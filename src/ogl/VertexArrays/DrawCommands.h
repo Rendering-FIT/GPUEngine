@@ -1,7 +1,7 @@
 #ifndef _DRAWCOMMANDS_H_
 #define _DRAWCOMMANDS_H_
 
-#include"OpenGL.h"
+#include"../../ogl/Standard/OpenGL.h"
 
 namespace ge
 {
@@ -49,35 +49,35 @@ namespace ge
     class DrawArraysIndirect: public Command
     {
       public:
-        GLenum   mode;
-        GLvoid * indirect;
+        GLenum  mode;
+        GLvoid *indirect;
         DrawArraysIndirect(GLenum mode,GLvoid*indirect);
         void apply();
     };
     class MultiDrawArrays: public Command
     {
       public:
-        GLenum    mode;
-        GLint   * first;
-        GLsizei * count;
-        GLsizei   drawCount;
+        GLenum   mode;
+        GLint   *first;
+        GLsizei *count;
+        GLsizei  drawCount;
         MultiDrawArrays(
-            GLenum    mode,
-            GLint   * first,
-            GLsizei * count,
-            GLsizei   drawCount);
+            GLenum   mode,
+            GLint   *first,
+            GLsizei *count,
+            GLsizei  drawCount);
         void apply();
     };
     class MultiDrawArraysIndirect: public Command
     {
       public:
         GLenum   mode;
-        GLvoid * indirect;
+        GLvoid  *indirect;
         GLsizei  drawCount;
         GLsizei  stride;
         MultiDrawArraysIndirect(
             GLenum   mode,
-            GLvoid * indirect,
+            GLvoid  *indirect,
             GLsizei  drawCount,
             GLsizei  stride);
         void apply();
@@ -88,62 +88,62 @@ namespace ge
         GLenum   mode;
         GLsizei  count;
         GLenum   type;
-        GLvoid * indices;
-        void DrawElements(
-            GLenum   mode;
-            GLsizei  count;
-            GLenum   type;
-            GLvoid * indices);
+        GLvoid  *indices;
+        DrawElements(
+            GLenum   mode,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid  *indices);
         void apply();
     };
     class DrawElementsInstancedBaseInstance: public Command
     {
       public:
-        GLenum    mode;
-        GLsizei   count;
-        GLenum    type;
-        GLvoid  * indices;
-        GLsizei   instanceCount;
-        GLuint    baseInstance;
-        void DrawElementsInstancedBaseInstance(
-            GLenum    mode;
-            GLsizei   count;
-            GLenum    type;
-            GLvoid  * indices;
-            GLsizei   instanceCount;
-            GLuint    baseInstance);
+        GLenum   mode;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid  *indices;
+        GLsizei  instanceCount;
+        GLuint   baseInstance;
+        DrawElementsInstancedBaseInstance(
+            GLenum   mode,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid  *indices,
+            GLsizei  instanceCount,
+            GLuint   baseInstance);
         void apply();
     };
     class DrawElementsInstanced: public Command
     {
       public:
-        GLenum    mode;
-        GLsizei   count;
-        GLenum    type;
-        GLvoid  * indices;
-        GLsizei   instanceCount;
+        GLenum   mode;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid  *indices;
+        GLsizei  instanceCount;
         DrawElementsInstanced(
-            GLenum    mode;
-            GLsizei   count;
-            GLenum    type;
-            GLvoid  * indices;
-            GLsizei   instanceCount);
+            GLenum   mode,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid  *indices,
+            GLsizei  instanceCount);
         void apply();
     };
     class MultiDrawElements: public Command
     {
       public:
-        GLenum     mode;
-        GLsizei *  count;
-        GLenum     type;
-        GLvoid  ** indices;
-        GLsizei    drawCount;
-        void MultiDrawElements(
-            GLenum     mode,
-            GLsizei *  count,
-            GLenum     type,
-            GLvoid  ** indices,
-            GLsizei    drawCount);
+        GLenum    mode;
+        GLsizei  *count;
+        GLenum    type;
+        GLvoid  **indices;
+        GLsizei   drawCount;
+        MultiDrawElements(
+            GLenum    mode,
+            GLsizei  *count,
+            GLenum    type,
+            GLvoid  **indices,
+            GLsizei   drawCount);
         void apply();
     };
     class DrawRangeElements: public Command
@@ -154,14 +154,14 @@ namespace ge
         GLuint   end;
         GLsizei  count;
         GLenum   type;
-        GLvoid * indices;
-        void DrawRangeElements(
+        GLvoid  *indices;
+        DrawRangeElements(
             GLenum   mode,
             GLuint   start,
             GLuint   end,
             GLsizei  count,
             GLenum   type,
-            GLvoid * indices);
+            GLvoid  *indices);
         void apply();
     };
     class DrawElementsBaseVertex: public Command
@@ -170,13 +170,13 @@ namespace ge
         GLenum   mode;
         GLsizei  count;
         GLenum   type;
-        GLvoid * indices;
+        GLvoid  *indices;
         GLint    baseVertex;
         DrawElementsBaseVertex(
             GLenum   mode,
             GLsizei  count,
             GLenum   type,
-            GLvoid * indices,
+            GLvoid  *indices,
             GLint    baseVertex);
         void apply();
     };
@@ -186,14 +186,14 @@ namespace ge
         GLenum   mode;
         GLsizei  count;
         GLenum   type;
-        GLvoid * indices;
+        GLvoid  *indices;
         GLsizei  instanceCount;
         GLint    baseVertex;
-        void DrawRangeElementsBaseVertex(
+        DrawRangeElementsBaseVertex(
             GLenum   mode,
-            GLsizei  count
+            GLsizei  count,
             GLenum   type,
-            GLvoid * indices,
+            GLvoid  *indices,
             GLsizei  instanceCount,
             GLint    baseVertex);
         void apply();
@@ -204,48 +204,48 @@ namespace ge
         GLenum   mode;
         GLsizei  count;
         GLenum   type;
-        GLvoid * indices;
+        GLvoid  *indices;
         GLsizei  instanceCount;
         GLint    baseVertex;
-        void DrawElementsInstanceBaseVertex(
+        DrawElementsInstanceBaseVertex(
             GLenum   mode,
             GLsizei  count,
             GLenum   type,
-            GLvoid * indices,
+            GLvoid  *indices,
             GLsizei  instanceCount,
             GLint    baseVertex);
         void apply();
     };
-    void DrawElementsInstancedBaseVertexBaseInstance: public Command
+    class DrawElementsInstancedBaseVertexBaseInstance: public Command
     {
       public:
-        GLenum mode;
-        GLsizei count;
-        GLenum type;
-        GLvoid * indices;
+        GLenum   mode;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid  *indices;
         GLsizei  instanceCount;
         GLint    baseVertex;
         GLuint   baseInstance;
-        void DrawElementsInstancedBaseVertexBaseInstance(
-            GLenum mode;
-            GLsizei count;
-            GLenum type;
-            GLvoid * indices;
-            GLsizei  instanceCount;
-            GLint    baseVertex;
+        DrawElementsInstancedBaseVertexBaseInstance(
+            GLenum   mode,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid  *indices,
+            GLsizei  instanceCount,
+            GLint    baseVertex,
             GLuint   baseInstance);
         void apply();
     };
     class DrawElementsIndirect: public Command
     {
       public:
-        GLenum   mode;
-        GLenum   type;
-        GLvoid * indirect;
-        void DrawElementsIndirect(
-            GLenum   mode;
-            GLenum   type;
-            GLvoid * indirect);
+        GLenum  mode;
+        GLenum  type;
+        GLvoid *indirect;
+        DrawElementsIndirect(
+            GLenum  mode,
+            GLenum  type,
+            GLvoid *indirect);
         void apply();
     };
     class MultiDrawElementsIndirect: public Command
@@ -253,33 +253,33 @@ namespace ge
       public:
         GLenum   mode;
         GLenum   type;
-        GLvoid * indirect;
+        GLvoid  *indirect;
         GLsizei  drawCount;
         GLsizei  stride;
-        void MultiDrawElementsIndirect(
-            GLenum   mode;
-            GLenum   type;
-            GLvoid * indirect;
-            GLsizei  drawCount;
+        MultiDrawElementsIndirect(
+            GLenum   mode,
+            GLenum   type,
+            GLvoid  *indirect,
+            GLsizei  drawCount,
             GLsizei  stride);
         void apply();
     };
     class MultiDrawElementsBaseVertex: public Command
     {
       public:
-        GLenum     mode;
-        GLsizei  * count;
-        GLenum     type;
-        GLvoid  ** indices;
-        GLsizei    drawCount;
-        GLint    * baseVertex;
-        void MultiDrawElementsBaseVertex(
-            GLenum     mode;
-            GLsizei  * count;
-            GLenum     type;
-            GLvoid  ** indices;
-            GLsizei    drawCount;
-            GLint    * baseVertex);
+        GLenum    mode;
+        GLsizei  *count;
+        GLenum    type;
+        GLvoid  **indices;
+        GLsizei   drawCount;
+        GLint    *baseVertex;
+        MultiDrawElementsBaseVertex(
+            GLenum    mode,
+            GLsizei  *count,
+            GLenum    type,
+            GLvoid  **indices,
+            GLsizei   drawCount,
+            GLint    *baseVertex);
         void apply();
     };
   }//namespace ogl

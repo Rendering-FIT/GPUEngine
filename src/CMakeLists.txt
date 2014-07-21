@@ -13,6 +13,7 @@ add_library(ogl STATIC
   ogl/PerFragmentOperation/StencilCommands.cpp
   ogl/Standard/OpenGL.cpp
   ogl/Standard/OpenGLCommon.cpp
+  ogl/VertexArrays/DrawCommands.cpp
   )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/")
