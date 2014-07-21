@@ -148,10 +148,140 @@ namespace ge
     };
     class DrawRangeElements: public Command
     {
-
+      public:
+        GLenum   mode;
+        GLuint   start;
+        GLuint   end;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid * indices;
+        void DrawRangeElements(
+            GLenum   mode,
+            GLuint   start,
+            GLuint   end,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid * indices);
+        void apply();
     };
-
-
+    class DrawElementsBaseVertex: public Command
+    {
+      public:
+        GLenum   mode;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid * indices;
+        GLint    baseVertex;
+        DrawElementsBaseVertex(
+            GLenum   mode,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid * indices,
+            GLint    baseVertex);
+        void apply();
+    };
+    class DrawRangeElementsBaseVertex: public Command
+    {
+      public:
+        GLenum   mode;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid * indices;
+        GLsizei  instanceCount;
+        GLint    baseVertex;
+        void DrawRangeElementsBaseVertex(
+            GLenum   mode,
+            GLsizei  count
+            GLenum   type,
+            GLvoid * indices,
+            GLsizei  instanceCount,
+            GLint    baseVertex);
+        void apply();
+    };
+    class DrawElementsInstanceBaseVertex: public Command
+    {
+      public:
+        GLenum   mode;
+        GLsizei  count;
+        GLenum   type;
+        GLvoid * indices;
+        GLsizei  instanceCount;
+        GLint    baseVertex;
+        void DrawElementsInstanceBaseVertex(
+            GLenum   mode,
+            GLsizei  count,
+            GLenum   type,
+            GLvoid * indices,
+            GLsizei  instanceCount,
+            GLint    baseVertex);
+        void apply();
+    };
+    void DrawElementsInstancedBaseVertexBaseInstance: public Command
+    {
+      public:
+        GLenum mode;
+        GLsizei count;
+        GLenum type;
+        GLvoid * indices;
+        GLsizei  instanceCount;
+        GLint    baseVertex;
+        GLuint   baseInstance;
+        void DrawElementsInstancedBaseVertexBaseInstance(
+            GLenum mode;
+            GLsizei count;
+            GLenum type;
+            GLvoid * indices;
+            GLsizei  instanceCount;
+            GLint    baseVertex;
+            GLuint   baseInstance);
+        void apply();
+    };
+    class DrawElementsIndirect: public Command
+    {
+      public:
+        GLenum   mode;
+        GLenum   type;
+        GLvoid * indirect;
+        void DrawElementsIndirect(
+            GLenum   mode;
+            GLenum   type;
+            GLvoid * indirect);
+        void apply();
+    };
+    class MultiDrawElementsIndirect: public Command
+    {
+      public:
+        GLenum   mode;
+        GLenum   type;
+        GLvoid * indirect;
+        GLsizei  drawCount;
+        GLsizei  stride;
+        void MultiDrawElementsIndirect(
+            GLenum   mode;
+            GLenum   type;
+            GLvoid * indirect;
+            GLsizei  drawCount;
+            GLsizei  stride);
+        void apply();
+    };
+    class MultiDrawElementsBaseVertex: public Command
+    {
+      public:
+        GLenum     mode;
+        GLsizei  * count;
+        GLenum     type;
+        GLvoid  ** indices;
+        GLsizei    drawCount;
+        GLint    * baseVertex;
+        void MultiDrawElementsBaseVertex(
+            GLenum     mode;
+            GLsizei  * count;
+            GLenum     type;
+            GLvoid  ** indices;
+            GLsizei    drawCount;
+            GLint    * baseVertex);
+        void apply();
+    };
   }//namespace ogl
 }//namespace ge
 
