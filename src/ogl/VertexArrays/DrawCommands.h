@@ -184,21 +184,23 @@ namespace ge
     {
       public:
         GLenum   mode;
+        GLuint   start;
+        GLuint   end;
         GLsizei  count;
         GLenum   type;
         GLvoid  *indices;
-        GLsizei  instanceCount;
         GLint    baseVertex;
         DrawRangeElementsBaseVertex(
             GLenum   mode,
+            GLuint   start,
+            GLuint   end,
             GLsizei  count,
             GLenum   type,
             GLvoid  *indices,
-            GLsizei  instanceCount,
             GLint    baseVertex);
         void apply();
     };
-    class DrawElementsInstanceBaseVertex: public Command
+    class DrawElementsInstancedBaseVertex: public Command
     {
       public:
         GLenum   mode;
@@ -207,7 +209,7 @@ namespace ge
         GLvoid  *indices;
         GLsizei  instanceCount;
         GLint    baseVertex;
-        DrawElementsInstanceBaseVertex(
+        DrawElementsInstancedBaseVertex(
             GLenum   mode,
             GLsizei  count,
             GLenum   type,
