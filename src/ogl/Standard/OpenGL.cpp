@@ -4,13 +4,13 @@ namespace ge
 {
   namespace ogl
   {
-    void CommandContainer::init(){
+    void CommandContainer::reset(){
       this->command = NULL;
       this->ref     = false;
     }
     void CommandContainer::free(){
       if(this->command&&!this->ref)delete this->command;
-      this->init();
+      this->reset();
     }
     void CommandContainer::apply(){
       if(this->command)this->command->apply();
