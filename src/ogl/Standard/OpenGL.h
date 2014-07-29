@@ -18,7 +18,7 @@ namespace ge
       public:
         Command     * command;
         bool          ref;
-        void reset ();
+        void reset();
         void free ();
         void apply();
     };

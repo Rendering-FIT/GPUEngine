@@ -14,6 +14,7 @@ set( OGL_INCLUDES
 		ogl/Standard/OpenGL.h
 		ogl/Standard/OpenGLCommon.h
 		ogl/VertexArrays/DrawCommands.h
+    ogl/VertexArrays/ConditionalRenderingCommands.h
   )
   
  set( OGL_SOURCES
@@ -29,6 +30,7 @@ set( OGL_INCLUDES
 		ogl/Standard/OpenGL.cpp
 		ogl/Standard/OpenGLCommon.cpp
 		ogl/VertexArrays/DrawCommands.cpp
+    ogl/VertexArrays/ConditionalRenderingCommands.cpp
 	)
 	
 ADD_LIBRARY(${LIB_NAME} 
