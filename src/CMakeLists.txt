@@ -1,21 +1,40 @@
 cmake_minimum_required (VERSION 2.6)
 project (ogl)
 
+set( OGL_INCLUDES
+		ogl/PerFragmentOperation/Blend.h
+		ogl/PerFragmentOperation/BlendCommands.h
+		ogl/PerFragmentOperation/DepthCommands.h
+		ogl/PerFragmentOperation/LogicalOperationsCommands.h
+		ogl/PerFragmentOperation/MultisampleFragmentOperationsCommands.h
+		ogl/PerFragmentOperation/OcclusionQueriesCommands.h
+		ogl/PerFragmentOperation/ScissorCommands.h
+		ogl/PerFragmentOperation/Stencil.h
+		ogl/PerFragmentOperation/StencilCommands.h
+		ogl/Standard/OpenGL.h
+		ogl/Standard/OpenGLCommon.h
+		ogl/VertexArrays/DrawCommands.h
+  )
+  
+ set( OGL_SOURCES
+		ogl/PerFragmentOperation/Blend.cpp
+		ogl/PerFragmentOperation/BlendCommands.cpp
+		ogl/PerFragmentOperation/DepthCommands.cpp
+		ogl/PerFragmentOperation/LogicalOperationsCommands.cpp
+		ogl/PerFragmentOperation/MultisampleFragmentOperationsCommands.cpp
+		ogl/PerFragmentOperation/OcclusionQueriesCommands.cpp
+		ogl/PerFragmentOperation/ScissorCommands.cpp
+		ogl/PerFragmentOperation/Stencil.cpp
+		ogl/PerFragmentOperation/StencilCommands.cpp
+		ogl/Standard/OpenGL.cpp
+		ogl/Standard/OpenGLCommon.cpp
+	)
+
 add_library(ogl STATIC
-  ogl/PerFragmentOperation/Blend.cpp
-  ogl/PerFragmentOperation/BlendCommands.cpp
-  ogl/PerFragmentOperation/DepthCommands.cpp
-  ogl/PerFragmentOperation/LogicalOperationsCommands.cpp
-  ogl/PerFragmentOperation/MultisampleFragmentOperationsCommands.cpp
-  ogl/PerFragmentOperation/OcclusionQueriesCommands.cpp
-  ogl/PerFragmentOperation/ScissorCommands.cpp
-  ogl/PerFragmentOperation/Stencil.cpp
-  ogl/PerFragmentOperation/StencilCommands.cpp
-  ogl/Standard/OpenGL.cpp
-  ogl/Standard/OpenGLCommon.cpp
+	${OGL_INCLUDES}
+	${OGL_SOURCES}
   )
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/modules/")
 
 find_package(GLEW REQUIRED)
 if(GLEW_FOUND)
