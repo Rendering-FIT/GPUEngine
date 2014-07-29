@@ -32,13 +32,13 @@ namespace ge
       this->_opSeparate[faceIndex].ref     = false;
     }
     Stencil::Stencil(){
-      this->_enableDisable  .init();
-      this->_func           .init();
-      this->_op             .init();
-      this->_funcSeparate[0].init();
-      this->_funcSeparate[1].init();
-      this->_opSeparate  [0].init();
-      this->_opSeparate  [1].init();
+      this->_enableDisable  .reset();
+      this->_func           .reset();
+      this->_op             .reset();
+      this->_funcSeparate[0].reset();
+      this->_funcSeparate[1].reset();
+      this->_opSeparate  [0].reset();
+      this->_opSeparate  [1].reset();
     }
     Stencil::~Stencil(){
       this->_enableDisable  .free();
