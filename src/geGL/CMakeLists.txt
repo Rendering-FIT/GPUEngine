@@ -21,6 +21,8 @@ set( OGL_INCLUDES
     ${HEADER_PATH}/VertexArrays/PrimitiveRestartCommands.h
     ${HEADER_PATH}/VertexArrays/VertexArrayObjectsCommands.h
     ${HEADER_PATH}/VertexArrays/VertexAttributeDivisorsCommands.h
+    ${HEADER_PATH}/ShadersAndPrograms/ShaderObjectsCommands.h
+    ${HEADER_PATH}/ShadersAndPrograms/ShaderObjectManager.h
   )
   
  set( OGL_SOURCES
@@ -41,6 +43,8 @@ set( OGL_INCLUDES
     VertexArrays/PrimitiveRestartCommands.cpp
     VertexArrays/VertexArrayObjectsCommands.cpp
     VertexArrays/VertexAttributeDivisorsCommands.cpp
+    ShadersAndPrograms/ShaderObjectsCommands.cpp
+    ShadersAndPrograms/ShaderObjectManager.cpp
 	)
 	
 ADD_LIBRARY(${LIB_NAME} 
