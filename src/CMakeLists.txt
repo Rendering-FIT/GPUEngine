@@ -15,6 +15,9 @@ set( OGL_INCLUDES
 		ogl/Standard/OpenGLCommon.h
 		ogl/VertexArrays/DrawCommands.h
     ogl/VertexArrays/ConditionalRenderingCommands.h
+    ogl/VertexArrays/GenericVertexAttributeArraysCommands.h
+    ogl/VertexArrays/VertexAttributeDivisorsCommands.h
+    ogl/VertexArrays/PrimitiveRestartCommands.h
   )
   
  set( OGL_SOURCES
@@ -31,6 +34,9 @@ set( OGL_INCLUDES
 		ogl/Standard/OpenGLCommon.cpp
 		ogl/VertexArrays/DrawCommands.cpp
     ogl/VertexArrays/ConditionalRenderingCommands.cpp
+    ogl/VertexArrays/GenericVertexAttributeArraysCommands.cpp
+    ogl/VertexArrays/VertexAttributeDivisorsCommands.cpp
+    ogl/VertexArrays/PrimitiveRestartCommands.cpp
 	)
 	
 ADD_LIBRARY(${LIB_NAME} 
