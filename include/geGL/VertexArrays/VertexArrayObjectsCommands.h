@@ -7,7 +7,7 @@ namespace ge
 {
   namespace ogl
   {
-    class GenVertexArrays: public Command
+    class GE_EXPORT GenVertexArrays: public Command
     {
       public:
         GLsizei  n;
@@ -17,7 +17,7 @@ namespace ge
             GLuint  *arrays);
         void apply();
     };
-    class DeleteVertexArrays: public Command
+    class GE_EXPORT DeleteVertexArrays: public Command
     {
       public:
         GLsizei  n;
@@ -27,7 +27,7 @@ namespace ge
             GLuint  *arrays);
         void apply();
     };
-    class BindVertexArray: public Command
+    class GE_EXPORT BindVertexArray: public Command
     {
       public:
         GLuint array;

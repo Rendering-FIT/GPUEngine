@@ -7,7 +7,7 @@ namespace ge
 {
   namespace ogl
   {
-    class PrimitiveRestartIndex: public Command
+    class GE_EXPORT PrimitiveRestartIndex: public Command
     {
       public:
         GLuint index;

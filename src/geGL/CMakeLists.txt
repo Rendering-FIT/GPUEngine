@@ -49,7 +49,8 @@ ADD_LIBRARY(${LIB_NAME}
 		${OGL_SOURCES}
 	)
 
-find_package(GLEW REQUIRED)
+find_package(GLEW   REQUIRED)
+find_package(OPENGL REQUIRED)
 #if(GLEW_FOUND)
 #  message("GLEW found")
 #  include_directories(${GLEW_INCLUDE_DIR})
@@ -58,8 +59,8 @@ find_package(GLEW REQUIRED)
 #  message("GLEW not found")
 #endif(GLEW_FOUND)
 
-include_directories(${GLEW_INCLUDE_PATH})
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} opengl32.lib)
+include_directories(${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
+target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})# opengl32.lib)
 
 install(FILES
   ${OGL_INCLUDES}
