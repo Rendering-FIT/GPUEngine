@@ -18,6 +18,7 @@ set( OGL_INCLUDES
     ogl/VertexArrays/GenericVertexAttributeArraysCommands.h
     ogl/VertexArrays/VertexAttributeDivisorsCommands.h
     ogl/VertexArrays/PrimitiveRestartCommands.h
+    ogl/VertexArrays/VertexArrayObjectsCommands.h
   )
   
  set( OGL_SOURCES
@@ -37,6 +38,7 @@ set( OGL_INCLUDES
     ogl/VertexArrays/GenericVertexAttributeArraysCommands.cpp
     ogl/VertexArrays/VertexAttributeDivisorsCommands.cpp
     ogl/VertexArrays/PrimitiveRestartCommands.cpp
+    ogl/VertexArrays/VertexArrayObjectsCommands.cpp
 	)
 	
 ADD_LIBRARY(${LIB_NAME} 
