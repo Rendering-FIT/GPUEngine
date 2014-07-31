@@ -9,11 +9,14 @@ namespace ge
 {
   namespace ogl
   {
+
     class GE_EXPORT Command
     {
       public:
         virtual void apply()=0;
     };
+
+
     class GE_EXPORT CommandContainer: public Command
     {
       public:
@@ -23,12 +26,25 @@ namespace ge
         void free ();
         void apply();
     };
+
+
     class GE_EXPORT CommandList: public Command
     {
       public:
-        bool alterable;
-        std::vector<Command*>commands;
         void apply();
+
+        /*virtual unsigned addCommand(Command* command);
+        virtual unsigned insertCommand(Command* command, unsigned after);
+        virtual void clear();
+        virtual void erase();*/
+
+        bool alterable;
+        std::vector<Command*> commands;
+
+        /*std::vector<Command*>& getCommands() { return _commands; }
+        bool getAlterable() const { return _alterable; }
+        void setAlterable(bool val) { _alterable = val; }*/
+    protected:
     };
   }
 }
