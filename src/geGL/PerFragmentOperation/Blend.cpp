@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     void Blend::_init(){
       this->_enable .free();

@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     unsigned Stencil::_faceToIndex(GLenum face){
       return(unsigned)(face==GL_BACK);

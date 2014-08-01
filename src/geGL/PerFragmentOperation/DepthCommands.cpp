@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     DepthFunc::DepthFunc(GLenum func){
       this->func = func;

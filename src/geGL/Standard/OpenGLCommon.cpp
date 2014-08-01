@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     EnableDisable::EnableDisable(GLenum target,bool value){
       this->target = target;

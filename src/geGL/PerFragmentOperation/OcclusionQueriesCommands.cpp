@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     BeginQuery::BeginQuery(GLenum target,GLuint id){
       this->target = target;

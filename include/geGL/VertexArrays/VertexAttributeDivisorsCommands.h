@@ -5,7 +5,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     class GE_EXPORT VertexBindingDivisor: public Command
     {

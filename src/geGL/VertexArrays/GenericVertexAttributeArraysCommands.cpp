@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     VertexAttribFormat::VertexAttribFormat(
         GLuint    attribIndex,

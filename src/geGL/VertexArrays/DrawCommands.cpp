@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     DrawArrays::DrawArrays(GLenum mode,GLint first,GLsizei count){
       this->mode  = mode;

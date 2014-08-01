@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     ScissorArrayv::ScissorArrayv(GLuint first,GLsizei count,GLint*v){
       this->first = first;

@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     StencilFunc::StencilFunc(
         GLenum func,

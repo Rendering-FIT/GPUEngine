@@ -7,7 +7,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
 
     class GE_EXPORT Command
@@ -38,7 +38,7 @@ namespace ge
         virtual void clear();
         virtual void erase();*/
 
-        bool alterable;
+        bool outOfOrder; ///<
         std::vector<Command*> commands;
 
         /*std::vector<Command*>& getCommands() { return _commands; }

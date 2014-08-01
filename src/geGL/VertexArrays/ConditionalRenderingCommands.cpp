@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl{
+  namespace gl{
     BeginConditionalRender::BeginConditionalRender(GLuint id,GLenum mode){
       this->id   = id;
       this->mode = mode;

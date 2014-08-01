@@ -7,7 +7,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     /**
      * @brief This class GE_EXPORT represents manager of stencil commands

@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     CreateShaderObject::CreateShaderObject(
         GLuint*shader,

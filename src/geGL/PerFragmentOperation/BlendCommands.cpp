@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     BlendEnablei::BlendEnablei(GLuint buffer,bool enable){
       this->buffer = buffer;

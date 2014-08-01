@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     GenVertexArrays::GenVertexArrays(
         GLsizei  n,

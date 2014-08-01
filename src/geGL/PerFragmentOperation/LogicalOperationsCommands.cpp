@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     LogicOp::LogicOp(GLenum op){
       this->op = op;

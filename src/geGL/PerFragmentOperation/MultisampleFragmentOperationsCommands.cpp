@@ -2,7 +2,7 @@
 
 namespace ge
 {
-  namespace ogl
+  namespace gl
   {
     SampleCoverage::SampleCoverage(GLfloat value,GLboolean invert){
       this->value  = value;

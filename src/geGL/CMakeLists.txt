@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 SET(LIB_NAME geGL)
 
 SET(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
-set( OGL_INCLUDES
+set( GL_INCLUDES
 		${HEADER_PATH}/Export.h
 		${HEADER_PATH}/PerFragmentOperation/Blend.h
 		${HEADER_PATH}/PerFragmentOperation/BlendCommands.h
@@ -25,7 +25,7 @@ set( OGL_INCLUDES
     ${HEADER_PATH}/ShadersAndPrograms/ShaderObjectManager.h
   )
   
- set( OGL_SOURCES
+ set( GL_SOURCES
 		PerFragmentOperation/Blend.cpp
 		PerFragmentOperation/BlendCommands.cpp
 		PerFragmentOperation/DepthCommands.cpp
@@ -49,25 +49,18 @@ set( OGL_INCLUDES
 	
 ADD_LIBRARY(${LIB_NAME} 
 		${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-		${OGL_INCLUDES}
-		${OGL_SOURCES}
+		${GL_INCLUDES}
+		${GL_SOURCES}
 	)
 
 find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
-#if(GLEW_FOUND)
-#  message("GLEW found")
-#  include_directories(${GLEW_INCLUDE_DIR})
-#  target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY})
-#else(GLEW_FOUND)
-#  message("GLEW not found")
-#endif(GLEW_FOUND)
 
 include_directories(${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})# opengl32.lib)
+target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
 
 install(FILES
-  ${OGL_INCLUDES}
+  ${GL_INCLUDES}
   DESTINATION include/ge/${LIB_NAME}
   )
 
