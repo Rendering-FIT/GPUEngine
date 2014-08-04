@@ -5,7 +5,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ChildList.h
     ${HEADER_PATH}/Node.h
-    ${HEADER_PATH}/Geometry.h
+    #${HEADER_PATH}/Geometry.h
   )
 
 set(SG_SOURCES
