@@ -6,15 +6,16 @@ using namespace ge::sg;
 
 void Node::addChild(std::shared_ptr<Node> &node)
 {
-   auto it = node->_parents.insert(node->_parents.end(),node.get());
-   _children.emplace_back(node,it);
+   auto it1 = node->_parents.emplace(node->_parents.end(),node,ChildList<Node>::iterator());
+   auto it2 = _children.emplace(node->_children.end(),node,it1);
+   it1->peerIt = it2;
 }
 
 
 void Node::removeChild(ChildIterator it)
 {
    auto ii = it.getInternalIterator();
-   ii->child->_parents.erase(ii->parentsDeleteIt);
+   ii->child->_parents.erase(ii->peerIt);
    _children.erase(ii);
 }
 
@@ -32,5 +33,14 @@ void Node::removeChild(std::shared_ptr<Node> &node)
    };
    ChildList<Node>::iterator it = std::find_if(_children.begin(),_children.end(),IsLookedForChildRec(node));
    if(it!=_children.end())
+      removeChild(it);
+}
+
+
+void Node::removeAllChildren()
+{
+   auto eIt = childEndIterator();
+   ChildIterator it;
+   while((it=childBeginIterator())!=eIt)
       removeChild(it);
 }
