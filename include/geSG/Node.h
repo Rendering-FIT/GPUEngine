@@ -7,27 +7,22 @@ namespace ge
 {
    namespace sg
    {
-      class Node
+      class Group;
+
+
+      class Node : public std::enable_shared_from_this<Node>
       {
       protected:
 
-         ChildList<Node> _children;
-         ParentList<Node> _parents;
+         ParentList<Group,Node> _parents;
 
       public:
 
-         typedef ChildList<Node>::ChildIterator ChildIterator;
-         typedef ParentList<Node>::ParentIterator ParentIterator;
+         typedef ParentList<Group,Node>::ParentIterator ParentIterator;
 
-         inline ChildIterator childBeginIterator() const  { return _children.childBegin(); }
-         inline ChildIterator childEndIterator()   const  { return _children.childEnd(); }
          inline ParentIterator parentBeginIterator() const  { return _parents.childBegin(); }
          inline ParentIterator parentEndIterator()   const  { return _parents.childEnd(); }
-
-         virtual void addChild(std::shared_ptr<Node> &node);
-         virtual void removeChild(ChildIterator it);
-         virtual void removeChild(std::shared_ptr<Node> &node);
-         virtual void removeAllChildren();
+         inline ParentList<Group,Node>& getParents()  { return _parents; }
 
       };
    }

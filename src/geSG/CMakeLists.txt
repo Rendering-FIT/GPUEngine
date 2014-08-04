@@ -3,13 +3,14 @@ set(LIB_NAME geSG)
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
-    ${HEADER_PATH}/ChildList.h
+    ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Node.h
-    #${HEADER_PATH}/Geometry.h
+    ${HEADER_PATH}/Group.h
   )
 
 set(SG_SOURCES
     Node.cpp
+    Group.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}
