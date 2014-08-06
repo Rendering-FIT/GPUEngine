@@ -3,6 +3,7 @@ set(LIB_NAME geGL)
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
     ${HEADER_PATH}/Export.h
+    ${HEADER_PATH}/BufferObject.h
     ${HEADER_PATH}/PerFragmentOperation/Blend.h
     ${HEADER_PATH}/PerFragmentOperation/BlendCommands.h
     ${HEADER_PATH}/PerFragmentOperation/DepthCommands.h
@@ -25,6 +26,7 @@ set(GL_INCLUDES
   )
 
 set(GL_SOURCES
+    BufferObject.cpp  
     PerFragmentOperation/Blend.cpp
     PerFragmentOperation/BlendCommands.cpp
     PerFragmentOperation/DepthCommands.cpp
@@ -56,7 +58,7 @@ find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
 
 include_directories(${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY})
+target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} geCore)
 
 install(FILES
     ${GL_INCLUDES}
