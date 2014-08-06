@@ -9,7 +9,7 @@ void Group::addChild(shared_ptr<Node> &node)
 {
    auto it1 = node->getParents().emplace(node->getParents().end(),
                                          static_pointer_cast<Group>(shared_from_this()),
-                                         ChildList<Node,Group>::iterator());
+                                         ChildList::iterator());
    auto it2 = _children.emplace(_children.end(),node,it1);
    it1->peerIt = it2;
 }
@@ -28,7 +28,7 @@ void Group::removeChild(shared_ptr<Node> &node)
    struct IsLookedForChildRec
    {
       Node* _lookedForNode;
-      inline bool operator()(const ChildRec<Node,Group>& rec) const
+      inline bool operator()(const ChildRecTemplate<Node,Group>& rec) const
       {
          return rec.child.get() == _lookedForNode;
       }

@@ -8,12 +8,16 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Geometry.h
     ${HEADER_PATH}/Group.h
     ${HEADER_PATH}/MatrixTransform.h
+    ${HEADER_PATH}/Projection.h
+    ${HEADER_PATH}/Camera.h
   )
 
 set(SG_SOURCES
     Node.cpp
     Group.cpp
     MatrixTransform.cpp
+    Projection.cpp
+    Camera.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}
