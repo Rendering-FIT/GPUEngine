@@ -5,12 +5,15 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Node.h
+    ${HEADER_PATH}/Geometry.h
     ${HEADER_PATH}/Group.h
+    ${HEADER_PATH}/MatrixTransform.h
   )
 
 set(SG_SOURCES
     Node.cpp
     Group.cpp
+    MatrixTransform.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}
