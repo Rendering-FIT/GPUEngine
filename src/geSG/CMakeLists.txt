@@ -26,6 +26,8 @@ ADD_LIBRARY(${LIB_NAME}
     ${SG_SOURCES}
   )
 
+include_directories(${GLM_INCLUDE_DIR})
+  
 install(FILES
     ${SG_INCLUDES}
     DESTINATION include/ge/${LIB_NAME}
