@@ -10,13 +10,16 @@ namespace ge
    {
       class Group : public Node
       {
-      protected:
-
-         ChildList<Node,Group> _children;
-
       public:
 
-         typedef ChildList<Node,Group>::ChildIterator ChildIterator;
+         typedef ChildListTemplate<Node,Group> ChildList;
+         typedef ChildList::ChildIterator ChildIterator;
+
+      protected:
+
+         ChildList _children;
+
+      public:
 
          inline ChildIterator childBeginIterator() const  { return _children.childBegin(); }
          inline ChildIterator childEndIterator()   const  { return _children.childEnd(); }
@@ -25,7 +28,7 @@ namespace ge
          virtual void removeChild(ChildIterator it);
          virtual void removeChild(std::shared_ptr<Node> &node);
          virtual void removeAllChildren();
-         inline ChildList<Node,Group>& getChildren()  { return _children; }
+         inline ChildList& getChildren()  { return _children; }
 
       };
    }

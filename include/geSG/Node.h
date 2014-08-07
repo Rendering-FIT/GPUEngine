@@ -12,17 +12,20 @@ namespace ge
 
       class Node : public std::enable_shared_from_this<Node>
       {
+      public:
+
+         typedef ParentListTemplate<Group,Node> ParentList;
+         typedef ParentList::ParentIterator ParentIterator;
+
       protected:
 
-         ParentList<Group,Node> _parents;
+         ParentList _parents;
 
       public:
 
-         typedef ParentList<Group,Node>::ParentIterator ParentIterator;
-
          inline ParentIterator parentBeginIterator() const  { return _parents.childBegin(); }
          inline ParentIterator parentEndIterator()   const  { return _parents.childEnd(); }
-         inline ParentList<Group,Node>& getParents()  { return _parents; }
+         inline ParentList& getParents()  { return _parents; }
 
       };
    }
