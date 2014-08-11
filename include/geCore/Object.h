@@ -62,7 +62,7 @@ T* cloneType(const T* t)
 {
    if (t)
    {
-      unique_ptr<ge::core::Object> obj = t->cloneType();
+      std::unique_ptr<ge::core::Object> obj = t->cloneType();
 
       T* ptr = dynamic_cast<T*>(obj.get());
       if (ptr)

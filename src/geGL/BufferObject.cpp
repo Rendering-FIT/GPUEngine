@@ -1,6 +1,7 @@
 #include <geGL/BufferObject.h>
 
-#include <malloc.h>
+#include <cstring>
+//#include <malloc.h>
 
 ge::gl::BufferObject::BufferObject()
    //: Object()
@@ -35,7 +36,7 @@ ge::gl::BufferObject::~BufferObject()
 {
    if(isMapped()) _data = NULL;
    deleteGLObject();
-   if(_data) delete _data;
+   if(_data) delete[](char*)_data;
 }
 
 /**
@@ -44,7 +45,8 @@ ge::gl::BufferObject::~BufferObject()
  */
 void ge::gl::BufferObject::allocateClientSideBuffer( GLsizeiptr size, void* dataSource/* = NULL*/ )
 {
-   _data = malloc(size);
+   //_data = malloc(size);
+   _data = new char[size];
    if (!_data)
    {
       //make fuss
