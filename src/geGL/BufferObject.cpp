@@ -3,15 +3,16 @@
 #include <cstring>
 //#include <malloc.h>
 
+
 ge::gl::BufferObject::BufferObject()
    //: Object()
-   : _mutable(true)
-   , _data(NULL)
-   , _bufferObject(0)
-   , _target(0)
-   , _size(0)
-   , _usage(GL_STATIC_DRAW)
-   , _flags(0)
+   : _mutable     (BUFFEROBJECT_DEFAULT_MUTABLE)
+   , _data        (BUFFEROBJECT_DEFAULT_DATA   )
+   , _bufferObject(BUFFEROBJECT_DEFAULT_ID     )
+   , _target      (BUFFEROBJECT_DEFAULT_TARGET )
+   , _size        (BUFFEROBJECT_DEFAULT_SIZE   )
+   , _usage       (BUFFEROBJECT_DEFAULT_USAGE  )
+   , _flags       (BUFFEROBJECT_DEFAULT_FLAGS  )
 {
 
 }
@@ -21,22 +22,23 @@ ge::gl::BufferObject::BufferObject()
  */
 ge::gl::BufferObject::BufferObject( const BufferObject& buf/*, const ge::core::CopyOp& copyop /*= ge::core::CopyOp::SHALLOW_COPY*/ )
    //: Object(buf, copyop)
-   : _mutable(buf._mutable)
-   , _data(buf._data)
+   : _mutable     (buf._mutable     )
+   , _data        (buf._data        )
    , _bufferObject(buf._bufferObject)
-   , _target(buf._target)
-   , _size(buf._size)
-   , _usage(buf._usage)
-   , _flags(buf._flags)
+   , _target      (buf._target      )
+   , _size        (buf._size        )
+   , _usage       (buf._usage       )
+   , _flags       (buf._flags       )
 {
 
 }
 
 ge::gl::BufferObject::~BufferObject()
 {
-   if(isMapped()) _data = NULL;
+   if(isMapped()) _data = BUFFEROBJECT_DEFAULT_DATA;
+   //FIXME shouldn't we unmap buffer using glUnmapBuffer?
    deleteGLObject();
-   if(_data) delete[](char*)_data;
+   this->freeClientSideBuffer();
 }
 
 /**
@@ -65,7 +67,8 @@ void ge::gl::BufferObject::allocateClientSideBuffer( GLsizeiptr size, void* data
 void ge::gl::BufferObject::freeClientSideBuffer()
 {
    //not checking if gl is mapped (waste of time)
-   if(_data) free(_data);
+   if(_data != BUFFEROBJECT_DEFAULT_DATA) delete[](char*)(_data);
+   this->_data = BUFFEROBJECT_DEFAULT_DATA;
 }
 
 /**
@@ -87,7 +90,7 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLenum usage /*= GL
    _flags = flags;
 
    if(!_bufferObject)
-      glGenBuffers(1, &_bufferObject);
+      glGenBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_bufferObject);
    if(!_bufferObject)
    {
       //make fuss
@@ -124,7 +127,7 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLsizeiptr size, GL
    _flags = flags;
 
    if(!_bufferObject)
-      glGenBuffers(1, &_bufferObject);
+      glGenBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_bufferObject);
    if(!_bufferObject)
    {
       //make fuss
@@ -146,8 +149,8 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLsizeiptr size, GL
  */
 void ge::gl::BufferObject::deleteGLObject()
 {
-   glDeleteBuffers(1, &_bufferObject);
-   _bufferObject = 0;
+   glDeleteBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_bufferObject);
+   _bufferObject = BUFFEROBJECT_DEFAULT_ID;
 }
 
 /**
@@ -158,7 +161,11 @@ void ge::gl::BufferObject::map( GLintptr offset /*= 0*/, GLsizeiptr size /*= 0*/
 {
    //if(_data)
       //should be NULL
-   _data = glMapNamedBufferRangeEXT(_bufferObject, offset, size==0 ? _size : size, mapFlags==0 ? _flags : mapFlags);
+   _data = glMapNamedBufferRangeEXT(
+         _bufferObject, 
+         offset, 
+         size     == BUFFEROBJECT_DEFAULT_SIZE     ? _size  : size, 
+         mapFlags == BUFFEROBJECT_DEFAULT_MAPFLAGS ? _flags : mapFlags);
 }
 
 /**
@@ -167,7 +174,7 @@ void ge::gl::BufferObject::map( GLintptr offset /*= 0*/, GLsizeiptr size /*= 0*/
 void ge::gl::BufferObject::unmap()
 {
    glUnmapNamedBufferEXT(_bufferObject);
-   _data = NULL;
+   _data = BUFFEROBJECT_DEFAULT_DATA;
 }
 
 /**
@@ -194,7 +201,7 @@ void ge::gl::BufferObject::bind()
  */
 void ge::gl::BufferObject::unbind()
 {
-   glBindBuffer(_target, 0);
+   glBindBuffer(_target, BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
 }
 
 //const ge::gl::BufferObject::Mapping* ge::gl::BufferObject::createMapping( GLintptr offset, GLsizeiptr size, GLbitfield flags )
@@ -215,3 +222,214 @@ void ge::gl::BufferObject::unbind()
 //{
 //
 //}
+namespace ge{
+   namespace gl{
+      /**
+       * @brief Binds buffer to specific target
+       *
+       * @param target target
+       */
+      void BufferObject::bind(
+            GLenum target){
+         //we just bind buffer object to another binding point
+         //original binding point stays the same
+         glBindBuffer(
+               target,
+               this->_bufferObject);
+      }
+      /**
+       * @brief Binds range of buffer to specific indexed target
+       *
+       * @param target target
+       * @param index target index
+       * @param offset offset
+       * @param size size of buffer
+       */
+      void BufferObject::bindRange(
+            GLenum     target,
+            GLuint     index,
+            GLintptr   offset,
+            GLsizeiptr size){
+         //we just bind buffer object to another binding point
+         //original binding point stays the same
+         glBindBufferRange(
+               target,
+               index,
+               this->_bufferObject,
+               offset,
+               size);
+      }
+      /**
+       * @brief Binds buffer to specific indexed target
+       *
+       * @param target target
+       * @param index index
+       */
+      void BufferObject::bindBase(
+            GLenum target,
+            GLuint index){
+         glBindBufferBase(
+               target,
+               index,
+               this->_bufferObject);
+      }
+      /**
+       * @brief Unbinds buffer from specific target
+       *
+       * @param target target
+       */
+      void BufferObject::unbind(
+            GLenum target){
+         glBindBuffer(
+               target,
+               BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      }
+      /**
+       * @brief Unbinds range of buffer from specific indexed target
+       *
+       * @param target target
+       * @param index  index
+       */
+      void BufferObject::unbindRange(
+            GLenum target,
+            GLuint index){
+         glBindBufferBase(//NOTE: unbind whole buffer
+               target,
+               index,
+               BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      }
+      /**
+       * @brief Unbinds buffer from specific index target
+       *
+       * @param target target
+       * @param index  index
+       */
+      void BufferObject::unbindBase(
+            GLenum target,
+            GLuint index){
+         glBindBufferBase(
+               target,
+               index,
+               BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      }
+      /**
+       * @brief Copies data from another buffer into this buffer
+       *
+       * @param buffer another buffer
+       */
+      void BufferObject::copy(
+            BufferObject*buffer){
+         //compute size
+         GLsizeiptr maxSize=(this->_size>buffer->_size)?buffer->_size:this->_size;
+         //bind buffers
+         glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,buffer->_bufferObject);
+         glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,this  ->_bufferObject);
+         //copy buffer
+         glCopyBufferSubData(
+               BUFFEROBJECT_DEFAULT_READBUFFER,
+               BUFFEROBJECT_DEFAULT_WRITEBUFFER,
+               BUFFEROBJECT_DEFAULT_READOFFSET,
+               BUFFEROBJECT_DEFAULT_WRITEOFFSET,
+               maxSize);
+         //unbind buffers
+         glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+         glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      }
+      /**
+       * @brief Copies data from another buffer into this buffer
+       *
+       * @param buffer another buffer
+       */
+      void BufferObject::operator &=(
+            BufferObject*buffer){
+         this->copy(buffer);
+      }
+      /**
+       * @brief Flushes mapped buffer
+       *
+       * @param target target
+       * @param offset offset into buffer in bytes
+       * @param length length of data in bytes
+       */
+      void BufferObject::flushMapped(
+            GLenum     target,
+            GLintptr   offset,
+            GLsizeiptr length){
+         glFlushMappedBufferRange(target,offset,length);
+      }
+      /**
+       * @brief Invalidates specific region of buffer
+       *
+       * @param offset offset of region in bytes
+       * @param length length of region in bytes
+       */
+      void BufferObject::invalidate(GLintptr offset,GLsizeiptr length){
+         glInvalidateBufferSubData(this->_bufferObject,offset,length);
+      }
+      /**
+       * @brief Invalidates buffer
+       */
+      void BufferObject::invalidate(){
+         glInvalidateBufferData(this->_bufferObject);
+      }
+      /**
+       * @brief Clears buffer
+       *
+       * @param internalFormat internal format of buffer
+       * @param format format of data
+       * @param type type of data
+       * @param data optional data
+       */
+      void BufferObject::clear(
+            GLenum        internalFormat,
+            GLenum        format,
+            GLenum        type,
+            const GLvoid *data){
+         //bind buffer to clearbuffer binding point
+         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_bufferObject);
+         //clear buffer
+         glClearBufferSubData(
+               BUFFEROBJECT_DEFAULT_CLEARBUFFER,
+               internalFormat,
+               BUFFEROBJECT_DEFAULT_CLEAROFFSET,
+               this->_size,
+               format,
+               type,
+               data);
+         //unbind buffer from clearbuffer binding point
+         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      }
+      /**
+       * @brief Clears specific region of buffer
+       *
+       * @param internalFormat internal format of buffer
+       * @param offset offset of region
+       * @param size   size of region
+       * @param format format of data
+       * @param type   type of data
+       * @param data   data
+       */
+      void BufferObject::clear(
+            GLenum        internalFormat,
+            GLintptr      offset,
+            GLsizeiptr    size,
+            GLenum        format,
+            GLenum        type,
+            const GLvoid *data){
+         //bind buffer to clearbuffer binding point
+         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_bufferObject);
+         //clear buffer
+         glClearBufferSubData(
+               BUFFEROBJECT_DEFAULT_CLEARBUFFER,
+               internalFormat,
+               offset,
+               size,
+               format,
+               type,
+               data);
+         //unbind buffer from clearbuffer binding point
+         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      }
+   }
+}
+
