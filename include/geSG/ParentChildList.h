@@ -9,39 +9,67 @@ namespace ge
    namespace sg
    {
 
+      template<typename T,typename ChildListT>
+      class ParentPointerAbstractTemplate {
+      public:
+         std::weak_ptr<T> parent;
+         typename ChildListT::iterator childListDeleteIterator;
+
+         inline ParentPointerAbstractTemplate(const std::weak_ptr<T>& aParent,typename ChildListT::iterator aChildListDeleteIterator)
+               : parent(aParent),childListDeleteIterator(childListDeleteIterator) {}
+         inline ParentPointerAbstractTemplate(const std::shared_ptr<T>& aParent,typename ChildListT::iterator aChildListDeleteIterator)
+               : parent(aParent),childListDeleteIterator(aChildListDeleteIterator) {}
+      };
+
+      template<typename T,typename ParentListT>
+      class ChildPointerAbstractTemplate {
+      public:
+         std::shared_ptr<T> child;
+         typename ParentListT::iterator parentListDeleteIterator;
+
+         inline ChildPointerAbstractTemplate(const std::shared_ptr<T>& aChild,typename ParentListT::iterator aParentListDeleteIterator)
+               : child(aChild),parentListDeleteIterator(aParentListDeleteIterator) {}
+      };
+
+      template<typename T>
+      class ChildSimpleListTemplate : public std::list<std::shared_ptr<T>> {};
+
+      template<typename T,typename ChildT>
+      class ParentPointerTemplate : public ParentPointerAbstractTemplate<T,ChildSimpleListTemplate<ChildT>> {};
+
+      template<typename T>
+      class ParentSimpleListTemplate : public std::list<std::weak_ptr<T>> {};
+
+      template<typename T,typename ParentT>
+      class ChildPointerTemplate : public ChildPointerAbstractTemplate<T,ParentSimpleListTemplate<ParentT>> {};
+
+      #define LIST_PUBLIC_INTERFACE(_list_name_,_list_type_,_item_reference_,_container_type_,_prefix_name_) \
+         public: \
+            inline _list_type_::iterator _prefix_name_##BeginIterator() { _list_name_.begin(); } \
+            inline _list_type_::iterator _prefix_name_##EndIterator() const { _list_name_.end(); } \
+            inline _list_type_::reverse_iterator _prefix_name_##RBeginIterator() { _list_name_.rbegin(); } \
+            inline _list_type_::reverse_iterator _prefix_name_##REndIterator() const { _list_name_.rend(); } \
+            inline _list_type_::iterator _prefix_name_##Append(_item_reference_ item) { return _list_name_.insert(_list_name_.end(),item); } \
+            inline void _prefix_name_##Remove(_list_type_::iterator it) { _list_name_.erase(it); } \
+            inline _list_type_& _prefix_name_##GetList() { return _list_name_; } \
+            static inline _list_type_& _prefix_name_##GetList(_container_type_ *container) { return container->_list_name_; }
+
+
       template<typename T,typename ParentT> class ChildListTemplate;
       template<typename T,typename ChildT> class ParentListTemplate;
 
-      template<typename T,typename ParentT=T>
-      struct ChildRecTemplate
-      {
-         std::shared_ptr<T> child;
-         typename ParentListTemplate<ParentT,T>::iterator peerIt;
-         ChildRecTemplate(std::shared_ptr<T> node,typename ParentListTemplate<ParentT,T>::iterator it)
-                  : child(node),peerIt(it) {}
-      };
-
-      template<typename T,typename ChildT=T>
-      struct ParentRecTemplate
-      {
-         std::weak_ptr<T> parent;
-         typename ChildListTemplate<ChildT,T>::iterator peerIt;
-         ParentRecTemplate(std::weak_ptr<T> node,typename ChildListTemplate<ChildT,T>::iterator it)
-                  : parent(node),peerIt(it) {}
-      };
-
-      template<typename T,typename Rec>
-      class ParentChildListTemplate : public std::list<Rec>
+      template<typename T,typename PointerT>
+      class ParentChildListAbstractTemplate : public std::list<PointerT>
       {
       protected:
-         typedef std::list<Rec> inherited;
+         typedef std::list<PointerT> inherited;
       public:
 
-         struct ParentChildIterator
+         class ParentChildIterator
          {
          protected:
 
-            typename std::list<Rec>::iterator _it;
+            typename std::list<PointerT>::iterator _it;
 
          public:
 
@@ -49,34 +77,36 @@ namespace ge
             typedef std::bidirectional_iterator_tag    iterator_category;
 
             inline ParentChildIterator()  {}
-            inline ParentChildIterator(typename std::list<Rec>::iterator recIt) : _it(recIt)  {}
+            inline ParentChildIterator(typename std::list<PointerT>::iterator it) : _it(it)  {}
 
-            inline typename std::list<Rec>::iterator getInternalIterator() const  { return _it; }
+            inline typename std::list<PointerT>::iterator getInternalIterator() const  { return _it; }
 
-            ParentChildIterator& operator++()     { _it++; return *this; }
-            ParentChildIterator  operator++(int)  { ParentChildIterator tmp = *this; _it++; return tmp; }
-            ParentChildIterator& operator--()     { _it--; return *this; }
-            ParentChildIterator  operator--(int)  { ParentChildIterator tmp = *this; _it--; return tmp; }
+            inline ParentChildIterator& operator++()     { _it++; return *this; }
+            inline ParentChildIterator  operator++(int)  { ParentChildIterator tmp = *this; _it++; return tmp; }
+            inline ParentChildIterator& operator--()     { _it--; return *this; }
+            inline ParentChildIterator  operator--(int)  { ParentChildIterator tmp = *this; _it--; return tmp; }
 
-            bool operator==(const ParentChildIterator& rhs) const  { return _it == rhs._it; }
-            bool operator!=(const ParentChildIterator& rhs) const  { return _it != rhs._it; }
+            inline bool operator==(const ParentChildIterator& rhs) const  { return _it == rhs._it; }
+            inline bool operator!=(const ParentChildIterator& rhs) const  { return _it != rhs._it; }
          };
 
          inline void assign(size_t n, const T& value)  { inherited::assign(n,value); }
       };
 
-      template<typename T,typename ParentT=T>
-      class ChildListTemplate : public ParentChildListTemplate<T,ChildRecTemplate<T,ParentT>>
+      template<typename T,typename ParentT>
+      class ChildListTemplate : public ParentChildListAbstractTemplate<T,ChildPointerAbstractTemplate<T,ParentListTemplate<ParentT,T>>>
       {
+      public:
+         typedef ChildPointerAbstractTemplate<T,ParentListTemplate<ParentT,T>> ChildData;
       protected:
-         typedef ParentChildListTemplate<T,ChildRecTemplate<T,ParentT>> inherited;
+         typedef ParentChildListAbstractTemplate<T,ChildData> inherited;
          typedef typename inherited::inherited inheritedList;
       public:
 
          struct ChildIterator : inherited::ParentChildIterator
          {
          protected:
-            typedef typename ParentChildListTemplate<T,ChildRecTemplate<T,ParentT>>::ParentChildIterator inherited;
+            typedef typename ParentChildListAbstractTemplate<T,ChildData>::ParentChildIterator inherited;
 
          public:
 
@@ -86,7 +116,7 @@ namespace ge
 
             inline ChildIterator()  {}
             inline ChildIterator(const ChildIterator& it) : inherited(it.getInternalIterator())  {}
-            inline ChildIterator(typename std::list<ChildRecTemplate<T,ParentT>>::iterator recIt) : inherited(recIt)  {}
+            inline ChildIterator(typename std::list<ChildData>::iterator it) : inherited(it)  {}
 
             inline reference operator*() const  { return inherited::_it->child; }
             inline pointer operator->() const   { return std::__addressof(inherited::_it->child); }
@@ -96,17 +126,14 @@ namespace ge
 
 
          inline ChildListTemplate()  {}
-         //inline explicit ChildListTemplate(const Alloc& a) : inherited(a)  {}
          inline explicit ChildListTemplate(size_t n) : inheritedList(n)  {}
          inline ChildListTemplate(size_t n,const T& value)
-                  : inherited(n,value,std::allocator<ChildRecTemplate<T,ParentT>>())  {}
+                  : inherited(n,value)  {}
          inline ChildListTemplate(const ChildListTemplate& list) : inherited(list)  {}
          inline ChildListTemplate(ChildListTemplate&& list) : inherited(std::move(list))  {}
-         inline ChildListTemplate(std::initializer_list<T> il)
-                  : inherited(il,std::allocator<ChildRecTemplate<T,ParentT>>())  {}
+         inline ChildListTemplate(std::initializer_list<T> il) : inherited(il)  {}
          template<typename InputIterator>
-         inline ChildListTemplate(InputIterator first,InputIterator last)
-                  : inherited(first,last,std::allocator<ChildRecTemplate<T,ParentT>>())  {}
+         inline ChildListTemplate(InputIterator first,InputIterator last) : inherited(first,last)  {}
 
          inline ChildIterator         childBegin() const   { return ChildIterator(((ChildListTemplate<T,ParentT>*)this)->inherited::begin()); }
          inline ChildIterator         childEnd() const     { return ChildIterator(((ChildListTemplate<T,ParentT>*)this)->inherited::end()); }
@@ -120,17 +147,19 @@ namespace ge
       };
 
       template<typename T,typename ChildT=T>
-      class ParentListTemplate : public ParentChildListTemplate<T,ParentRecTemplate<T,ChildT>>
+      class ParentListTemplate : public ParentChildListAbstractTemplate<T,ParentPointerAbstractTemplate<T,ChildListTemplate<ChildT,T>>>
       {
+      public:
+         typedef ParentPointerAbstractTemplate<T,ChildListTemplate<ChildT,T>> ParentData;
       protected:
-         typedef ParentChildListTemplate<T,ParentRecTemplate<T,ChildT>> inherited;
+         typedef ParentChildListAbstractTemplate<T,ParentData> inherited;
          typedef typename inherited::inherited inheritedList;
       public:
 
          struct ParentIterator : public inherited::ParentChildIterator
          {
          private:
-            typedef typename ParentChildListTemplate<T,ParentRecTemplate<T,ChildT>>::ParentChildIterator inherited;
+            typedef typename ParentChildListAbstractTemplate<T,ParentData>::ParentChildIterator inherited;
 
          public:
 
@@ -140,7 +169,7 @@ namespace ge
 
             inline ParentIterator()  {}
             inline ParentIterator(const ParentIterator& it) : inherited(it.getInternalIterator())  {}
-            inline ParentIterator(typename std::list<ParentRecTemplate<T,ChildT>>::iterator recIt) : inherited(recIt)  {}
+            inline ParentIterator(typename std::list<ParentData>::iterator it) : inherited(it)  {}
 
             inline reference operator*() const  { return inherited::_it->parent; }
             inline pointer operator->() const   { return std::__addressof(inherited::_it->parent); }

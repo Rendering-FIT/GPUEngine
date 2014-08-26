@@ -10,6 +10,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/MatrixTransform.h
     ${HEADER_PATH}/Projection.h
     ${HEADER_PATH}/Camera.h
+    ${HEADER_PATH}/StateSet.h
   )
 
 set(SG_SOURCES
