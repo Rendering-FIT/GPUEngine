@@ -20,9 +20,10 @@ set(GL_INCLUDES
     ${HEADER_PATH}/VertexArrays/GenericVertexAttributeArraysCommands.h
     ${HEADER_PATH}/VertexArrays/PrimitiveRestartCommands.h
     ${HEADER_PATH}/VertexArrays/VertexArrayObjectsCommands.h
+    ${HEADER_PATH}/VertexArrays/VertexArrayObjectsManager.h
     ${HEADER_PATH}/VertexArrays/VertexAttributeDivisorsCommands.h
     ${HEADER_PATH}/ShadersAndPrograms/ShaderObjectsCommands.h
-    ${HEADER_PATH}/ShadersAndPrograms/ShaderObjectManager.h
+    ${HEADER_PATH}/ShadersAndPrograms/ShaderObjectsManager.h
   )
 
 set(GL_SOURCES
@@ -43,9 +44,10 @@ set(GL_SOURCES
     VertexArrays/GenericVertexAttributeArraysCommands.cpp
     VertexArrays/PrimitiveRestartCommands.cpp
     VertexArrays/VertexArrayObjectsCommands.cpp
+    VertexArrays/VertexArrayObjectsManager.cpp
     VertexArrays/VertexAttributeDivisorsCommands.cpp
     ShadersAndPrograms/ShaderObjectsCommands.cpp
-    ShadersAndPrograms/ShaderObjectManager.cpp
+    ShadersAndPrograms/ShaderObjectsManager.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

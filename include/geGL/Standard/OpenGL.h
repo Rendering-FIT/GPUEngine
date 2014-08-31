@@ -31,6 +31,12 @@ namespace ge
       class GE_EXPORT CommandList: public Command
       {
          public:
+           /**
+            * @brief constructs command list
+            *
+            * @param outOfOrder if it is set to true, commands can be executed out of order
+            */
+            CommandList(bool outOfOrder);
             void apply();
 
             /*virtual unsigned addCommand(Command* command);

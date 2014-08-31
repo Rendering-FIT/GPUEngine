@@ -18,7 +18,7 @@ namespace ge
     DeleteVertexArrays::DeleteVertexArrays(
         GLsizei  n,
         GLuint  *arrays){
-      this->n = n;
+      this->n      = n;
       this->arrays = arrays;
     }
     void DeleteVertexArrays::apply(){

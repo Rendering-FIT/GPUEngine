@@ -1,4 +1,4 @@
-#include<geGL/ShadersAndPrograms/ShaderObjectManager.h>
+#include<geGL/ShadersAndPrograms/ShaderObjectsManager.h>
 
 #include<stdarg.h>
 #include<string>
@@ -83,35 +83,80 @@ namespace ge
       result<<*text;
       *text=result.str();
     }
+    bool ShaderObjectManager::_prepareSource(
+        GLuint       **shader,
+        GLchar      ***string,
+        std::string    text,
+        std::string   *name,
+        std::string    definitions,
+        unsigned       version,
+        std::string    profile){
+      //FIXME maybe create new command for these actions espetially for loading file
+      //does a shader with same name exist?
+      if(this->_shaders.count(*name)!=0)return false;
+      //set version
+      this->_setVersion(&text,version,profile);
+      //append definitions
+      this->_appendAfterVersion(&text,definitions);
+      //is name the default name
+      if(*name==SHADER_OBJECT_MANAGER_DEFAULT_NAME){
+        //stringstream for conversion of numbers to string
+        std::stringstream shaderName;
+        //create new name using base name and ordering number
+        shaderName<<SHADER_OBJECT_MANAGER_BASE_NAME<<this->_shaderCount;
+        //set name
+        *name=shaderName.str();
+      }
+      //allocate shader inside manager
+      this->_shaders.insert(std::pair<std::string,GLuint>(*name,0));
+      //get address of shader inside manager
+      *shader=&this->_shaders[*name];
+      //allocate array of sources
+      *string=new GLchar*[1];
+      //allocate characters of source inside array of sources
+      (*string)[0]=new GLchar[text.length()+1];
+      //copy source
+      memcpy((*string)[0],text.c_str(),text.length());
+      //put string end to the end of source
+      string[0][text.length()]='\0';
+      //increment counter of shader
+      this->_shaderCount++;//increment shader count
+      //preparation was successful
+      return true;
+    }
+
+    void ShaderObjectManager::clear(Command **command){
+      CommandList*commandList = new CommandList(true);
+      std::map<std::string,GLuint>::iterator ii     = this->_shaders.begin();
+      std::map<std::string,GLuint>::iterator ii_end = this->_shaders.end();
+      for(;ii!=ii_end;++ii)
+        commandList->commands.push_back(new DeleteShader(&ii->second));
+      *command=commandList;
+    }
     std::string ShaderObjectManager::insert(
         Command     **command,
         GLenum        type,
         std::string   text,
+        std::string   name,
         std::string   definitions,
         unsigned      version,
         std::string profile){
-      this->_setVersion(&text,version,profile);
-      this->_appendAfterVersion(&text,definitions);
-      std::stringstream shaderName;
-      shaderName<<"shader"<<this->_shaderCount;
-      this->_shaders.insert(std::pair<std::string,GLuint>(shaderName.str(),0));
-      GLuint*shader=&this->_shaders[shaderName.str()];
-      GLchar**string=new GLchar*[1];
-      string[0]=new GLchar[text.length()+1];
-      memcpy(string[0],text.c_str(),text.length());
-      string[0][text.length()]='\0';
-      CommandList*commandList = new CommandList();
-      commandList->outOfOrder=false;
-      commandList->commands.push_back(new CreateShader (shader,type));
-      commandList->commands.push_back(new ShaderSource (shader,1,string,NULL));
-      commandList->commands.push_back(new CompileShader(shader));
-      *command = commandList;
-      this->_shaderCount++;//increment shader count
-      return shaderName.str();
+      GLuint  *shader;
+      GLchar **string;
+      if(this->_prepareSource(&shader,&string,text,&name,definitions,version,profile)){
+        CommandList*commandList = new CommandList(false);
+        commandList->commands.push_back(new CreateShader (shader,type));
+        commandList->commands.push_back(new ShaderSource (shader,1,string,NULL));
+        commandList->commands.push_back(new CompileShader(shader));
+        *command = commandList;
+      }else
+        *command = NULL;
+      return name;
     }
     void ShaderObjectManager::insert(
         Command     **command,
         std::string   fileName,
+        std::string   name,
         std::string   definitions,
         unsigned      version,    
         std::string   profile){
@@ -120,10 +165,45 @@ namespace ge
           command,
           this->_fileToShaderType(fileName),
           this->_readWholeFile(&length,fileName),
+          name,
           definitions,
           version,
           profile);
     }
+    std::string ShaderObjectManager::insertNow(
+        GLenum        type,
+        std::string   text,
+        std::string   name,        
+        std::string   definitions,
+        unsigned      version,
+        std::string   profile){    
+      GLuint  *shader;
+      GLchar **string;
+      if(this->_prepareSource(&shader,&string,text,&name,definitions,version,profile)){
+        *shader = glCreateShader(type);
+        glShaderSource(*shader,1,(const GLchar**)string,NULL);
+        glCompileShader(*shader);
+        delete[]string[1];
+        delete[]string;
+      }
+      return name;
+    }
+    void ShaderObjectManager::insert(
+        std::string   fileName,
+        std::string   name,
+        std::string   definitions,
+        unsigned      version,
+        std::string   profile){
+      int length;
+      this->insertNow(
+          this->_fileToShaderType(fileName),
+          this->_readWholeFile(&length,fileName),
+          name,
+          definitions,
+          version,
+          profile);
+    }
+
     std::string define(std::string name){
       return"#define "+name+SHADER_OBJECT_MANAGER_LINE_END;
     }
