@@ -8,6 +8,7 @@ namespace ge
    namespace sg
    {
       class Group;
+      class StateSet;
 
 
       class Node : public std::enable_shared_from_this<Node>
@@ -16,10 +17,12 @@ namespace ge
 
          typedef ParentListTemplate<Group,Node> ParentList;
          typedef ParentList::ParentIterator ParentIterator;
+         typedef ChildPointerTemplate<StateSet,Node> StateSetPointer;
 
       protected:
 
          ParentList _parents;
+         StateSetPointer _stateSet;
 
       public:
 
