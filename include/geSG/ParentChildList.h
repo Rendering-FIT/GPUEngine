@@ -15,6 +15,7 @@ namespace ge
          std::weak_ptr<T> parent;
          typename ChildListT::iterator childListDeleteIterator;
 
+         inline ParentPointerAbstractTemplate() {}
          inline ParentPointerAbstractTemplate(const std::weak_ptr<T>& aParent,typename ChildListT::iterator aChildListDeleteIterator)
                : parent(aParent),childListDeleteIterator(childListDeleteIterator) {}
          inline ParentPointerAbstractTemplate(const std::shared_ptr<T>& aParent,typename ChildListT::iterator aChildListDeleteIterator)
@@ -27,6 +28,7 @@ namespace ge
          std::shared_ptr<T> child;
          typename ParentListT::iterator parentListDeleteIterator;
 
+         inline ChildPointerAbstractTemplate() {}
          inline ChildPointerAbstractTemplate(const std::shared_ptr<T>& aChild,typename ParentListT::iterator aParentListDeleteIterator)
                : child(aChild),parentListDeleteIterator(aParentListDeleteIterator) {}
       };

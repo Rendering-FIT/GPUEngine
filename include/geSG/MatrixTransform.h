@@ -13,10 +13,14 @@ namespace ge
       {
       protected:
 
+         class MatricesDataAdapter;
+
          unsigned _numMatrices;
-         std::unique_ptr<class MatricesDataAdapter> _matricesDataAdapter;
+         std::unique_ptr<MatricesDataAdapter> _matricesDataAdapter;
 
       public:
+
+         META_Node(ge::sg,MatrixTransform);
 
          virtual void setMatrix(std::shared_ptr<glm::mat4[]> matrices,unsigned numMatrices=1);
          virtual void setMatrix(glm::mat4 *matrices,unsigned numMatrices=1,bool deleteOnObjectDestruction=false);
@@ -28,7 +32,7 @@ namespace ge
                                 const float a9,const float a10,const float a11,const float a12,
                                 const float a13,const float a14,const float a15,const float a16);
 
-      public:
+      protected:
          class MatricesDataAdapter {
          public:
             enum Type { GLM_MAT4_SHARED_PTR, GLM_MAT4_PTR, FLOAT_SHARED_PTR, FLOAT_PTR, SINGLE_MATRIX };

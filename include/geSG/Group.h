@@ -21,6 +21,8 @@ namespace ge
 
       public:
 
+         META_Node(ge::sg,Group);
+
          inline ChildIterator childBeginIterator() const  { return _children.childBegin(); }
          inline ChildIterator childEndIterator()   const  { return _children.childEnd(); }
 
@@ -29,6 +31,8 @@ namespace ge
          virtual void removeChild(std::shared_ptr<Node> &node);
          virtual void removeAllChildren();
          inline ChildList& getChildren()  { return _children; }
+
+         virtual void traverse(NodeVisitor& visitor);
 
       };
    }

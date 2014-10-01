@@ -47,3 +47,10 @@ void Group::removeAllChildren()
    while((it=childBeginIterator())!=eIt)
       removeChild(it);
 }
+
+
+void Group::traverse(NodeVisitor& visitor)
+{
+   for(auto it=childBeginIterator(); it!=childEndIterator(); it++)
+      (*it)->accept(visitor);
+}

@@ -12,6 +12,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Projection.h
     ${HEADER_PATH}/Camera.h
     ${HEADER_PATH}/StateSet.h
+    ${HEADER_PATH}/NodeVisitor.h
   )
 
 set(SG_SOURCES
@@ -21,6 +22,7 @@ set(SG_SOURCES
     MatrixTransform.cpp
     Projection.cpp
     Camera.cpp
+    NodeVisitor.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}
