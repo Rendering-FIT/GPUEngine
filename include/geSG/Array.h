@@ -9,6 +9,7 @@ namespace ge
 {
    namespace sg
    {
+
       class ValueVisitor
       {
       public:
@@ -60,6 +61,7 @@ namespace ge
          virtual void apply(glm::dmat4x2&) {}
          virtual void apply(glm::dmat4x3&) {}
       };
+
 
       class ArrayVisitor
       {
@@ -113,12 +115,14 @@ namespace ge
          virtual void apply(std::vector<glm::dmat4x3>&) {}
       };
 
+
       class ArrayDecorator
       {
       public:
          virtual void accept(int index,ValueVisitor& visitor) = 0;
          virtual void accept(ArrayVisitor& visitor) = 0;
       };
+
 
       template<typename T>
       class ArrayDecoratorTemplate : public ArrayDecorator
@@ -130,9 +134,15 @@ namespace ge
          ArrayDecoratorTemplate() {}
          ArrayDecoratorTemplate(const std::shared_ptr<std::vector<T>> &array) : _array(array) {}
 
+         std::shared_ptr<std::vector<T>> get() { return _array; }
+         const std::shared_ptr<std::vector<T>>& get() const { return _array; }
+
+         virtual void set(const std::shared_ptr<std::vector<T>> &array) { _array=array; }
+
          virtual void accept(int index,ValueVisitor& visitor) { visitor.apply((*_array)[index]); }
          virtual void accept(ArrayVisitor& visitor) { visitor.apply(*_array); }
       };
+
 
       template<>
       class ArrayDecoratorTemplate<bool> : public ArrayDecorator
@@ -144,270 +154,325 @@ namespace ge
          ArrayDecoratorTemplate() {}
          ArrayDecoratorTemplate(const std::shared_ptr<std::vector<bool>> &array) : _array(array) {}
 
+         std::shared_ptr<std::vector<bool>> get() { return _array; }
+         const std::shared_ptr<std::vector<bool>>& get() const { return _array; }
+
+         virtual void set(const std::shared_ptr<std::vector<bool>> &array) { _array=array; }
+
          virtual void accept(int index,ValueVisitor& visitor) { bool tmp=(*_array)[index]; visitor.apply(tmp); (*_array)[index] = tmp; }
          virtual void accept(ArrayVisitor& visitor) { visitor.apply(*_array); }
       };
+
 
       class ArrayAdapter
       {
       protected:
 
-         virtual ~ArrayAdapter() {}
-
-         enum class Type : unsigned char; // forward declaration
-
-         Type    _arrayType;
-         int     _elementSize;
+         union {
+            struct {
+               unsigned short _glType;
+               unsigned short _glNumComponents;
+            };
+            unsigned int _arrayType;
+         };
+         int             _elementSize;
          std::shared_ptr<ArrayDecorator> _arrayDecorator;
 
       public:
 
-         enum class Type : unsigned char
+         enum class GLType : unsigned short
          {
-            Unknown = 0,
+            BYTE            = 0x1400,
+            UNSIGNED_BYTE   = 0x1401,
+            SHORT           = 0x1402,
+            UNSIGNED_SHORT  = 0x1403,
+            INT             = 0x1404,
+            UNSIGNED_INT    = 0x1405,
+            FLOAT           = 0x1406,
+            DOUBLE          = 0x140A,
+            HALF_FLOAT      = 0x140B,
+            FIXED           = 0x140C,
 
-            Bool     = 1,
+            UNSIGNED_BYTE_3_3_2            = 0x8032,
+            UNSIGNED_BYTE_2_3_3_REV        = 0x8362,
+            UNSIGNED_SHORT_5_6_5           = 0x8363,
+            UNSIGNED_SHORT_5_6_5_REV       = 0x8364,
+            UNSIGNED_SHORT_4_4_4_4         = 0x8033,
+            UNSIGNED_SHORT_4_4_4_4_REV     = 0x8365,
+            UNSIGNED_SHORT_5_5_5_1         = 0x8034,
+            UNSIGNED_SHORT_1_5_5_5_REV     = 0x8366,
+            UNSIGNED_INT_8_8_8_8           = 0x8035,
+            UNSIGNED_INT_8_8_8_8_REV       = 0x8367,
+            UNSIGNED_INT_10_10_10_2        = 0x8036,
+            UNSIGNED_INT_2_10_10_10_REV    = 0x8368,
+            UNSIGNED_INT_24_8              = 0x84FA,
+            UNSIGNED_INT_10F_11F_11F_REV   = 0x8C3B,
+            UNSIGNED_INT_5_9_9_9_REV       = 0x8C3E,
+            FLOAT_32_UNSIGNED_INT_24_8_REV = 0x8DAD,
 
-            Byte     = 2,
-            Short    = 3,
-            Int      = 4,
+            MAT2   = 0xff02,
+            MAT3   = 0xff03,
+            MAT4   = 0xff04,
 
-            UByte    = 5,
-            UShort   = 6,
-            UInt     = 7,
+            MAT2X3 = 0xff05,
+            MAT2X4 = 0xff06,
+            MAT3X2 = 0xff07,
+            MAT3X4 = 0xff08,
+            MAT4X2 = 0xff09,
+            MAT4X3 = 0xff0A,
 
-            Float    = 8,
-            Double   = 9,
+            DMAT2   = 0xff0B,
+            DMAT3   = 0xff0C,
+            DMAT4   = 0xff0D,
 
-            Vec2     = 10,
-            Vec3     = 11,
-            Vec4     = 12,
+            DMAT2X3 = 0xff0E,
+            DMAT2X4 = 0xff0F,
+            DMAT3X2 = 0xff10,
+            DMAT3X4 = 0xff11,
+            DMAT4X2 = 0xff12,
+            DMAT4X3 = 0xff13,
 
-            DVec2    = 13,
-            DVec3    = 14,
-            DVec4    = 15,
-
-            BVec2    = 16,
-            BVec3    = 17,
-            BVec4    = 18,
-
-            IVec2    = 19,
-            IVec3    = 20,
-            IVec4    = 21,
-
-            UVec2    = 22,
-            UVec3    = 23,
-            UVec4    = 24,
-
-            Mat2     = 25,
-            Mat3     = 26,
-            Mat4     = 27,
-
-            Mat2x3   = 28,
-            Mat2x4   = 29,
-            Mat3x2   = 30,
-            Mat3x4   = 31,
-            Mat4x2   = 32,
-            Mat4x3   = 33,
-
-            DMat2    = 34,
-            DMat3    = 35,
-            DMat4    = 36,
-
-            DMat2x3  = 37,
-            DMat2x4  = 38,
-            DMat3x2  = 39,
-            DMat3x4  = 40,
-            DMat4x2  = 41,
-            DMat4x3  = 42,
-
-            Struct   = 43,
+            STRUCT  = 0xffff,
+            UNKNOWN = 0x0000,
          };
 
-         ArrayAdapter() : _arrayType(Type::Unknown), _elementSize(0) {}
+         static const unsigned short BGRA = 0x80E1;
+
+         enum class Type : unsigned int
+         {
+            Empty = 0,
+            Unknown = 0,
+
+            Byte  = int(GLType::BYTE) | 1 << 16,
+            BVec2 = int(GLType::BYTE) | 2 << 16,
+            BVec3 = int(GLType::BYTE) | 3 << 16,
+            BVec4 = int(GLType::BYTE) | 4 << 16,
+
+            UByte  = int(GLType::UNSIGNED_BYTE) | 1 << 16,
+            UBVec2 = int(GLType::UNSIGNED_BYTE) | 2 << 16,
+            UBVec3 = int(GLType::UNSIGNED_BYTE) | 3 << 16,
+            UBVec4 = int(GLType::UNSIGNED_BYTE) | 4 << 16,
+
+            Short = int(GLType::SHORT) | 1 << 16,
+            SVec2 = int(GLType::SHORT) | 2 << 16,
+            SVec3 = int(GLType::SHORT) | 3 << 16,
+            SVec4 = int(GLType::SHORT) | 4 << 16,
+
+            UShort = int(GLType::UNSIGNED_SHORT) | 1 << 16,
+            USVec2 = int(GLType::UNSIGNED_SHORT) | 2 << 16,
+            USVec3 = int(GLType::UNSIGNED_SHORT) | 3 << 16,
+            USVec4 = int(GLType::UNSIGNED_SHORT) | 4 << 16,
+
+            Int   = int(GLType::INT) | 1 << 16,
+            IVec2 = int(GLType::INT) | 2 << 16,
+            IVec3 = int(GLType::INT) | 3 << 16,
+            IVec4 = int(GLType::INT) | 4 << 16,
+
+            UInt  = int(GLType::UNSIGNED_INT) | 1 << 16,
+            UVec2 = int(GLType::UNSIGNED_INT) | 2 << 16,
+            UVec3 = int(GLType::UNSIGNED_INT) | 3 << 16,
+            UVec4 = int(GLType::UNSIGNED_INT) | 4 << 16,
+
+            Float = int(GLType::FLOAT) | 1 << 16,
+            Vec2  = int(GLType::FLOAT) | 2 << 16,
+            Vec3  = int(GLType::FLOAT) | 3 << 16,
+            Vec4  = int(GLType::FLOAT) | 4 << 16,
+
+            Double = int(GLType::DOUBLE) | 1 << 16,
+            DVec2  = int(GLType::DOUBLE) | 2 << 16,
+            DVec3  = int(GLType::DOUBLE) | 3 << 16,
+            DVec4  = int(GLType::DOUBLE) | 4 << 16,
+
+            Half   = int(GLType::HALF_FLOAT) | 1 << 16,
+            HVec2  = int(GLType::HALF_FLOAT) | 2 << 16,
+            HVec3  = int(GLType::HALF_FLOAT) | 3 << 16,
+            HVec4  = int(GLType::HALF_FLOAT) | 4 << 16,
+
+            Mat2   = int(GLType::MAT2) | 1 << 16,
+            Mat3   = int(GLType::MAT3) | 1 << 16,
+            Mat4   = int(GLType::MAT4) | 1 << 16,
+
+            Mat2x3 = int(GLType::MAT2X3) | 1 << 16,
+            Mat2x4 = int(GLType::MAT2X4) | 1 << 16,
+            Mat3x2 = int(GLType::MAT3X2) | 1 << 16,
+            Mat3x4 = int(GLType::MAT3X4) | 1 << 16,
+            Mat4x2 = int(GLType::MAT4X2) | 1 << 16,
+            Mat4x3 = int(GLType::MAT4X3) | 1 << 16,
+
+            DMat2   = int(GLType::DMAT2) | 1 << 16,
+            DMat3   = int(GLType::DMAT3) | 1 << 16,
+            DMat4   = int(GLType::DMAT4) | 1 << 16,
+
+            DMat2x3 = int(GLType::DMAT2X3) | 1 << 16,
+            DMat2x4 = int(GLType::DMAT2X4) | 1 << 16,
+            DMat3x2 = int(GLType::DMAT3X2) | 1 << 16,
+            DMat3x4 = int(GLType::DMAT3X4) | 1 << 16,
+            DMat4x2 = int(GLType::DMAT4X2) | 1 << 16,
+            DMat4x3 = int(GLType::DMAT4X3) | 1 << 16,
+
+            Struct = int(GLType::STRUCT) | 1 << 16,
+         };
+
+      protected:
+
+         template<typename T>
+         static inline GLType makeGLType() { return GLType::UNKNOWN; }
+         template<typename T>
+         static inline unsigned short getNumComponentsOfType() { return 1; }
+
+         template<typename T>
+         static inline unsigned makeType(unsigned short numComponents) { return unsigned(makeGLType<T>()) | unsigned(numComponents)<<16; }
+         template<typename T>
+         static inline unsigned makeType() { return unsigned(makeGLType<T>()) | unsigned(getNumComponentsOfType<T>())<<16; }
+
+         static inline unsigned makeType(GLType glType,unsigned short numComponents) { return unsigned(glType) | unsigned(numComponents)<<16; }
+         static inline unsigned makeType(unsigned short glType,unsigned short numComponents) { return unsigned(glType) | unsigned(numComponents)<<16; }
+
+      public:
+
+         ArrayAdapter() : _arrayType(unsigned(Type::Unknown)), _elementSize(0) {}
          ArrayAdapter(const ArrayAdapter& a) : _arrayType(a._arrayType), _elementSize(a._elementSize), _arrayDecorator(a._arrayDecorator) {}
+         ArrayAdapter& operator=(const ArrayAdapter &a)  { _arrayType=a._arrayType; _elementSize=a._elementSize; _arrayDecorator=a._arrayDecorator; return *this; }
 
-         ArrayAdapter(const std::shared_ptr<std::vector<bool>> &ptr) : _arrayType(Type::Bool), _elementSize(sizeof(bool)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<bool>>(ptr)) {}
+         template<typename T>
+         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr) : _arrayType(makeType<T>()), _elementSize(sizeof(T)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         template<typename T>
+         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents) : _arrayType(makeType<T>(numComponents)), _elementSize(sizeof(T)*numComponents/getNumComponentsOfType<T>()), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         template<typename T>
+         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,GLType glType) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeof(T)*numComponents/getNumComponentsOfType<T>()), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         template<typename T>
+         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,unsigned glType) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeof(T)*numComponents/getNumComponentsOfType<T>()), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         template<typename T>
+         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,GLType glType,unsigned sizeOfElement) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeOfElement), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         template<typename T>
+         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,unsigned glType,unsigned sizeOfElement) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeOfElement), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
 
-         ArrayAdapter(const std::shared_ptr<std::vector<char>> &ptr) :  _arrayType(Type::Byte),  _elementSize(sizeof(char)),  _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<char>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<short>> &ptr) : _arrayType(Type::Short), _elementSize(sizeof(short)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<short>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<int>> &ptr) :   _arrayType(Type::Int),   _elementSize(sizeof(int)),   _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<int>>(ptr)) {}
+         virtual ~ArrayAdapter() {}
 
-         ArrayAdapter(const std::shared_ptr<std::vector<unsigned char>> &ptr) :  _arrayType(Type::UByte),  _elementSize(sizeof(unsigned char)),  _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<unsigned char>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<unsigned short>> &ptr) : _arrayType(Type::UShort), _elementSize(sizeof(unsigned short)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<unsigned short>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<unsigned>> &ptr) :       _arrayType(Type::UInt),   _elementSize(sizeof(unsigned)),       _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<unsigned>>(ptr)) {}
+         inline void setType(Type t) { _arrayType = unsigned(t); }
+         inline void setType(unsigned t) { _arrayType = t; }
+         inline void setType(GLType t,unsigned short numComponents) { _glType=(unsigned short)(t); _glNumComponents=numComponents; }
+         inline void setType(unsigned t,unsigned short numComponents) { _glType=t; _glNumComponents=numComponents; }
+         inline void setSizeOfElement(unsigned size) { _elementSize = size; }
 
-         ArrayAdapter(const std::shared_ptr<std::vector<float>> &ptr) :  _arrayType(Type::Float),  _elementSize(sizeof(float)),  _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<float>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<double>> &ptr) : _arrayType(Type::Double), _elementSize(sizeof(double)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<double>>(ptr)) {}
+         inline Type getType() const { return Type(_arrayType); }
+         inline unsigned getTypeAsInt() const { return _arrayType; }
+         inline GLType getGLType() const { return GLType(_glType); }
+         inline unsigned short getGLTypeAsInt() const { return _glType; }
+         inline unsigned short getNumComponents() const { return _glNumComponents; }
+         inline unsigned getSizeOfElement() const { return _elementSize; }
 
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::vec2>> &ptr) : _arrayType(Type::Vec2), _elementSize(sizeof(glm::vec2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::vec2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::vec3>> &ptr) : _arrayType(Type::Vec3), _elementSize(sizeof(glm::vec3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::vec3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::vec4>> &ptr) : _arrayType(Type::Vec4), _elementSize(sizeof(glm::vec4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::vec4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dvec2>> &ptr) : _arrayType(Type::DVec2), _elementSize(sizeof(glm::dvec2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dvec2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dvec3>> &ptr) : _arrayType(Type::DVec3), _elementSize(sizeof(glm::dvec3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dvec3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dvec4>> &ptr) : _arrayType(Type::DVec4), _elementSize(sizeof(glm::dvec4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dvec4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::bvec2>> &ptr) : _arrayType(Type::BVec2), _elementSize(sizeof(glm::bvec2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::bvec2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::bvec3>> &ptr) : _arrayType(Type::BVec3), _elementSize(sizeof(glm::bvec3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::bvec3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::bvec4>> &ptr) : _arrayType(Type::BVec4), _elementSize(sizeof(glm::bvec4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::bvec4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::ivec2>> &ptr) : _arrayType(Type::IVec2), _elementSize(sizeof(glm::ivec2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::ivec2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::ivec3>> &ptr) : _arrayType(Type::IVec3), _elementSize(sizeof(glm::ivec3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::ivec3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::ivec4>> &ptr) : _arrayType(Type::IVec4), _elementSize(sizeof(glm::ivec4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::ivec4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::uvec2>> &ptr) : _arrayType(Type::UVec2), _elementSize(sizeof(glm::uvec2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::uvec2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::uvec3>> &ptr) : _arrayType(Type::UVec3), _elementSize(sizeof(glm::uvec3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::uvec3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::uvec4>> &ptr) : _arrayType(Type::UVec4), _elementSize(sizeof(glm::uvec4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::uvec4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat2>> &ptr) : _arrayType(Type::Mat2), _elementSize(sizeof(glm::mat2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat3>> &ptr) : _arrayType(Type::Mat3), _elementSize(sizeof(glm::mat3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat4>> &ptr) : _arrayType(Type::Mat4), _elementSize(sizeof(glm::mat4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat2x3>> &ptr) : _arrayType(Type::Mat2x3), _elementSize(sizeof(glm::mat2x3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat2x3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat2x4>> &ptr) : _arrayType(Type::Mat2x4), _elementSize(sizeof(glm::mat2x4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat2x4>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat3x2>> &ptr) : _arrayType(Type::Mat3x2), _elementSize(sizeof(glm::mat3x2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat3x2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat3x4>> &ptr) : _arrayType(Type::Mat3x4), _elementSize(sizeof(glm::mat3x4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat3x4>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat4x2>> &ptr) : _arrayType(Type::Mat4x2), _elementSize(sizeof(glm::mat4x2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat4x2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::mat4x3>> &ptr) : _arrayType(Type::Mat4x3), _elementSize(sizeof(glm::mat4x3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::mat4x3>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat2>> &ptr) : _arrayType(Type::DMat2), _elementSize(sizeof(glm::dmat2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat3>> &ptr) : _arrayType(Type::DMat3), _elementSize(sizeof(glm::dmat3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat4>> &ptr) : _arrayType(Type::DMat4), _elementSize(sizeof(glm::dmat4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat4>>(ptr)) {}
-
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat2x3>> &ptr) : _arrayType(Type::DMat2x3), _elementSize(sizeof(glm::dmat2x3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat2x3>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat2x4>> &ptr) : _arrayType(Type::DMat2x4), _elementSize(sizeof(glm::dmat2x4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat2x4>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat3x2>> &ptr) : _arrayType(Type::DMat3x2), _elementSize(sizeof(glm::dmat3x2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat3x2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat3x4>> &ptr) : _arrayType(Type::DMat3x4), _elementSize(sizeof(glm::dmat3x4)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat3x4>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat4x2>> &ptr) : _arrayType(Type::DMat4x2), _elementSize(sizeof(glm::dmat4x2)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat4x2>>(ptr)) {}
-         ArrayAdapter(const std::shared_ptr<std::vector<glm::dmat4x3>> &ptr) : _arrayType(Type::DMat4x3), _elementSize(sizeof(glm::dmat4x3)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<glm::dmat4x3>>(ptr)) {}
-
-         template<typename StructType>
-         ArrayAdapter(const std::shared_ptr<std::vector<StructType>> &ptr) : _arrayType(Type::Struct), _elementSize(sizeof(StructType)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<StructType>>(ptr)) {}
-
-         void clear() { _arrayType=Type::Unknown; _elementSize=0; _arrayDecorator.reset(); }
+         void clear() { _arrayType=unsigned(Type::Unknown); _elementSize=0; _arrayDecorator.reset(); }
 
          inline void set(const std::nullptr_t ptr) { clear(); }
 
-         void set(const std::shared_ptr<std::vector<bool>> &ptr) { _arrayType=Type::Bool; _elementSize=sizeof(bool); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<bool>>(ptr); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr) { _arrayType=makeType<T>(); _elementSize=sizeof(T); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents) { _arrayType=makeType<T>(numComponents); _elementSize=sizeof(T)*numComponents/getNumComponentsOfType<T>(); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,GLType glType) { set(ptr,numComponents,unsigned(glType)); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,unsigned glType) { _arrayType=makeType(glType,numComponents); _elementSize=sizeof(T)*numComponents/getNumComponentsOfType<T>(); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,GLType glType,unsigned sizeOfElement) { set(ptr,numComponents,unsigned(glType),sizeOfElement); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,unsigned glType,unsigned sizeOfElement) { _arrayType=makeType(glType,numComponents); _elementSize=sizeOfElement; _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
 
-         void set(const std::shared_ptr<std::vector<char>> &ptr) {  _arrayType=Type::Byte;  _elementSize=sizeof(char);  _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<char>>(ptr); }
-         void set(const std::shared_ptr<std::vector<short>> &ptr) { _arrayType=Type::Short; _elementSize=sizeof(short); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<short>>(ptr); }
-         void set(const std::shared_ptr<std::vector<int>> &ptr) {   _arrayType=Type::Int;   _elementSize=sizeof(int);   _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<int>>(ptr); }
+         template<typename T>
+         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<T>> &ptr)  { set(ptr); return *this; }
 
-         void set(const std::shared_ptr<std::vector<unsigned char>> &ptr) {  _arrayType=Type::UByte;  _elementSize=sizeof(unsigned char);  _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<unsigned char>>(ptr); }
-         void set(const std::shared_ptr<std::vector<unsigned short>> &ptr) { _arrayType=Type::UShort; _elementSize=sizeof(unsigned short); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<unsigned short>>(ptr); }
-         void set(const std::shared_ptr<std::vector<unsigned>> &ptr) {       _arrayType=Type::UInt;   _elementSize=sizeof(unsigned);       _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<unsigned>>(ptr); }
+         template<typename T>
+         inline std::shared_ptr<std::vector<T>> get() { return static_cast<ArrayDecoratorTemplate<T>*>(_arrayDecorator.get())->get(); }
+         template<typename T>
+         inline const std::shared_ptr<std::vector<T>>& get() const { return static_cast<ArrayDecoratorTemplate<T>*>(_arrayDecorator)->get(); }
 
-         void set(const std::shared_ptr<std::vector<float>> &ptr) {  _arrayType=Type::Float;  _elementSize=sizeof(float);  _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<float>>(ptr); }
-         void set(const std::shared_ptr<std::vector<double>> &ptr) { _arrayType=Type::Double; _elementSize=sizeof(double); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<double>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::vec2>> &ptr) { _arrayType=Type::Vec2; _elementSize=sizeof(glm::vec2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::vec2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::vec3>> &ptr) { _arrayType=Type::Vec3; _elementSize=sizeof(glm::vec3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::vec3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::vec4>> &ptr) { _arrayType=Type::Vec4; _elementSize=sizeof(glm::vec4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::vec4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::dvec2>> &ptr) { _arrayType=Type::DVec2; _elementSize=sizeof(glm::dvec2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dvec2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dvec3>> &ptr) { _arrayType=Type::DVec3; _elementSize=sizeof(glm::dvec3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dvec3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dvec4>> &ptr) { _arrayType=Type::DVec4; _elementSize=sizeof(glm::dvec4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dvec4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::bvec2>> &ptr) { _arrayType=Type::BVec2; _elementSize=sizeof(glm::bvec2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::bvec2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::bvec3>> &ptr) { _arrayType=Type::BVec3; _elementSize=sizeof(glm::bvec3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::bvec3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::bvec4>> &ptr) { _arrayType=Type::BVec4; _elementSize=sizeof(glm::bvec4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::bvec4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::ivec2>> &ptr) { _arrayType=Type::IVec2; _elementSize=sizeof(glm::ivec2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::ivec2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::ivec3>> &ptr) { _arrayType=Type::IVec3; _elementSize=sizeof(glm::ivec3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::ivec3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::ivec4>> &ptr) { _arrayType=Type::IVec4; _elementSize=sizeof(glm::ivec4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::ivec4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::uvec2>> &ptr) { _arrayType=Type::UVec2; _elementSize=sizeof(glm::uvec2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::uvec2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::uvec3>> &ptr) { _arrayType=Type::UVec3; _elementSize=sizeof(glm::uvec3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::uvec3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::uvec4>> &ptr) { _arrayType=Type::UVec4; _elementSize=sizeof(glm::uvec4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::uvec4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::mat2>> &ptr) { _arrayType=Type::Mat2; _elementSize=sizeof(glm::mat2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat3>> &ptr) { _arrayType=Type::Mat3; _elementSize=sizeof(glm::mat3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat4>> &ptr) { _arrayType=Type::Mat4; _elementSize=sizeof(glm::mat4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::mat2x3>> &ptr) { _arrayType=Type::Mat2x3; _elementSize=sizeof(glm::mat2x3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat2x3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat2x4>> &ptr) { _arrayType=Type::Mat2x4; _elementSize=sizeof(glm::mat2x4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat2x4>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat3x2>> &ptr) { _arrayType=Type::Mat3x2; _elementSize=sizeof(glm::mat3x2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat3x2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat3x4>> &ptr) { _arrayType=Type::Mat3x4; _elementSize=sizeof(glm::mat3x4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat3x4>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat4x2>> &ptr) { _arrayType=Type::Mat4x2; _elementSize=sizeof(glm::mat4x2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat4x2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::mat4x3>> &ptr) { _arrayType=Type::Mat4x3; _elementSize=sizeof(glm::mat4x3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::mat4x3>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::dmat2>> &ptr) { _arrayType=Type::DMat2; _elementSize=sizeof(glm::dmat2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat3>> &ptr) { _arrayType=Type::DMat3; _elementSize=sizeof(glm::dmat3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat4>> &ptr) { _arrayType=Type::DMat4; _elementSize=sizeof(glm::dmat4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat4>>(ptr); }
-
-         void set(const std::shared_ptr<std::vector<glm::dmat2x3>> &ptr) { _arrayType=Type::DMat2x3; _elementSize=sizeof(glm::dmat2x3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat2x3>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat2x4>> &ptr) { _arrayType=Type::DMat2x4; _elementSize=sizeof(glm::dmat2x4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat2x4>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat3x2>> &ptr) { _arrayType=Type::DMat3x2; _elementSize=sizeof(glm::dmat3x2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat3x2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat3x4>> &ptr) { _arrayType=Type::DMat3x4; _elementSize=sizeof(glm::dmat3x4); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat3x4>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat4x2>> &ptr) { _arrayType=Type::DMat4x2; _elementSize=sizeof(glm::dmat4x2); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat4x2>>(ptr); }
-         void set(const std::shared_ptr<std::vector<glm::dmat4x3>> &ptr) { _arrayType=Type::DMat4x3; _elementSize=sizeof(glm::dmat4x3); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<glm::dmat4x3>>(ptr); }
-
-         template<typename StructType>
-         void set(const std::shared_ptr<std::vector<StructType>> &ptr) { _arrayType=Type::Struct; _elementSize=sizeof(StructType); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<StructType>>(ptr); }
-
-         inline ArrayAdapter& operator=(const ArrayAdapter& aa) { _arrayType=aa._arrayType; _elementSize=aa._elementSize; _arrayDecorator=aa._arrayDecorator; return *this; }
-         inline ArrayAdapter& operator=(const std::nullptr_t ptr) { clear(); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<bool>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<char>> &ptr)  { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<short>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<int>> &ptr)   { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<unsigned char>> &ptr)  { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<unsigned short>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<unsigned>> &ptr)       { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<float>> &ptr)  { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<double>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::vec2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::vec3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::vec4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dvec2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dvec3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dvec4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::bvec2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::bvec3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::bvec4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::ivec2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::ivec3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::ivec4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::uvec2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::uvec3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::uvec4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat2x3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat2x4>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat3x2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat3x4>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat4x2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::mat4x3>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat4>> &ptr) { set(ptr); return *this; }
-
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat2x3>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat2x4>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat3x2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat3x4>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat4x2>> &ptr) { set(ptr); return *this; }
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<glm::dmat4x3>> &ptr) { set(ptr); return *this; }
-
-         template<typename StructType>
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<StructType>> &ptr) { set(ptr); return *this; }
+         template<typename T>
+         inline std::shared_ptr<ArrayDecoratorTemplate<T>> getArrayDecorator() { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
+         template<typename T>
+         inline const std::shared_ptr<ArrayDecoratorTemplate<T>>& getArrayDecorator() const { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
       };
+
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<char>()  { return ArrayAdapter::GLType::BYTE; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<short>() { return ArrayAdapter::GLType::SHORT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<int>()   { return ArrayAdapter::GLType::INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<unsigned char>()  { return ArrayAdapter::GLType::UNSIGNED_BYTE; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<unsigned short>() { return ArrayAdapter::GLType::UNSIGNED_SHORT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<unsigned>()       { return ArrayAdapter::GLType::UNSIGNED_INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<float>()  { return ArrayAdapter::GLType::FLOAT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<double>() { return ArrayAdapter::GLType::DOUBLE; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::vec2>() { return ArrayAdapter::GLType::FLOAT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::vec3>() { return ArrayAdapter::GLType::FLOAT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::vec4>() { return ArrayAdapter::GLType::FLOAT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::dvec2>() { return ArrayAdapter::GLType::DOUBLE; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::dvec3>() { return ArrayAdapter::GLType::DOUBLE; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::dvec4>() { return ArrayAdapter::GLType::DOUBLE; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::ivec2>() { return ArrayAdapter::GLType::INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::ivec3>() { return ArrayAdapter::GLType::INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::ivec4>() { return ArrayAdapter::GLType::INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::uvec2>() { return ArrayAdapter::GLType::UNSIGNED_INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::uvec3>() { return ArrayAdapter::GLType::UNSIGNED_INT; }
+      template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<glm::uvec4>() { return ArrayAdapter::GLType::UNSIGNED_INT; }
+
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::vec2>()  { return 2; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::vec3>()  { return 3; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::vec4>()  { return 4; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::dvec2>()  { return 2; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::dvec3>()  { return 3; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::dvec4>()  { return 4; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::ivec2>()  { return 2; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::ivec3>()  { return 3; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::ivec4>()  { return 4; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::uvec2>()  { return 2; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::uvec3>()  { return 3; }
+      template<> inline unsigned short ArrayAdapter::getNumComponentsOfType<glm::uvec4>()  { return 4; }
+
+#if 0
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::BYTE>()           { return 1; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_BYTE>()  { return 1; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::SHORT>()          { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT>() { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::INT>()            { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT>()   { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::FLOAT>()          { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DOUBLE>()         { return 8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::HALF_FLOAT>()     { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::FIXED>()          { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_BYTE_3_3_2>()        { return 1; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_BYTE_2_3_3_REV>()    { return 1; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT_5_6_5>()       { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT_5_6_5_REV>()   { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT_4_4_4_4>()     { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT_4_4_4_4_REV>() { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT_5_5_5_1>()     { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_SHORT_1_5_5_5_REV>() { return 2; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8>()           { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8_REV>()       { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_10_10_10_2>()        { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_2_10_10_10_REV>()    { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_24_8>()              { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_10F_11F_11F_REV>()   { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::UNSIGNED_INT_5_9_9_9_REV>()       { return 4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::FLOAT_32_UNSIGNED_INT_24_8_REV>() { return 8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT2>()   { return  4*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT3>()   { return  9*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT4>()   { return 16*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT2X3>() { return  6*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT2X4>() { return  8*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT3X2>() { return  6*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT3X4>() { return 12*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT4X2>() { return  8*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::MAT4X3>() { return 12*4; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT2>()   { return  4*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT3>()   { return  9*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT4>()   { return 16*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT2X3>() { return  6*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT2X4>() { return  8*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT3X2>() { return  6*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT3X4>() { return 12*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT4X2>() { return  8*8; }
+      template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT4X3>() { return 12*8; }
+#endif
    }
 }
 
