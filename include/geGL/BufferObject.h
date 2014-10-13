@@ -123,10 +123,10 @@ public:
 
    inline void* data(){ return _data; }
    inline GLsizeiptr size(){return _size;}
-   inline GLuint glName(){ return _bufferObject; }
+   inline GLuint getId(){ return this->_id; }
 protected:
    //FIXME change to _id ?
-   GLuint     _bufferObject; ///< Buffer Object OpenGL ID
+   GLuint     _id; ///< Buffer Object OpenGL ID
    GLenum     _target;
    GLsizeiptr _size;
    GLenum     _usage;

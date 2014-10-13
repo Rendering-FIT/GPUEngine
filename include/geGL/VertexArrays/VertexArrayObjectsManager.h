@@ -15,6 +15,7 @@ namespace ge
     const std::string VERTEX_ARRAY_OBJECT_MANAGER_DEFAULT_NAME = ""   ;
     const std::string VERTEX_ARRAY_OBJECT_MANAGER_BASE_NAME    = "vao";
 
+
     /**
      * @brief This class represents manager of vertex array objects
      * OpenGL 4.5, table 23.3

@@ -4,6 +4,16 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/BufferObject.h
+    ${HEADER_PATH}/VertexArrayObject.h
+    ${HEADER_PATH}/FramebufferObject.h
+    ${HEADER_PATH}/TextureObject.h
+    ${HEADER_PATH}/SamplerObject.h
+    ${HEADER_PATH}/ProgramPipelineObject.h
+    ${HEADER_PATH}/ProgramObject.h
+    ${HEADER_PATH}/ShaderObject.h
+    ${HEADER_PATH}/ShaderObjectParameter.h
+    ${HEADER_PATH}/ShaderObjectSubroutine.h
+    ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/PerFragmentOperation/Blend.h
     ${HEADER_PATH}/PerFragmentOperation/BlendCommands.h
     ${HEADER_PATH}/PerFragmentOperation/DepthCommands.h
@@ -28,6 +38,16 @@ set(GL_INCLUDES
 
 set(GL_SOURCES
     BufferObject.cpp  
+    VertexArrayObject.cpp
+    FramebufferObject.cpp
+    TextureObject.cpp
+    SamplerObject.cpp
+    ProgramPipelineObject.cpp
+    ProgramObject.cpp
+    ShaderObject.cpp
+    ShaderObjectParameter.cpp
+    ShaderObjectSubroutine.cpp
+    ShaderObjectSubroutineUniform.cpp
     PerFragmentOperation/Blend.cpp
     PerFragmentOperation/BlendCommands.cpp
     PerFragmentOperation/DepthCommands.cpp

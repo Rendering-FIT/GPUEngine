@@ -26,12 +26,25 @@ namespace ge
           this->n,
           this->arrays);
     }
-    BindVertexArray::BindVertexArray(GLuint array){
+    BindVertexArray::BindVertexArray(GLuint *array){
       this->array = array;
     }
     void BindVertexArray::apply(){
-      glBindVertexArray(this->array);
+      glBindVertexArray(*this->array);
     }
+    CreateVertexArrays::CreateVertexArrays(
+            GLsizei  n,
+            GLuint  *arrays){
+      this->n      = n;
+      this->arrays = arrays;
+    }
+    /*
+    void CreateVertexArrays::apply(){
+      glCreateVertexArrays(
+          this->n,
+          this->arrays);
+    }*/
+
   }//ogl
 }//ge
 

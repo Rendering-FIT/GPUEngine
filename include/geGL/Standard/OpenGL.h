@@ -38,12 +38,14 @@ namespace ge
          */
         CommandList(bool outOfOrder);
         void apply();
+        void step();
 
         /*virtual unsigned addCommand(Command* command);
           virtual unsigned insertCommand(Command* command, unsigned after);
           virtual void clear();
           virtual void erase();*/
 
+        unsigned commandToExecute;///<index of command that will be executed using step()
         bool outOfOrder; ///<
         std::vector<Command*> commands;
 
@@ -71,6 +73,10 @@ namespace ge
         CommandStatement *statement;
         Command          *body;
         void              apply();
+    };
+    class GE_EXPORT CommandInterpret
+    {
+
     };
   }
 }

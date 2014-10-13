@@ -6,13 +6,13 @@
 
 ge::gl::BufferObject::BufferObject()
    //: Object()
-   : _mutable     (BUFFEROBJECT_DEFAULT_MUTABLE)
-   , _data        (BUFFEROBJECT_DEFAULT_DATA   )
-   , _bufferObject(BUFFEROBJECT_DEFAULT_ID     )
-   , _target      (BUFFEROBJECT_DEFAULT_TARGET )
-   , _size        (BUFFEROBJECT_DEFAULT_SIZE   )
-   , _usage       (BUFFEROBJECT_DEFAULT_USAGE  )
-   , _flags       (BUFFEROBJECT_DEFAULT_FLAGS  )
+   : _mutable(BUFFEROBJECT_DEFAULT_MUTABLE)
+   , _data   (BUFFEROBJECT_DEFAULT_DATA   )
+   , _id     (BUFFEROBJECT_DEFAULT_ID     )
+   , _target (BUFFEROBJECT_DEFAULT_TARGET )
+   , _size   (BUFFEROBJECT_DEFAULT_SIZE   )
+   , _usage  (BUFFEROBJECT_DEFAULT_USAGE  )
+   , _flags  (BUFFEROBJECT_DEFAULT_FLAGS  )
 {
 
 }
@@ -24,7 +24,7 @@ ge::gl::BufferObject::BufferObject( const BufferObject& buf/*, const ge::core::C
    //: Object(buf, copyop)
    : _mutable     (buf._mutable     )
    , _data        (buf._data        )
-   , _bufferObject(buf._bufferObject)
+   , _id(buf._id)
    , _target      (buf._target      )
    , _size        (buf._size        )
    , _usage       (buf._usage       )
@@ -79,7 +79,7 @@ void ge::gl::BufferObject::freeClientSideBuffer()
  */
 void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLenum usage /*= GL_STATIC_DRAW*/, bool mutable_ /*= true*/, GLbitfield flags /*= 0*/ )
 {
-   if((!_mutable && _bufferObject) || (_size <= 0) )
+   if((!_mutable && _id) || (_size <= 0) )
    {
       //make some fuss
       return;
@@ -89,9 +89,9 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLenum usage /*= GL
    _mutable = mutable_;
    _flags = flags;
 
-   if(!_bufferObject)
-      glGenBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_bufferObject);
-   if(!_bufferObject)
+   if(!_id)
+      glGenBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_id);
+   if(!_id)
    {
       //make fuss
       return;
@@ -99,11 +99,11 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLenum usage /*= GL
 
    if(_mutable)
    {
-      glNamedBufferDataEXT(_bufferObject, _size, _data, _usage);
+      glNamedBufferDataEXT(_id, _size, _data, _usage);
    }
    else
    {
-      glNamedBufferStorageEXT(_bufferObject, _size, _data, _flags);
+      glNamedBufferStorageEXT(_id, _size, _data, _flags);
    }
 }
 
@@ -115,7 +115,7 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLenum usage /*= GL
  */
 void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLsizeiptr size, GLenum usage /*= GL_STATIC_DRAW*/, void* data/* = NULL*/, bool mutable_ /*= true*/, GLbitfield flags/* = 0*/ )
 {
-   if(!_mutable && _bufferObject)
+   if(!_mutable && _id)
    {
       //make some fuss
       return;
@@ -126,9 +126,9 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLsizeiptr size, GL
    _mutable = mutable_;
    _flags = flags;
 
-   if(!_bufferObject)
-      glGenBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_bufferObject);
-   if(!_bufferObject)
+   if(!_id)
+      glGenBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_id);
+   if(!_id)
    {
       //make fuss
       return;
@@ -136,21 +136,21 @@ void ge::gl::BufferObject::createAndInitGLBO( GLenum target, GLsizeiptr size, GL
 
    if(_mutable)
    {
-      glNamedBufferDataEXT(_bufferObject, _size, data, _usage);
+      glNamedBufferDataEXT(_id, _size, data, _usage);
    }
    else
    {
-      glNamedBufferStorageEXT(_bufferObject, _size, data, _flags);
+      glNamedBufferStorageEXT(_id, _size, data, _flags);
    }
 }
 
 /**
- * Calls the glDeleteBuffer and sets _bufferObject member to 0.
+ * Calls the glDeleteBuffer and sets _id member to 0.
  */
 void ge::gl::BufferObject::deleteGLObject()
 {
-   glDeleteBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_bufferObject);
-   _bufferObject = BUFFEROBJECT_DEFAULT_ID;
+   glDeleteBuffers(BUFFEROBJECT_DEFAULT_NOF_BUFFERS, &_id);
+   _id = BUFFEROBJECT_DEFAULT_ID;
 }
 
 /**
@@ -162,7 +162,7 @@ void ge::gl::BufferObject::map( GLintptr offset /*= 0*/, GLsizeiptr size /*= 0*/
    //if(_data)
       //should be NULL
    _data = glMapNamedBufferRangeEXT(
-         _bufferObject, 
+         _id, 
          offset, 
          size     == BUFFEROBJECT_DEFAULT_SIZE     ? _size  : size, 
          mapFlags == BUFFEROBJECT_DEFAULT_MAPFLAGS ? _flags : mapFlags);
@@ -173,7 +173,7 @@ void ge::gl::BufferObject::map( GLintptr offset /*= 0*/, GLsizeiptr size /*= 0*/
  */
 void ge::gl::BufferObject::unmap()
 {
-   glUnmapNamedBufferEXT(_bufferObject);
+   glUnmapNamedBufferEXT(_id);
    _data = BUFFEROBJECT_DEFAULT_DATA;
 }
 
@@ -192,7 +192,7 @@ GLboolean ge::gl::BufferObject::isMapped()
  */
 void ge::gl::BufferObject::bind()
 {
-   glBindBuffer(_target, _bufferObject);
+   glBindBuffer(_target, _id);
 }
 
 /**
@@ -206,11 +206,11 @@ void ge::gl::BufferObject::unbind()
 
 //const ge::gl::BufferObject::Mapping* ge::gl::BufferObject::createMapping( GLintptr offset, GLsizeiptr size, GLbitfield flags )
 //{
-//   void *data = glMapNamedBufferRangeEXT(_bufferObject, offset, size, flags);
+//   void *data = glMapNamedBufferRangeEXT(_id, offset, size, flags);
 //
 //   if(data)
 //   {   
-//      ge::gl::BufferObject::Mapping m(offset, size, flags, _bufferObject, data);
+//      ge::gl::BufferObject::Mapping m(offset, size, flags, _id, data);
 //      _mappings.emplace_back(std::move(m));
 //      _mappings.back().setPlace(--_mappings.end());
 //      return &(_mappings.back());
@@ -235,7 +235,7 @@ namespace ge{
          //original binding point stays the same
          glBindBuffer(
                target,
-               this->_bufferObject);
+               this->_id);
       }
       /**
        * @brief Binds range of buffer to specific indexed target
@@ -255,7 +255,7 @@ namespace ge{
          glBindBufferRange(
                target,
                index,
-               this->_bufferObject,
+               this->_id,
                offset,
                size);
       }
@@ -271,7 +271,7 @@ namespace ge{
          glBindBufferBase(
                target,
                index,
-               this->_bufferObject);
+               this->_id);
       }
       /**
        * @brief Unbinds buffer from specific target
@@ -322,8 +322,8 @@ namespace ge{
          //compute size
          GLsizeiptr maxSize=(this->_size>buffer->_size)?buffer->_size:this->_size;
          //bind buffers
-         glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,buffer->_bufferObject);
-         glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,this  ->_bufferObject);
+         glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,buffer->_id);
+         glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,this  ->_id);
          //copy buffer
          glCopyBufferSubData(
                BUFFEROBJECT_DEFAULT_READBUFFER,
@@ -364,13 +364,13 @@ namespace ge{
        * @param length length of region in bytes
        */
       void BufferObject::invalidate(GLintptr offset,GLsizeiptr length){
-         glInvalidateBufferSubData(this->_bufferObject,offset,length);
+         glInvalidateBufferSubData(this->_id,offset,length);
       }
       /**
        * @brief Invalidates buffer
        */
       void BufferObject::invalidate(){
-         glInvalidateBufferData(this->_bufferObject);
+         glInvalidateBufferData(this->_id);
       }
       /**
        * @brief Clears buffer
@@ -386,7 +386,7 @@ namespace ge{
             GLenum        type,
             const GLvoid *data){
          //bind buffer to clearbuffer binding point
-         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_bufferObject);
+         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_id);
          //clear buffer
          glClearBufferSubData(
                BUFFEROBJECT_DEFAULT_CLEARBUFFER,
@@ -417,7 +417,7 @@ namespace ge{
             GLenum        type,
             const GLvoid *data){
          //bind buffer to clearbuffer binding point
-         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_bufferObject);
+         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_id);
          //clear buffer
          glClearBufferSubData(
                BUFFEROBJECT_DEFAULT_CLEARBUFFER,

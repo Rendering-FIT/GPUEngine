@@ -36,6 +36,23 @@ namespace ge
       glGenVertexArrays(1,vao);
       return name;
     }
+    void VertexArrayObjectsManager::addAttrib(
+        Command   **command,
+        std::string vaobj,
+        GLuint      buffer,
+        GLuint      index,
+        GLuint      size,
+        GLenum      type,
+        GLboolean   normalized,
+        GLsizei     stride,
+        unsigned    offset,
+        GLuint      divisitor){
+      GLuint*vao=&this->_vaos[vaobj];
+      CommandList*commandList=new CommandList(false);
+      commandList->commands.push_back(new BindVertexArray(vao));
+      //commandList->commands.push_back(new Bind)
+      *command=commandList;
+    }
 
 
   }//ogl
