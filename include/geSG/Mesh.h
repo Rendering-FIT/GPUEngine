@@ -1,38 +1,62 @@
 #ifndef GE_SG_MESH_H
 #define GE_SG_MESH_H
 
-#include <geSG/Node.h>
+#include <vector>
 #include <geSG/Array.h>
+#include <geSG/AttribDataReference.h>
+#include <geSG/Node.h>
 
 namespace ge
 {
    namespace sg
    {
+
       class Mesh : public Node
       {
-      protected:
-         enum class StoreType : unsigned char { UNINITIALIZED = 0, CNCT = 1, VECTOR = 2 };
-         enum class ArrayContent : unsigned char { UNKNOWN = 0, COORDINATES, NORMALS, COLORS, TEXCOORDS, INDICES };
-         struct CustomData { ArrayContent content; ArrayAdapter array; };
-         StoreType _storeType;
-         union {
-            struct {
-               ArrayAdapter _coords;
-               ArrayAdapter _normals;
-               ArrayAdapter _colors;
-               ArrayAdapter _texCoords;
-               ArrayAdapter _indices;
-            } cnct;
-            std::vector<CustomData> _arrays;
-         };
-         //std::shared_ptr<VAO> _vao;
-         int _glMode;
-         int _vaoIndex;
-         int _vaoNumElements;
-         int _eboIndex;
-         int _eboNumElements;
       public:
+
+         enum class ArrayContent : uint8_t { UNKNOWN=0, COORDINATES=1, NORMALS=2, COLORS=3, TEXCOORDS=4, USER=5, OTHER = 0xff };
+         struct AttribData { ArrayContent content; ArrayAdapter array; };
+
+      protected:
+
+         bool _releaseCpuGeometryDataAfterGpuUpload : 1;
+         bool _cpuGeometryDataAvailable : 1;
+         bool _gpuGeometryDataAvailable : 1;
+
+         int _glMode;
+         std::vector<AttribData> _attribs;
+         ArrayAdapter _indices;
+         int8_t _coordinateAttribIndex;
+         int8_t _normalAttribIndex;
+         int8_t _colorAttribIndex;
+         int8_t _texCoordAttribIndex;
+
+         AttribDataReference _attribDataReference;
+
+      public:
+
+         META_Node(ge::sg,Mesh);
+
+         inline Mesh() {}
+         virtual ~Mesh() {}
+
+         template<typename T>
+         inline void setAttribData(unsigned attribIndex, ArrayContent content, ArrayAdapter::ArrayType arrayType,
+                                   unsigned elementSize, const std::shared_ptr<std::vector<T>> &ptr);
+         virtual void setAttribData(unsigned attribIndex, ArrayContent content, ArrayAdapter::ArrayType arrayType,
+                                    unsigned elementSize, const std::shared_ptr<ArrayDecorator>& arrayDecorator);
+
+         virtual uint16_t getArraysConfigID();
       };
+
+
+      template<typename T>
+      inline void Mesh::setAttribData(unsigned attribIndex, ArrayContent content, ArrayAdapter::ArrayType arrayType,
+                                      unsigned elementSize, const std::shared_ptr<std::vector<T>> &ptr)
+      {
+         setAttribData(attribIndex,content,arrayType,elementSize,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
+      }
    }
 }
 

@@ -170,12 +170,12 @@ namespace ge
 
          union {
             struct {
-               unsigned short _glType;
-               unsigned short _glNumComponents;
+               uint16_t _glType;
+               uint16_t _glNumComponents;
             };
-            unsigned int _arrayType;
+            uint32_t _arrayType;
          };
-         int             _elementSize;
+         unsigned    _elementSize;
          std::shared_ptr<ArrayDecorator> _arrayDecorator;
 
       public:
@@ -238,7 +238,7 @@ namespace ge
 
          static const unsigned short BGRA = 0x80E1;
 
-         enum class Type : unsigned int
+         enum class ArrayType : unsigned int
          {
             Empty = 0,
             Unknown = 0,
@@ -330,7 +330,7 @@ namespace ge
 
       public:
 
-         ArrayAdapter() : _arrayType(unsigned(Type::Unknown)), _elementSize(0) {}
+         ArrayAdapter() : _arrayType(unsigned(ArrayType::Unknown)), _elementSize(0) {}
          ArrayAdapter(const ArrayAdapter& a) : _arrayType(a._arrayType), _elementSize(a._elementSize), _arrayDecorator(a._arrayDecorator) {}
          ArrayAdapter& operator=(const ArrayAdapter &a)  { _arrayType=a._arrayType; _elementSize=a._elementSize; _arrayDecorator=a._arrayDecorator; return *this; }
 
@@ -347,27 +347,33 @@ namespace ge
          template<typename T>
          inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,unsigned glType,unsigned sizeOfElement) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeOfElement), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
 
+         inline ArrayAdapter(const std::shared_ptr<ArrayDecorator> &arrayDecorator,ArrayType arrayType,unsigned sizeOfElement) : _arrayType(uint32_t(arrayType)), _elementSize(sizeOfElement), _arrayDecorator(arrayDecorator) {}
+         inline ArrayAdapter(const std::shared_ptr<ArrayDecorator> &arrayDecorator,unsigned short numComponents,GLType glType,unsigned sizeOfElement) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeOfElement), _arrayDecorator(arrayDecorator) {}
+         inline ArrayAdapter(const std::shared_ptr<ArrayDecorator> &arrayDecorator,unsigned short numComponents,unsigned glType,unsigned sizeOfElement) : _arrayType(makeType(glType,numComponents)), _elementSize(sizeOfElement), _arrayDecorator(arrayDecorator) {}
+
          virtual ~ArrayAdapter() {}
 
-         inline void setType(Type t) { _arrayType = unsigned(t); }
-         inline void setType(unsigned t) { _arrayType = t; }
+         inline void setType(ArrayType t) { _arrayType=unsigned(t); }
+         inline void setType(unsigned t) { _arrayType=t; }
          inline void setType(GLType t,unsigned short numComponents) { _glType=(unsigned short)(t); _glNumComponents=numComponents; }
          inline void setType(unsigned t,unsigned short numComponents) { _glType=t; _glNumComponents=numComponents; }
-         inline void setSizeOfElement(unsigned size) { _elementSize = size; }
+         inline void setSizeOfElement(unsigned size) { _elementSize=size; }
 
-         inline Type getType() const { return Type(_arrayType); }
+         inline ArrayType getType() const { return ArrayType(_arrayType); }
          inline unsigned getTypeAsInt() const { return _arrayType; }
          inline GLType getGLType() const { return GLType(_glType); }
          inline unsigned short getGLTypeAsInt() const { return _glType; }
          inline unsigned short getNumComponents() const { return _glNumComponents; }
          inline unsigned getSizeOfElement() const { return _elementSize; }
 
-         void clear() { _arrayType=unsigned(Type::Unknown); _elementSize=0; _arrayDecorator.reset(); }
+         void clear() { _arrayType=unsigned(ArrayType::Unknown); _elementSize=0; _arrayDecorator.reset(); }
 
          inline void set(const std::nullptr_t ptr) { clear(); }
 
          template<typename T>
          inline void set(const std::shared_ptr<std::vector<T>> &ptr) { _arrayType=makeType<T>(); _elementSize=sizeof(T); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
+         template<typename T>
+         inline void set(const std::shared_ptr<std::vector<T>> &ptr,ArrayType arrayType,unsigned sizeOfElement=sizeof(T)) { _arrayType=arrayType; _elementSize=sizeof(T); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
          template<typename T>
          inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents) { _arrayType=makeType<T>(numComponents); _elementSize=sizeof(T)*numComponents/getNumComponentsOfType<T>(); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
          template<typename T>
@@ -378,6 +384,10 @@ namespace ge
          inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,GLType glType,unsigned sizeOfElement) { set(ptr,numComponents,unsigned(glType),sizeOfElement); }
          template<typename T>
          inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents,unsigned glType,unsigned sizeOfElement) { _arrayType=makeType(glType,numComponents); _elementSize=sizeOfElement; _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
+
+         inline void set(const std::shared_ptr<ArrayDecorator> &arrayDecorator,ArrayType arrayType,unsigned sizeOfElement) { _arrayType=uint32_t(arrayType); _elementSize=sizeOfElement; _arrayDecorator=arrayDecorator; }
+         inline void set(const std::shared_ptr<ArrayDecorator> &arrayDecorator,unsigned short numComponents,GLType glType,unsigned sizeOfElement) { set(arrayDecorator,ArrayType(makeType(unsigned(glType),numComponents)),sizeOfElement); }
+         inline void set(const std::shared_ptr<ArrayDecorator> &arrayDecorator,unsigned short numComponents,unsigned glType,unsigned sizeOfElement) { set(arrayDecorator,ArrayType(makeType(glType,numComponents)),sizeOfElement); }
 
          template<typename T>
          inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<T>> &ptr)  { set(ptr); return *this; }
@@ -391,6 +401,9 @@ namespace ge
          inline std::shared_ptr<ArrayDecoratorTemplate<T>> getArrayDecorator() { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
          template<typename T>
          inline const std::shared_ptr<ArrayDecoratorTemplate<T>>& getArrayDecorator() const { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
+
+         inline void setArrayDecorator(const std::shared_ptr<ArrayDecorator>& decorator) { _arrayDecorator = decorator; }
+
       };
 
       template<> inline ArrayAdapter::GLType ArrayAdapter::makeGLType<char>()  { return ArrayAdapter::GLType::BYTE; }
@@ -473,6 +486,7 @@ namespace ge
       template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT4X2>() { return  8*8; }
       template<> inline unsigned ArrayAdapter::getSizeOfType<ArrayAdapter::GLType::DMAT4X3>() { return 12*8; }
 #endif
+
    }
 }
 
