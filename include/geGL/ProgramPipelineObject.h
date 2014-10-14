@@ -1,8 +1,7 @@
 #ifndef _PROGRAMPIPELINEOBJECT_H_
 #define _PROGRAMPIPELINEOBJECT_H_
 
-#include <geGL/Standard/OpenGL.h>
-#include<GL/glew.h>
+#include <geGL/OpenGL.h>
 
 namespace ge{
   namespace gl{

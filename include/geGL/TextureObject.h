@@ -1,7 +1,7 @@
 #ifndef _TEXTUREOBJECT_H_
 #define _TEXTUREOBJECT_H_
 
-#include<geGL/Standard/OpenGL.h>
+#include<geGL/OpenGL.h>
 #include<iostream>
 
 //#define USE_DSA

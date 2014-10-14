@@ -1,7 +1,7 @@
-#ifndef _PROGRAMOBJECT_HPP_
-#define _PROGRAMOBJECT_HPP_
+#ifndef _PROGRAMOBJECT_H_
+#define _PROGRAMOBJECT_H_
 
-#include<GL/glew.h>
+#include<geGL/OpenGL.h>
 
 #include<stdarg.h>
 #include<vector>
@@ -468,4 +468,4 @@ namespace ge{
 }//gl
 }//ge
 
-#endif//_PROGRAMOBJECT_HPP_
+#endif//_PROGRAMOBJECT_H_

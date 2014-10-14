@@ -1,7 +1,7 @@
 #ifndef _SHADEROBJECTSUBROUTINEUNIFORM_H_
 #define _SHADEROBJECTSUBROUTINEUNIFORM_H_
 
-#include <geGL/Standard/OpenGL.h>
+#include <geGL/OpenGL.h>
 #include<iostream>
 
 namespace ge{

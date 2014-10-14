@@ -1,7 +1,7 @@
 #ifndef _CSHADERPARAMETER_HPP_
 #define _CSHADERPARAMETER_HPP_
 
-#include<geGL/Standard/OpenGL.h>
+#include<geGL/OpenGL.h>
 #include<iostream>
 
 

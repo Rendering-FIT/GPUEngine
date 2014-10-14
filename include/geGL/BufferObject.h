@@ -1,7 +1,7 @@
 #ifndef GE_GL_BUFFEROBJECT
 #define GE_GL_BUFFEROBJECT
 
-#include <geGL/Standard/OpenGL.h>
+#include <geGL/OpenGL.h>
 #include <geCore/Object.h>
 
 #include <list>

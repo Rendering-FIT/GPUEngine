@@ -40,7 +40,7 @@ include_directories(${GLM_INCLUDE_DIR})
   
 install(FILES
     ${SG_INCLUDES}
-    DESTINATION include/ge/${LIB_NAME}
+    DESTINATION include/${LIB_NAME}
   )
 
 install(TARGETS ${LIB_NAME}

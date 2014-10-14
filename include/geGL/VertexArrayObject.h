@@ -1,7 +1,7 @@
 #ifndef _VERTEXARRAYOBJECT_H_
 #define _VERTEXARRAYOBJECT_H_
 
-#include<geGL/Standard/OpenGL.h>
+#include<geGL/OpenGL.h>
 
 #define VERTEXARRAYOBJECT_DEFAULT_STRIDE      0       
 #define VERTEXARRAYOBJECT_DEFAULT_POINTER     NULL    

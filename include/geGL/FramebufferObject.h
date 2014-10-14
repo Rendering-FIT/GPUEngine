@@ -1,7 +1,7 @@
 #ifndef _FRAMEBUFFEROBJECT_H_
 #define _FRAMEBUFFEROBJECT_H_
 
-#include<geGL/Standard/OpenGL.h>
+#include<geGL/OpenGL.h>
 #include<stdarg.h>
 
 #define FRAMEBUFFEROBJECT_DEFAULT_TARGET        GL_FRAMEBUFFER

@@ -19,12 +19,12 @@ ADD_LIBRARY(${LIB_NAME}
   )
 
 
-#install(FILES
-#  ${OGL_INCLUDES}
-#  DESTINATION include/ge/${LIB_NAME}
-#  )
-#
-#install(TARGETS ${LIB_NAME}
-#  LIBRARY DESTINATION lib
-#  ARCHIVE DESTINATION lib
-#  )
+install(FILES
+  ${CORE_INCLUDES}
+  DESTINATION include/${LIB_NAME}
+  )
+
+install(TARGETS ${LIB_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  )

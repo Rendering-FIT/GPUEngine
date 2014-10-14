@@ -1,4 +1,7 @@
-#include<GL/glew.h>
+#ifndef _RENDERBUFFEROBJECT_H_
+#define _RENDERBUFFEROBJECT_H_
+
+#include<geGL/OpenGL.h>
 
 class RenderbufferObject
 {
@@ -29,4 +32,6 @@ class RenderbufferObject
     GLint  getDepthSize     ();
     GLint  getStencilSize   ();
 };
+
+#endif//_RENDERBUFFEROBJECT_H_
 

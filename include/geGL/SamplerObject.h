@@ -1,7 +1,7 @@
 #ifndef _SAMPLEROBJECT_H_
 #define _SAMPLEROBJECT_H_
 
-#include<geGL/Standard/OpenGL.h>
+#include<geGL/OpenGL.h>
 
 namespace ge{
   namespace gl{
