@@ -6,8 +6,8 @@ set(SG_INCLUDES
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Array.h
     ${HEADER_PATH}/AttribDataReference.h
-    ${HEADER_PATH}/AttribObject.h
-    ${HEADER_PATH}/AttribStorage.h
+    ${HEADER_PATH}/AttribsStorage.h
+    ${HEADER_PATH}/AttribsManager.h
     ${HEADER_PATH}/Node.h
     ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Group.h
@@ -19,8 +19,8 @@ set(SG_INCLUDES
   )
 
 set(SG_SOURCES
-    AttribObject.cpp
-    AttribStorage.cpp
+    AttribsStorage.cpp
+    AttribsManager.cpp
     Node.cpp
     Mesh.cpp
     Group.cpp
