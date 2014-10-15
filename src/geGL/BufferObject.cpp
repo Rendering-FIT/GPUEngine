@@ -3,6 +3,7 @@
 #include <cstring>
 //#include <malloc.h>
 
+//#define USE_DSA
 
 ge::gl::BufferObject::BufferObject()
    //: Object()
@@ -32,6 +33,7 @@ ge::gl::BufferObject::BufferObject( const BufferObject& buf/*, const ge::core::C
 {
 
 }
+
 
 ge::gl::BufferObject::~BufferObject()
 {
@@ -223,213 +225,253 @@ void ge::gl::BufferObject::unbind()
 //
 //}
 namespace ge{
-   namespace gl{
-      /**
-       * @brief Binds buffer to specific target
-       *
-       * @param target target
-       */
-      void BufferObject::bind(
-            GLenum target){
-         //we just bind buffer object to another binding point
-         //original binding point stays the same
-         glBindBuffer(
-               target,
-               this->_id);
-      }
-      /**
-       * @brief Binds range of buffer to specific indexed target
-       *
-       * @param target target
-       * @param index target index
-       * @param offset offset
-       * @param size size of buffer
-       */
-      void BufferObject::bindRange(
-            GLenum     target,
-            GLuint     index,
-            GLintptr   offset,
-            GLsizeiptr size){
-         //we just bind buffer object to another binding point
-         //original binding point stays the same
-         glBindBufferRange(
-               target,
-               index,
-               this->_id,
-               offset,
-               size);
-      }
-      /**
-       * @brief Binds buffer to specific indexed target
-       *
-       * @param target target
-       * @param index index
-       */
-      void BufferObject::bindBase(
-            GLenum target,
-            GLuint index){
-         glBindBufferBase(
-               target,
-               index,
-               this->_id);
-      }
-      /**
-       * @brief Unbinds buffer from specific target
-       *
-       * @param target target
-       */
-      void BufferObject::unbind(
-            GLenum target){
-         glBindBuffer(
-               target,
-               BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-      }
-      /**
-       * @brief Unbinds range of buffer from specific indexed target
-       *
-       * @param target target
-       * @param index  index
-       */
-      void BufferObject::unbindRange(
-            GLenum target,
-            GLuint index){
-         glBindBufferBase(//NOTE: unbind whole buffer
-               target,
-               index,
-               BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-      }
-      /**
-       * @brief Unbinds buffer from specific index target
-       *
-       * @param target target
-       * @param index  index
-       */
-      void BufferObject::unbindBase(
-            GLenum target,
-            GLuint index){
-         glBindBufferBase(
-               target,
-               index,
-               BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-      }
-      /**
-       * @brief Copies data from another buffer into this buffer
-       *
-       * @param buffer another buffer
-       */
-      void BufferObject::copy(
-            BufferObject*buffer){
-         //compute size
-         GLsizeiptr maxSize=(this->_size>buffer->_size)?buffer->_size:this->_size;
-         //bind buffers
-         glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,buffer->_id);
-         glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,this  ->_id);
-         //copy buffer
-         glCopyBufferSubData(
-               BUFFEROBJECT_DEFAULT_READBUFFER,
-               BUFFEROBJECT_DEFAULT_WRITEBUFFER,
-               BUFFEROBJECT_DEFAULT_READOFFSET,
-               BUFFEROBJECT_DEFAULT_WRITEOFFSET,
-               maxSize);
-         //unbind buffers
-         glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-         glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-      }
-      /**
-       * @brief Copies data from another buffer into this buffer
-       *
-       * @param buffer another buffer
-       */
-      void BufferObject::operator &=(
-            BufferObject*buffer){
-         this->copy(buffer);
-      }
-      /**
-       * @brief Flushes mapped buffer
-       *
-       * @param target target
-       * @param offset offset into buffer in bytes
-       * @param length length of data in bytes
-       */
-      void BufferObject::flushMapped(
-            GLenum     target,
-            GLintptr   offset,
-            GLsizeiptr length){
-         glFlushMappedBufferRange(target,offset,length);
-      }
-      /**
-       * @brief Invalidates specific region of buffer
-       *
-       * @param offset offset of region in bytes
-       * @param length length of region in bytes
-       */
-      void BufferObject::invalidate(GLintptr offset,GLsizeiptr length){
-         glInvalidateBufferSubData(this->_id,offset,length);
-      }
-      /**
-       * @brief Invalidates buffer
-       */
-      void BufferObject::invalidate(){
-         glInvalidateBufferData(this->_id);
-      }
-      /**
-       * @brief Clears buffer
-       *
-       * @param internalFormat internal format of buffer
-       * @param format format of data
-       * @param type type of data
-       * @param data optional data
-       */
-      void BufferObject::clear(
-            GLenum        internalFormat,
-            GLenum        format,
-            GLenum        type,
-            const GLvoid *data){
-         //bind buffer to clearbuffer binding point
-         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_id);
-         //clear buffer
-         glClearBufferSubData(
-               BUFFEROBJECT_DEFAULT_CLEARBUFFER,
-               internalFormat,
-               BUFFEROBJECT_DEFAULT_CLEAROFFSET,
-               this->_size,
-               format,
-               type,
-               data);
-         //unbind buffer from clearbuffer binding point
-         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-      }
-      /**
-       * @brief Clears specific region of buffer
-       *
-       * @param internalFormat internal format of buffer
-       * @param offset offset of region
-       * @param size   size of region
-       * @param format format of data
-       * @param type   type of data
-       * @param data   data
-       */
-      void BufferObject::clear(
-            GLenum        internalFormat,
-            GLintptr      offset,
-            GLsizeiptr    size,
-            GLenum        format,
-            GLenum        type,
-            const GLvoid *data){
-         //bind buffer to clearbuffer binding point
-         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_id);
-         //clear buffer
-         glClearBufferSubData(
-               BUFFEROBJECT_DEFAULT_CLEARBUFFER,
-               internalFormat,
-               offset,
-               size,
-               format,
-               type,
-               data);
-         //unbind buffer from clearbuffer binding point
-         glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
-      }
-   }
+  namespace gl{
+    BufferObject::BufferObject(
+        GLsizeiptr    size,
+        const GLvoid *data,
+        GLenum        target,
+        GLenum        usage){
+      this->_data   = BUFFEROBJECT_DEFAULT_DATA;
+      this->_size   = size;
+      this->_target = target;
+      this->_usage  = usage;
+      this->_flags  = BUFFEROBJECT_DEFAULT_FLAGS;
+#ifndef USE_DSA
+      glGenBuffers(1,&this->_id);
+      glBindBuffer(this->_target,this->_id);
+      glBufferData(this->_target,this->_size,data,this->_usage);
+      glBindBuffer(this->_target,BUFFEROBJECT_DEFAULT_ID);
+#else //USE_DSA
+      glCreateBuffers(1,&this->_id);
+      glNamedBufferData(this->_id,this->_size,data,this->_usage);
+#endif//USE_DSA
+    }
+    BufferObject::BufferObject(
+        GLsizeiptr    size,
+        GLbitfield    flags,
+        const GLvoid *data){
+      this->_data   = BUFFEROBJECT_DEFAULT_DATA;
+      this->_size   = size;
+      this->_target = BUFFEROBJECT_DEFAULT_TARGET;
+      this->_usage  = BUFFEROBJECT_DEFAULT_USAGE;
+      this->_flags  = flags;
+#ifndef USE_DSA
+      glGenBuffers(1,&this->_id);
+      glBindBuffer(this->_target,this->_id);
+      glBufferStorage(this->_target,this->_size,data,flags);
+      glBindBuffer(this->_target,BUFFEROBJECT_DEFAULT_ID);
+#else //USE_DSA
+      glCreateBuffers(1,&this->_id);
+      glNamedBufferStorage(this->_id,this->_size,data,this->_flags);
+#endif//USE_DSA
+    }
+
+    /**
+     * @brief Binds buffer to specific target
+     *
+     * @param target target
+     */
+    void BufferObject::bind(
+        GLenum target){
+      //we just bind buffer object to another binding point
+      //original binding point stays the same
+      glBindBuffer(
+          target,
+          this->_id);
+    }
+    /**
+     * @brief Binds range of buffer to specific indexed target
+     *
+     * @param target target
+     * @param index target index
+     * @param offset offset
+     * @param size size of buffer
+     */
+    void BufferObject::bindRange(
+        GLenum     target,
+        GLuint     index,
+        GLintptr   offset,
+        GLsizeiptr size){
+      //we just bind buffer object to another binding point
+      //original binding point stays the same
+      glBindBufferRange(
+          target,
+          index,
+          this->_id,
+          offset,
+          size);
+    }
+    /**
+     * @brief Binds buffer to specific indexed target
+     *
+     * @param target target
+     * @param index index
+     */
+    void BufferObject::bindBase(
+        GLenum target,
+        GLuint index){
+      glBindBufferBase(
+          target,
+          index,
+          this->_id);
+    }
+    /**
+     * @brief Unbinds buffer from specific target
+     *
+     * @param target target
+     */
+    void BufferObject::unbind(
+        GLenum target){
+      glBindBuffer(
+          target,
+          BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+    }
+    /**
+     * @brief Unbinds range of buffer from specific indexed target
+     *
+     * @param target target
+     * @param index  index
+     */
+    void BufferObject::unbindRange(
+        GLenum target,
+        GLuint index){
+      glBindBufferBase(//NOTE: unbind whole buffer
+          target,
+          index,
+          BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+    }
+    /**
+     * @brief Unbinds buffer from specific index target
+     *
+     * @param target target
+     * @param index  index
+     */
+    void BufferObject::unbindBase(
+        GLenum target,
+        GLuint index){
+      glBindBufferBase(
+          target,
+          index,
+          BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+    }
+    /**
+     * @brief Copies data from another buffer into this buffer
+     *
+     * @param buffer another buffer
+     */
+    void BufferObject::copy(
+        BufferObject*buffer){
+      //compute size
+      GLsizeiptr maxSize=(this->_size>buffer->_size)?buffer->_size:this->_size;
+      //bind buffers
+      glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,buffer->_id);
+      glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,this  ->_id);
+      //copy buffer
+      glCopyBufferSubData(
+          BUFFEROBJECT_DEFAULT_READBUFFER,
+          BUFFEROBJECT_DEFAULT_WRITEBUFFER,
+          BUFFEROBJECT_DEFAULT_READOFFSET,
+          BUFFEROBJECT_DEFAULT_WRITEOFFSET,
+          maxSize);
+      //unbind buffers
+      glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+    }
+    /**
+     * @brief Copies data from another buffer into this buffer
+     *
+     * @param buffer another buffer
+     */
+    void BufferObject::operator &=(
+        BufferObject*buffer){
+      this->copy(buffer);
+    }
+    /**
+     * @brief Flushes mapped buffer
+     *
+     * @param target target
+     * @param offset offset into buffer in bytes
+     * @param length length of data in bytes
+     */
+    void BufferObject::flushMapped(
+        GLenum     target,
+        GLintptr   offset,
+        GLsizeiptr length){
+      glFlushMappedBufferRange(target,offset,length);
+    }
+    /**
+     * @brief Invalidates specific region of buffer
+     *
+     * @param offset offset of region in bytes
+     * @param length length of region in bytes
+     */
+    void BufferObject::invalidate(GLintptr offset,GLsizeiptr length){
+      glInvalidateBufferSubData(this->_id,offset,length);
+    }
+    /**
+     * @brief Invalidates buffer
+     */
+    void BufferObject::invalidate(){
+      glInvalidateBufferData(this->_id);
+    }
+    /**
+     * @brief Clears buffer
+     *
+     * @param internalFormat internal format of buffer
+     * @param format format of data
+     * @param type type of data
+     * @param data optional data
+     */
+    void BufferObject::clear(
+        GLenum        internalFormat,
+        GLenum        format,
+        GLenum        type,
+        const GLvoid *data){
+      //bind buffer to clearbuffer binding point
+      glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_id);
+      //clear buffer
+      glClearBufferSubData(
+          BUFFEROBJECT_DEFAULT_CLEARBUFFER,
+          internalFormat,
+          BUFFEROBJECT_DEFAULT_CLEAROFFSET,
+          this->_size,
+          format,
+          type,
+          data);
+      //unbind buffer from clearbuffer binding point
+      glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+    }
+    /**
+     * @brief Clears specific region of buffer
+     *
+     * @param internalFormat internal format of buffer
+     * @param offset offset of region
+     * @param size   size of region
+     * @param format format of data
+     * @param type   type of data
+     * @param data   data
+     */
+    void BufferObject::clear(
+        GLenum        internalFormat,
+        GLintptr      offset,
+        GLsizeiptr    size,
+        GLenum        format,
+        GLenum        type,
+        const GLvoid *data){
+      //bind buffer to clearbuffer binding point
+      glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,this->_id);
+      //clear buffer
+      glClearBufferSubData(
+          BUFFEROBJECT_DEFAULT_CLEARBUFFER,
+          internalFormat,
+          offset,
+          size,
+          format,
+          type,
+          data);
+      //unbind buffer from clearbuffer binding point
+      glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+    }
+  }
 }
 

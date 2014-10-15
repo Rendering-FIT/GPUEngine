@@ -39,6 +39,16 @@ class GE_EXPORT BufferObject// : public ge::core::Object
 public:
    BufferObject();
    BufferObject(const BufferObject& buf/*, const ge::core::CopyOp& copyop = ge::core::CopyOp::SHALLOW_COPY*/);
+   BufferObject(
+       GLsizeiptr    size,
+       const GLvoid *data   = BUFFEROBJECT_DEFAULT_DATA,
+       GLenum        target = BUFFEROBJECT_DEFAULT_TARGET,
+       GLenum        usage  = BUFFEROBJECT_DEFAULT_USAGE);
+   BufferObject(
+       GLsizeiptr    size,
+       GLbitfield    flags,
+       const GLvoid *data   = BUFFEROBJECT_DEFAULT_DATA);
+
    virtual ~BufferObject();
 
    //class GE_EXPORT Mapping
