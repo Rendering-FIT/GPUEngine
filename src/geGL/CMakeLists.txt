@@ -36,6 +36,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/VertexAttributeDivisorsCommands.h
     ${HEADER_PATH}/ShaderObjectsCommands.h
     ${HEADER_PATH}/ShaderObjectsManager.h
+    ${HEADER_PATH}/AsynchronousQueryObject.h
   )
 
 set(GL_SOURCES
@@ -70,6 +71,7 @@ set(GL_SOURCES
     VertexAttributeDivisorsCommands.cpp
     ShaderObjectsCommands.cpp
     ShaderObjectsManager.cpp
+    AsynchronousQueryObject.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

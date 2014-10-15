@@ -5,7 +5,7 @@ namespace ge{
     bool OpenGL320=false;
     bool OpenGL400=false;
     bool OpenGL410=false;
-    void ProgramObject::initShaderManager(){
+    void ProgramObject::initProgramObject(){
       OpenGL320=true;
       OpenGL400=true;
       OpenGL410=true;
@@ -113,7 +113,7 @@ namespace ge{
 
 
 
-      if(!OpenGL320)throw "OpenGL 3.2 is not available, missing: "+Result32;
+      if(!OpenGL320)throw      "OpenGL 3.2 is not available, missing: "+Result32;
       if(!OpenGL400)std::cerr<<"OpenGL 4.0 is not available, missing: "+Result40<<std::endl;
       if(!OpenGL410)std::cerr<<"OpenGL 4.1 is not available, missing: "+Result41<<std::endl;
 

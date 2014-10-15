@@ -46,7 +46,7 @@ namespace ge{
       /**
        * @brief Initialise shader manager
        */
-      static void initShaderManager();
+      static void initProgramObject();
       /**
        * @brief Function converts complex type (GL_FLOAT_VEC3 to GL_FLOAT)
        *
