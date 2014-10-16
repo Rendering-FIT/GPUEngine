@@ -1,173 +1,176 @@
-#include"WindowObject.h"
+#include<geUtil/WindowObject.h>
 
 #include<iostream>
 #include<AntTweakBar.h>
 #include<GL/glew.h>
 
-void WindowObject::_constructor(
-    unsigned Width,
-    unsigned Height,
-    bool FullScreen,
-    void(*Idle)(),
-    void(*Mouse)(),
-    bool UseAntTweakBar,
-    unsigned Version,
-    SDL_GLprofile Profile,
-    SDL_GLcontextFlag ContextFlag){
-  this->_mapKeyDown.clear();
-  this->_mapKeyOffOn.clear();
-  this->_idle=Idle;//set idle function
-  this->_mouse=Mouse;//set mouse function
-  this->_windowSize[0]=Width;//width of window
-  this->_windowSize[1]=Height;//height of window
-  this->_isFullScreen=FullScreen;//set fullscreen flag
-  this->_useAntTweakBar=UseAntTweakBar;
+namespace ge{
+  namespace util{
+
+    void WindowObject::_constructor(
+        unsigned Width,
+        unsigned Height,
+        bool FullScreen,
+        void(*Idle)(),
+        void(*Mouse)(),
+        bool UseAntTweakBar,
+        unsigned Version,
+        SDL_GLprofile Profile,
+        SDL_GLcontextFlag ContextFlag){
+      this->_mapKeyDown.clear();
+      this->_mapKeyOffOn.clear();
+      this->_idle=Idle;//set idle function
+      this->_mouse=Mouse;//set mouse function
+      this->_windowSize[0]=Width;//width of window
+      this->_windowSize[1]=Height;//height of window
+      this->_isFullScreen=FullScreen;//set fullscreen flag
+      this->_useAntTweakBar=UseAntTweakBar;
 
 
-  SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);//initialise video
+      SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);//initialise video
 #ifdef USE_SDL2
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Version/100    );
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(Version%100)/10);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,Profile         );
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,ContextFlag     );
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Version/100    );
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(Version%100)/10);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,Profile         );
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,ContextFlag     );
 #endif//USE_SDL2
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
+      SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
 #ifdef USE_SDL2
 
-  /*
-     const unsigned ver[]={
-     110,120,130,140,150,200,210,300,310,320,330,400,410,420,430,440};
-     SDL_Window*w=SDL_CreateWindow("w",0,0,1,1,SDL_WINDOW_OPENGL);
+      /*
+         const unsigned ver[]={
+         110,120,130,140,150,200,210,300,310,320,330,400,410,420,430,440};
+         SDL_Window*w=SDL_CreateWindow("w",0,0,1,1,SDL_WINDOW_OPENGL);
 
-     for(unsigned i=0;i<sizeof(ver)/sizeof(unsigned);++i){
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ver[i]/100    );
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(ver[i]%100)/10);
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,SDL_GL_CONTEXT_PROFILE_CORE);
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,SDL_GL_CONTEXT_DEBUG_FLAG*1);
-     SDL_GLContext cont=SDL_GL_CreateContext(w);
-     if(cont){
-     std::cerr<<"Version: "<<ver[i]<<std::endl;
-     std::cerr<<glGetString(GL_VERSION )<<std::endl;
-     std::cerr<<glGetString(GL_VENDOR  )<<std::endl;
-     std::cerr<<glGetString(GL_RENDERER)<<std::endl;
-     }
-     if(cont)SDL_GL_DeleteContext(cont);
-     }
-     if(w)SDL_DestroyWindow(w);
+         for(unsigned i=0;i<sizeof(ver)/sizeof(unsigned);++i){
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ver[i]/100    );
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(ver[i]%100)/10);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,SDL_GL_CONTEXT_PROFILE_CORE);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,SDL_GL_CONTEXT_DEBUG_FLAG*1);
+         SDL_GLContext cont=SDL_GL_CreateContext(w);
+         if(cont){
+         std::cerr<<"Version: "<<ver[i]<<std::endl;
+         std::cerr<<glGetString(GL_VERSION )<<std::endl;
+         std::cerr<<glGetString(GL_VENDOR  )<<std::endl;
+         std::cerr<<glGetString(GL_RENDERER)<<std::endl;
+         }
+         if(cont)SDL_GL_DeleteContext(cont);
+         }
+         if(w)SDL_DestroyWindow(w);
 
-     std::cerr<<"version end\n";
-     */
+         std::cerr<<"version end\n";
+         */
 
-  if(this->_isFullScreen)
-    this->_mainWindow=SDL_CreateWindow(
-        "SDL2",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        this->_windowSize[0],
-        this->_windowSize[1],
-        SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_FULLSCREEN);
-  else
-    this->_mainWindow=SDL_CreateWindow(
-        "SDL2",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        this->_windowSize[0],
-        this->_windowSize[1],
-        SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN);
-  this->_mainContext=SDL_GL_CreateContext(this->_mainWindow);
+      if(this->_isFullScreen)
+        this->_mainWindow=SDL_CreateWindow(
+            "SDL2",
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED,
+            this->_windowSize[0],
+            this->_windowSize[1],
+            SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_FULLSCREEN);
+      else
+        this->_mainWindow=SDL_CreateWindow(
+            "SDL2",
+            SDL_WINDOWPOS_CENTERED,
+            SDL_WINDOWPOS_CENTERED,
+            this->_windowSize[0],
+            this->_windowSize[1],
+            SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN);
+      this->_mainContext=SDL_GL_CreateContext(this->_mainWindow);
 #else
-  if(this->_isFullScreen)//is fullscreen?
-    SDL_SetVideoMode(//set video
-        this->WindowSize[0],//width
-        this->WindowSize[1],//height
-        24,//bit depth
-        SDL_HWSURFACE|//hardware surface
-        SDL_DOUBLEBUF|//double buffering
-        SDL_OPENGL|//OpenGL
-        SDL_FULLSCREEN);//fullscreen
-  else
-    SDL_SetVideoMode(//set video
-        this->WindowSize[0],//width
-        this->WindowSize[1],//height
-        24,//bit depth
-        SDL_HWSURFACE|//hardware surface
-        SDL_DOUBLEBUF|//double buffering
-        SDL_OPENGL);//OpenGL
+      if(this->_isFullScreen)//is fullscreen?
+        SDL_SetVideoMode(//set video
+            this->WindowSize[0],//width
+            this->WindowSize[1],//height
+            24,//bit depth
+            SDL_HWSURFACE|//hardware surface
+            SDL_DOUBLEBUF|//double buffering
+            SDL_OPENGL|//OpenGL
+            SDL_FULLSCREEN);//fullscreen
+      else
+        SDL_SetVideoMode(//set video
+            this->WindowSize[0],//width
+            this->WindowSize[1],//height
+            24,//bit depth
+            SDL_HWSURFACE|//hardware surface
+            SDL_DOUBLEBUF|//double buffering
+            SDL_OPENGL);//OpenGL
 #endif//USE_SDL2
 
-  for(int i=0;i<256;++i){//loop over keys
-    this->_keyDown[i]=0;//key is not down
-    this->_keyOffOn[i]=0;//key is off
-  }
-  if(this->_useAntTweakBar){
-    TwInit(TW_OPENGL_CORE,NULL);
-    TwWindowSize(this->_windowSize[0],this->_windowSize[1]);
-  }
+      for(int i=0;i<256;++i){//loop over keys
+        this->_keyDown[i]=0;//key is not down
+        this->_keyOffOn[i]=0;//key is off
+      }
+      if(this->_useAntTweakBar){
+        TwInit(TW_OPENGL_CORE,NULL);
+        TwWindowSize(this->_windowSize[0],this->_windowSize[1]);
+      }
 
-  this->_mouseLeftDown=0;//left mouse button is not down
-  this->_mouseLeftOffOn=0;//left mouse button is off
-  this->_mouseRightDown=0;//right mouse button is not down
-  this->_mouseRightOffOn=0;//right mouse button is off
-  this->_mouseMiddleDown=0;//middle mouse button is not down
-  this->_mouseMiddleOffOn=0;//middle mouse button is off
-  for(int i=0;i<2;++i){
-    this->_mousePosition[i]=this->_windowSize[i]/2;
-    this->_mouseDeltaPosition[i]=0;
-  }
-  this->_warpMouse=false;
-  this->_running=true;
-}
+      this->_mouseLeftDown=0;//left mouse button is not down
+      this->_mouseLeftOffOn=0;//left mouse button is off
+      this->_mouseRightDown=0;//right mouse button is not down
+      this->_mouseRightOffOn=0;//right mouse button is off
+      this->_mouseMiddleDown=0;//middle mouse button is not down
+      this->_mouseMiddleOffOn=0;//middle mouse button is off
+      for(int i=0;i<2;++i){
+        this->_mousePosition[i]=this->_windowSize[i]/2;
+        this->_mouseDeltaPosition[i]=0;
+      }
+      this->_warpMouse=false;
+      this->_running=true;
+    }
 
-WindowObject::WindowObject(
-    unsigned Width,
-    unsigned Height,
-    bool FullScreen,
-    void(*Idle)(),
-    void(*Mouse)(),
-    bool UseAntTweakBar,
-    unsigned Version,
-    SDL_GLprofile Profile,
-    SDL_GLcontextFlag ContextFlag){
-  this->_constructor(Width,Height,FullScreen,Idle,Mouse,UseAntTweakBar,Version,Profile,ContextFlag);
-}
-WindowObject::WindowObject(
-    unsigned Width,
-    unsigned Height,
-    bool FullScreen,
-    void(*Idle)(),
-    void(*Mouse)(),
-    bool UseAntTweakBar,
-    unsigned Version,
-    std::string Profile,
-    std::string ContextFlag){
-  SDL_GLprofile P=SDL_GL_CONTEXT_PROFILE_CORE;
-  if(Profile=="core")P=SDL_GL_CONTEXT_PROFILE_CORE;
-  if(Profile=="es")P=SDL_GL_CONTEXT_PROFILE_ES;
-  if(Profile=="compatibility")P=SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-  SDL_GLcontextFlag C=SDL_GL_CONTEXT_DEBUG_FLAG;
-  if(ContextFlag=="debug")C=SDL_GL_CONTEXT_DEBUG_FLAG;
-  this->_constructor(Width,Height,FullScreen,Idle,Mouse,UseAntTweakBar,Version,P,C);
-}
+    WindowObject::WindowObject(
+        unsigned Width,
+        unsigned Height,
+        bool FullScreen,
+        void(*Idle)(),
+        void(*Mouse)(),
+        bool UseAntTweakBar,
+        unsigned Version,
+        SDL_GLprofile Profile,
+        SDL_GLcontextFlag ContextFlag){
+      this->_constructor(Width,Height,FullScreen,Idle,Mouse,UseAntTweakBar,Version,Profile,ContextFlag);
+    }
+    WindowObject::WindowObject(
+        unsigned Width,
+        unsigned Height,
+        bool FullScreen,
+        void(*Idle)(),
+        void(*Mouse)(),
+        bool UseAntTweakBar,
+        unsigned Version,
+        std::string Profile,
+        std::string ContextFlag){
+      SDL_GLprofile P=SDL_GL_CONTEXT_PROFILE_CORE;
+      if(Profile=="core")P=SDL_GL_CONTEXT_PROFILE_CORE;
+      if(Profile=="es")P=SDL_GL_CONTEXT_PROFILE_ES;
+      if(Profile=="compatibility")P=SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+      SDL_GLcontextFlag C=SDL_GL_CONTEXT_DEBUG_FLAG;
+      if(ContextFlag=="debug")C=SDL_GL_CONTEXT_DEBUG_FLAG;
+      this->_constructor(Width,Height,FullScreen,Idle,Mouse,UseAntTweakBar,Version,P,C);
+    }
 
-/*
-   WindowObject::WindowObject(
-   unsigned Width,
-   unsigned Height,
-   bool FullScreen,
-   void(*Idle)(),
-   void(*Mouse)(),
-   bool UseAntTweakBar){
-   this->MapKeyDown.clear();
-   this->MapKeyOffOn.clear();
-   this->Idle=Idle;//set idle function
-   this->Mouse=Mouse;//set mouse function
-   this->WindowSize[0]=Width;//width of window
-   this->WindowSize[1]=Height;//height of window
-   this->IsFullScreen=FullScreen;//set fullscreen flag
-   this->UseAntTweakBar=UseAntTweakBar;
+    /*
+       WindowObject::WindowObject(
+       unsigned Width,
+       unsigned Height,
+       bool FullScreen,
+       void(*Idle)(),
+       void(*Mouse)(),
+       bool UseAntTweakBar){
+       this->MapKeyDown.clear();
+       this->MapKeyOffOn.clear();
+       this->Idle=Idle;//set idle function
+       this->Mouse=Mouse;//set mouse function
+       this->WindowSize[0]=Width;//width of window
+       this->WindowSize[1]=Height;//height of window
+       this->IsFullScreen=FullScreen;//set fullscreen flag
+       this->UseAntTweakBar=UseAntTweakBar;
 
 
-   SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);//initialise video
+       SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER);//initialise video
 #ifdef USE_SDL2
 SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,4);
 SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,3);
@@ -220,7 +223,7 @@ this->KeyOffOn[i]=0;//key is off
 }
 if(this->UseAntTweakBar){
 TwInit(TW_OPENGL_CORE,NULL);
-TwWindowSize(this->WindowSize[0],this->WindowSize[1]);
+    TwWindowSize(this->WindowSize[0],this->WindowSize[1]);
 }
 
 this->MouseLeftDown=0;//left mouse button is not down
@@ -487,3 +490,5 @@ void WindowObject::setKeyOn(int k){
   this->_mapKeyOffOn[(SDLKey)k]=1;
 #endif//USE_SDL2
 }
+}//util
+}//ge
