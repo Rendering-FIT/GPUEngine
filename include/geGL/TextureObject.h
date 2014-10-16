@@ -13,22 +13,26 @@
 
 namespace ge{
   namespace gl{
+    GLenum textureTarget2Binding(GLenum target );
+    GLenum textureBinding2Target(GLenum binding);
+    std::string translateTextureTarget     (GLenum target );
+    std::string translateTextureBinding    (GLenum binding);
+    std::string translateTextureCompareMode(GLint mode    );
+    std::string translateTextureCompareFunc(GLint func    );
+    std::string translateTextureFilter     (GLint filter  );
+    std::string translateTextureWrap       (GLint wrap    );
+    std::string translateTextureSwizzle    (GLint swizzle );
+
     class TextureObject
     {
+      private:
+        inline GLint getTexLevelParameter(GLint level,GLenum pname);
+        inline GLint getTexParameter(GLenum pname);
       protected:
         GLuint  _id;
         GLenum  _target;
         GLenum  _format;
       public:
-        static GLenum target2Binding(GLenum target );
-        static GLenum binding2Target(GLenum binding);
-        std::string translateTarget     (GLenum target );
-        std::string translateBinding    (GLenum binding);
-        std::string translateCompareMode(GLint mode    );
-        std::string translateCompareFunc(GLint func    );
-        std::string translateFilter     (GLint filter  );
-        std::string translateWrap       (GLint wrap    );
-        std::string translateSwizzle    (GLint swizzle );
         /**
          * @brief Creates 1D texture
          *
@@ -108,6 +112,12 @@ namespace ge{
             GLboolean layered = TEXTUREOBJECT_DEFAULT_LAYERED,
             GLint     layer   = TEXTUREOBJECT_DEFAULT_LAYER);
         /**
+         * @brief gets id of texture
+         *
+         * @return id
+         */
+        GLuint  getId();
+        /**
          * @brief sets parameters of texture
          *
          * @param pname name of parameter
@@ -158,11 +168,45 @@ namespace ge{
          */
         GLsizei getDepth (GLint level);
         /**
-         * @brief gets id of texture
+         * @brief gets fixed sample location
          *
-         * @return id
+         * @param level level of mipmap
+         *
+         * @return fixed sample location
          */
-        GLuint  getId();
+        GLint   getFixedSampleLocation(GLint level);
+        /**
+         * @brief gets compressed flag
+         *
+         * @param level level of mipmap
+         *
+         * @return compressed flag
+         */
+        GLint   getCompressed(GLint level);
+        /**
+         * @brief gets compressed image size
+         *
+         * @param level level of mipmap
+         *
+         * @return compressed image size
+         */
+        GLint   getCompressedImageSize(GLint level);
+        /**
+         * @brief gets number of samples
+         *
+         * @param level level of mipmap
+         *
+         * @return number of samples
+         */
+        GLint   getSamples(GLint level);
+        GLint   getImmutableFormat();
+        GLint   getSwizzleR();
+        GLint   getSwizzleG();
+        GLint   getSwizzleB();
+        GLint   getSwizzleA();
+        GLint   getMaxLevel();
+        GLint   getBaseLevel();
+
     };
   }//gl
 }//ge

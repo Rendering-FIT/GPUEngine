@@ -2,6 +2,9 @@
 
 namespace ge{
   namespace gl{
+    /**
+     * @brief Creates empty vertex array object
+     */
     VertexArrayObject::VertexArrayObject (){
 #ifndef USE_DSA
       glGenVertexArrays   (1,&this->_id);
@@ -9,9 +12,24 @@ namespace ge{
       glCreateVertexArrays(1,&this->_id);
 #endif//USE_DSA
     }
+    /**
+     * @brief Destroyes vertex array object
+     */
     VertexArrayObject::~VertexArrayObject(){
       glDeleteVertexArrays(1,&this->_id);
     }
+    /**
+     * @brief Adds vertex attrib into vertex array object
+     *
+     * @param buffer     id of buffer where a attrib is stored
+     * @param index      index of attrib layout(location=index)
+     * @param size       number of components of attrib vec3 = 3
+     * @param type       type of attrib vec3 = float, ivec2 = int
+     * @param stride     distance between attribs 
+     * @param pointer    offset to the first attrib
+     * @param normalized should the attrib be normalized?
+     * @param divisor    rate of incrementation of attrib per instance, 0 = per VS invocation
+     */
     void VertexArrayObject::addAttrib(
         GLuint        buffer,
         GLuint        index,
@@ -145,5 +163,30 @@ namespace ge{
 #endif//USE_DSA
       return id;
     }
+#ifndef REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
+    void VertexArrayObject::addAttrib(
+            ge::gl::BufferObject *buffer,
+            GLuint                index,
+            GLint                 size,
+            GLenum                type,
+            GLsizei               stride,
+            const GLvoid         *pointer,
+            GLboolean             normalized,
+            GLuint                divisor){
+      this->addAttrib(
+          buffer->getId(),
+          index,
+          stride,
+          type,
+          stride,
+          pointer,
+          normalized,
+          divisor);
+    }
+    void VertexArrayObject::addElementBuffer(
+            ge::gl::BufferObject *buffer){
+      this->addElementBuffer(buffer->getId());
+    }
+#endif//REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
   }//gl
 }//ge

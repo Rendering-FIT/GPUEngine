@@ -82,7 +82,7 @@ std::cerr<<"D->RBO_Stencil Samples: "<<RenderbufferSamples<<std::endl;
 */
 namespace ge{
   namespace gl{
-    GLenum TextureObject::target2Binding(GLenum target){
+    GLenum textureTarget2Binding(GLenum target){
       switch(target){
         case GL_TEXTURE_1D                  :return GL_TEXTURE_BINDING_1D                  ;
         case GL_TEXTURE_1D_ARRAY            :return GL_TEXTURE_BINDING_1D_ARRAY            ;
@@ -98,7 +98,7 @@ namespace ge{
       }
     }
 
-    GLenum TextureObject::binding2Target(GLenum target){
+    GLenum textureBinding2Target(GLenum target){
       switch(target){
         case GL_TEXTURE_BINDING_1D                  :return GL_TEXTURE_1D                  ;
         case GL_TEXTURE_BINDING_1D_ARRAY            :return GL_TEXTURE_1D_ARRAY            ;
@@ -114,7 +114,7 @@ namespace ge{
       }
     }
 
-    std::string TextureObject::translateTarget(GLenum target){
+    std::string translateTextureTarget(GLenum target){
       switch(target){
         case GL_TEXTURE_1D                  :return "GL_TEXTURE_1D"                  ;
         case GL_TEXTURE_1D_ARRAY            :return "GL_TEXTURE_1D_ARRAY"            ;
@@ -130,7 +130,7 @@ namespace ge{
       }
     }
 
-    std::string TextureObject::translateBinding(GLenum binding){
+    std::string translateTextureBinding(GLenum binding){
       switch(binding){
         case GL_TEXTURE_BINDING_1D                  :return "GL_TEXTURE_BINDING_1D"                  ;
         case GL_TEXTURE_BINDING_1D_ARRAY            :return "GL_TEXTURE_BINDING_1D_ARRAY"            ;
@@ -145,7 +145,7 @@ namespace ge{
         default                                     :return "unknown"                                ;
       }
     }
-    std::string TextureObject::translateSwizzle(GLint swizzle){
+    std::string translateTextureSwizzle(GLint swizzle){
       switch(swizzle){
         case GL_RED  :return"GL_RED"  ;
         case GL_GREEN:return"GL_GREEN";
@@ -155,7 +155,7 @@ namespace ge{
       }
     }
 
-    std::string TextureObject::translateWrap(GLint wrap){
+    std::string translateTextureWrap(GLint wrap){
       switch(wrap){
         case GL_CLAMP_TO_EDGE       :return"GL_CLAMP_TO_EDGE"       ;
         case GL_CLAMP_TO_BORDER     :return"GL_CLAMP_TO_BORDER"     ;
@@ -166,7 +166,7 @@ namespace ge{
       }
     }
 
-    std::string TextureObject::translateFilter(GLint filter){
+    std::string translateTextureFilter(GLint filter){
       switch(filter){
         case GL_NEAREST               :return"GL_NEAREST"               ;
         case GL_LINEAR                :return"GL_LINEAR"                ;
@@ -177,7 +177,7 @@ namespace ge{
         default                       :return"unknown"                  ;
       }
     }
-    std::string TextureObject::translateCompareFunc(GLint func){
+    std::string translateTextureCompareFunc(GLint func){
       switch(func){
         case GL_LEQUAL  :return"GL_LEQUAL"  ;
         case GL_GEQUAL  :return"GL_GEQUAL"  ;
@@ -190,7 +190,7 @@ namespace ge{
         default         :return"unknown"    ;
       }
     }
-    std::string TextureObject::translateCompareMode(GLint mode){
+    std::string translateTextureCompareMode(GLint mode){
       switch(mode){
         case GL_COMPARE_REF_TO_TEXTURE:return"GL_COMPARE_REF_TO_TEXTURE";
         case GL_NONE                  :return"GL_NONE"                  ;
@@ -325,47 +325,53 @@ namespace ge{
       return this->_format;
       //glGetTextureParameteriv(this->_id,GL_TEXTURE_INTERNAL_FORMAT,(GLint*)format);
     }
-
+    GLint TextureObject::getTexLevelParameter(GLint level,GLenum pname){
+      GLint param;
+#ifndef USE_DSA
+      GLuint oldId;
+      glGetTexParameteriv(this->getTarget(),textureTarget2Binding(this->getTarget()),(GLint*)&oldId);
+      glBindTexture(GL_TEXTURE_2D,this->_id);
+      glGetTexLevelParameteriv(GL_TEXTURE_2D,level,pname,&param);
+      glBindTexture(GL_TEXTURE_2D,oldId);
+#else //USE_DSA
+      glGetTextureLevelParameteriv(this->_id,level,GL_TEXTURE_WIDTH,&param);
+#endif//USE_DSA
+      return param;
+    }
     GLsizei TextureObject::getWidth(GLint level){
-      GLsizei width;
-#ifndef USE_DSA
-      GLuint oldId;
-      glGetTexParameteriv(this->getTarget(),TextureObject::target2Binding(this->getTarget()),(GLint*)&oldId);
-      glBindTexture(GL_TEXTURE_2D,this->_id);
-      glGetTexLevelParameteriv(GL_TEXTURE_2D,level,GL_TEXTURE_WIDTH,&width);
-      glBindTexture(GL_TEXTURE_2D,oldId);
-#else //USE_DSA
-      glGetTextureLevelParameteriv(this->_id,level,GL_TEXTURE_WIDTH,&width);
-#endif//USE_DSA
-      return width;
+      return this->getTexLevelParameter(level,GL_TEXTURE_WIDTH);
     }
-
     GLsizei TextureObject::getHeight(GLint level){
-      GLsizei height;
+      return this->getTexLevelParameter(level,GL_TEXTURE_HEIGHT);
+    }
+    GLsizei TextureObject::getDepth(GLint level){
+      return this->getTexLevelParameter(level,GL_TEXTURE_DEPTH);
+    }
+    GLint TextureObject::getFixedSampleLocation(GLint level){
+      return this->getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
+    }
+    GLint TextureObject::getCompressed(GLint level){
+      return this->getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
+    }
+    GLint TextureObject::getCompressedImageSize(GLint level){
+      return this->getTexLevelParameter(level,GL_TEXTURE_COMPRESSED_IMAGE_SIZE);
+    }
+    GLint TextureObject::getSamples(GLint level){
+      return this->getTexLevelParameter(level,GL_TEXTURE_SAMPLES);
+    }
+    GLint TextureObject::getTexParameter(GLenum pname){
+      GLint param;
 #ifndef USE_DSA
       GLuint oldId;
-      glGetTexParameteriv(this->getTarget(),TextureObject::target2Binding(this->getTarget()),(GLint*)&oldId);
+      glGetTexParameteriv(this->getTarget(),textureTarget2Binding(this->getTarget()),(GLint*)&oldId);
       glBindTexture(GL_TEXTURE_2D,this->_id);
-      glGetTexLevelParameteriv(GL_TEXTURE_2D,level,GL_TEXTURE_WIDTH,&height);
+      glGetTexParameteriv(GL_TEXTURE_2D,pname,&param);
       glBindTexture(GL_TEXTURE_2D,oldId);
 #else //USE_DSA
-      glGetTextureLevelParameteriv(this->_id,level,GL_TEXTURE_WIDTH,&height);
+      glGetTextureParameteriv(this->_id,pname,&param));
 #endif//USE_DSA
-      return height;
+      return param;
     }
 
-    GLsizei TextureObject::getDepth(GLint level){
-      GLsizei depth;
-#ifndef USE_DSA
-      GLuint oldId;
-      glGetTexParameteriv(this->getTarget(),TextureObject::target2Binding(this->getTarget()),(GLint*)&oldId);
-      glBindTexture(GL_TEXTURE_2D,this->_id);
-      glGetTexLevelParameteriv(GL_TEXTURE_2D,level,GL_TEXTURE_WIDTH,&depth);
-      glBindTexture(GL_TEXTURE_2D,oldId);
-#else //USE_DSA
-      glGetTextureLevelParameteriv(this->_id,level,GL_TEXTURE_WIDTH,&depth);
-#endif//USE_DSA
-      return depth;
-    }
   }//gl
 }//ge

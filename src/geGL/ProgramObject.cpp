@@ -5,7 +5,7 @@ namespace ge{
     bool OpenGL320=false;
     bool OpenGL400=false;
     bool OpenGL410=false;
-    void ProgramObject::initProgramObject(){
+    void initShadersAndPrograms(){
       OpenGL320=true;
       OpenGL400=true;
       OpenGL410=true;
@@ -118,6 +118,58 @@ namespace ge{
       if(!OpenGL410)std::cerr<<"OpenGL 4.1 is not available, missing: "+Result41<<std::endl;
 
     }
+    GLenum complexType2SimpleType(GLenum type){
+      switch(type){
+        case GL_FLOAT            :return GL_FLOAT;
+        case GL_FLOAT_VEC2       :return GL_FLOAT;
+        case GL_FLOAT_VEC3       :return GL_FLOAT;
+        case GL_FLOAT_VEC4       :return GL_FLOAT;
+        case GL_DOUBLE           :return GL_DOUBLE;
+        case GL_DOUBLE_VEC2      :return GL_DOUBLE;
+        case GL_DOUBLE_VEC3      :return GL_DOUBLE;
+        case GL_DOUBLE_VEC4      :return GL_DOUBLE;
+        case GL_INT              :return GL_INT;
+        case GL_INT_VEC2         :return GL_INT;
+        case GL_INT_VEC3         :return GL_INT;
+        case GL_INT_VEC4         :return GL_INT;
+        case GL_UNSIGNED_INT     :return GL_UNSIGNED_INT;
+        case GL_UNSIGNED_INT_VEC2:return GL_UNSIGNED_INT;
+        case GL_UNSIGNED_INT_VEC3:return GL_UNSIGNED_INT;
+        case GL_UNSIGNED_INT_VEC4:return GL_UNSIGNED_INT;
+        case GL_BOOL             :return GL_BOOL;
+        case GL_BOOL_VEC2        :return GL_BOOL;
+        case GL_BOOL_VEC3        :return GL_BOOL;
+        case GL_BOOL_VEC4        :return GL_BOOL;
+        default                  :return GL_FLOAT;//GL_FALSE glbinding...
+      }
+    }
+
+    GLint complexType2Size(GLenum type){
+      switch(type){
+        case GL_FLOAT            :return 1;
+        case GL_FLOAT_VEC2       :return 2;
+        case GL_FLOAT_VEC3       :return 3;
+        case GL_FLOAT_VEC4       :return 4;
+        case GL_DOUBLE           :return 1;
+        case GL_DOUBLE_VEC2      :return 2;
+        case GL_DOUBLE_VEC3      :return 3;
+        case GL_DOUBLE_VEC4      :return 4;
+        case GL_INT              :return 1;
+        case GL_INT_VEC2         :return 2;
+        case GL_INT_VEC3         :return 3;
+        case GL_INT_VEC4         :return 4;
+        case GL_UNSIGNED_INT     :return 1;
+        case GL_UNSIGNED_INT_VEC2:return 2;
+        case GL_UNSIGNED_INT_VEC3:return 3;
+        case GL_UNSIGNED_INT_VEC4:return 4;
+        case GL_BOOL             :return 1;
+        case GL_BOOL_VEC2        :return 2;
+        case GL_BOOL_VEC3        :return 3;
+        case GL_BOOL_VEC4        :return 4;
+        default:return 0;
+      }
+    }
+
     void ProgramObject::setSeparable    (){
       glProgramParameteri(this->_id,GL_PROGRAM_SEPARABLE,GL_TRUE);
       glLinkProgram(this->_id);
@@ -1053,57 +1105,6 @@ namespace ge{
       }
     }
 
-    GLenum ProgramObject::complexType2SimpleType(GLenum type){
-      switch(type){
-        case GL_FLOAT            :return GL_FLOAT;
-        case GL_FLOAT_VEC2       :return GL_FLOAT;
-        case GL_FLOAT_VEC3       :return GL_FLOAT;
-        case GL_FLOAT_VEC4       :return GL_FLOAT;
-        case GL_DOUBLE           :return GL_DOUBLE;
-        case GL_DOUBLE_VEC2      :return GL_DOUBLE;
-        case GL_DOUBLE_VEC3      :return GL_DOUBLE;
-        case GL_DOUBLE_VEC4      :return GL_DOUBLE;
-        case GL_INT              :return GL_INT;
-        case GL_INT_VEC2         :return GL_INT;
-        case GL_INT_VEC3         :return GL_INT;
-        case GL_INT_VEC4         :return GL_INT;
-        case GL_UNSIGNED_INT     :return GL_UNSIGNED_INT;
-        case GL_UNSIGNED_INT_VEC2:return GL_UNSIGNED_INT;
-        case GL_UNSIGNED_INT_VEC3:return GL_UNSIGNED_INT;
-        case GL_UNSIGNED_INT_VEC4:return GL_UNSIGNED_INT;
-        case GL_BOOL             :return GL_BOOL;
-        case GL_BOOL_VEC2        :return GL_BOOL;
-        case GL_BOOL_VEC3        :return GL_BOOL;
-        case GL_BOOL_VEC4        :return GL_BOOL;
-        default                  :return GL_FLOAT;//GL_FALSE glbinding...
-      }
-    }
-
-    GLint ProgramObject::complexType2Size(GLenum type){
-      switch(type){
-        case GL_FLOAT            :return 1;
-        case GL_FLOAT_VEC2       :return 2;
-        case GL_FLOAT_VEC3       :return 3;
-        case GL_FLOAT_VEC4       :return 4;
-        case GL_DOUBLE           :return 1;
-        case GL_DOUBLE_VEC2      :return 2;
-        case GL_DOUBLE_VEC3      :return 3;
-        case GL_DOUBLE_VEC4      :return 4;
-        case GL_INT              :return 1;
-        case GL_INT_VEC2         :return 2;
-        case GL_INT_VEC3         :return 3;
-        case GL_INT_VEC4         :return 4;
-        case GL_UNSIGNED_INT     :return 1;
-        case GL_UNSIGNED_INT_VEC2:return 2;
-        case GL_UNSIGNED_INT_VEC3:return 3;
-        case GL_UNSIGNED_INT_VEC4:return 4;
-        case GL_BOOL             :return 1;
-        case GL_BOOL_VEC2        :return 2;
-        case GL_BOOL_VEC3        :return 3;
-        case GL_BOOL_VEC4        :return 4;
-        default:return 0;
-      }
-    }
   }//gl
 }//ge
 
