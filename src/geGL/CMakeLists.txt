@@ -37,6 +37,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ShaderObjectsCommands.h
     ${HEADER_PATH}/ShaderObjectsManager.h
     ${HEADER_PATH}/AsynchronousQueryObject.h
+    ${HEADER_PATH}/DebugMessage.h
   )
 
 set(GL_SOURCES
@@ -72,6 +73,7 @@ set(GL_SOURCES
     ShaderObjectsCommands.cpp
     ShaderObjectsManager.cpp
     AsynchronousQueryObject.cpp
+    DebugMessage.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}
