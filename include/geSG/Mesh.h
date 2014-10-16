@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <geSG/Array.h>
-#include <geSG/AttribDataReference.h>
+#include <geSG/AttribsDataReference.h>
 #include <geSG/Node.h>
 
 namespace ge

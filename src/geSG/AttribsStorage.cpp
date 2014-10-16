@@ -1,6 +1,6 @@
 #include <iostream> // for cerr
 #include <geSG/AttribsStorage.h>
-#include <geSG/AttribDataReference.h>
+#include <geSG/AttribsDataReference.h>
 
 using namespace ge::sg;
 using namespace std;

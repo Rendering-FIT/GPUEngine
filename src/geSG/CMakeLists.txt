@@ -5,7 +5,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Array.h
-    ${HEADER_PATH}/AttribDataReference.h
+    ${HEADER_PATH}/AttribsDataReference.h
     ${HEADER_PATH}/AttribsStorage.h
     ${HEADER_PATH}/AttribsManager.h
     ${HEADER_PATH}/Node.h
