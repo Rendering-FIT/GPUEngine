@@ -32,7 +32,7 @@ namespace ge
          int8_t _colorAttribIndex;
          int8_t _texCoordAttribIndex;
 
-         AttribDataReference _attribDataReference;
+         AttribsDataReference _attribsDataReference;
 
       public:
 

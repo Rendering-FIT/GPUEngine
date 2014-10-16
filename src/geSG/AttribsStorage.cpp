@@ -1,12 +1,12 @@
 #include <iostream> // for cerr
-#include <geSG/AttribObject.h>
+#include <geSG/AttribsStorage.h>
 #include <geSG/AttribDataReference.h>
 
 using namespace ge::sg;
 using namespace std;
 
 
-AttribObject::AttribObject()
+AttribsStorage::AttribsStorage()
 {
    // zero element is reserved for invalid object
    // and it serves as Null object (Null object design pattern)
@@ -15,15 +15,15 @@ AttribObject::AttribObject()
 }
 
 
-bool AttribObject::allocData(AttribDataReference *r,int numVertices,int numIndices)
+bool AttribsStorage::allocData(AttribsDataReference *r,int numVertices,int numIndices)
 {
-   // allocate memory for vertices (inside AttribObject preallocated memory or buffers)
+   // allocate memory for vertices (inside AttribsStorage's preallocated memory or buffers)
    unsigned verticesDataId=_verticesDataAllocationMap.size();
    _verticesDataAllocationMap.emplace_back(_firstVertexAvailableAtTheEnd,numVertices,r,0);
    _verticesDataAllocationMap[_idOfVerticesBlockAtTheEnd].nextRec=verticesDataId;
    _idOfVerticesBlockAtTheEnd=verticesDataId;
 
-   // allocate memory for indices (inside AttribObject preallocated memory or buffers)
+   // allocate memory for indices (inside AttribsStorage's preallocated memory or buffers)
    unsigned indicesDataId;
    if(numIndices==0)
       indicesDataId=0;
@@ -35,18 +35,18 @@ bool AttribObject::allocData(AttribDataReference *r,int numVertices,int numIndic
       _idOfIndicesBlockAtTheEnd=indicesDataId;
    }
 
-   // update AttribDataReference
-   if(r->attribObject!=NULL)
+   // update AttribsDataReference
+   if(r->attribsStorage!=NULL)
    {
-      cerr<<"Error: calling AttribObject::allocData() on AttribDataReference\n"
+      cerr<<"Error: calling AttribsStorage::allocData() on AttribsDataReference\n"
             "   that is not empty." << endl;
       r->freeData();
    }
-   r->attribObject=this;
+   r->attribsStorage=this;
    r->verticesDataId=verticesDataId;
    r->indicesDataId=indicesDataId;
 
-   // update AttribObject internal allocation variables
+   // update AttribsStorage internal allocation variables
    _numVerticesAvailable-=numVertices;
    _numVerticesAvailableAtTheEnd-=numVertices;
    _firstVertexAvailableAtTheEnd+=numVertices;
@@ -58,34 +58,34 @@ bool AttribObject::allocData(AttribDataReference *r,int numVertices,int numIndic
 
 /** Changes the number of allocated elements or indices.
  *
- *  Parameter r contains the reference to AttribDataReference holding allocation information.
+ *  Parameter r contains the reference to AttribsDataReference holding allocation information.
  *  numVertices and numIndices are the new number of elements in vertex and index arrays.
  *  If preserveContent parameter is true, the content of element and index data will be preserved.
  *  If new data are larger, the content over the size of previous data is undefined.
  *  If new data are smaller, only the data up to the new data size is preserved.
  *  If preserveContent is false, content of element and index data are undefined.
  */
-bool AttribObject::reallocData(AttribDataReference *r,int numVertices,int numIndices,bool preserveContent)
+bool AttribsStorage::reallocData(AttribsDataReference *r,int numVertices,int numIndices,bool preserveContent)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
    // - if new arrays are bigger and can be enlarged on the place, we do it
-   // - otherwise we try to allocate new place for the data in the same AttribObject
-   // - if we do not succeed in the current AttribObject, we move the data to
-   //   some other AttribObject
-   // - if no AttribObject accommodate us, we allocate new AttribObject
+   // - otherwise we try to allocate new place for the data in the same AttribsStorage
+   // - if we do not succeed in the current AttribsStorage, we move the data to
+   //   some other AttribsStorage
+   // - if no AttribsStorage accommodate us, we allocate new AttribsStorage
 
    // FIXME: not implemented yet
 }
 
 
-void AttribObject::freeData(AttribDataReference *r)
+void AttribsStorage::freeData(AttribsDataReference *r)
 {
-   // check whether this attribObject owns given AttribDataReference
-   if(r->attribObject!=this)
+   // check whether this attribsStorage owns given AttribsDataReference
+   if(r->attribsStorage!=this)
    {
-      cerr<<"Error: calling AttribObject::freeData() on AttribDataReference\n"
-            "   that is not managed by this AttribObject."<<endl;
+      cerr<<"Error: calling AttribsStorage::freeData() on AttribsDataReference\n"
+            "   that is not managed by this AttribsStorage."<<endl;
       return;
    }
 
@@ -98,6 +98,6 @@ void AttribObject::freeData(AttribDataReference *r)
       ab.owner=NULL;
    }
 
-   // update AttribDataReference
-   r->attribObject=NULL;
+   // update AttribsDataReference
+   r->attribsStorage=NULL;
 }
