@@ -3,18 +3,15 @@ if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
 endif()
 
 
-set(APP_NAME EmptyWindow)
+set(APP_NAME geViewer)
 
 project(${APP_NAME})
 
 set(APP_SOURCES
-  src/main.cpp 
-  src/shaderdir.cpp
+  main.cpp
   )
 
 set(APP_INCLUDES
-  src/main.h
-  src/shaderdir.h
   )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
