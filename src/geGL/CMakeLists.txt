@@ -82,9 +82,6 @@ ADD_LIBRARY(${LIB_NAME}
     ${GL_SOURCES}
   )
 
-find_package(GLEW   REQUIRED)
-find_package(OPENGL REQUIRED)
-
 include_directories(${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} geCore)
 

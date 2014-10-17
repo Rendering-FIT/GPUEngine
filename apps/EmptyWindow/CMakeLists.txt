@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.0)
+if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+   return()
+endif()
 
 
-set(APP_NAME EmptyWindow.bin)
+set(APP_NAME EmptyWindow)
 
 project(${APP_NAME})
 
@@ -15,34 +17,22 @@ set(APP_INCLUDES
   src/shaderdir.h
   )
 
-SET(CMAKE_MODULE_PATH "CMakeModules;${CMAKE_MODULE_PATH}")
-
-find_package(GLEW        REQUIRED)
-find_package(OPENGL      REQUIRED)
-find_package(SDL2        REQUIRED)
-find_package(AntTweakBar REQUIRED)
-find_package(geGL        REQUIRED)
-find_package(geUtil      REQUIRED)
-
-
-
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 include_directories(
-  ${GEUTIL_INCLUDE_PATH} 
-  ${GEGL_INCLUDE_PATH} 
   ${GLEW_INCLUDE_PATH} 
   ${OPENGL_INCLUDE_PATH} 
   ${SDL2_INCLUDE_PATH} 
   ${ANTTWEAKBAR_INCLUDE_PATH}
   )
+
 target_link_libraries(${APP_NAME} 
+  geGL
+  geUtil
   ${GEUTIL_LIBRARY}
   ${GEGL_LIBRARY}
   ${GLEW_LIBRARY} 
-  ${OPENGL_LIBRARY} 
-  ${SDL2_LIBRARY} 
+  ${OPENGL_LIBRARY}
+  ${SDL2_LIBRARY}
   ${ANTTWEAKBAR_LIBRARY}
   )
-
-

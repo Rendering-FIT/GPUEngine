@@ -1,3 +1,4 @@
+#include <limits>
 #include"main.h"
 
 void Init();
