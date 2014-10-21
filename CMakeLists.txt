@@ -46,8 +46,14 @@ ELSE ()
     ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
 ENDIF()
 
+FIND_PACKAGE(OPENGL      REQUIRED)
+FIND_PACKAGE(GLEW        REQUIRED)
+FIND_PACKAGE(SDL2)
+FIND_PACKAGE(AntTweakBar)
+
 INCLUDE_DIRECTORIES(
     ${GPUEngine_SOURCE_DIR}/include
   )
 
 add_subdirectory(src)
+add_subdirectory(apps)

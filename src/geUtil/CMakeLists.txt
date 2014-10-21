@@ -1,5 +1,7 @@
 set(LIB_NAME geUtil)
 
+project(${LIB_NAME})
+
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
   ${HEADER_PATH}/ArgumentObject.h

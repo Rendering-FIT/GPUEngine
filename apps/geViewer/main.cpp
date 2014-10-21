@@ -1,16 +1,22 @@
-#include <limits>
-#include"main.h"
+#include <string>
+#include <GL/glew.h>
+#include <geGL/DebugMessage.h>
+#include <geUtil/WindowObject.h>
+#include <geUtil/ArgumentObject.h>
+
 
 void Init();
 void Idle();
 void Mouse();
 void Wheel(int d);
 
+
 struct SContextParam{
   unsigned    Version;
   std::string Profile;
   std::string Flag;
 }ContextParam;
+
 
 struct SWindowParam{
   unsigned Size[2];
@@ -21,14 +27,13 @@ struct SWindowParam{
 bool DisableAnttweakbar=true;
 ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
-//NDormon::CVertexArray*EmptyVAO;
 
-int main(int Argc,char*Argv[]){
+
+int main(int Argc,char*Argv[])
+{
   Args=new ge::util::ArgumentObject(Argc,Argv);
 
-  ShaderDir=Args->getArg("--shader-directory","");
-
-  DisableAnttweakbar=Args->isPresent("--disable-anttweakbar");
+  DisableAnttweakbar=true;
 
   //window args
   WindowParam.Size[0]    = atoi(Args->getArg("-w","800").c_str());
@@ -56,8 +61,6 @@ int main(int Argc,char*Argv[]){
 
   ge::gl::setDefaultDebugMessage();
 
-  //EmptyVAO=new NDormon::CVertexArray();
-
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glDisable(GL_CULL_FACE);
@@ -69,18 +72,20 @@ int main(int Argc,char*Argv[]){
   return 0;
 }
 
+
 void Mouse(){
 }
 
+
 void Wheel(int d){
 }
+
 
 void Idle(){
   Window->swap();
 }
 
+
 void Init(){
 
 }
-
-
