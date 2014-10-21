@@ -329,7 +329,8 @@ namespace ge{
       GLint param;
 #ifndef USE_DSA
       GLuint oldId;
-      glGetTexParameteriv(this->getTarget(),textureTarget2Binding(this->getTarget()),(GLint*)&oldId);
+      GLenum target=this->getTarget();
+      glGetTexParameteriv(target,textureTarget2Binding(target),(GLint*)&oldId);
       glBindTexture(GL_TEXTURE_2D,this->_id);
       glGetTexLevelParameteriv(GL_TEXTURE_2D,level,pname,&param);
       glBindTexture(GL_TEXTURE_2D,oldId);
@@ -363,7 +364,8 @@ namespace ge{
       GLint param;
 #ifndef USE_DSA
       GLuint oldId;
-      glGetTexParameteriv(this->getTarget(),textureTarget2Binding(this->getTarget()),(GLint*)&oldId);
+      GLenum target=this->getTarget();
+      glGetTexParameteriv(target,textureTarget2Binding(target),(GLint*)&oldId);
       glBindTexture(GL_TEXTURE_2D,this->_id);
       glGetTexParameteriv(GL_TEXTURE_2D,pname,&param);
       glBindTexture(GL_TEXTURE_2D,oldId);

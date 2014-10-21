@@ -472,6 +472,74 @@ namespace ge{
       //unbind buffer from clearbuffer binding point
       glBindBuffer(BUFFEROBJECT_DEFAULT_CLEARBUFFER,BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
     }
+    GLint BufferObject::getParameter(GLenum pname){
+      GLint param;
+#ifndef USE_DSA
+      GLuint oldId;
+      glGetIntegerv(GL_ARRAY_BUFFER_BINDING,(GLint*)&oldId);
+      glBindBuffer(GL_ARRAY_BUFFER,this->_id);
+      glGetBufferParameteriv(GL_ARRAY_BUFFER,pname,&param);
+      glBindBuffer(GL_ARRAY_BUFFER,oldId);
+#else //USE_DSA
+      glGetNamedBufferParameteriv(this->_id,pname,&param);
+#endif//USE_DSA
+      return param;
+    }
+    GLuint BufferObject::getId(){
+      return this->_id;
+    }
+    void*BufferObject::map(
+        GLenum target,
+        GLenum access){
+		  glBindBuffer(target,this->_id);//bind buffer to target
+		  return glMapBuffer(target,access);//return mapped buffer
+    }
+    void*BufferObject::map(
+        GLenum     target,
+        GLintptr   offset,
+        GLsizeiptr length,
+        GLbitfield access){
+		  glBindBuffer(target,this->_id);//bind buffer to target
+		  return glMapBufferRange(target,offset,length,access);//return mapped region
+    }
+    void BufferObject::unmap(
+        GLenum target){
+		  glUnmapBuffer(target);//unmap buffer
+		  glBindBuffer(target,0);//unbind buffer
+    }
+    void BufferObject::setData(
+        GLvoid     *data,
+        GLsizeiptr  size,
+        GLintptr    offset){
+      if(size==BUFFEROBJECT_DEFAULT_OFFSET)
+        size=this->_size;
+#ifndef USE_DSA
+      GLuint oldId;
+      glGetIntegerv(GL_ARRAY_BUFFER_BINDING,(GLint*)&oldId);
+      glBindBuffer(GL_ARRAY_BUFFER,this->_id);//bind buffer
+  		glBufferSubData(GL_ARRAY_BUFFER,offset,size,data);//copy data
+		  glBindBuffer(GL_ARRAY_BUFFER,oldId);//unbin buffer
+#else //USE_DSA
+      glNamedBufferSubData(this->_id,offset,size,data);
+#endif//USE_DSA
+
+    }
+    void BufferObject::getData(
+        GLvoid     *data,
+        GLsizeiptr  size,
+        GLintptr    offset){
+      if(size==BUFFEROBJECT_DEFAULT_OFFSET)
+        size=this->_size;
+#ifndef USE_DSA
+      GLuint oldId;
+      glGetIntegerv(GL_ARRAY_BUFFER_BINDING,(GLint*)&oldId);
+      glBindBuffer(GL_ARRAY_BUFFER,this->_id);//bind buffer
+      glGetBufferSubData(GL_ARRAY_BUFFER,offset,size,data);//obtain data
+      glBindBuffer(GL_ARRAY_BUFFER,oldId);//unbin buffer
+#else //USE_DSA
+      glGetNamedBufferSubData(this->_id,offset,size,data);
+#endif//USE_DSA
+    }
   }
 }
 
