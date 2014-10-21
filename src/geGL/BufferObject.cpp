@@ -511,7 +511,7 @@ namespace ge{
         GLvoid     *data,
         GLsizeiptr  size,
         GLintptr    offset){
-      if(size==BUFFEROBJECT_DEFAULT_OFFSET)
+      if(size==BUFFEROBJECT_DEFAULT_SIZE)
         size=this->_size;
 #ifndef USE_DSA
       GLuint oldId;
@@ -528,7 +528,7 @@ namespace ge{
         GLvoid     *data,
         GLsizeiptr  size,
         GLintptr    offset){
-      if(size==BUFFEROBJECT_DEFAULT_OFFSET)
+      if(size==BUFFEROBJECT_DEFAULT_SIZE)
         size=this->_size;
 #ifndef USE_DSA
       GLuint oldId;
