@@ -485,6 +485,9 @@ namespace ge{
 #endif//USE_DSA
       return param;
     }
+    GLsizeiptr BufferObject::getSize(){
+      return this->_size;
+    }
     GLuint BufferObject::getId(){
       return this->_id;
     }

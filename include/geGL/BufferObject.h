@@ -129,8 +129,8 @@ namespace ge{
         virtual void operator &=(BufferObject*buffer);
 
         inline void* data(){ return _data; }
-        inline GLsizeiptr getSize();
-        inline GLuint     getId  ();
+        GLsizeiptr getSize();
+        GLuint     getId  ();
     };
 
 
