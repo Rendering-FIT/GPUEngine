@@ -176,7 +176,7 @@ namespace ge{
       this->addAttrib(
           buffer->getId(),
           index,
-          stride,
+          size,
           type,
           stride,
           pointer,
