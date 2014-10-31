@@ -25,6 +25,7 @@ include_directories(
 
 target_link_libraries(${APP_NAME} 
   geGL
+  geSG
   geUtil
   ${GLEW_LIBRARY} 
   ${OPENGL_LIBRARY}

@@ -1,60 +1,103 @@
-#ifndef GE_SG_ATTRIB_OBJECT_H
-#define GE_SG_ATTRIB_OBJECT_H
+#ifndef GE_SG_ATTRIBS_STORAGE_H
+#define GE_SG_ATTRIBS_STORAGE_H
 
 #include <memory>
 #include <vector>
+#include <geSG/Export.h>
+#include <geSG/AttribsConfig.h>
 
 namespace ge
 {
    namespace sg
    {
-      class AttribsDataReference;
+      class AttribsReference;
       class Mesh;
 
-      class AttribsStorage {
+      /** AttribsStorage class maintains vertex attributes of many scene objects
+       *  in a single OpenGL vertex array object (VAO).
+       *
+       *  It is benefical to store all the vertex attributes in few AttribsStorage
+       *  objects because they can be drawn by a single draw command and handled
+       *  together by various scene processing algorithms instead of processing
+       *  many small VAOs separately, introducing smaller of bigger amount of overhead.
+       *
+       *  Each AttribsStorage object can store vertex attributes of the same format only.
+       *  For instance, vertex attributes composed of coordinates and colors are
+       *  stored in different AttribsStorage than vertex attributes composed of
+       *  coordinates, normals and texture coordinates. Format of a particular
+       *  attribute must be the same too. For instance, colors stored as RGBA8
+       *  are stored in different AttribsStorage than colors stored as three floats.
+       *
+       *  AttribsStorage is expected to be used with one graphics context only and
+       *  that context is expected to be current when working with the AttribsStorage.
+       *  The easiest rule is that whenever you are processing your scene graph
+       *  and perform any changes that may change the scene geometry, including adding
+       *  and removing objects, have your graphics context current.
+       *
+       *  Constructor require graphics context current to allocate internal VAO
+       *  and other OpenGL objects. Destructor requires it to delete these OpenGL objects.
+       *  However, there is a difficulty as the graphics context may be destroyed because of
+       *  various reasons, including closing of the window or power-saving reasons
+       *  on mobile devices. In such cases, the user is expected to call
+       *  AttribsManager::contextLost() before any further scene graph processing.
+       *  AttribsManager::contextLost() will forward the call to all AttribsStorages,
+       *  calling their contextLost(). This will clear all internal structures
+       *  as if no data would be uploaded to graphics context yet. This could be performed
+       *  even without active graphics context, after it was lost or destroyed.
+       *  Depending on user choose, he might decide to recreate the graphics
+       *  context and reinitialize attribute data, for instance, by reloading
+       *  model files, or he might safely start to tear down the application that
+       *  is in consistent state after calling AttribsManager::contextLost().
+       *
+       *  For more details, which methods can be called without active graphics context
+       *  refer to the documentation to each of the object's methods.
+       *
+       *  \sa AttribsManager, AttribsReference, Mesh::getAttribsConfig(), Mesh::getAttribsConfigId()
+       */
+      class GE_EXPORT AttribsStorage {
       protected:
 
-         unsigned _mode;
+         unsigned _numVerticesTotal;              ///< Total number of vertices that can be allocated in this AttribsStorage.
+         unsigned _numVerticesAvailable;          ///< Number of vertices that are available in this AttribsStorage.
+         unsigned _numVerticesAvailableAtTheEnd;  ///< Number of vertices that are available at the end of AttribsStorage.
+         unsigned _firstVertexAvailableAtTheEnd;  ///< Index of the first available vertex at the end of AttribsStorage.
+         unsigned _idOfVerticesBlockAtTheEnd;     ///< Id (index to _verticesDataAllocationMap) of the last allocated block at the end of AttribsStorage.
+         unsigned _numIndicesTotal;               ///< Total number of indices that can be allocated in this AttribsStorage.
+         unsigned _numIndicesAvailable;           ///< Number of indices that are available in this AttribsStorage.
+         unsigned _numIndicesAvailableAtTheEnd;   ///< Number of indices that are available at the end of AttribsStorage.
+         unsigned _firstIndexAvailableAtTheEnd;   ///< Index of the first available index at the end of AttribsStorage.
+         unsigned _idOfIndicesBlockAtTheEnd;      ///< Id (index to _indicesDataAllocationMap) of the last allocated block at the end of AttribsStorage.
 
-         unsigned _vertexDataSize;
-         unsigned _numVerticesTotal;
-         unsigned _numVerticesAvailable;
-         unsigned _numVerticesAvailableAtTheEnd;
-         unsigned _firstVertexAvailableAtTheEnd;
-         unsigned _idOfVerticesBlockAtTheEnd;
-         unsigned _numIndicesTotal;
-         unsigned _numIndicesAvailable;
-         unsigned _numIndicesAvailableAtTheEnd;
-         unsigned _firstIndexAvailableAtTheEnd;
-         unsigned _idOfIndicesBlockAtTheEnd;
-
+         /** AllocationBlock represents single allocation block of memory.
+          *  It is used by AttribsStorage internal Vertex Array Object (VAO) memory management
+          *  of vertices and indices.
+          */
          struct AllocationBlock {
-            unsigned startIndex;  //< Start of block. Real offset is the buffer is startIndex*sizeof(Element).
-            unsigned numElements; //< Number of elements in the block. Real size is numElements*sizeof(Element).
-            AttribsDataReference *owner; //< AttribsDataReference that owns the allocated block. Null indicates free block.
-            unsigned nextRec;     //< Index of AllocationBlock whose allocated memory follows the current block's
-                                  //< memory. Order of AllocationBlocks stored in std::vector<AllocationBlock>
-                                  //< often does not correspond with the order of their memory placements.
-                                  //< nextRec is index to the std::vector<AllocationBlock> and points
-                                  //< to the AllocationBlock whose allocated memory follows the current one.
-            inline AllocationBlock(unsigned start,unsigned num, AttribsDataReference *ref, unsigned next)
-               : startIndex(start), numElements(num), owner(ref), nextRec(next) {}
+            unsigned startIndex;   ///< Index of the start of the block. The real offset is startIndex multiplied by the size of the underlying array element.
+            unsigned numElements;  ///< Number of elements in the block. The real size is numElements multiplied by the size of the underlying array element.
+            AttribsReference *owner;  ///< AttribsReference that owns the allocated block. Null indicates free block.
+            unsigned nextRec;      ///< \brief Index of AllocationBlock whose allocated memory follows the current block's memory.
+            inline AllocationBlock(unsigned start,unsigned num, AttribsReference *ref, unsigned next)
+               : startIndex(start), numElements(num), owner(ref), nextRec(next) {}  ///< Constructs structure by given values.
          };
-         std::vector<AllocationBlock> _verticesDataAllocationMap;
-         std::vector<AllocationBlock> _indicesDataAllocationMap;
+         std::vector<AllocationBlock> _verticesDataAllocationMap;  ///< Allocation map of blocks of vertices.
+         std::vector<AllocationBlock> _indicesDataAllocationMap;   ///< Allocation map of blocks of indices.
+         AttribsConfig _attribsConfig;      ///< Configuration and formats of OpenGL attributes stored in this AttribsStorage.
+         AttribsConfigId _attribsConfigId;  ///< \brief Id of one of frequently used attribute configurations.
 
       public:
 
-         AttribsStorage();
+         AttribsStorage() = delete;
+         AttribsStorage(const AttribsConfig &config,unsigned numVertices,unsigned numIndices);
          virtual ~AttribsStorage();
 
-         virtual bool allocData(AttribsDataReference *r,int numVertices,int numIndices);
-         virtual bool reallocData(AttribsDataReference *r,int numVertices,int numIndices,bool preserveContent=true);
-         virtual void freeData(AttribsDataReference *r);
-         virtual void uploadVertexData(AttribsDataReference *r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
-         virtual int uploadVertexData(AttribsDataReference *r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
-         virtual void uploadIndicesData(AttribsDataReference *r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
-         virtual int uploadIndicesData(AttribsDataReference *r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
+         virtual bool allocData(AttribsReference &r,int numVertices,int numIndices);
+         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,bool preserveContent=true);
+         virtual void freeData(AttribsReference &r);
+         virtual void uploadVertexData(AttribsReference &r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
+         virtual int uploadVertexData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
+         virtual void uploadIndicesData(AttribsReference &r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
+         virtual int uploadIndicesData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
 
          inline unsigned getVertexDataSize() const;
          inline unsigned getNumVerticesTotal() const;
@@ -86,7 +129,6 @@ namespace ge
 
 
       // inline and template methods
-      inline unsigned AttribsStorage::getVertexDataSize() const  { return _vertexDataSize; }
       inline unsigned AttribsStorage::getNumVerticesTotal() const  { return _numVerticesTotal; }
       inline unsigned AttribsStorage::getNumVerticesAvailable() const  { return _numVerticesAvailable; }
       inline unsigned AttribsStorage::getNumVerticesAvailableAtTheEnd() const  { return _numVerticesAvailableAtTheEnd; }
@@ -107,4 +149,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_ATTRIB_OBJECT_H
+#endif // GE_SG_ATTRIBS_STORAGE_H

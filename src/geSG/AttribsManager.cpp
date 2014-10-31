@@ -1,13 +1,22 @@
 #include <iostream> // for cerr
 #include <geSG/AttribsManager.h>
-#include <geSG/AttribsDataReference.h>
+#include <geSG/AttribsReference.h>
 #include <geSG/AttribsStorage.h>
 
 using namespace ge::sg;
 using namespace std;
 
 
-bool AttribsManager::allocData(AttribsDataReference *r,int numVertices,int numIndices,uint16_t attribConfigId)
+shared_ptr<AttribsManager> AttribsManager::_instance;
+
+
+
+AttribsManager::~AttribsManager()
+{
+}
+
+
+bool AttribsManager::allocData(AttribsReference &r,int numVertices,int numIndices,uint16_t attribConfigId)
 {
    // get AttribsStorage or AttribsStorages with particular attribConfigID
    auto itRange=getAttribsStorages(attribConfigId);
@@ -45,14 +54,14 @@ bool AttribsManager::allocData(AttribsDataReference *r,int numVertices,int numIn
 
 /** Changes the number of allocated elements or indices.
  *
- *  Parameter r contains the reference to AttribsDataReference holding allocation information.
+ *  Parameter r contains the reference to AttribsReference holding allocation information.
  *  numVertices and numIndices are the new number of elements in vertex and index arrays.
  *  If preserveContent parameter is true, the content of element and index data will be preserved.
  *  If new data are larger, the content over the size of previous data is undefined.
  *  If new data are smaller, only the data up to the new data size is preserved.
  *  If preserveContent is false, content of element and index data are undefined.
  */
-bool AttribsManager::reallocData(AttribsDataReference *r,int numVertices,int numIndices,bool preserveContent)
+bool AttribsManager::reallocData(AttribsReference &r,int numVertices,int numIndices,bool preserveContent)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
@@ -66,14 +75,34 @@ bool AttribsManager::reallocData(AttribsDataReference *r,int numVertices,int num
 }
 
 
-void AttribsManager::freeData(AttribsDataReference *r)
+void AttribsManager::freeData(AttribsReference &r)
 {
-   // ignore empty AttribsDataReferences
-   if(r->attribsStorage==NULL)
+   // ignore empty AttribsReferences
+   if(r.attribsStorage==NULL)
       return;
 
    // free data
-   r->attribsStorage->freeData(r);
+   r.attribsStorage->freeData(r);
+}
+
+
+void AttribsManager::uploadVertexData(AttribsReference &r,Mesh *mesh,int fromIndex,int numVertices)
+{
+}
+
+
+int AttribsManager::uploadVertexData(AttribsReference &r,Mesh *mesh,unsigned &currentPosition,int bytesToUpload)
+{
+}
+
+
+void AttribsManager::uploadIndicesData(AttribsReference &r,Mesh *mesh,int fromIndex,int numIndices)
+{
+}
+
+
+int AttribsManager::uploadIndicesData(AttribsReference &r,Mesh *mesh,unsigned &currentPosition,int bytesToUpload)
+{
 }
 
 

@@ -1,8 +1,11 @@
 #include <string>
 #include <GL/glew.h>
 #include <geGL/DebugMessage.h>
+#include <geSG/AttribsReference.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
+
+using namespace ge::sg;
 
 
 void Init();
@@ -27,6 +30,7 @@ struct SWindowParam{
 bool DisableAnttweakbar=true;
 ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
+//ge::gl::ProgramObject;
 
 
 int main(int Argc,char*Argv[])
@@ -57,6 +61,7 @@ int main(int Argc,char*Argv[])
       ContextParam.Flag);
 
   glewExperimental=GL_TRUE;
+//  ge::gl::init
   glewInit();
 
   ge::gl::setDefaultDebugMessage();
@@ -80,6 +85,7 @@ void Mouse(){
 void Wheel(int d){
 }
 
+static AttribsReference attribsRef;
 
 void Idle(){
   Window->swap();
@@ -87,5 +93,5 @@ void Idle(){
 
 
 void Init(){
-
+   AttribsManager::instance()->allocData(attribsRef,3,3,0x401);
 }
