@@ -10,6 +10,7 @@ namespace ge
 {
    namespace sg
    {
+      class Array;
       class AttribsReference;
       class Mesh;
 
@@ -83,7 +84,6 @@ namespace ge
          std::vector<AllocationBlock> _verticesDataAllocationMap;  ///< Allocation map of blocks of vertices.
          std::vector<AllocationBlock> _indicesDataAllocationMap;   ///< Allocation map of blocks of indices.
          AttribsConfig _attribsConfig;      ///< Configuration and formats of OpenGL attributes stored in this AttribsStorage.
-         AttribsConfigId _attribsConfigId;  ///< \brief Id of one of frequently used attribute configurations.
 
       public:
 
@@ -92,12 +92,21 @@ namespace ge
          virtual ~AttribsStorage();
 
          virtual bool allocData(AttribsReference &r,int numVertices,int numIndices);
-         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,bool preserveContent=true);
+         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,
+                                  bool preserveContent=true);
          virtual void freeData(AttribsReference &r);
-         virtual void uploadVertexData(AttribsReference &r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
-         virtual int uploadVertexData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
-         virtual void uploadIndicesData(AttribsReference &r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
-         virtual int uploadIndicesData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
+         virtual void uploadVertexData(AttribsReference &r,const std::vector<Array>& attribs,
+                                       int fromIndex=0,int numVertices=-1) = 0;
+         virtual void uploadVertexData(AttribsReference &r,Mesh* mesh,
+                                       int fromIndex=0,int numVertices=-1) = 0;
+         virtual int uploadVertexData(AttribsReference &r,Mesh* mesh,
+                                      unsigned &currentPosition,int bytesToUpload) = 0;
+         virtual void uploadIndicesData(AttribsReference &r,const Array& indices,
+                                        int fromIndex=0,int numVertices=-1) = 0;
+         virtual void uploadIndicesData(AttribsReference &r,Mesh* mesh,
+                                        int fromIndex=0,int numVertices=-1) = 0;
+         virtual int uploadIndicesData(AttribsReference &r,Mesh* mesh,
+                                       unsigned &currentPosition,int bytesToUpload) = 0;
 
          inline unsigned getVertexDataSize() const;
          inline unsigned getNumVerticesTotal() const;
@@ -115,9 +124,12 @@ namespace ge
          inline const std::vector<AllocationBlock>& getVerticesDataAllocationMap() const;
          inline const std::vector<AllocationBlock>& getIndicesDataAllocationMap() const;
 
+         virtual void cancelAllAllocations();
+
          class Factory {
          public:
-            virtual AttribsStorage* create() = 0;
+            virtual std::shared_ptr<AttribsStorage> create(const AttribsConfig &config,
+                                                           unsigned numVertices,unsigned numIndices) = 0;
          };
          static inline std::shared_ptr<Factory>& getFactory();
          static inline void setFactory(std::shared_ptr<Factory>& f);

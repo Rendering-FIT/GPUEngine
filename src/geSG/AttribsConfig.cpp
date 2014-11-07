@@ -3,9 +3,9 @@
 using namespace ge::sg;
 
 
-AttribsConfigId AttribsConfig::convertToId() const
+AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
 {
-   unsigned configSize=this->size();
+   unsigned configSize=attribsConfig.size();
    if(configSize>5||configSize<=1)
       return 0;
 
@@ -18,7 +18,7 @@ AttribsConfigId AttribsConfig::convertToId() const
    // If they are used, they required EBO to use UNSIGNED_INT type.
    //
    // Indices occupy bit 10 of the returned integer.
-   if(ebo)  r|=0x400;
+   if(attribsConfig.ebo)  r|=0x400;
 
    // coordinates
    //
@@ -26,7 +26,7 @@ AttribsConfigId AttribsConfig::convertToId() const
    // and we expect that they are always specified.
    //
    // Coordinates occupies bits 0 and 1 of the returned integer.
-   t=(*this)[0];
+   t=attribsConfig[0];
    if(t==AttribType::Vec3)  r|=0x1;
    else if(t==AttribType::Vec4)  r|=0x2;
    else if(t==AttribType::Vec2)  r|=0x3;
@@ -43,7 +43,7 @@ AttribsConfigId AttribsConfig::convertToId() const
    //
    // TexCoords occupies bits 8 and 9 of the returned integer.
    unsigned texCoordPossibleIndex=configSize-2;
-   t=(*this)[texCoordPossibleIndex];
+   t=attribsConfig[texCoordPossibleIndex];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec2)  r|=0x100;
    else if(t==AttribType::HVec2)  r|=0x200;
@@ -62,7 +62,7 @@ AttribsConfigId AttribsConfig::convertToId() const
    //
    // Normals occupies bits 2 and 3 of the returned integer.
    bool normalsFound=true;
-   t=(*this)[1];
+   t=attribsConfig[1];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec3)  r|=0x4;
    else if(t==AttribType::HVec3)  r|=0x8;
@@ -80,7 +80,7 @@ AttribsConfigId AttribsConfig::convertToId() const
    // Index 1 must be used if there are no normals, index 2 must be used when normals are in use.
    //
    // Color occupies bits 4,5 and 6 of the returned integer.
-   t=(*this)[normalsFound?2:1];
+   t=attribsConfig[normalsFound?2:1];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec3)  r|=0x10;
    else if(t==AttribType::Vec4)  r|=0x20;
@@ -88,10 +88,28 @@ AttribsConfigId AttribsConfig::convertToId() const
    else if(t==AttribType::HVec4)  r|=0x40;
    else if(t==AttribType::UBVec3)  r|=0x50;
    else if(t==AttribType::UBVec4)  r|=0x60;
-   //else if(t==ArrayAdapter::makeType(ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8,1)  r|=0x1c0;
-   //else if(t==ArrayAdapter::makeType(ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8_REV,1)  r|=0x200;
-   //else if(t==ArrayAdapter::makeType(ArrayAdapter::GLType::UNSIGNED_BYTE,ArrayAdapter::BGRA)  r|=0x240;
+   //else if(t==Array::makeType(ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8,1)  r|=0x1c0;
+   //else if(t==Array::makeType(ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8_REV,1)  r|=0x200;
+   //else if(t==Array::makeType(ArrayAdapter::GLType::UNSIGNED_BYTE,ArrayAdapter::BGRA)  r|=0x240;
    else return 0;
 
    return r;
 }
+
+
+// AttribsStorage::_attribsConfigId documentation
+// note: brief description is with the variable declaration
+/** \var AttribsStorage::AttribsConfigId AttribsStorage::_attribsConfigId
+ *
+ *  If it is non-zero, _attribsConfig contains one of known frequently used
+ *  attribute configurations. Thus, optimized routines may be used for
+ *  operations with attribute configurations such as comparison or lookups,
+ *  as it is just comparison of integers or lookup by integer.
+ *
+ *  If the value is zero, all operations with attribute configurations
+ *  have to be performed using _attribsConfig. _attribsConfig is vector
+ *  of values storing details about each attribute configuration.
+ *
+ *  If one AttribsStorage has _attribConfig zero and the second non-zero,
+ *  they always contain different attribute configurations.
+ */

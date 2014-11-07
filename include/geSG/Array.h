@@ -122,6 +122,11 @@ namespace ge
       public:
          virtual void accept(int index,ValueVisitor& visitor) = 0;
          virtual void accept(ArrayVisitor& visitor) = 0;
+
+         virtual void* data() = 0;
+         virtual const void* data() const = 0;
+
+         virtual std::size_t size() const = 0;
       };
 
 
@@ -132,16 +137,21 @@ namespace ge
          std::shared_ptr<std::vector<T>> _array;
       public:
 
-         ArrayDecoratorTemplate() {}
-         ArrayDecoratorTemplate(const std::shared_ptr<std::vector<T>> &array) : _array(array) {}
+         ArrayDecoratorTemplate()  {}
+         ArrayDecoratorTemplate(const std::shared_ptr<std::vector<T>> &array) : _array(array)  {}
 
-         std::shared_ptr<std::vector<T>> get() { return _array; }
-         const std::shared_ptr<std::vector<T>>& get() const { return _array; }
+         std::shared_ptr<std::vector<T>> get()  { return _array; }
+         const std::shared_ptr<std::vector<T>>& get() const  { return _array; }
 
-         virtual void set(const std::shared_ptr<std::vector<T>> &array) { _array=array; }
+         virtual void set(const std::shared_ptr<std::vector<T>> &array)  { _array=array; }
 
-         virtual void accept(int index,ValueVisitor& visitor) { visitor.apply((*_array)[index]); }
-         virtual void accept(ArrayVisitor& visitor) { visitor.apply(*_array); }
+         virtual void* data()  { return _array->data(); }
+         virtual const void* data() const  { return _array->data(); }
+
+         virtual std::size_t size() const  { return _array->size(); }
+
+         virtual void accept(int index,ValueVisitor& visitor)  { visitor.apply((*_array)[index]); }
+         virtual void accept(ArrayVisitor& visitor)  { visitor.apply(*_array); }
       };
 
 
@@ -152,20 +162,25 @@ namespace ge
          std::shared_ptr<std::vector<bool>> _array;
       public:
 
-         ArrayDecoratorTemplate() {}
-         ArrayDecoratorTemplate(const std::shared_ptr<std::vector<bool>> &array) : _array(array) {}
+         ArrayDecoratorTemplate()  {}
+         ArrayDecoratorTemplate(const std::shared_ptr<std::vector<bool>> &array) : _array(array)  {}
 
-         std::shared_ptr<std::vector<bool>> get() { return _array; }
-         const std::shared_ptr<std::vector<bool>>& get() const { return _array; }
+         std::shared_ptr<std::vector<bool>> get()  { return _array; }
+         const std::shared_ptr<std::vector<bool>>& get() const  { return _array; }
 
-         virtual void set(const std::shared_ptr<std::vector<bool>> &array) { _array=array; }
+         virtual void set(const std::shared_ptr<std::vector<bool>> &array)  { _array=array; }
 
-         virtual void accept(int index,ValueVisitor& visitor) { bool tmp=(*_array)[index]; visitor.apply(tmp); (*_array)[index] = tmp; }
-         virtual void accept(ArrayVisitor& visitor) { visitor.apply(*_array); }
+         virtual void* data()  { return nullptr; }
+         virtual const void* data() const  { return nullptr; }
+
+         virtual std::size_t size() const  { return _array->size(); }
+
+         virtual void accept(int index,ValueVisitor& visitor)  { bool tmp=(*_array)[index]; visitor.apply(tmp); (*_array)[index] = tmp; }
+         virtual void accept(ArrayVisitor& visitor)  { visitor.apply(*_array); }
       };
 
 
-      class ArrayAdapter
+      class Array
       {
       protected:
 
@@ -174,20 +189,22 @@ namespace ge
 
       public:
 
-         ArrayAdapter() : _attribType(AttribType::create<GLType::INVALID>()) {}
-         ArrayAdapter(const ArrayAdapter& a) : _attribType(a._attribType), _arrayDecorator(a._arrayDecorator) {}
-         ArrayAdapter& operator=(const ArrayAdapter &a)  { _attribType=a._attribType; _arrayDecorator=a._arrayDecorator; return *this; }
+         Array() : _attribType(AttribType::create<GLType::INVALID>()) {}
+         Array(const Array& a) : _attribType(a._attribType), _arrayDecorator(a._arrayDecorator) {}
+         Array(Array&& a) : _attribType(a._attribType) { _arrayDecorator.swap(a._arrayDecorator); }
+         Array& operator=(const Array &a)  { _attribType=a._attribType; _arrayDecorator=a._arrayDecorator; return *this; }
+         Array& operator=(Array &&a)  { _attribType=a._attribType; _arrayDecorator.swap(a._arrayDecorator); return *this; }
 
          template<typename T>
-         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr) : _attribType(AttribType::create<T>()), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         inline Array(const std::shared_ptr<std::vector<T>> &ptr) : _attribType(AttribType::create<T>()), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
          template<typename T>
-         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents) : _attribType(AttribType::create<T>(numComponents)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         inline Array(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents) : _attribType(AttribType::create<T>(numComponents)), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
          template<typename T>
-         inline ArrayAdapter(const std::shared_ptr<std::vector<T>> &ptr,AttribType t) : _attribType(t), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
+         inline Array(const std::shared_ptr<std::vector<T>> &ptr,AttribType t) : _attribType(t), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
 
-         inline ArrayAdapter(const std::shared_ptr<ArrayDecorator> &arrayDecorator,AttribType attribType) : _attribType(attribType), _arrayDecorator(arrayDecorator) {}
+         inline Array(const std::shared_ptr<ArrayDecorator> &arrayDecorator,AttribType attribType) : _attribType(attribType), _arrayDecorator(arrayDecorator) {}
 
-         virtual ~ArrayAdapter() {}
+         virtual ~Array() {}
 
          inline void setType(AttribType t) { _attribType=t; }
 
@@ -210,7 +227,7 @@ namespace ge
          inline void set(const std::shared_ptr<ArrayDecorator> &arrayDecorator,AttribType attribType) { _attribType=attribType; _arrayDecorator=arrayDecorator; }
 
          template<typename T>
-         inline ArrayAdapter& operator=(const std::shared_ptr<std::vector<T>> &ptr)  { set(ptr); return *this; }
+         inline Array& operator=(const std::shared_ptr<std::vector<T>> &ptr)  { set(ptr); return *this; }
 
          template<typename T>
          inline std::shared_ptr<std::vector<T>> get() { return static_cast<ArrayDecoratorTemplate<T>*>(_arrayDecorator.get())->get(); }
@@ -224,6 +241,10 @@ namespace ge
 
          inline void setArrayDecorator(const std::shared_ptr<ArrayDecorator>& decorator) { _arrayDecorator = decorator; }
 
+         inline void* data()  { return _arrayDecorator->data(); }
+         inline const void* data() const  { return _arrayDecorator->data(); }
+
+         inline std::size_t size() const  { return _arrayDecorator->size(); }
       };
 
    }

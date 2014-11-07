@@ -94,10 +94,10 @@ namespace ge
       public:
 
          inline AttribType()  {}
-         inline AttribType(GLType glType,uint8_t numComponents,uint8_t elementSize,
-                           TypeHandling typeHandling,unsigned divisor=0);
-         inline AttribType(GLType glType,uint8_t numComponents,bool bgra,uint8_t elementSize,
-                           TypeHandling typeHandling,unsigned divisor=0);
+         inline constexpr AttribType(GLType glType,uint8_t numComponents,uint8_t elementSize,
+                                     TypeHandling typeHandling,unsigned divisor=0);
+         inline constexpr AttribType(GLType glType,uint8_t numComponents,bool bgra,uint8_t elementSize,
+                                     TypeHandling typeHandling,unsigned divisor=0);
          inline AttribType(const AttribType& a);
 
          inline AttribType& operator=(AttribType a);
@@ -231,12 +231,12 @@ namespace ge
 
 
       // inline and template methods
-      inline AttribType::AttribType(GLType glType,uint8_t numComponents,uint8_t elementSize,
-                                    TypeHandling typeHandling,unsigned divisor)
+      inline constexpr AttribType::AttribType(GLType glType,uint8_t numComponents,uint8_t elementSize,
+                                              TypeHandling typeHandling,unsigned divisor)
             :_glType(glType),_numComponents(numComponents),_bgra(false)
             ,_elementSize(elementSize),_typeHandling(typeHandling),_divisor(divisor)  {}
-      inline AttribType::AttribType(GLType glType,uint8_t numComponents,bool bgra,uint8_t elementSize,
-                                    TypeHandling typeHandling,unsigned divisor)
+      inline constexpr AttribType::AttribType(GLType glType,uint8_t numComponents,bool bgra,uint8_t elementSize,
+                                              TypeHandling typeHandling,unsigned divisor)
             :_glType(glType),_numComponents(numComponents),_bgra(bgra)
             ,_elementSize(elementSize),_typeHandling(typeHandling),_divisor(divisor)  {}
       inline AttribType::AttribType(const AttribType& a) : _attribType64(a._attribType64)  {}

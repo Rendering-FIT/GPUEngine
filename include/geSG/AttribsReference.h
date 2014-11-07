@@ -1,17 +1,20 @@
 #ifndef GE_SG_ATTRIBS_REFERENCE_H
 #define GE_SG_ATTRIBS_REFERENCE_H
 
-#include <geSG/AttribsManager.h>
 #include <geSG/Export.h>
 
 namespace ge
 {
    namespace sg
    {
+      class Array;
+      class AttribsConfig;
       class AttribsStorage;
       class Mesh;
 
-      struct GE_EXPORT AttribsReference {
+
+      class GE_EXPORT AttribsReference {
+      public:
 
          AttribsStorage *attribsStorage;
          unsigned verticesDataId;
@@ -24,21 +27,38 @@ namespace ge
          inline AttribsReference& operator=(AttribsReference&& rhs);
          inline ~AttribsReference();
 
-         inline void allocData(int numVertices,int numIndices,uint16_t attribConfigId);
+         inline void allocData(const AttribsConfig& attribsConfig,int numVertices,int numIndices);
          inline void reallocData(int numVertices,int numIndices,bool preserveContent=true);
          inline void freeData();
+
+         inline void uploadVertexData(const std::vector<Array>& attribs,
+                                      int fromIndex=0,int numVertices=-1);
          inline void uploadVertexData(Mesh *mesh,int fromIndex=0,int numVertices=-1);
          inline int uploadVertexData(Mesh *mesh,unsigned &currentPosition,int bytesToUpload);
+         inline void uploadIndicesData(const Array& indices,int fromIndex=0,int numIndices=-1);
          inline void uploadIndicesData(Mesh *mesh,int fromIndex=0,int numIndices=-1);
          inline int uploadIndicesData(Mesh *mesh,unsigned &currentPosition,int bytesToUpload);
-         //inline void map();
-         //inline void unmap();
 
       };
 
+   }
+}
 
 
-      // inline methods
+
+// inline methods
+//
+// note: they need their own includes that can not be placed on the beginning of this file
+//       as there is a circular include reference and the classes need to be defined before
+//       inline methods to avoid incomplete type compiler error
+
+#include <geSG/AttribsStorage.h>
+#include <geSG/AttribsManager.h>
+
+namespace ge
+{
+   namespace sg
+   {
       inline AttribsReference::AttribsReference(AttribsReference&& ref)
          : attribsStorage(ref.attribsStorage)
          , verticesDataId(ref.verticesDataId)
@@ -57,9 +77,9 @@ namespace ge
       {
          freeData();
       }
-      inline void AttribsReference::allocData(int numVertices,int numIndices,uint16_t attribConfigId)
+      inline void AttribsReference::allocData(const AttribsConfig& attribsConfig,int numVertices,int numIndices)
       {
-         AttribsManager::instance()->allocData(*this,numVertices,numIndices,attribConfigId);
+         AttribsManager::instance()->allocData(*this,attribsConfig,numVertices,numIndices);
       }
       inline void AttribsReference::reallocData(int numVertices,int numIndices,bool preserveContent)
       {
@@ -69,21 +89,36 @@ namespace ge
       {
          AttribsManager::instance()->freeData(*this);
       }
+      inline void AttribsReference::uploadVertexData(const std::vector<Array>& attribs,
+                                                     int fromIndex,int numVertices)
+      {
+         if(attribsStorage)
+            attribsStorage->uploadVertexData(*this,attribs,fromIndex,numVertices);
+      }
       inline void AttribsReference::uploadVertexData(Mesh *mesh,int fromIndex,int numVertices)
       {
-         AttribsManager::instance()->uploadVertexData(*this,mesh,fromIndex,numVertices);
+         if(attribsStorage)
+            attribsStorage->uploadVertexData(*this,mesh,fromIndex,numVertices);
       }
       inline int AttribsReference::uploadVertexData(Mesh *mesh,unsigned &currentPosition,int bytesToUpload)
       {
-         return AttribsManager::instance()->uploadVertexData(*this,mesh,currentPosition,bytesToUpload);
+         if(attribsStorage)
+            attribsStorage->uploadVertexData(*this,mesh,currentPosition,bytesToUpload);
+      }
+      inline void AttribsReference::uploadIndicesData(const Array& indices,int fromIndex,int numIndices)
+      {
+         if(attribsStorage)
+            attribsStorage->uploadIndicesData(*this,indices,fromIndex,numIndices);
       }
       inline void AttribsReference::uploadIndicesData(Mesh *mesh,int fromIndex,int numIndices)
       {
-         AttribsManager::instance()->uploadIndicesData(*this,mesh,fromIndex,numIndices);
+         if(attribsStorage)
+            attribsStorage->uploadIndicesData(*this,mesh,fromIndex,numIndices);
       }
       inline int AttribsReference::uploadIndicesData(Mesh *mesh,unsigned &currentPosition,int bytesToUpload)
       {
-         return AttribsManager::instance()->uploadIndicesData(*this,mesh,currentPosition,bytesToUpload);
+         if(attribsStorage)
+            attribsStorage->uploadIndicesData(*this,mesh,currentPosition,bytesToUpload);
       }
 
    }

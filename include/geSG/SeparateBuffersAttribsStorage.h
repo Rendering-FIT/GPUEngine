@@ -20,7 +20,7 @@ namespace ge
 
          ge::gl::VertexArrayObject* _vao;
          std::vector<ge::gl::BufferObject*> _arrayBuffers;
-         ge::gl::BufferObject *_ebo;
+         ge::gl::BufferObject* _ebo;
 
       public:
 
@@ -28,13 +28,20 @@ namespace ge
          SeparateBuffersAttribsStorage(const AttribsConfig &config,unsigned numVertices,unsigned numIndices);
          virtual ~SeparateBuffersAttribsStorage();
 
-         virtual bool allocData(AttribsReference &r,int numVertices,int numIndices);
-         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,bool preserveContent=true);
-         virtual void freeData(AttribsReference &r);
-         virtual void uploadVertexData(AttribsReference &r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
-         virtual int uploadVertexData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
-         virtual void uploadIndicesData(AttribsReference &r,Mesh* mesh,int fromIndex=0,int numVertices=-1);
-         virtual int uploadIndicesData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload);
+         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,
+                                  bool preserveContent=true) override;
+         virtual void uploadVertexData(AttribsReference &r,const std::vector<Array>& data,
+                                       int fromIndex=0,int numVertices=-1) override;
+         virtual void uploadVertexData(AttribsReference &r,Mesh* mesh,int fromIndex=0,
+                                       int numVertices=-1) override;
+         virtual int uploadVertexData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,
+                                      int bytesToUpload) override;
+         virtual void uploadIndicesData(AttribsReference &r,const Array& data,
+                                        int fromIndex=0,int numIndices=-1) override;
+         virtual void uploadIndicesData(AttribsReference &r,Mesh* mesh,
+                                        int fromIndex=0,int numIndices=-1) override;
+         virtual int uploadIndicesData(AttribsReference &r,Mesh* mesh,
+                                       unsigned &currentPosition,int bytesToUpload) override;
 
       };
 

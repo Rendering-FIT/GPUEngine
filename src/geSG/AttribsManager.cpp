@@ -7,7 +7,7 @@ using namespace ge::sg;
 using namespace std;
 
 
-shared_ptr<AttribsManager> AttribsManager::_instance;
+shared_ptr<AttribsManager> AttribsManager::_instance = make_shared<AttribsManager>();
 
 
 
@@ -16,34 +16,37 @@ AttribsManager::~AttribsManager()
 }
 
 
-bool AttribsManager::allocData(AttribsReference &r,int numVertices,int numIndices,uint16_t attribConfigId)
+bool AttribsManager::allocData(AttribsReference &r,const AttribsConfig& attribsConfig,
+                               int numVertices,int numIndices)
 {
    // get AttribsStorage or AttribsStorages with particular attribConfigID
-   auto itRange=getAttribsStorages(attribConfigId);
-   AttribsStorageMultiMap::iterator attribsStorageIt;
-   if(itRange.first==itRange.second)
+   auto itRange=getAttribsStorages(attribsConfig);
+   AttribsStorageMultiMap::iterator attribsStorageIt=_attribsStorageMultiMap.end();
+
+   // iterate possibly empty list of AttribsStorages
+   // with the required attribConfig
+   // and look if there is one with enough empty space
+   for(auto it=itRange.first; it!=itRange.second; it++)
    {
-      // no AttribsStorage with required attribConfigID in the map -> insert new one
-      attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribConfigId,
-            unique_ptr<AttribsStorage>(AttribsStorage::getFactory()->create()));
-   }
-   else
-   {
-      // AttribsStorage (or list of AttribsStorages) with the required attribConfigID found
-      //
-      // find AttribsStorage with enough empty space
-      for(auto it=itRange.first; it!=itRange.second; it++)
+      if(it->second->getNumVerticesAvailableAtTheEnd()>=numVertices &&
+         it->second->getNumIndicesAvailableAtTheEnd()>=numIndices)
       {
-         if(it->second->getNumVerticesAvailableAtTheEnd()>=numVertices &&
-            it->second->getNumIndicesAvailableAtTheEnd()>=numIndices)
-         {
-            attribsStorageIt=it;
-            break;
-         }
+         attribsStorageIt=it;
+         break;
       }
-      // not enough space in AttribsStorage(s) -> insert new one
-      attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribConfigId,
-            unique_ptr<AttribsStorage>(AttribsStorage::getFactory()->create()));
+   }
+
+   // do we have AttribsStorage?
+   if(attribsStorageIt==_attribsStorageMultiMap.end())
+   {
+      // create a new AttribsStorage
+      attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribsConfig,
+            AttribsStorage::getFactory()->create(attribsConfig,
+            _defaultStorageNumVertices,_defaultStorageNumIndices));
+
+      // update _id2IteratorMap for faster lookups
+      if(attribsConfig.configId!=0)
+         _id2IteratorMap[attribsConfig.configId].first=attribsStorageIt;
    }
 
    // perform allocation in the choosen AttribsStorage
@@ -86,23 +89,30 @@ void AttribsManager::freeData(AttribsReference &r)
 }
 
 
-void AttribsManager::uploadVertexData(AttribsReference &r,Mesh *mesh,int fromIndex,int numVertices)
+std::shared_ptr<AttribsStorage> AttribsManager::allocStorage(const AttribsConfig &config,
+                                                             unsigned numVertices,unsigned numIndices,
+                                                             bool privateFlag)
 {
-}
+   // create new AttribsStorage
+   shared_ptr<AttribsStorage> a = AttribsStorage::getFactory()->create(config,
+         _defaultStorageNumVertices,_defaultStorageNumIndices);
 
+   if(privateFlag)
+   {
+      // insert it to the "private" list
+      _privateAttribsStorages.push_back(a);
+   }
+   else
+   {
+      // insert it to the multimap
+      auto attribsStorageIt=_attribsStorageMultiMap.emplace(config,a);
 
-int AttribsManager::uploadVertexData(AttribsReference &r,Mesh *mesh,unsigned &currentPosition,int bytesToUpload)
-{
-}
+      // update _id2IteratorMap for faster lookups
+      if(config.configId!=0)
+         _id2IteratorMap[config.configId].first=attribsStorageIt;
+   }
 
-
-void AttribsManager::uploadIndicesData(AttribsReference &r,Mesh *mesh,int fromIndex,int numIndices)
-{
-}
-
-
-int AttribsManager::uploadIndicesData(AttribsReference &r,Mesh *mesh,unsigned &currentPosition,int bytesToUpload)
-{
+   return a;
 }
 
 

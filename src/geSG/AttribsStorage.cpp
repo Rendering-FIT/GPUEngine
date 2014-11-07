@@ -1,12 +1,24 @@
 #include <iostream> // for cerr
+#include <memory>
 #include <geSG/Array.h>
 #include <geSG/AttribsStorage.h>
 #include <geSG/AttribsReference.h>
+#include <geSG/SeparateBuffersAttribsStorage.h> // for DefaultFactory
 
 using namespace ge::sg;
 using namespace std;
 
-shared_ptr<AttribsStorage::Factory> AttribsStorage::_factory;
+
+class DefaultFactory : public AttribsStorage::Factory {
+public:
+   virtual shared_ptr<AttribsStorage> create(const AttribsConfig &config,
+                                             unsigned numVertices,unsigned numIndices)
+   {
+      return make_shared<SeparateBuffersAttribsStorage>(config,numVertices,numIndices);
+   }
+};
+
+shared_ptr<AttribsStorage::Factory> AttribsStorage::_factory = make_shared<DefaultFactory>();
 
 
 
@@ -22,7 +34,6 @@ AttribsStorage::AttribsStorage(const AttribsConfig &config,unsigned numVertices,
    , _firstIndexAvailableAtTheEnd(0) // all indices are available
    , _idOfIndicesBlockAtTheEnd(0) // points to zero element
    , _attribsConfig(config)
-   , _attribsConfigId(config.convertToId())
 {
    // zero element is reserved for invalid object
    // and it serves as Null object (Null object design pattern)
@@ -33,6 +44,7 @@ AttribsStorage::AttribsStorage(const AttribsConfig &config,unsigned numVertices,
 
 AttribsStorage::~AttribsStorage()
 {
+   cancelAllAllocations();
 }
 
 
@@ -153,23 +165,29 @@ void AttribsStorage::freeData(AttribsReference &r)
 }
 
 
-void AttribsStorage::uploadVertexData(AttribsReference &r,Mesh* mesh,int fromIndex,int numVertices)
+void AttribsStorage::cancelAllAllocations()
 {
-}
+   // break references from AttribsReferences
+   for(auto it=_verticesDataAllocationMap.begin(); it!=_verticesDataAllocationMap.end(); it++)
+      if(it->owner)
+         it->owner->attribsStorage=nullptr;
+   for(auto it=_indicesDataAllocationMap.begin(); it!=_indicesDataAllocationMap.end(); it++)
+      if(it->owner)
+         it->owner->attribsStorage=nullptr;
 
+   // empty allocation maps
+   _verticesDataAllocationMap.clear();
+   _indicesDataAllocationMap.clear();
 
-int AttribsStorage::uploadVertexData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload)
-{
-}
-
-
-void AttribsStorage::uploadIndicesData(AttribsReference &r,Mesh* mesh,int fromIndex,int numVertices)
-{
-}
-
-
-int AttribsStorage::uploadIndicesData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,int bytesToUpload)
-{
+   // reinitialize variables
+   _numVerticesAvailable=_numVerticesTotal;
+   _numVerticesAvailableAtTheEnd=_numVerticesTotal;
+   _firstVertexAvailableAtTheEnd=0;
+   _idOfVerticesBlockAtTheEnd=0;
+   _numIndicesAvailable=_numIndicesTotal;
+   _numIndicesAvailableAtTheEnd=_numIndicesTotal;
+   _firstIndexAvailableAtTheEnd=0;
+   _idOfIndicesBlockAtTheEnd=0;
 }
 
 
@@ -181,21 +199,4 @@ int AttribsStorage::uploadIndicesData(AttribsReference &r,Mesh* mesh,unsigned &c
  *  often does not correspond with the order of their memory placements.
  *  nextRec is index to the std::vector<AllocationBlock> and points
  *  to the AllocationBlock whose allocated memory follows the current one.
- */
-
-// AttribsStorage::_attribsConfigId documentation
-// note: brief description is with the variable declaration
-/** \var AttribsStorage::AttribsConfigId AttribsStorage::_attribsConfigId
- *
- *  If it is non-zero, _attribsConfig contains one of known frequently used
- *  attribute configurations. Thus, optimized routines may be used for
- *  operations with attribute configurations such as comparison or lookups,
- *  as it is just comparison of integers or lookup by integer.
- *
- *  If the value is zero, all operations with attribute configurations
- *  have to be performed using _attribsConfig. _attribsConfig is vector
- *  of values storing details about each attribute configuration.
- *
- *  If one AttribsStorage has _attribConfig zero and the second non-zero,
- *  they always contain different attribute configurations.
  */

@@ -1,10 +1,14 @@
 #include <string>
+#include <vector>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include <geGL/DebugMessage.h>
+#include <geSG/Array.h>
 #include <geSG/AttribsReference.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
+using namespace std;
 using namespace ge::sg;
 
 
@@ -93,5 +97,23 @@ void Idle(){
 
 
 void Init(){
-   AttribsManager::instance()->allocData(attribsRef,3,3,0x401);
+   AttribsConfig ac;
+   ac.push_back(AttribType::Vec3);
+   ac.ebo=false;
+   ac.updateConfigId();
+   attribsRef.allocData(ac,6,0);
+#if 1
+   shared_ptr<vector<glm::vec3>> data = make_shared<vector<glm::vec3>>();
+   constexpr float z=-5.f;
+   data->push_back(glm::vec3(0,0,z));
+   data->push_back(glm::vec3(0,1,z));
+   data->push_back(glm::vec3(1,0,z));
+   data->push_back(glm::vec3(0,0,z));
+   data->push_back(glm::vec3(0,1,z));
+   data->push_back(glm::vec3(-1,0,z));
+#endif
+   vector<Array> v;
+   v.resize(1);
+   v[0].set(data);
+   attribsRef.uploadVertexData(v);
 }

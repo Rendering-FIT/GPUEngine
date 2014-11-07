@@ -16,7 +16,6 @@ namespace ge
       public:
 
          enum class ArrayContent : uint8_t { UNKNOWN=0,COORDINATES=1,NORMALS=2,COLORS=3,TEXCOORDS=4,USER=5,OTHER = 0xff };
-         struct AttribData { ArrayContent content; ArrayAdapter array; };
 
       protected:
 
@@ -25,12 +24,10 @@ namespace ge
          bool _gpuGeometryDataAvailable : 1;
 
          int _glMode;
-         std::vector<AttribData> _attribs;
-         ArrayAdapter _indices;
-         int8_t _coordinateAttribIndex;
-         int8_t _normalAttribIndex;
-         int8_t _colorAttribIndex;
-         int8_t _texCoordAttribIndex;
+         std::vector<Array> _attribs;
+         std::vector<ArrayContent> _content;
+         Array _indices;
+         std::vector<int8_t> _attribIndex;
 
          AttribsReference _attribsReference;
 

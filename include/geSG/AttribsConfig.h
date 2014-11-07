@@ -15,8 +15,15 @@ namespace ge
       class GE_EXPORT AttribsConfig : public std::vector<AttribType> {
       public:
          bool ebo;
-         AttribsConfigId convertToId() const;
+         AttribsConfigId configId;      ///< \brief Id of one of frequently used attribute configurations.
+         inline void updateConfigId();
+
+         static AttribsConfigId convertToId(const AttribsConfig& attribsConfig);
       };
+
+
+      // inline methods
+      inline void AttribsConfig::updateConfigId()  { configId = convertToId(*this); }
 
    }
 }
