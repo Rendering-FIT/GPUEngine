@@ -5,8 +5,11 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Array.h
-    ${HEADER_PATH}/AttribsDataReference.h
+    ${HEADER_PATH}/AttribType.h
+    ${HEADER_PATH}/AttribsConfig.h
+    ${HEADER_PATH}/AttribsReference.h
     ${HEADER_PATH}/AttribsStorage.h
+    ${HEADER_PATH}/SeparateBuffersAttribsStorage.h
     ${HEADER_PATH}/AttribsManager.h
     ${HEADER_PATH}/Node.h
     ${HEADER_PATH}/Mesh.h
@@ -19,7 +22,10 @@ set(SG_INCLUDES
   )
 
 set(SG_SOURCES
+    AttribType.cpp
+    AttribsConfig.cpp
     AttribsStorage.cpp
+    SeparateBuffersAttribsStorage.cpp
     AttribsManager.cpp
     Node.cpp
     Mesh.cpp

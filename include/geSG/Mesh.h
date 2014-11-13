@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <geSG/Array.h>
-#include <geSG/AttribsDataReference.h>
+#include <geSG/AttribsReference.h>
 #include <geSG/Node.h>
 
 namespace ge
@@ -15,8 +15,7 @@ namespace ge
       {
       public:
 
-         enum class ArrayContent : uint8_t { UNKNOWN=0, COORDINATES=1, NORMALS=2, COLORS=3, TEXCOORDS=4, USER=5, OTHER = 0xff };
-         struct AttribData { ArrayContent content; ArrayAdapter array; };
+         enum class ArrayContent : uint8_t { UNKNOWN=0,COORDINATES=1,NORMALS=2,COLORS=3,TEXCOORDS=4,USER=5,OTHER = 0xff };
 
       protected:
 
@@ -25,14 +24,12 @@ namespace ge
          bool _gpuGeometryDataAvailable : 1;
 
          int _glMode;
-         std::vector<AttribData> _attribs;
-         ArrayAdapter _indices;
-         int8_t _coordinateAttribIndex;
-         int8_t _normalAttribIndex;
-         int8_t _colorAttribIndex;
-         int8_t _texCoordAttribIndex;
+         std::vector<Array> _attribs;
+         std::vector<ArrayContent> _content;
+         Array _indices;
+         std::vector<int8_t> _attribIndex;
 
-         AttribsDataReference _attribsDataReference;
+         AttribsReference _attribsReference;
 
       public:
 
@@ -42,20 +39,20 @@ namespace ge
          virtual ~Mesh() {}
 
          template<typename T>
-         inline void setAttribData(unsigned attribIndex, ArrayContent content, ArrayAdapter::ArrayType arrayType,
-                                   unsigned elementSize, const std::shared_ptr<std::vector<T>> &ptr);
-         virtual void setAttribData(unsigned attribIndex, ArrayContent content, ArrayAdapter::ArrayType arrayType,
-                                    unsigned elementSize, const std::shared_ptr<ArrayDecorator>& arrayDecorator);
+         inline void setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                   const std::shared_ptr<std::vector<T>> &ptr);
+         virtual void setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                    const std::shared_ptr<ArrayDecorator>& arrayDecorator);
 
-         virtual uint16_t getArraysConfigID();
+         virtual AttribsConfig getAttribsConfig() const;
       };
 
 
       template<typename T>
-      inline void Mesh::setAttribData(unsigned attribIndex, ArrayContent content, ArrayAdapter::ArrayType arrayType,
-                                      unsigned elementSize, const std::shared_ptr<std::vector<T>> &ptr)
+      inline void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                      const std::shared_ptr<std::vector<T>> &ptr)
       {
-         setAttribData(attribIndex,content,arrayType,elementSize,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
+         setAttribData(attribIndex,content,attribType,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
       }
    }
 }

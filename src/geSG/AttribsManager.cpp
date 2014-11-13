@@ -1,40 +1,52 @@
 #include <iostream> // for cerr
 #include <geSG/AttribsManager.h>
-#include <geSG/AttribsDataReference.h>
+#include <geSG/AttribsReference.h>
 #include <geSG/AttribsStorage.h>
 
 using namespace ge::sg;
 using namespace std;
 
 
-bool AttribsManager::allocData(AttribsDataReference *r,int numVertices,int numIndices,uint16_t attribConfigId)
+shared_ptr<AttribsManager> AttribsManager::_instance = make_shared<AttribsManager>();
+
+
+
+AttribsManager::~AttribsManager()
+{
+}
+
+
+bool AttribsManager::allocData(AttribsReference &r,const AttribsConfig& attribsConfig,
+                               int numVertices,int numIndices)
 {
    // get AttribsStorage or AttribsStorages with particular attribConfigID
-   auto itRange=getAttribsStorages(attribConfigId);
-   AttribsStorageMultiMap::iterator attribsStorageIt;
-   if(itRange.first==itRange.second)
+   auto itRange=getAttribsStorages(attribsConfig);
+   AttribsStorageMultiMap::iterator attribsStorageIt=_attribsStorageMultiMap.end();
+
+   // iterate possibly empty list of AttribsStorages
+   // with the required attribConfig
+   // and look if there is one with enough empty space
+   for(auto it=itRange.first; it!=itRange.second; it++)
    {
-      // no AttribsStorage with required attribConfigID in the map -> insert new one
-      attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribConfigId,
-            unique_ptr<AttribsStorage>(AttribsStorage::getFactory()->create()));
-   }
-   else
-   {
-      // AttribsStorage (or list of AttribsStorages) with the required attribConfigID found
-      //
-      // find AttribsStorage with enough empty space
-      for(auto it=itRange.first; it!=itRange.second; it++)
+      if(it->second->getNumVerticesAvailableAtTheEnd()>=numVertices &&
+         it->second->getNumIndicesAvailableAtTheEnd()>=numIndices)
       {
-         if(it->second->getNumVerticesAvailableAtTheEnd()>=numVertices &&
-            it->second->getNumIndicesAvailableAtTheEnd()>=numIndices)
-         {
-            attribsStorageIt=it;
-            break;
-         }
+         attribsStorageIt=it;
+         break;
       }
-      // not enough space in AttribsStorage(s) -> insert new one
-      attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribConfigId,
-            unique_ptr<AttribsStorage>(AttribsStorage::getFactory()->create()));
+   }
+
+   // do we have AttribsStorage?
+   if(attribsStorageIt==_attribsStorageMultiMap.end())
+   {
+      // create a new AttribsStorage
+      attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribsConfig,
+            AttribsStorage::getFactory()->create(attribsConfig,
+            _defaultStorageNumVertices,_defaultStorageNumIndices));
+
+      // update _id2IteratorMap for faster lookups
+      if(attribsConfig.configId!=0)
+         _id2IteratorMap[attribsConfig.configId].first=attribsStorageIt;
    }
 
    // perform allocation in the choosen AttribsStorage
@@ -45,14 +57,14 @@ bool AttribsManager::allocData(AttribsDataReference *r,int numVertices,int numIn
 
 /** Changes the number of allocated elements or indices.
  *
- *  Parameter r contains the reference to AttribsDataReference holding allocation information.
+ *  Parameter r contains the reference to AttribsReference holding allocation information.
  *  numVertices and numIndices are the new number of elements in vertex and index arrays.
  *  If preserveContent parameter is true, the content of element and index data will be preserved.
  *  If new data are larger, the content over the size of previous data is undefined.
  *  If new data are smaller, only the data up to the new data size is preserved.
  *  If preserveContent is false, content of element and index data are undefined.
  */
-bool AttribsManager::reallocData(AttribsDataReference *r,int numVertices,int numIndices,bool preserveContent)
+bool AttribsManager::reallocData(AttribsReference &r,int numVertices,int numIndices,bool preserveContent)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
@@ -66,14 +78,41 @@ bool AttribsManager::reallocData(AttribsDataReference *r,int numVertices,int num
 }
 
 
-void AttribsManager::freeData(AttribsDataReference *r)
+void AttribsManager::freeData(AttribsReference &r)
 {
-   // ignore empty AttribsDataReferences
-   if(r->attribsStorage==NULL)
+   // ignore empty AttribsReferences
+   if(r.attribsStorage==NULL)
       return;
 
    // free data
-   r->attribsStorage->freeData(r);
+   r.attribsStorage->freeData(r);
+}
+
+
+std::shared_ptr<AttribsStorage> AttribsManager::allocStorage(const AttribsConfig &config,
+                                                             unsigned numVertices,unsigned numIndices,
+                                                             bool privateFlag)
+{
+   // create new AttribsStorage
+   shared_ptr<AttribsStorage> a = AttribsStorage::getFactory()->create(config,
+         _defaultStorageNumVertices,_defaultStorageNumIndices);
+
+   if(privateFlag)
+   {
+      // insert it to the "private" list
+      _privateAttribsStorages.push_back(a);
+   }
+   else
+   {
+      // insert it to the multimap
+      auto attribsStorageIt=_attribsStorageMultiMap.emplace(config,a);
+
+      // update _id2IteratorMap for faster lookups
+      if(config.configId!=0)
+         _id2IteratorMap[config.configId].first=attribsStorageIt;
+   }
+
+   return a;
 }
 
 
