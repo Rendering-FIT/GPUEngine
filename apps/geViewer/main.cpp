@@ -2,13 +2,18 @@
 #include <vector>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#define GLM_FORCE_RADIANS
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <geGL/DebugMessage.h>
+#include <geGL/ProgramObject.h>
 #include <geSG/Array.h>
 #include <geSG/AttribsReference.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
 using namespace std;
+using namespace ge::gl;
 using namespace ge::sg;
 
 
@@ -34,7 +39,8 @@ struct SWindowParam{
 bool DisableAnttweakbar=true;
 ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
-//ge::gl::ProgramObject;
+
+static ProgramObject *glProgram = NULL;
 
 
 int main(int Argc,char*Argv[])
@@ -65,7 +71,6 @@ int main(int Argc,char*Argv[])
       ContextParam.Flag);
 
   glewExperimental=GL_TRUE;
-//  ge::gl::init
   glewInit();
 
   ge::gl::setDefaultDebugMessage();
@@ -76,6 +81,7 @@ int main(int Argc,char*Argv[])
 
   Init();
   Window->mainLoop();
+  delete glProgram;
   delete Window;
   delete Args;
   return 0;
@@ -89,10 +95,16 @@ void Mouse(){
 void Wheel(int d){
 }
 
+
 static AttribsReference attribsRef;
+static AttribsConfig ac;
+
 
 void Idle(){
-  Window->swap();
+   glProgram->use();
+   attribsRef.attribsStorage->bind();
+   glDrawArrays(GL_TRIANGLES,0,6);
+   Window->swap();
 }
 
 
@@ -109,11 +121,34 @@ void Init(){
    data->push_back(glm::vec3(0,1,z));
    data->push_back(glm::vec3(1,0,z));
    data->push_back(glm::vec3(0,0,z));
-   data->push_back(glm::vec3(0,1,z));
+   data->push_back(glm::vec3(0,-1,z));
    data->push_back(glm::vec3(-1,0,z));
 #endif
    vector<Array> v;
    v.resize(1);
    v[0].set(data);
    attribsRef.uploadVertexData(v);
+
+   ge::gl::initShadersAndPrograms();
+   glProgram = new ProgramObject(
+      GL_VERTEX_SHADER,
+      "#version 330\n"
+      "layout(location=0) in vec3 coords;\n"
+      "uniform mat4 mvp;\n"
+      "void main()\n"
+      "{\n"
+      "   gl_Position = mvp*vec4(coords,1.f);\n"
+      "}\n",
+      GL_FRAGMENT_SHADER,
+      "#version 330\n"
+      "layout(location=0) out vec4 fragColor;\n"
+      "void main()\n"
+      "{\n"
+      "   fragColor=vec4(1.f,1.f,0.,1.);\n"
+      "}\n");
+   glm::mat4 modelView(1.f); // identity
+   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
+   glm::mat4 mvp=modelView*projection;
+   glProgram->use();
+   glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
 }

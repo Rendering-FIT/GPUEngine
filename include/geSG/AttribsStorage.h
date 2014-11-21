@@ -91,6 +91,8 @@ namespace ge
          AttribsStorage(const AttribsConfig &config,unsigned numVertices,unsigned numIndices);
          virtual ~AttribsStorage();
 
+         virtual void bind() = 0;
+
          virtual bool allocData(AttribsReference &r,int numVertices,int numIndices);
          virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,
                                   bool preserveContent=true);

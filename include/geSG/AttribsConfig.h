@@ -9,14 +9,14 @@ namespace ge
 {
    namespace sg
    {
-      typedef uint16_t AttribsConfigId;
+      typedef uint16_t AttribsConfigId; ///< \brief Integer-based type for the most frequently used attribute configurations.
 
 
       class GE_EXPORT AttribsConfig : public std::vector<AttribType> {
       public:
-         bool ebo;
+         bool ebo;                      ///< Indicates whether element buffer object is used or not.
          AttribsConfigId configId;      ///< \brief Id of one of frequently used attribute configurations.
-         inline void updateConfigId();
+         inline void updateConfigId();  ///< Updates AttribsConfig::configId member.
 
          static AttribsConfigId convertToId(const AttribsConfig& attribsConfig);
       };

@@ -97,18 +97,37 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
 }
 
 
-// AttribsStorage::_attribsConfigId documentation
+// AttribsConfigId type documentation
 // note: brief description is with the variable declaration
-/** \var AttribsStorage::AttribsConfigId AttribsStorage::_attribsConfigId
+/** \var AttribsConfigId
  *
- *  If it is non-zero, _attribsConfig contains one of known frequently used
+ *  Complete attribute configuration is stored in AttribsConfig class,
+ *  a complicated vector-based type.
+ *  Using it for map lookups or comparison of two configurations
+ *  might be performance expensive.
+ *  Thus, frequently used attribute configurations has their
+ *  integer-based representation that can be used for faster maps lookups
+ *  and very fast comparison. This integer-based configuration uses
+ *  type defined by AttribsConfigId.
+ *
+ *  Zero value stored in this type means that the attribute configuration
+ *  is not one of the supported frequently used attribute configuration.
+ *
+ *  \sa AttribsConfig
+ */
+
+// AttribsConfig::configId documentation
+// note: brief description is with the variable declaration
+/** \var AttribsConfigId AttribsConfig::configId
+ *
+ *  If it is non-zero, AttribsConfig class contains one of known frequently used
  *  attribute configurations. Thus, optimized routines may be used for
  *  operations with attribute configurations such as comparison or lookups,
  *  as it is just comparison of integers or lookup by integer.
  *
  *  If the value is zero, all operations with attribute configurations
- *  have to be performed using _attribsConfig. _attribsConfig is vector
- *  of values storing details about each attribute configuration.
+ *  have to be performed using AttribsConfig class that contains vector
+ *  of values storing details about each particular attribute configuration.
  *
  *  If one AttribsStorage has _attribConfig zero and the second non-zero,
  *  they always contain different attribute configurations.

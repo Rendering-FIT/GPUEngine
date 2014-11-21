@@ -49,6 +49,12 @@ SeparateBuffersAttribsStorage::~SeparateBuffersAttribsStorage()
 }
 
 
+void SeparateBuffersAttribsStorage::bind()
+{
+   _vao->bind();
+}
+
+
 bool SeparateBuffersAttribsStorage::reallocData(AttribsReference &r,int numVertices,
                                                 int numIndices,bool preserveContent)
 {

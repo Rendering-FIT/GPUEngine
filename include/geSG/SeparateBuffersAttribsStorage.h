@@ -28,6 +28,8 @@ namespace ge
          SeparateBuffersAttribsStorage(const AttribsConfig &config,unsigned numVertices,unsigned numIndices);
          virtual ~SeparateBuffersAttribsStorage();
 
+         virtual void bind();
+
          virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,
                                   bool preserveContent=true) override;
          virtual void uploadVertexData(AttribsReference &r,const std::vector<Array>& data,
