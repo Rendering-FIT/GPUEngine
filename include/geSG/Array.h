@@ -137,13 +137,15 @@ namespace ge
          std::shared_ptr<std::vector<T>> _array;
       public:
 
-         ArrayDecoratorTemplate()  {}
-         ArrayDecoratorTemplate(const std::shared_ptr<std::vector<T>> &array) : _array(array)  {}
+         inline ArrayDecoratorTemplate()  {}
+         inline ArrayDecoratorTemplate(const std::vector<T> &data) : _array(std::make_shared<std::vector<T>>(data))  {}
+         inline ArrayDecoratorTemplate(const std::shared_ptr<std::vector<T>> &ptr) : _array(ptr)  {}
 
          std::shared_ptr<std::vector<T>> get()  { return _array; }
          const std::shared_ptr<std::vector<T>>& get() const  { return _array; }
 
-         virtual void set(const std::shared_ptr<std::vector<T>> &array)  { _array=array; }
+         virtual void set(const std::shared_ptr<std::vector<T>> &ptr)  { _array=ptr; }
+         inline void set(const std::vector<T> &data)  { set(std::make_shared<std::vector<T>>(data)); }
 
          virtual void* data()  { return _array->data(); }
          virtual const void* data() const  { return _array->data(); }
@@ -162,13 +164,15 @@ namespace ge
          std::shared_ptr<std::vector<bool>> _array;
       public:
 
-         ArrayDecoratorTemplate()  {}
-         ArrayDecoratorTemplate(const std::shared_ptr<std::vector<bool>> &array) : _array(array)  {}
+         inline ArrayDecoratorTemplate()  {}
+         inline ArrayDecoratorTemplate(const std::vector<bool> &data) : _array(std::make_shared<std::vector<bool>>(data))  {}
+         inline ArrayDecoratorTemplate(const std::shared_ptr<std::vector<bool>> &ptr) : _array(ptr)  {}
 
          std::shared_ptr<std::vector<bool>> get()  { return _array; }
          const std::shared_ptr<std::vector<bool>>& get() const  { return _array; }
 
-         virtual void set(const std::shared_ptr<std::vector<bool>> &array)  { _array=array; }
+         virtual void set(const std::shared_ptr<std::vector<bool>> &ptr)  { _array=ptr; }
+         inline void set(const std::vector<bool> &data)  { set(std::make_shared<std::vector<bool>>(data)); }
 
          virtual void* data()  { return nullptr; }
          virtual const void* data() const  { return nullptr; }
@@ -202,6 +206,13 @@ namespace ge
          template<typename T>
          inline Array(const std::shared_ptr<std::vector<T>> &ptr,AttribType t) : _attribType(t), _arrayDecorator(std::make_shared<ArrayDecoratorTemplate<T>>(ptr)) {}
 
+         template<typename T>
+         inline Array(const std::vector<T> &data) : Array(std::make_shared<std::vector<T>>(data)) {}
+         template<typename T>
+         inline Array(const std::vector<T> &data,unsigned short numComponents) : Array(std::make_shared<std::vector<T>>(data),numComponents) {}
+         template<typename T>
+         inline Array(const std::vector<T> &data,AttribType t) : Array(std::make_shared<std::vector<T>>(data),t) {}
+
          inline Array(const std::shared_ptr<ArrayDecorator> &arrayDecorator,AttribType attribType) : _attribType(attribType), _arrayDecorator(arrayDecorator) {}
 
          virtual ~Array() {}
@@ -223,6 +234,13 @@ namespace ge
          inline void set(const std::shared_ptr<std::vector<T>> &ptr,unsigned short numComponents) { _attribType=AttribType::create<T>(numComponents); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
          template<typename T>
          inline void set(const std::shared_ptr<std::vector<T>> &ptr,AttribType attribType) { _attribType=attribType; _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(ptr); }
+
+         template<typename T>
+         inline void set(const std::vector<T> &data) { _attribType=AttribType::create<T>(); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(data); }
+         template<typename T>
+         inline void set(const std::vector<T> &data,unsigned short numComponents) { _attribType=AttribType::create<T>(numComponents); _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(data); }
+         template<typename T>
+         inline void set(const std::vector<T> &data,AttribType attribType) { _attribType=attribType; _arrayDecorator=std::make_shared<ArrayDecoratorTemplate<T>>(data); }
 
          inline void set(const std::shared_ptr<ArrayDecorator> &arrayDecorator,AttribType attribType) { _attribType=attribType; _arrayDecorator=arrayDecorator; }
 

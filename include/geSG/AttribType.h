@@ -1,6 +1,7 @@
 #ifndef GE_SG_ATTRIB_TYPE_H
 #define GE_SG_ATTRIB_TYPE_H
 
+#include <cstdint>
 #include <glm/glm.hpp>
 
 namespace ge
