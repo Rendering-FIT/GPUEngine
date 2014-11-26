@@ -22,8 +22,7 @@ SeparateBuffersAttribsStorage::SeparateBuffersAttribsStorage(const AttribsConfig
    for(auto it=config.begin(); it!=config.end(); it++,i++)
    {
       AttribType t=*it;
-      BufferObject *bo=new BufferObject(numVertices*t.getElementSize(),NULL,
-                                        GL_ARRAY_BUFFER,GL_DYNAMIC_DRAW);
+      BufferObject *bo=new BufferObject(numVertices*t.getElementSize(),NULL,GL_DYNAMIC_DRAW);
       _vao->addAttrib(bo,i,t.getNumComponents(),t.getGLTypeAsInt(),t.getElementSize(),0,
                       t.getTypeHandling()==AttribType::INTEGER_NORMALIZE,t.getDivisor());
       _arrayBuffers.push_back(bo);
@@ -32,7 +31,7 @@ SeparateBuffersAttribsStorage::SeparateBuffersAttribsStorage(const AttribsConfig
    // create EBO
    if(config.ebo)
    {
-      _ebo=new BufferObject(numIndices*4,NULL,GL_ELEMENT_ARRAY_BUFFER,GL_DYNAMIC_DRAW);
+      _ebo=new BufferObject(numIndices*4,NULL,GL_DYNAMIC_DRAW);
       _vao->addElementBuffer(_ebo);
    }
    else

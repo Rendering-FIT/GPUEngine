@@ -80,6 +80,110 @@ glGetRenderbufferParameteriv(GL_RENDERBUFFER,GL_RENDERBUFFER_SAMPLES,&Renderbuff
 std::cerr<<"D->RBO_Stencil Samples: "<<RenderbufferSamples<<std::endl;
 
 */
+/*
+glTexSubImage3D glTexImage3D
+
+glTexStorage3D
+glCompressedTexSubImage3D glCompressedTexImage3D
+glTexImage3DMultisample
+glTexStorage3DMultisample
+
+
+glTextureSubImage3D
+glTextureStorage3D
+glCompressedTextureSubImage3D
+glTextureStorage3DMultisample
+
+
+glTexImage2D
+glTexImage1D
+glTexSubImage2D
+glTexSubImage1D
+
+glTextureSubImage2D
+glTextureSubImage1D
+glTextureStorage2D
+glTextureStorage1D
+glTextureStorage2DMultisample
+
+glTexImage2DMultisample
+glTexStorage2D
+glTexStorage1D
+glTexStorage2DMultisample
+glCompressedTexImage2D
+glCompressedTexImage1D
+glCompressedTexSubImage2D
+glCompressedTexSubImage1D
+glCompressedTextureSubImage2D
+glCompressedTextureSubImage1D
+
+
+
+{Tex,Texture}{1D,2D,3D}{Sub,€}{Storage,€}{Multisample,€}{Compressed,€}
+
+Texture(
+    GLenum      target                        ,
+    GLsizei     width                         ,
+    GLsizei     height                        ,
+    GLsizei     depth                         ,
+    GLint       internalFormat                ,
+    GLint       levels              = 0       ,
+    GLenum      type                = GL_FLOAT,
+    GLenum      format              = GL_RGBA ,
+    const void *data                = NULL    ,
+    GLsizei     imageSize           = 0       ,
+    GLsizei     samples             = 1       ,
+    GLboolean   fixedSampleLocation = GL_FALSE);
+
+//standard variant
+Texture(
+    GLsizei       width                         ,
+    GLsizei       height                        ,
+    GLsizei       depth                         ,
+    GLint         internalFormat                ,
+    GLenum        target         = GL_TEXTURE_2D,
+    GLint         level          = 0            ,
+    GLenum        type           = GL_FLOAT     ,
+    GLenum        format         = GL_RGBA      ,
+    const GLvoid *data           = NULL         );
+
+//multisample variant
+Texture(
+    GLsizei   width                         ,
+    GLsizei   height                        ,
+    GLsizei   depth                         ,
+    GLint     internalFormat                ,
+    GLsizei   samples             = 0       ,
+    GLboolean fixedSampleLocation = GL_FALSE);
+
+//compressed variant
+Texture(
+    GLsizei     width                         ,
+    GLsizei     height                        ,
+    GLsizei     depth                         ,
+    GLint       internalFormat                ,
+    GLenum      target                        ,
+    GLint       levels              = 0       ,
+    GLenum      type                = GL_FLOAT,
+    GLenum      format              = GL_RGBA ,
+    const void *data                = NULL    ,
+    GLsizei     imageSize           = 0       );
+
+
+//Proc nedavat do konstruktoru data
+//nektere typy textur nechteji data (multisampling)
+//textury jsou casto mipmapovane data nahrajou jen nejvetsi rozliseni
+//moc parametru na konstruktor
+//immutable storage
+//cube mapy jsou dalsi priklad
+//
+
+data    == NULL -> levels == NOF_LEVELS & glTexStorage2D/glTextureStorage2D
+samples == 1    -> glTexStorage2DMultisample/glTextureStorage2DMultisample
+
+// */
+
+
 namespace ge{
   namespace gl{
     GLenum textureTarget2Binding(GLenum target){

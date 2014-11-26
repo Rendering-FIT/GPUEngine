@@ -6,11 +6,15 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
   ${HEADER_PATH}/ArgumentObject.h
   ${HEADER_PATH}/WindowObject.h
+  ${HEADER_PATH}/CameraObject.h
+  ${HEADER_PATH}/CameraPath.h
   )
 
 set(GL_SOURCES
   ArgumentObject.cpp  
   WindowObject.cpp
+  CameraObject.cpp
+  CameraPath.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

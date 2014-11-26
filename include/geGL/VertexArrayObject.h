@@ -14,6 +14,7 @@
 #define VERTEXARRAYOBJECT_DEFAULT_NORMALIZED  GL_FALSE
 #define VERTEXARRAYOBJECT_DEFAULT_DIVISOR     0       
 #define VERTExARRAYOBJECT_DEFAULT_ID          0       
+#define VERTEXARRAYOBJECT_DEFAULT_APT         VertexArrayObject::AttribPointerType::NONE
 
 namespace ge{
   namespace gl{
@@ -24,17 +25,23 @@ namespace ge{
       protected:
         GLuint _id;
       public:
+        enum AttribPointerType{
+          NONE,
+          I,
+          L
+        };
         VertexArrayObject ();
         ~VertexArrayObject();
         void addAttrib(
-            GLuint        buffer,
-            GLuint        index,
-            GLint         size,
-            GLenum        type,
-            GLsizei       stride     = VERTEXARRAYOBJECT_DEFAULT_STRIDE,
-            const GLvoid *pointer    = VERTEXARRAYOBJECT_DEFAULT_POINTER,
-            GLboolean     normalized = VERTEXARRAYOBJECT_DEFAULT_NORMALIZED,  
-            GLuint        divisor    = VERTEXARRAYOBJECT_DEFAULT_DIVISOR);
+            GLuint                  buffer                                                  ,
+            GLuint                  index                                                   ,
+            GLint                   nofComponents                                           ,
+            GLenum                  type                                                    ,
+            GLsizei                 stride            = VERTEXARRAYOBJECT_DEFAULT_STRIDE    ,
+            const GLvoid           *pointer           = VERTEXARRAYOBJECT_DEFAULT_POINTER   ,
+            GLboolean               normalized        = VERTEXARRAYOBJECT_DEFAULT_NORMALIZED,  
+            GLuint                  divisor           = VERTEXARRAYOBJECT_DEFAULT_DIVISOR   ,
+            enum AttribPointerType  attribPointerType = VERTEXARRAYOBJECT_DEFAULT_APT       );
         void addElementBuffer(
             GLuint  buffer);
         void bind  ();
@@ -54,14 +61,15 @@ namespace ge{
         GLuint    getElementBuffer();
 #ifndef REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
         void addAttrib(
-            ge::gl::BufferObject *buffer,
-            GLuint                index,
-            GLint                 size,
-            GLenum                type,
-            GLsizei               stride     = VERTEXARRAYOBJECT_DEFAULT_STRIDE,
-            const GLvoid         *pointer    = VERTEXARRAYOBJECT_DEFAULT_POINTER,
-            GLboolean             normalized = VERTEXARRAYOBJECT_DEFAULT_NORMALIZED,  
-            GLuint                divisor    = VERTEXARRAYOBJECT_DEFAULT_DIVISOR);
+            ge::gl::BufferObject   *buffer                                                  ,
+            GLuint                  index                                                   ,
+            GLint                   nofComponentsa                                          ,
+            GLenum                  type                                                    ,
+            GLsizei                 stride            = VERTEXARRAYOBJECT_DEFAULT_STRIDE    ,
+            const GLvoid           *pointer           = VERTEXARRAYOBJECT_DEFAULT_POINTER   ,
+            GLboolean               normalized        = VERTEXARRAYOBJECT_DEFAULT_NORMALIZED,  
+            GLuint                  divisor           = VERTEXARRAYOBJECT_DEFAULT_DIVISOR   ,
+            enum AttribPointerType  attribPointerType = VERTEXARRAYOBJECT_DEFAULT_APT       );
         void addElementBuffer(
             ge::gl::BufferObject *buffer);
 #endif//REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
