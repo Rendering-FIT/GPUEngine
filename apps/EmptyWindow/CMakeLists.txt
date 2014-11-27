@@ -33,4 +33,5 @@ target_link_libraries(${APP_NAME}
   ${OPENGL_LIBRARY}
   ${SDL2_LIBRARY}
   ${ANTTWEAKBAR_LIBRARY}
+  ${X11_LIBRARIES}
   )
