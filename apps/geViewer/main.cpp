@@ -117,47 +117,7 @@ void Init(){
 #if 0
    ac.ebo=false;
    ac.updateConfigId();
-# if 0
-   shared_ptr<vector<glm::vec3>> data = make_shared<vector<glm::vec3>>();
-   constexpr float z=-5.f;
-   data->push_back(glm::vec3(0,0,z));
-   data->push_back(glm::vec3(0,1,z));
-   data->push_back(glm::vec3(1,0,z));
-   data->push_back(glm::vec3(0,0,z));
-   data->push_back(glm::vec3(0,-1,z));
-   data->push_back(glm::vec3(-1,0,z));
-   vector<Array> v;
-   v.resize(1);
-   v[0].set(data);
-# elif 0
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(make_shared<vector<glm::vec3>>());
-   const shared_ptr<vector<glm::vec3>> &data = v[0].get<glm::vec3>();
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   (*data) = twoTriangles;
-# elif 0
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(make_shared<vector<glm::vec3>>(twoTriangles));
-# elif 0
+
    constexpr float z=-5.f;
    const vector<glm::vec3> twoTriangles = {
       glm::vec3(0,0,z),
@@ -170,27 +130,14 @@ void Init(){
    vector<Array> v;
    v.reserve(1);
    v.emplace_back(twoTriangles);
-# else
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(twoTriangles);
-# endif
+
    attribsRef.allocData(ac,6,0);
    attribsRef.uploadVertexData(v);
 #else
    ac.ebo=true;
    ac.updateConfigId();
 
-   constexpr float z=-1.1f;
+   constexpr float z=-5.f;
    const vector<glm::vec3> twoTriangles = {
       glm::vec3(0,0,z),
       glm::vec3(0,1,z),

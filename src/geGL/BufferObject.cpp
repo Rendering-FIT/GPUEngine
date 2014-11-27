@@ -14,6 +14,10 @@
 #define GL_COPY_WRITE_BUFFER_BINDING 0x8F37
 #endif//GL_COPY_WRITE_BUFFER_BINDING
 
+#ifndef GL_TEXTURE_BUFFER_BINDING // since glew 1.11, missing on 1.10 and before
+#define GL_TEXTURE_BUFFER_BINDING 0x8C2A
+#endif//GL_TEXTURE_BUFFER_BINDING
+
 using namespace ge::gl;
 
 /**
