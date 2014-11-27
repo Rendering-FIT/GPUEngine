@@ -42,7 +42,7 @@ bool AttribsManager::allocData(AttribsReference &r,const AttribsConfig& attribsC
       // create a new AttribsStorage
       attribsStorageIt=_attribsStorageMultiMap.emplace_hint(itRange.first,attribsConfig,
             AttribsStorage::getFactory()->create(attribsConfig,
-            _defaultStorageNumVertices,_defaultStorageNumIndices));
+            _defaultStorageNumVertices,attribsConfig.ebo?_defaultStorageNumIndices:0));
 
       // update _id2IteratorMap for faster lookups
       if(attribsConfig.configId!=0)

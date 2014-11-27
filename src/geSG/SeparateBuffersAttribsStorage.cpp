@@ -35,7 +35,13 @@ SeparateBuffersAttribsStorage::SeparateBuffersAttribsStorage(const AttribsConfig
       _vao->addElementBuffer(_ebo);
    }
    else
+   {
+      if(numIndices>0)
+         cout<<"Warning in SeparateBuffersAttribsStorage constructor: If config parameter\n"
+               "   specifies to not use indices (AttribsConfig::ebo),\n"
+               "   numIndices parameter must be zero.\n"<<endl;
       _ebo = NULL;
+   }
 }
 
 
@@ -98,8 +104,14 @@ void SeparateBuffersAttribsStorage::uploadIndicesData(AttribsReference &r,const 
 {
    AttribType t=data.getType();
    if(t!=AttribType::UInt) {
-      cout << "Error in SeparateBuffersAttribsStorage::uploadIndicesData(): data type of\n"
-               "   indices is not UInt (unsigned 32-bit int)." << endl;
+      cout<<"Error in SeparateBuffersAttribsStorage::uploadIndicesData(): data type of\n"
+            "   indices is not UInt (unsigned 32-bit int)."<<endl;
+      return;
+   }
+   if(_ebo==NULL) {
+      cout<<"Error in SeparateBuffersAttribsStorage::uploadIndicesData(): ebo is null.\n"
+            "   SeparateBuffersAttribsStorage was probably created with AttribsConfig\n"
+            "   without ebo member set to true." << endl;
       return;
    }
    int elementSize=t.getElementSize();

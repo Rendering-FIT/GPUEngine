@@ -215,7 +215,7 @@ namespace ge
 
          inline Array(const std::shared_ptr<ArrayDecorator> &arrayDecorator,AttribType attribType) : _attribType(attribType), _arrayDecorator(arrayDecorator) {}
 
-         virtual ~Array() {}
+         ~Array() {}
 
          inline void setType(AttribType t) { _attribType=t; }
 
@@ -252,10 +252,9 @@ namespace ge
          template<typename T>
          inline const std::shared_ptr<std::vector<T>>& get() const { return static_cast<ArrayDecoratorTemplate<T>*>(_arrayDecorator)->get(); }
 
+         inline const std::shared_ptr<ArrayDecorator>& getArrayDecorator() const { return _arrayDecorator; }
          template<typename T>
-         inline std::shared_ptr<ArrayDecoratorTemplate<T>> getArrayDecorator() { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
-         template<typename T>
-         inline const std::shared_ptr<ArrayDecoratorTemplate<T>>& getArrayDecorator() const { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
+         inline const std::shared_ptr<ArrayDecoratorTemplate<T>>& getTypedArrayDecorator() const { return std::static_pointer_cast<ArrayDecoratorTemplate<T>>(_arrayDecorator); }
 
          inline void setArrayDecorator(const std::shared_ptr<ArrayDecorator>& decorator) { _arrayDecorator = decorator; }
 

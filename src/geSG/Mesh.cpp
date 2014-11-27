@@ -4,6 +4,11 @@ using namespace std;
 using namespace ge::sg;
 
 
+Mesh::~Mesh()
+{
+}
+
+
 void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
                          const std::shared_ptr<ArrayDecorator>& arrayDecorator)
 {
@@ -13,13 +18,26 @@ void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,AttribType at
 
    // set attrib
    _attribs[attribIndex].set(arrayDecorator,attribType);
-   _content[attribIndex]=content;
+   _contents[attribIndex]=content;
 
    // update _attribIndex
    int c=int(content)-1;
    if(c>=_attribIndex.size())
       _attribIndex.resize(c+1);
    _attribIndex[c]=attribIndex;
+}
+
+
+void Mesh::setAttribData(const vector<Array> attribs, const vector<ArrayContent> contents)
+{
+   unsigned n=min(attribs.size(),contents.size());
+   _attribs.clear();
+   _attribs.reserve(n);
+   _contents.clear();
+   _contents.reserve(n);
+
+   for(unsigned i=0; i<n; i++)
+      setAttribData(i,contents[i],attribs[i]);
 }
 
 

@@ -103,7 +103,9 @@ static AttribsConfig ac;
 void Idle(){
    glProgram->use();
    attribsRef.attribsStorage->bind();
-   glDrawArrays(GL_TRIANGLES,0,6);
+   //glDrawArrays(GL_TRIANGLES,0,6);
+   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)0);
+   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
    Window->swap();
 }
 
@@ -111,10 +113,10 @@ void Idle(){
 void Init(){
    AttribsConfig ac;
    ac.push_back(AttribType::Vec3);
+#if 0
    ac.ebo=false;
    ac.updateConfigId();
-   attribsRef.allocData(ac,6,0);
-#if 0
+# if 0
    shared_ptr<vector<glm::vec3>> data = make_shared<vector<glm::vec3>>();
    constexpr float z=-5.f;
    data->push_back(glm::vec3(0,0,z));
@@ -126,7 +128,7 @@ void Init(){
    vector<Array> v;
    v.resize(1);
    v[0].set(data);
-#elif 0
+# elif 0
    vector<Array> v;
    v.reserve(1);
    v.emplace_back(make_shared<vector<glm::vec3>>());
@@ -141,7 +143,7 @@ void Init(){
       glm::vec3(-1,0,z),
    };
    (*data) = twoTriangles;
-#elif 0
+# elif 0
    constexpr float z=-5.f;
    const vector<glm::vec3> twoTriangles = {
       glm::vec3(0,0,z),
@@ -154,7 +156,7 @@ void Init(){
    vector<Array> v;
    v.reserve(1);
    v.emplace_back(make_shared<vector<glm::vec3>>(twoTriangles));
-#else
+# elif 0
    constexpr float z=-5.f;
    const vector<glm::vec3> twoTriangles = {
       glm::vec3(0,0,z),
@@ -167,8 +169,44 @@ void Init(){
    vector<Array> v;
    v.reserve(1);
    v.emplace_back(twoTriangles);
-#endif
+# else
+   constexpr float z=-5.f;
+   const vector<glm::vec3> twoTriangles = {
+      glm::vec3(0,0,z),
+      glm::vec3(0,1,z),
+      glm::vec3(1,0,z),
+      glm::vec3(0,0,z),
+      glm::vec3(0,-1,z),
+      glm::vec3(-1,0,z),
+   };
+   vector<Array> v;
+   v.reserve(1);
+   v.emplace_back(twoTriangles);
+# endif
+   attribsRef.allocData(ac,6,0);
    attribsRef.uploadVertexData(v);
+#else
+   ac.ebo=true;
+   ac.updateConfigId();
+
+   constexpr float z=-1.1f;
+   const vector<glm::vec3> twoTriangles = {
+      glm::vec3(0,0,z),
+      glm::vec3(0,1,z),
+      glm::vec3(1,0,z),
+      glm::vec3(0.f,0.1f,z),
+      glm::vec3(0,-1,z),
+      glm::vec3(-1,0,z),
+   };
+   vector<Array> v;
+   v.reserve(1);
+   v.emplace_back(twoTriangles);
+
+   attribsRef.allocData(ac,6,6);
+   attribsRef.uploadVertexData(v);
+   const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
+   attribsRef.uploadIndicesData(Array(indices));
+#endif
 
    ge::gl::initShadersAndPrograms();
    glProgram = new ProgramObject(

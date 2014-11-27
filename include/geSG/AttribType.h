@@ -255,13 +255,22 @@ namespace ge
       inline bool AttribType::operator<=(const AttribType a) const  { return _attribType64<=a._attribType64; }
       inline bool AttribType::operator>=(const AttribType a) const  { return _attribType64>=a._attribType64; }
 
-      template<GLType T> inline AttribType AttribType::create()  { assert(0&&"Missing numComponents parameter or type specialization method."); return AttribType(GLType::INVALID,0,0); }
-      template<GLType T> inline AttribType AttribType::create(uint8_t numComponents)  { assert(0&&"Provided GLType does not support numComponents parameter or missing specialization method."); return AttribType(GLType::INVALID,0,0); }
-      template<GLType T> inline AttribType AttribType::create(uint8_t numComponents,TypeHandling typeHandling)  { assert(0&&"Provided GLType does not support numComponents and typeHandling parameters specified together, or missing specialization method."); return AttribType(GLType::INVALID,0,0); }
-      template<typename T> inline AttribType AttribType::create()  { assert(0&&"Missing numComponents parameter or type specialization method."); return AttribType(GLType::INVALID,0,0); }
-      template<typename T> inline AttribType AttribType::create(TypeHandling typeHandling)  { assert(0&&"Provided type does not support typeHandling parameter or missing specialization method."); return AttribType(GLType::INVALID,0,0); }
-      template<typename T> inline AttribType AttribType::create(uint8_t numComponents)  { assert(0&&"Provided type does not support numComponents parameter or missing specialization method."); return AttribType(GLType::INVALID,0,0); }
-      template<typename T> inline AttribType AttribType::create(uint8_t numComponents,TypeHandling typeHandling)  { assert(0&&"Provided type does not support numComponents and typeHandling parameters specified together, or missing specialization method."); return AttribType(GLType::INVALID,0,0); }
+      template<GLType T> inline AttribType AttribType::create()  { assert(0&&"Missing numComponents parameter or type specialization method."); return AttribType::createInvalid(); }
+      template<GLType T> inline AttribType AttribType::create(uint8_t numComponents)  { assert(0&&"Provided GLType does not support numComponents parameter or missing specialization method."); return AttribType::createInvalid(); }
+      template<GLType T> inline AttribType AttribType::create(uint8_t numComponents,TypeHandling typeHandling)  { assert(0&&"Provided GLType does not support numComponents and typeHandling parameters specified together, or missing specialization method."); return AttribType::createInvalid(); }
+      template<typename T> inline AttribType AttribType::create()  { assert(0&&"Missing numComponents parameter or type specialization method."); return AttribType::createInvalid(); }
+      template<typename T> inline AttribType AttribType::create(TypeHandling typeHandling)  { assert(0&&"Provided type does not support typeHandling parameter or missing specialization method."); return AttribType::createInvalid(); }
+      template<typename T> inline AttribType AttribType::create(uint8_t numComponents)  { assert(0&&"Provided type does not support numComponents parameter or missing specialization method."); return AttribType::createInvalid(); }
+      template<typename T> inline AttribType AttribType::create(uint8_t numComponents,TypeHandling typeHandling)  { assert(0&&"Provided type does not support numComponents and typeHandling parameters specified together, or missing specialization method."); return AttribType::createInvalid(); }
+
+      template<> inline AttribType AttribType::create< int8_t> ()  { return AttribType(GLType::BYTE,          1,1*1,USE_IFORMAT); }
+      template<> inline AttribType AttribType::create<uint8_t> ()  { return AttribType(GLType::UNSIGNED_BYTE, 1,1*1,USE_IFORMAT); }
+      template<> inline AttribType AttribType::create< int16_t>()  { return AttribType(GLType::SHORT,         1,2*1,USE_IFORMAT); }
+      template<> inline AttribType AttribType::create<uint16_t>()  { return AttribType(GLType::UNSIGNED_SHORT,1,2*1,USE_IFORMAT); }
+      template<> inline AttribType AttribType::create< int32_t>()  { return AttribType(GLType::INT,           1,4*1,USE_IFORMAT); }
+      template<> inline AttribType AttribType::create<uint32_t>()  { return AttribType(GLType::UNSIGNED_INT,  1,4*1,USE_IFORMAT); }
+      template<> inline AttribType AttribType::create<float>   ()  { return AttribType(GLType::FLOAT,         1,4*1,USE_FORMAT); }
+      template<> inline AttribType AttribType::create<double>  ()  { return AttribType(GLType::DOUBLE,        1,8*1,USE_LFORMAT); }
 
       template<> inline AttribType AttribType::create< int8_t> (uint8_t numComponents)  { return AttribType(GLType::BYTE,          numComponents,1*numComponents,USE_IFORMAT); }
       template<> inline AttribType AttribType::create<uint8_t> (uint8_t numComponents)  { return AttribType(GLType::UNSIGNED_BYTE, numComponents,1*numComponents,USE_IFORMAT); }
@@ -271,6 +280,13 @@ namespace ge
       template<> inline AttribType AttribType::create<uint32_t>(uint8_t numComponents)  { return AttribType(GLType::UNSIGNED_INT,  numComponents,4*numComponents,USE_IFORMAT); }
       template<> inline AttribType AttribType::create<float>   (uint8_t numComponents)  { return AttribType(GLType::FLOAT,         numComponents,4*numComponents,USE_FORMAT); }
       template<> inline AttribType AttribType::create<double>  (uint8_t numComponents)  { return AttribType(GLType::DOUBLE,        numComponents,8*numComponents,USE_LFORMAT); }
+
+      template<> inline AttribType AttribType::create< int8_t> (uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::BYTE,          numComponents,1*numComponents,typeHandling); }
+      template<> inline AttribType AttribType::create<uint8_t> (uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::UNSIGNED_BYTE, numComponents,1*numComponents,typeHandling); }
+      template<> inline AttribType AttribType::create< int16_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::SHORT,         numComponents,2*numComponents,typeHandling); }
+      template<> inline AttribType AttribType::create<uint16_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::UNSIGNED_SHORT,numComponents,2*numComponents,typeHandling); }
+      template<> inline AttribType AttribType::create< int32_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::INT,           numComponents,4*numComponents,typeHandling); }
+      template<> inline AttribType AttribType::create<uint32_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::UNSIGNED_INT,  numComponents,4*numComponents,typeHandling); }
 
       template<> inline AttribType AttribType::create<glm::vec2> ()  { return AttribType(GLType::FLOAT,2,4*2, USE_FORMAT); }
       template<> inline AttribType AttribType::create<glm::vec3> ()  { return AttribType(GLType::FLOAT,3,4*3, USE_FORMAT); }
@@ -284,13 +300,6 @@ namespace ge
       template<> inline AttribType AttribType::create<glm::uvec2>()  { return AttribType(GLType::UNSIGNED_INT,2,4*2,USE_IFORMAT); }
       template<> inline AttribType AttribType::create<glm::uvec3>()  { return AttribType(GLType::UNSIGNED_INT,3,4*3,USE_IFORMAT); }
       template<> inline AttribType AttribType::create<glm::uvec4>()  { return AttribType(GLType::UNSIGNED_INT,4,4*4,USE_IFORMAT); }
-
-      template<> inline AttribType AttribType::create< int8_t> (uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::BYTE,          numComponents,1*numComponents,typeHandling); }
-      template<> inline AttribType AttribType::create<uint8_t> (uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::UNSIGNED_BYTE, numComponents,1*numComponents,typeHandling); }
-      template<> inline AttribType AttribType::create< int16_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::SHORT,         numComponents,2*numComponents,typeHandling); }
-      template<> inline AttribType AttribType::create<uint16_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::UNSIGNED_SHORT,numComponents,2*numComponents,typeHandling); }
-      template<> inline AttribType AttribType::create< int32_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::INT,           numComponents,4*numComponents,typeHandling); }
-      template<> inline AttribType AttribType::create<uint32_t>(uint8_t numComponents,TypeHandling typeHandling)  { return AttribType(GLType::UNSIGNED_INT,  numComponents,4*numComponents,typeHandling); }
 
       template<> inline AttribType AttribType::create<glm::ivec2>(TypeHandling typeHandling)  { return AttribType(GLType::INT,2,4*2,typeHandling); }
       template<> inline AttribType AttribType::create<glm::ivec3>(TypeHandling typeHandling)  { return AttribType(GLType::INT,3,4*3,typeHandling); }
