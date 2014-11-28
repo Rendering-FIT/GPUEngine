@@ -421,9 +421,9 @@ void BufferObject::clear(
   glClearNamedBufferSubData(this->_id,internalFormat,offset,size,format,type,data);
 #endif//USE_DSA
 }
-void*BufferObject::map(
+GLvoid*BufferObject::map(
     GLbitfield access){
-  void*ptr;
+  GLvoid*ptr;
   if(access==GL_READ_ONLY )access=GL_MAP_READ_BIT ;
   if(access==GL_WRITE_ONLY)access=GL_MAP_WRITE_BIT;
   if(access==GL_READ_ONLY )access=GL_MAP_READ_BIT|GL_MAP_WRITE_BIT;
@@ -446,11 +446,11 @@ void*BufferObject::map(
 #endif//USE_DSA
   return ptr;
 }
-void*BufferObject::map(
+GLvoid*BufferObject::map(
     GLintptr   offset,
     GLsizeiptr size,
     GLbitfield access){
-  void*ptr;
+  GLvoid*ptr;
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
@@ -561,6 +561,29 @@ GLint BufferObject::_getBufferParameter(GLenum pname){
 #endif//USE_DSA
   return param;
 }
+
+GLvoid*BufferObject::_getBufferPointer(GLenum pname){
+  GLvoid *param;
+#ifndef USE_DSA
+
+#ifdef  SAVE_PREVIOUS_BINDING
+  GLuint oldId;
+  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+#endif//SAVE_PREVIOUS_BINDING
+
+  glBindBuffer       (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
+  glGetBufferPointerv(BUFFEROBJECT_DEFAULT_OPERTARGET,pname,&param);
+
+#ifdef  SAVE_PREVIOUS_BINDING
+  glBindBuffer       (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);
+#endif//SAVE_PREVIOUS_BINDING
+
+#else //USE_DSA
+  glGetNamedBufferPointerv(this->_id,pname,&param);
+#endif//USE_DSA
+  return param;
+}
+
 GLsizeiptr BufferObject::getSize(){
   return this->_getBufferParameter(GL_BUFFER_SIZE);
 }
@@ -587,5 +610,8 @@ GLsizeiptr BufferObject::getMapSize(){
 }
 GLboolean BufferObject::isImmutable(){
   return this->_getBufferParameter(GL_BUFFER_IMMUTABLE_STORAGE);
+}
+GLvoid*BufferObject::getMapPointer(){
+  return this->_getBufferPointer(GL_BUFFER_MAP_POINTER);
 }
 

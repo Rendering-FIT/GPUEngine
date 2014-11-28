@@ -39,7 +39,8 @@ namespace ge{
     class GE_EXPORT BufferObject// : public ge::core::Object
     {
       private:
-        GLint _getBufferParameter(GLenum pname);
+        GLint   _getBufferParameter(GLenum pname);
+        GLvoid* _getBufferPointer  (GLenum pname);
       protected:
         GLuint     _id; ///< Buffer Object OpenGL ID
       public:
@@ -48,9 +49,9 @@ namespace ge{
             const GLvoid *data  = BUFFEROBJECT_DEFAULT_DATA,
             GLbitfield    flags = BUFFEROBJECT_DEFAULT_FLAGS);
         ~BufferObject();
-        void*map(
+        GLvoid*map(
             GLbitfield access = BUFFEROBJECT_DEFAULT_ACCESS);
-        void*map(
+        GLvoid*map(
             GLintptr   offset,
             GLsizeiptr size,
             GLbitfield access = BUFFEROBJECT_DEFAULT_ACCESS);
@@ -97,6 +98,7 @@ namespace ge{
         GLboolean  isMapped      ();
         GLintptr   getMapOffset  ();
         GLsizeiptr getMapSize    ();
+        GLvoid*    getMapPointer ();
         GLboolean  isImmutable   ();
     };
   }

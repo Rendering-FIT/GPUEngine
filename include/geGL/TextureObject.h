@@ -26,8 +26,8 @@ namespace ge{
     class TextureObject
     {
       private:
-        inline GLint getTexLevelParameter(GLint level,GLenum pname);
-        inline GLint getTexParameter(GLenum pname);
+        inline GLint _getTexLevelParameter(GLint level,GLenum pname);
+        inline GLint _getTexParameter(GLenum pname);
       protected:
         GLuint  _id;
         GLenum  _target;

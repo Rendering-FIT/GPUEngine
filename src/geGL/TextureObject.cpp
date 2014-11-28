@@ -184,300 +184,297 @@ samples == 1    -> glTexStorage2DMultisample/glTextureStorage2DMultisample
 // */
 
 
-namespace ge{
-  namespace gl{
-    GLenum textureTarget2Binding(GLenum target){
-      switch(target){
-        case GL_TEXTURE_1D                  :return GL_TEXTURE_BINDING_1D                  ;
-        case GL_TEXTURE_1D_ARRAY            :return GL_TEXTURE_BINDING_1D_ARRAY            ;
-        case GL_TEXTURE_2D                  :return GL_TEXTURE_BINDING_2D                  ;
-        case GL_TEXTURE_2D_ARRAY            :return GL_TEXTURE_BINDING_2D_ARRAY            ;
-        case GL_TEXTURE_2D_MULTISAMPLE      :return GL_TEXTURE_BINDING_2D_MULTISAMPLE      ;
-        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:return GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY;
-        case GL_TEXTURE_3D                  :return GL_TEXTURE_BINDING_3D                  ;
-        case GL_TEXTURE_BUFFER              :return GL_TEXTURE_BINDING_BUFFER              ;
-        case GL_TEXTURE_CUBE_MAP            :return GL_TEXTURE_BINDING_CUBE_MAP            ;
-        case GL_TEXTURE_RECTANGLE           :return GL_TEXTURE_BINDING_RECTANGLE           ;
-        default                             :return 0;
-      }
-    }
+using namespace ge::gl;
 
-    GLenum textureBinding2Target(GLenum target){
-      switch(target){
-        case GL_TEXTURE_BINDING_1D                  :return GL_TEXTURE_1D                  ;
-        case GL_TEXTURE_BINDING_1D_ARRAY            :return GL_TEXTURE_1D_ARRAY            ;
-        case GL_TEXTURE_BINDING_2D                  :return GL_TEXTURE_2D                  ;
-        case GL_TEXTURE_BINDING_2D_ARRAY            :return GL_TEXTURE_2D_ARRAY            ;
-        case GL_TEXTURE_BINDING_2D_MULTISAMPLE      :return GL_TEXTURE_2D_MULTISAMPLE      ;
-        case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-        case GL_TEXTURE_BINDING_3D                  :return GL_TEXTURE_3D                  ;
-        case GL_TEXTURE_BINDING_BUFFER              :return GL_TEXTURE_BUFFER              ;
-        case GL_TEXTURE_BINDING_CUBE_MAP            :return GL_TEXTURE_CUBE_MAP            ;
-        case GL_TEXTURE_BINDING_RECTANGLE           :return GL_TEXTURE_RECTANGLE           ;
-        default                                     :return 0;
-      }
-    }
+GLenum ge::gl::textureTarget2Binding(GLenum target){
+  switch(target){
+    case GL_TEXTURE_1D                  :return GL_TEXTURE_BINDING_1D                  ;
+    case GL_TEXTURE_1D_ARRAY            :return GL_TEXTURE_BINDING_1D_ARRAY            ;
+    case GL_TEXTURE_2D                  :return GL_TEXTURE_BINDING_2D                  ;
+    case GL_TEXTURE_2D_ARRAY            :return GL_TEXTURE_BINDING_2D_ARRAY            ;
+    case GL_TEXTURE_2D_MULTISAMPLE      :return GL_TEXTURE_BINDING_2D_MULTISAMPLE      ;
+    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:return GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY;
+    case GL_TEXTURE_3D                  :return GL_TEXTURE_BINDING_3D                  ;
+    case GL_TEXTURE_BUFFER              :return GL_TEXTURE_BINDING_BUFFER              ;
+    case GL_TEXTURE_CUBE_MAP            :return GL_TEXTURE_BINDING_CUBE_MAP            ;
+    case GL_TEXTURE_RECTANGLE           :return GL_TEXTURE_BINDING_RECTANGLE           ;
+    default                             :return 0;
+  }
+}
 
-    std::string translateTextureTarget(GLenum target){
-      switch(target){
-        case GL_TEXTURE_1D                  :return "GL_TEXTURE_1D"                  ;
-        case GL_TEXTURE_1D_ARRAY            :return "GL_TEXTURE_1D_ARRAY"            ;
-        case GL_TEXTURE_2D                  :return "GL_TEXTURE_2D"                  ;
-        case GL_TEXTURE_2D_ARRAY            :return "GL_TEXTURE_2D_ARRAY"            ;
-        case GL_TEXTURE_2D_MULTISAMPLE      :return "GL_TEXTURE_2D_MULTISAMPLE"      ;
-        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:return "GL_TEXTURE_2D_MULTISAMPLE_ARRAY";
-        case GL_TEXTURE_3D                  :return "GL_TEXTURE_3D"                  ;
-        case GL_TEXTURE_BUFFER              :return "GL_TEXTURE_BUFFER"              ;
-        case GL_TEXTURE_CUBE_MAP            :return "GL_TEXTURE_CUBE_MAP"            ;
-        case GL_TEXTURE_RECTANGLE           :return "GL_TEXTURE_RECTANGLE"           ;
-        default                             :return "unknown"                        ;
-      }
-    }
+GLenum ge::gl::textureBinding2Target(GLenum binding){
+  switch(binding){
+    case GL_TEXTURE_BINDING_1D                  :return GL_TEXTURE_1D                  ;
+    case GL_TEXTURE_BINDING_1D_ARRAY            :return GL_TEXTURE_1D_ARRAY            ;
+    case GL_TEXTURE_BINDING_2D                  :return GL_TEXTURE_2D                  ;
+    case GL_TEXTURE_BINDING_2D_ARRAY            :return GL_TEXTURE_2D_ARRAY            ;
+    case GL_TEXTURE_BINDING_2D_MULTISAMPLE      :return GL_TEXTURE_2D_MULTISAMPLE      ;
+    case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+    case GL_TEXTURE_BINDING_3D                  :return GL_TEXTURE_3D                  ;
+    case GL_TEXTURE_BINDING_BUFFER              :return GL_TEXTURE_BUFFER              ;
+    case GL_TEXTURE_BINDING_CUBE_MAP            :return GL_TEXTURE_CUBE_MAP            ;
+    case GL_TEXTURE_BINDING_RECTANGLE           :return GL_TEXTURE_RECTANGLE           ;
+    default                                     :return 0;
+  }
+}
 
-    std::string translateTextureBinding(GLenum binding){
-      switch(binding){
-        case GL_TEXTURE_BINDING_1D                  :return "GL_TEXTURE_BINDING_1D"                  ;
-        case GL_TEXTURE_BINDING_1D_ARRAY            :return "GL_TEXTURE_BINDING_1D_ARRAY"            ;
-        case GL_TEXTURE_BINDING_2D                  :return "GL_TEXTURE_BINDING_2D"                  ;
-        case GL_TEXTURE_BINDING_2D_ARRAY            :return "GL_TEXTURE_BINDING_2D_ARRAY"            ;
-        case GL_TEXTURE_BINDING_2D_MULTISAMPLE      :return "GL_TEXTURE_BINDING_2D_MULTISAMPLE"      ;
-        case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:return "GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY";
-        case GL_TEXTURE_BINDING_3D                  :return "GL_TEXTURE_BINDING_3D"                  ;
-        case GL_TEXTURE_BINDING_BUFFER              :return "GL_TEXTURE_BINDING_BUFFER"              ;
-        case GL_TEXTURE_BINDING_CUBE_MAP            :return "GL_TEXTURE_BINDING_CUBE_MAP"            ;
-        case GL_TEXTURE_BINDING_RECTANGLE           :return "GL_TEXTURE_BINDING_RECTANGLE"           ;
-        default                                     :return "unknown"                                ;
-      }
-    }
-    std::string translateTextureSwizzle(GLint swizzle){
-      switch(swizzle){
-        case GL_RED  :return"GL_RED"  ;
-        case GL_GREEN:return"GL_GREEN";
-        case GL_BLUE :return"GL_BLUE" ;
-        case GL_ALPHA:return"GL_ALPHA";
-        default      :return"unknown" ;
-      }
-    }
+std::string ge::gl::translateTextureTarget(GLenum target){
+  switch(target){
+    case GL_TEXTURE_1D                  :return "GL_TEXTURE_1D"                  ;
+    case GL_TEXTURE_1D_ARRAY            :return "GL_TEXTURE_1D_ARRAY"            ;
+    case GL_TEXTURE_2D                  :return "GL_TEXTURE_2D"                  ;
+    case GL_TEXTURE_2D_ARRAY            :return "GL_TEXTURE_2D_ARRAY"            ;
+    case GL_TEXTURE_2D_MULTISAMPLE      :return "GL_TEXTURE_2D_MULTISAMPLE"      ;
+    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:return "GL_TEXTURE_2D_MULTISAMPLE_ARRAY";
+    case GL_TEXTURE_3D                  :return "GL_TEXTURE_3D"                  ;
+    case GL_TEXTURE_BUFFER              :return "GL_TEXTURE_BUFFER"              ;
+    case GL_TEXTURE_CUBE_MAP            :return "GL_TEXTURE_CUBE_MAP"            ;
+    case GL_TEXTURE_RECTANGLE           :return "GL_TEXTURE_RECTANGLE"           ;
+    default                             :return "unknown"                        ;
+  }
+}
 
-    std::string translateTextureWrap(GLint wrap){
-      switch(wrap){
-        case GL_CLAMP_TO_EDGE       :return"GL_CLAMP_TO_EDGE"       ;
-        case GL_CLAMP_TO_BORDER     :return"GL_CLAMP_TO_BORDER"     ;
-        case GL_MIRRORED_REPEAT     :return"GL_MIRRORED_REPEAT"     ;
-        case GL_REPEAT              :return"GL_REPEAT"              ;
-        case GL_MIRROR_CLAMP_TO_EDGE:return"GL_MIRROR_CLAMP_TO_EDGE";
-        default                     :return"unknown"                ;
-      }
-    }
+std::string ge::gl::translateTextureBinding(GLenum binding){
+  switch(binding){
+    case GL_TEXTURE_BINDING_1D                  :return "GL_TEXTURE_BINDING_1D"                  ;
+    case GL_TEXTURE_BINDING_1D_ARRAY            :return "GL_TEXTURE_BINDING_1D_ARRAY"            ;
+    case GL_TEXTURE_BINDING_2D                  :return "GL_TEXTURE_BINDING_2D"                  ;
+    case GL_TEXTURE_BINDING_2D_ARRAY            :return "GL_TEXTURE_BINDING_2D_ARRAY"            ;
+    case GL_TEXTURE_BINDING_2D_MULTISAMPLE      :return "GL_TEXTURE_BINDING_2D_MULTISAMPLE"      ;
+    case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:return "GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY";
+    case GL_TEXTURE_BINDING_3D                  :return "GL_TEXTURE_BINDING_3D"                  ;
+    case GL_TEXTURE_BINDING_BUFFER              :return "GL_TEXTURE_BINDING_BUFFER"              ;
+    case GL_TEXTURE_BINDING_CUBE_MAP            :return "GL_TEXTURE_BINDING_CUBE_MAP"            ;
+    case GL_TEXTURE_BINDING_RECTANGLE           :return "GL_TEXTURE_BINDING_RECTANGLE"           ;
+    default                                     :return "unknown"                                ;
+  }
+}
+std::string translateTextureSwizzle(GLint swizzle){
+  switch(swizzle){
+    case GL_RED  :return"GL_RED"  ;
+    case GL_GREEN:return"GL_GREEN";
+    case GL_BLUE :return"GL_BLUE" ;
+    case GL_ALPHA:return"GL_ALPHA";
+    default      :return"unknown" ;
+  }
+}
 
-    std::string translateTextureFilter(GLint filter){
-      switch(filter){
-        case GL_NEAREST               :return"GL_NEAREST"               ;
-        case GL_LINEAR                :return"GL_LINEAR"                ;
-        case GL_NEAREST_MIPMAP_NEAREST:return"GL_NEAREST_MIPMAP_NEAREST";
-        case GL_LINEAR_MIPMAP_NEAREST :return"GL_LINEAR_MIPMAP_NEAREST" ;
-        case GL_NEAREST_MIPMAP_LINEAR :return"GL_NEAREST_MIPMAP_LINEAR" ;
-        case GL_LINEAR_MIPMAP_LINEAR  :return"GL_LINEAR_MIPMAP_LINEAR"  ;
-        default                       :return"unknown"                  ;
-      }
-    }
-    std::string translateTextureCompareFunc(GLint func){
-      switch(func){
-        case GL_LEQUAL  :return"GL_LEQUAL"  ;
-        case GL_GEQUAL  :return"GL_GEQUAL"  ;
-        case GL_LESS    :return"GL_LESS"    ;
-        case GL_GREATER :return"GL_GREATER" ;
-        case GL_EQUAL   :return"GL_EQUAL"   ;
-        case GL_NOTEQUAL:return"GL_NOTEQUAL";
-        case GL_ALWAYS  :return"GL_ALWAYS"  ;
-        case GL_NEVER   :return"GL_NEVER"   ;
-        default         :return"unknown"    ;
-      }
-    }
-    std::string translateTextureCompareMode(GLint mode){
-      switch(mode){
-        case GL_COMPARE_REF_TO_TEXTURE:return"GL_COMPARE_REF_TO_TEXTURE";
-        case GL_NONE                  :return"GL_NONE"                  ;
-        default                       :return"unknown"                  ;
-      }
-    }
-    TextureObject::TextureObject(
-        GLenum  target,
-        GLenum  internalFormat,
-        GLsizei levels,
-        GLsizei width){
-      this->_target = target;
-      this->_format = internalFormat;
+std::string translateTextureWrap(GLint wrap){
+  switch(wrap){
+    case GL_CLAMP_TO_EDGE       :return"GL_CLAMP_TO_EDGE"       ;
+    case GL_CLAMP_TO_BORDER     :return"GL_CLAMP_TO_BORDER"     ;
+    case GL_MIRRORED_REPEAT     :return"GL_MIRRORED_REPEAT"     ;
+    case GL_REPEAT              :return"GL_REPEAT"              ;
+    case GL_MIRROR_CLAMP_TO_EDGE:return"GL_MIRROR_CLAMP_TO_EDGE";
+    default                     :return"unknown"                ;
+  }
+}
+
+std::string translateTextureFilter(GLint filter){
+  switch(filter){
+    case GL_NEAREST               :return"GL_NEAREST"               ;
+    case GL_LINEAR                :return"GL_LINEAR"                ;
+    case GL_NEAREST_MIPMAP_NEAREST:return"GL_NEAREST_MIPMAP_NEAREST";
+    case GL_LINEAR_MIPMAP_NEAREST :return"GL_LINEAR_MIPMAP_NEAREST" ;
+    case GL_NEAREST_MIPMAP_LINEAR :return"GL_NEAREST_MIPMAP_LINEAR" ;
+    case GL_LINEAR_MIPMAP_LINEAR  :return"GL_LINEAR_MIPMAP_LINEAR"  ;
+    default                       :return"unknown"                  ;
+  }
+}
+std::string translateTextureCompareFunc(GLint func){
+  switch(func){
+    case GL_LEQUAL  :return"GL_LEQUAL"  ;
+    case GL_GEQUAL  :return"GL_GEQUAL"  ;
+    case GL_LESS    :return"GL_LESS"    ;
+    case GL_GREATER :return"GL_GREATER" ;
+    case GL_EQUAL   :return"GL_EQUAL"   ;
+    case GL_NOTEQUAL:return"GL_NOTEQUAL";
+    case GL_ALWAYS  :return"GL_ALWAYS"  ;
+    case GL_NEVER   :return"GL_NEVER"   ;
+    default         :return"unknown"    ;
+  }
+}
+std::string translateTextureCompareMode(GLint mode){
+  switch(mode){
+    case GL_COMPARE_REF_TO_TEXTURE:return"GL_COMPARE_REF_TO_TEXTURE";
+    case GL_NONE                  :return"GL_NONE"                  ;
+    default                       :return"unknown"                  ;
+  }
+}
+TextureObject::TextureObject(
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width){
+  this->_target = target;
+  this->_format = internalFormat;
 #ifndef USE_DSA
-      glGenTextures(1,&this->_id);
-      glBindTexture(this->_target,this->_id);
-      glTexStorage1D(this->_target,levels,this->_format,width);
+  glGenTextures(1,&this->_id);
+  glBindTexture(this->_target,this->_id);
+  glTexStorage1D(this->_target,levels,this->_format,width);
 #else //USE_DSA
-      glCreateTextures(target,1,&this->_id);
-      glTextureStorage2D(this->_id,levels,this->_format,width);
+  glCreateTextures(target,1,&this->_id);
+  glTextureStorage2D(this->_id,levels,this->_format,width);
 #endif//USE_DSA
 
-    }
+}
 
-    TextureObject::TextureObject(
-        GLenum  target,
-        GLenum  internalFormat,
-        GLsizei levels,
-        GLsizei width,
-        GLsizei height){
-      this->_target = target;
-      this->_format = internalFormat;
+TextureObject::TextureObject(
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height){
+  this->_target = target;
+  this->_format = internalFormat;
 #ifndef USE_DSA
-      glGenTextures(1,&this->_id);
-      glBindTexture(this->_target,this->_id);
-      glTexStorage2D(this->_target,levels,this->_format,width,height);
+  glGenTextures(1,&this->_id);
+  glBindTexture(this->_target,this->_id);
+  glTexStorage2D(this->_target,levels,this->_format,width,height);
 #else //USE_DSA
-      glCreateTextures(target,1,&this->_id);
-      glTextureStorage2D(this->_id,levels,this->_format,width,height);
+  glCreateTextures(target,1,&this->_id);
+  glTextureStorage2D(this->_id,levels,this->_format,width,height);
 #endif//USE_DSA
-    }
+}
 
-    TextureObject::TextureObject(
-        GLenum  target,
-        GLenum  internalFormat,
-        GLsizei levels,
-        GLsizei width,
-        GLsizei height,
-        GLsizei depth){
-      this->_target = target;
-      this->_format = internalFormat;
+TextureObject::TextureObject(
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth){
+  this->_target = target;
+  this->_format = internalFormat;
 #ifndef USE_DSA
-      glGenTextures(1,&this->_id);
-      glBindTexture(this->_target,this->_id);
-      glTexStorage3D(this->_target,levels,this->_format,width,height,depth);
+  glGenTextures(1,&this->_id);
+  glBindTexture(this->_target,this->_id);
+  glTexStorage3D(this->_target,levels,this->_format,width,height,depth);
 #else //USE_DSA
-      glCreateTextures(target,1,&this->_id);
-      glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
+  glCreateTextures(target,1,&this->_id);
+  glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
 #endif//USE_DSA
 
-    }
+}
 
-    TextureObject::~TextureObject(){
-      glDeleteTextures(1,&this->_id);
-    }
+TextureObject::~TextureObject(){
+  glDeleteTextures(1,&this->_id);
+}
 
-    GLuint TextureObject::getId(){
-      return this->_id;
-    }
+GLuint TextureObject::getId(){
+  return this->_id;
+}
 
-    void   TextureObject::bind(GLuint unit){
+void   TextureObject::bind(GLuint unit){
 #ifndef USE_DSA
-      glActiveTexture(unit);
-      glBindTexture(this->_target,this->_id);
+  glActiveTexture(unit);
+  glBindTexture(this->_target,this->_id);
 #else //USE_DSA
-      glBindTextureUnit(unit,this->_id);
+  glBindTextureUnit(unit,this->_id);
 #endif//USE_DSA
-    }
+}
 
-    void TextureObject::unbind(GLuint unit){
+void TextureObject::unbind(GLuint unit){
 #ifndef USE_DSA
-      glActiveTexture(unit);
-      glBindTexture(this->_target,0);
+  glActiveTexture(unit);
+  glBindTexture(this->_target,0);
 #else //USE_DSA
-      glBindTextureUnit(unit,0);
+  glBindTextureUnit(unit,0);
 #endif//USE_DSA
-    }
+}
 
-    void TextureObject::bindImage(
-        GLuint    unit,
-        GLint     level,
-        GLenum    format,
-        GLenum    access,
-        GLboolean layered,
-        GLint     layer){
-      if(format == TEXTUREOBJECT_DEFAULT_FORMAT)
-        format=this->_format;
-      glBindImageTexture(
-          unit,
-          this->_id,
-          level,
-          layered,
-          layer,
-          access,
-          format);
-    }
+void TextureObject::bindImage(
+    GLuint    unit,
+    GLint     level,
+    GLenum    format,
+    GLenum    access,
+    GLboolean layered,
+    GLint     layer){
+  if(format == TEXTUREOBJECT_DEFAULT_FORMAT)
+    format=this->_format;
+  glBindImageTexture(
+      unit,
+      this->_id,
+      level,
+      layered,
+      layer,
+      access,
+      format);
+}
 
-    void TextureObject::texParameteri(GLenum pname,GLint params){
+void TextureObject::texParameteri(GLenum pname,GLint params){
 #ifndef USE_DSA
-      glBindTexture(this->_target,this->_id);
-      glTexParameteri(this->_target,pname,params);
+  glBindTexture(this->_target,this->_id);
+  glTexParameteri(this->_target,pname,params);
 #else //USE_DSA
-      glTextureParameteri(this->_id,pname,params);
+  glTextureParameteri(this->_id,pname,params);
 #endif//USE_DSA
-    }
+}
 
-    void TextureObject::texParameterfv(GLenum pname,GLfloat *params){
+void TextureObject::texParameterfv(GLenum pname,GLfloat *params){
 #ifndef USE_DSA
-      glBindTexture(this->_target,this->_id);
-      glTexParameterfv(this->_target,pname,params);
+  glBindTexture(this->_target,this->_id);
+  glTexParameterfv(this->_target,pname,params);
 #else //USE_DSA
-      glTextureParameterfv(this->_id,pname,params);
+  glTextureParameterfv(this->_id,pname,params);
 #endif//USE_DSA
-    }
+}
 
-    GLenum TextureObject::getTarget(){
-      return this->_target;
-      //glGetTextureParameteriv(this->_id,GL_TEXTURE_TARGET,(GLint*)&target);
-    }
+GLenum TextureObject::getTarget(){
+  return this->_target;
+  //glGetTextureParameteriv(this->_id,GL_TEXTURE_TARGET,(GLint*)&target);
+}
 
-    GLenum TextureObject::getFormat(){
-      return this->_format;
-      //glGetTextureParameteriv(this->_id,GL_TEXTURE_INTERNAL_FORMAT,(GLint*)format);
-    }
-    GLint TextureObject::getTexLevelParameter(GLint level,GLenum pname){
-      GLint param;
+GLenum TextureObject::getFormat(){
+  return this->_format;
+  //glGetTextureParameteriv(this->_id,GL_TEXTURE_INTERNAL_FORMAT,(GLint*)format);
+}
+GLint TextureObject::_getTexLevelParameter(GLint level,GLenum pname){
+  GLint param;
 #ifndef USE_DSA
-      GLuint oldId;
-      GLenum target=this->getTarget();
-      glGetTexParameteriv(target,textureTarget2Binding(target),(GLint*)&oldId);
-      glBindTexture(GL_TEXTURE_2D,this->_id);
-      glGetTexLevelParameteriv(GL_TEXTURE_2D,level,pname,&param);
-      glBindTexture(GL_TEXTURE_2D,oldId);
+  GLuint oldId;
+  GLenum target=this->getTarget();
+  glGetTexParameteriv(target,textureTarget2Binding(target),(GLint*)&oldId);
+  glBindTexture(GL_TEXTURE_2D,this->_id);
+  glGetTexLevelParameteriv(GL_TEXTURE_2D,level,pname,&param);
+  glBindTexture(GL_TEXTURE_2D,oldId);
 #else //USE_DSA
-      glGetTextureLevelParameteriv(this->_id,level,GL_TEXTURE_WIDTH,&param);
+  glGetTextureLevelParameteriv(this->_id,level,GL_TEXTURE_WIDTH,&param);
 #endif//USE_DSA
-      return param;
-    }
-    GLsizei TextureObject::getWidth(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_WIDTH);
-    }
-    GLsizei TextureObject::getHeight(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_HEIGHT);
-    }
-    GLsizei TextureObject::getDepth(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_DEPTH);
-    }
-    GLint TextureObject::getFixedSampleLocation(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
-    }
-    GLint TextureObject::getCompressed(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
-    }
-    GLint TextureObject::getCompressedImageSize(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_COMPRESSED_IMAGE_SIZE);
-    }
-    GLint TextureObject::getSamples(GLint level){
-      return this->getTexLevelParameter(level,GL_TEXTURE_SAMPLES);
-    }
-    GLint TextureObject::getTexParameter(GLenum pname){
-      GLint param;
+  return param;
+}
+GLsizei TextureObject::getWidth(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_WIDTH);
+}
+GLsizei TextureObject::getHeight(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_HEIGHT);
+}
+GLsizei TextureObject::getDepth(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH);
+}
+GLint TextureObject::getFixedSampleLocation(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
+}
+GLint TextureObject::getCompressed(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
+}
+GLint TextureObject::getCompressedImageSize(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED_IMAGE_SIZE);
+}
+GLint TextureObject::getSamples(GLint level){
+  return this->_getTexLevelParameter(level,GL_TEXTURE_SAMPLES);
+}
+GLint TextureObject::_getTexParameter(GLenum pname){
+  GLint param;
 #ifndef USE_DSA
-      GLuint oldId;
-      GLenum target=this->getTarget();
-      glGetTexParameteriv(target,textureTarget2Binding(target),(GLint*)&oldId);
-      glBindTexture(GL_TEXTURE_2D,this->_id);
-      glGetTexParameteriv(GL_TEXTURE_2D,pname,&param);
-      glBindTexture(GL_TEXTURE_2D,oldId);
+  GLuint oldId;
+  GLenum target=this->getTarget();
+  glGetTexParameteriv(target,textureTarget2Binding(target),(GLint*)&oldId);
+  glBindTexture(GL_TEXTURE_2D,this->_id);
+  glGetTexParameteriv(GL_TEXTURE_2D,pname,&param);
+  glBindTexture(GL_TEXTURE_2D,oldId);
 #else //USE_DSA
-      glGetTextureParameteriv(this->_id,pname,&param));
+  glGetTextureParameteriv(this->_id,pname,&param));
 #endif//USE_DSA
-      return param;
-    }
-
-  }//gl
-}//ge
+  return param;
+}
