@@ -16,6 +16,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ShaderObjectSubroutine.h
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
+    ${HEADER_PATH}/RenderbufferObject.h
     ${HEADER_PATH}/Blend.h
     ${HEADER_PATH}/BlendCommands.h
     ${HEADER_PATH}/DepthCommands.h
@@ -38,6 +39,8 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ShaderObjectsManager.h
     ${HEADER_PATH}/AsynchronousQueryObject.h
     ${HEADER_PATH}/DebugMessage.h
+    ${HEADER_PATH}/RasterizationState.h
+    ${HEADER_PATH}/geGL.h
   )
 
 set(GL_SOURCES
@@ -52,6 +55,7 @@ set(GL_SOURCES
     ShaderObjectParameter.cpp
     ShaderObjectSubroutine.cpp
     ShaderObjectSubroutineUniform.cpp
+    RenderbufferObject.cpp
     Blend.cpp
     BlendCommands.cpp
     DepthCommands.cpp
@@ -74,6 +78,7 @@ set(GL_SOURCES
     ShaderObjectsManager.cpp
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
+    RasterizationState.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}
