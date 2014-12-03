@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <geSG/Array.h>
-#include <geSG/AttribsReference.h>
+#include <geSG/AttribReference.h>
 #include <geSG/Node.h>
 
 namespace ge
@@ -14,8 +14,8 @@ namespace ge
       /** Mesh class represents a scene geometry that can be drawn by a single draw call
        *  on OpenGL 4.3+ graphics hardware.
        *
-       *  Mesh class may contain vertex attribute data. The data are uploaded to AttribsStorage
-       *  that manages vertex attributes in gpu memory. _attribsReference member holds reference
+       *  Mesh class may contain vertex attribute data. The data are uploaded to AttribStorage
+       *  that manages vertex attributes in gpu memory. _attribReference member holds reference
        *  to the uploaded data.
        * */
       class Mesh : public Node
@@ -26,17 +26,17 @@ namespace ge
 
       protected:
 
-         bool _cpuGeometryDataAvailable : 1;
-         bool _gpuGeometryDataAvailable : 1;
-         bool _releaseCpuGeometryDataAfterGpuUpload : 1;
+         bool _cpuAttribDataAvailable : 1;
+         bool _gpuAttribDataAvailable : 1;
+         bool _releaseCpuAttribDataAfterGpuUpload : 1;
 
          int _glMode;
-         std::vector<Array> _attribs;
+         std::vector<Array> _attribArrays;
          std::vector<ArrayContent> _contents;
-         Array _indices;
-         std::vector<int8_t> _attribIndex;
+         Array _indexArray;
+         std::vector<int8_t> _content2attribIndex;
 
-         AttribsReference _attribsReference;
+         AttribReference _attribReference;
 
       public:
 
@@ -49,15 +49,31 @@ namespace ge
          static inline std::shared_ptr<Mesh> create(const std::vector<Array> attribs,
                                                     const std::vector<ArrayContent> contents);
 
-         template<typename T>
-         inline void setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                                   const std::shared_ptr<std::vector<T>> &ptr);
-         virtual void setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                                    const std::shared_ptr<ArrayDecorator>& arrayDecorator);
-         inline void setAttribData(unsigned attribIndex,ArrayContent content,const Array &array);
-         void setAttribData(const std::vector<Array> attribs, const std::vector<ArrayContent> contents);
+         virtual void resetCpuGeometryData();
+         virtual void gpuUploadGeometryData();
+         virtual void gpuDownloadGeometryData();
 
-         virtual AttribsConfig getAttribsConfig() const;
+         void setAttribArrays(const std::vector<Array> attribs, const std::vector<ArrayContent> contents);
+         inline void setAttribArray(unsigned attribIndex,ArrayContent content,const Array &array);
+         template<typename T>
+         inline void setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                    const std::shared_ptr<std::vector<T>> &ptr);
+         virtual void setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                     const std::shared_ptr<ArrayDecorator>& arrayDecorator);
+         void setIndexArray(const Array &array);
+         inline void setIndexArray(const std::shared_ptr<std::vector<unsigned>> &ptr);
+         virtual void setIndexArray(const std::shared_ptr<ArrayDecoratorTemplate<unsigned>>& arrayDecorator);
+
+         inline int getNumAttribArrays() const;
+         inline bool hasIndices() const;
+
+         inline const std::vector<Array>& getAttribArrays();
+         inline Array& getAttribArray(int index);
+         inline Array& getAttribArray(ArrayContent content);
+         inline Array& getIndexArray();
+
+         inline const AttribReference& getAttribReference() const;
+         virtual AttribConfig getAttribConfig() const;
 
          class Factory {
          public:
@@ -72,26 +88,36 @@ namespace ge
 
 
       // inline and template methods
-      inline Mesh::Mesh() : _cpuGeometryDataAvailable(false), _gpuGeometryDataAvailable(false),
-                            _releaseCpuGeometryDataAfterGpuUpload(true)  {}
+      inline Mesh::Mesh() : _cpuAttribDataAvailable(false), _gpuAttribDataAvailable(false),
+                            _releaseCpuAttribDataAfterGpuUpload(true)  {}
       inline std::shared_ptr<Mesh> Mesh::create()  { return _factory->create(); }
       inline std::shared_ptr<Mesh> Mesh::create(const std::vector<Array> attribs, const std::vector<ArrayContent> contents)
       {
          std::shared_ptr<Mesh> m(_factory->create());
-         m->setAttribData(attribs,contents);
+         m->setAttribArrays(attribs,contents);
          return m;
       }
       template<typename T>
-      inline void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                                      const std::shared_ptr<std::vector<T>> &ptr)
+      inline void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                       const std::shared_ptr<std::vector<T>> &ptr)
       {
-         setAttribData(attribIndex,content,attribType,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
+         setAttribArray(attribIndex,content,attribType,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
       }
-      inline void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,const Array &array)
+      inline void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,const Array &array)
       {
-         setAttribData(attribIndex,content,array.getType(),array.getArrayDecorator());
+         setAttribArray(attribIndex,content,array.getType(),array.getArrayDecorator());
       }
-      std::shared_ptr<Mesh> Mesh::Factory::create() { return std::make_shared<Mesh>(); }
+      inline void Mesh::setIndexArray(const std::shared_ptr<std::vector<unsigned>> &ptr)
+      {
+         setIndexArray(std::make_shared<ArrayDecoratorTemplate<unsigned>>(ptr));
+      }
+      inline int Mesh::getNumAttribArrays() const  { return _attribArrays.size(); }
+      inline bool Mesh::hasIndices() const  { return _indexArray.getType() != AttribType::Empty; }
+      inline const std::vector<Array>& Mesh::getAttribArrays()  { return _attribArrays; }
+      inline Array& Mesh::getAttribArray(int index)  { return _attribArrays[index]; }
+      inline Array& Mesh::getAttribArray(ArrayContent content)  { return _attribArrays[_content2attribIndex[uint8_t(content)]]; }
+      inline Array& Mesh::getIndexArray()  { return _indexArray; }
+      inline const AttribReference& Mesh::getAttribReference() const  { return _attribReference; }
    }
 }
 

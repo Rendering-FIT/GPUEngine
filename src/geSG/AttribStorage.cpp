@@ -1,28 +1,28 @@
 #include <iostream> // for cerr
 #include <memory>
 #include <geSG/Array.h>
-#include <geSG/AttribsStorage.h>
-#include <geSG/AttribsReference.h>
-#include <geSG/SeparateBuffersAttribsStorage.h> // for DefaultFactory
+#include <geSG/AttribStorage.h>
+#include <geSG/AttribReference.h>
+#include <geSG/SeparateBuffersAttribStorage.h> // for DefaultFactory
 
 using namespace ge::sg;
 using namespace std;
 
 
-class DefaultFactory : public AttribsStorage::Factory {
+class DefaultFactory : public AttribStorage::Factory {
 public:
-   virtual shared_ptr<AttribsStorage> create(const AttribsConfig &config,
-                                             unsigned numVertices,unsigned numIndices)
+   virtual shared_ptr<AttribStorage> create(const AttribConfig &config,
+                                            unsigned numVertices,unsigned numIndices)
    {
-      return make_shared<SeparateBuffersAttribsStorage>(config,numVertices,numIndices);
+      return make_shared<SeparateBuffersAttribStorage>(config,numVertices,numIndices);
    }
 };
 
-shared_ptr<AttribsStorage::Factory> AttribsStorage::_factory = make_shared<DefaultFactory>();
+shared_ptr<AttribStorage::Factory> AttribStorage::_factory = make_shared<DefaultFactory>();
 
 
 
-AttribsStorage::AttribsStorage(const AttribsConfig &config,unsigned numVertices,unsigned numIndices)
+AttribStorage::AttribStorage(const AttribConfig &config,unsigned numVertices,unsigned numIndices)
    : _numVerticesTotal(numVertices)
    , _numVerticesAvailable(numVertices)
    , _numVerticesAvailableAtTheEnd(numVertices)
@@ -33,7 +33,7 @@ AttribsStorage::AttribsStorage(const AttribsConfig &config,unsigned numVertices,
    , _numIndicesAvailableAtTheEnd(numIndices)
    , _firstIndexAvailableAtTheEnd(0) // all indices are available
    , _idOfIndicesBlockAtTheEnd(0) // points to zero element
-   , _attribsConfig(config)
+   , _attribConfig(config)
 {
    // zero element is reserved for invalid object
    // and it serves as Null object (Null object design pattern)
@@ -42,13 +42,13 @@ AttribsStorage::AttribsStorage(const AttribsConfig &config,unsigned numVertices,
 }
 
 
-AttribsStorage::~AttribsStorage()
+AttribStorage::~AttribStorage()
 {
    cancelAllAllocations();
 }
 
 
-/** Allocates the memory for vertices and indices inside AttribsStorage
+/** Allocates the memory for vertices and indices inside AttribStorage
  *  managed Vertex Array Object (VAO).
  *
  *  Returns true on success. False on failure, usually caused by absence of
@@ -57,25 +57,25 @@ AttribsStorage::~AttribsStorage()
  *  The method does not require active graphics context.
  *
  *  @param r receives the allocation information and any further references
- *           to the allocated memory are performed using AttribsReference
+ *           to the allocated memory are performed using AttribReference
  *           returned in this parameter.
  *  @param numVertices number of vertices to be allocated
  *  @param numIndices number of indices to be allocated inside associated
  *                    Element Buffer Object
  */
-bool AttribsStorage::allocData(AttribsReference &r,int numVertices,int numIndices)
+bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices)
 {
    // do we have enough space?
    if(_numVerticesAvailableAtTheEnd<numVertices || _numIndicesAvailableAtTheEnd<numIndices)
       return false;
 
-   // allocate memory for vertices (inside AttribsStorage's preallocated memory or buffers)
+   // allocate memory for vertices (inside AttribStorage's preallocated memory or buffers)
    unsigned verticesDataId=_verticesDataAllocationMap.size();
    _verticesDataAllocationMap.emplace_back(_firstVertexAvailableAtTheEnd,numVertices,&r,0);
    _verticesDataAllocationMap[_idOfVerticesBlockAtTheEnd].nextRec=verticesDataId;
    _idOfVerticesBlockAtTheEnd=verticesDataId;
 
-   // allocate memory for indices (inside AttribsStorage's preallocated memory or buffers)
+   // allocate memory for indices (inside AttribStorage's preallocated memory or buffers)
    unsigned indicesDataId;
    if(numIndices==0)
       indicesDataId=0;
@@ -87,18 +87,18 @@ bool AttribsStorage::allocData(AttribsReference &r,int numVertices,int numIndice
       _idOfIndicesBlockAtTheEnd=indicesDataId;
    }
 
-   // update AttribsReference
-   if(r.attribsStorage!=NULL)
+   // update AttribReference
+   if(r.attribStorage!=NULL)
    {
-      cerr<<"Error: calling AttribsStorage::allocData() on AttribsReference\n"
+      cerr<<"Error: calling AttribStorage::allocData() on AttribReference\n"
             "   that is not empty." << endl;
       r.freeData();
    }
-   r.attribsStorage=this;
+   r.attribStorage=this;
    r.verticesDataId=verticesDataId;
    r.indicesDataId=indicesDataId;
 
-   // update AttribsStorage internal allocation variables
+   // update AttribStorage internal allocation variables
    _numVerticesAvailable-=numVertices;
    _numVerticesAvailableAtTheEnd-=numVertices;
    _firstVertexAvailableAtTheEnd+=numVertices;
@@ -112,7 +112,7 @@ bool AttribsStorage::allocData(AttribsReference &r,int numVertices,int numIndice
 
 /** Changes the number of allocated elements or indices.
  *
- *  Parameter r contains the reference to AttribsReference holding allocation information.
+ *  Parameter r contains the reference to AttribReference holding allocation information.
  *  numVertices and numIndices are the new number of elements in vertex and index arrays.
  *  If preserveContent parameter is true, the content of element and index data will be preserved.
  *  If new data are larger, the content over the size of previous data is undefined.
@@ -120,34 +120,34 @@ bool AttribsStorage::allocData(AttribsReference &r,int numVertices,int numIndice
  *  If preserveContent is false, content of element and index data are undefined
  *  after reallocation.
  */
-bool AttribsStorage::reallocData(AttribsReference &r,int numVertices,int numIndices,bool preserveContent)
+bool AttribStorage::reallocData(AttribReference &r,int numVertices,int numIndices,bool preserveContent)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
    // - if new arrays are bigger and can be enlarged on the place, we do it
-   // - otherwise we try to allocate new place for the data in the same AttribsStorage
-   // - if we do not succeed in the current AttribsStorage, we move the data to
-   //   some other AttribsStorage
-   // - if no AttribsStorage accommodate us, we allocate new AttribsStorage
+   // - otherwise we try to allocate new place for the data in the same AttribStorage
+   // - if we do not succeed in the current AttribStorage, we move the data to
+   //   some other AttribStorage
+   // - if no AttribStorage accommodate us, we allocate new AttribStorage
 
    // FIXME: not implemented yet
 }
 
 
-/** Releases the memory pointed by AttribsReference r.
+/** Releases the memory pointed by AttribReference r.
  *
  *  Memory pointed by r inside internally pre-allocated Vertex Array Object (VAO)
  *  is marked free.
  *
  *  The method does not require active graphics context.
  */
-void AttribsStorage::freeData(AttribsReference &r)
+void AttribStorage::freeData(AttribReference &r)
 {
-   // check whether this attribsStorage owns given AttribsReference
-   if(r.attribsStorage!=this)
+   // check whether this attribStorage owns given AttribReference
+   if(r.attribStorage!=this)
    {
-      cerr<<"Error: calling AttribsStorage::freeData() on AttribsReference\n"
-            "   that is not managed by this AttribsStorage."<<endl;
+      cerr<<"Error: calling AttribStorage::freeData() on AttribReference\n"
+            "   that is not managed by this AttribStorage."<<endl;
       return;
    }
 
@@ -160,20 +160,20 @@ void AttribsStorage::freeData(AttribsReference &r)
       ab.owner=NULL;
    }
 
-   // update AttribsReference
-   r.attribsStorage=NULL;
+   // update AttribReference
+   r.attribStorage=NULL;
 }
 
 
-void AttribsStorage::cancelAllAllocations()
+void AttribStorage::cancelAllAllocations()
 {
-   // break references from AttribsReferences
+   // break references from AttribReferences
    for(auto it=_verticesDataAllocationMap.begin(); it!=_verticesDataAllocationMap.end(); it++)
       if(it->owner)
-         it->owner->attribsStorage=nullptr;
+         it->owner->attribStorage=nullptr;
    for(auto it=_indicesDataAllocationMap.begin(); it!=_indicesDataAllocationMap.end(); it++)
       if(it->owner)
-         it->owner->attribsStorage=nullptr;
+         it->owner->attribStorage=nullptr;
 
    // empty allocation maps
    _verticesDataAllocationMap.clear();
@@ -191,9 +191,9 @@ void AttribsStorage::cancelAllAllocations()
 }
 
 
-// AttribsStorage::AllocationBlock::nextRec documentation
+// AttribStorage::AllocationBlock::nextRec documentation
 // note: brief description is with the variable declaration
-/** \var unsigned AttribsStorage::AllocationBlock::nextRec
+/** \var unsigned AttribStorage::AllocationBlock::nextRec
  *
  *  Order of AllocationBlocks stored in std::vector<AllocationBlock>
  *  often does not correspond with the order of their memory placements.

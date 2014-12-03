@@ -4,7 +4,7 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <geSG/AttribsConfig.h>
+#include <geSG/AttribConfig.h>
 #include <geSG/Export.h>
 
 namespace ge
@@ -12,64 +12,56 @@ namespace ge
    namespace sg
    {
       class Array;
-      class AttribsReference;
-      class AttribsStorage;
+      class AttribReference;
+      class AttribStorage;
       class Mesh;
 
 
-      class GE_EXPORT AttribsManager {
+      class GE_EXPORT AttribManager {
       public:
 
-         typedef std::multimap<AttribsConfig,std::shared_ptr<AttribsStorage>> AttribsStorageMultiMap;
+         typedef std::multimap<AttribConfig,std::shared_ptr<AttribStorage>> AttribStorageMultiMap;
 
       protected:
 
-         typedef std::map<AttribsConfigId,std::pair<AttribsStorageMultiMap::iterator,
-               AttribsStorageMultiMap::iterator>> Id2IteratorMap;
-         AttribsStorageMultiMap _attribsStorageMultiMap;
+         typedef std::map<AttribConfigId,std::pair<AttribStorageMultiMap::iterator,
+               AttribStorageMultiMap::iterator>> Id2IteratorMap;
+         AttribStorageMultiMap _attribStorageMultiMap;
          Id2IteratorMap _id2IteratorMap;
          int _defaultStorageNumVertices = 1000*1024;
          int _defaultStorageNumIndices = 4000*1024;
-         std::list<std::shared_ptr<AttribsStorage>> _privateAttribsStorages;
+         std::list<std::shared_ptr<AttribStorage>> _privateAttribStorages;
 
       public:
 
-         inline AttribsManager() {}
-         virtual ~AttribsManager();
+         inline AttribManager() {}
+         virtual ~AttribManager();
 
-         inline std::pair<AttribsStorageMultiMap::iterator,AttribsStorageMultiMap::iterator>
-               getAttribsStorages(const AttribsConfig& attribsConfig);
-         inline AttribsStorageMultiMap& getAttribsStorages();
-         inline const AttribsStorageMultiMap& getAttribsStorages() const;
+         inline std::pair<AttribStorageMultiMap::iterator,AttribStorageMultiMap::iterator>
+               getAttribStorages(const AttribConfig& attribConfig);
+         inline AttribStorageMultiMap& getAttribStorages();
+         inline const AttribStorageMultiMap& getAttribStorages() const;
 
-         virtual bool allocData(AttribsReference &r,const AttribsConfig& attribsConfig,
+         virtual bool allocData(AttribReference &r,const AttribConfig& attribConfig,
                                 int numVertices,int numIndices);
-         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,
+         virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
                                   bool preserveContent=true);
-         virtual void freeData(AttribsReference &r);
+         virtual void freeData(AttribReference &r);
 
-         static inline void uploadVertexData(AttribsReference &r,const std::vector<Array>& attribs,
+         static inline void uploadVertexData(AttribReference &r,const std::vector<Array>& attribs,
                                              int fromIndex=0,int numVertices=-1);
-         static inline void uploadVertexData(AttribsReference &r,Mesh *mesh,
-                                             int fromIndex=0,int numVertices=-1);
-         static inline int uploadVertexData(AttribsReference &r,Mesh *mesh,
-                                            unsigned &currentPosition,int bytesToUpload);
-         static inline void uploadIndicesData(AttribsReference &r,const Array& indices,
-                                              int fromIndex=0,int numIndices=-1);
-         static inline void uploadIndicesData(AttribsReference &r,Mesh *mesh,
-                                              int fromIndex=0,int numIndices=-1);
-         static inline int uploadIndicesData(AttribsReference &r,Mesh *mesh,
-                                             unsigned &currentPosition,int bytesToUpload);
+         static inline void uploadIndices(AttribReference &r,const Array& indices,
+                                          int fromIndex=0,int numIndices=-1);
 
-         virtual std::shared_ptr<AttribsStorage> allocStorage(const AttribsConfig &config,
-                                                              unsigned numVertices,unsigned numIndices,
-                                                              bool privateFlag);
+         virtual std::shared_ptr<AttribStorage> allocStorage(const AttribConfig &config,
+                                                             unsigned numVertices,unsigned numIndices,
+                                                             bool privateFlag);
 
-         static inline std::shared_ptr<AttribsManager>& instance();
-         static void setInstance(std::shared_ptr<AttribsManager>& ptr);
+         static inline std::shared_ptr<AttribManager>& instance();
+         static void setInstance(std::shared_ptr<AttribManager>& ptr);
 
       protected:
-         static std::shared_ptr<AttribsManager> _instance;
+         static std::shared_ptr<AttribManager> _instance;
       };
 
    }
@@ -83,67 +75,43 @@ namespace ge
 //       as there is a circular include reference and the classes need to be defined before
 //       inline methods to avoid incomplete type compiler error
 
-#include <geSG/AttribsReference.h>
+#include <geSG/AttribReference.h>
 
 namespace ge
 {
    namespace sg
    {
-      inline void AttribsManager::uploadVertexData(AttribsReference &r,
-                                                   const std::vector<Array>& attribs,
-                                                   int fromIndex,int numVertices)
+      inline void AttribManager::uploadVertexData(AttribReference &r,
+                                                  const std::vector<Array>& attribs,
+                                                  int fromIndex,int numVertices)
       {
-         if(r.attribsStorage)
-            r.attribsStorage->uploadVertexData(r,attribs,fromIndex,numVertices);
+         if(r.attribStorage)
+            r.attribStorage->uploadVertexData(r,attribs,fromIndex,numVertices);
       }
-      inline void AttribsManager::uploadVertexData(AttribsReference &r,Mesh *mesh,
-                                                   int fromIndex,int numVertices)
+      inline void AttribManager::uploadIndices(AttribReference &r,const Array& indices,
+                                               int fromIndex,int numIndices)
       {
-         if(r.attribsStorage)
-            r.attribsStorage->uploadVertexData(r,mesh,fromIndex,numVertices);
-      }
-      inline int AttribsManager::uploadVertexData(AttribsReference &r,Mesh *mesh,
-                                                  unsigned &currentPosition,int bytesToUpload)
-      {
-         if(r.attribsStorage)
-            r.attribsStorage->uploadVertexData(r,mesh,currentPosition,bytesToUpload);
-      }
-      inline void AttribsManager::uploadIndicesData(AttribsReference &r,const Array& indices,
-                                                    int fromIndex,int numIndices)
-      {
-         if(r.attribsStorage)
-            r.attribsStorage->uploadIndicesData(r,indices,fromIndex,numIndices);
-      }
-      inline void AttribsManager::uploadIndicesData(AttribsReference &r,Mesh *mesh,
-                                                    int fromIndex,int numIndices)
-      {
-         if(r.attribsStorage)
-            r.attribsStorage->uploadIndicesData(r,mesh,fromIndex,numIndices);
-      }
-      inline int AttribsManager::uploadIndicesData(AttribsReference &r,Mesh *mesh,
-                                                   unsigned &currentPosition,int bytesToUpload)
-      {
-         if(r.attribsStorage)
-            r.attribsStorage->uploadIndicesData(r,mesh,currentPosition,bytesToUpload);
+         if(r.attribStorage)
+            r.attribStorage->uploadIndices(r,indices,fromIndex,numIndices);
       }
 
 
-      inline std::pair<AttribsManager::AttribsStorageMultiMap::iterator,
-            AttribsManager::AttribsStorageMultiMap::iterator>
-            AttribsManager::getAttribsStorages(const AttribsConfig& attribsConfig)
+      inline std::pair<AttribManager::AttribStorageMultiMap::iterator,
+            AttribManager::AttribStorageMultiMap::iterator>
+            AttribManager::getAttribStorages(const AttribConfig& attribConfig)
       {
-         return attribsConfig.configId!=0 ? _id2IteratorMap[attribsConfig.configId]
-                                          : _attribsStorageMultiMap.equal_range(attribsConfig);
+         return attribConfig.configId!=0 ? _id2IteratorMap[attribConfig.configId]
+                                         : _attribStorageMultiMap.equal_range(attribConfig);
       }
-      inline AttribsManager::AttribsStorageMultiMap& AttribsManager::getAttribsStorages()
+      inline AttribManager::AttribStorageMultiMap& AttribManager::getAttribStorages()
       {
-         return _attribsStorageMultiMap;
+         return _attribStorageMultiMap;
       }
-      inline const AttribsManager::AttribsStorageMultiMap& AttribsManager::getAttribsStorages() const
+      inline const AttribManager::AttribStorageMultiMap& AttribManager::getAttribStorages() const
       {
-         return _attribsStorageMultiMap;
+         return _attribStorageMultiMap;
       }
-      inline std::shared_ptr<AttribsManager>& AttribsManager::instance()
+      inline std::shared_ptr<AttribManager>& AttribManager::instance()
       {
          return _instance;
       }

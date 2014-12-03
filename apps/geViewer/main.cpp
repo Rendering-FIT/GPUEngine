@@ -8,7 +8,8 @@
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
 #include <geSG/Array.h>
-#include <geSG/AttribsReference.h>
+#include <geSG/AttribReference.h>
+#include <geSG/Mesh.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
@@ -41,6 +42,10 @@ ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
 static ProgramObject *glProgram = NULL;
+static AttribReference attribsRefNI;
+static AttribReference attribsRefI;
+static shared_ptr<Mesh> meshNI;
+static shared_ptr<Mesh> meshI;
 
 
 int main(int Argc,char*Argv[])
@@ -96,65 +101,88 @@ void Wheel(int d){
 }
 
 
-static AttribsReference attribsRef;
-static AttribsConfig ac;
-
-
 void Idle(){
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
-   attribsRef.attribsStorage->bind();
-   //glDrawArrays(GL_TRIANGLES,0,6);
+   attribsRefNI.attribStorage->bind();
+   glDrawArrays(GL_TRIANGLES,0,3);
+   glDrawArrays(GL_TRIANGLES,3,3);
+   attribsRefI.attribStorage->bind();
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)0);
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
+//   meshNI->getAttribReference().attribStorage->bind();
+//   glDrawArrays(GL_TRIANGLES,meshNI->getAttribReference().verticesDataId
    Window->swap();
 }
 
 
 void Init(){
-   AttribsConfig ac;
+   AttribConfig ac;
    ac.push_back(AttribType::Vec3);
-#if 0
+
+   // top-left geometry
    ac.ebo=false;
    ac.updateConfigId();
 
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
+   constexpr float z=-6.f;
+   constexpr float niShiftX=-1.5f;
+   constexpr float shiftY=1.5f;
+   const vector<glm::vec3> twoTrianglesNI = {
+      glm::vec3(niShiftX+0,shiftY+0,z),
+      glm::vec3(niShiftX+0,shiftY+1,z),
+      glm::vec3(niShiftX+1,shiftY+0,z),
+      glm::vec3(niShiftX+0,shiftY+0,z),
+      glm::vec3(niShiftX+0,shiftY-1,z),
+      glm::vec3(niShiftX-1,shiftY+0,z),
    };
    vector<Array> v;
    v.reserve(1);
-   v.emplace_back(twoTriangles);
+   v.emplace_back(twoTrianglesNI);
 
-   attribsRef.allocData(ac,6,0);
-   attribsRef.uploadVertexData(v);
-#else
+   attribsRefNI.allocData(ac,6,0);
+   attribsRefNI.uploadVertexData(v);
+
+   // top-right geometry
    ac.ebo=true;
    ac.updateConfigId();
 
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0.f,0.1f,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
+   constexpr float iShiftX=1.5f;
+   const vector<glm::vec3> twoTrianglesI = {
+      glm::vec3(iShiftX+0,shiftY+0,z),
+      glm::vec3(iShiftX+0,shiftY+1,z),
+      glm::vec3(iShiftX+1,shiftY+0,z),
+      glm::vec3(iShiftX+0,shiftY+0.1f,z),
+      glm::vec3(iShiftX+0,shiftY-1,z),
+      glm::vec3(iShiftX-1,shiftY+0,z),
    };
-   vector<Array> v;
+   v.clear();
    v.reserve(1);
-   v.emplace_back(twoTriangles);
+   v.emplace_back(twoTrianglesI);
 
-   attribsRef.allocData(ac,6,6);
-   attribsRef.uploadVertexData(v);
+   attribsRefI.allocData(ac,6,6);
+   attribsRefI.uploadVertexData(v);
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
-   attribsRef.uploadIndicesData(Array(indices));
-#endif
+   attribsRefI.uploadIndices(Array(indices));
+
+   // bottom-left geometry
+   constexpr float meshShiftY=-1.5f;
+   const vector<glm::vec3> twoTrianglesMeshNI = {
+      glm::vec3(niShiftX+0,meshShiftY+0,z),
+      glm::vec3(niShiftX+0,meshShiftY+1,z),
+      glm::vec3(niShiftX+1,meshShiftY+0,z),
+      glm::vec3(niShiftX+0,meshShiftY+0,z),
+      glm::vec3(niShiftX+0,meshShiftY-1,z),
+      glm::vec3(niShiftX-1,meshShiftY+0,z),
+   };
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTrianglesMeshNI);
+   vector<Mesh::ArrayContent> contents;
+   contents.reserve(1);
+   contents.push_back(Mesh::ArrayContent::COORDINATES);
+   meshNI=Mesh::create();
+   meshNI->setAttribArrays(v,contents);
+   meshNI->gpuUploadGeometryData();
 
    ge::gl::initShadersAndPrograms();
    glProgram = new ProgramObject(

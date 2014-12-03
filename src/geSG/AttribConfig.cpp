@@ -1,11 +1,11 @@
-#include <geSG/AttribsConfig.h>
+#include <geSG/AttribConfig.h>
 
 using namespace ge::sg;
 
 
-AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
+AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
 {
-   unsigned configSize=attribsConfig.size();
+   unsigned configSize=attribConfig.size();
    if(configSize>5||configSize<=1)
       return 0;
 
@@ -18,7 +18,7 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
    // If they are used, they required EBO to use UNSIGNED_INT type.
    //
    // Indices occupy bit 10 of the returned integer.
-   if(attribsConfig.ebo)  r|=0x400;
+   if(attribConfig.ebo)  r|=0x400;
 
    // coordinates
    //
@@ -26,7 +26,7 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
    // and we expect that they are always specified.
    //
    // Coordinates occupies bits 0 and 1 of the returned integer.
-   t=attribsConfig[0];
+   t=attribConfig[0];
    if(t==AttribType::Vec3)  r|=0x1;
    else if(t==AttribType::Vec4)  r|=0x2;
    else if(t==AttribType::Vec2)  r|=0x3;
@@ -38,12 +38,12 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
    //
    // Texture coordinates are not mandatory.
    // We expect that they are stored at the last attribute index
-   // (last index in AttribsConfig is occupied by indices flag,
+   // (last index in AttribConfig is occupied by indices flag,
    // so it is just before it).
    //
    // TexCoords occupies bits 8 and 9 of the returned integer.
    unsigned texCoordPossibleIndex=configSize-2;
-   t=attribsConfig[texCoordPossibleIndex];
+   t=attribConfig[texCoordPossibleIndex];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec2)  r|=0x100;
    else if(t==AttribType::HVec2)  r|=0x200;
@@ -62,7 +62,7 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
    //
    // Normals occupies bits 2 and 3 of the returned integer.
    bool normalsFound=true;
-   t=attribsConfig[1];
+   t=attribConfig[1];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec3)  r|=0x4;
    else if(t==AttribType::HVec3)  r|=0x8;
@@ -80,7 +80,7 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
    // Index 1 must be used if there are no normals, index 2 must be used when normals are in use.
    //
    // Color occupies bits 4,5 and 6 of the returned integer.
-   t=attribsConfig[normalsFound?2:1];
+   t=attribConfig[normalsFound?2:1];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec3)  r|=0x10;
    else if(t==AttribType::Vec4)  r|=0x20;
@@ -97,38 +97,38 @@ AttribsConfigId AttribsConfig::convertToId(const AttribsConfig& attribsConfig)
 }
 
 
-// AttribsConfigId type documentation
+// AttribConfigId type documentation
 // note: brief description is with the variable declaration
-/** \var AttribsConfigId
+/** \var AttribConfigId
  *
- *  Complete attribute configuration is stored in AttribsConfig class,
+ *  Complete attribute configuration is stored in AttribConfig class,
  *  a complicated vector-based type.
  *  Using it for map lookups or comparison of two configurations
  *  might be performance expensive.
  *  Thus, frequently used attribute configurations has their
  *  integer-based representation that can be used for faster maps lookups
  *  and very fast comparison. This integer-based configuration uses
- *  type defined by AttribsConfigId.
+ *  type defined by AttribConfigId.
  *
  *  Zero value stored in this type means that the attribute configuration
  *  is not one of the supported frequently used attribute configuration.
  *
- *  \sa AttribsConfig
+ *  \sa AttribConfig
  */
 
-// AttribsConfig::configId documentation
+// AttribConfig::configId documentation
 // note: brief description is with the variable declaration
-/** \var AttribsConfigId AttribsConfig::configId
+/** \var AttribConfigId AttribConfig::configId
  *
- *  If it is non-zero, AttribsConfig class contains one of known frequently used
+ *  If it is non-zero, AttribConfig class contains one of known frequently used
  *  attribute configurations. Thus, optimized routines may be used for
  *  operations with attribute configurations such as comparison or lookups,
  *  as it is just comparison of integers or lookup by integer.
  *
  *  If the value is zero, all operations with attribute configurations
- *  have to be performed using AttribsConfig class that contains vector
+ *  have to be performed using AttribConfig class that contains vector
  *  of values storing details about each particular attribute configuration.
  *
- *  If one AttribsStorage has _attribConfig zero and the second non-zero,
+ *  If one AttribStorage has _attribConfig zero and the second non-zero,
  *  they always contain different attribute configurations.
  */

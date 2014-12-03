@@ -1,7 +1,7 @@
-#ifndef GE_SG_SEPARATE_BUFFERS_ATTRIBS_STORAGE_H
-#define GE_SG_SEPARATE_BUFFERS_ATTRIBS_STORAGE_H
+#ifndef GE_SG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
+#define GE_SG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
 
-#include <geSG/AttribsStorage.h>
+#include <geSG/AttribStorage.h>
 
 namespace ge
 {
@@ -12,10 +12,10 @@ namespace ge
    }
    namespace sg
    {
-      /** AttribsStorage class maintains vertex attributes of many scene objects
+      /** AttribStorage class maintains vertex attributes of many scene objects
        *  in a single OpenGL vertex array object (VAO).
        */
-      class GE_EXPORT SeparateBuffersAttribsStorage : public AttribsStorage {
+      class GE_EXPORT SeparateBuffersAttribStorage : public AttribStorage {
       protected:
 
          ge::gl::VertexArrayObject* _vao;
@@ -24,26 +24,18 @@ namespace ge
 
       public:
 
-         SeparateBuffersAttribsStorage() = delete;
-         SeparateBuffersAttribsStorage(const AttribsConfig &config,unsigned numVertices,unsigned numIndices);
-         virtual ~SeparateBuffersAttribsStorage();
+         SeparateBuffersAttribStorage() = delete;
+         SeparateBuffersAttribStorage(const AttribConfig &config,unsigned numVertices,unsigned numIndices);
+         virtual ~SeparateBuffersAttribStorage();
 
          virtual void bind();
 
-         virtual bool reallocData(AttribsReference &r,int numVertices,int numIndices,
+         virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
                                   bool preserveContent=true) override;
-         virtual void uploadVertexData(AttribsReference &r,const std::vector<Array>& data,
+         virtual void uploadVertexData(AttribReference &r,const std::vector<Array>& data,
                                        int fromIndex=0,int numVertices=-1) override;
-         virtual void uploadVertexData(AttribsReference &r,Mesh* mesh,int fromIndex=0,
-                                       int numVertices=-1) override;
-         virtual int uploadVertexData(AttribsReference &r,Mesh* mesh,unsigned &currentPosition,
-                                      int bytesToUpload) override;
-         virtual void uploadIndicesData(AttribsReference &r,const Array& data,
-                                        int fromIndex=0,int numIndices=-1) override;
-         virtual void uploadIndicesData(AttribsReference &r,Mesh* mesh,
-                                        int fromIndex=0,int numIndices=-1) override;
-         virtual int uploadIndicesData(AttribsReference &r,Mesh* mesh,
-                                       unsigned &currentPosition,int bytesToUpload) override;
+         virtual void uploadIndices(AttribReference &r,const Array& data,
+                                    int fromIndex=0,int numIndices=-1) override;
 
       };
 
@@ -54,4 +46,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_SEPARATE_BUFFERS_ATTRIBS_STORAGE_H
+#endif // GE_SG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
