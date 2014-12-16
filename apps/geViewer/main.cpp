@@ -110,19 +110,21 @@ void Idle(){
    attribsRefI.attribStorage->bind();
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)0);
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
-//   meshNI->getAttribReference().attribStorage->bind();
-//   glDrawArrays(GL_TRIANGLES,meshNI->getAttribReference().verticesDataId
+   AttribStorage *storage=meshNI->getAttribReference().attribStorage;
+   storage->bind();
+   const AttribStorage::AllocationBlock &block=storage->getVerticesAllocationBlock(meshNI->getAttribReference().verticesDataId);
+   glDrawArrays(GL_TRIANGLES,block.startIndex,block.numElements);
    Window->swap();
 }
 
 
 void Init(){
-   AttribConfig ac;
-   ac.push_back(AttribType::Vec3);
+   AttribConfig::ConfigData config;
+   config.attribTypes.push_back(AttribType::Vec3);
 
    // top-left geometry
-   ac.ebo=false;
-   ac.updateConfigId();
+   config.ebo=false;
+   config.updateId();
 
    constexpr float z=-6.f;
    constexpr float niShiftX=-1.5f;
@@ -139,12 +141,12 @@ void Init(){
    v.reserve(1);
    v.emplace_back(twoTrianglesNI);
 
-   attribsRefNI.allocData(ac,6,0);
+   attribsRefNI.allocData(config,6,0);
    attribsRefNI.uploadVertexData(v);
 
    // top-right geometry
-   ac.ebo=true;
-   ac.updateConfigId();
+   config.ebo=true;
+   config.updateId();
 
    constexpr float iShiftX=1.5f;
    const vector<glm::vec3> twoTrianglesI = {
@@ -159,7 +161,7 @@ void Init(){
    v.reserve(1);
    v.emplace_back(twoTrianglesI);
 
-   attribsRefI.allocData(ac,6,6);
+   attribsRefI.allocData(config,6,6);
    attribsRefI.uploadVertexData(v);
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
    attribsRefI.uploadIndices(Array(indices));

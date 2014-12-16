@@ -1,12 +1,70 @@
 #include <geSG/AttribConfig.h>
 
+using namespace std;
 using namespace ge::sg;
 
+shared_ptr<AttribConfig::Factory> AttribConfig::_factory=make_shared<AttribConfig::Factory>();
+const AttribConfigRef AttribConfigRef::invalid{};
 
-AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
+
+bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices)
 {
-   unsigned configSize=attribConfig.size();
-   if(configSize>5||configSize<=1)
+   // iterate AttribStorage list
+   // and look if there is one with enough empty space
+   AttribStorageList::iterator storageIt=_attribStorages.end();
+   for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
+   {
+      if((*it)->getNumVerticesAvailableAtTheEnd()>=numVertices &&
+         (*it)->getNumIndicesAvailableAtTheEnd()>=numIndices)
+      {
+         storageIt=it;
+         break;
+      }
+   }
+
+   // is there no suitable AttribStorage?
+   if(storageIt==_attribStorages.end())
+   {
+      // create a new AttribStorage
+      _attribStorages.push_front(
+            AttribStorage::getFactory()->create(this->createReference(),_defaultStorageNumVertices,
+                                                this->_configData.ebo?_defaultStorageNumIndices:0));
+      storageIt=_attribStorages.begin();
+   }
+
+   // perform allocation in the choosen AttribStorage
+   (*storageIt)->allocData(r,numVertices,numIndices);
+   return true;
+}
+
+
+/** Changes the number of allocated elements or indices.
+ *
+ *  Parameter r contains the reference to AttribReference holding allocation information.
+ *  numVertices and numIndices are the new number of elements in vertex and index arrays.
+ *  If preserveContent parameter is true, the content of element and index data will be preserved.
+ *  If new data are larger, the content over the size of previous data is undefined.
+ *  If new data are smaller, only the data up to the new data size is preserved.
+ *  If preserveContent is false, content of element and index data are undefined.
+ */
+bool AttribConfig::reallocData(AttribReference &r,int numVertices,int numIndices,bool preserveContent)
+{
+   // Used strategy:
+   // - if new arrays are smaller, we keep data in place and free the remaning space
+   // - if new arrays are bigger and can be enlarged on the place, we do it
+   // - otherwise we try to allocate new place for the data in the same AttribStorage
+   // - if we do not succeed in the current AttribStorage, we move the data to
+   //   some other AttribStorage
+   // - if no AttribStorage accommodate us, we allocate new AttribStorage
+
+   // FIXME: not implemented yet
+}
+
+
+AttribConfigId AttribConfig::getId(const std::vector<AttribType>& attribTypes,bool ebo)
+{
+   unsigned configSize=attribTypes.size();
+   if(configSize>4||configSize==0)
       return 0;
 
    uint16_t r=0;
@@ -17,21 +75,21 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
    // Use of indices is signalled by ebo boolean.
    // If they are used, they required EBO to use UNSIGNED_INT type.
    //
-   // Indices occupy bit 10 of the returned integer.
-   if(attribConfig.ebo)  r|=0x400;
+   // Indices occupy bit 0 of the returned integer.
+   if(ebo)  r|=0x1;
 
    // coordinates
    //
    // Coordinates are expected to be at attribute index 0
    // and we expect that they are always specified.
    //
-   // Coordinates occupies bits 0 and 1 of the returned integer.
-   t=attribConfig[0];
-   if(t==AttribType::Vec3)  r|=0x1;
-   else if(t==AttribType::Vec4)  r|=0x2;
-   else if(t==AttribType::Vec2)  r|=0x3;
+   // Coordinates occupies bits 1 and 2 of the returned integer.
+   t=attribTypes[0];
+   if(t==AttribType::Vec3)  r|=0x2;
+   else if(t==AttribType::Vec4)  r|=0x4;
+   else if(t==AttribType::Vec2)  r|=0x6;
    else return 0;
-   if(configSize==2)
+   if(configSize==1)
       return r;
 
    // texCoords
@@ -42,17 +100,15 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
    // so it is just before it).
    //
    // TexCoords occupies bits 8 and 9 of the returned integer.
-   unsigned texCoordPossibleIndex=configSize-2;
-   t=attribConfig[texCoordPossibleIndex];
+   unsigned texCoordPossibleIndex=configSize-1;
+   t=attribTypes[texCoordPossibleIndex];
    if(t==AttribType::Empty);
    else if(t==AttribType::Vec2)  r|=0x100;
    else if(t==AttribType::HVec2)  r|=0x200;
    else texCoordPossibleIndex=0;
-   if(configSize==3&&texCoordPossibleIndex!=0)
+   if(configSize==2&&texCoordPossibleIndex!=0)
       return r;
-   int numToParse=configSize-2;
-   if(texCoordPossibleIndex!=0)
-      numToParse--;
+   int numToParse=texCoordPossibleIndex!=0?configSize-2:configSize-1;
 
    // normals
    //
@@ -60,13 +116,13 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
    // If we find some 3-component formats,
    // let's consider them normals, although they may by colors as well.
    //
-   // Normals occupies bits 2 and 3 of the returned integer.
+   // Normals occupies bits 3 and 4 of the returned integer.
    bool normalsFound=true;
-   t=attribConfig[1];
+   t=attribTypes[1];
    if(t==AttribType::Empty);
-   else if(t==AttribType::Vec3)  r|=0x4;
-   else if(t==AttribType::HVec3)  r|=0x8;
-   else if(t==AttribType::UBVec3)  r|=0xc;
+   else if(t==AttribType::Vec3)  r|=0x8;
+   else if(t==AttribType::HVec3)  r|=0x10;
+   else if(t==AttribType::UBVec3)  r|=0x18;
    else normalsFound=false;
    if(normalsFound) {
       numToParse--;
@@ -79,15 +135,15 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
    // Colors are not mandatory. If they are specified, they have to use attribute index 1 or 2.
    // Index 1 must be used if there are no normals, index 2 must be used when normals are in use.
    //
-   // Color occupies bits 4,5 and 6 of the returned integer.
-   t=attribConfig[normalsFound?2:1];
+   // Color occupies bits 5,6 and 7 of the returned integer.
+   t=attribTypes[normalsFound?2:1];
    if(t==AttribType::Empty);
-   else if(t==AttribType::Vec3)  r|=0x10;
-   else if(t==AttribType::Vec4)  r|=0x20;
-   else if(t==AttribType::HVec3)  r|=0x30;
-   else if(t==AttribType::HVec4)  r|=0x40;
-   else if(t==AttribType::UBVec3)  r|=0x50;
-   else if(t==AttribType::UBVec4)  r|=0x60;
+   else if(t==AttribType::Vec3)  r|=0x20;
+   else if(t==AttribType::Vec4)  r|=0x40;
+   else if(t==AttribType::HVec3)  r|=0x60;
+   else if(t==AttribType::HVec4)  r|=0x80;
+   else if(t==AttribType::UBVec3)  r|=0xa0;
+   else if(t==AttribType::UBVec4)  r|=0xc0;
    //else if(t==Array::makeType(ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8,1)  r|=0x1c0;
    //else if(t==Array::makeType(ArrayAdapter::GLType::UNSIGNED_INT_8_8_8_8_REV,1)  r|=0x200;
    //else if(t==Array::makeType(ArrayAdapter::GLType::UNSIGNED_BYTE,ArrayAdapter::BGRA)  r|=0x240;
@@ -97,18 +153,26 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
 }
 
 
+AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attribTypes,bool ebo,
+                                            AttribConfigId id,AttribManager *manager,
+                                            AttribConfigList::iterator selfIterator)
+{
+   return new AttribConfig(attribTypes,ebo,id,manager,selfIterator);
+}
+
+
 // AttribConfigId type documentation
 // note: brief description is with the variable declaration
 /** \var AttribConfigId
  *
- *  Complete attribute configuration is stored in AttribConfig class,
- *  a complicated vector-based type.
+ *  Complete attribute configuration is stored in AttribConfig::ConfigData struct,
+ *  a non-trivial data type.
  *  Using it for map lookups or comparison of two configurations
  *  might be performance expensive.
  *  Thus, frequently used attribute configurations has their
- *  integer-based representation that can be used for faster maps lookups
+ *  integer-based representation that can be used for faster map lookups
  *  and very fast comparison. This integer-based configuration uses
- *  type defined by AttribConfigId.
+ *  AttribConfigId type.
  *
  *  Zero value stored in this type means that the attribute configuration
  *  is not one of the supported frequently used attribute configuration.
@@ -116,9 +180,9 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
  *  \sa AttribConfig
  */
 
-// AttribConfig::configId documentation
+// AttribConfig::ConfigData::Id documentation
 // note: brief description is with the variable declaration
-/** \var AttribConfigId AttribConfig::configId
+/** \var AttribConfigId AttribConfig::ConfigData::id
  *
  *  If it is non-zero, AttribConfig class contains one of known frequently used
  *  attribute configurations. Thus, optimized routines may be used for
@@ -126,9 +190,31 @@ AttribConfigId AttribConfig::convertToId(const AttribConfig& attribConfig)
  *  as it is just comparison of integers or lookup by integer.
  *
  *  If the value is zero, all operations with attribute configurations
- *  have to be performed using AttribConfig class that contains vector
- *  of values storing details about each particular attribute configuration.
+ *  have to be performed using the whole attribute setup described by
+ *  AttribConfig::ConfigData structure.
  *
- *  If one AttribStorage has _attribConfig zero and the second non-zero,
+ *  If one AttribStorage::ConfigData contains id equal to zero and
+ *  the second non-zero and updateId() was executed on both of them,
  *  they always contain different attribute configurations.
+ */
+
+// AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo) documentation
+// note: brief description is with the variable declaration
+/** \var AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo)
+ *
+ *  Constructor automatically computes id member from given parameters.
+ */
+
+
+// AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id);
+// note: brief description is with the variable declaration
+/** \var AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
+ */
+
+// void AttribConfig::ConfigData::updateId()
+// note: brief description is with the variable declaration
+/** \var void AttribConfig::ConfigData::updateId()
+ *
+ *  The method is expected to be called after each ConfigData structure update
+ *  whenever id member might become invalid.
  */

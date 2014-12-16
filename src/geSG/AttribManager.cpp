@@ -16,68 +16,35 @@ AttribManager::~AttribManager()
 }
 
 
-bool AttribManager::allocData(AttribReference &r,const AttribConfig& attribConfig,
-                              int numVertices,int numIndices)
+AttribConfigRef AttribManager::getAttribConfig(const AttribConfig::ConfigData &config)
 {
-   // get AttribStorage or AttribStorages with particular attribConfigID
-   auto itRange=getAttribStorages(attribConfig);
-   AttribStorageMultiMap::iterator attribStorageIt=_attribStorageMultiMap.end();
+   // find AttribConfig in _attribConfigList (std::map)
+   auto r=_attribConfigList.emplace(config,nullptr);
 
-   // iterate possibly empty list of AttribStorages
-   // with the required attribConfig
-   // and look if there is one with enough empty space
-   for(auto it=itRange.first; it!=itRange.second; it++)
-   {
-      if(it->second->getNumVerticesAvailableAtTheEnd()>=numVertices &&
-         it->second->getNumIndicesAvailableAtTheEnd()>=numIndices)
-      {
-         attribStorageIt=it;
-         break;
-      }
-   }
+   // if found, return reference to it
+   if(r.second==false)
+      return r.first->second->createReference();
 
-   // do we have AttribStorage?
-   if(attribStorageIt==_attribStorageMultiMap.end())
-   {
-      // create a new AttribStorage
-      attribStorageIt=_attribStorageMultiMap.emplace_hint(itRange.first,attribConfig,
-            AttribStorage::getFactory()->create(attribConfig,
-            _defaultStorageNumVertices,attribConfig.ebo?_defaultStorageNumIndices:0));
-
-      // update _id2IteratorMap for faster lookups
-      if(attribConfig.configId!=0)
-         _id2IteratorMap[attribConfig.configId].first=attribStorageIt;
-   }
-
-   // perform allocation in the choosen AttribStorage
-   attribStorageIt->second->allocData(r,numVertices,numIndices);
-   return true;
+   // otherwise create new AttribConfig, put it in _attribConfigList and return reference
+   AttribConfig *ac=AttribConfig::getFactory()->create(config,this,r.first);
+   r.first->second.reset(ac);
+   return ac->createReference();
 }
 
 
-/** Changes the number of allocated elements or indices.
- *
- *  Parameter r contains the reference to AttribReference holding allocation information.
- *  numVertices and numIndices are the new number of elements in vertex and index arrays.
- *  If preserveContent parameter is true, the content of element and index data will be preserved.
- *  If new data are larger, the content over the size of previous data is undefined.
- *  If new data are smaller, only the data up to the new data size is preserved.
- *  If preserveContent is false, content of element and index data are undefined.
- */
-bool AttribManager::reallocData(AttribReference &r,int numVertices,int numIndices,bool preserveContent)
+void AttribManager::removeAttribConfig(AttribConfigList::iterator it)
 {
-   // Used strategy:
-   // - if new arrays are smaller, we keep data in place and free the remaning space
-   // - if new arrays are bigger and can be enlarged on the place, we do it
-   // - otherwise we try to allocate new place for the data in the same AttribStorage
-   // - if we do not succeed in the current AttribStorage, we move the data to
-   //   some other AttribStorage
-   // - if no AttribStorage accommodate us, we allocate new AttribStorage
-
-   // FIXME: not implemented yet
+   if(it->second->getReferenceCounter()!=0) {
+      cout<<"Error in AttribManager::removeAttribConfig(): AttribConfig has still\n"
+            "   references. Destroy these references and AttribConfig will be freed\n"
+            "   automatically."<<endl;
+      return;
+   }
+   _attribConfigList.erase(it);
 }
 
 
+#if 0
 void AttribManager::freeData(AttribReference &r)
 {
    // ignore empty AttribReferences
@@ -114,6 +81,7 @@ std::shared_ptr<AttribStorage> AttribManager::allocStorage(const AttribConfig &c
 
    return a;
 }
+#endif
 
 
 void AttribManager::setInstance(std::shared_ptr<AttribManager>& ptr)

@@ -1,10 +1,12 @@
+// some includes need to be placed before GE_SG_ATTRIBS_MANAGER_H define
+// to prevent problems of circular includes
+#include <geSG/AttribConfig.h>
+
 #ifndef GE_SG_ATTRIBS_MANAGER_H
 #define GE_SG_ATTRIBS_MANAGER_H
 
-#include <list>
-#include <map>
 #include <memory>
-#include <geSG/AttribConfig.h>
+#include <set>
 #include <geSG/Export.h>
 
 namespace ge
@@ -14,40 +16,30 @@ namespace ge
       class Array;
       class AttribReference;
       class AttribStorage;
-      class Mesh;
 
 
       class GE_EXPORT AttribManager {
       public:
 
-         typedef std::multimap<AttribConfig,std::shared_ptr<AttribStorage>> AttribStorageMultiMap;
+         typedef AttribConfig::AttribConfigList AttribConfigList;
 
       protected:
 
-         typedef std::map<AttribConfigId,std::pair<AttribStorageMultiMap::iterator,
-               AttribStorageMultiMap::iterator>> Id2IteratorMap;
-         AttribStorageMultiMap _attribStorageMultiMap;
-         Id2IteratorMap _id2IteratorMap;
-         int _defaultStorageNumVertices = 1000*1024;
-         int _defaultStorageNumIndices = 4000*1024;
-         std::list<std::shared_ptr<AttribStorage>> _privateAttribStorages;
+         AttribConfigList _attribConfigList;
 
       public:
 
-         inline AttribManager() {}
+         inline AttribManager();
          virtual ~AttribManager();
 
-         inline std::pair<AttribStorageMultiMap::iterator,AttribStorageMultiMap::iterator>
-               getAttribStorages(const AttribConfig& attribConfig);
-         inline AttribStorageMultiMap& getAttribStorages();
-         inline const AttribStorageMultiMap& getAttribStorages() const;
+         inline const AttribConfigList& getAttribConfigList();
+         virtual AttribConfigRef getAttribConfig(const AttribConfig::ConfigData &config);
+         inline AttribConfigRef getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo);
+         inline AttribConfigRef getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
+                                                AttribConfigId id);
+         void removeAttribConfig(AttribConfigList::iterator it);
 
-         virtual bool allocData(AttribReference &r,const AttribConfig& attribConfig,
-                                int numVertices,int numIndices);
-         virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
-                                  bool preserveContent=true);
-         virtual void freeData(AttribReference &r);
-
+#if 0
          static inline void uploadVertexData(AttribReference &r,const std::vector<Array>& attribs,
                                              int fromIndex=0,int numVertices=-1);
          static inline void uploadIndices(AttribReference &r,const Array& indices,
@@ -56,6 +48,7 @@ namespace ge
          virtual std::shared_ptr<AttribStorage> allocStorage(const AttribConfig &config,
                                                              unsigned numVertices,unsigned numIndices,
                                                              bool privateFlag);
+#endif
 
          static inline std::shared_ptr<AttribManager>& instance();
          static void setInstance(std::shared_ptr<AttribManager>& ptr);
@@ -81,7 +74,13 @@ namespace ge
 {
    namespace sg
    {
-      inline void AttribManager::uploadVertexData(AttribReference &r,
+      inline AttribManager::AttribManager()  {}
+      inline const AttribManager::AttribConfigList& AttribManager::getAttribConfigList()  { return _attribConfigList; }
+      inline AttribConfigRef AttribManager::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo)
+      { return getAttribConfig(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo)); }
+      inline AttribConfigRef AttribManager::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
+      { return getAttribConfig(AttribConfig::ConfigData(attribTypes,ebo,id)); }
+      /*inline void AttribManager::uploadVertexData(AttribReference &r,
                                                   const std::vector<Array>& attribs,
                                                   int fromIndex,int numVertices)
       {
@@ -93,28 +92,9 @@ namespace ge
       {
          if(r.attribStorage)
             r.attribStorage->uploadIndices(r,indices,fromIndex,numIndices);
-      }
-
-
-      inline std::pair<AttribManager::AttribStorageMultiMap::iterator,
-            AttribManager::AttribStorageMultiMap::iterator>
-            AttribManager::getAttribStorages(const AttribConfig& attribConfig)
-      {
-         return attribConfig.configId!=0 ? _id2IteratorMap[attribConfig.configId]
-                                         : _attribStorageMultiMap.equal_range(attribConfig);
-      }
-      inline AttribManager::AttribStorageMultiMap& AttribManager::getAttribStorages()
-      {
-         return _attribStorageMultiMap;
-      }
-      inline const AttribManager::AttribStorageMultiMap& AttribManager::getAttribStorages() const
-      {
-         return _attribStorageMultiMap;
-      }
+      }*/
       inline std::shared_ptr<AttribManager>& AttribManager::instance()
-      {
-         return _instance;
-      }
+      { return _instance; }
 
    }
 }

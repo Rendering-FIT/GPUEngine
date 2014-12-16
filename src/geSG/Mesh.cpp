@@ -30,10 +30,8 @@ void Mesh::gpuUploadGeometryData()
 {
    // alloc data if not allocated
    if(!_attribReference.valid())
-   {
-      //AttribConfig ac(getAttribConfig());
-      //_attribReference.allocData(,,ac.hasIndices()?);
-   }
+      _attribReference.allocData(computeAttribConfig(),_attribArrays.size()>=1?_attribArrays[0].size():0,
+                                 hasIndices()?_indexArray.size():0);
 
    // upload attributes
    _attribReference.uploadVertexData(_attribArrays);
@@ -108,15 +106,15 @@ void Mesh::setIndexArray(const shared_ptr<ArrayDecoratorTemplate<unsigned>>& arr
 }
 
 
-AttribConfig Mesh::getAttribConfig() const
+AttribConfigRef Mesh::computeAttribConfig(AttribManager *manager) const
 {
-   AttribConfig r;
-   r.reserve(_attribArrays.size());
+   AttribConfig::ConfigData config;
+   config.attribTypes.reserve(_attribArrays.size());
    for(auto it=_attribArrays.begin(); it!=_attribArrays.end(); it++)
-      r.push_back(it->getType());
-   r.ebo = hasIndices();
-   r.updateConfigId();
-   return r;
+      config.attribTypes.push_back(it->getType());
+   config.ebo = hasIndices();
+   config.updateId();
+   return manager->getAttribConfig(config);
 }
 
 

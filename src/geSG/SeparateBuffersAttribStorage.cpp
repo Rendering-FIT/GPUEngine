@@ -9,17 +9,20 @@ using namespace ge::gl;
 using namespace std;
 
 
-SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfig &config,
+SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef &config,
                                                            unsigned numVertices,unsigned numIndices)
    : AttribStorage(config,numVertices,numIndices)
 {
+   // get ConfigData
+   const AttribConfig::ConfigData &configData=config->getConfigData();
+
    // create VAO
    _vao = new VertexArrayObject;
 
    // create array buffers
-   _arrayBuffers.reserve(config.size());
+   _arrayBuffers.reserve(configData.attribTypes.size());
    unsigned i=0;
-   for(auto it=config.begin(); it!=config.end(); it++,i++)
+   for(auto it=configData.attribTypes.begin(); it!=configData.attribTypes.end(); it++,i++)
    {
       AttribType t=*it;
       BufferObject *bo=new BufferObject(numVertices*t.getElementSize(),NULL,GL_DYNAMIC_DRAW);
@@ -29,7 +32,7 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfig &c
    }
 
    // create EBO
-   if(config.ebo)
+   if(configData.ebo)
    {
       _ebo=new BufferObject(numIndices*4,NULL,GL_DYNAMIC_DRAW);
       _vao->addElementBuffer(_ebo);
@@ -70,19 +73,20 @@ bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertice
 void SeparateBuffersAttribStorage::uploadVertexData(AttribReference &r,const std::vector<Array>& data,
                                                     int fromIndex,int numVertices)
 {
-
+   const AttribConfig::ConfigData &configData=_attribConfig->getConfigData();
    for(int i=0,c=min(_arrayBuffers.size(),data.size()); i<c; i++)
    {
-      AttribType t=_attribConfig[i];
+      AttribType t=configData.attribTypes[i];
       if(t!=data[i].getType()) {
          cout << "Error in SeparateBuffersAttribStorage::uploadVertexData(): data type of\n"
                  "   attribute " << i << " differs from the one passed in the parameter." << endl;
          continue;
       }
       int elementSize=t.getElementSize();
-      int offset=fromIndex*elementSize;
+      int srcOffset=fromIndex*elementSize;
+      int dstOffset=(_verticesDataAllocationMap[r.verticesDataId].startIndex+fromIndex)*elementSize;
       int num=numVertices==-1?data[i].size():numVertices;
-      _arrayBuffers[i]->setData((uint8_t*)data[i].data()+offset,num*elementSize,offset);
+      _arrayBuffers[i]->setData((uint8_t*)data[i].data()+srcOffset,num*elementSize,dstOffset);
    }
 }
 
@@ -103,7 +107,7 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array&
       return;
    }
    int elementSize=t.getElementSize();
-   int offset=fromIndex*elementSize;
+   int offset=(_indicesDataAllocationMap[r.indicesDataId].startIndex+fromIndex)*elementSize;
    int num=numIndices==-1?data.size():numIndices;
    _ebo->setData((uint8_t*)data.data()+offset,num*elementSize,offset);
 }

@@ -9,20 +9,11 @@ using namespace ge::sg;
 using namespace std;
 
 
-class DefaultFactory : public AttribStorage::Factory {
-public:
-   virtual shared_ptr<AttribStorage> create(const AttribConfig &config,
-                                            unsigned numVertices,unsigned numIndices)
-   {
-      return make_shared<SeparateBuffersAttribStorage>(config,numVertices,numIndices);
-   }
-};
-
-shared_ptr<AttribStorage::Factory> AttribStorage::_factory = make_shared<DefaultFactory>();
+shared_ptr<AttribStorage::Factory> AttribStorage::_factory = make_shared<AttribStorage::Factory>();
 
 
 
-AttribStorage::AttribStorage(const AttribConfig &config,unsigned numVertices,unsigned numIndices)
+AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices)
    : _numVerticesTotal(numVertices)
    , _numVerticesAvailable(numVertices)
    , _numVerticesAvailableAtTheEnd(numVertices)
@@ -188,6 +179,13 @@ void AttribStorage::cancelAllAllocations()
    _numIndicesAvailableAtTheEnd=_numIndicesTotal;
    _firstIndexAvailableAtTheEnd=0;
    _idOfIndicesBlockAtTheEnd=0;
+}
+
+
+shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &config,
+                                                         unsigned numVertices,unsigned numIndices)
+{
+   return make_shared<SeparateBuffersAttribStorage>(config,numVertices,numIndices);
 }
 
 

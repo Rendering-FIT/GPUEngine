@@ -1,10 +1,13 @@
+// some includes need to be placed before GE_SG_ATTRIB_STORAGE_H define
+// to prevent problems of circular includes
+#include <geSG/AttribConfig.h>
+
 #ifndef GE_SG_ATTRIB_STORAGE_H
 #define GE_SG_ATTRIB_STORAGE_H
 
 #include <memory>
 #include <vector>
 #include <geSG/Export.h>
-#include <geSG/AttribConfig.h>
 
 namespace ge
 {
@@ -53,7 +56,7 @@ namespace ge
        *  For more details, which methods can be called without active graphics context
        *  refer to the documentation to each of the object's methods.
        *
-       *  \sa AttribManager, AttribReference, Mesh::getAttribConfig(), Mesh::getAttribConfigId()
+       *  \sa AttribManager, AttribReference, Mesh::getAttribConfig()
        */
       class GE_EXPORT AttribStorage {
       public:
@@ -86,12 +89,12 @@ namespace ge
 
          std::vector<AllocationBlock> _verticesDataAllocationMap;  ///< Allocation map of blocks of vertices.
          std::vector<AllocationBlock> _indicesDataAllocationMap;   ///< Allocation map of blocks of indices.
-         AttribConfig _attribConfig;      ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
+         AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
 
       public:
 
          AttribStorage() = delete;
-         AttribStorage(const AttribConfig &config,unsigned numVertices,unsigned numIndices);
+         AttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices);
          virtual ~AttribStorage();
 
          virtual void bind() = 0;
@@ -101,13 +104,15 @@ namespace ge
                                   bool preserveContent=true);
          virtual void freeData(AttribReference &r);
 
-         inline const AllocationBlock& getVerticesAllocationBlock(unsigned id) const;
-         inline const AllocationBlock& getIndicesAllocationBlock(unsigned id) const;
-
          virtual void uploadVertexData(AttribReference &r,const std::vector<Array>& attribs,
                                        int fromIndex=0,int numVertices=-1) = 0;
          virtual void uploadIndices(AttribReference &r,const Array& indices,
                                     int fromIndex=0,int numIndices=-1) = 0;
+
+         inline const AllocationBlock& getVerticesAllocationBlock(unsigned id) const;
+         inline const AllocationBlock& getIndicesAllocationBlock(unsigned id) const;
+
+         inline const AttribConfigRef& getAttribConfig() const;
 
          inline unsigned getVertexDataSize() const;
          inline unsigned getNumVerticesTotal() const;
@@ -129,8 +134,8 @@ namespace ge
 
          class Factory {
          public:
-            virtual std::shared_ptr<AttribStorage> create(const AttribConfig &config,
-                                                           unsigned numVertices,unsigned numIndices) = 0;
+            virtual std::shared_ptr<AttribStorage> create(const AttribConfigRef &config,
+                                                          unsigned numVertices,unsigned numIndices);
          };
          static inline std::shared_ptr<Factory>& getFactory();
          static inline void setFactory(std::shared_ptr<Factory>& f);
@@ -144,6 +149,7 @@ namespace ge
       // inline and template methods
       inline const AttribStorage::AllocationBlock& AttribStorage::getVerticesAllocationBlock(unsigned id) const  { return _verticesDataAllocationMap[id]; }
       inline const AttribStorage::AllocationBlock& AttribStorage::getIndicesAllocationBlock(unsigned id) const  { return _indicesDataAllocationMap[id]; }
+      inline const AttribConfigRef& AttribStorage::getAttribConfig() const  { return _attribConfig; }
       inline unsigned AttribStorage::getNumVerticesTotal() const  { return _numVerticesTotal; }
       inline unsigned AttribStorage::getNumVerticesAvailable() const  { return _numVerticesAvailable; }
       inline unsigned AttribStorage::getNumVerticesAvailableAtTheEnd() const  { return _numVerticesAvailableAtTheEnd; }

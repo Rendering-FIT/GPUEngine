@@ -25,7 +25,7 @@ namespace ge
       public:
 
          SeparateBuffersAttribStorage() = delete;
-         SeparateBuffersAttribStorage(const AttribConfig &config,unsigned numVertices,unsigned numIndices);
+         SeparateBuffersAttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices);
          virtual ~SeparateBuffersAttribStorage();
 
          virtual void bind();

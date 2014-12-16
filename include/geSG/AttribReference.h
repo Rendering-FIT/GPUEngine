@@ -8,9 +8,8 @@ namespace ge
    namespace sg
    {
       class Array;
-      class AttribConfig;
+      class AttribConfigRef;
       class AttribStorage;
-      class Mesh;
 
 
       class GE_EXPORT AttribReference {
@@ -30,7 +29,7 @@ namespace ge
 
          inline bool valid() const;
 
-         inline void allocData(const AttribConfig& attribConfig,int numVertices,int numIndices);
+         inline void allocData(const AttribConfigRef& config,int numVertices,int numIndices);
          inline void reallocData(int numVertices,int numIndices,bool preserveContent=true);
          inline void freeData();
 
@@ -77,19 +76,11 @@ namespace ge
          freeData();
       }
       inline bool AttribReference::valid() const  { return attribStorage!=NULL; }
-      inline void AttribReference::allocData(const AttribConfig& attribConfig,int numVertices,int numIndices)
-      {
-         AttribManager::instance()->allocData(*this,attribConfig,numVertices,numIndices);
-      }
+      inline void AttribReference::allocData(const AttribConfigRef& config,int numVertices,int numIndices)
+      { config->allocData(*this,numVertices,numIndices); }
       inline void AttribReference::reallocData(int numVertices,int numIndices,bool preserveContent)
-      {
-         AttribManager::instance()->reallocData(*this,numVertices,numIndices,preserveContent);
-      }
-      inline void AttribReference::freeData()
-      {
-         if(attribStorage)
-            attribStorage->freeData(*this);
-      }
+      { attribStorage->reallocData(*this,numVertices,numIndices,preserveContent); }
+      inline void AttribReference::freeData()  { if(attribStorage) attribStorage->freeData(*this); }
       inline void AttribReference::uploadVertexData(const std::vector<Array>& attribs,
                                                     int fromIndex,int numVertices)
       {

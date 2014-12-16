@@ -73,7 +73,10 @@ namespace ge
          inline Array& getIndexArray();
 
          inline const AttribReference& getAttribReference() const;
-         virtual AttribConfig getAttribConfig() const;
+         inline AttribStorage* getAttribStorage() const;
+         inline const AttribConfigRef& getAttribConfig() const;
+         virtual AttribConfigRef computeAttribConfig(AttribManager *manager) const;
+         inline AttribConfigRef computeAttribConfig() const;
 
          class Factory {
          public:
@@ -118,6 +121,10 @@ namespace ge
       inline Array& Mesh::getAttribArray(ArrayContent content)  { return _attribArrays[_content2attribIndex[uint8_t(content)]]; }
       inline Array& Mesh::getIndexArray()  { return _indexArray; }
       inline const AttribReference& Mesh::getAttribReference() const  { return _attribReference; }
+      inline AttribStorage* Mesh::getAttribStorage() const  { return _attribReference.attribStorage; }
+      inline const AttribConfigRef& Mesh::getAttribConfig() const
+      { return _attribReference.valid() ? _attribReference.attribStorage->getAttribConfig() : AttribConfigRef::invalid; }
+      inline AttribConfigRef Mesh::computeAttribConfig() const  { return computeAttribConfig(AttribManager::instance().get()); }
    }
 }
 
