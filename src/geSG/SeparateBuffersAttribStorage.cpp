@@ -107,7 +107,8 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array&
       return;
    }
    int elementSize=t.getElementSize();
-   int offset=(_indicesDataAllocationMap[r.indicesDataId].startIndex+fromIndex)*elementSize;
+   int srcOffset=fromIndex*elementSize;
+   int dstOffset=(_indicesDataAllocationMap[r.indicesDataId].startIndex+fromIndex)*elementSize;
    int num=numIndices==-1?data.size():numIndices;
-   _ebo->setData((uint8_t*)data.data()+offset,num*elementSize,offset);
+   _ebo->setData((uint8_t*)data.data()+srcOffset,num*elementSize,dstOffset);
 }

@@ -102,7 +102,7 @@ void Mesh::setIndexArray(const Array &array)
 
 void Mesh::setIndexArray(const shared_ptr<ArrayDecoratorTemplate<unsigned>>& arrayDecorator)
 {
-   _indexArray.setArrayDecorator(arrayDecorator);
+   _indexArray.set(arrayDecorator,AttribType::UInt);
 }
 
 

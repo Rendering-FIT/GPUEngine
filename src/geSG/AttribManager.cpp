@@ -27,19 +27,15 @@ AttribConfigRef AttribManager::getAttribConfig(const AttribConfig::ConfigData &c
 
    // otherwise create new AttribConfig, put it in _attribConfigList and return reference
    AttribConfig *ac=AttribConfig::getFactory()->create(config,this,r.first);
-   r.first->second.reset(ac);
+   r.first->second=ac;
    return ac->createReference();
 }
 
 
 void AttribManager::removeAttribConfig(AttribConfigList::iterator it)
 {
-   if(it->second->getReferenceCounter()!=0) {
-      cout<<"Error in AttribManager::removeAttribConfig(): AttribConfig has still\n"
-            "   references. Destroy these references and AttribConfig will be freed\n"
-            "   automatically."<<endl;
-      return;
-   }
+   if(it->second!=NULL)
+      it->second->detachFromAttribManager();
    _attribConfigList.erase(it);
 }
 

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <geSG/AttribConfig.h>
 
 using namespace std;
@@ -5,6 +6,35 @@ using namespace ge::sg;
 
 shared_ptr<AttribConfig::Factory> AttribConfig::_factory=make_shared<AttribConfig::Factory>();
 const AttribConfigRef AttribConfigRef::invalid{};
+
+
+AttribConfig::~AttribConfig()
+{
+   if(_referenceCounter!=0)
+   {
+      if(_referenceCounter>0)
+         cout<<"Error in AttribConfig::~AttribConfig(): Reference counter is not zero.\n"
+               "   Destructing object with references may result in application instability." << endl;
+      else
+         cout<<"Error in AttribConfig::~AttribConfig(): Reference counter underflow." << endl;
+   }
+}
+
+
+void AttribConfig::destroy()
+{
+   assert(_referenceCounter==0 && "Wrong usage of AttribConfig::destroy.");
+
+   if(_manager!=NULL)
+      _manager->removeAttribConfig(_selfIterator);
+   delete this;
+}
+
+
+void AttribConfig::detachFromAttribManager()
+{
+   _manager=NULL;
+}
 
 
 bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices)

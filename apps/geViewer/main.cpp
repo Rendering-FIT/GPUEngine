@@ -110,10 +110,14 @@ void Idle(){
    attribsRefI.attribStorage->bind();
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)0);
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
-   AttribStorage *storage=meshNI->getAttribReference().attribStorage;
-   storage->bind();
-   const AttribStorage::AllocationBlock &block=storage->getVerticesAllocationBlock(meshNI->getAttribReference().verticesDataId);
-   glDrawArrays(GL_TRIANGLES,block.startIndex,block.numElements);
+   AttribStorage *storageNI=meshNI->getAttribReference().attribStorage;
+   storageNI->bind();
+   const AttribStorage::AllocationBlock &blockNI=storageNI->getVerticesAllocationBlock(meshNI->getAttribReference().verticesDataId);
+   glDrawArrays(GL_TRIANGLES,blockNI.startIndex,blockNI.numElements);
+   AttribStorage *storageI=meshI->getAttribReference().attribStorage;
+   storageI->bind();
+   const AttribStorage::AllocationBlock &blockI=storageI->getIndicesAllocationBlock(meshI->getAttribReference().indicesDataId);
+   glDrawElementsBaseVertex(GL_TRIANGLES,blockI.numElements,GL_UNSIGNED_INT,(void*)(blockI.startIndex*sizeof(uint32_t)),6);
    Window->swap();
 }
 
@@ -185,6 +189,23 @@ void Init(){
    meshNI=Mesh::create();
    meshNI->setAttribArrays(v,contents);
    meshNI->gpuUploadGeometryData();
+
+   // bottom-right geometry
+   const vector<glm::vec3> twoTrianglesMeshI = {
+      glm::vec3(iShiftX+0,meshShiftY+0,z),
+      glm::vec3(iShiftX+0,meshShiftY+1,z),
+      glm::vec3(iShiftX+1,meshShiftY+0,z),
+      glm::vec3(iShiftX+0,meshShiftY+0.1f,z),
+      glm::vec3(iShiftX+0,meshShiftY-1,z),
+      glm::vec3(iShiftX-1,meshShiftY+0,z),
+   };
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTrianglesMeshI);
+   meshI=Mesh::create();
+   meshI->setAttribArrays(v,contents);
+   meshI->setIndexArray(indices);
+   meshI->gpuUploadGeometryData();
 
    ge::gl::initShadersAndPrograms();
    glProgram = new ProgramObject(

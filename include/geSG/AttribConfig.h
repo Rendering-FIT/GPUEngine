@@ -43,7 +43,7 @@ namespace ge
             inline bool operator< (const ConfigData &rhs) const;  ///< Comparison operator.
             inline bool operator> (const ConfigData &rhs) const;  ///< Comparison operator.
          };
-         typedef std::map<ConfigData,std::unique_ptr<AttribConfig>> AttribConfigList;  ///< Map of AttribConfigs used inside AttribManager class.
+         typedef std::map<ConfigData,AttribConfig*> AttribConfigList;  ///< Map of AttribConfigs used inside AttribManager class.
          typedef std::list<std::shared_ptr<AttribStorage>> AttribStorageList;  ///< List of AttribStorages used inside AttribConfig class.
 
       protected:
@@ -62,10 +62,13 @@ namespace ge
                              AttribManager *manager,AttribConfigList::iterator selfIterator);
          inline AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
                              AttribConfigId id,AttribManager *manager,AttribConfigList::iterator selfIterator);
+         virtual void destroy();
 
       public:
 
          AttribConfig() = delete;
+         virtual ~AttribConfig();
+         virtual void detachFromAttribManager();
 
          virtual bool allocData(AttribReference &r,int numVertices,int numIndices);
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
@@ -196,7 +199,7 @@ namespace ge
       inline AttribConfigRef AttribConfig::getOrCreate(const std::vector<AttribType>& attribTypes,bool ebo,
          AttribConfigId id,AttribManager *manager)  { return manager->getAttribConfig(attribTypes,ebo,id); }
       inline void AttribConfig::addReference()  { _referenceCounter++; }
-      inline void AttribConfig::removeReference()  { if(--_referenceCounter==0) _manager->removeAttribConfig(_selfIterator); }
+      inline void AttribConfig::removeReference()  { if(--_referenceCounter==0) destroy(); }
       inline int AttribConfig::getReferenceCounter()  { return _referenceCounter; }
       inline const AttribConfig::ConfigData& AttribConfig::getConfigData() const  { return _configData; }
       inline int AttribConfig::getDefaultStorageNumVertices() const  { return _defaultStorageNumVertices; }
