@@ -37,6 +37,18 @@ void AttribConfig::detachFromAttribManager()
 }
 
 
+void AttribConfig::deleteAllAttribStorages()
+{
+   // remove AttribStorages while making reference to itself
+   // and release it at the end of our work
+   // (AttribConfig may be destroyed at the removeReference())
+   addReference();
+   _attribStorages.clear();
+   _privateAttribStorages.clear();
+   removeReference();
+}
+
+
 bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices)
 {
    // iterate AttribStorage list

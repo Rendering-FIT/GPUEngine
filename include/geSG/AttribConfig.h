@@ -69,6 +69,7 @@ namespace ge
          AttribConfig() = delete;
          virtual ~AttribConfig();
          virtual void detachFromAttribManager();
+         virtual void deleteAllAttribStorages();
 
          virtual bool allocData(AttribReference &r,int numVertices,int numIndices);
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,

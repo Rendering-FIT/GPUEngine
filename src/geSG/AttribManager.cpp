@@ -13,6 +13,13 @@ shared_ptr<AttribManager> AttribManager::_instance = make_shared<AttribManager>(
 
 AttribManager::~AttribManager()
 {
+   for(AttribConfigList::iterator it=_attribConfigList.begin(),nextIt; it!=_attribConfigList.end(); it=nextIt)
+   {
+      nextIt=it;
+      nextIt++;
+      if(it->second)
+         it->second->deleteAllAttribStorages();
+   }
 }
 
 
