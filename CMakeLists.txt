@@ -35,6 +35,10 @@ IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 ENDIF()
 
+IF(CMAKE_COMPILER_IS_GNUCXX)
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+ENDIF()
+
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 # Dynamic vs Static Linking
 OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." OFF)
