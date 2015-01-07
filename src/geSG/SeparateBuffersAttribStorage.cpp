@@ -10,8 +10,8 @@ using namespace std;
 
 
 SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef &config,
-                                                           unsigned numVertices,unsigned numIndices)
-   : AttribStorage(config,numVertices,numIndices)
+        unsigned numVertices,unsigned numIndices,unsigned numDrawCommands)
+   : AttribStorage(config,numVertices,numIndices,numDrawCommands)
 {
    // get ConfigData
    const AttribConfig::ConfigData &configData=config->getConfigData();
@@ -45,6 +45,9 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
                "   numIndices parameter must be zero.\n"<<endl;
       _ebo = NULL;
    }
+
+   // create draw commands buffer
+   _drawCommands=new BufferObject(numDrawCommands*sizeof(DrawCommandData),NULL,GL_DYNAMIC_DRAW);
 }
 
 
@@ -52,6 +55,7 @@ SeparateBuffersAttribStorage::~SeparateBuffersAttribStorage()
 {
    delete _vao;
    delete _ebo;
+   delete _drawCommands;
    for(auto it=_arrayBuffers.begin(); it!=_arrayBuffers.end(); it++)
       delete *it;
 }
@@ -64,7 +68,7 @@ void SeparateBuffersAttribStorage::bind()
 
 
 bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertices,
-                                               int numIndices,bool preserveContent)
+        int numIndices,int numDrawCommands,bool preserveContent)
 {
    // FIXME: not implemented yet
 }
@@ -111,4 +115,13 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array&
    int dstOffset=(_indicesDataAllocationMap[r.indicesDataId].startIndex+fromIndex)*elementSize;
    int num=numIndices==-1?data.size():numIndices;
    _ebo->setData((uint8_t*)data.data()+srcOffset,num*elementSize,dstOffset);
+}
+
+
+void SeparateBuffersAttribStorage::uploadDrawCommands(AttribReference &r,
+        const DrawCommandData *drawCommands,int fromIndex,int numDrawCommands)
+{
+   int srcOffset=fromIndex*sizeof(DrawCommandData);
+   int dstOffset=(_drawCommandsAllocationMap[r.drawCommandsId].startIndex+fromIndex)*sizeof(DrawCommandData);
+   _drawCommands->setData(((uint8_t*)drawCommands)+srcOffset,numDrawCommands,dstOffset);
 }

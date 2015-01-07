@@ -18,8 +18,9 @@ void Mesh::resetCpuGeometryData()
    // empty all attrib data
    _attribArrays.clear();
    _contents.clear();
-   _indexArray.clear();
    _content2attribIndex.clear();
+   _indexArray.clear();
+   _drawCommands.clear();
 
    // indicate that attrib data are now available on cpu, even although they are empty now
    _cpuAttribDataAvailable=true;
@@ -31,7 +32,7 @@ void Mesh::gpuUploadGeometryData()
    // alloc data if not allocated
    if(!_attribReference.valid())
       _attribReference.allocData(computeAttribConfig(),_attribArrays.size()>=1?_attribArrays[0].size():0,
-                                 hasIndices()?_indexArray.size():0);
+                                 hasIndices()?_indexArray.size():0,_drawCommands.size());
 
    // upload attributes
    _attribReference.uploadVertexData(_attribArrays);
@@ -39,6 +40,9 @@ void Mesh::gpuUploadGeometryData()
    // upload indices
    if(hasIndices())
       _attribReference.uploadIndices(_indexArray);
+
+   // upload draw commands
+   _attribReference.uploadDrawCommands(_drawCommands);
    _gpuAttribDataAvailable=true;
 
    // release cpu data if requested
@@ -46,6 +50,7 @@ void Mesh::gpuUploadGeometryData()
    {
       _attribArrays.clear();
       _indexArray.clear();
+      _drawCommands.clear();
       _cpuAttribDataAvailable=false;
    }
 }
@@ -103,6 +108,12 @@ void Mesh::setIndexArray(const Array &array)
 void Mesh::setIndexArray(const shared_ptr<ArrayDecoratorTemplate<unsigned>>& arrayDecorator)
 {
    _indexArray.set(arrayDecorator,AttribType::UInt);
+}
+
+
+void Mesh::setDrawCommandsBySwap(std::vector<DrawCommandData>& drawCommands)
+{
+   _drawCommands.swap(drawCommands);
 }
 
 

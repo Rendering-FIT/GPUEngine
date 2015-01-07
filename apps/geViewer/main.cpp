@@ -145,7 +145,7 @@ void Init(){
    v.reserve(1);
    v.emplace_back(twoTrianglesNI);
 
-   attribsRefNI.allocData(config,6,0);
+   attribsRefNI.allocData(config,6,0,0);
    attribsRefNI.uploadVertexData(v);
 
    // top-right geometry
@@ -165,7 +165,7 @@ void Init(){
    v.reserve(1);
    v.emplace_back(twoTrianglesI);
 
-   attribsRefI.allocData(config,6,6);
+   attribsRefI.allocData(config,6,6,0);
    attribsRefI.uploadVertexData(v);
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
    attribsRefI.uploadIndices(Array(indices));

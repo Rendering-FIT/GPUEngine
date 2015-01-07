@@ -10,6 +10,7 @@ namespace ge
       class Array;
       class AttribConfigRef;
       class AttribStorage;
+      struct DrawCommandData;
 
 
       class GE_EXPORT AttribReference {
@@ -18,6 +19,7 @@ namespace ge
          AttribStorage *attribStorage;
          unsigned verticesDataId;
          unsigned indicesDataId;
+         unsigned drawCommandsId;
 
          inline AttribReference() : attribStorage(NULL) {}
          inline AttribReference(AttribReference&& ref);
@@ -29,13 +31,21 @@ namespace ge
 
          inline bool valid() const;
 
-         inline void allocData(const AttribConfigRef& config,int numVertices,int numIndices);
-         inline void reallocData(int numVertices,int numIndices,bool preserveContent=true);
+         inline void allocData(const AttribConfigRef& config,int numVertices,
+                               int numIndices,int numDrawCommands);
+         inline void reallocData(int numVertices,int numIndices,
+                                 int numDrawCommands,bool preserveContent=true);
          inline void freeData();
 
          inline void uploadVertexData(const std::vector<Array>& attribs,
                                       int fromIndex=0,int numVertices=-1);
          inline void uploadIndices(const Array& indices,int fromIndex=0,int numIndices=-1);
+         inline void uploadDrawCommands(const DrawCommandData *drawCommands,
+                                        int fromIndex,int numDrawCommands);
+         inline void uploadDrawCommands(const DrawCommandData *drawCommands,
+                                        int numDrawCommands);
+         inline void uploadDrawCommands(const std::vector<DrawCommandData> &drawCommands,
+                                        int fromIndex=0);
 
       };
 
@@ -61,6 +71,7 @@ namespace ge
          : attribStorage(ref.attribStorage)
          , verticesDataId(ref.verticesDataId)
          , indicesDataId(ref.indicesDataId)
+         , drawCommandsId(ref.drawCommandsId)
       {
          ref.attribStorage=NULL;
       }
@@ -69,6 +80,7 @@ namespace ge
          attribStorage=rhs.attribStorage;
          verticesDataId=rhs.verticesDataId;
          indicesDataId=rhs.indicesDataId;
+         drawCommandsId=rhs.drawCommandsId;
          rhs.attribStorage=NULL;
       }
       AttribReference::~AttribReference()
@@ -76,10 +88,12 @@ namespace ge
          freeData();
       }
       inline bool AttribReference::valid() const  { return attribStorage!=NULL; }
-      inline void AttribReference::allocData(const AttribConfigRef& config,int numVertices,int numIndices)
-      { config->allocData(*this,numVertices,numIndices); }
-      inline void AttribReference::reallocData(int numVertices,int numIndices,bool preserveContent)
-      { attribStorage->reallocData(*this,numVertices,numIndices,preserveContent); }
+      inline void AttribReference::allocData(const AttribConfigRef& config,int numVertices,
+                                             int numIndices,int numDrawCommands)
+      { config->allocData(*this,numVertices,numIndices,numDrawCommands); }
+      inline void AttribReference::reallocData(int numVertices,int numIndices,
+                                               int numDrawCommands,bool preserveContent)
+      { attribStorage->reallocData(*this,numVertices,numIndices,numDrawCommands,preserveContent); }
       inline void AttribReference::freeData()  { if(attribStorage) attribStorage->freeData(*this); }
       inline void AttribReference::uploadVertexData(const std::vector<Array>& attribs,
                                                     int fromIndex,int numVertices)
@@ -92,6 +106,15 @@ namespace ge
          if(attribStorage)
             attribStorage->uploadIndices(*this,indices,fromIndex,numIndices);
       }
+      inline void AttribReference::uploadDrawCommands(const DrawCommandData *drawCommands,int fromIndex,int numDrawCommands)
+      {
+         if(attribStorage)
+            attribStorage->uploadDrawCommands(*this,drawCommands,fromIndex,numDrawCommands);
+      }
+      inline void AttribReference::uploadDrawCommands(const DrawCommandData *drawCommands,int numDrawCommands)
+      { uploadDrawCommands(drawCommands,0,numDrawCommands); }
+      inline void AttribReference::uploadDrawCommands(const std::vector<DrawCommandData> &drawCommands,int fromIndex)
+      { uploadDrawCommands(drawCommands.data(),drawCommands.size(),fromIndex); }
 
    }
 }

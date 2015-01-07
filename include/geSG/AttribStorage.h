@@ -16,47 +16,11 @@ namespace ge
       class Array;
       class AttribReference;
       class Mesh;
+      struct DrawCommandData;
 
-      /** AttribStorage class maintains vertex attributes of many scene objects
-       *  in a single OpenGL vertex array object (VAO).
-       *
-       *  It is benefical to store all the vertex attributes in few AttribStorage
-       *  objects because they can be drawn by a single draw command and handled
-       *  together by various scene processing algorithms instead of processing
-       *  many small VAOs separately, introducing smaller of bigger amount of overhead.
-       *
-       *  Each AttribStorage object can store vertex attributes of the same format only.
-       *  For instance, vertex attributes composed of coordinates and colors are
-       *  stored in different AttribStorage than vertex attributes composed of
-       *  coordinates, normals and texture coordinates. Format of a particular
-       *  attribute must be the same too. For instance, colors stored as RGBA8
-       *  are stored in different AttribStorage than colors stored as three floats.
-       *
-       *  AttribStorage is expected to be used with one graphics context only and
-       *  that context is expected to be current when working with the AttribStorage.
-       *  The easiest rule is that whenever you are processing your scene graph
-       *  and perform any changes that may change the scene geometry, including adding
-       *  and removing objects, have your graphics context current.
-       *
-       *  Constructor require graphics context current to allocate internal VAO
-       *  and other OpenGL objects. Destructor requires it to delete these OpenGL objects.
-       *  However, there is a difficulty as the graphics context may be destroyed because of
-       *  various reasons, including closing of the window or power-saving reasons
-       *  on mobile devices. In such cases, the user is expected to call
-       *  AttribManager::contextLost() before any further scene graph processing.
-       *  AttribManager::contextLost() will forward the call to all AttribStorages,
-       *  calling their contextLost(). This will clear all internal structures
-       *  as if no data would be uploaded to graphics context yet. This could be performed
-       *  even without active graphics context, after it was lost or destroyed.
-       *  Depending on user choose, he might decide to recreate the graphics
-       *  context and reinitialize attribute data, for instance, by reloading
-       *  model files, or he might safely start to tear down the application that
-       *  is in consistent state after calling AttribManager::contextLost().
-       *
-       *  For more details, which methods can be called without active graphics context
-       *  refer to the documentation to each of the object's methods.
-       *
-       *  \sa AttribManager, AttribReference, Mesh::getAttribConfig()
+
+      /** \brief AttribStorage class maintains vertex attributes,
+       *  indices and draw commands data of scene objects.
        */
       class GE_EXPORT AttribStorage {
       public:
@@ -86,35 +50,50 @@ namespace ge
          unsigned _numIndicesAvailableAtTheEnd;   ///< Number of indices that are available at the end of AttribStorage.
          unsigned _firstIndexAvailableAtTheEnd;   ///< Index of the first available index at the end of AttribStorage.
          unsigned _idOfIndicesBlockAtTheEnd;      ///< Id (index to _indicesDataAllocationMap) of the last allocated block at the end of AttribStorage.
+         unsigned _numDrawCommandsTotal;               ///< Total number of draw commands that can be allocated in this AttribStorage.
+         unsigned _numDrawCommandsAvailable;           ///< Number of draw commands that are available in this AttribStorage.
+         unsigned _numDrawCommandsAvailableAtTheEnd;   ///< Number of draw commands that are available at the end of AttribStorage.
+         unsigned _firstDrawCommandAvailableAtTheEnd;  ///< Index of the first available draw command at the end of AttribStorage.
+         unsigned _idOfDrawCommandBlockAtTheEnd;       ///< Id (index to _drawCommandAllocationMap) of the last allocated block at the end of AttribStorage.
 
          std::vector<AllocationBlock> _verticesDataAllocationMap;  ///< Allocation map of blocks of vertices.
          std::vector<AllocationBlock> _indicesDataAllocationMap;   ///< Allocation map of blocks of indices.
+         std::vector<AllocationBlock> _drawCommandsAllocationMap;  ///< Allocation map of blocks of draw commands data.
          AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
 
       public:
 
          AttribStorage() = delete;
-         AttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices);
+         AttribStorage(const AttribConfigRef &config,unsigned numVertices,
+                       unsigned numIndices,unsigned numDrawCommands);
          virtual ~AttribStorage();
 
          virtual void bind() = 0;
 
-         virtual bool allocData(AttribReference &r,int numVertices,int numIndices);
+         virtual bool allocData(AttribReference &r,int numVertices,
+                                int numIndices,int numDrawCommands);
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
-                                  bool preserveContent=true);
+                                  int numDrawCommands,bool preserveContent=true);
          virtual void freeData(AttribReference &r);
 
          virtual void uploadVertexData(AttribReference &r,const std::vector<Array>& attribs,
                                        int fromIndex=0,int numVertices=-1) = 0;
          virtual void uploadIndices(AttribReference &r,const Array& indices,
                                     int fromIndex=0,int numIndices=-1) = 0;
+         virtual void uploadDrawCommands(AttribReference &r,const DrawCommandData *drawCommands,
+                                         int fromIndex,int numDrawCommands) = 0;
+         inline void uploadDrawCommands(AttribReference &r,const DrawCommandData *drawCommands,
+                                        int numDrawCommands);
+         inline void uploadDrawCommands(AttribReference &r,
+                                        const std::vector<DrawCommandData> &drawCommands,
+                                        int fromIndex);
 
          inline const AllocationBlock& getVerticesAllocationBlock(unsigned id) const;
          inline const AllocationBlock& getIndicesAllocationBlock(unsigned id) const;
+         inline const AllocationBlock& getDrawCommandsAllocationBlock(unsigned id) const;
 
          inline const AttribConfigRef& getAttribConfig() const;
 
-         inline unsigned getVertexDataSize() const;
          inline unsigned getNumVerticesTotal() const;
          inline unsigned getNumVerticesAvailable() const;
          inline unsigned getNumVerticesAvailableAtTheEnd() const;
@@ -125,17 +104,24 @@ namespace ge
          inline unsigned getNumIndicesAvailableAtTheEnd() const;
          inline unsigned getFirstIndexAvailableAtTheEnd() const;
          inline unsigned getIdOfIndicesBlockAtTheEnd() const;
+         inline unsigned getNumDrawCommandsTotal() const;
+         inline unsigned getNumDrawCommandsAvailable() const;
+         inline unsigned getNumDrawCommandsAvailableAtTheEnd() const;
+         inline unsigned getFirstDrawCommandAvailableAtTheEnd() const;
+         inline unsigned getIdOfDrawCommandBlockAtTheEnd() const;
          inline std::vector<AllocationBlock>& getVerticesDataAllocationMap();
          inline std::vector<AllocationBlock>& getIndicesDataAllocationMap();
+         inline std::vector<AllocationBlock>& getDrawCommandsAllocationMap();
          inline const std::vector<AllocationBlock>& getVerticesDataAllocationMap() const;
          inline const std::vector<AllocationBlock>& getIndicesDataAllocationMap() const;
+         inline const std::vector<AllocationBlock>& getDrawCommandsAllocationMap() const;
 
          virtual void cancelAllAllocations();
 
          class Factory {
          public:
             virtual std::shared_ptr<AttribStorage> create(const AttribConfigRef &config,
-                                                          unsigned numVertices,unsigned numIndices);
+                     unsigned numVertices,unsigned numIndices,unsigned numDrawCommands);
          };
          static inline std::shared_ptr<Factory>& getFactory();
          static inline void setFactory(std::shared_ptr<Factory>& f);
@@ -144,11 +130,30 @@ namespace ge
          static std::shared_ptr<Factory> _factory;
       };
 
+   }
+}
 
 
-      // inline and template methods
+
+// inline and template methods
+//
+// note: they need their own includes that can not be placed on the beginning of this file
+//       as there are circular header includes and the classes need to be defined before
+//       inline methods to avoid incomplete type compiler error
+
+#include <geSG/DrawCommandData.h>
+
+namespace ge
+{
+   namespace sg
+   {
+      inline void AttribStorage::uploadDrawCommands(AttribReference &r,const DrawCommandData *drawCommands,int numDrawCommands)
+      { uploadDrawCommands(r,drawCommands,0,numDrawCommands); }
+      inline void AttribStorage::uploadDrawCommands(AttribReference &r,const std::vector<DrawCommandData> &drawCommands,int fromIndex)
+      { uploadDrawCommands(r,drawCommands.data(),drawCommands.size(),fromIndex); }
       inline const AttribStorage::AllocationBlock& AttribStorage::getVerticesAllocationBlock(unsigned id) const  { return _verticesDataAllocationMap[id]; }
       inline const AttribStorage::AllocationBlock& AttribStorage::getIndicesAllocationBlock(unsigned id) const  { return _indicesDataAllocationMap[id]; }
+      inline const AttribStorage::AllocationBlock& AttribStorage::getDrawCommandsAllocationBlock(unsigned id) const  { return _drawCommandsAllocationMap[id]; }
       inline const AttribConfigRef& AttribStorage::getAttribConfig() const  { return _attribConfig; }
       inline unsigned AttribStorage::getNumVerticesTotal() const  { return _numVerticesTotal; }
       inline unsigned AttribStorage::getNumVerticesAvailable() const  { return _numVerticesAvailable; }
@@ -160,10 +165,17 @@ namespace ge
       inline unsigned AttribStorage::getNumIndicesAvailableAtTheEnd() const  { return _numIndicesAvailableAtTheEnd; }
       inline unsigned AttribStorage::getFirstIndexAvailableAtTheEnd() const  { return _firstIndexAvailableAtTheEnd; }
       inline unsigned AttribStorage::getIdOfIndicesBlockAtTheEnd() const  { return _idOfIndicesBlockAtTheEnd; }
+      inline unsigned AttribStorage::getNumDrawCommandsTotal() const  { return _numDrawCommandsTotal; }
+      inline unsigned AttribStorage::getNumDrawCommandsAvailable() const  { return _numDrawCommandsAvailable; }
+      inline unsigned AttribStorage::getNumDrawCommandsAvailableAtTheEnd() const  { return _numDrawCommandsAvailableAtTheEnd; }
+      inline unsigned AttribStorage::getFirstDrawCommandAvailableAtTheEnd() const  { return _firstDrawCommandAvailableAtTheEnd; }
+      inline unsigned AttribStorage::getIdOfDrawCommandBlockAtTheEnd() const  { return _idOfDrawCommandBlockAtTheEnd; }
       inline std::vector<AttribStorage::AllocationBlock>& AttribStorage::getVerticesDataAllocationMap()  { return _verticesDataAllocationMap; }
       inline std::vector<AttribStorage::AllocationBlock>& AttribStorage::getIndicesDataAllocationMap()  { return _indicesDataAllocationMap; }
+      inline std::vector<AttribStorage::AllocationBlock>& AttribStorage::getDrawCommandsAllocationMap()  { return _drawCommandsAllocationMap; }
       inline const std::vector<AttribStorage::AllocationBlock>& AttribStorage::getVerticesDataAllocationMap() const  { return _verticesDataAllocationMap; }
       inline const std::vector<AttribStorage::AllocationBlock>& AttribStorage::getIndicesDataAllocationMap() const  { return _indicesDataAllocationMap; }
+      inline const std::vector<AttribStorage::AllocationBlock>& AttribStorage::getDrawCommandsAllocationMap() const  { return _drawCommandsAllocationMap; }
       inline std::shared_ptr<AttribStorage::Factory>& AttribStorage::getFactory() { return _factory; }
       inline void AttribStorage::setFactory(std::shared_ptr<AttribStorage::Factory>& f) { _factory = f; }
 

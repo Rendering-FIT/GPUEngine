@@ -54,8 +54,9 @@ namespace ge
          AttribConfigList::iterator _selfIterator;
          AttribStorageList _attribStorages;
          AttribStorageList _privateAttribStorages;
-         int _defaultStorageNumVertices = 1000*1024;
-         int _defaultStorageNumIndices = 4000*1024;
+         int _defaultStorageNumVertices = 1000*1024; // 1M vertices (for just float coordinates ~12MiB, including normals, color and texCoord, ~36MiB)
+         int _defaultStorageNumIndices = 4000*1024; // 4M indices (~16MiB)
+         int _defaultStorageNumDrawCommands = 100*1024; // 10 vertices per draw command, 100K draw commands (~1.6MiB)
 
          inline AttribConfig(const ConfigData &config,AttribManager *manager,AttribConfigList::iterator selfIterator);
          inline AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
@@ -71,9 +72,9 @@ namespace ge
          virtual void detachFromAttribManager();
          virtual void deleteAllAttribStorages();
 
-         virtual bool allocData(AttribReference &r,int numVertices,int numIndices);
+         virtual bool allocData(AttribReference &r,int numVertices,int numIndices,int numDrawCommands);
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
-                                  bool preserveContent=true);
+                                  int numDrawCommands,bool preserveContent=true);
          inline void freeData(AttribReference &r);
 
          inline AttribConfigRef createReference();
@@ -95,6 +96,8 @@ namespace ge
          inline void setDefaultStorageNumVertices(int num);
          inline int getDefaultStorageNumIndices() const;
          inline void setDefaultStorageNumIndices(int num);
+         inline int getDefaultStorageNumDrawCommands() const;
+         inline void setDefaultStorageNumDrawCommands(int num);
 
          inline bool operator==(const AttribConfig &rhs) const;
          inline bool operator!=(const AttribConfig &rhs) const;
@@ -207,6 +210,8 @@ namespace ge
       inline void AttribConfig::setDefaultStorageNumVertices(int num)  { _defaultStorageNumVertices=num; }
       inline int AttribConfig::getDefaultStorageNumIndices() const  { return _defaultStorageNumIndices; }
       inline void AttribConfig::setDefaultStorageNumIndices(int num)  { _defaultStorageNumIndices=num; }
+      inline int AttribConfig::getDefaultStorageNumDrawCommands() const  { return _defaultStorageNumDrawCommands; }
+      inline void AttribConfig::setDefaultStorageNumDrawCommands(int num)  { _defaultStorageNumDrawCommands=num; }
       inline bool AttribConfig::operator==(const AttribConfig &rhs) const  { return _configData==rhs._configData; }
       inline bool AttribConfig::operator!=(const AttribConfig &rhs) const  { return _configData!=rhs._configData; }
       inline bool AttribConfig::operator<=(const AttribConfig &rhs) const  { return _configData<=rhs._configData; }

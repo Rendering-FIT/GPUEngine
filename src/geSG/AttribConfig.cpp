@@ -49,7 +49,7 @@ void AttribConfig::deleteAllAttribStorages()
 }
 
 
-bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices)
+bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,int numDrawCommands)
 {
    // iterate AttribStorage list
    // and look if there is one with enough empty space
@@ -57,7 +57,8 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices)
    for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
    {
       if((*it)->getNumVerticesAvailableAtTheEnd()>=numVertices &&
-         (*it)->getNumIndicesAvailableAtTheEnd()>=numIndices)
+         (*it)->getNumIndicesAvailableAtTheEnd()>=numIndices &&
+         (*it)->getNumDrawCommandsAvailableAtTheEnd()>=numDrawCommands)
       {
          storageIt=it;
          break;
@@ -70,26 +71,19 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices)
       // create a new AttribStorage
       _attribStorages.push_front(
             AttribStorage::getFactory()->create(this->createReference(),_defaultStorageNumVertices,
-                                                this->_configData.ebo?_defaultStorageNumIndices:0));
+                                                this->_configData.ebo?_defaultStorageNumIndices:0,
+                                                numDrawCommands));
       storageIt=_attribStorages.begin();
    }
 
    // perform allocation in the choosen AttribStorage
-   (*storageIt)->allocData(r,numVertices,numIndices);
+   (*storageIt)->allocData(r,numVertices,numIndices,numDrawCommands);
    return true;
 }
 
 
-/** Changes the number of allocated elements or indices.
- *
- *  Parameter r contains the reference to AttribReference holding allocation information.
- *  numVertices and numIndices are the new number of elements in vertex and index arrays.
- *  If preserveContent parameter is true, the content of element and index data will be preserved.
- *  If new data are larger, the content over the size of previous data is undefined.
- *  If new data are smaller, only the data up to the new data size is preserved.
- *  If preserveContent is false, content of element and index data are undefined.
- */
-bool AttribConfig::reallocData(AttribReference &r,int numVertices,int numIndices,bool preserveContent)
+bool AttribConfig::reallocData(AttribReference &r,int numVertices,int numIndices,
+                               int numDrawCommands,bool preserveContent)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
