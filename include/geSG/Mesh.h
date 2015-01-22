@@ -36,7 +36,9 @@ namespace ge
          std::vector<ArrayContent> _contents;
          std::vector<int8_t> _content2attribIndex;
          Array _indexArray;
-         std::vector<DrawCommandData> _drawCommands;
+         void* _drawCommandBuffer;
+         unsigned _drawCommandBufferSize;
+         std::vector<unsigned> _drawCommandOffsetsAndSizes;
 
          AttribReference _attribReference;
 
@@ -65,9 +67,6 @@ namespace ge
          inline void setIndexArray(const std::shared_ptr<std::vector<unsigned>> &ptr);
          virtual void setIndexArray(const std::shared_ptr<ArrayDecoratorTemplate<unsigned>>& arrayDecorator);
 
-         inline void setDrawCommands(const std::vector<DrawCommandData>& drawCommands);
-         virtual void setDrawCommandsBySwap(std::vector<DrawCommandData>& drawCommands);
-
          inline int getNumAttribArrays() const;
          inline bool hasIndices() const;
 
@@ -75,7 +74,9 @@ namespace ge
          inline Array& getAttribArray(int index);
          inline Array& getAttribArray(ArrayContent content);
          inline Array& getIndexArray();
-         inline std::vector<DrawCommandData>& getDrawCommands();
+         inline void* getDrawCommandBuffer() const;
+         inline unsigned getDrawCommandBufferSize() const;
+         inline const std::vector<unsigned>& getDrawCommandOffsetsAndSizes() const;
 
          inline const AttribReference& getAttribReference() const;
          inline AttribStorage* getAttribStorage() const;
@@ -113,15 +114,15 @@ namespace ge
       {
          setIndexArray(std::make_shared<ArrayDecoratorTemplate<unsigned>>(ptr));
       }
-      inline void Mesh::setDrawCommands(const std::vector<DrawCommandData>& drawCommands)
-      { std::vector<DrawCommandData> tmp(drawCommands); setDrawCommandsBySwap(tmp); }
       inline int Mesh::getNumAttribArrays() const  { return _attribArrays.size(); }
       inline bool Mesh::hasIndices() const  { return _indexArray.getType() != AttribType::Empty; }
       inline const std::vector<Array>& Mesh::getAttribArrays()  { return _attribArrays; }
       inline Array& Mesh::getAttribArray(int index)  { return _attribArrays[index]; }
       inline Array& Mesh::getAttribArray(ArrayContent content)  { return _attribArrays[_content2attribIndex[uint8_t(content)]]; }
       inline Array& Mesh::getIndexArray()  { return _indexArray; }
-      inline std::vector<DrawCommandData>& Mesh::getDrawCommands()  { return _drawCommands; }
+      inline void* Mesh::getDrawCommandBuffer() const  { return _drawCommandBuffer; }
+      inline unsigned Mesh::getDrawCommandBufferSize() const  { return _drawCommandBufferSize; }
+      inline const std::vector<unsigned>& Mesh::getDrawCommandOffsetsAndSizes() const  { return _drawCommandOffsetsAndSizes; }
       inline const AttribReference& Mesh::getAttribReference() const  { return _attribReference; }
       inline AttribStorage* Mesh::getAttribStorage() const  { return _attribReference.attribStorage; }
       inline const AttribConfigRef& Mesh::getAttribConfig() const

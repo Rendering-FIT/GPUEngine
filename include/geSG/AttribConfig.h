@@ -52,8 +52,7 @@ namespace ge
          ConfigData _configData;
          AttribManager *_manager;
          AttribConfigList::iterator _selfIterator;
-         AttribStorageList _attribStorages;
-         AttribStorageList _privateAttribStorages;
+         AttribStorageList _attribStorages; // private storages are on the end
          int _defaultStorageNumVertices = 1000*1024; // 1M vertices (for just float coordinates ~12MiB, including normals, color and texCoord, ~36MiB)
          int _defaultStorageNumIndices = 4000*1024; // 4M indices (~16MiB)
          int _defaultStorageNumDrawCommands = 100*1024; // 10 vertices per draw command, 100K draw commands (~1.6MiB)
@@ -71,6 +70,8 @@ namespace ge
          virtual ~AttribConfig();
          virtual void detachFromAttribManager();
          virtual void deleteAllAttribStorages();
+
+         inline const AttribStorageList& getAttribStorageList() const;
 
          virtual bool allocData(AttribReference &r,int numVertices,int numIndices,int numDrawCommands);
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
@@ -91,6 +92,7 @@ namespace ge
          static AttribConfigId getId(const std::vector<AttribType>& attribTypes,bool ebo);
 
          inline const ConfigData& getConfigData() const;
+         inline AttribManager* getAttribManager() const;
 
          inline int getDefaultStorageNumVertices() const;
          inline void setDefaultStorageNumVertices(int num);
@@ -194,6 +196,7 @@ namespace ge
       inline AttribConfig::AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
          AttribConfigId id,AttribManager *manager,AttribConfigList::iterator selfIterator)
          : _configData(attribTypes,ebo,id), _manager(manager), _selfIterator(selfIterator)  {}
+      const AttribConfig::AttribStorageList& AttribConfig::getAttribStorageList() const  { return _attribStorages; }
       inline void AttribConfig::freeData(AttribReference &r)  { if(r.attribStorage) r.attribStorage->freeData(r); }
       inline AttribConfigRef AttribConfig::createReference()  { return AttribConfigRef(*this); }
       inline AttribConfigRef AttribConfig::getOrCreate(const ConfigData &config,AttribManager *manager)
@@ -206,6 +209,7 @@ namespace ge
       inline void AttribConfig::removeReference()  { if(--_referenceCounter==0) destroy(); }
       inline int AttribConfig::getReferenceCounter()  { return _referenceCounter; }
       inline const AttribConfig::ConfigData& AttribConfig::getConfigData() const  { return _configData; }
+      inline AttribManager* AttribConfig::getAttribManager() const  { return _manager; }
       inline int AttribConfig::getDefaultStorageNumVertices() const  { return _defaultStorageNumVertices; }
       inline void AttribConfig::setDefaultStorageNumVertices(int num)  { _defaultStorageNumVertices=num; }
       inline int AttribConfig::getDefaultStorageNumIndices() const  { return _defaultStorageNumIndices; }

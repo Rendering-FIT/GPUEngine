@@ -112,11 +112,11 @@ void Idle(){
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
    AttribStorage *storageNI=meshNI->getAttribReference().attribStorage;
    storageNI->bind();
-   const AttribStorage::AllocationBlock &blockNI=storageNI->getVerticesAllocationBlock(meshNI->getAttribReference().verticesDataId);
+   const AllocationItem &blockNI=storageNI->getVertexAllocationItem(meshNI->getAttribReference().verticesDataId);
    glDrawArrays(GL_TRIANGLES,blockNI.startIndex,blockNI.numElements);
    AttribStorage *storageI=meshI->getAttribReference().attribStorage;
    storageI->bind();
-   const AttribStorage::AllocationBlock &blockI=storageI->getIndicesAllocationBlock(meshI->getAttribReference().indicesDataId);
+   const AllocationItem &blockI=storageI->getIndexAllocationItem(meshI->getAttribReference().indicesDataId);
    glDrawElementsBaseVertex(GL_TRIANGLES,blockI.numElements,GL_UNSIGNED_INT,(void*)(blockI.startIndex*sizeof(uint32_t)),6);
    Window->swap();
 }
@@ -146,7 +146,7 @@ void Init(){
    v.emplace_back(twoTrianglesNI);
 
    attribsRefNI.allocData(config,6,0,0);
-   attribsRefNI.uploadVertexData(v);
+   attribsRefNI.uploadVertices(v);
 
    // top-right geometry
    config.ebo=true;
@@ -166,7 +166,7 @@ void Init(){
    v.emplace_back(twoTrianglesI);
 
    attribsRefI.allocData(config,6,6,0);
-   attribsRefI.uploadVertexData(v);
+   attribsRefI.uploadVertices(v);
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
    attribsRefI.uploadIndices(Array(indices));
 

@@ -44,7 +44,6 @@ void AttribConfig::deleteAllAttribStorages()
    // (AttribConfig may be destroyed at the removeReference())
    addReference();
    _attribStorages.clear();
-   _privateAttribStorages.clear();
    removeReference();
 }
 
@@ -57,8 +56,7 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,i
    for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
    {
       if((*it)->getNumVerticesAvailableAtTheEnd()>=numVertices &&
-         (*it)->getNumIndicesAvailableAtTheEnd()>=numIndices &&
-         (*it)->getNumDrawCommandsAvailableAtTheEnd()>=numDrawCommands)
+         (*it)->getNumIndicesAvailableAtTheEnd()>=numIndices)
       {
          storageIt=it;
          break;
@@ -71,13 +69,16 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,i
       // create a new AttribStorage
       _attribStorages.push_front(
             AttribStorage::getFactory()->create(this->createReference(),_defaultStorageNumVertices,
-                                                this->_configData.ebo?_defaultStorageNumIndices:0,
-                                                numDrawCommands));
+                                                this->_configData.ebo?_defaultStorageNumIndices:0));
       storageIt=_attribStorages.begin();
    }
 
    // perform allocation in the choosen AttribStorage
-   (*storageIt)->allocData(r,numVertices,numIndices,numDrawCommands);
+   (*storageIt)->allocData(r,numVertices,numIndices);
+
+   // perform allocation of draw commands
+   _manager->allocDrawCommands(r,numDrawCommands);
+
    return true;
 }
 

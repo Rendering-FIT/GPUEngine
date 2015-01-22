@@ -10,8 +10,8 @@ using namespace std;
 
 
 SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef &config,
-        unsigned numVertices,unsigned numIndices,unsigned numDrawCommands)
-   : AttribStorage(config,numVertices,numIndices,numDrawCommands)
+        unsigned numVertices,unsigned numIndices)
+   : AttribStorage(config,numVertices,numIndices)
 {
    // get ConfigData
    const AttribConfig::ConfigData &configData=config->getConfigData();
@@ -45,9 +45,6 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
                "   numIndices parameter must be zero.\n"<<endl;
       _ebo = NULL;
    }
-
-   // create draw commands buffer
-   _drawCommands=new BufferObject(numDrawCommands*sizeof(DrawCommandData),NULL,GL_DYNAMIC_DRAW);
 }
 
 
@@ -55,7 +52,6 @@ SeparateBuffersAttribStorage::~SeparateBuffersAttribStorage()
 {
    delete _vao;
    delete _ebo;
-   delete _drawCommands;
    for(auto it=_arrayBuffers.begin(); it!=_arrayBuffers.end(); it++)
       delete *it;
 }
@@ -68,14 +64,14 @@ void SeparateBuffersAttribStorage::bind()
 
 
 bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertices,
-        int numIndices,int numDrawCommands,bool preserveContent)
+        int numIndices,bool preserveContent)
 {
    // FIXME: not implemented yet
 }
 
 
-void SeparateBuffersAttribStorage::uploadVertexData(AttribReference &r,const std::vector<Array>& data,
-                                                    int fromIndex,int numVertices)
+void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const std::vector<Array>& data,
+                                                  int fromIndex,int numVertices)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->getConfigData();
    for(int i=0,c=min(_arrayBuffers.size(),data.size()); i<c; i++)
@@ -88,7 +84,7 @@ void SeparateBuffersAttribStorage::uploadVertexData(AttribReference &r,const std
       }
       int elementSize=t.getElementSize();
       int srcOffset=fromIndex*elementSize;
-      int dstOffset=(_verticesDataAllocationMap[r.verticesDataId].startIndex+fromIndex)*elementSize;
+      int dstOffset=(_vertexAllocationManager[r.verticesDataId].startIndex+fromIndex)*elementSize;
       int num=numVertices==-1?data[i].size():numVertices;
       _arrayBuffers[i]->setData((uint8_t*)data[i].data()+srcOffset,num*elementSize,dstOffset);
    }
@@ -112,16 +108,7 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array&
    }
    int elementSize=t.getElementSize();
    int srcOffset=fromIndex*elementSize;
-   int dstOffset=(_indicesDataAllocationMap[r.indicesDataId].startIndex+fromIndex)*elementSize;
+   int dstOffset=(_indexAllocationManager[r.indicesDataId].startIndex+fromIndex)*elementSize;
    int num=numIndices==-1?data.size():numIndices;
    _ebo->setData((uint8_t*)data.data()+srcOffset,num*elementSize,dstOffset);
-}
-
-
-void SeparateBuffersAttribStorage::uploadDrawCommands(AttribReference &r,
-        const DrawCommandData *drawCommands,int fromIndex,int numDrawCommands)
-{
-   int srcOffset=fromIndex*sizeof(DrawCommandData);
-   int dstOffset=(_drawCommandsAllocationMap[r.drawCommandsId].startIndex+fromIndex)*sizeof(DrawCommandData);
-   _drawCommands->setData(((uint8_t*)drawCommands)+srcOffset,numDrawCommands,dstOffset);
 }

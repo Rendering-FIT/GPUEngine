@@ -2,8 +2,10 @@
 #include <geSG/AttribManager.h>
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
+#include <geGL/BufferObject.h>
 
 using namespace ge::sg;
+using namespace ge::gl;
 using namespace std;
 
 
@@ -11,8 +13,17 @@ shared_ptr<AttribManager> AttribManager::_instance = make_shared<AttribManager>(
 
 
 
+AttribManager::AttribManager()
+   : _drawCommandAllocationManager(10000)
+{
+   // create draw commands buffer
+   //_drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,NULL,GL_DYNAMIC_DRAW);
+}
+
+
 AttribManager::~AttribManager()
 {
+   cancelAllAllocations();
    for(AttribConfigList::iterator it=_attribConfigList.begin(),nextIt; it!=_attribConfigList.end(); it=nextIt)
    {
       nextIt=it;
@@ -20,6 +31,7 @@ AttribManager::~AttribManager()
       if(it->second)
          it->second->deleteAllAttribStorages();
    }
+   //delete _drawCommandBuffer;
 }
 
 
@@ -47,44 +59,133 @@ void AttribManager::removeAttribConfig(AttribConfigList::iterator it)
 }
 
 
-#if 0
-void AttribManager::freeData(AttribReference &r)
+/** Allocates the memory for draw commands.
+ *
+ *  Returns true on success. False on failure, usually caused by absence of
+ *  large enough free memory block.
+ *
+ *  The method does not require active graphics context.
+ *
+ *  @param r AttribReference that will hold reference to the allocated draw command memory
+ *  @param size number of bytes to be allocated
+ */
+bool AttribManager::allocDrawCommands(AttribReference &r,unsigned size)
 {
-   // ignore empty AttribReferences
+   // Warn if attribStorage is not already assigned
+   if(r.attribStorage==NULL)
+   {
+      cerr<<"Error: calling AttribManager::allocDrawCommands() on AttribReference\n"
+            "   that is empty (no vertices and indices allocated)." << endl;
+      return false;
+   }
+
+   // Warn if already allocated
+   if(r.drawCommandBlockId!=0)
+   {
+      cerr<<"Warning: calling AttribManager::allocDrawCommands() on AttribReference\n"
+            "   that has already allocated draw commands." << endl;
+      freeDrawCommands(r);
+   }
+
+   if(!_drawCommandAllocationManager.canAllocate(size))
+      return false;
+
+   // allocate memory for draw commands (inside AttribStorage's preallocated memory or buffers)
+   r.drawCommandBlockId=_drawCommandAllocationManager.alloc(size,r);
+
+   return true;
+}
+
+
+bool AttribManager::reallocDrawCommands(AttribReference &r,int newSize,bool preserveContent)
+{
+   // not implemented yet
+}
+
+
+void AttribManager::freeDrawCommands(AttribReference &r)
+{
+   // Warn if attribStorage is assigned
+   if(r.attribStorage==NULL)
+   {
+      cerr<<"Error: calling AttribManager::freeDrawCommands() on AttribReference\n"
+            "   that is empty (no vertices and indices allocated)." << endl;
+      return;
+   }
+
+   // release the memory block
+   _drawCommandAllocationManager.free(r.drawCommandBlockId);
+   r.drawCommandBlockId=0;
+}
+
+
+void AttribManager::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
+                                       unsigned drawCommandBufferSize,
+                                       const unsigned *offsetsAndSizes,int numDrawCommands)
+{
+   clearDrawCommands(r);
+   uploadDrawCommands(r,drawCommandBuffer,0,drawCommandBufferSize);
+   updateDrawCommandOffsets(r,offsetsAndSizes,numDrawCommands);
+}
+
+
+void AttribManager::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
+                                       unsigned dstOffset,unsigned size)
+{
    if(r.attribStorage==NULL)
       return;
 
-   // free data
-   r.attribStorage->freeData(r);
+   //...
+   //int srcOffset=fromIndex*sizeof(DrawCommandData);
+   //int dstOffset=(_drawCommandsAllocationMap[r.drawCommandsId].startIndex+fromIndex)*sizeof(DrawCommandData);
+   //_drawCommands->setData(((uint8_t*)drawCommands)+srcOffset,numDrawCommands,dstOffset);
 }
 
 
-std::shared_ptr<AttribStorage> AttribManager::allocStorage(const AttribConfig &config,
-                                                           unsigned numVertices,unsigned numIndices,
-                                                           bool privateFlag)
+void AttribManager::updateDrawCommandOffsets(AttribReference &r,
+                                             const unsigned *offsetsAndSizes,int numDrawCommands,
+                                             unsigned startIndex,bool truncate)
 {
-   // create new AttribStorage
-   shared_ptr<AttribStorage> a = AttribStorage::getFactory()->create(config,
-         _defaultStorageNumVertices,_defaultStorageNumIndices);
+   if(r.attribStorage==NULL)
+      return;
 
-   if(privateFlag)
-   {
-      // insert it to the "private" list
-      _privateAttribStorages.push_back(a);
-   }
-   else
-   {
-      // insert it to the multimap
-      auto attribStorageIt=_attribStorageMultiMap.emplace(config,a);
-
-      // update _id2IteratorMap for faster lookups
-      if(config.configId!=0)
-         _id2IteratorMap[config.configId].first=attribStorageIt;
-   }
-
-   return a;
+   //...
 }
-#endif
+
+
+void AttribManager::setNumDrawCommands(AttribReference &r,unsigned num)
+{
+   if(r.attribStorage==NULL)
+      return;
+
+   //...
+}
+
+
+void AttribManager::cancelAllAllocations()
+{
+   // break references from AttribReferences
+   for(auto it=_drawCommandAllocationManager.begin(); it!=_drawCommandAllocationManager.end(); it++)
+      if(it->owner)
+         it->owner->attribStorage=nullptr;
+
+   // empty allocation map
+   _drawCommandAllocationManager.clear();
+
+   // break references in all AttribStorages
+   for(auto acIt=_attribConfigList.begin(); acIt!=_attribConfigList.end(); acIt++)
+   {
+      const AttribConfig::AttribStorageList &list=acIt->second->getAttribStorageList();
+      for(auto asIt=list.begin(); asIt!=list.end(); asIt++)
+         (*asIt)->cancelAllAllocations();
+   }
+}
+
+
+void AttribManager::handleContextLost()
+{
+   cancelAllAllocations();
+}
 
 
 void AttribManager::setInstance(std::shared_ptr<AttribManager>& ptr)

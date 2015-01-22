@@ -21,25 +21,22 @@ namespace ge
          ge::gl::VertexArrayObject* _vao;
          std::vector<ge::gl::BufferObject*> _arrayBuffers;
          ge::gl::BufferObject* _ebo;
-         ge::gl::BufferObject* _drawCommands;
 
       public:
 
          SeparateBuffersAttribStorage() = delete;
          SeparateBuffersAttribStorage(const AttribConfigRef &config,unsigned numVertices,
-                                      unsigned numIndices,unsigned numDrawCommands);
+                                      unsigned numIndices);
          virtual ~SeparateBuffersAttribStorage();
 
-         virtual void bind();
+         virtual void bind() override;
 
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
-                                  int numDrawCommands,bool preserveContent=true) override;
-         virtual void uploadVertexData(AttribReference &r,const std::vector<Array>& data,
+                                  bool preserveContent=true) override;
+         virtual void uploadVertices(AttribReference &r,const std::vector<Array>& data,
                                        int fromIndex=0,int numVertices=-1) override;
          virtual void uploadIndices(AttribReference &r,const Array& data,
                                     int fromIndex=0,int numIndices=-1) override;
-         virtual void uploadDrawCommands(AttribReference &r,const DrawCommandData *drawCommands,
-                                         int fromIndex,int numDrawCommands);
 
       };
 

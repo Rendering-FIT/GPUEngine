@@ -5,6 +5,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Array.h
+    ${HEADER_PATH}/AllocationManagers.h
     ${HEADER_PATH}/AttribType.h
     ${HEADER_PATH}/AttribConfig.h
     ${HEADER_PATH}/AttribReference.h
@@ -22,6 +23,7 @@ set(SG_INCLUDES
   )
 
 set(SG_SOURCES
+    AllocationManagers.cpp
     AttribType.cpp
     AttribConfig.cpp
     AttribStorage.cpp

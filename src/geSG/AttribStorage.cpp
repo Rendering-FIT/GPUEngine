@@ -14,29 +14,12 @@ shared_ptr<AttribStorage::Factory> AttribStorage::_factory = make_shared<AttribS
 
 
 AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
-                             unsigned numIndices,unsigned numDrawCommands)
-   : _numVerticesTotal(numVertices)
-   , _numVerticesAvailable(numVertices)
-   , _numVerticesAvailableAtTheEnd(numVertices)
-   , _firstVertexAvailableAtTheEnd(0) // all vertices are available
-   , _idOfVerticesBlockAtTheEnd(0) // points to zero element
-   , _numIndicesTotal(numIndices)
-   , _numIndicesAvailable(numIndices)
-   , _numIndicesAvailableAtTheEnd(numIndices)
-   , _firstIndexAvailableAtTheEnd(0) // all indices are available
-   , _idOfIndicesBlockAtTheEnd(0) // points to zero element
-   , _numDrawCommandsTotal(numDrawCommands)
-   , _numDrawCommandsAvailable(numDrawCommands)
-   , _numDrawCommandsAvailableAtTheEnd(numDrawCommands)
-   , _firstDrawCommandAvailableAtTheEnd(0) // all vertices are available
-   , _idOfDrawCommandBlockAtTheEnd(0) // points to zero element
+                             unsigned numIndices)
+   : _vertexAllocationManager(numVertices)
+   , _indexAllocationManager(numIndices)
    , _attribConfig(config)
+   , _attribManager(config->getAttribManager())
 {
-   // zero element is reserved for invalid object
-   // and it serves as Null object (Null object design pattern)
-   _verticesDataAllocationMap.emplace_back(0,0,nullptr,0);
-   _indicesDataAllocationMap.emplace_back(0,0,nullptr,0);
-   _drawCommandsAllocationMap.emplace_back(0,0,nullptr,0);
 }
 
 
@@ -46,8 +29,8 @@ AttribStorage::~AttribStorage()
 }
 
 
-/** Allocates the memory for vertices, indices and draw commands
- *  inside AttribStorage managed Vertex Array Object (VAO) and Buffer Objects.
+/** Allocates the memory for vertices and indices
+ *  inside AttribStorage managed Vertex Array Object (VAO).
  *
  *  Returns true on success. False on failure, usually caused by absence of
  *  large enough free memory block.
@@ -60,79 +43,44 @@ AttribStorage::~AttribStorage()
  *  @param numVertices number of vertices to be allocated
  *  @param numIndices number of indices to be allocated inside associated
  *                    Element Buffer Object
- *  @param numDrawCommands number of draw commands to be allocated;
- *                         draw commands are source data used for construction
- *                         of indirect buffer or other rendering structures
  */
-bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices,int numDrawCommands)
+bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices)
 {
    // do we have enough space?
-   if(_numVerticesAvailableAtTheEnd<numVertices || _numIndicesAvailableAtTheEnd<numIndices ||
-      _numDrawCommandsAvailableAtTheEnd<numDrawCommands)
+   if(!_vertexAllocationManager.canAllocate(numVertices) ||
+      !_indexAllocationManager.canAllocate(numIndices))
       return false;
 
    // allocate memory for vertices (inside AttribStorage's preallocated memory or buffers)
-   unsigned verticesDataId=_verticesDataAllocationMap.size();
-   _verticesDataAllocationMap.emplace_back(_firstVertexAvailableAtTheEnd,numVertices,&r,0);
-   _verticesDataAllocationMap[_idOfVerticesBlockAtTheEnd].nextRec=verticesDataId;
-   _idOfVerticesBlockAtTheEnd=verticesDataId;
+   unsigned verticesDataId=_vertexAllocationManager.alloc(numVertices,r);
 
    // allocate memory for indices (inside AttribStorage's preallocated memory or buffers)
    unsigned indicesDataId;
    if(numIndices==0)
       indicesDataId=0;
    else
-   {
-      indicesDataId=_indicesDataAllocationMap.size();
-      _indicesDataAllocationMap.emplace_back(_firstIndexAvailableAtTheEnd,numIndices,&r,0);
-      _indicesDataAllocationMap[_idOfIndicesBlockAtTheEnd].nextRec=indicesDataId;
-      _idOfIndicesBlockAtTheEnd=indicesDataId;
-   }
-
-   // allocate memory for draw commands (inside AttribStorage's preallocated memory or buffers)
-   unsigned drawCommandsId;
-   if(numDrawCommands==0)
-      drawCommandsId=0;
-   else
-   {
-      drawCommandsId=_drawCommandsAllocationMap.size();
-      _drawCommandsAllocationMap.emplace_back(_firstDrawCommandAvailableAtTheEnd,numDrawCommands,&r,0);
-      _drawCommandsAllocationMap[_idOfDrawCommandBlockAtTheEnd].nextRec=drawCommandsId;
-      _idOfDrawCommandBlockAtTheEnd=drawCommandsId;
-   }
+      indicesDataId=_indexAllocationManager.alloc(numIndices,r);
 
    // update AttribReference
    if(r.attribStorage!=NULL)
    {
-      cerr<<"Error: calling AttribStorage::allocData() on AttribReference\n"
+      cerr<<"Warning: calling AttribStorage::allocData() on AttribReference\n"
             "   that is not empty." << endl;
       r.freeData();
    }
    r.attribStorage=this;
    r.verticesDataId=verticesDataId;
    r.indicesDataId=indicesDataId;
-   r.drawCommandsId=drawCommandsId;
-
-   // update AttribStorage internal allocation variables
-   _numVerticesAvailable-=numVertices;
-   _numVerticesAvailableAtTheEnd-=numVertices;
-   _firstVertexAvailableAtTheEnd+=numVertices;
-   _numIndicesAvailable-=numIndices;
-   _numIndicesAvailableAtTheEnd-=numIndices;
-   _firstIndexAvailableAtTheEnd+=numIndices;
-   _numDrawCommandsAvailable-=numDrawCommands;
-   _numDrawCommandsAvailableAtTheEnd-=numDrawCommands;
-   _firstDrawCommandAvailableAtTheEnd+=numDrawCommands;
+   r.drawCommandBlockId=0;
 
    return true;
 }
 
 
-/** Changes the number of allocated vertices, indices and draw commands.
+/** Changes the number of allocated vertices and indices.
  *
  *  Parameter r contains the reference to AttribReference holding allocation information.
- *  numVertices, numIndices and numDrawCommands are the new number of elements in vertex arrays,
- *  index arrays and draw command array.
+ *  numVertices and numIndices are the new number of elements in vertex and index arrays.
  *  If preserveContent parameter is true, the content of element and index data will be preserved.
  *  If new data are larger, the content over the size of previous data is undefined.
  *  If new data are smaller, only the data up to the new data size is preserved.
@@ -140,7 +88,7 @@ bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices,
  *  after reallocation.
  */
 bool AttribStorage::reallocData(AttribReference &r,int numVertices,int numIndices,
-                                int numDrawCommands,bool preserveContent)
+                                bool preserveContent)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
@@ -171,19 +119,19 @@ void AttribStorage::freeData(AttribReference &r)
       return;
    }
 
+   // make sure that there are no draw commands
+   // (draw commands has to be freed first, otherwise we can not mark
+   // AttribReference as empty by setting attribStorage member to NULL)
+   if(r.drawCommandBlockId!=0)
+   {
+      cerr<<"Error: calling AttribStorage::freeData() on AttribReference\n"
+            "   that has still draw commands allocated."<<endl;
+      return;
+   }
+
    // release vertices and indices allocations
-   AllocationBlock &ab=_verticesDataAllocationMap[r.verticesDataId];
-   ab.owner=NULL;
-   if(r.indicesDataId!=0)
-   {
-      ab=_indicesDataAllocationMap[r.indicesDataId];
-      ab.owner=NULL;
-   }
-   if(r.drawCommandsId!=0)
-   {
-      ab=_drawCommandsAllocationMap[r.drawCommandsId];
-      ab.owner=NULL;
-   }
+   _vertexAllocationManager.free(r.verticesDataId);
+   _indexAllocationManager.free(r.indicesDataId);
 
    // update AttribReference
    r.attribStorage=NULL;
@@ -193,41 +141,23 @@ void AttribStorage::freeData(AttribReference &r)
 void AttribStorage::cancelAllAllocations()
 {
    // break references from AttribReferences
-   for(auto it=_verticesDataAllocationMap.begin(); it!=_verticesDataAllocationMap.end(); it++)
+   for(auto it=_vertexAllocationManager.begin(); it!=_vertexAllocationManager.end(); it++)
       if(it->owner)
          it->owner->attribStorage=nullptr;
-   for(auto it=_indicesDataAllocationMap.begin(); it!=_indicesDataAllocationMap.end(); it++)
-      if(it->owner)
-         it->owner->attribStorage=nullptr;
-   for(auto it=_drawCommandsAllocationMap.begin(); it!=_drawCommandsAllocationMap.end(); it++)
+   for(auto it=_indexAllocationManager.begin(); it!=_indexAllocationManager.end(); it++)
       if(it->owner)
          it->owner->attribStorage=nullptr;
 
    // empty allocation maps
-   _verticesDataAllocationMap.clear();
-   _indicesDataAllocationMap.clear();
-   _drawCommandsAllocationMap.clear();
-
-   // reinitialize variables
-   _numVerticesAvailable=_numVerticesTotal;
-   _numVerticesAvailableAtTheEnd=_numVerticesTotal;
-   _firstVertexAvailableAtTheEnd=0;
-   _idOfVerticesBlockAtTheEnd=0;
-   _numIndicesAvailable=_numIndicesTotal;
-   _numIndicesAvailableAtTheEnd=_numIndicesTotal;
-   _firstIndexAvailableAtTheEnd=0;
-   _idOfIndicesBlockAtTheEnd=0;
-   _numDrawCommandsAvailable=_numDrawCommandsTotal;
-   _numDrawCommandsAvailableAtTheEnd=_numDrawCommandsTotal;
-   _firstDrawCommandAvailableAtTheEnd=0;
-   _idOfDrawCommandBlockAtTheEnd=0;
+   _vertexAllocationManager.clear();
+   _indexAllocationManager.clear();
 }
 
 
 shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &config,
-        unsigned numVertices,unsigned numIndices,unsigned numDrawCommands)
+        unsigned numVertices,unsigned numIndices)
 {
-   return make_shared<SeparateBuffersAttribStorage>(config,numVertices,numIndices,numDrawCommands);
+   return make_shared<SeparateBuffersAttribStorage>(config,numVertices,numIndices);
 }
 
 
