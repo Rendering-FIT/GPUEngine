@@ -28,7 +28,7 @@ namespace ge
          AllocationItemManager _vertexAllocationManager;  ///< Allocation manager of blocks of vertices.
          AllocationItemManager _indexAllocationManager;   ///< Allocation manager of blocks of indices.
          AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
-         AttribManager* _attribManager;
+         RenderingContext* _renderingContext;
 
       public:
 
@@ -52,7 +52,7 @@ namespace ge
          inline const AllocationItem& getIndexAllocationItem(unsigned id) const;
 
          inline const AttribConfigRef& getAttribConfig() const;
-         inline AttribManager* getAttribManager() const;
+         inline RenderingContext* getRenderingContext() const;
          inline bool isPrivate() const;
 
          inline unsigned getNumVerticesTotal() const;              ///< Returns total number of vertices that can be stored in this AttribStorage.
@@ -102,7 +102,7 @@ namespace ge
       inline const AllocationItem& AttribStorage::getVertexAllocationItem(unsigned id) const  { return _vertexAllocationManager[id]; }
       inline const AllocationItem& AttribStorage::getIndexAllocationItem(unsigned id) const  { return _indexAllocationManager[id]; }
       inline const AttribConfigRef& AttribStorage::getAttribConfig() const  { return _attribConfig; }
-      inline AttribManager* AttribStorage::getAttribManager() const  { return _attribManager; }
+      inline RenderingContext* AttribStorage::getRenderingContext() const  { return _renderingContext; }
       inline bool AttribStorage::isPrivate() const  { return _privateFlag; }
       inline unsigned AttribStorage::getNumVerticesTotal() const  { return _vertexAllocationManager._numItemsTotal; }
       inline unsigned AttribStorage::getNumVerticesAvailable() const  { return _vertexAllocationManager._numItemsAvailable; }

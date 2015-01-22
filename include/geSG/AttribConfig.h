@@ -16,7 +16,7 @@ namespace ge
       class AttribReference;
       class AttribConfigRef;
       class AttribStorage;
-      class AttribManager;
+      class RenderingContext;
       typedef uint16_t AttribConfigId;  ///< \brief Integer-based type for the most frequently used attribute configurations.
 
 
@@ -43,32 +43,32 @@ namespace ge
             inline bool operator< (const ConfigData &rhs) const;  ///< Comparison operator.
             inline bool operator> (const ConfigData &rhs) const;  ///< Comparison operator.
          };
-         typedef std::map<ConfigData,AttribConfig*> AttribConfigList;  ///< Map of AttribConfigs used inside AttribManager class.
+         typedef std::map<ConfigData,AttribConfig*> AttribConfigList;  ///< Map of AttribConfigs used inside RenderingContext class.
          typedef std::list<std::shared_ptr<AttribStorage>> AttribStorageList;  ///< List of AttribStorages used inside AttribConfig class.
 
       protected:
 
          int _referenceCounter = 0;
          ConfigData _configData;
-         AttribManager *_manager;
+         RenderingContext *_renderingContext;
          AttribConfigList::iterator _selfIterator;
          AttribStorageList _attribStorages; // private storages are on the end
          int _defaultStorageNumVertices = 1000*1024; // 1M vertices (for just float coordinates ~12MiB, including normals, color and texCoord, ~36MiB)
          int _defaultStorageNumIndices = 4000*1024; // 4M indices (~16MiB)
          int _defaultStorageNumDrawCommands = 100*1024; // 10 vertices per draw command, 100K draw commands (~1.6MiB)
 
-         inline AttribConfig(const ConfigData &config,AttribManager *manager,AttribConfigList::iterator selfIterator);
+         inline AttribConfig(const ConfigData &config,RenderingContext *rc,AttribConfigList::iterator selfIterator);
          inline AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
-                             AttribManager *manager,AttribConfigList::iterator selfIterator);
+                             RenderingContext *rc,AttribConfigList::iterator selfIterator);
          inline AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
-                             AttribConfigId id,AttribManager *manager,AttribConfigList::iterator selfIterator);
+                             AttribConfigId id,RenderingContext *rc,AttribConfigList::iterator selfIterator);
          virtual void destroy();
 
       public:
 
          AttribConfig() = delete;
          virtual ~AttribConfig();
-         virtual void detachFromAttribManager();
+         virtual void detachFromRenderingContext();
          virtual void deleteAllAttribStorages();
 
          inline const AttribStorageList& getAttribStorageList() const;
@@ -79,11 +79,11 @@ namespace ge
          inline void freeData(AttribReference &r);
 
          inline AttribConfigRef createReference();
-         virtual AttribConfigRef getOrCreate(const ConfigData &config,AttribManager *manager);
+         virtual AttribConfigRef getOrCreate(const ConfigData &config,RenderingContext *rc);
          inline AttribConfigRef getOrCreate(const std::vector<AttribType>& attribTypes,bool ebo,
-                                            AttribManager *manager);
+                                            RenderingContext *rc);
          inline AttribConfigRef getOrCreate(const std::vector<AttribType>& attribTypes,bool ebo,
-                                            AttribConfigId id,AttribManager *manager);
+                                            AttribConfigId id,RenderingContext *rc);
 
          inline void addReference();
          inline void removeReference();
@@ -92,7 +92,7 @@ namespace ge
          static AttribConfigId getId(const std::vector<AttribType>& attribTypes,bool ebo);
 
          inline const ConfigData& getConfigData() const;
-         inline AttribManager* getAttribManager() const;
+         inline RenderingContext* getRenderingContext() const;
 
          inline int getDefaultStorageNumVertices() const;
          inline void setDefaultStorageNumVertices(int num);
@@ -111,12 +111,12 @@ namespace ge
 
          class Factory {
          public:
-            inline AttribConfig* create(const ConfigData &config,AttribManager *manager,
+            inline AttribConfig* create(const ConfigData &config,RenderingContext *rc,
                                         AttribConfigList::iterator selfIterator);
             inline AttribConfig* create(const std::vector<AttribType>& attribTypes,bool ebo,
-                                        AttribManager *manager,AttribConfigList::iterator selfIterator);
+                                        RenderingContext *rc,AttribConfigList::iterator selfIterator);
             virtual AttribConfig* create(const std::vector<AttribType>& attribTypes,bool ebo,
-                                         AttribConfigId id,AttribManager *manager,
+                                         AttribConfigId id,RenderingContext *rc,
                                          AttribConfigList::iterator selfIterator);
          };
          static inline std::shared_ptr<Factory>& getFactory();
@@ -139,12 +139,12 @@ namespace ge
          inline AttribConfigRef(const AttribConfigRef &acr);
          inline AttribConfigRef(AttribConfigRef &&acr);
          inline AttribConfigRef(const AttribConfig::ConfigData &config);
-         inline AttribConfigRef(const AttribConfig::ConfigData &config,AttribManager *manager);
+         inline AttribConfigRef(const AttribConfig::ConfigData &config,RenderingContext *rc);
          inline AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo);
          inline AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id);
-         inline AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,AttribManager *manager);
+         inline AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,RenderingContext *rc);
          inline AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,
-                                AttribConfigId id,AttribManager *manager);
+                                AttribConfigId id,RenderingContext *rc);
          inline ~AttribConfigRef();
          inline AttribConfigRef& operator=(const AttribConfigRef &ac);
          inline AttribConfigRef& operator=(AttribConfigRef &&ac);
@@ -165,7 +165,7 @@ namespace ge
 
 // inline methods
 #include <geSG/AttribStorage.h>
-#include <geSG/AttribManager.h>
+#include <geSG/RenderingContext.h>
 
 namespace ge
 {
@@ -186,30 +186,30 @@ namespace ge
       inline bool AttribConfig::ConfigData::operator<(const ConfigData &rhs) const  { return id!=0||rhs.id!=0 ? id<rhs.id : ebo!=rhs.ebo?ebo<rhs.ebo:attribTypes<rhs.attribTypes; }
       inline bool AttribConfig::ConfigData::operator>(const ConfigData &rhs) const  { return id!=0||rhs.id!=0 ? id>rhs.id : ebo!=rhs.ebo?ebo>rhs.ebo:attribTypes>rhs.attribTypes; }
 
-      inline AttribConfig::AttribConfig(const ConfigData &config,AttribManager *manager,
+      inline AttribConfig::AttribConfig(const ConfigData &config,RenderingContext *rc,
          AttribConfigList::iterator selfIterator)
-         : _configData(config), _manager(manager), _selfIterator(selfIterator)  {}
+         : _configData(config), _renderingContext(rc), _selfIterator(selfIterator)  {}
       inline AttribConfig::AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
-         AttribManager *manager,AttribConfigList::iterator selfIterator)
+         RenderingContext *rc,AttribConfigList::iterator selfIterator)
          : _configData(attribTypes,ebo,getId(attribTypes,ebo))
-         , _manager(manager), _selfIterator(selfIterator)  {}
+         , _renderingContext(rc), _selfIterator(selfIterator)  {}
       inline AttribConfig::AttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
-         AttribConfigId id,AttribManager *manager,AttribConfigList::iterator selfIterator)
-         : _configData(attribTypes,ebo,id), _manager(manager), _selfIterator(selfIterator)  {}
+         AttribConfigId id,RenderingContext *rc,AttribConfigList::iterator selfIterator)
+         : _configData(attribTypes,ebo,id), _renderingContext(rc), _selfIterator(selfIterator)  {}
       const AttribConfig::AttribStorageList& AttribConfig::getAttribStorageList() const  { return _attribStorages; }
       inline void AttribConfig::freeData(AttribReference &r)  { if(r.attribStorage) r.attribStorage->freeData(r); }
       inline AttribConfigRef AttribConfig::createReference()  { return AttribConfigRef(*this); }
-      inline AttribConfigRef AttribConfig::getOrCreate(const ConfigData &config,AttribManager *manager)
-      { return manager->getAttribConfig(config); }
+      inline AttribConfigRef AttribConfig::getOrCreate(const ConfigData &config,RenderingContext *rc)
+      { return rc->getAttribConfig(config); }
       inline AttribConfigRef AttribConfig::getOrCreate(const std::vector<AttribType>& attribTypes,bool ebo,
-         AttribManager *manager)  { return getOrCreate(attribTypes,ebo,getId(attribTypes,ebo),manager); }
+         RenderingContext *rc)  { return getOrCreate(attribTypes,ebo,getId(attribTypes,ebo),rc); }
       inline AttribConfigRef AttribConfig::getOrCreate(const std::vector<AttribType>& attribTypes,bool ebo,
-         AttribConfigId id,AttribManager *manager)  { return manager->getAttribConfig(attribTypes,ebo,id); }
+         AttribConfigId id,RenderingContext *rc)  { return rc->getAttribConfig(attribTypes,ebo,id); }
       inline void AttribConfig::addReference()  { _referenceCounter++; }
       inline void AttribConfig::removeReference()  { if(--_referenceCounter==0) destroy(); }
       inline int AttribConfig::getReferenceCounter()  { return _referenceCounter; }
       inline const AttribConfig::ConfigData& AttribConfig::getConfigData() const  { return _configData; }
-      inline AttribManager* AttribConfig::getAttribManager() const  { return _manager; }
+      inline RenderingContext* AttribConfig::getRenderingContext() const  { return _renderingContext; }
       inline int AttribConfig::getDefaultStorageNumVertices() const  { return _defaultStorageNumVertices; }
       inline void AttribConfig::setDefaultStorageNumVertices(int num)  { _defaultStorageNumVertices=num; }
       inline int AttribConfig::getDefaultStorageNumIndices() const  { return _defaultStorageNumIndices; }
@@ -222,11 +222,11 @@ namespace ge
       inline bool AttribConfig::operator>=(const AttribConfig &rhs) const  { return _configData>=rhs._configData; }
       inline bool AttribConfig::operator<(const AttribConfig &rhs) const  { return _configData<rhs._configData; }
       inline bool AttribConfig::operator>(const AttribConfig &rhs) const  { return _configData>rhs._configData; }
-      inline AttribConfig* AttribConfig::Factory::create(const ConfigData &config,AttribManager *manager,
-         AttribConfigList::iterator selfIterator)  { return create(config.attribTypes,config.ebo,config.id,manager,selfIterator); }
+      inline AttribConfig* AttribConfig::Factory::create(const ConfigData &config,RenderingContext *rc,
+         AttribConfigList::iterator selfIterator)  { return create(config.attribTypes,config.ebo,config.id,rc,selfIterator); }
       inline AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attribTypes,bool ebo,
-         AttribManager *manager,AttribConfigList::iterator selfIterator)
-         { return create(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo),manager,selfIterator); }
+         RenderingContext *rc,AttribConfigList::iterator selfIterator)
+         { return create(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo),rc,selfIterator); }
       inline std::shared_ptr<AttribConfig::Factory>& AttribConfig::getFactory()  { return _factory; }
       inline void AttribConfig::setFactory(std::shared_ptr<AttribConfig::Factory>& f)  { _factory=f; }
 
@@ -238,17 +238,17 @@ namespace ge
       inline AttribConfigRef::AttribConfigRef(const AttribConfigRef &acr) : _pointer(acr._pointer)  { if(_pointer) _pointer->addReference(); }
       inline AttribConfigRef::AttribConfigRef(AttribConfigRef &&acr) : _pointer(acr._pointer)  { if(_pointer) acr._pointer=NULL; }
       inline AttribConfigRef::AttribConfigRef(const AttribConfig::ConfigData &config)
-         : AttribConfigRef(config,AttribManager::instance().get())  {}
-      inline AttribConfigRef::AttribConfigRef(const AttribConfig::ConfigData &config,AttribManager *manager)
-         : AttribConfigRef(manager->getAttribConfig(config))  {}
+         : AttribConfigRef(config,RenderingContext::current().get())  {}
+      inline AttribConfigRef::AttribConfigRef(const AttribConfig::ConfigData &config,RenderingContext *rc)
+         : AttribConfigRef(rc->getAttribConfig(config))  {}
       inline AttribConfigRef::AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo)
          : AttribConfigRef(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo))  {}
       inline AttribConfigRef::AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
-         : AttribConfigRef(attribTypes,ebo,id,AttribManager::instance().get())  {}
-      inline AttribConfigRef::AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,AttribManager *manager)
-         : AttribConfigRef(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo),manager)  {}
+         : AttribConfigRef(attribTypes,ebo,id,RenderingContext::current().get())  {}
+      inline AttribConfigRef::AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,RenderingContext *rc)
+         : AttribConfigRef(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo),rc)  {}
       inline AttribConfigRef::AttribConfigRef(const std::vector<AttribType>& attribTypes,bool ebo,
-            AttribConfigId id,AttribManager *manager) : AttribConfigRef(manager->getAttribConfig(attribTypes,ebo,id))  {}
+            AttribConfigId id,RenderingContext *rc) : AttribConfigRef(rc->getAttribConfig(attribTypes,ebo,id))  {}
       inline AttribConfigRef::~AttribConfigRef()  { if(_pointer) _pointer->removeReference(); }
       inline AttribConfigRef& AttribConfigRef::operator=(const AttribConfigRef &ac)  { if(_pointer) _pointer->removeReference(); _pointer=ac._pointer; if(_pointer) _pointer->addReference(); return *this; }
       inline AttribConfigRef& AttribConfigRef::operator=(AttribConfigRef &&ac)  { if(_pointer) _pointer->removeReference(); _pointer=ac._pointer; ac._pointer=NULL; return *this; }

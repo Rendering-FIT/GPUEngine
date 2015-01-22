@@ -18,7 +18,7 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    : _vertexAllocationManager(numVertices)
    , _indexAllocationManager(numIndices)
    , _attribConfig(config)
-   , _attribManager(config->getAttribManager())
+   , _renderingContext(config->getRenderingContext())
 {
 }
 
@@ -188,20 +188,20 @@ shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &
  *  However, there is a difficulty as the graphics context may be destroyed because of
  *  various reasons, including closing of the window or power-saving reasons
  *  on mobile devices. In such cases, the user is expected to call
- *  AttribManager::contextLost() before any further scene graph processing.
- *  AttribManager::contextLost() will forward the call to all AttribStorages,
+ *  RenderingContext::contextLost() before any further scene graph processing.
+ *  RenderingContext::contextLost() will forward the call to all AttribStorages,
  *  calling their contextLost(). This will clear all internal structures
  *  as if no data would be uploaded to graphics context yet. This could be performed
  *  even without active graphics context, after it was lost or destroyed.
  *  Depending on user choose, he might decide to recreate the graphics
  *  context and reinitialize attribute data, for instance, by reloading
  *  model files, or he might safely start to tear down the application that
- *  is in consistent state after calling AttribManager::contextLost().
+ *  is in consistent state after calling RenderingContext::contextLost().
  *
  *  For more details, which methods can be called without active graphics context
  *  refer to the documentation to each of the object's methods.
  *
- *  \sa AttribManager, AttribReference, Mesh::getAttribConfig()
+ *  \sa RenderingContext, AttribReference, Mesh::getAttribConfig()
  */
 
 // AttribStorage::AllocationBlock::nextRec documentation

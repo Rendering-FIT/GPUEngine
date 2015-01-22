@@ -81,7 +81,7 @@ namespace ge
          inline const AttribReference& getAttribReference() const;
          inline AttribStorage* getAttribStorage() const;
          inline const AttribConfigRef& getAttribConfig() const;
-         virtual AttribConfigRef computeAttribConfig(AttribManager *manager) const;
+         virtual AttribConfigRef computeAttribConfig(RenderingContext *renderingContext) const;
          inline AttribConfigRef computeAttribConfig() const;
 
          class Factory {
@@ -127,7 +127,7 @@ namespace ge
       inline AttribStorage* Mesh::getAttribStorage() const  { return _attribReference.attribStorage; }
       inline const AttribConfigRef& Mesh::getAttribConfig() const
       { return _attribReference.valid() ? _attribReference.attribStorage->getAttribConfig() : AttribConfigRef::invalid; }
-      inline AttribConfigRef Mesh::computeAttribConfig() const  { return computeAttribConfig(AttribManager::instance().get()); }
+      inline AttribConfigRef Mesh::computeAttribConfig() const  { return computeAttribConfig(RenderingContext::current().get()); }
    }
 }
 

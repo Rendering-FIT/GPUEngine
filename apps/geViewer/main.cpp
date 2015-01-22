@@ -10,6 +10,7 @@
 #include <geSG/Array.h>
 #include <geSG/AttribReference.h>
 #include <geSG/Mesh.h>
+#include <geSG/RenderingContext.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
@@ -77,6 +78,7 @@ int main(int Argc,char*Argv[])
 
   glewExperimental=GL_TRUE;
   glewInit();
+  RenderingContext::setCurrent(make_shared<RenderingContext>());
 
   ge::gl::setDefaultDebugMessage();
 

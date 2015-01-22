@@ -1,5 +1,5 @@
 #include <iostream> // for cerr
-#include <geSG/AttribManager.h>
+#include <geSG/RenderingContext.h>
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
 #include <geGL/BufferObject.h>
@@ -9,19 +9,19 @@ using namespace ge::gl;
 using namespace std;
 
 
-shared_ptr<AttribManager> AttribManager::_instance = make_shared<AttribManager>();
+thread_local shared_ptr<RenderingContext> RenderingContext::_currentContext;
 
 
 
-AttribManager::AttribManager()
-   : _drawCommandAllocationManager(10000)
+RenderingContext::RenderingContext()
+   : _drawCommandAllocationManager(_initialDrawCommandBufferSize)
 {
    // create draw commands buffer
-   //_drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,NULL,GL_DYNAMIC_DRAW);
+   _drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,NULL,GL_DYNAMIC_DRAW);
 }
 
 
-AttribManager::~AttribManager()
+RenderingContext::~RenderingContext()
 {
    cancelAllAllocations();
    for(AttribConfigList::iterator it=_attribConfigList.begin(),nextIt; it!=_attribConfigList.end(); it=nextIt)
@@ -31,11 +31,11 @@ AttribManager::~AttribManager()
       if(it->second)
          it->second->deleteAllAttribStorages();
    }
-   //delete _drawCommandBuffer;
+   delete _drawCommandBuffer;
 }
 
 
-AttribConfigRef AttribManager::getAttribConfig(const AttribConfig::ConfigData &config)
+AttribConfigRef RenderingContext::getAttribConfig(const AttribConfig::ConfigData &config)
 {
    // find AttribConfig in _attribConfigList (std::map)
    auto r=_attribConfigList.emplace(config,nullptr);
@@ -51,10 +51,10 @@ AttribConfigRef AttribManager::getAttribConfig(const AttribConfig::ConfigData &c
 }
 
 
-void AttribManager::removeAttribConfig(AttribConfigList::iterator it)
+void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
 {
    if(it->second!=NULL)
-      it->second->detachFromAttribManager();
+      it->second->detachFromRenderingContext();
    _attribConfigList.erase(it);
 }
 
@@ -69,12 +69,12 @@ void AttribManager::removeAttribConfig(AttribConfigList::iterator it)
  *  @param r AttribReference that will hold reference to the allocated draw command memory
  *  @param size number of bytes to be allocated
  */
-bool AttribManager::allocDrawCommands(AttribReference &r,unsigned size)
+bool RenderingContext::allocDrawCommands(AttribReference &r,unsigned size)
 {
    // Warn if attribStorage is not already assigned
    if(r.attribStorage==NULL)
    {
-      cerr<<"Error: calling AttribManager::allocDrawCommands() on AttribReference\n"
+      cerr<<"Error: calling RenderingContext::allocDrawCommands() on AttribReference\n"
             "   that is empty (no vertices and indices allocated)." << endl;
       return false;
    }
@@ -82,7 +82,7 @@ bool AttribManager::allocDrawCommands(AttribReference &r,unsigned size)
    // Warn if already allocated
    if(r.drawCommandBlockId!=0)
    {
-      cerr<<"Warning: calling AttribManager::allocDrawCommands() on AttribReference\n"
+      cerr<<"Warning: calling RenderingContext::allocDrawCommands() on AttribReference\n"
             "   that has already allocated draw commands." << endl;
       freeDrawCommands(r);
    }
@@ -97,18 +97,18 @@ bool AttribManager::allocDrawCommands(AttribReference &r,unsigned size)
 }
 
 
-bool AttribManager::reallocDrawCommands(AttribReference &r,int newSize,bool preserveContent)
+bool RenderingContext::reallocDrawCommands(AttribReference &r,int newSize,bool preserveContent)
 {
    // not implemented yet
 }
 
 
-void AttribManager::freeDrawCommands(AttribReference &r)
+void RenderingContext::freeDrawCommands(AttribReference &r)
 {
    // Warn if attribStorage is assigned
    if(r.attribStorage==NULL)
    {
-      cerr<<"Error: calling AttribManager::freeDrawCommands() on AttribReference\n"
+      cerr<<"Error: calling RenderingContext::freeDrawCommands() on AttribReference\n"
             "   that is empty (no vertices and indices allocated)." << endl;
       return;
    }
@@ -119,7 +119,7 @@ void AttribManager::freeDrawCommands(AttribReference &r)
 }
 
 
-void AttribManager::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
+void RenderingContext::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
                                        unsigned drawCommandBufferSize,
                                        const unsigned *offsetsAndSizes,int numDrawCommands)
 {
@@ -129,7 +129,7 @@ void AttribManager::uploadDrawCommands(AttribReference &r,const void *drawComman
 }
 
 
-void AttribManager::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
+void RenderingContext::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
                                        unsigned dstOffset,unsigned size)
 {
    if(r.attribStorage==NULL)
@@ -142,7 +142,7 @@ void AttribManager::uploadDrawCommands(AttribReference &r,const void *drawComman
 }
 
 
-void AttribManager::updateDrawCommandOffsets(AttribReference &r,
+void RenderingContext::updateDrawCommandOffsets(AttribReference &r,
                                              const unsigned *offsetsAndSizes,int numDrawCommands,
                                              unsigned startIndex,bool truncate)
 {
@@ -153,7 +153,7 @@ void AttribManager::updateDrawCommandOffsets(AttribReference &r,
 }
 
 
-void AttribManager::setNumDrawCommands(AttribReference &r,unsigned num)
+void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 {
    if(r.attribStorage==NULL)
       return;
@@ -162,7 +162,7 @@ void AttribManager::setNumDrawCommands(AttribReference &r,unsigned num)
 }
 
 
-void AttribManager::cancelAllAllocations()
+void RenderingContext::cancelAllAllocations()
 {
    // break references from AttribReferences
    for(auto it=_drawCommandAllocationManager.begin(); it!=_drawCommandAllocationManager.end(); it++)
@@ -182,13 +182,13 @@ void AttribManager::cancelAllAllocations()
 }
 
 
-void AttribManager::handleContextLost()
+void RenderingContext::handleContextLost()
 {
    cancelAllAllocations();
 }
 
 
-void AttribManager::setInstance(std::shared_ptr<AttribManager>& ptr)
+void RenderingContext::setCurrent(const std::shared_ptr<RenderingContext>& ptr)
 {
-   _instance = ptr;
+   _currentContext=ptr;
 }

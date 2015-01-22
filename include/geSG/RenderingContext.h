@@ -24,7 +24,7 @@ namespace ge
       class AttribStorage;
 
 
-      class GE_EXPORT AttribManager { // RenderingContext //: public GraphicsContext GLContext
+      class GE_EXPORT RenderingContext { //: public GraphicsContext,GLContext,...
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;
@@ -41,11 +41,12 @@ namespace ge
          unsigned _instanceBufferElementsCount;
          unsigned _instanceBufferFreeListFirst;
          unsigned _instanceBufferFreeListLast;
+         int _initialDrawCommandBufferSize = 10000; // 10'000 bytes
 
       public:
 
-         AttribManager();
-         virtual ~AttribManager();
+         RenderingContext();
+         virtual ~RenderingContext();
 
          inline  const AttribConfigList& getAttribConfigList();
          virtual AttribConfigRef getAttribConfig(const AttribConfig::ConfigData &config);
@@ -86,11 +87,11 @@ namespace ge
          virtual void cancelAllAllocations();
          virtual void handleContextLost();
 
-         static inline std::shared_ptr<AttribManager>& instance();
-         static void setInstance(std::shared_ptr<AttribManager>& ptr);
+         static inline std::shared_ptr<RenderingContext>& current();
+         static void setCurrent(const std::shared_ptr<RenderingContext>& ptr);
 
       protected:
-         static std::shared_ptr<AttribManager> _instance;
+         static thread_local std::shared_ptr<RenderingContext> _currentContext;
       };
 
    }
@@ -110,22 +111,22 @@ namespace ge
 {
    namespace sg
    {
-      inline const AttribManager::AttribConfigList& AttribManager::getAttribConfigList()  { return _attribConfigList; }
-      inline AttribConfigRef AttribManager::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo)
+      inline const RenderingContext::AttribConfigList& RenderingContext::getAttribConfigList()  { return _attribConfigList; }
+      inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo)
       { return getAttribConfig(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo)); }
-      inline AttribConfigRef AttribManager::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
+      inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
       { return getAttribConfig(AttribConfig::ConfigData(attribTypes,ebo,id)); }
-      inline const AllocationBlock& AttribManager::getDrawCommandsAllocationBlock(unsigned id) const  { return _drawCommandAllocationManager[id]; }
-      inline AllocationBlockManager& AttribManager::getDrawCommandsAllocationManager()  { return _drawCommandAllocationManager; }
-      inline const AllocationBlockManager& AttribManager::getDrawCommandsAllocationManager() const  { return _drawCommandAllocationManager; }
-      inline unsigned AttribManager::getNumDrawCommandsTotal() const  { return _drawCommandAllocationManager._numBytesTotal; }
-      inline unsigned AttribManager::getNumDrawCommandsAvailable() const  { return _drawCommandAllocationManager._numBytesAvailable; }
-      inline unsigned AttribManager::getNumDrawCommandsAvailableAtTheEnd() const  { return _drawCommandAllocationManager._numBytesAvailableAtTheEnd; }
-      inline unsigned AttribManager::getFirstDrawCommandAvailableAtTheEnd() const  { return _drawCommandAllocationManager._firstByteAvailableAtTheEnd; }
-      inline unsigned AttribManager::getIdOfDrawCommandBlockAtTheEnd() const  { return _drawCommandAllocationManager._idOfBlockAtTheEnd; }
-      inline void AttribManager::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
-      inline std::shared_ptr<AttribManager>& AttribManager::instance()
-      { return _instance; }
+      inline const AllocationBlock& RenderingContext::getDrawCommandsAllocationBlock(unsigned id) const  { return _drawCommandAllocationManager[id]; }
+      inline AllocationBlockManager& RenderingContext::getDrawCommandsAllocationManager()  { return _drawCommandAllocationManager; }
+      inline const AllocationBlockManager& RenderingContext::getDrawCommandsAllocationManager() const  { return _drawCommandAllocationManager; }
+      inline unsigned RenderingContext::getNumDrawCommandsTotal() const  { return _drawCommandAllocationManager._numBytesTotal; }
+      inline unsigned RenderingContext::getNumDrawCommandsAvailable() const  { return _drawCommandAllocationManager._numBytesAvailable; }
+      inline unsigned RenderingContext::getNumDrawCommandsAvailableAtTheEnd() const  { return _drawCommandAllocationManager._numBytesAvailableAtTheEnd; }
+      inline unsigned RenderingContext::getFirstDrawCommandAvailableAtTheEnd() const  { return _drawCommandAllocationManager._firstByteAvailableAtTheEnd; }
+      inline unsigned RenderingContext::getIdOfDrawCommandBlockAtTheEnd() const  { return _drawCommandAllocationManager._idOfBlockAtTheEnd; }
+      inline void RenderingContext::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
+      inline std::shared_ptr<RenderingContext>& RenderingContext::current()
+      { return _currentContext; }
 
    }
 }

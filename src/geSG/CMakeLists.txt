@@ -11,7 +11,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/AttribReference.h
     ${HEADER_PATH}/AttribStorage.h
     ${HEADER_PATH}/SeparateBuffersAttribStorage.h
-    ${HEADER_PATH}/AttribManager.h
+    ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/Node.h
     ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Group.h
@@ -28,7 +28,7 @@ set(SG_SOURCES
     AttribConfig.cpp
     AttribStorage.cpp
     SeparateBuffersAttribStorage.cpp
-    AttribManager.cpp
+    RenderingContext.cpp
     Node.cpp
     Mesh.cpp
     Group.cpp

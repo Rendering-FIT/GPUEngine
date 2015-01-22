@@ -116,7 +116,7 @@ void Mesh::setIndexArray(const shared_ptr<ArrayDecoratorTemplate<unsigned>>& arr
 }
 
 
-AttribConfigRef Mesh::computeAttribConfig(AttribManager *manager) const
+AttribConfigRef Mesh::computeAttribConfig(RenderingContext *renderingContext) const
 {
    AttribConfig::ConfigData config;
    config.attribTypes.reserve(_attribArrays.size());
@@ -124,7 +124,7 @@ AttribConfigRef Mesh::computeAttribConfig(AttribManager *manager) const
       config.attribTypes.push_back(it->getType());
    config.ebo = hasIndices();
    config.updateId();
-   return manager->getAttribConfig(config);
+   return renderingContext->getAttribConfig(config);
 }
 
 

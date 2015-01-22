@@ -25,15 +25,15 @@ void AttribConfig::destroy()
 {
    assert(_referenceCounter==0 && "Wrong usage of AttribConfig::destroy.");
 
-   if(_manager!=NULL)
-      _manager->removeAttribConfig(_selfIterator);
+   if(_renderingContext!=NULL)
+      _renderingContext->removeAttribConfig(_selfIterator);
    delete this;
 }
 
 
-void AttribConfig::detachFromAttribManager()
+void AttribConfig::detachFromRenderingContext()
 {
-   _manager=NULL;
+   _renderingContext=NULL;
 }
 
 
@@ -77,7 +77,7 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,i
    (*storageIt)->allocData(r,numVertices,numIndices);
 
    // perform allocation of draw commands
-   _manager->allocDrawCommands(r,numDrawCommands);
+   _renderingContext->allocDrawCommands(r,numDrawCommands);
 
    return true;
 }
@@ -191,7 +191,7 @@ AttribConfigId AttribConfig::getId(const std::vector<AttribType>& attribTypes,bo
 
 
 AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attribTypes,bool ebo,
-                                            AttribConfigId id,AttribManager *manager,
+                                            AttribConfigId id,RenderingContext *manager,
                                             AttribConfigList::iterator selfIterator)
 {
    return new AttribConfig(attribTypes,ebo,id,manager,selfIterator);

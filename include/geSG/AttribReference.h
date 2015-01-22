@@ -75,7 +75,7 @@ namespace ge
 //       inline methods to avoid incomplete type compiler error
 
 #include <geSG/AttribStorage.h>
-#include <geSG/AttribManager.h>
+#include <geSG/RenderingContext.h>
 
 namespace ge
 {
@@ -112,7 +112,7 @@ namespace ge
                                                int numDrawCommands,bool preserveContent)
       {
          attribStorage->reallocData(*this,numVertices,numIndices,preserveContent);
-         AttribManager::instance()->reallocDrawCommands(*this,numDrawCommands,preserveContent);
+         RenderingContext::current()->reallocDrawCommands(*this,numDrawCommands,preserveContent);
       }
       inline void AttribReference::freeData()  { if(attribStorage) attribStorage->freeData(*this); }
       inline void AttribReference::uploadVertices(const std::vector<Array>& attribs,
@@ -127,14 +127,14 @@ namespace ge
             attribStorage->uploadIndices(*this,indices,fromIndex,numIndices);
       }
       inline void AttribReference::uploadDrawCommands(const void *drawCommandBuffer,unsigned drawCommandBufferSize,const unsigned *offsetsAndSizes,int numDrawCommands)
-      { AttribManager::instance()->uploadDrawCommands(*this,drawCommandBuffer,drawCommandBufferSize,offsetsAndSizes,numDrawCommands); }
+      { RenderingContext::current()->uploadDrawCommands(*this,drawCommandBuffer,drawCommandBufferSize,offsetsAndSizes,numDrawCommands); }
       inline void AttribReference::uploadDrawCommands(const void *drawCommandBuffer,unsigned dstOffset,unsigned size)
-      { AttribManager::instance()->uploadDrawCommands(*this,drawCommandBuffer,dstOffset,size); }
+      { RenderingContext::current()->uploadDrawCommands(*this,drawCommandBuffer,dstOffset,size); }
       inline void AttribReference::updateDrawCommandOffsets(const unsigned *offsetsAndSizes,int numDrawCommands,unsigned startIndex,bool truncate)
-      { AttribManager::instance()->updateDrawCommandOffsets(*this,offsetsAndSizes,numDrawCommands,startIndex,truncate); }
+      { RenderingContext::current()->updateDrawCommandOffsets(*this,offsetsAndSizes,numDrawCommands,startIndex,truncate); }
       inline void AttribReference::clearDrawCommands()  { setNumDrawCommands(0); }
       inline void AttribReference::setNumDrawCommands(unsigned num)
-      { AttribManager::instance()->setNumDrawCommands(*this,num); }
+      { RenderingContext::current()->setNumDrawCommands(*this,num); }
    }
 }
 
