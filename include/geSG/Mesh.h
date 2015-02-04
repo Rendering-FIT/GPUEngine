@@ -38,7 +38,7 @@ namespace ge
          Array _indexArray;
          void* _drawCommandBuffer;
          unsigned _drawCommandBufferSize;
-         std::vector<unsigned> _drawCommandOffsetsAndSizes;
+         std::vector<unsigned> _drawCommandOffsets;
 
          AttribReference _attribReference;
 
@@ -76,7 +76,7 @@ namespace ge
          inline Array& getIndexArray();
          inline void* getDrawCommandBuffer() const;
          inline unsigned getDrawCommandBufferSize() const;
-         inline const std::vector<unsigned>& getDrawCommandOffsetsAndSizes() const;
+         inline const std::vector<unsigned>& getDrawCommandOffsets() const;
 
          inline const AttribReference& getAttribReference() const;
          inline AttribStorage* getAttribStorage() const;
@@ -98,7 +98,8 @@ namespace ge
 
       // inline and template methods
       inline Mesh::Mesh() : _cpuAttribDataAvailable(false), _gpuAttribDataAvailable(false),
-                            _releaseCpuAttribDataAfterGpuUpload(true)  {}
+                            _releaseCpuAttribDataAfterGpuUpload(true),
+                            _drawCommandBuffer(nullptr), _drawCommandBufferSize(0)  {}
       inline std::shared_ptr<Mesh> Mesh::create()  { return _factory->create(); }
       template<typename T>
       inline void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
@@ -122,7 +123,7 @@ namespace ge
       inline Array& Mesh::getIndexArray()  { return _indexArray; }
       inline void* Mesh::getDrawCommandBuffer() const  { return _drawCommandBuffer; }
       inline unsigned Mesh::getDrawCommandBufferSize() const  { return _drawCommandBufferSize; }
-      inline const std::vector<unsigned>& Mesh::getDrawCommandOffsetsAndSizes() const  { return _drawCommandOffsetsAndSizes; }
+      inline const std::vector<unsigned>& Mesh::getDrawCommandOffsets() const  { return _drawCommandOffsets; }
       inline const AttribReference& Mesh::getAttribReference() const  { return _attribReference; }
       inline AttribStorage* Mesh::getAttribStorage() const  { return _attribReference.attribStorage; }
       inline const AttribConfigRef& Mesh::getAttribConfig() const

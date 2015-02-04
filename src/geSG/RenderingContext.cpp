@@ -1,4 +1,5 @@
 #include <iostream> // for cerr
+#include <cstring>
 #include <geSG/RenderingContext.h>
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
@@ -11,13 +12,20 @@ using namespace std;
 
 thread_local shared_ptr<RenderingContext> RenderingContext::_currentContext;
 
+int RenderingContext::_initialDrawCommandBufferSize = 8000; // 8'000 bytes
+int RenderingContext::_initialInstanceBufferSize = 8000; // 8'000 bytes
+int RenderingContext::_initialIndirectCommandBufferSize = 8000; // 8'000 bytes
+
 
 
 RenderingContext::RenderingContext()
    : _drawCommandAllocationManager(_initialDrawCommandBufferSize)
+   , _instanceAllocationManager(_initialInstanceBufferSize)
 {
    // create draw commands buffer
-   _drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,NULL,GL_DYNAMIC_DRAW);
+   _drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,nullptr,GL_DYNAMIC_DRAW);
+   _instanceBuffer=new BufferObject(_initialInstanceBufferSize,nullptr,GL_DYNAMIC_DRAW);
+   _indirectCommandBuffer=new BufferObject(_initialIndirectCommandBufferSize,nullptr,GL_DYNAMIC_COPY);
 }
 
 
@@ -32,6 +40,8 @@ RenderingContext::~RenderingContext()
          it->second->deleteAllAttribStorages();
    }
    delete _drawCommandBuffer;
+   delete _instanceBuffer;
+   delete _indirectCommandBuffer;
 }
 
 
@@ -119,37 +129,87 @@ void RenderingContext::freeDrawCommands(AttribReference &r)
 }
 
 
-void RenderingContext::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
-                                       unsigned drawCommandBufferSize,
-                                       const unsigned *offsetsAndSizes,int numDrawCommands)
+/** Sets draw commands for the given AttribReference.
+ *
+ * The method uploads all draw commands to GPU
+ * while updating startIndex of each draw command.
+ * Draw commands are given by drawCommandBuffer memory pointer.
+ * Each draw command is stored as four unsigned integers followed
+ * by arbitrary user data. The first integer specifies GL mode
+ * (GL_TRIANGLES, GL_LINE_STRIP, GL_POINT, GL_PATCH, etc.).
+ * The second integer gives count - the number of vertices sent for rendering.
+ * The third gives the start index within AttribReference allocated block of
+ * vertices or indices while the fourth gives the index-offset of the start of
+ * the allocated block of vertices or indices within AttribStorage. Thus,
+ * the real start index is sum of these two indexes.*/
+void RenderingContext::setDrawCommands(AttribReference &r,
+                                       const void *drawCommandBuffer,unsigned bytesToCopy,
+                                       const unsigned *offsets,int numDrawCommands)
+{
+   void *p=malloc(bytesToCopy);
+   memcpy(p,drawCommandBuffer,bytesToCopy);
+   setDrawCommandsOptimized(r,p,bytesToCopy,offsets,numDrawCommands);
+   free(p);
+}
+
+
+void RenderingContext::setDrawCommandsOptimized(AttribReference &r,
+                                                void *drawCommandBuffer,unsigned bytesToCopy,
+                                                const unsigned *offsets,int numDrawCommands)
 {
    clearDrawCommands(r);
-   uploadDrawCommands(r,drawCommandBuffer,0,drawCommandBufferSize);
-   updateDrawCommandOffsets(r,offsetsAndSizes,numDrawCommands);
+   updateDrawCommandsBufferData(r,drawCommandBuffer,offsets,numDrawCommands);
+   uploadDrawCommands(r,drawCommandBuffer,bytesToCopy);
+   updateDrawCommandOffsets(r,offsets,numDrawCommands);
+}
+
+
+void RenderingContext::updateDrawCommandsBufferData(AttribReference &r,
+                                                    void *drawCommandBuffer,
+                                                    const unsigned *offsets,int numDrawCommands)
+{
+   // get index of allocated block
+   unsigned index;
+   if(r.indicesDataId==0)
+      index=r.attribStorage->getVertexAllocationBlock(r.verticesDataId).startIndex;
+   else
+      index=r.attribStorage->getIndexAllocationBlock(r.indicesDataId).startIndex;
+
+   // update start index of all draw commands
+   for(int i=0; i<numDrawCommands; i++)
+   {
+      unsigned pos=offsets[i];
+      static_cast<unsigned*>(drawCommandBuffer)[pos+3]=index;
+   }
 }
 
 
 void RenderingContext::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
-                                       unsigned dstOffset,unsigned size)
+                                          unsigned bytesToCopy,unsigned dstOffset)
 {
-   if(r.attribStorage==NULL)
+   if(r.attribStorage==NULL || r.drawCommandBlockId==0)
       return;
 
-   //...
-   //int srcOffset=fromIndex*sizeof(DrawCommandData);
-   //int dstOffset=(_drawCommandsAllocationMap[r.drawCommandsId].startIndex+fromIndex)*sizeof(DrawCommandData);
-   //_drawCommands->setData(((uint8_t*)drawCommands)+srcOffset,numDrawCommands,dstOffset);
+   int bufferOffset=dstOffset+_drawCommandAllocationManager[r.drawCommandBlockId].offset;
+   _drawCommandBuffer->setData((uint8_t*)drawCommandBuffer,bytesToCopy,bufferOffset);
 }
 
 
 void RenderingContext::updateDrawCommandOffsets(AttribReference &r,
-                                             const unsigned *offsetsAndSizes,int numDrawCommands,
-                                             unsigned startIndex,bool truncate)
+                                                const unsigned *offsets,int numDrawCommands,
+                                                unsigned startIndex,bool truncate)
 {
    if(r.attribStorage==NULL)
       return;
 
-   //...
+   // resize if needed
+   int minSizeRequired=numDrawCommands+startIndex;
+   int currentSize=r.drawCommandOffsets.size();
+   if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
+      r.drawCommandOffsets.resize(minSizeRequired);
+
+   // copy memory
+   memmove(r.drawCommandOffsets.data()+startIndex,offsets,numDrawCommands*sizeof(unsigned));
 }
 
 
@@ -158,8 +218,24 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
    if(r.attribStorage==NULL)
       return;
 
-   //...
+   r.drawCommandOffsets.resize(num);
 }
+
+
+/*InstanceBlockID RenderingContext::createInstances(AttribReference &r,
+                                                  const unsigned *drawCommandIndices,
+                                                  const unsigned drawCommandsCount,
+                                                  unsigned matrixOffset,unsigned stateSetOffset)
+{
+   FlexibleArray<unsigned,ListItemBase> *instanceBlock;
+   unsigned numInstances=drawCommandsCount==-1 ? r.drawCommandOffsets.size() : drawCommandsCount;
+   instanceBlock=FlexibleArray<unsigned,ListItemBase>.alloc(numInstances);
+   instanceBlock->count=numInstances;
+   if(drawCommandsCount==-1)
+   {
+      
+   r.instances
+}*/
 
 
 void RenderingContext::cancelAllAllocations()
@@ -169,8 +245,9 @@ void RenderingContext::cancelAllAllocations()
       if(it->owner)
          it->owner->attribStorage=nullptr;
 
-   // empty allocation map
+   // empty allocation maps
    _drawCommandAllocationManager.clear();
+   _instanceAllocationManager.clear();
 
    // break references in all AttribStorages
    for(auto acIt=_attribConfigList.begin(); acIt!=_attribConfigList.end(); acIt++)

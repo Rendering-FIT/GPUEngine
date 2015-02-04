@@ -45,9 +45,8 @@ void Mesh::gpuUploadGeometryData()
       _attribReference.uploadIndices(_indexArray);
 
    // upload draw commands
-   _attribReference.uploadDrawCommands(_drawCommandBuffer,_drawCommandBufferSize,
-                                       _drawCommandOffsetsAndSizes.data(),
-                                       _drawCommandOffsetsAndSizes.size()/2);
+   _attribReference.setDrawCommands(_drawCommandBuffer,_drawCommandBufferSize,
+                                    _drawCommandOffsets.data(),_drawCommandOffsets.size());
    _gpuAttribDataAvailable=true;
 
    // release cpu data if requested

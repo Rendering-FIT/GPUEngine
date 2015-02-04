@@ -5,6 +5,7 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
 #include <geSG/Array.h>
@@ -43,8 +44,12 @@ ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
 static ProgramObject *glProgram = NULL;
+static ProgramObject *drawCommandProgram = NULL;
+static AttribReference attribsRefCS;
 static AttribReference attribsRefNI;
 static AttribReference attribsRefI;
+static AttribReference attribsRefInstNI;
+static AttribReference attribsRefInstI;
 static shared_ptr<Mesh> meshNI;
 static shared_ptr<Mesh> meshI;
 
@@ -80,7 +85,8 @@ int main(int Argc,char*Argv[])
   glewInit();
   RenderingContext::setCurrent(make_shared<RenderingContext>());
 
-  ge::gl::setDefaultDebugMessage();
+  // OpenGL debugging messages
+  //ge::gl::setDefaultDebugMessage();
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
@@ -89,6 +95,7 @@ int main(int Argc,char*Argv[])
   Init();
   Window->mainLoop();
   delete glProgram;
+  delete drawCommandProgram;
   delete Window;
   delete Args;
   return 0;
@@ -104,22 +111,34 @@ void Wheel(int d){
 
 
 void Idle(){
+   drawCommandProgram->use();
+   RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   glDispatchCompute(1,1,1);
+
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
    attribsRefNI.attribStorage->bind();
-   glDrawArrays(GL_TRIANGLES,0,3);
-   glDrawArrays(GL_TRIANGLES,3,3);
+   unsigned baseIndex=attribsRefNI.attribStorage->getVertexAllocationBlock(attribsRefNI.verticesDataId).startIndex;
+   glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
+   glDrawArrays(GL_TRIANGLES,baseIndex+3,3);
    attribsRefI.attribStorage->bind();
-   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)0);
-   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
+   baseIndex=attribsRefI.attribStorage->getIndexAllocationBlock(attribsRefI.indicesDataId).startIndex;
+   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
+   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
    AttribStorage *storageNI=meshNI->getAttribReference().attribStorage;
    storageNI->bind();
-   const AllocationItem &blockNI=storageNI->getVertexAllocationItem(meshNI->getAttribReference().verticesDataId);
+   const BlockAllocation &blockNI=storageNI->getVertexAllocationBlock(meshNI->getAttribReference().verticesDataId);
    glDrawArrays(GL_TRIANGLES,blockNI.startIndex,blockNI.numElements);
    AttribStorage *storageI=meshI->getAttribReference().attribStorage;
    storageI->bind();
-   const AllocationItem &blockI=storageI->getIndexAllocationItem(meshI->getAttribReference().indicesDataId);
+   const BlockAllocation &blockI=storageI->getIndexAllocationBlock(meshI->getAttribReference().indicesDataId);
    glDrawElementsBaseVertex(GL_TRIANGLES,blockI.numElements,GL_UNSIGNED_INT,(void*)(blockI.startIndex*sizeof(uint32_t)),6);
+
+   RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   storageNI->bind();
+   glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+   glDrawArraysIndirect(GL_TRIANGLES,nullptr);
+
    Window->swap();
 }
 
@@ -128,13 +147,15 @@ void Init(){
    AttribConfig::ConfigData config;
    config.attribTypes.push_back(AttribType::Vec3);
 
-   // top-left geometry
+   // compute shader allocation (done first to have offset 0)
    config.ebo=false;
    config.updateId();
+   attribsRefCS.allocData(config,6,0,32);
 
-   constexpr float z=-6.f;
+   // top-left geometry
+   constexpr float z=-10.f;
    constexpr float niShiftX=-1.5f;
-   constexpr float shiftY=1.5f;
+   constexpr float shiftY=3.0f;
    const vector<glm::vec3> twoTrianglesNI = {
       glm::vec3(niShiftX+0,shiftY+0,z),
       glm::vec3(niShiftX+0,shiftY+1,z),
@@ -173,7 +194,7 @@ void Init(){
    attribsRefI.uploadIndices(Array(indices));
 
    // bottom-left geometry
-   constexpr float meshShiftY=-1.5f;
+   constexpr float meshShiftY=shiftY-3.0f;
    const vector<glm::vec3> twoTrianglesMeshNI = {
       glm::vec3(niShiftX+0,meshShiftY+0,z),
       glm::vec3(niShiftX+0,meshShiftY+1,z),
@@ -209,6 +230,27 @@ void Init(){
    meshI->setIndexArray(indices);
    meshI->gpuUploadGeometryData();
 
+   // bottom-left geometry
+   constexpr float instanceShiftY=meshShiftY-3.0f;
+   const vector<glm::vec3> twoTriangleInstancesNI = {
+      glm::vec3(niShiftX+0,instanceShiftY+0,z),
+      glm::vec3(niShiftX+0,instanceShiftY+1,z),
+      glm::vec3(niShiftX+1,instanceShiftY+0,z),
+      glm::vec3(niShiftX+0,instanceShiftY+0,z),
+      glm::vec3(niShiftX+0,instanceShiftY-1,z),
+      glm::vec3(niShiftX-1,instanceShiftY+0,z),
+   };
+   //const vector<unsigned> drawCommands = {
+   //   GL_TRIANGLES,3,0,0,
+   //};
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTriangleInstancesNI);
+
+   attribsRefCS.uploadVertices(v);
+   //attribsRefCS.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),0);
+
+
    ge::gl::initShadersAndPrograms();
    glProgram = new ProgramObject(
       GL_VERTEX_SHADER,
@@ -231,4 +273,22 @@ void Init(){
    glm::mat4 mvp=modelView*projection;
    glProgram->use();
    glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
+   drawCommandProgram = new ProgramObject(
+      GL_COMPUTE_SHADER,
+      "#version 430\n"
+      "\n"
+      "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
+      "\n"
+      "layout(std430,binding=2) restrict writeonly buffer IndirectBuffer {\n"
+      "   uint indirectBuffer[];\n"
+      "};\n"
+      "\n"
+      "void main()\n"
+      "{\n"
+      "   uint writeIndex=0; //gl_GlobalInvocationId.x will probably be used here\n"
+      "   indirectBuffer[writeIndex+0]=3; // count\n"
+      "   indirectBuffer[writeIndex+1]=1; // instance count\n"
+      "   indirectBuffer[writeIndex+2]=0; // first\n"
+      "   indirectBuffer[writeIndex+3]=0; // base instance\n"
+      "}\n");
 }

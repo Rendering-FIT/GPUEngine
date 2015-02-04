@@ -25,8 +25,8 @@ namespace ge
       protected:
 
          bool _privateFlag;
-         AllocationItemManager _vertexAllocationManager;  ///< Allocation manager of blocks of vertices.
-         AllocationItemManager _indexAllocationManager;   ///< Allocation manager of blocks of indices.
+         BlockAllocationManager _vertexAllocationManager;  ///< Allocation manager of blocks of vertices.
+         BlockAllocationManager _indexAllocationManager;   ///< Allocation manager of blocks of indices.
          AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
          RenderingContext* _renderingContext;
 
@@ -48,8 +48,10 @@ namespace ge
          virtual void uploadIndices(AttribReference &r,const Array& indices,
                                     int fromIndex=0,int numIndices=-1) = 0;
 
-         inline const AllocationItem& getVertexAllocationItem(unsigned id) const;
-         inline const AllocationItem& getIndexAllocationItem(unsigned id) const;
+         inline const BlockAllocation& getVertexAllocationBlock(unsigned id) const; ///< Returns vertex data allocation block at index id.
+         inline const BlockAllocation& getIndexAllocationBlock(unsigned id) const;  ///< Returns index data allocation block at index id.
+         inline BlockAllocation& getVertexAllocationBlock(unsigned id);  ///< Returns vertex data allocation block at index id. If modifying returned data, the care must be taken to not break internal data consistency.
+         inline BlockAllocation& getIndexAllocationBlock(unsigned id);   ///< Returns index data allocation block at index id. If modifying returned data, the care must be taken to not break internal data consistency.
 
          inline const AttribConfigRef& getAttribConfig() const;
          inline RenderingContext* getRenderingContext() const;
@@ -65,10 +67,10 @@ namespace ge
          inline unsigned getNumIndicesAvailableAtTheEnd() const;   ///< Returns number of indices that are available at the end of the AttribStorage.
          inline unsigned getFirstIndexAvailableAtTheEnd() const;   ///< Returns index of the first available index at the end of the AttribStorage.
          inline unsigned getIdOfIndicesBlockAtTheEnd() const;      ///< Returns id (index to _indexAllocationManager) of the last allocated block at the end of the AttribStorage.
-         inline AllocationItemManager& getVertexAllocationManager();
-         inline AllocationItemManager& getIndexAllocationManager();
-         inline const AllocationItemManager& getVertexAllocationManager() const;
-         inline const AllocationItemManager& getIndexAllocationManager() const;
+         inline BlockAllocationManager& getVertexAllocationManager();
+         inline BlockAllocationManager& getIndexAllocationManager();
+         inline const BlockAllocationManager& getVertexAllocationManager() const;
+         inline const BlockAllocationManager& getIndexAllocationManager() const;
 
          virtual void cancelAllAllocations();
 
@@ -99,8 +101,10 @@ namespace ge
 {
    namespace sg
    {
-      inline const AllocationItem& AttribStorage::getVertexAllocationItem(unsigned id) const  { return _vertexAllocationManager[id]; }
-      inline const AllocationItem& AttribStorage::getIndexAllocationItem(unsigned id) const  { return _indexAllocationManager[id]; }
+      inline const BlockAllocation& AttribStorage::getVertexAllocationBlock(unsigned id) const  { return _vertexAllocationManager[id]; }
+      inline const BlockAllocation& AttribStorage::getIndexAllocationBlock(unsigned id) const  { return _indexAllocationManager[id]; }
+      inline BlockAllocation& AttribStorage::getVertexAllocationBlock(unsigned id)  { return _vertexAllocationManager[id]; }
+      inline BlockAllocation& AttribStorage::getIndexAllocationBlock(unsigned id)  { return _indexAllocationManager[id]; }
       inline const AttribConfigRef& AttribStorage::getAttribConfig() const  { return _attribConfig; }
       inline RenderingContext* AttribStorage::getRenderingContext() const  { return _renderingContext; }
       inline bool AttribStorage::isPrivate() const  { return _privateFlag; }
@@ -114,10 +118,10 @@ namespace ge
       inline unsigned AttribStorage::getNumIndicesAvailableAtTheEnd() const  { return _indexAllocationManager._numItemsAvailableAtTheEnd; }
       inline unsigned AttribStorage::getFirstIndexAvailableAtTheEnd() const  { return _indexAllocationManager._firstItemAvailableAtTheEnd; }
       inline unsigned AttribStorage::getIdOfIndicesBlockAtTheEnd() const  { return _indexAllocationManager._idOfBlockAtTheEnd; }
-      inline AllocationItemManager& AttribStorage::getVertexAllocationManager()  { return _vertexAllocationManager; }
-      inline AllocationItemManager& AttribStorage::getIndexAllocationManager()  { return _indexAllocationManager; }
-      inline const AllocationItemManager& AttribStorage::getVertexAllocationManager() const  { return _vertexAllocationManager; }
-      inline const AllocationItemManager& AttribStorage::getIndexAllocationManager() const  { return _indexAllocationManager; }
+      inline BlockAllocationManager& AttribStorage::getVertexAllocationManager()  { return _vertexAllocationManager; }
+      inline BlockAllocationManager& AttribStorage::getIndexAllocationManager()  { return _indexAllocationManager; }
+      inline const BlockAllocationManager& AttribStorage::getVertexAllocationManager() const  { return _vertexAllocationManager; }
+      inline const BlockAllocationManager& AttribStorage::getIndexAllocationManager() const  { return _indexAllocationManager; }
       inline std::shared_ptr<AttribStorage::Factory>& AttribStorage::getFactory() { return _factory; }
       inline void AttribStorage::setFactory(std::shared_ptr<AttribStorage::Factory>& f) { _factory = f; }
 
