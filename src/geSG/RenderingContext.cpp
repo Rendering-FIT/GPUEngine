@@ -21,6 +21,8 @@ int RenderingContext::_initialIndirectCommandBufferSize = 8000; // 8'000 bytes
 RenderingContext::RenderingContext()
    : _drawCommandAllocationManager(_initialDrawCommandBufferSize)
    , _instanceAllocationManager(_initialInstanceBufferSize)
+   , _mappedInstanceBufferPtr(nullptr)
+   , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
 {
    // create draw commands buffer
    _drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,nullptr,GL_DYNAMIC_DRAW);
@@ -31,7 +33,10 @@ RenderingContext::RenderingContext()
 
 RenderingContext::~RenderingContext()
 {
+   // break all scene graph references for this context
    cancelAllAllocations();
+
+   // delete all AttribStorages attached to this RenderingContext
    for(AttribConfigList::iterator it=_attribConfigList.begin(),nextIt; it!=_attribConfigList.end(); it=nextIt)
    {
       nextIt=it;
@@ -39,6 +44,8 @@ RenderingContext::~RenderingContext()
       if(it->second)
          it->second->deleteAllAttribStorages();
    }
+
+   // delete buffers
    delete _drawCommandBuffer;
    delete _instanceBuffer;
    delete _indirectCommandBuffer;
@@ -66,6 +73,33 @@ void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
    if(it->second!=NULL)
       it->second->detachFromRenderingContext();
    _attribConfigList.erase(it);
+}
+
+
+void* RenderingContext::mapInstanceBuffer(MappedBufferAccess access)
+{
+   if(_instanceBufferMappedAccess==MappedBufferAccess::READ_WRITE ||
+      _instanceBufferMappedAccess==access ||
+      access==MappedBufferAccess::NO_ACCESS)
+      return _mappedInstanceBufferPtr;
+
+   if(_instanceBufferMappedAccess!=MappedBufferAccess::NO_ACCESS)
+      _instanceBuffer->unmap();
+
+   _instanceBufferMappedAccess|=access;
+   _mappedInstanceBufferPtr=_instanceBuffer->map(static_cast<GLbitfield>(_instanceBufferMappedAccess));
+   return _mappedInstanceBufferPtr;
+}
+
+
+void RenderingContext::unmapInstanceBuffer()
+{
+   if(_instanceBufferMappedAccess==MappedBufferAccess::NO_ACCESS)
+      return;
+
+   _instanceBuffer->unmap();
+   _mappedInstanceBufferPtr=nullptr;
+   _instanceBufferMappedAccess=MappedBufferAccess::NO_ACCESS;
 }
 
 
@@ -222,20 +256,49 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 }
 
 
-/*InstanceBlockID RenderingContext::createInstances(AttribReference &r,
-                                                  const unsigned *drawCommandIndices,
-                                                  const unsigned drawCommandsCount,
-                                                  unsigned matrixOffset,unsigned stateSetOffset)
+RenderingContext::InstanceGroupId RenderingContext::createInstances(
+      AttribReference &r,
+      const unsigned *drawCommandIndices,const unsigned drawCommandsCount,
+      unsigned matrixOffset,unsigned stateSetOffset)
 {
-   FlexibleArray<unsigned,ListItemBase> *instanceBlock;
-   unsigned numInstances=drawCommandsCount==-1 ? r.drawCommandOffsets.size() : drawCommandsCount;
-   instanceBlock=FlexibleArray<unsigned,ListItemBase>.alloc(numInstances);
-   instanceBlock->count=numInstances;
-   if(drawCommandsCount==-1)
+   // numInstances to be created
+   unsigned numInstances=drawCommandsCount!=-1 ? drawCommandsCount : r.drawCommandOffsets.size();
+
+   // make sure we have enough space
+   if(!_instanceAllocationManager.canAllocate(numInstances))
+      return r.instances.end();
+
+   // allocate InstanceGroup
+   InstanceGroup *ig=InstanceGroup::alloc(numInstances);
+   ig->count=numInstances;
+
+   // allocate items in allocation manager
+   _instanceAllocationManager.alloc(numInstances,ig->items);
+
+   // update instanceBuffer
+   mapInstanceBuffer(MappedBufferAccess::WRITE);
+   for(int i=0; i<numInstances; i++)
    {
-      
-   r.instances
-}*/
+      Instance &instance=static_cast<Instance*>(_mappedInstanceBufferPtr)[ig->items[i]];
+      unsigned dcIndex=drawCommandsCount==-1 ? i : drawCommandIndices[i];
+      instance.drawCommandOffset=_drawCommandAllocationManager[r.drawCommandBlockId].offset+
+                                 r.drawCommandOffsets[dcIndex];
+      instance.matrixOffset=matrixOffset;
+      instance.stateSetOffset=stateSetOffset;
+   }
+
+   // insert InstanceGroup into the list of instances
+   // and return iterator to it
+   r.instances.push_front(ig);
+   return r.instances.begin();
+}
+
+
+void RenderingContext::deleteInstances(AttribReference &r,InstanceGroupId id)
+{
+   _instanceAllocationManager.free(id->items,id->count);
+   r.instances.erase(id);
+}
 
 
 void RenderingContext::cancelAllAllocations()

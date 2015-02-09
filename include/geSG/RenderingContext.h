@@ -10,6 +10,7 @@
 #include <set>
 #include <geSG/Export.h>
 #include <geSG/AllocationManagers.h>
+#include <geSG/FlexibleArrayList.h>
 
 namespace ge
 {
@@ -28,6 +29,16 @@ namespace ge
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;
+         typedef FlexibleArray<unsigned,ListItemBase> InstanceGroup;
+         typedef FlexibleArrayList<InstanceGroup> InstanceGroupList;
+         typedef InstanceGroupList::iterator InstanceGroupId;
+         enum class MappedBufferAccess : uint8_t { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
+
+         struct Instance {
+            unsigned drawCommandOffset;
+            unsigned matrixOffset;
+            unsigned stateSetOffset;
+         };
 
       protected:
 
@@ -39,6 +50,9 @@ namespace ge
          ge::gl::BufferObject *_indirectCommandBuffer;
          ChunkAllocationManager _drawCommandAllocationManager;  ///< Allocation manager of blocks of draw commands.
          ItemAllocationManager _instanceAllocationManager;  ///< Allocation manager of instances.
+         void* _mappedInstanceBufferPtr;
+         MappedBufferAccess _instanceBufferMappedAccess;
+
          static int _initialDrawCommandBufferSize;
          static int _initialInstanceBufferSize;
          static int _initialIndirectCommandBufferSize;
@@ -58,6 +72,9 @@ namespace ge
          inline ge::gl::BufferObject* getDrawCommandBuffer();      ///< Returns the buffer containing draw commands of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline ge::gl::BufferObject* getInstanceBuffer();         ///< Returns the buffer containing instances. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline ge::gl::BufferObject* getIndirectCommandBuffer();  ///< Returns indirect command buffer used for indirect rendering.
+
+         void* mapInstanceBuffer(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
+         void unmapInstanceBuffer();
 
          inline const ChunkAllocation& getDrawCommandsAllocationBlock(unsigned id) const;
          inline ChunkAllocationManager& getDrawCommandsAllocationManager();
@@ -91,11 +108,13 @@ namespace ge
          inline  void clearDrawCommands(AttribReference &r);
          virtual void setNumDrawCommands(AttribReference &r,unsigned num);
 
-         /*virtual InstanceBlockID createInstances(AttribReference &r,
+         inline InstanceGroupId createInstances(AttribReference &r,
+                                                unsigned matrixOffset,unsigned stateSetOffset);
+         virtual InstanceGroupId createInstances(AttribReference &r,
                                                  const unsigned *drawCommandIndices,
                                                  const unsigned drawCommandsCount,
-                                                 unsigned matrixOffset,unsigned stateSetOffset);*/
-         //virtual void deleteInstance(AttribReference &r, InstanceID);
+                                                 unsigned matrixOffset,unsigned stateSetOffset);
+         virtual void deleteInstances(AttribReference &r,InstanceGroupId id);
 
          virtual void cancelAllAllocations();
          virtual void handleContextLost();
@@ -114,6 +133,11 @@ namespace ge
          static thread_local std::shared_ptr<RenderingContext> _currentContext;
       };
 
+
+      inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b);
+      inline RenderingContext::MappedBufferAccess& operator&=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b);
+      inline RenderingContext::MappedBufferAccess& operator+=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b);
+      inline RenderingContext::MappedBufferAccess& operator-=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b);
    }
 }
 
@@ -148,6 +172,8 @@ namespace ge
       inline unsigned RenderingContext::getFirstDrawCommandAvailableAtTheEnd() const  { return _drawCommandAllocationManager._firstByteAvailableAtTheEnd; }
       inline unsigned RenderingContext::getIdOfDrawCommandBlockAtTheEnd() const  { return _drawCommandAllocationManager._idOfBlockAtTheEnd; }
       inline void RenderingContext::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
+      inline RenderingContext::InstanceGroupId RenderingContext::createInstances(AttribReference &r,unsigned matrixOffset,unsigned stateSetOffset)
+      { return createInstances(r,nullptr,-1,matrixOffset,stateSetOffset); }
       inline void RenderingContext::setInitialDrawCommandBufferSize(int value)  { _initialDrawCommandBufferSize=value; }
       inline int RenderingContext::getInitialDrawCommandBufferSize()  { return _initialDrawCommandBufferSize; }
       inline void RenderingContext::setInitialInstanceBufferSize(int value)  { _initialInstanceBufferSize=value; }
@@ -156,6 +182,15 @@ namespace ge
       inline int RenderingContext::getInitialIndirectCommandBufferSize()  { return _initialIndirectCommandBufferSize; }
       inline std::shared_ptr<RenderingContext>& RenderingContext::current()
       { return _currentContext; }
+
+      inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
+      { (uint8_t&)a|=(uint8_t)b; return a; }
+      inline RenderingContext::MappedBufferAccess& operator&=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
+      { (uint8_t&)a&=(uint8_t)b; return a; }
+      inline RenderingContext::MappedBufferAccess& operator+=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
+      { (uint8_t&)a|=(uint8_t)b; return a; }
+      inline RenderingContext::MappedBufferAccess& operator-=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
+      { (uint8_t&)a&=(uint8_t)b; return a; }
 
    }
 }

@@ -17,13 +17,16 @@ namespace ge
       class GE_EXPORT AttribReference {
       public:
 
+         typedef FlexibleArray<unsigned,ListItemBase> InstanceGroup;
+         typedef FlexibleArrayList<InstanceGroup> InstanceGroupList;
+         typedef InstanceGroupList::iterator InstanceGroupId;
+
          AttribStorage *attribStorage;
          unsigned verticesDataId;
          unsigned indicesDataId;
          unsigned drawCommandBlockId;
          std::vector<unsigned> drawCommandOffsets;
-         FlexibleArrayList<FlexibleArray<unsigned,ListItemBase>> instances;
-
+         InstanceGroupList instances;
 
          inline AttribReference();
          inline AttribReference(AttribReference&& ref);
@@ -62,6 +65,11 @@ namespace ge
          inline void clearDrawCommands();
          inline void setNumDrawCommands(unsigned num);
 
+         inline InstanceGroupId createInstances(unsigned matrixOffset,unsigned stateSetOffset);
+         inline InstanceGroupId createInstances(const unsigned *drawCommandIndices,
+                                                const unsigned drawCommandsCount,
+                                                unsigned matrixOffset,unsigned stateSetOffset);
+         inline void deleteInstances(InstanceGroupId id);
       };
 
    }
@@ -140,6 +148,12 @@ namespace ge
       inline void AttribReference::clearDrawCommands()  { setNumDrawCommands(0); }
       inline void AttribReference::setNumDrawCommands(unsigned num)
       { RenderingContext::current()->setNumDrawCommands(*this,num); }
+      inline AttribReference::InstanceGroupId AttribReference::createInstances(unsigned matrixOffset,unsigned stateSetOffset)
+      { return RenderingContext::current()->createInstances(*this,matrixOffset,stateSetOffset); }
+      inline AttribReference::InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const unsigned drawCommandsCount,unsigned matrixOffset,unsigned stateSetOffset)
+      { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,matrixOffset,stateSetOffset); }
+      inline void AttribReference::deleteInstances(AttribReference::InstanceGroupId id)
+      { RenderingContext::current()->deleteInstances(*this,id); }
    }
 }
 

@@ -106,8 +106,8 @@ namespace ge
          emplace_back(0,0,0,nullptr);
       }
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity)
-         : _numItemsTotal(capacity), _numItemsAvailable(capacity), _numItemsAvailableAtTheEnd(capacity),
-           _firstItemAvailableAtTheEnd(0)  {}
+         : std::vector<unsigned*>(capacity), _numItemsTotal(capacity), _numItemsAvailable(capacity),
+           _numItemsAvailableAtTheEnd(capacity), _firstItemAvailableAtTheEnd(0)  {}
       inline bool ChunkAllocationManager::canAllocate(unsigned numBytes) const
       { return _numBytesAvailableAtTheEnd>=numBytes; }
       inline bool BlockAllocationManager::canAllocate(unsigned numItems) const

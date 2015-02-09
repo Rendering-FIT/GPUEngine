@@ -44,8 +44,7 @@ ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
 static ProgramObject *glProgram = NULL;
-static ProgramObject *drawCommandProgram = NULL;
-static AttribReference attribsRefCS;
+static ProgramObject *processInstanceProgram = NULL;
 static AttribReference attribsRefNI;
 static AttribReference attribsRefI;
 static AttribReference attribsRefInstNI;
@@ -95,7 +94,7 @@ int main(int Argc,char*Argv[])
   Init();
   Window->mainLoop();
   delete glProgram;
-  delete drawCommandProgram;
+  delete processInstanceProgram;
   delete Window;
   delete Args;
   return 0;
@@ -111,7 +110,10 @@ void Wheel(int d){
 
 
 void Idle(){
-   drawCommandProgram->use();
+   processInstanceProgram->use();
+   processInstanceProgram->set("numToProcess",2);
+   RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
    RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
    glDispatchCompute(1,1,1);
 
@@ -137,7 +139,7 @@ void Idle(){
    RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
    storageNI->bind();
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
-   glDrawArraysIndirect(GL_TRIANGLES,nullptr);
+   glMultiDrawArraysIndirect(GL_TRIANGLES,nullptr,2,0);
 
    Window->swap();
 }
@@ -147,12 +149,10 @@ void Init(){
    AttribConfig::ConfigData config;
    config.attribTypes.push_back(AttribType::Vec3);
 
-   // compute shader allocation (done first to have offset 0)
+   // top-left geometry
    config.ebo=false;
    config.updateId();
-   attribsRefCS.allocData(config,6,0,32);
 
-   // top-left geometry
    constexpr float z=-10.f;
    constexpr float niShiftX=-1.5f;
    constexpr float shiftY=3.0f;
@@ -230,7 +230,7 @@ void Init(){
    meshI->setIndexArray(indices);
    meshI->gpuUploadGeometryData();
 
-   // bottom-left geometry
+   // bottom2-left geometry
    constexpr float instanceShiftY=meshShiftY-3.0f;
    const vector<glm::vec3> twoTriangleInstancesNI = {
       glm::vec3(niShiftX+0,instanceShiftY+0,z),
@@ -240,15 +240,23 @@ void Init(){
       glm::vec3(niShiftX+0,instanceShiftY-1,z),
       glm::vec3(niShiftX-1,instanceShiftY+0,z),
    };
-   //const vector<unsigned> drawCommands = {
-   //   GL_TRIANGLES,3,0,0,
-   //};
+   const vector<unsigned> drawCommands = {
+      GL_TRIANGLES,3,0,0,
+      GL_TRIANGLES,3,3,3,
+   };
+   const vector<unsigned> drawCommandOffsets = {
+      0,4,
+   };
    v.clear();
    v.reserve(1);
    v.emplace_back(twoTriangleInstancesNI);
-
-   attribsRefCS.uploadVertices(v);
-   //attribsRefCS.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),0);
+   config.ebo=false;
+   config.updateId();
+   attribsRefInstNI.allocData(config,6,0,24);
+   attribsRefInstNI.uploadVertices(v);
+   attribsRefInstNI.setDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
+                                    drawCommandOffsets.data(),drawCommandOffsets.size());
+   attribsRefInstNI.createInstances(0,0);
 
 
    ge::gl::initShadersAndPrograms();
@@ -273,22 +281,37 @@ void Init(){
    glm::mat4 mvp=modelView*projection;
    glProgram->use();
    glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
-   drawCommandProgram = new ProgramObject(
+   processInstanceProgram=new ProgramObject(
       GL_COMPUTE_SHADER,
       "#version 430\n"
       "\n"
       "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
       "\n"
+      "layout(std430,binding=0) restrict readonly buffer DrawCommandBuffer {\n"
+      "   uint drawCommandBuffer[];\n"
+      "};\n"
+      "layout(std430,binding=1) restrict readonly buffer InstanceBuffer {\n"
+      "   uint instanceBuffer[];\n"
+      "};\n"
       "layout(std430,binding=2) restrict writeonly buffer IndirectBuffer {\n"
       "   uint indirectBuffer[];\n"
       "};\n"
       "\n"
+      "uniform int numToProcess;\n"
+      "\n"
       "void main()\n"
       "{\n"
-      "   uint writeIndex=0; //gl_GlobalInvocationId.x will probably be used here\n"
-      "   indirectBuffer[writeIndex+0]=3; // count\n"
+      "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
+      "      return;\n"
+      "\n"
+      "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
+      "   uint drawCommandIndex=instanceBuffer[instanceIndex+0];\n"
+      "\n"
+      "   uint writeIndex=gl_GlobalInvocationID.x*4;\n"
+      "   indirectBuffer[writeIndex+0]=drawCommandBuffer[drawCommandIndex+1]; // count\n"
       "   indirectBuffer[writeIndex+1]=1; // instance count\n"
-      "   indirectBuffer[writeIndex+2]=0; // first\n"
+      "   indirectBuffer[writeIndex+2]=drawCommandBuffer[drawCommandIndex+2]+\n"
+      "                                drawCommandBuffer[drawCommandIndex+3]; // first\n"
       "   indirectBuffer[writeIndex+3]=0; // base instance\n"
       "}\n");
 }
