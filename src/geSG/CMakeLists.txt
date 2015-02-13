@@ -26,6 +26,7 @@ set(SG_SOURCES
     AllocationManagers.cpp
     AttribType.cpp
     AttribConfig.cpp
+    AttribReference.cpp
     AttribStorage.cpp
     SeparateBuffersAttribStorage.cpp
     RenderingContext.cpp

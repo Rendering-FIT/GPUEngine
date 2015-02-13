@@ -3,12 +3,12 @@
 #include <geSG/RenderingContext.h>
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
+#include <geSG/StateSet.h>
 #include <geGL/BufferObject.h>
 
 using namespace ge::sg;
 using namespace ge::gl;
 using namespace std;
-
 
 thread_local shared_ptr<RenderingContext> RenderingContext::_currentContext;
 
@@ -21,6 +21,8 @@ int RenderingContext::_initialIndirectCommandBufferSize = 8000; // 8'000 bytes
 RenderingContext::RenderingContext()
    : _drawCommandAllocationManager(_initialDrawCommandBufferSize)
    , _instanceAllocationManager(_initialInstanceBufferSize)
+   , _mappedDrawCommandBufferPtr(nullptr)
+   , _drawCommandBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
 {
@@ -76,30 +78,35 @@ void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
 }
 
 
-void* RenderingContext::mapInstanceBuffer(MappedBufferAccess access)
+void* RenderingContext::mapBuffer(void* &mappedBufferPtr,
+                                  MappedBufferAccess &currentAccess,
+                                  BufferObject *buffer,
+                                  MappedBufferAccess requestedAccess)
 {
-   if(_instanceBufferMappedAccess==MappedBufferAccess::READ_WRITE ||
-      _instanceBufferMappedAccess==access ||
-      access==MappedBufferAccess::NO_ACCESS)
-      return _mappedInstanceBufferPtr;
+   if(currentAccess==MappedBufferAccess::READ_WRITE ||
+      currentAccess==requestedAccess ||
+      requestedAccess==MappedBufferAccess::NO_ACCESS)
+      return mappedBufferPtr;
 
-   if(_instanceBufferMappedAccess!=MappedBufferAccess::NO_ACCESS)
-      _instanceBuffer->unmap();
+   if(currentAccess!=MappedBufferAccess::NO_ACCESS)
+      buffer->unmap();
 
-   _instanceBufferMappedAccess|=access;
-   _mappedInstanceBufferPtr=_instanceBuffer->map(static_cast<GLbitfield>(_instanceBufferMappedAccess));
-   return _mappedInstanceBufferPtr;
+   currentAccess|=requestedAccess;
+   mappedBufferPtr=buffer->map(static_cast<GLbitfield>(currentAccess));
+   return mappedBufferPtr;
 }
 
 
-void RenderingContext::unmapInstanceBuffer()
+void RenderingContext::unmapBuffer(ge::gl::BufferObject *buffer,
+                                   void* &mappedBufferPtr,
+                                   MappedBufferAccess &currentAccess)
 {
-   if(_instanceBufferMappedAccess==MappedBufferAccess::NO_ACCESS)
+   if(currentAccess==MappedBufferAccess::NO_ACCESS)
       return;
 
-   _instanceBuffer->unmap();
-   _mappedInstanceBufferPtr=nullptr;
-   _instanceBufferMappedAccess=MappedBufferAccess::NO_ACCESS;
+   buffer->unmap();
+   mappedBufferPtr=nullptr;
+   currentAccess=MappedBufferAccess::NO_ACCESS;
 }
 
 
@@ -178,48 +185,80 @@ void RenderingContext::freeDrawCommands(AttribReference &r)
  * the real start index is sum of these two indexes.*/
 void RenderingContext::setDrawCommands(AttribReference &r,
                                        const void *drawCommandBuffer,unsigned bytesToCopy,
-                                       const unsigned *offsets,int numDrawCommands)
+                                       const unsigned *offsets4,int numDrawCommands)
 {
    void *p=malloc(bytesToCopy);
    memcpy(p,drawCommandBuffer,bytesToCopy);
-   setDrawCommandsOptimized(r,p,bytesToCopy,offsets,numDrawCommands);
+   setDrawCommandsOptimized(r,p,bytesToCopy,
+                            generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands).data(),
+                            numDrawCommands);
    free(p);
 }
 
 
 void RenderingContext::setDrawCommandsOptimized(AttribReference &r,
                                                 void *drawCommandBuffer,unsigned bytesToCopy,
-                                                const unsigned *offsets,int numDrawCommands)
+                                                const unsigned *offsets4,int numDrawCommands)
 {
-   clearDrawCommands(r);
-   updateDrawCommandsBufferData(r,drawCommandBuffer,offsets,numDrawCommands);
-   uploadDrawCommands(r,drawCommandBuffer,bytesToCopy);
-   updateDrawCommandOffsets(r,offsets,numDrawCommands);
+   setDrawCommandsOptimized(r,drawCommandBuffer,bytesToCopy,
+                            generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands).data(),
+                            numDrawCommands);
 }
 
 
-void RenderingContext::updateDrawCommandsBufferData(AttribReference &r,
-                                                    void *drawCommandBuffer,
-                                                    const unsigned *offsets,int numDrawCommands)
+void RenderingContext::setDrawCommandsOptimized(AttribReference &r,
+                                                void *drawCommandBuffer,unsigned bytesToCopy,
+                                                const AttribReference::DrawCommandControlData *data,
+                                                int numDrawCommands)
 {
-   // get index of allocated block
-   unsigned index;
-   if(r.indicesDataId==0)
-      index=r.attribStorage->getVertexAllocationBlock(r.verticesDataId).startIndex;
-   else
-      index=r.attribStorage->getIndexAllocationBlock(r.indicesDataId).startIndex;
+   clearDrawCommands(r);
+   prepareDrawCommandsBufferData(r,drawCommandBuffer,data,numDrawCommands);
+   uploadDrawCommandBufferData(r,drawCommandBuffer,bytesToCopy);
+   updateDrawCommandControlData(r,data,numDrawCommands);
+}
 
-   // update start index of all draw commands
+
+std::vector<AttribReference::DrawCommandControlData>
+RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
+                                                 const unsigned *offsets4,int numDrawCommands)
+{
+   std::vector<AttribReference::DrawCommandControlData> r;
+   r.reserve(numDrawCommands);
    for(int i=0; i<numDrawCommands; i++)
    {
-      unsigned pos=offsets[i];
-      static_cast<unsigned*>(drawCommandBuffer)[pos+3]=index;
+      unsigned o=offsets4[i];
+      unsigned mode=((DrawCommandBufferData*)((unsigned*)drawCommandBuffer)+o)->mode;
+      r.emplace_back(o,mode);
+   }
+   return r;
+}
+
+
+void RenderingContext::prepareDrawCommandsBufferData(AttribReference &r,
+                                                     void *drawCommandBuffer,
+                                                     const AttribReference::DrawCommandControlData *data,
+                                                     int numDrawCommands)
+{
+   // get index of allocated block
+   unsigned blockOffset;
+   if(r.indicesDataId==0)
+      blockOffset=r.attribStorage->getVertexAllocationBlock(r.verticesDataId).startIndex;
+   else
+      blockOffset=r.attribStorage->getIndexAllocationBlock(r.indicesDataId).startIndex;
+
+   // update blockOffset of all draw commands
+   for(int i=0; i<numDrawCommands; i++)
+   {
+      // set DrawCommandBufferData::blockOffset
+      unsigned index=data[i].offset4;
+      static_cast<unsigned*>(drawCommandBuffer)[index+3]=blockOffset;
    }
 }
 
 
-void RenderingContext::uploadDrawCommands(AttribReference &r,const void *drawCommandBuffer,
-                                          unsigned bytesToCopy,unsigned dstOffset)
+void RenderingContext::uploadDrawCommandBufferData(AttribReference &r,
+                                                   const void *drawCommandBuffer,
+                                                   unsigned bytesToCopy,unsigned dstOffset)
 {
    if(r.attribStorage==NULL || r.drawCommandBlockId==0)
       return;
@@ -229,21 +268,23 @@ void RenderingContext::uploadDrawCommands(AttribReference &r,const void *drawCom
 }
 
 
-void RenderingContext::updateDrawCommandOffsets(AttribReference &r,
-                                                const unsigned *offsets,int numDrawCommands,
-                                                unsigned startIndex,bool truncate)
+void RenderingContext::updateDrawCommandControlData(AttribReference &r,
+                                                    const AttribReference::DrawCommandControlData *data,
+                                                    int numDrawCommands,
+                                                    unsigned startIndex,bool truncate)
 {
    if(r.attribStorage==NULL)
       return;
 
    // resize if needed
    int minSizeRequired=numDrawCommands+startIndex;
-   int currentSize=r.drawCommandOffsets.size();
+   int currentSize=r.drawCommandControlData.size();
    if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
-      r.drawCommandOffsets.resize(minSizeRequired);
+      r.drawCommandControlData.resize(minSizeRequired);
 
    // copy memory
-   memmove(r.drawCommandOffsets.data()+startIndex,offsets,numDrawCommands*sizeof(unsigned));
+   memmove(r.drawCommandControlData.data()+startIndex,data,
+           numDrawCommands*sizeof(AttribReference::DrawCommandControlData));
 }
 
 
@@ -252,17 +293,17 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
    if(r.attribStorage==NULL)
       return;
 
-   r.drawCommandOffsets.resize(num);
+   r.drawCommandControlData.resize(num);
 }
 
 
 RenderingContext::InstanceGroupId RenderingContext::createInstances(
       AttribReference &r,
       const unsigned *drawCommandIndices,const unsigned drawCommandsCount,
-      unsigned matrixOffset,unsigned stateSetOffset)
+      unsigned matrixIndex,StateSet *stateSet)
 {
    // numInstances to be created
-   unsigned numInstances=drawCommandsCount!=-1 ? drawCommandsCount : r.drawCommandOffsets.size();
+   unsigned numInstances=drawCommandsCount!=-1 ? drawCommandsCount : r.drawCommandControlData.size();
 
    // make sure we have enough space
    if(!_instanceAllocationManager.canAllocate(numInstances))
@@ -275,16 +316,24 @@ RenderingContext::InstanceGroupId RenderingContext::createInstances(
    // allocate items in allocation manager
    _instanceAllocationManager.alloc(numInstances,ig->items);
 
-   // update instanceBuffer
+   // iterate through instances
    mapInstanceBuffer(MappedBufferAccess::WRITE);
    for(int i=0; i<numInstances; i++)
    {
+      // update instanceBuffer
       Instance &instance=static_cast<Instance*>(_mappedInstanceBufferPtr)[ig->items[i]];
       unsigned dcIndex=drawCommandsCount==-1 ? i : drawCommandIndices[i];
-      instance.drawCommandOffset=_drawCommandAllocationManager[r.drawCommandBlockId].offset+
-                                 r.drawCommandOffsets[dcIndex];
-      instance.matrixOffset=matrixOffset;
-      instance.stateSetOffset=stateSetOffset;
+      AttribReference::DrawCommandControlData dccd=r.drawCommandControlData[dcIndex];
+      instance.drawCommandOffset4=_drawCommandAllocationManager[r.drawCommandBlockId].offset/4+
+                                  dccd.offset4;
+      instance.matrixIndex=matrixIndex;
+
+      // update StateSet counter
+      unsigned mode=dccd.mode;
+      stateSet->incrementDrawCommandModeCounter(mode);
+
+      // set stateSetOffset (must be done after incrementing StateSet counter)
+      instance.stateSetDataIndex=stateSet->getStateSetBufferIndex(mode);
    }
 
    // insert InstanceGroup into the list of instances

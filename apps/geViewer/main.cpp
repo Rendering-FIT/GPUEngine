@@ -12,6 +12,7 @@
 #include <geSG/AttribReference.h>
 #include <geSG/Mesh.h>
 #include <geSG/RenderingContext.h>
+#include <geSG/StateSet.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
@@ -45,6 +46,7 @@ ge::util::WindowObject   *Window;
 
 static ProgramObject *glProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
+static shared_ptr<StateSet> stateSet;
 static AttribReference attribsRefNI;
 static AttribReference attribsRefI;
 static AttribReference attribsRefInstNI;
@@ -244,7 +246,7 @@ void Init(){
       GL_TRIANGLES,3,0,0,
       GL_TRIANGLES,3,3,3,
    };
-   const vector<unsigned> drawCommandOffsets = {
+   const vector<unsigned> drawCommandOffsets4 = {
       0,4,
    };
    v.clear();
@@ -252,11 +254,18 @@ void Init(){
    v.emplace_back(twoTriangleInstancesNI);
    config.ebo=false;
    config.updateId();
+   stateSet=make_shared<StateSet>();
    attribsRefInstNI.allocData(config,6,0,24);
    attribsRefInstNI.uploadVertices(v);
    attribsRefInstNI.setDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
-                                    drawCommandOffsets.data(),drawCommandOffsets.size());
-   attribsRefInstNI.createInstances(0,0);
+                                    drawCommandOffsets4.data(),drawCommandOffsets4.size());
+   attribsRefInstNI.createInstances(0,stateSet.get());
+
+
+   // unmap instance buffer
+   // (it has to be done before rendering, for sure always before the frame,
+   // or at least when there were any modifications to the instance buffer)
+   RenderingContext::current()->unmapInstanceBuffer();
 
 
    ge::gl::initShadersAndPrograms();
@@ -305,13 +314,13 @@ void Init(){
       "      return;\n"
       "\n"
       "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
-      "   uint drawCommandIndex=instanceBuffer[instanceIndex+0];\n"
+      "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
       "\n"
       "   uint writeIndex=gl_GlobalInvocationID.x*4;\n"
-      "   indirectBuffer[writeIndex+0]=drawCommandBuffer[drawCommandIndex+1]; // count\n"
+      "   indirectBuffer[writeIndex+0]=drawCommandBuffer[drawCommandOffset4+1]; // count\n"
       "   indirectBuffer[writeIndex+1]=1; // instance count\n"
-      "   indirectBuffer[writeIndex+2]=drawCommandBuffer[drawCommandIndex+2]+\n"
-      "                                drawCommandBuffer[drawCommandIndex+3]; // first\n"
+      "   indirectBuffer[writeIndex+2]=drawCommandBuffer[drawCommandOffset4+2]+\n"
+      "                                drawCommandBuffer[drawCommandOffset4+3]; // first\n"
       "   indirectBuffer[writeIndex+3]=0; // base instance\n"
       "}\n");
 }
