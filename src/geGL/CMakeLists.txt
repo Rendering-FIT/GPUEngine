@@ -94,3 +94,23 @@ install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
   )
+  
+#########################################
+#Export
+#configure_package_config_file( 
+#   geGLConfig.cmake.in
+#   geGLConfig.cmake
+#   INSTALL_DESTINATION lib/cmake/geGL
+#)
+
+configure_file(
+   geGLConfig.cmake.in
+   geGLConfig.cmake
+   @ONLY
+)
+
+message("geGL install cm ${INSTALL_CM_DIR}")
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geGLConfig.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/geGL"
+        )

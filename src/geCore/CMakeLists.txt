@@ -24,7 +24,23 @@ install(FILES
   DESTINATION include/${LIB_NAME}
   )
 
+
 install(TARGETS ${LIB_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
   )
+  
+#########################################
+#Export
+  
+message("geCore install cm ${INSTALL_CM_DIR}")
+  
+configure_file(
+   geCoreConfig.cmake.in
+   geCoreConfig.cmake
+   @ONLY
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geCoreConfig.cmake"
+   DESTINATION "${INSTALL_CM_DIR}/geCore"
+   )

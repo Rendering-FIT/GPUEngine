@@ -7,6 +7,9 @@ SET(GPUENGINE_MINOR_VERSION 0)
 SET(GPUENGINE_PATCH_VERSION 0)
 SET(GPUENGINE_REVISION_VERSION 0)
 SET(GPUENGINE_VERSION ${GPUENGINE_MAJOR_VERSION}.${GPUENGINE_MINOR_VERSION}.${GPUENGINE_PATCH_VERSION}.${GPUENGINE_REVISION_VERSION})
+
+SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
+
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
@@ -41,7 +44,7 @@ ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 # Dynamic vs Static Linking
-OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." OFF)
+OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
 IF   (DYNAMIC_GPUENGINE)
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
     ADD_DEFINITIONS(-DGE_LIBRARY)
@@ -59,6 +62,38 @@ FIND_PACKAGE(AntTweakBar)
 INCLUDE_DIRECTORIES(
     ${GPUEngine_SOURCE_DIR}/include
   )
+
+
+##################################################
+# Export Things
+##################################################
+
+SET(INSTALL_CM_DIR cmake)
+
+configure_file(version.h.in "include/version.h" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
+        DESTINATION include
+        )
+        
+configure_file(
+   GPUEngineConfig.cmake.in
+   GPUEngineConfig.cmake
+   @ONLY
+)
+
+configure_file(
+   GPUEngineConfigVersion.cmake.in
+   GPUEngineConfigVersion.cmake
+   @ONLY
+)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
+              "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+        DESTINATION ${INSTALL_CM_DIR}
+        )
+        
+        
 
 add_subdirectory(src)
 add_subdirectory(apps)
