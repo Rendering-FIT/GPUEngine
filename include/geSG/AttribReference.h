@@ -23,9 +23,30 @@ namespace ge
          typedef FlexibleArrayList<InstanceGroup> InstanceGroupList;
          typedef InstanceGroupList::iterator InstanceGroupId;
 
+         /** DrawCommandControlData carries offset and mode of particular draw command.
+          *
+          *  Offset is given in multiple of 4 (shaders access memory as int array,
+          *  thus index is memory address divided by four). Real memory offset is
+          *  computed as offset4()*4.
+          *
+          *  Mode is OpenGL mode, such as GL_TRIANGLES, GL_PATCH, GL_LINE_STRIP. The upmost
+          *  bit is used to distinguish between glDrawArrays and glDrawElements draw commands,
+          *  e.g. whether EBO is used or not.
+          *
+          *  Implementation note: The structure provides setters and getters as we want to
+          *  make sure the structure occupies only 4 bytes. (Bit fields are known to be
+          *  not tightly packed on MSVC.)
+          */
          struct DrawCommandControlData {
-            uint32_t offset4 : 27;
-            uint16_t mode    : 5;
+         protected:
+            uint32_t data;
+         public:
+            inline uint32_t offset4() const  { return data&0x07ffffff; } // return lowest 27 bits
+            inline uint16_t mode() const     { return data>>27; } // return upmost 5 bits
+            inline void setOffset4(uint32_t value)  { data=(data&0xf8000000)|value; } // set lowest 27 bits, value must fit to 27 bits
+            inline void setMode(uint16_t value)     { data=(data&0x07ffffff)|(uint32_t(value)<<27); } // set upmost 5 bits
+            inline void set(uint32_t offset4,uint16_t mode)  { data=offset4|(uint32_t(mode)<<27); } // set data, offset4 must fit to 27 bits
+
             inline DrawCommandControlData() {}
             inline DrawCommandControlData(uint32_t offset4,uint16_t mode);
          };
@@ -107,8 +128,7 @@ namespace ge
 {
    namespace sg
    {
-      inline AttribReference::DrawCommandControlData::DrawCommandControlData(uint32_t offset4,uint16_t mode)
-      { this->offset4=offset4; this->mode=mode; }
+      inline AttribReference::DrawCommandControlData::DrawCommandControlData(uint32_t offset4,uint16_t mode)  { set(offset4,mode); }
       inline AttribReference::AttribReference() : attribStorage(NULL)  {}
       inline AttribReference::AttribReference(AttribReference&& ref)
          : attribStorage(ref.attribStorage)

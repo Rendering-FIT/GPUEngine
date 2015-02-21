@@ -151,6 +151,7 @@ bool RenderingContext::allocDrawCommands(AttribReference &r,unsigned size)
 bool RenderingContext::reallocDrawCommands(AttribReference &r,int newSize,bool preserveContent)
 {
    // not implemented yet
+   return false;
 }
 
 
@@ -250,7 +251,7 @@ void RenderingContext::prepareDrawCommandsBufferData(AttribReference &r,
    for(int i=0; i<numDrawCommands; i++)
    {
       // set DrawCommandBufferData::blockOffset
-      unsigned index=data[i].offset4;
+      unsigned index=data[i].offset4();
       static_cast<unsigned*>(drawCommandBuffer)[index+3]=blockOffset;
    }
 }
@@ -325,11 +326,11 @@ RenderingContext::InstanceGroupId RenderingContext::createInstances(
       unsigned dcIndex=drawCommandsCount==-1 ? i : drawCommandIndices[i];
       AttribReference::DrawCommandControlData dccd=r.drawCommandControlData[dcIndex];
       instance.drawCommandOffset4=_drawCommandAllocationManager[r.drawCommandBlockId].offset/4+
-                                  dccd.offset4;
+                                  dccd.offset4();
       instance.matrixIndex=matrixIndex;
 
       // update StateSet counter
-      unsigned mode=dccd.mode;
+      unsigned mode=dccd.mode();
       stateSet->incrementDrawCommandModeCounter(mode);
 
       // set stateSetOffset (must be done after incrementing StateSet counter)

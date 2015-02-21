@@ -6,6 +6,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Array.h
     ${HEADER_PATH}/AllocationManagers.h
+    ${HEADER_PATH}/FlexibleArrayList.h
     ${HEADER_PATH}/AttribType.h
     ${HEADER_PATH}/AttribConfig.h
     ${HEADER_PATH}/AttribReference.h
@@ -45,8 +46,8 @@ ADD_LIBRARY(${LIB_NAME}
     ${SG_SOURCES}
   )
 
-include_directories(${GLM_INCLUDE_DIR})
-  
+include_directories(${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+
 install(FILES
     ${SG_INCLUDES}
     DESTINATION include/${LIB_NAME}

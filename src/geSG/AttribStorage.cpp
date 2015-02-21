@@ -99,6 +99,7 @@ bool AttribStorage::reallocData(AttribReference &r,int numVertices,int numIndice
    // - if no AttribStorage accommodate us, we allocate new AttribStorage
 
    // FIXME: not implemented yet
+   return false;
 }
 
 

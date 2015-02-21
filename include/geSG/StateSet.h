@@ -1,6 +1,7 @@
 #ifndef GE_SG_STATE_SET_H
 #define GE_SG_STATE_SET_H
 
+#include <array>
 #include <memory>
 #include <geSG/ParentChildList.h>
 
@@ -8,8 +9,6 @@ namespace ge
 {
    namespace sg
    {
-      class Node;
-
 
       class StateSet : public std::enable_shared_from_this<StateSet>
       {

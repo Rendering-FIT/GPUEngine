@@ -67,6 +67,7 @@ bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertice
         int numIndices,bool preserveContent)
 {
    // FIXME: not implemented yet
+   return false;
 }
 
 
