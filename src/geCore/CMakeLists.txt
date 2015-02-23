@@ -33,9 +33,7 @@ install(TARGETS ${LIB_NAME}
   
 #########################################
 #Export
-  
-message("geCore install cm ${INSTALL_CM_DIR}")
-  
+   
 configure_file(
    geCoreConfig.cmake.in
    geCoreConfig.cmake

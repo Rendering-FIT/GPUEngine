@@ -4,35 +4,14 @@
 
 @PACKAGE_INIT@
 
-message(STATUS "geGL greets downstreamer")
+message(STATUS "@LIB_NAME@ greets downstreamer")
 
-get_filename_component(_geGL_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 
-include(${_geGL_install_prefix}/cmake/GEMacros.cmake)
+include(${_@LIB_NAME@_install_prefix}/cmake/GEMacros.cmake)
 
-if(NOT TARGET geGL)
-   set_target_properties( geGL PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${_geGL_install_prefix}/include"
-      IMPORTED_LOCATION_RELEASE "${_geGL_install_prefix}/bin/geGL.dll"
-      IMPORTED_LOCATION_DEBUG "${_geGL_install_prefix}/bin/geGLd.dll"
-   )
-   set(imported_implib "${_geGL_install_prefix}/lib/geGL.lib")
-    
-   if(EXISTS "${imported_implib}")
-     set_target_properties(geGL PROPERTIES
-     "IMPORTED_IMPLIB_RELEASE" ${imported_implib}
-     )
-   else()
-   message("The imported lib location ${imported_implib} doesn't exists.")
-   endif()
-   
-   set(imported_implib "${_geGL_install_prefix}/lib/geGLd.lib")
-    
-   if(EXISTS "${imported_implib}")
-     set_target_properties(geGL PROPERTIES
-     "IMPORTED_IMPLIB_DEBUG" ${imported_implib}
-     )
-   else()
-   message("The imported lib location ${imported_implib} doesn't exists.")
-   endif()
-endif(NOT TARGET geGL)
+if(NOT TARGET @LIB_NAME@)
+   add_library(@LIB_NAME@ SHARED IMPORTED)
+
+   _ge_populate_imported_target(@LIB_NAME@ _@LIB_NAME@_install_prefix @LIB_NAME@ GPUEngine_FIND_REQUIRED_@LIB_NAME@ GPUEngine_FIND_QUIETLY)
+endif(NOT TARGET @LIB_NAME@)

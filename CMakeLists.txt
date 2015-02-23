@@ -74,7 +74,7 @@ configure_file(version.h.in "include/version.h" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
         DESTINATION include
         )
-        
+
 configure_file(
    GPUEngineConfig.cmake.in
    GPUEngineConfig.cmake
@@ -92,8 +92,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
               "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
         DESTINATION ${INSTALL_CM_DIR}
         )
-        
-        
+
+
 
 add_subdirectory(src)
 add_subdirectory(apps)

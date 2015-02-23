@@ -2,15 +2,12 @@
 @PACKAGE_INIT@
 
 message(STATUS "@LIB_NAME@ greets downstreamer")
-get_filename_component(_geGL_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
-include(${_geGL_install_prefix}/cmake/GEMacros.cmake)
+get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+include(${_@LIB_NAME@_install_prefix}/cmake/GEMacros.cmake)
 
 if(NOT TARGET @LIB_NAME@)
 
-add_library(@LIB_NAME@ SHARED IMPORTED)
-_ge_check_file_exists("${_geGL_install_prefix}/include" @LIB_NAME@)
-set_property(TARGET @LIB_NAME@ PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${_geGL_install_prefix}/include")
-
-_ge_populate_imported_target(@LIB_NAME@ _geGL_install_prefix @LIB_NAME@)
+   add_library(@LIB_NAME@ SHARED IMPORTED)
+   _ge_populate_imported_target(@LIB_NAME@ _@LIB_NAME@_install_prefix @LIB_NAME@ GPUEngine_FIND_REQUIRED_@LIB_NAME@ GPUEngine_FIND_QUIETLY)
 
 endif(NOT TARGET @LIB_NAME@)
