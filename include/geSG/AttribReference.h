@@ -34,8 +34,8 @@ namespace ge
           *  e.g. whether EBO is used or not.
           *
           *  Implementation note: The structure provides setters and getters as we want to
-          *  make sure the structure occupies only 4 bytes. (Bit fields are known to be
-          *  not tightly packed on MSVC.)
+          *  make sure the structure occupies only 4 bytes. (Bit fields are known to not be
+          *  always tightly packed on MSVC.)
           */
          struct DrawCommandControlData {
          protected:

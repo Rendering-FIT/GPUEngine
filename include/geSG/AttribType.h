@@ -92,21 +92,18 @@ namespace ge
 
       protected:
 
+         /** AttribType is stored on 64 bits. Bits distribution is as follows:
+          *  - 0..7 - element size
+          *  - 8,9 - type handling
+          *  - 10 - bgra flag
+          *  - 11..15 - number of components
+          *  - 16..31 - glType
+          *  - 32..63 - divisor
+          */
          union {
-            struct {
-               union {
-                  struct {
-                     GLType  _glType;
-                     int     _numComponents : 5; // range 1..16
-                     bool    _bgra : 1;
-                     int     _elementSize : 8; // range 1..128
-                     TypeHandling  _typeHandling : 2; // four options
-                  };
-                  uint32_t _attribType32;
-               };
-               uint32_t  _divisor;
-            };
-            uint64_t _attribType64;
+            uint64_t _data64;
+            uint32_t _data32[2];
+            uint16_t _data16[4];
          };
 
       public:
@@ -122,20 +119,20 @@ namespace ge
 
          inline AttribType& operator=(AttribType a);       ///< Assignment operator.
 
-         inline GLType getGLType() const;                  ///< Returns the type of attribute data.
-         inline uint16_t getGLTypeAsInt() const;           ///< Returns type of attribute data as integer value.
+         inline GLType glType() const;                     ///< Returns the type of attribute data.
+         inline uint16_t glTypeAsInt() const;              ///< Returns type of attribute data as integer value.
          inline void setGLType(GLType value);              ///< Sets the type of attribute data.
-         inline int getNumComponents() const;              ///< Returns the number of components of attribute.
+         inline int numComponents() const;                 ///< Returns the number of components of attribute.
          inline void setNumComponents(int value);          ///< Sets the number of components of attribute.
-         inline bool getBGRA() const;                      ///< Returns BGRA flag used by some special OpenGL attribute formats.
+         inline bool bgra() const;                         ///< Returns BGRA flag used by some special OpenGL attribute formats.
          inline void setBGRA(bool value);                  ///< Sets BGRA flag used by some special OpenGL attribute formats.
-         inline int getElementSize() const;                ///< \brief Returns the size (in bytes) of single attribute item.
+         inline int elementSize() const;                   ///< \brief Returns the size (in bytes) of single attribute item.
          inline void setElementSize(int value);            ///< \brief Sets the size (in bytes) of single attribute item.
-         inline TypeHandling getTypeHandling() const;      ///< \brief Returns how the attribute is handled to OpenGL.
+         inline TypeHandling typeHandling() const;         ///< \brief Returns how the attribute is handled to OpenGL.
          inline void setTypeHandling(TypeHandling value);  ///< \brief Sets how the attribute is handled to OpenGL.
-         inline uint32_t getDivisor() const;               ///< \brief Returns attribute divisor.
+         inline uint32_t divisor() const;                  ///< \brief Returns attribute divisor.
          inline void setDivisor(uint32_t value);           ///< \brief Sets attribute divisor.
-         inline uint64_t getAsInt64() const;               ///< \brief Returns AttribType object content as the 64-bit value.
+         inline uint64_t asInt64() const;                  ///< \brief Returns AttribType object content as the 64-bit value.
          inline void setAsInt64(uint64_t value);           ///< \brief Sets AttribType object content by the 64-bit value.
 
          template<GLType T> static inline AttribType create();
@@ -251,42 +248,42 @@ namespace ge
       // inline and template methods
       inline constexpr AttribType::AttribType(GLType glType,uint8_t numComponents,uint8_t elementSize,
                                               TypeHandling typeHandling,unsigned divisor)
-            :_glType(glType),_numComponents(numComponents),_bgra(false)
-            ,_elementSize(elementSize),_typeHandling(typeHandling),_divisor(divisor)  {}
+            :_data64(uint64_t(divisor)<<32 | uint32_t(glType)<<16 | uint32_t(numComponents)<<11 |
+                     uint32_t(typeHandling)<<8 | elementSize)  {}
       inline constexpr AttribType::AttribType(GLType glType,uint8_t numComponents,bool bgra,uint8_t elementSize,
                                               TypeHandling typeHandling,unsigned divisor)
-            :_glType(glType),_numComponents(numComponents),_bgra(bgra)
-            ,_elementSize(elementSize),_typeHandling(typeHandling),_divisor(divisor)  {}
-      inline AttribType::AttribType(const AttribType& a) : _attribType64(a._attribType64)  {}
-      inline AttribType& AttribType::operator=(AttribType a) { _attribType64=a._attribType64; return *this; }
+            :_data64(uint64_t(divisor)<<32 | uint32_t(glType)<<16 | uint32_t(numComponents)<<11 |
+                     bgra?0x0400:0 | uint32_t(typeHandling)<<8 | elementSize)  {}
+      inline AttribType::AttribType(const AttribType& a) : _data64(a._data64)  {}
+      inline AttribType& AttribType::operator=(AttribType a) { _data64=a._data64; return *this; }
 
-      inline GLType AttribType::getGLType() const  { return _glType; }
-      inline uint16_t AttribType::getGLTypeAsInt() const  { return uint16_t(_glType); }
-      inline void AttribType::setGLType(GLType value)  { _glType = value; }
-      inline int AttribType::getNumComponents() const  { return _numComponents; }
-      inline void AttribType::setNumComponents(int value)  { _numComponents=value; }
-      inline bool AttribType::getBGRA() const  { return _bgra; }
-      inline void AttribType::setBGRA(bool value)  { _bgra=value; }
-      inline int AttribType::getElementSize() const  { return _elementSize; }
-      inline void AttribType::setElementSize(int value)  { _elementSize=value; }
-      inline AttribType::TypeHandling AttribType::getTypeHandling() const  { return _typeHandling; }
-      inline void AttribType::setTypeHandling(AttribType::TypeHandling value)  { _typeHandling=value; }
-      inline uint32_t AttribType::getDivisor() const  { return _divisor; }
-      inline void AttribType::setDivisor(uint32_t value)  { _divisor=value; }
-      inline uint64_t AttribType::getAsInt64() const  { return _attribType64; }
-      inline void AttribType::setAsInt64(uint64_t value)  { _attribType64=value; }
+      inline GLType AttribType::glType() const  { return GLType(_data16[1]); }
+      inline uint16_t AttribType::glTypeAsInt() const  { return _data16[1]; }
+      inline void AttribType::setGLType(GLType value)  { _data16[1]=uint16_t(value); }
+      inline int AttribType::numComponents() const  { return (_data16[0]&0xf800)>>11; }
+      inline void AttribType::setNumComponents(int value)  { _data16[0]&=0x07ff; _data16[0]|=value<<11; }
+      inline bool AttribType::bgra() const  { return _data16[0]&0x0400; }
+      inline void AttribType::setBGRA(bool value)  { if(value) _data16[0]|=0x0400; else _data16[0]&=0xfbff; }
+      inline int AttribType::elementSize() const  { return _data16[0]&0x00ff; }
+      inline void AttribType::setElementSize(int value)  { _data16[0]&=0xff00; _data16[0]|=value&0xff; }
+      inline AttribType::TypeHandling AttribType::typeHandling() const  { return TypeHandling((_data16[0]&0x0300)>>8); }
+      inline void AttribType::setTypeHandling(AttribType::TypeHandling value)  { _data16[0]&=0xfc00; _data16[0]|=value; }
+      inline uint32_t AttribType::divisor() const  { return _data32[1]; }
+      inline void AttribType::setDivisor(uint32_t value)  { _data32[1]=value; }
+      inline uint64_t AttribType::asInt64() const  { return _data64; }
+      inline void AttribType::setAsInt64(uint64_t value)  { _data64=value; }
 
-      inline AttribType AttribType::createInvalid()  { return AttribType(GLType::INVALID,0,0,NOT_DEFINED); }
-      inline AttribType AttribType::createEmpty()  { return createInvalid(); }
-      inline void AttribType::invalidate()  { _glType=GLType::INVALID; _numComponents=0; _bgra=false; _elementSize=0; _typeHandling=NOT_DEFINED; }
-      inline void AttribType::makeEmpty()  { invalidate(); }
+      inline AttribType AttribType::createInvalid()  { return AttribType::Invalid; }
+      inline AttribType AttribType::createEmpty()  { return AttribType::Empty; }
+      inline void AttribType::invalidate()  { *this=AttribType::Invalid; }
+      inline void AttribType::makeEmpty()  { *this=AttribType::Empty; }
 
-      inline bool AttribType::operator==(const AttribType a) const  { return _attribType64==a._attribType64; }
-      inline bool AttribType::operator!=(const AttribType a) const  { return _attribType64!=a._attribType64; }
-      inline bool AttribType::operator< (const AttribType a) const  { return _attribType64<a._attribType64; }
-      inline bool AttribType::operator> (const AttribType a) const  { return _attribType64>a._attribType64; }
-      inline bool AttribType::operator<=(const AttribType a) const  { return _attribType64<=a._attribType64; }
-      inline bool AttribType::operator>=(const AttribType a) const  { return _attribType64>=a._attribType64; }
+      inline bool AttribType::operator==(const AttribType a) const  { return _data64==a._data64; }
+      inline bool AttribType::operator!=(const AttribType a) const  { return _data64!=a._data64; }
+      inline bool AttribType::operator< (const AttribType a) const  { return _data64<a._data64; }
+      inline bool AttribType::operator> (const AttribType a) const  { return _data64>a._data64; }
+      inline bool AttribType::operator<=(const AttribType a) const  { return _data64<=a._data64; }
+      inline bool AttribType::operator>=(const AttribType a) const  { return _data64>=a._data64; }
 
       template<GLType T> inline AttribType AttribType::create()  { assert(0&&"Missing numComponents parameter or type specialization method."); return AttribType::createInvalid(); }
       template<GLType T> inline AttribType AttribType::create(uint8_t numComponents)  { assert(0&&"Provided GLType does not support numComponents parameter or missing specialization method."); return AttribType::createInvalid(); }

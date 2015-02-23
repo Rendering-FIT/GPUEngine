@@ -220,9 +220,9 @@ namespace ge
          inline void setType(AttribType t) { _attribType=t; }
 
          inline AttribType getType() const { return _attribType; }
-         inline GLType getGLType() const { return _attribType.getGLType(); }
-         inline unsigned short getNumComponents() const { return _attribType.getNumComponents(); }
-         inline unsigned getSizeOfElement() const { return _attribType.getElementSize(); }
+         inline GLType getGLType() const { return _attribType.glType(); }
+         inline unsigned short getNumComponents() const { return _attribType.numComponents(); }
+         inline unsigned getSizeOfElement() const { return _attribType.elementSize(); }
 
          void clear() { _attribType.invalidate(); _arrayDecorator.reset(); }
 

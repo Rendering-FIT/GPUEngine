@@ -25,9 +25,9 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
    for(auto it=configData.attribTypes.begin(); it!=configData.attribTypes.end(); it++,i++)
    {
       AttribType t=*it;
-      BufferObject *bo=new BufferObject(numVertices*t.getElementSize(),NULL,GL_DYNAMIC_DRAW);
-      _vao->addAttrib(bo,i,t.getNumComponents(),t.getGLTypeAsInt(),t.getElementSize(),0,
-                      t.getTypeHandling()==AttribType::INTEGER_NORMALIZE,t.getDivisor());
+      BufferObject *bo=new BufferObject(numVertices*t.elementSize(),NULL,GL_DYNAMIC_DRAW);
+      _vao->addAttrib(bo,i,t.numComponents(),t.glTypeAsInt(),t.elementSize(),0,
+                      t.typeHandling()==AttribType::INTEGER_NORMALIZE,t.divisor());
       _arrayBuffers.push_back(bo);
    }
 
@@ -83,7 +83,7 @@ void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const std::
                  "   attribute " << i << " differs from the one passed in the parameter." << endl;
          continue;
       }
-      int elementSize=t.getElementSize();
+      int elementSize=t.elementSize();
       int srcOffset=fromIndex*elementSize;
       int dstOffset=(_vertexAllocationManager[r.verticesDataId].startIndex+fromIndex)*elementSize;
       int num=numVertices==-1?data[i].size():numVertices;
@@ -107,7 +107,7 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array&
             "   without ebo member set to true." << endl;
       return;
    }
-   int elementSize=t.getElementSize();
+   int elementSize=t.elementSize();
    int srcOffset=fromIndex*elementSize;
    int dstOffset=(_indexAllocationManager[r.indicesDataId].startIndex+fromIndex)*elementSize;
    int num=numIndices==-1?data.size():numIndices;

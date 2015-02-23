@@ -43,9 +43,9 @@ namespace ge
             inline Iterator(T *node);
             inline T& operator*();
             inline T* operator->();
-            inline Iterator& operator=(const Iterator & rhs);
-            inline bool operator==(const Iterator & rhs) const;
-            inline bool operator!=(const Iterator & rhs) const;
+            inline Iterator& operator=(const Iterator &rhs);
+            inline bool operator==(const Iterator &rhs) const;
+            inline bool operator!=(const Iterator &rhs) const;
             inline Iterator& operator++();
             inline Iterator  operator++(int);
             inline Iterator& operator--();
@@ -65,7 +65,7 @@ namespace ge
          inline FlexibleArrayList(const FlexibleArrayList &other) = delete;
          inline FlexibleArrayList(FlexibleArrayList &&other);
          inline ~FlexibleArrayList();
-         FlexibleArrayList<T>& operator=(FlexibleArrayList<T>&& other);
+         FlexibleArrayList<T>& operator=(FlexibleArrayList<T> &&other);
 
          inline T* front();
          inline T* back();
@@ -115,9 +115,9 @@ namespace ge
       template<typename T>
       inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator=(const Iterator &rhs)  { node=rhs.node; }
       template<typename T>
-      inline bool FlexibleArrayList<T>::Iterator::operator==(const FlexibleArrayList<T>::Iterator & rhs) const  { return node==rhs.node; }
+      inline bool FlexibleArrayList<T>::Iterator::operator==(const FlexibleArrayList<T>::Iterator &rhs) const  { return node==rhs.node; }
       template<typename T>
-      inline bool FlexibleArrayList<T>::Iterator::operator!=(const FlexibleArrayList<T>::Iterator & rhs) const  { return node!=rhs.node; }
+      inline bool FlexibleArrayList<T>::Iterator::operator!=(const FlexibleArrayList<T>::Iterator &rhs) const  { return node!=rhs.node; }
       template<typename T>
       inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator++()  { node=node->next; return this; }
       template<typename T>

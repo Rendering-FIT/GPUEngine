@@ -2,6 +2,10 @@
 
 using namespace ge::sg;
 
+static_assert(sizeof(AttribType)==8,
+              "AttribType size is not 8 bytes.\n"
+              "Consider its bits reallocation or rewising this assert.");
+
 const AttribType AttribType::Invalid{GLType::INVALID,0,0,NOT_DEFINED};
 const AttribType AttribType::Empty{GLType::EMPTY,0,0,NOT_DEFINED};
 
