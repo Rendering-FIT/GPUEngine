@@ -44,8 +44,8 @@ namespace ge
             inline T& operator*();
             inline T* operator->();
             inline Iterator& operator=(const Iterator &rhs);
-            inline bool operator==(const Iterator &rhs) const;
-            inline bool operator!=(const Iterator &rhs) const;
+            inline bool operator==(const Iterator &rhs) const  { return node==rhs.node; }
+            inline bool operator!=(const Iterator &rhs) const  { return node!=rhs.node; }
             inline Iterator& operator++();
             inline Iterator  operator++(int);
             inline Iterator& operator--();
@@ -115,10 +115,6 @@ namespace ge
       template<typename T>
       inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator=(const Iterator &rhs)  { node=rhs.node; }
       template<typename T>
-      inline bool FlexibleArrayList<T>::Iterator::operator==(const FlexibleArrayList<T>::Iterator &rhs) const  { return node==rhs.node; }
-      template<typename T>
-      inline bool FlexibleArrayList<T>::Iterator::operator!=(const FlexibleArrayList<T>::Iterator &rhs) const  { return node!=rhs.node; }
-      template<typename T>
       inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator++()  { node=node->next; return this; }
       template<typename T>
       inline typename FlexibleArrayList<T>::Iterator  FlexibleArrayList<T>::Iterator::operator++(int)  { FlexibleArrayList<T>::Iterator tmp=*this; node=node->next; return tmp; }
@@ -156,13 +152,13 @@ namespace ge
       template<typename T>
       inline typename FlexibleArrayList<T>::iterator FlexibleArrayList<T>::end()  { return static_cast<T*>(&head); }
       template<typename T>
-      inline typename FlexibleArrayList<T>::const_iterator FlexibleArrayList<T>::begin() const  { return static_cast<T*>(head.prev); }
+      inline typename const FlexibleArrayList<T>::Iterator FlexibleArrayList<T>::begin() const  { return static_cast<T*>(head.prev); }
       template<typename T>
-      inline typename FlexibleArrayList<T>::const_iterator FlexibleArrayList<T>::end() const  { return static_cast<T*>(&head); }
+      inline typename const FlexibleArrayList<T>::Iterator FlexibleArrayList<T>::end() const  { return static_cast<T*>(&head); }
       template<typename T>
-      inline typename FlexibleArrayList<T>::const_iterator FlexibleArrayList<T>::cbegin() const  { return static_cast<T*>(head.prev); }
+      inline typename const FlexibleArrayList<T>::Iterator FlexibleArrayList<T>::cbegin() const  { return static_cast<T*>(head.prev); }
       template<typename T>
-      inline typename FlexibleArrayList<T>::const_iterator FlexibleArrayList<T>::cend() const  { return static_cast<T*>(&head); }
+      inline typename const FlexibleArrayList<T>::Iterator FlexibleArrayList<T>::cend() const  { return static_cast<T*>(&head); }
 
       template<typename T>
       bool FlexibleArrayList<T>::empty() const  { return head.next==&head; }

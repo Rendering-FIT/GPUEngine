@@ -75,7 +75,7 @@ void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const std::
                                                   int fromIndex,int numVertices)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->getConfigData();
-   for(int i=0,c=min(_arrayBuffers.size(),data.size()); i<c; i++)
+   for(int i=0,c=int(min(_arrayBuffers.size(),data.size())); i<c; i++)
    {
       AttribType t=configData.attribTypes[i];
       if(t!=data[i].getType()) {
@@ -86,7 +86,7 @@ void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const std::
       int elementSize=t.elementSize();
       int srcOffset=fromIndex*elementSize;
       int dstOffset=(_vertexAllocationManager[r.verticesDataId].startIndex+fromIndex)*elementSize;
-      int num=numVertices==-1?data[i].size():numVertices;
+      int num=numVertices==-1?int(data[i].size()):numVertices;
       _arrayBuffers[i]->setData((uint8_t*)data[i].data()+srcOffset,num*elementSize,dstOffset);
    }
 }
@@ -110,6 +110,6 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array&
    int elementSize=t.elementSize();
    int srcOffset=fromIndex*elementSize;
    int dstOffset=(_indexAllocationManager[r.indicesDataId].startIndex+fromIndex)*elementSize;
-   int num=numIndices==-1?data.size():numIndices;
+   int num=numIndices==-1?int(data.size()):numIndices;
    _ebo->setData((uint8_t*)data.data()+srcOffset,num*elementSize,dstOffset);
 }

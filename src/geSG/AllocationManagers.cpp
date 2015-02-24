@@ -8,7 +8,7 @@ unsigned ChunkAllocationManager::alloc(unsigned numBytes,AttribReference &r)
    if(_numBytesAvailableAtTheEnd<numBytes)
       return 0;
 
-   unsigned id=size();
+   unsigned id=unsigned(size());
    emplace_back(_firstByteAvailableAtTheEnd,numBytes,0,&r);
    operator[](_idOfBlockAtTheEnd).nextRec=id;
    _numBytesAvailable-=numBytes;
@@ -24,7 +24,7 @@ unsigned BlockAllocationManager::alloc(unsigned numItems,AttribReference &r)
    if(_numItemsAvailableAtTheEnd<numItems)
       return 0;
 
-   unsigned id=size();
+   unsigned id=unsigned(size());
    emplace_back(_firstItemAvailableAtTheEnd,numItems,0,&r);
    operator[](_idOfBlockAtTheEnd).nextRec=id;
    _numItemsAvailable-=numItems;

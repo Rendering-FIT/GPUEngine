@@ -1,4 +1,5 @@
 #include<geGL/DebugMessage.h>
+#include<string>
 
 namespace ge{
   namespace gl{

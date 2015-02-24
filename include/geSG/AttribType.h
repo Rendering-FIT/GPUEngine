@@ -253,7 +253,7 @@ namespace ge
       inline constexpr AttribType::AttribType(GLType glType,uint8_t numComponents,bool bgra,uint8_t elementSize,
                                               TypeHandling typeHandling,unsigned divisor)
             :_data64(uint64_t(divisor)<<32 | uint32_t(glType)<<16 | uint32_t(numComponents)<<11 |
-                     bgra?0x0400:0 | uint32_t(typeHandling)<<8 | elementSize)  {}
+                     (bgra?0x0400:0) | uint32_t(typeHandling)<<8 | elementSize)  {}
       inline AttribType::AttribType(const AttribType& a) : _data64(a._data64)  {}
       inline AttribType& AttribType::operator=(AttribType a) { _data64=a._data64; return *this; }
 
@@ -262,7 +262,7 @@ namespace ge
       inline void AttribType::setGLType(GLType value)  { _data16[1]=uint16_t(value); }
       inline int AttribType::numComponents() const  { return (_data16[0]&0xf800)>>11; }
       inline void AttribType::setNumComponents(int value)  { _data16[0]&=0x07ff; _data16[0]|=value<<11; }
-      inline bool AttribType::bgra() const  { return _data16[0]&0x0400; }
+      inline bool AttribType::bgra() const  { return (_data16[0]&0x0400)!=0; }
       inline void AttribType::setBGRA(bool value)  { if(value) _data16[0]|=0x0400; else _data16[0]&=0xfbff; }
       inline int AttribType::elementSize() const  { return _data16[0]&0x00ff; }
       inline void AttribType::setElementSize(int value)  { _data16[0]&=0xff00; _data16[0]|=value&0xff; }

@@ -16,7 +16,7 @@ namespace ge{
     }
     void CameraObject::_computeProjection(){
       if(this->_far==std::numeric_limits<float>::infinity()){//is far inifinty?
-        float top=tan(this->_fovy/2*M_PI/180)*this->_near;//top border of viewport
+        float top=tan(this->_fovy/2*glm::pi<float>()/180)*this->_near;//top border of viewport
         float bottom=-top;//bottom border of viewport
         float right=(top*this->_size[0])/this->_size[1];//right border of viewport
         float left=-right;//left border of viewport

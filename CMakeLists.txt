@@ -36,6 +36,10 @@ ENDFOREACH()
 
 IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+   # workaround for limited C++11 support of MSVC 2013 Update 4:
+   # - no constexpr support
+   # - no local_thread storage
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS")
 ENDIF()
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
