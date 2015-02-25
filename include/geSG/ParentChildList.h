@@ -102,8 +102,8 @@ namespace ge
          typedef ChildPointerAbstractTemplate<T,ParentListTemplate<ParentT,T>> ChildData;
       protected:
          typedef AbstractListTemplate<T,ChildData> inherited;
-		 typedef AbstractListTemplate<T,ChildData>::inherited inheritedList;
-	  public:
+         typedef typename AbstractListTemplate<T,ChildData>::inherited inheritedList;
+      public:
 
          struct ChildIterator : inherited::AbstractIterator
          {
@@ -155,7 +155,7 @@ namespace ge
          typedef ParentPointerAbstractTemplate<T,ChildListTemplate<ChildT,T>> ParentData;
       protected:
          typedef AbstractListTemplate<T,ParentData> inherited;
-		 typedef AbstractListTemplate<T,ParentData>::inherited inheritedList;
+         typedef typename AbstractListTemplate<T,ParentData>::inherited inheritedList;
       public:
 
          struct ParentIterator : public inherited::AbstractIterator
