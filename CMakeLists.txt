@@ -36,10 +36,25 @@ ENDFOREACH()
 
 IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-   # workaround for limited C++11 support of MSVC 2013 Update 4:
-   # - no constexpr support
-   # - no local_thread storage
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS")
+
+   OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." ON)
+   IF(GLEW_STATIC)
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DGLEW_STATIC")
+   ENDIF()
+
+   # avoid "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
+
+   # workarounds for limited C++11 support of MSVC
+   IF(MSVC_VERSION LESS 1900)
+      # MSVC 2013 Update 4:
+      # - no constexpr support
+      # - no local_thread storage
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS")
+   ELSE()
+      # MSVC 2015 Preview does not fully support constexpr (only partial implementation yet):
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /D_ALLOW_KEYWORD_MACROS")
+   ENDIF()
 ENDIF()
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
