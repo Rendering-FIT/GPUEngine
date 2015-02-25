@@ -79,7 +79,7 @@ void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,AttribType a
    _contents[attribIndex]=content;
 
    // update _content2attribIndex
-   int c=int(content)-1;
+   unsigned c=unsigned(content)-1;
    if(c>=_content2attribIndex.size())
       _content2attribIndex.resize(c+1);
    _content2attribIndex[c]=attribIndex;

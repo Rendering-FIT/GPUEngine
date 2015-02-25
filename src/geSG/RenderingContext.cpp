@@ -300,11 +300,11 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 
 RenderingContext::InstanceGroupId RenderingContext::createInstances(
       AttribReference &r,
-      const unsigned *drawCommandIndices,const unsigned drawCommandsCount,
+      const unsigned *drawCommandIndices,const int drawCommandsCount,
       unsigned matrixIndex,StateSet *stateSet)
 {
    // numInstances to be created
-   unsigned numInstances=drawCommandsCount!=-1 ? drawCommandsCount : r.drawCommandControlData.size();
+   unsigned numInstances=drawCommandsCount!=-1 ? unsigned(drawCommandsCount) : r.drawCommandControlData.size();
 
    // make sure we have enough space
    if(!_instanceAllocationManager.canAllocate(numInstances))
@@ -319,7 +319,7 @@ RenderingContext::InstanceGroupId RenderingContext::createInstances(
 
    // iterate through instances
    mapInstanceBuffer(MappedBufferAccess::WRITE);
-   for(int i=0; i<numInstances; i++)
+   for(unsigned i=0; i<numInstances; i++)
    {
       // update instanceBuffer
       Instance &instance=static_cast<Instance*>(_mappedInstanceBufferPtr)[ig->items[i]];

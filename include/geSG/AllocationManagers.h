@@ -117,7 +117,7 @@ namespace ge
       inline void ChunkAllocationManager::free(unsigned id)  { operator[](id).owner=nullptr; }
       inline void BlockAllocationManager::free(unsigned id)  { operator[](id).owner=nullptr; }
 
-   };
-};
+   }
+}
 
 #endif /* GE_SG_ALLOCATION_MANAGERS_H */

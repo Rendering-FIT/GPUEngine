@@ -105,7 +105,7 @@ namespace ge
 
          inline InstanceGroupId createInstances(unsigned matrixIndex,StateSet *stateSet);
          inline InstanceGroupId createInstances(const unsigned *drawCommandIndices,
-                                                const unsigned drawCommandsCount,
+                                                const int drawCommandsCount,
                                                 unsigned matrixIndex,StateSet *stateSet);
          inline void deleteInstances(InstanceGroupId id);
       };
@@ -149,6 +149,7 @@ namespace ge
          drawCommandControlData=std::move(rhs.drawCommandControlData);
          instances=std::move(rhs.instances);
          rhs.attribStorage=NULL;
+         return *this;
       }
       AttribReference::~AttribReference()
       {
@@ -181,7 +182,7 @@ namespace ge
       inline void AttribReference::setDrawCommandsOptimized(void *drawCommandBuffer,unsigned bytesToCopy,const AttribReference::DrawCommandControlData *data,int numDrawCommands)
       { RenderingContext::current()->setDrawCommandsOptimized(*this,drawCommandBuffer,bytesToCopy,data,numDrawCommands); }
       inline std::vector<AttribReference::DrawCommandControlData> AttribReference::generateDrawCommandControlData(const void *drawCommandBuffer,const unsigned *offsets4,int numDrawCommands)
-      { RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
+      { return RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
       inline void AttribReference::prepareDrawCommandsBufferData(void *drawCommandBuffer,const AttribReference::DrawCommandControlData *data,int numDrawCommands)
       { RenderingContext::prepareDrawCommandsBufferData(*this,drawCommandBuffer,data,numDrawCommands); }
       inline void AttribReference::uploadDrawCommandBufferData(const void *drawCommandBuffer,unsigned bytesToCopy,unsigned dstOffset)
@@ -193,7 +194,7 @@ namespace ge
       { RenderingContext::current()->setNumDrawCommands(*this,num); }
       inline AttribReference::InstanceGroupId AttribReference::createInstances(unsigned matrixIndex,StateSet *stateSet)
       { return RenderingContext::current()->createInstances(*this,matrixIndex,stateSet); }
-      inline AttribReference::InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const unsigned drawCommandsCount,unsigned matrixIndex,StateSet *stateSet)
+      inline AttribReference::InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,unsigned matrixIndex,StateSet *stateSet)
       { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,matrixIndex,stateSet); }
       inline void AttribReference::deleteInstances(AttribReference::InstanceGroupId id)
       { RenderingContext::current()->deleteInstances(*this,id); }

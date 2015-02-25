@@ -141,7 +141,7 @@ namespace ge
                                                 unsigned matrixIndex,StateSet *stateSet);
          virtual InstanceGroupId createInstances(AttribReference &r,
                                                  const unsigned *drawCommandIndices,
-                                                 const unsigned drawCommandsCount,
+                                                 const int drawCommandsCount,
                                                  unsigned matrixIndex,StateSet *stateSet);
          virtual void deleteInstances(AttribReference &r,InstanceGroupId id);
 

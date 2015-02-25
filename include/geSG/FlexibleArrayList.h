@@ -140,6 +140,7 @@ namespace ge
          head=other.head;
          other.head.next=&other.head;
          other.head.prev=&other.head;
+         return *this;
       }
 
       template<typename T>

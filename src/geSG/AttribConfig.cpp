@@ -55,8 +55,8 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,i
    AttribStorageList::iterator storageIt=_attribStorages.end();
    for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
    {
-      if((*it)->getNumVerticesAvailableAtTheEnd()>=numVertices &&
-         (*it)->getNumIndicesAvailableAtTheEnd()>=numIndices)
+      if((*it)->getNumVerticesAvailableAtTheEnd()>=unsigned(numVertices) &&
+         (*it)->getNumIndicesAvailableAtTheEnd()>=unsigned(numIndices))
       {
          storageIt=it;
          break;
