@@ -1,3 +1,11 @@
+IF   (DYNAMIC_GPUENGINE)
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+    ADD_DEFINITIONS(-DGESG_LIBRARY)
+ELSE ()
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
+ENDIF()
+
 set(LIB_NAME geSG)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
@@ -47,6 +55,10 @@ ADD_LIBRARY(${LIB_NAME}
   )
 
 include_directories(${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+
+set(Internal_deps geGL)
+target_link_libraries(${LIB_NAME} ${Internal_deps})
+add_dependencies(${LIB_NAME} ${Internal_deps})
 
 install(FILES
     ${SG_INCLUDES}

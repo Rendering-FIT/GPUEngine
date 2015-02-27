@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT VertexAttribFormat: public Command
+    class GEGL_EXPORT VertexAttribFormat: public Command
     {
       public:
         GLuint    attribIndex;
@@ -23,7 +23,7 @@ namespace ge
             GLuint    relativeOffset);
         void apply();
     };
-    class GE_EXPORT VertexAttribIFormat: public Command
+    class GEGL_EXPORT VertexAttribIFormat: public Command
     {
       public:
         GLuint attribIndex;
@@ -37,7 +37,7 @@ namespace ge
             GLuint relativeOffset);
         void apply();
     };
-    class GE_EXPORT VertexAttribLFormat: public Command
+    class GEGL_EXPORT VertexAttribLFormat: public Command
     {
       public:
         GLuint attribIndex;
@@ -51,7 +51,7 @@ namespace ge
             GLuint relativeOffset);
         void apply();
     };
-    class GE_EXPORT BindVertexBuffer: public Command
+    class GEGL_EXPORT BindVertexBuffer: public Command
     {
       public:
         GLuint   bindingIndex;
@@ -65,7 +65,7 @@ namespace ge
             GLsizei  stride);
         void apply();
     };
-    class GE_EXPORT BindVertexBuffers: public Command
+    class GEGL_EXPORT BindVertexBuffers: public Command
     {
       public:
         GLuint    first;
@@ -81,7 +81,7 @@ namespace ge
             GLsizei  *strides);
         void apply();
     };
-    class GE_EXPORT VertexAttribBinding: public Command
+    class GEGL_EXPORT VertexAttribBinding: public Command
     {
       public:
         GLuint attribIndex;
@@ -91,7 +91,7 @@ namespace ge
             GLuint bindingIndex);
         void apply();
     };
-    class GE_EXPORT VertexAttribPointer: public Command
+    class GEGL_EXPORT VertexAttribPointer: public Command
     {
       public:
         GLuint     index;
@@ -109,7 +109,7 @@ namespace ge
             GLvoid    *pointer);
         void apply();
     };
-    class GE_EXPORT VertexAttribIPointer: public Command
+    class GEGL_EXPORT VertexAttribIPointer: public Command
     {
       public:
         GLuint   index;
@@ -125,7 +125,7 @@ namespace ge
             GLvoid  *pointer);
         void apply();
     };
-    class GE_EXPORT VertexAttribLPointer: public Command
+    class GEGL_EXPORT VertexAttribLPointer: public Command
     {
       public:
         GLuint   index;
@@ -141,7 +141,7 @@ namespace ge
             GLvoid  *pointer);
         void apply();
     };
-    class GE_EXPORT EnableVertexAttribArray: public Command
+    class GEGL_EXPORT EnableVertexAttribArray: public Command
     {
       public:
         GLuint index;
@@ -149,7 +149,7 @@ namespace ge
             GLuint index);
         void apply();
     };
-    class GE_EXPORT DisableVertexAttribArray: public Command
+    class GEGL_EXPORT DisableVertexAttribArray: public Command
     {
       public:
         GLuint index;

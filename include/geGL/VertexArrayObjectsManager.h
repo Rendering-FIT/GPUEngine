@@ -20,7 +20,7 @@ namespace ge
      * @brief This class represents manager of vertex array objects
      * OpenGL 4.5, table 23.3
      */
-    class GE_EXPORT VertexArrayObjectsManager
+    class GEGL_EXPORT VertexArrayObjectsManager
     {
       private:
         std::map<std::string,GLuint>_vaos;
@@ -163,7 +163,7 @@ namespace ge
 //        std::string        name;
 //    };
 //
-//    class GE_EXPORT LeastRecentlyUsed
+//    class GEGL_EXPORT LeastRecentlyUsed
 //    {
 //      private:
 //        std::vector<LeastRecentlyUsedItem*>            _table;

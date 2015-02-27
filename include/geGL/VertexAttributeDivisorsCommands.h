@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT VertexBindingDivisor: public Command
+    class GEGL_EXPORT VertexBindingDivisor: public Command
     {
       public:
         GLuint bindingIndex;
@@ -17,7 +17,7 @@ namespace ge
             GLuint divisor);
         void apply();
     };
-    class GE_EXPORT VertexAttribDivisor: public Command
+    class GEGL_EXPORT VertexAttribDivisor: public Command
     {
       public:
         GLuint index;

@@ -8,7 +8,7 @@ namespace ge{
     /**
      * @brief table 23.18
      */
-    class GE_EXPORT SamplerObject
+    class GEGL_EXPORT SamplerObject
     {
       protected:
         GLuint _id;

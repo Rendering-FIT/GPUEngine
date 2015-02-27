@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT BlendEnablei: public Command
+    class GEGL_EXPORT BlendEnablei: public Command
     {
       public:
         GLuint buffer;
@@ -16,7 +16,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendEquation: public Command
+    class GEGL_EXPORT BlendEquation: public Command
     {
       public:
         GLenum mode;
@@ -24,7 +24,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendEquationSeparate: public Command
+    class GEGL_EXPORT BlendEquationSeparate: public Command
     {
       public:
         GLenum modeRGB;
@@ -35,7 +35,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendEquationi: public Command
+    class GEGL_EXPORT BlendEquationi: public Command
     {
       public:
         GLuint buffer;
@@ -46,7 +46,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendEquationSeparatei: public Command
+    class GEGL_EXPORT BlendEquationSeparatei: public Command
     {
       public:
         GLuint buffer;
@@ -59,7 +59,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendFunc: public Command
+    class GEGL_EXPORT BlendFunc: public Command
     {
       public:
         GLenum src;
@@ -70,7 +70,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendFuncSeparate: public Command
+    class GEGL_EXPORT BlendFuncSeparate: public Command
     {
       public:
         GLenum srcRGB;
@@ -85,7 +85,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendFunci: public Command
+    class GEGL_EXPORT BlendFunci: public Command
     {
       public:
         GLuint buffer;
@@ -98,7 +98,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendFuncSeparatei: public Command
+    class GEGL_EXPORT BlendFuncSeparatei: public Command
     {
       public:
         GLuint buffer;
@@ -115,7 +115,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT BlendColor: public Command
+    class GEGL_EXPORT BlendColor: public Command
     {
       public:
         GLfloat red;

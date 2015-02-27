@@ -15,7 +15,7 @@ namespace ge
        *  Memory blocks may vary in size. The smallest allocation unit is one byte.
        *  The structure is used by AttribStorage and related classes for memory management purposes.
        */
-      struct GE_EXPORT ChunkAllocation {
+      struct GESG_EXPORT ChunkAllocation {
          unsigned offset;         ///< Offset of the start of the block.
          unsigned size;           ///< Number of bytes in the block.
          unsigned nextRec;        ///< \brief Index of ChunkAllocation whose allocated memory follows the current block's memory.
@@ -30,7 +30,7 @@ namespace ge
        *  The smallest allocation unit is one array element.
        *  The structure is used by AttribStorage and related classes for memory management purposes.
        */
-      struct GE_EXPORT BlockAllocation {
+      struct GESG_EXPORT BlockAllocation {
          unsigned startIndex;     ///< Index of the start of the block. The real offset is startIndex multiplied by the size of the underlaying array element.
          unsigned numElements;    ///< Number of elements in the block. The real size is numElements multiplied by the size of the underlaying array element.
          unsigned nextRec;        ///< \brief Index of BlockAllocation whose allocated memory follows the current block's memory.
@@ -40,7 +40,7 @@ namespace ge
       };
 
 
-      class GE_EXPORT ChunkAllocationManager : public std::vector<ChunkAllocation> {
+      class GESG_EXPORT ChunkAllocationManager : public std::vector<ChunkAllocation> {
       public:
          unsigned _numBytesTotal;               ///< Total number of bytes. Sum of allocated and unallocated space.
          unsigned _numBytesAvailable;           ///< Number of bytes available for allocation.
@@ -55,7 +55,7 @@ namespace ge
       };
 
 
-      class GE_EXPORT BlockAllocationManager : public std::vector<BlockAllocation> {
+      class GESG_EXPORT BlockAllocationManager : public std::vector<BlockAllocation> {
       public:
          unsigned _numItemsTotal;               ///< Total number of items (allocated plus unallocated).
          unsigned _numItemsAvailable;           ///< Number of items available for allocation.
@@ -70,7 +70,7 @@ namespace ge
       };
 
 
-      class GE_EXPORT ItemAllocationManager : public std::vector<unsigned*> {
+      class GESG_EXPORT ItemAllocationManager : public std::vector<unsigned*> {
       public:
          unsigned _numItemsTotal;               ///< Total number of items (allocated plus unallocated).
          unsigned _numItemsAvailable;           ///< Number of items available for allocation.

@@ -10,7 +10,7 @@ namespace ge
 
 class Object;
 
-class GE_EXPORT CopyOp
+class GECORE_EXPORT CopyOp
 {
 public:
    enum Options

@@ -20,7 +20,7 @@ namespace ge
       typedef uint16_t AttribConfigId;  ///< \brief Integer-based type for the most frequently used attribute configurations.
 
 
-      class GE_EXPORT AttribConfig {
+      class GESG_EXPORT AttribConfig {
       public:
 
          /** ConfigData holds complete information about attribute configuration.
@@ -127,7 +127,7 @@ namespace ge
       };
 
 
-      class GE_EXPORT AttribConfigRef {
+      class GESG_EXPORT AttribConfigRef {
       protected:
          AttribConfig* _pointer;
       public:

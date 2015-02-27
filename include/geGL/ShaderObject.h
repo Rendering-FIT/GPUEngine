@@ -9,7 +9,7 @@ namespace ge{
 	/**
 	 * This class represents shader
 	 */
-	class ShaderObject
+	class GEGL_EXPORT ShaderObject
 	{
     protected:
       std::string _text; ///<contains shader test

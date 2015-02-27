@@ -26,6 +26,12 @@ namespace ge
       for(unsigned i=0;i<this->commands.size();++i)
         this->commands[i]->apply();
     }
+
+    CommandList::CommandList(bool outOfOrder)
+    {
+
+    }
+
     void CommandIf::apply(){
       this->statement->apply();
       if(this->statement->isTrue){

@@ -18,7 +18,7 @@
 
 namespace ge{
   namespace gl{
-    class GE_EXPORT VertexArrayObject
+    class GEGL_EXPORT VertexArrayObject
     {
       private:
         inline GLint getAttrib(GLuint index,GLenum pname);

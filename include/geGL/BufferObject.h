@@ -2,7 +2,7 @@
 #define GE_GL_BUFFEROBJECT
 
 #include <geGL/OpenGL.h>
-#include <geCore/Object.h>
+//#include <geCore/Object.h>
 
 #include <iostream>
 
@@ -36,7 +36,7 @@ namespace ge{
     /**
      * Abstraction of the OpenGL Buffer Object.
      */
-    class GE_EXPORT BufferObject// : public ge::core::Object
+    class GEGL_EXPORT BufferObject// : public ge::core::Object
     {
       private:
         GLint _getBufferParameter(GLenum pname);

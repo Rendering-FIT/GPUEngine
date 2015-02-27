@@ -15,7 +15,7 @@ namespace ge
       /** AttribStorage class maintains vertex attributes of many scene objects
        *  in a single OpenGL vertex array object (VAO).
        */
-      class GE_EXPORT SeparateBuffersAttribStorage : public AttribStorage {
+      class GESG_EXPORT SeparateBuffersAttribStorage : public AttribStorage {
       protected:
 
          ge::gl::VertexArrayObject* _vao;

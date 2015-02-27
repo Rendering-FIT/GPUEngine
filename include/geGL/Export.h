@@ -8,17 +8,17 @@
 
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
 #   ifdef GE_LIBRARY_STATIC
-#      define GE_EXPORT
-#   elif defined(GE_LIBRARY)
-#      define GE_EXPORT __declspec(dllexport)
+#      define GEGL_EXPORT
+#   elif defined(GEGL_LIBRARY)
+#      define GEGL_EXPORT __declspec(dllexport)
 #   else
-#      define GE_EXPORT __declspec(dllimport)
+#      define GEGL_EXPORT __declspec(dllimport)
 #   endif 
 #else
 #   ifdef GE_LIBRARY
-#      define GE_EXPORT __attribute__ ((visibility("default")))
+#      define GEGL_EXPORT __attribute__ ((visibility("default")))
 #   else
-#      define GE_EXPORT
+#      define GEGL_EXPORT
 #   endif 
 #endif
 

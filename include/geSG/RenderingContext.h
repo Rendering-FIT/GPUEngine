@@ -26,7 +26,7 @@ namespace ge
       class StateSet;
 
 
-      class GE_EXPORT RenderingContext {
+      class GESG_EXPORT RenderingContext {
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;

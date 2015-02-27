@@ -10,14 +10,14 @@ namespace ge
   namespace gl
   {
 
-    class GE_EXPORT Command
+    class GEGL_EXPORT Command
     {
       public:
         virtual void apply()=0;
     };
 
 
-    class GE_EXPORT CommandContainer: public Command
+    class GEGL_EXPORT CommandContainer: public Command
     {
       public:
         Command     * command;
@@ -28,7 +28,7 @@ namespace ge
     };
 
 
-    class GE_EXPORT CommandList: public Command
+    class GEGL_EXPORT CommandList: public Command
     {
       public:
         /**
@@ -54,12 +54,12 @@ namespace ge
           void setAlterable(bool val) { _alterable = val; }*/
       protected:
     };
-    class GE_EXPORT CommandStatement: public Command
+    class GEGL_EXPORT CommandStatement: public Command
     {
       public:
         bool     isTrue;
     };
-    class GE_EXPORT CommandIf: public Command
+    class GEGL_EXPORT CommandIf: public Command
     {
       public:
         CommandStatement *statement;
@@ -67,14 +67,14 @@ namespace ge
         Command          *falseBranch;
         void              apply();
     };
-    class GE_EXPORT CommandWhile: public Command
+    class GEGL_EXPORT CommandWhile: public Command
     {
       public:
         CommandStatement *statement;
         Command          *body;
         void              apply();
     };
-    class GE_EXPORT CommandInterpret
+    class GEGL_EXPORT CommandInterpret
     {
 
     };

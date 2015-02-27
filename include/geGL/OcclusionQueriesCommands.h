@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT BeginQuery: public Command
+    class GEGL_EXPORT BeginQuery: public Command
     {
       public:
         GLenum target;
@@ -15,7 +15,7 @@ namespace ge
         BeginQuery(GLenum target,GLuint id);
         void apply();
     };
-    class GE_EXPORT EndQuery: public Command
+    class GEGL_EXPORT EndQuery: public Command
     {
       public:
         GLenum target;

@@ -38,7 +38,7 @@ namespace ge
      * it produces commands that create or destroy shaders
      * it also implements LRU strategy for shaders TODO
      */
-    class GE_EXPORT ShaderObjectManager
+    class GEGL_EXPORT ShaderObjectManager
     {
       private:
         std::map<std::string,GLuint>_shaders;

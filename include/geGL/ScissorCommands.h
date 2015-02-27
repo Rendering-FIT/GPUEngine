@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT ScissorArrayv: public Command
+    class GEGL_EXPORT ScissorArrayv: public Command
     {
       public:
         GLuint        first;
@@ -16,7 +16,7 @@ namespace ge
         ScissorArrayv(GLuint first,GLsizei count,GLint*v);
         void apply();
     };
-    class GE_EXPORT ScissorIndexed: public Command
+    class GEGL_EXPORT ScissorIndexed: public Command
     {
       public:
         GLuint  index;
@@ -27,7 +27,7 @@ namespace ge
         ScissorIndexed(GLuint index,GLint left,GLint bottom,GLsizei width,GLsizei height);
         void apply();
     };
-    class GE_EXPORT ScissorIndexedv: public Command
+    class GEGL_EXPORT ScissorIndexedv: public Command
     {
       public:
         GLuint   index;
@@ -35,7 +35,7 @@ namespace ge
         ScissorIndexedv(GLuint index,GLint*v);
         void apply();
     };
-    class GE_EXPORT Scissor: public Command
+    class GEGL_EXPORT Scissor: public Command
     {
       public:
         GLint   left;

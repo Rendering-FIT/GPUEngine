@@ -10,9 +10,9 @@ namespace ge
   namespace gl
   {
     /**
-     * @brief This class GE_EXPORT represents manager of stencil commands
+     * @brief This class GEGL_EXPORT represents manager of stencil commands
      */
-    class GE_EXPORT Stencil: public Command
+    class GEGL_EXPORT Stencil: public Command
     {
       private:
         CommandContainer _enableDisable;  ///<gl{En,Dis}able(GL_STENCIL)

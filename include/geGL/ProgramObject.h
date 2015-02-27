@@ -36,7 +36,7 @@ namespace ge{
     /**
      * @brief This class represents shader program
      */
-    class ProgramObject
+    class GEGL_EXPORT ProgramObject
     {
       protected:
         std::vector<GLuint>                        _shaderList;    ///<list of shader object

@@ -16,7 +16,7 @@ namespace ge
       class StateSet;
 
 
-      class GE_EXPORT AttribReference {
+      class GESG_EXPORT AttribReference {
       public:
 
          typedef FlexibleArray<unsigned,ListItemBase> InstanceGroup;
