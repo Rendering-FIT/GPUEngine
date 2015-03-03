@@ -61,13 +61,13 @@ namespace ge
       template<typename T,typename ChildT> class ParentListTemplate;
 
       template<typename T,typename PointerT>
-      class ParentChildListAbstractTemplate : public std::list<PointerT>
+      class AbstractListTemplate : public std::list<PointerT>
       {
       protected:
          typedef std::list<PointerT> inherited;
       public:
 
-         class ParentChildIterator
+         class AbstractIterator
          {
          protected:
 
@@ -78,37 +78,37 @@ namespace ge
             typedef std::ptrdiff_t                     difference_type;
             typedef std::bidirectional_iterator_tag    iterator_category;
 
-            inline ParentChildIterator()  {}
-            inline ParentChildIterator(typename std::list<PointerT>::iterator it) : _it(it)  {}
+            inline AbstractIterator()  {}
+            inline AbstractIterator(typename std::list<PointerT>::iterator it) : _it(it)  {}
 
             inline typename std::list<PointerT>::iterator getInternalIterator() const  { return _it; }
 
-            inline ParentChildIterator& operator++()     { _it++; return *this; }
-            inline ParentChildIterator  operator++(int)  { ParentChildIterator tmp = *this; _it++; return tmp; }
-            inline ParentChildIterator& operator--()     { _it--; return *this; }
-            inline ParentChildIterator  operator--(int)  { ParentChildIterator tmp = *this; _it--; return tmp; }
+            inline AbstractIterator& operator++()     { _it++; return *this; }
+            inline AbstractIterator  operator++(int)  { AbstractIterator tmp = *this; _it++; return tmp; }
+            inline AbstractIterator& operator--()     { _it--; return *this; }
+            inline AbstractIterator  operator--(int)  { AbstractIterator tmp = *this; _it--; return tmp; }
 
-            inline bool operator==(const ParentChildIterator& rhs) const  { return _it == rhs._it; }
-            inline bool operator!=(const ParentChildIterator& rhs) const  { return _it != rhs._it; }
+            inline bool operator==(const AbstractIterator& rhs) const  { return _it == rhs._it; }
+            inline bool operator!=(const AbstractIterator& rhs) const  { return _it != rhs._it; }
          };
 
          inline void assign(size_t n, const T& value)  { inherited::assign(n,value); }
       };
 
-      template<typename T,typename ParentT>
-      class ChildListTemplate : public ParentChildListAbstractTemplate<T,ChildPointerAbstractTemplate<T,ParentListTemplate<ParentT,T>>>
+      template<typename T,typename ParentT=T>
+      class ChildListTemplate : public AbstractListTemplate<T,ChildPointerAbstractTemplate<T,ParentListTemplate<ParentT,T>>>
       {
       public:
          typedef ChildPointerAbstractTemplate<T,ParentListTemplate<ParentT,T>> ChildData;
       protected:
-         typedef ParentChildListAbstractTemplate<T,ChildData> inherited;
-         typedef typename inherited::inherited inheritedList;
+         typedef AbstractListTemplate<T,ChildData> inherited;
+         typedef typename AbstractListTemplate<T,ChildData>::inherited inheritedList;
       public:
 
-         struct ChildIterator : inherited::ParentChildIterator
+         struct ChildIterator : inherited::AbstractIterator
          {
          protected:
-            typedef typename ParentChildListAbstractTemplate<T,ChildData>::ParentChildIterator inherited;
+            typedef typename AbstractListTemplate<T,ChildData>::AbstractIterator inherited;
 
          public:
 
@@ -149,19 +149,19 @@ namespace ge
       };
 
       template<typename T,typename ChildT=T>
-      class ParentListTemplate : public ParentChildListAbstractTemplate<T,ParentPointerAbstractTemplate<T,ChildListTemplate<ChildT,T>>>
+      class ParentListTemplate : public AbstractListTemplate<T,ParentPointerAbstractTemplate<T,ChildListTemplate<ChildT,T>>>
       {
       public:
          typedef ParentPointerAbstractTemplate<T,ChildListTemplate<ChildT,T>> ParentData;
       protected:
-         typedef ParentChildListAbstractTemplate<T,ParentData> inherited;
-         typedef typename inherited::inherited inheritedList;
+         typedef AbstractListTemplate<T,ParentData> inherited;
+         typedef typename AbstractListTemplate<T,ParentData>::inherited inheritedList;
       public:
 
-         struct ParentIterator : public inherited::ParentChildIterator
+         struct ParentIterator : public inherited::AbstractIterator
          {
          private:
-            typedef typename ParentChildListAbstractTemplate<T,ParentData>::ParentChildIterator inherited;
+            typedef typename AbstractListTemplate<T,ParentData>::AbstractIterator inherited;
 
          public:
 

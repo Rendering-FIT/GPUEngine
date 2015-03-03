@@ -8,7 +8,7 @@
 
 namespace ge{
   namespace gl{
-    class GE_EXPORT RasterizationState
+    class GEGL_EXPORT RasterizationState
     {
       protected:
         bool      _ignoreDiscard;

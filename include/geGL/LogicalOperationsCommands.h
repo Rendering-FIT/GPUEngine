@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT LogicOp: public Command
+    class GEGL_EXPORT LogicOp: public Command
     {
       public:
         GLenum op;

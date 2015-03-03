@@ -101,7 +101,7 @@
 
 #define DEFDEFFCEV(type)\
 	void set(std::string uniformName,GLsizei count,\
-			DEF_GLTYPE(type) *value);
+			DEF_GLTYPE(type) *value)
 
 #define DEFFCEV(type_name)\
 	void ProgramObject::set(\
@@ -139,7 +139,7 @@
 
 #define DEFDEFDSAFCEV(type)\
 	void setdsa(std::string uniformName,GLsizei count,\
-			DEF_GLTYPE(type) *value);
+			DEF_GLTYPE(type) *value)
 
 #define DEFDSAFCEV(type_name)\
 	void ProgramObject::setdsa(\

@@ -5,6 +5,8 @@
 #include<vector>
 #include<map>
 
+#include <geUtil/Export.h>
+
 namespace ge{
   namespace util{
     /**
@@ -18,7 +20,7 @@ namespace ge{
     /**
      * @brief Represents manager of program arguments
      */
-    class ArgumentObject
+    class GEUTIL_EXPORT ArgumentObject
     {
       private:
         std::vector<std::string>_argList;///<list of program arguments

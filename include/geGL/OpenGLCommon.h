@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT EnableDisable: public Command
+    class GEGL_EXPORT EnableDisable: public Command
     {
       public:
         GLenum target;
@@ -15,7 +15,7 @@ namespace ge
         EnableDisable(GLenum target,bool value);
         void apply();
     };
-    class GE_EXPORT EnableDisablei: public Command
+    class GEGL_EXPORT EnableDisablei: public Command
     {
       public:
         GLenum target;
@@ -24,21 +24,21 @@ namespace ge
         EnableDisablei(GLenum target,GLuint index,bool value);
         void apply();
     };
-    class GE_EXPORT Enable: public Command
+    class GEGL_EXPORT Enable: public Command
     {
       public:
         GLenum target;
         Enable(GLenum target);
         void apply();
     };
-    class GE_EXPORT Disable: public Command
+    class GEGL_EXPORT Disable: public Command
     {
       public:
         GLenum target;
         Disable(GLenum target);
         void apply();
     };
-    class GE_EXPORT Enablei: public Command
+    class GEGL_EXPORT Enablei: public Command
     {
       public:
         GLuint buffer;
@@ -46,7 +46,7 @@ namespace ge
         Enablei(GLuint buffer,GLenum target);
         void apply();
     };
-    class GE_EXPORT Disablei: public Command
+    class GEGL_EXPORT Disablei: public Command
     {
       public:
         GLuint buffer;

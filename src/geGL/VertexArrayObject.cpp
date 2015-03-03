@@ -55,7 +55,7 @@ void ge::gl::_glCreateVertexArrays(GLsizei n,GLuint*arrays){
   GLint oldVAO;
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING,&oldVAO);
   glGenVertexArrays(n,arrays);
-  for(unsigned i=0;i<n;++n)glBindVertexArray(arrays[n]);
+  for(GLint i=0;i<n;++n)glBindVertexArray(arrays[n]);
   glBindVertexArray(oldVAO);
 }
 
@@ -71,7 +71,7 @@ void initVertexArrayObjects(){
   if(!glDeleteVertexArrays     ){result320+="glDeleteVertexArrays "     ;openGL320=false;}
   if(!glEnableVertexAttribArray){result320+="glEnableVertexAttribArray ";openGL320=false;}
   if(!glGenVertexArrays        ){result320+="glGenVertexArrays "        ;openGL320=false;}
-  if(!glGetIntegerv            ){result320+="glGetIntegerv "            ;openGL320=false;}
+  //if(!glGetIntegerv            ){result320+="glGetIntegerv "            ;openGL320=false;}
   if(!glGetVertexAttribiv      ){result320+="glGetVertexAttribiv "      ;openGL320=false;}
   if(!glVertexAttribPointer    ){
     if(glVertexAttribPointerARB){
@@ -106,7 +106,12 @@ void initVertexArrayObjects(){
       openGL420=false;
     }
   }
-
+  if(!openGL320){
+    throw(std::string(result320));
+  }
+  if(!openGL420){
+    throw(std::string(result420));
+  }
 }
 
 /**
@@ -258,7 +263,7 @@ std::string VertexArrayObject::getInfo(){
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&maxVertexAttribs);
   ss<<"vao: "<<this->getId()<<std::endl;
   ss<<"GL_MAX_VERTEX_ATTRIBS: "<<maxVertexAttribs<<std::endl;
-  for(GLuint a=0;a<maxVertexAttribs;++a){
+  for(GLint a=0;a<maxVertexAttribs;++a){
     if(this->isAttribEnabled(a)==GL_FALSE)continue;
     ss<<"attrib: "<<a<<std::endl;
     ss<<"  GL_VERTEX_ATTRIB_ARRAY_ENABLED:        "<<ge::gl::translateBoolean(

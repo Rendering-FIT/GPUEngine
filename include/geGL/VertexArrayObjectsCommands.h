@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT GenVertexArrays: public Command
+    class GEGL_EXPORT GenVertexArrays: public Command
     {
       public:
         GLsizei  n;
@@ -17,7 +17,7 @@ namespace ge
             GLuint  *arrays);
         void apply();
     };
-    class GE_EXPORT DeleteVertexArrays: public Command
+    class GEGL_EXPORT DeleteVertexArrays: public Command
     {
       public:
         GLsizei  n;
@@ -27,14 +27,14 @@ namespace ge
             GLuint  *arrays);
         void apply();
     };
-    class GE_EXPORT BindVertexArray: public Command
+    class GEGL_EXPORT BindVertexArray: public Command
     {
       public:
         GLuint *array;
         BindVertexArray(GLuint *array);
         void apply();
     };
-    class GE_EXPORT CreateVertexArrays: public Command
+    class GEGL_EXPORT CreateVertexArrays: public Command
     {
       public:
         GLsizei  n;
@@ -44,7 +44,7 @@ namespace ge
             GLuint  *arrays);
         void apply();
     };
-    class GE_EXPORT VertexAttribFormat: public Command
+    class GEGL_EXPORT VertexAttribFormat: public Command
     {
       public:
         GLuint    attribIndex;
@@ -60,7 +60,7 @@ namespace ge
             GLuint    relativeOffset);
         void apply();
     };
-    class GE_EXPORT VertexAttribIFormat: public Command
+    class GEGL_EXPORT VertexAttribIFormat: public Command
     {
       public:
         GLuint attribIndex;

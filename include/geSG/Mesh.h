@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <geSG/Array.h>
-#include <geSG/AttribsReference.h>
+#include <geSG/AttribReference.h>
 #include <geSG/Node.h>
 
 namespace ge
@@ -11,32 +11,36 @@ namespace ge
    namespace sg
    {
 
-      /** Mesh class represents a scene geometry that can be drawn by a single draw call
-       *  on OpenGL 4.3+ graphics hardware.
+      /** Mesh class represents a scene geometry and associated draw commands data
+       *  that are used for rendering of mesh.
        *
-       *  Mesh class may contain vertex attribute data. The data are uploaded to AttribsStorage
-       *  that manages vertex attributes in gpu memory. _attribsReference member holds reference
+       *  Mesh class contains vertex attribute data, indices and draw commands data.
+       *  All these data are uploaded to AttribStorage that efficiently manages
+       *  their storage in gpu memory. _attribReference member holds the reference
        *  to the uploaded data.
-       * */
+       */
       class Mesh : public Node
       {
       public:
 
-         enum class ArrayContent : uint8_t { UNKNOWN=0,COORDINATES=1,NORMALS=2,COLORS=3,TEXCOORDS=4,USER=5,OTHER = 0xff };
+         enum class ArrayContent : uint8_t { UNKNOWN=0,COORDINATES=1,NORMALS=2,COLORS=3,TEXCOORDS=4,USER=5,OTHER=0xff };
 
       protected:
 
-         bool _cpuGeometryDataAvailable : 1;
-         bool _gpuGeometryDataAvailable : 1;
-         bool _releaseCpuGeometryDataAfterGpuUpload : 1;
+         bool _cpuAttribDataAvailable : 1;
+         bool _gpuAttribDataAvailable : 1;
+         bool _releaseCpuAttribDataAfterGpuUpload : 1;
 
          int _glMode;
-         std::vector<Array> _attribs;
+         std::vector<Array> _attribArrays;
          std::vector<ArrayContent> _contents;
-         Array _indices;
-         std::vector<int8_t> _attribIndex;
+         std::vector<int8_t> _content2attribIndex;
+         Array _indexArray;
+         void* _drawCommandBuffer;
+         unsigned _drawCommandBufferSize;
+         std::vector<unsigned> _drawCommandOffsets;
 
-         AttribsReference _attribsReference;
+         AttribReference _attribReference;
 
       public:
 
@@ -46,18 +50,39 @@ namespace ge
          virtual ~Mesh();
 
          static inline std::shared_ptr<Mesh> create();
-         static inline std::shared_ptr<Mesh> create(const std::vector<Array> attribs,
-                                                    const std::vector<ArrayContent> contents);
 
+         virtual void resetCpuGeometryData();
+         virtual void gpuUploadGeometryData();
+         virtual void gpuDownloadGeometryData();
+
+         void setAttribArrays(const std::vector<Array> attribs, const std::vector<ArrayContent> contents);
+         inline void setAttribArray(unsigned attribIndex,ArrayContent content,const Array &array);
          template<typename T>
-         inline void setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                                   const std::shared_ptr<std::vector<T>> &ptr);
-         virtual void setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                                    const std::shared_ptr<ArrayDecorator>& arrayDecorator);
-         inline void setAttribData(unsigned attribIndex,ArrayContent content,const Array &array);
-         void setAttribData(const std::vector<Array> attribs, const std::vector<ArrayContent> contents);
+         inline void setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                    const std::shared_ptr<std::vector<T>> &ptr);
+         virtual void setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                     const std::shared_ptr<ArrayDecorator>& arrayDecorator);
 
-         virtual AttribsConfig getAttribsConfig() const;
+         void setIndexArray(const Array &array);
+         inline void setIndexArray(const std::shared_ptr<std::vector<unsigned>> &ptr);
+         virtual void setIndexArray(const std::shared_ptr<ArrayDecoratorTemplate<unsigned>>& arrayDecorator);
+
+         inline int getNumAttribArrays() const;
+         inline bool hasIndices() const;
+
+         inline const std::vector<Array>& getAttribArrays();
+         inline Array& getAttribArray(int index);
+         inline Array& getAttribArray(ArrayContent content);
+         inline Array& getIndexArray();
+         inline void* getDrawCommandBuffer() const;
+         inline unsigned getDrawCommandBufferSize() const;
+         inline const std::vector<unsigned>& getDrawCommandOffsets() const;
+
+         inline const AttribReference& getAttribReference() const;
+         inline AttribStorage* getAttribStorage() const;
+         inline const AttribConfigRef& getAttribConfig() const;
+         virtual AttribConfigRef computeAttribConfig(RenderingContext *renderingContext) const;
+         inline AttribConfigRef computeAttribConfig() const;
 
          class Factory {
          public:
@@ -72,26 +97,38 @@ namespace ge
 
 
       // inline and template methods
-      inline Mesh::Mesh() : _cpuGeometryDataAvailable(false), _gpuGeometryDataAvailable(false),
-                            _releaseCpuGeometryDataAfterGpuUpload(true)  {}
+      inline Mesh::Mesh() : _cpuAttribDataAvailable(false), _gpuAttribDataAvailable(false),
+                            _releaseCpuAttribDataAfterGpuUpload(true),
+                            _drawCommandBuffer(nullptr), _drawCommandBufferSize(0)  {}
       inline std::shared_ptr<Mesh> Mesh::create()  { return _factory->create(); }
-      inline std::shared_ptr<Mesh> Mesh::create(const std::vector<Array> attribs, const std::vector<ArrayContent> contents)
-      {
-         std::shared_ptr<Mesh> m(_factory->create());
-         m->setAttribData(attribs,contents);
-         return m;
-      }
       template<typename T>
-      inline void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                                      const std::shared_ptr<std::vector<T>> &ptr)
+      inline void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                                       const std::shared_ptr<std::vector<T>> &ptr)
       {
-         setAttribData(attribIndex,content,attribType,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
+         setAttribArray(attribIndex,content,attribType,std::make_shared<ArrayDecoratorTemplate<T>>(ptr));
       }
-      inline void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,const Array &array)
+      inline void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,const Array &array)
       {
-         setAttribData(attribIndex,content,array.getType(),array.getArrayDecorator());
+         setAttribArray(attribIndex,content,array.getType(),array.getArrayDecorator());
       }
-      std::shared_ptr<Mesh> Mesh::Factory::create() { return std::make_shared<Mesh>(); }
+      inline void Mesh::setIndexArray(const std::shared_ptr<std::vector<unsigned>> &ptr)
+      {
+         setIndexArray(std::make_shared<ArrayDecoratorTemplate<unsigned>>(ptr));
+      }
+      inline int Mesh::getNumAttribArrays() const  { return _attribArrays.size(); }
+      inline bool Mesh::hasIndices() const  { return _indexArray.getType() != AttribType::Empty; }
+      inline const std::vector<Array>& Mesh::getAttribArrays()  { return _attribArrays; }
+      inline Array& Mesh::getAttribArray(int index)  { return _attribArrays[index]; }
+      inline Array& Mesh::getAttribArray(ArrayContent content)  { return _attribArrays[_content2attribIndex[uint8_t(content)]]; }
+      inline Array& Mesh::getIndexArray()  { return _indexArray; }
+      inline void* Mesh::getDrawCommandBuffer() const  { return _drawCommandBuffer; }
+      inline unsigned Mesh::getDrawCommandBufferSize() const  { return _drawCommandBufferSize; }
+      inline const std::vector<unsigned>& Mesh::getDrawCommandOffsets() const  { return _drawCommandOffsets; }
+      inline const AttribReference& Mesh::getAttribReference() const  { return _attribReference; }
+      inline AttribStorage* Mesh::getAttribStorage() const  { return _attribReference.attribStorage; }
+      inline const AttribConfigRef& Mesh::getAttribConfig() const
+      { return _attribReference.valid() ? _attribReference.attribStorage->getAttribConfig() : AttribConfigRef::invalid; }
+      inline AttribConfigRef Mesh::computeAttribConfig() const  { return computeAttribConfig(RenderingContext::current().get()); }
    }
 }
 

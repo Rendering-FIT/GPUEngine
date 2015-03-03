@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT PrimitiveRestartIndex: public Command
+    class GEGL_EXPORT PrimitiveRestartIndex: public Command
     {
       public:
         GLuint index;

@@ -7,6 +7,9 @@ SET(GPUENGINE_MINOR_VERSION 0)
 SET(GPUENGINE_PATCH_VERSION 0)
 SET(GPUENGINE_REVISION_VERSION 0)
 SET(GPUENGINE_VERSION ${GPUENGINE_MAJOR_VERSION}.${GPUENGINE_MINOR_VERSION}.${GPUENGINE_PATCH_VERSION}.${GPUENGINE_REVISION_VERSION})
+
+SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
+
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
@@ -25,7 +28,7 @@ FOREACH(CONF ${CMAKE_CONFIGURATION_TYPES})        # For each configuration (Debu
    SET("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_LIBDIR}")
    SET("CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_BINDIR}")
    IF(WIN32)
-       SET("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_BINDIR}")
+       SET("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_LIBDIR}")
    ELSE()
        SET("CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF}" "${OUTPUT_LIBDIR}")
    ENDIF()
@@ -33,18 +36,34 @@ ENDFOREACH()
 
 IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+
+   OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." ON)
+   IF(GLEW_STATIC)
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DGLEW_STATIC")
+   ENDIF()
+
+   # avoid "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
+
+   # workarounds for limited C++11 support of MSVC
+   IF(MSVC_VERSION LESS 1900)
+      # MSVC 2013 Update 4:
+      # - no constexpr support
+      # - no local_thread storage
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS")
+   ELSE()
+      # MSVC 2015 Preview does not fully support constexpr (only partial implementation yet):
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /D_ALLOW_KEYWORD_MACROS")
+   ENDIF()
+ENDIF()
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 # Dynamic vs Static Linking
-OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." OFF)
-IF   (DYNAMIC_GPUENGINE)
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-DGE_LIBRARY)
-ELSE ()
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
-ENDIF()
+OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
 
 FIND_PACKAGE(OPENGL      REQUIRED)
 FIND_PACKAGE(GLEW        REQUIRED)
@@ -55,6 +74,38 @@ FIND_PACKAGE(AntTweakBar)
 INCLUDE_DIRECTORIES(
     ${GPUEngine_SOURCE_DIR}/include
   )
+
+
+##################################################
+# Export Things
+##################################################
+
+SET(INSTALL_CM_DIR cmake)
+
+configure_file(version.h.in "include/version.h" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
+        DESTINATION include
+        )
+
+configure_file(
+   GPUEngineConfig.cmake.in
+   GPUEngineConfig.cmake
+   @ONLY
+)
+
+configure_file(
+   GPUEngineConfigVersion.cmake.in
+   GPUEngineConfigVersion.cmake
+   @ONLY
+)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
+              "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+        DESTINATION ${INSTALL_CM_DIR}
+        )
+
+
 
 add_subdirectory(src)
 add_subdirectory(apps)

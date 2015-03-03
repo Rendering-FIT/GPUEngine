@@ -48,7 +48,7 @@ namespace ge
     void CompileShader::apply(){
       glCompileShader(*this->shader);
     }
-    ReleaseShaderCompiler::ReleaseShaderCompiler(){};
+    ReleaseShaderCompiler::ReleaseShaderCompiler(){}
     void ReleaseShaderCompiler::apply(){
       glReleaseShaderCompiler();
     }

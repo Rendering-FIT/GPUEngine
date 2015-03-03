@@ -4,6 +4,8 @@
 #include<iostream>
 #include<map>
 
+#include<geUtil/Export.h>
+
 #define USE_SDL2
 
 #define WINDOWOBJECT_WINDOWSIZE      NULL
@@ -50,7 +52,7 @@ namespace ge{
     void loadContextParam(ContextParam*p,ArgumentObject*args);
     void loadWindowParam (WindowParam *p,ArgumentObject*args);
 
-    class WindowObject
+    class GEUTIL_EXPORT WindowObject
     {
       protected:
         unsigned _windowSize[2];//size of window
@@ -99,17 +101,6 @@ namespace ge{
             SDL_GLprofile     profile,
             SDL_GLcontextFlag contextFlag);
       public:
-        WindowObject(
-            unsigned          width          = WINDOWOBJECT_WIDTH,
-            unsigned          height         = WINDOWOBJECT_HEIGHT,
-            bool              fullScreen     = WINDOWOBJECT_FULLSCREEN,
-            void(*Idle )()                   = WINDOWOBJECT_IDLE,
-            void(*Mouse)()                   = WINDOWOBJECT_MOUSE,
-            bool              useAntTweakBar = WINDOWOBJECT_ANTTWEAKBAR,
-            unsigned          version        = WINDOWOBJECT_VERSION,
-            SDL_GLprofile     profile        = WINDOWOBJECT_PROFILE,
-            SDL_GLcontextFlag contextFlag    = WINDOWOBJECT_CONTEXTFLAG
-            );
         WindowObject(
             unsigned       width          = WINDOWOBJECT_WIDTH,
             unsigned       height         = WINDOWOBJECT_HEIGHT,

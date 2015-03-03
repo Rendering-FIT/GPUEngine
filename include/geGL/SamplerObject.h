@@ -10,7 +10,7 @@ namespace ge{
     /**
      * @brief table 23.18
      */
-    class GE_EXPORT SamplerObject: public OpenGLObject
+    class GEGL_EXPORT SamplerObject: public OpenGLObject
     {
       public:
         SamplerObject ();

@@ -24,7 +24,7 @@ namespace ge{
     std::string translateTextureWrap       (GLint wrap    );
     std::string translateTextureSwizzle    (GLint swizzle );
 
-    class TextureObject: public OpenGLObject
+    class GEGL_EXPORT TextureObject: public OpenGLObject
     {
       private:
         inline GLint _getTexLevelParameter(GLint level,GLenum pname);

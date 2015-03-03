@@ -2,10 +2,11 @@
 #define _ASYNCHRONOUSQUERYOBJECT_H_
 
 #include<geGL/OpenGL.h>
+#include<geGL/OpenGLObject.h>
 
 namespace ge{
   namespace gl{
-    class AsynchronousQueryObject
+    class GEGL_EXPORT AsynchronousQueryObject: public OpenGLObject
     {
       public:
         enum ResultSize{
@@ -15,7 +16,6 @@ namespace ge{
           UINT64
         };
       protected:
-        GLuint _id;///<query id
         /**
          * @brief 
          * GL_ANY_SAMPLES_PASSED
@@ -105,12 +105,6 @@ namespace ge{
          * @return query int results
          */
         GLint    geti();
-        /**
-         * @brief gets id of query
-         *
-         * @return id
-         */
-        GLuint   getId();
         /**
          * @brief gets target of query
          *

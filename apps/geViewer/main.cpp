@@ -5,10 +5,14 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
 #include <geSG/Array.h>
-#include <geSG/AttribsReference.h>
+#include <geSG/AttribReference.h>
+#include <geSG/Mesh.h>
+#include <geSG/RenderingContext.h>
+#include <geSG/StateSet.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
@@ -41,6 +45,14 @@ ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
 static ProgramObject *glProgram = NULL;
+static ProgramObject *processInstanceProgram = NULL;
+static shared_ptr<StateSet> stateSet;
+static AttribReference attribsRefNI;
+static AttribReference attribsRefI;
+static AttribReference attribsRefInstNI;
+static AttribReference attribsRefInstI;
+static shared_ptr<Mesh> meshNI;
+static shared_ptr<Mesh> meshI;
 
 
 int main(int Argc,char*Argv[])
@@ -72,8 +84,10 @@ int main(int Argc,char*Argv[])
 
   glewExperimental=GL_TRUE;
   glewInit();
+  RenderingContext::setCurrent(make_shared<RenderingContext>());
 
-  ge::gl::setDefaultDebugMessage();
+  // OpenGL debugging messages
+  //ge::gl::setDefaultDebugMessage();
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
@@ -82,6 +96,7 @@ int main(int Argc,char*Argv[])
   Init();
   Window->mainLoop();
   delete glProgram;
+  delete processInstanceProgram;
   delete Window;
   delete Args;
   return 0;
@@ -96,118 +111,162 @@ void Wheel(int d){
 }
 
 
-static AttribsReference attribsRef;
-static AttribsConfig ac;
-
-
 void Idle(){
+   processInstanceProgram->use();
+   processInstanceProgram->set("numToProcess",2);
+   RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   glDispatchCompute(1,1,1);
+
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
-   attribsRef.attribsStorage->bind();
-   //glDrawArrays(GL_TRIANGLES,0,6);
-   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)0);
-   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)12);
+   attribsRefNI.attribStorage->bind();
+   unsigned baseIndex=attribsRefNI.attribStorage->getVertexAllocationBlock(attribsRefNI.verticesDataId).startIndex;
+   glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
+   glDrawArrays(GL_TRIANGLES,baseIndex+3,3);
+   attribsRefI.attribStorage->bind();
+   baseIndex=attribsRefI.attribStorage->getIndexAllocationBlock(attribsRefI.indicesDataId).startIndex;
+   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
+   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
+   AttribStorage *storageNI=meshNI->getAttribReference().attribStorage;
+   storageNI->bind();
+   const BlockAllocation &blockNI=storageNI->getVertexAllocationBlock(meshNI->getAttribReference().verticesDataId);
+   glDrawArrays(GL_TRIANGLES,blockNI.startIndex,blockNI.numElements);
+   AttribStorage *storageI=meshI->getAttribReference().attribStorage;
+   storageI->bind();
+   const BlockAllocation &blockI=storageI->getIndexAllocationBlock(meshI->getAttribReference().indicesDataId);
+   glDrawElementsBaseVertex(GL_TRIANGLES,blockI.numElements,GL_UNSIGNED_INT,(void*)(blockI.startIndex*sizeof(uint32_t)),6);
+
+   RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   storageNI->bind();
+   glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+   glMultiDrawArraysIndirect(GL_TRIANGLES,nullptr,2,0);
+
    Window->swap();
 }
 
 
 void Init(){
-   AttribsConfig ac;
-   ac.push_back(AttribType::Vec3);
-#if 0
-   ac.ebo=false;
-   ac.updateConfigId();
-# if 0
-   shared_ptr<vector<glm::vec3>> data = make_shared<vector<glm::vec3>>();
-   constexpr float z=-5.f;
-   data->push_back(glm::vec3(0,0,z));
-   data->push_back(glm::vec3(0,1,z));
-   data->push_back(glm::vec3(1,0,z));
-   data->push_back(glm::vec3(0,0,z));
-   data->push_back(glm::vec3(0,-1,z));
-   data->push_back(glm::vec3(-1,0,z));
-   vector<Array> v;
-   v.resize(1);
-   v[0].set(data);
-# elif 0
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(make_shared<vector<glm::vec3>>());
-   const shared_ptr<vector<glm::vec3>> &data = v[0].get<glm::vec3>();
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   (*data) = twoTriangles;
-# elif 0
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(make_shared<vector<glm::vec3>>(twoTriangles));
-# elif 0
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(twoTriangles);
-# else
-   constexpr float z=-5.f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0,0,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
-   };
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(twoTriangles);
-# endif
-   attribsRef.allocData(ac,6,0);
-   attribsRef.uploadVertexData(v);
-#else
-   ac.ebo=true;
-   ac.updateConfigId();
+   AttribConfig::ConfigData config;
+   config.attribTypes.push_back(AttribType::Vec3);
 
-   constexpr float z=-1.1f;
-   const vector<glm::vec3> twoTriangles = {
-      glm::vec3(0,0,z),
-      glm::vec3(0,1,z),
-      glm::vec3(1,0,z),
-      glm::vec3(0.f,0.1f,z),
-      glm::vec3(0,-1,z),
-      glm::vec3(-1,0,z),
+   // top-left geometry
+   config.ebo=false;
+   config.updateId();
+
+   constexpr float z=-10.f;
+   constexpr float niShiftX=-1.5f;
+   constexpr float shiftY=3.0f;
+   const vector<glm::vec3> twoTrianglesNI = {
+      glm::vec3(niShiftX+0,shiftY+0,z),
+      glm::vec3(niShiftX+0,shiftY+1,z),
+      glm::vec3(niShiftX+1,shiftY+0,z),
+      glm::vec3(niShiftX+0,shiftY+0,z),
+      glm::vec3(niShiftX+0,shiftY-1,z),
+      glm::vec3(niShiftX-1,shiftY+0,z),
    };
    vector<Array> v;
    v.reserve(1);
-   v.emplace_back(twoTriangles);
+   v.emplace_back(twoTrianglesNI);
 
-   attribsRef.allocData(ac,6,6);
-   attribsRef.uploadVertexData(v);
+   attribsRefNI.allocData(config,6,0,0);
+   attribsRefNI.uploadVertices(v);
+
+   // top-right geometry
+   config.ebo=true;
+   config.updateId();
+
+   constexpr float iShiftX=1.5f;
+   const vector<glm::vec3> twoTrianglesI = {
+      glm::vec3(iShiftX+0,shiftY+0,z),
+      glm::vec3(iShiftX+0,shiftY+1,z),
+      glm::vec3(iShiftX+1,shiftY+0,z),
+      glm::vec3(iShiftX+0,shiftY+0.1f,z),
+      glm::vec3(iShiftX+0,shiftY-1,z),
+      glm::vec3(iShiftX-1,shiftY+0,z),
+   };
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTrianglesI);
+
+   attribsRefI.allocData(config,6,6,0);
+   attribsRefI.uploadVertices(v);
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
-   attribsRef.uploadIndicesData(Array(indices));
-#endif
+   attribsRefI.uploadIndices(Array(indices));
+
+   // bottom-left geometry
+   constexpr float meshShiftY=shiftY-3.0f;
+   const vector<glm::vec3> twoTrianglesMeshNI = {
+      glm::vec3(niShiftX+0,meshShiftY+0,z),
+      glm::vec3(niShiftX+0,meshShiftY+1,z),
+      glm::vec3(niShiftX+1,meshShiftY+0,z),
+      glm::vec3(niShiftX+0,meshShiftY+0,z),
+      glm::vec3(niShiftX+0,meshShiftY-1,z),
+      glm::vec3(niShiftX-1,meshShiftY+0,z),
+   };
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTrianglesMeshNI);
+   vector<Mesh::ArrayContent> contents;
+   contents.reserve(1);
+   contents.push_back(Mesh::ArrayContent::COORDINATES);
+   meshNI=Mesh::create();
+   meshNI->setAttribArrays(v,contents);
+   meshNI->gpuUploadGeometryData();
+
+   // bottom-right geometry
+   const vector<glm::vec3> twoTrianglesMeshI = {
+      glm::vec3(iShiftX+0,meshShiftY+0,z),
+      glm::vec3(iShiftX+0,meshShiftY+1,z),
+      glm::vec3(iShiftX+1,meshShiftY+0,z),
+      glm::vec3(iShiftX+0,meshShiftY+0.1f,z),
+      glm::vec3(iShiftX+0,meshShiftY-1,z),
+      glm::vec3(iShiftX-1,meshShiftY+0,z),
+   };
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTrianglesMeshI);
+   meshI=Mesh::create();
+   meshI->setAttribArrays(v,contents);
+   meshI->setIndexArray(indices);
+   meshI->gpuUploadGeometryData();
+
+   // bottom2-left geometry
+   constexpr float instanceShiftY=meshShiftY-3.0f;
+   const vector<glm::vec3> twoTriangleInstancesNI = {
+      glm::vec3(niShiftX+0,instanceShiftY+0,z),
+      glm::vec3(niShiftX+0,instanceShiftY+1,z),
+      glm::vec3(niShiftX+1,instanceShiftY+0,z),
+      glm::vec3(niShiftX+0,instanceShiftY+0,z),
+      glm::vec3(niShiftX+0,instanceShiftY-1,z),
+      glm::vec3(niShiftX-1,instanceShiftY+0,z),
+   };
+   const vector<unsigned> drawCommands = {
+      GL_TRIANGLES,3,0,0,
+      GL_TRIANGLES,3,3,3,
+   };
+   const vector<unsigned> drawCommandOffsets4 = {
+      0,4,
+   };
+   v.clear();
+   v.reserve(1);
+   v.emplace_back(twoTriangleInstancesNI);
+   config.ebo=false;
+   config.updateId();
+   stateSet=make_shared<StateSet>();
+   attribsRefInstNI.allocData(config,6,0,24);
+   attribsRefInstNI.uploadVertices(v);
+   attribsRefInstNI.setDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
+                                    drawCommandOffsets4.data(),drawCommandOffsets4.size());
+   attribsRefInstNI.createInstances(0,stateSet.get());
+
+
+   // unmap instance buffer
+   // (it has to be done before rendering, for sure always before the frame,
+   // or at least when there were any modifications to the instance buffer)
+   RenderingContext::current()->unmapInstanceBuffer();
+
 
    ge::gl::initShadersAndPrograms();
    glProgram = new ProgramObject(
@@ -231,4 +290,37 @@ void Init(){
    glm::mat4 mvp=modelView*projection;
    glProgram->use();
    glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
+   processInstanceProgram=new ProgramObject(
+      GL_COMPUTE_SHADER,
+      "#version 430\n"
+      "\n"
+      "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
+      "\n"
+      "layout(std430,binding=0) restrict readonly buffer DrawCommandBuffer {\n"
+      "   uint drawCommandBuffer[];\n"
+      "};\n"
+      "layout(std430,binding=1) restrict readonly buffer InstanceBuffer {\n"
+      "   uint instanceBuffer[];\n"
+      "};\n"
+      "layout(std430,binding=2) restrict writeonly buffer IndirectBuffer {\n"
+      "   uint indirectBuffer[];\n"
+      "};\n"
+      "\n"
+      "uniform int numToProcess;\n"
+      "\n"
+      "void main()\n"
+      "{\n"
+      "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
+      "      return;\n"
+      "\n"
+      "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
+      "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
+      "\n"
+      "   uint writeIndex=gl_GlobalInvocationID.x*4;\n"
+      "   indirectBuffer[writeIndex+0]=drawCommandBuffer[drawCommandOffset4+1]; // count\n"
+      "   indirectBuffer[writeIndex+1]=1; // instance count\n"
+      "   indirectBuffer[writeIndex+2]=drawCommandBuffer[drawCommandOffset4+2]+\n"
+      "                                drawCommandBuffer[drawCommandOffset4+3]; // first\n"
+      "   indirectBuffer[writeIndex+3]=0; // base instance\n"
+      "}\n");
 }

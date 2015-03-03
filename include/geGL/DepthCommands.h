@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT DepthFunc: public Command
+    class GEGL_EXPORT DepthFunc: public Command
     {
       public:
         GLenum func;

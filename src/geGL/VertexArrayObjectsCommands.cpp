@@ -38,6 +38,12 @@ namespace ge
       this->n      = n;
       this->arrays = arrays;
     }
+
+    void CreateVertexArrays::apply()
+    {
+
+    }
+
     /*
     void CreateVertexArrays::apply(){
       glCreateVertexArrays(

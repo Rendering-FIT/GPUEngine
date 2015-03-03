@@ -1,3 +1,11 @@
+IF   (DYNAMIC_GPUENGINE)
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+    ADD_DEFINITIONS(-DGESG_LIBRARY)
+ELSE ()
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
+ENDIF()
+
 set(LIB_NAME geSG)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
@@ -5,12 +13,14 @@ set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/Array.h
+    ${HEADER_PATH}/AllocationManagers.h
+    ${HEADER_PATH}/FlexibleArrayList.h
     ${HEADER_PATH}/AttribType.h
-    ${HEADER_PATH}/AttribsConfig.h
-    ${HEADER_PATH}/AttribsReference.h
-    ${HEADER_PATH}/AttribsStorage.h
-    ${HEADER_PATH}/SeparateBuffersAttribsStorage.h
-    ${HEADER_PATH}/AttribsManager.h
+    ${HEADER_PATH}/AttribConfig.h
+    ${HEADER_PATH}/AttribReference.h
+    ${HEADER_PATH}/AttribStorage.h
+    ${HEADER_PATH}/SeparateBuffersAttribStorage.h
+    ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/Node.h
     ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Group.h
@@ -22,11 +32,13 @@ set(SG_INCLUDES
   )
 
 set(SG_SOURCES
+    AllocationManagers.cpp
     AttribType.cpp
-    AttribsConfig.cpp
-    AttribsStorage.cpp
-    SeparateBuffersAttribsStorage.cpp
-    AttribsManager.cpp
+    AttribConfig.cpp
+    AttribReference.cpp
+    AttribStorage.cpp
+    SeparateBuffersAttribStorage.cpp
+    RenderingContext.cpp
     Node.cpp
     Mesh.cpp
     Group.cpp
@@ -42,8 +54,12 @@ ADD_LIBRARY(${LIB_NAME}
     ${SG_SOURCES}
   )
 
-include_directories(${GLM_INCLUDE_DIR})
-  
+include_directories(${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+
+set(Internal_deps geGL)
+target_link_libraries(${LIB_NAME} ${Internal_deps})
+add_dependencies(${LIB_NAME} ${Internal_deps})
+
 install(FILES
     ${SG_INCLUDES}
     DESTINATION include/${LIB_NAME}
@@ -52,4 +68,20 @@ install(FILES
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
   )
+
+#########################################
+#Export
+
+configure_file(
+   geSGConfig.cmake.in
+   geSGConfig.cmake
+   @ONLY
+)
+
+# INSTALL_CM_DIR is defined in master CMakeLists file
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geSGConfig.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/geSG"
+        )

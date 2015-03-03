@@ -1,7 +1,12 @@
+#include <algorithm>
+#include <iostream>
 #include <geSG/Mesh.h>
 
 using namespace std;
 using namespace ge::sg;
+
+shared_ptr<Mesh::Factory> Mesh::_factory=make_shared<Mesh::Factory>();
+
 
 
 Mesh::~Mesh()
@@ -9,45 +14,121 @@ Mesh::~Mesh()
 }
 
 
-void Mesh::setAttribData(unsigned attribIndex,ArrayContent content,AttribType attribType,
-                         const std::shared_ptr<ArrayDecorator>& arrayDecorator)
+void Mesh::resetCpuGeometryData()
 {
-   // resize _attribs if necessary
-   if(attribIndex>=_attribs.size())
-      _attribs.resize(attribIndex+1);
+   // empty all attrib data
+   _attribArrays.clear();
+   _contents.clear();
+   _content2attribIndex.clear();
+   _indexArray.clear();
+   //_drawCommands.clear();
 
-   // set attrib
-   _attribs[attribIndex].set(arrayDecorator,attribType);
-   _contents[attribIndex]=content;
-
-   // update _attribIndex
-   int c=int(content)-1;
-   if(c>=_attribIndex.size())
-      _attribIndex.resize(c+1);
-   _attribIndex[c]=attribIndex;
+   // indicate that attrib data are now available on cpu, even although they are empty now
+   _cpuAttribDataAvailable=true;
 }
 
 
-void Mesh::setAttribData(const vector<Array> attribs, const vector<ArrayContent> contents)
+void Mesh::gpuUploadGeometryData()
+{
+   // alloc data if not allocated
+   if(!_attribReference.valid())
+   {
+      _attribReference.allocData(computeAttribConfig(),
+                                 _attribArrays.size()>=1?_attribArrays[0].size():0,
+                                 hasIndices()?_indexArray.size():0,_drawCommandBufferSize);
+  }
+
+   // upload attributes
+   _attribReference.uploadVertices(_attribArrays);
+
+   // upload indices
+   if(hasIndices())
+      _attribReference.uploadIndices(_indexArray);
+
+   // upload draw commands
+   _attribReference.setDrawCommands(_drawCommandBuffer,_drawCommandBufferSize,
+                                    _drawCommandOffsets.data(),_drawCommandOffsets.size());
+   _gpuAttribDataAvailable=true;
+
+   // release cpu data if requested
+   if(_releaseCpuAttribDataAfterGpuUpload)
+   {
+      _attribArrays.clear();
+      _indexArray.clear();
+      //_drawCommands.clear();
+      _cpuAttribDataAvailable=false;
+   }
+}
+
+
+void Mesh::gpuDownloadGeometryData()
+{
+   //FIXME: not implemented yet
+}
+
+
+void Mesh::setAttribArray(unsigned attribIndex,ArrayContent content,AttribType attribType,
+                         const std::shared_ptr<ArrayDecorator>& arrayDecorator)
+{
+   // resize _attribArrays if necessary
+   if(attribIndex>=_attribArrays.size())
+      _attribArrays.resize(attribIndex+1);
+
+   // set attrib
+   _attribArrays[attribIndex].set(arrayDecorator,attribType);
+   _contents[attribIndex]=content;
+
+   // update _content2attribIndex
+   unsigned c=unsigned(content)-1;
+   if(c>=_content2attribIndex.size())
+      _content2attribIndex.resize(c+1);
+   _content2attribIndex[c]=attribIndex;
+}
+
+
+void Mesh::setAttribArrays(const vector<Array> attribs, const vector<ArrayContent> contents)
 {
    unsigned n=min(attribs.size(),contents.size());
-   _attribs.clear();
-   _attribs.reserve(n);
+   _attribArrays.clear();
+   _attribArrays.reserve(n);
    _contents.clear();
    _contents.reserve(n);
 
    for(unsigned i=0; i<n; i++)
-      setAttribData(i,contents[i],attribs[i]);
+      setAttribArray(i,contents[i],attribs[i]);
 }
 
 
-AttribsConfig Mesh::getAttribsConfig() const
+void Mesh::setIndexArray(const Array &array)
 {
-   AttribsConfig r;
-   r.reserve(_attribs.size());
-   for(auto it=_attribs.begin(); it!=_attribs.end(); it++)
-      r.push_back(it->getType());
-   r.ebo = _indices.getType() != AttribType::Empty;
-   r.updateConfigId();
-   return r;
+   if(array.getType()!=AttribType::UInt)
+   {
+      cout<<"Error in Mesh::setIndexArray(): Array type must be UNSIGNED_INT or INT."<<endl;
+      return;
+   }
+   setIndexArray(static_pointer_cast<ArrayDecoratorTemplate<unsigned>>(array.getArrayDecorator()));
+}
+
+
+void Mesh::setIndexArray(const shared_ptr<ArrayDecoratorTemplate<unsigned>>& arrayDecorator)
+{
+   _indexArray.set(arrayDecorator,AttribType::UInt);
+}
+
+
+AttribConfigRef Mesh::computeAttribConfig(RenderingContext *renderingContext) const
+{
+   AttribConfig::ConfigData config;
+   config.attribTypes.reserve(_attribArrays.size());
+   for(auto it=_attribArrays.begin(); it!=_attribArrays.end(); it++)
+      config.attribTypes.push_back(it->getType());
+   config.ebo = hasIndices();
+   config.updateId();
+   return renderingContext->getAttribConfig(config);
+}
+
+
+shared_ptr<Mesh> Mesh::Factory::create()
+{
+   return std::make_shared<Mesh>();
 }

@@ -14,7 +14,7 @@
 
 namespace ge{
   namespace util{
-    class CameraKeyPoint
+     class GEUTIL_EXPORT CameraKeyPoint
     {
       public:
         float position  [3];

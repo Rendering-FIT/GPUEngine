@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT CreateShader: public Command
+    class GEGL_EXPORT CreateShader: public Command
     {
       public:
         GLenum  type;
@@ -15,7 +15,7 @@ namespace ge
         CreateShader(GLuint*shader,GLenum type);
         void apply();
     };
-    class GE_EXPORT ShaderSource: public Command
+    class GEGL_EXPORT ShaderSource: public Command
     {
       public:
         GLuint   *shader;
@@ -30,7 +30,7 @@ namespace ge
         ~ShaderSource();
         void apply();
     };
-    class GE_EXPORT CompileShader: public Command
+    class GEGL_EXPORT CompileShader: public Command
     {
       public:
         GLuint *shader;
@@ -38,20 +38,20 @@ namespace ge
             GLuint *shader);
         void apply();
     };
-    class GE_EXPORT ReleaseShaderCompiler: public Command
+    class GEGL_EXPORT ReleaseShaderCompiler: public Command
     {
       public:
         ReleaseShaderCompiler();
         void apply();
     };
-    class GE_EXPORT DeleteShader: public Command
+    class GEGL_EXPORT DeleteShader: public Command
     {
       public:
         GLuint *shader;
         DeleteShader(GLuint *shader);
         void apply();
     };
-    class GE_EXPORT IsShader: public Command
+    class GEGL_EXPORT IsShader: public Command
     {
       public:
         GLuint    *shader;
@@ -59,7 +59,7 @@ namespace ge
         IsShader(GLboolean *is,GLuint *shader);
         void apply();
     };
-    class GE_EXPORT ShaderBinary: public Command
+    class GEGL_EXPORT ShaderBinary: public Command
     {
       public:
         GLsizei   count;

@@ -8,7 +8,7 @@
 
 namespace ge{
   namespace gl{
-    class GE_EXPORT OpenGLObject
+    class GEGL_EXPORT OpenGLObject
     {
       protected:
         GLuint _id;///<object id

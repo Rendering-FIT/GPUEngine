@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT SampleCoverage: public Command
+    class GEGL_EXPORT SampleCoverage: public Command
     {
       public:
         GLfloat   value;
@@ -16,7 +16,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT SampleMaski: public Command
+    class GEGL_EXPORT SampleMaski: public Command
     {
       public:
         GLuint     maskNumber;

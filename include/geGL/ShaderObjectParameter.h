@@ -10,7 +10,7 @@ namespace ge{
     /**
      * @brief This class represents shader parameter
      */
-    class ShaderObjectParameter
+    class GEGL_EXPORT ShaderObjectParameter
     {
       public:
         GLint       location;///< parameter location

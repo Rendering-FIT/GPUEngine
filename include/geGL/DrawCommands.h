@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT DrawArrays: public Command
+    class GEGL_EXPORT DrawArrays: public Command
     {
       public:
         GLenum  mode;
@@ -16,7 +16,7 @@ namespace ge
         DrawArrays(GLenum mode,GLint first,GLsizei count);
         void apply();
     };
-    class GE_EXPORT DrawArraysInstancedBaseInstance: public Command
+    class GEGL_EXPORT DrawArraysInstancedBaseInstance: public Command
     {
       public:
         GLenum  mode;
@@ -32,7 +32,7 @@ namespace ge
             GLuint  baseInstance);
         void apply();
     };
-    class GE_EXPORT DrawArraysInstanced: public Command
+    class GEGL_EXPORT DrawArraysInstanced: public Command
     {
       public:
         GLenum  mode;
@@ -46,7 +46,7 @@ namespace ge
             GLsizei instanceCount);
         void apply();
     };
-    class GE_EXPORT DrawArraysIndirect: public Command
+    class GEGL_EXPORT DrawArraysIndirect: public Command
     {
       public:
         GLenum  mode;
@@ -54,7 +54,7 @@ namespace ge
         DrawArraysIndirect(GLenum mode,GLvoid*indirect);
         void apply();
     };
-    class GE_EXPORT MultiDrawArrays: public Command
+    class GEGL_EXPORT MultiDrawArrays: public Command
     {
       public:
         GLenum   mode;
@@ -68,7 +68,7 @@ namespace ge
             GLsizei  drawCount);
         void apply();
     };
-    class GE_EXPORT MultiDrawArraysIndirect: public Command
+    class GEGL_EXPORT MultiDrawArraysIndirect: public Command
     {
       public:
         GLenum   mode;
@@ -82,7 +82,7 @@ namespace ge
             GLsizei  stride);
         void apply();
     };
-    class GE_EXPORT DrawElements: public Command
+    class GEGL_EXPORT DrawElements: public Command
     {
       public:
         GLenum   mode;
@@ -96,7 +96,7 @@ namespace ge
             GLvoid  *indices);
         void apply();
     };
-    class GE_EXPORT DrawElementsInstancedBaseInstance: public Command
+    class GEGL_EXPORT DrawElementsInstancedBaseInstance: public Command
     {
       public:
         GLenum   mode;
@@ -114,7 +114,7 @@ namespace ge
             GLuint   baseInstance);
         void apply();
     };
-    class GE_EXPORT DrawElementsInstanced: public Command
+    class GEGL_EXPORT DrawElementsInstanced: public Command
     {
       public:
         GLenum   mode;
@@ -130,7 +130,7 @@ namespace ge
             GLsizei  instanceCount);
         void apply();
     };
-    class GE_EXPORT MultiDrawElements: public Command
+    class GEGL_EXPORT MultiDrawElements: public Command
     {
       public:
         GLenum    mode;
@@ -146,7 +146,7 @@ namespace ge
             GLsizei   drawCount);
         void apply();
     };
-    class GE_EXPORT DrawRangeElements: public Command
+    class GEGL_EXPORT DrawRangeElements: public Command
     {
       public:
         GLenum   mode;
@@ -164,7 +164,7 @@ namespace ge
             GLvoid  *indices);
         void apply();
     };
-    class GE_EXPORT DrawElementsBaseVertex: public Command
+    class GEGL_EXPORT DrawElementsBaseVertex: public Command
     {
       public:
         GLenum   mode;
@@ -180,7 +180,7 @@ namespace ge
             GLint    baseVertex);
         void apply();
     };
-    class GE_EXPORT DrawRangeElementsBaseVertex: public Command
+    class GEGL_EXPORT DrawRangeElementsBaseVertex: public Command
     {
       public:
         GLenum   mode;
@@ -200,7 +200,7 @@ namespace ge
             GLint    baseVertex);
         void apply();
     };
-    class GE_EXPORT DrawElementsInstancedBaseVertex: public Command
+    class GEGL_EXPORT DrawElementsInstancedBaseVertex: public Command
     {
       public:
         GLenum   mode;
@@ -218,7 +218,7 @@ namespace ge
             GLint    baseVertex);
         void apply();
     };
-    class GE_EXPORT DrawElementsInstancedBaseVertexBaseInstance: public Command
+    class GEGL_EXPORT DrawElementsInstancedBaseVertexBaseInstance: public Command
     {
       public:
         GLenum   mode;
@@ -238,7 +238,7 @@ namespace ge
             GLuint   baseInstance);
         void apply();
     };
-    class GE_EXPORT DrawElementsIndirect: public Command
+    class GEGL_EXPORT DrawElementsIndirect: public Command
     {
       public:
         GLenum  mode;
@@ -250,7 +250,7 @@ namespace ge
             GLvoid *indirect);
         void apply();
     };
-    class GE_EXPORT MultiDrawElementsIndirect: public Command
+    class GEGL_EXPORT MultiDrawElementsIndirect: public Command
     {
       public:
         GLenum   mode;
@@ -266,7 +266,7 @@ namespace ge
             GLsizei  stride);
         void apply();
     };
-    class GE_EXPORT MultiDrawElementsBaseVertex: public Command
+    class GEGL_EXPORT MultiDrawElementsBaseVertex: public Command
     {
       public:
         GLenum    mode;

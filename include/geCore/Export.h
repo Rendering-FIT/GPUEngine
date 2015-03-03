@@ -1,5 +1,5 @@
-#ifndef GE_EXPORT_
-#define GE_EXPORT_
+#ifndef GECORE_EXPORT_
+#define GECORE_EXPORT_
 
 #if defined(_MSC_VER)
    #pragma warning( disable : 4251 ) //http://msdn.microsoft.com/cs-cz/library/esew7y1w.aspx  http://support.microsoft.com/default.aspx?scid=KB;EN-US;168958
@@ -8,17 +8,17 @@
 
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
 #   ifdef GE_LIBRARY_STATIC
-#      define GE_EXPORT
-#   elif defined(GE_LIBRARY)
-#      define GE_EXPORT __declspec(dllexport)
+#      define GECORE_EXPORT
+#   elif defined(GECORE_LIBRARY)
+#      define GECORE_EXPORT __declspec(dllexport)
 #   else
-#      define GE_EXPORT __declspec(dllimport)
+#      define GECORE_EXPORT __declspec(dllimport)
 #   endif 
 #else
 #   ifdef GE_LIBRARY
-#      define GE_EXPORT __attribute__ ((visibility("default")))
+#      define GECORE_EXPORT __attribute__ ((visibility("default")))
 #   else
-#      define GE_EXPORT
+#      define GECORE_EXPORT
 #   endif 
 #endif
 

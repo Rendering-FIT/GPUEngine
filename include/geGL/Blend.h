@@ -8,7 +8,7 @@
 namespace ge
 {
   namespace gl{
-    class GE_EXPORT Blend
+    class GEGL_EXPORT Blend
     {
       private:
         CommandContainer   _enable;

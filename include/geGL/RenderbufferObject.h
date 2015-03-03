@@ -6,7 +6,7 @@
 
 namespace ge{
   namespace gl{
-    class RenderbufferObject: public OpenGLObject
+    class GEGL_EXPORT RenderbufferObject: public OpenGLObject
     {
       public:
         RenderbufferObject(

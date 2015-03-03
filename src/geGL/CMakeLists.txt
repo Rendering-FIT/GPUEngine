@@ -1,3 +1,12 @@
+IF   (DYNAMIC_GPUENGINE)
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+    ADD_DEFINITIONS(-DGEGL_LIBRARY)
+ELSE ()
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
+ENDIF()
+
+
 set(LIB_NAME geGL)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
@@ -89,8 +98,11 @@ ADD_LIBRARY(${LIB_NAME}
     ${GL_SOURCES}
   )
 
+set(Internal_deps geCore)
+  
 include_directories(${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} geCore)
+target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps})
+add_dependencies(${LIB_NAME} ${Internal_deps})
 
 install(FILES
     ${GL_INCLUDES}
@@ -100,4 +112,25 @@ install(FILES
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
   )
+  
+#########################################
+#Export
+#configure_package_config_file( 
+#   geGLConfig.cmake.in
+#   geGLConfig.cmake
+#   INSTALL_DESTINATION lib/cmake/geGL
+#)
+
+configure_file(
+   geGLConfig.cmake.in
+   geGLConfig.cmake
+   @ONLY
+)
+
+# INSTALL_CM_DIR is defined in master CMakeLists file
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geGLConfig.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/geGL"
+        )

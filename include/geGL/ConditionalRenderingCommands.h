@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT BeginConditionalRender
+    class GEGL_EXPORT BeginConditionalRender
     {
       public:
         GLuint id;
@@ -15,7 +15,7 @@ namespace ge
         BeginConditionalRender(GLuint id,GLenum mode);
         void apply();
     };
-    class GE_EXPORT EndConditionalRender
+    class GEGL_EXPORT EndConditionalRender
     {
       public:
         EndConditionalRender();

@@ -14,7 +14,7 @@ namespace ge
    virtual ge::core::Object* cloneType() const {return new type ();} \
    virtual ge::core::Object* clone(const ge::core::CopyOp& copyOp) const { return new type (*this, copyOp); }
 
-class GE_EXPORT Object
+class GECORE_EXPORT Object
 {
 public:
    Object(){}

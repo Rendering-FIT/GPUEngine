@@ -1,0 +1,11 @@
+# - Config file for the GPUEngine package
+
+@INIT_PACKAGE@
+
+message("Greetings! GPUEngine downstreamer.")
+
+foreach(module ${GPUEngine_FIND_COMPONENTS})
+   find_package(${module}
+      PATHS "${CMAKE_CURRENT_LIST_DIR}" NO_DEFAULT_PATH
+   )
+endforeach()

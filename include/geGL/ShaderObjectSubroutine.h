@@ -10,7 +10,7 @@ namespace ge{
     /**
      * @brief This class represents shader parameter
      */
-    class ShaderObjectSubroutine
+    class GEGL_EXPORT ShaderObjectSubroutine
     {
       public:
         /**

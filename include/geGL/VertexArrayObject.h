@@ -24,7 +24,7 @@ namespace ge{
     std::string translateBoolean   (GLboolean boolean);
     unsigned    getTypeSize        (GLenum    type   );
     void initVertexArrayObjects    ();
-    class GE_EXPORT VertexArrayObject: public OpenGLObject
+    class GEGL_EXPORT VertexArrayObject: public OpenGLObject
     {
       private:
         inline GLint getAttrib(GLuint index,GLenum pname);

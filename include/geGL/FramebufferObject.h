@@ -20,7 +20,7 @@ namespace ge{
     /**
      * @brief 
      */
-    class FramebufferObject: public OpenGLObject
+    class GEGL_EXPORT FramebufferObject: public OpenGLObject
     {
       private:
         inline GLint getParam(GLenum pname);

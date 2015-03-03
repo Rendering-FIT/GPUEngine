@@ -5,7 +5,7 @@
 #include<geGL/OpenGLObject.h>
 namespace ge{
   namespace gl{
-    class ProgramPipelineObject: public OpenGLObject
+    class GEGL_EXPORT ProgramPipelineObject: public OpenGLObject
     {
       public:
         ProgramPipelineObject();

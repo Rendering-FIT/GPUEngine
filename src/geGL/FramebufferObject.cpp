@@ -45,7 +45,7 @@ std::string ge::gl::translateFramebufferAttachment(GLenum attachment){
     case GL_COLOR_ATTACHMENT13:return"GL_COLOR_ATTACHMENT13";
     case GL_COLOR_ATTACHMENT14:return"GL_COLOR_ATTACHMENT14";
     case GL_COLOR_ATTACHMENT15:return"GL_COLOR_ATTACHMENT15";
-    defaut:                    return"unknown"              ;
+    default:                   return"unknown"              ;
   }
 }
 

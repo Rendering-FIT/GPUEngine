@@ -140,18 +140,6 @@ WindowObject::WindowObject(
     void(*Mouse)(),
     bool UseAntTweakBar,
     unsigned Version,
-    SDL_GLprofile Profile,
-    SDL_GLcontextFlag ContextFlag){
-  this->_constructor(Width,Height,FullScreen,Idle,Mouse,UseAntTweakBar,Version,Profile,ContextFlag);
-}
-WindowObject::WindowObject(
-    unsigned Width,
-    unsigned Height,
-    bool FullScreen,
-    void(*Idle)(),
-    void(*Mouse)(),
-    bool UseAntTweakBar,
-    unsigned Version,
     std::string Profile,
     std::string ContextFlag){
   SDL_GLprofile P=SDL_GL_CONTEXT_PROFILE_CORE;

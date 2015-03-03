@@ -9,7 +9,7 @@ namespace ge{
     /**
      * @brief This class represents shader parameter
      */
-    class ShaderObjectSubroutineUniform
+    class GEGL_EXPORT ShaderObjectSubroutineUniform
     {
       public:
         GLint Location;///< location of subroutine uniform

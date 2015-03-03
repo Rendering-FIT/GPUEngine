@@ -1,3 +1,11 @@
+IF   (DYNAMIC_GPUENGINE)
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+    ADD_DEFINITIONS(-DGECORE_LIBRARY)
+ELSE ()
+    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
+ENDIF()
+
 set(LIB_NAME geCore)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
@@ -24,7 +32,21 @@ install(FILES
   DESTINATION include/${LIB_NAME}
   )
 
+
 install(TARGETS ${LIB_NAME}
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
   )
+  
+#########################################
+#Export
+   
+configure_file(
+   geCoreConfig.cmake.in
+   geCoreConfig.cmake
+   @ONLY
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geCoreConfig.cmake"
+   DESTINATION "${INSTALL_CM_DIR}/geCore"
+   )

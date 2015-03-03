@@ -23,7 +23,7 @@ include_directories(
   ${GLEW_INCLUDE_PATH} 
   ${OPENGL_INCLUDE_PATH} 
   ${SDL2_INCLUDE_PATH} 
-  ${ANTTWEAKBAR_INCLUDE_PATH}
+  ${ANTTWEAKBAR_INCLUDE_DIR}
   )
 
 target_link_libraries(${APP_NAME} 

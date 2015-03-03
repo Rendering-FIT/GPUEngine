@@ -7,7 +7,7 @@ namespace ge
 {
   namespace gl
   {
-    class GE_EXPORT StencilFunc: public Command
+    class GEGL_EXPORT StencilFunc: public Command
     {
       public:
         GLenum func;
@@ -17,7 +17,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT StencilFuncSeparate: public Command
+    class GEGL_EXPORT StencilFuncSeparate: public Command
     {
       public:
         GLenum face;
@@ -28,7 +28,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT StencilOp: public Command
+    class GEGL_EXPORT StencilOp: public Command
     {
       public:
         GLenum sfail;
@@ -38,7 +38,7 @@ namespace ge
         void apply();
     };
 
-    class GE_EXPORT StencilOpSeparate: public Command
+    class GEGL_EXPORT StencilOpSeparate: public Command
     {
       public:
         GLenum face;
