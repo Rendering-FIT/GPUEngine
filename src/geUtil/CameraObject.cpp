@@ -114,8 +114,21 @@ namespace ge{
       *P=this->_projection;
       //return this->Projection;
     }
+    glm::mat4 CameraObject::getView(){
+      return this->_viewRotation*glm::translate(glm::mat4(1.f),-this->_position);
+    }
+    glm::mat4 CameraObject::getViewRoration(){
+      return this->_viewRotation;
+    }
+    glm::mat4 CameraObject::getProjection(){
+      this->_computeProjection();
+      return this->_projection;
+    }
     glm::vec3 CameraObject::getPosition(){
       return -this->_position;
+    }
+    void CameraObject::setPosition(glm::vec3 p){
+      this->_position=-p;
     }
     glm::vec3 CameraObject::getVector(int k){
       return glm::vec3(glm::row(this->_viewRotation,k));

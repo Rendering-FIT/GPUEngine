@@ -15,10 +15,6 @@ namespace ge{
       glDeleteProgramPipelines(1,&this->_id);
     }
 
-    GLuint ProgramPipelineObject::getId(){
-      return this->_id;
-    }
-
     void ProgramPipelineObject::bind(){
       glBindProgramPipeline(this->_id);
     }

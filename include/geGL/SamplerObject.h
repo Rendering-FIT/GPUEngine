@@ -2,16 +2,16 @@
 #define _SAMPLEROBJECT_H_
 
 #include<geGL/OpenGL.h>
+#include <geGL/OpenGLObject.h>
+
 
 namespace ge{
   namespace gl{
     /**
      * @brief table 23.18
      */
-    class GE_EXPORT SamplerObject
+    class GE_EXPORT SamplerObject: public OpenGLObject
     {
-      protected:
-        GLuint _id;
       public:
         SamplerObject ();
         SamplerObject (SamplerObject*sampler);

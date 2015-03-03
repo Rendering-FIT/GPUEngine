@@ -95,6 +95,7 @@
 
 #define DEFFCE(a,b)\
 	void ProgramObject::set(std::string uniformName,DEF_GLTYPEPAR(a,b)){\
+    if(!this->_uniformList.count(uniformName))return;\
 		DEF_GLUNIFORM(a,b)(this->_uniformList[uniformName].location,DEF_GLTYPEPARCONV(a,b));\
 	}
 
@@ -107,6 +108,7 @@
 			std::string uniformName,\
 			GLsizei count,\
 			DEF_GLTYPE(type_name) *value){\
+    if(!this->_uniformList.count(uniformName))return;\
 		ShaderObjectParameter param=this->_uniformList[uniformName];\
 		switch(param.type){\
 			case DEF_GLTYPECONST(1,type_name):\
@@ -131,6 +133,7 @@
 
 #define DEFDSAFCE(a,b)\
 	void ProgramObject::setdsa(std::string uniformName,DEF_GLTYPEPAR(a,b)){\
+    if(!this->_uniformList.count(uniformName))return;\
 		DEF_GLPROGRAMUNIFORM(a,b)(this->_id,this->_uniformList[uniformName].location,DEF_GLTYPEPARCONV(a,b));\
 	}
 
@@ -143,6 +146,7 @@
 			std::string uniformName,\
 			GLsizei count,\
 			DEF_GLTYPE(type_name) *value){\
+    if(!this->_uniformList.count(uniformName))return;\
 		ShaderObjectParameter param=this->_uniformList[uniformName];\
 		switch(param.type){\
 			case DEF_GLTYPECONST(1,type_name):\

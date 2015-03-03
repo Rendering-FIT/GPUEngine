@@ -2,6 +2,7 @@
 #define _SHADEROBJECT_H_
 
 #include <geGL/OpenGL.h>
+#include <geGL/OpenGLObject.h>
 #include<iostream>
 
 namespace ge{
@@ -9,11 +10,10 @@ namespace ge{
 	/**
 	 * This class represents shader
 	 */
-	class ShaderObject
+	class ShaderObject: public OpenGLObject
 	{
     protected:
       std::string _text; ///<contains shader test
-      GLuint      _id;   ///<id of shader
       GLenum      _type; ///<type of shader (vertex,fragment,geometry,...)
       void        _compileShader();            ///<compile shader
       std::string _getShaderInfo(GLuint id);   ///<gets shader info
@@ -84,12 +84,6 @@ namespace ge{
        * @brief Destructor
        */
       ~ShaderObject();
-      /**
-       * @brief This method return ID of compiled shader
-       *
-       * @return ID of compiled shader
-       */
-      GLuint getId();
       /**
        * @brief Sets version and profile of shader
        *

@@ -2,7 +2,7 @@
 #define _PROGRAMOBJECT_H_
 
 #include<geGL/OpenGL.h>
-
+#include<geGL/OpenGLObject.h>
 #include<stdarg.h>
 #include<vector>
 #include<map>
@@ -36,7 +36,7 @@ namespace ge{
     /**
      * @brief This class represents shader program
      */
-    class ProgramObject
+    class ProgramObject: public OpenGLObject
     {
       protected:
         std::vector<GLuint>                        _shaderList;    ///<list of shader object
@@ -44,7 +44,6 @@ namespace ge{
         std::map<std::string,ShaderObjectParameter>_attributeList; ///<list of attributes
         std::map<std::string,ShaderObjectParameter>_uniformList;   ///<list of uniforms
         ShaderObjectSubroutine                     _subroutines[6];///subroutines in shaders
-        GLuint                                     _id;            ///<id of shader program
         void createShaderProgram_Prologue();  ///<prologue of creating of shader prg.
         void createShaderProgram_Epilogue();  ///<epilogue of creating of shader prg.
         void getParameterList();              ///<obtain shader parameters
@@ -316,12 +315,6 @@ namespace ge{
          * @brief Destructor
          */
         ~ProgramObject();
-        /**
-         * @brief This method return ID of linked shader program
-         *
-         * @return ID of linked shader program
-         */
-        GLuint getId();
         /**
          * @brief Return shader program uniform location
          *

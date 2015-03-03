@@ -1,5 +1,7 @@
 #include<geGL/RenderbufferObject.h>
 
+using namespace ge::gl;
+
 RenderbufferObject::RenderbufferObject(
     GLenum  internalFormat,
     GLsizei width,
@@ -32,9 +34,6 @@ RenderbufferObject::~RenderbufferObject(){
 }
 void   RenderbufferObject::bind(){
   glBindRenderbuffer(GL_RENDERBUFFER,this->_id);
-}
-GLuint RenderbufferObject::getId(){
-  return this->_id;
 }
 
 GLint RenderbufferObject::getWidth(){

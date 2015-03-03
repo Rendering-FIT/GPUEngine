@@ -229,10 +229,6 @@ namespace ge{
       return Info;//return message
     }
 
-    GLuint ShaderObject::getId(){
-      return this->_id;//id of shader
-    }
-
     void ShaderObject::setVersion(unsigned version,std::string profile){
       if(version==0)return;
       int Position=0;

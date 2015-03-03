@@ -361,10 +361,6 @@ TextureObject::~TextureObject(){
   glDeleteTextures(1,&this->_id);
 }
 
-GLuint TextureObject::getId(){
-  return this->_id;
-}
-
 void   TextureObject::bind(GLuint unit){
 #ifndef USE_DSA
   glActiveTexture(unit);

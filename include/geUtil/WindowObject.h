@@ -33,8 +33,23 @@
 	#include<SDL/SDL.h>
 #endif//USE_SDL2
 
+#include<geUtil/ArgumentObject.h>
+
 namespace ge{
   namespace util{
+    struct ContextParam{
+      unsigned    version;
+      std::string profile;
+      std::string flag;
+    };
+    struct WindowParam{
+      unsigned size[2];
+      bool     fullscreen;
+    };
+
+    void loadContextParam(ContextParam*p,ArgumentObject*args);
+    void loadWindowParam (WindowParam *p,ArgumentObject*args);
+
     class WindowObject
     {
       protected:

@@ -2,6 +2,7 @@
 #define _TEXTUREOBJECT_H_
 
 #include<geGL/OpenGL.h>
+#include<geGL/OpenGLObject.h>
 #include<iostream>
 
 //#define USE_DSA
@@ -23,13 +24,11 @@ namespace ge{
     std::string translateTextureWrap       (GLint wrap    );
     std::string translateTextureSwizzle    (GLint swizzle );
 
-    class TextureObject
+    class TextureObject: public OpenGLObject
     {
       private:
         inline GLint _getTexLevelParameter(GLint level,GLenum pname);
         inline GLint _getTexParameter(GLenum pname);
-      protected:
-        GLuint  _id;
         GLenum  _target;
         GLenum  _format;
       public:
@@ -111,12 +110,6 @@ namespace ge{
             GLenum    access  = TEXTUREOBJECT_DEFAULT_ACCESS,
             GLboolean layered = TEXTUREOBJECT_DEFAULT_LAYERED,
             GLint     layer   = TEXTUREOBJECT_DEFAULT_LAYER);
-        /**
-         * @brief gets id of texture
-         *
-         * @return id
-         */
-        GLuint  getId();
         /**
          * @brief sets parameters of texture
          *

@@ -40,6 +40,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/AsynchronousQueryObject.h
     ${HEADER_PATH}/DebugMessage.h
     ${HEADER_PATH}/RasterizationState.h
+    ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
   )
 
@@ -79,6 +80,7 @@ set(GL_SOURCES
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
     RasterizationState.cpp
+    OpenGLObject.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

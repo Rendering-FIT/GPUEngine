@@ -52,6 +52,49 @@ namespace ge{
         std::string getArg(std::string Start,std::string End,
             std::string ArgName,std::string Default="");
         /**
+         * @brief Gets following argument and converts it to integer
+         *
+         * @param ArgName argument name
+         * @param Default default returning value if the arg. is not found
+         *
+         * @return return next argument (1024 for -w; -w 1024)
+         */
+        int getArgi(std::string ArgName,std::string Default="");
+        /**
+         * @brief Gets following argument in context and converts it to integer
+         *
+         * @param Start starting argument of context
+         * @param End ending argument of context
+         * @param ArgName argument name
+         * @param Default default returning value if the arg. is not found
+         *
+         * @return 768 for -h in: -foo -tessstart -w 1024 -h 768 -tessend
+         */
+        int getArgi(std::string Start,std::string End,
+            std::string ArgName,std::string Default="");
+        /**
+         * @brief Gets following argument and converts it to float
+         *
+         * @param ArgName argument name
+         * @param Default default returning value if the arg. is not found
+         *
+         * @return return next argument (1024 for -w; -w 1024)
+         */
+        float getArgf(std::string ArgName,std::string Default="");
+        /**
+         * @brief Gets following argument in context and converts it to float
+         *
+         * @param Start starting argument of context
+         * @param End ending argument of context
+         * @param ArgName argument name
+         * @param Default default returning value if the arg. is not found
+         *
+         * @return 768 for -h in: -foo -tessstart -w 1024 -h 768 -tessend
+         */
+        float getArgf(std::string Start,std::string End,
+            std::string ArgName,std::string Default="");
+
+        /**
          * @brief Is argument present
          *
          * @param ArgName argument name
@@ -89,6 +132,10 @@ namespace ge{
          * @return g for 2 in: -foo -hahastart a b g d -hahaend
          */
         std::string getArg(std::string Start,std::string End,
+            unsigned Index,std::string Default="");
+        int getArgi(std::string Start,std::string End,
+            unsigned Index,std::string Default="");
+        float getArgf(std::string Start,std::string End,
             unsigned Index,std::string Default="");
     };
   }//util

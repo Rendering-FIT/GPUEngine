@@ -116,20 +116,6 @@ namespace ge{
         void      setPolygonOffsetFill(GLboolean value);
         void      ignorePolygonOffsetFill();
         bool      hasPolygonOffsetFill();
-
-
-
-
-
-
-        /*
-        GLboolean isDiscard();
-        GLfloat   getPointSize();
-        GLfloat   getPointFadeThresholdSIze();
-        GLenum    getPointSpriteCoordOrigin();
-        GLfloat   getLineWidth();
-        GLboolean isLineSmooth();
-        */
     };
   }//gl
 }//ge

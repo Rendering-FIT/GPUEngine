@@ -862,10 +862,6 @@ namespace ge{
       //delete this->UniformList;
     }
 
-    GLuint ProgramObject::getId(){
-      return this->_id;//returns shader program id
-    }
-
     GLint ProgramObject::operator[](std::string Name){
       return this->_uniformList[Name].location;//uniform id
     }

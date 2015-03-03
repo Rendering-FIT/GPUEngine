@@ -2,17 +2,14 @@
 #define _PROGRAMPIPELINEOBJECT_H_
 
 #include <geGL/OpenGL.h>
-
+#include<geGL/OpenGLObject.h>
 namespace ge{
   namespace gl{
-    class ProgramPipelineObject
+    class ProgramPipelineObject: public OpenGLObject
     {
-      protected:
-        GLuint _id;
       public:
         ProgramPipelineObject();
         ~ProgramPipelineObject();
-        GLuint getId();
         void bind();
         void unbind();
         void useProgramStages(GLbitfield stages,GLuint program);

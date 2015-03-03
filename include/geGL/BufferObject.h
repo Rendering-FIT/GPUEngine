@@ -3,6 +3,7 @@
 
 #include <geGL/OpenGL.h>
 #include <geCore/Object.h>
+#include <geGL/OpenGLObject.h>
 
 #include <iostream>
 
@@ -36,13 +37,13 @@ namespace ge{
     /**
      * Abstraction of the OpenGL Buffer Object.
      */
-    class GE_EXPORT BufferObject// : public ge::core::Object
+    class GE_EXPORT BufferObject:public OpenGLObject
     {
       private:
         GLint   _getBufferParameter(GLenum pname);
         GLvoid* _getBufferPointer  (GLenum pname);
-      protected:
-        GLuint     _id; ///< Buffer Object OpenGL ID
+      //protected:
+      //  GLuint     _id; ///< Buffer Object OpenGL ID
       public:
         BufferObject(
             GLsizeiptr    size,
@@ -91,7 +92,7 @@ namespace ge{
             const GLvoid *Data = BUFFEROBJECT_DEFAULT_DATA);
         void operator &=(BufferObject*buffer);
         GLsizeiptr getSize       ();
-        GLuint     getId         ();
+        //GLuint     getId         ();
         GLenum     getUsage      ();
         GLenum     getAccess     ();
         GLbitfield getAccessFlags();

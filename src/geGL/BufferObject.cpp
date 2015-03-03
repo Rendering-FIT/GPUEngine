@@ -3,7 +3,7 @@
 //toggle usage of direct state access
 //#define USE_DSA
 //toggle saving previous bindings
-#define SAVE_PREVIOUS_BINDING
+//#define SAVE_PREVIOUS_BINDING
 
 //TODO remove after glew fix
 #ifndef GL_COPY_READ_BUFFER_BINDING
@@ -587,9 +587,9 @@ GLvoid*BufferObject::_getBufferPointer(GLenum pname){
 GLsizeiptr BufferObject::getSize(){
   return this->_getBufferParameter(GL_BUFFER_SIZE);
 }
-GLuint BufferObject::getId(){
-  return this->_id;
-}
+//GLuint BufferObject::getId(){
+//  return this->_id;
+//}
 GLenum BufferObject::getUsage(){
   return this->_getBufferParameter(GL_BUFFER_USAGE);
 }

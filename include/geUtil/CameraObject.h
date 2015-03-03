@@ -117,11 +117,23 @@ namespace ge{
          */
         void getView(glm::mat4*V);
         /**
+         * @brief Gets view matrix
+         *
+         * @return view matrix
+         */
+        glm::mat4 getView();
+        /**
          * @brief Gets view matrix without translation
          *
          * @param V rotation view matrix
          */
         void getViewRoration(glm::mat4*V);
+        /**
+         * @brief Gets view matrix without translation
+         *
+         * @return rotation view matrix
+         */
+        glm::mat4 getViewRoration();
         /**
          * @brief Gets projection matrix
          *
@@ -129,11 +141,18 @@ namespace ge{
          */
         void getProjection(glm::mat4*P);
         /**
+         * @brief Gets projection matrix
+         *
+         * @return projection matrix
+         */
+        glm::mat4 getProjection();
+        /**
          * @brief Gets position of the camera
          *
          * @return position of the camera
          */
         glm::vec3 getPosition();
+        void setPosition(glm::vec3 p);
         /**
          * @brief Gets axes of view matrix
          *

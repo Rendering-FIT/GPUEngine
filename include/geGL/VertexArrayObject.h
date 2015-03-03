@@ -2,6 +2,8 @@
 #define _VERTEXARRAYOBJECT_H_
 
 #include<geGL/OpenGL.h>
+#include<geGL/OpenGLObject.h>
+#include<iostream>
 
 //#define REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
 
@@ -18,12 +20,14 @@
 
 namespace ge{
   namespace gl{
-    class GE_EXPORT VertexArrayObject
+    std::string translateAttribType(GLenum    type   );
+    std::string translateBoolean   (GLboolean boolean);
+    unsigned    getTypeSize        (GLenum    type   );
+    void initVertexArrayObjects    ();
+    class GE_EXPORT VertexArrayObject: public OpenGLObject
     {
       private:
         inline GLint getAttrib(GLuint index,GLenum pname);
-      protected:
-        GLuint _id;
       public:
         enum AttribPointerType{
           NONE,
@@ -46,19 +50,19 @@ namespace ge{
             GLuint  buffer);
         void bind  ();
         void unbind();
-        GLuint    getId();
         GLuint    getAttribBufferBinding (GLuint index);
-        GLboolean getAttribEnable        (GLuint index);
+        GLboolean isAttribEnabled        (GLuint index);
         GLint     getAttribSize          (GLuint index);
         GLsizei   getAttribStride        (GLuint index);
         GLenum    getAttribType          (GLuint index);
-        GLboolean getAttribNormalized    (GLuint index);
-        GLuint    getAttribInteger       (GLuint index);
-        GLuint    getAttribLong          (GLuint index);
+        GLboolean isAttribNormalized     (GLuint index);
+        GLboolean isAttribInteger        (GLuint index);
+        GLboolean isAttribLong           (GLuint index);
         GLuint    getAttribDivisor       (GLuint index);
         GLuint    getAttribBinding       (GLuint index);
         GLuint    getAttribRelativeOffset(GLuint index);
         GLuint    getElementBuffer();
+        std::string getInfo();
 #ifndef REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
         void addAttrib(
             ge::gl::BufferObject   *buffer                                                  ,
