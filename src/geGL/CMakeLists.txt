@@ -105,6 +105,7 @@ install(FILES
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
   )
   
 #########################################
@@ -121,7 +122,7 @@ configure_file(
    @ONLY
 )
 
-message("geGL install cm ${INSTALL_CM_DIR}")
+# INSTALL_CM_DIR is defined in master CMakeLists file
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geGLConfig.cmake"
         DESTINATION "${INSTALL_CM_DIR}/geGL"

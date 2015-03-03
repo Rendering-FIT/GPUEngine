@@ -68,4 +68,20 @@ install(FILES
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
   )
+
+#########################################
+#Export
+
+configure_file(
+   geSGConfig.cmake.in
+   geSGConfig.cmake
+   @ONLY
+)
+
+# INSTALL_CM_DIR is defined in master CMakeLists file
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geSGConfig.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/geSG"
+        )

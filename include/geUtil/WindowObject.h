@@ -4,6 +4,8 @@
 #include<iostream>
 #include<map>
 
+#include<geUtil/Export.h>
+
 #define USE_SDL2
 
 #define WINDOWOBJECT_WINDOWSIZE      NULL
@@ -35,7 +37,7 @@
 
 namespace ge{
   namespace util{
-    class WindowObject
+    class GEUTIL_EXPORT WindowObject
     {
       protected:
         unsigned _windowSize[2];//size of window

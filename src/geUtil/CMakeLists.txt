@@ -24,22 +24,31 @@ set(GL_SOURCES
   CameraPath.cpp
   )
 
-if(ANTTWEAKBAR_FOUND)
-set(GL_INCLUDES ${GL_INCLUDES} ${HEADER_PATH}/WindowObject.h)
-set(GL_SOURCES ${GL_SOURCES} WindowObject.cpp)
-include_directories(${ANTTWEAKBAR_INCLUDE_DIR})
+if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)
+   set(GL_INCLUDES ${GL_INCLUDES} ${HEADER_PATH}/WindowObject.h)
+   set(GL_SOURCES ${GL_SOURCES} WindowObject.cpp)
 endif()
 
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${GL_INCLUDES}
     ${GL_SOURCES}
-  )
+)
 
 find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
 
 set(Internal_deps geGL)
+
+IF(ANTTWEAKBAR_FOUND)
+   include_directories(${ANTTWEAKBAR_INCLUDE_DIR})
+   target_link_libraries(${LIB_NAME} ${ANTTWEAKBAR_LIBRARY})
+ENDIF()
+
+IF(SDL2_FOUND)
+   include_directories(${SDL2_INCLUDE_DIR})
+   target_link_libraries(${LIB_NAME} ${SDL2_LIBRARY})
+ENDIF()
 
 include_directories(${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps})
@@ -53,4 +62,21 @@ install(FILES
 install(TARGETS ${LIB_NAME}
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
   )
+
+
+#########################################
+#Export
+
+configure_file(
+   geUtilConfig.cmake.in
+   geUtilConfig.cmake
+   @ONLY
+)
+
+# INSTALL_CM_DIR is defined in master CMakeLists file
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geUtilConfig.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/geUtil"
+        )

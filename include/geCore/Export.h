@@ -1,5 +1,5 @@
-#ifndef GE_EXPORT_
-#define GE_EXPORT_
+#ifndef GECORE_EXPORT_
+#define GECORE_EXPORT_
 
 #if defined(_MSC_VER)
    #pragma warning( disable : 4251 ) //http://msdn.microsoft.com/cs-cz/library/esew7y1w.aspx  http://support.microsoft.com/default.aspx?scid=KB;EN-US;168958

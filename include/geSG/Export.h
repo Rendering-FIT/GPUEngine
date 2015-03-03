@@ -1,5 +1,5 @@
-#ifndef GE_EXPORT_H
-#define GE_EXPORT_H
+#ifndef GESG_EXPORT_H
+#define GESG_EXPORT_H
 
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
 #   ifdef GE_LIBRARY_STATIC

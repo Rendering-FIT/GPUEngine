@@ -1,18 +1,21 @@
 #ifndef _CAMERAOBJECT_H_
 #define _CAMERAOBJECT_H_
 
-#include<glm/glm.hpp>
 #define GLM_FORCE_RADIANS
+
+#include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtc/matrix_access.hpp>
+
+#include <geUtil/Export.h>
 
 namespace ge{
   namespace util{
     /**
      * @brief Class represents camera
      */
-    class CameraObject
+     class GEUTIL_EXPORT CameraObject
     {
       private:
         float     _fovy;        ///<field of view
