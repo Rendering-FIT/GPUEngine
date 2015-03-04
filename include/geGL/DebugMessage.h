@@ -10,6 +10,9 @@ namespace ge{
     GEGL_EXPORT std::string translateDebugType    (GLenum type    );
     GEGL_EXPORT std::string translateDebugSeverity(GLenum severity);
     GEGL_EXPORT void setDefaultDebugMessage();
+    GEGL_EXPORT void setLowAndGreaterDebugMessage();
+    GEGL_EXPORT void setMediumAndGreaterDebugMessage();
+    GEGL_EXPORT void setHighDebugMessage();
     GEGL_EXPORT void setDebugMessage(GLDEBUGPROC fce,void*data);
   }//gl
 }//ge
