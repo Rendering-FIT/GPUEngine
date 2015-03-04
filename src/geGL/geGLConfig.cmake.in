@@ -1,17 +1,20 @@
-#if (CMAKE_VERSION VERSION_LESS 2.8.3)
-#    message(FATAL_ERROR "Qt 5 requires at least CMake version 2.8.3")
-#endif()
 
 @PACKAGE_INIT@
 
 message(STATUS "@LIB_NAME@ greets downstreamer")
-
 get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
-
 include(${_@LIB_NAME@_install_prefix}/cmake/GEMacros.cmake)
 
 if(NOT TARGET @LIB_NAME@)
-   add_library(@LIB_NAME@ SHARED IMPORTED)
 
+   #find dependencies
+   foreach(_dep @Internal_deps@)
+      Find_Package(GPUEngine COMPONENTS ${_dep} ${GPUEngine_FIND_QUIETLY} PATHS "${CMAKE_CURRENT_LIST_DIR}/.." NO_DEFAULT_PATH)
+   endforeach()
+   
+   add_library(@LIB_NAME@ SHARED IMPORTED)
    _ge_populate_imported_target(@LIB_NAME@ _@LIB_NAME@_install_prefix @LIB_NAME@ GPUEngine_FIND_REQUIRED_@LIB_NAME@ GPUEngine_FIND_QUIETLY)
+   set_target_properties(@LIB_NAME@ PROPERTIES INTERFACE_LINK_LIBRARIES "@Internal_deps@")
+   list(APPEND GPUEngine_modules @LIB_NAME@)
+   
 endif(NOT TARGET @LIB_NAME@)

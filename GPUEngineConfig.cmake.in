@@ -1,8 +1,12 @@
 # - Config file for the GPUEngine package
+# Additional variables:
+# GPUEngine_modules - list of all found GPUEngine modules including the dependencies
 
 @INIT_PACKAGE@
 
 message("Greetings! GPUEngine downstreamer.")
+
+list(APPEND GPUEngine_modules )
 
 foreach(module ${GPUEngine_FIND_COMPONENTS})
    find_package(${module}
