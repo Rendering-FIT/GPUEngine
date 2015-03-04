@@ -1,11 +1,9 @@
-if(NOT OSG_FOUND OR NOT OSGDB_FOUND OR
-   NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND OR
-   NOT OSGDB_FOUND)
+if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
    return()
 endif()
 
 
-set(APP_NAME geViewer)
+set(APP_NAME TriangleRendering)
 
 project(${APP_NAME})
 
@@ -23,8 +21,6 @@ include_directories(
   ${OPENGL_INCLUDE_PATH} 
   ${SDL2_INCLUDE_PATH} 
   ${ANTTWEAKBAR_INCLUDE_PATH}
-  ${OSG_INCLUDE_PATH}
-  ${OSGDB_INCLUDE_PATH}
   )
 
 target_link_libraries(${APP_NAME} 
@@ -36,6 +32,4 @@ target_link_libraries(${APP_NAME}
   ${SDL2_LIBRARY}
   ${ANTTWEAKBAR_LIBRARY}
   ${X11_LIBRARIES}
-  ${OSG_LIBRARY}
-  ${OSGDB_LIBRARY}
   )

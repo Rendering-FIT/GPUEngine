@@ -171,74 +171,42 @@ void RenderingContext::freeDrawCommands(AttribReference &r)
 }
 
 
-/** Sets draw commands for the given AttribReference.
- *
- * The method uploads all draw commands to GPU
- * while updating startIndex of each draw command.
- * Draw commands are given by drawCommandBuffer memory pointer.
- * Each draw command is stored as four unsigned integers followed
- * by arbitrary user data. The first integer specifies GL mode
- * (GL_TRIANGLES, GL_LINE_STRIP, GL_POINT, GL_PATCH, etc.).
- * The second integer gives count - the number of vertices sent for rendering.
- * The third gives the start index within AttribReference allocated block of
- * vertices or indices while the fourth gives the index-offset of the start of
- * the allocated block of vertices or indices within AttribStorage. Thus,
- * the real start index is sum of these two indexes.*/
-void RenderingContext::setDrawCommands(AttribReference &r,
-                                       const void *drawCommandBuffer,unsigned bytesToCopy,
-                                       const unsigned *offsets4,int numDrawCommands)
+void RenderingContext::uploadPreprocessedDrawCommands(AttribReference &r,
+                                                      const void *drawCommandBuffer,
+                                                      unsigned bytesToCopy,unsigned dstOffset)
 {
-   void *p=malloc(bytesToCopy);
-   memcpy(p,drawCommandBuffer,bytesToCopy);
-   setDrawCommandsOptimized(r,p,bytesToCopy,
-                            generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands).data(),
-                            numDrawCommands);
-   free(p);
+   if(r.attribStorage==NULL || r.drawCommandBlockId==0)
+      return;
+
+   int bufferOffset=dstOffset+_drawCommandAllocationManager[r.drawCommandBlockId].offset;
+   _drawCommandBuffer->setData((uint8_t*)drawCommandBuffer,bytesToCopy,bufferOffset);
 }
 
 
-void RenderingContext::setDrawCommandsOptimized(AttribReference &r,
-                                                void *drawCommandBuffer,unsigned bytesToCopy,
-                                                const unsigned *offsets4,int numDrawCommands)
+void RenderingContext::setDrawCommandControlData(AttribReference &r,
+                                                 const AttribReference::DrawCommandControlData *data,
+                                                 int numDrawCommands,unsigned startIndex,
+                                                 bool truncate)
 {
-   setDrawCommandsOptimized(r,drawCommandBuffer,bytesToCopy,
-                            generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands).data(),
-                            numDrawCommands);
+   if(r.attribStorage==NULL)
+      return;
+
+   // resize if needed
+   int minSizeRequired=numDrawCommands+startIndex;
+   int currentSize=r.drawCommandControlData.size();
+   if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
+      r.drawCommandControlData.resize(minSizeRequired);
+
+   // copy memory
+   memmove(r.drawCommandControlData.data()+startIndex,data,
+           numDrawCommands*sizeof(AttribReference::DrawCommandControlData));
 }
 
 
-void RenderingContext::setDrawCommandsOptimized(AttribReference &r,
-                                                void *drawCommandBuffer,unsigned bytesToCopy,
-                                                const AttribReference::DrawCommandControlData *data,
-                                                int numDrawCommands)
-{
-   clearDrawCommands(r);
-   prepareDrawCommandsBufferData(r,drawCommandBuffer,data,numDrawCommands);
-   uploadDrawCommandBufferData(r,drawCommandBuffer,bytesToCopy);
-   updateDrawCommandControlData(r,data,numDrawCommands);
-}
-
-
-std::vector<AttribReference::DrawCommandControlData>
-RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
-                                                 const unsigned *offsets4,int numDrawCommands)
-{
-   std::vector<AttribReference::DrawCommandControlData> r;
-   r.reserve(numDrawCommands);
-   for(int i=0; i<numDrawCommands; i++)
-   {
-      unsigned o=offsets4[i];
-      unsigned mode=((DrawCommandBufferData*)((unsigned*)drawCommandBuffer)+o)->mode;
-      r.emplace_back(o,mode);
-   }
-   return r;
-}
-
-
-void RenderingContext::prepareDrawCommandsBufferData(AttribReference &r,
-                                                     void *drawCommandBuffer,
-                                                     const AttribReference::DrawCommandControlData *data,
-                                                     int numDrawCommands)
+void RenderingContext::preprocessDrawCommands(AttribReference &r,
+                                              void *drawCommandBuffer,
+                                              const AttribReference::DrawCommandControlData *data,
+                                              int numDrawCommands)
 {
    // get index of allocated block
    unsigned blockOffset;
@@ -257,35 +225,60 @@ void RenderingContext::prepareDrawCommandsBufferData(AttribReference &r,
 }
 
 
-void RenderingContext::uploadDrawCommandBufferData(AttribReference &r,
-                                                   const void *drawCommandBuffer,
-                                                   unsigned bytesToCopy,unsigned dstOffset)
+vector<AttribReference::DrawCommandControlData>
+RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
+                                                 const unsigned *offsets4,int numDrawCommands)
 {
-   if(r.attribStorage==NULL || r.drawCommandBlockId==0)
-      return;
-
-   int bufferOffset=dstOffset+_drawCommandAllocationManager[r.drawCommandBlockId].offset;
-   _drawCommandBuffer->setData((uint8_t*)drawCommandBuffer,bytesToCopy,bufferOffset);
+   std::vector<AttribReference::DrawCommandControlData> r;
+   r.reserve(numDrawCommands);
+   for(int i=0; i<numDrawCommands; i++)
+   {
+      unsigned o=offsets4[i];
+      unsigned mode=((DrawCommandBufferData*)&(((unsigned*)drawCommandBuffer)[o]))->mode;
+      r.emplace_back(o,mode);
+   }
+   return r;
 }
 
 
-void RenderingContext::updateDrawCommandControlData(AttribReference &r,
-                                                    const AttribReference::DrawCommandControlData *data,
-                                                    int numDrawCommands,
-                                                    unsigned startIndex,bool truncate)
+/** Uploads draw commands and sets their control data.
+ *
+ * The method uploads all draw commands to GPU
+ * and sets the control data of each draw command.
+ *
+ * Each draw command is stored in nonConstDrawCommandBuffer
+ * as four unsigned integers followed
+ * by arbitrary user data. The first integer specifies GL mode
+ * (GL_TRIANGLES, GL_LINE_STRIP, GL_POINT, GL_PATCH, etc.).
+ * The second integer gives count - the number of vertices sent for rendering.
+ * The third gives the start index within AttribReference allocated block of
+ * vertices or indices while the fourth gives the index-offset of the start of
+ * the allocated block of vertices or indices within AttribStorage. Thus,
+ * the real start index is sum of these two indexes.
+ * Arbitrary amount of user defined data may follow, that might be used
+ * for GPU-based frustum culling, automatic LOD, etc.
+ *
+ * Before uploading all draw commands to GPU,
+ * the buffer have to be preprocessed to update
+ * startIndex of each draw command. As a performance optimization,
+ * the preprocessing is performed directly in nonConstDrawCommandBuffer,
+ * thus if you do not want the data to be modified,
+ * create temporary copy and pass it to the method instead.
+ *
+ * DrawCommandControlData carries the offset of each
+ * draw command inside draw command buffer and mode of each draw command.
+ * The mode tells OpenGL rendering mode (GL_TRIANGLES, GL_LINE_STRIP, etc.)
+ * and whether indexing is in use (glDrawArrays vs. glDrawElements).
+ */
+void RenderingContext::uploadDrawCommands(AttribReference &r,
+                                          void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
+                                          const AttribReference::DrawCommandControlData *data,
+                                          int numDrawCommands)
 {
-   if(r.attribStorage==NULL)
-      return;
-
-   // resize if needed
-   int minSizeRequired=numDrawCommands+startIndex;
-   int currentSize=r.drawCommandControlData.size();
-   if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
-      r.drawCommandControlData.resize(minSizeRequired);
-
-   // copy memory
-   memmove(r.drawCommandControlData.data()+startIndex,data,
-           numDrawCommands*sizeof(AttribReference::DrawCommandControlData));
+   clearDrawCommands(r);
+   preprocessDrawCommands(r,nonConstDrawCommandBuffer,data,numDrawCommands);
+   uploadPreprocessedDrawCommands(r,nonConstDrawCommandBuffer,bytesToCopy);
+   setDrawCommandControlData(r,data,numDrawCommands);
 }
 
 

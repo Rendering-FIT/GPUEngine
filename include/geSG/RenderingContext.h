@@ -20,7 +20,6 @@ namespace ge
    }
    namespace sg
    {
-      class Array;
       class AttribReference;
       class AttribStorage;
       class StateSet;
@@ -100,40 +99,49 @@ namespace ge
          inline ChunkAllocationManager& getDrawCommandsAllocationManager();
          inline const ChunkAllocationManager& getDrawCommandsAllocationManager() const;
 
-         inline unsigned getNumDrawCommandsTotal() const;
-         inline unsigned getNumDrawCommandsAvailable() const;
-         inline unsigned getNumDrawCommandsAvailableAtTheEnd() const;
+         inline unsigned getNumDrawCommandBytesTotal() const;
+         inline unsigned getNumDrawCommandBytesAvailable() const;
+         inline unsigned getNumDrawCommandBytesAvailableAtTheEnd() const;
          inline unsigned getFirstDrawCommandAvailableAtTheEnd() const;
          inline unsigned getIdOfDrawCommandBlockAtTheEnd() const;
+
+         inline unsigned* getInstanceAllocation(unsigned id) const;
+         inline ItemAllocationManager& getInstanceAllocationManager();
+         inline const ItemAllocationManager& getInstanceAllocationManager() const;
+
+         inline unsigned getNumInstancesTotal() const;
+         inline unsigned getNumInstancesAvailable() const;
+         inline unsigned getNumInstancesAvailableAtTheEnd() const;
+         inline unsigned getFirstInstanceAvailableAtTheEnd() const;
 
          virtual bool allocDrawCommands(AttribReference &r,unsigned size);
          virtual bool reallocDrawCommands(AttribReference &r,int newSize,
                                           bool preserveContent=true);
          virtual void freeDrawCommands(AttribReference &r);
 
-         void setDrawCommands(AttribReference &r,
-                              const void *drawCommandBuffer,unsigned bytesToCopy,
-                              const unsigned *offsets4,int numDrawCommands);
-         void setDrawCommandsOptimized(AttribReference &r,
-                                       void *drawCommandBuffer,unsigned bytesToCopy,
-                                       const unsigned *offsets4,int numDrawCommands);
-         void setDrawCommandsOptimized(AttribReference &r,
-                                       void *drawCommandBuffer,unsigned bytesToCopy,
-                                       const AttribReference::DrawCommandControlData *data,
-                                       int numDrawCommands);
+         virtual void uploadPreprocessedDrawCommands(AttribReference &r,
+                                                     const void *drawCommandBuffer,
+                                                     unsigned bytesToCopy,unsigned dstOffset=0);
+         virtual void setDrawCommandControlData(AttribReference &r,
+                                                const AttribReference::DrawCommandControlData *data,
+                                                int numDrawCommands,unsigned startIndex=0,
+                                                bool truncate=true);
+         static void preprocessDrawCommands(AttribReference &r,
+                                            void *drawCommandBuffer,
+                                            const AttribReference::DrawCommandControlData *data,
+                                            int numDrawCommands);
          static std::vector<AttribReference::DrawCommandControlData> generateDrawCommandControlData(
-                                       const void *drawCommandBuffer,
-                                       const unsigned *offsets4,int numDrawCommands);
-         static void prepareDrawCommandsBufferData(AttribReference &r,
-                                                   void *drawCommandBuffer,
-                                                   const AttribReference::DrawCommandControlData *data,
-                                                   int numDrawCommands);
-         virtual void uploadDrawCommandBufferData(AttribReference &r,const void *drawCommandBuffer,
-                                                  unsigned bytesToCopy,unsigned dstOffset=0);
-         virtual void updateDrawCommandControlData(AttribReference &r,
-                                                   const AttribReference::DrawCommandControlData *data,
-                                                   int numDrawCommands,
-                                                   unsigned startIndex=0,bool truncate=true);
+                                            const void *drawCommandBuffer,
+                                            const unsigned *offsets4,int numDrawCommands);
+
+         void uploadDrawCommands(AttribReference &r,
+                                 void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
+                                 const AttribReference::DrawCommandControlData *data,
+                                 int numDrawCommands);
+         inline void uploadDrawCommands(AttribReference &r,
+                                        void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
+                                        const unsigned *offsets4,int numDrawCommands);
+
          inline  void clearDrawCommands(AttribReference &r);
          virtual void setNumDrawCommands(AttribReference &r,unsigned num);
 
@@ -201,11 +209,20 @@ namespace ge
       inline const ChunkAllocation& RenderingContext::getDrawCommandsAllocationBlock(unsigned id) const  { return _drawCommandAllocationManager[id]; }
       inline ChunkAllocationManager& RenderingContext::getDrawCommandsAllocationManager()  { return _drawCommandAllocationManager; }
       inline const ChunkAllocationManager& RenderingContext::getDrawCommandsAllocationManager() const  { return _drawCommandAllocationManager; }
-      inline unsigned RenderingContext::getNumDrawCommandsTotal() const  { return _drawCommandAllocationManager._numBytesTotal; }
-      inline unsigned RenderingContext::getNumDrawCommandsAvailable() const  { return _drawCommandAllocationManager._numBytesAvailable; }
-      inline unsigned RenderingContext::getNumDrawCommandsAvailableAtTheEnd() const  { return _drawCommandAllocationManager._numBytesAvailableAtTheEnd; }
+      inline unsigned RenderingContext::getNumDrawCommandBytesTotal() const  { return _drawCommandAllocationManager._numBytesTotal; }
+      inline unsigned RenderingContext::getNumDrawCommandBytesAvailable() const  { return _drawCommandAllocationManager._numBytesAvailable; }
+      inline unsigned RenderingContext::getNumDrawCommandBytesAvailableAtTheEnd() const  { return _drawCommandAllocationManager._numBytesAvailableAtTheEnd; }
       inline unsigned RenderingContext::getFirstDrawCommandAvailableAtTheEnd() const  { return _drawCommandAllocationManager._firstByteAvailableAtTheEnd; }
       inline unsigned RenderingContext::getIdOfDrawCommandBlockAtTheEnd() const  { return _drawCommandAllocationManager._idOfBlockAtTheEnd; }
+      inline unsigned* RenderingContext::getInstanceAllocation(unsigned id) const  { return _instanceAllocationManager[id]; }
+      inline ItemAllocationManager& RenderingContext::getInstanceAllocationManager()  { return _instanceAllocationManager; }
+      inline const ItemAllocationManager& RenderingContext::getInstanceAllocationManager() const  { return _instanceAllocationManager; }
+      inline unsigned RenderingContext::getNumInstancesTotal() const  { return _instanceAllocationManager._numItemsTotal; }
+      inline unsigned RenderingContext::getNumInstancesAvailable() const  { return _instanceAllocationManager._numItemsAvailable; }
+      inline unsigned RenderingContext::getNumInstancesAvailableAtTheEnd() const  { return _instanceAllocationManager._numItemsAvailableAtTheEnd; }
+      inline unsigned RenderingContext::getFirstInstanceAvailableAtTheEnd() const  { return _instanceAllocationManager._firstItemAvailableAtTheEnd; }
+      inline void RenderingContext::uploadDrawCommands(AttribReference &r,void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
+      { uploadDrawCommands(r,nonConstDrawCommandBuffer,bytesToCopy,generateDrawCommandControlData(nonConstDrawCommandBuffer,offsets4,numDrawCommands).data(),numDrawCommands); }
       inline void RenderingContext::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
       inline RenderingContext::InstanceGroupId RenderingContext::createInstances(AttribReference &r,unsigned matrixIndex,StateSet *stateSet)
       { return createInstances(r,nullptr,-1,matrixIndex,stateSet); }

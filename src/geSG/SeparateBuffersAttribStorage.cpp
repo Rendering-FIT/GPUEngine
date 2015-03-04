@@ -1,7 +1,5 @@
-#include <algorithm>
 #include <iostream>
 #include <geSG/SeparateBuffersAttribStorage.h>
-#include <geSG/Array.h>
 #include <geGL/VertexArrayObject.h>
 
 using namespace ge::sg;
@@ -71,45 +69,34 @@ bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertice
 }
 
 
-void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const std::vector<Array>& data,
-                                                  int fromIndex,int numVertices)
+void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const void*const *attribs,
+                                                  int numVertices,int fromIndex)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->getConfigData();
-   for(int i=0,c=int(min(_arrayBuffers.size(),data.size())); i<c; i++)
+   for(int i=0,c=int(_arrayBuffers.size()); i<c; i++)
    {
       AttribType t=configData.attribTypes[i];
-      if(t!=data[i].getType()) {
-         cout << "Error in SeparateBuffersAttribStorage::uploadVertexData(): data type of\n"
-                 "   attribute " << i << " differs from the one passed in the parameter." << endl;
-         continue;
-      }
       int elementSize=t.elementSize();
       int srcOffset=fromIndex*elementSize;
       int dstOffset=(_vertexAllocationManager[r.verticesDataId].startIndex+fromIndex)*elementSize;
-      int num=numVertices==-1?int(data[i].size()):numVertices;
-      _arrayBuffers[i]->setData((uint8_t*)data[i].data()+srcOffset,num*elementSize,dstOffset);
+      const void *data=attribs[i];
+      _arrayBuffers[i]->setData(((uint8_t*)data)+srcOffset,
+                                numVertices*elementSize,dstOffset);
    }
 }
 
 
-void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const Array& data,
-                                                 int fromIndex,int numIndices)
+void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const void *indices,
+                                                 int numIndices,int fromIndex)
 {
-   AttribType t=data.getType();
-   if(t!=AttribType::UInt) {
-      cout<<"Error in SeparateBuffersAttribStorage::uploadIndices(): data type of\n"
-            "   indices is not UInt (unsigned 32-bit int)."<<endl;
-      return;
-   }
    if(_ebo==NULL) {
       cout<<"Error in SeparateBuffersAttribStorage::uploadIndices(): ebo is null.\n"
             "   SeparateBuffersAttribStorage was probably created with AttribConfig\n"
             "   without ebo member set to true." << endl;
       return;
    }
-   int elementSize=t.elementSize();
+   const int elementSize=4;
    int srcOffset=fromIndex*elementSize;
    int dstOffset=(_indexAllocationManager[r.indicesDataId].startIndex+fromIndex)*elementSize;
-   int num=numIndices==-1?int(data.size()):numIndices;
-   _ebo->setData((uint8_t*)data.data()+srcOffset,num*elementSize,dstOffset);
+   _ebo->setData((uint8_t*)indices+srcOffset,numIndices*elementSize,dstOffset);
 }

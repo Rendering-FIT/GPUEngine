@@ -10,7 +10,6 @@ namespace ge
 {
    namespace sg
    {
-      class Array;
       class AttribConfigRef;
       class AttribStorage;
       class StateSet;
@@ -78,28 +77,27 @@ namespace ge
          inline int getNumIndices() const;
          inline int getDrawCommandBlockSize() const;
 
-         inline void uploadVertices(const std::vector<Array>& attribs,
-                                    int fromIndex=0,int numVertices=-1);
-         inline void uploadIndices(const Array& indices,int fromIndex=0,int numIndices=-1);
+         inline void uploadVertices(const void*const *attribs,int numVertices,int fromIndex=0);
+         inline void uploadIndices(const void *indices,int numIndices,int fromIndex=0);
 
-         inline void setDrawCommands(const void *drawCommandBuffer,unsigned bytesToCopy,
-                                     const unsigned *offsets4,int numDrawCommands);
-         inline void setDrawCommandsOptimized(void *drawCommandBuffer,unsigned bytesToCopy,
-                                              const unsigned *offsets4,int numDrawCommands);
-         inline void setDrawCommandsOptimized(void *drawCommandBuffer,unsigned bytesToCopy,
-                                              const DrawCommandControlData *data,
-                                              int numDrawCommands);
+         inline void uploadPreprocessedDrawCommands(const void *drawCommandBuffer,
+                                                    unsigned bytesToCopy,unsigned dstOffset=0);
+         inline void setDrawCommandControlData(const DrawCommandControlData *data,
+                                               int numDrawCommands,unsigned startIndex=0,
+                                               bool truncate=true);
+         inline void preprocessDrawCommands(void *drawCommandBuffer,
+                                            const DrawCommandControlData *data,
+                                            int numDrawCommands);
          inline static std::vector<DrawCommandControlData> generateDrawCommandControlData(
-                                              const void *drawCommandBuffer,
-                                              const unsigned *offsets4,int numDrawCommands);
-         inline void prepareDrawCommandsBufferData(void *drawCommandBuffer,
-                                                   const DrawCommandControlData *data,
-                                                   int numDrawCommands);
-         inline void uploadDrawCommandBufferData(const void *drawCommandBuffer,
-                                                 unsigned bytesToCopy,unsigned dstOffset=0);
-         inline void updateDrawCommandControlData(const DrawCommandControlData *data,
-                                                  int numDrawCommands,unsigned startIndex=0,
-                                                  bool truncate=true);
+                                            const void *drawCommandBuffer,
+                                            const unsigned *offsets4,int numDrawCommands);
+
+         inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
+                                        const DrawCommandControlData *data,
+                                        int numDrawCommands);
+         inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
+                                        const unsigned *offsets4,int numDrawCommands);
+
          inline void clearDrawCommands();
          inline void setNumDrawCommands(unsigned num);
 
@@ -164,31 +162,28 @@ namespace ge
          RenderingContext::current()->reallocDrawCommands(*this,numDrawCommands,preserveContent);
       }
       inline void AttribReference::freeData()  { if(attribStorage) attribStorage->freeData(*this); }
-      inline void AttribReference::uploadVertices(const std::vector<Array>& attribs,
-                                                  int fromIndex,int numVertices)
+      inline void AttribReference::uploadVertices(const void*const *attribs,int numVertices,int fromIndex)
       {
          if(attribStorage)
-            attribStorage->uploadVertices(*this,attribs,fromIndex,numVertices);
+            attribStorage->uploadVertices(*this,attribs,numVertices,fromIndex);
       }
-      inline void AttribReference::uploadIndices(const Array& indices,int fromIndex,int numIndices)
+      inline void AttribReference::uploadIndices(const void *indices,int numIndices,int fromIndex)
       {
          if(attribStorage)
-            attribStorage->uploadIndices(*this,indices,fromIndex,numIndices);
+            attribStorage->uploadIndices(*this,indices,numIndices,fromIndex);
       }
-      inline void AttribReference::setDrawCommands(const void *drawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
-      { RenderingContext::current()->setDrawCommands(*this,drawCommandBuffer,bytesToCopy,offsets4,numDrawCommands); }
-      inline void AttribReference::setDrawCommandsOptimized(void *drawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
-      { RenderingContext::current()->setDrawCommandsOptimized(*this,drawCommandBuffer,bytesToCopy,offsets4,numDrawCommands); }
-      inline void AttribReference::setDrawCommandsOptimized(void *drawCommandBuffer,unsigned bytesToCopy,const AttribReference::DrawCommandControlData *data,int numDrawCommands)
-      { RenderingContext::current()->setDrawCommandsOptimized(*this,drawCommandBuffer,bytesToCopy,data,numDrawCommands); }
+      inline void AttribReference::uploadPreprocessedDrawCommands(const void *drawCommandBuffer,unsigned bytesToCopy,unsigned dstOffset)
+      { RenderingContext::current()->uploadPreprocessedDrawCommands(*this,drawCommandBuffer,bytesToCopy,dstOffset); }
+      inline void AttribReference::setDrawCommandControlData(const DrawCommandControlData *data,int numDrawCommands,unsigned startIndex,bool truncate)
+      { RenderingContext::current()->setDrawCommandControlData(*this,data,numDrawCommands,startIndex,truncate); }
+      inline void AttribReference::preprocessDrawCommands(void *drawCommandBuffer,const DrawCommandControlData *data,int numDrawCommands)
+      { RenderingContext::current()->preprocessDrawCommands(*this,drawCommandBuffer,data,numDrawCommands); }
       inline std::vector<AttribReference::DrawCommandControlData> AttribReference::generateDrawCommandControlData(const void *drawCommandBuffer,const unsigned *offsets4,int numDrawCommands)
-      { return RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
-      inline void AttribReference::prepareDrawCommandsBufferData(void *drawCommandBuffer,const AttribReference::DrawCommandControlData *data,int numDrawCommands)
-      { RenderingContext::prepareDrawCommandsBufferData(*this,drawCommandBuffer,data,numDrawCommands); }
-      inline void AttribReference::uploadDrawCommandBufferData(const void *drawCommandBuffer,unsigned bytesToCopy,unsigned dstOffset)
-      { RenderingContext::current()->uploadDrawCommandBufferData(*this,drawCommandBuffer,bytesToCopy,dstOffset); }
-      inline void AttribReference::updateDrawCommandControlData(const DrawCommandControlData *data,int numDrawCommands,unsigned startIndex,bool truncate)
-      { RenderingContext::current()->updateDrawCommandControlData(*this,data,numDrawCommands,startIndex,truncate); }
+      { RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
+      inline void AttribReference::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const DrawCommandControlData *data,int numDrawCommands)
+      { RenderingContext::current()->uploadDrawCommands(*this,nonConstDrawCommandBuffer,bytesToCopy,data,numDrawCommands); }
+      inline void AttribReference::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
+      { RenderingContext::current()->uploadDrawCommands(*this,nonConstDrawCommandBuffer,bytesToCopy,offsets4,numDrawCommands); }
       inline void AttribReference::clearDrawCommands()  { setNumDrawCommands(0); }
       inline void AttribReference::setNumDrawCommands(unsigned num)
       { RenderingContext::current()->setNumDrawCommands(*this,num); }

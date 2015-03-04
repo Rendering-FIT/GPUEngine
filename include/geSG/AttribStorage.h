@@ -6,7 +6,6 @@
 #define GE_SG_ATTRIB_STORAGE_H
 
 #include <memory>
-#include <vector>
 #include <geSG/Export.h>
 #include <geSG/AllocationManagers.h>
 
@@ -14,7 +13,6 @@ namespace ge
 {
    namespace sg
    {
-      class Array;
       class AttribReference;
 
 
@@ -43,9 +41,9 @@ namespace ge
                                   bool preserveContent=true);
          virtual void freeData(AttribReference &r);
 
-         virtual void uploadVertices(AttribReference &r,const std::vector<Array>& attribs,
-                                       int fromIndex=0,int numVertices=-1) = 0;
-         virtual void uploadIndices(AttribReference &r,const Array& indices,
+         virtual void uploadVertices(AttribReference &r,const void*const *attribs,
+                                     int fromIndex=0,int numVertices=-1) = 0;
+         virtual void uploadIndices(AttribReference &r,const void *indices,
                                     int fromIndex=0,int numIndices=-1) = 0;
 
          inline const BlockAllocation& getVertexAllocationBlock(unsigned id) const; ///< Returns vertex data allocation block at index id.

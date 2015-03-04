@@ -1,6 +1,5 @@
 #include <iostream> // for cerr
 #include <memory>
-#include <geSG/Array.h>
 #include <geSG/AttribStorage.h>
 #include <geSG/AttribReference.h>
 #include <geSG/SeparateBuffersAttribStorage.h> // for DefaultFactory

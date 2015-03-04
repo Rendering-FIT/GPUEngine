@@ -33,10 +33,10 @@ namespace ge
 
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
                                   bool preserveContent=true) override;
-         virtual void uploadVertices(AttribReference &r,const std::vector<Array>& data,
-                                       int fromIndex=0,int numVertices=-1) override;
-         virtual void uploadIndices(AttribReference &r,const Array& data,
-                                    int fromIndex=0,int numIndices=-1) override;
+         virtual void uploadVertices(AttribReference &r,const void*const *attribs,
+                                     int numVertices,int fromIndex=0) override;
+         virtual void uploadIndices(AttribReference &r,const void *indices,
+                                    int numIndices,int fromIndex=0) override;
 
       };
 

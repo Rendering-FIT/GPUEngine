@@ -18,7 +18,6 @@ namespace ge
       public:
 
          virtual void apply(Node& node);
-         virtual void apply(Mesh& node);
          virtual void apply(Group& node);
          virtual void apply(MatrixTransform& node);
 

@@ -94,9 +94,9 @@ void initVertexArrayObjects(){
       openGL320=false;
     }
   }
-  if(!glCreateVertexArrays){
-    glCreateVertexArrays=ge::gl::_glCreateVertexArrays;
-  }
+//  if(!glCreateVertexArrays){
+//    glCreateVertexArrays=ge::gl::_glCreateVertexArrays;
+//  }
   if(!glVertexAttribLPointer){
     if(glVertexAttribLPointerEXT){
       glVertexAttribLPointer=glVertexAttribLPointerEXT;

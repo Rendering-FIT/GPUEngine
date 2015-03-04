@@ -8,13 +8,13 @@
 #include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
-#include <geSG/Array.h>
 #include <geSG/AttribReference.h>
-#include <geSG/Mesh.h>
+#include <geSG/AttribType.h>
 #include <geSG/RenderingContext.h>
 #include <geSG/StateSet.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
+#include <osgDB/ReadFile>
 
 using namespace std;
 using namespace ge::gl;
@@ -47,12 +47,13 @@ ge::util::WindowObject   *Window;
 static ProgramObject *glProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
 static shared_ptr<StateSet> stateSet;
+static list<AttribReference> attribRefList;
+static vector<AttribReference> notUsedVector;
 static AttribReference attribsRefNI;
 static AttribReference attribsRefI;
 static AttribReference attribsRefInstNI;
 static AttribReference attribsRefInstI;
-static shared_ptr<Mesh> meshNI;
-static shared_ptr<Mesh> meshI;
+static string fileName;
 
 
 int main(int Argc,char*Argv[])
@@ -70,6 +71,14 @@ int main(int Argc,char*Argv[])
   ContextParam.Version = atoi(Args->getArg("--context-version","430").c_str());
   ContextParam.Profile = Args->getArg("--context-profile","core");
   ContextParam.Flag    = Args->getArg("--context-flag","debug");
+
+  // file name
+  if(Argc>1)
+  {
+     int i=Argc-1;
+     if(Argv[i][0]!='-')
+        if(Argc==2 || Argv[i-1][0]!='-')  fileName=Argv[1];
+  }
 
   Window=new ge::util::WindowObject(
       WindowParam.Size[0],
@@ -111,14 +120,37 @@ void Wheel(int d){
 }
 
 
-void Idle(){
+static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
+{
+   cout<<"Buffer contains "<<numInts<<" int values:"<<endl;
+   unsigned *p=(unsigned*)bo->map(GL_MAP_READ_BIT);
+   if(p==nullptr) return;
+   unsigned i;
+   for(i=0; i<numInts; i++)
+   {
+      cout<<*(p+i)<<"  ";
+      if(i%4==3)
+         cout<<endl;
+   }
+   bo->unmap();
+   if(i%4!=0)
+      cout<<endl;
+   cout<<endl;
+}
+
+
+void Idle()
+{
+   // indirect buffer update - setup and start compute shader
    processInstanceProgram->use();
-   processInstanceProgram->set("numToProcess",2);
+   unsigned numInstances=RenderingContext::current()->getFirstInstanceAvailableAtTheEnd();
+   processInstanceProgram->set("numToProcess",numInstances);
    RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
    RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
    RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
-   glDispatchCompute(1,1,1);
+   glDispatchCompute((numInstances+63)/64,1,1);
 
+   // draw few triangles by very low-level approach
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
    attribsRefNI.attribStorage->bind();
@@ -129,25 +161,322 @@ void Idle(){
    baseIndex=attribsRefI.attribStorage->getIndexAllocationBlock(attribsRefI.indicesDataId).startIndex;
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
-   AttribStorage *storageNI=meshNI->getAttribReference().attribStorage;
-   storageNI->bind();
-   const BlockAllocation &blockNI=storageNI->getVertexAllocationBlock(meshNI->getAttribReference().verticesDataId);
-   glDrawArrays(GL_TRIANGLES,blockNI.startIndex,blockNI.numElements);
-   AttribStorage *storageI=meshI->getAttribReference().attribStorage;
-   storageI->bind();
-   const BlockAllocation &blockI=storageI->getIndexAllocationBlock(meshI->getAttribReference().indicesDataId);
-   glDrawElementsBaseVertex(GL_TRIANGLES,blockI.numElements,GL_UNSIGNED_INT,(void*)(blockI.startIndex*sizeof(uint32_t)),6);
 
-   RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
-   storageNI->bind();
+   // wait for compute shader
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
-   glMultiDrawArraysIndirect(GL_TRIANGLES,nullptr,2,0);
+   RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+
+   // render two triangles indirectly
+   attribsRefInstNI.attribStorage->bind();
+   glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(attribsRefInstNI.instances.front()->items[0]*16),2,0);
+
+   // render loaded model
+   if(!attribRefList.empty())
+   {
+      for(auto it=attribRefList.begin(); it!=attribRefList.end(); it++)
+      {
+         it->attribStorage->bind();
+         glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(it->instances.front()->items[0]*16),
+                                   it->instances.front()->count,0);
+      }
+   }
+   //printIntBufferContent(RenderingContext::current()->getInstanceBuffer(),
+   //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*3);
+   //printIntBufferContent(RenderingContext::current()->getIndirectCommandBuffer(),
+   //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*4);
 
    Window->swap();
 }
 
 
-void Init(){
+static map<osg::Array::Type,AttribType> osgArrayType2geArrayType = {
+   { osg::Array::ByteArrayType,   AttribType::Byte },
+   { osg::Array::ShortArrayType,  AttribType::Short },
+   { osg::Array::IntArrayType,    AttribType::Int },
+   { osg::Array::UByteArrayType,  AttribType::UByte },
+   { osg::Array::UShortArrayType, AttribType::UShort },
+   { osg::Array::UIntArrayType,   AttribType::UInt },
+   { osg::Array::FloatArrayType,  AttribType::Float },
+   { osg::Array::DoubleArrayType, AttribType::Double },
+   { osg::Array::Vec2bArrayType,  AttribType::BVec2 },
+   { osg::Array::Vec3bArrayType,  AttribType::BVec3 },
+   { osg::Array::Vec4bArrayType,  AttribType::BVec4 },
+   { osg::Array::Vec2sArrayType,  AttribType::SVec2 },
+   { osg::Array::Vec3sArrayType,  AttribType::SVec3 },
+   { osg::Array::Vec4sArrayType,  AttribType::SVec4 },
+   { osg::Array::Vec2iArrayType,  AttribType::IVec2 },
+   { osg::Array::Vec3iArrayType,  AttribType::IVec3 },
+   { osg::Array::Vec4iArrayType,  AttribType::IVec4 },
+   { osg::Array::Vec2ubArrayType, AttribType::UBVec2 },
+   { osg::Array::Vec3ubArrayType, AttribType::UBVec3 },
+   { osg::Array::Vec4ubArrayType, AttribType::UBVec4 },
+   { osg::Array::Vec2usArrayType, AttribType::USVec2 },
+   { osg::Array::Vec3usArrayType, AttribType::USVec3 },
+   { osg::Array::Vec4usArrayType, AttribType::USVec4 },
+   { osg::Array::Vec2uiArrayType, AttribType::UVec2 },
+   { osg::Array::Vec3uiArrayType, AttribType::UVec3 },
+   { osg::Array::Vec4uiArrayType, AttribType::UVec4 },
+   { osg::Array::Vec2ArrayType,   AttribType::Vec2 },
+   { osg::Array::Vec3ArrayType,   AttribType::Vec3 },
+   { osg::Array::Vec4ArrayType,   AttribType::Vec4 },
+   { osg::Array::Vec2dArrayType,  AttribType::DVec2 },
+   { osg::Array::Vec3dArrayType,  AttribType::DVec3 },
+   { osg::Array::Vec4dArrayType,  AttribType::DVec4 },
+   { osg::Array::MatrixArrayType,  AttribType::Mat4 },
+   { osg::Array::MatrixdArrayType, AttribType::DMat4 },
+};
+
+
+static AttribType convertOsgArrayType2geAttribType(osg::Array::Type osgType)
+{
+   return osgArrayType2geArrayType[osgType];
+}
+
+
+class BuildGpuEngineGraphVisitor : public osg::NodeVisitor {
+public:
+
+   inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+   {
+   }
+
+   virtual void apply(osg::Geode& node)
+   {
+      for(int i=0,c=node.getNumDrawables(); i<c; i++)
+         apply(*node.getDrawable(i));
+   }
+
+   virtual void apply(osg::Drawable& drawable)
+   {
+      osg::Geometry *g=drawable.asGeometry();
+      if(g)
+      {
+         // will we use indices (EBO)?
+         bool useIndices=false;
+         const osg::Geometry::PrimitiveSetList &primitiveList=g->getPrimitiveSetList();
+         for(auto it=primitiveList.begin(); it!=primitiveList.end(); it++)
+         {
+            auto e=(*it)->getDrawElements();
+            if(e && e->getNumIndices()>0)
+            {
+               useIndices=true;
+               break;
+            }
+         }
+
+         // get numVertices of osg::Geometry
+         unsigned numVertices=0;
+         osg::Geometry::ArrayList arrayList;
+         g->getArrayList(arrayList);
+         for(osg::Geometry::ArrayList::iterator it=arrayList.begin(); it!=arrayList.end(); it++)
+         {
+            unsigned n=(*it)->getNumElements();
+            if(n>numVertices)
+               numVertices=n;
+         }
+
+         // generate draw commands
+         unsigned numDrawCommands=g->getNumPrimitiveSets();
+         vector<unsigned> drawCommands;
+         vector<AttribReference::DrawCommandControlData> drawCommandsControlData;
+         drawCommands.reserve(numDrawCommands*4);
+         drawCommandsControlData.reserve(numDrawCommands);
+         unsigned numIndices=0;
+         for(unsigned i=0; i<numDrawCommands; i++)
+         {
+            osg::PrimitiveSet *ps=g->getPrimitiveSet(i);
+            unsigned glMode=ps->getMode();
+            unsigned count,first;
+            osg::DrawElements *e=ps->getDrawElements();
+            if(e!=nullptr)
+            {
+               drawCommandsControlData.emplace_back(drawCommands.size(),glMode|0x10);
+               count=e->getNumIndices();
+               first=numIndices;
+               numIndices+=count;
+            }
+            else
+            {
+               drawCommandsControlData.emplace_back(drawCommands.size(),glMode);
+               switch(ps->getType()) {
+                  case osg::PrimitiveSet::DrawArraysPrimitiveType:
+                  {
+                     osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
+                     count=a->getCount();
+                     if(useIndices)
+                     {
+                        first=numIndices;
+                        numIndices+=count;
+                     }
+                     else
+                        first=a->getFirst();
+                     break;
+                  }
+                  case osg::PrimitiveSet::DrawArrayLengthsPrimitiveType:
+                  {
+                     osg::DrawArrayLengths *a=static_cast<osg::DrawArrayLengths*>(ps);
+                     first=useIndices?numIndices:a->getFirst();
+                     for(unsigned i=0,c=a->size(); i<c; i++)
+                     {
+                        unsigned count=a->operator[](i);
+                        drawCommands.push_back(glMode);
+                        drawCommands.push_back(count);
+                        drawCommands.push_back(first);
+                        drawCommands.push_back(0);
+                        first+=count;
+                        if(useIndices)
+                           numIndices+=count;
+                     }
+                     continue;
+                  }
+                  default:
+                     continue;
+               }
+            }
+            drawCommands.push_back(glMode);
+            drawCommands.push_back(count);
+            drawCommands.push_back(first);
+            drawCommands.push_back(0);
+         }
+
+         // create AttribConfig::ConfigData
+         // and list of osg arrays
+         AttribConfig::ConfigData configData;
+         configData.attribTypes.reserve(arrayList.size());
+         vector<const osg::Array*> osgArrays;
+         osgArrays.reserve(arrayList.size());
+
+         // convert all vertex attrib types
+         // and fill configData.attribTypes and osgArrays vectors
+         auto processArrayType=[&configData,&osgArrays](const osg::Array *a)
+         {
+            if(a)
+            {
+               configData.attribTypes.push_back(convertOsgArrayType2geAttribType(a->getType()));
+               osgArrays.push_back(a);
+            }
+         };
+         processArrayType(g->getVertexArray());
+         processArrayType(g->getNormalArray());
+         processArrayType(g->getColorArray());
+         for(unsigned i=0,c=g->getNumTexCoordArrays(); i<c; i++)
+            processArrayType(g->getTexCoordArray(i));
+         processArrayType(g->getSecondaryColorArray());
+         processArrayType(g->getFogCoordArray());
+         for(unsigned i=0,c=g->getNumVertexAttribArrays(); i<c; i++)
+            processArrayType(g->getVertexAttribArray(i));
+
+         // use EBO if there are indices
+         // and updateId (for optimization purposes, such as ConfigData comparison, etc.)
+         configData.ebo=useIndices;
+         configData.updateId();
+
+         // create AttribConfigRef
+         AttribConfigRef config(configData);
+
+         // create AttribReference
+         attribRefList.emplace_back();
+         AttribReference &r=attribRefList.back();
+         r.allocData(config,numVertices,numIndices,drawCommands.size()*4);
+
+         r.uploadDrawCommands(drawCommands.data(),drawCommands.size()*4,
+                              drawCommandsControlData.data(),drawCommandsControlData.size());
+
+         // upload vertices
+         vector<void*> geArrays;
+         geArrays.reserve(configData.attribTypes.size());
+         for(int i=0,c=configData.attribTypes.size(); i<c; i++)
+         {
+            AttribType &t=configData.attribTypes[i];
+            size_t attribBufSize=t.elementSize()*numVertices;
+            size_t osgBufSize=osgArrays[i]->getTotalDataSize();
+            void *p=malloc(attribBufSize);
+            memcpy(p,osgArrays[i]->getDataPointer(),osgBufSize);
+            if(attribBufSize!=osgBufSize)
+               memset(((uint8_t*)p)+osgBufSize,0,attribBufSize-osgBufSize);
+            geArrays.push_back(p);
+         }
+         r.uploadVertices(geArrays.data(),geArrays.size());
+         for(int i=0,c=configData.attribTypes.size(); i<c; i++)
+            free(geArrays[i]);
+
+         // upload indices
+         if(useIndices)
+         {
+            vector<unsigned> indices;
+            indices.reserve(numVertices); // reserve some possibly large space
+            for(auto it=primitiveList.begin(); it!=primitiveList.end(); it++)
+            {
+               osg::PrimitiveSet *ps=*it;
+               auto e=ps->getDrawElements();
+               if(e)
+               {
+                  for(unsigned i=0,c=e->getNumIndices(); i<c; i++)
+                     indices.push_back(e->index(i));
+               }
+               else
+               {
+                  switch(ps->getType()) {
+                     case osg::PrimitiveSet::DrawArraysPrimitiveType:
+                     {
+                        osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
+                        for(unsigned i=a->getFirst(),c=i+a->getCount(); i<c; i++)
+                           indices.push_back(i);
+                        break;
+                     }
+                     case osg::PrimitiveSet::DrawArrayLengthsPrimitiveType:
+                     {
+                        osg::DrawArrayLengths *a=static_cast<osg::DrawArrayLengths*>(ps);
+                        unsigned i=a->getFirst();
+                        for(unsigned j=0,l=a->size(); j<l; j++)
+                        {
+                           unsigned count=a->operator[](j);
+                           for(unsigned c=i+count; i<c; i++)
+                              indices.push_back(i);
+                        }
+                        continue;
+                     }
+                     default:
+                        continue;
+                  }
+               }
+            }
+            r.uploadIndices(indices.data(),indices.size());
+         }
+
+      }
+   }
+
+};
+
+
+void Init()
+{
+   stateSet=make_shared<StateSet>();
+
+   // load model
+   if(!fileName.empty())
+   {
+      osg::Node *root=osgDB::readNodeFile(fileName);
+      if(root==nullptr)
+         cout<<"Failed to load file "<<fileName<<endl;
+      else
+      {
+         BuildGpuEngineGraphVisitor graphBuilder;
+         root->ref();
+         root->accept(graphBuilder);
+         root->unref();
+
+         for(auto it=attribRefList.begin(); it!=attribRefList.end(); it++)
+            it->createInstances(0,stateSet.get());
+      }
+
+      // release OSG memory
+      osgDB::Registry::instance()->closeAllLibraries();
+      osgDB::Registry::instance(true);
+   }
+
+
    AttribConfig::ConfigData config;
    config.attribTypes.push_back(AttribType::Vec3);
 
@@ -166,12 +495,12 @@ void Init(){
       glm::vec3(niShiftX+0,shiftY-1,z),
       glm::vec3(niShiftX-1,shiftY+0,z),
    };
-   vector<Array> v;
-   v.reserve(1);
-   v.emplace_back(twoTrianglesNI);
+   vector<const void*> a;
+   a.reserve(1);
+   a.emplace_back(twoTrianglesNI.data());
 
    attribsRefNI.allocData(config,6,0,0);
-   attribsRefNI.uploadVertices(v);
+   attribsRefNI.uploadVertices(a.data(),twoTrianglesNI.size());
 
    // top-right geometry
    config.ebo=true;
@@ -186,54 +515,15 @@ void Init(){
       glm::vec3(iShiftX+0,shiftY-1,z),
       glm::vec3(iShiftX-1,shiftY+0,z),
    };
-   v.clear();
-   v.reserve(1);
-   v.emplace_back(twoTrianglesI);
+   a[0]=twoTrianglesI.data();
 
    attribsRefI.allocData(config,6,6,0);
-   attribsRefI.uploadVertices(v);
+   attribsRefI.uploadVertices(a.data(),twoTrianglesI.size());
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
-   attribsRefI.uploadIndices(Array(indices));
+   attribsRefI.uploadIndices(indices.data(),indices.size());
 
    // bottom-left geometry
-   constexpr float meshShiftY=shiftY-3.0f;
-   const vector<glm::vec3> twoTrianglesMeshNI = {
-      glm::vec3(niShiftX+0,meshShiftY+0,z),
-      glm::vec3(niShiftX+0,meshShiftY+1,z),
-      glm::vec3(niShiftX+1,meshShiftY+0,z),
-      glm::vec3(niShiftX+0,meshShiftY+0,z),
-      glm::vec3(niShiftX+0,meshShiftY-1,z),
-      glm::vec3(niShiftX-1,meshShiftY+0,z),
-   };
-   v.clear();
-   v.reserve(1);
-   v.emplace_back(twoTrianglesMeshNI);
-   vector<Mesh::ArrayContent> contents;
-   contents.reserve(1);
-   contents.push_back(Mesh::ArrayContent::COORDINATES);
-   meshNI=Mesh::create();
-   meshNI->setAttribArrays(v,contents);
-   meshNI->gpuUploadGeometryData();
-
-   // bottom-right geometry
-   const vector<glm::vec3> twoTrianglesMeshI = {
-      glm::vec3(iShiftX+0,meshShiftY+0,z),
-      glm::vec3(iShiftX+0,meshShiftY+1,z),
-      glm::vec3(iShiftX+1,meshShiftY+0,z),
-      glm::vec3(iShiftX+0,meshShiftY+0.1f,z),
-      glm::vec3(iShiftX+0,meshShiftY-1,z),
-      glm::vec3(iShiftX-1,meshShiftY+0,z),
-   };
-   v.clear();
-   v.reserve(1);
-   v.emplace_back(twoTrianglesMeshI);
-   meshI=Mesh::create();
-   meshI->setAttribArrays(v,contents);
-   meshI->setIndexArray(indices);
-   meshI->gpuUploadGeometryData();
-
-   // bottom2-left geometry
-   constexpr float instanceShiftY=meshShiftY-3.0f;
+   constexpr float instanceShiftY=shiftY-3.0f;
    const vector<glm::vec3> twoTriangleInstancesNI = {
       glm::vec3(niShiftX+0,instanceShiftY+0,z),
       glm::vec3(niShiftX+0,instanceShiftY+1,z),
@@ -242,23 +532,20 @@ void Init(){
       glm::vec3(niShiftX+0,instanceShiftY-1,z),
       glm::vec3(niShiftX-1,instanceShiftY+0,z),
    };
-   const vector<unsigned> drawCommands = {
+   vector<unsigned> drawCommands = {
       GL_TRIANGLES,3,0,0,
       GL_TRIANGLES,3,3,3,
    };
    const vector<unsigned> drawCommandOffsets4 = {
       0,4,
    };
-   v.clear();
-   v.reserve(1);
-   v.emplace_back(twoTriangleInstancesNI);
+   a[0]=twoTriangleInstancesNI.data();
    config.ebo=false;
    config.updateId();
-   stateSet=make_shared<StateSet>();
-   attribsRefInstNI.allocData(config,6,0,24);
-   attribsRefInstNI.uploadVertices(v);
-   attribsRefInstNI.setDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
-                                    drawCommandOffsets4.data(),drawCommandOffsets4.size());
+   attribsRefInstNI.allocData(config,6,0,drawCommands.size()*4);
+   attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
+   attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*4,
+                                       drawCommandOffsets4.data(),drawCommandOffsets4.size());
    attribsRefInstNI.createInstances(0,stateSet.get());
 
 
@@ -306,7 +593,7 @@ void Init(){
       "   uint indirectBuffer[];\n"
       "};\n"
       "\n"
-      "uniform int numToProcess;\n"
+      "uniform uint numToProcess;\n"
       "\n"
       "void main()\n"
       "{\n"

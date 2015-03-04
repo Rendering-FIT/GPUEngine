@@ -12,7 +12,6 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(SG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
-    ${HEADER_PATH}/Array.h
     ${HEADER_PATH}/AllocationManagers.h
     ${HEADER_PATH}/FlexibleArrayList.h
     ${HEADER_PATH}/AttribType.h
@@ -22,7 +21,6 @@ set(SG_INCLUDES
     ${HEADER_PATH}/SeparateBuffersAttribStorage.h
     ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/Node.h
-    ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Group.h
     ${HEADER_PATH}/MatrixTransform.h
     ${HEADER_PATH}/Projection.h
@@ -40,7 +38,6 @@ set(SG_SOURCES
     SeparateBuffersAttribStorage.cpp
     RenderingContext.cpp
     Node.cpp
-    Mesh.cpp
     Group.cpp
     MatrixTransform.cpp
     Projection.cpp

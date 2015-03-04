@@ -73,8 +73,8 @@ bool ItemAllocationManager::alloc(unsigned numItems,unsigned* ids)
 
    for(unsigned i=0; i<numItems; i++)
    {
-      (*this)[_firstItemAvailableAtTheEnd+i]=ids+i;
-      *(ids+i)=_firstItemAvailableAtTheEnd+i;
+      (*this)[_firstItemAvailableAtTheEnd+i]=&ids[i];
+      ids[i]=_firstItemAvailableAtTheEnd+i;
    }
    _numItemsAvailable-=numItems;
    _numItemsAvailableAtTheEnd-=numItems;
