@@ -120,6 +120,7 @@ void Wheel(int d){
 }
 
 
+#if 0 // uncomment for debugging purposes (it is commented to kill warning of unused function)
 static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
 {
    cout<<"Buffer contains "<<numInts<<" int values:"<<endl;
@@ -137,6 +138,7 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
       cout<<endl;
    cout<<endl;
 }
+#endif
 
 
 void Idle()

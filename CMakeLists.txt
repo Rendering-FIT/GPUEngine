@@ -46,7 +46,10 @@ IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
 
    # workarounds for limited C++11 support of MSVC
-   IF(MSVC_VERSION LESS 1900)
+   IF(MSVC_VERSION LESS 1800)
+      MESSAGE(FATAL_ERROR "Microsoft Visual C++ 2012 and earlier are not supported "
+              "as their support of C++11 is too limited.")
+   ELSEIF(MSVC_VERSION LESS 1900)
       # MSVC 2013 Update 4:
       # - no constexpr support
       # - no local_thread storage

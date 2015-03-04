@@ -179,7 +179,7 @@ namespace ge
       inline void AttribReference::preprocessDrawCommands(void *drawCommandBuffer,const DrawCommandControlData *data,int numDrawCommands)
       { RenderingContext::current()->preprocessDrawCommands(*this,drawCommandBuffer,data,numDrawCommands); }
       inline std::vector<AttribReference::DrawCommandControlData> AttribReference::generateDrawCommandControlData(const void *drawCommandBuffer,const unsigned *offsets4,int numDrawCommands)
-      { RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
+      { return RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
       inline void AttribReference::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const DrawCommandControlData *data,int numDrawCommands)
       { RenderingContext::current()->uploadDrawCommands(*this,nonConstDrawCommandBuffer,bytesToCopy,data,numDrawCommands); }
       inline void AttribReference::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
