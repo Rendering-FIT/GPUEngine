@@ -6,11 +6,11 @@
 
 namespace ge{
   namespace gl{
-    std::string translateDebugSource  (GLenum source  );
-    std::string translateDebugType    (GLenum type    );
-    std::string translateDebugSeverity(GLenum severity);
-    void setDefaultDebugMessage();
-    void setDebugMessage(GLDEBUGPROC fce,void*data);
+    GEGL_EXPORT std::string translateDebugSource  (GLenum source  );
+    GEGL_EXPORT std::string translateDebugType    (GLenum type    );
+    GEGL_EXPORT std::string translateDebugSeverity(GLenum severity);
+    GEGL_EXPORT void setDefaultDebugMessage();
+    GEGL_EXPORT void setDebugMessage(GLDEBUGPROC fce,void*data);
   }//gl
 }//ge
 

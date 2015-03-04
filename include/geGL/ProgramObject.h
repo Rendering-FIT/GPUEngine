@@ -16,7 +16,7 @@ namespace ge{
     /**
      * @brief Initialise shader manager
      */
-    void initShadersAndPrograms();
+    GEGL_EXPORT void initShadersAndPrograms();
     /**
      * @brief Function converts complex type (GL_FLOAT_VEC3 to GL_FLOAT)
      *
@@ -24,7 +24,7 @@ namespace ge{
      *
      * @return GL_FLOAT, ...
      */
-    GLenum complexType2SimpleType(GLenum Type);
+    GEGL_EXPORT GLenum complexType2SimpleType(GLenum Type);
     /**
      * @brief Function converts complex type (GL_FLOAT_VEC3 to 3)
      *
@@ -32,7 +32,7 @@ namespace ge{
      *
      * @return 2, ...
      */
-    GLint complexType2Size(GLenum Type);
+    GEGL_EXPORT GLint complexType2Size(GLenum Type);
     /**
      * @brief This class represents shader program
      */

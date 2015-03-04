@@ -12,11 +12,11 @@
 
 namespace ge{
   namespace gl{
-    std::string translateFramebufferComponentType(GLenum type);
-    std::string translateFramebufferObjectType   (GLenum type);
-    std::string translateFramebufferAttachment   (GLenum attachment);
-    std::string translateFramebufferColorEncoding(GLenum type);
-    std::string translateCubeMapFace(GLenum face);
+    GEGL_EXPORT std::string translateFramebufferComponentType(GLenum type);
+    GEGL_EXPORT std::string translateFramebufferObjectType   (GLenum type);
+    GEGL_EXPORT std::string translateFramebufferAttachment   (GLenum attachment);
+    GEGL_EXPORT std::string translateFramebufferColorEncoding(GLenum type);
+    GEGL_EXPORT std::string translateCubeMapFace(GLenum face);
     /**
      * @brief 
      */

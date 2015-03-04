@@ -14,15 +14,15 @@
 
 namespace ge{
   namespace gl{
-    GLenum textureTarget2Binding(GLenum target );
-    GLenum textureBinding2Target(GLenum binding);
-    std::string translateTextureTarget     (GLenum target );
-    std::string translateTextureBinding    (GLenum binding);
-    std::string translateTextureCompareMode(GLint mode    );
-    std::string translateTextureCompareFunc(GLint func    );
-    std::string translateTextureFilter     (GLint filter  );
-    std::string translateTextureWrap       (GLint wrap    );
-    std::string translateTextureSwizzle    (GLint swizzle );
+    GEGL_EXPORT GLenum textureTarget2Binding(GLenum target );
+    GEGL_EXPORT GLenum textureBinding2Target(GLenum binding);
+    GEGL_EXPORT std::string translateTextureTarget     (GLenum target );
+    GEGL_EXPORT std::string translateTextureBinding    (GLenum binding);
+    GEGL_EXPORT std::string translateTextureCompareMode(GLint mode    );
+    GEGL_EXPORT std::string translateTextureCompareFunc(GLint func    );
+    GEGL_EXPORT std::string translateTextureFilter     (GLint filter  );
+    GEGL_EXPORT std::string translateTextureWrap       (GLint wrap    );
+    GEGL_EXPORT std::string translateTextureSwizzle    (GLint swizzle );
 
     class GEGL_EXPORT TextureObject: public OpenGLObject
     {

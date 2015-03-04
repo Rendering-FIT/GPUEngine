@@ -20,10 +20,10 @@
 
 namespace ge{
   namespace gl{
-    std::string translateAttribType(GLenum    type   );
-    std::string translateBoolean   (GLboolean boolean);
-    unsigned    getTypeSize        (GLenum    type   );
-    void initVertexArrayObjects    ();
+    GEGL_EXPORT std::string translateAttribType(GLenum    type   );
+    GEGL_EXPORT std::string translateBoolean   (GLboolean boolean);
+    GEGL_EXPORT unsigned    getTypeSize        (GLenum    type   );
+    GEGL_EXPORT void initVertexArrayObjects    ();
     class GEGL_EXPORT VertexArrayObject: public OpenGLObject
     {
       private:

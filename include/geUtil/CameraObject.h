@@ -15,7 +15,7 @@ namespace ge{
     /**
      * @brief Class represents camera
      */
-     class GEUTIL_EXPORT CameraObject
+    class GEUTIL_EXPORT CameraObject
     {
       private:
         float     _fovy;        ///<field of view

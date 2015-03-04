@@ -39,18 +39,18 @@
 
 namespace ge{
   namespace util{
-    struct ContextParam{
+    struct GEUTIL_EXPORT ContextParam{
       unsigned    version;
       std::string profile;
       std::string flag;
     };
-    struct WindowParam{
+    struct GEUTIL_EXPORT WindowParam{
       unsigned size[2];
       bool     fullscreen;
     };
 
-    void loadContextParam(ContextParam*p,ArgumentObject*args);
-    void loadWindowParam (WindowParam *p,ArgumentObject*args);
+    GEUTIL_EXPORT void loadContextParam(ContextParam*p,ArgumentObject*args);
+    GEUTIL_EXPORT void loadWindowParam (WindowParam *p,ArgumentObject*args);
 
     class GEUTIL_EXPORT WindowObject
     {

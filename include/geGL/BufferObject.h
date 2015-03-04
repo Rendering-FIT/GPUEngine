@@ -28,10 +28,10 @@
 
 namespace ge{
   namespace gl{
-    std::string translateBufferTarget(GLenum target);
-    std::string translateBufferBinding(GLenum binding);
-    GLenum bufferTarget2Binding(GLenum target);
-    GLenum bufferBinding2Target(GLenum binding);
+    GEGL_EXPORT std::string translateBufferTarget(GLenum target);
+    GEGL_EXPORT std::string translateBufferBinding(GLenum binding);
+    GEGL_EXPORT GLenum bufferTarget2Binding(GLenum target);
+    GEGL_EXPORT GLenum bufferBinding2Target(GLenum binding);
 
     /**
      * Abstraction of the OpenGL Buffer Object.

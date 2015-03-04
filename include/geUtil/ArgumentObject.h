@@ -16,7 +16,7 @@ namespace ge{
      *
      * @return floating point number
      */
-    float atof(const char*s);
+    GEUTIL_EXPORT float atof(const char*s);
     /**
      * @brief Represents manager of program arguments
      */
