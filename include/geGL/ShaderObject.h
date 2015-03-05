@@ -19,7 +19,7 @@ namespace ge{
       std::string _getShaderInfo(GLuint id);   ///<gets shader info
       void        _loadFile(std::string file); ///<load file with shader
 	    static int            fileTypeSwitch(std::string fileName,unsigned numType,...);
-	    static unsigned char *readWholeFile(int*len,std::string file);
+      static unsigned char *readWholeFile(int*len,std::string file);
     public:
       /**
        * @brief Converts filename to type of shader
@@ -46,6 +46,7 @@ namespace ge{
       static std::string define(std::string name,float value0,float value1,float value2,float value3);
       static std::string define(std::string name,unsigned vectorSize,float*values);
       static std::string define(std::string name,std::string value);
+      static std::string include(std::string file);
 
       /**
        * Constructor

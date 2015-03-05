@@ -157,6 +157,14 @@ std::string ShaderObject::define(std::string Name,unsigned vectorSize,float*valu
 std::string ShaderObject::define(std::string Name,std::string Value){
   return"#define "+Name+" "+Value+"\n";
 }
+std::string ShaderObject::include(std::string file){
+  int len;
+  char*Buffer=(char*)ShaderObject::readWholeFile(&len,file);
+  std::string text=std::string(Buffer,len);
+  delete[]Buffer;
+  return text;
+}
+
 
 //throw std::string("Wrong file extension for shader");
 void ShaderObject::_loadFile(std::string File){
