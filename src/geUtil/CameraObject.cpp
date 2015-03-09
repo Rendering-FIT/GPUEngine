@@ -16,7 +16,7 @@ namespace ge{
     }
     void CameraObject::_computeProjection(){
       if(this->_far==std::numeric_limits<float>::infinity()){//is far inifinty?
-        float top=tan(this->_fovy/2*glm::pi<float>()/180)*this->_near;//top border of viewport
+        float top=glm::tan(glm::radians(this->_fovy/2))*this->_near;//top border of viewport
         float bottom=-top;//bottom border of viewport
         float right=(top*this->_size[0])/this->_size[1];//right border of viewport
         float left=-right;//left border of viewport
@@ -42,7 +42,7 @@ namespace ge{
         this->_projection[3][3]=0;
       }else//far is finite
         this->_projection=glm::perspective(
-            this->_fovy,//field of view
+            glm::radians<float>(this->_fovy),//field of view
             1.f*this->_size[0]/this->_size[1],//aspect ratio
             this->_near,//near plane
             this->_far);//far plane
