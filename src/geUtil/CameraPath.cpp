@@ -29,6 +29,9 @@ namespace ge{
 
     CameraPath::CameraPath(){
       this->_selected=0;
+
+#ifdef ENABLE_DRAWING
+      this->_emptyVAO=new ge::gl::VertexArrayObject();
       std::string LineVertex=
         "#version 430\n"
         "void main(){gl_Position=vec4(0,0,0,1);}\n";
@@ -128,6 +131,7 @@ namespace ge{
       if(PV)delete PV;
       if(PG)delete PG;
       if(PF)delete PF;
+#endif//ENABLE_DRAWING
     }
 
     float CameraPath::_catmullRom(float A,float B,float C,float D,float t1){
@@ -142,6 +146,11 @@ namespace ge{
     CameraPath::~CameraPath(){
       for(unsigned i=0;i<this->_keyPoints.size();++i)
         delete this->_keyPoints[i];
+#ifdef ENABLE_DRAWING
+      delete this->_lineProgram;
+      delete this->_pointProgram;
+      delete this->_emptyVAO;
+#endif//ENABLE_DRAWING
     }
 
     void CameraPath::getCameraPoint(CameraKeyPoint*Point,float Time){
@@ -271,6 +280,7 @@ namespace ge{
     }
 
     void CameraPath::draw(float*mvp){
+      this->_emptyVAO->bind();
       if(this->_keyPoints.size()>1){
         this->_lineProgram->use();
         this->_lineProgram->set("mvp",1,GL_FALSE,mvp);
@@ -315,6 +325,7 @@ namespace ge{
         else this->_pointProgram->set("Color",0.f,0.f,1.f,1.f);
         glDrawArrays(GL_POINTS,0,1);
       }
+      this->_emptyVAO->unbind();
     }
   }//util
 }//ge

@@ -7,7 +7,7 @@
 #define ENABLE_DRAWING
 
 #ifdef ENABLE_DRAWING
-  #include<geGL/ProgramObject.h>
+  #include<geGL/geGL.h>
 #endif//ENABLE_DRAWING
 
 #include<geUtil/CameraObject.h>
@@ -36,6 +36,7 @@ namespace ge{
 #ifdef ENABLE_DRAWING
         ge::gl::ProgramObject*_lineProgram;
         ge::gl::ProgramObject*_pointProgram;
+        ge::gl::VertexArrayObject*_emptyVAO;
 #endif//ENABLE_DRAWING
       public:
         CameraPath();
