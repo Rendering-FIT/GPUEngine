@@ -20,8 +20,8 @@ namespace ge
          unsigned size;           ///< Number of bytes in the block.
          unsigned nextRec;        ///< \brief Index of ChunkAllocation whose allocated memory follows the current block's memory.
          AttribReference *owner;  ///< AttribReference that owns the allocated block. Null indicates free block.
-		 inline ChunkAllocation();  ///< Default constructor does nothing.
-		 inline ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,AttribReference *owner);  ///< Constructs structure by given values.
+         inline ChunkAllocation();  ///< Default constructor does nothing.
+         inline ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,AttribReference *owner);  ///< Constructs structure by given values.
       };
 
 
@@ -35,8 +35,8 @@ namespace ge
          unsigned numElements;    ///< Number of elements in the block. The real size is numElements multiplied by the size of the underlaying array element.
          unsigned nextRec;        ///< \brief Index of BlockAllocation whose allocated memory follows the current block's memory.
          AttribReference *owner;  ///< AttribReference that owns the allocated block. Null indicates free block.
-		 inline BlockAllocation();  ///< Default constructor does nothing.
-		 inline BlockAllocation(unsigned startIndex,unsigned numElements,unsigned nextRec,AttribReference *owner);  ///< Constructs structure by given values.
+         inline BlockAllocation();  ///< Default constructor does nothing.
+         inline BlockAllocation(unsigned startIndex,unsigned numElements,unsigned nextRec,AttribReference *owner);  ///< Constructs structure by given values.
       };
 
 
@@ -78,7 +78,7 @@ namespace ge
          unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of managed memory that is followed by available items only.
          inline ItemAllocationManager(unsigned capacity);
          inline bool canAllocate(unsigned numItems) const;
-         bool alloc(unsigned* id);  ///< \brief Allocates one item and stores the item's id to the variable pointed by id parameter.
+         bool alloc(unsigned *id);  ///< \brief Allocates one item and stores the item's id to the variable pointed by id parameter.
          bool alloc(unsigned numItems,unsigned* ids);  ///< \brief Allocates number of items.
          void free(unsigned id);  ///< Frees allocated item. Id must be valid.
          void free(unsigned* ids,unsigned numItems);  ///< Frees allocated items. Ids pointed by ids parameter must be valid.
@@ -87,11 +87,11 @@ namespace ge
 
 
       // inline and template methods
-	  inline ChunkAllocation::ChunkAllocation()  {}
-	  inline ChunkAllocation::ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,AttribReference *owner)
+      inline ChunkAllocation::ChunkAllocation()  {}
+      inline ChunkAllocation::ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,AttribReference *owner)
       { this->offset=offset; this->size=size; this->nextRec=nextRec; this->owner=owner; }
-	  inline BlockAllocation::BlockAllocation()  {}
-	  inline BlockAllocation::BlockAllocation(unsigned startIndex,unsigned numElements,unsigned nextRec,AttribReference *owner)
+      inline BlockAllocation::BlockAllocation()  {}
+      inline BlockAllocation::BlockAllocation(unsigned startIndex,unsigned numElements,unsigned nextRec,AttribReference *owner)
       { this->startIndex=startIndex; this->numElements=numElements; this->nextRec=nextRec; this->owner=owner; }
       inline ChunkAllocationManager::ChunkAllocationManager(unsigned capacity)
          : _numBytesTotal(capacity), _numBytesAvailable(capacity), _numBytesAvailableAtTheEnd(capacity),

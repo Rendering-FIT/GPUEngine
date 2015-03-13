@@ -42,7 +42,7 @@ unsigned BlockAllocationManager::alloc(unsigned numItems,AttribReference &r)
  *
  *  True is returned on success, false otherwise.
  */
-bool ItemAllocationManager::alloc(unsigned* id)
+bool ItemAllocationManager::alloc(unsigned *id)
 {
    if(_numItemsAvailableAtTheEnd==0)
       return false;

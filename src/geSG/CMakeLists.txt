@@ -19,13 +19,14 @@ set(SG_INCLUDES
     ${HEADER_PATH}/AttribReference.h
     ${HEADER_PATH}/AttribStorage.h
     ${HEADER_PATH}/SeparateBuffersAttribStorage.h
+    ${HEADER_PATH}/InstanceGroup.h
     ${HEADER_PATH}/RenderingContext.h
+    ${HEADER_PATH}/StateSet.h
     ${HEADER_PATH}/Node.h
     ${HEADER_PATH}/Group.h
     ${HEADER_PATH}/MatrixTransform.h
     ${HEADER_PATH}/Projection.h
     ${HEADER_PATH}/Camera.h
-    ${HEADER_PATH}/StateSet.h
     ${HEADER_PATH}/NodeVisitor.h
   )
 
@@ -36,7 +37,9 @@ set(SG_SOURCES
     AttribReference.cpp
     AttribStorage.cpp
     SeparateBuffersAttribStorage.cpp
+    InstanceGroup.cpp
     RenderingContext.cpp
+    StateSet.cpp
     Node.cpp
     Group.cpp
     MatrixTransform.cpp

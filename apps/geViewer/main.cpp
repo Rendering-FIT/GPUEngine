@@ -170,7 +170,7 @@ void Idle()
 
    // render two triangles indirectly
    attribsRefInstNI.attribStorage->bind();
-   glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(attribsRefInstNI.instances.front()->items[0]*16),2,0);
+   glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(attribsRefInstNI.instances.front()->items[0].index()*16),2,0);
 
    // render loaded model
    if(!attribRefList.empty())
@@ -178,7 +178,7 @@ void Idle()
       for(auto it=attribRefList.begin(); it!=attribRefList.end(); it++)
       {
          it->attribStorage->bind();
-         glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(it->instances.front()->items[0]*16),
+         glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(it->instances.front()->items[0].index()*16),
                                    it->instances.front()->count,0);
       }
    }
