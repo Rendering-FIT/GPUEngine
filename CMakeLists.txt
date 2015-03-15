@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.0)
+cmake_minimum_required(VERSION 3.0)
 
 PROJECT(GPUEngine)
 
@@ -68,8 +68,8 @@ SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}
 # Dynamic vs Static Linking
 OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
 
-FIND_PACKAGE(OPENGL      REQUIRED)
-FIND_PACKAGE(GLEW        REQUIRED)
+#FIND_PACKAGE(OPENGL      REQUIRED)
+#FIND_PACKAGE(GLEW        REQUIRED)
 FIND_PACKAGE(X11         QUIET)
 FIND_PACKAGE(SDL2        QUIET)
 FIND_PACKAGE(AntTweakBar QUIET)

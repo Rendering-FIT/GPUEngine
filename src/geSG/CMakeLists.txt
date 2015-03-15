@@ -48,17 +48,24 @@ set(SG_SOURCES
     NodeVisitor.cpp
   )
 
+find_package(GLEW   REQUIRED)
+  
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${SG_INCLUDES}
     ${SG_SOURCES}
   )
 
-include_directories(${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+include_directories()
 
 set(Internal_deps geGL)
+set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
 target_link_libraries(${LIB_NAME} ${Internal_deps})
-add_dependencies(${LIB_NAME} ${Internal_deps})
+set_target_properties(${LIB_NAME} PROPERTIES 
+	INCLUDE_DIRECTORIES "${Internal_inc}"
+	INTERFACE_INCLUDE_DIRECTORIES "${GPUEngine_SOURCE_DIR}/include"
+)
+
 
 install(FILES
     ${SG_INCLUDES}

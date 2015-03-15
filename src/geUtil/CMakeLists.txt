@@ -41,20 +41,26 @@ find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
 
 set(Internal_deps geGL)
+set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
 
 IF(ANTTWEAKBAR_FOUND)
-   include_directories(${ANTTWEAKBAR_INCLUDE_DIR})
+   list(APPEND Internal_inc ${ANTTWEAKBAR_INCLUDE_DIR})
    target_link_libraries(${LIB_NAME} ${ANTTWEAKBAR_LIBRARY})
 ENDIF()
 
 IF(SDL2_FOUND)
-   include_directories(${SDL2_INCLUDE_DIR})
+   list(APPEND Internal_inc ${SDL2_INCLUDE_DIR})
    target_link_libraries(${LIB_NAME} ${SDL2_LIBRARY})
 ENDIF()
 
-include_directories(${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
+set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
+#include_directories(${includes_to_export})
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps})
-add_dependencies(${LIB_NAME} ${Internal_deps})
+set_target_properties(${LIB_NAME} PROPERTIES
+	INCLUDE_DIRECTORIES "${Internal_inc}"
+	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
+)
+
 
 install(FILES
     ${GL_INCLUDES}
