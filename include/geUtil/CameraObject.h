@@ -9,6 +9,7 @@
 #include<glm/gtc/matrix_access.hpp>
 
 #include <geUtil/Export.h>
+#include <iostream>
 
 namespace ge{
   namespace util{
@@ -170,6 +171,12 @@ namespace ge{
          * @return field of view
          */
         float getFovy();
+        float getNear();
+        float getFar();
+        std::string toString();
+        void saveToFile(std::string file);
+        void loadFromString(std::string data);
+        void loadFromFile(std::string file);
         /**
          * @brief Gets pickup vector
          *

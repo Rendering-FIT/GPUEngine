@@ -1,6 +1,12 @@
 #include<geUtil/CameraObject.h>
 
 #include <limits>
+#include<sstream>
+#include<iostream>
+#include<fstream>
+#include<cstdlib>
+#include <streambuf>
+
 
 namespace ge{
   namespace util{
@@ -136,6 +142,81 @@ namespace ge{
     float CameraObject::getFovy(){
       return this->_fovy;
     }
+    float CameraObject::getNear(){
+      return this->_near;
+    }
+    float CameraObject::getFar(){
+      return this->_far;
+    }
+    std::string CameraObject::toString(){
+      std::stringstream ss;
+      ss<<this->_size[0]<<" ";
+      ss<<this->_size[1]<<" ";
+      ss<<this->_fovy<<" ";
+      ss<<this->_near<<" ";
+      ss<<this->_far<<" ";
+      ss<<this->_position[0]<<" "<<this->_position[1]<<" "<<this->_position[2]<<" ";
+      for(unsigned i=0;i<16;++i){
+        ss<<glm::value_ptr(this->_viewRotation)[i];
+        if(i<15)ss<<" ";
+      }
+      return ss.str();
+    }
+    void CameraObject::saveToFile(std::string file){
+      std::ofstream out(file.c_str());
+      out<<this->toString();
+      out.close();
+    }
+
+    void CameraObject::loadFromString(std::string data){
+      std::size_t pos=0;
+      pos=data.find(" ");
+      this->_size[0]=std::atoi(data.substr(0,pos).c_str());
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_size[1]=std::atoi(data.substr(0,pos).c_str());
+
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_fovy=std::atof(data.substr(0,pos).c_str());
+
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_near=std::atof(data.substr(0,pos).c_str());
+
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_far=std::atof(data.substr(0,pos).c_str());
+
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_position[0]=std::atof(data.substr(0,pos).c_str());
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_position[1]=std::atof(data.substr(0,pos).c_str());
+      data=data.substr(pos+1);pos=data.find(" ");
+      this->_position[2]=std::atof(data.substr(0,pos).c_str());
+
+      for(unsigned i=0;i<15;++i){
+        data=data.substr(pos+1);pos=data.find(" ");
+        glm::value_ptr(this->_viewRotation)[i]=std::atof(data.substr(0,pos).c_str());
+      }
+      data=data.substr(pos+1);
+      glm::value_ptr(this->_viewRotation)[15]=std::atof(data.c_str());
+      this->_computeProjection();
+    }
+    void CameraObject::loadFromFile(std::string file){
+      std::ifstream t(file.c_str());
+      std::string str;
+
+      t.seekg(0, std::ios::end);   
+      str.reserve(t.tellg());
+      t.seekg(0, std::ios::beg);
+
+      str.assign((std::istreambuf_iterator<char>(t)),
+          std::istreambuf_iterator<char>());
+      t.close();
+      this->loadFromString(str);
+    }
+
+
+
+
+
     glm::vec3 CameraObject::getPickVector(unsigned x,unsigned y){
       float dy=2.*x/this->_size[0]-1;
       float dx=2.*y/this->_size[1]-1;
