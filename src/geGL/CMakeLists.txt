@@ -92,6 +92,10 @@ set(GL_SOURCES
     OpenGLObject.cpp
   )
 
+
+find_package(GLEW   REQUIRED)
+find_package(OPENGL REQUIRED)
+  
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${GL_INCLUDES}
@@ -99,10 +103,15 @@ ADD_LIBRARY(${LIB_NAME}
   )
 
 set(Internal_deps geCore)
-  
-include_directories(${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
+set(Internal_inc ${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
+set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
+
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps})
-add_dependencies(${LIB_NAME} ${Internal_deps})
+set_target_properties(${LIB_NAME} PROPERTIES
+	INCLUDE_DIRECTORIES "${Internal_inc}"
+	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
+)
+
 
 install(FILES
     ${GL_INCLUDES}

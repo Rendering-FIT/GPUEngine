@@ -12,23 +12,26 @@ using namespace std;
 
 thread_local shared_ptr<RenderingContext> RenderingContext::_currentContext;
 
+int RenderingContext::_initialStateSetBufferNumElements = 100; // 800 bytes
 int RenderingContext::_initialDrawCommandBufferSize = 8000; // 8'000 bytes
-int RenderingContext::_initialInstanceBufferSize = 8000; // 8'000 bytes
-int RenderingContext::_initialIndirectCommandBufferSize = 8000; // 8'000 bytes
+int RenderingContext::_initialInstanceBufferNumElements = 1000; // 12'000 bytes
+int RenderingContext::_initialIndirectCommandBufferSize = 20000; // 20'000 bytes
 
 
 
 RenderingContext::RenderingContext()
-   : _drawCommandAllocationManager(_initialDrawCommandBufferSize)
-   , _instanceAllocationManager(_initialInstanceBufferSize)
+   : _stateSetBufferAllocationManager(_initialStateSetBufferNumElements)
+   , _drawCommandAllocationManager(_initialDrawCommandBufferSize)
+   , _instanceAllocationManager(_initialInstanceBufferNumElements)
    , _mappedDrawCommandBufferPtr(nullptr)
    , _drawCommandBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
 {
    // create draw commands buffer
-   _drawCommandBuffer=new BufferObject(_drawCommandAllocationManager._numBytesTotal,nullptr,GL_DYNAMIC_DRAW);
-   _instanceBuffer=new BufferObject(_initialInstanceBufferSize,nullptr,GL_DYNAMIC_DRAW);
+   _stateSetBuffer=new BufferObject(_initialStateSetBufferNumElements*8,nullptr,GL_DYNAMIC_DRAW);
+   _drawCommandBuffer=new BufferObject(_initialDrawCommandBufferSize,nullptr,GL_DYNAMIC_DRAW);
+   _instanceBuffer=new BufferObject(_initialInstanceBufferNumElements*12,nullptr,GL_DYNAMIC_DRAW);
    _indirectCommandBuffer=new BufferObject(_initialIndirectCommandBufferSize,nullptr,GL_DYNAMIC_COPY);
 }
 
@@ -48,6 +51,7 @@ RenderingContext::~RenderingContext()
    }
 
    // delete buffers
+   delete _stateSetBuffer;
    delete _drawCommandBuffer;
    delete _instanceBuffer;
    delete _indirectCommandBuffer;
@@ -107,6 +111,21 @@ void RenderingContext::unmapBuffer(ge::gl::BufferObject *buffer,
    buffer->unmap();
    mappedBufferPtr=nullptr;
    currentAccess=MappedBufferAccess::NO_ACCESS;
+}
+
+
+unsigned RenderingContext::allocStateSetBufferItem()
+{
+   unsigned id;
+   if(!_stateSetBufferAllocationManager.alloc(&id))
+      ; // resize buffer
+   return id;
+}
+
+
+void RenderingContext::freeStateSetBufferItem(unsigned id)
+{
+   _stateSetBufferAllocationManager.free(id);
 }
 
 
@@ -291,7 +310,7 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 }
 
 
-RenderingContext::InstanceGroupId RenderingContext::createInstances(
+InstanceGroupId RenderingContext::createInstances(
       AttribReference &r,
       const unsigned *drawCommandIndices,const int drawCommandsCount,
       unsigned matrixIndex,StateSet *stateSet)
@@ -305,30 +324,35 @@ RenderingContext::InstanceGroupId RenderingContext::createInstances(
 
    // allocate InstanceGroup
    InstanceGroup *ig=InstanceGroup::alloc(numInstances);
+   ig->stateSet=stateSet;
    ig->count=numInstances;
 
    // allocate items in allocation manager
    _instanceAllocationManager.alloc(numInstances,ig->items);
 
    // iterate through instances
+   auto storageDataIterator=stateSet->getOrCreateAttribStorageData(r.attribStorage);
+   StateSet::AttribStorageData &storageData=storageDataIterator->second;
    mapInstanceBuffer(MappedBufferAccess::WRITE);
    for(unsigned i=0; i<numInstances; i++)
    {
       // update instanceBuffer
-      Instance &instance=static_cast<Instance*>(_mappedInstanceBufferPtr)[ig->items[i]];
+      Instance &instance=static_cast<Instance*>(_mappedInstanceBufferPtr)[ig->items[i].index()];
       unsigned dcIndex=drawCommandsCount==-1 ? i : drawCommandIndices[i];
       AttribReference::DrawCommandControlData dccd=r.drawCommandControlData[dcIndex];
       instance.drawCommandOffset4=_drawCommandAllocationManager[r.drawCommandBlockId].offset/4+
                                   dccd.offset4();
       instance.matrixIndex=matrixIndex;
 
-      // update StateSet counter
+      // update instance's mode and StateSet counter
       unsigned mode=dccd.mode();
-      stateSet->incrementDrawCommandModeCounter(mode);
+      ig->items[i].setMode(mode);
+      stateSet->incrementDrawCommandModeCounter(1,mode,storageData);
 
       // set stateSetOffset (must be done after incrementing StateSet counter)
-      instance.stateSetDataIndex=stateSet->getStateSetBufferIndex(mode);
+      instance.stateSetDataIndex=stateSet->getStateSetBufferIndex(mode,storageData);
    }
+   stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
    // insert InstanceGroup into the list of instances
    // and return iterator to it
@@ -339,7 +363,20 @@ RenderingContext::InstanceGroupId RenderingContext::createInstances(
 
 void RenderingContext::deleteInstances(AttribReference &r,InstanceGroupId id)
 {
+   // iterate through instances
+   StateSet *stateSet=id->stateSet;
+   auto storageDataIterator=stateSet->getOrCreateAttribStorageData(r.attribStorage);
+   StateSet::AttribStorageData &storageData=storageDataIterator->second;
+   for(unsigned i=0,c=id->count; i<c; i++)
+   {
+      // update StateSet counter
+      stateSet->decrementDrawCommandModeCounter(1,id->items[i].mode(),storageData);
+   }
+   stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
+
+   // remove from lists, execute destructors and free memory
    _instanceAllocationManager.free(id->items,id->count);
+   id->free();
    r.instances.erase(id);
 }
 

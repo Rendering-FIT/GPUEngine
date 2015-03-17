@@ -26,6 +26,10 @@ ADD_LIBRARY(${LIB_NAME}
     ${CORE_SOURCES}
   )
 
+set_target_properties(${LIB_NAME} PROPERTIES
+	INTERFACE_INCLUDE_DIRECTORIES "${GPUEngine_SOURCE_DIR}/include"
+)
+
 
 install(FILES
   ${CORE_INCLUDES}

@@ -7,10 +7,9 @@
 #define GE_SG_ATTRIBS_MANAGER_H
 
 #include <memory>
-#include <set>
 #include <geSG/Export.h>
 #include <geSG/AllocationManagers.h>
-#include <geSG/FlexibleArrayList.h>
+#include <geSG/InstanceGroup.h>
 
 namespace ge
 {
@@ -29,9 +28,6 @@ namespace ge
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;
-         typedef FlexibleArray<unsigned,ListItemBase> InstanceGroup;
-         typedef FlexibleArrayList<InstanceGroup> InstanceGroupList;
-         typedef InstanceGroupList::iterator InstanceGroupId;
          enum class MappedBufferAccess : uint8_t { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
 
          struct DrawCommandBufferData {
@@ -55,15 +51,17 @@ namespace ge
          ge::gl::BufferObject *_drawCommandBuffer;
          ge::gl::BufferObject *_instanceBuffer;
          ge::gl::BufferObject *_indirectCommandBuffer;
+         ItemAllocationManager _stateSetBufferAllocationManager;
          ChunkAllocationManager _drawCommandAllocationManager;  ///< Allocation manager of blocks of draw commands.
-         ItemAllocationManager _instanceAllocationManager;  ///< Allocation manager of instances.
+         InstanceAllocationManager _instanceAllocationManager;  ///< Allocation manager of instances.
          void* _mappedDrawCommandBufferPtr;
          MappedBufferAccess _drawCommandBufferMappedAccess;
          void* _mappedInstanceBufferPtr;
          MappedBufferAccess _instanceBufferMappedAccess;
 
+         static int _initialStateSetBufferNumElements;
          static int _initialDrawCommandBufferSize;
-         static int _initialInstanceBufferSize;
+         static int _initialInstanceBufferNumElements;
          static int _initialIndirectCommandBufferSize;
 
          static void* mapBuffer(void* &_mappedBufferPtr,
@@ -95,6 +93,17 @@ namespace ge
          inline void* mapInstanceBuffer(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
          inline void unmapInstanceBuffer();
 
+         inline unsigned* getStateSetBufferAllocation(unsigned id) const;
+         inline ItemAllocationManager& getStateSetBufferAllocationManager();
+         inline const ItemAllocationManager& getStateSetBufferAllocationManager() const;
+
+         unsigned allocStateSetBufferItem();
+         void freeStateSetBufferItem(unsigned id);
+         inline unsigned getNumStateSetBufferItemsTotal() const;
+         inline unsigned getNumStateSetBufferItemsAvailable() const;
+         inline unsigned getNumStateSetBufferItemsAvailableAtTheEnd() const;
+         inline unsigned getFirstStateSetBufferItemAvailableAtTheEnd() const;
+
          inline const ChunkAllocation& getDrawCommandsAllocationBlock(unsigned id) const;
          inline ChunkAllocationManager& getDrawCommandsAllocationManager();
          inline const ChunkAllocationManager& getDrawCommandsAllocationManager() const;
@@ -105,7 +114,7 @@ namespace ge
          inline unsigned getFirstDrawCommandAvailableAtTheEnd() const;
          inline unsigned getIdOfDrawCommandBlockAtTheEnd() const;
 
-         inline unsigned* getInstanceAllocation(unsigned id) const;
+         inline InstanceData* getInstanceAllocation(unsigned id) const;
          inline ItemAllocationManager& getInstanceAllocationManager();
          inline const ItemAllocationManager& getInstanceAllocationManager() const;
 
@@ -156,10 +165,12 @@ namespace ge
          virtual void cancelAllAllocations();
          virtual void handleContextLost();
 
+         static inline void setInitialStateSetBufferNumElements(int value);
+         static inline int getInitialStateSetBufferNumElements();
          static inline void setInitialDrawCommandBufferSize(int value);
          static inline int getInitialDrawCommandBufferSize();
-         static inline void setInitialInstanceBufferSize(int value);
-         static inline int getInitialInstanceBufferSize();
+         static inline void setInitialInstanceBufferNumElements(int value);
+         static inline int getInitialInstanceBufferNumElements();
          static inline void setInitialIndirectCommandBufferSize(int value);
          static inline int getInitialIndirectCommandBufferSize();
 
@@ -206,6 +217,13 @@ namespace ge
       { return mapBuffer(_mappedInstanceBufferPtr,_instanceBufferMappedAccess,_instanceBuffer,access); }
       inline void RenderingContext::unmapInstanceBuffer()
       { unmapBuffer(_instanceBuffer,_mappedInstanceBufferPtr,_instanceBufferMappedAccess); }
+      inline unsigned* RenderingContext::getStateSetBufferAllocation(unsigned id) const  { return _stateSetBufferAllocationManager[id]; }
+      inline ItemAllocationManager& RenderingContext::getStateSetBufferAllocationManager()  { return _stateSetBufferAllocationManager; }
+      inline const ItemAllocationManager& RenderingContext::getStateSetBufferAllocationManager() const  { return _stateSetBufferAllocationManager; }
+      inline unsigned RenderingContext::getNumStateSetBufferItemsTotal() const  { return _stateSetBufferAllocationManager._numItemsTotal; }
+      inline unsigned RenderingContext::getNumStateSetBufferItemsAvailable() const  { return _stateSetBufferAllocationManager._numItemsAvailable; }
+      inline unsigned RenderingContext::getNumStateSetBufferItemsAvailableAtTheEnd() const  { return _stateSetBufferAllocationManager._numItemsAvailableAtTheEnd; }
+      inline unsigned RenderingContext::getFirstStateSetBufferItemAvailableAtTheEnd() const  { return _stateSetBufferAllocationManager._firstItemAvailableAtTheEnd; }
       inline const ChunkAllocation& RenderingContext::getDrawCommandsAllocationBlock(unsigned id) const  { return _drawCommandAllocationManager[id]; }
       inline ChunkAllocationManager& RenderingContext::getDrawCommandsAllocationManager()  { return _drawCommandAllocationManager; }
       inline const ChunkAllocationManager& RenderingContext::getDrawCommandsAllocationManager() const  { return _drawCommandAllocationManager; }
@@ -214,7 +232,7 @@ namespace ge
       inline unsigned RenderingContext::getNumDrawCommandBytesAvailableAtTheEnd() const  { return _drawCommandAllocationManager._numBytesAvailableAtTheEnd; }
       inline unsigned RenderingContext::getFirstDrawCommandAvailableAtTheEnd() const  { return _drawCommandAllocationManager._firstByteAvailableAtTheEnd; }
       inline unsigned RenderingContext::getIdOfDrawCommandBlockAtTheEnd() const  { return _drawCommandAllocationManager._idOfBlockAtTheEnd; }
-      inline unsigned* RenderingContext::getInstanceAllocation(unsigned id) const  { return _instanceAllocationManager[id]; }
+      inline InstanceData* RenderingContext::getInstanceAllocation(unsigned id) const  { return _instanceAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::getInstanceAllocationManager()  { return _instanceAllocationManager; }
       inline const ItemAllocationManager& RenderingContext::getInstanceAllocationManager() const  { return _instanceAllocationManager; }
       inline unsigned RenderingContext::getNumInstancesTotal() const  { return _instanceAllocationManager._numItemsTotal; }
@@ -224,12 +242,14 @@ namespace ge
       inline void RenderingContext::uploadDrawCommands(AttribReference &r,void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
       { uploadDrawCommands(r,nonConstDrawCommandBuffer,bytesToCopy,generateDrawCommandControlData(nonConstDrawCommandBuffer,offsets4,numDrawCommands).data(),numDrawCommands); }
       inline void RenderingContext::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
-      inline RenderingContext::InstanceGroupId RenderingContext::createInstances(AttribReference &r,unsigned matrixIndex,StateSet *stateSet)
+      inline InstanceGroupId RenderingContext::createInstances(AttribReference &r,unsigned matrixIndex,StateSet *stateSet)
       { return createInstances(r,nullptr,-1,matrixIndex,stateSet); }
+      inline void RenderingContext::setInitialStateSetBufferNumElements(int value)  { _initialStateSetBufferNumElements=value; }
+      inline int RenderingContext::getInitialStateSetBufferNumElements()  { return _initialStateSetBufferNumElements; }
       inline void RenderingContext::setInitialDrawCommandBufferSize(int value)  { _initialDrawCommandBufferSize=value; }
       inline int RenderingContext::getInitialDrawCommandBufferSize()  { return _initialDrawCommandBufferSize; }
-      inline void RenderingContext::setInitialInstanceBufferSize(int value)  { _initialInstanceBufferSize=value; }
-      inline int RenderingContext::getInitialInstanceBufferSize()  { return _initialInstanceBufferSize; }
+      inline void RenderingContext::setInitialInstanceBufferNumElements(int value)  { _initialInstanceBufferNumElements=value; }
+      inline int RenderingContext::getInitialInstanceBufferNumElements()  { return _initialInstanceBufferNumElements; }
       inline void RenderingContext::setInitialIndirectCommandBufferSize(int value)  { _initialIndirectCommandBufferSize=value; }
       inline int RenderingContext::getInitialIndirectCommandBufferSize()  { return _initialIndirectCommandBufferSize; }
       inline std::shared_ptr<RenderingContext>& RenderingContext::current()

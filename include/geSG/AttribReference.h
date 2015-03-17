@@ -2,7 +2,7 @@
 #define GE_SG_ATTRIB_REFERENCE_H
 
 #include <geSG/Export.h>
-#include <geSG/FlexibleArrayList.h>
+#include <geSG/InstanceGroup.h>
 #include <vector>
 #include <cstdint>
 
@@ -17,10 +17,6 @@ namespace ge
 
       class GESG_EXPORT AttribReference {
       public:
-
-         typedef FlexibleArray<unsigned,ListItemBase> InstanceGroup;
-         typedef FlexibleArrayList<InstanceGroup> InstanceGroupList;
-         typedef InstanceGroupList::iterator InstanceGroupId;
 
          /** DrawCommandControlData carries offset and mode of particular draw command.
           *
@@ -187,11 +183,11 @@ namespace ge
       inline void AttribReference::clearDrawCommands()  { setNumDrawCommands(0); }
       inline void AttribReference::setNumDrawCommands(unsigned num)
       { RenderingContext::current()->setNumDrawCommands(*this,num); }
-      inline AttribReference::InstanceGroupId AttribReference::createInstances(unsigned matrixIndex,StateSet *stateSet)
+      inline InstanceGroupId AttribReference::createInstances(unsigned matrixIndex,StateSet *stateSet)
       { return RenderingContext::current()->createInstances(*this,matrixIndex,stateSet); }
-      inline AttribReference::InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,unsigned matrixIndex,StateSet *stateSet)
+      inline InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,unsigned matrixIndex,StateSet *stateSet)
       { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,matrixIndex,stateSet); }
-      inline void AttribReference::deleteInstances(AttribReference::InstanceGroupId id)
+      inline void AttribReference::deleteInstances(InstanceGroupId id)
       { RenderingContext::current()->deleteInstances(*this,id); }
    }
 }
