@@ -55,7 +55,7 @@ SeparateBuffersAttribStorage::~SeparateBuffersAttribStorage()
 }
 
 
-void SeparateBuffersAttribStorage::bind()
+void SeparateBuffersAttribStorage::bind() const
 {
    _vao->bind();
 }

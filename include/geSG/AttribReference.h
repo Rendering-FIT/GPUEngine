@@ -86,13 +86,13 @@ namespace ge
                                             int numDrawCommands);
          inline static std::vector<DrawCommandControlData> generateDrawCommandControlData(
                                             const void *drawCommandBuffer,
-                                            const unsigned *offsets4,int numDrawCommands);
+                                            const unsigned *modesAndOffsets4,int numDrawCommands);
 
          inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
                                         const DrawCommandControlData *data,
                                         int numDrawCommands);
          inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
-                                        const unsigned *offsets4,int numDrawCommands);
+                                        const unsigned *modesAndOffsets4,int numDrawCommands);
 
          inline void clearDrawCommands();
          inline void setNumDrawCommands(unsigned num);
