@@ -34,7 +34,7 @@ namespace ge
          AttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices);
          virtual ~AttribStorage();
 
-         virtual void bind() = 0;
+         virtual void bind() const = 0;
 
          virtual bool allocData(AttribReference &r,int numVertices,int numIndices);
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,

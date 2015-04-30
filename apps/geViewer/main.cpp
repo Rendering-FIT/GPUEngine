@@ -143,6 +143,12 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
 
 void Idle()
 {
+   // prepare for rendering
+   RenderingContext::current()->setupRendering();
+   RenderingContext::current()->mapStateSetBuffer();
+   stateSet->setupRendering();
+   RenderingContext::current()->unmapStateSetBuffer();
+
    // indirect buffer update - setup and start compute shader
    processInstanceProgram->use();
    unsigned numInstances=RenderingContext::current()->getFirstInstanceAvailableAtTheEnd();
@@ -150,6 +156,7 @@ void Idle()
    RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
    RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
    RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->getStateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
    glDispatchCompute((numInstances+63)/64,1,1);
 
    // draw few triangles by very low-level approach
@@ -169,7 +176,7 @@ void Idle()
    RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
 
    // render two triangles indirectly
-   attribsRefInstNI.attribStorage->bind();
+   /*attribsRefInstNI.attribStorage->bind();
    glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(attribsRefInstNI.instances.front()->items[0].index()*16),2,0);
 
    // render loaded model
@@ -181,11 +188,14 @@ void Idle()
          glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(it->instances.front()->items[0].index()*16),
                                    it->instances.front()->count,0);
       }
-   }
-   //printIntBufferContent(RenderingContext::current()->getInstanceBuffer(),
-   //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*3);
-   //printIntBufferContent(RenderingContext::current()->getIndirectCommandBuffer(),
-   //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*4);
+   }*/
+   /*printIntBufferContent(RenderingContext::current()->getInstanceBuffer(),
+                         RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->getDrawCommandBuffer(),
+                         (RenderingContext::current()->getFirstDrawCommandAvailableAtTheEnd()+3)/sizeof(unsigned));
+   printIntBufferContent(RenderingContext::current()->getIndirectCommandBuffer(),
+                         RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*5);*/
+   stateSet->render();
 
    Window->swap();
 }
@@ -281,28 +291,29 @@ public:
          unsigned numDrawCommands=g->getNumPrimitiveSets();
          vector<unsigned> drawCommands;
          vector<AttribReference::DrawCommandControlData> drawCommandsControlData;
-         drawCommands.reserve(numDrawCommands*4);
+         drawCommands.reserve(numDrawCommands*3);
          drawCommandsControlData.reserve(numDrawCommands);
          unsigned numIndices=0;
          for(unsigned i=0; i<numDrawCommands; i++)
          {
             osg::PrimitiveSet *ps=g->getPrimitiveSet(i);
             unsigned glMode=ps->getMode();
+            unsigned mode=useIndices?glMode|0x10:glMode;
             unsigned count,first;
             osg::DrawElements *e=ps->getDrawElements();
             if(e!=nullptr)
             {
-               drawCommandsControlData.emplace_back(drawCommands.size(),glMode|0x10);
+               drawCommandsControlData.emplace_back(drawCommands.size(),mode);
                count=e->getNumIndices();
                first=numIndices;
                numIndices+=count;
             }
             else
             {
-               drawCommandsControlData.emplace_back(drawCommands.size(),glMode);
                switch(ps->getType()) {
                   case osg::PrimitiveSet::DrawArraysPrimitiveType:
                   {
+                     drawCommandsControlData.emplace_back(drawCommands.size(),mode);
                      osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
                      count=a->getCount();
                      if(useIndices)
@@ -320,9 +331,9 @@ public:
                      first=useIndices?numIndices:a->getFirst();
                      for(unsigned i=0,c=a->size(); i<c; i++)
                      {
+                        drawCommandsControlData.emplace_back(drawCommands.size(),mode);
                         unsigned count=a->operator[](i);
-                        drawCommands.push_back(glMode);
-                        drawCommands.push_back(count);
+                        drawCommands.push_back(useIndices?count|0x80000000:count); // countAndIndexedFlag
                         drawCommands.push_back(first);
                         drawCommands.push_back(0);
                         first+=count;
@@ -335,8 +346,7 @@ public:
                      continue;
                }
             }
-            drawCommands.push_back(glMode);
-            drawCommands.push_back(count);
+            drawCommands.push_back(useIndices?count|0x80000000:count);
             drawCommands.push_back(first);
             drawCommands.push_back(0);
          }
@@ -379,9 +389,9 @@ public:
          // create AttribReference
          attribRefList.emplace_back();
          AttribReference &r=attribRefList.back();
-         r.allocData(config,numVertices,numIndices,drawCommands.size()*4);
+         r.allocData(config,numVertices,numIndices,drawCommands.size()*sizeof(unsigned));
 
-         r.uploadDrawCommands(drawCommands.data(),drawCommands.size()*4,
+         r.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                               drawCommandsControlData.data(),drawCommandsControlData.size());
 
          // upload vertices
@@ -535,19 +545,20 @@ void Init()
       glm::vec3(niShiftX-1,instanceShiftY+0,z),
    };
    vector<unsigned> drawCommands = {
-      GL_TRIANGLES,3,0,0,
-      GL_TRIANGLES,3,3,3,
+      3,0,0,
+      3,3,3,
    };
-   const vector<unsigned> drawCommandOffsets4 = {
-      0,4,
+   const vector<unsigned> modesAndOffsets4 = {
+      GL_TRIANGLES,0,
+      GL_TRIANGLES,3,
    };
    a[0]=twoTriangleInstancesNI.data();
    config.ebo=false;
    config.updateId();
-   attribsRefInstNI.allocData(config,6,0,drawCommands.size()*4);
+   attribsRefInstNI.allocData(config,6,0,drawCommands.size()*sizeof(unsigned));
    attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
-   attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*4,
-                                       drawCommandOffsets4.data(),drawCommandOffsets4.size());
+   attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
+                                       modesAndOffsets4.data(),modesAndOffsets4.size()/2);
    attribsRefInstNI.createInstances(0,stateSet.get());
 
 
@@ -594,6 +605,9 @@ void Init()
       "layout(std430,binding=2) restrict writeonly buffer IndirectBuffer {\n"
       "   uint indirectBuffer[];\n"
       "};\n"
+      "layout(std430,binding=3) restrict buffer StateSetBuffer {\n"
+      "   uint stateSetBuffer[];\n"
+      "};\n"
       "\n"
       "uniform uint numToProcess;\n"
       "\n"
@@ -602,14 +616,32 @@ void Init()
       "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
       "      return;\n"
       "\n"
+      "   // instance buffer data\n"
       "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
       "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
+      "   uint stateSetDataOffset4=instanceBuffer[instanceIndex+2];\n"
       "\n"
-      "   uint writeIndex=gl_GlobalInvocationID.x*4;\n"
-      "   indirectBuffer[writeIndex+0]=drawCommandBuffer[drawCommandOffset4+1]; // count\n"
-      "   indirectBuffer[writeIndex+1]=1; // instance count\n"
-      "   indirectBuffer[writeIndex+2]=drawCommandBuffer[drawCommandOffset4+2]+\n"
-      "                                drawCommandBuffer[drawCommandOffset4+3]; // first\n"
-      "   indirectBuffer[writeIndex+3]=0; // base instance\n"
+      "   // compute increment and get indirectBufferOffset\n"
+      "   uint countAndIndexedFlag=drawCommandBuffer[drawCommandOffset4+0];\n"
+      "   uint indirectBufferIncrement=4+bitfieldExtract(countAndIndexedFlag,31,1); // make increment 4 or 5\n"
+      "   uint indirectBufferOffset4=atomicAdd(stateSetBuffer[stateSetDataOffset4],indirectBufferIncrement);\n"
+      "\n"
+      "   // write indirect buffer data\n"
+      "   indirectBuffer[indirectBufferOffset4]=countAndIndexedFlag&0x7fffffff; // indexCount or vertexCount\n"
+      "   indirectBufferOffset4++;\n"
+      "   indirectBuffer[indirectBufferOffset4]=1; // instanceCount\n"
+      "   indirectBufferOffset4++;\n"
+      "   uint first=drawCommandBuffer[drawCommandOffset4+1]; // firstIndex or firstVertex\n"
+      "   uint vertexOffset=drawCommandBuffer[drawCommandOffset4+2]; // vertexOffset\n"
+      "   if(countAndIndexedFlag>=0x80000000) {\n"
+      "      indirectBuffer[indirectBufferOffset4]=first; // firstIndex\n"
+      "      indirectBufferOffset4++;\n"
+      "      indirectBuffer[indirectBufferOffset4]=vertexOffset; // vertexOffset\n"
+      "      indirectBufferOffset4++;\n"
+      "   } else {\n"
+      "      indirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
+      "      indirectBufferOffset4++;\n"
+      "   }\n"
+      "   indirectBuffer[indirectBufferOffset4]=0; // base instance\n"
       "}\n");
 }

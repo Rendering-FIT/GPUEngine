@@ -29,7 +29,7 @@ namespace ge
                                       unsigned numIndices);
          virtual ~SeparateBuffersAttribStorage();
 
-         virtual void bind() override;
+         virtual void bind() const override;
 
          virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
                                   bool preserveContent=true) override;

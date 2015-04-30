@@ -190,6 +190,7 @@ void RenderingContext::freeDrawCommands(AttribReference &r)
 }
 
 
+/** Uploads raw draw commands data to GPU buffers. */
 void RenderingContext::uploadPreprocessedDrawCommands(AttribReference &r,
                                                       const void *drawCommandBuffer,
                                                       unsigned bytesToCopy,unsigned dstOffset)
@@ -202,6 +203,7 @@ void RenderingContext::uploadPreprocessedDrawCommands(AttribReference &r,
 }
 
 
+/* Sets draw command control data (the data that are kept on CPU memory). */
 void RenderingContext::setDrawCommandControlData(AttribReference &r,
                                                  const AttribReference::DrawCommandControlData *data,
                                                  int numDrawCommands,unsigned startIndex,
@@ -239,22 +241,20 @@ void RenderingContext::preprocessDrawCommands(AttribReference &r,
    {
       // set DrawCommandBufferData::blockOffset
       unsigned index=data[i].offset4();
-      static_cast<unsigned*>(drawCommandBuffer)[index+3]=blockOffset;
+      static_cast<unsigned*>(drawCommandBuffer)[index+2]=blockOffset;
    }
 }
 
 
 vector<AttribReference::DrawCommandControlData>
 RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
-                                                 const unsigned *offsets4,int numDrawCommands)
+                                                 const unsigned *modesAndOffsets4,int numDrawCommands)
 {
    std::vector<AttribReference::DrawCommandControlData> r;
    r.reserve(numDrawCommands);
-   for(int i=0; i<numDrawCommands; i++)
+   for(int i=0,c=numDrawCommands*2; i<c; i+=2)
    {
-      unsigned o=offsets4[i];
-      unsigned mode=((DrawCommandBufferData*)&(((unsigned*)drawCommandBuffer)[o]))->mode;
-      r.emplace_back(o,mode);
+      r.emplace_back(modesAndOffsets4[i+1],modesAndOffsets4[i+0]);
    }
    return r;
 }
@@ -349,8 +349,8 @@ InstanceGroupId RenderingContext::createInstances(
       ig->items[i].setMode(mode);
       stateSet->incrementDrawCommandModeCounter(1,mode,storageData);
 
-      // set stateSetOffset (must be done after incrementing StateSet counter)
-      instance.stateSetDataIndex=stateSet->getStateSetBufferIndex(mode,storageData);
+      // set stateSet offset (must be done after incrementing StateSet counter)
+      instance.stateSetDataOffset4=stateSet->getStateSetBufferOffset4(mode,storageData);
    }
    stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
@@ -405,6 +405,17 @@ void RenderingContext::cancelAllAllocations()
 void RenderingContext::handleContextLost()
 {
    cancelAllAllocations();
+}
+
+
+void RenderingContext::setupRendering()
+{
+   _indirectBufferAllocatedSpace4=0;
+}
+
+
+void RenderingContext::render()
+{
 }
 
 
