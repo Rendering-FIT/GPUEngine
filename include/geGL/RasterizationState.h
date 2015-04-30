@@ -50,6 +50,16 @@ namespace ge{
         bool      _ignorePolygonOffsetFill;
         GLboolean _polygonOffsetFill;
       public:
+        enum class Defs{
+          CCW            = GL_CCW,
+          CW             = GL_CW,
+          FRONT          = GL_FRONT,
+          BACK           = GL_BACK,
+          FRONT_AND_BACK = GL_FRONT_AND_BACK,
+          PONT           = GL_POINT,
+          LINE           = GL_LINE,
+          FILL           = GL_FILL
+        };
         RasterizationState();
         ~RasterizationState();
         void apply();
@@ -74,6 +84,7 @@ namespace ge{
         void      setLineWidth(GLfloat value);
         void      ignoreLineWidth();
         bool      hasLineWidth();
+
         GLboolean getCullFace();
         void      setCullFace(GLboolean value);
         void      ignoreCullFace();
@@ -83,35 +94,43 @@ namespace ge{
         void      setCullFaceMode(GLenum value);
         void      ignoreCullFaceMode();
         bool      hasCullFaceMode();
+
         GLenum    getFrontFace();
         void      setFrontFace(GLenum value);
         void      ignoreFrontFace();
         bool      hasFrontFace();
+
         GLboolean getPolygonSmooth();
         void      setPolygonSmooth(GLboolean value);
         void      ignorePolygonSmooth();
         bool      hasPolygonSmooth();
+
         GLenum    getPolygonModeFront();
         void      setPolygonModeFront(GLenum value);
         void      ignorePolygonModeFront();
         bool      hasPolygonModeFront();
+
         GLenum    getPolygonModeBack();
         void      setPolygonModeBack(GLenum value);
         void      ignorePolygonModeBack();
         bool      hasPolygonModeBack();
+
         GLfloat   getPolygonOffsetFactor();
         GLfloat   getPolygonOffsetUnits();
         void      getSetPolygonOffset(GLfloat factor,GLfloat units);
         void      ignorePolygonOffset();
         bool      hasPolygonOffset();
+
         GLboolean getPolygonOffsetPoint();
         void      setPolygonOffsetPoint(GLboolean value);
         void      ignorePolygonOffsetPoint();
         bool      hasPolygonOffsetPoint();
+
         GLboolean getPolygonOffsetLine();
         void      setPolygonOffsetLine(GLboolean value);
         void      ignorePolygonOffsetLine();
         bool      hasPolygonOffsetLine();
+
         GLboolean getPolygonOffsetFill();
         void      setPolygonOffsetFill(GLboolean value);
         void      ignorePolygonOffsetFill();

@@ -48,6 +48,8 @@ namespace ge
 
         unsigned commandToExecute;///<index of command that will be executed using step()
         bool outOfOrder; ///<
+        bool commutative;
+        bool associative;
         std::vector<Command*> commands;
 
         /*std::vector<Command*>& getCommands() { return _commands; }

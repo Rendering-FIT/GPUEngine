@@ -39,6 +39,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/OpenGLCommon.h
     ${HEADER_PATH}/ConditionalRenderingCommands.h
     ${HEADER_PATH}/DrawCommands.h
+    ${HEADER_PATH}/UniformCommands.h
     ${HEADER_PATH}/GenericVertexAttributeArraysCommands.h
     ${HEADER_PATH}/PrimitiveRestartCommands.h
     ${HEADER_PATH}/VertexArrayObjectsCommands.h
@@ -79,6 +80,7 @@ set(GL_SOURCES
     OpenGLCommon.cpp
     ConditionalRenderingCommands.cpp
     DrawCommands.cpp
+    UniformCommands.cpp
     GenericVertexAttributeArraysCommands.cpp
     PrimitiveRestartCommands.cpp
     VertexArrayObjectsCommands.cpp

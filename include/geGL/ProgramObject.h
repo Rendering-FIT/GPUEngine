@@ -38,6 +38,9 @@ namespace ge{
      */
     class GEGL_EXPORT ProgramObject: public OpenGLObject
     {
+      private:
+        int _floatMatrixType2Index(GLenum type);
+        int _doubleMatrixType2Index(GLenum type);
       protected:
         std::vector<GLuint>                        _shaderList;    ///<list of shader object
         std::vector<ShaderObject*>                 _shaders;       ///<list of shaders
@@ -62,6 +65,7 @@ namespace ge{
             unsigned     version,
             std::string  profile);
       public:
+        std::string uniformsToStr();
         GLint workGroupSize[3];///< work group size
         void setSeparable    ();
         void resetSeparable  ();
@@ -328,7 +332,7 @@ namespace ge{
          * @param attributeName jmeno atributu
          * @return vracu identifikator atributu
          */
-        GLuint getAttribute(std::string attributeName);
+        GLint getAttribute(std::string attributeName);
         /**
          * @brief Returns attribute type
          *
@@ -350,7 +354,7 @@ namespace ge{
          * @param uniformName jmeno uniformni promenne
          * @return vracu identifikator uniformni promenne
          */
-        GLuint getUniform(std::string uniformName);
+        GLint getUniform(std::string uniformName);
         /**
          * @brief Returns uniform type
          *
@@ -383,16 +387,27 @@ namespace ge{
             std::string uniform,
             unsigned    offSet,
             std::string subroutineName);
+
         void set(
-            std::string  uniformName,
-            GLsizei      count,
-            GLboolean    transpose,
-            GLfloat     *value);
+            std::string   uniformName,
+            GLsizei       count,
+            GLboolean     transpose,
+            const GLfloat*value);
         void set(
-            std::string  uniformName,
-            GLsizei      count,
-            GLboolean    transpose,
-            GLdouble    *value);
+            std::string    uniformName,
+            GLsizei        count,
+            GLboolean      transpose,
+            const GLdouble*value);
+        void setdsa(
+            std::string   uniformName,
+            GLsizei       count,
+            GLboolean     transpose,
+            const GLfloat*value);
+        void setdsa(
+            std::string    uniformName,
+            GLsizei        count,
+            GLboolean      transpose,
+            const GLdouble*value);
 
         DEFDEFFCE(1,f);
         DEFDEFFCE(2,f);
@@ -419,17 +434,6 @@ namespace ge{
         DEFDEFFCEV(i);
         DEFDEFFCEV(ui);
         DEFDEFFCEV(boolean);
-
-        void setdsa(
-            std::string  uniformName,
-            GLsizei      count,
-            GLboolean    transpose,
-            GLfloat     *value);
-        void setdsa(
-            std::string  uniformName,
-            GLsizei      count,
-            GLboolean    transpose,
-            GLdouble    *value);
 
         DEFDEFDSAFCE(1,f);
         DEFDEFDSAFCE(2,f);
@@ -458,6 +462,7 @@ namespace ge{
         DEFDEFDSAFCEV(boolean);
 
     };
+
   }//gl
 }//ge
 

@@ -23,53 +23,32 @@ namespace ge{
     GEGL_EXPORT std::string translateTextureFilter     (GLint filter  );
     GEGL_EXPORT std::string translateTextureWrap       (GLint wrap    );
     GEGL_EXPORT std::string translateTextureSwizzle    (GLint swizzle );
+    GEGL_EXPORT std::string translateTextureChannelType(GLenum type   );
+    GEGL_EXPORT unsigned internalFormatSize(GLenum internalFormat);
 
     class GEGL_EXPORT TextureObject: public OpenGLObject
     {
       private:
         inline GLint _getTexLevelParameter(GLint level,GLenum pname);
-        inline GLint _getTexParameter(GLenum pname);
+        inline GLint _getTexParameter (GLenum pname);
+        inline void  _getTexParameterf(GLfloat*data,GLenum pname);
+        inline GLuint _bindSafe();
+#ifndef USE_DSA
         GLenum  _target;
+#endif//USE_DSA
         GLenum  _format;
       public:
-        /**
-         * @brief Creates 1D texture
-         *
-         * @param target target of texture
-         * @param internalFormat internal format of data of texture
-         * @param levels number of mipmap levels
-         * @param width x size of texture
-         */
         TextureObject(
             GLenum  target,
             GLenum  internalFormat,
             GLsizei levels,
             GLsizei width);
-        /**
-         * @brief Creates 2D texture
-         *
-         * @param target target of texture
-         * @param internalFormat internal format of data of texture
-         * @param levels number of mipmap levels
-         * @param width x size of texture
-         * @param height y size of texture
-         */
         TextureObject(
             GLenum  target,
             GLenum  internalFormat,
             GLsizei levels,
             GLsizei width,
             GLsizei height);
-        /**
-         * @brief Creates 3D texture
-         *
-         * @param target target of texture
-         * @param internalFormat internal format of data of texture
-         * @param levels number of mipmap levels
-         * @param width x size of texture
-         * @param height y size of texture
-         * @param depth z size of texture
-         */
         TextureObject(
             GLenum  target,
             GLenum  internalFormat,
@@ -77,32 +56,9 @@ namespace ge{
             GLsizei width,
             GLsizei height,
             GLsizei depth);
-        /**
-         * @brief destroys texture
-         */
         ~TextureObject();
-        /**
-         * @brief binds texture to texture unit
-         *
-         * @param unit texture unit
-         */
         void bind     (GLuint unit);
-        /**
-         * @brief unbinds texture unit
-         *
-         * @param unit texture unit
-         */
         void unbind   (GLuint unit);
-        /**
-         * @brief binds image of texture
-         *
-         * @param unit texture unit
-         * @param level level of mipmap
-         * @param format format of data
-         * @param access read/write
-         * @param layered use layered 
-         * @param layer index of layer
-         */
         void bindImage(
             GLuint    unit,
             GLint     level,
@@ -110,96 +66,60 @@ namespace ge{
             GLenum    access  = TEXTUREOBJECT_DEFAULT_ACCESS,
             GLboolean layered = TEXTUREOBJECT_DEFAULT_LAYERED,
             GLint     layer   = TEXTUREOBJECT_DEFAULT_LAYER);
-        /**
-         * @brief sets parameters of texture
-         *
-         * @param pname name of parameter
-         * @param params value of parameter
-         */
         void    texParameteri (GLenum pname,GLint    params);
-        /**
-         * @brief sets parameters of texture
-         *
-         * @param pname name of parameter
-         * @param params values of parameter
-         */
         void    texParameterfv(GLenum pname,GLfloat *params);
-        /**
-         * @brief gets target of texture
-         *
-         * @return target
-         */
-        GLenum  getTarget();
-        /**
-         * @brief gets internal format of texture
-         *
-         * @return format
-         */
         GLenum  getFormat();
-        /**
-         * @brief gets width of texture at specific level
-         *
-         * @param level level of mipmap
-         *
-         * @return width of mipmap
-         */
-        GLsizei getWidth (GLint level);
-        /**
-         * @brief gets height of texture at specific level
-         *
-         * @param level level of mipmap
-         *
-         * @return height of mipmap
-         */
-        GLsizei getHeight(GLint level);
-        /**
-         * @brief gets depth of texture at specific level
-         *
-         * @param level level of mipmap
-         *
-         * @return depth of mipmap
-         */
-        GLsizei getDepth (GLint level);
-        /**
-         * @brief gets fixed sample location
-         *
-         * @param level level of mipmap
-         *
-         * @return fixed sample location
-         */
-        GLint   getFixedSampleLocation(GLint level);
-        /**
-         * @brief gets compressed flag
-         *
-         * @param level level of mipmap
-         *
-         * @return compressed flag
-         */
-        GLint   getCompressed(GLint level);
-        /**
-         * @brief gets compressed image size
-         *
-         * @param level level of mipmap
-         *
-         * @return compressed image size
-         */
-        GLint   getCompressedImageSize(GLint level);
-        /**
-         * @brief gets number of samples
-         *
-         * @param level level of mipmap
-         *
-         * @return number of samples
-         */
-        GLint   getSamples(GLint level);
-        GLint   getImmutableFormat();
-        GLint   getSwizzleR();
-        GLint   getSwizzleG();
-        GLint   getSwizzleB();
-        GLint   getSwizzleA();
-        GLint   getMaxLevel();
-        GLint   getBaseLevel();
-
+        GLuint    getWidth                 (GLint level);
+        GLuint    getHeight                (GLint level);
+        GLuint    getDepth                 (GLint level);
+        GLuint    getSamples               (GLint level);
+        GLboolean getFixedSampleLocation   (GLint level);
+        GLenum    getInternalFormat        (GLint level);
+        GLuint    getRedSize               (GLint level);
+        GLuint    getGreenSize             (GLint level);
+        GLuint    getBlueSize              (GLint level);
+        GLuint    getAlphaSize             (GLint level);
+        GLuint    getDepthSize             (GLint level);
+        GLuint    getStencilSize           (GLint level);
+        GLuint    getSharedSize            (GLint level);
+        GLenum    getRedType               (GLint level);
+        GLenum    getGreenType             (GLint level);
+        GLenum    getBlueType              (GLint level);
+        GLenum    getAlphaType             (GLint level);
+        GLenum    getDepthType             (GLint level);
+        GLboolean getCompressed            (GLint level);
+        GLuint    getCompressedImageSize   (GLint level);
+        GLuint    getBufferDataStoreBinding(GLint level);
+        GLint     getBufferOffset          (GLint level);
+        GLint     getBufferSize            (GLint level);
+        GLenum    getSwizzleR                    (             );
+        GLenum    getSwizzleG                    (             );
+        GLenum    getSwizzleB                    (             );
+        GLenum    getSwizzleA                    (             );
+        void      getBorderColor                 (GLfloat*color);
+        GLenum    getMinFilter                   (             );
+        GLenum    getMagFilter                   (             );
+        GLenum    getWrapS                       (             );
+        GLenum    getWrapT                       (             );
+        GLenum    getWrapR                       (             );
+        GLenum    getTarget                      (             );
+        GLfloat   getMinLod                      (             );
+        GLfloat   getMaxLod                      (             );
+        GLuint    getBaseLevel                   (             );
+        GLuint    getMaxLevel                    (             );
+        GLfloat   getLodBias                     (             );
+        GLenum    getDepthStencilTextureMode     (             );
+        GLenum    getCompareMode                 (             );
+        GLenum    getCompareFunc                 (             );
+        GLenum    getImageFormatCompatibilityType(             );
+        GLboolean getImmutableFormat             (             );
+        GLuint    getImmutableLevels             (             );
+        GLuint    getViewMinLevel                (             );
+        GLuint    getViewNumLevels               (             );
+        GLuint    getViewMinLayer                (             );
+        GLuint    getViewNumLayers               (             );
+        std::string getInfo();
+        unsigned long long getSize();
     };
   }//gl
 }//ge

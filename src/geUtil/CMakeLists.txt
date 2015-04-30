@@ -17,6 +17,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/CameraObject.h
   ${HEADER_PATH}/CameraPath.h
   ${HEADER_PATH}/HighResolutionTimer.h
+  ${HEADER_PATH}/FPSPrinter.h
   )
 
 set(GL_SOURCES
@@ -24,6 +25,7 @@ set(GL_SOURCES
   CameraObject.cpp
   CameraPath.cpp
   HighResolutionTimer.cpp
+  FPSPrinter.cpp
   )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)

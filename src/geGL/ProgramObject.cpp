@@ -1,11 +1,60 @@
 #include<geGL/ProgramObject.h>
 #include<string>
+#include<sstream>
 
 using namespace ge::gl;
 
 bool OpenGL320=false;
 bool OpenGL400=false;
 bool OpenGL410=false;
+
+void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
+  glUniformMatrix2fv  ,
+  glUniformMatrix3fv  ,
+  glUniformMatrix4fv  ,
+  glUniformMatrix2x3fv,
+  glUniformMatrix3x2fv,
+  glUniformMatrix2x4fv,
+  glUniformMatrix4x2fv,
+  glUniformMatrix3x4fv,
+  glUniformMatrix4x3fv
+};
+
+void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
+  glUniformMatrix2dv  ,
+  glUniformMatrix3dv  ,
+  glUniformMatrix4dv  ,
+  glUniformMatrix2x3dv,
+  glUniformMatrix3x2dv,
+  glUniformMatrix2x4dv,
+  glUniformMatrix4x2dv,
+  glUniformMatrix3x4dv,
+  glUniformMatrix4x3dv
+};
+
+void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
+  glProgramUniformMatrix2fv  ,
+  glProgramUniformMatrix3fv  ,
+  glProgramUniformMatrix4fv  ,
+  glProgramUniformMatrix2x3fv,
+  glProgramUniformMatrix3x2fv,
+  glProgramUniformMatrix2x4fv,
+  glProgramUniformMatrix4x2fv,
+  glProgramUniformMatrix3x4fv,
+  glProgramUniformMatrix4x3fv
+};
+
+void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
+  glProgramUniformMatrix2dv  ,
+  glProgramUniformMatrix3dv  ,
+  glProgramUniformMatrix4dv  ,
+  glProgramUniformMatrix2x3dv,
+  glProgramUniformMatrix3x2dv,
+  glProgramUniformMatrix2x4dv,
+  glProgramUniformMatrix4x2dv,
+  glProgramUniformMatrix3x4dv,
+  glProgramUniformMatrix4x3dv
+};
 
 void ge::gl::initShadersAndPrograms(){
   OpenGL320=true;
@@ -115,10 +164,49 @@ void ge::gl::initShadersAndPrograms(){
 
 
 
-  if(!OpenGL320)throw      "OpenGL 3.2 is not available, missing: "+Result32;
+  if(!OpenGL320)/*throw*/std::cerr<<      "OpenGL 3.2 is not available, missing: "+Result32<<std::endl;
   if(!OpenGL400)std::cerr<<"OpenGL 4.0 is not available, missing: "+Result40<<std::endl;
   if(!OpenGL410)std::cerr<<"OpenGL 4.1 is not available, missing: "+Result41<<std::endl;
 
+  matrixfFce[0]=glUniformMatrix2fv  ;
+  matrixfFce[1]=glUniformMatrix3fv  ;
+  matrixfFce[2]=glUniformMatrix4fv  ;
+  matrixfFce[3]=glUniformMatrix2x3fv;
+  matrixfFce[4]=glUniformMatrix3x2fv;
+  matrixfFce[5]=glUniformMatrix2x4fv;
+  matrixfFce[6]=glUniformMatrix4x2fv;
+  matrixfFce[7]=glUniformMatrix3x4fv;
+  matrixfFce[8]=glUniformMatrix4x3fv;
+
+  matrixdFce[0]=glUniformMatrix2dv  ;
+  matrixdFce[1]=glUniformMatrix3dv  ;
+  matrixdFce[2]=glUniformMatrix4dv  ;
+  matrixdFce[3]=glUniformMatrix2x3dv;
+  matrixdFce[4]=glUniformMatrix3x2dv;
+  matrixdFce[5]=glUniformMatrix2x4dv;
+  matrixdFce[6]=glUniformMatrix4x2dv;
+  matrixdFce[7]=glUniformMatrix3x4dv;
+  matrixdFce[8]=glUniformMatrix4x3dv;
+
+  matrixfFceDsa[0]=glProgramUniformMatrix2fv  ;
+  matrixfFceDsa[1]=glProgramUniformMatrix3fv  ;
+  matrixfFceDsa[2]=glProgramUniformMatrix4fv  ;
+  matrixfFceDsa[3]=glProgramUniformMatrix2x3fv;
+  matrixfFceDsa[4]=glProgramUniformMatrix3x2fv;
+  matrixfFceDsa[5]=glProgramUniformMatrix2x4fv;
+  matrixfFceDsa[6]=glProgramUniformMatrix4x2fv;
+  matrixfFceDsa[7]=glProgramUniformMatrix3x4fv;
+  matrixfFceDsa[8]=glProgramUniformMatrix4x3fv;
+
+  matrixdFceDsa[0]=glProgramUniformMatrix2dv  ;
+  matrixdFceDsa[1]=glProgramUniformMatrix3dv  ;
+  matrixdFceDsa[2]=glProgramUniformMatrix4dv  ;
+  matrixdFceDsa[3]=glProgramUniformMatrix2x3dv;
+  matrixdFceDsa[4]=glProgramUniformMatrix3x2dv;
+  matrixdFceDsa[5]=glProgramUniformMatrix2x4dv;
+  matrixdFceDsa[6]=glProgramUniformMatrix4x2dv;
+  matrixdFceDsa[7]=glProgramUniformMatrix3x4dv;
+  matrixdFceDsa[8]=glProgramUniformMatrix4x3dv;
 }
 GLenum complexType2SimpleType(GLenum type){
   switch(type){
@@ -172,6 +260,14 @@ GLint complexType2Size(GLenum type){
   }
 }
 
+std::string ProgramObject::uniformsToStr(){
+  std::stringstream ss;
+  for(std::map<std::string,ShaderObjectParameter>::iterator it=this->_uniformList.begin();it!=this->_uniformList.end();++it){
+    ss<<it->first<<" ";
+  }
+  return ss.str();
+}
+
 void ProgramObject::setSeparable    (){
   glProgramParameteri(this->_id,GL_PROGRAM_SEPARABLE,GL_TRUE);
   glLinkProgram(this->_id);
@@ -189,10 +285,15 @@ void ProgramObject::resetRetrievable(){
   glLinkProgram(this->_id);
 }
 void ProgramObject::createShaderProgram_Prologue(){
-  if(!OpenGL320)throw std::string("OpenGL 3.2 not available");
+  if(!OpenGL320){
+    /*throw*/std::cerr<<std::string("OpenGL 3.2 not available")<<std::endl;
+    return;
+  }
   this->_id=glCreateProgram();//creates a shader program
-  if(!this->_id)//something is wrong
-    throw std::string("glCreateProgram failed");//+GetGLError());//error message
+  if(!this->_id){//something is wrong
+    /*throw*/ std::cerr<< std::string("glCreateProgram failed")<<std::endl;//+GetGLError());//error message
+    return;
+  }
   //this->AttributeList=new std::map<std::string,ShaderObjectParameter>();
   //this->UniformList=new std::map<std::string,int>();
 }
@@ -202,8 +303,10 @@ void ProgramObject::createShaderProgram_Epilogue(){
   std::cerr<<this->getProgramInfo(this->_id);
   GLint Status;//status of linking
   glGetProgramiv(this->_id,GL_LINK_STATUS,&Status);//status
-  if((GLboolean)Status==GL_FALSE)//something is wrong
-    throw std::string("Shader linking failed");//+GetGLError());//error message
+  if((GLboolean)Status==GL_FALSE){//something is wrong
+    /*throw*/std::cerr << std::string("Shader linking failed")<<std::endl;//+GetGLError());//error message
+    return;
+  }
   this->getParameterList();//get list of shader program parameter
 
   if(OpenGL400)
@@ -356,12 +459,12 @@ void ProgramObject::setSubroutine(
     std::string SubroutineName){
   int WH=0;
   switch(ShaderType){
-    case GL_VERTEX_SHADER:WH=0;break;
-    case GL_TESS_CONTROL_SHADER:WH=1;break;
+    case GL_VERTEX_SHADER         :WH=0;break;
+    case GL_TESS_CONTROL_SHADER   :WH=1;break;
     case GL_TESS_EVALUATION_SHADER:WH=2;break;
-    case GL_GEOMETRY_SHADER:WH=3;break;
-    case GL_FRAGMENT_SHADER:WH=4;break;
-    case GL_COMPUTE_SHADER:WH=5;break;
+    case GL_GEOMETRY_SHADER       :WH=3;break;
+    case GL_FRAGMENT_SHADER       :WH=4;break;
+    case GL_COMPUTE_SHADER        :WH=5;break;
   }
   this->_subroutines[WH].Indices[
     this->_subroutines[WH].SubroutineUniformList[Uniform].Index+OffSet
@@ -398,7 +501,9 @@ void ProgramObject::compileShaders(
     for(unsigned s=0;s<NumShaders;++s)//loop over shaders
       if(S[s])delete S[s];//free allocate shaders
     delete[]S;//free shaders array
-    throw e;//send error message
+    std::cerr<<e<<std::endl;
+    return;
+    //throw e;//send error message
   }
   for(unsigned s=0;s<NumShaders;++s){
     glAttachShader(this->_id,S[s]->getId());
@@ -429,7 +534,9 @@ void ProgramObject::sortAndCompileShaders(
       if(ActShader<0){//there was no shader
         delete[]ShaderSources;//deallocate shader array
         delete[]Defs;//deallaocate definitions array
-        throw std::string("bad arguments");//throw error
+        /*throw*/
+        std::cerr<<std::string("bad arguments")<<std::endl;//throw error
+        return;
       }else Defs[ActShader]+=Strings[s];//set definitinos
     }
   }
@@ -647,7 +754,9 @@ ProgramObject::ProgramObject(
     S0=new ShaderObject(Type0,Shader0);
   }catch(std::string&e){
     if(S0)delete S0;
-    throw e;
+    std::cerr<<e<<std::endl;
+    return;
+    //throw e;
   }
 
   glAttachShader(this->_id,S0->getId());
@@ -667,7 +776,9 @@ ProgramObject::ProgramObject(
   }catch(std::string&e){
     if(S0)delete S0;
     if(S1)delete S1;
-    throw e;
+    std::cerr<<e<<std::endl;
+    return;
+    //throw e;
   }
 
   glAttachShader(this->_id,S0->getId());
@@ -694,7 +805,9 @@ ProgramObject::ProgramObject(
     if(S0)delete S0;
     if(S1)delete S1;
     if(S2)delete S2;
-    throw e;
+    std::cerr<<e<<std::endl;
+    return;
+    //throw e;
   }
 
   glAttachShader(this->_id,S0->getId());
@@ -726,7 +839,9 @@ ProgramObject::ProgramObject(
     if(S1)delete S1;
     if(S2)delete S2;
     if(S3)delete S3;
-    throw e;
+    std::cerr<<e<<std::endl;
+    return;
+    //throw e;
   }
 
   glAttachShader(this->_id,S0->getId());
@@ -764,7 +879,9 @@ ProgramObject::ProgramObject(
     if(S2)delete S2;
     if(S3)delete S3;
     if(S4)delete S4;
-    throw e;
+    std::cerr<<e<<std::endl;
+    return;
+    //throw e;
   }
 
   glAttachShader(this->_id,S0->getId());
@@ -868,8 +985,9 @@ GLint ProgramObject::operator[](std::string Name){
   return this->_uniformList[Name].location;//uniform id
 }
 
-GLuint ProgramObject::getAttribute(std::string AttributeName){
-  return this->_attributeList[AttributeName].location;
+GLint ProgramObject::getAttribute(std::string name){
+  if(!this->_attributeList.count(name))return-1;
+  return this->_attributeList[name].location;
 }
 
 GLenum ProgramObject::getAttributeType(std::string AttributeName){
@@ -880,7 +998,8 @@ GLint ProgramObject::getAttributeSize(std::string AttributeName){
   return this->_attributeList[AttributeName].size;
 }
 
-GLuint ProgramObject::getUniform(std::string UniformName){
+GLint ProgramObject::getUniform(std::string UniformName){
+  if(!this->_uniformList.count(UniformName))return-1;
   return this->_uniformList[UniformName].location;
 }
 
@@ -895,6 +1014,67 @@ GLint ProgramObject::getUniformSize(std::string UniformName){
 void ProgramObject::use(){
   glUseProgram(this->_id);
 }
+
+int ProgramObject::_floatMatrixType2Index(GLenum type){
+  if(type<=GL_FLOAT_MAT4)return type-GL_FLOAT_MAT2;
+  int index=type-GL_FLOAT_MAT2x3;
+  if(index<0)return index;
+  return index+GL_FLOAT_MAT4-GL_FLOAT_MAT2+1;
+}
+
+int ProgramObject::_doubleMatrixType2Index(GLenum type){
+  if(type>GL_DOUBLE_MAT4x3||type<GL_DOUBLE_MAT2)return-1;
+  return type-GL_DOUBLE_MAT2;
+}
+
+
+#define MATRIXBODYA(TYPE)\
+  if(!this->_uniformList.count(name))return;\
+ShaderObjectParameter param=this->_uniformList[name];\
+int index=this->_##TYPE##MatrixType2Index(param.type);\
+if(index<0)return;\
+
+#define MATRIXBODY(FCE,TYPE)\
+  MATRIXBODYA(TYPE)\
+FCE[index](param.location,count,transpose,value);
+
+#define MATRIXBODYDSA(FCE,TYPE)\
+  MATRIXBODYA(TYPE)\
+FCE[index](this->_id,param.location,count,transpose,value);
+
+
+void ProgramObject::set(
+    std::string   name,
+    GLsizei       count,
+    GLboolean     transpose,
+    const GLfloat*value){
+  MATRIXBODY(matrixfFce,float)
+}
+
+void ProgramObject::set(
+    std::string    name,
+    GLsizei        count,
+    GLboolean      transpose,
+    const GLdouble*value){
+  MATRIXBODY(matrixdFce,double)
+}
+
+void ProgramObject::setdsa(
+    std::string   name,
+    GLsizei       count,
+    GLboolean     transpose,
+    const GLfloat*value){
+  MATRIXBODYDSA(matrixfFceDsa,float)
+}
+
+void ProgramObject::setdsa(
+    std::string    name,
+    GLsizei        count,
+    GLboolean      transpose,
+    const GLdouble*value){
+  MATRIXBODYDSA(matrixdFceDsa,double)
+}
+
   DEFFCE(1,f)
   DEFFCE(2,f)
   DEFFCE(3,f)
@@ -921,162 +1101,6 @@ void ProgramObject::use(){
   DEFFCEV(ui)
 DEFFCEV(boolean)
 
-
-  void ProgramObject::set(
-      std::string UniformName,
-      GLsizei Count,
-      GLboolean Transpose,
-      GLfloat*Value){
-    ShaderObjectParameter Param=this->_uniformList[UniformName];
-    switch(Param.type){
-      case GL_FLOAT_MAT2:
-        glUniformMatrix2fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT3:
-        glUniformMatrix3fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT4:
-        glUniformMatrix4fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT2x3:
-        glUniformMatrix2x3fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT3x2:
-        glUniformMatrix3x2fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT2x4:
-        glUniformMatrix2x4fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT4x2:
-        glUniformMatrix4x2fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT3x4:
-        glUniformMatrix3x4fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      case GL_FLOAT_MAT4x3:
-        glUniformMatrix4x3fv(Param.location,Count,Transpose,(const GLfloat*)Value);
-        break;
-      default:
-        break;
-    }
-  }
-void ProgramObject::set(
-    std::string  uniformName,
-    GLsizei      count,
-    GLboolean    transpose,
-    GLdouble    *value){
-  ShaderObjectParameter param=this->_uniformList[uniformName];
-  switch(param.type){
-    case GL_DOUBLE_MAT2:
-      glUniformMatrix2dv  (param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT3:
-      glUniformMatrix3dv  (param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT4:
-      glUniformMatrix4dv  (param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT2x3:
-      glUniformMatrix2x3dv(param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT3x2:
-      glUniformMatrix3x2dv(param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT2x4:
-      glUniformMatrix2x4dv(param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT4x2:
-      glUniformMatrix4x2dv(param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT3x4:
-      glUniformMatrix3x4dv(param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT4x3:
-      glUniformMatrix4x3dv(param.location,count,transpose,(const GLdouble*)value);
-      break;
-    default:
-      break;
-  }
-}
-
-
-
-void ProgramObject::setdsa(
-    std::string UniformName,
-    GLsizei Count,
-    GLboolean Transpose,
-    GLfloat*Value){
-  ShaderObjectParameter Param=this->_uniformList[UniformName];
-  switch(Param.type){
-    case GL_FLOAT_MAT2:
-      glProgramUniformMatrix2fv  (this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT3:
-      glProgramUniformMatrix3fv  (this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT4:
-      glProgramUniformMatrix4fv  (this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT2x3:
-      glProgramUniformMatrix2x3fv(this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT3x2:
-      glProgramUniformMatrix3x2fv(this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT2x4:
-      glProgramUniformMatrix2x4fv(this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT4x2:
-      glProgramUniformMatrix4x2fv(this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT3x4:
-      glProgramUniformMatrix3x4fv(this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    case GL_FLOAT_MAT4x3:
-      glProgramUniformMatrix4x3fv(this->_id,Param.location,Count,Transpose,(const GLfloat*)Value);
-      break;
-    default:
-      break;
-  }
-}
-void ProgramObject::setdsa(
-    std::string  uniformName,
-    GLsizei      count,
-    GLboolean    transpose,
-    GLdouble    *value){
-  ShaderObjectParameter param=this->_uniformList[uniformName];
-  switch(param.type){
-    case GL_DOUBLE_MAT2:
-      glProgramUniformMatrix2dv  (this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT3:
-      glProgramUniformMatrix3dv  (this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT4:
-      glProgramUniformMatrix4dv  (this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT2x3:
-      glProgramUniformMatrix2x3dv(this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT3x2:
-      glProgramUniformMatrix3x2dv(this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT2x4:
-      glProgramUniformMatrix2x4dv(this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT4x2:
-      glProgramUniformMatrix4x2dv(this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT3x4:
-      glProgramUniformMatrix3x4dv(this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    case GL_DOUBLE_MAT4x3:
-      glProgramUniformMatrix4x3dv(this->_id,param.location,count,transpose,(const GLdouble*)value);
-      break;
-    default:
-      break;
-  }
-}
 
   DEFDSAFCE(1,f)
   DEFDSAFCE(2,f)

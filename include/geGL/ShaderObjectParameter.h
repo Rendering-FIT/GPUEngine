@@ -28,6 +28,27 @@ namespace ge{
         ShaderObjectParameter(GLint location,GLenum type,std::string name,GLint size);
         ShaderObjectParameter(){};
     };
+    class GEGL_EXPORT BufferParams{
+      public:
+        std::string name         ;
+        GLenum      type         ;
+        GLint       arraySize    ;
+        GLint       offset       ;
+        GLint       blockIndex   ;
+        GLint       arrayStride  ;
+        GLint       matrixStride ;
+        GLboolean   isRowMajor   ;
+        GLboolean   refInVS      ;
+        GLboolean   refInCS      ;
+        GLboolean   refInES      ;
+        GLboolean   refInGS      ;
+        GLboolean   refInFS      ;
+        GLboolean   refInMP      ;
+        GLint       tlArraySize  ;
+        GLint       tlArrayStride;
+    };
+
+
   }
 }
 
