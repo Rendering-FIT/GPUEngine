@@ -19,7 +19,6 @@ void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
   glUniformMatrix3x4fv,
   glUniformMatrix4x3fv
 };
-
 void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
   glUniformMatrix2dv  ,
   glUniformMatrix3dv  ,
@@ -31,7 +30,6 @@ void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
   glUniformMatrix3x4dv,
   glUniformMatrix4x3dv
 };
-
 void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
   glProgramUniformMatrix2fv  ,
   glProgramUniformMatrix3fv  ,
@@ -43,7 +41,6 @@ void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
   glProgramUniformMatrix3x4fv,
   glProgramUniformMatrix4x3fv
 };
-
 void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
   glProgramUniformMatrix2dv  ,
   glProgramUniformMatrix3dv  ,
@@ -312,6 +309,9 @@ void ProgramObject::createShaderProgram_Epilogue(){
   if(OpenGL400)
     this->getSubroutineUniformList();
 
+  if(OpenGL400)
+    this->getBufferList();
+
   bool HasComputeShader=false;
   //for(unsigned i=0;i<this->ShaderList.size();++i){
   for(unsigned i=0;i<this->_shaders.size();++i){
@@ -452,6 +452,24 @@ void ProgramObject::getSubroutineUniformList(){
     }
   }
 }
+
+void ProgramObject::getBufferList(){
+  GLint nofBuffers=0;
+  glGetProgramInterfaceiv(
+      this->getId(),
+      GL_BUFFER_VARIABLE,
+      GL_ACTIVE_RESOURCES,
+      &nofBuffers);
+  for(GLint i=0;i<nofBuffers;++i){
+    BufferParams params(this->getId(),i);
+    this->_bufferList.insert(
+        std::pair<std::string,BufferParams>(
+          params.getName(),
+          params));
+    this->_bufferNames.push_back(params.getName());
+  }
+}
+
 void ProgramObject::setSubroutine(
     GLenum ShaderType,
     std::string Uniform,
@@ -1009,6 +1027,32 @@ GLenum ProgramObject::getUniformType(std::string UniformName){
 
 GLint ProgramObject::getUniformSize(std::string UniformName){
   return this->_uniformList[UniformName].size;
+}
+
+unsigned ProgramObject::getNofBuffers(){
+  return this->_bufferNames.size();
+}
+std::string ProgramObject::getBufferName(unsigned i){
+  return this->_bufferNames[i];
+}
+GLint ProgramObject::getBuffer(std::string name){
+  if(!this->_bufferList.count(name))return-1;
+  return this->_bufferList[name].getBinding();
+}
+GLint ProgramObject::getBufferProperty(
+    std::string name,
+    BufferParams::Properties property){
+   if(!this->_bufferList.count(name))return 0;
+   return this->_bufferList[name].getProperty(property);
+}
+BufferParams ProgramObject::getBufferParams(std::string name){
+  return this->_bufferList[name];
+}
+void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer){
+  buffer->bindBase(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name));
+}
+void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size){
+  buffer->bindRange(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name),offset,size);
 }
 
 void ProgramObject::use(){

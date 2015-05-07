@@ -27,10 +27,13 @@ namespace ge
         this->commands[i]->apply();
     }
 
-    CommandList::CommandList(bool outOfOrder)
-    {
-
+    CommandList::CommandList(bool outOfOrder){
+      this->outOfOrder=outOfOrder;
     }
+    void CommandList::add(Command*commands){
+      this->commands.push_back(commands);
+    }
+
 
     void CommandIf::apply(){
       this->statement->apply();

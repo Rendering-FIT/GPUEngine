@@ -10,6 +10,7 @@
 #include<geGL/ShaderObjectParameter.h>
 #include<geGL/ShaderObjectSubroutine.h>
 #include<geGL/ProgramObjectMacro.h>
+#include<geGL/BufferObject.h>
 
 namespace ge{
   namespace gl{
@@ -42,15 +43,18 @@ namespace ge{
         int _floatMatrixType2Index(GLenum type);
         int _doubleMatrixType2Index(GLenum type);
       protected:
-        std::vector<GLuint>                        _shaderList;    ///<list of shader object
-        std::vector<ShaderObject*>                 _shaders;       ///<list of shaders
-        std::map<std::string,ShaderObjectParameter>_attributeList; ///<list of attributes
-        std::map<std::string,ShaderObjectParameter>_uniformList;   ///<list of uniforms
+        std::vector<GLuint>                        _shaderList   ;///<list of shader object
+        std::vector<ShaderObject*>                 _shaders      ;///<list of shaders
+        std::map<std::string,ShaderObjectParameter>_attributeList;///<list of attributes
+        std::map<std::string,ShaderObjectParameter>_uniformList  ;///<list of uniforms
+        std::map<std::string,BufferParams>         _bufferList   ;///<list of buffers
+        std::vector<std::string>                   _bufferNames  ;///<list of buffer names
         ShaderObjectSubroutine                     _subroutines[6];///subroutines in shaders
         void createShaderProgram_Prologue();  ///<prologue of creating of shader prg.
         void createShaderProgram_Epilogue();  ///<epilogue of creating of shader prg.
         void getParameterList();              ///<obtain shader parameters
         void getSubroutineUniformList();      ///<obtain shader subroutines
+        void getBufferList();                 ///<obtain shader buffers
         std::string getProgramInfo(GLuint ID);///<obtain program info log
         void deleteProgram();                 ///<delete shader program
         void compileShaders(
@@ -372,6 +376,45 @@ namespace ge{
          */
         GLint getUniformSize(std::string uniformName);
         /**
+         * @brief gets buffer binding index
+         *
+         * @param name name of buffer
+         *
+         * @return binding index
+         */
+        GLint getBuffer(std::string name);
+        /**
+         * @brief gets number of buffers
+         *
+         * @return number of buffers
+         */
+        unsigned getNofBuffers();
+        /**
+         * @brief gets name of buffer
+         *
+         * @param i index of buffer
+         *
+         * @return name of buffer
+         */
+        std::string getBufferName(unsigned i);
+        /**
+         * @brief gets buffer property
+         *
+         * @param name name of buffer
+         * @param property property type
+         *
+         * @return value of buffer property
+         */
+        GLint getBufferProperty(std::string name,BufferParams::Properties property);
+        /**
+         * @brief gets buffer params
+         *
+         * @param name name of buffer
+         *
+         * @return buffer params
+         */
+        BufferParams getBufferParams(std::string name);
+        /**
          * @brief Sets this shader as active
          */
         void use();
@@ -408,6 +451,8 @@ namespace ge{
             GLsizei        count,
             GLboolean      transpose,
             const GLdouble*value);
+        void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
+        void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
 
         DEFDEFFCE(1,f);
         DEFDEFFCE(2,f);

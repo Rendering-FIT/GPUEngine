@@ -31,32 +31,24 @@ namespace ge
 
     class GEGL_EXPORT CommandList: public Command
     {
+      protected:
+        bool outOfOrder;
+        bool commutative;
+        bool associative;
+        std::vector<Command*> commands;
+        unsigned commandToExecute;///<index of command that will be executed using step()
       public:
         /**
          * @brief constructs command list
          *
          * @param outOfOrder if it is set to true, commands can be executed out of order
          */
-        CommandList(bool outOfOrder);
+        CommandList(bool outOfOrder=false);
         void apply();
         void step();
-
-        /*virtual unsigned addCommand(Command* command);
-          virtual unsigned insertCommand(Command* command, unsigned after);
-          virtual void clear();
-          virtual void erase();*/
-
-        unsigned commandToExecute;///<index of command that will be executed using step()
-        bool outOfOrder; ///<
-        bool commutative;
-        bool associative;
-        std::vector<Command*> commands;
-
-        /*std::vector<Command*>& getCommands() { return _commands; }
-          bool getAlterable() const { return _alterable; }
-          void setAlterable(bool val) { _alterable = val; }*/
-      protected:
+        void add(Command*command);
     };
+
     class GEGL_EXPORT CommandStatement: public Command
     {
       public:

@@ -52,6 +52,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/RasterizationState.h
     ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
+    ${HEADER_PATH}/ProgramCommands.h
   )
 
 set(GL_SOURCES
@@ -92,6 +93,7 @@ set(GL_SOURCES
     DebugMessage.cpp
     RasterizationState.cpp
     OpenGLObject.cpp
+    ProgramCommands.cpp
   )
 
 

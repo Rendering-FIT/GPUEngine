@@ -130,7 +130,7 @@ namespace ge
       std::map<std::string,GLuint>::iterator ii     = this->_shaders.begin();
       std::map<std::string,GLuint>::iterator ii_end = this->_shaders.end();
       for(;ii!=ii_end;++ii)
-        commandList->commands.push_back(new DeleteShader(&ii->second));
+        commandList->add(new DeleteShader(&ii->second));
       *command=commandList;
     }
     std::string ShaderObjectManager::insert(
@@ -145,9 +145,9 @@ namespace ge
       GLchar **string;
       if(this->_prepareSource(&shader,&string,text,&name,definitions,version,profile)){
         CommandList*commandList = new CommandList(false);
-        commandList->commands.push_back(new CreateShader (shader,type));
-        commandList->commands.push_back(new ShaderSource (shader,1,string,NULL));
-        commandList->commands.push_back(new CompileShader(shader));
+        commandList->add(new CreateShader (shader,type));
+        commandList->add(new ShaderSource (shader,1,string,NULL));
+        commandList->add(new CompileShader(shader));
         *command = commandList;
       }else
         *command = NULL;
