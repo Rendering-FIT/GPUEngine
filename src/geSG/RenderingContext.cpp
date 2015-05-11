@@ -4,6 +4,7 @@
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
 #include <geSG/StateSet.h>
+#include <geSG/InstancingMatrixCollection.h>
 #include <geGL/BufferObject.h>
 
 using namespace ge::sg;
@@ -16,6 +17,17 @@ int RenderingContext::_initialStateSetBufferNumElements = 100; // 800 bytes
 int RenderingContext::_initialDrawCommandBufferSize = 8000; // 8'000 bytes
 int RenderingContext::_initialInstanceBufferNumElements = 1000; // 12'000 bytes
 int RenderingContext::_initialIndirectCommandBufferSize = 20000; // 20'000 bytes
+int RenderingContext::_initialTransformationBufferSize = 1280; // 20 matrices (including one reserved
+                                                               // matrix for identity), 64*20=1'280 bytes
+int RenderingContext::_initialInstancingMatrixCollectionBufferNumElements = 20; // 20*8=160 bytes
+int RenderingContext::_initialInstancingMatricesBufferSize = 1280; // 20 matrices, 64*20=1'280 bytes
+
+const float RenderingContext::identityMatrix[16] = {
+   1.f, 0.f, 0.f, 0.f,
+   0.f, 1.f, 0.f, 0.f,
+   0.f, 0.f, 1.f, 0.f,
+   0.f, 0.f, 0.f, 1.f,
+};
 
 
 
@@ -27,12 +39,31 @@ RenderingContext::RenderingContext()
    , _drawCommandBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
+   , _transformationsAllocationManager(_initialTransformationBufferSize/64)
+   , _instancingMatrixCollectionAllocationManager(_initialInstancingMatrixCollectionBufferNumElements)
+   , _instancingMatrixAllocationManager(_initialInstancingMatricesBufferSize/64,1)
 {
    // create draw commands buffer
    _stateSetBuffer=new BufferObject(_initialStateSetBufferNumElements*8,nullptr,GL_DYNAMIC_DRAW);
    _drawCommandBuffer=new BufferObject(_initialDrawCommandBufferSize,nullptr,GL_DYNAMIC_DRAW);
    _instanceBuffer=new BufferObject(_initialInstanceBufferNumElements*12,nullptr,GL_DYNAMIC_DRAW);
    _indirectCommandBuffer=new BufferObject(_initialIndirectCommandBufferSize,nullptr,GL_DYNAMIC_COPY);
+   //_transformationBuffer=new BufferObject(_initialTransformationBufferSize,nullptr,GL_DYNAMIC_DRAW);
+   _cpuTransformationBuffer=new float[_initialTransformationBufferSize/sizeof(float)];
+   _instancingMatrixCollectionBuffer=new BufferObject(_initialInstancingMatrixCollectionBufferNumElements*
+          sizeof(InstancingMatrixCollectionGpuData),nullptr,GL_DYNAMIC_DRAW);
+   _instancingMatrixBuffer=new BufferObject(_initialInstancingMatricesBufferSize,nullptr,GL_DYNAMIC_COPY);
+
+   // make matrix at zero position identity matrix,
+   // among others, it serves as Null object (Null object design pattern)
+   _transformationsAllocationManager.emplace_back(nullptr);
+   //float *p=static_cast<float*>(_transformationBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+   //memcpy(p,identityMatrix,sizeof(float)*16);
+   //_transformationBuffer->unmap();
+   memcpy(&_cpuTransformationBuffer[0],identityMatrix,sizeof(float)*16);
+   float *p=static_cast<float*>(_instancingMatrixBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+   memcpy(p,identityMatrix,sizeof(float)*16);
+   _instancingMatrixBuffer->unmap();
 }
 
 
@@ -55,6 +86,10 @@ RenderingContext::~RenderingContext()
    delete _drawCommandBuffer;
    delete _instanceBuffer;
    delete _indirectCommandBuffer;
+   //delete _transformationBuffer;
+   delete _cpuTransformationBuffer;
+   delete _instancingMatrixCollectionBuffer;
+   delete _instancingMatrixBuffer;
 }
 
 
@@ -82,21 +117,21 @@ void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
 }
 
 
-void* RenderingContext::mapBuffer(void* &mappedBufferPtr,
-                                  MappedBufferAccess &currentAccess,
-                                  BufferObject *buffer,
-                                  MappedBufferAccess requestedAccess)
+void* RenderingContext::mapBuffer(BufferObject *buffer,
+                                  MappedBufferAccess requestedAccess,
+                                  void* &mappedBufferPtr,
+                                  MappedBufferAccess &grantedAccess)
 {
-   if(currentAccess==MappedBufferAccess::READ_WRITE ||
-      currentAccess==requestedAccess ||
+   if(grantedAccess==MappedBufferAccess::READ_WRITE ||
+      grantedAccess==requestedAccess ||
       requestedAccess==MappedBufferAccess::NO_ACCESS)
       return mappedBufferPtr;
 
-   if(currentAccess!=MappedBufferAccess::NO_ACCESS)
+   if(grantedAccess!=MappedBufferAccess::NO_ACCESS)
       buffer->unmap();
 
-   currentAccess|=requestedAccess;
-   mappedBufferPtr=buffer->map(static_cast<GLbitfield>(currentAccess));
+   grantedAccess|=requestedAccess;
+   mappedBufferPtr=buffer->map(static_cast<GLbitfield>(grantedAccess));
    return mappedBufferPtr;
 }
 

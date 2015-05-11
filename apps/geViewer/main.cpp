@@ -162,6 +162,8 @@ void Idle()
    // draw few triangles by very low-level approach
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
+   RenderingContext::current()->getInstancingMatrixCollectionBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->getInstancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
    attribsRefNI.attribStorage->bind();
    unsigned baseIndex=attribsRefNI.attribStorage->getVertexAllocationBlock(attribsRefNI.verticesDataId).startIndex;
    glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
@@ -195,6 +197,8 @@ void Idle()
                          (RenderingContext::current()->getFirstDrawCommandAvailableAtTheEnd()+3)/sizeof(unsigned));
    printIntBufferContent(RenderingContext::current()->getIndirectCommandBuffer(),
                          RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*5);*/
+   RenderingContext::current()->getInstancingMatrixCollectionBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->getInstancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
    stateSet->render();
 
    Window->swap();
@@ -571,12 +575,22 @@ void Init()
    ge::gl::initShadersAndPrograms();
    glProgram = new ProgramObject(
       GL_VERTEX_SHADER,
-      "#version 330\n"
+      "#version 430\n"
+      "\n"
       "layout(location=0) in vec3 coords;\n"
+      "\n"
+      "layout(std430,binding=0) restrict readonly buffer InstancingMatrixCollection {\n"
+      "   uint instancingMatrixCollectionBuffer[];\n"
+      "};\n"
+      "layout(std430,binding=1) restrict readonly buffer InstancingMatrices {\n"
+      "   mat4 instancingMatricesBuffer[];\n"
+      "};\n"
+      "\n"
       "uniform mat4 mvp;\n"
+      "\n"
       "void main()\n"
       "{\n"
-      "   gl_Position = mvp*vec4(coords,1.f);\n"
+      "   gl_Position = mvp*instancingMatricesBuffer[0]*vec4(coords,1.f);\n"
       "}\n",
       GL_FRAGMENT_SHADER,
       "#version 330\n"
