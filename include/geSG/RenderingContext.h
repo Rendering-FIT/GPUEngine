@@ -39,7 +39,7 @@ namespace ge
 
          struct Instance {
             unsigned drawCommandOffset4;
-            unsigned matrixIndex;
+            unsigned matrixCollectionOffset4;
             unsigned stateSetDataOffset4;
          };
 
@@ -207,11 +207,11 @@ namespace ge
          virtual void setNumDrawCommands(AttribReference &r,unsigned num);
 
          inline InstanceGroupId createInstances(AttribReference &r,
-                                                unsigned matrixIndex,StateSet *stateSet);
+                                                unsigned matrixCollectionOffset4,StateSet *stateSet);
          virtual InstanceGroupId createInstances(AttribReference &r,
                                                  const unsigned *drawCommandIndices,
                                                  const int drawCommandsCount,
-                                                 unsigned matrixIndex,StateSet *stateSet);
+                                                 unsigned matrixCollectionOffset4,StateSet *stateSet);
          virtual void deleteInstances(AttribReference &r,InstanceGroupId id);
 
          virtual void cancelAllAllocations();
@@ -337,8 +337,8 @@ namespace ge
       inline void RenderingContext::uploadDrawCommands(AttribReference &r,void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *modesAndOffsets4,int numDrawCommands)
       { uploadDrawCommands(r,nonConstDrawCommandBuffer,bytesToCopy,generateDrawCommandControlData(nonConstDrawCommandBuffer,modesAndOffsets4,numDrawCommands).data(),numDrawCommands); }
       inline void RenderingContext::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
-      inline InstanceGroupId RenderingContext::createInstances(AttribReference &r,unsigned matrixIndex,StateSet *stateSet)
-      { return createInstances(r,nullptr,-1,matrixIndex,stateSet); }
+      inline InstanceGroupId RenderingContext::createInstances(AttribReference &r,unsigned matrixCollectionOffset4,StateSet *stateSet)
+      { return createInstances(r,nullptr,-1,matrixCollectionOffset4,stateSet); }
       inline unsigned RenderingContext::getPositionInIndirectBuffer4() const  { return _indirectBufferAllocatedSpace4; }
       inline void RenderingContext::setPositionInIndirectBuffer4(unsigned pos)  { _indirectBufferAllocatedSpace4=pos; }
       inline void RenderingContext::setInitialStateSetBufferNumElements(int value)  { _initialStateSetBufferNumElements=value; }

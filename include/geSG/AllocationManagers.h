@@ -82,13 +82,16 @@ namespace ge
          unsigned _numItemsAvailable;           ///< Number of items available for allocation.
          unsigned _numItemsAvailableAtTheEnd;   ///< Number of available items at the end of managed memory, e.g. number of items in the block at the end.
          unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of managed memory that is followed by available items only.
+         static unsigned nullId;
          inline ItemAllocationManager(unsigned capacity);
+         inline ItemAllocationManager(unsigned capacity,unsigned nullObject);
          inline bool canAllocate(unsigned numItems) const;
          bool alloc(unsigned *id);  ///< \brief Allocates one item and stores the item's id to the variable pointed by id parameter.
          bool alloc(unsigned numItems,unsigned* ids);  ///< \brief Allocates number of items.
          void free(unsigned id);  ///< Frees allocated item. Id must be valid.
          void free(unsigned* ids,unsigned numItems);  ///< Frees allocated items. Ids pointed by ids parameter must be valid.
          void clear();
+         void assertEmpty();
       };
 
 
@@ -140,6 +143,13 @@ namespace ge
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity)
          : std::vector<unsigned*>(capacity), _numItemsTotal(capacity), _numItemsAvailable(capacity),
            _numItemsAvailableAtTheEnd(capacity), _firstItemAvailableAtTheEnd(0)  {}
+      inline ItemAllocationManager::ItemAllocationManager(unsigned capacity,unsigned nullObject)
+         : std::vector<unsigned*>(capacity), _numItemsTotal(capacity-nullObject),
+           _numItemsAvailable(capacity-nullObject),
+           _numItemsAvailableAtTheEnd(capacity-nullObject), _firstItemAvailableAtTheEnd(nullObject)
+      {
+         emplace_back(&nullId);
+      }
       template<typename OwnerType> inline bool ChunkAllocationManager<OwnerType>::canAllocate(unsigned numBytes) const
       { return _numBytesAvailableAtTheEnd>=numBytes; }
       template<typename OwnerType> inline bool BlockAllocationManager<OwnerType>::canAllocate(unsigned numItems) const

@@ -206,7 +206,7 @@ void Init(){
    attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
    attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                                        drawCommandOffsets4.data(),drawCommandOffsets4.size());
-   attribsRefInstNI.createInstances(0,stateSet.get());
+   attribsRefInstNI.createInstances(0u,stateSet.get());
 
 
    // unmap instance buffer

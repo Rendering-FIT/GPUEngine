@@ -40,7 +40,7 @@ RenderingContext::RenderingContext()
    , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _transformationsAllocationManager(_initialTransformationBufferSize/64)
-   , _instancingMatrixCollectionAllocationManager(_initialInstancingMatrixCollectionBufferNumElements)
+   , _instancingMatrixCollectionAllocationManager(_initialInstancingMatrixCollectionBufferNumElements,1)
    , _instancingMatrixAllocationManager(_initialInstancingMatricesBufferSize/64,1)
 {
    // create draw commands buffer
@@ -54,16 +54,19 @@ RenderingContext::RenderingContext()
           sizeof(InstancingMatrixCollectionGpuData),nullptr,GL_DYNAMIC_DRAW);
    _instancingMatrixBuffer=new BufferObject(_initialInstancingMatricesBufferSize,nullptr,GL_DYNAMIC_COPY);
 
-   // make matrix at zero position identity matrix,
-   // among others, it serves as Null object (Null object design pattern)
+   // create Null objects (Null object design pattern)
    _transformationsAllocationManager.emplace_back(nullptr);
-   //float *p=static_cast<float*>(_transformationBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
-   //memcpy(p,identityMatrix,sizeof(float)*16);
-   //_transformationBuffer->unmap();
+   // _cpuTransformationBuffer: null object is identity matrix
    memcpy(&_cpuTransformationBuffer[0],identityMatrix,sizeof(float)*16);
-   float *p=static_cast<float*>(_instancingMatrixBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
-   memcpy(p,identityMatrix,sizeof(float)*16);
+   // _instancingMatrixBuffer: null object is identity matrix
+   float *p1=static_cast<float*>(_instancingMatrixBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+   memcpy(p1,identityMatrix,sizeof(float)*16);
    _instancingMatrixBuffer->unmap();
+   // _instancingMatrixCollectionBuffer: null object points to the null identity matrix in _instancingMatrixBuffer
+   unsigned *p2=static_cast<unsigned*>(_instancingMatrixCollectionBuffer->map(0,sizeof(unsigned)*2,GL_MAP_WRITE_BIT));
+   p2[0]=0; // matrixCollectionOffset64
+   p2[1]=1; // numMatrices
+   _instancingMatrixCollectionBuffer->unmap();
 }
 
 
@@ -80,6 +83,14 @@ RenderingContext::~RenderingContext()
       if(it->second)
          it->second->deleteAllAttribStorages();
    }
+
+   // check AllocationManagers to be empty
+   //_stateSetBufferAllocationManager.assertEmpty();
+   //_drawCommandAllocationManager.assertEmpty();
+   //_instanceAllocationManager.assertEmpty();
+   //_transformationsAllocationManager.assertEmpty();
+   //_instancingMatrixCollectionAllocationManager.assertEmpty();
+   //_instancingMatrixAllocationManager.assertEmpty();
 
    // delete buffers
    delete _stateSetBuffer;
@@ -348,7 +359,7 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 InstanceGroupId RenderingContext::createInstances(
       AttribReference &r,
       const unsigned *drawCommandIndices,const int drawCommandsCount,
-      unsigned matrixIndex,StateSet *stateSet)
+      unsigned matrixCollectionOffset4,StateSet *stateSet)
 {
    // numInstances to be created
    unsigned numInstances=drawCommandsCount!=-1 ? unsigned(drawCommandsCount) : r.drawCommandControlData.size();
@@ -377,7 +388,7 @@ InstanceGroupId RenderingContext::createInstances(
       AttribReference::DrawCommandControlData dccd=r.drawCommandControlData[dcIndex];
       instance.drawCommandOffset4=_drawCommandAllocationManager[r.drawCommandBlockId].offset/4+
                                   dccd.offset4();
-      instance.matrixIndex=matrixIndex;
+      instance.matrixCollectionOffset4=matrixCollectionOffset4;
 
       // update instance's mode and StateSet counter
       unsigned mode=dccd.mode();

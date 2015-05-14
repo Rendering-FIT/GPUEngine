@@ -37,11 +37,16 @@ namespace ge
 
       public:
 
+         inline std::shared_ptr<InstancingMatrixCollection>& getOrCreateInstancingMatrixCollection();
+         inline const std::shared_ptr<InstancingMatrixCollection>& getOrCreateInstancingMatrixCollection() const;
+         inline std::shared_ptr<InstancingMatrixCollection>& instancingMatrixCollection();
+         inline const std::shared_ptr<InstancingMatrixCollection>& instancingMatrixCollection() const;
+
          enum ConstructionFlags { SHARE_MATRIX=0x1, SHARE_INSTANCING_MATRIX_COLLECTION=0x2,
                                   COPY_CHILDREN=0x4, SHARE_AND_COPY_ALL=0x7 };
-         Transformation();
-         Transformation(const Transformation &t,unsigned constructionFlags=SHARE_AND_COPY_ALL);
-         ~Transformation();
+         //inline Transformation();
+         //inline Transformation(const Transformation &t,unsigned constructionFlags=SHARE_AND_COPY_ALL);
+         //inline ~Transformation();
 
          void shareTransformationFrom(const Transformation &t);
 
@@ -67,10 +72,18 @@ namespace ge
 }
 
 
+#include <geSG/InstancingMatrixCollection.h>
+
 namespace ge
 {
    namespace sg
    {
+      inline std::shared_ptr<InstancingMatrixCollection>& Transformation::getOrCreateInstancingMatrixCollection()
+      { if(_instancingMatrixCollection==nullptr) _instancingMatrixCollection=std::make_shared<InstancingMatrixCollection>(); return _instancingMatrixCollection; }
+      inline const std::shared_ptr<InstancingMatrixCollection>& Transformation::getOrCreateInstancingMatrixCollection() const
+      { if(_instancingMatrixCollection==nullptr) const_cast<Transformation*>(this)->_instancingMatrixCollection=std::make_shared<InstancingMatrixCollection>(); return _instancingMatrixCollection; }
+      inline std::shared_ptr<InstancingMatrixCollection>& Transformation::instancingMatrixCollection()  { return _instancingMatrixCollection; }
+      inline const std::shared_ptr<InstancingMatrixCollection>& Transformation::instancingMatrixCollection() const  { return _instancingMatrixCollection; }
    }
 }
 

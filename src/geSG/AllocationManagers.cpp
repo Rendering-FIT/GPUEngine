@@ -1,6 +1,9 @@
+#include <cassert>
 #include <geSG/AllocationManagers.h>
 
 using namespace ge::sg;
+
+unsigned ItemAllocationManager::nullId = 0;
 
 
 // brief doc in declaration
@@ -71,4 +74,15 @@ void ItemAllocationManager::clear()
    _numItemsAvailable=_numItemsTotal;
    _numItemsAvailableAtTheEnd=_numItemsTotal;
    _firstItemAvailableAtTheEnd=0;
+}
+
+
+void ItemAllocationManager::assertEmpty()
+{
+   assert(size()<=1 && "ItemAllocationManager still contains elements.");
+   assert((size()!=1 || operator[](0)==&nullId) &&
+          "ItemAllocationManager still contains one element that is not null element.");
+   assert((_numItemsAvailable==_numItemsTotal ||
+          (_numItemsAvailable+1==_numItemsTotal && size()==1 && operator[](0)==&nullId)) &&
+          "ItemAllocationManager::_numItemsAvailable does not contain valid value.");
 }

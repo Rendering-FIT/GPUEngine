@@ -12,6 +12,7 @@
 #include <geSG/AttribType.h>
 #include <geSG/RenderingContext.h>
 #include <geSG/StateSet.h>
+#include <geSG/Transformation.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 #include <osgDB/ReadFile>
@@ -252,8 +253,16 @@ static AttribType convertOsgArrayType2geAttribType(osg::Array::Type osgType)
 class BuildGpuEngineGraphVisitor : public osg::NodeVisitor {
 public:
 
+   vector<shared_ptr<Transformation>> transformationStack;
+
    inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
    {
+      transformationStack.push_back(make_shared<Transformation>());
+   }
+
+   inline BuildGpuEngineGraphVisitor(shared_ptr<Transformation> &parentTransformation) : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+   {
+      transformationStack.push_back(parentTransformation);
    }
 
    virtual void apply(osg::Geode& node)
@@ -395,8 +404,13 @@ public:
          AttribReference &r=attribRefList.back();
          r.allocData(config,numVertices,numIndices,drawCommands.size()*sizeof(unsigned));
 
+         // upload draw commands
          r.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                               drawCommandsControlData.data(),drawCommandsControlData.size());
+
+         // create instances
+         shared_ptr<InstancingMatrixCollection> &imc=transformationStack.back()->getOrCreateInstancingMatrixCollection();
+         r.createInstances(imc.get(),stateSet.get());
 
          // upload vertices
          vector<void*> geArrays;
@@ -482,9 +496,15 @@ void Init()
          root->ref();
          root->accept(graphBuilder);
          root->unref();
-
-         for(auto it=attribRefList.begin(); it!=attribRefList.end(); it++)
-            it->createInstances(0,stateSet.get());
+         InstancingMatrixCollection *imc=graphBuilder.transformationStack.front()->getOrCreateInstancingMatrixCollection().get();
+         imc->updateGpuData(1);
+         const float m[16] = {
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            0.f,-2.f,-10.f, 1.f,
+         };
+         imc->uploadMatrices(m,1);
       }
 
       // release OSG memory
@@ -563,7 +583,7 @@ void Init()
    attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
    attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                                        modesAndOffsets4.data(),modesAndOffsets4.size()/2);
-   attribsRefInstNI.createInstances(0,stateSet.get());
+   attribsRefInstNI.createInstances(0u,stateSet.get());
 
 
    // unmap instance buffer
@@ -576,6 +596,7 @@ void Init()
    glProgram = new ProgramObject(
       GL_VERTEX_SHADER,
       "#version 430\n"
+      "#extension GL_ARB_shader_draw_parameters : enable\n"
       "\n"
       "layout(location=0) in vec3 coords;\n"
       "\n"
@@ -590,7 +611,8 @@ void Init()
       "\n"
       "void main()\n"
       "{\n"
-      "   gl_Position = mvp*instancingMatricesBuffer[0]*vec4(coords,1.f);\n"
+      "   uint matrixOffset64=instancingMatrixCollectionBuffer[gl_BaseInstanceARB];\n"
+      "   gl_Position = mvp*instancingMatricesBuffer[matrixOffset64]*vec4(coords,1.f);\n"
       "}\n",
       GL_FRAGMENT_SHADER,
       "#version 330\n"
@@ -633,6 +655,7 @@ void Init()
       "   // instance buffer data\n"
       "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
       "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
+      "   uint matrixCollectionOffset4=instanceBuffer[instanceIndex+1];\n"
       "   uint stateSetDataOffset4=instanceBuffer[instanceIndex+2];\n"
       "\n"
       "   // compute increment and get indirectBufferOffset\n"
@@ -656,6 +679,6 @@ void Init()
       "      indirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
       "      indirectBufferOffset4++;\n"
       "   }\n"
-      "   indirectBuffer[indirectBufferOffset4]=0; // base instance\n"
+      "   indirectBuffer[indirectBufferOffset4]=matrixCollectionOffset4; // base instance\n"
       "}\n");
 }
