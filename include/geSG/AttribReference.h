@@ -99,10 +99,9 @@ namespace ge
          inline void setNumDrawCommands(unsigned num);
 
          inline InstanceGroupId createInstances(InstancingMatrixCollection *imc,StateSet *stateSet);
-         inline InstanceGroupId createInstances(unsigned matrixCollectionOffset4,StateSet *stateSet);
          inline InstanceGroupId createInstances(const unsigned *drawCommandIndices,
                                                 const int drawCommandsCount,
-                                                unsigned matrixCollectionOffset4,StateSet *stateSet);
+                                                InstancingMatrixCollection *imc,StateSet *stateSet);
          inline void deleteInstances(InstanceGroupId id);
       };
 
@@ -187,11 +186,9 @@ namespace ge
       inline void AttribReference::setNumDrawCommands(unsigned num)
       { RenderingContext::current()->setNumDrawCommands(*this,num); }
       inline InstanceGroupId AttribReference::createInstances(InstancingMatrixCollection *imc,StateSet *stateSet)
-      { return createInstances(imc->gpuDataOffset4(),stateSet); }
-      inline InstanceGroupId AttribReference::createInstances(unsigned matrixCollectionOffset4,StateSet *stateSet)
-      { return RenderingContext::current()->createInstances(*this,matrixCollectionOffset4,stateSet); }
-      inline InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,unsigned matrixCollectionOffset4,StateSet *stateSet)
-      { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,matrixCollectionOffset4,stateSet); }
+      { return RenderingContext::current()->createInstances(*this,imc,stateSet); }
+      inline InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,InstancingMatrixCollection *imc,StateSet *stateSet)
+      { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,imc,stateSet); }
       inline void AttribReference::deleteInstances(InstanceGroupId id)
       { RenderingContext::current()->deleteInstances(*this,id); }
    }

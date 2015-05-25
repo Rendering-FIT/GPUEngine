@@ -82,9 +82,9 @@ namespace ge
          unsigned _numItemsAvailable;           ///< Number of items available for allocation.
          unsigned _numItemsAvailableAtTheEnd;   ///< Number of available items at the end of managed memory, e.g. number of items in the block at the end.
          unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of managed memory that is followed by available items only.
-         static unsigned nullId;
+         unsigned _numNullObjects;
          inline ItemAllocationManager(unsigned capacity);
-         inline ItemAllocationManager(unsigned capacity,unsigned nullObject);
+         inline ItemAllocationManager(unsigned capacity,unsigned numNullObjects);
          inline bool canAllocate(unsigned numItems) const;
          bool alloc(unsigned *id);  ///< \brief Allocates one item and stores the item's id to the variable pointed by id parameter.
          bool alloc(unsigned numItems,unsigned* ids);  ///< \brief Allocates number of items.
@@ -92,6 +92,8 @@ namespace ge
          void free(unsigned* ids,unsigned numItems);  ///< Frees allocated items. Ids pointed by ids parameter must be valid.
          void clear();
          void assertEmpty();
+         inline void setOwner(unsigned id,unsigned* const owner);
+         inline unsigned* owner(unsigned id) const;
       };
 
 
@@ -142,13 +144,14 @@ namespace ge
       }
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity)
          : std::vector<unsigned*>(capacity), _numItemsTotal(capacity), _numItemsAvailable(capacity),
-           _numItemsAvailableAtTheEnd(capacity), _firstItemAvailableAtTheEnd(0)  {}
-      inline ItemAllocationManager::ItemAllocationManager(unsigned capacity,unsigned nullObject)
-         : std::vector<unsigned*>(capacity), _numItemsTotal(capacity-nullObject),
-           _numItemsAvailable(capacity-nullObject),
-           _numItemsAvailableAtTheEnd(capacity-nullObject), _firstItemAvailableAtTheEnd(nullObject)
+           _numItemsAvailableAtTheEnd(capacity), _firstItemAvailableAtTheEnd(0), _numNullObjects(0)  {}
+      inline ItemAllocationManager::ItemAllocationManager(unsigned capacity,unsigned numNullObjects)
+         : std::vector<unsigned*>(capacity), _numItemsTotal(capacity-numNullObjects),
+           _numItemsAvailable(capacity-numNullObjects), _numItemsAvailableAtTheEnd(capacity-numNullObjects),
+           _firstItemAvailableAtTheEnd(numNullObjects), _numNullObjects(numNullObjects)
       {
-         emplace_back(&nullId);
+         for(unsigned i=0; i<numNullObjects; i++)
+            emplace_back(nullptr);
       }
       template<typename OwnerType> inline bool ChunkAllocationManager<OwnerType>::canAllocate(unsigned numBytes) const
       { return _numBytesAvailableAtTheEnd>=numBytes; }
@@ -158,6 +161,8 @@ namespace ge
       { return _numItemsAvailableAtTheEnd>=numItems; }
       template<typename OwnerType> inline void ChunkAllocationManager<OwnerType>::free(unsigned id)  { std::vector<ChunkAllocation<OwnerType>>::operator[](id).owner=nullptr; }
       template<typename OwnerType> inline void BlockAllocationManager<OwnerType>::free(unsigned id)  { std::vector<BlockAllocation<OwnerType>>::operator[](id).owner=nullptr; }
+      inline void ItemAllocationManager::setOwner(unsigned id,unsigned* const owner)  { operator[](id)=owner; }
+      inline unsigned* ItemAllocationManager::owner(unsigned id) const  { return operator[](id); }
 
       template<typename OwnerType>
       unsigned ChunkAllocationManager<OwnerType>::alloc(unsigned numBytes,AttribReference &r)

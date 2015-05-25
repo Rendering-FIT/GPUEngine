@@ -1,10 +1,12 @@
-#include <iostream> // for cerr
+#include <algorithm>
 #include <cstring>
+#include <iostream> // for cerr
 #include <geSG/RenderingContext.h>
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
 #include <geSG/StateSet.h>
 #include <geSG/InstancingMatrixCollection.h>
+#include <geSG/Transformation.h>
 #include <geGL/BufferObject.h>
 
 using namespace ge::sg;
@@ -39,7 +41,7 @@ RenderingContext::RenderingContext()
    , _drawCommandBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
-   , _transformationsAllocationManager(_initialTransformationBufferSize/64)
+   , _transformationsAllocationManager(_initialTransformationBufferSize/64,1)
    , _instancingMatrixCollectionAllocationManager(_initialInstancingMatrixCollectionBufferNumElements,1)
    , _instancingMatrixAllocationManager(_initialInstancingMatricesBufferSize/64,1)
 {
@@ -55,7 +57,6 @@ RenderingContext::RenderingContext()
    _instancingMatrixBuffer=new BufferObject(_initialInstancingMatricesBufferSize,nullptr,GL_DYNAMIC_COPY);
 
    // create Null objects (Null object design pattern)
-   _transformationsAllocationManager.emplace_back(nullptr);
    // _cpuTransformationBuffer: null object is identity matrix
    memcpy(&_cpuTransformationBuffer[0],identityMatrix,sizeof(float)*16);
    // _instancingMatrixBuffer: null object is identity matrix
@@ -296,7 +297,7 @@ vector<AttribReference::DrawCommandControlData>
 RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
                                                  const unsigned *modesAndOffsets4,int numDrawCommands)
 {
-   std::vector<AttribReference::DrawCommandControlData> r;
+   vector<AttribReference::DrawCommandControlData> r;
    r.reserve(numDrawCommands);
    for(int i=0,c=numDrawCommands*2; i<c; i+=2)
    {
@@ -359,7 +360,7 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 InstanceGroupId RenderingContext::createInstances(
       AttribReference &r,
       const unsigned *drawCommandIndices,const int drawCommandsCount,
-      unsigned matrixCollectionOffset4,StateSet *stateSet)
+      InstancingMatrixCollection *imc,StateSet *stateSet)
 {
    // numInstances to be created
    unsigned numInstances=drawCommandsCount!=-1 ? unsigned(drawCommandsCount) : r.drawCommandControlData.size();
@@ -371,7 +372,11 @@ InstanceGroupId RenderingContext::createInstances(
    // allocate InstanceGroup
    InstanceGroup *ig=InstanceGroup::alloc(numInstances);
    ig->stateSet=stateSet;
+   ig->matrixCollection=imc;
    ig->count=numInstances;
+
+   // reference matrix collection (to prevent it to be released from memory)
+   imc->incrementInstanceRefCounter();
 
    // allocate items in allocation manager
    _instanceAllocationManager.alloc(numInstances,ig->items);
@@ -379,6 +384,7 @@ InstanceGroupId RenderingContext::createInstances(
    // iterate through instances
    auto storageDataIterator=stateSet->getOrCreateAttribStorageData(r.attribStorage);
    StateSet::AttribStorageData &storageData=storageDataIterator->second;
+   auto matrixCollectionOffset4=imc->gpuDataOffset4();
    mapInstanceBuffer(MappedBufferAccess::WRITE);
    for(unsigned i=0; i<numInstances; i++)
    {
@@ -420,10 +426,27 @@ void RenderingContext::deleteInstances(AttribReference &r,InstanceGroupId id)
    }
    stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
+   // unreference matrix collection
+   id->matrixCollection->decrementInstanceRefCounter();
+
    // remove from lists, execute destructors and free memory
    _instanceAllocationManager.free(id->items,id->count);
    id->free();
    r.instances.erase(id);
+}
+
+
+void RenderingContext::appendTransformationGraph(shared_ptr<Transformation>& transformation)
+{
+   _transformationGraphs.emplace_back(transformation);
+}
+
+
+void RenderingContext::removeTransformationGraph(shared_ptr<Transformation>& transformation)
+{
+   auto it=std::find(_transformationGraphs.begin(),_transformationGraphs.end(),transformation);
+   if(it!=_transformationGraphs.end())
+      _transformationGraphs.erase(it);
 }
 
 
@@ -454,6 +477,63 @@ void RenderingContext::handleContextLost()
 }
 
 
+static void countMatrices(Transformation *t)
+{
+   InstancingMatrixCollection *imc=t->instancingMatrixCollection().get();
+   if(imc) {
+      if(imc->matrixCounterResetFlag()) {
+         imc->setMatrixCounter(1);
+         imc->setMatrixCounterResetFlag(false);
+      } else {
+         imc->setMatrixCounter(imc->matrixCounter()+1);
+      }
+   }
+   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   {
+      countMatrices(it->get());
+   }
+}
+
+
+static void processTransformation(Transformation *t,glm::mat4 mv)
+{
+   // compute new matrix
+   mv*=*reinterpret_cast<glm::mat4*>(t->getMatrixPtr());
+
+   // update number of matrices and allocated space for them
+   InstancingMatrixCollection *imc=t->instancingMatrixCollection().get();
+   if(imc)
+   {
+      if(imc->matrixCounterResetFlag()==false)
+      {
+         if(imc->matrixCounter()!=imc->numMatricesAllocated()) {
+            imc->updateGpuCollectionData(imc->matrixCounter());
+            imc->setNumMatricesAllocated(imc->matrixCounter());
+         }
+         imc->setMatrixCounterResetFlag(true);
+      }
+      imc->uploadMatrices(reinterpret_cast<float*>(&mv),1);
+   }
+
+   // process child transformations
+   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   {
+      processTransformation(it->get(),mv);
+   }
+}
+
+
+void RenderingContext::evaluateTransformationGraph()
+{
+   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
+      countMatrices(it->get());
+
+   glm::mat4 mv{}; // identity matrix
+   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
+      processTransformation(it->get(),mv);
+}
+
+
 void RenderingContext::setupRendering()
 {
    _indirectBufferAllocatedSpace4=0;
@@ -465,7 +545,7 @@ void RenderingContext::render()
 }
 
 
-void RenderingContext::setCurrent(const std::shared_ptr<RenderingContext>& ptr)
+void RenderingContext::setCurrent(const shared_ptr<RenderingContext>& ptr)
 {
    _currentContext=ptr;
 }

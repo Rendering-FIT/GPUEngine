@@ -3,7 +3,6 @@
 
 using namespace ge::sg;
 
-unsigned ItemAllocationManager::nullId = 0;
 
 
 // brief doc in declaration
@@ -56,33 +55,44 @@ bool ItemAllocationManager::alloc(unsigned numItems,unsigned* ids)
 
 void ItemAllocationManager::free(unsigned id)
 {
-   (*this)[id]=nullptr;
+   unsigned* &item=(*this)[id];
+   if(item==nullptr) {
+      assert(id<_numNullObjects && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
+      return;
+   }
+   item=nullptr;
    _numItemsAvailable++;
 }
 
 
 void ItemAllocationManager::free(unsigned* ids,unsigned numItems)
 {
+   unsigned numRemoved=numItems;
    for(unsigned i=0; i<numItems; i++)
-      (*this)[ids[i]]=nullptr;
-   _numItemsAvailable+=numItems;
+   {
+      unsigned* &item=(*this)[ids[i]];
+      if(item==nullptr) {
+         assert(ids[i]<_numNullObjects && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
+         numRemoved--;
+         continue;
+      }
+      item=nullptr;
+   }
+   _numItemsAvailable+=numRemoved;
 }
 
 
 void ItemAllocationManager::clear()
 {
-   _numItemsAvailable=_numItemsTotal;
-   _numItemsAvailableAtTheEnd=_numItemsTotal;
-   _firstItemAvailableAtTheEnd=0;
+   _numItemsAvailable=_numItemsTotal-_numNullObjects;
+   _numItemsAvailableAtTheEnd=_numItemsTotal-_numNullObjects;
+   _firstItemAvailableAtTheEnd=_numNullObjects;
 }
 
 
 void ItemAllocationManager::assertEmpty()
 {
-   assert(size()<=1 && "ItemAllocationManager still contains elements.");
-   assert((size()!=1 || operator[](0)==&nullId) &&
-          "ItemAllocationManager still contains one element that is not null element.");
-   assert((_numItemsAvailable==_numItemsTotal ||
-          (_numItemsAvailable+1==_numItemsTotal && size()==1 && operator[](0)==&nullId)) &&
+   assert(size()==_numNullObjects && "ItemAllocationManager still contains elements.");
+   assert(_numItemsAvailable+_numNullObjects==_numItemsTotal &&
           "ItemAllocationManager::_numItemsAvailable does not contain valid value.");
 }

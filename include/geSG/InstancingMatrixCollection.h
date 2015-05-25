@@ -17,15 +17,17 @@ namespace ge
       protected:
 
          unsigned _numInstanceRefs;
-         unsigned _gpuDataAllocationIndex;
-         unsigned _numMatricesAndDirtyFlag;
-         unsigned _gpuMatricesAllocationId;
+         unsigned _gpuDataAllocationIndex;   ///< Matrix collection allocation index.
+         unsigned _matrixCounter;
+         bool     _matrixCounterResetFlag;
+         unsigned _gpuMatricesAllocationId;  ///< GPU matrix block allocation id.
+         unsigned _numMatricesAllocated;
          std::shared_ptr<InstancingMatrixCollection> _selfRef;
 
       public:
 
-         void download(unsigned &matrixCollectionOffset64,unsigned &numMatrices);
-         void upload(unsigned matrixCollectionOffset64,unsigned numMatrices);
+         void downloadCollectionData(unsigned &matrixCollectionOffset64,unsigned &numMatrices);
+         void uploadCollectionData(unsigned matrixCollectionOffset64,unsigned numMatrices);
          static void downloadMatricesFromOffset(float *matrix,unsigned matrixCollectionOffset64,unsigned numMatrices);
          static void uploadMatricesToOffset(const float *matrix,unsigned matrixCollectionOffset64,unsigned numMatrices);
          inline void downloadMatrices(float *matrix,unsigned numMatrices,unsigned startIndex=0);
@@ -35,19 +37,24 @@ namespace ge
          inline unsigned gpuDataOffset4() const;
          inline unsigned matrixCollectionOffset64() const;  ///< Returns offset of the matrix block in InstancingMatrixBuffer.
 
-         inline unsigned numMatrices() const  { return _numMatricesAndDirtyFlag&0x7fffffff; }
-         inline void setNumMatrices(unsigned num)  { _numMatricesAndDirtyFlag=(_numMatricesAndDirtyFlag&0x80000000)|num; }
+         inline unsigned matrixCounter() const  { return _matrixCounter; }
+         inline void setMatrixCounter(unsigned num)  { _matrixCounter=num; }
 
-         inline bool gpuNumMatricesDirty() const  { return _numMatricesAndDirtyFlag>=0x80000000; }
-         inline void setGpuNumMatricesDirty(bool dirty)  { _numMatricesAndDirtyFlag=(_numMatricesAndDirtyFlag&0x7fffffff)|(dirty<<31); }
+         inline bool matrixCounterResetFlag() const  { return _matrixCounterResetFlag; }
+         inline void setMatrixCounterResetFlag(bool on)  { _matrixCounterResetFlag=on; }
 
-         void updateGpuData(unsigned numMatrices);
+         inline unsigned numMatricesAllocated() const  { return _numMatricesAllocated; }
+         inline void setNumMatricesAllocated(unsigned num)  { _numMatricesAllocated=num; }
+
+         void updateGpuCollectionData(unsigned numMatrices);
 
          inline void incrementInstanceRefCounter();
          inline void decrementInstanceRefCounter();
 
          static inline std::shared_ptr<InstancingMatrixCollection> create();
+         static inline const std::shared_ptr<InstancingMatrixCollection>& identity();
          InstancingMatrixCollection();
+         InstancingMatrixCollection(unsigned gpuDataAllocationIndex,unsigned gpuMatricesAllocationId);
          ~InstancingMatrixCollection();
 
       };
@@ -68,8 +75,9 @@ namespace ge
       { uploadMatricesToOffset(matrix,matrixCollectionOffset64()+startIndex,numMatrices); }
       inline unsigned InstancingMatrixCollection::gpuDataAllocationIndex() const  { return _gpuDataAllocationIndex; }
       inline unsigned InstancingMatrixCollection::gpuDataOffset4() const  { return _gpuDataAllocationIndex*2; }
-      inline unsigned InstancingMatrixCollection::matrixCollectionOffset64() const  { return RenderingContext::current()->getInstancingMatrixAllocationManager()[_gpuMatricesAllocationId].startIndex; }
+      inline unsigned InstancingMatrixCollection::matrixCollectionOffset64() const  { return RenderingContext::current()->instancingMatrixAllocationManager()[_gpuMatricesAllocationId].startIndex; }
       inline std::shared_ptr<InstancingMatrixCollection> InstancingMatrixCollection::create()  { return std::make_shared<InstancingMatrixCollection>(); }
+      inline const std::shared_ptr<InstancingMatrixCollection>& identity()  { return RenderingContext::current()->identityInstancingMatrix(); }
       inline void InstancingMatrixCollection::incrementInstanceRefCounter()
       { if(_numInstanceRefs==0) _selfRef=shared_from_this(); _numInstanceRefs++; }
       inline void InstancingMatrixCollection::decrementInstanceRefCounter()
@@ -78,3 +86,4 @@ namespace ge
 }
 
 #endif // GE_SG_INSTANCING_MATRIX_COLLECTION_H
+

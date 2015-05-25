@@ -145,6 +145,7 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
 void Idle()
 {
    // prepare for rendering
+   RenderingContext::current()->evaluateTransformationGraph();
    RenderingContext::current()->setupRendering();
    RenderingContext::current()->mapStateSetBuffer();
    stateSet->setupRendering();
@@ -263,6 +264,16 @@ public:
    inline BuildGpuEngineGraphVisitor(shared_ptr<Transformation> &parentTransformation) : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
    {
       transformationStack.push_back(parentTransformation);
+   }
+
+   virtual void apply(osg::Transform& transform)
+   {
+      osg::Matrix m;
+      transform.computeLocalToWorldMatrix(m,this);
+      //transformationStack.emplace_back(make_shared<Transformation>());
+      //transformationStack.back()->allocTransformationGpuData();
+      //transformationStack.back()->uploadMatrix(osg::Matrixf(m).ptr());
+      traverse(transform);
    }
 
    virtual void apply(osg::Geode& node)
@@ -496,15 +507,16 @@ void Init()
          root->ref();
          root->accept(graphBuilder);
          root->unref();
-         InstancingMatrixCollection *imc=graphBuilder.transformationStack.front()->getOrCreateInstancingMatrixCollection().get();
-         imc->updateGpuData(1);
+         RenderingContext::current()->appendTransformationGraph(graphBuilder.transformationStack.front());
          const float m[16] = {
             1.f, 0.f, 0.f, 0.f,
             0.f, 1.f, 0.f, 0.f,
             0.f, 0.f, 1.f, 0.f,
             0.f,-2.f,-10.f, 1.f,
          };
-         imc->uploadMatrices(m,1);
+         Transformation *t=graphBuilder.transformationStack.front().get();
+         t->allocTransformationGpuData();
+         t->uploadMatrix(m);
       }
 
       // release OSG memory
@@ -583,7 +595,7 @@ void Init()
    attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
    attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                                        modesAndOffsets4.data(),modesAndOffsets4.size()/2);
-   attribsRefInstNI.createInstances(0u,stateSet.get());
+   attribsRefInstNI.createInstances(RenderingContext::current()->identityInstancingMatrix().get(),stateSet.get());
 
 
    // unmap instance buffer
