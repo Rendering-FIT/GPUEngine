@@ -171,8 +171,8 @@ BufferParams::BufferParams(GLuint program,GLuint index){
   GLenum bindingProperty=GL_BUFFER_BINDING;
   glGetProgramResourceiv(program,GL_SHADER_STORAGE_BLOCK,index,1,&bindingProperty,1,&lenght,&this->_binding);
   delete[]buffer;
-  std::cerr<<this->toStr()<<std::endl;
-  std::cerr<<"name: "<<this->_name<<std::endl;
+  //std::cerr<<this->toStr()<<std::endl;
+  //std::cerr<<"name: "<<this->_name<<std::endl;
   //std::cerr<<"binding: "<<this->_binding<<std::endl;
 }
 GLint BufferParams::getProperty(enum Properties property){

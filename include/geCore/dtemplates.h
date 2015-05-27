@@ -38,6 +38,17 @@ namespace ge{
       }
 
 
+    template<unsigned SIZE,typename TYPE>
+      void argsToArray(TYPE data[SIZE],TYPE v){
+        data[SIZE-1]=v;
+      }
+    template<unsigned SIZE,typename TYPE,typename... Args>
+      inline void argsToArray(TYPE data[SIZE],TYPE v, Args... args){
+        data[SIZE-1-sizeof...(args)]=v;
+        argsToArray<SIZE,TYPE>(data,args...);
+      }
+
+
     template<typename TPtr>
       void deleteSetNull(TPtr&b){
         if(b)delete b;b=NULL;
@@ -71,6 +82,19 @@ namespace ge{
       void filterArgsToVector(std::vector<T>&data,T2,Args... args){
         filterArgsToVector(data,args...);
       }
+
+
+    template<unsigned... Is>
+      struct seq { };
+
+    template<unsigned N, unsigned... Is>
+      struct gen_seq : gen_seq<N - 1, N - 1, Is...> { };
+
+    template<unsigned... Is>
+      struct gen_seq<0, Is...> : seq<Is...> { };
+
+
+
     GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);  
   }
 }
