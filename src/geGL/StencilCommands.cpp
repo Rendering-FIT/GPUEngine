@@ -22,7 +22,7 @@ namespace ge
         GLenum face,
         GLenum func,
         GLint  ref,
-        GLuint Mask){
+        GLuint mask){
       this->face = face;
       this->func = func;
       this->ref  = ref;

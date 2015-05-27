@@ -197,82 +197,45 @@ namespace ge{
                 T2... args):UniformCommand(location){
               copyArgsToArray<dim,T>(this->data,args...);
             }
-          //*
-          template<unsigned... Is, typename std::enable_if<1 == dim, unsigned>::type = 0>
-            void apl(detail::seq<Is...>){
-              /*
-              if( typeid(T) == typeid(float  ) ||
-                  typeid(T) == typeid(GLfloat)){
-
-                if(dim==1)glUniform1f(this->_location,this->data[Is]...);
-                if(dim==2)glUniform2f(this->_location,this->data[Is]...);
-                if(dim==3)glUniform3f(this->_location,this->data[Is]...);
-                if(dim==4)glUniform4f(this->_location,this->data[Is]...);
-              }
-              if( typeid(T) == typeid(int  ) ||
-                  typeid(T) == typeid(GLint)){
-                if(dim==1)glUniform1i(this->_location,this->data[Is]...);
-                if(dim==2)glUniform2i(this->_location,this->data[Is]...);
-                if(dim==3)glUniform3i(this->_location,this->data[Is]...);
-                if(dim==4)glUniform4i(this->_location,this->data[Is]...);
-              }
-              if( typeid(T) == typeid(unsigned) ||
-                  typeid(T) == typeid(GLuint  )){
-                if(dim==1)glUniform1ui(this->_location,this->data[Is]...);
-                if(dim==2)glUniform2ui(this->_location,this->data[Is]...);
-                if(dim==3)glUniform3ui(this->_location,this->data[Is]...);
-                if(dim==4)glUniform4ui(this->_location,this->data[Is]...);
-              }
-              if( typeid(T) == typeid(double  ) ||
-                  typeid(T) == typeid(GLdouble)){
-                if(dim==1)glUniform1d(this->_location,this->data[Is]...);
-                if(dim==2)glUniform2d(this->_location,this->data[Is]...);
-                if(dim==3)glUniform3d(this->_location,this->data[Is]...);
-                if(dim==4)glUniform4d(this->_location,this->data[Is]...);
-              }
-              */
-              glUniform1ui(this->_location,this->data[Is]...);
-            }
           void apply(){
-            this->apl(detail::gen_seq<dim>());
+            if( typeid(T) == typeid(float  ) ||
+                typeid(T) == typeid(GLfloat)){
+              if(dim==1)glUniform1f(this->_location,this->data[0]);
+              if(dim==2)glUniform2f(this->_location,this->data[0],this->data[1]);
+              if(dim==3)glUniform3f(this->_location,this->data[0],this->data[1],this->data[2]);
+              if(dim==4)glUniform4f(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
+            }
+            if( typeid(T) == typeid(int  ) ||
+                typeid(T) == typeid(GLint)){
+              if(dim==1)glUniform1i(this->_location,this->data[0]);
+              if(dim==2)glUniform2i(this->_location,this->data[0],this->data[1]);
+              if(dim==3)glUniform3i(this->_location,this->data[0],this->data[1],this->data[2]);
+              if(dim==4)glUniform4i(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
+            }
+            if( typeid(T) == typeid(unsigned) ||
+                typeid(T) == typeid(GLuint  )){
+              if(dim==1)glUniform1ui(this->_location,this->data[0]);
+              if(dim==2)glUniform2ui(this->_location,this->data[0],this->data[1]);
+              if(dim==3)glUniform3ui(this->_location,this->data[0],this->data[1],this->data[2]);
+              if(dim==4)glUniform4ui(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
+            }
+            if( typeid(T) == typeid(double  ) ||
+                typeid(T) == typeid(GLdouble)){
+              if(dim==1)glUniform1d(this->_location,this->data[0]);
+              if(dim==2)glUniform2d(this->_location,this->data[0],this->data[1]);
+              if(dim==3)glUniform3d(this->_location,this->data[0],this->data[1],this->data[2]);
+              if(dim==4)glUniform4d(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
+            }
           }
-          // */
-          /*
-             void apply(){
-             if( typeid(T) == typeid(float  ) ||
-             typeid(T) == typeid(GLfloat)){
-             if(dim==1)glUniform1f(this->_location,this->data[0]);
-             if(dim==2)glUniform2f(this->_location,this->data[0],this->data[1]);
-             if(dim==3)glUniform3f(this->_location,this->data[0],this->data[1],this->data[2]);
-             if(dim==4)glUniform4f(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
-             }
-             if( typeid(T) == typeid(int  ) ||
-             typeid(T) == typeid(GLint)){
-             if(dim==1)glUniform1i(this->_location,this->data[0]);
-             if(dim==2)glUniform2i(this->_location,this->data[0],this->data[1]);
-             if(dim==3)glUniform3i(this->_location,this->data[0],this->data[1],this->data[2]);
-             if(dim==4)glUniform4i(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
-             }
-             if( typeid(T) == typeid(unsigned) ||
-             typeid(T) == typeid(GLuint  )){
-             if(dim==1)glUniform1ui(this->_location,this->data[0]);
-             if(dim==2)glUniform2ui(this->_location,this->data[0],this->data[1]);
-             if(dim==3)glUniform3ui(this->_location,this->data[0],this->data[1],this->data[2]);
-             if(dim==4)glUniform4ui(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
-             }
-             if( typeid(T) == typeid(double  ) ||
-             typeid(T) == typeid(GLdouble)){
-             if(dim==1)glUniform1d(this->_location,this->data[0]);
-             if(dim==2)glUniform2d(this->_location,this->data[0],this->data[1]);
-             if(dim==3)glUniform3d(this->_location,this->data[0],this->data[1],this->data[2]);
-             if(dim==4)glUniform4d(this->_location,this->data[0],this->data[1],this->data[2],this->data[3]);
-             }
-             }// */
+          template<class...T2, typename std::enable_if<sizeof...(T2) == dim, unsigned>::type = 0>
+          void set(T2... args){
+            copyArgsToArray<dim,T>(this->data,args...);
+          }
       };
     template<unsigned dim,typename T>
       class GEGL_EXPORT UniformV: public UniformCommand{
         public:
-          T*data;
+          const T*data;
           GLsizei count;
           UniformV(
               ge::gl::ProgramObject*program,
@@ -284,40 +247,46 @@ namespace ge{
           }
           UniformV(
               GLint location,
-              T*data,
+              const T*data,
               GLsizei count=1):UniformCommand(location){
             this->data  = data;
             this->count = count;
           }
           void apply(){
+            return;
             if( typeid(T) == typeid(float  ) ||
                 typeid(T) == typeid(GLfloat)){
-              if(dim==1)glUniform1fv(this->_location,this->count,this->data);
-              if(dim==2)glUniform2fv(this->_location,this->count,this->data);
-              if(dim==3)glUniform3fv(this->_location,this->count,this->data);
-              if(dim==4)glUniform4fv(this->_location,this->count,this->data);
+              if(dim==1)glUniform1fv(this->_location,this->count,(const GLfloat*)this->data);
+              if(dim==2)glUniform2fv(this->_location,this->count,(const GLfloat*)this->data);
+              if(dim==3)glUniform3fv(this->_location,this->count,(const GLfloat*)this->data);
+              if(dim==4)glUniform4fv(this->_location,this->count,(const GLfloat*)this->data);
             }
             if( typeid(T) == typeid(int  ) ||
                 typeid(T) == typeid(GLint)){
-              if(dim==1)glUniform1iv(this->_location,this->count,this->data);
-              if(dim==2)glUniform2iv(this->_location,this->count,this->data);
-              if(dim==3)glUniform3iv(this->_location,this->count,this->data);
-              if(dim==4)glUniform4iv(this->_location,this->count,this->data);
+              if(dim==1)glUniform1iv(this->_location,this->count,(const GLint*)this->data);
+              if(dim==2)glUniform2iv(this->_location,this->count,(const GLint*)this->data);
+              if(dim==3)glUniform3iv(this->_location,this->count,(const GLint*)this->data);
+              if(dim==4)glUniform4iv(this->_location,this->count,(const GLint*)this->data);
             }
             if( typeid(T) == typeid(unsigned) ||
                 typeid(T) == typeid(GLuint  )){
-              if(dim==1)glUniform1uiv(this->_location,this->count,this->data);
-              if(dim==2)glUniform2uiv(this->_location,this->count,this->data);
-              if(dim==3)glUniform3uiv(this->_location,this->count,this->data);
-              if(dim==4)glUniform4uiv(this->_location,this->count,this->data);
+              if(dim==1)glUniform1uiv(this->_location,this->count,(const GLuint*)this->data);
+              if(dim==2)glUniform2uiv(this->_location,this->count,(const GLuint*)this->data);
+              if(dim==3)glUniform3uiv(this->_location,this->count,(const GLuint*)this->data);
+              if(dim==4)glUniform4uiv(this->_location,this->count,(const GLuint*)this->data);
             }
             if( typeid(T) == typeid(double  ) ||
                 typeid(T) == typeid(GLdouble)){
-              if(dim==1)glUniform1dv(this->_location,this->count,this->data);
-              if(dim==2)glUniform2dv(this->_location,this->count,this->data);
-              if(dim==3)glUniform3dv(this->_location,this->count,this->data);
-              if(dim==4)glUniform4dv(this->_location,this->count,this->data);
+              if(dim==1)glUniform1dv(this->_location,this->count,(const GLdouble*)this->data);
+              if(dim==2)glUniform2dv(this->_location,this->count,(const GLdouble*)this->data);
+              if(dim==3)glUniform3dv(this->_location,this->count,(const GLdouble*)this->data);
+              if(dim==4)glUniform4dv(this->_location,this->count,(const GLdouble*)this->data);
             }
+          }
+          void set(const T*data,GLsizei count=1){
+            this->count = count;
+            return;
+            this->data  = data ;
           }
       };
 

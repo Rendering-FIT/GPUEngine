@@ -4,6 +4,7 @@
 #include <geGL/Export.h>
 #include <GL/glew.h>
 #include <vector>
+#include<memory>
 
 namespace ge
 {
@@ -28,25 +29,20 @@ namespace ge
         void apply();
     };
 
-
     class GEGL_EXPORT CommandList: public Command
     {
       protected:
         bool outOfOrder;
         bool commutative;
         bool associative;
-        std::vector<Command*> commands;
+        std::vector<std::shared_ptr<Command>> commands;
         unsigned commandToExecute;///<index of command that will be executed using step()
       public:
-        /**
-         * @brief constructs command list
-         *
-         * @param outOfOrder if it is set to true, commands can be executed out of order
-         */
+        typedef std::vector<std::shared_ptr<Command>>::iterator Iterator;
         CommandList(bool outOfOrder=false);
         void apply();
         void step();
-        void add(Command*command);
+        Iterator add(Command*command);
     };
 
     class GEGL_EXPORT CommandStatement: public Command
@@ -58,15 +54,15 @@ namespace ge
     {
       public:
         CommandStatement *statement;
-        Command          *trueBranch;
-        Command          *falseBranch;
+        std::shared_ptr<Command> trueBranch;
+        std::shared_ptr<Command> falseBranch;
         void              apply();
     };
     class GEGL_EXPORT CommandWhile: public Command
     {
       public:
         CommandStatement *statement;
-        Command          *body;
+        std::shared_ptr<Command> body;
         void              apply();
     };
     class GEGL_EXPORT CommandInterpret

@@ -110,6 +110,7 @@ std::string ge::gl::translateBufferProperty(GLenum property){
     case GL_REFERENCED_BY_COMPUTE_SHADER        :return"GL_REFERENCED_BY_COMPUTE_SHADER"        ;
     case GL_TOP_LEVEL_ARRAY_SIZE                :return"GL_TOP_LEVEL_ARRAY_SIZE"                ;
     case GL_TOP_LEVEL_ARRAY_STRIDE              :return"GL_TOP_LEVEL_ARRAY_STRIDE"              ;
+    default                                     :return"unknown"                                ;
   }
 }
 
@@ -133,6 +134,7 @@ const GLenum bufferProperties[]={
 const unsigned nofBufferProperties = sizeof(bufferProperties)/sizeof(GLenum);
 
 BufferParams::BufferParams(GLuint program,GLuint index){
+  //std::cerr<<"BufferParams\n";
   GLint lenght;
   glGetProgramResourceiv(
       program,
@@ -160,10 +162,13 @@ BufferParams::BufferParams(GLuint program,GLuint index){
   this->_name = std::string(buffer);
   std::size_t pos=this->_name.find("[0]");
   if(pos!=std::string::npos)this->_name=this->_name.substr(0,pos);
-
+  //std::cerr<<"BINDING\n";
   GLenum bindingProperty=GL_BUFFER_BINDING;
   glGetProgramResourceiv(program,GL_SHADER_STORAGE_BLOCK,index,1,&bindingProperty,1,&lenght,&this->_binding);
-  delete buffer;
+  delete[]buffer;
+  //std::cerr<<this->toStr()<<std::endl;
+  //std::cerr<<"name: "<<this->_name<<std::endl;
+  //std::cerr<<"binding: "<<this->_binding<<std::endl;
 }
 GLint BufferParams::getProperty(enum Properties property){
   return this->_params[(int)property];

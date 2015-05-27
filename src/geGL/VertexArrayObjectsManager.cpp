@@ -39,14 +39,14 @@ namespace ge
     void VertexArrayObjectsManager::addAttrib(
         Command   **command,
         std::string vaobj,
-        GLuint      buffer,
-        GLuint      index,
-        GLuint      size,
-        GLenum      type,
-        GLboolean   normalized,
-        GLsizei     stride,
-        unsigned    offset,
-        GLuint      divisitor){
+        GLuint      /*buffer*/,
+        GLuint      /*index*/,
+        GLuint      /*size*/,
+        GLenum      /*type*/,
+        GLboolean   /*normalized*/,
+        GLsizei     /*stride*/,
+        unsigned    /*offset*/,
+        GLuint      /*divisitor*/){
       GLuint*vao=&this->_vaos[vaobj];
       CommandList*commandList=new CommandList(false);
       commandList->add(new BindVertexArray(vao));

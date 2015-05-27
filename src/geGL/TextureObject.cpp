@@ -328,6 +328,7 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
 
 
   }
+  return 4;//TODO
 }
 
 
