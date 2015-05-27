@@ -1,9 +1,12 @@
-#include <iostream> // for cerr
+#include <algorithm>
 #include <cstring>
+#include <iostream> // for cerr
 #include <geSG/RenderingContext.h>
 #include <geSG/AttribReference.h>
 #include <geSG/AttribStorage.h>
 #include <geSG/StateSet.h>
+#include <geSG/InstancingMatrixCollection.h>
+#include <geSG/Transformation.h>
 #include <geGL/BufferObject.h>
 
 using namespace ge::sg;
@@ -16,6 +19,17 @@ int RenderingContext::_initialStateSetBufferNumElements = 100; // 800 bytes
 int RenderingContext::_initialDrawCommandBufferSize = 8000; // 8'000 bytes
 int RenderingContext::_initialInstanceBufferNumElements = 1000; // 12'000 bytes
 int RenderingContext::_initialIndirectCommandBufferSize = 20000; // 20'000 bytes
+int RenderingContext::_initialTransformationBufferSize = 1280; // 20 matrices (including one reserved
+                                                               // matrix for identity), 64*20=1'280 bytes
+int RenderingContext::_initialInstancingMatrixControlBufferNumElements = 20; // 20*8=160 bytes
+int RenderingContext::_initialInstancingMatricesBufferSize = 1280; // 20 matrices, 64*20=1'280 bytes
+
+const float RenderingContext::identityMatrix[16] = {
+   1.f, 0.f, 0.f, 0.f,
+   0.f, 1.f, 0.f, 0.f,
+   0.f, 0.f, 1.f, 0.f,
+   0.f, 0.f, 0.f, 1.f,
+};
 
 
 
@@ -23,16 +37,38 @@ RenderingContext::RenderingContext()
    : _stateSetBufferAllocationManager(_initialStateSetBufferNumElements)
    , _drawCommandAllocationManager(_initialDrawCommandBufferSize)
    , _instanceAllocationManager(_initialInstanceBufferNumElements)
-   , _mappedDrawCommandBufferPtr(nullptr)
+   , _stateSetBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _drawCommandBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
-   , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
+   , _transformationsAllocationManager(_initialTransformationBufferSize/64,1)
+   , _instancingMatrixControlAllocationManager(_initialInstancingMatrixControlBufferNumElements,1)
+   , _instancingMatrixAllocationManager(_initialInstancingMatricesBufferSize/64,1)
+   , _instancingMatrixControlBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
+   , _instancingMatrixBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
 {
    // create draw commands buffer
    _stateSetBuffer=new BufferObject(_initialStateSetBufferNumElements*8,nullptr,GL_DYNAMIC_DRAW);
    _drawCommandBuffer=new BufferObject(_initialDrawCommandBufferSize,nullptr,GL_DYNAMIC_DRAW);
    _instanceBuffer=new BufferObject(_initialInstanceBufferNumElements*12,nullptr,GL_DYNAMIC_DRAW);
    _indirectCommandBuffer=new BufferObject(_initialIndirectCommandBufferSize,nullptr,GL_DYNAMIC_COPY);
+   //_transformationBuffer=new BufferObject(_initialTransformationBufferSize,nullptr,GL_DYNAMIC_DRAW);
+   _cpuTransformationBuffer=new float[_initialTransformationBufferSize/sizeof(float)];
+   _instancingMatrixControlBuffer=new BufferObject(_initialInstancingMatrixControlBufferNumElements*
+          sizeof(InstancingMatrixControlGpuData),nullptr,GL_DYNAMIC_DRAW);
+   _instancingMatrixBuffer=new BufferObject(_initialInstancingMatricesBufferSize,nullptr,GL_DYNAMIC_COPY);
+
+   // create Null objects (Null object design pattern)
+   // _cpuTransformationBuffer: null object is identity matrix
+   memcpy(&_cpuTransformationBuffer[0],identityMatrix,sizeof(float)*16);
+   // _instancingMatrixBuffer: null object is identity matrix
+   float *p1=static_cast<float*>(_instancingMatrixBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+   memcpy(p1,identityMatrix,sizeof(float)*16);
+   _instancingMatrixBuffer->unmap();
+   // _instancingMatrixControlBuffer: null object points to the null identity matrix in _instancingMatrixBuffer
+   unsigned *p2=static_cast<unsigned*>(_instancingMatrixControlBuffer->map(0,sizeof(unsigned)*2,GL_MAP_WRITE_BIT));
+   p2[0]=0; // matrixCollectionOffset64
+   p2[1]=1; // numMatrices
+   _instancingMatrixControlBuffer->unmap();
 }
 
 
@@ -50,11 +86,23 @@ RenderingContext::~RenderingContext()
          it->second->deleteAllAttribStorages();
    }
 
+   // check AllocationManagers to be empty
+   //_stateSetBufferAllocationManager.assertEmpty();
+   //_drawCommandAllocationManager.assertEmpty();
+   //_instanceAllocationManager.assertEmpty();
+   //_transformationsAllocationManager.assertEmpty();
+   //_instancingMatrixCollectionAllocationManager.assertEmpty();
+   //_instancingMatrixAllocationManager.assertEmpty();
+
    // delete buffers
    delete _stateSetBuffer;
    delete _drawCommandBuffer;
    delete _instanceBuffer;
    delete _indirectCommandBuffer;
+   //delete _transformationBuffer;
+   delete[] _cpuTransformationBuffer;
+   delete _instancingMatrixControlBuffer;
+   delete _instancingMatrixBuffer;
 }
 
 
@@ -82,21 +130,21 @@ void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
 }
 
 
-void* RenderingContext::mapBuffer(void* &mappedBufferPtr,
-                                  MappedBufferAccess &currentAccess,
-                                  BufferObject *buffer,
-                                  MappedBufferAccess requestedAccess)
+void* RenderingContext::mapBuffer(BufferObject *buffer,
+                                  MappedBufferAccess requestedAccess,
+                                  void* &mappedBufferPtr,
+                                  MappedBufferAccess &grantedAccess)
 {
-   if(currentAccess==MappedBufferAccess::READ_WRITE ||
-      currentAccess==requestedAccess ||
+   if(grantedAccess==MappedBufferAccess::READ_WRITE ||
+      grantedAccess==requestedAccess ||
       requestedAccess==MappedBufferAccess::NO_ACCESS)
       return mappedBufferPtr;
 
-   if(currentAccess!=MappedBufferAccess::NO_ACCESS)
+   if(grantedAccess!=MappedBufferAccess::NO_ACCESS)
       buffer->unmap();
 
-   currentAccess|=requestedAccess;
-   mappedBufferPtr=buffer->map(static_cast<GLbitfield>(currentAccess));
+   grantedAccess|=requestedAccess;
+   mappedBufferPtr=buffer->map(static_cast<GLbitfield>(grantedAccess));
    return mappedBufferPtr;
 }
 
@@ -250,7 +298,7 @@ vector<AttribReference::DrawCommandControlData>
 RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
                                                  const unsigned *modesAndOffsets4,int numDrawCommands)
 {
-   std::vector<AttribReference::DrawCommandControlData> r;
+   vector<AttribReference::DrawCommandControlData> r;
    r.reserve(numDrawCommands);
    for(int i=0,c=numDrawCommands*2; i<c; i+=2)
    {
@@ -313,7 +361,7 @@ void RenderingContext::setNumDrawCommands(AttribReference &r,unsigned num)
 InstanceGroupId RenderingContext::createInstances(
       AttribReference &r,
       const unsigned *drawCommandIndices,const int drawCommandsCount,
-      unsigned matrixIndex,StateSet *stateSet)
+      InstancingMatrixCollection *imc,StateSet *stateSet)
 {
    // numInstances to be created
    unsigned numInstances=drawCommandsCount!=-1 ? unsigned(drawCommandsCount) : r.drawCommandControlData.size();
@@ -325,7 +373,11 @@ InstanceGroupId RenderingContext::createInstances(
    // allocate InstanceGroup
    InstanceGroup *ig=InstanceGroup::alloc(numInstances);
    ig->stateSet=stateSet;
+   ig->matrixCollection=imc;
    ig->count=numInstances;
+
+   // reference matrix collection (to prevent it to be released from memory)
+   imc->incrementInstanceRefCounter();
 
    // allocate items in allocation manager
    _instanceAllocationManager.alloc(numInstances,ig->items);
@@ -333,6 +385,7 @@ InstanceGroupId RenderingContext::createInstances(
    // iterate through instances
    auto storageDataIterator=stateSet->getOrCreateAttribStorageData(r.attribStorage);
    StateSet::AttribStorageData &storageData=storageDataIterator->second;
+   auto matrixCollectionOffset4=imc->gpuDataOffset4();
    mapInstanceBuffer(MappedBufferAccess::WRITE);
    for(unsigned i=0; i<numInstances; i++)
    {
@@ -342,7 +395,7 @@ InstanceGroupId RenderingContext::createInstances(
       AttribReference::DrawCommandControlData dccd=r.drawCommandControlData[dcIndex];
       instance.drawCommandOffset4=_drawCommandAllocationManager[r.drawCommandBlockId].offset/4+
                                   dccd.offset4();
-      instance.matrixIndex=matrixIndex;
+      instance.matrixCollectionOffset4=matrixCollectionOffset4;
 
       // update instance's mode and StateSet counter
       unsigned mode=dccd.mode();
@@ -374,10 +427,27 @@ void RenderingContext::deleteInstances(AttribReference &r,InstanceGroupId id)
    }
    stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
+   // unreference matrix collection
+   id->matrixCollection->decrementInstanceRefCounter();
+
    // remove from lists, execute destructors and free memory
    _instanceAllocationManager.free(id->items,id->count);
    id->free();
    r.instances.erase(id);
+}
+
+
+void RenderingContext::appendTransformationGraph(shared_ptr<Transformation>& transformation)
+{
+   _transformationGraphs.emplace_back(transformation);
+}
+
+
+void RenderingContext::removeTransformationGraph(shared_ptr<Transformation>& transformation)
+{
+   auto it=std::find(_transformationGraphs.begin(),_transformationGraphs.end(),transformation);
+   if(it!=_transformationGraphs.end())
+      _transformationGraphs.erase(it);
 }
 
 
@@ -408,6 +478,65 @@ void RenderingContext::handleContextLost()
 }
 
 
+static void countMatrices(Transformation *t)
+{
+   InstancingMatrixCollection *imc=t->instancingMatrixCollection().get();
+   if(imc) {
+      if(imc->matrixCounterResetFlag()) {
+         imc->setMatrixCounter(1);
+         imc->setMatrixCounterResetFlag(false);
+      } else {
+         imc->setMatrixCounter(imc->matrixCounter()+1);
+      }
+   }
+   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   {
+      countMatrices(it->get());
+   }
+}
+
+
+static void processTransformation(Transformation *t,glm::mat4 mv)
+{
+   // compute new matrix
+   mv*=*reinterpret_cast<glm::mat4*>(t->getMatrixPtr());
+
+   // update number of matrices and allocated space for them
+   InstancingMatrixCollection *imc=t->instancingMatrixCollection().get();
+   if(imc)
+   {
+      if(imc->matrixCounterResetFlag()==false)
+      {
+         if(imc->matrixCounter()!=imc->numMatricesAllocated()) {
+            imc->updateGpuCollectionData(imc->matrixCounter());
+            imc->setNumMatricesAllocated(imc->matrixCounter());
+         }
+         imc->setMatrixCounterResetFlag(true);
+         imc->setMatrixCounter(0);
+      }
+      imc->uploadMatrices(reinterpret_cast<float*>(&mv),1,imc->matrixCounter());
+      imc->setMatrixCounter(imc->matrixCounter()+1);
+   }
+
+   // process child transformations
+   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   {
+      processTransformation(it->get(),mv);
+   }
+}
+
+
+void RenderingContext::evaluateTransformationGraph()
+{
+   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
+      countMatrices(it->get());
+
+   glm::mat4 mv{}; // identity matrix
+   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
+      processTransformation(it->get(),mv);
+}
+
+
 void RenderingContext::setupRendering()
 {
    _indirectBufferAllocatedSpace4=0;
@@ -419,7 +548,7 @@ void RenderingContext::render()
 }
 
 
-void RenderingContext::setCurrent(const std::shared_ptr<RenderingContext>& ptr)
+void RenderingContext::setCurrent(const shared_ptr<RenderingContext>& ptr)
 {
    _currentContext=ptr;
 }

@@ -22,12 +22,8 @@ set(SG_INCLUDES
     ${HEADER_PATH}/InstanceGroup.h
     ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/StateSet.h
-    ${HEADER_PATH}/Node.h
-    ${HEADER_PATH}/Group.h
-    ${HEADER_PATH}/MatrixTransform.h
-    ${HEADER_PATH}/Projection.h
-    ${HEADER_PATH}/Camera.h
-    ${HEADER_PATH}/NodeVisitor.h
+    ${HEADER_PATH}/Transformation.h
+    ${HEADER_PATH}/InstancingMatrixCollection.h
   )
 
 set(SG_SOURCES
@@ -40,16 +36,12 @@ set(SG_SOURCES
     InstanceGroup.cpp
     RenderingContext.cpp
     StateSet.cpp
-    Node.cpp
-    Group.cpp
-    MatrixTransform.cpp
-    Projection.cpp
-    Camera.cpp
-    NodeVisitor.cpp
+    Transformation.cpp
+    InstancingMatrixCollection.cpp
   )
 
 find_package(GLEW   REQUIRED)
-  
+
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${SG_INCLUDES}
@@ -62,8 +54,8 @@ set(Internal_deps geGL)
 set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
 target_link_libraries(${LIB_NAME} ${Internal_deps})
 set_target_properties(${LIB_NAME} PROPERTIES 
-	INCLUDE_DIRECTORIES "${Internal_inc}"
-	INTERFACE_INCLUDE_DIRECTORIES "${GPUEngine_SOURCE_DIR}/include"
+    INCLUDE_DIRECTORIES "${Internal_inc}"
+    INTERFACE_INCLUDE_DIRECTORIES "${GPUEngine_SOURCE_DIR}/include"
 )
 
 

@@ -10,12 +10,14 @@ namespace ge
 {
    namespace sg
    {
+      class InstancingMatrixCollection;
       class StateSet;
 
 
       class GESG_EXPORT InstanceGroupBase : public ListItemBase {
       public:
          StateSet *stateSet;
+         InstancingMatrixCollection *matrixCollection;
       };
 
 

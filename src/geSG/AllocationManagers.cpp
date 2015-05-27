@@ -1,38 +1,8 @@
+#include <cassert>
 #include <geSG/AllocationManagers.h>
 
 using namespace ge::sg;
 
-
-unsigned ChunkAllocationManager::alloc(unsigned numBytes,AttribReference &r)
-{
-   if(_numBytesAvailableAtTheEnd<numBytes)
-      return 0;
-
-   unsigned id=unsigned(size());
-   emplace_back(_firstByteAvailableAtTheEnd,numBytes,0,&r);
-   operator[](_idOfBlockAtTheEnd).nextRec=id;
-   _numBytesAvailable-=numBytes;
-   _numBytesAvailableAtTheEnd-=numBytes;
-   _firstByteAvailableAtTheEnd+=numBytes;
-   _idOfBlockAtTheEnd=id;
-   return id;
-}
-
-
-unsigned BlockAllocationManager::alloc(unsigned numItems,AttribReference &r)
-{
-   if(_numItemsAvailableAtTheEnd<numItems)
-      return 0;
-
-   unsigned id=unsigned(size());
-   emplace_back(_firstItemAvailableAtTheEnd,numItems,0,&r);
-   operator[](_idOfBlockAtTheEnd).nextRec=id;
-   _numItemsAvailable-=numItems;
-   _numItemsAvailableAtTheEnd-=numItems;
-   _firstItemAvailableAtTheEnd+=numItems;
-   _idOfBlockAtTheEnd=id;
-   return id;
-}
 
 
 // brief doc in declaration
@@ -85,42 +55,44 @@ bool ItemAllocationManager::alloc(unsigned numItems,unsigned* ids)
 
 void ItemAllocationManager::free(unsigned id)
 {
-   (*this)[id]=nullptr;
+   unsigned* &item=(*this)[id];
+   if(item==nullptr) {
+      assert(id<_numNullObjects && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
+      return;
+   }
+   item=nullptr;
    _numItemsAvailable++;
 }
 
 
 void ItemAllocationManager::free(unsigned* ids,unsigned numItems)
 {
+   unsigned numRemoved=numItems;
    for(unsigned i=0; i<numItems; i++)
-      (*this)[ids[i]]=nullptr;
-   _numItemsAvailable+=numItems;
-}
-
-
-void ChunkAllocationManager::clear()
-{
-   vector<ChunkAllocation>::clear();
-   _numBytesAvailable=_numBytesTotal;
-   _numBytesAvailableAtTheEnd=_numBytesTotal;
-   _firstByteAvailableAtTheEnd=0;
-   _idOfBlockAtTheEnd=0;
-}
-
-
-void BlockAllocationManager::clear()
-{
-   vector<BlockAllocation>::clear();
-   _numItemsAvailable=_numItemsTotal;
-   _numItemsAvailableAtTheEnd=_numItemsTotal;
-   _firstItemAvailableAtTheEnd=0;
-   _idOfBlockAtTheEnd=0;
+   {
+      unsigned* &item=(*this)[ids[i]];
+      if(item==nullptr) {
+         assert(ids[i]<_numNullObjects && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
+         numRemoved--;
+         continue;
+      }
+      item=nullptr;
+   }
+   _numItemsAvailable+=numRemoved;
 }
 
 
 void ItemAllocationManager::clear()
 {
-   _numItemsAvailable=_numItemsTotal;
-   _numItemsAvailableAtTheEnd=_numItemsTotal;
-   _firstItemAvailableAtTheEnd=0;
+   _numItemsAvailable=_numItemsTotal-_numNullObjects;
+   _numItemsAvailableAtTheEnd=_numItemsTotal-_numNullObjects;
+   _firstItemAvailableAtTheEnd=_numNullObjects;
+}
+
+
+void ItemAllocationManager::assertEmpty()
+{
+   assert(size()==_numNullObjects && "ItemAllocationManager still contains elements.");
+   assert(_numItemsAvailable+_numNullObjects==_numItemsTotal &&
+          "ItemAllocationManager::_numItemsAvailable does not contain valid value.");
 }
