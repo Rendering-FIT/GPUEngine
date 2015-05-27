@@ -2,14 +2,20 @@
 #define GE_SG_INSTANCING_MATRIX_COLLECTION_H
 
 #include <memory>
+#include <glm/mat4x4.hpp>
 
 namespace ge
 {
    namespace sg
    {
 
-      struct InstancingMatrixCollectionGpuData {
-         unsigned matrixCollectionOffset64;
+      union InstancingMatrixGpuData {
+         float matrix[16];
+         glm::mat4 glmMatrix;
+      };
+
+      struct InstancingMatrixControlGpuData {
+         unsigned matrixBaseOffset64;
          unsigned numMatrices;
       };
 

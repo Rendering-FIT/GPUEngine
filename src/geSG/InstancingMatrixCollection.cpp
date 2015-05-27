@@ -9,10 +9,10 @@ using namespace ge::sg;
 void InstancingMatrixCollection::downloadCollectionData(unsigned &matrixCollectionOffset64,unsigned &numMatrices)
 {
    RenderingContext *rc=RenderingContext::current().get();
-   const InstancingMatrixCollectionGpuData *buffer=static_cast<InstancingMatrixCollectionGpuData*>(
-      rc->mapInstancingMatrixCollectionBuffer(RenderingContext::MappedBufferAccess::READ));
-   const InstancingMatrixCollectionGpuData &data=buffer[_gpuDataAllocationIndex];
-   matrixCollectionOffset64=data.matrixCollectionOffset64;
+   const InstancingMatrixControlGpuData *buffer=static_cast<InstancingMatrixControlGpuData*>(
+      rc->mapInstancingMatrixControlBuffer(RenderingContext::MappedBufferAccess::READ));
+   const InstancingMatrixControlGpuData &data=buffer[_gpuDataAllocationIndex];
+   matrixCollectionOffset64=data.matrixBaseOffset64;
    numMatrices=data.numMatrices;
 }
 
@@ -20,10 +20,10 @@ void InstancingMatrixCollection::downloadCollectionData(unsigned &matrixCollecti
 void InstancingMatrixCollection::uploadCollectionData(unsigned matrixCollectionOffset64,unsigned numMatrices)
 {
    RenderingContext *rc=RenderingContext::current().get();
-   InstancingMatrixCollectionGpuData *buffer=static_cast<InstancingMatrixCollectionGpuData*>(
-      rc->mapInstancingMatrixCollectionBuffer(RenderingContext::MappedBufferAccess::WRITE));
-   InstancingMatrixCollectionGpuData &data=buffer[_gpuDataAllocationIndex];
-   data.matrixCollectionOffset64=matrixCollectionOffset64;
+   InstancingMatrixControlGpuData *buffer=static_cast<InstancingMatrixControlGpuData*>(
+      rc->mapInstancingMatrixControlBuffer(RenderingContext::MappedBufferAccess::WRITE));
+   InstancingMatrixControlGpuData &data=buffer[_gpuDataAllocationIndex];
+   data.matrixBaseOffset64=matrixCollectionOffset64;
    data.numMatrices=numMatrices;
 }
 
@@ -47,19 +47,19 @@ void InstancingMatrixCollection::uploadMatricesToOffset(const float *matrix,unsi
 InstancingMatrixCollection::InstancingMatrixCollection()
    : _numInstanceRefs(0)
    , _matrixCounterResetFlag(true)
-   , _numMatricesAllocated(0)
    , _gpuMatricesAllocationId(0)
+   , _numMatricesAllocated(0)
 {
    RenderingContext *rc=RenderingContext::current().get();
-   auto &m=rc->instancingMatrixCollectionAllocationManager();
+   auto &m=rc->instancingMatrixControlAllocationManager();
    m.alloc(&_gpuDataAllocationIndex);
 }
 
 
 InstancingMatrixCollection::InstancingMatrixCollection(unsigned gpuDataAllocationIndex,unsigned gpuMatricesAllocationId)
    : _numInstanceRefs(0)
-   , _matrixCounterResetFlag(true)
    , _gpuDataAllocationIndex(gpuDataAllocationIndex)
+   , _matrixCounterResetFlag(true)
    , _gpuMatricesAllocationId(gpuMatricesAllocationId)
 {
    RenderingContext *rc=RenderingContext::current().get();
@@ -71,7 +71,7 @@ InstancingMatrixCollection::InstancingMatrixCollection(unsigned gpuDataAllocatio
 InstancingMatrixCollection::~InstancingMatrixCollection()
 {
    RenderingContext *rc=RenderingContext::current().get();
-   auto &m1=rc->instancingMatrixCollectionAllocationManager();
+   auto &m1=rc->instancingMatrixControlAllocationManager();
    auto &m2=rc->instancingMatrixAllocationManager();
    m1.free(_gpuDataAllocationIndex);
    m2.free(_gpuMatricesAllocationId);

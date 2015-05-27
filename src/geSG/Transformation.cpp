@@ -8,6 +8,7 @@ class Tmp_Transformation : public Transformation {
    static void dummy() {
       static_assert(offsetof(Transformation::SharedDataOffset,_gpuDataOffset64)==0,"_gpuDataOffset64 must be on offset 0 inside SharedDataOffset structure.");
       static_assert(offsetof(Transformation::SharedDataOffset,_refCounter)==sizeof(unsigned),"_refCounter must be on offset 4 inside SharedDataOffset structure.");
+      static_assert(sizeof(float[16])==sizeof(glm::mat4),"glm::mat4 memory placement is not equal to float[16].");
    }
 };
 

@@ -2,6 +2,7 @@
 #define GE_SG_TRANSFORMATION_H
 
 #include <memory>
+#include <glm/mat4x4.hpp>
 #include <geSG/ParentChildList.h>
 
 namespace ge
@@ -17,8 +18,9 @@ namespace ge
       };
 
 
-      struct TransformationMatrixGpuData {
+      union TransformationMatrixGpuData {
          float matrix[16];
+         glm::mat4 glmMatrix;
       };
 
 
@@ -57,6 +59,7 @@ namespace ge
          inline const std::shared_ptr<InstancingMatrixCollection>& getOrCreateInstancingMatrixCollection() const;
          inline std::shared_ptr<InstancingMatrixCollection>& instancingMatrixCollection();
          inline const std::shared_ptr<InstancingMatrixCollection>& instancingMatrixCollection() const;
+         inline void setInstancingMatrixCollection(std::shared_ptr<InstancingMatrixCollection>& imc);
 
          enum ConstructionFlags { SHARE_MATRIX=0x1, SHARE_INSTANCING_MATRIX_COLLECTION=0x2,
                                   COPY_CHILDREN=0x4, SHARE_AND_COPY_ALL=0x7 };
@@ -93,6 +96,7 @@ namespace ge
       { if(_instancingMatrixCollection==nullptr) const_cast<Transformation*>(this)->_instancingMatrixCollection=std::make_shared<InstancingMatrixCollection>(); return _instancingMatrixCollection; }
       inline std::shared_ptr<InstancingMatrixCollection>& Transformation::instancingMatrixCollection()  { return _instancingMatrixCollection; }
       inline const std::shared_ptr<InstancingMatrixCollection>& Transformation::instancingMatrixCollection() const  { return _instancingMatrixCollection; }
+      inline void Transformation::setInstancingMatrixCollection(std::shared_ptr<InstancingMatrixCollection>& imc)  { _instancingMatrixCollection=imc; }
       inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}
       inline Transformation::~Transformation()  { RenderingContext::current()->transformationsAllocationManager().free(_gpuDataOffsetPtr[0]);
          if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } }

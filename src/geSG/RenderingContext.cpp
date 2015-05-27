@@ -21,7 +21,7 @@ int RenderingContext::_initialInstanceBufferNumElements = 1000; // 12'000 bytes
 int RenderingContext::_initialIndirectCommandBufferSize = 20000; // 20'000 bytes
 int RenderingContext::_initialTransformationBufferSize = 1280; // 20 matrices (including one reserved
                                                                // matrix for identity), 64*20=1'280 bytes
-int RenderingContext::_initialInstancingMatrixCollectionBufferNumElements = 20; // 20*8=160 bytes
+int RenderingContext::_initialInstancingMatrixControlBufferNumElements = 20; // 20*8=160 bytes
 int RenderingContext::_initialInstancingMatricesBufferSize = 1280; // 20 matrices, 64*20=1'280 bytes
 
 const float RenderingContext::identityMatrix[16] = {
@@ -37,13 +37,14 @@ RenderingContext::RenderingContext()
    : _stateSetBufferAllocationManager(_initialStateSetBufferNumElements)
    , _drawCommandAllocationManager(_initialDrawCommandBufferSize)
    , _instanceAllocationManager(_initialInstanceBufferNumElements)
-   , _mappedDrawCommandBufferPtr(nullptr)
+   , _stateSetBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _drawCommandBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
-   , _mappedInstanceBufferPtr(nullptr)
    , _instanceBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
    , _transformationsAllocationManager(_initialTransformationBufferSize/64,1)
-   , _instancingMatrixCollectionAllocationManager(_initialInstancingMatrixCollectionBufferNumElements,1)
+   , _instancingMatrixControlAllocationManager(_initialInstancingMatrixControlBufferNumElements,1)
    , _instancingMatrixAllocationManager(_initialInstancingMatricesBufferSize/64,1)
+   , _instancingMatrixControlBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
+   , _instancingMatrixBufferMappedAccess(MappedBufferAccess::NO_ACCESS)
 {
    // create draw commands buffer
    _stateSetBuffer=new BufferObject(_initialStateSetBufferNumElements*8,nullptr,GL_DYNAMIC_DRAW);
@@ -52,8 +53,8 @@ RenderingContext::RenderingContext()
    _indirectCommandBuffer=new BufferObject(_initialIndirectCommandBufferSize,nullptr,GL_DYNAMIC_COPY);
    //_transformationBuffer=new BufferObject(_initialTransformationBufferSize,nullptr,GL_DYNAMIC_DRAW);
    _cpuTransformationBuffer=new float[_initialTransformationBufferSize/sizeof(float)];
-   _instancingMatrixCollectionBuffer=new BufferObject(_initialInstancingMatrixCollectionBufferNumElements*
-          sizeof(InstancingMatrixCollectionGpuData),nullptr,GL_DYNAMIC_DRAW);
+   _instancingMatrixControlBuffer=new BufferObject(_initialInstancingMatrixControlBufferNumElements*
+          sizeof(InstancingMatrixControlGpuData),nullptr,GL_DYNAMIC_DRAW);
    _instancingMatrixBuffer=new BufferObject(_initialInstancingMatricesBufferSize,nullptr,GL_DYNAMIC_COPY);
 
    // create Null objects (Null object design pattern)
@@ -63,11 +64,11 @@ RenderingContext::RenderingContext()
    float *p1=static_cast<float*>(_instancingMatrixBuffer->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
    memcpy(p1,identityMatrix,sizeof(float)*16);
    _instancingMatrixBuffer->unmap();
-   // _instancingMatrixCollectionBuffer: null object points to the null identity matrix in _instancingMatrixBuffer
-   unsigned *p2=static_cast<unsigned*>(_instancingMatrixCollectionBuffer->map(0,sizeof(unsigned)*2,GL_MAP_WRITE_BIT));
+   // _instancingMatrixControlBuffer: null object points to the null identity matrix in _instancingMatrixBuffer
+   unsigned *p2=static_cast<unsigned*>(_instancingMatrixControlBuffer->map(0,sizeof(unsigned)*2,GL_MAP_WRITE_BIT));
    p2[0]=0; // matrixCollectionOffset64
    p2[1]=1; // numMatrices
-   _instancingMatrixCollectionBuffer->unmap();
+   _instancingMatrixControlBuffer->unmap();
 }
 
 
@@ -99,8 +100,8 @@ RenderingContext::~RenderingContext()
    delete _instanceBuffer;
    delete _indirectCommandBuffer;
    //delete _transformationBuffer;
-   delete _cpuTransformationBuffer;
-   delete _instancingMatrixCollectionBuffer;
+   delete[] _cpuTransformationBuffer;
+   delete _instancingMatrixControlBuffer;
    delete _instancingMatrixBuffer;
 }
 
@@ -511,8 +512,10 @@ static void processTransformation(Transformation *t,glm::mat4 mv)
             imc->setNumMatricesAllocated(imc->matrixCounter());
          }
          imc->setMatrixCounterResetFlag(true);
+         imc->setMatrixCounter(0);
       }
-      imc->uploadMatrices(reinterpret_cast<float*>(&mv),1);
+      imc->uploadMatrices(reinterpret_cast<float*>(&mv),1,imc->matrixCounter());
+      imc->setMatrixCounter(imc->matrixCounter()+1);
    }
 
    // process child transformations
