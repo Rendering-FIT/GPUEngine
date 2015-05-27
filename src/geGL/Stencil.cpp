@@ -4,6 +4,7 @@ namespace ge
 {
   namespace gl
   {
+    /*
     unsigned Stencil::_faceToIndex(GLenum face){
       return(unsigned)(face==GL_BACK);
     }
@@ -161,5 +162,6 @@ namespace ge
       this->_opSeparate[0].apply();
       this->_opSeparate[1].apply();
     }
+    */
   }//namespace ogl
 }//namespace ge

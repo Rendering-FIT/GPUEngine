@@ -13,11 +13,14 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/Object.h
     ${HEADER_PATH}/CopyOp.h
+    ${HEADER_PATH}/dtemplates.h
+    ${HEADER_PATH}/geCore.h
   )
 
 set(CORE_SOURCES
     Object.cpp
     CopyOp.cpp
+    dtemplates.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

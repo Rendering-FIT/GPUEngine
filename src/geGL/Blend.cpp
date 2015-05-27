@@ -4,6 +4,7 @@ namespace ge
 {
   namespace gl
   {
+    /*
     void Blend::_init(){
       this->_enable .free();
       this->_disable.free();
@@ -104,7 +105,7 @@ namespace ge
       this->_disablei[buffer].command = disableCommand;
       this->_disablei[buffer].ref     = true;
     }
-
+    */
     /*void Blend::_deleteEnablei(){
       if(this->_enableiCommand){
         for(unsigned i=0;i<this->_maxBuffers;++i)

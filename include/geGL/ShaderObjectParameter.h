@@ -46,6 +46,15 @@ namespace ge{
      */
     GEGL_EXPORT std::string translateBufferProperty(GLenum property);
 
+    /**
+     * @brief If name contains "[0]" it is chopped
+     *
+     * @param name name of uniform/buffer shader input
+     *
+     * @return name without "[0]"
+     */
+    GEGL_EXPORT std::string chopIndexingInPropertyName(std::string name);
+
     class GEGL_EXPORT BufferParams{
       public:
         enum Properties{

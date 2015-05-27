@@ -11,7 +11,7 @@ namespace ge
     {
       public:
         GLenum func;
-        GLint  ref;
+        GLint  ref ;
         GLuint mask;
         StencilFunc(GLenum func,GLint ref,GLuint mask);
         void apply();
@@ -22,7 +22,7 @@ namespace ge
       public:
         GLenum face;
         GLenum func;
-        GLint  ref;
+        GLint  ref ;
         GLuint mask;
         StencilFuncSeparate(GLenum face,GLenum func,GLint ref,GLuint mask);
         void apply();
@@ -31,7 +31,7 @@ namespace ge
     class GEGL_EXPORT StencilOp: public Command
     {
       public:
-        GLenum sfail;
+        GLenum sfail ;
         GLenum dpfail;
         GLenum dppass;
         StencilOp(GLenum sfail,GLenum dpfail,GLenum dppass);
@@ -41,8 +41,8 @@ namespace ge
     class GEGL_EXPORT StencilOpSeparate: public Command
     {
       public:
-        GLenum face;
-        GLenum sfail;
+        GLenum face  ;
+        GLenum sfail ;
         GLenum dpfail;
         GLenum dppass;
         StencilOpSeparate(GLenum face,GLenum sfail,GLenum dpfail,GLenum dppass);

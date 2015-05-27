@@ -207,27 +207,27 @@ void ge::gl::initShadersAndPrograms(){
 }
 GLenum complexType2SimpleType(GLenum type){
   switch(type){
-    case GL_FLOAT            :return GL_FLOAT;
-    case GL_FLOAT_VEC2       :return GL_FLOAT;
-    case GL_FLOAT_VEC3       :return GL_FLOAT;
-    case GL_FLOAT_VEC4       :return GL_FLOAT;
-    case GL_DOUBLE           :return GL_DOUBLE;
-    case GL_DOUBLE_VEC2      :return GL_DOUBLE;
-    case GL_DOUBLE_VEC3      :return GL_DOUBLE;
-    case GL_DOUBLE_VEC4      :return GL_DOUBLE;
-    case GL_INT              :return GL_INT;
-    case GL_INT_VEC2         :return GL_INT;
-    case GL_INT_VEC3         :return GL_INT;
-    case GL_INT_VEC4         :return GL_INT;
+    case GL_FLOAT            :return GL_FLOAT       ;
+    case GL_FLOAT_VEC2       :return GL_FLOAT       ;
+    case GL_FLOAT_VEC3       :return GL_FLOAT       ;
+    case GL_FLOAT_VEC4       :return GL_FLOAT       ;
+    case GL_DOUBLE           :return GL_DOUBLE      ;
+    case GL_DOUBLE_VEC2      :return GL_DOUBLE      ;
+    case GL_DOUBLE_VEC3      :return GL_DOUBLE      ;
+    case GL_DOUBLE_VEC4      :return GL_DOUBLE      ;
+    case GL_INT              :return GL_INT         ;
+    case GL_INT_VEC2         :return GL_INT         ;
+    case GL_INT_VEC3         :return GL_INT         ;
+    case GL_INT_VEC4         :return GL_INT         ;
     case GL_UNSIGNED_INT     :return GL_UNSIGNED_INT;
     case GL_UNSIGNED_INT_VEC2:return GL_UNSIGNED_INT;
     case GL_UNSIGNED_INT_VEC3:return GL_UNSIGNED_INT;
     case GL_UNSIGNED_INT_VEC4:return GL_UNSIGNED_INT;
-    case GL_BOOL             :return GL_BOOL;
-    case GL_BOOL_VEC2        :return GL_BOOL;
-    case GL_BOOL_VEC3        :return GL_BOOL;
-    case GL_BOOL_VEC4        :return GL_BOOL;
-    default                  :return GL_FLOAT;//GL_FALSE glbinding...
+    case GL_BOOL             :return GL_BOOL        ;
+    case GL_BOOL_VEC2        :return GL_BOOL        ;
+    case GL_BOOL_VEC3        :return GL_BOOL        ;
+    case GL_BOOL_VEC4        :return GL_BOOL        ;
+    default                  :return GL_FLOAT       ;//GL_FALSE glbinding...
   }
 }
 
@@ -253,7 +253,7 @@ GLint complexType2Size(GLenum type){
     case GL_BOOL_VEC2        :return 2;
     case GL_BOOL_VEC3        :return 3;
     case GL_BOOL_VEC4        :return 4;
-    default:return 0;
+    default                  :return 0;
   }
 }
 
@@ -331,62 +331,51 @@ void ProgramObject::createShaderProgram_Epilogue(){
 typedef void (*GETACTIVEFCE  )(GLuint,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLchar*);
 typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
 void ProgramObject::getParameterList(){
-  GETACTIVEFCE   getActive[2]   = {
-    (GETACTIVEFCE)glGetActiveAttrib,
+  const GETACTIVEFCE   getActive[]   = {
+    (GETACTIVEFCE)glGetActiveAttrib ,
     (GETACTIVEFCE)glGetActiveUniform};
-  GETLOCATIONFCE getLocation[2] = {
-    (GETLOCATIONFCE)glGetAttribLocation,
+  const GETLOCATIONFCE getLocation[] = {
+    (GETLOCATIONFCE)glGetAttribLocation ,
     (GETLOCATIONFCE)glGetUniformLocation};
-  GLenum Active[2]={
+  const GLenum Active[]={
     GL_ACTIVE_ATTRIBUTES,
-    GL_ACTIVE_UNIFORMS};
-  GLenum MaxLenght[2]={
+    GL_ACTIVE_UNIFORMS  };
+  const GLenum MaxLenght[]={
     GL_ACTIVE_ATTRIBUTE_MAX_LENGTH,
-    GL_ACTIVE_UNIFORM_MAX_LENGTH};
-  for(int t=0;t<2;++t){//loop over set of types {attribute,uniform}
-    GLint Num;//number of active parameter
-    glGetProgramiv(this->_id,Active[t],&Num);//number
-    if(!Num)continue;//there are no active parameters
-    GLint BufLen;//length of the longest attribute name
-    glGetProgramiv(this->_id,MaxLenght[t],&BufLen);
-    char*Buffer=new char[BufLen+1];//alocate buffer
-    for(GLint i=0;i<Num;++i){//loop over active parameter
-      GLenum Type;//type of parameter
-      GLint Size;//size of parameter
-      std::string Name;//name of parameter
-      GLint Location;//location of parameter
-      GLsizei Length;
-      getActive[t](this->_id,i,BufLen,&Length,&Size,&Type,Buffer);
-      Name=std::string(Buffer);//convert buffer to string
-      if(Name.find("[0]")!=std::string::npos){
-        //std::cerr<<"####"<<Name<<std::endl;
-        Name.erase(Name.end()-3,Name.end());
-        //std::cerr<<"####"<<Name<<std::endl;
-      }
-
-      //if(Size>1)Buffer[Length-3]='\0';//get rid of [0] part
-      Location=getLocation[t](this->_id,Name.c_str());//location
-      //std::cerr<<Name<<" : "<<Location<<std::endl;
-      //std::cerr<<"Name: "<<Name<<std::endl;
-      ShaderObjectParameter Param=ShaderObjectParameter(Location,Type,Name,Size);//param
-      if(t==0)this->_attributeList.insert(
-          std::pair<std::string,ShaderObjectParameter>(Name,Param));
-      else this->_uniformList.insert(
-          std::pair<std::string,ShaderObjectParameter>(Name,Param));
+    GL_ACTIVE_UNIFORM_MAX_LENGTH  };
+  for(unsigned t=0;t<sizeof(Active)/sizeof(const GLenum);++t){//loop over set of types {attribute,uniform}
+    GLint num;//number of active parameter
+    glGetProgramiv(this->_id,Active[t],&num);//number
+    if(!num)continue;//there are no active parameters
+    GLint bufLen;//length of the longest attribute name
+    glGetProgramiv(this->_id,MaxLenght[t],&bufLen);
+    char*Buffer=new char[bufLen+1];//alocate buffer
+    for(GLint i=0;i<num;++i){//loop over active parameter
+      GLenum      type;//type of parameter
+      GLint       size;//size of parameter
+      std::string name;//name of parameter
+      GLint       location;//location of parameter
+      GLsizei     length;
+      getActive[t](this->_id,i,bufLen,&length,&size,&type,Buffer);
+      name = chopIndexingInPropertyName(std::string(Buffer));
+      location = getLocation[t](this->_id,name.c_str());//location
+      ShaderObjectParameter Param = ShaderObjectParameter(location,type,name,size);//param
+      if(Active[t]==GL_ACTIVE_ATTRIBUTES)this->_attributeList[name]=Param;
+      else                               this->_uniformList  [name]=Param;
     }
     delete[]Buffer;//free buffer
   }
 }
 void ProgramObject::getSubroutineUniformList(){
-  GLenum ShaderType[]={
-    GL_VERTEX_SHADER,
-    GL_TESS_CONTROL_SHADER,
+  const GLenum ShaderType[]={
+    GL_VERTEX_SHADER         ,
+    GL_TESS_CONTROL_SHADER   ,
     GL_TESS_EVALUATION_SHADER,
-    GL_GEOMETRY_SHADER,
-    GL_FRAGMENT_SHADER,
+    GL_GEOMETRY_SHADER       ,
+    GL_FRAGMENT_SHADER       ,
     GL_COMPUTE_SHADER
   };
-  for(int i=0;i<6;++i){//loop over shader types
+  for(unsigned i=0;i<sizeof(ShaderType)/sizeof(const GLenum);++i){//loop over shader types
     GLint NumSubroutines;//number of subroutines in this shader
     GLsizei MaxSubroutineNameSize;//max legth of name of subroutine
     glGetProgramStageiv(this->_id,ShaderType[i],//get number of sub.
@@ -426,12 +415,8 @@ void ProgramObject::getSubroutineUniformList(){
         glGetActiveSubroutineUniformName(this->_id,ShaderType[i],sub,
             MaxSubroutineUniformNameSize,&Length,BufferName);//obtain name
         //if(Size>1)BufferName[Length-3]='\0';
-        std::string Name=std::string(BufferName);//convert buffer to string
-        if(Name.find("[0]")!=std::string::npos){
-          //std::cerr<<"####"<<Name<<std::endl;
-          Name.erase(Name.end()-3,Name.end());
-          //std::cerr<<"####"<<Name<<std::endl;
-        }
+        //std::string Name=std::string(BufferName);//convert buffer to string
+        std::string Name = chopIndexingInPropertyName(std::string(BufferName));
         GLint NumCompatible;
         glGetActiveSubroutineUniformiv(this->_id,ShaderType[i],sub,
             GL_NUM_COMPATIBLE_SUBROUTINES,&NumCompatible);
@@ -457,7 +442,7 @@ void ProgramObject::getBufferList(){
   GLint nofBuffers=0;
   glGetProgramInterfaceiv(
       this->getId(),
-      GL_BUFFER_VARIABLE,
+      GL_SHADER_STORAGE_BLOCK,
       GL_ACTIVE_RESOURCES,
       &nofBuffers);
   for(GLint i=0;i<nofBuffers;++i){

@@ -103,7 +103,7 @@ void Mouse(){
 }
 
 
-void Wheel(int d){
+void Wheel(int /*d*/){
 }
 
 

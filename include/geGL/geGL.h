@@ -1,5 +1,4 @@
-#ifndef _GEGL_H_
-#define _GEGL_H_
+#pragma once
 
 #include<geGL/AsynchronousQueryObject.h>
 #include<geGL/BufferObject.h>
@@ -13,5 +12,3 @@
 #include<geGL/RenderbufferObject.h>
 #include<geGL/RasterizationState.h>
 #include<geGL/DebugMessage.h>
-
-#endif//_GEGL_H_
