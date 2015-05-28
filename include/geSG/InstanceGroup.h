@@ -40,7 +40,8 @@ namespace ge
       public:
          inline InstanceData*& operator[](size_type pos);
          inline InstanceData* operator[](size_type pos) const;
-         using ItemAllocationManager::ItemAllocationManager; // inherit constructors
+         inline InstanceAllocationManager(unsigned capacity);
+         inline InstanceAllocationManager(unsigned capacity,unsigned numNullObjects);
          bool alloc(InstanceData *id);  ///< \brief Allocates one instance and stores the instance's index to the InstanceData pointed by id parameter.
          bool alloc(unsigned num,InstanceData *ids);  ///< \brief Allocates number of instances.
          inline void free(InstanceData id);  ///< Frees allocated instances. Id must be valid.
@@ -57,6 +58,8 @@ namespace ge
       // inline and template methods
       inline InstanceData*& InstanceAllocationManager::operator[](size_type pos)  { return reinterpret_cast<InstanceData**>(ItemAllocationManager::data())[pos]; }
       inline InstanceData* InstanceAllocationManager::operator[](size_type pos) const  { return reinterpret_cast<InstanceData*const*>(ItemAllocationManager::data())[pos]; }
+      inline InstanceAllocationManager::InstanceAllocationManager(unsigned capacity) : ItemAllocationManager(capacity) {}
+      inline InstanceAllocationManager::InstanceAllocationManager(unsigned capacity,unsigned numNullObjects) : ItemAllocationManager(capacity,numNullObjects) {}
       inline void InstanceAllocationManager::free(InstanceData id)  { ItemAllocationManager::free(id.index()); }
 
    }

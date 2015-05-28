@@ -18,9 +18,10 @@ namespace ge
       };
 
 
-      union TransformationMatrixGpuData {
+      struct TransformationMatrixGpuData {
          float matrix[16];
-         glm::mat4 glmMatrix;
+         inline float* asFloats()  { return matrix; }
+         inline glm::mat4& asGlmMatrix()  { return *reinterpret_cast<glm::mat4*>(&matrix[0]); }
       };
 
 
