@@ -166,7 +166,9 @@ unsigned RenderingContext::allocStateSetBufferItem()
 {
    unsigned id;
    if(!_stateSetBufferAllocationManager.alloc(&id))
-      ; // resize buffer
+   {
+      // resize buffer here
+   }
    return id;
 }
 
@@ -496,10 +498,10 @@ static void countMatrices(Transformation *t)
 }
 
 
-static void processTransformation(Transformation *t,glm::mat4 mv)
+static void processTransformation(Transformation *t,glm::mat4 parentMV)
 {
    // compute new matrix
-   mv*=*reinterpret_cast<glm::mat4*>(t->getMatrixPtr());
+   glm::mat4 mv=parentMV*(*reinterpret_cast<glm::mat4*>(t->getMatrixPtr()));
 
    // update number of matrices and allocated space for them
    InstancingMatrixCollection *imc=t->instancingMatrixCollection().get();
