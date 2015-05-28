@@ -382,7 +382,7 @@ namespace ge{
          *
          * @return binding index
          */
-        GLint getBuffer(std::string name);
+        GLuint getBuffer(std::string name);
         /**
          * @brief gets number of buffers
          *

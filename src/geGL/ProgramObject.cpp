@@ -205,7 +205,7 @@ void ge::gl::initShadersAndPrograms(){
   matrixdFceDsa[7]=glProgramUniformMatrix3x4dv;
   matrixdFceDsa[8]=glProgramUniformMatrix4x3dv;
 }
-GLenum complexType2SimpleType(GLenum type){
+GLenum ge::gl::complexType2SimpleType(GLenum type){
   switch(type){
     case GL_FLOAT            :return GL_FLOAT       ;
     case GL_FLOAT_VEC2       :return GL_FLOAT       ;
@@ -231,7 +231,7 @@ GLenum complexType2SimpleType(GLenum type){
   }
 }
 
-GLint complexType2Size(GLenum type){
+GLint ge::gl::complexType2Size(GLenum type){
   switch(type){
     case GL_FLOAT            :return 1;
     case GL_FLOAT_VEC2       :return 2;
@@ -300,7 +300,7 @@ void ProgramObject::createShaderProgram_Epilogue(){
   std::cerr<<this->getProgramInfo(this->_id);
   GLint Status;//status of linking
   glGetProgramiv(this->_id,GL_LINK_STATUS,&Status);//status
-  if((GLboolean)Status==GL_FALSE){//something is wrong
+  if(static_cast<GLboolean>(Status)==GL_FALSE){//something is wrong
     /*throw*/std::cerr << std::string("Shader linking failed")<<std::endl;//+GetGLError());//error message
     return;
   }
@@ -317,7 +317,7 @@ void ProgramObject::createShaderProgram_Epilogue(){
   for(unsigned i=0;i<this->_shaders.size();++i){
     GLenum Type=GL_VERTEX_SHADER;
     GLuint Shader=this->_shaders[i]->getId();
-    glGetShaderiv(Shader,GL_SHADER_TYPE,(GLint*)&Type);
+    glGetShaderiv(Shader,GL_SHADER_TYPE,reinterpret_cast<GLint*>(&Type));
     if(Type==GL_COMPUTE_SHADER){
       HasComputeShader=true;
       break;
@@ -344,13 +344,13 @@ void ProgramObject::getParameterList(){
     GL_ACTIVE_ATTRIBUTE_MAX_LENGTH,
     GL_ACTIVE_UNIFORM_MAX_LENGTH  };
   for(unsigned t=0;t<sizeof(Active)/sizeof(const GLenum);++t){//loop over set of types {attribute,uniform}
-    GLint num;//number of active parameter
-    glGetProgramiv(this->_id,Active[t],&num);//number
+    GLuint num;//number of active parameter
+    glGetProgramiv(this->_id,Active[t],reinterpret_cast<GLint*>(&num));//number
     if(!num)continue;//there are no active parameters
-    GLint bufLen;//length of the longest attribute name
+    GLsizei bufLen;//length of the longest attribute name
     glGetProgramiv(this->_id,MaxLenght[t],&bufLen);
-    char*Buffer=new char[bufLen+1];//alocate buffer
-    for(GLint i=0;i<num;++i){//loop over active parameter
+    GLchar*Buffer=new GLchar[bufLen+1];//alocate buffer
+    for(GLuint i=0;i<num;++i){//loop over active parameter
       GLenum      type;//type of parameter
       GLint       size;//size of parameter
       std::string name;//name of parameter
@@ -376,16 +376,16 @@ void ProgramObject::getSubroutineUniformList(){
     GL_COMPUTE_SHADER
   };
   for(unsigned i=0;i<sizeof(ShaderType)/sizeof(const GLenum);++i){//loop over shader types
-    GLint NumSubroutines;//number of subroutines in this shader
+    GLuint NumSubroutines;//number of subroutines in this shader
     GLsizei MaxSubroutineNameSize;//max legth of name of subroutine
     glGetProgramStageiv(this->_id,ShaderType[i],//get number of sub.
-        GL_ACTIVE_SUBROUTINES,&NumSubroutines);
+        GL_ACTIVE_SUBROUTINES,reinterpret_cast<GLint*>(&NumSubroutines));
     if(NumSubroutines>0){//there are subroutines
       glGetProgramStageiv(this->_id,ShaderType[i],//max lenght
           GL_ACTIVE_SUBROUTINE_MAX_LENGTH,&MaxSubroutineNameSize);
       char*BufferName=new char[MaxSubroutineNameSize];//allocate buffer
 
-      for(int sub=0;sub<NumSubroutines;++sub){//loop over subroutines
+      for(GLuint sub=0;sub<NumSubroutines;++sub){//loop over subroutines
         glGetActiveSubroutineName(this->_id,ShaderType[i],sub,
             MaxSubroutineNameSize,NULL,BufferName);//obtain name of subroutine
         GLuint Location=glGetSubroutineIndex(this->_id,
@@ -397,17 +397,17 @@ void ProgramObject::getSubroutineUniformList(){
       delete[]BufferName;//free buffer
     }
 
-    GLint NumSubroutineUniforms;//number of subroutine uniforms
+    GLuint NumSubroutineUniforms;//number of subroutine uniforms
     GLint MaxSubroutineUniformNameSize;//max legth of subroutine uniforms
 
     glGetProgramStageiv(this->_id,ShaderType[i],//get number
-        GL_ACTIVE_SUBROUTINE_UNIFORMS,&NumSubroutineUniforms);
+        GL_ACTIVE_SUBROUTINE_UNIFORMS,reinterpret_cast<GLint*>(&NumSubroutineUniforms));
     if(NumSubroutineUniforms){//there are subroutine uniforms
       unsigned ActIndex=0;
       glGetProgramStageiv(this->_id,ShaderType[i],//get lenght
           GL_ACTIVE_SUBROUTINE_UNIFORM_MAX_LENGTH,&MaxSubroutineUniformNameSize);
       char*BufferName=new char[MaxSubroutineNameSize];//allocate buffer
-      for(int sub=0;sub<NumSubroutineUniforms;++sub){
+      for(GLuint sub=0;sub<NumSubroutineUniforms;++sub){
         GLint Size;
         glGetActiveSubroutineUniformiv(this->_id,ShaderType[i],sub,
             GL_UNIFORM_SIZE,&Size);
@@ -420,7 +420,7 @@ void ProgramObject::getSubroutineUniformList(){
         GLint NumCompatible;
         glGetActiveSubroutineUniformiv(this->_id,ShaderType[i],sub,
             GL_NUM_COMPATIBLE_SUBROUTINES,&NumCompatible);
-        GLuint Location;
+        GLint Location;
         Location=glGetSubroutineUniformLocation(this->_id,
             ShaderType[i],Name.c_str());
         ShaderObjectSubroutineUniform ShaderSubroutineUniform=
@@ -1020,7 +1020,7 @@ unsigned ProgramObject::getNofBuffers(){
 std::string ProgramObject::getBufferName(unsigned i){
   return this->_bufferNames[i];
 }
-GLint ProgramObject::getBuffer(std::string name){
+GLuint ProgramObject::getBuffer(std::string name){
   if(!this->_bufferList.count(name))return-1;
   return this->_bufferList[name].getBinding();
 }
