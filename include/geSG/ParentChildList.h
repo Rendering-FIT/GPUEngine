@@ -121,7 +121,7 @@ namespace ge
             explicit inline ChildIterator(typename std::list<ChildData>::iterator it) : inherited(it)  {}
 
             inline reference operator*() const  { return inherited::_it->child; }
-            inline pointer operator->() const   { return std::__addressof(inherited::_it->child); }
+            inline pointer operator->() const   { return std::addressof(inherited::_it->child); }
          };
 
          struct ParentIterator : AbstractIterator
@@ -140,7 +140,7 @@ namespace ge
             explicit inline ParentIterator(typename std::list<ParentData>::iterator it) : inherited(it)  {}
 
             inline reference operator*() const  { return inherited::_it->parent; }
-            inline pointer operator->() const   { return std::__addressof(inherited::_it->parent); }
+            inline pointer operator->() const   { return std::addressof(inherited::_it->parent); }
          };
 
       };

@@ -101,7 +101,7 @@ bool AttribConfig::reallocData(AttribReference &r,int numVertices,int numIndices
 
 AttribConfigId AttribConfig::getId(const std::vector<AttribType>& attribTypes,bool ebo)
 {
-   unsigned configSize=attribTypes.size();
+   unsigned configSize=unsigned(attribTypes.size());
    if(configSize>4||configSize==0)
       return 0;
 

@@ -264,7 +264,7 @@ void RenderingContext::setDrawCommandControlData(AttribReference &r,
 
    // resize if needed
    int minSizeRequired=numDrawCommands+startIndex;
-   int currentSize=r.drawCommandControlData.size();
+   int currentSize=int(r.drawCommandControlData.size());
    if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
       r.drawCommandControlData.resize(minSizeRequired);
 
@@ -366,7 +366,8 @@ InstanceGroupId RenderingContext::createInstances(
       InstancingMatrixCollection *imc,StateSet *stateSet)
 {
    // numInstances to be created
-   unsigned numInstances=drawCommandsCount!=-1 ? unsigned(drawCommandsCount) : r.drawCommandControlData.size();
+   unsigned numInstances=drawCommandsCount!=-1 ? unsigned(drawCommandsCount)
+                                               : unsigned(r.drawCommandControlData.size());
 
    // make sure we have enough space
    if(!_instanceAllocationManager.canAllocate(numInstances))
