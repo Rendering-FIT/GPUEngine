@@ -26,7 +26,7 @@ void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned
    {
       // allocate StateSet buffer data
       // and create RenderingData
-      storageData.setIndexToRenderingData(glMode,storageData.renderingData.size());
+      storageData.setIndexToRenderingData(glMode,unsigned(storageData.renderingData.size()));
       unsigned stateSetBufferIndex=RenderingContext::current()->allocStateSetBufferItem();
       storageData.renderingData.emplace_back(0,stateSetBufferIndex*sizeof(StateSetData)/4,glMode,newNum);
    }
@@ -64,7 +64,7 @@ void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned
       RenderingContext::current()->freeStateSetBufferItem(
             storageData.renderingData[index].stateSetBufferOffset4*4/sizeof(StateSetData));
 
-      unsigned lastIndex=storageData.renderingData.size()-1;
+      unsigned lastIndex=unsigned(storageData.renderingData.size())-1;
       if(index<lastIndex)
       {
          storageData.setIndexToRenderingData(storageData.renderingData[lastIndex].glMode,index);
