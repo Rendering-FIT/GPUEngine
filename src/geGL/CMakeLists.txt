@@ -53,6 +53,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
     ${HEADER_PATH}/ProgramCommands.h
+    ${HEADER_PATH}/BufferCommands.h
   )
 
 set(GL_SOURCES
@@ -94,6 +95,7 @@ set(GL_SOURCES
     RasterizationState.cpp
     OpenGLObject.cpp
     ProgramCommands.cpp
+    BufferCommands.cpp
   )
 
 
