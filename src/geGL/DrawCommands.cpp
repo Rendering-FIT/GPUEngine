@@ -63,20 +63,20 @@ void DrawIndirect::setIndirect(const GLvoid*indirect){
   this->_indirect = indirect;
 }
 
-MultiDraw::MultiDraw(GLsizei drawCount){
+MultiDrawCount::MultiDrawCount(GLsizei drawCount){
   this->setDrawCount(drawCount);
 }
-GLsizei MultiDraw::getDrawCount(){
+GLsizei MultiDrawCount::getDrawCount(){
   return this->_drawCount;
 }
-void MultiDraw::setDrawCount(GLsizei drawCount){
+void MultiDrawCount::setDrawCount(GLsizei drawCount){
   this->_drawCount = drawCount;
 }
 
 MultiDrawIndirect::MultiDrawIndirect(
     const GLvoid*indirect ,
     GLsizei      drawCount,
-    GLsizei      stride   ):DrawIndirect(indirect),MultiDraw(drawCount){
+    GLsizei      stride   ):DrawIndirect(indirect),MultiDrawCount(drawCount){
   this->setStride(stride);
 }
 GLsizei MultiDrawIndirect::getStride(){
@@ -85,6 +85,26 @@ GLsizei MultiDrawIndirect::getStride(){
 void MultiDrawIndirect::setStride(GLsizei stride){
   this->_stride = stride;
 }
+
+DrawRange::DrawRange(
+    GLuint start,
+    GLuint end  ){
+  this->setStart(start);
+  this->setEnd  (end  );
+}
+GLuint DrawRange::getStart(){
+  return this->_start;
+}
+GLuint DrawRange::getEnd  (){
+  return this->_end;
+}
+void DrawRange::setStart(GLuint start){
+  this->_start = start;
+}
+void DrawRange::setEnd(GLuint end){
+  this->_end = end;
+}
+
 
 DrawArrays::DrawArrays(
     GLenum  mode ,
@@ -151,13 +171,9 @@ MultiDrawArrays::MultiDrawArrays(
     GLenum         mode     ,
     const GLint*   first    ,
     const GLsizei* count    ,
-    GLsizei        drawCount){
-  this->_mode      = mode;
-  this->_first     = first;
-  this->_count     = count;
-  this->_drawCount = drawCount;
+    GLsizei        drawCount):DrawMode(mode),MultiCount(count),MultiDrawCount(drawCount){
+  this->setFirst(first);
 }
-
 void MultiDrawArrays::apply(){
   glMultiDrawArrays(
       this->_mode,
@@ -165,6 +181,15 @@ void MultiDrawArrays::apply(){
       this->_count,
       this->_drawCount);
 }
+const GLint*MultiDrawArrays::getFirst(){
+  return this->_first;
+}
+void MultiDrawArrays::setFirst(const GLint*first){
+  this->_first = first;
+}
+
+
+
 MultiDrawArraysIndirect::MultiDrawArraysIndirect(
     GLenum        mode     ,
     const GLvoid* indirect ,
@@ -221,67 +246,69 @@ void DrawElementsInstancedBaseInstance::apply(){
 }
 
 DrawElementsInstanced::DrawElementsInstanced(
-    GLenum   mode,
-    GLsizei  count,
-    GLenum   type,
-    GLvoid  *indices,
-    GLsizei  instanceCount){
-  this->mode          = mode;
-  this->count         = count;
-  this->type          = type;
-  this->indices       = indices;
-  this->instanceCount = instanceCount;
+    GLenum        mode         ,
+    GLsizei       count        ,
+    GLenum        type         ,
+    const GLvoid* indices      ,
+    GLsizei       instanceCount):DrawElements(mode,count,type,indices),DrawInstanced(instanceCount){
 }
 void DrawElementsInstanced::apply(){
   glDrawElementsInstanced(
-      this->mode,
-      this->count,
-      this->type,
-      this->indices,
-      this->instanceCount);
+      this->_mode         ,
+      this->_count        ,
+      this->_type         ,
+      this->_indices      ,
+      this->_instanceCount);
 }
+
 MultiDrawElements::MultiDrawElements(
-    GLenum    mode,
-    GLsizei  *count,
-    GLenum    type,
-    GLvoid  **indices,
-    GLsizei   drawCount){
-  this->mode      = mode;
-  this->count     = count;
-  this->type      = type;
-  this->indices   = indices;
-  this->drawCount = drawCount;
+    GLenum              mode     ,
+    const GLsizei*      count    ,
+    GLenum              type     ,
+    const GLvoid*const* indices  ,
+    GLsizei             drawCount):DrawModeType(mode,type),MultiCount(count),MultiDrawCount(drawCount){
+  this->setIndices(indices);
 }
 void MultiDrawElements::apply(){
   glMultiDrawElements(
-      this->mode,
-      this->count,
-      this->type,
-      (const GLvoid**)this->indices,
-      this->drawCount);
+      this->_mode     ,
+      this->_count    ,
+      this->_type     ,
+      this->_indices  ,
+      this->_drawCount);
+}
+const GLvoid*const*MultiDrawElements::getIndices(){
+  return this->_indices;
+}
+void MultiDrawElements::setIndices(const GLvoid*const*indices){
+  this->_indices = indices;
 }
 DrawRangeElements::DrawRangeElements(
-    GLenum   mode,
-    GLuint   start,
-    GLuint   end,
-    GLsizei  count,
-    GLenum   type,
-    GLvoid  *indices){
-  this->mode    = mode;
-  this->start   = start;
-  this->end     = end;
-  this->count   = count;
-  this->type    = type;
-  this->indices = indices;
+    GLenum        mode   ,
+    GLuint        start  ,
+    GLuint        end    ,
+    GLsizei       count  ,
+    GLenum        type   ,
+    const GLvoid* indices):DrawElements(mode,count,type,indices),DrawRange(start,end){
 }
 void DrawRangeElements::apply(){
   glDrawRangeElements(
-      this->mode,
-      this->start,
-      this->end,
-      this->count,
-      this->type,
-      this->indices);
+      this->_mode   ,
+      this->_start  ,
+      this->_end    ,
+      this->_count  ,
+      this->_type   ,
+      this->_indices);
+}
+
+MultiCount::MultiCount(const GLsizei* count){
+  this->setCount(count);
+}
+const GLsizei* MultiCount::getCount(){
+  return this->_count;
+}
+void MultiCount::setCount(const GLsizei*count){
+  this->_count = count;
 }
 
 DrawElementsBaseVertex::DrawElementsBaseVertex(
@@ -308,30 +335,23 @@ void DrawElementsBaseVertex::setBaseVertex(GLint baseVertex){
 }
 
 DrawRangeElementsBaseVertex::DrawRangeElementsBaseVertex(
-    GLenum   mode,
-    GLuint   start,
-    GLuint   end,
-    GLsizei  count,
-    GLenum   type,
-    GLvoid  *indices,
-    GLint    baseVertex){
-  this->mode       = mode;
-  this->start      = start;
-  this->end        = end;
-  this->count      = count;
-  this->type       = type;
-  this->indices    = indices;
-  this->baseVertex = baseVertex;
+    GLenum        mode      ,
+    GLuint        start     ,
+    GLuint        end       ,
+    GLsizei       count     ,
+    GLenum        type      ,
+    const GLvoid* indices   ,
+    GLint         baseVertex):DrawElementsBaseVertex(mode,count,type,indices,baseVertex),DrawRange(start,end){
 }
 void DrawRangeElementsBaseVertex::apply(){
   glDrawRangeElementsBaseVertex(
-      this->mode,
-      this->start,
-      this->end,
-      this->count,
-      this->type,
-      this->indices,
-      this->baseVertex);
+      this->_mode      ,
+      this->_start     ,
+      this->_end       ,
+      this->_count     ,
+      this->_type      ,
+      this->_indices   ,
+      this->_baseVertex);
 }
 
 DrawElementsInstancedBaseVertex::DrawElementsInstancedBaseVertex(
@@ -399,25 +419,26 @@ void MultiDrawElementsIndirect::apply(){
       this->_stride   );
 }
 MultiDrawElementsBaseVertex::MultiDrawElementsBaseVertex(
-    GLenum    mode,
-    GLsizei  *count,
-    GLenum    type,
-    GLvoid  **indices,
-    GLsizei   drawCount,
-    GLint    *baseVertex){
-  this->mode       = mode;
-  this->count      = count;
-  this->type       = type;
-  this->indices    = indices;
-  this->drawCount  = drawCount;
-  this->baseVertex = baseVertex;
+    GLenum              mode      ,
+    const GLsizei*      count     ,
+    GLenum              type      ,
+    const GLvoid*const* indices   ,
+    GLsizei             drawCount ,
+    const GLint*        baseVertex):MultiDrawElements(mode,count,type,indices,drawCount){
+  this->setBaseVertex(baseVertex);
 }
 void MultiDrawElementsBaseVertex::apply(){
   glMultiDrawElementsBaseVertex(
-      this->mode,
-      this->count,
-      this->type,
-      this->indices,
-      this->drawCount,
-      this->baseVertex);
+      this->_mode      ,
+      this->_count     ,
+      this->_type      ,
+      this->_indices   ,
+      this->_drawCount ,
+      this->_baseVertex);
+}
+const GLint*MultiDrawElementsBaseVertex::getBaseVertex(){
+  return this->_baseVertex;
+}
+void MultiDrawElementsBaseVertex::setBaseVertex(const GLint*baseVertex){
+  this->_baseVertex = baseVertex;
 }
