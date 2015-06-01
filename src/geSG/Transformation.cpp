@@ -46,14 +46,14 @@ void Transformation::allocTransformationGpuData()
       _gpuDataOffsetPtr[1]--;
       if(_gpuDataOffsetPtr[1]==0)
       {
-         RenderingContext::current()->transformationsAllocationManager().free(_gpuDataOffsetPtr[0]);
+         RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
          delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr);
          _gpuDataOffsetPtr=&_gpuDataOffset64;
       }
    }
 
    // alloc gpu data
-   RenderingContext::current()->transformationsAllocationManager().alloc(&_gpuDataOffset64);
+   RenderingContext::current()->transformationAllocationManager().alloc(&_gpuDataOffset64);
 }
 
 
@@ -67,14 +67,14 @@ void Transformation::shareTransformationFrom(const Transformation &t)
 
       if(_gpuDataOffsetPtr==&_gpuDataOffset64)
          // free gpu data
-         RenderingContext::current()->transformationsAllocationManager().free(_gpuDataOffset64);
+         RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffset64);
       else
       {
          // remove shared data reference
          _gpuDataOffsetPtr[1]--;
          if(_gpuDataOffsetPtr[1]==0)
          {
-            RenderingContext::current()->transformationsAllocationManager().free(_gpuDataOffsetPtr[0]);
+            RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
             if(t._gpuDataOffsetPtr==&t._gpuDataOffset64)
             {
                // reuse SharedDataOffset struct
@@ -104,7 +104,7 @@ void Transformation::shareTransformationFrom(const Transformation &t)
    }
 
    // alloc gpu data
-   RenderingContext::current()->transformationsAllocationManager().alloc(&_gpuDataOffset64);
+   RenderingContext::current()->transformationAllocationManager().alloc(&_gpuDataOffset64);
 }
 
 
@@ -113,7 +113,7 @@ void Transformation::cancelSharedTransformation()
    _gpuDataOffsetPtr[1]--;
    if(_gpuDataOffsetPtr[1]==0)
    {
-      RenderingContext::current()->transformationsAllocationManager().free(_gpuDataOffsetPtr[0]);
+      RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
       delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr);
    }
    _gpuDataOffsetPtr=&_gpuDataOffset64;

@@ -23,7 +23,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/StateSet.h
     ${HEADER_PATH}/Transformation.h
-    ${HEADER_PATH}/InstancingMatrixCollection.h
+    ${HEADER_PATH}/InstancingMatrices.h
   )
 
 set(SG_SOURCES
@@ -37,7 +37,7 @@ set(SG_SOURCES
     RenderingContext.cpp
     StateSet.cpp
     Transformation.cpp
-    InstancingMatrixCollection.cpp
+    InstancingMatrices.cpp
   )
 
 find_package(GLEW   REQUIRED)
