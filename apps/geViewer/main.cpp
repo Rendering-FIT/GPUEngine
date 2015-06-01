@@ -250,6 +250,14 @@ static AttribType convertOsgArrayType2geAttribType(osg::Array::Type osgType)
 }
 
 
+static const float osg2glTransformation[16] = {
+   1.f, 0.f, 0.f, 0.f,
+   0.f, 0.f,-1.f, 0.f,
+   0.f, 1.f, 0.f, 0.f,
+   0.f, 0.f, 0.f, 1.f,
+};
+
+
 class BuildGpuEngineGraphVisitor : public osg::NodeVisitor {
 public:
 
@@ -257,21 +265,22 @@ public:
 
    inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
    {
-      transformationStack.push_back(make_shared<Transformation>());
-   }
-
-   inline BuildGpuEngineGraphVisitor(shared_ptr<Transformation> &parentTransformation) : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
-   {
-      transformationStack.push_back(parentTransformation);
+      shared_ptr<Transformation> t=make_shared<Transformation>();
+      transformationStack.emplace_back(t);
+      t->allocTransformationGpuData();
+      t->uploadMatrix(osg2glTransformation);
    }
 
    virtual void apply(osg::Transform& transform)
    {
       osg::Matrix m;
       transform.computeLocalToWorldMatrix(m,this);
-      //transformationStack.emplace_back(make_shared<Transformation>());
-      //transformationStack.back()->allocTransformationGpuData();
-      //transformationStack.back()->uploadMatrix(osg::Matrixf(m).ptr());
+      //transform.computeWorldToLocalMatrix(m,this);
+      shared_ptr<Transformation> t=make_shared<Transformation>();
+      transformationStack.back()->appendChild(t,transformationStack.back());
+      transformationStack.emplace_back(t);
+      t->allocTransformationGpuData();
+      t->uploadMatrix(osg::Matrixf(m).ptr());
       traverse(transform);
    }
 
@@ -507,7 +516,8 @@ void Init()
          root->accept(graphBuilder);
          root->unref();
 
-         shared_ptr<Transformation> t1=graphBuilder.transformationStack.front();
+         shared_ptr<Transformation> t1=make_shared<Transformation>();
+         t1->appendChild(graphBuilder.transformationStack.front(),t1);
          RenderingContext::current()->appendTransformationGraph(t1);
          const float m1[16] = {
             1.f, 0.f, 0.f, 0.f,
@@ -539,7 +549,7 @@ void Init()
          shared_ptr<Transformation> t3=make_shared<Transformation>();
          t3->allocTransformationGpuData();
          t3->uploadMatrix(m3);
-         t3->appendChild(graphBuilder.transformationStack.front(),t3);
+         t3->appendChild(t1,t3);
          RenderingContext::current()->appendTransformationGraph(t3);
       }
 
