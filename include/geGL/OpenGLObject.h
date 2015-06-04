@@ -14,6 +14,7 @@ namespace ge{
         GLuint _id;///<object id
       public:
         GLuint getId();
+        virtual ~OpenGLObject(){};
     };
   }//gl
 }//ge
