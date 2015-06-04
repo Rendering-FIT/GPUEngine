@@ -25,6 +25,7 @@ namespace ge{
     GEGL_EXPORT std::string translateTextureSwizzle    (GLint swizzle );
     GEGL_EXPORT std::string translateTextureChannelType(GLenum type   );
     GEGL_EXPORT unsigned internalFormatSize(GLenum internalFormat);
+    GEGL_EXPORT std::string translateInternalForma(GLenum internalFormat);
 
     class GEGL_EXPORT TextureObject: public OpenGLObject
     {
@@ -61,11 +62,11 @@ namespace ge{
         void unbind   (GLuint unit);
         void bindImage(
             GLuint    unit,
-            GLint     level,
-            GLenum    format  = TEXTUREOBJECT_DEFAULT_FORMAT,
-            GLenum    access  = TEXTUREOBJECT_DEFAULT_ACCESS,
+            GLint     level   = 0                            ,
+            GLenum    format  = TEXTUREOBJECT_DEFAULT_FORMAT ,
+            GLenum    access  = TEXTUREOBJECT_DEFAULT_ACCESS ,
             GLboolean layered = TEXTUREOBJECT_DEFAULT_LAYERED,
-            GLint     layer   = TEXTUREOBJECT_DEFAULT_LAYER);
+            GLint     layer   = TEXTUREOBJECT_DEFAULT_LAYER  );
         void    texParameteri (GLenum pname,GLint    params);
         void    texParameterfv(GLenum pname,GLfloat *params);
         GLenum  getFormat();

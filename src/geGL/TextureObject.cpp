@@ -152,7 +152,7 @@ GLenum ge::gl::textureTarget2Binding(GLenum target){
     case GL_TEXTURE_BUFFER              :return GL_TEXTURE_BINDING_BUFFER              ;
     case GL_TEXTURE_CUBE_MAP            :return GL_TEXTURE_BINDING_CUBE_MAP            ;
     case GL_TEXTURE_RECTANGLE           :return GL_TEXTURE_BINDING_RECTANGLE           ;
-    default                             :return 0;
+    default                             :return 0                                      ;
   }
 }
 
@@ -168,7 +168,7 @@ GLenum ge::gl::textureBinding2Target(GLenum binding){
     case GL_TEXTURE_BINDING_BUFFER              :return GL_TEXTURE_BUFFER              ;
     case GL_TEXTURE_BINDING_CUBE_MAP            :return GL_TEXTURE_CUBE_MAP            ;
     case GL_TEXTURE_BINDING_RECTANGLE           :return GL_TEXTURE_RECTANGLE           ;
-    default                                     :return 0;
+    default                                     :return 0                              ;
   }
 }
 
@@ -268,6 +268,12 @@ std::string ge::gl::translateTextureChannelType(GLenum type){
   }
 }
 
+std::string ge::gl::translateInternalForma(GLenum internalFormat){
+  switch(internalFormat){
+    default :return"unknown";
+  };
+}
+
 
 unsigned ge::gl::internalFormatSize(GLenum internalFormat){
   switch(internalFormat){
@@ -287,7 +293,7 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
     case GL_RGB4:
       return 12;
     case GL_RGB5:
-      return 15;
+      return 16;//TODO CHECK
 
     case GL_R16              :
     case GL_R16F             :
@@ -323,10 +329,8 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
       return 40;
     case GL_RGBA32F :
     case GL_RGBA32UI:
+    case GL_RGBA32I :
       return 128;
-
-
-
   }
   return 4;//TODO
 }
