@@ -157,7 +157,7 @@ void Idle()
    processInstanceProgram->set("numToProcess",numInstances);
    RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
    RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->getInstancingMatrixControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->getInstancingMatricesControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
    RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
    RenderingContext::current()->getStateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
    glDispatchCompute((numInstances+63)/64,1,1);
@@ -250,6 +250,14 @@ static AttribType convertOsgArrayType2geAttribType(osg::Array::Type osgType)
 }
 
 
+static const float osg2glTransformation[16] = {
+   1.f, 0.f, 0.f, 0.f,
+   0.f, 0.f,-1.f, 0.f,
+   0.f, 1.f, 0.f, 0.f,
+   0.f, 0.f, 0.f, 1.f,
+};
+
+
 class BuildGpuEngineGraphVisitor : public osg::NodeVisitor {
 public:
 
@@ -257,21 +265,21 @@ public:
 
    inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
    {
-      transformationStack.push_back(make_shared<Transformation>());
-   }
-
-   inline BuildGpuEngineGraphVisitor(shared_ptr<Transformation> &parentTransformation) : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
-   {
-      transformationStack.push_back(parentTransformation);
+      shared_ptr<Transformation> t=make_shared<Transformation>();
+      transformationStack.emplace_back(t);
+      t->allocTransformationGpuData();
+      t->uploadMatrix(osg2glTransformation);
    }
 
    virtual void apply(osg::Transform& transform)
    {
       osg::Matrix m;
       transform.computeLocalToWorldMatrix(m,this);
-      //transformationStack.emplace_back(make_shared<Transformation>());
-      //transformationStack.back()->allocTransformationGpuData();
-      //transformationStack.back()->uploadMatrix(osg::Matrixf(m).ptr());
+      shared_ptr<Transformation> t=make_shared<Transformation>();
+      transformationStack.back()->appendChild(t,transformationStack.back());
+      transformationStack.emplace_back(t);
+      t->allocTransformationGpuData();
+      t->uploadMatrix(osg::Matrixf(m).ptr());
       traverse(transform);
    }
 
@@ -419,8 +427,8 @@ public:
                               drawCommandsControlData.data(),drawCommandsControlData.size());
 
          // create instances
-         shared_ptr<InstancingMatrixCollection> &imc=transformationStack.back()->getOrCreateInstancingMatrixCollection();
-         r.createInstances(imc.get(),stateSet.get());
+         shared_ptr<InstancingMatrices> &im=transformationStack.back()->getOrCreateInstancingMatrices();
+         r.createInstances(im.get(),stateSet.get());
 
          // upload vertices
          vector<void*> geArrays;
@@ -507,7 +515,8 @@ void Init()
          root->accept(graphBuilder);
          root->unref();
 
-         shared_ptr<Transformation> t1=graphBuilder.transformationStack.front();
+         shared_ptr<Transformation> t1=make_shared<Transformation>();
+         t1->appendChild(graphBuilder.transformationStack.front(),t1);
          RenderingContext::current()->appendTransformationGraph(t1);
          const float m1[16] = {
             1.f, 0.f, 0.f, 0.f,
@@ -527,7 +536,7 @@ void Init()
          shared_ptr<Transformation> t2=make_shared<Transformation>();
          t2->allocTransformationGpuData();
          t2->uploadMatrix(m2);
-         t2->setInstancingMatrixCollection(t1->getOrCreateInstancingMatrixCollection());
+         t2->setInstancingMatrices(t1->getOrCreateInstancingMatrices());
          RenderingContext::current()->appendTransformationGraph(t2);
 
          const float m3[16] = {
@@ -539,7 +548,7 @@ void Init()
          shared_ptr<Transformation> t3=make_shared<Transformation>();
          t3->allocTransformationGpuData();
          t3->uploadMatrix(m3);
-         t3->appendChild(graphBuilder.transformationStack.front(),t3);
+         t3->appendChild(t1,t3);
          RenderingContext::current()->appendTransformationGraph(t3);
       }
 
@@ -636,8 +645,8 @@ void Init()
       "\n"
       "layout(location=0) in vec3 coords;\n"
       "\n"
-      "layout(std430,binding=0) restrict readonly buffer InstancingMatrices {\n"
-      "   mat4 instancingMatricesBuffer[];\n"
+      "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+      "   mat4 instancingMatrixBuffer[];\n"
       "};\n"
       "\n"
       "uniform mat4 mvp;\n"
@@ -645,7 +654,7 @@ void Init()
       "void main()\n"
       "{\n"
       "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-      "   gl_Position = mvp*instancingMatricesBuffer[matrixOffset64]*vec4(coords,1.f);\n"
+      "   gl_Position = mvp*instancingMatrixBuffer[matrixOffset64]*vec4(coords,1.f);\n"
       "}\n",
       GL_FRAGMENT_SHADER,
       "#version 330\n"
@@ -671,8 +680,8 @@ void Init()
       "layout(std430,binding=1) restrict readonly buffer InstanceBuffer {\n"
       "   uint instanceBuffer[];\n"
       "};\n"
-      "layout(std430,binding=2) restrict readonly buffer InstancingMatrixControlBuffer {\n"
-      "   uint instancingMatrixControlBuffer[];\n"
+      "layout(std430,binding=2) restrict readonly buffer InstancingMatricesControlBuffer {\n"
+      "   uint instancingMatricesControlBuffer[];\n"
       "};\n"
       "layout(std430,binding=3) restrict writeonly buffer IndirectBuffer {\n"
       "   uint indirectBuffer[];\n"
@@ -691,12 +700,12 @@ void Init()
       "   // instance buffer data\n"
       "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
       "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
-      "   uint matrixCollectionOffset4=instanceBuffer[instanceIndex+1];\n"
+      "   uint matrixControlOffset4=instanceBuffer[instanceIndex+1];\n"
       "   uint stateSetDataOffset4=instanceBuffer[instanceIndex+2];\n"
       "\n"
       "   // instancing matrices data\n"
-      "   uint matrixBaseOffset64=instancingMatrixControlBuffer[matrixCollectionOffset4+0];\n"
-      "   uint numMatrices=instancingMatrixControlBuffer[matrixCollectionOffset4+1];\n"
+      "   uint matrixCollectionOffset64=instancingMatricesControlBuffer[matrixControlOffset4+0];\n"
+      "   uint numMatrices=instancingMatricesControlBuffer[matrixControlOffset4+1];\n"
       "\n"
       "   // compute increment and get indirectBufferOffset\n"
       "   uint countAndIndexedFlag=drawCommandBuffer[drawCommandOffset4+0];\n"
@@ -719,6 +728,6 @@ void Init()
       "      indirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
       "      indirectBufferOffset4++;\n"
       "   }\n"
-      "   indirectBuffer[indirectBufferOffset4]=matrixBaseOffset64; // base instance\n"
+      "   indirectBuffer[indirectBufferOffset4]=matrixCollectionOffset64; // base instance\n"
       "}\n");
 }

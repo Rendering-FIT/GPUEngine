@@ -28,7 +28,7 @@ void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned
       // and create RenderingData
       storageData.setIndexToRenderingData(glMode,unsigned(storageData.renderingData.size()));
       unsigned stateSetBufferIndex=RenderingContext::current()->allocStateSetBufferItem();
-      storageData.renderingData.emplace_back(0,stateSetBufferIndex*sizeof(StateSetData)/4,glMode,newNum);
+      storageData.renderingData.emplace_back(0,stateSetBufferIndex*unsigned(sizeof(StateSetData))/4,glMode,newNum);
    }
    else
    {

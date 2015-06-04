@@ -9,7 +9,7 @@ namespace ge
 {
    namespace sg
    {
-      class InstancingMatrixCollection;
+      class InstancingMatrices;
 
 
       struct TransformationThreadGpuData {
@@ -42,7 +42,7 @@ namespace ge
          unsigned _gpuDataOffset64;
          GESG_CHILD_LIST(Transformation);
          ParentList _parentList;
-         std::shared_ptr<InstancingMatrixCollection> _instancingMatrixCollection;
+         std::shared_ptr<InstancingMatrices> _instancingMatrices;
 
          void cancelSharedTransformation();
 
@@ -56,11 +56,11 @@ namespace ge
          void allocTransformationGpuData();
          void shareTransformationFrom(const Transformation &t);
 
-         inline std::shared_ptr<InstancingMatrixCollection>& getOrCreateInstancingMatrixCollection();
-         inline const std::shared_ptr<InstancingMatrixCollection>& getOrCreateInstancingMatrixCollection() const;
-         inline std::shared_ptr<InstancingMatrixCollection>& instancingMatrixCollection();
-         inline const std::shared_ptr<InstancingMatrixCollection>& instancingMatrixCollection() const;
-         inline void setInstancingMatrixCollection(std::shared_ptr<InstancingMatrixCollection>& imc);
+         inline std::shared_ptr<InstancingMatrices>& getOrCreateInstancingMatrices();
+         inline const std::shared_ptr<InstancingMatrices>& getOrCreateInstancingMatrices() const;
+         inline std::shared_ptr<InstancingMatrices>& instancingMatrices();
+         inline const std::shared_ptr<InstancingMatrices>& instancingMatrices() const;
+         inline void setInstancingMatrices(std::shared_ptr<InstancingMatrices>& im);
 
          enum ConstructionFlags { SHARE_MATRIX=0x1, SHARE_INSTANCING_MATRIX_COLLECTION=0x2,
                                   COPY_CHILDREN=0x4, SHARE_AND_COPY_ALL=0x7 };
@@ -84,22 +84,22 @@ namespace ge
 }
 
 
-#include <geSG/InstancingMatrixCollection.h>
+#include <geSG/InstancingMatrices.h>
 
 namespace ge
 {
    namespace sg
    {
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
-      inline std::shared_ptr<InstancingMatrixCollection>& Transformation::getOrCreateInstancingMatrixCollection()
-      { if(_instancingMatrixCollection==nullptr) _instancingMatrixCollection=std::make_shared<InstancingMatrixCollection>(); return _instancingMatrixCollection; }
-      inline const std::shared_ptr<InstancingMatrixCollection>& Transformation::getOrCreateInstancingMatrixCollection() const
-      { if(_instancingMatrixCollection==nullptr) const_cast<Transformation*>(this)->_instancingMatrixCollection=std::make_shared<InstancingMatrixCollection>(); return _instancingMatrixCollection; }
-      inline std::shared_ptr<InstancingMatrixCollection>& Transformation::instancingMatrixCollection()  { return _instancingMatrixCollection; }
-      inline const std::shared_ptr<InstancingMatrixCollection>& Transformation::instancingMatrixCollection() const  { return _instancingMatrixCollection; }
-      inline void Transformation::setInstancingMatrixCollection(std::shared_ptr<InstancingMatrixCollection>& imc)  { _instancingMatrixCollection=imc; }
+      inline std::shared_ptr<InstancingMatrices>& Transformation::getOrCreateInstancingMatrices()
+      { if(_instancingMatrices==nullptr) _instancingMatrices=std::make_shared<InstancingMatrices>(); return _instancingMatrices; }
+      inline const std::shared_ptr<InstancingMatrices>& Transformation::getOrCreateInstancingMatrices() const
+      { if(_instancingMatrices==nullptr) const_cast<Transformation*>(this)->_instancingMatrices=std::make_shared<InstancingMatrices>(); return _instancingMatrices; }
+      inline std::shared_ptr<InstancingMatrices>& Transformation::instancingMatrices()  { return _instancingMatrices; }
+      inline const std::shared_ptr<InstancingMatrices>& Transformation::instancingMatrices() const  { return _instancingMatrices; }
+      inline void Transformation::setInstancingMatrices(std::shared_ptr<InstancingMatrices>& im)  { _instancingMatrices=im; }
       inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}
-      inline Transformation::~Transformation()  { RenderingContext::current()->transformationsAllocationManager().free(_gpuDataOffsetPtr[0]);
+      inline Transformation::~Transformation()  { RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
          if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } }
       inline Transformation::ChildList& Transformation::getChildren()  { return _childList; }
       inline const Transformation::ChildList& Transformation::getChildren() const  { return _childList; }

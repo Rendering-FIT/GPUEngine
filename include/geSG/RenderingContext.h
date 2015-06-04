@@ -21,7 +21,7 @@ namespace ge
    {
       class AttribReference;
       class AttribStorage;
-      class InstancingMatrixCollection;
+      class InstancingMatrices;
       class StateSet;
       class Transformation;
 
@@ -40,7 +40,7 @@ namespace ge
 
          struct Instance {
             unsigned drawCommandOffset4;
-            unsigned matrixCollectionOffset4;
+            unsigned instancingMatricesControlOffset4;
             unsigned stateSetDataOffset4;
          };
 
@@ -65,30 +65,30 @@ namespace ge
 
          float *_cpuTransformationBuffer;
          //ge::gl::BufferObject *_transformationBuffer;
-         ItemAllocationManager _transformationsAllocationManager;
+         ItemAllocationManager _transformationAllocationManager;
          //ge::gl::BufferObject *_transformationGraphBuffer;
          //ChunkAllocationManager _transformationGraphAllocationManager;
-         ge::gl::BufferObject *_instancingMatrixControlBuffer;
-         ItemAllocationManager _instancingMatrixControlAllocationManager;
+         ge::gl::BufferObject *_instancingMatricesControlBuffer;
+         ItemAllocationManager _instancingMatricesControlAllocationManager;
          ge::gl::BufferObject *_transformationThreadsData;
          ge::gl::BufferObject *_instancingMatrixBuffer;
-         BlockAllocationManager<InstancingMatrixCollection> _instancingMatrixAllocationManager;
+         BlockAllocationManager<InstancingMatrices> _instancingMatrixAllocationManager;
 
-         void* _mappedInstancingMatrixControlBufferPtr;
-         MappedBufferAccess _instancingMatrixControlBufferMappedAccess;
+         void* _mappedInstancingMatricesControlBufferPtr;
+         MappedBufferAccess _instancingMatricesControlBufferMappedAccess;
          void* _mappedInstancingMatrixBufferPtr;
          MappedBufferAccess _instancingMatrixBufferMappedAccess;
 
          typedef std::vector<std::shared_ptr<ge::sg::Transformation>> TransformationGraphList;
          TransformationGraphList _transformationGraphs;
-         std::shared_ptr<InstancingMatrixCollection> _identityInstancingMatrix;
+         std::shared_ptr<InstancingMatrices> _identityInstancingMatrix;
 
          static int _initialStateSetBufferNumElements;
          static int _initialDrawCommandBufferSize;
          static int _initialInstanceBufferNumElements;
          static int _initialIndirectCommandBufferSize;
          static int _initialTransformationBufferSize;
-         static int _initialInstancingMatrixControlBufferNumElements;
+         static int _initialInstancingMatricesControlBufferNumElements;
          static int _initialInstancingMatricesBufferSize;
 
          static void* mapBuffer(ge::gl::BufferObject *buffer,
@@ -102,7 +102,7 @@ namespace ge
       public:
 
          static const float identityMatrix[16];
-         inline const std::shared_ptr<InstancingMatrixCollection>& identityInstancingMatrix() const;
+         inline const std::shared_ptr<InstancingMatrices>& identityInstancingMatrix() const;
 
          RenderingContext();
          virtual ~RenderingContext();
@@ -119,7 +119,7 @@ namespace ge
          inline ge::gl::BufferObject* getIndirectCommandBuffer();  ///< Returns indirect command buffer used for indirect rendering.
          inline ge::gl::BufferObject* getStateSetBuffer();         ///< Returns the buffer containing StateSet specific data.
          inline float* getCpuTransformationBuffer();
-         inline ge::gl::BufferObject* getInstancingMatrixControlBuffer();
+         inline ge::gl::BufferObject* getInstancingMatricesControlBuffer();
          inline ge::gl::BufferObject* getTransformationThreadsData();
          inline ge::gl::BufferObject* getInstancingMatrixBuffer();
 
@@ -132,9 +132,9 @@ namespace ge
          inline void* mapInstanceBuffer(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
          inline void* mappedInstanceBufferPtr() const;
          inline void unmapInstanceBuffer();
-         inline void* mapInstancingMatrixControlBuffer(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
-         inline void* mappedInstancingMatrixControlBufferPtr() const;
-         inline void unmapInstancingMatrixControlBuffer();
+         inline void* mapInstancingMatricesControlBuffer(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
+         inline void* mappedInstancingMatricesControlBufferPtr() const;
+         inline void unmapInstancingMatricesControlBuffer();
          inline void* mapInstancingMatrixBuffer(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
          inline void* mappedInstancingMatrixBufferPtr() const;
          inline void unmapInstancingMatrixBuffer();
@@ -170,16 +170,16 @@ namespace ge
          inline unsigned getNumInstancesAvailableAtTheEnd() const;
          inline unsigned getFirstInstanceAvailableAtTheEnd() const;
 
-         inline unsigned* getTransformationsAllocation(unsigned id) const;
-         inline ItemAllocationManager& transformationsAllocationManager();
-         inline const ItemAllocationManager& transformationsAllocationManager() const;
-         inline unsigned* getInstancingMatrixCollectionAllocation(unsigned id) const;
-         inline ItemAllocationManager& instancingMatrixControlAllocationManager();
-         inline const ItemAllocationManager& instancingMatrixControlAllocationManager() const;
-         inline BlockAllocation<InstancingMatrixCollection>& getInstancingMatrixAllocation(unsigned id);
-         inline const BlockAllocation<InstancingMatrixCollection>& getInstancingMatrixAllocation(unsigned id) const;
-         inline BlockAllocationManager<InstancingMatrixCollection>& instancingMatrixAllocationManager();
-         inline const BlockAllocationManager<InstancingMatrixCollection>& instancingMatrixAllocationManager() const;
+         inline unsigned* transformationAllocation(unsigned id) const;
+         inline ItemAllocationManager& transformationAllocationManager();
+         inline const ItemAllocationManager& transformationAllocationManager() const;
+         inline unsigned* instancingMatricesControlAllocation(unsigned id) const;
+         inline ItemAllocationManager& instancingMatricesControlAllocationManager();
+         inline const ItemAllocationManager& instancingMatricesControlAllocationManager() const;
+         inline BlockAllocation<InstancingMatrices>& instancingMatrixAllocation(unsigned id);
+         inline const BlockAllocation<InstancingMatrices>& instancingMatrixAllocation(unsigned id) const;
+         inline BlockAllocationManager<InstancingMatrices>& instancingMatrixAllocationManager();
+         inline const BlockAllocationManager<InstancingMatrices>& instancingMatrixAllocationManager() const;
 
          virtual bool allocDrawCommands(AttribReference &r,unsigned size);
          virtual bool reallocDrawCommands(AttribReference &r,int newSize,
@@ -213,11 +213,11 @@ namespace ge
          virtual void setNumDrawCommands(AttribReference &r,unsigned num);
 
          inline InstanceGroupId createInstances(AttribReference &r,
-                                                InstancingMatrixCollection *imc,StateSet *stateSet);
+                                                InstancingMatrices *im,StateSet *stateSet);
          virtual InstanceGroupId createInstances(AttribReference &r,
                                                  const unsigned *drawCommandIndices,
                                                  const int drawCommandsCount,
-                                                 InstancingMatrixCollection *imc,StateSet *stateSet);
+                                                 InstancingMatrices *im,StateSet *stateSet);
          virtual void deleteInstances(AttribReference &r,InstanceGroupId id);
 
          inline TransformationGraphList& getTransformationGraphs();
@@ -245,8 +245,8 @@ namespace ge
          static inline int getInitialIndirectCommandBufferSize();
          static inline void setInitialTransformationBufferSize(int value);
          static inline int getInitialTransformationBufferSize();
-         static inline void setInitialInstancingMatrixControlBufferNumElements(int value);
-         static inline int getInitialInstancingMatrixControlBufferNumElements();
+         static inline void setInitialInstancingMatricesControlBufferNumElements(int value);
+         static inline int getInitialInstancingMatricesControlBufferNumElements();
          static inline void setInitialInstancingMatricesBufferSize(int value);
          static inline int getInitialInstancingMatricesBufferSize();
 
@@ -272,14 +272,14 @@ namespace ge
 // note: they need their own includes that can not be placed on the beginning of this file
 //       as there is a circular include reference and the classes need to be defined before
 //       inline methods to avoid incomplete type compiler error
-#include <geSG/InstancingMatrixCollection.h>
+#include <geSG/InstancingMatrices.h>
 
 namespace ge
 {
    namespace sg
    {
-      inline const std::shared_ptr<InstancingMatrixCollection>& RenderingContext::identityInstancingMatrix() const
-      { if(_identityInstancingMatrix==nullptr) const_cast<RenderingContext*>(this)->_identityInstancingMatrix=std::make_shared<InstancingMatrixCollection>(0,0); return _identityInstancingMatrix; }
+      inline const std::shared_ptr<InstancingMatrices>& RenderingContext::identityInstancingMatrix() const
+      { if(_identityInstancingMatrix==nullptr) const_cast<RenderingContext*>(this)->_identityInstancingMatrix=std::make_shared<InstancingMatrices>(0,0); return _identityInstancingMatrix; }
       inline const RenderingContext::AttribConfigList& RenderingContext::getAttribConfigList()  { return _attribConfigList; }
       inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo)
       { return getAttribConfig(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo)); }
@@ -290,7 +290,7 @@ namespace ge
       inline ge::gl::BufferObject* RenderingContext::getIndirectCommandBuffer()  { return _indirectCommandBuffer; }
       inline ge::gl::BufferObject* RenderingContext::getStateSetBuffer()  { return _stateSetBuffer; }
       inline float* RenderingContext::getCpuTransformationBuffer()  { return _cpuTransformationBuffer; }
-      inline ge::gl::BufferObject* RenderingContext::getInstancingMatrixControlBuffer() { return _instancingMatrixControlBuffer; }
+      inline ge::gl::BufferObject* RenderingContext::getInstancingMatricesControlBuffer() { return _instancingMatricesControlBuffer; }
       inline ge::gl::BufferObject* RenderingContext::getTransformationThreadsData()  { return _transformationThreadsData; }
       inline ge::gl::BufferObject* RenderingContext::getInstancingMatrixBuffer()  { return _instancingMatrixBuffer; }
       inline void* RenderingContext::mapStateSetBuffer(MappedBufferAccess access)
@@ -308,14 +308,14 @@ namespace ge
       inline void* RenderingContext::mappedInstanceBufferPtr() const  { return _mappedInstanceBufferPtr; }
       inline void RenderingContext::unmapInstanceBuffer()
       { unmapBuffer(_instanceBuffer,_mappedInstanceBufferPtr,_instanceBufferMappedAccess); }
-      inline void* RenderingContext::mapInstancingMatrixControlBuffer(MappedBufferAccess access)
-      { return mapBuffer(_instancingMatrixControlBuffer,access,_mappedInstancingMatrixControlBufferPtr,_instancingMatrixControlBufferMappedAccess); }
-      inline void* RenderingContext::mappedInstancingMatrixControlBufferPtr() const  { return _mappedInstancingMatrixControlBufferPtr; }
-      inline void RenderingContext::unmapInstancingMatrixControlBuffer()  { unmapBuffer(_instancingMatrixControlBuffer,_mappedInstancingMatrixControlBufferPtr,_instancingMatrixControlBufferMappedAccess); }
+      inline void* RenderingContext::mapInstancingMatricesControlBuffer(MappedBufferAccess access)
+      { return mapBuffer(_instancingMatricesControlBuffer,access,_mappedInstancingMatricesControlBufferPtr,_instancingMatricesControlBufferMappedAccess); }
+      inline void* RenderingContext::mappedInstancingMatricesControlBufferPtr() const  { return _mappedInstancingMatricesControlBufferPtr; }
+      inline void RenderingContext::unmapInstancingMatricesControlBuffer()  { unmapBuffer(_instancingMatricesControlBuffer,_mappedInstancingMatricesControlBufferPtr,_instancingMatricesControlBufferMappedAccess); }
       inline void* RenderingContext::mapInstancingMatrixBuffer(MappedBufferAccess access)
       { return mapBuffer(_instancingMatrixBuffer,access,_mappedInstancingMatrixBufferPtr,_instancingMatrixBufferMappedAccess); }
       inline void* RenderingContext::mappedInstancingMatrixBufferPtr() const  { return _mappedInstancingMatrixBufferPtr; }
-      inline void RenderingContext::unmapInstancingMatrixBuffer()  { unmapBuffer(_instancingMatrixBuffer,_mappedInstancingMatrixBufferPtr,_instancingMatrixControlBufferMappedAccess); }
+      inline void RenderingContext::unmapInstancingMatrixBuffer()  { unmapBuffer(_instancingMatrixBuffer,_mappedInstancingMatrixBufferPtr,_instancingMatrixBufferMappedAccess); }
       inline unsigned* RenderingContext::getStateSetBufferAllocation(unsigned id) const  { return _stateSetBufferAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::getStateSetBufferAllocationManager()  { return _stateSetBufferAllocationManager; }
       inline const ItemAllocationManager& RenderingContext::getStateSetBufferAllocationManager() const  { return _stateSetBufferAllocationManager; }
@@ -339,21 +339,21 @@ namespace ge
       inline unsigned RenderingContext::getNumInstancesAvailable() const  { return _instanceAllocationManager._numItemsAvailable; }
       inline unsigned RenderingContext::getNumInstancesAvailableAtTheEnd() const  { return _instanceAllocationManager._numItemsAvailableAtTheEnd; }
       inline unsigned RenderingContext::getFirstInstanceAvailableAtTheEnd() const  { return _instanceAllocationManager._firstItemAvailableAtTheEnd; }
-      inline unsigned* RenderingContext::getTransformationsAllocation(unsigned id) const  { return _transformationsAllocationManager[id]; }
-      inline ItemAllocationManager& RenderingContext::transformationsAllocationManager()  { return _transformationsAllocationManager; }
-      inline const ItemAllocationManager& RenderingContext::transformationsAllocationManager() const  { return _transformationsAllocationManager; }
-      inline BlockAllocation<InstancingMatrixCollection>& RenderingContext::getInstancingMatrixAllocation(unsigned id)  { return _instancingMatrixAllocationManager[id]; }
-      inline unsigned* RenderingContext::getInstancingMatrixCollectionAllocation(unsigned id) const  { return _instancingMatrixControlAllocationManager[id]; }
-      inline ItemAllocationManager& RenderingContext::instancingMatrixControlAllocationManager()  { return _instancingMatrixControlAllocationManager; }
-      inline const ItemAllocationManager& RenderingContext::instancingMatrixControlAllocationManager() const  { return _instancingMatrixControlAllocationManager; }
-      inline const BlockAllocation<InstancingMatrixCollection>& RenderingContext::getInstancingMatrixAllocation(unsigned id) const  { return _instancingMatrixAllocationManager[id]; }
-      inline BlockAllocationManager<InstancingMatrixCollection>& RenderingContext::instancingMatrixAllocationManager()  { return _instancingMatrixAllocationManager; }
-      inline const BlockAllocationManager<InstancingMatrixCollection>& RenderingContext::instancingMatrixAllocationManager() const  { return _instancingMatrixAllocationManager; }
+      inline unsigned* RenderingContext::transformationAllocation(unsigned id) const  { return _transformationAllocationManager[id]; }
+      inline ItemAllocationManager& RenderingContext::transformationAllocationManager()  { return _transformationAllocationManager; }
+      inline const ItemAllocationManager& RenderingContext::transformationAllocationManager() const  { return _transformationAllocationManager; }
+      inline BlockAllocation<InstancingMatrices>& RenderingContext::instancingMatrixAllocation(unsigned id)  { return _instancingMatrixAllocationManager[id]; }
+      inline unsigned* RenderingContext::instancingMatricesControlAllocation(unsigned id) const  { return _instancingMatricesControlAllocationManager[id]; }
+      inline ItemAllocationManager& RenderingContext::instancingMatricesControlAllocationManager()  { return _instancingMatricesControlAllocationManager; }
+      inline const ItemAllocationManager& RenderingContext::instancingMatricesControlAllocationManager() const  { return _instancingMatricesControlAllocationManager; }
+      inline const BlockAllocation<InstancingMatrices>& RenderingContext::instancingMatrixAllocation(unsigned id) const  { return _instancingMatrixAllocationManager[id]; }
+      inline BlockAllocationManager<InstancingMatrices>& RenderingContext::instancingMatrixAllocationManager()  { return _instancingMatrixAllocationManager; }
+      inline const BlockAllocationManager<InstancingMatrices>& RenderingContext::instancingMatrixAllocationManager() const  { return _instancingMatrixAllocationManager; }
       inline void RenderingContext::uploadDrawCommands(AttribReference &r,void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *modesAndOffsets4,int numDrawCommands)
       { uploadDrawCommands(r,nonConstDrawCommandBuffer,bytesToCopy,generateDrawCommandControlData(nonConstDrawCommandBuffer,modesAndOffsets4,numDrawCommands).data(),numDrawCommands); }
       inline void RenderingContext::clearDrawCommands(AttribReference &r)  { setNumDrawCommands(r,0); }
-      inline InstanceGroupId RenderingContext::createInstances(AttribReference &r,InstancingMatrixCollection *imc,StateSet *stateSet)
-      { return createInstances(r,nullptr,-1,imc,stateSet); }
+      inline InstanceGroupId RenderingContext::createInstances(AttribReference &r,InstancingMatrices *im,StateSet *stateSet)
+      { return createInstances(r,nullptr,-1,im,stateSet); }
       inline RenderingContext::TransformationGraphList& RenderingContext::getTransformationGraphs()  { return _transformationGraphs; }
       inline const RenderingContext::TransformationGraphList& RenderingContext::getTransformationGraphs() const  { return _transformationGraphs; }
       inline unsigned RenderingContext::getPositionInIndirectBuffer4() const  { return _indirectBufferAllocatedSpace4; }
@@ -368,8 +368,8 @@ namespace ge
       inline int RenderingContext::getInitialIndirectCommandBufferSize()  { return _initialIndirectCommandBufferSize; }
       inline void RenderingContext::setInitialTransformationBufferSize(int value)  { _initialTransformationBufferSize=value; }
       inline int RenderingContext::getInitialTransformationBufferSize()  { return _initialTransformationBufferSize; }
-      inline void RenderingContext::setInitialInstancingMatrixControlBufferNumElements(int value)  { _initialInstancingMatrixControlBufferNumElements=value; }
-      inline int RenderingContext::getInitialInstancingMatrixControlBufferNumElements()  { return _initialInstancingMatrixControlBufferNumElements; }
+      inline void RenderingContext::setInitialInstancingMatricesControlBufferNumElements(int value)  { _initialInstancingMatricesControlBufferNumElements=value; }
+      inline int RenderingContext::getInitialInstancingMatricesControlBufferNumElements()  { return _initialInstancingMatricesControlBufferNumElements; }
       inline void RenderingContext::setInitialInstancingMatricesBufferSize(int value)  { _initialInstancingMatricesBufferSize=value; }
       inline int RenderingContext::getInitialInstancingMatricesBufferSize()  { return _initialInstancingMatricesBufferSize; }
       inline std::shared_ptr<RenderingContext>& RenderingContext::current()

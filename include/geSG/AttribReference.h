@@ -12,7 +12,7 @@ namespace ge
    {
       class AttribConfigRef;
       class AttribStorage;
-      class InstancingMatrixCollection;
+      class InstancingMatrices;
       class StateSet;
 
 
@@ -98,10 +98,10 @@ namespace ge
          inline void clearDrawCommands();
          inline void setNumDrawCommands(unsigned num);
 
-         inline InstanceGroupId createInstances(InstancingMatrixCollection *imc,StateSet *stateSet);
+         inline InstanceGroupId createInstances(InstancingMatrices *im,StateSet *stateSet);
          inline InstanceGroupId createInstances(const unsigned *drawCommandIndices,
                                                 const int drawCommandsCount,
-                                                InstancingMatrixCollection *imc,StateSet *stateSet);
+                                                InstancingMatrices *im,StateSet *stateSet);
          inline void deleteInstances(InstanceGroupId id);
       };
 
@@ -117,7 +117,7 @@ namespace ge
 //       inline methods to avoid incomplete type compiler error
 
 #include <geSG/AttribStorage.h>
-#include <geSG/InstancingMatrixCollection.h>
+#include <geSG/InstancingMatrices.h>
 #include <geSG/RenderingContext.h>
 
 namespace ge
@@ -185,10 +185,10 @@ namespace ge
       inline void AttribReference::clearDrawCommands()  { setNumDrawCommands(0); }
       inline void AttribReference::setNumDrawCommands(unsigned num)
       { RenderingContext::current()->setNumDrawCommands(*this,num); }
-      inline InstanceGroupId AttribReference::createInstances(InstancingMatrixCollection *imc,StateSet *stateSet)
-      { return RenderingContext::current()->createInstances(*this,imc,stateSet); }
-      inline InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,InstancingMatrixCollection *imc,StateSet *stateSet)
-      { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,imc,stateSet); }
+      inline InstanceGroupId AttribReference::createInstances(InstancingMatrices *im,StateSet *stateSet)
+      { return RenderingContext::current()->createInstances(*this,im,stateSet); }
+      inline InstanceGroupId AttribReference::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,InstancingMatrices *im,StateSet *stateSet)
+      { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,im,stateSet); }
       inline void AttribReference::deleteInstances(InstanceGroupId id)
       { RenderingContext::current()->deleteInstances(*this,id); }
    }
