@@ -25,7 +25,7 @@ namespace ge{
     GEGL_EXPORT std::string translateTextureSwizzle    (GLint swizzle );
     GEGL_EXPORT std::string translateTextureChannelType(GLenum type   );
     GEGL_EXPORT unsigned internalFormatSize(GLenum internalFormat);
-    GEGL_EXPORT std::string translateInternalForma(GLenum internalFormat);
+    GEGL_EXPORT std::string translateInternalFormat(GLenum internalFormat);
 
     class GEGL_EXPORT TextureObject: public OpenGLObject
     {
@@ -70,6 +70,8 @@ namespace ge{
         void    texParameteri (GLenum pname,GLint    params);
         void    texParameterfv(GLenum pname,GLfloat *params);
         GLenum  getFormat();
+        bool      hasHeight();
+        bool      hasDepth ();
         GLuint    getWidth                 (GLint level);
         GLuint    getHeight                (GLint level);
         GLuint    getDepth                 (GLint level);
@@ -121,6 +123,7 @@ namespace ge{
         GLuint    getViewNumLayers               (             );
         std::string getInfo();
         unsigned long long getSize();
+        unsigned long long getLevelSize(GLint level);
     };
   }//gl
 }//ge

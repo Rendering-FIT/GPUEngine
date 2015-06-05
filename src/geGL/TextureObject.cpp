@@ -268,9 +268,55 @@ std::string ge::gl::translateTextureChannelType(GLenum type){
   }
 }
 
-std::string ge::gl::translateInternalForma(GLenum internalFormat){
+std::string ge::gl::translateInternalFormat(GLenum internalFormat){
   switch(internalFormat){
-    default :return"unknown";
+    case GL_STENCIL_INDEX1    :return"GL_STENCIL_INDEX1"    ;
+    case GL_STENCIL_INDEX4    :return"GL_STENCIL_INDEX4"    ;
+    case GL_R8                :return"GL_R8"                ;
+    case GL_R8UI              :return"GL_R8UI"              ;
+    case GL_R8I               :return"GL_R8I"               ;
+    case GL_R8_SNORM          :return"GL_R8_SNORM"          ;
+    case GL_R3_G3_B2          :return"GL_R3_G3_B2"          ;
+    case GL_RGBA2             :return"GL_RGBA2"             ;
+    case GL_STENCIL_INDEX8    :return"GL_STENCIL_INDEX8"    ;
+    case GL_RGB4              :return"GL_RGB4"              ;
+    case GL_RGB5              :return"GL_RGB5"              ;
+    case GL_R16               :return"GL_R16"               ;
+    case GL_R16F              :return"GL_R16F"              ;
+    case GL_R16UI             :return"GL_R16UI"             ;
+    case GL_R16I              :return"GL_R16I"              ;
+    case GL_R16_SNORM         :return"GL_R16_SNORM"         ;
+    case GL_RG8               :return"GL_RG8"               ;
+    case GL_RG8UI             :return"GL_RG8UI"             ;
+    case GL_RG8I              :return"GL_RG8I"              ;
+    case GL_RGB565            :return"GL_RGB565"            ;
+    case GL_RGB5_A1           :return"GL_RGB5_A1"           ;
+    case GL_RGBA4             :return"GL_RGBA4"             ;
+    case GL_DEPTH_COMPONENT16 :return"GL_DEPTH_COMPONENT16" ;
+    case GL_STENCIL_INDEX16   :return"GL_STENCIL_INDEX16"   ;
+    case GL_RGB8              :return"GL_RGB8"              ;
+    case GL_RGB8_SNORM        :return"GL_RGB8_SNORM"        ;
+    case GL_RGB8UI            :return"GL_RGB8UI"            ;
+    case GL_RGB8I             :return"GL_RGB8I"             ;
+    case GL_DEPTH_COMPONENT24 :return"GL_DEPTH_COMPONENT24" ;
+    case GL_SRGB8             :return"GL_SRGB8"             ;
+    case GL_SRGB8_ALPHA8      :return"GL_SRGB8_ALPHA8"      ;
+    case GL_RG16              :return"GL_RG16"              ;
+    case GL_RG16_SNORM        :return"GL_RG16_SNORM"        ;
+    case GL_DEPTH24_STENCIL8  :return"GL_DEPTH24_STENCIL8"  ;
+    case GL_DEPTH_COMPONENT32F:return"GL_DEPTH_COMPONENT32F";
+    case GL_DEPTH_COMPONENT32 :return"GL_DEPTH_COMPONENT32" ;
+    case GL_DEPTH32F_STENCIL8 :return"GL_DEPTH32F_STENCIL8" ;
+    case GL_RGB16F            :return"GL_RGB16F"            ;
+    case GL_RGB16I            :return"GL_RGB16I"            ;
+    case GL_RGB16UI           :return"GL_RGB16UI"           ;
+    case GL_RGBA16F           :return"GL_RGBA16F"           ;
+    case GL_RGBA16I           :return"GL_RGBA16I"           ;
+    case GL_RGBA16UI          :return"GL_RGBA16UI"          ;
+    case GL_RGBA32F           :return"GL_RGBA32F"           ;
+    case GL_RGBA32UI          :return"GL_RGBA32UI"          ;
+    case GL_RGBA32I           :return"GL_RGBA32I"           ;
+    default                   :return"unknown"              ;
   };
 }
 
@@ -326,13 +372,21 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
     case GL_DEPTH_COMPONENT32 :
       return 32;
     case GL_DEPTH32F_STENCIL8:
-      return 40;
+      return 32+8;
+    case GL_RGB16F:
+    case GL_RGB16I:
+    case GL_RGB16UI:
+      return 3*16;
+    case GL_RGBA16F:
+    case GL_RGBA16I:
+    case GL_RGBA16UI:
+      return 4*16;
     case GL_RGBA32F :
     case GL_RGBA32UI:
     case GL_RGBA32I :
-      return 128;
+      return 4*32;
   }
-  return 4;//TODO
+  return 32;//TODO
 }
 
 
@@ -1079,7 +1133,7 @@ std::string TextureObject::getInfo(){
 
   ss<<"GL_TEXTURE_SAMPLES: "                  <<this->getSamples               (0)<<std::endl;
   ss<<"GL_TEXTURE_FIXED_SAMPLE_LOCATIONS: "   <<(bool)this->getFixedSampleLocation   (0)<<std::endl;
-  ss<<"GL_TEXTURE_INTERNAL_FORMAT: "          <<this->getInternalFormat        (0)<<std::endl;
+  ss<<"GL_TEXTURE_INTERNAL_FORMAT: "          <<ge::gl::translateInternalFormat(this->getInternalFormat(0))<<std::endl;
   ss<<"GL_TEXTURE_RED_SIZE: "                 <<this->getRedSize               (0)<<std::endl;
   ss<<"GL_TEXTURE_BLUE_SIZE: "                <<this->getBlueSize              (0)<<std::endl;
   ss<<"GL_TEXTURE_GREEN_SIZE: "               <<this->getGreenSize             (0)<<std::endl;
@@ -1131,8 +1185,50 @@ std::string TextureObject::getInfo(){
   return ss.str();
 }
 
+bool TextureObject::hasHeight(){
+  switch(this->_target){
+    case GL_TEXTURE_1D_ARRAY            :
+    case GL_TEXTURE_2D                  :
+    case GL_TEXTURE_2D_ARRAY            :
+    case GL_TEXTURE_2D_MULTISAMPLE      :
+    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+    case GL_TEXTURE_3D                  :
+    case GL_TEXTURE_BUFFER              :
+    case GL_TEXTURE_CUBE_MAP            :
+    case GL_TEXTURE_RECTANGLE           :return true ;
+    case GL_TEXTURE_1D                  :
+    default                             :return false;
+  }
+}
+
+bool TextureObject::hasDepth (){
+   switch(this->_target){
+    case GL_TEXTURE_2D_ARRAY            :
+    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+    case GL_TEXTURE_3D                  :
+    case GL_TEXTURE_CUBE_MAP            :return true ;
+    case GL_TEXTURE_1D                  :
+    case GL_TEXTURE_1D_ARRAY            :
+    case GL_TEXTURE_2D                  :
+    case GL_TEXTURE_2D_MULTISAMPLE      :
+    case GL_TEXTURE_RECTANGLE           :
+    case GL_TEXTURE_BUFFER              :
+    default                             :return false;
+  }
+}
+
+unsigned long long TextureObject::getLevelSize(GLint level){
+  unsigned long long size=internalFormatSize(this->getInternalFormat(level))*this->getWidth(level);
+  if(this->hasHeight())size*=this->getHeight(level);
+  if(this->hasDepth())size*=this->getDepth(level);
+  return size/8;
+}
 
 unsigned long long TextureObject::getSize(){
-  return this->getWidth(0)*this->getHeight(0)*this->getDepth(0);
+  GLint nofLevels=this->getViewNumLayers();//TODO neco lepsiho?
+  unsigned long long size=0;
+  for(GLint l=0;l<nofLevels;++l)
+    size+=this->getLevelSize(l);
+  return size;
 }
 
