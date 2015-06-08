@@ -12,7 +12,7 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
    : AttribStorage(config,numVertices,numIndices)
 {
    // get ConfigData
-   const AttribConfig::ConfigData &configData=config->getConfigData();
+   const AttribConfig::ConfigData &configData=config->configData();
 
    // create VAO
    _vao = new VertexArrayObject;
@@ -61,7 +61,7 @@ void SeparateBuffersAttribStorage::bind() const
 }
 
 
-bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertices,
+bool SeparateBuffersAttribStorage::reallocData(Mesh &mesh,int numVertices,
         int numIndices,bool preserveContent)
 {
    // FIXME: not implemented yet
@@ -69,16 +69,16 @@ bool SeparateBuffersAttribStorage::reallocData(AttribReference &r,int numVertice
 }
 
 
-void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const void*const *attribs,
+void SeparateBuffersAttribStorage::uploadVertices(Mesh &mesh,const void*const *attribs,
                                                   int numVertices,int fromIndex)
 {
-   const AttribConfig::ConfigData &configData=_attribConfig->getConfigData();
+   const AttribConfig::ConfigData &configData=_attribConfig->configData();
    for(int i=0,c=int(_arrayBuffers.size()); i<c; i++)
    {
       AttribType t=configData.attribTypes[i];
       int elementSize=t.elementSize();
       int srcOffset=fromIndex*elementSize;
-      int dstOffset=(_vertexAllocationManager[r.verticesDataId].startIndex+fromIndex)*elementSize;
+      int dstOffset=(_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex)*elementSize;
       const void *data=attribs[i];
       _arrayBuffers[i]->setData(((uint8_t*)data)+srcOffset,
                                 numVertices*elementSize,dstOffset);
@@ -86,10 +86,10 @@ void SeparateBuffersAttribStorage::uploadVertices(AttribReference &r,const void*
 }
 
 
-void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const void *indices,
+void SeparateBuffersAttribStorage::uploadIndices(Mesh &mesh,const void *indices,
                                                  int numIndices,int fromIndex)
 {
-   if(_ebo==NULL) {
+   if(_ebo==nullptr) {
       cout<<"Error in SeparateBuffersAttribStorage::uploadIndices(): ebo is null.\n"
             "   SeparateBuffersAttribStorage was probably created with AttribConfig\n"
             "   without ebo member set to true." << endl;
@@ -97,6 +97,6 @@ void SeparateBuffersAttribStorage::uploadIndices(AttribReference &r,const void *
    }
    const int elementSize=4;
    int srcOffset=fromIndex*elementSize;
-   int dstOffset=(_indexAllocationManager[r.indicesDataId].startIndex+fromIndex)*elementSize;
+   int dstOffset=(_indexAllocationManager[mesh.indicesDataId()].startIndex+fromIndex)*elementSize;
    _ebo->setData((uint8_t*)indices+srcOffset,numIndices*elementSize,dstOffset);
 }

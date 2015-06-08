@@ -85,7 +85,7 @@ void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned
 
 void StateSet::setupRendering()
 {
-   unsigned indirectBufferOffset4=RenderingContext::current()->getPositionInIndirectBuffer4();
+   unsigned indirectBufferOffset4=RenderingContext::current()->positionInIndirectBuffer4();
    unsigned *stateSetMappedBufferPtr=static_cast<unsigned*>(RenderingContext::current()->mappedStateSetBufferPtr());
 
    // iterate through all AttribStorageData
@@ -98,7 +98,7 @@ void StateSet::setupRendering()
       // size of increment differs for DrawElements and DrawArrays (EBO in use or not)
       // and it is given as index to unsigned array (to be usable directly as index in shader),
       // thus it is not 20 and 16, but 5 and 4
-      unsigned increment=it1->second.attribStorage->getAttribConfig()->getConfigData().ebo?5:4;
+      unsigned increment=it1->second.attribStorage->attribConfig()->configData().ebo?5:4;
 
       // iterate through all RenderingData
       for(auto it2=it1->second.renderingData.begin(),e=it1->second.renderingData.end(); it2!=e; it2++)
@@ -123,7 +123,7 @@ void StateSet::render()
          continue;
 
       it1->second.attribStorage->bind();
-      if(it1->second.attribStorage->getAttribConfig()->getConfigData().ebo)
+      if(it1->second.attribStorage->attribConfig()->configData().ebo)
          for(auto it2=it1->second.renderingData.begin(),e=it1->second.renderingData.end(); it2!=e; it2++)
          {
             GLintptr offset=it2->indirectBufferOffset4*4;

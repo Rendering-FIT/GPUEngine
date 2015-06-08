@@ -2,9 +2,9 @@
 #define GE_SG_ATTRIB_CONFIG_H
 
 #include <list>
+#include <map>
 #include <memory>
 #include <vector>
-#include <map>
 #include <geSG/Export.h>
 #include <geSG/AttribType.h>
 
@@ -13,9 +13,9 @@ namespace ge
 {
    namespace sg
    {
-      class AttribReference;
       class AttribConfigRef;
       class AttribStorage;
+      class Mesh;
       class RenderingContext;
       typedef uint16_t AttribConfigId;  ///< \brief Integer-based type for the most frequently used attribute configurations.
 
@@ -73,10 +73,10 @@ namespace ge
 
          inline const AttribStorageList& getAttribStorageList() const;
 
-         virtual bool allocData(AttribReference &r,int numVertices,int numIndices,int numDrawCommands);
-         virtual bool reallocData(AttribReference &r,int numVertices,int numIndices,
+         virtual bool allocData(Mesh &mesh,int numVertices,int numIndices,int numDrawCommands);
+         virtual bool reallocData(Mesh &mesh,int numVertices,int numIndices,
                                   int numDrawCommands,bool preserveContent=true);
-         inline void freeData(AttribReference &r);
+         inline void freeData(Mesh &mesh);
 
          inline AttribConfigRef createReference();
          virtual AttribConfigRef getOrCreate(const ConfigData &config,RenderingContext *rc);
@@ -87,18 +87,18 @@ namespace ge
 
          inline void addReference();
          inline void removeReference();
-         inline int getReferenceCounter();
+         inline int referenceCounter();
 
          static AttribConfigId getId(const std::vector<AttribType>& attribTypes,bool ebo);
 
-         inline const ConfigData& getConfigData() const;
-         inline RenderingContext* getRenderingContext() const;
+         inline const ConfigData& configData() const;
+         inline RenderingContext* renderingContext() const;
 
-         inline int getDefaultStorageNumVertices() const;
+         inline int defaultStorageNumVertices() const;
          inline void setDefaultStorageNumVertices(int num);
-         inline int getDefaultStorageNumIndices() const;
+         inline int defaultStorageNumIndices() const;
          inline void setDefaultStorageNumIndices(int num);
-         inline int getDefaultStorageNumDrawCommands() const;
+         inline int defaultStorageNumDrawCommands() const;
          inline void setDefaultStorageNumDrawCommands(int num);
 
          inline bool operator==(const AttribConfig &rhs) const;
@@ -119,7 +119,7 @@ namespace ge
                                          AttribConfigId id,RenderingContext *rc,
                                          AttribConfigList::iterator selfIterator);
          };
-         static inline std::shared_ptr<Factory>& getFactory();
+         static inline std::shared_ptr<Factory>& factory();
          static inline void setFactory(std::shared_ptr<Factory>& f);
 
       protected:
@@ -197,7 +197,7 @@ namespace ge
          AttribConfigId id,RenderingContext *rc,AttribConfigList::iterator selfIterator)
          : _configData(attribTypes,ebo,id), _renderingContext(rc), _selfIterator(selfIterator)  {}
       const AttribConfig::AttribStorageList& AttribConfig::getAttribStorageList() const  { return _attribStorages; }
-      inline void AttribConfig::freeData(AttribReference &r)  { if(r.attribStorage) r.attribStorage->freeData(r); }
+      inline void AttribConfig::freeData(Mesh &mesh)  { if(mesh.attribStorage()) mesh.attribStorage()->freeData(mesh); }
       inline AttribConfigRef AttribConfig::createReference()  { return AttribConfigRef(*this); }
       inline AttribConfigRef AttribConfig::getOrCreate(const ConfigData &config,RenderingContext *rc)
       { return rc->getAttribConfig(config); }
@@ -207,14 +207,14 @@ namespace ge
          AttribConfigId id,RenderingContext *rc)  { return rc->getAttribConfig(attribTypes,ebo,id); }
       inline void AttribConfig::addReference()  { _referenceCounter++; }
       inline void AttribConfig::removeReference()  { if(--_referenceCounter==0) destroy(); }
-      inline int AttribConfig::getReferenceCounter()  { return _referenceCounter; }
-      inline const AttribConfig::ConfigData& AttribConfig::getConfigData() const  { return _configData; }
-      inline RenderingContext* AttribConfig::getRenderingContext() const  { return _renderingContext; }
-      inline int AttribConfig::getDefaultStorageNumVertices() const  { return _defaultStorageNumVertices; }
+      inline int AttribConfig::referenceCounter()  { return _referenceCounter; }
+      inline const AttribConfig::ConfigData& AttribConfig::configData() const  { return _configData; }
+      inline RenderingContext* AttribConfig::renderingContext() const  { return _renderingContext; }
+      inline int AttribConfig::defaultStorageNumVertices() const  { return _defaultStorageNumVertices; }
       inline void AttribConfig::setDefaultStorageNumVertices(int num)  { _defaultStorageNumVertices=num; }
-      inline int AttribConfig::getDefaultStorageNumIndices() const  { return _defaultStorageNumIndices; }
+      inline int AttribConfig::defaultStorageNumIndices() const  { return _defaultStorageNumIndices; }
       inline void AttribConfig::setDefaultStorageNumIndices(int num)  { _defaultStorageNumIndices=num; }
-      inline int AttribConfig::getDefaultStorageNumDrawCommands() const  { return _defaultStorageNumDrawCommands; }
+      inline int AttribConfig::defaultStorageNumDrawCommands() const  { return _defaultStorageNumDrawCommands; }
       inline void AttribConfig::setDefaultStorageNumDrawCommands(int num)  { _defaultStorageNumDrawCommands=num; }
       inline bool AttribConfig::operator==(const AttribConfig &rhs) const  { return _configData==rhs._configData; }
       inline bool AttribConfig::operator!=(const AttribConfig &rhs) const  { return _configData!=rhs._configData; }
@@ -227,7 +227,7 @@ namespace ge
       inline AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attribTypes,bool ebo,
          RenderingContext *rc,AttribConfigList::iterator selfIterator)
          { return create(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo),rc,selfIterator); }
-      inline std::shared_ptr<AttribConfig::Factory>& AttribConfig::getFactory()  { return _factory; }
+      inline std::shared_ptr<AttribConfig::Factory>& AttribConfig::factory()  { return _factory; }
       inline void AttribConfig::setFactory(std::shared_ptr<AttribConfig::Factory>& f)  { _factory=f; }
 
       inline AttribConfig& AttribConfigRef::get() const  { return *_pointer; }

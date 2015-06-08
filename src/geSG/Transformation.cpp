@@ -15,21 +15,21 @@ class Tmp_Transformation : public Transformation {
 
 void Transformation::uploadMatrix(const float *matrix)
 {
-   float* buffer=RenderingContext::current()->getCpuTransformationBuffer();
+   float* buffer=RenderingContext::current()->cpuTransformationBuffer();
    memcpy(&buffer[gpuDataOffset64()*16],matrix,16*sizeof(float));
 }
 
 
 void Transformation::downloadMatrix(float *matrix)
 {
-   float* buffer=RenderingContext::current()->getCpuTransformationBuffer();
+   float* buffer=RenderingContext::current()->cpuTransformationBuffer();
    memcpy(matrix,&buffer[gpuDataOffset64()*16],16*sizeof(float));
 }
 
 
 float* Transformation::getMatrixPtr()
 {
-   float* buffer=RenderingContext::current()->getCpuTransformationBuffer();
+   float* buffer=RenderingContext::current()->cpuTransformationBuffer();
    return &buffer[gpuDataOffset64()*16];
 }
 

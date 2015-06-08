@@ -8,7 +8,7 @@
 #include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
-#include <geSG/AttribReference.h>
+#include <geSG/Mesh.h>
 #include <geSG/AttribType.h>
 #include <geSG/RenderingContext.h>
 #include <geSG/StateSet.h>
@@ -48,12 +48,12 @@ ge::util::WindowObject   *Window;
 static ProgramObject *glProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
 static shared_ptr<StateSet> stateSet;
-static list<AttribReference> attribRefList;
-static vector<AttribReference> notUsedVector;
-static AttribReference attribsRefNI;
-static AttribReference attribsRefI;
-static AttribReference attribsRefInstNI;
-static AttribReference attribsRefInstI;
+static list<Mesh> meshList;
+static vector<Mesh> notUsedVector;
+static Mesh attribsRefNI;
+static Mesh attribsRefI;
+static Mesh attribsRefInstNI;
+static Mesh attribsRefInstI;
 static string fileName;
 
 
@@ -153,40 +153,40 @@ void Idle()
 
    // indirect buffer update - setup and start compute shader
    processInstanceProgram->use();
-   unsigned numInstances=RenderingContext::current()->getFirstInstanceAvailableAtTheEnd();
+   unsigned numInstances=RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd();
    processInstanceProgram->set("numToProcess",numInstances);
-   RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->getInstancingMatricesControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
-   RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
-   RenderingContext::current()->getStateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
+   RenderingContext::current()->drawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->instanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   RenderingContext::current()->instancingMatricesControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->indirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
+   RenderingContext::current()->stateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
    glDispatchCompute((numInstances+63)/64,1,1);
 
    // draw few triangles by very low-level approach
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
-   RenderingContext::current()->getInstancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   attribsRefNI.attribStorage->bind();
-   unsigned baseIndex=attribsRefNI.attribStorage->getVertexAllocationBlock(attribsRefNI.verticesDataId).startIndex;
+   RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   attribsRefNI.attribStorage()->bind();
+   unsigned baseIndex=attribsRefNI.attribStorage()->vertexAllocationBlock(attribsRefNI.verticesDataId()).startIndex;
    glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
    glDrawArrays(GL_TRIANGLES,baseIndex+3,3);
-   attribsRefI.attribStorage->bind();
-   baseIndex=attribsRefI.attribStorage->getIndexAllocationBlock(attribsRefI.indicesDataId).startIndex;
+   attribsRefI.attribStorage()->bind();
+   baseIndex=attribsRefI.attribStorage()->indexAllocationBlock(attribsRefI.indicesDataId()).startIndex;
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
 
    // wait for compute shader
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
-   RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   RenderingContext::current()->indirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
 
    // render two triangles indirectly
    /*attribsRefInstNI.attribStorage->bind();
    glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(attribsRefInstNI.instances.front()->items[0].index()*16),2,0);
 
    // render loaded model
-   if(!attribRefList.empty())
+   if(!meshList.empty())
    {
-      for(auto it=attribRefList.begin(); it!=attribRefList.end(); it++)
+      for(auto it=meshList.begin(); it!=meshList.end(); it++)
       {
          it->attribStorage->bind();
          glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(it->instances.front()->items[0].index()*16),
@@ -199,7 +199,7 @@ void Idle()
    //                      (RenderingContext::current()->getFirstDrawCommandAvailableAtTheEnd()+3)/sizeof(unsigned));
    //printIntBufferContent(RenderingContext::current()->getIndirectCommandBuffer(),
    //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*5);
-   RenderingContext::current()->getInstancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
    stateSet->render();
 
    Window->swap();
@@ -321,7 +321,7 @@ public:
          // generate draw commands
          unsigned numDrawCommands=g->getNumPrimitiveSets();
          vector<unsigned> drawCommands;
-         vector<AttribReference::DrawCommandControlData> drawCommandsControlData;
+         vector<Mesh::DrawCommandControlData> drawCommandsControlData;
          drawCommands.reserve(numDrawCommands*3);
          drawCommandsControlData.reserve(numDrawCommands);
          unsigned numIndices=0;
@@ -417,18 +417,18 @@ public:
          // create AttribConfigRef
          AttribConfigRef config(configData);
 
-         // create AttribReference
-         attribRefList.emplace_back();
-         AttribReference &r=attribRefList.back();
-         r.allocData(config,numVertices,numIndices,drawCommands.size()*sizeof(unsigned));
+         // create Mesh
+         meshList.emplace_back();
+         Mesh &m=meshList.back();
+         m.allocData(config,numVertices,numIndices,drawCommands.size()*sizeof(unsigned));
 
          // upload draw commands
-         r.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
+         m.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                               drawCommandsControlData.data(),drawCommandsControlData.size());
 
          // create instances
          shared_ptr<InstancingMatrices> &im=transformationStack.back()->getOrCreateInstancingMatrices();
-         r.createInstances(im.get(),stateSet.get());
+         m.createInstances(im.get(),stateSet.get());
 
          // upload vertices
          vector<void*> geArrays;
@@ -444,7 +444,7 @@ public:
                memset(((uint8_t*)p)+osgBufSize,0,attribBufSize-osgBufSize);
             geArrays.push_back(p);
          }
-         r.uploadVertices(geArrays.data(),geArrays.size());
+         m.uploadVertices(geArrays.data(),geArrays.size());
          for(int i=0,c=configData.attribTypes.size(); i<c; i++)
             free(geArrays[i]);
 
@@ -489,7 +489,7 @@ public:
                   }
                }
             }
-            r.uploadIndices(indices.data(),indices.size());
+            m.uploadIndices(indices.data(),indices.size());
          }
 
       }
