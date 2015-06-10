@@ -49,7 +49,7 @@ namespace ge
         GLuint      /*divisitor*/){
       GLuint*vao=&this->_vaos[vaobj];
       CommandList*commandList=new CommandList(false);
-      commandList->add(new BindVertexArray(vao));
+      commandList->add(new BindVertexArray(*vao));
       *command=commandList;
     }
 

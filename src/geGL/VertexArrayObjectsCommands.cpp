@@ -26,11 +26,11 @@ namespace ge
           this->n,
           this->arrays);
     }
-    BindVertexArray::BindVertexArray(GLuint *array){
+    BindVertexArray::BindVertexArray(GLuint array){
       this->array = array;
     }
     void BindVertexArray::apply(){
-      glBindVertexArray(*this->array);
+      glBindVertexArray(this->array);
     }
     CreateVertexArrays::CreateVertexArrays(
             GLsizei  n,
