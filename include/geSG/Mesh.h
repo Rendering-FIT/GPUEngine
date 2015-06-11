@@ -163,7 +163,7 @@ namespace ge
          rhs._attribStorage=NULL;
          return *this;
       }
-      Mesh::~Mesh()
+      inline Mesh::~Mesh()
       {
          freeData();
       }
@@ -187,7 +187,13 @@ namespace ge
          _attribStorage->reallocData(*this,numVertices,numIndices,preserveContent);
          RenderingContext::current()->reallocDrawCommands(*this,numDrawCommands,preserveContent);
       }
-      inline void Mesh::freeData()  { if(_attribStorage) _attribStorage->freeData(*this); }
+      inline void Mesh::freeData()
+      {
+         if(_attribStorage) {
+            RenderingContext::current()->freeDrawCommands(*this);
+            _attribStorage->freeData(*this);
+         }
+      }
       inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexAllocationBlock(_verticesDataId).numElements : 0; }
       inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexAllocationBlock(_indicesDataId).numElements : 0; }
       inline int Mesh::drawCommandBlockSize() const  { return RenderingContext::current()->drawCommandsAllocation(_drawCommandBlockId).size; }

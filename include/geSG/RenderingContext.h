@@ -10,6 +10,7 @@
 #include <geSG/Export.h>
 #include <geSG/AllocationManagers.h>
 #include <geSG/InstanceGroup.h>
+#include <geCore/InitAndFinalize.h>
 
 namespace ge
 {
@@ -186,10 +187,10 @@ namespace ge
                                             const void *drawCommandBuffer,
                                             const unsigned *modesAndOffsets4,int numDrawCommands);
 
-         void uploadDrawCommands(Mesh &mesh,
-                                 void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
-                                 const Mesh::DrawCommandControlData *data,
-                                 int numDrawCommands);
+         virtual void uploadDrawCommands(Mesh &mesh,
+                                         void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
+                                         const Mesh::DrawCommandControlData *data,
+                                         int numDrawCommands);
          inline void uploadDrawCommands(Mesh &mesh,
                                         void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
                                         const unsigned *modesAndOffsets4,int numDrawCommands);
@@ -238,9 +239,25 @@ namespace ge
          static inline std::shared_ptr<RenderingContext>& current();
          static void setCurrent(const std::shared_ptr<RenderingContext>& ptr);
 
+         static void init();
+         static void finalize();
+
       protected:
-         static thread_local std::shared_ptr<RenderingContext> _currentContext;
+         struct AutoInitRenderingContext {
+            bool initialized; // initialized to false if struct is declared static
+            bool usingNiftyCounter;
+            union {
+               std::shared_ptr<RenderingContext> ptr;
+               int dummy;
+            };
+            AutoInitRenderingContext();
+            ~AutoInitRenderingContext();
+         };
+         static thread_local AutoInitRenderingContext _currentContext;
       };
+
+
+      static ge::core::InitAndFinalize<RenderingContext> renderingContextInitAndFinalize;
 
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b);
@@ -345,7 +362,7 @@ namespace ge
       inline int RenderingContext::initialInstancingMatricesBufferSize()  { return _initialInstancingMatricesBufferSize; }
       inline void RenderingContext::setInitialInstancingMatricesBufferSize(int value)  { _initialInstancingMatricesBufferSize=value; }
       inline std::shared_ptr<RenderingContext>& RenderingContext::current()
-      { return _currentContext; }
+      { return _currentContext.ptr; }
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
       { (uint8_t&)a|=(uint8_t)b; return a; }

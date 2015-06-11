@@ -15,6 +15,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/CopyOp.h
     ${HEADER_PATH}/dtemplates.h
     ${HEADER_PATH}/geCore.h
+    ${HEADER_PATH}/InitAndFinalize.h
   )
 
 set(CORE_SOURCES

@@ -13,7 +13,7 @@ using namespace ge::sg;
 using namespace ge::gl;
 using namespace std;
 
-thread_local shared_ptr<RenderingContext> RenderingContext::_currentContext;
+thread_local RenderingContext::AutoInitRenderingContext RenderingContext::_currentContext;
 
 int RenderingContext::_initialStateSetBufferNumElements = 100; // 800 bytes
 int RenderingContext::_initialDrawCommandBufferSize = 8000; // 8'000 bytes
@@ -31,6 +31,50 @@ const float RenderingContext::identityMatrix[16] = {
    0.f, 0.f, 0.f, 1.f,
 };
 
+
+
+void RenderingContext::init()
+{
+   // init _currentContext.data.value
+   // (use placement new on shared_ptr, memory is statically preallocated)
+   _currentContext.usingNiftyCounter=true; // this attempt to write into local thread storage (lts)
+                                           // may trigger all the constructors in lts
+   if(_currentContext.initialized==false) {
+      ::new(&_currentContext.ptr)shared_ptr<RenderingContext>();
+      _currentContext.initialized=true;
+   }
+}
+
+
+void RenderingContext::finalize()
+{
+   // call in-place shared_ptr destructor
+   // (do not free static memory)
+   _currentContext.ptr.~shared_ptr();
+}
+
+
+RenderingContext::AutoInitRenderingContext::AutoInitRenderingContext()
+{
+   if(usingNiftyCounter||initialized)
+      return;
+
+   // placement new on shared_ptr
+   // (memory is statically preallocated)
+   ::new(&ptr)shared_ptr<RenderingContext>();
+   initialized=true;
+}
+
+
+RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
+{
+   if(usingNiftyCounter)
+      return;
+
+   // call in-place shared_ptr destructor
+   // (do not free static memory)
+   ptr.~shared_ptr();
+}
 
 
 RenderingContext::RenderingContext()
@@ -557,5 +601,5 @@ void RenderingContext::render()
 
 void RenderingContext::setCurrent(const shared_ptr<RenderingContext>& ptr)
 {
-   _currentContext=ptr;
+   _currentContext.ptr=ptr;
 }
