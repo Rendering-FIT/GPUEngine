@@ -8,7 +8,6 @@ namespace ge
 {
    namespace sg
    {
-      class AttribReference;
 
       /** ChunkAllocation represents single allocation block of memory
        *  inside ChunkAllocationManager.
@@ -22,7 +21,7 @@ namespace ge
          unsigned nextRec;          ///< \brief Index of ChunkAllocation whose allocated memory follows the current block's memory.
          OwnerType *owner;          ///< Object that owns the allocated block. Null indicates free block.
          inline ChunkAllocation();  ///< Default constructor does nothing.
-         inline ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,AttribReference *owner);  ///< Constructs structure by given values.
+         inline ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,OwnerType *owner);  ///< Constructs structure by given values.
       };
 
 
@@ -44,16 +43,26 @@ namespace ge
 
       template<typename ChunkOwnerType>
       class GESG_EXPORT ChunkAllocationManager : public std::vector<ChunkAllocation<ChunkOwnerType>> {
-      public:
-         unsigned _numBytesTotal;               ///< Total number of bytes. Sum of allocated and unallocated space.
+      protected:
+
+         unsigned _numBytesTotal;               ///< Total number of bytes, e.g. sum of allocated and unallocated space.
          unsigned _numBytesAvailable;           ///< Number of bytes available for allocation.
-         unsigned _numBytesAvailableAtTheEnd;   ///< Number of available bytes at the end of managed memory, e.g. size of the block of available bytes residing at the end.
-         unsigned _firstByteAvailableAtTheEnd;  ///< Offset of the first available byte at the end of managed memory that is followed by available bytes only.
-         unsigned _idOfBlockAtTheEnd;        ///< Id (index to std::vector\<ChunkAllocation\>) of the last allocated block at the end of managed memory.
+         unsigned _numBytesAvailableAtTheEnd;   ///< Number of available bytes at the end of the managed memory, e.g. size of the block of available bytes residing at the end.
+         unsigned _firstByteAvailableAtTheEnd;  ///< Offset of the first available byte at the end of the managed memory, e.g. the first available byte that is followed by available space only.
+         unsigned _idOfBlockAtTheEnd;           ///< Id (index to std::vector\<ChunkAllocation\>) of the last allocated block at the end of the managed memory.
+
+      public:
+
+         inline unsigned numBytesTotal() const;              ///< Returns total number of bytes, e.g. sum of allocated and unallocated space.
+         inline unsigned numBytesAvailable() const;          ///< Returns the number of bytes available for allocation.
+         inline unsigned numBytesAvailableAtTheEnd() const;  ///< Returns the number of available bytes at the end of the managed memory, e.g. size of the block of available bytes residing at the end.
+         inline unsigned firstByteAvailableAtTheEnd() const; ///< Returns the offset of the first available byte at the end of the managed memory, e.g. the first available byte that is followed by available space only.
+         inline unsigned idOfBlockAtTheEnd() const;          ///< Returns id (index to std::vector\<BlockAllocation\>) of the last allocated block at the end of the managed memory.
+
          inline ChunkAllocationManager(unsigned capacity);
          inline ChunkAllocationManager(unsigned capacity,unsigned nullObjectSize);
          inline bool canAllocate(unsigned numBytes) const;
-         unsigned alloc(unsigned numBytes,AttribReference &r);  // Allocates memory block. Returns id of the block or zero on failure.
+         unsigned alloc(unsigned numBytes,ChunkOwnerType &owner);  // Allocates memory block. Returns id of the block or zero on failure.
          inline void free(unsigned id);  // Frees allocated block. Id must be valid allocated block. Zero id is allowed and safely ignored.
          void clear();
       };
@@ -61,28 +70,48 @@ namespace ge
 
       template<typename BlockOwnerType>
       class GESG_EXPORT BlockAllocationManager : public std::vector<BlockAllocation<BlockOwnerType>> {
-      public:
-         unsigned _numItemsTotal;               ///< Total number of items (allocated plus unallocated).
+      protected:
+
+         unsigned _numItemsTotal;               ///< Total number of items (allocated and unallocated).
          unsigned _numItemsAvailable;           ///< Number of items available for allocation.
-         unsigned _numItemsAvailableAtTheEnd;   ///< Number of available items at the end of managed memory, e.g. number of items in the block at the end.
-         unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of managed memory that is followed by available items only.
-         unsigned _idOfBlockAtTheEnd;           ///< Id (index to std::vector\<BlockAllocation\>) of the last allocated block at the end of managed memory.
+         unsigned _numItemsAvailableAtTheEnd;   ///< Number of available items at the end of the managed memory, e.g. number of items in the block at the end.
+         unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
+         unsigned _idOfBlockAtTheEnd;           ///< Id (index to std::vector\<BlockAllocation\>) of the last allocated block at the end of the managed memory.
+
+      public:
+
+         inline unsigned numItemsTotal() const;              ///< Returns total number of items (allocated and unallocated).
+         inline unsigned numItemsAvailable() const;          ///< Returns the number of items that are available for allocation.
+         inline unsigned numItemsAvailableAtTheEnd() const;  ///< Returns the number of items that are available at the end of the managed memory, e.g. number of items in the block at the end.
+         inline unsigned firstItemAvailableAtTheEnd() const; ///< Returns the index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
+         inline unsigned idOfBlockAtTheEnd() const;          ///< Returns id (index to std::vector\<BlockAllocation\>) of the last allocated block at the end of the managed memory.
+
          inline BlockAllocationManager(unsigned capacity);
          inline BlockAllocationManager(unsigned capacity,unsigned nullObjectNumElements);
          inline bool canAllocate(unsigned numItems) const;
-         unsigned alloc(unsigned numItems,BlockOwnerType &r);  // Allocates number of items. Returns id or zero on failure.
+         unsigned alloc(unsigned numItems,BlockOwnerType &owner);  // Allocates number of items. Returns id or zero on failure.
          inline void free(unsigned id);  // Frees allocated items. Id must be valid. Zero id is allowed and safely ignored.
          void clear();
       };
 
 
       class GESG_EXPORT ItemAllocationManager : public std::vector<unsigned*> {
-      public:
+      protected:
+
          unsigned _numItemsTotal;               ///< Total number of items (allocated plus unallocated).
          unsigned _numItemsAvailable;           ///< Number of items available for allocation.
-         unsigned _numItemsAvailableAtTheEnd;   ///< Number of available items at the end of managed memory, e.g. number of items in the block at the end.
-         unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of managed memory that is followed by available items only.
-         unsigned _numNullObjects;
+         unsigned _numItemsAvailableAtTheEnd;   ///< Number of available items at the end of the managed memory, e.g. number of items in the block at the end.
+         unsigned _firstItemAvailableAtTheEnd;  ///< Index of the first available item at the end of the managed memory that is followed by available items only.
+         unsigned _numNullObjects;              ///< Number of null objects (null design pattern) allocated at the beginning of the managed memory.
+
+      public:
+
+         inline unsigned numItemsTotal() const;              ///< Returns total number of items (allocated and unallocated).
+         inline unsigned numItemsAvailable() const;          ///< Returns the number of items that are available for allocation.
+         inline unsigned numItemsAvailableAtTheEnd() const;  ///< Returns the number of items that are available at the end of the managed memory, e.g. number of items in the block at the end.
+         inline unsigned firstItemAvailableAtTheEnd() const; ///< Returns the index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
+         inline unsigned numNullObjects() const;             ///< Returns the number of null objects (null design pattern) allocated at the beginning of the managed memory.
+
          inline ItemAllocationManager(unsigned capacity);
          inline ItemAllocationManager(unsigned capacity,unsigned numNullObjects);
          inline bool canAllocate(unsigned numItems) const;
@@ -99,11 +128,26 @@ namespace ge
 
       // inline and template methods
       template<typename OwnerType> inline ChunkAllocation<OwnerType>::ChunkAllocation()  {}
-      template<typename OwnerType> inline ChunkAllocation<OwnerType>::ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,AttribReference *owner)
+      template<typename OwnerType> inline ChunkAllocation<OwnerType>::ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,OwnerType *owner)
       { this->offset=offset; this->size=size; this->nextRec=nextRec; this->owner=owner; }
       template<typename OwnerType> inline BlockAllocation<OwnerType>::BlockAllocation()  {}
       template<typename OwnerType> inline BlockAllocation<OwnerType>::BlockAllocation(unsigned startIndex,unsigned numElements,unsigned nextRec,OwnerType *owner)
       { this->startIndex=startIndex; this->numElements=numElements; this->nextRec=nextRec; this->owner=owner; }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::numBytesTotal() const  { return _numBytesTotal; }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::numBytesAvailable() const  { return _numBytesAvailable; }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::numBytesAvailableAtTheEnd() const  { return _numBytesAvailableAtTheEnd; }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::firstByteAvailableAtTheEnd() const  { return _firstByteAvailableAtTheEnd; }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::idOfBlockAtTheEnd() const  { return _idOfBlockAtTheEnd; }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::numItemsTotal() const  { return _numItemsTotal; }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::numItemsAvailable() const  { return _numItemsAvailable; }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::numItemsAvailableAtTheEnd() const  { return _numItemsAvailableAtTheEnd; }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::firstItemAvailableAtTheEnd() const  { return _firstItemAvailableAtTheEnd; }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::idOfBlockAtTheEnd() const  { return _idOfBlockAtTheEnd; }
+      inline unsigned ItemAllocationManager::numItemsTotal() const  { return _numItemsTotal; }
+      inline unsigned ItemAllocationManager::numItemsAvailable() const  { return _numItemsAvailable; }
+      inline unsigned ItemAllocationManager::numItemsAvailableAtTheEnd() const  { return _numItemsAvailableAtTheEnd; }
+      inline unsigned ItemAllocationManager::firstItemAvailableAtTheEnd() const  { return _firstItemAvailableAtTheEnd; }
+      inline unsigned ItemAllocationManager::numNullObjects() const  { return _numNullObjects; }
       template<typename OwnerType>
       inline ChunkAllocationManager<OwnerType>::ChunkAllocationManager(unsigned capacity)
          : _numBytesTotal(capacity), _numBytesAvailable(capacity), _numBytesAvailableAtTheEnd(capacity),
@@ -165,13 +209,13 @@ namespace ge
       inline unsigned* ItemAllocationManager::owner(unsigned id) const  { return operator[](id); }
 
       template<typename OwnerType>
-      unsigned ChunkAllocationManager<OwnerType>::alloc(unsigned numBytes,AttribReference &r)
+      unsigned ChunkAllocationManager<OwnerType>::alloc(unsigned numBytes,OwnerType &owner)
       {
          if(_numBytesAvailableAtTheEnd<numBytes)
             return 0;
 
          unsigned id=unsigned(std::vector<ChunkAllocation<OwnerType>>::size());
-         std::vector<ChunkAllocation<OwnerType>>::emplace_back(_firstByteAvailableAtTheEnd,numBytes,0,&r);
+         std::vector<ChunkAllocation<OwnerType>>::emplace_back(_firstByteAvailableAtTheEnd,numBytes,0,&owner);
          std::vector<ChunkAllocation<OwnerType>>::operator[](_idOfBlockAtTheEnd).nextRec=id;
          _numBytesAvailable-=numBytes;
          _numBytesAvailableAtTheEnd-=numBytes;
@@ -181,13 +225,13 @@ namespace ge
       }
 
       template<typename OwnerType>
-      unsigned BlockAllocationManager<OwnerType>::alloc(unsigned numItems,OwnerType &r)
+      unsigned BlockAllocationManager<OwnerType>::alloc(unsigned numItems,OwnerType &owner)
       {
          if(_numItemsAvailableAtTheEnd<numItems)
             return 0;
 
          unsigned id=unsigned(std::vector<BlockAllocation<OwnerType>>::size());
-         std::vector<BlockAllocation<OwnerType>>::emplace_back(_firstItemAvailableAtTheEnd,numItems,0,&r);
+         std::vector<BlockAllocation<OwnerType>>::emplace_back(_firstItemAvailableAtTheEnd,numItems,0,&owner);
          std::vector<BlockAllocation<OwnerType>>::operator[](_idOfBlockAtTheEnd).nextRec=id;
          _numItemsAvailable-=numItems;
          _numItemsAvailableAtTheEnd-=numItems;

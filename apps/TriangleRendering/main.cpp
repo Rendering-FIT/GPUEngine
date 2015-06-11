@@ -8,7 +8,7 @@
 #include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
-#include <geSG/AttribReference.h>
+#include <geSG/Mesh.h>
 #include <geSG/RenderingContext.h>
 #include <geSG/StateSet.h>
 #include <geUtil/WindowObject.h>
@@ -45,10 +45,10 @@ ge::util::WindowObject   *Window;
 static ProgramObject *glProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
 static shared_ptr<StateSet> stateSet;
-static AttribReference attribsRefNI;
-static AttribReference attribsRefI;
-static AttribReference attribsRefInstNI;
-static AttribReference attribsRefInstI;
+static Mesh attribsRefNI;
+static Mesh attribsRefI;
+static Mesh attribsRefInstNI;
+static Mesh attribsRefInstI;
 
 
 int main(int Argc,char*Argv[])
@@ -110,24 +110,24 @@ void Wheel(int /*d*/){
 void Idle(){
    processInstanceProgram->use();
    processInstanceProgram->set("numToProcess",2);
-   RenderingContext::current()->getDrawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   RenderingContext::current()->getInstanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->getIndirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->drawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->instanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   RenderingContext::current()->indirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
    glDispatchCompute(1,1,1);
 
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
-   attribsRefNI.attribStorage->bind();
-   unsigned baseIndex=attribsRefNI.attribStorage->getVertexAllocationBlock(attribsRefNI.verticesDataId).startIndex;
+   attribsRefNI.attribStorage()->bind();
+   unsigned baseIndex=attribsRefNI.attribStorage()->vertexAllocationBlock(attribsRefNI.verticesDataId()).startIndex;
    glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
    glDrawArrays(GL_TRIANGLES,baseIndex+3,3);
-   attribsRefI.attribStorage->bind();
-   baseIndex=attribsRefI.attribStorage->getIndexAllocationBlock(attribsRefI.indicesDataId).startIndex;
+   attribsRefI.attribStorage()->bind();
+   baseIndex=attribsRefI.attribStorage()->indexAllocationBlock(attribsRefI.indicesDataId()).startIndex;
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
 
-   RenderingContext::current()->getIndirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
-   attribsRefNI.attribStorage->bind();
+   RenderingContext::current()->indirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   attribsRefNI.attribStorage()->bind();
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
    glMultiDrawArraysIndirect(GL_TRIANGLES,nullptr,2,0);
 

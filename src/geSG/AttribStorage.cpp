@@ -1,7 +1,7 @@
 #include <iostream> // for cerr
 #include <memory>
 #include <geSG/AttribStorage.h>
-#include <geSG/AttribReference.h>
+#include <geSG/Mesh.h>
 #include <geSG/SeparateBuffersAttribStorage.h> // for DefaultFactory
 
 using namespace ge::sg;
@@ -17,7 +17,7 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    : _vertexAllocationManager(numVertices)
    , _indexAllocationManager(numIndices)
    , _attribConfig(config)
-   , _renderingContext(config->getRenderingContext())
+   , _renderingContext(config->renderingContext())
 {
 }
 
@@ -36,14 +36,16 @@ AttribStorage::~AttribStorage()
  *
  *  The method does not require active graphics context.
  *
- *  @param r receives the allocation information and any further references
- *           to the allocated memory are performed using AttribReference
- *           returned in this parameter.
+ *  @param mesh object that receives the allocation information.
+ *           Any further references to the allocated memory are
+ *           performed using the mesh passed in this parameter.
+ *           The mesh must not have any allocated vertices or
+ *           indices in the time of call of this method.
  *  @param numVertices number of vertices to be allocated
  *  @param numIndices number of indices to be allocated inside associated
  *                    Element Buffer Object
  */
-bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices)
+bool AttribStorage::allocData(Mesh &mesh,int numVertices,int numIndices)
 {
    // do we have enough space?
    if(!_vertexAllocationManager.canAllocate(numVertices) ||
@@ -51,26 +53,26 @@ bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices)
       return false;
 
    // allocate memory for vertices (inside AttribStorage's preallocated memory or buffers)
-   unsigned verticesDataId=_vertexAllocationManager.alloc(numVertices,r);
+   unsigned verticesDataId=_vertexAllocationManager.alloc(numVertices,mesh);
 
    // allocate memory for indices (inside AttribStorage's preallocated memory or buffers)
    unsigned indicesDataId;
    if(numIndices==0)
       indicesDataId=0;
    else
-      indicesDataId=_indexAllocationManager.alloc(numIndices,r);
+      indicesDataId=_indexAllocationManager.alloc(numIndices,mesh);
 
-   // update AttribReference
-   if(r.attribStorage!=NULL)
+   // update Mesh
+   if(mesh.attribStorage()!=NULL)
    {
-      cerr<<"Warning: calling AttribStorage::allocData() on AttribReference\n"
+      cerr<<"Warning: calling AttribStorage::allocData() on Mesh\n"
             "   that is not empty." << endl;
-      r.freeData();
+      mesh.freeData();
    }
-   r.attribStorage=this;
-   r.verticesDataId=verticesDataId;
-   r.indicesDataId=indicesDataId;
-   r.drawCommandBlockId=0;
+   mesh.setAttribStorage(this);
+   mesh.setVerticesDataId(verticesDataId);
+   mesh.setIndicesDataId(indicesDataId);
+   mesh.setDrawCommandBlockId(0);
 
    return true;
 }
@@ -78,7 +80,7 @@ bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices)
 
 /** Changes the number of allocated vertices and indices.
  *
- *  Parameter r contains the reference to AttribReference holding allocation information.
+ *  Parameter mesh contains the reference to Mesh holding allocation information.
  *  numVertices and numIndices are the new number of elements in vertex and index arrays.
  *  If preserveContent parameter is true, the content of element and index data will be preserved.
  *  If new data are larger, the content over the size of previous data is undefined.
@@ -86,7 +88,7 @@ bool AttribStorage::allocData(AttribReference &r,int numVertices,int numIndices)
  *  If preserveContent is false, content of element and index data are undefined
  *  after reallocation.
  */
-bool AttribStorage::reallocData(AttribReference &r,int numVertices,int numIndices,
+bool AttribStorage::reallocData(Mesh &mesh,int numVertices,int numIndices,
                                 bool preserveContent)
 {
    // Used strategy:
@@ -102,51 +104,51 @@ bool AttribStorage::reallocData(AttribReference &r,int numVertices,int numIndice
 }
 
 
-/** Releases the memory pointed by AttribReference r.
+/** Releases the memory pointed by mesh.
  *
  *  Memory pointed by r inside internally pre-allocated Vertex Array Object (VAO)
  *  is marked free.
  *
  *  The method does not require active graphics context.
  */
-void AttribStorage::freeData(AttribReference &r)
+void AttribStorage::freeData(Mesh &mesh)
 {
-   // check whether this attribStorage owns given AttribReference
-   if(r.attribStorage!=this)
+   // check whether this attribStorage owns the given Mesh
+   if(mesh.attribStorage()!=this)
    {
-      cerr<<"Error: calling AttribStorage::freeData() on AttribReference\n"
+      cerr<<"Error: calling AttribStorage::freeData() on Mesh\n"
             "   that is not managed by this AttribStorage."<<endl;
       return;
    }
 
    // make sure that there are no draw commands
    // (draw commands has to be freed first, otherwise we can not mark
-   // AttribReference as empty by setting attribStorage member to NULL)
-   if(r.drawCommandBlockId!=0)
+   // Mesh as empty by setting attribStorage member to NULL)
+   if(mesh.drawCommandBlockId()!=0)
    {
-      cerr<<"Error: calling AttribStorage::freeData() on AttribReference\n"
+      cerr<<"Error: calling AttribStorage::freeData() on Mesh\n"
             "   that has still draw commands allocated."<<endl;
       return;
    }
 
    // release vertices and indices allocations
-   _vertexAllocationManager.free(r.verticesDataId);
-   _indexAllocationManager.free(r.indicesDataId);
+   _vertexAllocationManager.free(mesh.verticesDataId());
+   _indexAllocationManager.free(mesh.indicesDataId());
 
-   // update AttribReference
-   r.attribStorage=NULL;
+   // update Mesh
+   mesh.setAttribStorage(nullptr);
 }
 
 
 void AttribStorage::cancelAllAllocations()
 {
-   // break references from AttribReferences
+   // break Mesh references to this AttribStorage
    for(auto it=_vertexAllocationManager.begin(); it!=_vertexAllocationManager.end(); it++)
       if(it->owner)
-         it->owner->attribStorage=nullptr;
+         it->owner->setAttribStorage(nullptr);
    for(auto it=_indexAllocationManager.begin(); it!=_indexAllocationManager.end(); it++)
       if(it->owner)
-         it->owner->attribStorage=nullptr;
+         it->owner->setAttribStorage(nullptr);
 
    // empty allocation maps
    _vertexAllocationManager.clear();
@@ -201,15 +203,5 @@ shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &
  *  For more details, which methods can be called without active graphics context
  *  refer to the documentation to each of the object's methods.
  *
- *  \sa RenderingContext, AttribReference, Mesh::getAttribConfig()
- */
-
-// AttribStorage::AllocationBlock::nextRec documentation
-// note: brief description is with the variable declaration
-/** \var unsigned AttribStorage::AllocationBlock::nextRec
- *
- *  Order of AllocationBlocks stored in std::vector<AllocationBlock>
- *  often does not correspond with the order of their memory placements.
- *  nextRec is index to the std::vector<AllocationBlock> and points
- *  to the AllocationBlock whose allocated memory follows the current one.
+ *  \sa RenderingContext, Mesh, Mesh::getAttribConfig()
  */

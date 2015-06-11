@@ -16,9 +16,9 @@ set(SG_INCLUDES
     ${HEADER_PATH}/FlexibleArrayList.h
     ${HEADER_PATH}/AttribType.h
     ${HEADER_PATH}/AttribConfig.h
-    ${HEADER_PATH}/AttribReference.h
     ${HEADER_PATH}/AttribStorage.h
     ${HEADER_PATH}/SeparateBuffersAttribStorage.h
+    ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/InstanceGroup.h
     ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/StateSet.h
@@ -30,9 +30,9 @@ set(SG_SOURCES
     AllocationManagers.cpp
     AttribType.cpp
     AttribConfig.cpp
-    AttribReference.cpp
     AttribStorage.cpp
     SeparateBuffersAttribStorage.cpp
+    Mesh.cpp
     InstanceGroup.cpp
     RenderingContext.cpp
     StateSet.cpp

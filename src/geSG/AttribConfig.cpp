@@ -48,15 +48,15 @@ void AttribConfig::deleteAllAttribStorages()
 }
 
 
-bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,int numDrawCommands)
+bool AttribConfig::allocData(Mesh &mesh,int numVertices,int numIndices,int numDrawCommands)
 {
    // iterate AttribStorage list
    // and look if there is one with enough empty space
    AttribStorageList::iterator storageIt=_attribStorages.end();
    for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
    {
-      if((*it)->getNumVerticesAvailableAtTheEnd()>=unsigned(numVertices) &&
-         (*it)->getNumIndicesAvailableAtTheEnd()>=unsigned(numIndices))
+      if((*it)->vertexAllocationManager().numItemsAvailableAtTheEnd()>=unsigned(numVertices) &&
+         (*it)->indexAllocationManager().numItemsAvailableAtTheEnd()>=unsigned(numIndices))
       {
          storageIt=it;
          break;
@@ -68,22 +68,22 @@ bool AttribConfig::allocData(AttribReference &r,int numVertices,int numIndices,i
    {
       // create a new AttribStorage
       _attribStorages.push_front(
-            AttribStorage::getFactory()->create(this->createReference(),_defaultStorageNumVertices,
-                                                this->_configData.ebo?_defaultStorageNumIndices:0));
+            AttribStorage::factory()->create(this->createReference(),_defaultStorageNumVertices,
+                                             this->_configData.ebo?_defaultStorageNumIndices:0));
       storageIt=_attribStorages.begin();
    }
 
    // perform allocation in the choosen AttribStorage
-   (*storageIt)->allocData(r,numVertices,numIndices);
+   (*storageIt)->allocData(mesh,numVertices,numIndices);
 
    // perform allocation of draw commands
-   _renderingContext->allocDrawCommands(r,numDrawCommands);
+   _renderingContext->allocDrawCommands(mesh,numDrawCommands);
 
    return true;
 }
 
 
-bool AttribConfig::reallocData(AttribReference &r,int numVertices,int numIndices,
+bool AttribConfig::reallocData(Mesh &mesh,int numVertices,int numIndices,
                                int numDrawCommands,bool preserveContent)
 {
    // Used strategy:
