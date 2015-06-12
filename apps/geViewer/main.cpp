@@ -439,9 +439,22 @@ public:
             size_t attribBufSize=t.elementSize()*numVertices;
             size_t osgBufSize=osgArrays[i]->getTotalDataSize();
             void *p=malloc(attribBufSize);
-            memcpy(p,osgArrays[i]->getDataPointer(),osgBufSize);
-            if(attribBufSize!=osgBufSize)
-               memset(((uint8_t*)p)+osgBufSize,0,attribBufSize-osgBufSize);
+            if(osgArrays[i]->getBinding()==osg::Array::BIND_OVERALL)
+            {
+               const void *src=osgArrays[i]->getDataPointer();
+               uint8_t *dst=static_cast<uint8_t*>(p);
+               size_t size=osgArrays[i]->getElementSize();
+               for(unsigned i=0; i<numVertices; i++) {
+                  memcpy(dst,src,size);
+                  dst+=size;
+               }
+            }
+            else
+            {
+               memcpy(p,osgArrays[i]->getDataPointer(),osgBufSize);
+               if(attribBufSize!=osgBufSize)
+                  memset(((uint8_t*)p)+osgBufSize,0,attribBufSize-osgBufSize);
+            }
             geArrays.push_back(p);
          }
          m.uploadVertices(geArrays.data(),geArrays.size());
@@ -643,7 +656,12 @@ void Init()
       "#version 430\n"
       "#extension GL_ARB_shader_draw_parameters : enable\n"
       "\n"
-      "layout(location=0) in vec3 coords;\n"
+      "layout(location=0) in vec3 position;\n"
+      "layout(location=1) in vec3 normal;\n"
+      "layout(location=2) in vec4 color;\n"
+      "layout(location=3) in vec2 texCoord;\n"
+      "\n"
+      "layout(location=0) out vec4 colorOut;\n"
       "\n"
       "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
       "   mat4 instancingMatrixBuffer[];\n"
@@ -653,15 +671,20 @@ void Init()
       "\n"
       "void main()\n"
       "{\n"
+      "   colorOut=color;\n"
       "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-      "   gl_Position = mvp*instancingMatrixBuffer[matrixOffset64]*vec4(coords,1.f);\n"
+      "   gl_Position = mvp*instancingMatrixBuffer[matrixOffset64]*vec4(position,1.f);\n"
       "}\n",
       GL_FRAGMENT_SHADER,
       "#version 330\n"
+      "\n"
+      "in vec4 color;\n"
+      "\n"
       "layout(location=0) out vec4 fragColor;\n"
+      "\n"
       "void main()\n"
       "{\n"
-      "   fragColor=vec4(1.f,1.f,0.,1.);\n"
+      "   fragColor=color;\n"
       "}\n");
    glm::mat4 modelView(1.f); // identity
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
