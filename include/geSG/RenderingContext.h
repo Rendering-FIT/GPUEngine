@@ -246,10 +246,8 @@ namespace ge
          struct AutoInitRenderingContext {
             bool initialized; // initialized to false if struct is declared static
             bool usingNiftyCounter;
-            union {
-               std::shared_ptr<RenderingContext> ptr;
-               int dummy;
-            };
+            uint8_t ptr[sizeof(std::shared_ptr<RenderingContext>)];
+            inline std::shared_ptr<RenderingContext>& get()  { return reinterpret_cast<std::shared_ptr<RenderingContext>&>(ptr); }
             AutoInitRenderingContext();
             ~AutoInitRenderingContext();
          };
@@ -362,7 +360,7 @@ namespace ge
       inline int RenderingContext::initialInstancingMatricesBufferSize()  { return _initialInstancingMatricesBufferSize; }
       inline void RenderingContext::setInitialInstancingMatricesBufferSize(int value)  { _initialInstancingMatricesBufferSize=value; }
       inline std::shared_ptr<RenderingContext>& RenderingContext::current()
-      { return _currentContext.ptr; }
+      { return _currentContext.get(); }
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
       { (uint8_t&)a|=(uint8_t)b; return a; }
