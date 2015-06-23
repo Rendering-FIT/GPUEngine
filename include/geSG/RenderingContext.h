@@ -145,10 +145,10 @@ namespace ge
          unsigned allocStateSetBufferItem();
          void freeStateSetBufferItem(unsigned id);
 
-         inline ChunkAllocation<Mesh>& drawCommandsAllocation(unsigned id);
-         inline const ChunkAllocation<Mesh>& drawCommandsAllocation(unsigned id) const;
-         inline ChunkAllocationManager<Mesh>& drawCommandsAllocationManager();
-         inline const ChunkAllocationManager<Mesh>& drawCommandsAllocationManager() const;
+         inline ChunkAllocation<Mesh>& drawCommandAllocation(unsigned id);
+         inline const ChunkAllocation<Mesh>& drawCommandAllocation(unsigned id) const;
+         inline ChunkAllocationManager<Mesh>& drawCommandAllocationManager();
+         inline const ChunkAllocationManager<Mesh>& drawCommandAllocationManager() const;
 
          inline InstanceData* instanceAllocation(unsigned id) const;
          inline ItemAllocationManager& instanceAllocationManager();
@@ -319,10 +319,10 @@ namespace ge
       inline unsigned* RenderingContext::stateSetBufferAllocation(unsigned id) const  { return _stateSetBufferAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::stateSetBufferAllocationManager()  { return _stateSetBufferAllocationManager; }
       inline const ItemAllocationManager& RenderingContext::stateSetBufferAllocationManager() const  { return _stateSetBufferAllocationManager; }
-      inline ChunkAllocation<Mesh>& RenderingContext::drawCommandsAllocation(unsigned id)  { return _drawCommandAllocationManager[id]; }
-      inline const ChunkAllocation<Mesh>& RenderingContext::drawCommandsAllocation(unsigned id) const  { return _drawCommandAllocationManager[id]; }
-      inline ChunkAllocationManager<Mesh>& RenderingContext::drawCommandsAllocationManager()  { return _drawCommandAllocationManager; }
-      inline const ChunkAllocationManager<Mesh>& RenderingContext::drawCommandsAllocationManager() const  { return _drawCommandAllocationManager; }
+      inline ChunkAllocation<Mesh>& RenderingContext::drawCommandAllocation(unsigned id)  { return _drawCommandAllocationManager[id]; }
+      inline const ChunkAllocation<Mesh>& RenderingContext::drawCommandAllocation(unsigned id) const  { return _drawCommandAllocationManager[id]; }
+      inline ChunkAllocationManager<Mesh>& RenderingContext::drawCommandAllocationManager()  { return _drawCommandAllocationManager; }
+      inline const ChunkAllocationManager<Mesh>& RenderingContext::drawCommandAllocationManager() const  { return _drawCommandAllocationManager; }
       inline InstanceData* RenderingContext::instanceAllocation(unsigned id) const  { return _instanceAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::instanceAllocationManager()  { return _instanceAllocationManager; }
       inline const ItemAllocationManager& RenderingContext::instanceAllocationManager() const  { return _instanceAllocationManager; }

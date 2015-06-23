@@ -41,10 +41,11 @@ namespace ge
                                   bool preserveContent=true);
          virtual void freeData(Mesh &mesh);
 
-         virtual void uploadVertices(Mesh &mesh,const void*const *attribs,
-                                     int fromIndex=0,int numVertices=-1) = 0;
+         virtual void uploadVertices(Mesh &mesh,const void*const *attribList,
+                                     unsigned attribListSize,
+                                     int numVertices,int fromIndex=0) = 0;
          virtual void uploadIndices(Mesh &mesh,const void *indices,
-                                    int fromIndex=0,int numIndices=-1) = 0;
+                                    int numIndices,int fromIndex=0) = 0;
 
          inline const BlockAllocation<Mesh>& vertexAllocationBlock(unsigned id) const; ///< Returns vertex data allocation block at index id.
          inline const BlockAllocation<Mesh>& indexAllocationBlock(unsigned id) const;  ///< Returns index data allocation block at index id.

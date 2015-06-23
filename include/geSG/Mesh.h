@@ -90,7 +90,8 @@ namespace ge
          inline int numIndices() const;
          inline int drawCommandBlockSize() const;
 
-         inline void uploadVertices(const void*const *attribs,int numVertices,int fromIndex=0);
+         inline void uploadVertices(const void*const *attribList,unsigned attribListSize,
+                                    int numVertices,int fromIndex=0);
          inline void uploadIndices(const void *indices,int numIndices,int fromIndex=0);
 
          inline void uploadPreprocessedDrawCommands(const void *drawCommandBuffer,
@@ -196,11 +197,11 @@ namespace ge
       }
       inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexAllocationBlock(_verticesDataId).numElements : 0; }
       inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexAllocationBlock(_indicesDataId).numElements : 0; }
-      inline int Mesh::drawCommandBlockSize() const  { return RenderingContext::current()->drawCommandsAllocation(_drawCommandBlockId).size; }
-      inline void Mesh::uploadVertices(const void*const *attribs,int numVertices,int fromIndex)
+      inline int Mesh::drawCommandBlockSize() const  { return RenderingContext::current()->drawCommandAllocation(_drawCommandBlockId).size; }
+      inline void Mesh::uploadVertices(const void*const *attribList,unsigned attribListSize,int numVertices,int fromIndex)
       {
          if(_attribStorage)
-            _attribStorage->uploadVertices(*this,attribs,numVertices,fromIndex);
+            _attribStorage->uploadVertices(*this,attribList,attribListSize,numVertices,fromIndex);
       }
       inline void Mesh::uploadIndices(const void *indices,int numIndices,int fromIndex)
       {

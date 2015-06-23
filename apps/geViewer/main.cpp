@@ -45,15 +45,12 @@ bool DisableAnttweakbar=true;
 ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
-static ProgramObject *glProgram = NULL;
+static ProgramObject *ambientProgram = NULL;
+static ProgramObject *simplifiedPhongProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
 static shared_ptr<StateSet> stateSet;
 static list<Mesh> meshList;
 static vector<Mesh> notUsedVector;
-static Mesh attribsRefNI;
-static Mesh attribsRefI;
-static Mesh attribsRefInstNI;
-static Mesh attribsRefInstI;
 static string fileName;
 
 
@@ -105,7 +102,8 @@ int main(int Argc,char*Argv[])
 
   Init();
   Window->mainLoop();
-  delete glProgram;
+  delete ambientProgram;
+  delete simplifiedPhongProgram;
   delete processInstanceProgram;
   delete Window;
   delete Args;
@@ -164,43 +162,32 @@ void Idle()
 
    // draw few triangles by very low-level approach
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-   glProgram->use();
-   RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   attribsRefNI.attribStorage()->bind();
-   unsigned baseIndex=attribsRefNI.attribStorage()->vertexAllocationBlock(attribsRefNI.verticesDataId()).startIndex;
-   glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
-   glDrawArrays(GL_TRIANGLES,baseIndex+3,3);
-   attribsRefI.attribStorage()->bind();
-   baseIndex=attribsRefI.attribStorage()->indexAllocationBlock(attribsRefI.indicesDataId()).startIndex;
-   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
-   glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
 
    // wait for compute shader
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
    RenderingContext::current()->indirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
-
-   // render two triangles indirectly
-   /*attribsRefInstNI.attribStorage->bind();
-   glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(attribsRefInstNI.instances.front()->items[0].index()*16),2,0);
-
-   // render loaded model
-   if(!meshList.empty())
-   {
-      for(auto it=meshList.begin(); it!=meshList.end(); it++)
-      {
-         it->attribStorage->bind();
-         glMultiDrawArraysIndirect(GL_TRIANGLES,(GLvoid*)intptr_t(it->instances.front()->items[0].index()*16),
-                                   it->instances.front()->count,0);
-      }
-   }*/
-   //printIntBufferContent(RenderingContext::current()->getInstanceBuffer(),
-   //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*3);
-   //printIntBufferContent(RenderingContext::current()->getDrawCommandBuffer(),
-   //                      (RenderingContext::current()->getFirstDrawCommandAvailableAtTheEnd()+3)/sizeof(unsigned));
-   //printIntBufferContent(RenderingContext::current()->getIndirectCommandBuffer(),
-   //                      RenderingContext::current()->getFirstInstanceAvailableAtTheEnd()*5);
    RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+
+#if 0
+   printIntBufferContent(RenderingContext::current()->instanceBuffer(),
+                         RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->drawCommandBuffer(),
+                         (RenderingContext::current()->drawCommandAllocationManager().firstByteAvailableAtTheEnd()+3)/sizeof(unsigned));
+   printIntBufferContent(RenderingContext::current()->indirectCommandBuffer(),
+                         RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd()*5);
+#endif
+
+   // render ambient scene
+   glDisable(GL_CULL_FACE);
+   ambientProgram->use();
    stateSet->render();
+
+   // render light pass
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_ONE,GL_ONE);
+   simplifiedPhongProgram->use();
+   stateSet->render();
+   glDisable(GL_BLEND);
 
    Window->swap();
 }
@@ -281,6 +268,7 @@ public:
       t->allocTransformationGpuData();
       t->uploadMatrix(osg::Matrixf(m).ptr());
       traverse(transform);
+      transformationStack.pop_back();
    }
 
    virtual void apply(osg::Geode& node)
@@ -457,7 +445,7 @@ public:
             }
             geArrays.push_back(p);
          }
-         m.uploadVertices(geArrays.data(),geArrays.size());
+         m.uploadVertices(geArrays.data(),geArrays.size(),numVertices);
          for(int i=0,c=configData.attribTypes.size(); i<c; i++)
             free(geArrays[i]);
 
@@ -528,6 +516,19 @@ void Init()
          root->accept(graphBuilder);
          root->unref();
 
+#if 1
+         shared_ptr<Transformation> t1=make_shared<Transformation>();
+         t1->appendChild(graphBuilder.transformationStack.front(),t1);
+         RenderingContext::current()->appendTransformationGraph(t1);
+         const float m1[16] = {
+            1.f, 0.f, 0.f, 0.f,
+            0.f, 1.f, 0.f, 0.f,
+            0.f, 0.f, 1.f, 0.f,
+            0.f, 0.f,-10.f, 1.f,
+         };
+         t1->allocTransformationGpuData();
+         t1->uploadMatrix(m1);
+#else
          shared_ptr<Transformation> t1=make_shared<Transformation>();
          t1->appendChild(graphBuilder.transformationStack.front(),t1);
          RenderingContext::current()->appendTransformationGraph(t1);
@@ -563,85 +564,13 @@ void Init()
          t3->uploadMatrix(m3);
          t3->appendChild(t1,t3);
          RenderingContext::current()->appendTransformationGraph(t3);
+#endif
       }
 
       // release OSG memory
       osgDB::Registry::instance()->closeAllLibraries();
       osgDB::Registry::instance(true);
    }
-
-
-   AttribConfig::ConfigData config;
-   config.attribTypes.push_back(AttribType::Vec3);
-
-   // top-left geometry
-   config.ebo=false;
-   config.updateId();
-
-   constexpr float z=-10.f;
-   constexpr float niShiftX=-1.5f;
-   constexpr float shiftY=3.0f;
-   const vector<glm::vec3> twoTrianglesNI = {
-      glm::vec3(niShiftX+0,shiftY+0,z),
-      glm::vec3(niShiftX+0,shiftY+1,z),
-      glm::vec3(niShiftX+1,shiftY+0,z),
-      glm::vec3(niShiftX+0,shiftY+0,z),
-      glm::vec3(niShiftX+0,shiftY-1,z),
-      glm::vec3(niShiftX-1,shiftY+0,z),
-   };
-   vector<const void*> a;
-   a.reserve(1);
-   a.emplace_back(twoTrianglesNI.data());
-
-   attribsRefNI.allocData(config,6,0,0);
-   attribsRefNI.uploadVertices(a.data(),twoTrianglesNI.size());
-
-   // top-right geometry
-   config.ebo=true;
-   config.updateId();
-
-   constexpr float iShiftX=1.5f;
-   const vector<glm::vec3> twoTrianglesI = {
-      glm::vec3(iShiftX+0,shiftY+0,z),
-      glm::vec3(iShiftX+0,shiftY+1,z),
-      glm::vec3(iShiftX+1,shiftY+0,z),
-      glm::vec3(iShiftX+0,shiftY+0.1f,z),
-      glm::vec3(iShiftX+0,shiftY-1,z),
-      glm::vec3(iShiftX-1,shiftY+0,z),
-   };
-   a[0]=twoTrianglesI.data();
-
-   attribsRefI.allocData(config,6,6,0);
-   attribsRefI.uploadVertices(a.data(),twoTrianglesI.size());
-   const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
-   attribsRefI.uploadIndices(indices.data(),indices.size());
-
-   // bottom-left geometry
-   constexpr float instanceShiftY=shiftY-3.0f;
-   const vector<glm::vec3> twoTriangleInstancesNI = {
-      glm::vec3(niShiftX+0,instanceShiftY+0,z),
-      glm::vec3(niShiftX+0,instanceShiftY+1,z),
-      glm::vec3(niShiftX+1,instanceShiftY+0,z),
-      glm::vec3(niShiftX+0,instanceShiftY+0,z),
-      glm::vec3(niShiftX+0,instanceShiftY-1,z),
-      glm::vec3(niShiftX-1,instanceShiftY+0,z),
-   };
-   vector<unsigned> drawCommands = {
-      3,0,0,
-      3,3,3,
-   };
-   const vector<unsigned> modesAndOffsets4 = {
-      GL_TRIANGLES,0,
-      GL_TRIANGLES,3,
-   };
-   a[0]=twoTriangleInstancesNI.data();
-   config.ebo=false;
-   config.updateId();
-   attribsRefInstNI.allocData(config,6,0,drawCommands.size()*sizeof(unsigned));
-   attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
-   attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
-                                       modesAndOffsets4.data(),modesAndOffsets4.size()/2);
-   attribsRefInstNI.createInstances(RenderingContext::current()->identityInstancingMatrix().get(),stateSet.get());
 
 
    // unmap instance buffer
@@ -651,29 +580,32 @@ void Init()
 
 
    ge::gl::initShadersAndPrograms();
-   glProgram = new ProgramObject(
+   ambientProgram = new ProgramObject(
       GL_VERTEX_SHADER,
       "#version 430\n"
       "#extension GL_ARB_shader_draw_parameters : enable\n"
-      "\n"
-      "layout(location=0) in vec3 position;\n"
-      "layout(location=1) in vec3 normal;\n"
-      "layout(location=2) in vec4 color;\n"
-      "layout(location=3) in vec2 texCoord;\n"
-      "\n"
-      "layout(location=0) out vec4 colorOut;\n"
       "\n"
       "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
       "   mat4 instancingMatrixBuffer[];\n"
       "};\n"
       "\n"
-      "uniform mat4 mvp;\n"
+      "layout(location=0) in vec4 position;\n"
+      "layout(location=2) in vec4 diffuse;\n"
+      //"layout(location=3) in vec2 texCoord;\n"
+      "\n"
+      "layout(location=0) out vec4 colorOut;\n"
+      "\n"
+      "uniform vec4 globalAmbientLight; // alpha should be 1\n"
+      "uniform mat4 projection;\n"
       "\n"
       "void main()\n"
       "{\n"
-      "   colorOut=color;\n"
+      "   // ambient lighting\n"
+      "   colorOut=globalAmbientLight*diffuse;\n"
+      "\n"
+      "   // vertex position\n"
       "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-      "   gl_Position = mvp*instancingMatrixBuffer[matrixOffset64]*vec4(position,1.f);\n"
+      "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
       "}\n",
       GL_FRAGMENT_SHADER,
       "#version 330\n"
@@ -686,11 +618,105 @@ void Init()
       "{\n"
       "   fragColor=color;\n"
       "}\n");
-   glm::mat4 modelView(1.f); // identity
+   simplifiedPhongProgram = new ProgramObject(
+      GL_VERTEX_SHADER,
+      "#version 430\n"
+      "#extension GL_ARB_shader_draw_parameters : enable\n"
+      "\n"
+      "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+      "   mat4 instancingMatrixBuffer[];\n"
+      "};\n"
+      "\n"
+      "layout(location=0) in vec4 position;\n"
+      "layout(location=1) in vec3 normal;\n"
+      "layout(location=2) in vec4 diffuse;\n"
+      "layout(location=3) in vec2 texCoord;\n"
+      "\n"
+      "layout(location=0) out vec3 eyePosition;\n"
+      "layout(location=1) out vec3 eyeNormal;\n"
+      "layout(location=2) out vec4 diffuseOut;\n"
+      "\n"
+      "uniform mat4 projection;\n"
+      "\n"
+      "void main()\n"
+      "{\n"
+      "   diffuseOut=diffuse;\n"
+      "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+      "   vec4 v=instancingMatrixBuffer[matrixOffset64]*position;\n"
+      "   eyePosition=v.xyz;\n"
+      "   eyeNormal=transpose(inverse(mat3(instancingMatrixBuffer[matrixOffset64])))*normal;\n"
+      "   gl_Position=projection*v;\n"
+      "}\n",
+      GL_FRAGMENT_SHADER,
+      "#version 330\n"
+      "\n"
+      "in vec3 eyePosition;\n"
+      "in vec3 eyeNormal;\n"
+      "in vec4 diffuse;\n"
+      "\n"
+      "layout(location=0) out vec4 fragColor;\n"
+      "\n"
+      "uniform vec4 specularAndShininess; // shininess in alpha\n"
+      "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+      "uniform vec3 lightColor;\n"
+      "uniform vec3 lightAttenuation;\n"
+      "\n"
+      "void main()\n"
+      "{\n"
+      "   // compute VL - vertex to light vector, in eye coordinates\n"
+      "   vec3 VL=lightPosition.xyz;\n"
+      "   if(lightPosition.w!=0.)\n"
+      "      VL-=eyePosition;\n"
+      "   float VLlen=length(VL);\n"
+      "   vec3 VLdir=VL/VLlen;\n"
+      "\n"
+      "   // invert normals on back facing triangles\n"
+      "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+      "\n"
+      "   // Lambert's diffuse reflection\n"
+      "   float NdotL=dot(N,VLdir);\n"
+      "\n"
+      "   // fragments facing the light get all the lighting\n"
+      "   // while those not facing the light get only ambient lighting\n"
+      "   if(NdotL>0.) {\n"
+      "\n"
+      "      // specular effect\n"
+      "      float specularEffect;\n"
+      "      vec3 R=reflect(-VLdir,N);\n"
+      "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+      "      float RdotV=dot(R,-Vdir);\n"
+      "      if(RdotV>0.)\n"
+      "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+      "      else\n"
+      "         specularEffect = 0.;\n"
+      "\n"
+      "      // attenuation\n"
+      "      float attenuation=lightAttenuation[0]+\n"
+      "                        lightAttenuation[1]*VLlen+\n"
+      "                        lightAttenuation[2]*VLlen*VLlen;\n"
+      "\n"
+      "      // final sum for light-facing fragments\n"
+      "      fragColor=vec4((diffuse.rgb*lightColor*NdotL+\n"
+      "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+      "                      attenuation,\n"
+      "                     diffuse.a);\n"
+      "   }\n"
+      "   else\n"
+      "   {\n"
+      "      // final sum for light-not-facing fragments\n"
+      "      fragColor=vec4(0,0,0,diffuse.a);\n"
+      "   }\n"
+      "}\n");
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
-   glm::mat4 mvp=modelView*projection;
-   glProgram->use();
-   glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
+   ambientProgram->use();
+   ambientProgram->set("globalAmbientLight",0.2f,0.2f,0.2f,1.f);
+   ambientProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   simplifiedPhongProgram->use();
+   simplifiedPhongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   simplifiedPhongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
+   simplifiedPhongProgram->set("lightPosition",0.f,0.f,0.f,1.f); // in eye coordinates, w must be 0 or 1
+   simplifiedPhongProgram->set("lightColor",1.f,1.f,1.f);
+   simplifiedPhongProgram->set("lightAttenuation",1.f,0.f,0.f);
    processInstanceProgram=new ProgramObject(
       GL_COMPUTE_SHADER,
       "#version 430\n"

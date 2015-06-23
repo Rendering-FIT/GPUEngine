@@ -69,17 +69,21 @@ bool SeparateBuffersAttribStorage::reallocData(Mesh &mesh,int numVertices,
 }
 
 
-void SeparateBuffersAttribStorage::uploadVertices(Mesh &mesh,const void*const *attribs,
+void SeparateBuffersAttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
+                                                  unsigned attribListSize,
                                                   int numVertices,int fromIndex)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->configData();
-   for(int i=0,c=int(_arrayBuffers.size()); i<c; i++)
+   unsigned c=_arrayBuffers.size();
+   assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
+                               "AttribStorage must match.");
+   for(unsigned i=0; i<c; i++)
    {
       AttribType t=configData.attribTypes[i];
       int elementSize=t.elementSize();
       int srcOffset=fromIndex*elementSize;
       int dstOffset=(_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex)*elementSize;
-      const void *data=attribs[i];
+      const void *data=attribList[i];
       _arrayBuffers[i]->setData(((uint8_t*)data)+srcOffset,
                                 numVertices*elementSize,dstOffset);
    }

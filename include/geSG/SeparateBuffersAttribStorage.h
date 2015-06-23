@@ -33,7 +33,8 @@ namespace ge
 
          virtual bool reallocData(Mesh &mesh,int numVertices,int numIndices,
                                   bool preserveContent=true) override;
-         virtual void uploadVertices(Mesh &mesh,const void*const *attribs,
+         virtual void uploadVertices(Mesh &mesh,const void*const *attribList,
+                                     unsigned attribListSize,
                                      int numVertices,int fromIndex=0) override;
          virtual void uploadIndices(Mesh &mesh,const void *indices,
                                     int numIndices,int fromIndex=0) override;

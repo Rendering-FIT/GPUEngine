@@ -172,7 +172,7 @@ void Init()
    a.emplace_back(twoTrianglesNI.data());
 
    attribsRefNI.allocData(config,6,0,0);
-   attribsRefNI.uploadVertices(a.data(),twoTrianglesNI.size());
+   attribsRefNI.uploadVertices(a.data(),a.size(),twoTrianglesNI.size());
 
    // top-right geometry
    config.ebo=true;
@@ -190,7 +190,7 @@ void Init()
    a[0]=twoTrianglesI.data();
 
    attribsRefI.allocData(config,6,6,0);
-   attribsRefI.uploadVertices(a.data(),twoTrianglesI.size());
+   attribsRefI.uploadVertices(a.data(),a.size(),twoTrianglesI.size());
    const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
    attribsRefI.uploadIndices(indices.data(),indices.size());
 
@@ -217,7 +217,7 @@ void Init()
    config.updateId();
    stateSet=make_shared<StateSet>();
    attribsRefInstNI.allocData(config,6,0,drawCommands.size()*sizeof(unsigned));
-   attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
+   attribsRefInstNI.uploadVertices(a.data(),a.size(),twoTriangleInstancesNI.size());
    attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
                                        modesAndOffsets4.data(),modesAndOffsets4.size()/2);
    attribsRefInstNI.createInstances(RenderingContext::current()->identityInstancingMatrix().get(),stateSet.get());
