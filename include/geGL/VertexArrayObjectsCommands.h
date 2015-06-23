@@ -30,8 +30,8 @@ namespace ge
     class GEGL_EXPORT BindVertexArray: public Command
     {
       public:
-        GLuint *array;
-        BindVertexArray(GLuint *array);
+        GLuint array;
+        BindVertexArray(GLuint array);
         void apply();
     };
     class GEGL_EXPORT CreateVertexArrays: public Command
