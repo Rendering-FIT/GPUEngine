@@ -190,7 +190,7 @@ namespace ge{
           }
       };
     template<unsigned dim,typename T>
-      class GEGL_EXPORT UniformV: public UniformCommand{
+      class UniformV: public UniformCommand{
         protected:
           const T*_data;
           GLsizei _count;
@@ -247,7 +247,7 @@ namespace ge{
 #define UNIFORM_MATRIX_ARGS(T)this->_location,this->_count,this->_transpose,(const T*)this->_data
 
     template<unsigned X,unsigned Y,typename T>
-    class GEGL_EXPORT UniformMatrix: public UniformCommand{
+    class /*GEGL_EXPORT*/ UniformMatrix: public UniformCommand{
       protected:
         const T*  _data;
         GLsizei   _count;
@@ -304,7 +304,7 @@ namespace ge{
 #define PROGRAM_UNIFORM_MATRIX_ARGS(T)this->_program,UNIFORM_MATRIX_ARGS(T)
 
     template<unsigned X,unsigned Y,typename T>
-    class GEGL_EXPORT ProgramUniformMatrix: public ProgramUniformCommand{
+    class /*GEGL_EXPORT*/ ProgramUniformMatrix: public ProgramUniformCommand{
       protected:
         const T*  _data;
         GLsizei   _count;

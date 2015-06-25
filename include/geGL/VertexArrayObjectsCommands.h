@@ -31,7 +31,7 @@ namespace ge{
       public:
         GLuint array;
         BindVertexArray(GLuint array);
-        void operator()();
+        virtual void operator()();
     };
     class GEGL_EXPORT CreateVertexArrays: public ge::core::Command
     {

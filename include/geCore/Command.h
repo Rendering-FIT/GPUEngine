@@ -10,8 +10,8 @@ namespace ge{
     class GECORE_EXPORT Command : public Functor
     {
       public:
-        virtual void operator()()=0;
-        virtual ~Command(){}
+         virtual void operator()(){};
+        virtual ~Command(){};
     };
 
     class GECORE_EXPORT CommandContainer: public Command
