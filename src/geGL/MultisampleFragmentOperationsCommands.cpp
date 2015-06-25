@@ -8,7 +8,7 @@ namespace ge
       this->value  = value;
       this->invert = invert;
     }
-    void SampleCoverage::apply(){
+    void SampleCoverage::operator()(){
       glSampleCoverage(this->value,this->invert);
     }
 
@@ -17,7 +17,7 @@ namespace ge
       this->mask       = mask;
     }
 
-    void SampleMaski::apply(){
+    void SampleMaski::operator()(){
       glSampleMaski(this->maskNumber,this->mask);
     }
   }//ogl

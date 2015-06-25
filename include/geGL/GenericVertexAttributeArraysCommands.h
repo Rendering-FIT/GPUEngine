@@ -1,13 +1,12 @@
-#ifndef _GENERICVERTEXATTRIBUTEARRAYSCOMMANDS_H_
-#define _GENERICVERTEXATTRIBUTEARRAYSCOMMANDS_H_
+#pragma once
 
-#include<geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT VertexAttribFormat: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT VertexAttribFormat: public ge::core::Command
     {
       public:
         GLuint    attribIndex;
@@ -21,9 +20,9 @@ namespace ge
             GLenum    type,
             GLboolean normalized,
             GLuint    relativeOffset);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribIFormat: public Command
+    class GEGL_EXPORT VertexAttribIFormat: public ge::core::Command
     {
       public:
         GLuint attribIndex;
@@ -35,9 +34,9 @@ namespace ge
             GLint  size,
             GLenum type,
             GLuint relativeOffset);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribLFormat: public Command
+    class GEGL_EXPORT VertexAttribLFormat: public ge::core::Command
     {
       public:
         GLuint attribIndex;
@@ -49,9 +48,9 @@ namespace ge
             GLint  size,
             GLenum type,
             GLuint relativeOffset);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT BindVertexBuffer: public Command
+    class GEGL_EXPORT BindVertexBuffer: public ge::core::Command
     {
       public:
         GLuint   bindingIndex;
@@ -63,9 +62,9 @@ namespace ge
             GLuint   buffer,
             GLintptr offset,
             GLsizei  stride);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT BindVertexBuffers: public Command
+    class GEGL_EXPORT BindVertexBuffers: public ge::core::Command
     {
       public:
         GLuint    first;
@@ -79,9 +78,9 @@ namespace ge
             GLuint   *buffers,
             GLintptr *offsets,
             GLsizei  *strides);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribBinding: public Command
+    class GEGL_EXPORT VertexAttribBinding: public ge::core::Command
     {
       public:
         GLuint attribIndex;
@@ -89,9 +88,9 @@ namespace ge
         VertexAttribBinding(
             GLuint attribIndex,
             GLuint bindingIndex);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribPointer: public Command
+    class GEGL_EXPORT VertexAttribPointer: public ge::core::Command
     {
       public:
         GLuint     index;
@@ -107,9 +106,9 @@ namespace ge
             GLboolean  normalized,
             GLsizei    stride,
             GLvoid    *pointer);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribIPointer: public Command
+    class GEGL_EXPORT VertexAttribIPointer: public ge::core::Command
     {
       public:
         GLuint   index;
@@ -123,9 +122,9 @@ namespace ge
             GLenum   type,
             GLsizei  stride,
             GLvoid  *pointer);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribLPointer: public Command
+    class GEGL_EXPORT VertexAttribLPointer: public ge::core::Command
     {
       public:
         GLuint   index;
@@ -139,25 +138,24 @@ namespace ge
             GLenum   type,
             GLsizei  stride,
             GLvoid  *pointer);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT EnableVertexAttribArray: public Command
+    class GEGL_EXPORT EnableVertexAttribArray: public ge::core::Command
     {
       public:
         GLuint index;
         EnableVertexAttribArray(
             GLuint index);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT DisableVertexAttribArray: public Command
+    class GEGL_EXPORT DisableVertexAttribArray: public ge::core::Command
     {
       public:
         GLuint index;
         DisableVertexAttribArray(
             GLuint index);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-#endif//_GENERICVERTEXATTRIBUTEARRAYSCOMMANDS_H_

@@ -1,13 +1,16 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
+
 #include<geGL/ProgramObject.h>
 #include<geCore/dtemplates.h>
 #include <type_traits>
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT UniformCommand: public Command{
+    class GEGL_EXPORT UniformCommand: public ge::core::Command{
       protected:
         GLint _location;
       public:
@@ -151,7 +154,7 @@ namespace ge{
                 T2... args):UniformCommand(location){
               this->set(args...);
             }
-          void apply(){
+          void operator()(){
             if( typeid(T) == typeid(float  ) ||
                 typeid(T) == typeid(GLfloat)){
               if(dim==1)glUniform1f(this->_location,UNIFORM_ARGS1);
@@ -205,7 +208,7 @@ namespace ge{
               GLsizei count = 1):UniformCommand(location){
             this->set(data,count);
           }
-          void apply(){
+          void operator()(){
             if( typeid(T) == typeid(float  ) ||
                 typeid(T) == typeid(GLfloat)){
               if(dim==1)glUniform1fv(this->_location,this->_count,(const GLfloat*)this->_data);
@@ -265,7 +268,7 @@ namespace ge{
             GLboolean transpose = GL_FALSE):UniformCommand(location){
           this->set(data,count,transpose);
         }
-        void apply(){
+        void operator()(){
           if (typeid(T) == typeid(float  ) ||
               typeid(T) == typeid(GLfloat)){
             if(X==2&&Y==2)glUniformMatrix2fv  (UNIFORM_MATRIX_ARGS(GLfloat));
@@ -323,7 +326,7 @@ namespace ge{
             GLboolean transpose = GL_FALSE):ProgramUniformCommand(location){
           this->set(data,count,transpose);
         }
-        void apply(){
+        void operator()(){
           if (typeid(T) == typeid(float  ) ||
               typeid(T) == typeid(GLfloat)){
             if(X==2&&Y==2)glProgramUniformMatrix2fv  (PROGRAM_UNIFORM_MATRIX_ARGS(GLfloat));
@@ -375,7 +378,7 @@ namespace ge{
                 T2... args):ProgramUniformCommand(program,location){
               this->set(args...);
             }
-          void apply(){
+          void operator()(){
             if( typeid(T) == typeid(float  ) ||
                 typeid(T) == typeid(GLfloat)){
               if(dim==1)glProgramUniform1f(this->_program,this->_location,UNIFORM_ARGS1);

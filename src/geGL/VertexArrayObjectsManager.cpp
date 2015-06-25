@@ -22,7 +22,7 @@ namespace ge
     }
 
     std::string VertexArrayObjectsManager::insert(
-        Command     **command,
+        ge::core::Command     **command,
         std::string   name){
       GLuint *vao;
       this->_prepareVAO(&name,&vao);
@@ -37,7 +37,7 @@ namespace ge
       return name;
     }
     void VertexArrayObjectsManager::addAttrib(
-        Command   **command,
+        ge::core::Command   **command,
         std::string vaobj,
         GLuint      /*buffer*/,
         GLuint      /*index*/,
@@ -48,7 +48,7 @@ namespace ge
         unsigned    /*offset*/,
         GLuint      /*divisitor*/){
       GLuint*vao=&this->_vaos[vaobj];
-      CommandList*commandList=new CommandList(false);
+      ge::core::CommandList*commandList=new ge::core::CommandList(false);
       commandList->add(new BindVertexArray(vao));
       *command=commandList;
     }

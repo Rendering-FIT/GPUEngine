@@ -1,13 +1,12 @@
-#ifndef _VERTEXARRAYOBJECTSCOMMANDS_H_
-#define _VERTEXARRAYOBJECTSCOMMANDS_H_
+#pragma once
 
-#include<geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT GenVertexArrays: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT GenVertexArrays: public ge::core::Command
     {
       public:
         GLsizei  n;
@@ -15,9 +14,9 @@ namespace ge
         GenVertexArrays(
             GLsizei  n,
             GLuint  *arrays);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT DeleteVertexArrays: public Command
+    class GEGL_EXPORT DeleteVertexArrays: public ge::core::Command
     {
       public:
         GLsizei  n;
@@ -25,16 +24,16 @@ namespace ge
         DeleteVertexArrays(
             GLsizei  n,
             GLuint  *arrays);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT BindVertexArray: public Command
+    class GEGL_EXPORT BindVertexArray: public ge::core::Command
     {
       public:
         GLuint *array;
         BindVertexArray(GLuint *array);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT CreateVertexArrays: public Command
+    class GEGL_EXPORT CreateVertexArrays: public ge::core::Command
     {
       public:
         GLsizei  n;
@@ -42,9 +41,9 @@ namespace ge
         CreateVertexArrays(
             GLsizei  n,
             GLuint  *arrays);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribFormat: public Command
+    class GEGL_EXPORT VertexAttribFormat: public ge::core::Command
     {
       public:
         GLuint    attribIndex;
@@ -58,9 +57,9 @@ namespace ge
             GLenum    type,
             GLboolean normalized,
             GLuint    relativeOffset);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribIFormat: public Command
+    class GEGL_EXPORT VertexAttribIFormat: public ge::core::Command
     {
       public:
         GLuint attribIndex;
@@ -72,9 +71,9 @@ namespace ge
             GLint  size,
             GLenum type,
             GLuint relativeOffset);
-        void apply();
+        void operator()();
     };
-    class VertexAttribLFormat: public Command
+    class VertexAttribLFormat: public ge::core::Command
     {
       public:
         GLuint attribIndex;
@@ -86,9 +85,9 @@ namespace ge
             GLint  size,
             GLenum type,
             GLuint relativeOffset);
-        void apply();
+        void operator()();
     };
-    class BindVertexBuffer: public Command
+    class BindVertexBuffer: public ge::core::Command
     {
       public:
         GLuint    bindingIndex;
@@ -100,9 +99,9 @@ namespace ge
             GLuint   *buffer,
             GLintptr  offset,
             GLsizei   stride);
-        void apply();
+        void operator()();
     };
-    class BindVertexBuffers: public Command
+    class BindVertexBuffers: public ge::core::Command
     {
       public:
         GLuint   first;
@@ -113,4 +112,3 @@ namespace ge
   }//ogl
 }//ge
 
-#endif//_VERTEXARRAYOBJECTSCOMMANDS_H_

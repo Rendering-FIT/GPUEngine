@@ -11,6 +11,7 @@
 #include<geGL/ShaderObjectSubroutine.h>
 #include<geGL/ProgramObjectMacro.h>
 #include<geGL/BufferObject.h>
+#include<geCore/dtemplates.h>
 
 namespace ge{
   namespace gl{
@@ -68,6 +69,17 @@ namespace ge{
             std::string *strings,
             unsigned     version,
             std::string  profile);
+        /*
+        void _createProgram(
+            std::vector<std::string>& data         ,
+            unsigned                  version = 0  ,
+            std::string               profile = "" );
+        bool        _isShader       (std::string data);///<has to contain void main() in some form
+        bool        _isFile         (std::string data);///<has to exist
+        std::string _composeShaderSource(std::vector<std::string>&data,unsigned version=0,std::string profile="");
+        std::string _getShaderSource(std::string data);///<if its file open it and return its content
+        unsigned    _getShaderSourceTypeMask(std::string data);///if it can be vs gp or fs it returns 0x1|0x8|0x10
+        */
       public:
         std::string uniformsToStr();
         GLint workGroupSize[3];///< work group size
@@ -216,6 +228,14 @@ namespace ge{
             std::string shader9,
             unsigned    version=0,
             std::string profile="");
+        /*
+        template<typename... Args>
+        ProgramObject(Args... args,unsigned version=430,std::string profile=""){
+          std::vector<std::string>sources;
+          ge::core::argsToVector(sources,args...);
+          this->_createProgram(sources,version,profile);
+        }*/
+
         /**
          * @brief Constructor
          *

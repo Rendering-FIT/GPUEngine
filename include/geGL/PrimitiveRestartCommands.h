@@ -1,21 +1,19 @@
-#ifndef _PRIMITIVERESTARTCOMMANDS_H_
-#define _PRIMITIVERESTARTCOMMANDS_H_
+#pragma once
 
-#include<geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT PrimitiveRestartIndex: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT PrimitiveRestartIndex: public ge::core::Command
     {
       public:
         GLuint index;
         PrimitiveRestartIndex(
             GLuint index);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-#endif//_PRIMITIVERESTARTCOMMANDS_H_

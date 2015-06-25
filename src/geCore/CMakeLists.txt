@@ -16,12 +16,14 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/dtemplates.h
     ${HEADER_PATH}/geCore.h
     ${HEADER_PATH}/InitAndFinalize.h
+    ${HEADER_PATH}/Command.h
   )
 
 set(CORE_SOURCES
     Object.cpp
     CopyOp.cpp
     dtemplates.cpp
+    Command.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

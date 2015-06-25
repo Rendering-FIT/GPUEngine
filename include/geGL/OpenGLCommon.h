@@ -1,13 +1,12 @@
-#ifndef _COPENGLCOMMON_HPP_
-#define _COPENGLCOMMON_HPP_
+#pragma once
 
-#include"OpenGL.h"
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT EnableDisable: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT EnableDisable: public ge::core::Command
     {
       public:
         GLenum target;
@@ -15,7 +14,7 @@ namespace ge
         EnableDisable(GLenum target,bool value);
         void apply();
     };
-    class GEGL_EXPORT EnableDisablei: public Command
+    class GEGL_EXPORT EnableDisablei: public ge::core::Command
     {
       public:
         GLenum target;
@@ -24,21 +23,21 @@ namespace ge
         EnableDisablei(GLenum target,GLuint index,bool value);
         void apply();
     };
-    class GEGL_EXPORT Enable: public Command
+    class GEGL_EXPORT Enable: public ge::core::Command
     {
       public:
         GLenum target;
         Enable(GLenum target);
         void apply();
     };
-    class GEGL_EXPORT Disable: public Command
+    class GEGL_EXPORT Disable: public ge::core::Command
     {
       public:
         GLenum target;
         Disable(GLenum target);
         void apply();
     };
-    class GEGL_EXPORT Enablei: public Command
+    class GEGL_EXPORT Enablei: public ge::core::Command
     {
       public:
         GLuint buffer;
@@ -46,7 +45,7 @@ namespace ge
         Enablei(GLuint buffer,GLenum target);
         void apply();
     };
-    class GEGL_EXPORT Disablei: public Command
+    class GEGL_EXPORT Disablei: public ge::core::Command
     {
       public:
         GLuint buffer;
@@ -57,4 +56,3 @@ namespace ge
   }//ogl
 }//ge
 
-#endif//_COPENGLCOMMON_HPP_

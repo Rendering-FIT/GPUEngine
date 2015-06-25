@@ -7,14 +7,14 @@ namespace ge
       this->id   = id;
       this->mode = mode;
     }
-    void BeginConditionalRender::apply(){
+    void BeginConditionalRender::operator()(){
       glBeginConditionalRender(
           this->id,
           this->mode);
     }
     EndConditionalRender::EndConditionalRender(){
     }
-    void EndConditionalRender::apply(){
+    void EndConditionalRender::operator()(){
       glEndConditionalRender();
     }
   }//ogl

@@ -1,81 +1,120 @@
-#ifndef _SHADEROBJECTSCOMMANDS_H_
-#define _SHADEROBJECTSCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
+#include<memory>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT CreateShader: public Command
-    {
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT SharedShader{
+      protected:
+        std::shared_ptr<GLuint>_shader;
       public:
-        GLenum  type;
-        GLuint *shader;
-        CreateShader(GLuint*shader,GLenum type);
-        void apply();
+        SharedShader(std::shared_ptr<GLuint>shader);
+        std::shared_ptr<GLuint>getShader();
     };
-    class GEGL_EXPORT ShaderSource: public Command
-    {
+
+    class GEGL_EXPORT CreateShader: public ge::core::Command, public SharedShader{
+      private:
+        std::shared_ptr<GLenum>_type;
       public:
-        GLuint   *shader;
-        GLsizei   count;
-        GLchar  **string;
-        GLint    *length;
+        CreateShader(std::shared_ptr<GLuint>shader,std::shared_ptr<GLenum>type);
+        void operator()();
+        std::shared_ptr<GLenum>getType();
+    };
+
+    class ShaderSourceData{
+      protected:
+        GLsizei             _count ;
+        const GLchar*const* _string;
+        const GLint*        _length;
+      public:
+        ShaderSourceData(
+            GLsizei             count  = 0   ,
+            const GLchar*const* string = NULL,
+            const GLint*        length = 0   );
+        void set(
+            GLsizei             count  = 0   ,
+            const GLchar*const* string = NULL,
+            const GLint*        length = 0   );
+        GLsizei getCount();
+        const GLchar*const*getString();
+        const GLint*getLength();
+    };
+
+    class GEGL_EXPORT ShaderSource: public ge::core::Command, public SharedShader{
+      protected:
+        std::shared_ptr<ShaderSourceData>_data  ;
+      public:
         ShaderSource(
-            GLuint   *shader,
-            GLsizei   count,
-            GLchar  **string,
-            GLint    *length);
-        ~ShaderSource();
-        void apply();
+            std::shared_ptr<GLuint>shader        ,
+            std::shared_ptr<ShaderSourceData>data);
+        void operator()();
+        std::shared_ptr<ShaderSourceData>getData();
     };
-    class GEGL_EXPORT CompileShader: public Command
-    {
+
+    class GEGL_EXPORT CompileShader: public ge::core::Command, public SharedShader{
       public:
-        GLuint *shader;
-        CompileShader(
-            GLuint *shader);
-        void apply();
+        CompileShader(std::shared_ptr<GLuint>shader);
+        void operator()();
     };
-    class GEGL_EXPORT ReleaseShaderCompiler: public Command
-    {
+
+    class GEGL_EXPORT ReleaseShaderCompiler: public ge::core::Command{
       public:
         ReleaseShaderCompiler();
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT DeleteShader: public Command
-    {
+
+    class GEGL_EXPORT DeleteShader: public ge::core::Command, public SharedShader{
       public:
-        GLuint *shader;
-        DeleteShader(GLuint *shader);
-        void apply();
+        DeleteShader(std::shared_ptr<GLuint>shader);
+        void operator()();
     };
-    class GEGL_EXPORT IsShader: public Command
-    {
+
+    class GEGL_EXPORT IsShader: public ge::core::Command, public SharedShader{
+      protected:
+        std::shared_ptr<GLboolean>_is;
       public:
-        GLuint    *shader;
-        GLboolean *is;
-        IsShader(GLboolean *is,GLuint *shader);
-        void apply();
+        IsShader(std::shared_ptr<GLboolean>is,std::shared_ptr<GLuint>shader);
+        void operator()();
+        std::shared_ptr<GLboolean>getIs();
     };
-    class GEGL_EXPORT ShaderBinary: public Command
-    {
+
+    class ShaderBinaryData{
+      private:
+        GLenum       _format;
+        const GLvoid*_binary;
+        GLsizei      _length;
       public:
-        GLsizei   count;
-        GLuint  **shaders;
-        GLenum    binaryFormat;
-        GLvoid   *binary;
-        GLsizei   length;
+        ShaderBinaryData(
+            GLenum       format = 0   ,
+            const GLvoid*binary = NULL,
+            GLsizei      length = 0   );
+        void set(
+            GLenum       format = 0   ,
+            const GLvoid*binary = NULL,
+            GLsizei      length = 0   );
+        GLenum getFormat();
+        const GLvoid*getBinary();
+        GLsizei getLength();
+    };
+
+    class GEGL_EXPORT ShaderBinary: public ge::core::Command{
+      protected:
+        std::shared_ptr<GLsizei>         _count  ;
+        std::shared_ptr<GLuint>          _shaders;
+        std::shared_ptr<ShaderBinaryData>_binary ;
+      public:
         ShaderBinary(
-            GLsizei   count,
-            GLuint  **shaders,
-            GLenum    binaryFormat,
-            GLvoid   *binary,
-            GLsizei   length);
-        void apply();
+            std::shared_ptr<GLsizei>         count  ,
+            std::shared_ptr<GLuint>          shaders,
+            std::shared_ptr<ShaderBinaryData>binary );
+        void operator()();
+        std::shared_ptr<GLsizei>         getCount  ();
+        std::shared_ptr<GLuint>          getShaders();
+        std::shared_ptr<ShaderBinaryData>getBinary ();
     };
   }//ogl
 }//ge
 
-#endif//_SHADEROBJECTSCOMMANDS_H_

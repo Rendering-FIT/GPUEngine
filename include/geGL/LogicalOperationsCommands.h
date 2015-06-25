@@ -1,24 +1,17 @@
-#ifndef _LOGICALOPERATIONSCOMMANDS_H_
-#define _LOGICALOPERATIONSCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
-
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT LogicOp: public Command
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
+namespace ge{
+  namespace gl  {
+    class GEGL_EXPORT LogicOp: public ge::core::Command
     {
       public:
         GLenum op;
         LogicOp(GLenum op);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-
-
-
-
-#endif//_LOGICALOPERATIONSCOMMANDS_H_

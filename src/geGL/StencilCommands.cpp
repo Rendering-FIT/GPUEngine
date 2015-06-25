@@ -10,7 +10,7 @@ StencilFunc::StencilFunc(
   this->ref  = ref;
   this->mask = mask;
 }
-void StencilFunc::apply(){
+void StencilFunc::operator()(){
   glStencilFunc(
       this->func,
       this->ref,
@@ -27,7 +27,7 @@ StencilFuncSeparate::StencilFuncSeparate(
   this->ref  = ref;
   this->mask = mask;
 }
-void StencilFuncSeparate::apply(){
+void StencilFuncSeparate::operator()(){
   glStencilFuncSeparate(
       this->face,
       this->func,
@@ -43,7 +43,7 @@ StencilOp::StencilOp(
   this->dpfail = dpfail;
   this->dppass = dppass;
 }
-void StencilOp::apply(){
+void StencilOp::operator()(){
   glStencilOp(
       this->sfail,
       this->dpfail,
@@ -60,7 +60,7 @@ StencilOpSeparate::StencilOpSeparate(
   this->dpfail = dpfail;
   this->dppass = dppass;
 }
-void StencilOpSeparate::apply(){
+void StencilOpSeparate::operator()(){
   glStencilOpSeparate(
       this->face,
       this->sfail,

@@ -1,37 +1,16 @@
-#ifndef GE_GL_BUFFEROBJECT
-#define GE_GL_BUFFEROBJECT
+#pragma once
 
 #include <geGL/OpenGL.h>
 #include <geGL/OpenGLObject.h>
 
 #include <iostream>
 
-#define BUFFEROBJECT_DEFAULT_MUTABLE         true
-#define BUFFEROBJECT_DEFAULT_DATA            NULL
-#define BUFFEROBJECT_DEFAULT_ID              0
-#define BUFFEROBJECT_DEFAULT_TARGET          GL_ARRAY_BUFFER
-#define BUFFEROBJECT_DEFAULT_ACCESS          (GL_MAP_READ_BIT|GL_MAP_WRITE_BIT)
-#define BUFFEROBJECT_DEFAULT_EMPTY_TARGET    0
-#define BUFFEROBJECT_DEFAULT_OFFSET          0
-#define BUFFEROBJECT_DEFAULT_MAPOFFSET       0
-#define BUFFEROBJECT_DEFAULT_SIZE            0
-#define BUFFEROBJECT_DEFAULT_USAGE           GL_STATIC_DRAW
-#define BUFFEROBJECT_DEFAULT_FLAGS           GL_STATIC_DRAW
-#define BUFFEROBJECT_DEFAULT_MAPFLAGS        0
-#define BUFFEROBJECT_DEFAULT_DATASOURCE      NULL
-#define BUFFEROBJECT_DEFAULT_READBUFFER      GL_COPY_READ_BUFFER
-#define BUFFEROBJECT_DEFAULT_WRITEBUFFER     GL_COPY_WRITE_BUFFER
-#define BUFFEROBJECT_DEFAULT_READOFFSET      0
-#define BUFFEROBJECT_DEFAULT_WRITEOFFSET     0
-#define BUFFEROBJECT_DEFAULT_OPERTARGET      GL_COPY_WRITE_BUFFER
-#define BUFFEROBJECT_DEFAULT_NOF_BUFFERS     1
-
 namespace ge{
   namespace gl{
-    GEGL_EXPORT std::string translateBufferTarget(GLenum target);
+    GEGL_EXPORT std::string translateBufferTarget (GLenum target );
     GEGL_EXPORT std::string translateBufferBinding(GLenum binding);
-    GEGL_EXPORT GLenum bufferTarget2Binding(GLenum target);
-    GEGL_EXPORT GLenum bufferBinding2Target(GLenum binding);
+    GEGL_EXPORT GLenum      bufferTarget2Binding  (GLenum target );
+    GEGL_EXPORT GLenum      bufferBinding2Target  (GLenum binding);
 
     /**
      * Abstraction of the OpenGL Buffer Object.
@@ -43,25 +22,25 @@ namespace ge{
         GLvoid* _getBufferPointer  (GLenum pname);
       public:
         BufferObject(
-            GLsizeiptr    size,
-            const GLvoid *data  = BUFFEROBJECT_DEFAULT_DATA,
-            GLbitfield    flags = BUFFEROBJECT_DEFAULT_FLAGS);
+            GLsizeiptr    size                  ,
+            const GLvoid* data  = NULL          ,
+            GLbitfield    flags = GL_STATIC_DRAW);
         ~BufferObject();
         GLvoid*map(
-            GLbitfield access = BUFFEROBJECT_DEFAULT_ACCESS);
+            GLbitfield access = GL_MAP_READ_BIT|GL_MAP_WRITE_BIT);
         GLvoid*map(
             GLintptr   offset,
             GLsizeiptr size,
-            GLbitfield access = BUFFEROBJECT_DEFAULT_ACCESS);
+            GLbitfield access = GL_MAP_READ_BIT|GL_MAP_WRITE_BIT);
         void unmap();
         void setData(
-            GLvoid     *data,
-            GLsizeiptr  size   = BUFFEROBJECT_DEFAULT_SIZE,
-            GLintptr    offset = BUFFEROBJECT_DEFAULT_OFFSET);
+            const GLvoid*data      ,
+            GLsizeiptr   size   = 0,
+            GLintptr     offset = 0);
         void getData(
-            GLvoid     *data,
-            GLsizeiptr  size   = BUFFEROBJECT_DEFAULT_SIZE,
-            GLintptr    offset = BUFFEROBJECT_DEFAULT_OFFSET);
+            GLvoid*     data      ,
+            GLsizeiptr  size   = 0,
+            GLintptr    offset = 0);
         void bind       (GLenum target);
         void bindRange  (GLenum target,GLuint index,GLintptr offset,GLsizeiptr size);
         void bindBase   (GLenum Target,GLuint index);
@@ -70,23 +49,23 @@ namespace ge{
         void unbindBase (GLenum target,GLuint index);
         void copy(BufferObject*buffer);
         void flushMapped(
-            GLsizeiptr size   = BUFFEROBJECT_DEFAULT_SIZE,
-            GLintptr   offset = BUFFEROBJECT_DEFAULT_OFFSET);
+            GLsizeiptr size   = 0,
+            GLintptr   offset = 0);
         void invalidate(
-            GLsizeiptr size   = BUFFEROBJECT_DEFAULT_SIZE,
-            GLintptr   offset = BUFFEROBJECT_DEFAULT_OFFSET);
+            GLsizeiptr size   = 0,
+            GLintptr   offset = 0);
         void clear(
-            GLenum        internalFormat,
-            GLenum        format,
-            GLenum        type,
-            const GLvoid *Data = BUFFEROBJECT_DEFAULT_DATA);
+            GLenum        internalFormat       ,
+            GLenum        format               ,
+            GLenum        type                 ,
+            const GLvoid *Data           = NULL);
         void clear(
-            GLenum        internalFormat,
-            GLintptr      offset,
-            GLsizeiptr    size,
-            GLenum        format,
-            GLenum        type,
-            const GLvoid *Data = BUFFEROBJECT_DEFAULT_DATA);
+            GLenum        internalFormat          ,
+            GLintptr      offset                  ,
+            GLsizeiptr    size                    ,
+            GLenum        format                  ,
+            GLenum        type                    ,
+            const GLvoid *Data           = NULL   );
         void operator &=(BufferObject*buffer);
         GLsizeiptr getSize       ();
         GLenum     getUsage      ();
@@ -101,4 +80,3 @@ namespace ge{
   }
 }
 
-#endif //GE_GL_BUFFEROBJECT

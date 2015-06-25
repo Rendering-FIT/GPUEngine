@@ -1,25 +1,22 @@
-#ifndef _CSTENCIL_HPP_
-#define _CSTENCIL_HPP_
+#pragma once
 
-#include <geGL/OpenGL.h>
-#include <geGL/OpenGLCommon.h>
-#include"StencilCommands.h"
+#include<geCore/Command.h>
+#include<geGL/OpenGLCommon.h>
+#include<geGL/StencilCommands.h>
 
-namespace ge
-{
-  namespace gl
-  {
+namespace ge{
+  namespace gl{
     /**
      * @brief This class GEGL_EXPORT represents manager of stencil commands
      */
-    class GEGL_EXPORT Stencil: public Command
+    class GEGL_EXPORT Stencil: public ge::core::Command
     {
       private:
-        CommandContainer _enableDisable;  ///<gl{En,Dis}able(GL_STENCIL)
-        CommandContainer _func;           ///<glStencilFunc
-        CommandContainer _op;             ///<glStencilOp
-        CommandContainer _funcSeparate[2];///<glStencilFuncSeparate
-        CommandContainer _opSeparate  [2];///<glStencilOpSeparate
+        ge::core::CommandContainer _enableDisable;  ///<gl{En,Dis}able(GL_STENCIL)
+        ge::core::CommandContainer _func;           ///<glStencilFunc
+        ge::core::CommandContainer _op;             ///<glStencilOp
+        ge::core::CommandContainer _funcSeparate[2];///<glStencilFuncSeparate
+        ge::core::CommandContainer _opSeparate  [2];///<glStencilOpSeparate
 
         unsigned _faceToIndex       (GLenum face);///<this method translate face to index
         void     _mergeFuncSeparate ();///<this method merges two glStencilFuncSeparate commands
@@ -135,8 +132,8 @@ namespace ge
          * @brief Apply all set commands
          */
         void apply();
+        virtual void operator()();
     };
-  }//namespace ogl
+  }//namespace gl
 }//namespace ge
 
-#endif//_CSTENCIL_HPP_

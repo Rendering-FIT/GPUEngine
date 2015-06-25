@@ -1,21 +1,17 @@
 #include <geGL/OcclusionQueriesCommands.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    BeginQuery::BeginQuery(GLenum target,GLuint id){
-      this->target = target;
-      this->id     = id;
-    }
-    void BeginQuery::apply(){
-      glBeginQuery(this->target,this->id);
-    }
-    EndQuery::EndQuery(GLenum target){
-      this->target = target;
-    }
-    void EndQuery::apply(){
-      glEndQuery(this->target);
-    }
-  }//ogl
-}//ge
+using namespace ge::gl;
+
+BeginQuery::BeginQuery(GLenum target,GLuint id){
+  this->target = target;
+  this->id     = id;
+}
+void BeginQuery::operator()(){
+  glBeginQuery(this->target,this->id);
+}
+EndQuery::EndQuery(GLenum target){
+  this->target = target;
+}
+void EndQuery::operator()(){
+  glEndQuery(this->target);
+}

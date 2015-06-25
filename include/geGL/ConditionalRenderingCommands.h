@@ -1,27 +1,24 @@
-#ifndef _COMDITIONALRENDERINGCOMMANDS_H_
-#define _COMDITIONALRENDERINGCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT BeginConditionalRender
-    {
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT BeginConditionalRender{
       public:
         GLuint id;
         GLenum mode;
         BeginConditionalRender(GLuint id,GLenum mode);
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT EndConditionalRender
     {
       public:
         EndConditionalRender();
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-#endif//_COMDITIONALRENDERINGCOMMANDS_H_

@@ -1,22 +1,21 @@
-#ifndef _SCISSORCOMMANDS_H_
-#define _SCISSORCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT ScissorArrayv: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT ScissorArrayv: public ge::core::Command
     {
       public:
         GLuint        first;
         GLsizei       count;
         GLint * v;
         ScissorArrayv(GLuint first,GLsizei count,GLint*v);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT ScissorIndexed: public Command
+    class GEGL_EXPORT ScissorIndexed: public ge::core::Command
     {
       public:
         GLuint  index;
@@ -25,17 +24,17 @@ namespace ge
         GLsizei width;
         GLsizei height;
         ScissorIndexed(GLuint index,GLint left,GLint bottom,GLsizei width,GLsizei height);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT ScissorIndexedv: public Command
+    class GEGL_EXPORT ScissorIndexedv: public ge::core::Command
     {
       public:
         GLuint   index;
         GLint  * v;
         ScissorIndexedv(GLuint index,GLint*v);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT Scissor: public Command
+    class GEGL_EXPORT Scissor: public ge::core::Command
     {
       public:
         GLint   left;
@@ -43,10 +42,8 @@ namespace ge
         GLsizei width;
         GLsizei height;
         Scissor(GLint left,GLint bottom,GLsizei width,GLsizei height);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-
-#endif//_SCISSORCOMMANDS_H_

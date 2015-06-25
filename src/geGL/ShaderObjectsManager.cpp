@@ -6,10 +6,8 @@
 #include<fstream>
 #include<sstream>
 
-namespace ge
-{
-  namespace gl
-  {
+namespace ge{
+  namespace gl{
     char*ShaderObjectManager::_readWholeFile(int*length,std::string fileName){
       std::ifstream f(fileName.data(),std::ifstream::binary);//open file
       if(!f.good())throw std::string("File "+fileName+" is corrupt");
@@ -125,16 +123,16 @@ namespace ge
       return true;
     }
 
-    void ShaderObjectManager::clear(Command **command){
-      CommandList*commandList = new CommandList(true);
+    void ShaderObjectManager::clear(ge::core::Command **command){
+      ge::core::CommandList*commandList = new ge::core::CommandList(true);
       std::map<std::string,GLuint>::iterator ii     = this->_shaders.begin();
       std::map<std::string,GLuint>::iterator ii_end = this->_shaders.end();
       for(;ii!=ii_end;++ii)
-        commandList->add(new DeleteShader(&ii->second));
+        /*commandList->add(new DeleteShader(&ii->second))*/;
       *command=commandList;
     }
     std::string ShaderObjectManager::insert(
-        Command     **command,
+        ge::core::Command     **command,
         GLenum        type,
         std::string   text,
         std::string   name,
@@ -144,17 +142,20 @@ namespace ge
       GLuint  *shader;
       GLchar **string;
       if(this->_prepareSource(&shader,&string,text,&name,definitions,version,profile)){
-        CommandList*commandList = new CommandList(false);
-        commandList->add(new CreateShader (shader,type));
-        commandList->add(new ShaderSource (shader,1,string,NULL));
-        commandList->add(new CompileShader(shader));
+        ge::core::CommandList*commandList = new ge::core::CommandList(false);
+        commandList->add(new CreateShader(
+              std::make_shared<GLuint>(0   ),
+              std::make_shared<GLenum>(type)));
+        //commandList->add(new CreateShader (shader,type));
+        //commandList->add(new ShaderSource (shader,1,string,NULL));
+        //commandList->add(new CompileShader(shader));
         *command = commandList;
       }else
         *command = NULL;
       return name;
     }
     void ShaderObjectManager::insert(
-        Command     **command,
+        ge::core::Command     **command,
         std::string   fileName,
         std::string   name,
         std::string   definitions,

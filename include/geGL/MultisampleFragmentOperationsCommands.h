@@ -1,33 +1,27 @@
-#ifndef _MULTISAMPLEFRAGMENTOPERATIONSCOMMANDS_H_
-#define _MULTISAMPLEFRAGMENTOPERATIONSCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT SampleCoverage: public Command
-    {
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT SampleCoverage: public ge::core::Command{
       public:
         GLfloat   value;
         GLboolean invert;
         SampleCoverage(GLfloat value,GLboolean invert);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT SampleMaski: public Command
+    class GEGL_EXPORT SampleMaski: public ge::core::Command
     {
       public:
         GLuint     maskNumber;
         GLbitfield mask;
         SampleMaski(GLuint maskNumber,GLbitfield mask);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-
-
-
-#endif//_MULTISAMPLEFRAGMENTOPERATIONSCOMMANDS_H_

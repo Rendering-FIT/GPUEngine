@@ -2,7 +2,6 @@
 
 using namespace ge::gl;
 
-
 BindBufferBase::BindBufferBase(GLenum target,GLuint index,GLuint buffer){
   this->_target = target;
   this->_index  = index ;
@@ -16,7 +15,7 @@ BindBufferBase::BindBufferBase(
   this->_index  = program->getBuffer(name);
   this->_buffer = buffer->getId();
 }
-void BindBufferBase::apply(){
+void BindBufferBase::operator()(){
   glBindBufferBase(this->_target,this->_index,this->_buffer);
 }
 GLenum BindBufferBase::getTarget(){

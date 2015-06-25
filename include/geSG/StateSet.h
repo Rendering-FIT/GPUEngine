@@ -8,6 +8,7 @@
 #include <geSG/Export.h>
 #include <geSG/ParentChildList.h>
 #include <geGL/OpenGL.h>
+#include <geCore/Command.h>
 
 namespace ge
 {
@@ -60,7 +61,7 @@ namespace ge
          unsigned _numDrawCommands;
          std::map<const AttribStorage*,AttribStorageData> _attribStorageData;
 
-         std::vector<std::shared_ptr<ge::gl::Command>> _commandList;
+         std::vector<std::shared_ptr<ge::core::Command>> _commandList;
 
       public:
 
@@ -81,12 +82,12 @@ namespace ge
          void decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned mode,
                                               AttribStorageData &storageData);
 
-         inline unsigned addCommand(std::shared_ptr<ge::gl::Command> command);
+         inline unsigned addCommand(std::shared_ptr<ge::core::Command> command);
          inline void removeCommand(unsigned index);
-         inline void removeCommand(std::shared_ptr<ge::gl::Command> command);
+         inline void removeCommand(std::shared_ptr<ge::core::Command> command);
          inline void clearCommands();
-         inline const std::vector<std::shared_ptr<ge::gl::Command>>& commandList() const;
-         inline std::vector<std::shared_ptr<ge::gl::Command>>& commandList();
+         inline const std::vector<std::shared_ptr<ge::core::Command>>& commandList() const;
+         inline std::vector<std::shared_ptr<ge::core::Command>>& commandList();
 
          void setupRendering();
          void render();

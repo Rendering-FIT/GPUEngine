@@ -1,38 +1,35 @@
-#ifndef _CBLEND_HPP_
-#define _CBLEND_HPP_
+#pragma once
 
-#include <geGL/OpenGL.h>
-#include <geGL/BlendCommands.h>
-#include <geGL/OpenGLCommon.h>
+#include<geGL/BlendCommands.h>
+#include<geGL/OpenGLCommon.h>
 
-namespace ge
-{
+namespace ge{
   namespace gl{
     class GEGL_EXPORT Blend
     {
       private:
-        CommandContainer   _enable;
-        CommandContainer   _disable;
-        CommandContainer * _enablei;
-        CommandContainer * _disablei;
+        ge::core::CommandContainer   _enable;
+        ge::core::CommandContainer   _disable;
+        ge::core::CommandContainer * _enablei;
+        ge::core::CommandContainer * _disablei;
 
-        Command *  _equationCommand;
+        ge::core::Command *  _equationCommand;
         bool             _refEquationCommand;
-        Command *  _equationSeparateCommand;
+        ge::core::Command *  _equationSeparateCommand;
         bool             _refEquationSeparateCommand;
-        Command ** _equationiCommand;
+        ge::core::Command ** _equationiCommand;
         bool          *  _refEquationiCommand;
-        Command ** _equationSeparateiCommand;
+        ge::core::Command ** _equationSeparateiCommand;
         bool          *  _refEquationSeparateiCommand;
-        Command *  _funcCommand;
+        ge::core::Command *  _funcCommand;
         bool             _refFuncCommand;
-        Command *  _funcSeparateCommand;
+        ge::core::Command *  _funcSeparateCommand;
         bool             _refFuncSeparateCommand;
-        Command ** _funciCommand;
+        ge::core::Command ** _funciCommand;
         bool          *  _refFunciCommand;
-        Command ** _funcSeparateiCommand;
+        ge::core::Command ** _funcSeparateiCommand;
         bool          *  _refFuncSeparateiCommand;
-        Command *  _colorCommand;
+        ge::core::Command *  _colorCommand;
         bool             _refColorCommand;
         unsigned _maxBuffers;
         void _init();
@@ -87,8 +84,8 @@ namespace ge
         void ignoreBlendColor();
 
         void apply();
+        virtual void operator()();
     };
   }//ogl
 }//ge
 
-#endif//_CBLEND_HPP_

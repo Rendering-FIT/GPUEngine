@@ -1,13 +1,12 @@
-#ifndef _VERTEXATTRIBUTEDIVISORS_H_
-#define _VERTEXATTRIBUTEDIVISORS_H_
+#pragma once
 
-#include<geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT VertexBindingDivisor: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT VertexBindingDivisor: public ge::core::Command
     {
       public:
         GLuint bindingIndex;
@@ -15,9 +14,9 @@ namespace ge
         VertexBindingDivisor(
             GLuint bindingIndex,
             GLuint divisor);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT VertexAttribDivisor: public Command
+    class GEGL_EXPORT VertexAttribDivisor: public ge::core::Command
     {
       public:
         GLuint index;
@@ -25,9 +24,8 @@ namespace ge
         VertexAttribDivisor(
             GLuint index,
             GLuint divisor);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-#endif//_VERTEXATTRIBUTEDIVISORS_H_
