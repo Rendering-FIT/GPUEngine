@@ -26,7 +26,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/RenderbufferObject.h
-    ${HEADER_PATH}/Blend.h
+#    ${HEADER_PATH}/Blend.h
     ${HEADER_PATH}/BlendCommands.h
     ${HEADER_PATH}/DepthCommands.h
     ${HEADER_PATH}/LogicalOperationsCommands.h
@@ -71,7 +71,7 @@ set(GL_SOURCES
     ShaderObjectSubroutine.cpp
     ShaderObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
-    Blend.cpp
+#    Blend.cpp
     BlendCommands.cpp
     DepthCommands.cpp
     LogicalOperationsCommands.cpp
