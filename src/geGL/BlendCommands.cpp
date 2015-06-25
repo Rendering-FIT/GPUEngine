@@ -6,7 +6,7 @@ BlendEnablei::BlendEnablei(GLuint buffer,bool enable){
   this->buffer = buffer;
   this->enable = enable;
 }
-void BlendEnablei::apply(){
+void BlendEnablei::operator()(){
   if(this->enable)glEnablei(GL_BLEND,this->buffer);
   else glDisablei(GL_BLEND,this->buffer);
 }
@@ -14,7 +14,7 @@ void BlendEnablei::apply(){
 BlendEquation::BlendEquation(GLenum mode){
   this->mode=mode;
 }
-void BlendEquation::apply(){
+void BlendEquation::operator()(){
   glBlendEquation(this->mode);
 }
 
@@ -24,7 +24,7 @@ BlendEquationSeparate::BlendEquationSeparate(
   this->modeRGB   = modeRGB;
   this->modeAlpha = modeAlpha;
 }
-void BlendEquationSeparate::apply(){
+void BlendEquationSeparate::operator()(){
   glBlendEquationSeparate(this->modeRGB,this->modeAlpha);
 }
 
@@ -34,7 +34,7 @@ BlendEquationi::BlendEquationi(
   this->buffer = buffer;
   this->mode   = mode;
 }
-void BlendEquationi::apply(){
+void BlendEquationi::operator()(){
   glBlendEquationi(this->buffer,this->mode);
 }
 
@@ -46,7 +46,7 @@ BlendEquationSeparatei::BlendEquationSeparatei(
   this->modeRGB   = modeRGB;
   this->modeAlpha = modeAlpha;
 }
-void BlendEquationSeparatei::apply(){
+void BlendEquationSeparatei::operator()(){
   glBlendEquationSeparatei(
       this->buffer,
       this->modeRGB,
@@ -57,7 +57,7 @@ BlendFunc::BlendFunc(GLenum src,GLenum dst){
   this->src = src;
   this->dst = dst;
 }
-void BlendFunc::apply(){
+void BlendFunc::operator()(){
   glBlendFunc(this->src,this->dst);
 }
 
@@ -71,7 +71,7 @@ BlendFuncSeparate::BlendFuncSeparate(
   this->srcAlpha = srcAlpha;
   this->dstAlpha = dstAlpha;
 }
-void BlendFuncSeparate::apply(){
+void BlendFuncSeparate::operator()(){
   glBlendFuncSeparate(
       this->srcRGB,
       this->dstRGB,
@@ -87,7 +87,7 @@ BlendFunci::BlendFunci(
   this->src    = src;
   this->dst    = dst;
 }
-void BlendFunci::apply(){
+void BlendFunci::operator()(){
   glBlendFunci(this->buffer,this->src,this->dst);
 }
 
@@ -103,7 +103,7 @@ BlendFuncSeparatei::BlendFuncSeparatei(
   this->srcAlpha = srcAlpha;
   this->dstAlpha = dstAlpha;
 }
-void BlendFuncSeparatei::apply(){
+void BlendFuncSeparatei::operator()(){
   glBlendFuncSeparatei(
       this->buffer,
       this->srcRGB,
@@ -122,7 +122,7 @@ BlendColor::BlendColor(
   this->blue  = blue;
   this->alpha = alpha;
 }
-void BlendColor::apply(){
+void BlendColor::operator()(){
   glBlendColor(this->red,this->green,this->blue,this->alpha);
 }
 

@@ -1,17 +1,15 @@
-#ifndef _VERTEXARRAYOBJECTSMANAGER_H_
-#define _VERTEXARRAYOBJECTSMANAGER_H_
+#pragma once
 
 #include<iostream>
 
-#include<geGL/OpenGL.h>
-
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 #include<vector>
 #include<map>
 
-namespace ge
-{
-  namespace gl
-  {
+namespace ge{
+  namespace gl{
     const std::string VERTEX_ARRAY_OBJECT_MANAGER_DEFAULT_NAME = ""   ;
     const std::string VERTEX_ARRAY_OBJECT_MANAGER_BASE_NAME    = "vao";
 
@@ -34,7 +32,7 @@ namespace ge
          *
          * @param command created command that destroys vertex array objects
          */
-        void clear(Command **command);
+        void clear(ge::core::Command **command);
         /**
          * @brief immediately clears manager
          */
@@ -48,7 +46,7 @@ namespace ge
          * @return returns textual representation of vertex array object
          */
         std::string insert(
-            Command     **command,
+            ge::core::Command     **command,
             std::string   name = VERTEX_ARRAY_OBJECT_MANAGER_DEFAULT_NAME);
         /**
          * @brief immediately creates vertex array object
@@ -74,7 +72,7 @@ namespace ge
          * @param divisitor  attribute advances once per divisitor instances of vertices
          */
         void addAttrib(
-            Command   **command,
+            ge::core::Command   **command,
             std::string vaobj,
             GLuint      buffer,
             GLuint      index,
@@ -115,7 +113,7 @@ namespace ge
          * @param ebo     element buffer object
          */
         void addElementBuffer(
-            Command     **command,
+            ge::core::Command     **command,
             std::string   vaobj,
             GLuint        ebo);
         /**
@@ -135,7 +133,7 @@ namespace ge
          * @param vaobj   name of vertex array object
          */
         void bind(
-            Command     **command,
+            ge::core::Command     **command,
             std::string   vaobj);
         /**
          * @brief immediately binds selected vertex array object
@@ -150,7 +148,7 @@ namespace ge
          * @param command generated command that unbinds any vertex array
          */
         void unbind(
-            Command     **command);
+            ge::core::Command     **command);
         /**
          * @brief immediately unbinds any vertex array object
          */
@@ -194,4 +192,3 @@ namespace ge
   }
 }
 
-#endif//_VERTEXARRAYOBJECTSMANAGER_H_

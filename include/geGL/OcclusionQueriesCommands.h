@@ -1,30 +1,26 @@
-#ifndef _OCCLUSIONQUERIESCOMMANDS_H_
-#define _OCCLUSIONQUERIESCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT BeginQuery: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT BeginQuery: public ge::core::Command
     {
       public:
         GLenum target;
         GLuint id;
         BeginQuery(GLenum target,GLuint id);
-        void apply();
+        void operator()();
     };
-    class GEGL_EXPORT EndQuery: public Command
+    class GEGL_EXPORT EndQuery: public ge::core::Command
     {
       public:
         GLenum target;
         EndQuery(GLenum target);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-
-
-#endif//_OCCLUSIONQUERIESCOMMANDS_H_

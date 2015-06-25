@@ -26,7 +26,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/RenderbufferObject.h
-    ${HEADER_PATH}/Blend.h
+#    ${HEADER_PATH}/Blend.h
     ${HEADER_PATH}/BlendCommands.h
     ${HEADER_PATH}/DepthCommands.h
     ${HEADER_PATH}/LogicalOperationsCommands.h
@@ -55,6 +55,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/geGL.h
     ${HEADER_PATH}/ProgramCommands.h
     ${HEADER_PATH}/BufferCommands.h
+    ${HEADER_PATH}/BufferObjectCommands.h
   )
 
 set(GL_SOURCES
@@ -70,7 +71,7 @@ set(GL_SOURCES
     ShaderObjectSubroutine.cpp
     ShaderObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
-    Blend.cpp
+#    Blend.cpp
     BlendCommands.cpp
     DepthCommands.cpp
     LogicalOperationsCommands.cpp
@@ -98,6 +99,7 @@ set(GL_SOURCES
     OpenGLObject.cpp
     ProgramCommands.cpp
     BufferCommands.cpp
+    BufferObjectCommands.cpp
   )
 
 

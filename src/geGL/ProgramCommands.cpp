@@ -6,7 +6,7 @@ UseProgram::UseProgram(GLuint program){
   this->set(program);
 }
 
-void UseProgram::apply(){
+void UseProgram::operator()(){
   glUseProgram(this->_program);
 }
 
@@ -21,7 +21,7 @@ GLuint UseProgram::get(){
 UseProgramR::UseProgramR(GLuint*program){
   this->set(program);
 }
-void UseProgramR::apply(){
+void UseProgramR::operator()(){
   if(this->_program)glUseProgram(*this->_program);
 }
 void UseProgramR::set(GLuint*program){

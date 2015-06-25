@@ -95,6 +95,7 @@ namespace ge{
 
 
 
-    GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);  
+    GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);
+    GECORE_EXPORT unsigned bitCount(unsigned value);
   }
 }

@@ -1,30 +1,29 @@
-#ifndef _CBLENDINGFUNCTIONS_HPP_
-#define _CBLENDINGFUNCTIONS_HPP_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT BlendEnablei: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT BlendEnablei: public ge::core::Command
     {
       public:
         GLuint buffer;
         bool   enable;
         BlendEnablei(GLuint buffer,bool enable);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendEquation: public Command
+    class GEGL_EXPORT BlendEquation: public ge::core::Command
     {
       public:
         GLenum mode;
         BlendEquation(GLenum mode);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendEquationSeparate: public Command
+    class GEGL_EXPORT BlendEquationSeparate: public ge::core::Command
     {
       public:
         GLenum modeRGB;
@@ -32,10 +31,10 @@ namespace ge
         BlendEquationSeparate(
             GLenum modeRGB,
             GLenum modeAlpha);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendEquationi: public Command
+    class GEGL_EXPORT BlendEquationi: public ge::core::Command
     {
       public:
         GLuint buffer;
@@ -43,10 +42,10 @@ namespace ge
         BlendEquationi(
             GLuint buffer,
             GLenum mode);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendEquationSeparatei: public Command
+    class GEGL_EXPORT BlendEquationSeparatei: public ge::core::Command
     {
       public:
         GLuint buffer;
@@ -56,10 +55,10 @@ namespace ge
             GLuint buffer,
             GLenum modeRGB,
             GLenum modeAlpha);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendFunc: public Command
+    class GEGL_EXPORT BlendFunc: public ge::core::Command
     {
       public:
         GLenum src;
@@ -67,10 +66,10 @@ namespace ge
         BlendFunc(
             GLenum src,
             GLenum dst);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendFuncSeparate: public Command
+    class GEGL_EXPORT BlendFuncSeparate: public ge::core::Command
     {
       public:
         GLenum srcRGB;
@@ -82,10 +81,10 @@ namespace ge
             GLenum dstRGB,
             GLenum srcAlpha,
             GLenum dstAlpha);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendFunci: public Command
+    class GEGL_EXPORT BlendFunci: public ge::core::Command
     {
       public:
         GLuint buffer;
@@ -95,10 +94,10 @@ namespace ge
             GLuint buffer,
             GLenum src,
             GLenum dst);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendFuncSeparatei: public Command
+    class GEGL_EXPORT BlendFuncSeparatei: public ge::core::Command
     {
       public:
         GLuint buffer;
@@ -112,10 +111,10 @@ namespace ge
             GLenum dstRGB,
             GLenum srcAlpha,
             GLenum dstAlpha);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT BlendColor: public Command
+    class GEGL_EXPORT BlendColor: public ge::core::Command
     {
       public:
         GLfloat red;
@@ -127,9 +126,8 @@ namespace ge
             GLfloat green,
             GLfloat blue,
             GLfloat alpha);
-        void apply();
+        void operator()();
     };
   }
 }
 
-#endif//_CBLENDINGFUNCTIONS_HPP_

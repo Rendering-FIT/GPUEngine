@@ -5,7 +5,7 @@ using namespace ge::gl;
 DepthFunc::DepthFunc(GLenum func){
   this->set(func);
 }
-void DepthFunc::apply(){
+void DepthFunc::operator()(){
   glDepthFunc(this->_func);
 }
 void DepthFunc::set(GLenum func){
@@ -18,7 +18,7 @@ GLenum DepthFunc::get(){
 DepthMask::DepthMask(GLboolean mask){
   this->set(mask);
 }
-void DepthMask::apply(){
+void DepthMask::operator()(){
   glDepthMask(this->_mask);
 }
 void DepthMask::set(GLboolean mask){
@@ -31,7 +31,7 @@ GLboolean DepthMask::get(){
 ClearDepth::ClearDepth(GLdouble value){
   this->set(value);
 }
-void ClearDepth::apply(){
+void ClearDepth::operator()(){
   glClearDepth(this->_value);
 }
 void ClearDepth::set(GLdouble value){
@@ -44,7 +44,7 @@ GLdouble ClearDepth::get(){
 ClearDepthf::ClearDepthf(GLfloat value){
   this->set(value);
 }
-void ClearDepthf::apply(){
+void ClearDepthf::operator()(){
   glClearDepthf(this->_value);
 }
 void ClearDepthf::set(GLfloat value){
@@ -58,7 +58,7 @@ GLfloat ClearDepthf::get(){
 DepthFuncR::DepthFuncR(GLenum*func){
   this->set(func);
 }
-void DepthFuncR::apply(){
+void DepthFuncR::operator()(){
   if(this->_func)glDepthFunc(*this->_func);
 }
 void DepthFuncR::set(GLenum*func){
@@ -71,7 +71,7 @@ GLenum*DepthFuncR::get(){
 DepthMaskR::DepthMaskR(GLboolean*mask){
   this->set(mask);
 }
-void DepthMaskR::apply(){
+void DepthMaskR::operator()(){
   if(this->_mask)glDepthMask(*this->_mask);
 }
 void DepthMaskR::set(GLboolean*mask){
@@ -84,7 +84,7 @@ GLboolean*DepthMaskR::get(){
 ClearDepthR::ClearDepthR(GLdouble*value){
   this->set(value);
 }
-void ClearDepthR::apply(){
+void ClearDepthR::operator()(){
   if(this->_value)glClearDepth(*this->_value);
 }
 void ClearDepthR::set(GLdouble*value){
@@ -97,7 +97,7 @@ GLdouble*ClearDepthR::get(){
 ClearDepthfR::ClearDepthfR(GLfloat*value){
   this->set(value);
 }
-void ClearDepthfR::apply(){
+void ClearDepthfR::operator()(){
   if(this->_value)glClearDepthf(*this->_value);
 }
 void ClearDepthfR::set(GLfloat*value){

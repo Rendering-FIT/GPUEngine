@@ -3,7 +3,7 @@
 
 #include<iostream>
 
-#include<geGL/OpenGL.h>
+#include<geCore/Command.h>
 #include<geGL/ShaderObjectsCommands.h>
 
 #include<vector>
@@ -62,7 +62,7 @@ namespace ge
          *
          * @param command created command that destroys shaders
          */
-        void clear(Command **command);
+        void clear(ge::core::Command **command);
         /**
          * @brief creates commands that create shader
          *
@@ -77,7 +77,7 @@ namespace ge
          * @return returns textual representation of shader
          */
         std::string insert(
-            Command     **command,
+            ge::core::Command     **command,
             GLenum        type,
             std::string   text,
             std::string   name        = SHADER_OBJECT_MANAGER_DEFAULT_NAME,
@@ -93,7 +93,7 @@ namespace ge
          * @param profile profile version of shader
          */
         void insert(
-            Command     **command,
+            ge::core::Command     **command,
             std::string   fileName,
             std::string   name        = SHADER_OBJECT_MANAGER_DEFAULT_NAME,
             std::string   definitions = SHADER_OBJECT_MANAGER_DEFAULT_DEFINITIONS,

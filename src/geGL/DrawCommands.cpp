@@ -10,7 +10,7 @@ DrawArrays::DrawArrays(
     GLsizei count):DrawMode(mode),DrawCount(count){
   this->setFirst(first);
 }
-void DrawArrays::apply(){
+void DrawArrays::operator()(){
   glDrawArrays(
       this->_mode,
       this->_first,
@@ -32,7 +32,7 @@ DrawArraysInstancedBaseInstance::DrawArraysInstancedBaseInstance(
     GLsizei instanceCount,
     GLuint  baseInstance ):DrawArrays(mode,first,count),DrawInstancedBaseInstance(instanceCount,baseInstance){
 }
-void DrawArraysInstancedBaseInstance::apply(){
+void DrawArraysInstancedBaseInstance::operator()(){
   glDrawArraysInstancedBaseInstance(
       this->_mode,
       this->_first,
@@ -47,7 +47,7 @@ DrawArraysInstanced::DrawArraysInstanced(
     GLsizei count        ,
     GLsizei instanceCount):DrawArrays(mode,first,count),DrawInstanced(instanceCount){
 }
-void DrawArraysInstanced::apply(){
+void DrawArraysInstanced::operator()(){
   glDrawArraysInstanced(
       this->_mode         ,
       this->_first        ,
@@ -59,7 +59,7 @@ DrawArraysIndirect::DrawArraysIndirect(
     GLenum        mode    ,
     const GLvoid* indirect):DrawMode(mode),DrawIndirect(indirect){
 }
-void DrawArraysIndirect::apply(){
+void DrawArraysIndirect::operator()(){
   glDrawArraysIndirect(
       this->_mode,
       this->_indirect);
@@ -72,7 +72,7 @@ MultiDrawArrays::MultiDrawArrays(
     GLsizei        drawCount):DrawMode(mode),MultiCount(count),MultiDrawCount(drawCount){
   this->setFirst(first);
 }
-void MultiDrawArrays::apply(){
+void MultiDrawArrays::operator()(){
   glMultiDrawArrays(
       this->_mode,
       this->_first,
@@ -94,7 +94,7 @@ MultiDrawArraysIndirect::MultiDrawArraysIndirect(
     GLsizei       drawCount,
     GLsizei       stride   ):DrawMode(mode),MultiDrawIndirect(indirect,drawCount,stride){
 }
-void MultiDrawArraysIndirect::apply(){
+void MultiDrawArraysIndirect::operator()(){
   glMultiDrawArraysIndirect(
       this->_mode     ,
       this->_indirect ,
@@ -109,7 +109,7 @@ DrawElements::DrawElements(
     const GLvoid* indices):DrawCount(count),DrawModeType(mode,type){
   this->setIndices(indices);
 }
-void DrawElements::apply(){
+void DrawElements::operator()(){
   glDrawElements(
       this->_mode   ,
       this->_count  ,
@@ -133,7 +133,7 @@ DrawElementsInstancedBaseInstance::DrawElementsInstancedBaseInstance(
     GLsizei       instanceCount,
     GLuint        baseInstance ):DrawElements(mode,count,type,indices),DrawInstancedBaseInstance(instanceCount,baseInstance){
 }
-void DrawElementsInstancedBaseInstance::apply(){
+void DrawElementsInstancedBaseInstance::operator()(){
   glDrawElementsInstancedBaseInstance(
       this->_mode         ,
       this->_count        ,
@@ -150,7 +150,7 @@ DrawElementsInstanced::DrawElementsInstanced(
     const GLvoid* indices      ,
     GLsizei       instanceCount):DrawElements(mode,count,type,indices),DrawInstanced(instanceCount){
 }
-void DrawElementsInstanced::apply(){
+void DrawElementsInstanced::operator()(){
   glDrawElementsInstanced(
       this->_mode         ,
       this->_count        ,
@@ -167,7 +167,7 @@ MultiDrawElements::MultiDrawElements(
     GLsizei             drawCount):DrawModeType(mode,type),MultiCount(count),MultiDrawCount(drawCount){
   this->setIndices(indices);
 }
-void MultiDrawElements::apply(){
+void MultiDrawElements::operator()(){
   glMultiDrawElements(
       this->_mode     ,
       this->_count    ,
@@ -189,7 +189,7 @@ DrawRangeElements::DrawRangeElements(
     GLenum        type   ,
     const GLvoid* indices):DrawElements(mode,count,type,indices),DrawRange(start,end){
 }
-void DrawRangeElements::apply(){
+void DrawRangeElements::operator()(){
   glDrawRangeElements(
       this->_mode   ,
       this->_start  ,
@@ -217,7 +217,7 @@ DrawElementsBaseVertex::DrawElementsBaseVertex(
     GLint         baseVertex):DrawElements(mode,count,type,indices){
   this->setBaseVertex(baseVertex);
 }
-void DrawElementsBaseVertex::apply(){
+void DrawElementsBaseVertex::operator()(){
   glDrawElementsBaseVertex(
       this->_mode      ,
       this->_count     ,
@@ -241,7 +241,7 @@ DrawRangeElementsBaseVertex::DrawRangeElementsBaseVertex(
     const GLvoid* indices   ,
     GLint         baseVertex):DrawElementsBaseVertex(mode,count,type,indices,baseVertex),DrawRange(start,end){
 }
-void DrawRangeElementsBaseVertex::apply(){
+void DrawRangeElementsBaseVertex::operator()(){
   glDrawRangeElementsBaseVertex(
       this->_mode      ,
       this->_start     ,
@@ -260,7 +260,7 @@ DrawElementsInstancedBaseVertex::DrawElementsInstancedBaseVertex(
     GLsizei       instanceCount,
     GLint         baseVertex   ):DrawElementsBaseVertex(mode,count,type,indices,baseVertex),DrawInstanced(instanceCount){
 }
-void DrawElementsInstancedBaseVertex::apply(){
+void DrawElementsInstancedBaseVertex::operator()(){
   glDrawElementsInstancedBaseVertex(
       this->_mode         ,
       this->_count        ,
@@ -279,7 +279,7 @@ DrawElementsInstancedBaseVertexBaseInstance::DrawElementsInstancedBaseVertexBase
     GLint         baseVertex   ,
     GLuint        baseInstance ):DrawElementsBaseVertex(mode,count,type,indices,baseVertex),DrawInstancedBaseInstance(instanceCount,baseInstance){
 }
-void DrawElementsInstancedBaseVertexBaseInstance::apply(){
+void DrawElementsInstancedBaseVertexBaseInstance::operator()(){
   glDrawElementsInstancedBaseVertexBaseInstance(
       this->_mode         ,
       this->_count        ,
@@ -295,7 +295,7 @@ DrawElementsIndirect::DrawElementsIndirect(
     GLenum        type    ,
     const GLvoid* indirect):DrawModeType(mode,type),DrawIndirect(indirect){
 }
-void DrawElementsIndirect::apply(){
+void DrawElementsIndirect::operator()(){
   glDrawElementsIndirect(
       this->_mode    ,
       this->_type    ,
@@ -308,7 +308,7 @@ MultiDrawElementsIndirect::MultiDrawElementsIndirect(
     GLsizei       drawCount,
     GLsizei       stride   ):DrawModeType(mode,type),MultiDrawIndirect(indirect,drawCount,stride){
 }
-void MultiDrawElementsIndirect::apply(){
+void MultiDrawElementsIndirect::operator()(){
   glMultiDrawElementsIndirect(
       this->_mode     ,
       this->_type     ,
@@ -325,7 +325,7 @@ MultiDrawElementsBaseVertex::MultiDrawElementsBaseVertex(
     const GLint*        baseVertex):MultiDrawElements(mode,count,type,indices,drawCount){
   this->setBaseVertex(baseVertex);
 }
-void MultiDrawElementsBaseVertex::apply(){
+void MultiDrawElementsBaseVertex::operator()(){
   glMultiDrawElementsBaseVertex(
       this->_mode      ,
       this->_count     ,

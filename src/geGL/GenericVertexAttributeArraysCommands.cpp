@@ -17,7 +17,7 @@ namespace ge
       this->relativeOffset = relativeOffset;
     }
 
-    void VertexAttribFormat::apply(){
+    void VertexAttribFormat::operator()(){
       glVertexAttribFormat(
           this->attribIndex,
           this->size,
@@ -35,7 +35,7 @@ namespace ge
       this->type           = type;
       this->relativeOffset = relativeOffset;
     }
-    void VertexAttribIFormat::apply(){
+    void VertexAttribIFormat::operator()(){
       glVertexAttribIFormat(
           this->attribIndex,
           this->size,
@@ -52,7 +52,7 @@ namespace ge
       this->type           = type;
       this->relativeOffset = relativeOffset;
     }
-    void VertexAttribLFormat::apply(){
+    void VertexAttribLFormat::operator()(){
       glVertexAttribLFormat(
           this->attribIndex,
           this->size,
@@ -69,7 +69,7 @@ namespace ge
       this->offset       = offset;
       this->stride       = stride;
     }
-    void BindVertexBuffer::apply(){
+    void BindVertexBuffer::operator()(){
       glBindVertexBuffer(
           this->bindingIndex,
           this->buffer,
@@ -88,7 +88,7 @@ namespace ge
       this->offsets = offsets;
       this->strides = strides;
     }
-    void BindVertexBuffers::apply(){
+    void BindVertexBuffers::operator()(){
       glBindVertexBuffers(
           this->first,
           this->count,
@@ -102,7 +102,7 @@ namespace ge
       this->attribIndex  = attribIndex;
       this->bindingIndex = bindingIndex;
     }
-    void VertexAttribBinding::apply(){
+    void VertexAttribBinding::operator()(){
       glVertexAttribBinding(
           this->attribIndex,
           this->bindingIndex);
@@ -121,7 +121,7 @@ namespace ge
       this->stride     = stride;
       this->pointer    = pointer;
     }
-    void VertexAttribPointer::apply(){
+    void VertexAttribPointer::operator()(){
       glVertexAttribPointer(
           this->index,
           this->size,
@@ -142,7 +142,7 @@ namespace ge
       this->stride  = stride;
       this->pointer = pointer;
     }
-    void VertexAttribIPointer::apply(){
+    void VertexAttribIPointer::operator()(){
       glVertexAttribIPointer(
           this->index,
           this->size,
@@ -162,7 +162,7 @@ namespace ge
       this->stride  = stride;
       this->pointer = pointer;
     }
-    void VertexAttribLPointer::apply(){
+    void VertexAttribLPointer::operator()(){
       glVertexAttribLPointer(
           this->index,
           this->size,
@@ -174,14 +174,14 @@ namespace ge
         GLuint index){
       this->index = index;
     }
-    void EnableVertexAttribArray::apply(){
+    void EnableVertexAttribArray::operator()(){
       glEnableVertexAttribArray(this->index);
     }
     DisableVertexAttribArray::DisableVertexAttribArray(
         GLuint index){
       this->index = index;
     }
-    void DisableVertexAttribArray::apply(){
+    void DisableVertexAttribArray::operator()(){
       glDisableVertexAttribArray(this->index);
     }
   }//ogl

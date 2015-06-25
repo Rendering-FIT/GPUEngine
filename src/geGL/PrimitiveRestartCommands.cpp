@@ -1,17 +1,13 @@
 #include<geGL/PrimitiveRestartCommands.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    PrimitiveRestartIndex::PrimitiveRestartIndex(
-        GLuint index){
-      this->index = index;
-    }
-    void PrimitiveRestartIndex::apply(){
-      glPrimitiveRestartIndex(
-          this->index);
-    }
-  }//ogl
-}//ge
+using namespace ge::gl;
+
+PrimitiveRestartIndex::PrimitiveRestartIndex(
+    GLuint index){
+  this->index = index;
+}
+void PrimitiveRestartIndex::operator()(){
+  glPrimitiveRestartIndex(
+      this->index);
+}
 

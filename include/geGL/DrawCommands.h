@@ -1,13 +1,12 @@
-#ifndef _DRAWCOMMANDS_H_
-#define _DRAWCOMMANDS_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
-#include <geGL/DrawCommandsBases.h>
+#include<geCore/Command.h>
+#include<geGL/DrawCommandsBases.h>
 
 namespace ge{
   namespace gl{
     class GEGL_EXPORT DrawArrays: 
-      public Command,
+      public ge::core::Command,
       public DrawMode,
       public DrawCount
     {
@@ -18,7 +17,7 @@ namespace ge{
             GLenum  mode  = GL_TRIANGLES,
             GLint   first = 0           ,
             GLsizei count = 3           );
-        void apply();
+        void operator()();
         GLint getFirst();
         void  setFirst(GLint first = 0);
     };
@@ -34,7 +33,7 @@ namespace ge{
             GLsizei count         = 3           ,
             GLsizei instanceCount = 1           ,
             GLuint  baseInstance  = 0           );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT DrawArraysInstanced: 
       public DrawArrays, 
@@ -46,24 +45,24 @@ namespace ge{
             GLint   first         = 0           ,
             GLsizei count         = 3           ,
             GLsizei instanceCount = 1           );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT DrawArraysIndirect: 
       public DrawMode, 
       public DrawIndirect, 
-      public Command
+      public ge::core::Command
     {
       public:
         DrawArraysIndirect(
             GLenum        mode     = GL_TRIANGLES,
             const GLvoid* indirect = NULL        );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT MultiDrawArrays: 
       public DrawMode, 
       public MultiCount, 
       public MultiDrawCount, 
-      public Command
+      public ge::core::Command
     {
       protected:
         const GLint*   _first;
@@ -73,14 +72,14 @@ namespace ge{
             const GLint*   first     = NULL        ,
             const GLsizei* count     = NULL        ,
             GLsizei        drawCount = 1           );
-        void apply();
+        void operator()();
         const GLint*getFirst();
         void setFirst(const GLint*first = NULL);
     };
     class GEGL_EXPORT MultiDrawArraysIndirect: 
       public DrawMode, 
       public MultiDrawIndirect, 
-      public Command
+      public ge::core::Command
     {
       public:
         MultiDrawArraysIndirect(
@@ -88,10 +87,10 @@ namespace ge{
             const GLvoid* indirect  = NULL            ,
             GLsizei       drawCount = 1               ,
             GLsizei       stride    = sizeof(GLuint)*4);
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT DrawElements: 
-      public Command, 
+      public ge::core::Command, 
       public DrawCount, 
       public DrawModeType
     {
@@ -103,7 +102,7 @@ namespace ge{
             GLsizei       count   = 3              ,
             GLenum        type    = GL_UNSIGNED_INT,
             const GLvoid* indices = NULL           );
-        void apply();
+        void operator()();
         const GLvoid*getIndices();
         void setIndices(const GLvoid*indices = NULL);
     };
@@ -119,7 +118,7 @@ namespace ge{
             const GLvoid* indices       = NULL           ,
             GLsizei       instanceCount = 1              ,
             GLuint        baseInstance  = 0              );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT DrawElementsInstanced: 
       public DrawElements, 
@@ -132,13 +131,13 @@ namespace ge{
             GLenum        type          = GL_UNSIGNED_INT,
             const GLvoid* indices       = NULL           ,
             GLsizei       instanceCount = 1              );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT MultiDrawElements: 
       public DrawModeType, 
       public MultiCount, 
       public MultiDrawCount, 
-      public Command
+      public ge::core::Command
     {
       protected:
         const GLvoid*const* _indices;
@@ -149,7 +148,7 @@ namespace ge{
             GLenum              type      = GL_UNSIGNED_INT,
             const GLvoid*const* indices   = NULL           ,
             GLsizei             drawCount = 1              );
-        void apply();
+        void operator()();
         const GLvoid*const*getIndices();
         void setIndices(const GLvoid*const*indices = NULL);
     };
@@ -165,7 +164,7 @@ namespace ge{
             GLsizei       count   = 3              ,
             GLenum        type    = GL_UNSIGNED_INT,
             const GLvoid* indices = NULL           );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT DrawElementsBaseVertex: 
       public DrawElements
@@ -179,7 +178,7 @@ namespace ge{
             GLenum        type       = GL_UNSIGNED_INT,
             const GLvoid* indices    = NULL           ,
             GLint         baseVertex = 0              );
-        void apply();
+        void operator()();
         GLint getBaseVertex();
         void  setBaseVertex(GLint baseVertex = 0);
     };
@@ -196,7 +195,7 @@ namespace ge{
             GLenum        type       = GL_UNSIGNED_INT,
             const GLvoid* indices    = NULL           ,
             GLint         baseVertex = 0              );
-        void apply();
+        void operator()();
     };
 
     class GEGL_EXPORT DrawElementsInstancedBaseVertex: 
@@ -211,7 +210,7 @@ namespace ge{
             const GLvoid* indices       = NULL           ,
             GLsizei       instanceCount = 1              ,
             GLint         baseVertex    = 0              );
-        void apply();
+        void operator()();
     };
 
     class GEGL_EXPORT DrawElementsInstancedBaseVertexBaseInstance: 
@@ -227,25 +226,25 @@ namespace ge{
             GLsizei       instanceCount = 1              ,
             GLint         baseVertex    = 0              ,
             GLuint        baseInstance  = 0              );
-        void apply();
+        void operator()();
     };
 
     class GEGL_EXPORT DrawElementsIndirect: 
       public DrawModeType, 
       public DrawIndirect, 
-      public Command
+      public ge::core::Command
     {
       public:
         DrawElementsIndirect(
             GLenum        mode     = GL_TRIANGLES   ,
             GLenum        type     = GL_UNSIGNED_INT,
             const GLvoid* indirect = NULL           );
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT MultiDrawElementsIndirect: 
       public DrawModeType, 
       public MultiDrawIndirect, 
-      public Command
+      public ge::core::Command
     {
       public:
         MultiDrawElementsIndirect(
@@ -254,7 +253,7 @@ namespace ge{
             const GLvoid* indirect  = NULL            ,
             GLsizei       drawCount = 1               ,
             GLsizei       stride    = sizeof(GLuint)*5);
-        void apply();
+        void operator()();
     };
     class GEGL_EXPORT MultiDrawElementsBaseVertex: 
       public MultiDrawElements
@@ -269,12 +268,10 @@ namespace ge{
             const GLvoid*const* indices    = NULL,
             GLsizei             drawCount  = 1,
             const GLint*        baseVertex = NULL);
-        void apply();
+        void operator()();
         const GLint*getBaseVertex();
         void setBaseVertex(const GLint*baseVertex = NULL);
     };
   }//namespace ogl
 }//namespace ge
 
-
-#endif//_DRAWCOMMANDS_H_

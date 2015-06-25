@@ -158,10 +158,7 @@ void ge::gl::initShadersAndPrograms(){
   if(!glProgramUniformMatrix4x3dv     ){Result41+="glProgramUniformMatrix4x3dv "     ;OpenGL410=false;}
   if(!glProgramParameteri             ){Result41+="glProgramParameteri "             ;OpenGL410=false;}
 
-
-
-
-  if(!OpenGL320)/*throw*/std::cerr<<      "OpenGL 3.2 is not available, missing: "+Result32<<std::endl;
+  if(!OpenGL320)std::cerr<<"OpenGL 3.2 is not available, missing: "+Result32<<std::endl;
   if(!OpenGL400)std::cerr<<"OpenGL 4.0 is not available, missing: "+Result40<<std::endl;
   if(!OpenGL410)std::cerr<<"OpenGL 4.1 is not available, missing: "+Result41<<std::endl;
 
@@ -516,6 +513,148 @@ void ProgramObject::compileShaders(
   this->createShaderProgram_Epilogue();//gets attributes and uniforms
 }
 
+/*
+bool ProgramObject::_isShader(std::string data){
+  enum State{
+    START      ,
+    V          ,
+    O          ,
+    I          ,
+    D          ,
+    M          ,
+    A          ,
+    I          ,
+    N          ,
+    LEFT       ,
+    RIGHT      ,
+    SLASH      ,
+    COMMENT    ,
+    BACKSLASH  ,
+    CR         ,
+    LF         ,
+    LONGCOMMENT,
+    STAR       ,
+  }state=START;
+  unsigned pos=0;
+  while(pos<data.size()){
+    switch(state){
+      case START:
+        if(pos=='')
+        break;
+    }
+  }
+}
+void ProgramObject::_createProgram(
+    std::vector<std::string>& data,
+    unsigned                  version,
+    std::string               profile){
+  const std::string functionName="ProgramObject::_createProgram";
+  if(data.size()==0){
+    std::cerr<<functionName<<" - there are no data"<<std::endl;
+    return;
+  }
+
+  std::vector<std::string>sources;
+  for(unsigned i=0;i<data.size();++i)
+    sources.push_back(this->_getShaderSource(data[i]));
+
+  unsigned i=0;
+  while(!this->_isShader(sources[i])){
+    std::cerr<<functionName<<" - there has to be a shader before: "<<sources[i]<<std::endl;
+    ++i;
+  }
+  if(i>=sources.size()){
+    std::cerr<<functionName<<" - there are no shaders"<<std::endl;
+    return;
+  }
+
+  std::vector<std::string>shaders;
+  while(i<sources.size()){
+    std::vector<std::string>component;
+    component.push_back(sources[i++]);//push shader
+    while(i<sources.size()&&!this->_isShader(sources[i]))//push definitions ...
+      component.push_back(sources[i++]);
+    shaders.push_back(this->_composeShaderSource(component,version,profile));
+    if(i>=sources.size())break;
+  }
+  std::vector<unsigned>shaderMasks;
+  for(unsigned i=0;i<shaders.size();++i)
+    shaderMasks.push_back(this->_getShaderSourceTypeMask(shaders[i]));
+  //resolved
+  //unsigned resolved=0;
+  unsigned presentShaders=0;
+  for(unsigned i=0;i<shaderMasks.size();++i)
+    presentShaders|=shaderMasks[i];
+  enum ShaderTypeId{
+    VERTEX     = 0u,
+    CONTROL    = 1u,
+    EVALUATION = 2u,
+    GEOMETRY   = 3u,
+    FRAGMENT   = 4u,
+    COMPUTE    = 5u,
+  };
+  const char*shaderNames[]={
+    "vertex"                 ,
+    "tessellation control"   ,
+    "tessellation evaluation",
+    "geometry"               ,
+    "fragment"               ,
+    "compute"                ,
+  };
+  const unsigned nofShaderTypes=sizeof(shaderNames)/sizeof(const char*);
+  enum ShaderTypeMask{
+    MASK_VERTEX     = 1u << VERTEX    ,
+    MASK_CONTROL    = 1u << CONTROL   ,
+    MASK_EVALUATION = 1u << EVALUATION,
+    MASK_GEOMETRY   = 1u << GEOMETRY  ,
+    MASK_FRAGMENT   = 1u << FRAGMENT  ,
+    MASK_COMPUTE    = 1u << COMPUTE   ,
+  };
+  const unsigned allowedCombinations[]={
+    MASK_VERTEX  ,
+    MASK_FRAGMENT,
+    MASK_COMPUTE ,
+    MASK_VERTEX  |MASK_FRAGMENT,
+    MASK_VERTEX  |MASK_GEOMETRY,
+    MASK_VERTEX  |MASK_GEOMETRY|MASK_FRAGMENT  ,
+    MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION,
+    MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION|MASK_GEOMETRY,
+    MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION|MASK_FRAGMENT,
+    MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION|MASK_GEOMETRY|MASK_FRAGMENT
+  };
+  const unsigned nofAllowedCombinations=sizeof(allowedCombinations)/sizeof(unsigned);
+  auto combination2Str=[&shaderNames](unsigned mask){
+    std::stringstream ss;
+    for(unsigned s=0;s<nofShaderTypes;++s)
+      if(mask&(MASK_VERTEX+s)){
+        ss<<shaderNames[s];
+        if(s<nofShaderTypes-1)
+          ss<<"+";
+      }
+    return ss.str();
+  };
+  auto nofShadersInCombination=[](unsigned mask){
+    return ge::core::bitCount(mask);
+  };
+  auto shaderSubset=[](unsigned inner,unsigned outer){
+    return ge::core::bitCount(inner&outer)==ge::core::bitCount(inner);
+  }
+  if(nofShadersInCombination(presentShaders)<shaders.size()){
+    std::cerr<<functionName<<" - there are duplicate shaders"<<std::endl;
+    return;
+  }
+  std::vector<unsigned>allowedIncides;
+  for(unsigned i=0;i<nofAllowedCombinations;++i)
+    if(shaderSubset(presentShaders,allowedCombinations[i]))
+      allowedIncides.push_back(i);
+
+  if(!allowedIncides.size()){
+    std::cerr<<functionName<<" - disallowed shader combination: "<<combination2Str(presentShaders)<<std::endl;
+    return;
+  }
+
+}
+*/
 void ProgramObject::sortAndCompileShaders(
     unsigned NumStrings,
     std::string*Strings,
@@ -1027,8 +1166,8 @@ GLuint ProgramObject::getBuffer(std::string name){
 GLint ProgramObject::getBufferProperty(
     std::string name,
     BufferParams::Properties property){
-   if(!this->_bufferList.count(name))return 0;
-   return this->_bufferList[name].getProperty(property);
+  if(!this->_bufferList.count(name))return 0;
+  return this->_bufferList[name].getProperty(property);
 }
 BufferParams ProgramObject::getBufferParams(std::string name){
   return this->_bufferList[name];

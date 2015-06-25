@@ -1,23 +1,22 @@
-#ifndef _CSTENCILFUNCTIONS_HPP_
-#define _CSTENCILFUNCTIONS_HPP_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geCore/Command.h>
+#include<geGL/Export.h>
+#include<GL/glew.h>
 
-namespace ge
-{
-  namespace gl
-  {
-    class GEGL_EXPORT StencilFunc: public Command
+namespace ge{
+  namespace gl{
+    class GEGL_EXPORT StencilFunc: public ge::core::Command
     {
       public:
         GLenum func;
         GLint  ref ;
         GLuint mask;
         StencilFunc(GLenum func,GLint ref,GLuint mask);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT StencilFuncSeparate: public Command
+    class GEGL_EXPORT StencilFuncSeparate: public ge::core::Command
     {
       public:
         GLenum face;
@@ -25,20 +24,20 @@ namespace ge
         GLint  ref ;
         GLuint mask;
         StencilFuncSeparate(GLenum face,GLenum func,GLint ref,GLuint mask);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT StencilOp: public Command
+    class GEGL_EXPORT StencilOp: public ge::core::Command
     {
       public:
         GLenum sfail ;
         GLenum dpfail;
         GLenum dppass;
         StencilOp(GLenum sfail,GLenum dpfail,GLenum dppass);
-        void apply();
+        void operator()();
     };
 
-    class GEGL_EXPORT StencilOpSeparate: public Command
+    class GEGL_EXPORT StencilOpSeparate: public ge::core::Command
     {
       public:
         GLenum face  ;
@@ -46,9 +45,8 @@ namespace ge
         GLenum dpfail;
         GLenum dppass;
         StencilOpSeparate(GLenum face,GLenum sfail,GLenum dpfail,GLenum dppass);
-        void apply();
+        void operator()();
     };
   }//ogl
 }//ge
 
-#endif//_CSTENCILFUNCTIONS_HPP_

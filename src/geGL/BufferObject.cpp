@@ -135,10 +135,10 @@ BufferObject::BufferObject(
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer(BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
+  glBindBuffer(GL_COPY_WRITE_BUFFER,this->_id);
   if(
       flags == GL_STATIC_DRAW ||
       flags == GL_STATIC_COPY ||
@@ -149,12 +149,12 @@ BufferObject::BufferObject(
       flags == GL_DYNAMIC_DRAW||
       flags == GL_DYNAMIC_COPY||
       flags == GL_DYNAMIC_READ)
-    glBufferData(BUFFEROBJECT_DEFAULT_OPERTARGET,size,data,flags);
+    glBufferData(GL_COPY_WRITE_BUFFER,size,data,flags);
   else
-    glBufferStorage(BUFFEROBJECT_DEFAULT_OPERTARGET,size,data,flags);
+    glBufferStorage(GL_COPY_WRITE_BUFFER,size,data,flags);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer(BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);
+  glBindBuffer(GL_COPY_WRITE_BUFFER,oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -236,7 +236,7 @@ void BufferObject::unbind(
     GLenum target){
   glBindBuffer(
       target,
-      BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      0);
 }
 /**
  * @brief Unbinds range of buffer from specific indexed target
@@ -250,7 +250,7 @@ void BufferObject::unbindRange(
   glBindBufferBase(//NOTE: unbind whole buffer
       target,
       index,
-      BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      0);
 }
 /**
  * @brief Unbinds buffer from specific index target
@@ -264,7 +264,7 @@ void BufferObject::unbindBase(
   glBindBufferBase(
       target,
       index,
-      BUFFEROBJECT_DEFAULT_EMPTY_TARGET);
+      0);
 }
 /**
  * @brief Copies data from another buffer into this buffer
@@ -279,33 +279,33 @@ void BufferObject::copy(
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldReadId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_READBUFFER),(GLint*)&oldReadId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_READ_BUFFER),(GLint*)&oldReadId);
   GLuint oldWriteId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_WRITEBUFFER),(GLint*)&oldWriteId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldWriteId);
 #endif//SAVE_PREVIOUS_BINDING
 
   //bind buffers
-  glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,buffer->_id);
-  glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,this  ->_id);
+  glBindBuffer(GL_COPY_READ_BUFFER ,buffer->_id);
+  glBindBuffer(GL_COPY_WRITE_BUFFER,this  ->_id);
   //copy buffer
   glCopyBufferSubData(
-      BUFFEROBJECT_DEFAULT_READBUFFER,
-      BUFFEROBJECT_DEFAULT_WRITEBUFFER,
-      BUFFEROBJECT_DEFAULT_READOFFSET,
-      BUFFEROBJECT_DEFAULT_WRITEOFFSET,
+      GL_COPY_READ_BUFFER,
+      GL_COPY_WRITE_BUFFER,
+      0,
+      0,
       maxSize);
 #ifdef  SAVE_PREVIOUS_BINDING
   //unbind buffers
-  glBindBuffer(BUFFEROBJECT_DEFAULT_READBUFFER ,oldReadId);
-  glBindBuffer(BUFFEROBJECT_DEFAULT_WRITEBUFFER,oldWriteId);
+  glBindBuffer(GL_COPY_READ_BUFFER ,oldReadId);
+  glBindBuffer(GL_COPY_WRITE_BUFFER,oldWriteId);
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
   glCopyNamedBufferSubData(
       buffer->_id,
-      this->_id,
-      BUFFEROBJECT_DEFAULT_READOFFSET,
-      BUFFEROBJECT_DEFAULT_WRITEOFFSET,
+      this  ->_id,
+      0,
+      0,
       maxSize);
 #endif//USE_DSA
 }
@@ -328,20 +328,20 @@ void BufferObject::operator &=(
 void BufferObject::flushMapped(
     GLsizeiptr size,
     GLintptr   offset){
-  if(size==BUFFEROBJECT_DEFAULT_SIZE)
+  if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer(BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  glFlushMappedBufferRange(BUFFEROBJECT_DEFAULT_OPERTARGET,offset,size);
+  glBindBuffer(GL_COPY_WRITE_BUFFER,this->_id);
+  glFlushMappedBufferRange(GL_COPY_WRITE_BUFFER,offset,size);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer(BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);
+  glBindBuffer(GL_COPY_WRITE_BUFFER,oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -376,14 +376,14 @@ void BufferObject::clear(
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer     (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  glClearBufferData(BUFFEROBJECT_DEFAULT_OPERTARGET,internalFormat,format,type,data);
+  glBindBuffer     (GL_COPY_WRITE_BUFFER,this->_id);
+  glClearBufferData(GL_COPY_WRITE_BUFFER,internalFormat,format,type,data);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer     (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);
+  glBindBuffer     (GL_COPY_WRITE_BUFFER,oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -411,14 +411,14 @@ void BufferObject::clear(
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer        (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  glClearBufferSubData(BUFFEROBJECT_DEFAULT_OPERTARGET,internalFormat,offset,size,format,type,data);
+  glBindBuffer        (GL_COPY_WRITE_BUFFER,this->_id);
+  glClearBufferSubData(GL_COPY_WRITE_BUFFER,internalFormat,offset,size,format,type,data);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer        (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);//unbin buffer
+  glBindBuffer        (GL_COPY_WRITE_BUFFER,oldId);//unbin buffer
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -435,14 +435,14 @@ GLvoid*BufferObject::map(
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer        (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  ptr=glMapBufferRange(BUFFEROBJECT_DEFAULT_OPERTARGET,BUFFEROBJECT_DEFAULT_MAPOFFSET,this->getSize(),access);
+  glBindBuffer        (GL_COPY_WRITE_BUFFER,this->_id);
+  ptr=glMapBufferRange(GL_COPY_WRITE_BUFFER,0,this->getSize(),access);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer        (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);//unbin buffer
+  glBindBuffer        (GL_COPY_WRITE_BUFFER,oldId);//unbin buffer
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -459,14 +459,14 @@ GLvoid*BufferObject::map(
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer        (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  ptr=glMapBufferRange(BUFFEROBJECT_DEFAULT_OPERTARGET,offset,size,access);
+  glBindBuffer        (GL_COPY_WRITE_BUFFER,this->_id);
+  ptr=glMapBufferRange(GL_COPY_WRITE_BUFFER,offset,size,access);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer        (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);//unbin buffer
+  glBindBuffer        (GL_COPY_WRITE_BUFFER,oldId);//unbin buffer
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -480,14 +480,14 @@ void BufferObject::unmap(){
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  glUnmapBuffer(BUFFEROBJECT_DEFAULT_OPERTARGET);
+  glBindBuffer (GL_COPY_WRITE_BUFFER,this->_id);
+  glUnmapBuffer(GL_COPY_WRITE_BUFFER);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);//unbin buffer
+  glBindBuffer (GL_COPY_WRITE_BUFFER,oldId);//unbin buffer
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -496,23 +496,23 @@ void BufferObject::unmap(){
 }
 
 void BufferObject::setData(
-    GLvoid     *data,
-    GLsizeiptr  size,
-    GLintptr    offset){
-  if(size==BUFFEROBJECT_DEFAULT_SIZE)
+    const GLvoid* data  ,
+    GLsizeiptr    size  ,
+    GLintptr      offset){
+  if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer   (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);//bind buffer
-  glBufferSubData(BUFFEROBJECT_DEFAULT_OPERTARGET,offset,size,data);//copy data
+  glBindBuffer   (GL_COPY_WRITE_BUFFER,this->_id);//bind buffer
+  glBufferSubData(GL_COPY_WRITE_BUFFER,offset,size,data);//copy data
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer   (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);//unbin buffer
+  glBindBuffer   (GL_COPY_WRITE_BUFFER,oldId);//unbin buffer
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -524,40 +524,41 @@ void BufferObject::getData(
     GLvoid     *data,
     GLsizeiptr  size,
     GLintptr    offset){
-  if(size==BUFFEROBJECT_DEFAULT_SIZE)
+  if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer      (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);//bind buffer
-  glGetBufferSubData(BUFFEROBJECT_DEFAULT_OPERTARGET,offset,size,data);//obtain data
+  glBindBuffer      (GL_COPY_WRITE_BUFFER,this->_id);//bind buffer
+  glGetBufferSubData(GL_COPY_WRITE_BUFFER,offset,size,data);//obtain data
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer      (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);//unbin buffer
+  glBindBuffer      (GL_COPY_WRITE_BUFFER,oldId);//unbin buffer
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
   glGetNamedBufferSubData(this->_id,offset,size,data);
 #endif//USE_DSA
 }
+
 GLint BufferObject::_getBufferParameter(GLenum pname){
   GLint param;
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer          (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  glGetBufferParameteriv(BUFFEROBJECT_DEFAULT_OPERTARGET,pname,&param);
+  glBindBuffer          (GL_COPY_WRITE_BUFFER,this->_id);
+  glGetBufferParameteriv(GL_COPY_WRITE_BUFFER,pname,&param);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer          (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);
+  glBindBuffer          (GL_COPY_WRITE_BUFFER,oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -572,14 +573,14 @@ GLvoid*BufferObject::_getBufferPointer(GLenum pname){
 
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
-  glGetIntegerv(bufferTarget2Binding(BUFFEROBJECT_DEFAULT_OPERTARGET),(GLint*)&oldId);
+  glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
-  glBindBuffer       (BUFFEROBJECT_DEFAULT_OPERTARGET,this->_id);
-  glGetBufferPointerv(BUFFEROBJECT_DEFAULT_OPERTARGET,pname,&param);
+  glBindBuffer       (GL_COPY_WRITE_BUFFER,this->_id);
+  glGetBufferPointerv(GL_COPY_WRITE_BUFFER,pname,&param);
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  glBindBuffer       (BUFFEROBJECT_DEFAULT_OPERTARGET,oldId);
+  glBindBuffer       (GL_COPY_WRITE_BUFFER,oldId);
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
@@ -591,9 +592,6 @@ GLvoid*BufferObject::_getBufferPointer(GLenum pname){
 GLsizeiptr BufferObject::getSize(){
   return this->_getBufferParameter(GL_BUFFER_SIZE);
 }
-//GLuint BufferObject::getId(){
-//  return this->_id;
-//}
 GLenum BufferObject::getUsage(){
   return this->_getBufferParameter(GL_BUFFER_USAGE);
 }

@@ -13,6 +13,7 @@ namespace ge{
       protected:
         GLuint _id;///<object id
       public:
+        OpenGLObject(GLuint id = 0);
         GLuint getId();
         virtual ~OpenGLObject(){};
     };
