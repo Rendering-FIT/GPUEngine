@@ -13,6 +13,7 @@ project(${LIB_NAME})
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
   ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/algorithms.h
   ${HEADER_PATH}/ArgumentObject.h
   ${HEADER_PATH}/CameraObject.h
   ${HEADER_PATH}/CameraPath.h

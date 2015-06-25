@@ -1,12 +1,13 @@
 #pragma once
 
 #include <geCore/Export.h>
+#include <geCore/Functor.h>
 #include<iostream>
 #include<vector>
 
 namespace ge{
   namespace core{
-    class GECORE_EXPORT Command
+    class GECORE_EXPORT Command : public Functor
     {
       public:
         virtual void operator()()=0;
