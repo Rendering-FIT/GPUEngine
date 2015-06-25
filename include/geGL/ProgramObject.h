@@ -438,6 +438,8 @@ namespace ge{
          * @brief Sets this shader as active
          */
         void use();
+        void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
+        void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
         /**
          * @brief Sets subroutine with name SubroutineName as active in Uniform
          *
@@ -445,89 +447,62 @@ namespace ge{
          * @param uniform uniform name
          * @param subroutineName subroutine name
          */
-        void setSubroutine(
-            GLenum      shaderType,
-            std::string uniform,
-            unsigned    offSet,
-            std::string subroutineName);
-
-        void set(
-            std::string   uniformName,
-            GLsizei       count,
-            GLboolean     transpose,
-            const GLfloat*value);
-        void set(
-            std::string    uniformName,
-            GLsizei        count,
-            GLboolean      transpose,
-            const GLdouble*value);
-        void setdsa(
-            std::string   uniformName,
-            GLsizei       count,
-            GLboolean     transpose,
-            const GLfloat*value);
-        void setdsa(
-            std::string    uniformName,
-            GLsizei        count,
-            GLboolean      transpose,
-            const GLdouble*value);
-        void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
-        void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
-
-        DEFDEFFCE(1,f);
-        DEFDEFFCE(2,f);
-        DEFDEFFCE(3,f);
-        DEFDEFFCE(4,f);
-        DEFDEFFCE(1,d);
-        DEFDEFFCE(2,d);
-        DEFDEFFCE(3,d);
-        DEFDEFFCE(4,d);
-        DEFDEFFCE(1,i);
-        DEFDEFFCE(2,i);
-        DEFDEFFCE(3,i);
-        DEFDEFFCE(4,i);
-        DEFDEFFCE(1,ui);
-        DEFDEFFCE(2,ui);
-        DEFDEFFCE(3,ui);
-        DEFDEFFCE(4,ui);
-        DEFDEFFCE(1,boolean);
-        DEFDEFFCE(2,boolean);
-        DEFDEFFCE(3,boolean);
-        DEFDEFFCE(4,boolean);
-        DEFDEFFCEV(f);
-        DEFDEFFCEV(d);
-        DEFDEFFCEV(i);
-        DEFDEFFCEV(ui);
-        DEFDEFFCEV(boolean);
-
-        DEFDEFDSAFCE(1,f);
-        DEFDEFDSAFCE(2,f);
-        DEFDEFDSAFCE(3,f);
-        DEFDEFDSAFCE(4,f);
-        DEFDEFDSAFCE(1,d);
-        DEFDEFDSAFCE(2,d);
-        DEFDEFDSAFCE(3,d);
-        DEFDEFDSAFCE(4,d);
-        DEFDEFDSAFCE(1,i);
-        DEFDEFDSAFCE(2,i);
-        DEFDEFDSAFCE(3,i);
-        DEFDEFDSAFCE(4,i);
-        DEFDEFDSAFCE(1,ui);
-        DEFDEFDSAFCE(2,ui);
-        DEFDEFDSAFCE(3,ui);
-        DEFDEFDSAFCE(4,ui);
-        DEFDEFDSAFCE(1,boolean);
-        DEFDEFDSAFCE(2,boolean);
-        DEFDEFDSAFCE(3,boolean);
-        DEFDEFDSAFCE(4,boolean);
-        DEFDEFDSAFCEV(f);
-        DEFDEFDSAFCEV(d);
-        DEFDEFDSAFCEV(i);
-        DEFDEFDSAFCEV(ui);
-        DEFDEFDSAFCEV(boolean);
-
+        void setSubroutine(GLenum shader,std::string uniform,unsigned offSet,std::string subroutine);
+        void set(std::string name,GLsizei count,GLboolean transpose,const GLfloat*value);
+        void set(std::string name,GLsizei count,GLboolean transpose,const GLdouble*value);
+        void setdsa(std::string name,GLsizei count,GLboolean transpose,const GLfloat*value);
+        void setdsa(std::string name,GLsizei count,GLboolean transpose,const GLdouble*value);
+        void set(std::string name,GLfloat v0);
+        void set(std::string name,GLfloat v0,GLfloat v1);
+        void set(std::string name,GLfloat v0,GLfloat v1,GLfloat v2);
+        void set(std::string name,GLfloat v0,GLfloat v1,GLfloat v2,GLfloat v3);
+        void set(std::string name,GLdouble v0);
+        void set(std::string name,GLdouble v0,GLdouble v1);
+        void set(std::string name,GLdouble v0,GLdouble v1,GLdouble v2);
+        void set(std::string name,GLdouble v0,GLdouble v1,GLdouble v2,GLdouble v3);
+        void set(std::string name,GLint v0);
+        void set(std::string name,GLint v0,GLint v1);
+        void set(std::string name,GLint v0,GLint v1,GLint v2);
+        void set(std::string name,GLint v0,GLint v1,GLint v2,GLint v3);
+        void set(std::string name,GLuint v0);
+        void set(std::string name,GLuint v0,GLuint v1);
+        void set(std::string name,GLuint v0,GLuint v1,GLuint v2);
+        void set(std::string name,GLuint v0,GLuint v1,GLuint v2,GLuint v3);
+        void set(std::string name,GLboolean v0);
+        void set(std::string name,GLboolean v0,GLboolean v1);
+        void set(std::string name,GLboolean v0,GLboolean v1,GLboolean v2);
+        void set(std::string name,GLboolean v0,GLboolean v1,GLboolean v2,GLboolean v3);
+        void set(std::string name,GLsizei count,const GLfloat*  v);
+        void set(std::string name,GLsizei count,const GLdouble* v);
+        void set(std::string name,GLsizei count,const GLint*    v);
+        void set(std::string name,GLsizei count,const GLuint*   v);
+        void set(std::string name,GLsizei count,const GLboolean*v);
+        void setdsa(std::string name,GLfloat v0);
+        void setdsa(std::string name,GLfloat v0,GLfloat v1);
+        void setdsa(std::string name,GLfloat v0,GLfloat v1,GLfloat v2);
+        void setdsa(std::string name,GLfloat v0,GLfloat v1,GLfloat v2,GLfloat v3);
+        void setdsa(std::string name,GLdouble v0);
+        void setdsa(std::string name,GLdouble v0,GLdouble v1);
+        void setdsa(std::string name,GLdouble v0,GLdouble v1,GLdouble v2);
+        void setdsa(std::string name,GLdouble v0,GLdouble v1,GLdouble v2,GLdouble v3);
+        void setdsa(std::string name,GLint v0);
+        void setdsa(std::string name,GLint v0,GLint v1);
+        void setdsa(std::string name,GLint v0,GLint v1,GLint v2);
+        void setdsa(std::string name,GLint v0,GLint v1,GLint v2,GLint v3);
+        void setdsa(std::string name,GLuint v0);
+        void setdsa(std::string name,GLuint v0,GLuint v1);
+        void setdsa(std::string name,GLuint v0,GLuint v1,GLuint v2);
+        void setdsa(std::string name,GLuint v0,GLuint v1,GLuint v2,GLuint v3);
+        void setdsa(std::string name,GLboolean v0);
+        void setdsa(std::string name,GLboolean v0,GLboolean v1);
+        void setdsa(std::string name,GLboolean v0,GLboolean v1,GLboolean v2);
+        void setdsa(std::string name,GLboolean v0,GLboolean v1,GLboolean v2,GLboolean v3);
+        void setdsa(std::string name,GLsizei count,const GLfloat*  v);
+        void setdsa(std::string name,GLsizei count,const GLdouble* v);
+        void setdsa(std::string name,GLsizei count,const GLint*    v);
+        void setdsa(std::string name,GLsizei count,const GLuint*   v);
+        void setdsa(std::string name,GLsizei count,const GLboolean*v);
     };
-
   }//gl
 }//ge
 

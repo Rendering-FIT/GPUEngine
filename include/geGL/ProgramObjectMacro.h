@@ -107,7 +107,7 @@
 	void ProgramObject::set(\
 			std::string uniformName,\
 			GLsizei count,\
-			DEF_GLTYPE(type_name) *value){\
+			const DEF_GLTYPE(type_name) *value){\
     if(!this->_uniformList.count(uniformName))return;\
 		ShaderObjectParameter param=this->_uniformList[uniformName];\
 		switch(param.type){\
@@ -145,7 +145,7 @@
 	void ProgramObject::setdsa(\
 			std::string uniformName,\
 			GLsizei count,\
-			DEF_GLTYPE(type_name) *value){\
+			const DEF_GLTYPE(type_name) *value){\
     if(!this->_uniformList.count(uniformName))return;\
 		ShaderObjectParameter param=this->_uniformList[uniformName];\
 		switch(param.type){\
