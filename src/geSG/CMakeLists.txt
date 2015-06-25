@@ -51,7 +51,7 @@ ADD_LIBRARY(${LIB_NAME}
 include_directories()
 
 set(Internal_deps geGL)
-set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
 target_link_libraries(${LIB_NAME} ${Internal_deps})
 set_target_properties(${LIB_NAME} PROPERTIES 
     INCLUDE_DIRECTORIES "${Internal_inc}"

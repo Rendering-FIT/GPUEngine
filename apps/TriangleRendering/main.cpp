@@ -107,13 +107,25 @@ void Wheel(int /*d*/){
 }
 
 
-void Idle(){
+void Idle()
+{
+   // prepare for rendering
+   RenderingContext::current()->evaluateTransformationGraph();
+   RenderingContext::current()->setupRendering();
+   RenderingContext::current()->mapStateSetBuffer();
+   stateSet->setupRendering();
+   RenderingContext::current()->unmapStateSetBuffer();
+
+   // indirect buffer update - setup and start compute shader
    processInstanceProgram->use();
-   processInstanceProgram->set("numToProcess",2);
+   unsigned numInstances=RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd();
+   processInstanceProgram->set("numToProcess",numInstances);
    RenderingContext::current()->drawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
    RenderingContext::current()->instanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->indirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
-   glDispatchCompute(1,1,1);
+   RenderingContext::current()->instancingMatricesControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->indirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
+   RenderingContext::current()->stateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
+   glDispatchCompute((numInstances+63)/64,1,1);
 
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    glProgram->use();
@@ -135,7 +147,8 @@ void Idle(){
 }
 
 
-void Init(){
+void Init()
+{
    AttribConfig::ConfigData config;
    config.attribTypes.push_back(AttribType::Vec3);
 
@@ -192,21 +205,22 @@ void Init(){
       glm::vec3(niShiftX-1,instanceShiftY+0,z),
    };
    vector<unsigned> drawCommands = {
-      GL_TRIANGLES,3,0,0,
-      GL_TRIANGLES,3,3,3,
+      3,0,0,
+      3,3,3,
    };
-   const vector<unsigned> drawCommandOffsets4 = {
-      0,4,
+   const vector<unsigned> modesAndOffsets4 = {
+      GL_TRIANGLES,0,
+      GL_TRIANGLES,3,
    };
    a[0]=twoTriangleInstancesNI.data();
    config.ebo=false;
    config.updateId();
    stateSet=make_shared<StateSet>();
-   attribsRefInstNI.allocData(config,6,0,24);
+   attribsRefInstNI.allocData(config,6,0,drawCommands.size()*sizeof(unsigned));
    attribsRefInstNI.uploadVertices(a.data(),twoTriangleInstancesNI.size());
    attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
-                                       drawCommandOffsets4.data(),drawCommandOffsets4.size());
-   attribsRefInstNI.createInstances(0u,stateSet.get());
+                                       modesAndOffsets4.data(),modesAndOffsets4.size()/2);
+   attribsRefInstNI.createInstances(RenderingContext::current()->identityInstancingMatrix().get(),stateSet.get());
 
 
    // unmap instance buffer
@@ -249,25 +263,54 @@ void Init(){
       "layout(std430,binding=1) restrict readonly buffer InstanceBuffer {\n"
       "   uint instanceBuffer[];\n"
       "};\n"
-      "layout(std430,binding=2) restrict writeonly buffer IndirectBuffer {\n"
+      "layout(std430,binding=2) restrict readonly buffer InstancingMatricesControlBuffer {\n"
+      "   uint instancingMatricesControlBuffer[];\n"
+      "};\n"
+      "layout(std430,binding=3) restrict writeonly buffer IndirectBuffer {\n"
       "   uint indirectBuffer[];\n"
       "};\n"
+      "layout(std430,binding=4) restrict buffer StateSetBuffer {\n"
+      "   uint stateSetBuffer[];\n"
+      "};\n"
       "\n"
-      "uniform int numToProcess;\n"
+      "uniform uint numToProcess;\n"
       "\n"
       "void main()\n"
       "{\n"
       "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
       "      return;\n"
       "\n"
+      "   // instance buffer data\n"
       "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
       "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
+      "   uint matrixControlOffset4=instanceBuffer[instanceIndex+1];\n"
+      "   uint stateSetDataOffset4=instanceBuffer[instanceIndex+2];\n"
       "\n"
-      "   uint writeIndex=gl_GlobalInvocationID.x*4;\n"
-      "   indirectBuffer[writeIndex+0]=drawCommandBuffer[drawCommandOffset4+1]; // count\n"
-      "   indirectBuffer[writeIndex+1]=1; // instance count\n"
-      "   indirectBuffer[writeIndex+2]=drawCommandBuffer[drawCommandOffset4+2]+\n"
-      "                                drawCommandBuffer[drawCommandOffset4+3]; // first\n"
-      "   indirectBuffer[writeIndex+3]=0; // base instance\n"
+      "   // instancing matrices data\n"
+      "   uint matrixCollectionOffset64=instancingMatricesControlBuffer[matrixControlOffset4+0];\n"
+      "   uint numMatrices=instancingMatricesControlBuffer[matrixControlOffset4+1];\n"
+      "\n"
+      "   // compute increment and get indirectBufferOffset\n"
+      "   uint countAndIndexedFlag=drawCommandBuffer[drawCommandOffset4+0];\n"
+      "   uint indirectBufferIncrement=4+bitfieldExtract(countAndIndexedFlag,31,1); // make increment 4 or 5\n"
+      "   uint indirectBufferOffset4=atomicAdd(stateSetBuffer[stateSetDataOffset4],indirectBufferIncrement);\n"
+      "\n"
+      "   // write indirect buffer data\n"
+      "   indirectBuffer[indirectBufferOffset4]=countAndIndexedFlag&0x7fffffff; // indexCount or vertexCount\n"
+      "   indirectBufferOffset4++;\n"
+      "   indirectBuffer[indirectBufferOffset4]=numMatrices; // instanceCount\n"
+      "   indirectBufferOffset4++;\n"
+      "   uint first=drawCommandBuffer[drawCommandOffset4+1]; // firstIndex or firstVertex\n"
+      "   uint vertexOffset=drawCommandBuffer[drawCommandOffset4+2]; // vertexOffset\n"
+      "   if(countAndIndexedFlag>=0x80000000) {\n"
+      "      indirectBuffer[indirectBufferOffset4]=first; // firstIndex\n"
+      "      indirectBufferOffset4++;\n"
+      "      indirectBuffer[indirectBufferOffset4]=vertexOffset; // vertexOffset\n"
+      "      indirectBufferOffset4++;\n"
+      "   } else {\n"
+      "      indirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
+      "      indirectBufferOffset4++;\n"
+      "   }\n"
+      "   indirectBuffer[indirectBufferOffset4]=matrixCollectionOffset64; // base instance\n"
       "}\n");
 }

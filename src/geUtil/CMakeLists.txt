@@ -46,7 +46,7 @@ find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
 
 set(Internal_deps geGL)
-set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_PATH})
+set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
 
 IF(ANTTWEAKBAR_FOUND)
    list(APPEND Internal_inc ${ANTTWEAKBAR_INCLUDE_DIR})

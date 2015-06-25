@@ -33,7 +33,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/MultisampleFragmentOperationsCommands.h
     ${HEADER_PATH}/OcclusionQueriesCommands.h
     ${HEADER_PATH}/ScissorCommands.h
-    ${HEADER_PATH}/Stencil.h
+#    ${HEADER_PATH}/Stencil.h
     ${HEADER_PATH}/StencilCommands.h
     ${HEADER_PATH}/OpenGL.h
     ${HEADER_PATH}/OpenGLCommon.h
@@ -78,7 +78,7 @@ set(GL_SOURCES
     MultisampleFragmentOperationsCommands.cpp
     OcclusionQueriesCommands.cpp
     ScissorCommands.cpp
-    Stencil.cpp
+#    Stencil.cpp
     StencilCommands.cpp
     OpenGL.cpp
     OpenGLCommon.cpp
@@ -113,10 +113,15 @@ ADD_LIBRARY(${LIB_NAME}
   )
 
 set(Internal_deps geCore)
-set(Internal_inc ${GLEW_INCLUDE_PATH} ${OPENGL_INCLUDE_PATH})
+set(External_deps GLEW OPENGL)
+set(External_export_libs  ${OPENGL_LIBRARY} ${GLEW_LIBRARY})
+set(External_export_includes  GLEW_INCLUDE_DIR OPENGL_INCLUDE_DIR)
+set(Internal_inc ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps})
+message("kjsdhgfk ${GLEW_INCLUDE_DIR}")
+
+target_link_libraries(${LIB_NAME} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${Internal_deps})
 set_target_properties(${LIB_NAME} PROPERTIES
 	INCLUDE_DIRECTORIES "${Internal_inc}"
 	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"

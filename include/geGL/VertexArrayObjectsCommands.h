@@ -29,8 +29,8 @@ namespace ge{
     class GEGL_EXPORT BindVertexArray: public ge::core::Command
     {
       public:
-        GLuint *array;
-        BindVertexArray(GLuint *array);
+        GLuint array;
+        BindVertexArray(GLuint array);
         void operator()();
     };
     class GEGL_EXPORT CreateVertexArrays: public ge::core::Command

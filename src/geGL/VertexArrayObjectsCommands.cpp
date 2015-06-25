@@ -24,11 +24,11 @@ void DeleteVertexArrays::operator()(){
       this->n,
       this->arrays);
 }
-BindVertexArray::BindVertexArray(GLuint *array){
+BindVertexArray::BindVertexArray(GLuint array){
   this->array = array;
 }
 void BindVertexArray::operator()(){
-  glBindVertexArray(*this->array);
+  glBindVertexArray(this->array);
 }
 CreateVertexArrays::CreateVertexArrays(
     GLsizei  n,
@@ -48,3 +48,4 @@ void CreateVertexArrays::operator()()
    this->n,
    this->arrays);
    }*/
+
