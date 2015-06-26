@@ -121,8 +121,6 @@ set(External_export_includes  GLEW_INCLUDE_DIR OPENGL_INCLUDE_DIR)
 set(Internal_inc ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
-message("kjsdhgfk ${GLEW_INCLUDE_DIR}")
-
 target_link_libraries(${LIB_NAME} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${Internal_deps})
 set_target_properties(${LIB_NAME} PROPERTIES
 	INCLUDE_DIRECTORIES "${Internal_inc}"
