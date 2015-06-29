@@ -13,7 +13,7 @@ namespace ge{
         private:
           std::shared_ptr<ProgramObject>_program;
         public:
-          Use(std::shared_ptr<ProgramObject>&program);
+          Use(std::shared_ptr<ProgramObject> program);
           virtual void operator()();
           std::shared_ptr<ProgramObject>&getProgram();
       };
@@ -80,46 +80,76 @@ namespace ge{
       };
 
       template<unsigned DIM,typename T>
-      class SetData{
-        protected:
-          T _data[DIM];
+      class Set: public ge::core::Command{
         public:
-          template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
-          SetData(ARGS... args){
-            this->set(args...);
-          }
-          inline const T*get(){
-            return this->_data;
-          }
-          void set(const T*data){
-            std::memcpy(this->_data,data,DIM*sizeof(T));
-          }
-          template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
-          void set(ARGS... args){
-            ge::core::argsToArray<DIM,T>(this->_data,args...);
-          }
-      };
+          class Data{
+            protected:
+              T _data[DIM];
+            public:
+#ifndef _MSC_VER
+              template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
+#else
+              template<typename...ARGS>
+#endif//immature Visual Studio compiler...
+                Data(ARGS... args){
+                  this->set(args...);
+                }
+              inline const T*get(){
+                return this->_data;
+              }
+              void set(const T*data){
+                std::memcpy(this->_data,data,DIM*sizeof(T));
+              }
 
-      template<unsigned DIM,typename T>
-      class Set{
+#ifndef _MSC_VER
+              template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
+#else
+              template<typename...ARGS>
+#endif//immature Visual Studio compiler...
+                void set(ARGS... args){
+                  ge::core::argsToArray<DIM,T>(this->_data,args...);
+                }
+          };
         protected:
           std::shared_ptr<ProgramObject> _program;
           std::string                    _name   ;
-          std::shared_ptr<SetData<DIM,T>>_data   ;
+          std::shared_ptr<Data>          _data   ;
+          template<unsigned... Is>
+            inline void _iind(ge::core::seq<Is...>){
+              const T*v=this->_data->get();
+              this->_program->set(this->_name,v[Is]...);
+            }
         public:
           Set(
               std::shared_ptr<ProgramObject> &program,
               std::string                     name   ,
-              std::shared_ptr<SetData<DIM,T>>&data   ){
+              std::shared_ptr<Data>&data   ){
             this->_program = program;
             this->_name    = name   ;
             this->_data    = data   ;
           }
-          virtual void operator()();
+
+#ifndef _MSC_VER
+              template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
+#else
+              template<typename...ARGS>
+#endif//immature Visual Studio compiler...
+            Set(
+                std::shared_ptr<ProgramObject> &program,
+                std::string                     name   ,
+                ARGS...                         args   ){
+              this->_program = program;
+              this->_name    = name   ;
+              this->_data    = std::make_shared<Data>(args...);
+            }
+
+          virtual void operator()(){
+            this->_iind(ge::core::gen_seq<DIM>{});
+          }
           std::shared_ptr<ProgramObject> &getProgram(){
             return this->_program;
           }
-          std::shared_ptr<SetData<DIM,T>>&getData   (){
+          std::shared_ptr<Data>&getData   (){
             return this->_data;
           }
           std::string                     getName   (){
@@ -131,123 +161,85 @@ namespace ge{
           void setName   (std::string name){
             this->_name = name;
           }
-          void setData   (std::shared_ptr<SetData<DIM,T>>&data){
+          void setData   (std::shared_ptr<Data>&data){
             this->_data = data;
           }
-          
-          template<unsigned... IND>
-          inline void _ind(){
-            const T*v=this->_data->get();
-            this->_program->set(this->_name,v[IND]...);
-          }
-          template<unsigned D>
-          inline void _iind(ge::core::gen_seq<D>Is){
-            const T*v=this->_data->get();
-            this->_program->set(this->_name,v[Is]);
-          }
-          
       };
-      template<>void Set<1,GLfloat>::operator()(){this->_ind<0>();}
-      template<>void Set<2,GLfloat>::operator()(){this->_ind<0,1>();}
-      template<>void Set<3,GLfloat>::operator()(){this->_ind<0,1,2>();}
-      template<>void Set<4,GLfloat>::operator()(){this->_ind<0,1,2,3>();}
+      template<unsigned DIM,typename T>
+      class SetV: public ge::core::Command{
+        public:
+          class Data{
+            protected:
+              T*      _data ;
+              GLuint  _count;
+            public:
+              Data(GLuint count=1,const T*data=NULL){
+                this->_count = count;
+                this->_data = new T[this->getCount()*DIM];
+                if(data)this->copy(data);
+              }
+              ~Data(){
+                delete this->_data;
+              }
+              inline const T*get(){
+                return this->_data;
+              }
+              inline GLuint getCount(){
+                return this->_count;
+              }
+              void copy(const T*data,unsigned size=0,unsigned writeOffset=0){
+                if(size==0)std::memcpy(this->_data,data,DIM*sizeof(T)*this->getCount());
+                else std::memcpy(
+                    ((char*)this->_data)+writeOffset,
+                    ((char*)data       ),
+                    DIM*sizeof(T)*this->getCount());
+              }
+          };
+        protected:
+          std::shared_ptr<ProgramObject> _program;
+          std::string                    _name   ;
+          std::shared_ptr<Data>          _data   ;
+        public:
+          SetV(
+              std::shared_ptr<ProgramObject> &program,
+              std::string                     name   ,
+              std::shared_ptr<Data>&data             ){
+            this->_program = program;
+            this->_name    = name   ;
+            this->_data    = data   ;
+          }
+          SetV(
+              std::shared_ptr<ProgramObject> &program       ,
+              std::string                     name          ,
+              GLuint                          count   = 1   ,
+              const T*                        data    = NULL){
+            this->_program = program                           ;
+            this->_name    = name                              ;
+            this->_data    = std::make_shared<Data>(count,data);
+          }
+          virtual void operator()(){
+            this->_program->set(this->_name,this->_data->getCount(),this->_data->get());
+          }
+          std::shared_ptr<ProgramObject> &getProgram(){
+            return this->_program;
+          }
+          std::shared_ptr<Data>&getData   (){
+            return this->_data;
+          }
+          std::string                     getName   (){
+            return this->_name;
+          }
+          void setProgram(std::shared_ptr<ProgramObject>&program){
+            this->_program = program;
+          }
+          void setName   (std::string name){
+            this->_name = name;
+          }
+          void setData   (std::shared_ptr<Data>&data){
+            this->_data = data;
+          }
+      };
 
-      /*
-      template<>
-        void Set<2,GLfloat>::operator()(){
-          const GLfloat*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1]);
-        }
-      template<>
-        void Set<3,GLfloat>::operator()(){
-          const GLfloat*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[2]);
-        }
-      template<>
-        void Set<4,GLfloat>::operator()(){
-          const GLfloat*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
-        }
-      template<>
-        void Set<1,GLdouble>::operator()(){
-          const GLdouble*v=this->_data->get();
-          this->_program->set(this->_name,v[0]);
-        }
-      template<>
-        void Set<2,GLdouble>::operator()(){
-          const GLdouble*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1]);
-        }
-      template<>
-        void Set<3,GLdouble>::operator()(){
-          const GLdouble*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[2]);
-        }
-      template<>
-        void Set<4,GLdouble>::operator()(){
-          const GLdouble*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
-        }
-      template<>
-        void Set<1,GLint>::operator()(){
-          const GLint*v=this->_data->get();
-          this->_program->set(this->_name,v[0]);
-        }
-      template<>
-        void Set<2,GLint>::operator()(){
-          const GLint*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1]);
-        }
-      template<>
-        void Set<3,GLint>::operator()(){
-          const GLint*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[2]);
-        }
-      template<>
-        void Set<4,GLint>::operator()(){
-          const GLint*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
-        }
-      template<>
-        void Set<1,GLuint>::operator()(){
-          const GLuint*v=this->_data->get();
-          this->_program->set(this->_name,v[0]);
-        }
-      template<>
-        void Set<2,GLuint>::operator()(){
-          const GLuint*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1]);
-        }
-      template<>
-        void Set<3,GLuint>::operator()(){
-          const GLuint*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[2]);
-        }
-      template<>
-        void Set<4,GLuint>::operator()(){
-          const GLuint*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
-        }
-      template<>
-        void Set<1,GLboolean>::operator()(){
-          const GLboolean*v=this->_data->get();
-          this->_program->set(this->_name,v[0]);
-        }
-      template<>
-        void Set<2,GLboolean>::operator()(){
-          const GLboolean*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1]);
-        }
-      template<>
-        void Set<3,GLboolean>::operator()(){
-          const GLboolean*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[2]);
-        }
-      template<>
-        void Set<4,GLboolean>::operator()(){
-          const GLboolean*v=this->_data->get();
-          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
-        }*/
     }
   }
 }
