@@ -78,6 +78,176 @@ namespace ge{
           std::shared_ptr<ProgramObject>&getProgram();
           std::shared_ptr<Data         >&getData();
       };
+
+      template<unsigned DIM,typename T>
+      class SetData{
+        protected:
+          T _data[DIM];
+        public:
+          template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
+          SetData(ARGS... args){
+            this->set(args...);
+          }
+          inline const T*get(){
+            return this->_data;
+          }
+          void set(const T*data){
+            std::memcpy(this->_data,data,DIM*sizeof(T));
+          }
+          template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
+          void set(ARGS... args){
+            ge::core::argsToArray<DIM,T>(this->_data,args...);
+          }
+      };
+
+      template<unsigned DIM,typename T>
+      class Set{
+        protected:
+          std::shared_ptr<ProgramObject> _program;
+          std::string                    _name   ;
+          std::shared_ptr<SetData<DIM,T>>_data   ;
+        public:
+          Set(
+              std::shared_ptr<ProgramObject> &program,
+              std::string                     name   ,
+              std::shared_ptr<SetData<DIM,T>>&data   ){
+            this->_program = program;
+            this->_name    = name   ;
+            this->_data    = data   ;
+          }
+          virtual void operator()();
+          std::shared_ptr<ProgramObject> &getProgram(){
+            return this->_program;
+          }
+          std::shared_ptr<SetData<DIM,T>>&getData   (){
+            return this->_data;
+          }
+          std::string                     getName   (){
+            return this->_name;
+          }
+          void setProgram(std::shared_ptr<ProgramObject>&program){
+            this->_program = program;
+          }
+          void setName   (std::string name){
+            this->_name = name;
+          }
+          void setData   (std::shared_ptr<SetData<DIM,T>>&data){
+            this->_data = data;
+          }
+          
+          template<unsigned... IND>
+          inline void _ind(){
+            const T*v=this->_data->get();
+            this->_program->set(this->_name,v[IND]...);
+          }
+          template<unsigned D>
+          inline void _iind(ge::core::gen_seq<D>Is){
+            const T*v=this->_data->get();
+            this->_program->set(this->_name,v[Is]);
+          }
+          
+      };
+      template<>void Set<1,GLfloat>::operator()(){this->_ind<0>();}
+      template<>void Set<2,GLfloat>::operator()(){this->_ind<0,1>();}
+      template<>void Set<3,GLfloat>::operator()(){this->_ind<0,1,2>();}
+      template<>void Set<4,GLfloat>::operator()(){this->_ind<0,1,2,3>();}
+
+      /*
+      template<>
+        void Set<2,GLfloat>::operator()(){
+          const GLfloat*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1]);
+        }
+      template<>
+        void Set<3,GLfloat>::operator()(){
+          const GLfloat*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[2]);
+        }
+      template<>
+        void Set<4,GLfloat>::operator()(){
+          const GLfloat*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
+        }
+      template<>
+        void Set<1,GLdouble>::operator()(){
+          const GLdouble*v=this->_data->get();
+          this->_program->set(this->_name,v[0]);
+        }
+      template<>
+        void Set<2,GLdouble>::operator()(){
+          const GLdouble*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1]);
+        }
+      template<>
+        void Set<3,GLdouble>::operator()(){
+          const GLdouble*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[2]);
+        }
+      template<>
+        void Set<4,GLdouble>::operator()(){
+          const GLdouble*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
+        }
+      template<>
+        void Set<1,GLint>::operator()(){
+          const GLint*v=this->_data->get();
+          this->_program->set(this->_name,v[0]);
+        }
+      template<>
+        void Set<2,GLint>::operator()(){
+          const GLint*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1]);
+        }
+      template<>
+        void Set<3,GLint>::operator()(){
+          const GLint*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[2]);
+        }
+      template<>
+        void Set<4,GLint>::operator()(){
+          const GLint*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
+        }
+      template<>
+        void Set<1,GLuint>::operator()(){
+          const GLuint*v=this->_data->get();
+          this->_program->set(this->_name,v[0]);
+        }
+      template<>
+        void Set<2,GLuint>::operator()(){
+          const GLuint*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1]);
+        }
+      template<>
+        void Set<3,GLuint>::operator()(){
+          const GLuint*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[2]);
+        }
+      template<>
+        void Set<4,GLuint>::operator()(){
+          const GLuint*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
+        }
+      template<>
+        void Set<1,GLboolean>::operator()(){
+          const GLboolean*v=this->_data->get();
+          this->_program->set(this->_name,v[0]);
+        }
+      template<>
+        void Set<2,GLboolean>::operator()(){
+          const GLboolean*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1]);
+        }
+      template<>
+        void Set<3,GLboolean>::operator()(){
+          const GLboolean*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[2]);
+        }
+      template<>
+        void Set<4,GLboolean>::operator()(){
+          const GLboolean*v=this->_data->get();
+          this->_program->set(this->_name,v[0],v[1],v[3],v[4]);
+        }*/
     }
   }
 }

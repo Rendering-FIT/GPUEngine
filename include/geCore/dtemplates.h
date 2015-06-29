@@ -95,23 +95,23 @@ namespace ge{
 
 
     template<typename T>
-      constexpr T notequal(const T ref,const T t){
+      T notequal(const T ref,const T t){
         return ref!=t;
       }
 
     template<typename T,typename... Args>
-      constexpr T notequal(const T ref,const T t,Args... args){
+      T notequal(const T ref,const T t,Args... args){
         return ref!=t&&notequal(ref,args...);
       }
 
     template<typename T,typename... Args>
-      constexpr T nonof_rec(const T halt,const T t0,const T t1,Args... args){
+      T nonof_rec(const T halt,const T t0,const T t1,Args... args){
         //static_assert(halt!=t0,"there is no space for nonof");
         return halt==t0?0:notequal(t0,t1,args...)?t0:nonof_rec(halt,t0+1,t1,args...);
       }
 
     template<typename T,typename... Args>
-      constexpr T nonof(const T t0,const T t1,Args... args){
+      T nonof(const T t0,const T t1,Args... args){
         return nonof_rec(t0,t0+1,t1,args...);
       }
 
