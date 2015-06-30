@@ -63,7 +63,7 @@ ShaderSource::ShaderSource(
 }
 
 void ShaderSource::operator()(){
-  glShaderSource(
+  ((void(*)(GLuint,GLsizei,const GLchar*const*,const GLint*))glShaderSource)(
       *this->_shader,
       this->_data->getCount(),
       this->_data->getString(),

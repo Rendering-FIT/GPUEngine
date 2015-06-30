@@ -4,6 +4,7 @@
 #include<geGL/Export.h>
 #include<GL/glew.h>
 #include<geGL/ProgramObject.h>
+#include<geGL/Definitions.h>
 #include<geCore/dtemplates.h>
 
 namespace ge{
@@ -13,7 +14,7 @@ namespace ge{
         private:
           std::shared_ptr<ProgramObject>_program;
         public:
-          Use(std::shared_ptr<ProgramObject> program);
+          Use(const std::shared_ptr<ProgramObject>&program);
           virtual void operator()();
           std::shared_ptr<ProgramObject>&getProgram();
       };
@@ -80,120 +81,108 @@ namespace ge{
       };
 
       template<unsigned DIM,typename T>
-      class Set: public ge::core::Command{
-        public:
-          class Data{
-            protected:
-              T _data[DIM];
-            public:
-#ifndef _MSC_VER
-              template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
-#else
-              template<typename...ARGS>
-#endif//immature Visual Studio compiler...
-                Data(ARGS... args){
-                  this->set(args...);
+        class Set: public ge::core::Command{
+          public:
+            class Data{
+              protected:
+                T _data[DIM];
+              public:
+                template<SIZED_VARIADIC_PARAMS(ARGS,DIM)>
+                  Data(ARGS... args){
+                    this->set(args...);
+                  }
+                inline const T*get(){
+                  return this->_data;
                 }
-              inline const T*get(){
-                return this->_data;
-              }
-              void set(const T*data){
-                std::memcpy(this->_data,data,DIM*sizeof(T));
-              }
-
-#ifndef _MSC_VER
-              template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
-#else
-              template<typename...ARGS>
-#endif//immature Visual Studio compiler...
-                void set(ARGS... args){
-                  ge::core::argsToArray<DIM,T>(this->_data,args...);
+                void set(const T*data){
+                  std::memcpy(this->_data,data,DIM*sizeof(T));
                 }
-          };
-        protected:
-          std::shared_ptr<ProgramObject> _program;
-          std::string                    _name   ;
-          std::shared_ptr<Data>          _data   ;
-          template<unsigned... Is>
-            inline void _iind(ge::core::seq<Is...>){
-              const T*v=this->_data->get();
-              this->_program->set(this->_name,v[Is]...);
-            }
-        public:
-          Set(
-              std::shared_ptr<ProgramObject> &program,
-              std::string                     name   ,
-              std::shared_ptr<Data>&data   ){
-            this->_program = program;
-            this->_name    = name   ;
-            this->_data    = data   ;
-          }
 
-#ifndef _MSC_VER
-              template<typename...ARGS, typename std::enable_if<sizeof...(ARGS) == DIM, unsigned>::type = 0>
-#else
-              template<typename...ARGS>
-#endif//immature Visual Studio compiler...
+                template<SIZED_VARIADIC_PARAMS(ARGS,DIM)>
+                  void set(ARGS... args){
+                    ge::core::argsToArray<DIM,T>(this->_data,args...);
+                  }
+            };
+          protected:
+            std::shared_ptr<ProgramObject> _program;
+            std::string                    _name   ;
+            std::shared_ptr<Data>          _data   ;
+            template<unsigned... Is>
+              inline void _iind(ge::core::seq<Is...>){
+                const T*v=this->_data->get();
+                this->_program->set(this->_name,v[Is]...);
+              }
+          public:
             Set(
                 std::shared_ptr<ProgramObject> &program,
                 std::string                     name   ,
-                ARGS...                         args   ){
+                std::shared_ptr<Data>&data   ){
               this->_program = program;
               this->_name    = name   ;
-              this->_data    = std::make_shared<Data>(args...);
+              this->_data    = data   ;
             }
 
-          virtual void operator()(){
-            this->_iind(ge::core::gen_seq<DIM>{});
-          }
-          std::shared_ptr<ProgramObject> &getProgram(){
-            return this->_program;
-          }
-          std::shared_ptr<Data>&getData   (){
-            return this->_data;
-          }
-          std::string                     getName   (){
-            return this->_name;
-          }
-          void setProgram(std::shared_ptr<ProgramObject>&program){
-            this->_program = program;
-          }
-          void setName   (std::string name){
-            this->_name = name;
-          }
-          void setData   (std::shared_ptr<Data>&data){
-            this->_data = data;
-          }
-      };
+            template<SIZED_VARIADIC_PARAMS(ARGS,DIM)>
+              Set(
+                  std::shared_ptr<ProgramObject> &program,
+                  std::string                     name   ,
+                  ARGS...                         args   ){
+                this->_program = program;
+                this->_name    = name   ;
+                this->_data    = std::make_shared<Data>(args...);
+              }
+
+            virtual void operator()(){
+              this->_iind(ge::core::gen_seq<DIM>{});
+            }
+            std::shared_ptr<ProgramObject> &getProgram(){
+              return this->_program;
+            }
+            std::shared_ptr<Data>&getData   (){
+              return this->_data;
+            }
+            std::string                     getName   (){
+              return this->_name;
+            }
+            void setProgram(std::shared_ptr<ProgramObject>&program){
+              this->_program = program;
+            }
+            void setName   (std::string name){
+              this->_name = name;
+            }
+            void setData   (std::shared_ptr<Data>&data){
+              this->_data = data;
+            }
+        };
 
       template<typename T,unsigned COMPONENTS>
-      class UniformVData{
-        protected:
-          T*     _data ;
-          GLuint _count;
-        public:
-          UniformVData(GLuint count=1,const T*data=NULL){
-            this->_count = count;
-            this->_data  = new T[this->getCount()*COMPONENTS];
-            if(data)this->copy(data);
-          }
-          ~UniformVData(){
-            delete[]this->_data;
-          }
-          inline const T*get(){
-            return this->_data;
-          }
-          inline GLuint getCount(){
-            return this->_count;
-          }
-          void copy(const T*data,unsigned size=0,unsigned writeOffset=0){
-            if(size==0)std::memcpy(this->_data,data,COMPONENTS*sizeof(T)*this->getCount());
-            else std::memcpy(
-                ((char*)this->_data)+writeOffset,
-                ((char*)data       ),
-                COMPONENTS*sizeof(T)*this->getCount());
-          }
-      };
+        class UniformVData{
+          protected:
+            T*     _data ;
+            GLuint _count;
+          public:
+            UniformVData(GLuint count=1,const T*data=NULL){
+              this->_count = count;
+              this->_data  = new T[this->getCount()*COMPONENTS];
+              if(data)this->copy(data);
+            }
+            ~UniformVData(){
+              delete[]this->_data;
+            }
+            inline const T*get(){
+              return this->_data;
+            }
+            inline GLuint getCount(){
+              return this->_count;
+            }
+            void copy(const T*data,unsigned size=0,unsigned writeOffset=0){
+              if(size==0)std::memcpy(this->_data,data,COMPONENTS*sizeof(T)*this->getCount());
+              else std::memcpy(
+                  ((char*)this->_data)+writeOffset,
+                  ((char*)data       ),
+                  COMPONENTS*sizeof(T)*this->getCount());
+            }
+        };
 
       class Location{
         protected:
@@ -282,8 +271,6 @@ namespace ge{
             inline void setData(std::shared_ptr<Data>&data){
               this->_data = data;
             }
-
-
         };
     }
   }

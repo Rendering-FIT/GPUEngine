@@ -12,6 +12,7 @@ set(LIB_NAME geGL)
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
     ${HEADER_PATH}/Export.h
+    ${HEADER_PATH}/Definitions.h
     ${HEADER_PATH}/BufferObject.h
     ${HEADER_PATH}/VertexArrayObject.h
     ${HEADER_PATH}/FramebufferObject.h

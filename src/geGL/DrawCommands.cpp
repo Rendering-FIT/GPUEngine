@@ -168,7 +168,7 @@ MultiDrawElements::MultiDrawElements(
   this->setIndices(indices);
 }
 void MultiDrawElements::operator()(){
-  glMultiDrawElements(
+  ((void(*)(GLenum,const GLsizei*,GLenum,const GLvoid*const*,GLsizei))glMultiDrawElements)(
       this->_mode     ,
       this->_count    ,
       this->_type     ,

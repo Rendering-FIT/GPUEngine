@@ -3,7 +3,7 @@
 using namespace ge::gl;
 using namespace ge::gl::po;
 
-Use::Use(std::shared_ptr<ProgramObject> program){
+Use::Use(const std::shared_ptr<ProgramObject>&program){
   this->_program = program;
 }
 
