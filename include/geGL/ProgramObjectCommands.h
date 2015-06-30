@@ -165,82 +165,126 @@ namespace ge{
             this->_data = data;
           }
       };
-      template<unsigned DIM,typename T>
-      class SetV: public ge::core::Command{
-        public:
-          class Data{
-            protected:
-              T*      _data ;
-              GLuint  _count;
-            public:
-              Data(GLuint count=1,const T*data=NULL){
-                this->_count = count;
-                this->_data = new T[this->getCount()*DIM];
-                if(data)this->copy(data);
-              }
-              ~Data(){
-                delete this->_data;
-              }
-              inline const T*get(){
-                return this->_data;
-              }
-              inline GLuint getCount(){
-                return this->_count;
-              }
-              void copy(const T*data,unsigned size=0,unsigned writeOffset=0){
-                if(size==0)std::memcpy(this->_data,data,DIM*sizeof(T)*this->getCount());
-                else std::memcpy(
-                    ((char*)this->_data)+writeOffset,
-                    ((char*)data       ),
-                    DIM*sizeof(T)*this->getCount());
-              }
-          };
+
+      template<typename T,unsigned COMPONENTS>
+      class UniformVData{
         protected:
-          std::shared_ptr<ProgramObject> _program;
-          std::string                    _name   ;
-          std::shared_ptr<Data>          _data   ;
+          T*     _data ;
+          GLuint _count;
         public:
-          SetV(
-              std::shared_ptr<ProgramObject> &program,
-              std::string                     name   ,
-              std::shared_ptr<Data>&data             ){
-            this->_program = program;
-            this->_name    = name   ;
-            this->_data    = data   ;
+          UniformVData(GLuint count=1,const T*data=NULL){
+            this->_count = count;
+            this->_data  = new T[this->getCount()*COMPONENTS];
+            if(data)this->copy(data);
           }
-          SetV(
-              std::shared_ptr<ProgramObject> &program       ,
-              std::string                     name          ,
-              GLuint                          count   = 1   ,
-              const T*                        data    = NULL){
-            this->_program = program                           ;
-            this->_name    = name                              ;
-            this->_data    = std::make_shared<Data>(count,data);
+          ~UniformVData(){
+            delete[]this->_data;
           }
-          virtual void operator()(){
-            this->_program->set(this->_name,this->_data->getCount(),this->_data->get());
-          }
-          std::shared_ptr<ProgramObject> &getProgram(){
-            return this->_program;
-          }
-          std::shared_ptr<Data>&getData   (){
+          inline const T*get(){
             return this->_data;
           }
-          std::string                     getName   (){
-            return this->_name;
+          inline GLuint getCount(){
+            return this->_count;
           }
-          void setProgram(std::shared_ptr<ProgramObject>&program){
-            this->_program = program;
-          }
-          void setName   (std::string name){
-            this->_name = name;
-          }
-          void setData   (std::shared_ptr<Data>&data){
-            this->_data = data;
+          void copy(const T*data,unsigned size=0,unsigned writeOffset=0){
+            if(size==0)std::memcpy(this->_data,data,COMPONENTS*sizeof(T)*this->getCount());
+            else std::memcpy(
+                ((char*)this->_data)+writeOffset,
+                ((char*)data       ),
+                COMPONENTS*sizeof(T)*this->getCount());
           }
       };
 
+      class Location{
+        protected:
+          std::shared_ptr<ProgramObject> _program;
+          std::string                    _name   ;
+        public:
+          Location(
+              std::shared_ptr<ProgramObject> &program,
+              std::string                     name   );
+          std::shared_ptr<ProgramObject> &getProgram();
+          std::string getName();
+          void setProgram(std::shared_ptr<ProgramObject>&program);
+          void setName   (std::string name);
+      };
+
+      template<unsigned DIM,typename T>
+        class SetV: public ge::core::Command, public Location{
+          public:
+            class Data: public UniformVData<T,DIM>{
+              public:
+                Data(GLuint count=1,const T*data=NULL):UniformVData<T,DIM>(count,data){}
+            };
+          protected:
+            std::shared_ptr<Data>_data;
+          public:
+            SetV(
+                std::shared_ptr<ProgramObject>&program,
+                std::string                    name   ,
+                std::shared_ptr<Data>&         data   ):Location(program,name){
+              this->_data = data   ;
+            }
+            SetV(
+                std::shared_ptr<ProgramObject>&program       ,
+                std::string                    name          ,
+                GLuint                         count   = 1   ,
+                const T*                       data    = NULL):Location(program,name){
+              this->_data = std::make_shared<Data>(count,data);
+            }
+            virtual void operator()(){
+              this->_program->set(this->_name,this->_data->getCount(),this->_data->get());
+            }
+            std::shared_ptr<Data>&getData(){
+              return this->_data;
+            }
+            void setData(std::shared_ptr<Data>&data){
+              this->_data = data;
+            }
+        };
+
+      template<unsigned X,unsigned Y,typename T>
+        class SetMatrix: public ge::core::Command, public Location{
+          public:
+            class Data: public UniformVData<T,X*Y>{
+              protected:
+                GLboolean _transpose;
+              public:
+                Data(GLsizei count=1,const T*data=NULL,GLboolean transpose=GL_FALSE):UniformVData<T,X*Y>(count,data){
+                  this->_transpose = transpose;
+                }
+                GLboolean getTranspose(){
+                  return this->_transpose;
+                }
+                void setTranspose(GLboolean transpose){
+                  return this->_transpose = transpose;
+                }
+            };
+          protected:
+            std::shared_ptr<Data>_data;
+          public:
+            SetMatrix(
+                std::shared_ptr<ProgramObject>&program,
+                std::string                    name   ,
+                std::shared_ptr<Data>&         data   ):Location(program,name){
+              this->_data = data;
+            }
+            virtual void operator()(){
+              this->_program->set(
+                  this->_name                    ,
+                  this->getData()->getCount    (),
+                  this->getData()->getTranspose(),
+                  this->getData()->get         ());
+            }
+            inline std::shared_ptr<Data>&getData(){
+              return this->_data;
+            }
+            inline void setData(std::shared_ptr<Data>&data){
+              this->_data = data;
+            }
+
+
+        };
     }
   }
 }
-

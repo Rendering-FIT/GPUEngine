@@ -113,4 +113,26 @@ std::shared_ptr<Append::Data>&Append::getData(){
   return this->_data;
 }
 
+Location::Location(
+    std::shared_ptr<ProgramObject> &program,
+    std::string                     name   ){
+  this->_name    = name   ;
+  this->_program = program;
+}
+
+std::shared_ptr<ProgramObject>&Location::getProgram(){
+  return this->_program;
+}
+
+std::string Location::getName(){
+  return this->_name;
+}
+
+void Location::setProgram(std::shared_ptr<ProgramObject>&program){
+  this->_program = program;
+}
+
+void Location::setName(std::string name){
+  this->_name = name;
+}
 
