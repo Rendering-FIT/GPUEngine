@@ -1,15 +1,15 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream> // for cerr
-#include <geSG/RenderingContext.h>
-#include <geSG/Mesh.h>
-#include <geSG/AttribStorage.h>
-#include <geSG/StateSet.h>
-#include <geSG/InstancingMatrices.h>
-#include <geSG/Transformation.h>
+#include <geRG/RenderingContext.h>
+#include <geRG/Mesh.h>
+#include <geRG/AttribStorage.h>
+#include <geRG/StateSet.h>
+#include <geRG/InstancingMatrices.h>
+#include <geRG/Transformation.h>
 #include <geGL/BufferObject.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 using namespace ge::gl;
 using namespace std;
 

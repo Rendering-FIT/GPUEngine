@@ -1,14 +1,14 @@
-#ifndef GE_SG_INSTANCE_GROUP_H
-#define GE_SG_INSTANCE_GROUP_H
+#ifndef GE_RG_INSTANCE_GROUP_H
+#define GE_RG_INSTANCE_GROUP_H
 
 #include <cstdint>
-#include <geSG/Export.h>
-#include <geSG/FlexibleArrayList.h>
-#include <geSG/AllocationManagers.h>
+#include <geRG/Export.h>
+#include <geRG/FlexibleArrayList.h>
+#include <geRG/AllocationManagers.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class InstancingMatrices;
       class StateSet;
@@ -65,4 +65,4 @@ namespace ge
    }
 }
 
-#endif /* GE_SG_INSTANCE_GROUP_H */
+#endif /* GE_RG_INSTANCE_GROUP_H */

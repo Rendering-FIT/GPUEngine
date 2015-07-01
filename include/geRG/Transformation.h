@@ -1,13 +1,14 @@
-#ifndef GE_SG_TRANSFORMATION_H
-#define GE_SG_TRANSFORMATION_H
+#ifndef GE_RG_TRANSFORMATION_H
+#define GE_RG_TRANSFORMATION_H
 
 #include <memory>
 #include <glm/mat4x4.hpp>
-#include <geSG/ParentChildList.h>
+#include <geRG/Export.h>
+#include <geRG/ParentChildList.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class InstancingMatrices;
 
@@ -25,7 +26,7 @@ namespace ge
       };
 
 
-      class Transformation {
+      class GESG_EXPORT Transformation {
       public:
 
          typedef ChildListTemplate<Transformation> ChildList;
@@ -84,11 +85,11 @@ namespace ge
 }
 
 
-#include <geSG/InstancingMatrices.h>
+#include <geRG/InstancingMatrices.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
       inline std::shared_ptr<InstancingMatrices>& Transformation::getOrCreateInstancingMatrices()
@@ -108,4 +109,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_TRANSFORMATION_H
+#endif // GE_RG_TRANSFORMATION_H

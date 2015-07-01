@@ -1,15 +1,15 @@
 IF   (DYNAMIC_GPUENGINE)
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-DGESG_LIBRARY)
+    ADD_DEFINITIONS(-DGERG_LIBRARY)
 ELSE ()
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
+    ADD_DEFINITIONS(-DGERG_LIBRARY_STATIC)
 ENDIF()
 
-set(LIB_NAME geSG)
+set(LIB_NAME geRG)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
-set(SG_INCLUDES
+set(RG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/AllocationManagers.h
@@ -26,7 +26,7 @@ set(SG_INCLUDES
     ${HEADER_PATH}/InstancingMatrices.h
   )
 
-set(SG_SOURCES
+set(RG_SOURCES
     AllocationManagers.cpp
     AttribType.cpp
     AttribConfig.cpp
@@ -44,8 +44,8 @@ find_package(GLEW   REQUIRED)
 
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-    ${SG_INCLUDES}
-    ${SG_SOURCES}
+    ${RG_INCLUDES}
+    ${RG_SOURCES}
   )
 
 include_directories()
@@ -60,7 +60,7 @@ set_target_properties(${LIB_NAME} PROPERTIES
 
 
 install(FILES
-    ${SG_INCLUDES}
+    ${RG_INCLUDES}
     DESTINATION include/${LIB_NAME}
   )
 
@@ -74,13 +74,13 @@ install(TARGETS ${LIB_NAME}
 #Export
 
 configure_file(
-   geSGConfig.cmake.in
-   geSGConfig.cmake
+   geRGConfig.cmake.in
+   geRGConfig.cmake
    @ONLY
 )
 
 # INSTALL_CM_DIR is defined in master CMakeLists file
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geSGConfig.cmake"
-        DESTINATION "${INSTALL_CM_DIR}/geSG"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geRGConfig.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/geRG"
         )

@@ -1,8 +1,8 @@
 #include <string.h>
-#include <geSG/InstancingMatrices.h>
-#include <geSG/RenderingContext.h>
+#include <geRG/InstancingMatrices.h>
+#include <geRG/RenderingContext.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 
 

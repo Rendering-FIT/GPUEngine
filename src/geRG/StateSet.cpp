@@ -1,8 +1,8 @@
 #include <GL/glew.h>
-#include <geSG/StateSet.h>
-#include <geSG/RenderingContext.h>
+#include <geRG/StateSet.h>
+#include <geRG/RenderingContext.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 static_assert(sizeof(StateSet::StateSetData)==4,
               "StateSet::StateSetData size is not 4 bytes.\n"

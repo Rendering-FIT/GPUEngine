@@ -1,12 +1,12 @@
-#ifndef GE_SG_PARENT_CHILD_LIST_H
-#define GE_SG_PARENT_CHILD_LIST_H
+#ifndef GE_RG_PARENT_CHILD_LIST_H
+#define GE_RG_PARENT_CHILD_LIST_H
 
 #include <memory>
 #include <list>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       template<typename ChildT,typename ParentT> class ChildPointerAbstractTemplate;
       template<typename ParentT,typename ChildT> class ParentPointerAbstractTemplate;
@@ -316,4 +316,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_PARENT_CHILD_LIST_H
+#endif // GE_RG_PARENT_CHILD_LIST_H

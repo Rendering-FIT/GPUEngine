@@ -1,17 +1,17 @@
-#ifndef GE_SG_ATTRIB_CONFIG_H
-#define GE_SG_ATTRIB_CONFIG_H
+#ifndef GE_RG_ATTRIB_CONFIG_H
+#define GE_RG_ATTRIB_CONFIG_H
 
 #include <list>
 #include <map>
 #include <memory>
 #include <vector>
-#include <geSG/Export.h>
-#include <geSG/AttribType.h>
+#include <geRG/Export.h>
+#include <geRG/AttribType.h>
 
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class AttribConfigRef;
       class AttribStorage;
@@ -164,12 +164,12 @@ namespace ge
 
 
 // inline methods
-#include <geSG/AttribStorage.h>
-#include <geSG/RenderingContext.h>
+#include <geRG/AttribStorage.h>
+#include <geRG/RenderingContext.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline AttribConfig::ConfigData::ConfigData()  {}
       inline AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo)
@@ -261,4 +261,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_ATTRIB_CONFIG_H
+#endif // GE_RG_ATTRIB_CONFIG_H

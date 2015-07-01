@@ -1,12 +1,12 @@
-#ifndef GE_SG_ATTRIB_TYPE_H
-#define GE_SG_ATTRIB_TYPE_H
+#ifndef GE_RG_ATTRIB_TYPE_H
+#define GE_RG_ATTRIB_TYPE_H
 
 #include <cstdint>
 #include <glm/glm.hpp>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
 
       /** GLType is enum class that defines types of variables.
@@ -401,4 +401,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_ATTRIB_TYPE_H
+#endif // GE_RG_ATTRIB_TYPE_H

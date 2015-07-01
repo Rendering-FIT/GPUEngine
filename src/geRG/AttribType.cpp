@@ -1,6 +1,6 @@
-#include <geSG/AttribType.h>
+#include <geRG/AttribType.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 static_assert(sizeof(AttribType)==8,
               "AttribType size is not 8 bytes.\n"

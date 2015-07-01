@@ -1,12 +1,13 @@
-#ifndef GE_SG_INSTANCING_MATRICES_H
-#define GE_SG_INSTANCING_MATRICES_H
+#ifndef GE_RG_INSTANCING_MATRICES_H
+#define GE_RG_INSTANCING_MATRICES_H
 
 #include <memory>
 #include <glm/mat4x4.hpp>
+#include <geRG/Export.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
 
       struct InstancingMatrixGpuData {
@@ -22,7 +23,7 @@ namespace ge
       };
 
 
-      class InstancingMatrices : public std::enable_shared_from_this<InstancingMatrices> {
+      class GESG_EXPORT InstancingMatrices : public std::enable_shared_from_this<InstancingMatrices> {
       protected:
 
          unsigned _numInstanceRefs;
@@ -72,11 +73,11 @@ namespace ge
 }
 
 
-#include <geSG/RenderingContext.h>
+#include <geRG/RenderingContext.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline void InstancingMatrices::downloadMatrices(float *matrix,unsigned numMatrices,unsigned startIndex)
       { downloadMatricesFromOffset(matrix,matrixCollectionOffset64()+startIndex,numMatrices); }
@@ -94,4 +95,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_INSTANCING_MATRICES_H
+#endif // GE_RG_INSTANCING_MATRICES_H

@@ -1,11 +1,11 @@
-#ifndef GE_SG_FLEXIBLE_ARRAY_LIST_H
-#define GE_SG_FLEXIBLE_ARRAY_LIST_H
+#ifndef GE_RG_FLEXIBLE_ARRAY_LIST_H
+#define GE_RG_FLEXIBLE_ARRAY_LIST_H
 
 #include <cstdlib>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
 
       class ListItemBase {
@@ -239,4 +239,4 @@ namespace ge
    }
 }
 
-#endif /* GE_SG_FLEXIBLE_ARRAY_LIST_H */
+#endif /* GE_RG_FLEXIBLE_ARRAY_LIST_H */

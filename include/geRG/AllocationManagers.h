@@ -1,12 +1,12 @@
-#ifndef GE_SG_ALLOCATION_MANAGERS_H
-#define GE_SG_ALLOCATION_MANAGERS_H
+#ifndef GE_RG_ALLOCATION_MANAGERS_H
+#define GE_RG_ALLOCATION_MANAGERS_H
 
 #include <vector>
-#include <geSG/Export.h>
+#include <geRG/Export.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
 
       /** ChunkAllocation represents single allocation block of memory
@@ -263,4 +263,4 @@ namespace ge
    }
 }
 
-#endif /* GE_SG_ALLOCATION_MANAGERS_H */
+#endif /* GE_RG_ALLOCATION_MANAGERS_H */

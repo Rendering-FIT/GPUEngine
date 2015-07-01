@@ -8,18 +8,18 @@
 #include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/ProgramObject.h>
-#include <geSG/Mesh.h>
-#include <geSG/AttribType.h>
-#include <geSG/RenderingContext.h>
-#include <geSG/StateSet.h>
-#include <geSG/Transformation.h>
+#include <geRG/Mesh.h>
+#include <geRG/AttribType.h>
+#include <geRG/RenderingContext.h>
+#include <geRG/StateSet.h>
+#include <geRG/Transformation.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 #include <osgDB/ReadFile>
 
 using namespace std;
 using namespace ge::gl;
-using namespace ge::sg;
+using namespace ge::rg;
 
 
 void Init();

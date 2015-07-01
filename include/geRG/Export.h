@@ -17,5 +17,4 @@
 #   endif
 #endif
 
-
-#endif //GE_EXPORT_H
+#endif // GESG_EXPORT_H

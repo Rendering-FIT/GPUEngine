@@ -1,18 +1,18 @@
-#ifndef GE_SG_STATE_SET_H
-#define GE_SG_STATE_SET_H
+#ifndef GE_RG_STATE_SET_H
+#define GE_RG_STATE_SET_H
 
 #include <array>
 #include <map>
 #include <memory>
 #include <vector>
-#include <geSG/Export.h>
-#include <geSG/ParentChildList.h>
+#include <geRG/Export.h>
+#include <geRG/ParentChildList.h>
 #include <geGL/OpenGL.h>
 #include <geCore/Command.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class AttribStorage;
 
@@ -24,7 +24,7 @@ namespace ge
          typedef ChildListTemplate<StateSet> ChildList;
          typedef ParentListTemplate<StateSet> ParentList;
 
-         struct RenderingData
+         struct GESG_EXPORT RenderingData
          {
             unsigned indirectBufferOffset4;
             unsigned stateSetBufferOffset4;
@@ -34,7 +34,7 @@ namespace ge
                                  unsigned glMode,unsigned drawCommandCount);
          };
 
-         struct AttribStorageData
+         struct GESG_EXPORT AttribStorageData
          {
             const AttribStorage *attribStorage;
             unsigned numDrawCommands;
@@ -49,7 +49,7 @@ namespace ge
             inline AttribStorageData(const AttribStorage *storage);
          };
 
-         struct StateSetData {
+         struct GESG_EXPORT StateSetData {
             unsigned indirectBufferOffset;
          };
 
@@ -117,4 +117,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_STATE_SET_H
+#endif // GE_RG_STATE_SET_H

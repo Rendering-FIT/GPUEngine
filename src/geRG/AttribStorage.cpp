@@ -1,10 +1,10 @@
 #include <iostream> // for cerr
 #include <memory>
-#include <geSG/AttribStorage.h>
-#include <geSG/Mesh.h>
-#include <geSG/SeparateBuffersAttribStorage.h> // for DefaultFactory
+#include <geRG/AttribStorage.h>
+#include <geRG/Mesh.h>
+#include <geRG/SeparateBuffersAttribStorage.h> // for DefaultFactory
 
-using namespace ge::sg;
+using namespace ge::rg;
 using namespace std;
 
 
@@ -165,7 +165,7 @@ shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &
 
 // AttribStorage documentation
 // note: brief description is with the class declaration
-/** \class ge::sg::AttribStorage
+/** \class ge::rg::AttribStorage
  *
  *  It is benefical to store all the vertex attributes in only few AttribStorage
  *  objects because only few OpenGL vertex array objects (VAO) are required,
