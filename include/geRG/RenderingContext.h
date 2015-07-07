@@ -26,7 +26,7 @@ namespace ge
       class Transformation;
 
 
-      class GESG_EXPORT RenderingContext {
+      class GERG_EXPORT RenderingContext {
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;

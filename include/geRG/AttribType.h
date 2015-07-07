@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
+#include <geRG/Export.h>
 
 namespace ge
 {
@@ -77,7 +78,7 @@ namespace ge
        *  AttribType stores data type of the attribute, number of components,
        *  size of a one attribute data item and function to send the attribute to OpenGL.
        */
-      class AttribType {
+      class GERG_EXPORT AttribType {
       public:
 
          /// Specifies how attributes are handled to OpenGL pipeline.

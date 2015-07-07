@@ -17,14 +17,14 @@ namespace ge
       class AttribStorage;
 
 
-      class GESG_EXPORT StateSet : public std::enable_shared_from_this<StateSet>
+      class GERG_EXPORT StateSet : public std::enable_shared_from_this<StateSet>
       {
       public:
 
          typedef ChildListTemplate<StateSet> ChildList;
          typedef ParentListTemplate<StateSet> ParentList;
 
-         struct GESG_EXPORT RenderingData
+         struct GERG_EXPORT RenderingData
          {
             unsigned indirectBufferOffset4;
             unsigned stateSetBufferOffset4;
@@ -34,7 +34,7 @@ namespace ge
                                  unsigned glMode,unsigned drawCommandCount);
          };
 
-         struct GESG_EXPORT AttribStorageData
+         struct GERG_EXPORT AttribStorageData
          {
             const AttribStorage *attribStorage;
             unsigned numDrawCommands;
@@ -49,7 +49,7 @@ namespace ge
             inline AttribStorageData(const AttribStorage *storage);
          };
 
-         struct GESG_EXPORT StateSetData {
+         struct GERG_EXPORT StateSetData {
             unsigned indirectBufferOffset;
          };
 

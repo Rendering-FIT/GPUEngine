@@ -26,7 +26,7 @@ namespace ge
       };
 
 
-      class GESG_EXPORT Transformation {
+      class GERG_EXPORT Transformation {
       public:
 
          typedef ChildListTemplate<Transformation> ChildList;
@@ -41,8 +41,8 @@ namespace ge
 
          unsigned *_gpuDataOffsetPtr;  ///< It points either to _gpuDataOffset64 member or to externally allocated SharedDataOffset::_gpuDataOffset64.
          unsigned _gpuDataOffset64;
-         GESG_CHILD_LIST(Transformation);
-         ParentList _parentList;
+         GERG_CHILD_LIST(Transformation);
+         GERG_PARENT_LIST(Transformation);
          std::shared_ptr<InstancingMatrices> _instancingMatrices;
 
          void cancelSharedTransformation();
@@ -101,7 +101,7 @@ namespace ge
       inline void Transformation::setInstancingMatrices(std::shared_ptr<InstancingMatrices>& im)  { _instancingMatrices=im; }
       inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}
       inline Transformation::~Transformation()  { RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
-         if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } }
+         if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } removeAllChildren(); }
       inline Transformation::ChildList& Transformation::getChildren()  { return _childList; }
       inline const Transformation::ChildList& Transformation::getChildren() const  { return _childList; }
       inline Transformation::ParentList& Transformation::getParents()  { return _parentList; }

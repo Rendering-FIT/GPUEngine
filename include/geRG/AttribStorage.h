@@ -19,7 +19,7 @@ namespace ge
       /** \brief AttribStorage class maintains vertex attributes,
        *  indices and draw commands data of scene objects.
        */
-      class GESG_EXPORT AttribStorage {
+      class GERG_EXPORT AttribStorage {
       protected:
 
          bool _privateFlag;

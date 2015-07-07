@@ -2,13 +2,14 @@
 #define GE_RG_FLEXIBLE_ARRAY_LIST_H
 
 #include <cstdlib>
+#include <geRG/Export.h>
 
 namespace ge
 {
    namespace rg
    {
 
-      class ListItemBase {
+      class GERG_EXPORT ListItemBase {
       public:
          ListItemBase *next;
          ListItemBase *prev;

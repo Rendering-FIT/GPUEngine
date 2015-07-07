@@ -540,7 +540,7 @@ static void countMatrices(Transformation *t)
          im->setMatrixCounter(im->matrixCounter()+1);
       }
    }
-   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
    {
       countMatrices(it->get());
    }
@@ -570,7 +570,7 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV)
    }
 
    // process child transformations
-   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
    {
       processTransformation(it->get(),mv);
    }

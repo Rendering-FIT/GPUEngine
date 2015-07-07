@@ -14,14 +14,14 @@ namespace ge
       class StateSet;
 
 
-      class GESG_EXPORT InstanceGroupBase : public ListItemBase {
+      class GERG_EXPORT InstanceGroupBase : public ListItemBase {
       public:
          StateSet *stateSet;
          InstancingMatrices *instancingMatrices;
       };
 
 
-      struct GESG_EXPORT InstanceData {
+      struct GERG_EXPORT InstanceData {
       public:
          uint32_t data;
 
@@ -36,7 +36,7 @@ namespace ge
       };
 
 
-      class GESG_EXPORT InstanceAllocationManager : public ItemAllocationManager {
+      class GERG_EXPORT InstanceAllocationManager : public ItemAllocationManager {
       public:
          inline InstanceData*& operator[](size_type pos);
          inline InstanceData* operator[](size_type pos) const;

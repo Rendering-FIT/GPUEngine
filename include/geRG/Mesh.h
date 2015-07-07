@@ -16,7 +16,7 @@ namespace ge
       class StateSet;
 
 
-      class GESG_EXPORT Mesh {
+      class GERG_EXPORT Mesh {
       public:
 
          /** DrawCommandControlData carries offset and mode of particular draw command.
