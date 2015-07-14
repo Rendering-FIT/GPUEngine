@@ -58,6 +58,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/BufferCommands.h
     ${HEADER_PATH}/BufferObjectCommands.h
     ${HEADER_PATH}/ProgramObjectCommands.h
+    ${HEADER_PATH}/ObjectCommands.h
   )
 
 set(GL_SOURCES

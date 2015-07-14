@@ -3,16 +3,6 @@
 using namespace ge::gl;
 using namespace ge::gl::bo;
 
-SharedBuffer::SharedBuffer(
-    std::shared_ptr<BufferObject>buffer){
-  this->_buffer = buffer;
-}
-
-std::shared_ptr<BufferObject>&SharedBuffer::getBuffer(){
-  return this->_buffer;
-}
-
-
 
 BufferData::BufferData(
     GLsizeiptr    size,
@@ -35,52 +25,31 @@ const GLvoid*BufferData::getData(){
   return this->_data;
 }
 
-
-
-Constructor::Constructor(
-    std::shared_ptr<BufferObject>buffer,
-    std::shared_ptr<BufferData>  data  ,
-    std::shared_ptr<GLbitfield>  flags ):Shared<BufferObject>(buffer){
-  this->_data  = data ;
-  this->_flags = flags;
+Offset::Offset(GLintptr offset){
+  this->setOffset(offset);
+}
+GLintptr Offset::getOffset(){
+  return this->_offset;
+}
+void Offset::setOffset(GLintptr offset){
+  this->_offset = offset;
 }
 
-Constructor::Constructor(
-    std::shared_ptr<BufferObject>buffer,
-    std::shared_ptr<BufferData>  data  ,
-    GLbitfield                   flags ):Shared<BufferObject>(buffer){
-  this->_data  = data;
-  this->_flags = std::make_shared<GLbitfield>(flags);
+Size::Size(GLsizeiptr size){
+  this->setSize(size);
+}
+GLsizeiptr Size::getSize(){
+  return this->_size;
+}
+void Size::setSize(GLsizeiptr size){
+  this->_size = size;
 }
 
-Constructor::Constructor(
-    std::shared_ptr<BufferObject>buffer,
-    GLsizeiptr                   size  ,
-    const GLvoid*                data  ,
-    GLbitfield                   flags ):Shared<BufferObject>(buffer){
-  this->_data  = std::make_shared<BufferData>(size,data);
-  this->_flags = std::make_shared<GLbitfield>(flags);
-}
-
-void Constructor::operator()(){
-  this->Shared<BufferObject>::_obj=std::make_shared<BufferObject>(
-        this->_data->getSize(),
-        this->_data->getData(),
-        *this->_flags);
-}
-
-std::shared_ptr<BufferData>&Constructor::getData (){
-  return this->_data;
-}
-
-std::shared_ptr<GLbitfield>&Constructor::getFlags(){
-  return this->_flags;
-}
 
 Map::Map(
     std::shared_ptr<BufferObject>buffer,
     std::shared_ptr<GLvoid*>     ptr   ,
-    GLbitfield                   access):SharedBuffer(buffer){
+    GLbitfield                   access):Shared<BufferObject>(buffer){
   this->_ptr    = ptr   ;
   this->_access = std::make_shared<GLbitfield>(access);
   this->_offset = 0     ;
@@ -91,7 +60,7 @@ Map::Map(
     std::shared_ptr<GLvoid*>     ptr   ,
     GLintptr                     offset,
     GLsizeiptr                   size  ,
-    GLbitfield                   access):SharedBuffer(buffer){
+    GLbitfield                   access):Shared<BufferObject>(buffer){
   this->_ptr    = ptr   ;
   this->_offset = std::make_shared<GLintptr  >(offset);
   this->_size   = std::make_shared<GLsizeiptr>(size  );
@@ -100,9 +69,9 @@ Map::Map(
 
 void Map::operator()(){
   if(this->_size==0)
-    *this->_ptr=this->_buffer->map(*this->_access);
+    *this->_ptr=this->_object->map(*this->_access);
   else
-    *this->_ptr=this->_buffer->map(*this->_offset,*this->_size,*this->_access);
+    *this->_ptr=this->_object->map(*this->_offset,*this->_size,*this->_access);
 }
 
 std::shared_ptr<GLvoid*>&Map::getPtr(){
@@ -123,10 +92,10 @@ std::shared_ptr<GLsizeiptr>&Map::getSize(){
 
 
 
-Unmap::Unmap(std::shared_ptr<BufferObject>buffer):SharedBuffer(buffer){
+Unmap::Unmap(std::shared_ptr<BufferObject>buffer):Shared<BufferObject>(buffer){
 }
 
 void Unmap::operator()(){
-  this->_buffer->unmap();
+  this->_object->unmap();
 }
 

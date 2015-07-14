@@ -6,18 +6,27 @@
 #include<geGL/ProgramObject.h>
 #include<geGL/Definitions.h>
 #include<geCore/dtemplates.h>
+#include<geGL/ObjectCommands.h>
 
 namespace ge{
   namespace gl{
     namespace po{
-      class GEGL_EXPORT Use: public ge::core::Command{
-        private:
-          std::shared_ptr<ProgramObject>_program;
+      /*
+      class GEGL_EXPORT SharedProgram{
+        protected:
+          std::shared_ptr<ProgramObject>_object;
+        public:
+          SharedProgram(const std::shared_ptr<ProgramObject>&program);
+          std::shared_ptr<ProgramObject>&getProgram();
+          void setProgram(const std::shared_ptr<ProgramObject>&program);
+      };*/
+
+      class GEGL_EXPORT Use: public ge::core::Command, public Shared<ProgramObject>{
         public:
           Use(const std::shared_ptr<ProgramObject>&program);
           virtual void operator()();
-          std::shared_ptr<ProgramObject>&getProgram();
       };
+
       static const GLenum DEFAULT_SHADER = ge::core::nonof(
           GL_VERTEX_SHADER         ,
           GL_TESS_CONTROL_SHADER   ,
@@ -26,7 +35,7 @@ namespace ge{
           GL_FRAGMENT_SHADER       ,
           GL_COMPUTE_SHADER        );
 
-      class GEGL_EXPORT SetVersion: public ge::core::Command{
+      class GEGL_EXPORT SetVersion: public ge::core::Command, public Shared<ProgramObject>{
         public:
           class Data{
             protected:
@@ -45,17 +54,18 @@ namespace ge{
               void        setProfile(std::string profile);
               void        setShader(GLenum shader = DEFAULT_SHADER);
           };
-        private:
-          std::shared_ptr<ProgramObject>_program;
-          std::shared_ptr<Data>         _data   ;
+        protected:
+          std::shared_ptr<Data>_data;
         public:
-          SetVersion(std::shared_ptr<ProgramObject>&program,std::shared_ptr<Data>&data);
+          SetVersion(
+              const std::shared_ptr<ProgramObject>&program,
+              const std::shared_ptr<Data         >&data   );
           virtual void operator()();
-          std::shared_ptr<ProgramObject>&getProgram();
-          std::shared_ptr<Data>         &getData   ();
+          std::shared_ptr<Data>&getData();
+          void setData(const std::shared_ptr<Data>&data);
       };
 
-      class GEGL_EXPORT Append: public ge::core::Command{
+      class GEGL_EXPORT Append: public ge::core::Command, public Shared<ProgramObject>{
         public:
           class Data{
             protected:
@@ -71,17 +81,29 @@ namespace ge{
               void        setShader(GLenum      shader = DEFAULT_SHADER);
           };
         protected:
-          std::shared_ptr<Data         >_data   ;
-          std::shared_ptr<ProgramObject>_program;
+          std::shared_ptr<Data>_data   ;
         public:
-          Append(std::shared_ptr<ProgramObject>&program,std::shared_ptr<Data>&data);
+          Append(
+              const std::shared_ptr<ProgramObject>&program,
+              const std::shared_ptr<Data         >&data   );
           virtual void operator()();
-          std::shared_ptr<ProgramObject>&getProgram();
-          std::shared_ptr<Data         >&getData();
+          std::shared_ptr<Data>&getData();
+          void setData(const std::shared_ptr<Data>&data);
+      };
+
+      class Location: public Shared<ProgramObject>{
+        protected:
+          std::string _name;
+        public:
+          Location(
+              const std::shared_ptr<ProgramObject>&program,
+              std::string                          name   );
+          std::string getName();
+          void setName   (std::string name);
       };
 
       template<unsigned DIM,typename T>
-        class Set: public ge::core::Command{
+        class Set: public ge::core::Command, public Location{
           public:
             class Data{
               protected:
@@ -97,60 +119,39 @@ namespace ge{
                 void set(const T*data){
                   std::memcpy(this->_data,data,DIM*sizeof(T));
                 }
-
                 template<SIZED_VARIADIC_PARAMS(ARGS,DIM)>
                   void set(ARGS... args){
                     ge::core::argsToArray<DIM,T>(this->_data,args...);
                   }
             };
           protected:
-            std::shared_ptr<ProgramObject> _program;
-            std::string                    _name   ;
-            std::shared_ptr<Data>          _data   ;
+            std::shared_ptr<Data>_data;
             template<unsigned... Is>
               inline void _iind(ge::core::seq<Is...>){
                 const T*v=this->_data->get();
-                this->_program->set(this->_name,v[Is]...);
+                this->_object->set(this->_name,v[Is]...);
               }
           public:
             Set(
-                std::shared_ptr<ProgramObject> &program,
-                std::string                     name   ,
-                std::shared_ptr<Data>&data   ){
-              this->_program = program;
-              this->_name    = name   ;
+                const std::shared_ptr<ProgramObject>&program,
+                std::string                          name   ,
+                const std::shared_ptr<Data         >&data   ):Location(program,name){
               this->_data    = data   ;
             }
-
             template<SIZED_VARIADIC_PARAMS(ARGS,DIM)>
               Set(
-                  std::shared_ptr<ProgramObject> &program,
-                  std::string                     name   ,
-                  ARGS...                         args   ){
-                this->_program = program;
-                this->_name    = name   ;
-                this->_data    = std::make_shared<Data>(args...);
+                  const std::shared_ptr<ProgramObject>&program,
+                  std::string                          name   ,
+                  ARGS...                              args   ):Location(program,name){
+                this->setData(std::make_shared<Data>(args...));
               }
-
             virtual void operator()(){
               this->_iind(ge::core::gen_seq<DIM>{});
             }
-            std::shared_ptr<ProgramObject> &getProgram(){
-              return this->_program;
-            }
-            std::shared_ptr<Data>&getData   (){
+            std::shared_ptr<Data>&getData(){
               return this->_data;
             }
-            std::string                     getName   (){
-              return this->_name;
-            }
-            void setProgram(std::shared_ptr<ProgramObject>&program){
-              this->_program = program;
-            }
-            void setName   (std::string name){
-              this->_name = name;
-            }
-            void setData   (std::shared_ptr<Data>&data){
+            void setData(const std::shared_ptr<Data>&data){
               this->_data = data;
             }
         };
@@ -184,20 +185,6 @@ namespace ge{
             }
         };
 
-      class Location{
-        protected:
-          std::shared_ptr<ProgramObject> _program;
-          std::string                    _name   ;
-        public:
-          Location(
-              std::shared_ptr<ProgramObject> &program,
-              std::string                     name   );
-          std::shared_ptr<ProgramObject> &getProgram();
-          std::string getName();
-          void setProgram(std::shared_ptr<ProgramObject>&program);
-          void setName   (std::string name);
-      };
-
       template<unsigned DIM,typename T>
         class SetV: public ge::core::Command, public Location{
           public:
@@ -209,25 +196,25 @@ namespace ge{
             std::shared_ptr<Data>_data;
           public:
             SetV(
-                std::shared_ptr<ProgramObject>&program,
-                std::string                    name   ,
-                std::shared_ptr<Data>&         data   ):Location(program,name){
+                const std::shared_ptr<ProgramObject>&program,
+                std::string                    name         ,
+                const std::shared_ptr<Data         >&data   ):Location(program,name){
               this->_data = data   ;
             }
             SetV(
-                std::shared_ptr<ProgramObject>&program       ,
-                std::string                    name          ,
-                GLuint                         count   = 1   ,
-                const T*                       data    = NULL):Location(program,name){
+                const std::shared_ptr<ProgramObject>&program       ,
+                std::string                          name          ,
+                GLuint                               count   = 1   ,
+                const T*                             data    = NULL):Location(program,name){
               this->_data = std::make_shared<Data>(count,data);
             }
             virtual void operator()(){
-              this->_program->set(this->_name,this->_data->getCount(),this->_data->get());
+              this->_object->set(this->_name,this->_data->getCount(),this->_data->get());
             }
             std::shared_ptr<Data>&getData(){
               return this->_data;
             }
-            void setData(std::shared_ptr<Data>&data){
+            void setData(const std::shared_ptr<Data>&data){
               this->_data = data;
             }
         };
@@ -239,27 +226,30 @@ namespace ge{
               protected:
                 GLboolean _transpose;
               public:
-                Data(GLsizei count=1,const T*data=NULL,GLboolean transpose=GL_FALSE):UniformVData<T,X*Y>(count,data){
-                  this->_transpose = transpose;
+                Data(
+                    GLsizei   count     = 1       ,
+                    const T*  data      = NULL    ,
+                    GLboolean transpose = GL_FALSE):UniformVData<T,X*Y>(count,data){
+                  this->setTranspose(transpose);
                 }
                 GLboolean getTranspose(){
                   return this->_transpose;
                 }
                 void setTranspose(GLboolean transpose){
-                  return this->_transpose = transpose;
+                  this->_transpose = transpose;
                 }
             };
           protected:
             std::shared_ptr<Data>_data;
           public:
             SetMatrix(
-                std::shared_ptr<ProgramObject>&program,
-                std::string                    name   ,
-                std::shared_ptr<Data>&         data   ):Location(program,name){
-              this->_data = data;
+                const std::shared_ptr<ProgramObject>&program,
+                std::string                          name   ,
+                const std::shared_ptr<Data         >&data   ):Location(program,name){
+              this->setData(data);
             }
             virtual void operator()(){
-              this->_program->set(
+              this->_object->set(
                   this->_name                    ,
                   this->getData()->getCount    (),
                   this->getData()->getTranspose(),
@@ -268,7 +258,7 @@ namespace ge{
             inline std::shared_ptr<Data>&getData(){
               return this->_data;
             }
-            inline void setData(std::shared_ptr<Data>&data){
+            inline void setData(const std::shared_ptr<Data>&data){
               this->_data = data;
             }
         };

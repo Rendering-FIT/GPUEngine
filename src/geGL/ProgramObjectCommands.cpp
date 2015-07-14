@@ -3,16 +3,10 @@
 using namespace ge::gl;
 using namespace ge::gl::po;
 
-Use::Use(const std::shared_ptr<ProgramObject>&program){
-  this->_program = program;
-}
+Use::Use(const std::shared_ptr<ProgramObject>&program):Shared<ProgramObject>(program){}
 
 void Use::operator()(){
-  this->_program->use();
-}
-
-std::shared_ptr<ProgramObject>&Use::getProgram(){
-  return this->_program;
+  this->_object->use();
 }
 
 
@@ -49,24 +43,30 @@ void SetVersion::Data::setShader(GLenum shader){
 
 
 
-SetVersion::SetVersion(std::shared_ptr<ProgramObject>&program,std::shared_ptr<Data>&data){
-  this->_program = program;
-  this->_data    = data   ;
+SetVersion::SetVersion(
+    const std::shared_ptr<ProgramObject>&program,
+    const std::shared_ptr<Data         >&data   ):Shared<ProgramObject>(program){
+  this->setData(data);
 }
 
 void SetVersion::operator()(){
   if(this->_data->getShader()==DEFAULT_SHADER)
-    this->_program->setVersion(this->_data->getVersion(),this->_data->getProfile());
+    this->_object->setVersion(
+        this->_data->getVersion(),
+        this->_data->getProfile());
   else
-    this->_program->setVersion(this->_data->getShader(),this->_data->getVersion(),this->_data->getProfile());
-}
-
-std::shared_ptr<ProgramObject>&SetVersion::getProgram(){
-  return this->_program;
+    this->_object->setVersion(
+        this->_data->getShader (),
+        this->_data->getVersion(),
+        this->_data->getProfile());
 }
 
 std::shared_ptr<SetVersion::Data>&SetVersion::getData(){
   return this->_data;
+}
+
+void SetVersion::setData(const std::shared_ptr<Data>&data){
+  this->_data = data;
 }
 
 
@@ -93,43 +93,36 @@ void Append::Data::setShader(GLenum shader){
   this->_shader = shader;
 }
 
-Append::Append(std::shared_ptr<ProgramObject>&program,std::shared_ptr<Data>&data){
-  this->_program = program;
-  this->_data    = data   ;
+Append::Append(
+    const std::shared_ptr<ProgramObject>&program,
+    const std::shared_ptr<Data         >&data):Shared<ProgramObject>(program){
+  this->setData(data);
 }
 
 void Append::operator()(){
   if(this->_data->getShader() == DEFAULT_SHADER)
-    this->_program->appendAfterVersion(this->_data->getDefs());
+    this->_object->appendAfterVersion(this->_data->getDefs());
   else
-    this->_program->appendAfterVersion(this->_data->getShader(),this->_data->getDefs());
-}
-
-std::shared_ptr<ProgramObject>&Append::getProgram(){
-  return this->_program;
+    this->_object->appendAfterVersion(this->_data->getShader(),this->_data->getDefs());
 }
 
 std::shared_ptr<Append::Data>&Append::getData(){
   return this->_data;
 }
-
-Location::Location(
-    std::shared_ptr<ProgramObject> &program,
-    std::string                     name   ){
-  this->_name    = name   ;
-  this->_program = program;
+void Append::setData(const std::shared_ptr<Data>&data){
+  this->_data = data;
 }
 
-std::shared_ptr<ProgramObject>&Location::getProgram(){
-  return this->_program;
+
+
+Location::Location(
+    const std::shared_ptr<ProgramObject>&program,
+    std::string name):Shared<ProgramObject>(program){
+  this->setName(name);
 }
 
 std::string Location::getName(){
   return this->_name;
-}
-
-void Location::setProgram(std::shared_ptr<ProgramObject>&program){
-  this->_program = program;
 }
 
 void Location::setName(std::string name){
