@@ -1,12 +1,12 @@
-#ifndef GE_SG_ALLOCATION_MANAGERS_H
-#define GE_SG_ALLOCATION_MANAGERS_H
+#ifndef GE_RG_ALLOCATION_MANAGERS_H
+#define GE_RG_ALLOCATION_MANAGERS_H
 
 #include <vector>
-#include <geSG/Export.h>
+#include <geRG/Export.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
 
       /** ChunkAllocation represents single allocation block of memory
@@ -15,7 +15,7 @@ namespace ge
        *  The structure is used by AttribStorage and related classes for memory management purposes.
        */
       template<typename OwnerType>
-      struct GESG_EXPORT ChunkAllocation {
+      struct ChunkAllocation {
          unsigned offset;           ///< Offset of the start of the block.
          unsigned size;             ///< Number of bytes in the block.
          unsigned nextRec;          ///< \brief Index of ChunkAllocation whose allocated memory follows the current block's memory.
@@ -31,7 +31,7 @@ namespace ge
        *  The structure is used by AttribStorage and related classes for memory management purposes.
        */
       template<typename OwnerType>
-      struct GESG_EXPORT BlockAllocation {
+      struct BlockAllocation {
          unsigned startIndex;       ///< Index of the start of the block. The real offset is startIndex multiplied by the size of the underlaying array element.
          unsigned numElements;      ///< Number of elements in the block. The real size is numElements multiplied by the size of the underlaying array element.
          unsigned nextRec;          ///< \brief Index of BlockAllocation whose allocated memory follows the current block's memory.
@@ -42,7 +42,7 @@ namespace ge
 
 
       template<typename ChunkOwnerType>
-      class GESG_EXPORT ChunkAllocationManager : public std::vector<ChunkAllocation<ChunkOwnerType>> {
+      class ChunkAllocationManager : public std::vector<ChunkAllocation<ChunkOwnerType>> {
       protected:
 
          unsigned _numBytesTotal;               ///< Total number of bytes, e.g. sum of allocated and unallocated space.
@@ -69,7 +69,7 @@ namespace ge
 
 
       template<typename BlockOwnerType>
-      class GESG_EXPORT BlockAllocationManager : public std::vector<BlockAllocation<BlockOwnerType>> {
+      class BlockAllocationManager : public std::vector<BlockAllocation<BlockOwnerType>> {
       protected:
 
          unsigned _numItemsTotal;               ///< Total number of items (allocated and unallocated).
@@ -95,7 +95,7 @@ namespace ge
       };
 
 
-      class GESG_EXPORT ItemAllocationManager : public std::vector<unsigned*> {
+      class GERG_EXPORT ItemAllocationManager : public std::vector<unsigned*> {
       protected:
 
          unsigned _numItemsTotal;               ///< Total number of items (allocated plus unallocated).
@@ -263,4 +263,4 @@ namespace ge
    }
 }
 
-#endif /* GE_SG_ALLOCATION_MANAGERS_H */
+#endif /* GE_RG_ALLOCATION_MANAGERS_H */

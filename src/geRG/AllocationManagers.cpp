@@ -1,7 +1,7 @@
 #include <cassert>
-#include <geSG/AllocationManagers.h>
+#include <geRG/AllocationManagers.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 
 

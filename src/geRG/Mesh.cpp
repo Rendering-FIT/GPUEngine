@@ -1,6 +1,6 @@
-#include <geSG/Mesh.h>
+#include <geRG/Mesh.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 static_assert(sizeof(Mesh::DrawCommandControlData)<=4,
               "Mesh::DrawCommandControlData size is bigger than 4 bytes.\n"

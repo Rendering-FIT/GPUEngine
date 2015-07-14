@@ -1,6 +1,6 @@
-#include <geSG/InstanceGroup.h>
+#include <geRG/InstanceGroup.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 static_assert(sizeof(InstanceData)<=4,
               "InstanceData size is bigger than 4 bytes.\n"

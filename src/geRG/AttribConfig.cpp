@@ -1,8 +1,8 @@
 #include <iostream>
-#include <geSG/AttribConfig.h>
+#include <geRG/AttribConfig.h>
 
 using namespace std;
-using namespace ge::sg;
+using namespace ge::rg;
 
 shared_ptr<AttribConfig::Factory> AttribConfig::_factory=make_shared<AttribConfig::Factory>();
 const AttribConfigRef AttribConfigRef::invalid{};

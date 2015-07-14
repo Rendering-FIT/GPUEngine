@@ -1,7 +1,7 @@
 #include <string.h>
-#include <geSG/Transformation.h>
+#include <geRG/Transformation.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 
 
 class Tmp_Transformation : public Transformation {

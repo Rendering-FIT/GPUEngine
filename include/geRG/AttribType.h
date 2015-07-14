@@ -1,12 +1,13 @@
-#ifndef GE_SG_ATTRIB_TYPE_H
-#define GE_SG_ATTRIB_TYPE_H
+#ifndef GE_RG_ATTRIB_TYPE_H
+#define GE_RG_ATTRIB_TYPE_H
 
 #include <cstdint>
 #include <glm/glm.hpp>
+#include <geRG/Export.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
 
       /** GLType is enum class that defines types of variables.
@@ -77,7 +78,7 @@ namespace ge
        *  AttribType stores data type of the attribute, number of components,
        *  size of a one attribute data item and function to send the attribute to OpenGL.
        */
-      class AttribType {
+      class GERG_EXPORT AttribType {
       public:
 
          /// Specifies how attributes are handled to OpenGL pipeline.
@@ -401,4 +402,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_ATTRIB_TYPE_H
+#endif // GE_RG_ATTRIB_TYPE_H

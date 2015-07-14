@@ -1,15 +1,15 @@
-// some includes need to be placed before GE_SG_RENDERING_CONTEXT_H define
+// some includes need to be placed before GE_RG_RENDERING_CONTEXT_H define
 // to prevent problems of circular includes
-#include <geSG/AttribConfig.h>
-#include <geSG/Mesh.h>
+#include <geRG/AttribConfig.h>
+#include <geRG/Mesh.h>
 
-#ifndef GE_SG_RENDERING_CONTEXT_H
-#define GE_SG_RENDERING_CONTEXT_H
+#ifndef GE_RG_RENDERING_CONTEXT_H
+#define GE_RG_RENDERING_CONTEXT_H
 
 #include <memory>
-#include <geSG/Export.h>
-#include <geSG/AllocationManagers.h>
-#include <geSG/InstanceGroup.h>
+#include <geRG/Export.h>
+#include <geRG/AllocationManagers.h>
+#include <geRG/InstanceGroup.h>
 #include <geCore/InitAndFinalize.h>
 
 namespace ge
@@ -18,7 +18,7 @@ namespace ge
    {
       class BufferObject;
    }
-   namespace sg
+   namespace rg
    {
       class AttribStorage;
       class InstancingMatrices;
@@ -26,7 +26,7 @@ namespace ge
       class Transformation;
 
 
-      class GESG_EXPORT RenderingContext {
+      class GERG_EXPORT RenderingContext {
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;
@@ -48,7 +48,7 @@ namespace ge
 
          AttribConfigList _attribConfigList;
          //StateSetList
-         typedef std::vector<std::shared_ptr<ge::sg::Transformation>> TransformationGraphList;
+         typedef std::vector<std::shared_ptr<ge::rg::Transformation>> TransformationGraphList;
          TransformationGraphList _transformationGraphs;
          std::shared_ptr<InstancingMatrices> _identityInstancingMatrix;
 
@@ -272,11 +272,11 @@ namespace ge
 // note: they need their own includes that can not be placed on the beginning of this file
 //       as there is a circular include reference and the classes need to be defined before
 //       inline methods to avoid incomplete type compiler error
-#include <geSG/InstancingMatrices.h>
+#include <geRG/InstancingMatrices.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline const std::shared_ptr<InstancingMatrices>& RenderingContext::identityInstancingMatrix() const
       { if(_identityInstancingMatrix==nullptr) const_cast<RenderingContext*>(this)->_identityInstancingMatrix=std::make_shared<InstancingMatrices>(0,0); return _identityInstancingMatrix; }
@@ -374,4 +374,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_RENDERING_CONTEXT_H
+#endif // GE_RG_RENDERING_CONTEXT_H

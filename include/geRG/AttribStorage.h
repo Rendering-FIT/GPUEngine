@@ -1,17 +1,17 @@
-// some includes need to be placed before GE_SG_ATTRIB_STORAGE_H define
+// some includes need to be placed before GE_RG_ATTRIB_STORAGE_H define
 // to prevent problems of circular includes
-#include <geSG/AttribConfig.h>
+#include <geRG/AttribConfig.h>
 
-#ifndef GE_SG_ATTRIB_STORAGE_H
-#define GE_SG_ATTRIB_STORAGE_H
+#ifndef GE_RG_ATTRIB_STORAGE_H
+#define GE_RG_ATTRIB_STORAGE_H
 
 #include <memory>
-#include <geSG/Export.h>
-#include <geSG/AllocationManagers.h>
+#include <geRG/Export.h>
+#include <geRG/AllocationManagers.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class Mesh;
 
@@ -19,7 +19,7 @@ namespace ge
       /** \brief AttribStorage class maintains vertex attributes,
        *  indices and draw commands data of scene objects.
        */
-      class GESG_EXPORT AttribStorage {
+      class GERG_EXPORT AttribStorage {
       protected:
 
          bool _privateFlag;
@@ -88,7 +88,7 @@ namespace ge
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline const BlockAllocation<Mesh>& AttribStorage::vertexAllocationBlock(unsigned id) const  { return _vertexAllocationManager[id]; }
       inline const BlockAllocation<Mesh>& AttribStorage::indexAllocationBlock(unsigned id) const  { return _indexAllocationManager[id]; }
@@ -107,4 +107,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_ATTRIB_STORAGE_H
+#endif // GE_RG_ATTRIB_STORAGE_H

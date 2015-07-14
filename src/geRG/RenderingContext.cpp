@@ -1,15 +1,15 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream> // for cerr
-#include <geSG/RenderingContext.h>
-#include <geSG/Mesh.h>
-#include <geSG/AttribStorage.h>
-#include <geSG/StateSet.h>
-#include <geSG/InstancingMatrices.h>
-#include <geSG/Transformation.h>
+#include <geRG/RenderingContext.h>
+#include <geRG/Mesh.h>
+#include <geRG/AttribStorage.h>
+#include <geRG/StateSet.h>
+#include <geRG/InstancingMatrices.h>
+#include <geRG/Transformation.h>
 #include <geGL/BufferObject.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 using namespace ge::gl;
 using namespace std;
 
@@ -540,7 +540,7 @@ static void countMatrices(Transformation *t)
          im->setMatrixCounter(im->matrixCounter()+1);
       }
    }
-   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
    {
       countMatrices(it->get());
    }
@@ -570,7 +570,7 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV)
    }
 
    // process child transformations
-   for(auto it=t->getChildList().begin(); it!=t->getChildList().end(); it++)
+   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
    {
       processTransformation(it->get(),mv);
    }

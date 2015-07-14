@@ -1,8 +1,8 @@
 #include <iostream>
-#include <geSG/SeparateBuffersAttribStorage.h>
+#include <geRG/SeparateBuffersAttribStorage.h>
 #include <geGL/VertexArrayObject.h>
 
-using namespace ge::sg;
+using namespace ge::rg;
 using namespace ge::gl;
 using namespace std;
 

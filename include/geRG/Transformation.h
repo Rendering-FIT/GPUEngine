@@ -1,13 +1,14 @@
-#ifndef GE_SG_TRANSFORMATION_H
-#define GE_SG_TRANSFORMATION_H
+#ifndef GE_RG_TRANSFORMATION_H
+#define GE_RG_TRANSFORMATION_H
 
 #include <memory>
 #include <glm/mat4x4.hpp>
-#include <geSG/ParentChildList.h>
+#include <geRG/Export.h>
+#include <geRG/ParentChildList.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class InstancingMatrices;
 
@@ -25,7 +26,7 @@ namespace ge
       };
 
 
-      class Transformation {
+      class GERG_EXPORT Transformation {
       public:
 
          typedef ChildListTemplate<Transformation> ChildList;
@@ -40,8 +41,8 @@ namespace ge
 
          unsigned *_gpuDataOffsetPtr;  ///< It points either to _gpuDataOffset64 member or to externally allocated SharedDataOffset::_gpuDataOffset64.
          unsigned _gpuDataOffset64;
-         GESG_CHILD_LIST(Transformation);
-         ParentList _parentList;
+         GERG_CHILD_LIST(Transformation);
+         GERG_PARENT_LIST(Transformation);
          std::shared_ptr<InstancingMatrices> _instancingMatrices;
 
          void cancelSharedTransformation();
@@ -84,11 +85,11 @@ namespace ge
 }
 
 
-#include <geSG/InstancingMatrices.h>
+#include <geRG/InstancingMatrices.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
       inline std::shared_ptr<InstancingMatrices>& Transformation::getOrCreateInstancingMatrices()
@@ -100,7 +101,7 @@ namespace ge
       inline void Transformation::setInstancingMatrices(std::shared_ptr<InstancingMatrices>& im)  { _instancingMatrices=im; }
       inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}
       inline Transformation::~Transformation()  { RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
-         if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } }
+         if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } removeAllChildren(); }
       inline Transformation::ChildList& Transformation::getChildren()  { return _childList; }
       inline const Transformation::ChildList& Transformation::getChildren() const  { return _childList; }
       inline Transformation::ParentList& Transformation::getParents()  { return _parentList; }
@@ -108,4 +109,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_TRANSFORMATION_H
+#endif // GE_RG_TRANSFORMATION_H

@@ -1,7 +1,7 @@
-#ifndef GE_SG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
-#define GE_SG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
+#ifndef GE_RG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
+#define GE_RG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
 
-#include <geSG/AttribStorage.h>
+#include <geRG/AttribStorage.h>
 
 namespace ge
 {
@@ -10,12 +10,12 @@ namespace ge
       class VertexArrayObject;
       class BufferObject;
    }
-   namespace sg
+   namespace rg
    {
       /** AttribStorage class maintains vertex attributes of many scene objects
        *  in a single OpenGL vertex array object (VAO).
        */
-      class GESG_EXPORT SeparateBuffersAttribStorage : public AttribStorage {
+      class GERG_EXPORT SeparateBuffersAttribStorage : public AttribStorage {
       protected:
 
          ge::gl::VertexArrayObject* _vao;
@@ -44,4 +44,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H
+#endif // GE_RG_SEPARATE_BUFFERS_ATTRIB_STORAGE_H

@@ -1,14 +1,14 @@
-#ifndef GE_SG_MESH_H
-#define GE_SG_MESH_H
+#ifndef GE_RG_MESH_H
+#define GE_RG_MESH_H
 
-#include <geSG/Export.h>
-#include <geSG/InstanceGroup.h>
+#include <geRG/Export.h>
+#include <geRG/InstanceGroup.h>
 #include <vector>
 #include <cstdint>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class AttribConfigRef;
       class AttribStorage;
@@ -16,7 +16,7 @@ namespace ge
       class StateSet;
 
 
-      class GESG_EXPORT Mesh {
+      class GERG_EXPORT Mesh {
       public:
 
          /** DrawCommandControlData carries offset and mode of particular draw command.
@@ -133,13 +133,13 @@ namespace ge
 //       as there are circular header includes and the classes need to be defined before
 //       inline methods to avoid incomplete type compiler error
 
-#include <geSG/AttribStorage.h>
-#include <geSG/InstancingMatrices.h>
-#include <geSG/RenderingContext.h>
+#include <geRG/AttribStorage.h>
+#include <geRG/InstancingMatrices.h>
+#include <geRG/RenderingContext.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       inline Mesh::DrawCommandControlData::DrawCommandControlData(uint32_t offset4,uint16_t mode)  { set(offset4,mode); }
       inline Mesh::Mesh() : _attribStorage(NULL)  {}
@@ -232,4 +232,4 @@ namespace ge
    }
 }
 
-#endif // GE_SG_MESH_H
+#endif // GE_RG_MESH_H

@@ -1,27 +1,27 @@
-#ifndef GE_SG_INSTANCE_GROUP_H
-#define GE_SG_INSTANCE_GROUP_H
+#ifndef GE_RG_INSTANCE_GROUP_H
+#define GE_RG_INSTANCE_GROUP_H
 
 #include <cstdint>
-#include <geSG/Export.h>
-#include <geSG/FlexibleArrayList.h>
-#include <geSG/AllocationManagers.h>
+#include <geRG/Export.h>
+#include <geRG/FlexibleArrayList.h>
+#include <geRG/AllocationManagers.h>
 
 namespace ge
 {
-   namespace sg
+   namespace rg
    {
       class InstancingMatrices;
       class StateSet;
 
 
-      class GESG_EXPORT InstanceGroupBase : public ListItemBase {
+      class GERG_EXPORT InstanceGroupBase : public ListItemBase {
       public:
          StateSet *stateSet;
          InstancingMatrices *instancingMatrices;
       };
 
 
-      struct GESG_EXPORT InstanceData {
+      struct GERG_EXPORT InstanceData {
       public:
          uint32_t data;
 
@@ -36,7 +36,7 @@ namespace ge
       };
 
 
-      class GESG_EXPORT InstanceAllocationManager : public ItemAllocationManager {
+      class GERG_EXPORT InstanceAllocationManager : public ItemAllocationManager {
       public:
          inline InstanceData*& operator[](size_type pos);
          inline InstanceData* operator[](size_type pos) const;
@@ -65,4 +65,4 @@ namespace ge
    }
 }
 
-#endif /* GE_SG_INSTANCE_GROUP_H */
+#endif /* GE_RG_INSTANCE_GROUP_H */
