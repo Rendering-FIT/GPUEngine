@@ -19,6 +19,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/CameraPath.h
   ${HEADER_PATH}/HighResolutionTimer.h
   ${HEADER_PATH}/FPSPrinter.h
+  ${HEADER_PATH}/macros.h
   ${HEADER_PATH}/Progress.h
   ${HEADER_PATH}/geUtil.h
   )
