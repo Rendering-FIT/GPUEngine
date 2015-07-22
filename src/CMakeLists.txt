@@ -1,7 +1,7 @@
 FOREACH(mylibfolder
         geGL
         geCore
-        #geRG
+        geRG
         geSG
         geUtil
   )
