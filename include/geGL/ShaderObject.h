@@ -59,6 +59,7 @@ namespace ge{
          * @param FileName name of file which contains shader
          */
         ShaderObject(std::string fileName);
+        ShaderObject(std::string fileName, GLenum type);
         /**
          * @brief Constructor
          *

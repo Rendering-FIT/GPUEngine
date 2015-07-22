@@ -11,7 +11,7 @@ namespace ge
    namespace util
    {
       template<ForwardIterator FwdIt>
-      apply(FwdIt first, FwdIt last)
+      void apply(FwdIt first, FwdIt last)
       {
          while(first != last)
          {

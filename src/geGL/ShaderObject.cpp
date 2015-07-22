@@ -180,6 +180,13 @@ ShaderObject::ShaderObject(std::string File){
   this->_compileShader();
 }
 
+ge::gl::ShaderObject::ShaderObject(std::string fileName, GLenum type)
+{
+   this->_type = type;
+   this->_loadFile(fileName);
+   this->_compileShader();
+}
+
 ShaderObject::ShaderObject(GLenum type,std::string text){
   this->_text = text;//text
   this->_type = type;//type
