@@ -195,3 +195,76 @@ std::string BufferParams::toStr(){
 GLint BufferParams::getBinding(){
   return this->_binding;
 }
+
+
+bool SamplerParam::isSampler(GLenum type){
+  switch(type){
+    case GL_SAMPLER_1D                               :
+    case GL_SAMPLER_2D                               :
+    case GL_SAMPLER_3D                               :
+    case GL_SAMPLER_CUBE                             :
+    case GL_SAMPLER_1D_SHADOW                        :
+    case GL_SAMPLER_2D_SHADOW                        :
+    case GL_SAMPLER_1D_ARRAY                         :
+    case GL_SAMPLER_2D_ARRAY                         :
+    case GL_SAMPLER_1D_ARRAY_SHADOW                  :
+    case GL_SAMPLER_2D_ARRAY_SHADOW                  :
+    case GL_SAMPLER_2D_MULTISAMPLE                   :
+    case GL_SAMPLER_2D_MULTISAMPLE_ARRAY             :
+    case GL_SAMPLER_CUBE_SHADOW                      :
+    case GL_SAMPLER_BUFFER                           :
+    case GL_SAMPLER_2D_RECT                          :
+    case GL_SAMPLER_2D_RECT_SHADOW                   :
+    case GL_INT_SAMPLER_1D                           :
+    case GL_INT_SAMPLER_2D                           :
+    case GL_INT_SAMPLER_3D                           :
+    case GL_INT_SAMPLER_CUBE                         :
+    case GL_INT_SAMPLER_1D_ARRAY                     :
+    case GL_INT_SAMPLER_2D_ARRAY                     :
+    case GL_INT_SAMPLER_2D_MULTISAMPLE               :
+    case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY         :
+    case GL_INT_SAMPLER_BUFFER                       :
+    case GL_INT_SAMPLER_2D_RECT                      :
+    case GL_UNSIGNED_INT_SAMPLER_1D                  :
+    case GL_UNSIGNED_INT_SAMPLER_2D                  :
+    case GL_UNSIGNED_INT_SAMPLER_3D                  :
+    case GL_UNSIGNED_INT_SAMPLER_CUBE                :
+    case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY            :
+    case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY            :
+    case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE      :
+    case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+    case GL_UNSIGNED_INT_SAMPLER_BUFFER              :
+    case GL_UNSIGNED_INT_SAMPLER_2D_RECT             :
+                                                      return true;
+    default:
+                                                      return false;
+  }
+}
+
+SamplerParam::SamplerParam(){}
+
+SamplerParam::SamplerParam(std::string name,GLint location,GLenum type,GLint binding){
+  this->_name     = name    ;
+  this->_location = location;
+  this->_type     = type    ;
+  this->_binding  = binding ;
+}
+
+std::string SamplerParam::getName(){
+  return this->_name;
+}
+
+void SamplerParam::setBinding(GLint binding){
+  this->_binding = binding;
+  glUniform1i(this->_location,binding);
+}
+
+GLint SamplerParam::getBinding(){
+  return this->_binding;
+}
+
+GLint SamplerParam::getLocation(){
+  return this->_location;
+}
+
+

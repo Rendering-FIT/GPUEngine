@@ -88,6 +88,29 @@ namespace ge{
         std::string toStr();
     };
 
+    class GEGL_EXPORT SamplerParam{
+      protected:
+        GLint       _location;
+        GLenum      _type    ;
+        GLint       _binding ;
+        std::string _name    ;
+      public:
+        static bool isSampler(GLenum type);
+        SamplerParam();
+        SamplerParam(std::string name,GLint location,GLenum type,GLint binding);
+        std::string getName   ();
+        GLint       getBinding();
+        void        setBinding(GLint binding);
+        GLint       getLocation();
+    };
+
+
+
+
+
+
+
+
 
   }
 }

@@ -356,6 +356,11 @@ void ProgramObject::getParameterList(){
       getActive[t](this->_id,i,bufLen,&length,&size,&type,Buffer);
       name = chopIndexingInPropertyName(std::string(Buffer));
       location = getLocation[t](this->_id,name.c_str());//location
+      if(ge::gl::SamplerParam::isSampler(type)){
+        GLint binding;
+        glGetUniformiv(this->getId(),location,&binding);
+        this->_samplerList[name]=SamplerParam(name,location,type,binding);
+      }
       ShaderObjectParameter Param = ShaderObjectParameter(location,type,name,size);//param
       if(Active[t]==GL_ACTIVE_ATTRIBUTES)this->_attributeList[name]=Param;
       else                               this->_uniformList  [name]=Param;
@@ -1177,6 +1182,14 @@ void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer){
 }
 void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size){
   buffer->bindRange(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name),offset,size);
+}
+/*
+unsigned ProgramObject::getSamplerBinding(std::string uniform){
+  return this->_samplerBindings[uniform];
+}
+*/
+void ProgramObject::bindTexture(std::string uniform,ge::gl::TextureObject*texture){
+  texture->bind(GL_TEXTURE0+this->_samplerList[uniform].getBinding());
 }
 
 void ProgramObject::use(){

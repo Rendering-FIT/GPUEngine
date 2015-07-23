@@ -11,6 +11,7 @@
 #include<geGL/ShaderObjectSubroutine.h>
 #include<geGL/ProgramObjectMacro.h>
 #include<geGL/BufferObject.h>
+#include<geGL/TextureObject.h>
 #include<geCore/dtemplates.h>
 
 namespace ge{
@@ -44,13 +45,14 @@ namespace ge{
         int _floatMatrixType2Index(GLenum type);
         int _doubleMatrixType2Index(GLenum type);
       protected:
-        std::vector<GLuint>                        _shaderList   ;///<list of shader object
-        std::vector<ShaderObject*>                 _shaders      ;///<list of shaders
-        std::map<std::string,ShaderObjectParameter>_attributeList;///<list of attributes
-        std::map<std::string,ShaderObjectParameter>_uniformList  ;///<list of uniforms
-        std::map<std::string,BufferParams>         _bufferList   ;///<list of buffers
-        std::vector<std::string>                   _bufferNames  ;///<list of buffer names
-        ShaderObjectSubroutine                     _subroutines[6];///subroutines in shaders
+        std::vector<GLuint>                        _shaderList    ;///<list of shader object
+        std::vector<ShaderObject*>                 _shaders       ;///<list of shaders
+        std::map<std::string,ShaderObjectParameter>_attributeList ;///<list of attributes
+        std::map<std::string,ShaderObjectParameter>_uniformList   ;///<list of uniforms
+        std::map<std::string,BufferParams>         _bufferList    ;///<list of buffers
+        std::vector<std::string>                   _bufferNames   ;///<list of buffer names
+        ShaderObjectSubroutine                     _subroutines[6];///<subroutines in shaders
+        std::map<std::string,SamplerParam>         _samplerList   ;///<sampler parameters
         void createShaderProgram_Prologue();  ///<prologue of creating of shader prg.
         void createShaderProgram_Epilogue();  ///<epilogue of creating of shader prg.
         void getParameterList();              ///<obtain shader parameters
@@ -440,6 +442,9 @@ namespace ge{
         void use();
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
+        unsigned getSamplerBinding(std::string uniform);
+        void bindTexture(std::string uniform,ge::gl::TextureObject*texture);
+
         /**
          * @brief Sets subroutine with name SubroutineName as active in Uniform
          *
