@@ -31,7 +31,7 @@ set(SG_SOURCES
    MatrixTransform.cpp
 )
 
-find_package(ste)
+#find_package(ste)
 
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
@@ -40,13 +40,13 @@ ADD_LIBRARY(${LIB_NAME}
   )
 
 set(Internal_deps geCore)
-set(External_deps ste)
+#set(External_deps ste)
 set(External_export_libs )
 set(External_export_includes )
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GLM_INCLUDE_DIR})
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)  
 
-target_link_libraries(${LIB_NAME} ${Internal_deps} ste)
+target_link_libraries(${LIB_NAME} ${Internal_deps} )#ste)
  
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"

@@ -64,7 +64,7 @@ namespace ge{
          char *data;
       };
 
-      template<typename Deleter = default_delete<char[]>>
+      template<typename Deleter = std::default_delete<char[]>>
       class MaterialSimpleComponentTemplate : public MaterialSimpleComponent
       {
       public:
