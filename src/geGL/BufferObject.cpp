@@ -126,6 +126,19 @@ GLenum ge::gl::bufferBinding2Target(GLenum binding){
   }
 }
 
+bool BufferObject::areFlagsMutable(GLbitfield flags){
+  return 
+    flags == GL_STATIC_DRAW ||
+    flags == GL_STATIC_COPY ||
+    flags == GL_STATIC_READ ||
+    flags == GL_STREAM_DRAW ||
+    flags == GL_STREAM_COPY ||
+    flags == GL_STREAM_READ ||
+    flags == GL_DYNAMIC_DRAW||
+    flags == GL_DYNAMIC_COPY||
+    flags == GL_DYNAMIC_READ;
+}
+
 BufferObject::BufferObject(
     GLsizeiptr    size,
     const GLvoid *data,
@@ -139,16 +152,7 @@ BufferObject::BufferObject(
 #endif//SAVE_PREVIOUS_BINDING
 
   glBindBuffer(GL_COPY_WRITE_BUFFER,this->_id);
-  if(
-      flags == GL_STATIC_DRAW ||
-      flags == GL_STATIC_COPY ||
-      flags == GL_STATIC_READ ||
-      flags == GL_STREAM_DRAW ||
-      flags == GL_STREAM_COPY ||
-      flags == GL_STREAM_READ ||
-      flags == GL_DYNAMIC_DRAW||
-      flags == GL_DYNAMIC_COPY||
-      flags == GL_DYNAMIC_READ)
+  if(BufferObject::areFlagsMutable(flags))
     glBufferData(GL_COPY_WRITE_BUFFER,size,data,flags);
   else
     glBufferStorage(GL_COPY_WRITE_BUFFER,size,data,flags);
@@ -159,16 +163,7 @@ BufferObject::BufferObject(
 
 #else //USE_DSA
   glCreateBuffers(1,&this->_id);
-  if(
-      flags == GL_STATIC_DRAW ||
-      flags == GL_STATIC_COPY ||
-      flags == GL_STATIC_READ ||
-      flags == GL_STREAM_DRAW ||
-      flags == GL_STREAM_COPY ||
-      flags == GL_STREAM_READ ||
-      flags == GL_DYNAMIC_DRAW||
-      flags == GL_DYNAMIC_COPY||
-      flags == GL_DYNAMIC_READ)
+  if(BufferObject::areFlagsMutable(flags))
     glNamedBufferData(this->_id,size,data,flags);
   else
     glNamedBufferStorage(this->_id,size,data,flags);

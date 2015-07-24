@@ -21,6 +21,7 @@ namespace ge{
         GLint   _getBufferParameter(GLenum pname);
         GLvoid* _getBufferPointer  (GLenum pname);
       public:
+        static bool areFlagsMutable(GLbitfield flags);
         BufferObject(
             GLsizeiptr    size                  ,
             const GLvoid* data  = NULL          ,
