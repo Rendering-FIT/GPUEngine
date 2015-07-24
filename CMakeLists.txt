@@ -36,7 +36,7 @@ ENDFOREACH()
 IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
-   OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." ON)
+   OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." OFF)
    IF(GLEW_STATIC)
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DGLEW_STATIC")
    ENDIF()
