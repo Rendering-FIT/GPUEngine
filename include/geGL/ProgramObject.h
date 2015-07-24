@@ -444,6 +444,14 @@ namespace ge{
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
         unsigned getSamplerBinding(std::string uniform);
         void bindTexture(std::string uniform,ge::gl::TextureObject*texture);
+        void bindImage(
+            std::string           uniform                ,
+            ge::gl::TextureObject*texture                ,
+            GLint                 level   = 0            ,
+            GLenum                format  = 0            ,
+            GLenum                access  = GL_READ_WRITE,
+            GLboolean             layered = GL_FALSE     ,
+            GLint                 layer   = 0            );
 
         /**
          * @brief Sets subroutine with name SubroutineName as active in Uniform

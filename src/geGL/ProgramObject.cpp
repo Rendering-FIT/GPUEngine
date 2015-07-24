@@ -1191,6 +1191,16 @@ unsigned ProgramObject::getSamplerBinding(std::string uniform){
 void ProgramObject::bindTexture(std::string uniform,ge::gl::TextureObject*texture){
   texture->bind(GL_TEXTURE0+this->_samplerList[uniform].getBinding());
 }
+void ProgramObject::bindImage(
+    std::string           uniform,
+    ge::gl::TextureObject*texture,
+    GLint                 level  ,
+    GLenum                format ,
+    GLenum                access ,
+    GLboolean             layered,
+    GLint                 layer  ){
+  texture->bindImage(this->_samplerList[uniform].getBinding(),level,format,access,layered,layer);
+}
 
 void ProgramObject::use(){
   glUseProgram(this->_id);
