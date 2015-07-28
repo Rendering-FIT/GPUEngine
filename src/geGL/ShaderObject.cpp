@@ -9,6 +9,68 @@
 
 using namespace ge::gl;
 
+GLint Shader::_getParam(GLenum pname){
+  GLint params;
+  glGetShaderiv(this->getId(),pname,&params);
+  return params;
+}
+
+Shader::Shader(GLenum type,std::string source){
+  this->_id = glCreateShader(type);
+  if(source!="")this->compile(source);
+}
+
+void Shader::setSource(std::string source){
+  const char*string=source.c_str();
+  glShaderSource(this->getId(),1,&string,NULL);
+}
+
+void Shader::compile(std::string source){
+  if(source!="")this->setSource(source);
+  glCompileShader(this->getId());
+}
+
+GLboolean Shader::isShader(){
+  return glIsShader(this->getId());
+}
+
+GLenum Shader::getType(){
+  return this->_getParam(GL_SHADER_TYPE);
+}
+
+GLboolean Shader::getDeleteStatus(){
+  return this->_getParam(GL_DELETE_STATUS);
+}
+
+GLboolean Shader::getCompileStatus(){
+  return this->_getParam(GL_COMPILE_STATUS);
+}
+
+GLuint Shader::getInfoLogLength(){
+  return this->_getParam(GL_INFO_LOG_LENGTH);
+}
+
+GLuint Shader::getSourceLength(){
+  return this->_getParam(GL_SHADER_SOURCE_LENGTH);
+}
+
+std::string Shader::getInfoLog(){
+  GLuint length = this->getInfoLogLength();
+  if(!length)return"";
+  std::string info(length,' ');
+  glGetShaderInfoLog(this->getId(),length,NULL,(GLchar*)info.c_str());
+  return info;
+}
+
+std::string Shader::getSource(){
+  GLuint length=this->getSourceLength();
+  if(!length)return"";
+  std::string source(length,' ');
+  glGetShaderSource(this->getId(),length,NULL,(GLchar*)source.c_str());
+  return source;
+}
+
+
 int ShaderObject::fileTypeSwitch(std::string fileName,unsigned numType,...){
   va_list args;//argumenty
   va_start(args,numType);//zacatek argumentu
@@ -182,9 +244,9 @@ ShaderObject::ShaderObject(std::string File){
 
 ge::gl::ShaderObject::ShaderObject(std::string fileName, GLenum type)
 {
-   this->_type = type;
-   this->_loadFile(fileName);
-   this->_compileShader();
+  this->_type = type;
+  this->_loadFile(fileName);
+  this->_compileShader();
 }
 
 ShaderObject::ShaderObject(GLenum type,std::string text){
@@ -221,8 +283,10 @@ ShaderObject::~ShaderObject(){
 
 void ShaderObject::_compileShader(){
   this->_id=glCreateShader(this->_type);//get shader id
-  if(!this->_id)//something is wrong
-    throw std::string("glCreateShader failed");//+GetGLError());//error message
+  if(!this->_id){
+    std::cerr<<"glCreateShader failed"<<std::endl;
+    return;
+  }
   GLchar*ptr[1]={(GLchar*)this->_text.data()};//retype
   glShaderSource(this->_id,1,(const GLchar**)ptr,NULL);//load shader text
   glCompileShader(this->_id);//compile shader
@@ -231,7 +295,7 @@ void ShaderObject::_compileShader(){
   GLint Status;//status of compilation
   glGetShaderiv(this->_id,GL_COMPILE_STATUS,&Status);//get status
   if((GLboolean)Status==GL_FALSE)//something is wrong
-    throw std::string("Shader compilation failed");//+GetGLError());//error message
+    std::cerr<<"Shader compilation failed"<<std::endl;
 }
 
 std::string ShaderObject::_getShaderInfo(GLuint ID){

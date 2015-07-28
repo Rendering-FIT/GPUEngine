@@ -1,15 +1,11 @@
-#ifndef _GE_GL_OPENGLOBJECT_H_
-#define _GE_GL_OPENGLOBJECT_H_
+#pragma once
 
 #include <geGL/OpenGL.h>
 #include <geCore/Object.h>
 
-#include <iostream>
-
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT OpenGLObject
-    {
+    class GEGL_EXPORT OpenGLObject{
       protected:
         GLuint _id;///<object id
       public:
@@ -20,5 +16,3 @@ namespace ge{
   }//gl
 }//ge
 
-
-#endif//_GE_GL_OPENGLOBJECT_H_

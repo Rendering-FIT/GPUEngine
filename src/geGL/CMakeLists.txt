@@ -59,6 +59,8 @@ set(GL_INCLUDES
     ${HEADER_PATH}/BufferObjectCommands.h
     ${HEADER_PATH}/ProgramObjectCommands.h
     ${HEADER_PATH}/ObjectCommands.h
+    ${HEADER_PATH}/ProgramObjectUniformCommands.h
+    ${HEADER_PATH}/TextureObjectCommands.h
   )
 
 set(GL_SOURCES
@@ -104,6 +106,8 @@ set(GL_SOURCES
     BufferCommands.cpp
     BufferObjectCommands.cpp
     ProgramObjectCommands.cpp
+    ProgramObjectUniformCommands.cpp
+    TextureObjectCommands.cpp
   )
 
 

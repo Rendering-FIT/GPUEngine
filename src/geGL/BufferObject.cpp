@@ -208,59 +208,46 @@ void BufferObject::bindRange(
       offset,
       size);
 }
+
 /**
  * @brief Binds buffer to specific indexed target
  *
  * @param target target
  * @param index index
  */
-void BufferObject::bindBase(
-    GLenum target,
-    GLuint index){
-  glBindBufferBase(
-      target,
-      index,
-      this->_id);
+void BufferObject::bindBase(GLenum target,GLuint index){
+  glBindBufferBase(target,index,this->_id);
 }
+
 /**
  * @brief Unbinds buffer from specific target
  *
  * @param target target
  */
-void BufferObject::unbind(
-    GLenum target){
-  glBindBuffer(
-      target,
-      0);
+void BufferObject::unbind(GLenum target){
+  glBindBuffer(target,0);
 }
+
 /**
  * @brief Unbinds range of buffer from specific indexed target
  *
  * @param target target
  * @param index  index
  */
-void BufferObject::unbindRange(
-    GLenum target,
-    GLuint index){
-  glBindBufferBase(//NOTE: unbind whole buffer
-      target,
-      index,
-      0);
+void BufferObject::unbindRange(GLenum target,GLuint index){
+  glBindBufferBase(target,index,0);
 }
+
 /**
  * @brief Unbinds buffer from specific index target
  *
  * @param target target
  * @param index  index
  */
-void BufferObject::unbindBase(
-    GLenum target,
-    GLuint index){
-  glBindBufferBase(
-      target,
-      index,
-      0);
+void BufferObject::unbindBase(GLenum target,GLuint index){
+  glBindBufferBase(target,index,0);
 }
+
 /**
  * @brief Copies data from another buffer into this buffer
  *
@@ -304,15 +291,16 @@ void BufferObject::copy(
       maxSize);
 #endif//USE_DSA
 }
+
 /**
  * @brief Copies data from another buffer into this buffer
  *
  * @param buffer another buffer
  */
-void BufferObject::operator &=(
-    BufferObject*buffer){
+void BufferObject::operator &=(BufferObject*buffer){
   this->copy(buffer);
 }
+
 /**
  * @brief Flushes mapped buffer
  *
@@ -320,9 +308,7 @@ void BufferObject::operator &=(
  * @param offset offset into buffer in bytes
  * @param size   length of data in bytes
  */
-void BufferObject::flushMapped(
-    GLsizeiptr size,
-    GLintptr   offset){
+void BufferObject::flushMapped(GLsizeiptr size,GLintptr offset){
   if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
@@ -343,17 +329,17 @@ void BufferObject::flushMapped(
   glFlushMappedNamedBufferRange(this->_id,offset,size);
 #endif//USE_DSA
 }
+
 /**
  * @brief Invalidates specific region of buffer
  *
  * @param offset offset of region in bytes
  * @param size   length of region in bytes
  */
-void BufferObject::invalidate(
-    GLsizeiptr size,
-    GLintptr offset){
+void BufferObject::invalidate(GLsizeiptr size,GLintptr offset){
   glInvalidateBufferSubData(this->_id,offset,size);
 }
+
 /**
  * @brief Clears buffer
  *
@@ -445,6 +431,7 @@ GLvoid*BufferObject::map(
 #endif//USE_DSA
   return ptr;
 }
+
 GLvoid*BufferObject::map(
     GLintptr   offset,
     GLsizeiptr size,

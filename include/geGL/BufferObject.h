@@ -26,7 +26,7 @@ namespace ge{
             GLsizeiptr    size                  ,
             const GLvoid* data  = NULL          ,
             GLbitfield    flags = GL_STATIC_DRAW);
-        ~BufferObject();
+        virtual ~BufferObject();
         GLvoid*map(
             GLbitfield access = GL_MAP_READ_BIT|GL_MAP_WRITE_BIT);
         GLvoid*map(

@@ -3,10 +3,36 @@
 
 #include <geGL/OpenGL.h>
 #include <geGL/OpenGLObject.h>
+#include <geCore/dtemplates.h>
 #include<iostream>
 
 namespace ge{
   namespace gl{
+
+    class GEGL_EXPORT Shader: public OpenGLObject{
+      protected:
+        GLint _getParam(GLenum pname);
+      public:
+        Shader(GLenum type,std::string source="");
+        void        setSource(std::string source);
+        void        compile(std::string source="");
+        GLboolean   isShader        ();
+        GLenum      getType         ();
+        GLboolean   getDeleteStatus ();
+        GLboolean   getCompileStatus();
+        GLuint      getInfoLogLength();
+        GLuint      getSourceLength ();
+        std::string getInfoLog      ();
+        std::string getSource       ();
+    };
+
+    /*
+    Shader*createShader(GLenum type,std::string source="");
+    Shader*createShader(std::string file,GLenum type=ge::core::nonof(
+          GL_VERTEX_SHADER,GL_FRAGMENT_SHADER,GL_TESS_CONTROL_SHADER,GL_TESS_EVALUATION_SHADER,
+          ))
+          */
+
     /**
      * This class represents shader
      */
