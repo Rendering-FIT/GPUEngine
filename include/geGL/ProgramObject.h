@@ -442,7 +442,7 @@ namespace ge{
         void use();
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
-        unsigned getSamplerBinding(std::string uniform);
+        GLenum getSamplerBinding(std::string uniform);
         void bindTexture(std::string uniform,ge::gl::TextureObject*texture);
         void bindImage(
             std::string           uniform                ,

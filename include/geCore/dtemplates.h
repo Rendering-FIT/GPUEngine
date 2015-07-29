@@ -7,6 +7,7 @@
 #include<sstream>
 #include<vector>
 #include<map>
+#include<memory>
 
 #define DEF_ENUM(name,...)\
   enum name{\
@@ -119,5 +120,76 @@ namespace ge{
 
     GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);
     GECORE_EXPORT unsigned bitCount(unsigned value);
+
+    template<typename TYPE,bool SET,bool GET>
+      class Attrib{
+        protected:
+          TYPE _value;
+        public:
+          Attrib(TYPE const&value){this->_value = value;}
+          Attrib(){}
+          template<typename T = TYPE>
+            inline typename std::enable_if<GET,T>::type&get(){return this->_value;}
+          template<typename T = TYPE>
+            inline void set(typename std::enable_if<SET,T>::type const&value){this->_value = value;}
+      };
+    template<typename TYPE>
+      inline TYPE convertTo(std::shared_ptr<TYPE> const&sharedPtr){
+        return *sharedPtr;
+      }
+
+    template<typename TYPE>
+      inline TYPE convertTo(TYPE*const&ptr){
+        return *ptr;
+      }
+
+    template<typename TYPE>
+      inline TYPE convertTo(TYPE const&val){
+        return val;
+      }
+
+    template<typename TYPE>
+      inline void convertFrom(std::shared_ptr<TYPE>&output,TYPE const&input){
+        *output=input;
+      }
+
+    template<typename TYPE>
+      inline void convertFrom(TYPE*&output,TYPE const&input){
+        *output=input;
+      }
+
+    template<typename TYPE>
+      inline void convertFrom(TYPE &output,TYPE const&input){
+        output = input;
+      }
+
   }
+
 }
+
+#define DEF_NAMED_ATTRIBUTE(newClassName,type,set,get)\
+  class newClassName: public ge::core::Attrib<type,set,get>{\
+    public:\
+           newClassName(type const&val):ge::core::Attrib<type,set,get>(val){}\
+  }
+
+#define DEF_ATTRIBUTE(newClassName,type)\
+  DEF_NAMED_ATTRIBUTE(newClassName,type,false,false)
+
+#define DEF_ATTRIBUTE_R(newClassName,type)\
+  DEF_NAMED_ATTRIBUTE(newClassName,type,false,true)
+
+#define DEF_ATTRIBUTE_W(newClassName,type)\
+  DEF_NAMED_ATTRIBUTE(newClassName,type,true,false)
+
+#define DEF_ATTRIBUTE_RW(newClassName,type)\
+  DEF_NAMED_ATTRIBUTE(newClassName,type,true,true)
+
+
+#define DEF_NAMED_TEMPLATE_ATTRIBUTE(newClassName)\
+  template<typename TYPE,bool SET=true,bool GET=true>\
+class newClassName: public ge::core::Attrib<TYPE,SET,GET>{\
+  public:\
+         newClassName(TYPE const&val):ge::core::Attrib<TYPE,SET,GET>(val){}\
+}
+

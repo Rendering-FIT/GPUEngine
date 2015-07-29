@@ -41,7 +41,6 @@ namespace ge{
         GLuint getTexture();
         void   setTexture(GLuint texture);
     };
-
   }
 }
 

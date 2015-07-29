@@ -148,7 +148,7 @@ namespace ge{
             GLint     location            ,
             const T*  data                ,
             GLsizei   count     = 1       ,
-            GLboolean transpose = GL_FALSE):ProgramUniformCommand(location){
+            GLboolean transpose = GL_FALSE):ProgramUniformCommand(program,location){
           this->set(data,count,transpose);
         }
         virtual void operator()();
@@ -214,5 +214,54 @@ namespace ge{
     template<>void ProgramUniform<2,GLdouble>::operator()();
     template<>void ProgramUniform<3,GLdouble>::operator()();
     template<>void ProgramUniform<4,GLdouble>::operator()();
+
+    template<unsigned dim,typename T>
+      class ProgramUniformV: public ProgramUniformCommand{
+        protected:
+          const T*_data;
+          GLsizei _count;
+        public:
+          ProgramUniformV(
+              GLuint  program  ,
+              GLint   location ,
+              const T*data     ,
+              GLsizei count = 1):ProgramUniformCommand(program,location){
+            this->set(data,count);
+          }
+          virtual void operator()();
+          void set(const T*data,GLsizei count=1){
+            this->_data  = data ;
+            this->_count = count;
+          }
+      };
+
+    template<>void ProgramUniformV<1,GLfloat >::operator()();
+    template<>void ProgramUniformV<2,GLfloat >::operator()();
+    template<>void ProgramUniformV<3,GLfloat >::operator()();
+    template<>void ProgramUniformV<4,GLfloat >::operator()();
+    template<>void ProgramUniformV<1,GLint   >::operator()();
+    template<>void ProgramUniformV<2,GLint   >::operator()();
+    template<>void ProgramUniformV<3,GLint   >::operator()();
+    template<>void ProgramUniformV<4,GLint   >::operator()();
+    template<>void ProgramUniformV<1,GLuint  >::operator()();
+    template<>void ProgramUniformV<2,GLuint  >::operator()();
+    template<>void ProgramUniformV<3,GLuint  >::operator()();
+    template<>void ProgramUniformV<4,GLuint  >::operator()();
+    template<>void ProgramUniformV<1,GLdouble>::operator()();
+    template<>void ProgramUniformV<2,GLdouble>::operator()();
+    template<>void ProgramUniformV<3,GLdouble>::operator()();
+    template<>void ProgramUniformV<4,GLdouble>::operator()();
+
+    class UniformSubroutines: public ge::core::Command{
+      protected:
+        GLenum        _shaderType;
+        GLsizei       _count     ;
+        GLuint*       _indices   ;
+      public:
+        UniformSubroutines(GLenum shaderType,GLsizei count,GLuint* indices);
+        virtual ~UniformSubroutines();
+        virtual void operator()();
+    };
+
   }
 }

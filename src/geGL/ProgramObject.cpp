@@ -1183,11 +1183,11 @@ void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer){
 void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size){
   buffer->bindRange(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name),offset,size);
 }
-/*
-unsigned ProgramObject::getSamplerBinding(std::string uniform){
-  return this->_samplerBindings[uniform];
+
+GLenum ProgramObject::getSamplerBinding(std::string uniform){
+  return GL_TEXTURE0+this->_samplerList[uniform].getBinding();
 }
-*/
+
 void ProgramObject::bindTexture(std::string uniform,ge::gl::TextureObject*texture){
   texture->bind(GL_TEXTURE0+this->_samplerList[uniform].getBinding());
 }

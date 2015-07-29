@@ -1,5 +1,7 @@
 #include<geGL/TextureObjectCommands.h>
 #include<geGL/TextureObject.h>
+#include<geGL/ProgramObject.h>
+#include<geGL/TextureCommands.h>
 
 using namespace ge::gl;
 
@@ -30,3 +32,17 @@ void BindTextureObject2Unit::setUnit(GLenum unit){
   this->_unit = unit;
 }
 
+ge::core::Command*ge::gl::newActiveTexture(ProgramObject*program,std::string samplerName){
+  return new ActiveTexture(program->getSamplerBinding(samplerName));
+}
+
+ge::core::Command*ge::gl::newBindTexture(TextureObject*texture){
+  return new BindTexture(texture->getTarget(),texture->getId());
+}
+
+ge::core::Command*ge::gl::newBindTextureUnit(
+    ProgramObject*program    ,
+    std::string   samplerName,
+    TextureObject*texture    ){
+  return new BindTextureUnit(program->getSamplerBinding(samplerName),texture->getId());
+}
