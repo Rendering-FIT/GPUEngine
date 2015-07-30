@@ -3,6 +3,7 @@
 #include<geCore/Command.h>
 #include<geGL/Export.h>
 #include<GL/glew.h>
+#include<geGL/AllAttribs.h>
 
 namespace ge{
   namespace gl{

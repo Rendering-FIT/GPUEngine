@@ -6,18 +6,6 @@
 #include<geGL/BufferObject.h>
 #include<geGL/AllAttribs.h>
 
-namespace ge{
-  namespace core{
-    template<typename TYPE>
-      inline TYPE convertTo(ge::gl::BufferObject*const&bufferObject){
-        return bufferObject->getId();
-      }
-    template<typename TYPE>
-      inline TYPE convertTo(std::shared_ptr<ge::gl::BufferObject>const&sharedBufferObject){
-        return sharedBufferObject->getId();
-      }
-  }
-}
 
 namespace ge{
   namespace gl{

@@ -6,19 +6,6 @@
 #include<geGL/AllAttribs.h>
 
 namespace ge{
-  namespace core{
-    template<typename TYPE>
-      inline TYPE convertTo(ge::gl::ProgramObject*const&programObject){
-        return programObject->getId();
-      }
-    template<typename TYPE>
-      inline TYPE convertTo(std::shared_ptr<ge::gl::ProgramObject>const&sharedProgramObject){
-        return sharedProgramObject->getId();
-      }
-  }
-}
-
-namespace ge{
   namespace gl{
     template<
       typename PROGRAM_TYPE = GLuint>

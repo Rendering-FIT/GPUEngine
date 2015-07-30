@@ -1,6 +1,8 @@
 #pragma once
 
 #include<geCore/dtemplates.h>
+#include<geGL/ProgramObject.h>
+#include<geGL/BufferObject.h>
 
 namespace ge{
   namespace gl{
@@ -243,6 +245,28 @@ namespace ge{
       DEF_NAMED_TEMPLATE_ATTRIBUTE(Strings             );
       DEF_NAMED_TEMPLATE_ATTRIBUTE(Left                );
     }
+  }
+}
+
+namespace ge{
+  namespace core{
+    template<typename TYPE>
+      inline TYPE convertTo(ge::gl::BufferObject*const&bufferObject){
+        return bufferObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(std::shared_ptr<ge::gl::BufferObject>const&sharedBufferObject){
+        return sharedBufferObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(ge::gl::ProgramObject*const&programObject){
+        return programObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(std::shared_ptr<ge::gl::ProgramObject>const&sharedProgramObject){
+        return sharedProgramObject->getId();
+      }
+
   }
 }
 

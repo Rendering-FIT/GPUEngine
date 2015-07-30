@@ -64,6 +64,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/AllAttribs.h
     ${HEADER_PATH}/TextureCommands.h
     ${HEADER_PATH}/BarrierCommands.h
+    ${HEADER_PATH}/DispatchCommands.h
   )
 
 set(GL_SOURCES
