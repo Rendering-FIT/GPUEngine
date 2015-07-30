@@ -1,7 +1,8 @@
 #include<geGL/ProgramCommands.h>
 
-using namespace ge::gl;
+//using namespace ge::gl;
 
+/*
 UseProgram::UseProgram(GLuint program){
   this->set(program);
 }
@@ -30,4 +31,4 @@ void UseProgramR::set(GLuint*program){
 GLuint*UseProgramR::get(){
   return this->_program;
 }
-
+*/

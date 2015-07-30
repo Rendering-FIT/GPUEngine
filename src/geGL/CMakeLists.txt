@@ -61,7 +61,9 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ObjectCommands.h
     ${HEADER_PATH}/ProgramObjectUniformCommands.h
     ${HEADER_PATH}/TextureObjectCommands.h
+    ${HEADER_PATH}/AllAttribs.h
     ${HEADER_PATH}/TextureCommands.h
+    ${HEADER_PATH}/BarrierCommands.h
   )
 
 set(GL_SOURCES
@@ -103,7 +105,7 @@ set(GL_SOURCES
     DebugMessage.cpp
     RasterizationState.cpp
     OpenGLObject.cpp
-    ProgramCommands.cpp
+    #ProgramCommands.cpp
     BufferCommands.cpp
     BufferObjectCommands.cpp
     ProgramObjectCommands.cpp
