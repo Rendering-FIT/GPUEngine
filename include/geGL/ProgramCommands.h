@@ -10,16 +10,17 @@ namespace ge{
     template<
       typename PROGRAM_TYPE = GLuint>
     class UseProgram:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
         UseProgram(
-            PROGRAM_TYPE const&program):
-          at::Program<PROGRAM_TYPE>(program){}
+            PROGRAM_TYPE const&program){
+          this->program = program;
+        }
         virtual~UseProgram(){}
         virtual void operator()(){
           glUseProgram(
-            ge::core::convertTo<GLuint>(this->at::Program<PROGRAM_TYPE>::_value)
+            ge::core::convertTo<GLuint>(this->program)
           );
         }
     };
@@ -34,16 +35,16 @@ namespace ge{
       typename LENGTH_TYPE           = GLsizei*     ,
       typename PARAMS_TYPE           = GLint*       >
     class GetProgramResourceiv:
-        public ge::core::Command,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::ProgramInterface<PROGRAMINTERFACE_TYPE>,
-        public at::Index           <INDEX_TYPE           >,
-        public at::PropCount       <PROPCOUNT_TYPE       >,
-        public at::Props           <PROPS_TYPE           >,
-        public at::BufSize         <BUFSIZE_TYPE         >,
-        public at::Length          <LENGTH_TYPE          >,
-        public at::Params          <PARAMS_TYPE          >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE          program         ;
+        PROGRAMINTERFACE_TYPE programInterface;
+        INDEX_TYPE            index           ;
+        PROPCOUNT_TYPE        propCount       ;
+        PROPS_TYPE            props           ;
+        BUFSIZE_TYPE          bufSize         ;
+        LENGTH_TYPE           length          ;
+        PARAMS_TYPE           params          ;
         GetProgramResourceiv(
             PROGRAM_TYPE          const&program         ,
             PROGRAMINTERFACE_TYPE const&programInterface,
@@ -52,26 +53,27 @@ namespace ge{
             PROPS_TYPE            const&props           ,
             BUFSIZE_TYPE          const&bufSize         ,
             LENGTH_TYPE           const&length          ,
-            PARAMS_TYPE           const&params          ):
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::ProgramInterface<PROGRAMINTERFACE_TYPE>(programInterface),
-          at::Index           <INDEX_TYPE           >(index           ),
-          at::PropCount       <PROPCOUNT_TYPE       >(propCount       ),
-          at::Props           <PROPS_TYPE           >(props           ),
-          at::BufSize         <BUFSIZE_TYPE         >(bufSize         ),
-          at::Length          <LENGTH_TYPE          >(length          ),
-          at::Params          <PARAMS_TYPE          >(params          ){}
+            PARAMS_TYPE           const&params          ){
+          this->program          = program         ;
+          this->programInterface = programInterface;
+          this->index            = index           ;
+          this->propCount        = propCount       ;
+          this->props            = props           ;
+          this->bufSize          = bufSize         ;
+          this->length           = length          ;
+          this->params           = params          ;
+        }
         virtual~GetProgramResourceiv(){}
         virtual void operator()(){
           glGetProgramResourceiv(
-            ge::core::convertTo<GLuint       >(this->at::Program         <PROGRAM_TYPE         >::_value),
-            ge::core::convertTo<GLenum       >(this->at::ProgramInterface<PROGRAMINTERFACE_TYPE>::_value),
-            ge::core::convertTo<GLuint       >(this->at::Index           <INDEX_TYPE           >::_value),
-            ge::core::convertTo<GLsizei      >(this->at::PropCount       <PROPCOUNT_TYPE       >::_value),
-            ge::core::convertTo<const GLenum*>(this->at::Props           <PROPS_TYPE           >::_value),
-            ge::core::convertTo<GLsizei      >(this->at::BufSize         <BUFSIZE_TYPE         >::_value),
-            ge::core::convertTo<GLsizei*     >(this->at::Length          <LENGTH_TYPE          >::_value),
-            ge::core::convertTo<GLint*       >(this->at::Params          <PARAMS_TYPE          >::_value)
+            ge::core::convertTo<GLuint       >(this->program         ),
+            ge::core::convertTo<GLenum       >(this->programInterface),
+            ge::core::convertTo<GLuint       >(this->index           ),
+            ge::core::convertTo<GLsizei      >(this->propCount       ),
+            ge::core::convertTo<const GLenum*>(this->props           ),
+            ge::core::convertTo<GLsizei      >(this->bufSize         ),
+            ge::core::convertTo<GLsizei*     >(this->length          ),
+            ge::core::convertTo<GLint*       >(this->params          )
           );
         }
     };
@@ -83,32 +85,33 @@ namespace ge{
       typename BINARYFORMAT_TYPE = GLenum* ,
       typename BINARY_TYPE       = void*   >
     class GetProgramBinary:
-        public ge::core::Command,
-        public at::Program     <PROGRAM_TYPE     >,
-        public at::BufSize     <BUFSIZE_TYPE     >,
-        public at::Length      <LENGTH_TYPE      >,
-        public at::BinaryFormat<BINARYFORMAT_TYPE>,
-        public at::Binary      <BINARY_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE      program     ;
+        BUFSIZE_TYPE      bufSize     ;
+        LENGTH_TYPE       length      ;
+        BINARYFORMAT_TYPE binaryFormat;
+        BINARY_TYPE       binary      ;
         GetProgramBinary(
             PROGRAM_TYPE      const&program     ,
             BUFSIZE_TYPE      const&bufSize     ,
             LENGTH_TYPE       const&length      ,
             BINARYFORMAT_TYPE const&binaryFormat,
-            BINARY_TYPE       const&binary      ):
-          at::Program     <PROGRAM_TYPE     >(program     ),
-          at::BufSize     <BUFSIZE_TYPE     >(bufSize     ),
-          at::Length      <LENGTH_TYPE      >(length      ),
-          at::BinaryFormat<BINARYFORMAT_TYPE>(binaryFormat),
-          at::Binary      <BINARY_TYPE      >(binary      ){}
+            BINARY_TYPE       const&binary      ){
+          this->program      = program     ;
+          this->bufSize      = bufSize     ;
+          this->length       = length      ;
+          this->binaryFormat = binaryFormat;
+          this->binary       = binary      ;
+        }
         virtual~GetProgramBinary(){}
         virtual void operator()(){
           glGetProgramBinary(
-            ge::core::convertTo<GLuint  >(this->at::Program     <PROGRAM_TYPE     >::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize     <BUFSIZE_TYPE     >::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length      <LENGTH_TYPE      >::_value),
-            ge::core::convertTo<GLenum* >(this->at::BinaryFormat<BINARYFORMAT_TYPE>::_value),
-            ge::core::convertTo<void*   >(this->at::Binary      <BINARY_TYPE      >::_value)
+            ge::core::convertTo<GLuint  >(this->program     ),
+            ge::core::convertTo<GLsizei >(this->bufSize     ),
+            ge::core::convertTo<GLsizei*>(this->length      ),
+            ge::core::convertTo<GLenum* >(this->binaryFormat),
+            ge::core::convertTo<void*   >(this->binary      )
           );
         }
     };
@@ -116,15 +119,16 @@ namespace ge{
     template<
       typename RET_TYPE = GLuint>
     class CreateProgram:
-        public ge::core::Command,
-        public at::Ret<RET_TYPE>{
+        public ge::core::Command{
       public:
+        RET_TYPE ret;
         CreateProgram(
-            RET_TYPE const&ret):
-          at::Ret<RET_TYPE>(ret){}
+            RET_TYPE const&ret){
+          this->ret = ret;
+        }
         virtual~CreateProgram(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLuint>(this->at::Ret<RET_TYPE>::_value,glCreateProgram()
+          ge::core::convertFrom<GLuint>(this->ret,glCreateProgram()
           );
         }
     };
@@ -135,27 +139,28 @@ namespace ge{
       typename PROGRAMINTERFACE_TYPE = GLenum       ,
       typename NAME_TYPE             = const GLchar*>
     class GetProgramResourceLocation:
-        public ge::core::Command,
-        public at::Ret             <RET_TYPE             >,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::ProgramInterface<PROGRAMINTERFACE_TYPE>,
-        public at::Name            <NAME_TYPE            >{
+        public ge::core::Command{
       public:
+        RET_TYPE              ret             ;
+        PROGRAM_TYPE          program         ;
+        PROGRAMINTERFACE_TYPE programInterface;
+        NAME_TYPE             name            ;
         GetProgramResourceLocation(
             RET_TYPE              const&ret             ,
             PROGRAM_TYPE          const&program         ,
             PROGRAMINTERFACE_TYPE const&programInterface,
-            NAME_TYPE             const&name            ):
-          at::Ret             <RET_TYPE             >(ret             ),
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::ProgramInterface<PROGRAMINTERFACE_TYPE>(programInterface),
-          at::Name            <NAME_TYPE            >(name            ){}
+            NAME_TYPE             const&name            ){
+          this->ret              = ret             ;
+          this->program          = program         ;
+          this->programInterface = programInterface;
+          this->name             = name            ;
+        }
         virtual~GetProgramResourceLocation(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLint>(this->at::Ret<RET_TYPE>::_value,glGetProgramResourceLocation(
-              ge::core::convertTo<GLuint       >(this->at::Program         <PROGRAM_TYPE         >::_value),
-              ge::core::convertTo<GLenum       >(this->at::ProgramInterface<PROGRAMINTERFACE_TYPE>::_value),
-              ge::core::convertTo<const GLchar*>(this->at::Name            <NAME_TYPE            >::_value))
+          ge::core::convertFrom<GLint>(this->ret,glGetProgramResourceLocation(
+              ge::core::convertTo<GLuint       >(this->program         ),
+              ge::core::convertTo<GLenum       >(this->programInterface),
+              ge::core::convertTo<const GLchar*>(this->name            ))
           );
         }
     };
@@ -166,28 +171,29 @@ namespace ge{
       typename LENGTH_TYPE  = GLsizei*,
       typename INFOLOG_TYPE = GLchar* >
     class GetProgramInfoLog:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>,
-        public at::BufSize<BUFSIZE_TYPE>,
-        public at::Length <LENGTH_TYPE >,
-        public at::InfoLog<INFOLOG_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
+        BUFSIZE_TYPE bufSize;
+        LENGTH_TYPE  length ;
+        INFOLOG_TYPE infoLog;
         GetProgramInfoLog(
             PROGRAM_TYPE const&program,
             BUFSIZE_TYPE const&bufSize,
             LENGTH_TYPE  const&length ,
-            INFOLOG_TYPE const&infoLog):
-          at::Program<PROGRAM_TYPE>(program),
-          at::BufSize<BUFSIZE_TYPE>(bufSize),
-          at::Length <LENGTH_TYPE >(length ),
-          at::InfoLog<INFOLOG_TYPE>(infoLog){}
+            INFOLOG_TYPE const&infoLog){
+          this->program = program;
+          this->bufSize = bufSize;
+          this->length  = length ;
+          this->infoLog = infoLog;
+        }
         virtual~GetProgramInfoLog(){}
         virtual void operator()(){
           glGetProgramInfoLog(
-            ge::core::convertTo<GLuint  >(this->at::Program<PROGRAM_TYPE>::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize<BUFSIZE_TYPE>::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length <LENGTH_TYPE >::_value),
-            ge::core::convertTo<GLchar* >(this->at::InfoLog<INFOLOG_TYPE>::_value)
+            ge::core::convertTo<GLuint  >(this->program),
+            ge::core::convertTo<GLsizei >(this->bufSize),
+            ge::core::convertTo<GLsizei*>(this->length ),
+            ge::core::convertTo<GLchar* >(this->infoLog)
           );
         }
     };
@@ -195,16 +201,17 @@ namespace ge{
     template<
       typename PROGRAM_TYPE = GLuint>
     class ValidateProgram:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
         ValidateProgram(
-            PROGRAM_TYPE const&program):
-          at::Program<PROGRAM_TYPE>(program){}
+            PROGRAM_TYPE const&program){
+          this->program = program;
+        }
         virtual~ValidateProgram(){}
         virtual void operator()(){
           glValidateProgram(
-            ge::core::convertTo<GLuint>(this->at::Program<PROGRAM_TYPE>::_value)
+            ge::core::convertTo<GLuint>(this->program)
           );
         }
     };
@@ -215,28 +222,29 @@ namespace ge{
       typename PNAME_TYPE      = GLenum,
       typename VALUES_TYPE     = GLint*>
     class GetProgramStageiv:
-        public ge::core::Command,
-        public at::Program   <PROGRAM_TYPE   >,
-        public at::Shadertype<SHADERTYPE_TYPE>,
-        public at::Pname     <PNAME_TYPE     >,
-        public at::Values    <VALUES_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE    program   ;
+        SHADERTYPE_TYPE shadertype;
+        PNAME_TYPE      pname     ;
+        VALUES_TYPE     values    ;
         GetProgramStageiv(
             PROGRAM_TYPE    const&program   ,
             SHADERTYPE_TYPE const&shadertype,
             PNAME_TYPE      const&pname     ,
-            VALUES_TYPE     const&values    ):
-          at::Program   <PROGRAM_TYPE   >(program   ),
-          at::Shadertype<SHADERTYPE_TYPE>(shadertype),
-          at::Pname     <PNAME_TYPE     >(pname     ),
-          at::Values    <VALUES_TYPE    >(values    ){}
+            VALUES_TYPE     const&values    ){
+          this->program    = program   ;
+          this->shadertype = shadertype;
+          this->pname      = pname     ;
+          this->values     = values    ;
+        }
         virtual~GetProgramStageiv(){}
         virtual void operator()(){
           glGetProgramStageiv(
-            ge::core::convertTo<GLuint>(this->at::Program   <PROGRAM_TYPE   >::_value),
-            ge::core::convertTo<GLenum>(this->at::Shadertype<SHADERTYPE_TYPE>::_value),
-            ge::core::convertTo<GLenum>(this->at::Pname     <PNAME_TYPE     >::_value),
-            ge::core::convertTo<GLint*>(this->at::Values    <VALUES_TYPE    >::_value)
+            ge::core::convertTo<GLuint>(this->program   ),
+            ge::core::convertTo<GLenum>(this->shadertype),
+            ge::core::convertTo<GLenum>(this->pname     ),
+            ge::core::convertTo<GLint*>(this->values    )
           );
         }
     };
@@ -245,19 +253,20 @@ namespace ge{
       typename RET_TYPE     = GLboolean,
       typename PROGRAM_TYPE = GLuint   >
     class IsProgram:
-        public ge::core::Command,
-        public at::Ret    <RET_TYPE    >,
-        public at::Program<PROGRAM_TYPE>{
+        public ge::core::Command{
       public:
+        RET_TYPE     ret    ;
+        PROGRAM_TYPE program;
         IsProgram(
             RET_TYPE     const&ret    ,
-            PROGRAM_TYPE const&program):
-          at::Ret    <RET_TYPE    >(ret    ),
-          at::Program<PROGRAM_TYPE>(program){}
+            PROGRAM_TYPE const&program){
+          this->ret     = ret    ;
+          this->program = program;
+        }
         virtual~IsProgram(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLboolean>(this->at::Ret<RET_TYPE>::_value,glIsProgram(
-              ge::core::convertTo<GLuint   >(this->at::Program<PROGRAM_TYPE>::_value))
+          ge::core::convertFrom<GLboolean>(this->ret,glIsProgram(
+              ge::core::convertTo<GLuint   >(this->program))
           );
         }
     };
@@ -268,28 +277,29 @@ namespace ge{
       typename PNAME_TYPE            = GLenum,
       typename PARAMS_TYPE           = GLint*>
     class GetProgramInterfaceiv:
-        public ge::core::Command,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::ProgramInterface<PROGRAMINTERFACE_TYPE>,
-        public at::Pname           <PNAME_TYPE           >,
-        public at::Params          <PARAMS_TYPE          >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE          program         ;
+        PROGRAMINTERFACE_TYPE programInterface;
+        PNAME_TYPE            pname           ;
+        PARAMS_TYPE           params          ;
         GetProgramInterfaceiv(
             PROGRAM_TYPE          const&program         ,
             PROGRAMINTERFACE_TYPE const&programInterface,
             PNAME_TYPE            const&pname           ,
-            PARAMS_TYPE           const&params          ):
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::ProgramInterface<PROGRAMINTERFACE_TYPE>(programInterface),
-          at::Pname           <PNAME_TYPE           >(pname           ),
-          at::Params          <PARAMS_TYPE          >(params          ){}
+            PARAMS_TYPE           const&params          ){
+          this->program          = program         ;
+          this->programInterface = programInterface;
+          this->pname            = pname           ;
+          this->params           = params          ;
+        }
         virtual~GetProgramInterfaceiv(){}
         virtual void operator()(){
           glGetProgramInterfaceiv(
-            ge::core::convertTo<GLuint>(this->at::Program         <PROGRAM_TYPE         >::_value),
-            ge::core::convertTo<GLenum>(this->at::ProgramInterface<PROGRAMINTERFACE_TYPE>::_value),
-            ge::core::convertTo<GLenum>(this->at::Pname           <PNAME_TYPE           >::_value),
-            ge::core::convertTo<GLint*>(this->at::Params          <PARAMS_TYPE          >::_value)
+            ge::core::convertTo<GLuint>(this->program         ),
+            ge::core::convertTo<GLenum>(this->programInterface),
+            ge::core::convertTo<GLenum>(this->pname           ),
+            ge::core::convertTo<GLint*>(this->params          )
           );
         }
     };
@@ -299,24 +309,25 @@ namespace ge{
       typename PNAME_TYPE   = GLenum,
       typename PARAMS_TYPE  = GLint*>
     class GetProgramiv:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>,
-        public at::Pname  <PNAME_TYPE  >,
-        public at::Params <PARAMS_TYPE >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
+        PNAME_TYPE   pname  ;
+        PARAMS_TYPE  params ;
         GetProgramiv(
             PROGRAM_TYPE const&program,
             PNAME_TYPE   const&pname  ,
-            PARAMS_TYPE  const&params ):
-          at::Program<PROGRAM_TYPE>(program),
-          at::Pname  <PNAME_TYPE  >(pname  ),
-          at::Params <PARAMS_TYPE >(params ){}
+            PARAMS_TYPE  const&params ){
+          this->program = program;
+          this->pname   = pname  ;
+          this->params  = params ;
+        }
         virtual~GetProgramiv(){}
         virtual void operator()(){
           glGetProgramiv(
-            ge::core::convertTo<GLuint>(this->at::Program<PROGRAM_TYPE>::_value),
-            ge::core::convertTo<GLenum>(this->at::Pname  <PNAME_TYPE  >::_value),
-            ge::core::convertTo<GLint*>(this->at::Params <PARAMS_TYPE >::_value)
+            ge::core::convertTo<GLuint>(this->program),
+            ge::core::convertTo<GLenum>(this->pname  ),
+            ge::core::convertTo<GLint*>(this->params )
           );
         }
     };
@@ -325,20 +336,21 @@ namespace ge{
       typename PIPELINE_TYPE = GLuint,
       typename PROGRAM_TYPE  = GLuint>
     class ActiveShaderProgram:
-        public ge::core::Command,
-        public at::Pipeline<PIPELINE_TYPE>,
-        public at::Program <PROGRAM_TYPE >{
+        public ge::core::Command{
       public:
+        PIPELINE_TYPE pipeline;
+        PROGRAM_TYPE  program ;
         ActiveShaderProgram(
             PIPELINE_TYPE const&pipeline,
-            PROGRAM_TYPE  const&program ):
-          at::Pipeline<PIPELINE_TYPE>(pipeline),
-          at::Program <PROGRAM_TYPE >(program ){}
+            PROGRAM_TYPE  const&program ){
+          this->pipeline = pipeline;
+          this->program  = program ;
+        }
         virtual~ActiveShaderProgram(){}
         virtual void operator()(){
           glActiveShaderProgram(
-            ge::core::convertTo<GLuint>(this->at::Pipeline<PIPELINE_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value)
+            ge::core::convertTo<GLuint>(this->pipeline),
+            ge::core::convertTo<GLuint>(this->program )
           );
         }
     };
@@ -349,27 +361,28 @@ namespace ge{
       typename PROGRAMINTERFACE_TYPE = GLenum       ,
       typename NAME_TYPE             = const GLchar*>
     class GetProgramResourceIndex:
-        public ge::core::Command,
-        public at::Ret             <RET_TYPE             >,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::ProgramInterface<PROGRAMINTERFACE_TYPE>,
-        public at::Name            <NAME_TYPE            >{
+        public ge::core::Command{
       public:
+        RET_TYPE              ret             ;
+        PROGRAM_TYPE          program         ;
+        PROGRAMINTERFACE_TYPE programInterface;
+        NAME_TYPE             name            ;
         GetProgramResourceIndex(
             RET_TYPE              const&ret             ,
             PROGRAM_TYPE          const&program         ,
             PROGRAMINTERFACE_TYPE const&programInterface,
-            NAME_TYPE             const&name            ):
-          at::Ret             <RET_TYPE             >(ret             ),
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::ProgramInterface<PROGRAMINTERFACE_TYPE>(programInterface),
-          at::Name            <NAME_TYPE            >(name            ){}
+            NAME_TYPE             const&name            ){
+          this->ret              = ret             ;
+          this->program          = program         ;
+          this->programInterface = programInterface;
+          this->name             = name            ;
+        }
         virtual~GetProgramResourceIndex(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLuint>(this->at::Ret<RET_TYPE>::_value,glGetProgramResourceIndex(
-              ge::core::convertTo<GLuint       >(this->at::Program         <PROGRAM_TYPE         >::_value),
-              ge::core::convertTo<GLenum       >(this->at::ProgramInterface<PROGRAMINTERFACE_TYPE>::_value),
-              ge::core::convertTo<const GLchar*>(this->at::Name            <NAME_TYPE            >::_value))
+          ge::core::convertFrom<GLuint>(this->ret,glGetProgramResourceIndex(
+              ge::core::convertTo<GLuint       >(this->program         ),
+              ge::core::convertTo<GLenum       >(this->programInterface),
+              ge::core::convertTo<const GLchar*>(this->name            ))
           );
         }
     };
@@ -377,16 +390,17 @@ namespace ge{
     template<
       typename PROGRAM_TYPE = GLuint>
     class LinkProgram:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
         LinkProgram(
-            PROGRAM_TYPE const&program):
-          at::Program<PROGRAM_TYPE>(program){}
+            PROGRAM_TYPE const&program){
+          this->program = program;
+        }
         virtual~LinkProgram(){}
         virtual void operator()(){
           glLinkProgram(
-            ge::core::convertTo<GLuint>(this->at::Program<PROGRAM_TYPE>::_value)
+            ge::core::convertTo<GLuint>(this->program)
           );
         }
     };
@@ -397,27 +411,28 @@ namespace ge{
       typename PROGRAMINTERFACE_TYPE = GLenum       ,
       typename NAME_TYPE             = const GLchar*>
     class GetProgramResourceLocationIndex:
-        public ge::core::Command,
-        public at::Ret             <RET_TYPE             >,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::ProgramInterface<PROGRAMINTERFACE_TYPE>,
-        public at::Name            <NAME_TYPE            >{
+        public ge::core::Command{
       public:
+        RET_TYPE              ret             ;
+        PROGRAM_TYPE          program         ;
+        PROGRAMINTERFACE_TYPE programInterface;
+        NAME_TYPE             name            ;
         GetProgramResourceLocationIndex(
             RET_TYPE              const&ret             ,
             PROGRAM_TYPE          const&program         ,
             PROGRAMINTERFACE_TYPE const&programInterface,
-            NAME_TYPE             const&name            ):
-          at::Ret             <RET_TYPE             >(ret             ),
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::ProgramInterface<PROGRAMINTERFACE_TYPE>(programInterface),
-          at::Name            <NAME_TYPE            >(name            ){}
+            NAME_TYPE             const&name            ){
+          this->ret              = ret             ;
+          this->program          = program         ;
+          this->programInterface = programInterface;
+          this->name             = name            ;
+        }
         virtual~GetProgramResourceLocationIndex(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLint>(this->at::Ret<RET_TYPE>::_value,glGetProgramResourceLocationIndex(
-              ge::core::convertTo<GLuint       >(this->at::Program         <PROGRAM_TYPE         >::_value),
-              ge::core::convertTo<GLenum       >(this->at::ProgramInterface<PROGRAMINTERFACE_TYPE>::_value),
-              ge::core::convertTo<const GLchar*>(this->at::Name            <NAME_TYPE            >::_value))
+          ge::core::convertFrom<GLint>(this->ret,glGetProgramResourceLocationIndex(
+              ge::core::convertTo<GLuint       >(this->program         ),
+              ge::core::convertTo<GLenum       >(this->programInterface),
+              ge::core::convertTo<const GLchar*>(this->name            ))
           );
         }
     };
@@ -428,27 +443,28 @@ namespace ge{
       typename COUNT_TYPE   = GLsizei            ,
       typename STRINGS_TYPE = const GLchar*const*>
     class CreateShaderProgramv:
-        public ge::core::Command,
-        public at::Ret    <RET_TYPE    >,
-        public at::Type   <TYPE_TYPE   >,
-        public at::Count  <COUNT_TYPE  >,
-        public at::Strings<STRINGS_TYPE>{
+        public ge::core::Command{
       public:
+        RET_TYPE     ret    ;
+        TYPE_TYPE    type   ;
+        COUNT_TYPE   count  ;
+        STRINGS_TYPE strings;
         CreateShaderProgramv(
             RET_TYPE     const&ret    ,
             TYPE_TYPE    const&type   ,
             COUNT_TYPE   const&count  ,
-            STRINGS_TYPE const&strings):
-          at::Ret    <RET_TYPE    >(ret    ),
-          at::Type   <TYPE_TYPE   >(type   ),
-          at::Count  <COUNT_TYPE  >(count  ),
-          at::Strings<STRINGS_TYPE>(strings){}
+            STRINGS_TYPE const&strings){
+          this->ret     = ret    ;
+          this->type    = type   ;
+          this->count   = count  ;
+          this->strings = strings;
+        }
         virtual~CreateShaderProgramv(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLuint>(this->at::Ret<RET_TYPE>::_value,glCreateShaderProgramv(
-              ge::core::convertTo<GLenum             >(this->at::Type   <TYPE_TYPE   >::_value),
-              ge::core::convertTo<GLsizei            >(this->at::Count  <COUNT_TYPE  >::_value),
-              ge::core::convertTo<const GLchar*const*>(this->at::Strings<STRINGS_TYPE>::_value))
+          ge::core::convertFrom<GLuint>(this->ret,glCreateShaderProgramv(
+              ge::core::convertTo<GLenum             >(this->type   ),
+              ge::core::convertTo<GLsizei            >(this->count  ),
+              ge::core::convertTo<const GLchar*const*>(this->strings))
           );
         }
     };
@@ -461,36 +477,37 @@ namespace ge{
       typename LENGTH_TYPE           = GLsizei*,
       typename NAME_TYPE             = GLchar* >
     class GetProgramResourceName:
-        public ge::core::Command,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::ProgramInterface<PROGRAMINTERFACE_TYPE>,
-        public at::Index           <INDEX_TYPE           >,
-        public at::BufSize         <BUFSIZE_TYPE         >,
-        public at::Length          <LENGTH_TYPE          >,
-        public at::Name            <NAME_TYPE            >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE          program         ;
+        PROGRAMINTERFACE_TYPE programInterface;
+        INDEX_TYPE            index           ;
+        BUFSIZE_TYPE          bufSize         ;
+        LENGTH_TYPE           length          ;
+        NAME_TYPE             name            ;
         GetProgramResourceName(
             PROGRAM_TYPE          const&program         ,
             PROGRAMINTERFACE_TYPE const&programInterface,
             INDEX_TYPE            const&index           ,
             BUFSIZE_TYPE          const&bufSize         ,
             LENGTH_TYPE           const&length          ,
-            NAME_TYPE             const&name            ):
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::ProgramInterface<PROGRAMINTERFACE_TYPE>(programInterface),
-          at::Index           <INDEX_TYPE           >(index           ),
-          at::BufSize         <BUFSIZE_TYPE         >(bufSize         ),
-          at::Length          <LENGTH_TYPE          >(length          ),
-          at::Name            <NAME_TYPE            >(name            ){}
+            NAME_TYPE             const&name            ){
+          this->program          = program         ;
+          this->programInterface = programInterface;
+          this->index            = index           ;
+          this->bufSize          = bufSize         ;
+          this->length           = length          ;
+          this->name             = name            ;
+        }
         virtual~GetProgramResourceName(){}
         virtual void operator()(){
           glGetProgramResourceName(
-            ge::core::convertTo<GLuint  >(this->at::Program         <PROGRAM_TYPE         >::_value),
-            ge::core::convertTo<GLenum  >(this->at::ProgramInterface<PROGRAMINTERFACE_TYPE>::_value),
-            ge::core::convertTo<GLuint  >(this->at::Index           <INDEX_TYPE           >::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize         <BUFSIZE_TYPE         >::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length          <LENGTH_TYPE          >::_value),
-            ge::core::convertTo<GLchar* >(this->at::Name            <NAME_TYPE            >::_value)
+            ge::core::convertTo<GLuint  >(this->program         ),
+            ge::core::convertTo<GLenum  >(this->programInterface),
+            ge::core::convertTo<GLuint  >(this->index           ),
+            ge::core::convertTo<GLsizei >(this->bufSize         ),
+            ge::core::convertTo<GLsizei*>(this->length          ),
+            ge::core::convertTo<GLchar* >(this->name            )
           );
         }
     };
@@ -501,28 +518,29 @@ namespace ge{
       typename BINARY_TYPE       = const void*,
       typename LENGTH_TYPE       = GLsizei    >
     class ProgramBinary:
-        public ge::core::Command,
-        public at::Program     <PROGRAM_TYPE     >,
-        public at::BinaryFormat<BINARYFORMAT_TYPE>,
-        public at::Binary      <BINARY_TYPE      >,
-        public at::Length      <LENGTH_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE      program     ;
+        BINARYFORMAT_TYPE binaryFormat;
+        BINARY_TYPE       binary      ;
+        LENGTH_TYPE       length      ;
         ProgramBinary(
             PROGRAM_TYPE      const&program     ,
             BINARYFORMAT_TYPE const&binaryFormat,
             BINARY_TYPE       const&binary      ,
-            LENGTH_TYPE       const&length      ):
-          at::Program     <PROGRAM_TYPE     >(program     ),
-          at::BinaryFormat<BINARYFORMAT_TYPE>(binaryFormat),
-          at::Binary      <BINARY_TYPE      >(binary      ),
-          at::Length      <LENGTH_TYPE      >(length      ){}
+            LENGTH_TYPE       const&length      ){
+          this->program      = program     ;
+          this->binaryFormat = binaryFormat;
+          this->binary       = binary      ;
+          this->length       = length      ;
+        }
         virtual~ProgramBinary(){}
         virtual void operator()(){
           glProgramBinary(
-            ge::core::convertTo<GLuint     >(this->at::Program     <PROGRAM_TYPE     >::_value),
-            ge::core::convertTo<GLenum     >(this->at::BinaryFormat<BINARYFORMAT_TYPE>::_value),
-            ge::core::convertTo<const void*>(this->at::Binary      <BINARY_TYPE      >::_value),
-            ge::core::convertTo<GLsizei    >(this->at::Length      <LENGTH_TYPE      >::_value)
+            ge::core::convertTo<GLuint     >(this->program     ),
+            ge::core::convertTo<GLenum     >(this->binaryFormat),
+            ge::core::convertTo<const void*>(this->binary      ),
+            ge::core::convertTo<GLsizei    >(this->length      )
           );
         }
     };
@@ -532,24 +550,25 @@ namespace ge{
       typename STAGES_TYPE   = GLbitfield,
       typename PROGRAM_TYPE  = GLuint    >
     class UseProgramStages:
-        public ge::core::Command,
-        public at::Pipeline<PIPELINE_TYPE>,
-        public at::Stages  <STAGES_TYPE  >,
-        public at::Program <PROGRAM_TYPE >{
+        public ge::core::Command{
       public:
+        PIPELINE_TYPE pipeline;
+        STAGES_TYPE   stages  ;
+        PROGRAM_TYPE  program ;
         UseProgramStages(
             PIPELINE_TYPE const&pipeline,
             STAGES_TYPE   const&stages  ,
-            PROGRAM_TYPE  const&program ):
-          at::Pipeline<PIPELINE_TYPE>(pipeline),
-          at::Stages  <STAGES_TYPE  >(stages  ),
-          at::Program <PROGRAM_TYPE >(program ){}
+            PROGRAM_TYPE  const&program ){
+          this->pipeline = pipeline;
+          this->stages   = stages  ;
+          this->program  = program ;
+        }
         virtual~UseProgramStages(){}
         virtual void operator()(){
           glUseProgramStages(
-            ge::core::convertTo<GLuint    >(this->at::Pipeline<PIPELINE_TYPE>::_value),
-            ge::core::convertTo<GLbitfield>(this->at::Stages  <STAGES_TYPE  >::_value),
-            ge::core::convertTo<GLuint    >(this->at::Program <PROGRAM_TYPE >::_value)
+            ge::core::convertTo<GLuint    >(this->pipeline),
+            ge::core::convertTo<GLbitfield>(this->stages  ),
+            ge::core::convertTo<GLuint    >(this->program )
           );
         }
     };
@@ -557,16 +576,17 @@ namespace ge{
     template<
       typename PROGRAM_TYPE = GLuint>
     class DeleteProgram:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
         DeleteProgram(
-            PROGRAM_TYPE const&program):
-          at::Program<PROGRAM_TYPE>(program){}
+            PROGRAM_TYPE const&program){
+          this->program = program;
+        }
         virtual~DeleteProgram(){}
         virtual void operator()(){
           glDeleteProgram(
-            ge::core::convertTo<GLuint>(this->at::Program<PROGRAM_TYPE>::_value)
+            ge::core::convertTo<GLuint>(this->program)
           );
         }
     };
@@ -576,24 +596,25 @@ namespace ge{
       typename PNAME_TYPE   = GLenum,
       typename VALUE_TYPE   = GLint >
     class ProgramParameteri:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>,
-        public at::Pname  <PNAME_TYPE  >,
-        public at::Value  <VALUE_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
+        PNAME_TYPE   pname  ;
+        VALUE_TYPE   value  ;
         ProgramParameteri(
             PROGRAM_TYPE const&program,
             PNAME_TYPE   const&pname  ,
-            VALUE_TYPE   const&value  ):
-          at::Program<PROGRAM_TYPE>(program),
-          at::Pname  <PNAME_TYPE  >(pname  ),
-          at::Value  <VALUE_TYPE  >(value  ){}
+            VALUE_TYPE   const&value  ){
+          this->program = program;
+          this->pname   = pname  ;
+          this->value   = value  ;
+        }
         virtual~ProgramParameteri(){}
         virtual void operator()(){
           glProgramParameteri(
-            ge::core::convertTo<GLuint>(this->at::Program<PROGRAM_TYPE>::_value),
-            ge::core::convertTo<GLenum>(this->at::Pname  <PNAME_TYPE  >::_value),
-            ge::core::convertTo<GLint >(this->at::Value  <VALUE_TYPE  >::_value)
+            ge::core::convertTo<GLuint>(this->program),
+            ge::core::convertTo<GLenum>(this->pname  ),
+            ge::core::convertTo<GLint >(this->value  )
           );
         }
     };

@@ -4,6 +4,7 @@
 #include <geCore/Functor.h>
 #include<iostream>
 #include<vector>
+#include<map>
 
 namespace ge{
   namespace core{
@@ -20,7 +21,7 @@ namespace ge{
         Command**_command;
       public:
         CommandContainer(Command**command=NULL);
-        ~CommandContainer();
+        virtual ~CommandContainer();
         virtual void operator()();
         void set(Command**command=NULL);
         Command**get();
@@ -37,11 +38,20 @@ namespace ge{
         unsigned _commandToExecute;///<index of command that will be executed using step()
       public:
         CommandList(bool outOfOrder=false);
-        ~CommandList();
-        unsigned add(Command*command);
+        virtual ~CommandList();
+        virtual unsigned add(Command*command);
         Command* getCommand(unsigned i);
         virtual void operator()();
         void step();
+    };
+
+    class GECORE_EXPORT CommandListWithAccessor: public CommandList{
+      protected:
+        std::map<std::string,Command*>_name2Command;
+      public:
+        CommandListWithAccessor(bool outOfOrder=false):CommandList(outOfOrder){}
+        virtual Command*operator[](std::string name);
+        virtual unsigned add(Command*command,std::string name="");
     };
 
     class GECORE_EXPORT CommandStatement: public Command

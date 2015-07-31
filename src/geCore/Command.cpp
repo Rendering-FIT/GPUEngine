@@ -49,6 +49,18 @@ Command* CommandList::getCommand(unsigned i){
   return this->_commands[i];
 }
 
+
+Command*CommandListWithAccessor::operator[](std::string name){
+  auto it=this->_name2Command.find(name);
+  if(it==this->_name2Command.end())return NULL;
+  return this->_name2Command[name];
+}
+
+unsigned CommandListWithAccessor::add(Command*command,std::string name){
+  if(name!="")this->_name2Command[name]=command;
+  return this->CommandList::add(command);
+}
+
 void CommandIf::operator()(){
   (*this->statement)();
   if(this->statement->isTrue){

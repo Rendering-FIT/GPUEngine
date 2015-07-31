@@ -6,6 +6,7 @@
 
 namespace ge{
   namespace gl{
+    /*
     namespace at{
       DEF_NAMED_TEMPLATE_ATTRIBUTE(ReadFramebuffer     );
       DEF_NAMED_TEMPLATE_ATTRIBUTE(MessageLog          );
@@ -245,6 +246,7 @@ namespace ge{
       DEF_NAMED_TEMPLATE_ATTRIBUTE(Strings             );
       DEF_NAMED_TEMPLATE_ATTRIBUTE(Left                );
     }
+  */
   }
 }
 

@@ -274,24 +274,25 @@ namespace ge{
       typename X_TYPE        = GLdouble,
       typename Y_TYPE        = GLdouble>
     class Uniform2d:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::X       <X_TYPE       >,
-        public at::Y       <Y_TYPE       >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        X_TYPE        x       ;
+        Y_TYPE        y       ;
         Uniform2d(
             LOCATION_TYPE const&location,
             X_TYPE        const&x       ,
-            Y_TYPE        const&y       ):
-          at::Location<LOCATION_TYPE>(location),
-          at::X       <X_TYPE       >(x       ),
-          at::Y       <Y_TYPE       >(y       ){}
+            Y_TYPE        const&y       ){
+          this->location = location;
+          this->x        = x       ;
+          this->y        = y       ;
+        }
         virtual~Uniform2d(){}
         virtual void operator()(){
           glUniform2d(
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::X       <X_TYPE       >::_value),
-            ge::core::convertTo<GLdouble>(this->at::Y       <Y_TYPE       >::_value)
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->x       ),
+            ge::core::convertTo<GLdouble>(this->y       )
           );
         }
     };
@@ -302,28 +303,29 @@ namespace ge{
       typename BUFSIZE_TYPE  = GLsizei ,
       typename PARAMS_TYPE   = GLfloat*>
     class GetnUniformfv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::BufSize <BUFSIZE_TYPE >,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        BUFSIZE_TYPE  bufSize ;
+        PARAMS_TYPE   params  ;
         GetnUniformfv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             BUFSIZE_TYPE  const&bufSize ,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::BufSize <BUFSIZE_TYPE >(bufSize ),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->bufSize  = bufSize ;
+          this->params   = params  ;
+        }
         virtual~GetnUniformfv(){}
         virtual void operator()(){
           glGetnUniformfv(
-            ge::core::convertTo<GLuint  >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize <BUFSIZE_TYPE >::_value),
-            ge::core::convertTo<GLfloat*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint  >(this->program ),
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLsizei >(this->bufSize ),
+            ge::core::convertTo<GLfloat*>(this->params  )
           );
         }
     };
@@ -335,32 +337,33 @@ namespace ge{
       typename LENGTH_TYPE            = GLsizei*,
       typename UNIFORMBLOCKNAME_TYPE  = GLchar* >
     class GetActiveUniformBlockName:
-        public ge::core::Command,
-        public at::Program          <PROGRAM_TYPE          >,
-        public at::UniformBlockIndex<UNIFORMBLOCKINDEX_TYPE>,
-        public at::BufSize          <BUFSIZE_TYPE          >,
-        public at::Length           <LENGTH_TYPE           >,
-        public at::UniformBlockName <UNIFORMBLOCKNAME_TYPE >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE           program          ;
+        UNIFORMBLOCKINDEX_TYPE uniformBlockIndex;
+        BUFSIZE_TYPE           bufSize          ;
+        LENGTH_TYPE            length           ;
+        UNIFORMBLOCKNAME_TYPE  uniformBlockName ;
         GetActiveUniformBlockName(
             PROGRAM_TYPE           const&program          ,
             UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
             BUFSIZE_TYPE           const&bufSize          ,
             LENGTH_TYPE            const&length           ,
-            UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ):
-          at::Program          <PROGRAM_TYPE          >(program          ),
-          at::UniformBlockIndex<UNIFORMBLOCKINDEX_TYPE>(uniformBlockIndex),
-          at::BufSize          <BUFSIZE_TYPE          >(bufSize          ),
-          at::Length           <LENGTH_TYPE           >(length           ),
-          at::UniformBlockName <UNIFORMBLOCKNAME_TYPE >(uniformBlockName ){}
+            UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ){
+          this->program           = program          ;
+          this->uniformBlockIndex = uniformBlockIndex;
+          this->bufSize           = bufSize          ;
+          this->length            = length           ;
+          this->uniformBlockName  = uniformBlockName ;
+        }
         virtual~GetActiveUniformBlockName(){}
         virtual void operator()(){
           glGetActiveUniformBlockName(
-            ge::core::convertTo<GLuint  >(this->at::Program          <PROGRAM_TYPE          >::_value),
-            ge::core::convertTo<GLuint  >(this->at::UniformBlockIndex<UNIFORMBLOCKINDEX_TYPE>::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize          <BUFSIZE_TYPE          >::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length           <LENGTH_TYPE           >::_value),
-            ge::core::convertTo<GLchar* >(this->at::UniformBlockName <UNIFORMBLOCKNAME_TYPE >::_value)
+            ge::core::convertTo<GLuint  >(this->program          ),
+            ge::core::convertTo<GLuint  >(this->uniformBlockIndex),
+            ge::core::convertTo<GLsizei >(this->bufSize          ),
+            ge::core::convertTo<GLsizei*>(this->length           ),
+            ge::core::convertTo<GLchar* >(this->uniformBlockName )
           );
         }
     };
@@ -372,32 +375,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix4x3dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix4x3dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix4x3dv(){}
         virtual void operator()(){
           glProgramUniformMatrix4x3dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -407,24 +411,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform3dv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform3dv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform3dv(){}
         virtual void operator()(){
           glUniform3dv(
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -434,24 +439,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform1fv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform1fv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform1fv(){}
         virtual void operator()(){
           glUniform1fv(
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -462,28 +468,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix2x3dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix2x3dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix2x3dv(){}
         virtual void operator()(){
           glUniformMatrix2x3dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -493,24 +500,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform1dv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform1dv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform1dv(){}
         virtual void operator()(){
           glUniform1dv(
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -522,32 +530,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix2x4dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix2x4dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix2x4dv(){}
         virtual void operator()(){
           glProgramUniformMatrix2x4dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -559,32 +568,33 @@ namespace ge{
       typename PNAME_TYPE      = GLenum,
       typename VALUES_TYPE     = GLint*>
     class GetActiveSubroutineUniformiv:
-        public ge::core::Command,
-        public at::Program   <PROGRAM_TYPE   >,
-        public at::Shadertype<SHADERTYPE_TYPE>,
-        public at::Index     <INDEX_TYPE     >,
-        public at::Pname     <PNAME_TYPE     >,
-        public at::Values    <VALUES_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE    program   ;
+        SHADERTYPE_TYPE shadertype;
+        INDEX_TYPE      index     ;
+        PNAME_TYPE      pname     ;
+        VALUES_TYPE     values    ;
         GetActiveSubroutineUniformiv(
             PROGRAM_TYPE    const&program   ,
             SHADERTYPE_TYPE const&shadertype,
             INDEX_TYPE      const&index     ,
             PNAME_TYPE      const&pname     ,
-            VALUES_TYPE     const&values    ):
-          at::Program   <PROGRAM_TYPE   >(program   ),
-          at::Shadertype<SHADERTYPE_TYPE>(shadertype),
-          at::Index     <INDEX_TYPE     >(index     ),
-          at::Pname     <PNAME_TYPE     >(pname     ),
-          at::Values    <VALUES_TYPE    >(values    ){}
+            VALUES_TYPE     const&values    ){
+          this->program    = program   ;
+          this->shadertype = shadertype;
+          this->index      = index     ;
+          this->pname      = pname     ;
+          this->values     = values    ;
+        }
         virtual~GetActiveSubroutineUniformiv(){}
         virtual void operator()(){
           glGetActiveSubroutineUniformiv(
-            ge::core::convertTo<GLuint>(this->at::Program   <PROGRAM_TYPE   >::_value),
-            ge::core::convertTo<GLenum>(this->at::Shadertype<SHADERTYPE_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::Index     <INDEX_TYPE     >::_value),
-            ge::core::convertTo<GLenum>(this->at::Pname     <PNAME_TYPE     >::_value),
-            ge::core::convertTo<GLint*>(this->at::Values    <VALUES_TYPE    >::_value)
+            ge::core::convertTo<GLuint>(this->program   ),
+            ge::core::convertTo<GLenum>(this->shadertype),
+            ge::core::convertTo<GLuint>(this->index     ),
+            ge::core::convertTo<GLenum>(this->pname     ),
+            ge::core::convertTo<GLint*>(this->values    )
           );
         }
     };
@@ -594,24 +604,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint>
     class ProgramUniform1ui:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         ProgramUniform1ui(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~ProgramUniform1ui(){}
         virtual void operator()(){
           glProgramUniform1ui(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      )
           );
         }
     };
@@ -621,24 +632,25 @@ namespace ge{
       typename UNIFORMBLOCKINDEX_TYPE   = GLuint,
       typename UNIFORMBLOCKBINDING_TYPE = GLuint>
     class UniformBlockBinding:
-        public ge::core::Command,
-        public at::Program            <PROGRAM_TYPE            >,
-        public at::UniformBlockIndex  <UNIFORMBLOCKINDEX_TYPE  >,
-        public at::UniformBlockBinding<UNIFORMBLOCKBINDING_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE             program            ;
+        UNIFORMBLOCKINDEX_TYPE   uniformBlockIndex  ;
+        UNIFORMBLOCKBINDING_TYPE uniformBlockBinding;
         UniformBlockBinding(
             PROGRAM_TYPE             const&program            ,
             UNIFORMBLOCKINDEX_TYPE   const&uniformBlockIndex  ,
-            UNIFORMBLOCKBINDING_TYPE const&uniformBlockBinding):
-          at::Program            <PROGRAM_TYPE            >(program            ),
-          at::UniformBlockIndex  <UNIFORMBLOCKINDEX_TYPE  >(uniformBlockIndex  ),
-          at::UniformBlockBinding<UNIFORMBLOCKBINDING_TYPE>(uniformBlockBinding){}
+            UNIFORMBLOCKBINDING_TYPE const&uniformBlockBinding){
+          this->program             = program            ;
+          this->uniformBlockIndex   = uniformBlockIndex  ;
+          this->uniformBlockBinding = uniformBlockBinding;
+        }
         virtual~UniformBlockBinding(){}
         virtual void operator()(){
           glUniformBlockBinding(
-            ge::core::convertTo<GLuint>(this->at::Program            <PROGRAM_TYPE            >::_value),
-            ge::core::convertTo<GLuint>(this->at::UniformBlockIndex  <UNIFORMBLOCKINDEX_TYPE  >::_value),
-            ge::core::convertTo<GLuint>(this->at::UniformBlockBinding<UNIFORMBLOCKBINDING_TYPE>::_value)
+            ge::core::convertTo<GLuint>(this->program            ),
+            ge::core::convertTo<GLuint>(this->uniformBlockIndex  ),
+            ge::core::convertTo<GLuint>(this->uniformBlockBinding)
           );
         }
     };
@@ -650,32 +662,33 @@ namespace ge{
       typename V2_TYPE       = GLuint,
       typename V3_TYPE       = GLuint>
     class Uniform4ui:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         Uniform4ui(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~Uniform4ui(){}
         virtual void operator()(){
           glUniform4ui(
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      ),
+            ge::core::convertTo<GLuint>(this->v2      ),
+            ge::core::convertTo<GLuint>(this->v3      )
           );
         }
     };
@@ -686,28 +699,29 @@ namespace ge{
       typename BUFSIZE_TYPE  = GLsizei  ,
       typename PARAMS_TYPE   = GLdouble*>
     class GetnUniformdv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::BufSize <BUFSIZE_TYPE >,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        BUFSIZE_TYPE  bufSize ;
+        PARAMS_TYPE   params  ;
         GetnUniformdv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             BUFSIZE_TYPE  const&bufSize ,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::BufSize <BUFSIZE_TYPE >(bufSize ),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->bufSize  = bufSize ;
+          this->params   = params  ;
+        }
         virtual~GetnUniformdv(){}
         virtual void operator()(){
           glGetnUniformdv(
-            ge::core::convertTo<GLuint   >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint    >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei  >(this->at::BufSize <BUFSIZE_TYPE >::_value),
-            ge::core::convertTo<GLdouble*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint   >(this->program ),
+            ge::core::convertTo<GLint    >(this->location),
+            ge::core::convertTo<GLsizei  >(this->bufSize ),
+            ge::core::convertTo<GLdouble*>(this->params  )
           );
         }
     };
@@ -720,36 +734,37 @@ namespace ge{
       typename V2_TYPE       = GLuint,
       typename V3_TYPE       = GLuint>
     class ProgramUniform4ui:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         ProgramUniform4ui(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~ProgramUniform4ui(){}
         virtual void operator()(){
           glProgramUniform4ui(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      ),
+            ge::core::convertTo<GLuint>(this->v2      ),
+            ge::core::convertTo<GLuint>(this->v3      )
           );
         }
     };
@@ -761,32 +776,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix2x4fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix2x4fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix2x4fv(){}
         virtual void operator()(){
           glProgramUniformMatrix2x4fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -796,24 +812,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class Uniform2uiv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform2uiv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform2uiv(){}
         virtual void operator()(){
           glUniform2uiv(
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -824,28 +841,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform3fv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform3fv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform3fv(){}
         virtual void operator()(){
           glProgramUniform3fv(
-            ge::core::convertTo<GLuint        >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint        >(this->program ),
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -856,28 +874,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform1fv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform1fv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform1fv(){}
         virtual void operator()(){
           glProgramUniform1fv(
-            ge::core::convertTo<GLuint        >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint        >(this->program ),
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -888,28 +907,29 @@ namespace ge{
       typename V0_TYPE       = GLuint,
       typename V1_TYPE       = GLuint>
     class ProgramUniform2ui:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         ProgramUniform2ui(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~ProgramUniform2ui(){}
         virtual void operator()(){
           glProgramUniform2ui(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      )
           );
         }
     };
@@ -920,28 +940,29 @@ namespace ge{
       typename V1_TYPE       = GLuint,
       typename V2_TYPE       = GLuint>
     class Uniform3ui:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         Uniform3ui(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~Uniform3ui(){}
         virtual void operator()(){
           glUniform3ui(
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      ),
+            ge::core::convertTo<GLuint>(this->v2      )
           );
         }
     };
@@ -951,24 +972,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class Uniform3iv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform3iv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform3iv(){}
         virtual void operator()(){
           glUniform3iv(
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -979,28 +1001,29 @@ namespace ge{
       typename UNIFORMNAMES_TYPE   = const GLchar*const*,
       typename UNIFORMINDICES_TYPE = GLuint*            >
     class GetUniformIndices:
-        public ge::core::Command,
-        public at::Program       <PROGRAM_TYPE       >,
-        public at::UniformCount  <UNIFORMCOUNT_TYPE  >,
-        public at::UniformNames  <UNIFORMNAMES_TYPE  >,
-        public at::UniformIndices<UNIFORMINDICES_TYPE>{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE        program       ;
+        UNIFORMCOUNT_TYPE   uniformCount  ;
+        UNIFORMNAMES_TYPE   uniformNames  ;
+        UNIFORMINDICES_TYPE uniformIndices;
         GetUniformIndices(
             PROGRAM_TYPE        const&program       ,
             UNIFORMCOUNT_TYPE   const&uniformCount  ,
             UNIFORMNAMES_TYPE   const&uniformNames  ,
-            UNIFORMINDICES_TYPE const&uniformIndices):
-          at::Program       <PROGRAM_TYPE       >(program       ),
-          at::UniformCount  <UNIFORMCOUNT_TYPE  >(uniformCount  ),
-          at::UniformNames  <UNIFORMNAMES_TYPE  >(uniformNames  ),
-          at::UniformIndices<UNIFORMINDICES_TYPE>(uniformIndices){}
+            UNIFORMINDICES_TYPE const&uniformIndices){
+          this->program        = program       ;
+          this->uniformCount   = uniformCount  ;
+          this->uniformNames   = uniformNames  ;
+          this->uniformIndices = uniformIndices;
+        }
         virtual~GetUniformIndices(){}
         virtual void operator()(){
           glGetUniformIndices(
-            ge::core::convertTo<GLuint             >(this->at::Program       <PROGRAM_TYPE       >::_value),
-            ge::core::convertTo<GLsizei            >(this->at::UniformCount  <UNIFORMCOUNT_TYPE  >::_value),
-            ge::core::convertTo<const GLchar*const*>(this->at::UniformNames  <UNIFORMNAMES_TYPE  >::_value),
-            ge::core::convertTo<GLuint*            >(this->at::UniformIndices<UNIFORMINDICES_TYPE>::_value)
+            ge::core::convertTo<GLuint             >(this->program       ),
+            ge::core::convertTo<GLsizei            >(this->uniformCount  ),
+            ge::core::convertTo<const GLchar*const*>(this->uniformNames  ),
+            ge::core::convertTo<GLuint*            >(this->uniformIndices)
           );
         }
     };
@@ -1010,24 +1033,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint ,
       typename PARAMS_TYPE   = GLint*>
     class GetUniformiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        PARAMS_TYPE   params  ;
         GetUniformiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->params   = params  ;
+        }
         virtual~GetUniformiv(){}
         virtual void operator()(){
           glGetUniformiv(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLint*>(this->params  )
           );
         }
     };
@@ -1038,28 +1062,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix4dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix4dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix4dv(){}
         virtual void operator()(){
           glUniformMatrix4dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -1068,20 +1093,21 @@ namespace ge{
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint>
     class Uniform1ui:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         Uniform1ui(
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~Uniform1ui(){}
         virtual void operator()(){
           glUniform1ui(
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      )
           );
         }
     };
@@ -1092,28 +1118,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix3x4dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix3x4dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix3x4dv(){}
         virtual void operator()(){
           glUniformMatrix3x4dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -1123,24 +1150,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLint >
     class ProgramUniform1i:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         ProgramUniform1i(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~ProgramUniform1i(){}
         virtual void operator()(){
           glProgramUniform1i(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint >(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLint >(this->v0      )
           );
         }
     };
@@ -1152,32 +1180,33 @@ namespace ge{
       typename PNAME_TYPE          = GLenum       ,
       typename PARAMS_TYPE         = GLint*       >
     class GetActiveUniformsiv:
-        public ge::core::Command,
-        public at::Program       <PROGRAM_TYPE       >,
-        public at::UniformCount  <UNIFORMCOUNT_TYPE  >,
-        public at::UniformIndices<UNIFORMINDICES_TYPE>,
-        public at::Pname         <PNAME_TYPE         >,
-        public at::Params        <PARAMS_TYPE        >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE        program       ;
+        UNIFORMCOUNT_TYPE   uniformCount  ;
+        UNIFORMINDICES_TYPE uniformIndices;
+        PNAME_TYPE          pname         ;
+        PARAMS_TYPE         params        ;
         GetActiveUniformsiv(
             PROGRAM_TYPE        const&program       ,
             UNIFORMCOUNT_TYPE   const&uniformCount  ,
             UNIFORMINDICES_TYPE const&uniformIndices,
             PNAME_TYPE          const&pname         ,
-            PARAMS_TYPE         const&params        ):
-          at::Program       <PROGRAM_TYPE       >(program       ),
-          at::UniformCount  <UNIFORMCOUNT_TYPE  >(uniformCount  ),
-          at::UniformIndices<UNIFORMINDICES_TYPE>(uniformIndices),
-          at::Pname         <PNAME_TYPE         >(pname         ),
-          at::Params        <PARAMS_TYPE        >(params        ){}
+            PARAMS_TYPE         const&params        ){
+          this->program        = program       ;
+          this->uniformCount   = uniformCount  ;
+          this->uniformIndices = uniformIndices;
+          this->pname          = pname         ;
+          this->params         = params        ;
+        }
         virtual~GetActiveUniformsiv(){}
         virtual void operator()(){
           glGetActiveUniformsiv(
-            ge::core::convertTo<GLuint       >(this->at::Program       <PROGRAM_TYPE       >::_value),
-            ge::core::convertTo<GLsizei      >(this->at::UniformCount  <UNIFORMCOUNT_TYPE  >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::UniformIndices<UNIFORMINDICES_TYPE>::_value),
-            ge::core::convertTo<GLenum       >(this->at::Pname         <PNAME_TYPE         >::_value),
-            ge::core::convertTo<GLint*       >(this->at::Params        <PARAMS_TYPE        >::_value)
+            ge::core::convertTo<GLuint       >(this->program       ),
+            ge::core::convertTo<GLsizei      >(this->uniformCount  ),
+            ge::core::convertTo<const GLuint*>(this->uniformIndices),
+            ge::core::convertTo<GLenum       >(this->pname         ),
+            ge::core::convertTo<GLint*       >(this->params        )
           );
         }
     };
@@ -1189,32 +1218,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix2x3dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix2x3dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix2x3dv(){}
         virtual void operator()(){
           glProgramUniformMatrix2x3dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -1225,28 +1255,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform3uiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform3uiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform3uiv(){}
         virtual void operator()(){
           glProgramUniform3uiv(
-            ge::core::convertTo<GLuint       >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint       >(this->program ),
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -1256,24 +1287,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class Uniform2iv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform2iv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform2iv(){}
         virtual void operator()(){
           glUniform2iv(
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -1284,28 +1316,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform2uiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform2uiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform2uiv(){}
         virtual void operator()(){
           glProgramUniform2uiv(
-            ge::core::convertTo<GLuint       >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint       >(this->program ),
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -1317,32 +1350,33 @@ namespace ge{
       typename V1_TYPE       = GLint ,
       typename V2_TYPE       = GLint >
     class ProgramUniform3i:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         ProgramUniform3i(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~ProgramUniform3i(){}
         virtual void operator()(){
           glProgramUniform3i(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint >(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLint >(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLint >(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLint >(this->v0      ),
+            ge::core::convertTo<GLint >(this->v1      ),
+            ge::core::convertTo<GLint >(this->v2      )
           );
         }
     };
@@ -1354,32 +1388,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix3dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix3dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix3dv(){}
         virtual void operator()(){
           glProgramUniformMatrix3dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -1391,32 +1426,33 @@ namespace ge{
       typename V1_TYPE       = GLdouble,
       typename V2_TYPE       = GLdouble>
     class ProgramUniform3d:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         ProgramUniform3d(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~ProgramUniform3d(){}
         virtual void operator()(){
           glProgramUniform3d(
-            ge::core::convertTo<GLuint  >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLdouble>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLdouble>(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLuint  >(this->program ),
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->v0      ),
+            ge::core::convertTo<GLdouble>(this->v1      ),
+            ge::core::convertTo<GLdouble>(this->v2      )
           );
         }
     };
@@ -1426,24 +1462,25 @@ namespace ge{
       typename V0_TYPE       = GLfloat,
       typename V1_TYPE       = GLfloat>
     class Uniform2f:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         Uniform2f(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~Uniform2f(){}
         virtual void operator()(){
           glUniform2f(
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      ),
+            ge::core::convertTo<GLfloat>(this->v1      )
           );
         }
     };
@@ -1453,24 +1490,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class Uniform1iv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform1iv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform1iv(){}
         virtual void operator()(){
           glUniform1iv(
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -1481,28 +1519,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix2x4dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix2x4dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix2x4dv(){}
         virtual void operator()(){
           glUniformMatrix2x4dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -1514,32 +1553,33 @@ namespace ge{
       typename V2_TYPE       = GLint,
       typename V3_TYPE       = GLint>
     class Uniform4i:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         Uniform4i(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~Uniform4i(){}
         virtual void operator()(){
           glUniform4i(
-            ge::core::convertTo<GLint>(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLint>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLint>(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLint>(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLint>(this->location),
+            ge::core::convertTo<GLint>(this->v0      ),
+            ge::core::convertTo<GLint>(this->v1      ),
+            ge::core::convertTo<GLint>(this->v2      ),
+            ge::core::convertTo<GLint>(this->v3      )
           );
         }
     };
@@ -1549,24 +1589,25 @@ namespace ge{
       typename V0_TYPE       = GLint,
       typename V1_TYPE       = GLint>
     class Uniform2i:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         Uniform2i(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~Uniform2i(){}
         virtual void operator()(){
           glUniform2i(
-            ge::core::convertTo<GLint>(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLint>(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLint>(this->location),
+            ge::core::convertTo<GLint>(this->v0      ),
+            ge::core::convertTo<GLint>(this->v1      )
           );
         }
     };
@@ -1577,28 +1618,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform2dv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform2dv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform2dv(){}
         virtual void operator()(){
           glProgramUniform2dv(
-            ge::core::convertTo<GLuint         >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint         >(this->program ),
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -1609,28 +1651,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform3iv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform3iv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform3iv(){}
         virtual void operator()(){
           glProgramUniform3iv(
-            ge::core::convertTo<GLuint      >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint      >(this->program ),
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -1641,28 +1684,29 @@ namespace ge{
       typename BUFSIZE_TYPE  = GLsizei,
       typename PARAMS_TYPE   = GLuint*>
     class GetnUniformuiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::BufSize <BUFSIZE_TYPE >,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        BUFSIZE_TYPE  bufSize ;
+        PARAMS_TYPE   params  ;
         GetnUniformuiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             BUFSIZE_TYPE  const&bufSize ,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::BufSize <BUFSIZE_TYPE >(bufSize ),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->bufSize  = bufSize ;
+          this->params   = params  ;
+        }
         virtual~GetnUniformuiv(){}
         virtual void operator()(){
           glGetnUniformuiv(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei>(this->at::BufSize <BUFSIZE_TYPE >::_value),
-            ge::core::convertTo<GLuint*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLsizei>(this->bufSize ),
+            ge::core::convertTo<GLuint*>(this->params  )
           );
         }
     };
@@ -1674,32 +1718,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix4fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix4fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix4fv(){}
         virtual void operator()(){
           glProgramUniformMatrix4fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -1711,32 +1756,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix4dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix4dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix4dv(){}
         virtual void operator()(){
           glProgramUniformMatrix4dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -1747,28 +1793,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix4x2fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix4x2fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix4x2fv(){}
         virtual void operator()(){
           glUniformMatrix4x2fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -1779,28 +1826,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix2x3fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix2x3fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix2x3fv(){}
         virtual void operator()(){
           glUniformMatrix2x3fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -1810,24 +1858,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform4dv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform4dv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform4dv(){}
         virtual void operator()(){
           glUniform4dv(
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -1839,32 +1888,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix3x4fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix3x4fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix3x4fv(){}
         virtual void operator()(){
           glProgramUniformMatrix3x4fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -1875,28 +1925,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform1uiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform1uiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform1uiv(){}
         virtual void operator()(){
           glProgramUniform1uiv(
-            ge::core::convertTo<GLuint       >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint       >(this->program ),
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -1906,24 +1957,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint  ,
       typename PARAMS_TYPE   = GLuint*>
     class GetUniformuiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        PARAMS_TYPE   params  ;
         GetUniformuiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->params   = params  ;
+        }
         virtual~GetUniformuiv(){}
         virtual void operator()(){
           glGetUniformuiv(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLuint*>(this->params  )
           );
         }
     };
@@ -1934,28 +1986,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix4fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix4fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix4fv(){}
         virtual void operator()(){
           glUniformMatrix4fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -1965,23 +2018,24 @@ namespace ge{
       typename PROGRAM_TYPE          = GLuint       ,
       typename UNIFORMBLOCKNAME_TYPE = const GLchar*>
     class GetUniformBlockIndex:
-        public ge::core::Command,
-        public at::Ret             <RET_TYPE             >,
-        public at::Program         <PROGRAM_TYPE         >,
-        public at::UniformBlockName<UNIFORMBLOCKNAME_TYPE>{
+        public ge::core::Command{
       public:
+        RET_TYPE              ret             ;
+        PROGRAM_TYPE          program         ;
+        UNIFORMBLOCKNAME_TYPE uniformBlockName;
         GetUniformBlockIndex(
             RET_TYPE              const&ret             ,
             PROGRAM_TYPE          const&program         ,
-            UNIFORMBLOCKNAME_TYPE const&uniformBlockName):
-          at::Ret             <RET_TYPE             >(ret             ),
-          at::Program         <PROGRAM_TYPE         >(program         ),
-          at::UniformBlockName<UNIFORMBLOCKNAME_TYPE>(uniformBlockName){}
+            UNIFORMBLOCKNAME_TYPE const&uniformBlockName){
+          this->ret              = ret             ;
+          this->program          = program         ;
+          this->uniformBlockName = uniformBlockName;
+        }
         virtual~GetUniformBlockIndex(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLuint>(this->at::Ret<RET_TYPE>::_value,glGetUniformBlockIndex(
-              ge::core::convertTo<GLuint       >(this->at::Program         <PROGRAM_TYPE         >::_value),
-              ge::core::convertTo<const GLchar*>(this->at::UniformBlockName<UNIFORMBLOCKNAME_TYPE>::_value))
+          ge::core::convertFrom<GLuint>(this->ret,glGetUniformBlockIndex(
+              ge::core::convertTo<GLuint       >(this->program         ),
+              ge::core::convertTo<const GLchar*>(this->uniformBlockName))
           );
         }
     };
@@ -1992,28 +2046,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix2x4fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix2x4fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix2x4fv(){}
         virtual void operator()(){
           glUniformMatrix2x4fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -2025,32 +2080,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix2fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix2fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix2fv(){}
         virtual void operator()(){
           glProgramUniformMatrix2fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -2061,28 +2117,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform4uiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform4uiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform4uiv(){}
         virtual void operator()(){
           glProgramUniform4uiv(
-            ge::core::convertTo<GLuint       >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint       >(this->program ),
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -2092,24 +2149,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint   ,
       typename PARAMS_TYPE   = GLfloat*>
     class GetUniformfv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        PARAMS_TYPE   params  ;
         GetUniformfv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->params   = params  ;
+        }
         virtual~GetUniformfv(){}
         virtual void operator()(){
           glGetUniformfv(
-            ge::core::convertTo<GLuint  >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint  >(this->program ),
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLfloat*>(this->params  )
           );
         }
     };
@@ -2120,28 +2178,29 @@ namespace ge{
       typename Y_TYPE        = GLdouble,
       typename Z_TYPE        = GLdouble>
     class Uniform3d:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::X       <X_TYPE       >,
-        public at::Y       <Y_TYPE       >,
-        public at::Z       <Z_TYPE       >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        X_TYPE        x       ;
+        Y_TYPE        y       ;
+        Z_TYPE        z       ;
         Uniform3d(
             LOCATION_TYPE const&location,
             X_TYPE        const&x       ,
             Y_TYPE        const&y       ,
-            Z_TYPE        const&z       ):
-          at::Location<LOCATION_TYPE>(location),
-          at::X       <X_TYPE       >(x       ),
-          at::Y       <Y_TYPE       >(y       ),
-          at::Z       <Z_TYPE       >(z       ){}
+            Z_TYPE        const&z       ){
+          this->location = location;
+          this->x        = x       ;
+          this->y        = y       ;
+          this->z        = z       ;
+        }
         virtual~Uniform3d(){}
         virtual void operator()(){
           glUniform3d(
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::X       <X_TYPE       >::_value),
-            ge::core::convertTo<GLdouble>(this->at::Y       <Y_TYPE       >::_value),
-            ge::core::convertTo<GLdouble>(this->at::Z       <Z_TYPE       >::_value)
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->x       ),
+            ge::core::convertTo<GLdouble>(this->y       ),
+            ge::core::convertTo<GLdouble>(this->z       )
           );
         }
     };
@@ -2154,36 +2213,37 @@ namespace ge{
       typename V2_TYPE       = GLfloat,
       typename V3_TYPE       = GLfloat>
     class ProgramUniform4f:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         ProgramUniform4f(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~ProgramUniform4f(){}
         virtual void operator()(){
           glProgramUniform4f(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      ),
+            ge::core::convertTo<GLfloat>(this->v1      ),
+            ge::core::convertTo<GLfloat>(this->v2      ),
+            ge::core::convertTo<GLfloat>(this->v3      )
           );
         }
     };
@@ -2194,28 +2254,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform3dv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform3dv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform3dv(){}
         virtual void operator()(){
           glProgramUniform3dv(
-            ge::core::convertTo<GLuint         >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint         >(this->program ),
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -2226,28 +2287,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix4x3dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix4x3dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix4x3dv(){}
         virtual void operator()(){
           glUniformMatrix4x3dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -2259,32 +2321,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix3x2fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix3x2fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix3x2fv(){}
         virtual void operator()(){
           glProgramUniformMatrix3x2fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -2296,32 +2359,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix3x4dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix3x4dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix3x4dv(){}
         virtual void operator()(){
           glProgramUniformMatrix3x4dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -2333,32 +2397,33 @@ namespace ge{
       typename V1_TYPE       = GLuint,
       typename V2_TYPE       = GLuint>
     class ProgramUniform3ui:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         ProgramUniform3ui(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~ProgramUniform3ui(){}
         virtual void operator()(){
           glProgramUniform3ui(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      ),
+            ge::core::convertTo<GLuint>(this->v2      )
           );
         }
     };
@@ -2369,28 +2434,29 @@ namespace ge{
       typename V1_TYPE       = GLint,
       typename V2_TYPE       = GLint>
     class Uniform3i:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         Uniform3i(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~Uniform3i(){}
         virtual void operator()(){
           glUniform3i(
-            ge::core::convertTo<GLint>(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLint>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLint>(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLint>(this->location),
+            ge::core::convertTo<GLint>(this->v0      ),
+            ge::core::convertTo<GLint>(this->v1      ),
+            ge::core::convertTo<GLint>(this->v2      )
           );
         }
     };
@@ -2401,28 +2467,29 @@ namespace ge{
       typename BUFSIZE_TYPE  = GLsizei,
       typename PARAMS_TYPE   = GLint* >
     class GetnUniformiv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::BufSize <BUFSIZE_TYPE >,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        BUFSIZE_TYPE  bufSize ;
+        PARAMS_TYPE   params  ;
         GetnUniformiv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             BUFSIZE_TYPE  const&bufSize ,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::BufSize <BUFSIZE_TYPE >(bufSize ),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->bufSize  = bufSize ;
+          this->params   = params  ;
+        }
         virtual~GetnUniformiv(){}
         virtual void operator()(){
           glGetnUniformiv(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei>(this->at::BufSize <BUFSIZE_TYPE >::_value),
-            ge::core::convertTo<GLint* >(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLsizei>(this->bufSize ),
+            ge::core::convertTo<GLint* >(this->params  )
           );
         }
     };
@@ -2435,36 +2502,37 @@ namespace ge{
       typename V2_TYPE       = GLint ,
       typename V3_TYPE       = GLint >
     class ProgramUniform4i:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         ProgramUniform4i(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~ProgramUniform4i(){}
         virtual void operator()(){
           glProgramUniform4i(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint >(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLint >(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLint >(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLint >(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLint >(this->v0      ),
+            ge::core::convertTo<GLint >(this->v1      ),
+            ge::core::convertTo<GLint >(this->v2      ),
+            ge::core::convertTo<GLint >(this->v3      )
           );
         }
     };
@@ -2475,28 +2543,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform4fv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform4fv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform4fv(){}
         virtual void operator()(){
           glProgramUniform4fv(
-            ge::core::convertTo<GLuint        >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint        >(this->program ),
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -2508,32 +2577,33 @@ namespace ge{
       typename V1_TYPE       = GLfloat,
       typename V2_TYPE       = GLfloat>
     class ProgramUniform3f:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         ProgramUniform3f(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~ProgramUniform3f(){}
         virtual void operator()(){
           glProgramUniform3f(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      ),
+            ge::core::convertTo<GLfloat>(this->v1      ),
+            ge::core::convertTo<GLfloat>(this->v2      )
           );
         }
     };
@@ -2543,24 +2613,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform2fv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform2fv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform2fv(){}
         virtual void operator()(){
           glUniform2fv(
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -2571,28 +2642,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix3dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix3dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix3dv(){}
         virtual void operator()(){
           glUniformMatrix3dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -2603,28 +2675,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform4dv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform4dv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform4dv(){}
         virtual void operator()(){
           glProgramUniform4dv(
-            ge::core::convertTo<GLuint         >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint         >(this->program ),
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -2636,32 +2709,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix2dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix2dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix2dv(){}
         virtual void operator()(){
           glProgramUniformMatrix2dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -2672,28 +2746,29 @@ namespace ge{
       typename V0_TYPE       = GLint ,
       typename V1_TYPE       = GLint >
     class ProgramUniform2i:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         ProgramUniform2i(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~ProgramUniform2i(){}
         virtual void operator()(){
           glProgramUniform2i(
-            ge::core::convertTo<GLuint>(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint >(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLint >(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLuint>(this->program ),
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLint >(this->v0      ),
+            ge::core::convertTo<GLint >(this->v1      )
           );
         }
     };
@@ -2704,28 +2779,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform2fv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform2fv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform2fv(){}
         virtual void operator()(){
           glProgramUniform2fv(
-            ge::core::convertTo<GLuint        >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint        >(this->program ),
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -2736,28 +2812,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix2fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix2fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix2fv(){}
         virtual void operator()(){
           glUniformMatrix2fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -2768,27 +2845,28 @@ namespace ge{
       typename SHADERTYPE_TYPE = GLenum       ,
       typename NAME_TYPE       = const GLchar*>
     class GetSubroutineUniformLocation:
-        public ge::core::Command,
-        public at::Ret       <RET_TYPE       >,
-        public at::Program   <PROGRAM_TYPE   >,
-        public at::Shadertype<SHADERTYPE_TYPE>,
-        public at::Name      <NAME_TYPE      >{
+        public ge::core::Command{
       public:
+        RET_TYPE        ret       ;
+        PROGRAM_TYPE    program   ;
+        SHADERTYPE_TYPE shadertype;
+        NAME_TYPE       name      ;
         GetSubroutineUniformLocation(
             RET_TYPE        const&ret       ,
             PROGRAM_TYPE    const&program   ,
             SHADERTYPE_TYPE const&shadertype,
-            NAME_TYPE       const&name      ):
-          at::Ret       <RET_TYPE       >(ret       ),
-          at::Program   <PROGRAM_TYPE   >(program   ),
-          at::Shadertype<SHADERTYPE_TYPE>(shadertype),
-          at::Name      <NAME_TYPE      >(name      ){}
+            NAME_TYPE       const&name      ){
+          this->ret        = ret       ;
+          this->program    = program   ;
+          this->shadertype = shadertype;
+          this->name       = name      ;
+        }
         virtual~GetSubroutineUniformLocation(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLint>(this->at::Ret<RET_TYPE>::_value,glGetSubroutineUniformLocation(
-              ge::core::convertTo<GLuint       >(this->at::Program   <PROGRAM_TYPE   >::_value),
-              ge::core::convertTo<GLenum       >(this->at::Shadertype<SHADERTYPE_TYPE>::_value),
-              ge::core::convertTo<const GLchar*>(this->at::Name      <NAME_TYPE      >::_value))
+          ge::core::convertFrom<GLint>(this->ret,glGetSubroutineUniformLocation(
+              ge::core::convertTo<GLuint       >(this->program   ),
+              ge::core::convertTo<GLenum       >(this->shadertype),
+              ge::core::convertTo<const GLchar*>(this->name      ))
           );
         }
     };
@@ -2798,24 +2876,25 @@ namespace ge{
       typename COUNT_TYPE      = GLsizei      ,
       typename INDICES_TYPE    = const GLuint*>
     class UniformSubroutinesuiv:
-        public ge::core::Command,
-        public at::Shadertype<SHADERTYPE_TYPE>,
-        public at::Count     <COUNT_TYPE     >,
-        public at::Indices   <INDICES_TYPE   >{
+        public ge::core::Command{
       public:
+        SHADERTYPE_TYPE shadertype;
+        COUNT_TYPE      count     ;
+        INDICES_TYPE    indices   ;
         UniformSubroutinesuiv(
             SHADERTYPE_TYPE const&shadertype,
             COUNT_TYPE      const&count     ,
-            INDICES_TYPE    const&indices   ):
-          at::Shadertype<SHADERTYPE_TYPE>(shadertype),
-          at::Count     <COUNT_TYPE     >(count     ),
-          at::Indices   <INDICES_TYPE   >(indices   ){}
+            INDICES_TYPE    const&indices   ){
+          this->shadertype = shadertype;
+          this->count      = count     ;
+          this->indices    = indices   ;
+        }
         virtual~UniformSubroutinesuiv(){}
         virtual void operator()(){
           glUniformSubroutinesuiv(
-            ge::core::convertTo<GLenum       >(this->at::Shadertype<SHADERTYPE_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count     <COUNT_TYPE     >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Indices   <INDICES_TYPE   >::_value)
+            ge::core::convertTo<GLenum       >(this->shadertype),
+            ge::core::convertTo<GLsizei      >(this->count     ),
+            ge::core::convertTo<const GLuint*>(this->indices   )
           );
         }
     };
@@ -2827,32 +2906,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix4x2dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix4x2dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix4x2dv(){}
         virtual void operator()(){
           glProgramUniformMatrix4x2dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -2863,28 +2943,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix3x2dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix3x2dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix3x2dv(){}
         virtual void operator()(){
           glUniformMatrix3x2dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -2893,20 +2974,21 @@ namespace ge{
       typename LOCATION_TYPE = GLint,
       typename V0_TYPE       = GLint>
     class Uniform1i:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         Uniform1i(
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~Uniform1i(){}
         virtual void operator()(){
           glUniform1i(
-            ge::core::convertTo<GLint>(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLint>(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLint>(this->location),
+            ge::core::convertTo<GLint>(this->v0      )
           );
         }
     };
@@ -2917,28 +2999,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix3x4fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix3x4fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix3x4fv(){}
         virtual void operator()(){
           glUniformMatrix3x4fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -2949,28 +3032,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix4x3fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix4x3fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix4x3fv(){}
         virtual void operator()(){
           glUniformMatrix4x3fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -2984,15 +3068,15 @@ namespace ge{
       typename TYPE_TYPE    = GLenum* ,
       typename NAME_TYPE    = GLchar* >
     class GetActiveUniform:
-        public ge::core::Command,
-        public at::Program<PROGRAM_TYPE>,
-        public at::Index  <INDEX_TYPE  >,
-        public at::BufSize<BUFSIZE_TYPE>,
-        public at::Length <LENGTH_TYPE >,
-        public at::Size   <SIZE_TYPE   >,
-        public at::Type   <TYPE_TYPE   >,
-        public at::Name   <NAME_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE program;
+        INDEX_TYPE   index  ;
+        BUFSIZE_TYPE bufSize;
+        LENGTH_TYPE  length ;
+        SIZE_TYPE    size   ;
+        TYPE_TYPE    type   ;
+        NAME_TYPE    name   ;
         GetActiveUniform(
             PROGRAM_TYPE const&program,
             INDEX_TYPE   const&index  ,
@@ -3000,24 +3084,25 @@ namespace ge{
             LENGTH_TYPE  const&length ,
             SIZE_TYPE    const&size   ,
             TYPE_TYPE    const&type   ,
-            NAME_TYPE    const&name   ):
-          at::Program<PROGRAM_TYPE>(program),
-          at::Index  <INDEX_TYPE  >(index  ),
-          at::BufSize<BUFSIZE_TYPE>(bufSize),
-          at::Length <LENGTH_TYPE >(length ),
-          at::Size   <SIZE_TYPE   >(size   ),
-          at::Type   <TYPE_TYPE   >(type   ),
-          at::Name   <NAME_TYPE   >(name   ){}
+            NAME_TYPE    const&name   ){
+          this->program = program;
+          this->index   = index  ;
+          this->bufSize = bufSize;
+          this->length  = length ;
+          this->size    = size   ;
+          this->type    = type   ;
+          this->name    = name   ;
+        }
         virtual~GetActiveUniform(){}
         virtual void operator()(){
           glGetActiveUniform(
-            ge::core::convertTo<GLuint  >(this->at::Program<PROGRAM_TYPE>::_value),
-            ge::core::convertTo<GLuint  >(this->at::Index  <INDEX_TYPE  >::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize<BUFSIZE_TYPE>::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length <LENGTH_TYPE >::_value),
-            ge::core::convertTo<GLint*  >(this->at::Size   <SIZE_TYPE   >::_value),
-            ge::core::convertTo<GLenum* >(this->at::Type   <TYPE_TYPE   >::_value),
-            ge::core::convertTo<GLchar* >(this->at::Name   <NAME_TYPE   >::_value)
+            ge::core::convertTo<GLuint  >(this->program),
+            ge::core::convertTo<GLuint  >(this->index  ),
+            ge::core::convertTo<GLsizei >(this->bufSize),
+            ge::core::convertTo<GLsizei*>(this->length ),
+            ge::core::convertTo<GLint*  >(this->size   ),
+            ge::core::convertTo<GLenum* >(this->type   ),
+            ge::core::convertTo<GLchar* >(this->name   )
           );
         }
     };
@@ -3027,24 +3112,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform2dv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform2dv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform2dv(){}
         virtual void operator()(){
           glUniform2dv(
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -3055,28 +3141,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform2iv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform2iv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform2iv(){}
         virtual void operator()(){
           glProgramUniform2iv(
-            ge::core::convertTo<GLuint      >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint      >(this->program ),
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -3086,24 +3173,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class Uniform4iv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform4iv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform4iv(){}
         virtual void operator()(){
           glUniform4iv(
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -3114,28 +3202,29 @@ namespace ge{
       typename V0_TYPE       = GLdouble,
       typename V1_TYPE       = GLdouble>
     class ProgramUniform2d:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         ProgramUniform2d(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~ProgramUniform2d(){}
         virtual void operator()(){
           glProgramUniform2d(
-            ge::core::convertTo<GLuint  >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLdouble>(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLuint  >(this->program ),
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->v0      ),
+            ge::core::convertTo<GLdouble>(this->v1      )
           );
         }
     };
@@ -3145,24 +3234,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform3fv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform3fv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform3fv(){}
         virtual void operator()(){
           glUniform3fv(
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -3174,32 +3264,33 @@ namespace ge{
       typename Z_TYPE        = GLdouble,
       typename W_TYPE        = GLdouble>
     class Uniform4d:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::X       <X_TYPE       >,
-        public at::Y       <Y_TYPE       >,
-        public at::Z       <Z_TYPE       >,
-        public at::W       <W_TYPE       >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        X_TYPE        x       ;
+        Y_TYPE        y       ;
+        Z_TYPE        z       ;
+        W_TYPE        w       ;
         Uniform4d(
             LOCATION_TYPE const&location,
             X_TYPE        const&x       ,
             Y_TYPE        const&y       ,
             Z_TYPE        const&z       ,
-            W_TYPE        const&w       ):
-          at::Location<LOCATION_TYPE>(location),
-          at::X       <X_TYPE       >(x       ),
-          at::Y       <Y_TYPE       >(y       ),
-          at::Z       <Z_TYPE       >(z       ),
-          at::W       <W_TYPE       >(w       ){}
+            W_TYPE        const&w       ){
+          this->location = location;
+          this->x        = x       ;
+          this->y        = y       ;
+          this->z        = z       ;
+          this->w        = w       ;
+        }
         virtual~Uniform4d(){}
         virtual void operator()(){
           glUniform4d(
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::X       <X_TYPE       >::_value),
-            ge::core::convertTo<GLdouble>(this->at::Y       <Y_TYPE       >::_value),
-            ge::core::convertTo<GLdouble>(this->at::Z       <Z_TYPE       >::_value),
-            ge::core::convertTo<GLdouble>(this->at::W       <W_TYPE       >::_value)
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->x       ),
+            ge::core::convertTo<GLdouble>(this->y       ),
+            ge::core::convertTo<GLdouble>(this->z       ),
+            ge::core::convertTo<GLdouble>(this->w       )
           );
         }
     };
@@ -3210,28 +3301,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform4iv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform4iv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform4iv(){}
         virtual void operator()(){
           glProgramUniform4iv(
-            ge::core::convertTo<GLuint      >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint      >(this->program ),
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -3241,24 +3333,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class Uniform1uiv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform1uiv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform1uiv(){}
         virtual void operator()(){
           glUniform1uiv(
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -3270,32 +3363,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix2x3fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix2x3fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix2x3fv(){}
         virtual void operator()(){
           glProgramUniformMatrix2x3fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -3306,28 +3400,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix3fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix3fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix3fv(){}
         virtual void operator()(){
           glUniformMatrix3fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -3337,24 +3432,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat>
     class ProgramUniform1f:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         ProgramUniform1f(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~ProgramUniform1f(){}
         virtual void operator()(){
           glProgramUniform1f(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      )
           );
         }
     };
@@ -3366,32 +3462,33 @@ namespace ge{
       typename V2_TYPE       = GLfloat,
       typename V3_TYPE       = GLfloat>
     class Uniform4f:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         Uniform4f(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~Uniform4f(){}
         virtual void operator()(){
           glUniform4f(
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      ),
+            ge::core::convertTo<GLfloat>(this->v1      ),
+            ge::core::convertTo<GLfloat>(this->v2      ),
+            ge::core::convertTo<GLfloat>(this->v3      )
           );
         }
     };
@@ -3402,28 +3499,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix4x2dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix4x2dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix4x2dv(){}
         virtual void operator()(){
           glUniformMatrix4x2dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -3433,24 +3531,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class Uniform4uiv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform4uiv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform4uiv(){}
         virtual void operator()(){
           glUniform4uiv(
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -3460,24 +3559,25 @@ namespace ge{
       typename V0_TYPE       = GLuint,
       typename V1_TYPE       = GLuint>
     class Uniform2ui:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         Uniform2ui(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~Uniform2ui(){}
         virtual void operator()(){
           glUniform2ui(
-            ge::core::convertTo<GLint >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLuint>(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      )
           );
         }
     };
@@ -3489,32 +3589,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix3x2dv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix3x2dv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix3x2dv(){}
         virtual void operator()(){
           glProgramUniformMatrix3x2dv(
-            ge::core::convertTo<GLuint         >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -3524,24 +3625,25 @@ namespace ge{
       typename LOCATION_TYPE   = GLint  ,
       typename PARAMS_TYPE     = GLuint*>
     class GetUniformSubroutineuiv:
-        public ge::core::Command,
-        public at::Shadertype<SHADERTYPE_TYPE>,
-        public at::Location  <LOCATION_TYPE  >,
-        public at::Params    <PARAMS_TYPE    >{
+        public ge::core::Command{
       public:
+        SHADERTYPE_TYPE shadertype;
+        LOCATION_TYPE   location  ;
+        PARAMS_TYPE     params    ;
         GetUniformSubroutineuiv(
             SHADERTYPE_TYPE const&shadertype,
             LOCATION_TYPE   const&location  ,
-            PARAMS_TYPE     const&params    ):
-          at::Shadertype<SHADERTYPE_TYPE>(shadertype),
-          at::Location  <LOCATION_TYPE  >(location  ),
-          at::Params    <PARAMS_TYPE    >(params    ){}
+            PARAMS_TYPE     const&params    ){
+          this->shadertype = shadertype;
+          this->location   = location  ;
+          this->params     = params    ;
+        }
         virtual~GetUniformSubroutineuiv(){}
         virtual void operator()(){
           glGetUniformSubroutineuiv(
-            ge::core::convertTo<GLenum >(this->at::Shadertype<SHADERTYPE_TYPE>::_value),
-            ge::core::convertTo<GLint  >(this->at::Location  <LOCATION_TYPE  >::_value),
-            ge::core::convertTo<GLuint*>(this->at::Params    <PARAMS_TYPE    >::_value)
+            ge::core::convertTo<GLenum >(this->shadertype),
+            ge::core::convertTo<GLint  >(this->location  ),
+            ge::core::convertTo<GLuint*>(this->params    )
           );
         }
     };
@@ -3554,36 +3656,37 @@ namespace ge{
       typename V2_TYPE       = GLdouble,
       typename V3_TYPE       = GLdouble>
     class ProgramUniform4d:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >,
-        public at::V3      <V3_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
         ProgramUniform4d(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
             V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ),
-          at::V3      <V3_TYPE      >(v3      ){}
+            V3_TYPE       const&v3      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
         virtual~ProgramUniform4d(){}
         virtual void operator()(){
           glProgramUniform4d(
-            ge::core::convertTo<GLuint  >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLdouble>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLdouble>(this->at::V2      <V2_TYPE      >::_value),
-            ge::core::convertTo<GLdouble>(this->at::V3      <V3_TYPE      >::_value)
+            ge::core::convertTo<GLuint  >(this->program ),
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->v0      ),
+            ge::core::convertTo<GLdouble>(this->v1      ),
+            ge::core::convertTo<GLdouble>(this->v2      ),
+            ge::core::convertTo<GLdouble>(this->v3      )
           );
         }
     };
@@ -3594,28 +3697,29 @@ namespace ge{
       typename PNAME_TYPE             = GLenum,
       typename PARAMS_TYPE            = GLint*>
     class GetActiveUniformBlockiv:
-        public ge::core::Command,
-        public at::Program          <PROGRAM_TYPE          >,
-        public at::UniformBlockIndex<UNIFORMBLOCKINDEX_TYPE>,
-        public at::Pname            <PNAME_TYPE            >,
-        public at::Params           <PARAMS_TYPE           >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE           program          ;
+        UNIFORMBLOCKINDEX_TYPE uniformBlockIndex;
+        PNAME_TYPE             pname            ;
+        PARAMS_TYPE            params           ;
         GetActiveUniformBlockiv(
             PROGRAM_TYPE           const&program          ,
             UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
             PNAME_TYPE             const&pname            ,
-            PARAMS_TYPE            const&params           ):
-          at::Program          <PROGRAM_TYPE          >(program          ),
-          at::UniformBlockIndex<UNIFORMBLOCKINDEX_TYPE>(uniformBlockIndex),
-          at::Pname            <PNAME_TYPE            >(pname            ),
-          at::Params           <PARAMS_TYPE           >(params           ){}
+            PARAMS_TYPE            const&params           ){
+          this->program           = program          ;
+          this->uniformBlockIndex = uniformBlockIndex;
+          this->pname             = pname            ;
+          this->params            = params           ;
+        }
         virtual~GetActiveUniformBlockiv(){}
         virtual void operator()(){
           glGetActiveUniformBlockiv(
-            ge::core::convertTo<GLuint>(this->at::Program          <PROGRAM_TYPE          >::_value),
-            ge::core::convertTo<GLuint>(this->at::UniformBlockIndex<UNIFORMBLOCKINDEX_TYPE>::_value),
-            ge::core::convertTo<GLenum>(this->at::Pname            <PNAME_TYPE            >::_value),
-            ge::core::convertTo<GLint*>(this->at::Params           <PARAMS_TYPE           >::_value)
+            ge::core::convertTo<GLuint>(this->program          ),
+            ge::core::convertTo<GLuint>(this->uniformBlockIndex),
+            ge::core::convertTo<GLenum>(this->pname            ),
+            ge::core::convertTo<GLint*>(this->params           )
           );
         }
     };
@@ -3627,32 +3731,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix4x2fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix4x2fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix4x2fv(){}
         virtual void operator()(){
           glProgramUniformMatrix4x2fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -3664,32 +3769,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix3fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix3fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix3fv(){}
         virtual void operator()(){
           glProgramUniformMatrix3fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -3700,28 +3806,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix3x2fv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix3x2fv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix3x2fv(){}
         virtual void operator()(){
           glUniformMatrix3x2fv(
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -3731,24 +3838,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint    ,
       typename PARAMS_TYPE   = GLdouble*>
     class GetUniformdv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Params  <PARAMS_TYPE  >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        PARAMS_TYPE   params  ;
         GetUniformdv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            PARAMS_TYPE   const&params  ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Params  <PARAMS_TYPE  >(params  ){}
+            PARAMS_TYPE   const&params  ){
+          this->program  = program ;
+          this->location = location;
+          this->params   = params  ;
+        }
         virtual~GetUniformdv(){}
         virtual void operator()(){
           glGetUniformdv(
-            ge::core::convertTo<GLuint   >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint    >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble*>(this->at::Params  <PARAMS_TYPE  >::_value)
+            ge::core::convertTo<GLuint   >(this->program ),
+            ge::core::convertTo<GLint    >(this->location),
+            ge::core::convertTo<GLdouble*>(this->params  )
           );
         }
     };
@@ -3759,28 +3867,29 @@ namespace ge{
       typename V1_TYPE       = GLfloat,
       typename V2_TYPE       = GLfloat>
     class Uniform3f:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >,
-        public at::V2      <V2_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
         Uniform3f(
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
             V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ),
-          at::V2      <V2_TYPE      >(v2      ){}
+            V2_TYPE       const&v2      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+        }
         virtual~Uniform3f(){}
         virtual void operator()(){
           glUniform3f(
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V1      <V1_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V2      <V2_TYPE      >::_value)
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      ),
+            ge::core::convertTo<GLfloat>(this->v1      ),
+            ge::core::convertTo<GLfloat>(this->v2      )
           );
         }
     };
@@ -3791,28 +3900,29 @@ namespace ge{
       typename V0_TYPE       = GLfloat,
       typename V1_TYPE       = GLfloat>
     class ProgramUniform2f:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >,
-        public at::V1      <V1_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
         ProgramUniform2f(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ),
-          at::V1      <V1_TYPE      >(v1      ){}
+            V1_TYPE       const&v1      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+        }
         virtual~ProgramUniform2f(){}
         virtual void operator()(){
           glProgramUniform2f(
-            ge::core::convertTo<GLuint >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value),
-            ge::core::convertTo<GLfloat>(this->at::V1      <V1_TYPE      >::_value)
+            ge::core::convertTo<GLuint >(this->program ),
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      ),
+            ge::core::convertTo<GLfloat>(this->v1      )
           );
         }
     };
@@ -3823,28 +3933,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform1dv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform1dv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform1dv(){}
         virtual void operator()(){
           glProgramUniform1dv(
-            ge::core::convertTo<GLuint         >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint          >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint         >(this->program ),
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -3855,28 +3966,29 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix2dv:
-        public ge::core::Command,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         UniformMatrix2dv(
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~UniformMatrix2dv(){}
         virtual void operator()(){
           glUniformMatrix2dv(
-            ge::core::convertTo<GLint          >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei        >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean      >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLdouble*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
           );
         }
     };
@@ -3886,23 +3998,24 @@ namespace ge{
       typename PROGRAM_TYPE = GLuint       ,
       typename NAME_TYPE    = const GLchar*>
     class GetUniformLocation:
-        public ge::core::Command,
-        public at::Ret    <RET_TYPE    >,
-        public at::Program<PROGRAM_TYPE>,
-        public at::Name   <NAME_TYPE   >{
+        public ge::core::Command{
       public:
+        RET_TYPE     ret    ;
+        PROGRAM_TYPE program;
+        NAME_TYPE    name   ;
         GetUniformLocation(
             RET_TYPE     const&ret    ,
             PROGRAM_TYPE const&program,
-            NAME_TYPE    const&name   ):
-          at::Ret    <RET_TYPE    >(ret    ),
-          at::Program<PROGRAM_TYPE>(program),
-          at::Name   <NAME_TYPE   >(name   ){}
+            NAME_TYPE    const&name   ){
+          this->ret     = ret    ;
+          this->program = program;
+          this->name    = name   ;
+        }
         virtual~GetUniformLocation(){}
         virtual void operator()(){
-          ge::core::convertFrom<GLint>(this->at::Ret<RET_TYPE>::_value,glGetUniformLocation(
-              ge::core::convertTo<GLuint       >(this->at::Program<PROGRAM_TYPE>::_value),
-              ge::core::convertTo<const GLchar*>(this->at::Name   <NAME_TYPE   >::_value))
+          ge::core::convertFrom<GLint>(this->ret,glGetUniformLocation(
+              ge::core::convertTo<GLuint       >(this->program),
+              ge::core::convertTo<const GLchar*>(this->name   ))
           );
         }
     };
@@ -3911,20 +4024,21 @@ namespace ge{
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat>
     class Uniform1f:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         Uniform1f(
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~Uniform1f(){}
         virtual void operator()(){
           glUniform1f(
-            ge::core::convertTo<GLint  >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLfloat>(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLint  >(this->location),
+            ge::core::convertTo<GLfloat>(this->v0      )
           );
         }
     };
@@ -3934,24 +4048,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class Uniform3uiv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform3uiv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform3uiv(){}
         virtual void operator()(){
           glUniform3uiv(
-            ge::core::convertTo<GLint        >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei      >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLuint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint        >(this->location),
+            ge::core::convertTo<GLsizei      >(this->count   ),
+            ge::core::convertTo<const GLuint*>(this->value   )
           );
         }
     };
@@ -3963,32 +4078,33 @@ namespace ge{
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix4x3fv:
-        public ge::core::Command,
-        public at::Program  <PROGRAM_TYPE  >,
-        public at::Location <LOCATION_TYPE >,
-        public at::Count    <COUNT_TYPE    >,
-        public at::Transpose<TRANSPOSE_TYPE>,
-        public at::Value    <VALUE_TYPE    >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
         ProgramUniformMatrix4x3fv(
             PROGRAM_TYPE   const&program  ,
             LOCATION_TYPE  const&location ,
             COUNT_TYPE     const&count    ,
             TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ):
-          at::Program  <PROGRAM_TYPE  >(program  ),
-          at::Location <LOCATION_TYPE >(location ),
-          at::Count    <COUNT_TYPE    >(count    ),
-          at::Transpose<TRANSPOSE_TYPE>(transpose),
-          at::Value    <VALUE_TYPE    >(value    ){}
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
         virtual~ProgramUniformMatrix4x3fv(){}
         virtual void operator()(){
           glProgramUniformMatrix4x3fv(
-            ge::core::convertTo<GLuint        >(this->at::Program  <PROGRAM_TYPE  >::_value),
-            ge::core::convertTo<GLint         >(this->at::Location <LOCATION_TYPE >::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count    <COUNT_TYPE    >::_value),
-            ge::core::convertTo<GLboolean     >(this->at::Transpose<TRANSPOSE_TYPE>::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value    <VALUE_TYPE    >::_value)
+            ge::core::convertTo<GLuint        >(this->program  ),
+            ge::core::convertTo<GLint         >(this->location ),
+            ge::core::convertTo<GLsizei       >(this->count    ),
+            ge::core::convertTo<GLboolean     >(this->transpose),
+            ge::core::convertTo<const GLfloat*>(this->value    )
           );
         }
     };
@@ -3997,20 +4113,21 @@ namespace ge{
       typename LOCATION_TYPE = GLint   ,
       typename X_TYPE        = GLdouble>
     class Uniform1d:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::X       <X_TYPE       >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        X_TYPE        x       ;
         Uniform1d(
             LOCATION_TYPE const&location,
-            X_TYPE        const&x       ):
-          at::Location<LOCATION_TYPE>(location),
-          at::X       <X_TYPE       >(x       ){}
+            X_TYPE        const&x       ){
+          this->location = location;
+          this->x        = x       ;
+        }
         virtual~Uniform1d(){}
         virtual void operator()(){
           glUniform1d(
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::X       <X_TYPE       >::_value)
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->x       )
           );
         }
     };
@@ -4022,32 +4139,33 @@ namespace ge{
       typename LENGTH_TYPE       = GLsizei*,
       typename UNIFORMNAME_TYPE  = GLchar* >
     class GetActiveUniformName:
-        public ge::core::Command,
-        public at::Program     <PROGRAM_TYPE     >,
-        public at::UniformIndex<UNIFORMINDEX_TYPE>,
-        public at::BufSize     <BUFSIZE_TYPE     >,
-        public at::Length      <LENGTH_TYPE      >,
-        public at::UniformName <UNIFORMNAME_TYPE >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE      program     ;
+        UNIFORMINDEX_TYPE uniformIndex;
+        BUFSIZE_TYPE      bufSize     ;
+        LENGTH_TYPE       length      ;
+        UNIFORMNAME_TYPE  uniformName ;
         GetActiveUniformName(
             PROGRAM_TYPE      const&program     ,
             UNIFORMINDEX_TYPE const&uniformIndex,
             BUFSIZE_TYPE      const&bufSize     ,
             LENGTH_TYPE       const&length      ,
-            UNIFORMNAME_TYPE  const&uniformName ):
-          at::Program     <PROGRAM_TYPE     >(program     ),
-          at::UniformIndex<UNIFORMINDEX_TYPE>(uniformIndex),
-          at::BufSize     <BUFSIZE_TYPE     >(bufSize     ),
-          at::Length      <LENGTH_TYPE      >(length      ),
-          at::UniformName <UNIFORMNAME_TYPE >(uniformName ){}
+            UNIFORMNAME_TYPE  const&uniformName ){
+          this->program      = program     ;
+          this->uniformIndex = uniformIndex;
+          this->bufSize      = bufSize     ;
+          this->length       = length      ;
+          this->uniformName  = uniformName ;
+        }
         virtual~GetActiveUniformName(){}
         virtual void operator()(){
           glGetActiveUniformName(
-            ge::core::convertTo<GLuint  >(this->at::Program     <PROGRAM_TYPE     >::_value),
-            ge::core::convertTo<GLuint  >(this->at::UniformIndex<UNIFORMINDEX_TYPE>::_value),
-            ge::core::convertTo<GLsizei >(this->at::BufSize     <BUFSIZE_TYPE     >::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length      <LENGTH_TYPE      >::_value),
-            ge::core::convertTo<GLchar* >(this->at::UniformName <UNIFORMNAME_TYPE >::_value)
+            ge::core::convertTo<GLuint  >(this->program     ),
+            ge::core::convertTo<GLuint  >(this->uniformIndex),
+            ge::core::convertTo<GLsizei >(this->bufSize     ),
+            ge::core::convertTo<GLsizei*>(this->length      ),
+            ge::core::convertTo<GLchar* >(this->uniformName )
           );
         }
     };
@@ -4057,24 +4175,25 @@ namespace ge{
       typename LOCATION_TYPE = GLint   ,
       typename V0_TYPE       = GLdouble>
     class ProgramUniform1d:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::V0      <V0_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
         ProgramUniform1d(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::V0      <V0_TYPE      >(v0      ){}
+            V0_TYPE       const&v0      ){
+          this->program  = program ;
+          this->location = location;
+          this->v0       = v0      ;
+        }
         virtual~ProgramUniform1d(){}
         virtual void operator()(){
           glProgramUniform1d(
-            ge::core::convertTo<GLuint  >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint   >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLdouble>(this->at::V0      <V0_TYPE      >::_value)
+            ge::core::convertTo<GLuint  >(this->program ),
+            ge::core::convertTo<GLint   >(this->location),
+            ge::core::convertTo<GLdouble>(this->v0      )
           );
         }
     };
@@ -4084,24 +4203,25 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform4fv:
-        public ge::core::Command,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         Uniform4fv(
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~Uniform4fv(){}
         virtual void operator()(){
           glUniform4fv(
-            ge::core::convertTo<GLint         >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei       >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLfloat*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
           );
         }
     };
@@ -4112,28 +4232,29 @@ namespace ge{
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform1iv:
-        public ge::core::Command,
-        public at::Program <PROGRAM_TYPE >,
-        public at::Location<LOCATION_TYPE>,
-        public at::Count   <COUNT_TYPE   >,
-        public at::Value   <VALUE_TYPE   >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
         ProgramUniform1iv(
             PROGRAM_TYPE  const&program ,
             LOCATION_TYPE const&location,
             COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ):
-          at::Program <PROGRAM_TYPE >(program ),
-          at::Location<LOCATION_TYPE>(location),
-          at::Count   <COUNT_TYPE   >(count   ),
-          at::Value   <VALUE_TYPE   >(value   ){}
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
         virtual~ProgramUniform1iv(){}
         virtual void operator()(){
           glProgramUniform1iv(
-            ge::core::convertTo<GLuint      >(this->at::Program <PROGRAM_TYPE >::_value),
-            ge::core::convertTo<GLint       >(this->at::Location<LOCATION_TYPE>::_value),
-            ge::core::convertTo<GLsizei     >(this->at::Count   <COUNT_TYPE   >::_value),
-            ge::core::convertTo<const GLint*>(this->at::Value   <VALUE_TYPE   >::_value)
+            ge::core::convertTo<GLuint      >(this->program ),
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
           );
         }
     };
@@ -4146,36 +4267,37 @@ namespace ge{
       typename LENGTH_TYPE     = GLsizei*,
       typename NAME_TYPE       = GLchar* >
     class GetActiveSubroutineUniformName:
-        public ge::core::Command,
-        public at::Program   <PROGRAM_TYPE   >,
-        public at::Shadertype<SHADERTYPE_TYPE>,
-        public at::Index     <INDEX_TYPE     >,
-        public at::Bufsize   <BUFSIZE_TYPE   >,
-        public at::Length    <LENGTH_TYPE    >,
-        public at::Name      <NAME_TYPE      >{
+        public ge::core::Command{
       public:
+        PROGRAM_TYPE    program   ;
+        SHADERTYPE_TYPE shadertype;
+        INDEX_TYPE      index     ;
+        BUFSIZE_TYPE    bufsize   ;
+        LENGTH_TYPE     length    ;
+        NAME_TYPE       name      ;
         GetActiveSubroutineUniformName(
             PROGRAM_TYPE    const&program   ,
             SHADERTYPE_TYPE const&shadertype,
             INDEX_TYPE      const&index     ,
             BUFSIZE_TYPE    const&bufsize   ,
             LENGTH_TYPE     const&length    ,
-            NAME_TYPE       const&name      ):
-          at::Program   <PROGRAM_TYPE   >(program   ),
-          at::Shadertype<SHADERTYPE_TYPE>(shadertype),
-          at::Index     <INDEX_TYPE     >(index     ),
-          at::Bufsize   <BUFSIZE_TYPE   >(bufsize   ),
-          at::Length    <LENGTH_TYPE    >(length    ),
-          at::Name      <NAME_TYPE      >(name      ){}
+            NAME_TYPE       const&name      ){
+          this->program    = program   ;
+          this->shadertype = shadertype;
+          this->index      = index     ;
+          this->bufsize    = bufsize   ;
+          this->length     = length    ;
+          this->name       = name      ;
+        }
         virtual~GetActiveSubroutineUniformName(){}
         virtual void operator()(){
           glGetActiveSubroutineUniformName(
-            ge::core::convertTo<GLuint  >(this->at::Program   <PROGRAM_TYPE   >::_value),
-            ge::core::convertTo<GLenum  >(this->at::Shadertype<SHADERTYPE_TYPE>::_value),
-            ge::core::convertTo<GLuint  >(this->at::Index     <INDEX_TYPE     >::_value),
-            ge::core::convertTo<GLsizei >(this->at::Bufsize   <BUFSIZE_TYPE   >::_value),
-            ge::core::convertTo<GLsizei*>(this->at::Length    <LENGTH_TYPE    >::_value),
-            ge::core::convertTo<GLchar* >(this->at::Name      <NAME_TYPE      >::_value)
+            ge::core::convertTo<GLuint  >(this->program   ),
+            ge::core::convertTo<GLenum  >(this->shadertype),
+            ge::core::convertTo<GLuint  >(this->index     ),
+            ge::core::convertTo<GLsizei >(this->bufsize   ),
+            ge::core::convertTo<GLsizei*>(this->length    ),
+            ge::core::convertTo<GLchar* >(this->name      )
           );
         }
     };

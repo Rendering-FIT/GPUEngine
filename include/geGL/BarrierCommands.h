@@ -10,16 +10,17 @@ namespace ge{
     template<
       typename BARRIERS_TYPE = GLbitfield>
     class MemoryBarrierByRegion:
-        public ge::core::Command,
-        public at::Barriers<BARRIERS_TYPE>{
+        public ge::core::Command{
       public:
+        BARRIERS_TYPE barriers;
         MemoryBarrierByRegion(
-            BARRIERS_TYPE const&barriers):
-          at::Barriers<BARRIERS_TYPE>(barriers){}
+            BARRIERS_TYPE const&barriers){
+          this->barriers = barriers;
+        }
         virtual~MemoryBarrierByRegion(){}
         virtual void operator()(){
           glMemoryBarrierByRegion(
-            ge::core::convertTo<GLbitfield>(this->at::Barriers<BARRIERS_TYPE>::_value)
+            ge::core::convertTo<GLbitfield>(this->barriers)
           );
         }
     };
@@ -27,16 +28,17 @@ namespace ge{
     template<
       typename BARRIERS_TYPE = GLbitfield>
     class MemoryBarrier:
-        public ge::core::Command,
-        public at::Barriers<BARRIERS_TYPE>{
+        public ge::core::Command{
       public:
+        BARRIERS_TYPE barriers;
         MemoryBarrier(
-            BARRIERS_TYPE const&barriers):
-          at::Barriers<BARRIERS_TYPE>(barriers){}
+            BARRIERS_TYPE const&barriers){
+          this->barriers = barriers;
+        }
         virtual~MemoryBarrier(){}
         virtual void operator()(){
           glMemoryBarrier(
-            ge::core::convertTo<GLbitfield>(this->at::Barriers<BARRIERS_TYPE>::_value)
+            ge::core::convertTo<GLbitfield>(this->barriers)
           );
         }
     };

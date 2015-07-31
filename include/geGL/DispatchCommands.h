@@ -10,16 +10,17 @@ namespace ge{
     template<
       typename INDIRECT_TYPE = GLintptr>
     class DispatchComputeIndirect:
-        public ge::core::Command,
-        public at::Indirect<INDIRECT_TYPE>{
+        public ge::core::Command{
       public:
+        INDIRECT_TYPE indirect;
         DispatchComputeIndirect(
-            INDIRECT_TYPE const&indirect):
-          at::Indirect<INDIRECT_TYPE>(indirect){}
+            INDIRECT_TYPE const&indirect){
+          this->indirect = indirect;
+        }
         virtual~DispatchComputeIndirect(){}
         virtual void operator()(){
           glDispatchComputeIndirect(
-            ge::core::convertTo<GLintptr>(this->at::Indirect<INDIRECT_TYPE>::_value)
+            ge::core::convertTo<GLintptr>(this->indirect)
           );
         }
     };
@@ -29,24 +30,25 @@ namespace ge{
       typename NUM_GROUPS_Y_TYPE = GLuint,
       typename NUM_GROUPS_Z_TYPE = GLuint>
     class DispatchCompute:
-        public ge::core::Command,
-        public at::Num_groups_x<NUM_GROUPS_X_TYPE>,
-        public at::Num_groups_y<NUM_GROUPS_Y_TYPE>,
-        public at::Num_groups_z<NUM_GROUPS_Z_TYPE>{
+        public ge::core::Command{
       public:
+        NUM_GROUPS_X_TYPE num_groups_x;
+        NUM_GROUPS_Y_TYPE num_groups_y;
+        NUM_GROUPS_Z_TYPE num_groups_z;
         DispatchCompute(
             NUM_GROUPS_X_TYPE const&num_groups_x,
             NUM_GROUPS_Y_TYPE const&num_groups_y,
-            NUM_GROUPS_Z_TYPE const&num_groups_z):
-          at::Num_groups_x<NUM_GROUPS_X_TYPE>(num_groups_x),
-          at::Num_groups_y<NUM_GROUPS_Y_TYPE>(num_groups_y),
-          at::Num_groups_z<NUM_GROUPS_Z_TYPE>(num_groups_z){}
+            NUM_GROUPS_Z_TYPE const&num_groups_z){
+          this->num_groups_x = num_groups_x;
+          this->num_groups_y = num_groups_y;
+          this->num_groups_z = num_groups_z;
+        }
         virtual~DispatchCompute(){}
         virtual void operator()(){
           glDispatchCompute(
-            ge::core::convertTo<GLuint>(this->at::Num_groups_x<NUM_GROUPS_X_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::Num_groups_y<NUM_GROUPS_Y_TYPE>::_value),
-            ge::core::convertTo<GLuint>(this->at::Num_groups_z<NUM_GROUPS_Z_TYPE>::_value)
+            ge::core::convertTo<GLuint>(this->num_groups_x),
+            ge::core::convertTo<GLuint>(this->num_groups_y),
+            ge::core::convertTo<GLuint>(this->num_groups_z)
           );
         }
     };
