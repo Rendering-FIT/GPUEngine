@@ -11,6 +11,11 @@ namespace ge{
       typename INDIRECT_TYPE = GLintptr>
     class DispatchComputeIndirect:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "indirect")return(void*)&this->indirect;
+          return NULL;
+        }
       public:
         INDIRECT_TYPE indirect;
         DispatchComputeIndirect(
@@ -31,6 +36,13 @@ namespace ge{
       typename NUM_GROUPS_Z_TYPE = GLuint>
     class DispatchCompute:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "num_groups_x")return(void*)&this->num_groups_x;
+          if(name == "num_groups_y")return(void*)&this->num_groups_y;
+          if(name == "num_groups_z")return(void*)&this->num_groups_z;
+          return NULL;
+        }
       public:
         NUM_GROUPS_X_TYPE num_groups_x;
         NUM_GROUPS_Y_TYPE num_groups_y;

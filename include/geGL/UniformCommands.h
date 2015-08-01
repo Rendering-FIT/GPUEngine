@@ -5,268 +5,6 @@
 #include<GL/glew.h>
 #include<geGL/AllAttribs.h>
 
-#include<geCore/dtemplates.h>
-#include <type_traits>
-
-namespace ge{
-  namespace gl{
-    class GEGL_EXPORT UniformCommand: public ge::core::Command{
-      protected:
-        GLint _location;
-      public:
-        UniformCommand(GLint location);
-    };
-
-    class GEGL_EXPORT ProgramUniformCommand: public UniformCommand{
-      protected:
-        GLuint _program;
-      public:
-        ProgramUniformCommand(GLuint program,GLint location);
-    };
-
-    template<unsigned dim,typename T>
-      class GEGL_EXPORT Uniform: public UniformCommand{
-        protected:
-          T _data[dim];
-        public:
-          template<class...T2, typename std::enable_if<sizeof...(T2) == dim, unsigned>::type = 0>
-            Uniform(
-                GLint location,
-                T2... args):UniformCommand(location){
-              this->set(args...);
-            }
-          virtual void operator()();
-          template<class...T2, typename std::enable_if<sizeof...(T2) == dim, unsigned>::type = 0>
-          void set(T2... args){
-            ge::core::argsToArray<dim,T>(this->_data,args...);
-          }
-      };
-
-    template<>void Uniform<1,GLfloat >::operator()();
-    template<>void Uniform<2,GLfloat >::operator()();
-    template<>void Uniform<3,GLfloat >::operator()();
-    template<>void Uniform<4,GLfloat >::operator()();
-    template<>void Uniform<1,GLint   >::operator()();
-    template<>void Uniform<2,GLint   >::operator()();
-    template<>void Uniform<3,GLint   >::operator()();
-    template<>void Uniform<4,GLint   >::operator()();
-    template<>void Uniform<1,GLuint  >::operator()();
-    template<>void Uniform<2,GLuint  >::operator()();
-    template<>void Uniform<3,GLuint  >::operator()();
-    template<>void Uniform<4,GLuint  >::operator()();
-    template<>void Uniform<1,GLdouble>::operator()();
-    template<>void Uniform<2,GLdouble>::operator()();
-    template<>void Uniform<3,GLdouble>::operator()();
-    template<>void Uniform<4,GLdouble>::operator()();
-
-    template<unsigned dim,typename T>
-      class UniformV: public UniformCommand{
-        protected:
-          const T*_data;
-          GLsizei _count;
-        public:
-          UniformV(
-              GLint   location ,
-              const T*data     ,
-              GLsizei count = 1):UniformCommand(location){
-            this->set(data,count);
-          }
-          virtual void operator()();
-          void set(const T*data,GLsizei count=1){
-            this->_data  = data ;
-            this->_count = count;
-          }
-      };
-
-    template<>void UniformV<1,GLfloat >::operator()();
-    template<>void UniformV<2,GLfloat >::operator()();
-    template<>void UniformV<3,GLfloat >::operator()();
-    template<>void UniformV<4,GLfloat >::operator()();
-    template<>void UniformV<1,GLint   >::operator()();
-    template<>void UniformV<2,GLint   >::operator()();
-    template<>void UniformV<3,GLint   >::operator()();
-    template<>void UniformV<4,GLint   >::operator()();
-    template<>void UniformV<1,GLuint  >::operator()();
-    template<>void UniformV<2,GLuint  >::operator()();
-    template<>void UniformV<3,GLuint  >::operator()();
-    template<>void UniformV<4,GLuint  >::operator()();
-    template<>void UniformV<1,GLdouble>::operator()();
-    template<>void UniformV<2,GLdouble>::operator()();
-    template<>void UniformV<3,GLdouble>::operator()();
-    template<>void UniformV<4,GLdouble>::operator()();
-
-    template<unsigned X,unsigned Y,typename T>
-    class GEGL_EXPORT UniformMatrix: public UniformCommand{
-      protected:
-        const T*  _data;
-        GLsizei   _count;
-        GLboolean _transpose;
-      public:
-        UniformMatrix(
-            GLint     location            ,
-            const T*  data                ,
-            GLsizei   count     = 1       ,
-            GLboolean transpose = GL_FALSE):UniformCommand(location){
-          this->set(data,count,transpose);
-        }
-        virtual void operator()();
-        void set(const T*data,GLsizei count=1,GLboolean transpose=GL_FALSE){
-          this->_data      = data     ;
-          this->_count     = count    ;
-          this->_transpose = transpose;
-        }
-    };
-
-    template<>void UniformMatrix<2,2,GLfloat >::operator()();
-    template<>void UniformMatrix<3,3,GLfloat >::operator()();
-    template<>void UniformMatrix<4,4,GLfloat >::operator()();
-    template<>void UniformMatrix<2,3,GLfloat >::operator()();
-    template<>void UniformMatrix<3,2,GLfloat >::operator()();
-    template<>void UniformMatrix<2,4,GLfloat >::operator()();
-    template<>void UniformMatrix<4,2,GLfloat >::operator()();
-    template<>void UniformMatrix<3,4,GLfloat >::operator()();
-    template<>void UniformMatrix<4,3,GLfloat >::operator()();
-    template<>void UniformMatrix<2,2,GLdouble>::operator()();
-    template<>void UniformMatrix<3,3,GLdouble>::operator()();
-    template<>void UniformMatrix<4,4,GLdouble>::operator()();
-    template<>void UniformMatrix<2,3,GLdouble>::operator()();
-    template<>void UniformMatrix<3,2,GLdouble>::operator()();
-    template<>void UniformMatrix<2,4,GLdouble>::operator()();
-    template<>void UniformMatrix<4,2,GLdouble>::operator()();
-    template<>void UniformMatrix<3,4,GLdouble>::operator()();
-    template<>void UniformMatrix<4,3,GLdouble>::operator()();
-
-
-    template<unsigned X,unsigned Y,typename T>
-    class GEGL_EXPORT ProgramUniformMatrix: public ProgramUniformCommand{
-      protected:
-        const T*  _data;
-        GLsizei   _count;
-        GLboolean _transpose;
-      public:
-        ProgramUniformMatrix(
-            GLuint    program             ,
-            GLint     location            ,
-            const T*  data                ,
-            GLsizei   count     = 1       ,
-            GLboolean transpose = GL_FALSE):ProgramUniformCommand(program,location){
-          this->set(data,count,transpose);
-        }
-        virtual void operator()();
-        void set(const T*data,GLsizei count=1,GLboolean transpose=GL_FALSE){
-          this->_data      = data     ;
-          this->_count     = count    ;
-          this->_transpose = transpose;
-        }
-    };
-
-    template<>void ProgramUniformMatrix<2,2,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<3,3,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<4,4,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<2,3,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<3,2,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<2,4,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<4,2,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<3,4,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<4,3,GLfloat >::operator()();
-    template<>void ProgramUniformMatrix<2,2,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<3,3,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<4,4,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<2,3,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<3,2,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<2,4,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<4,2,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<3,4,GLdouble>::operator()();
-    template<>void ProgramUniformMatrix<4,3,GLdouble>::operator()();
-
-    template<unsigned dim,typename T>
-      class GEGL_EXPORT ProgramUniform: public ProgramUniformCommand{
-        protected:
-          T _data[dim];
-        public:
-          template<class...T2, typename std::enable_if<sizeof...(T2) == dim, unsigned>::type = 0>
-            ProgramUniform(
-                GLuint program,
-                GLint location,
-                T2... args):ProgramUniformCommand(program,location){
-              this->set(args...);
-            }
-          virtual void operator()();
-          template<class...T2, typename std::enable_if<sizeof...(T2) == dim, unsigned>::type = 0>
-            void set(T2... args){
-              ge::core::argsToArray<dim,T>(this->_data,args...);
-            }
-
-      };
-
-    template<>void ProgramUniform<1,GLfloat >::operator()();
-    template<>void ProgramUniform<2,GLfloat >::operator()();
-    template<>void ProgramUniform<3,GLfloat >::operator()();
-    template<>void ProgramUniform<4,GLfloat >::operator()();
-    template<>void ProgramUniform<1,GLint   >::operator()();
-    template<>void ProgramUniform<2,GLint   >::operator()();
-    template<>void ProgramUniform<3,GLint   >::operator()();
-    template<>void ProgramUniform<4,GLint   >::operator()();
-    template<>void ProgramUniform<1,GLuint  >::operator()();
-    template<>void ProgramUniform<2,GLuint  >::operator()();
-    template<>void ProgramUniform<3,GLuint  >::operator()();
-    template<>void ProgramUniform<4,GLuint  >::operator()();
-    template<>void ProgramUniform<1,GLdouble>::operator()();
-    template<>void ProgramUniform<2,GLdouble>::operator()();
-    template<>void ProgramUniform<3,GLdouble>::operator()();
-    template<>void ProgramUniform<4,GLdouble>::operator()();
-
-    template<unsigned dim,typename T>
-      class ProgramUniformV: public ProgramUniformCommand{
-        protected:
-          const T*_data;
-          GLsizei _count;
-        public:
-          ProgramUniformV(
-              GLuint  program  ,
-              GLint   location ,
-              const T*data     ,
-              GLsizei count = 1):ProgramUniformCommand(program,location){
-            this->set(data,count);
-          }
-          virtual void operator()();
-          void set(const T*data,GLsizei count=1){
-            this->_data  = data ;
-            this->_count = count;
-          }
-      };
-
-    template<>void ProgramUniformV<1,GLfloat >::operator()();
-    template<>void ProgramUniformV<2,GLfloat >::operator()();
-    template<>void ProgramUniformV<3,GLfloat >::operator()();
-    template<>void ProgramUniformV<4,GLfloat >::operator()();
-    template<>void ProgramUniformV<1,GLint   >::operator()();
-    template<>void ProgramUniformV<2,GLint   >::operator()();
-    template<>void ProgramUniformV<3,GLint   >::operator()();
-    template<>void ProgramUniformV<4,GLint   >::operator()();
-    template<>void ProgramUniformV<1,GLuint  >::operator()();
-    template<>void ProgramUniformV<2,GLuint  >::operator()();
-    template<>void ProgramUniformV<3,GLuint  >::operator()();
-    template<>void ProgramUniformV<4,GLuint  >::operator()();
-    template<>void ProgramUniformV<1,GLdouble>::operator()();
-    template<>void ProgramUniformV<2,GLdouble>::operator()();
-    template<>void ProgramUniformV<3,GLdouble>::operator()();
-    template<>void ProgramUniformV<4,GLdouble>::operator()();
-
-    class UniformSubroutines: public ge::core::Command{
-      protected:
-        GLenum        _shaderType;
-        GLsizei       _count     ;
-        GLuint*       _indices   ;
-      public:
-        UniformSubroutines(GLenum shaderType,GLsizei count,GLuint* indices);
-        virtual ~UniformSubroutines();
-        virtual void operator()();
-    };
-
-  }
-}
-
 namespace ge{
   namespace gl{
     template<
@@ -275,6 +13,13 @@ namespace ge{
       typename Y_TYPE        = GLdouble>
     class Uniform2d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "x"       )return(void*)&this->x       ;
+          if(name == "y"       )return(void*)&this->y       ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         X_TYPE        x       ;
@@ -304,6 +49,14 @@ namespace ge{
       typename PARAMS_TYPE   = GLfloat*>
     class GetnUniformfv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "bufSize" )return(void*)&this->bufSize ;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -331,44 +84,6 @@ namespace ge{
     };
 
     template<
-      typename PROGRAM_TYPE           = GLuint  ,
-      typename UNIFORMBLOCKINDEX_TYPE = GLuint  ,
-      typename BUFSIZE_TYPE           = GLsizei ,
-      typename LENGTH_TYPE            = GLsizei*,
-      typename UNIFORMBLOCKNAME_TYPE  = GLchar* >
-    class GetActiveUniformBlockName:
-        public ge::core::Command{
-      public:
-        PROGRAM_TYPE           program          ;
-        UNIFORMBLOCKINDEX_TYPE uniformBlockIndex;
-        BUFSIZE_TYPE           bufSize          ;
-        LENGTH_TYPE            length           ;
-        UNIFORMBLOCKNAME_TYPE  uniformBlockName ;
-        GetActiveUniformBlockName(
-            PROGRAM_TYPE           const&program          ,
-            UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
-            BUFSIZE_TYPE           const&bufSize          ,
-            LENGTH_TYPE            const&length           ,
-            UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ){
-          this->program           = program          ;
-          this->uniformBlockIndex = uniformBlockIndex;
-          this->bufSize           = bufSize          ;
-          this->length            = length           ;
-          this->uniformBlockName  = uniformBlockName ;
-        }
-        virtual~GetActiveUniformBlockName(){}
-        virtual void operator()(){
-          glGetActiveUniformBlockName(
-            ge::core::convertTo<GLuint  >(this->program          ),
-            ge::core::convertTo<GLuint  >(this->uniformBlockIndex),
-            ge::core::convertTo<GLsizei >(this->bufSize          ),
-            ge::core::convertTo<GLsizei*>(this->length           ),
-            ge::core::convertTo<GLchar* >(this->uniformBlockName )
-          );
-        }
-    };
-
-    template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -376,6 +91,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix4x3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -412,6 +136,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -440,6 +171,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform1fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -469,6 +207,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix2x3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -501,6 +247,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform1dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -531,6 +284,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix2x4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -569,6 +331,15 @@ namespace ge{
       typename VALUES_TYPE     = GLint*>
     class GetActiveSubroutineUniformiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"   )return(void*)&this->program   ;
+          if(name == "shadertype")return(void*)&this->shadertype;
+          if(name == "index"     )return(void*)&this->index     ;
+          if(name == "pname"     )return(void*)&this->pname     ;
+          if(name == "values"    )return(void*)&this->values    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE    program   ;
         SHADERTYPE_TYPE shadertype;
@@ -600,11 +371,65 @@ namespace ge{
     };
 
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    class ProgramUniformMatrix4x2dv:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
+      public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
+        ProgramUniformMatrix4x2dv(
+            PROGRAM_TYPE   const&program  ,
+            LOCATION_TYPE  const&location ,
+            COUNT_TYPE     const&count    ,
+            TRANSPOSE_TYPE const&transpose,
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
+        virtual~ProgramUniformMatrix4x2dv(){}
+        virtual void operator()(){
+          glProgramUniformMatrix4x2dv(
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
+          );
+        }
+    };
+
+    template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint>
     class ProgramUniform1ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -633,6 +458,13 @@ namespace ge{
       typename UNIFORMBLOCKBINDING_TYPE = GLuint>
     class UniformBlockBinding:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"            )return(void*)&this->program            ;
+          if(name == "uniformBlockIndex"  )return(void*)&this->uniformBlockIndex  ;
+          if(name == "uniformBlockBinding")return(void*)&this->uniformBlockBinding;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE             program            ;
         UNIFORMBLOCKINDEX_TYPE   uniformBlockIndex  ;
@@ -656,50 +488,20 @@ namespace ge{
     };
 
     template<
-      typename LOCATION_TYPE = GLint ,
-      typename V0_TYPE       = GLuint,
-      typename V1_TYPE       = GLuint,
-      typename V2_TYPE       = GLuint,
-      typename V3_TYPE       = GLuint>
-    class Uniform4ui:
-        public ge::core::Command{
-      public:
-        LOCATION_TYPE location;
-        V0_TYPE       v0      ;
-        V1_TYPE       v1      ;
-        V2_TYPE       v2      ;
-        V3_TYPE       v3      ;
-        Uniform4ui(
-            LOCATION_TYPE const&location,
-            V0_TYPE       const&v0      ,
-            V1_TYPE       const&v1      ,
-            V2_TYPE       const&v2      ,
-            V3_TYPE       const&v3      ){
-          this->location = location;
-          this->v0       = v0      ;
-          this->v1       = v1      ;
-          this->v2       = v2      ;
-          this->v3       = v3      ;
-        }
-        virtual~Uniform4ui(){}
-        virtual void operator()(){
-          glUniform4ui(
-            ge::core::convertTo<GLint >(this->location),
-            ge::core::convertTo<GLuint>(this->v0      ),
-            ge::core::convertTo<GLuint>(this->v1      ),
-            ge::core::convertTo<GLuint>(this->v2      ),
-            ge::core::convertTo<GLuint>(this->v3      )
-          );
-        }
-    };
-
-    template<
       typename PROGRAM_TYPE  = GLuint   ,
       typename LOCATION_TYPE = GLint    ,
       typename BUFSIZE_TYPE  = GLsizei  ,
       typename PARAMS_TYPE   = GLdouble*>
     class GetnUniformdv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "bufSize" )return(void*)&this->bufSize ;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -735,6 +537,16 @@ namespace ge{
       typename V3_TYPE       = GLuint>
     class ProgramUniform4ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -777,6 +589,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix2x4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -808,11 +629,59 @@ namespace ge{
     };
 
     template<
+      typename PROGRAM_TYPE  = GLuint      ,
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    class ProgramUniform1iv:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
+      public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
+        ProgramUniform1iv(
+            PROGRAM_TYPE  const&program ,
+            LOCATION_TYPE const&location,
+            COUNT_TYPE    const&count   ,
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
+        virtual~ProgramUniform1iv(){}
+        virtual void operator()(){
+          glProgramUniform1iv(
+            ge::core::convertTo<GLuint      >(this->program ),
+            ge::core::convertTo<GLint       >(this->location),
+            ge::core::convertTo<GLsizei     >(this->count   ),
+            ge::core::convertTo<const GLint*>(this->value   )
+          );
+        }
+    };
+
+    template<
       typename LOCATION_TYPE = GLint        ,
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
     class Uniform2uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -842,6 +711,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -875,6 +752,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform1fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -908,6 +793,14 @@ namespace ge{
       typename V1_TYPE       = GLuint>
     class ProgramUniform2ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -941,6 +834,14 @@ namespace ge{
       typename V2_TYPE       = GLuint>
     class Uniform3ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -973,6 +874,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class Uniform3iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -996,12 +904,67 @@ namespace ge{
     };
 
     template<
+      typename PROGRAM_TYPE           = GLuint  ,
+      typename UNIFORMBLOCKINDEX_TYPE = GLuint  ,
+      typename BUFSIZE_TYPE           = GLsizei ,
+      typename LENGTH_TYPE            = GLsizei*,
+      typename UNIFORMBLOCKNAME_TYPE  = GLchar* >
+    class GetActiveUniformBlockName:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"          )return(void*)&this->program          ;
+          if(name == "uniformBlockIndex")return(void*)&this->uniformBlockIndex;
+          if(name == "bufSize"          )return(void*)&this->bufSize          ;
+          if(name == "length"           )return(void*)&this->length           ;
+          if(name == "uniformBlockName" )return(void*)&this->uniformBlockName ;
+          return NULL;
+        }
+      public:
+        PROGRAM_TYPE           program          ;
+        UNIFORMBLOCKINDEX_TYPE uniformBlockIndex;
+        BUFSIZE_TYPE           bufSize          ;
+        LENGTH_TYPE            length           ;
+        UNIFORMBLOCKNAME_TYPE  uniformBlockName ;
+        GetActiveUniformBlockName(
+            PROGRAM_TYPE           const&program          ,
+            UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
+            BUFSIZE_TYPE           const&bufSize          ,
+            LENGTH_TYPE            const&length           ,
+            UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ){
+          this->program           = program          ;
+          this->uniformBlockIndex = uniformBlockIndex;
+          this->bufSize           = bufSize          ;
+          this->length            = length           ;
+          this->uniformBlockName  = uniformBlockName ;
+        }
+        virtual~GetActiveUniformBlockName(){}
+        virtual void operator()(){
+          glGetActiveUniformBlockName(
+            ge::core::convertTo<GLuint  >(this->program          ),
+            ge::core::convertTo<GLuint  >(this->uniformBlockIndex),
+            ge::core::convertTo<GLsizei >(this->bufSize          ),
+            ge::core::convertTo<GLsizei*>(this->length           ),
+            ge::core::convertTo<GLchar* >(this->uniformBlockName )
+          );
+        }
+    };
+
+    template<
       typename PROGRAM_TYPE        = GLuint             ,
       typename UNIFORMCOUNT_TYPE   = GLsizei            ,
       typename UNIFORMNAMES_TYPE   = const GLchar*const*,
       typename UNIFORMINDICES_TYPE = GLuint*            >
     class GetUniformIndices:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"       )return(void*)&this->program       ;
+          if(name == "uniformCount"  )return(void*)&this->uniformCount  ;
+          if(name == "uniformNames"  )return(void*)&this->uniformNames  ;
+          if(name == "uniformIndices")return(void*)&this->uniformIndices;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE        program       ;
         UNIFORMCOUNT_TYPE   uniformCount  ;
@@ -1034,6 +997,13 @@ namespace ge{
       typename PARAMS_TYPE   = GLint*>
     class GetUniformiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1063,6 +1033,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -1094,6 +1072,12 @@ namespace ge{
       typename V0_TYPE       = GLuint>
     class Uniform1ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -1119,6 +1103,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix3x4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -1151,6 +1143,13 @@ namespace ge{
       typename V0_TYPE       = GLint >
     class ProgramUniform1i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1181,6 +1180,15 @@ namespace ge{
       typename PARAMS_TYPE         = GLint*       >
     class GetActiveUniformsiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"       )return(void*)&this->program       ;
+          if(name == "uniformCount"  )return(void*)&this->uniformCount  ;
+          if(name == "uniformIndices")return(void*)&this->uniformIndices;
+          if(name == "pname"         )return(void*)&this->pname         ;
+          if(name == "params"        )return(void*)&this->params        ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE        program       ;
         UNIFORMCOUNT_TYPE   uniformCount  ;
@@ -1219,6 +1227,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix2x3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -1256,6 +1273,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform3uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1288,6 +1313,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class Uniform2iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -1317,6 +1349,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform2uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1351,6 +1391,15 @@ namespace ge{
       typename V2_TYPE       = GLint >
     class ProgramUniform3i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1382,44 +1431,6 @@ namespace ge{
     };
 
     template<
-      typename PROGRAM_TYPE   = GLuint         ,
-      typename LOCATION_TYPE  = GLint          ,
-      typename COUNT_TYPE     = GLsizei        ,
-      typename TRANSPOSE_TYPE = GLboolean      ,
-      typename VALUE_TYPE     = const GLdouble*>
-    class ProgramUniformMatrix3dv:
-        public ge::core::Command{
-      public:
-        PROGRAM_TYPE   program  ;
-        LOCATION_TYPE  location ;
-        COUNT_TYPE     count    ;
-        TRANSPOSE_TYPE transpose;
-        VALUE_TYPE     value    ;
-        ProgramUniformMatrix3dv(
-            PROGRAM_TYPE   const&program  ,
-            LOCATION_TYPE  const&location ,
-            COUNT_TYPE     const&count    ,
-            TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ){
-          this->program   = program  ;
-          this->location  = location ;
-          this->count     = count    ;
-          this->transpose = transpose;
-          this->value     = value    ;
-        }
-        virtual~ProgramUniformMatrix3dv(){}
-        virtual void operator()(){
-          glProgramUniformMatrix3dv(
-            ge::core::convertTo<GLuint         >(this->program  ),
-            ge::core::convertTo<GLint          >(this->location ),
-            ge::core::convertTo<GLsizei        >(this->count    ),
-            ge::core::convertTo<GLboolean      >(this->transpose),
-            ge::core::convertTo<const GLdouble*>(this->value    )
-          );
-        }
-    };
-
-    template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
       typename V0_TYPE       = GLdouble,
@@ -1427,6 +1438,15 @@ namespace ge{
       typename V2_TYPE       = GLdouble>
     class ProgramUniform3d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1458,11 +1478,65 @@ namespace ge{
     };
 
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    class ProgramUniformMatrix3dv:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
+      public:
+        PROGRAM_TYPE   program  ;
+        LOCATION_TYPE  location ;
+        COUNT_TYPE     count    ;
+        TRANSPOSE_TYPE transpose;
+        VALUE_TYPE     value    ;
+        ProgramUniformMatrix3dv(
+            PROGRAM_TYPE   const&program  ,
+            LOCATION_TYPE  const&location ,
+            COUNT_TYPE     const&count    ,
+            TRANSPOSE_TYPE const&transpose,
+            VALUE_TYPE     const&value    ){
+          this->program   = program  ;
+          this->location  = location ;
+          this->count     = count    ;
+          this->transpose = transpose;
+          this->value     = value    ;
+        }
+        virtual~ProgramUniformMatrix3dv(){}
+        virtual void operator()(){
+          glProgramUniformMatrix3dv(
+            ge::core::convertTo<GLuint         >(this->program  ),
+            ge::core::convertTo<GLint          >(this->location ),
+            ge::core::convertTo<GLsizei        >(this->count    ),
+            ge::core::convertTo<GLboolean      >(this->transpose),
+            ge::core::convertTo<const GLdouble*>(this->value    )
+          );
+        }
+    };
+
+    template<
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat,
       typename V1_TYPE       = GLfloat>
     class Uniform2f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -1491,6 +1565,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class Uniform1iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -1520,6 +1601,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix2x4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -1554,6 +1643,15 @@ namespace ge{
       typename V3_TYPE       = GLint>
     class Uniform4i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -1590,6 +1688,13 @@ namespace ge{
       typename V1_TYPE       = GLint>
     class Uniform2i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -1619,6 +1724,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1652,6 +1765,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform3iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1685,6 +1806,14 @@ namespace ge{
       typename PARAMS_TYPE   = GLuint*>
     class GetnUniformuiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "bufSize" )return(void*)&this->bufSize ;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1719,6 +1848,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -1757,6 +1895,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -1794,6 +1941,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix4x2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -1827,6 +1982,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix2x3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -1859,6 +2022,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -1889,6 +2059,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix3x4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -1926,6 +2105,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform1uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1958,6 +2145,13 @@ namespace ge{
       typename PARAMS_TYPE   = GLuint*>
     class GetUniformuiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -1987,6 +2181,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -2019,6 +2221,13 @@ namespace ge{
       typename UNIFORMBLOCKNAME_TYPE = const GLchar*>
     class GetUniformBlockIndex:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"             )return(void*)&this->ret             ;
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "uniformBlockName")return(void*)&this->uniformBlockName;
+          return NULL;
+        }
       public:
         RET_TYPE              ret             ;
         PROGRAM_TYPE          program         ;
@@ -2047,6 +2256,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix2x4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -2081,6 +2298,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -2118,6 +2344,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class ProgramUniform4uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2150,6 +2384,13 @@ namespace ge{
       typename PARAMS_TYPE   = GLfloat*>
     class GetUniformfv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2179,6 +2420,14 @@ namespace ge{
       typename Z_TYPE        = GLdouble>
     class Uniform3d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "x"       )return(void*)&this->x       ;
+          if(name == "y"       )return(void*)&this->y       ;
+          if(name == "z"       )return(void*)&this->z       ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         X_TYPE        x       ;
@@ -2214,6 +2463,16 @@ namespace ge{
       typename V3_TYPE       = GLfloat>
     class ProgramUniform4f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2255,6 +2514,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2288,6 +2555,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix4x3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -2322,6 +2597,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix3x2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -2360,6 +2644,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix3x4dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -2398,6 +2691,15 @@ namespace ge{
       typename V2_TYPE       = GLuint>
     class ProgramUniform3ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2435,6 +2737,14 @@ namespace ge{
       typename V2_TYPE       = GLint>
     class Uniform3i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -2468,6 +2778,14 @@ namespace ge{
       typename PARAMS_TYPE   = GLint* >
     class GetnUniformiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "bufSize" )return(void*)&this->bufSize ;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2503,6 +2821,16 @@ namespace ge{
       typename V3_TYPE       = GLint >
     class ProgramUniform4i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2544,6 +2872,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2578,6 +2914,15 @@ namespace ge{
       typename V2_TYPE       = GLfloat>
     class ProgramUniform3f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2614,6 +2959,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -2643,6 +2995,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix3dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -2670,39 +3030,6 @@ namespace ge{
     };
 
     template<
-      typename PROGRAM_TYPE  = GLuint         ,
-      typename LOCATION_TYPE = GLint          ,
-      typename COUNT_TYPE    = GLsizei        ,
-      typename VALUE_TYPE    = const GLdouble*>
-    class ProgramUniform4dv:
-        public ge::core::Command{
-      public:
-        PROGRAM_TYPE  program ;
-        LOCATION_TYPE location;
-        COUNT_TYPE    count   ;
-        VALUE_TYPE    value   ;
-        ProgramUniform4dv(
-            PROGRAM_TYPE  const&program ,
-            LOCATION_TYPE const&location,
-            COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ){
-          this->program  = program ;
-          this->location = location;
-          this->count    = count   ;
-          this->value    = value   ;
-        }
-        virtual~ProgramUniform4dv(){}
-        virtual void operator()(){
-          glProgramUniform4dv(
-            ge::core::convertTo<GLuint         >(this->program ),
-            ge::core::convertTo<GLint          >(this->location),
-            ge::core::convertTo<GLsizei        >(this->count   ),
-            ge::core::convertTo<const GLdouble*>(this->value   )
-          );
-        }
-    };
-
-    template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -2710,6 +3037,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -2747,6 +3083,14 @@ namespace ge{
       typename V1_TYPE       = GLint >
     class ProgramUniform2i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2780,6 +3124,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class ProgramUniform2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -2807,12 +3159,55 @@ namespace ge{
     };
 
     template<
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    class Uniform4fv:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
+      public:
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
+        Uniform4fv(
+            LOCATION_TYPE const&location,
+            COUNT_TYPE    const&count   ,
+            VALUE_TYPE    const&value   ){
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
+        virtual~Uniform4fv(){}
+        virtual void operator()(){
+          glUniform4fv(
+            ge::core::convertTo<GLint         >(this->location),
+            ge::core::convertTo<GLsizei       >(this->count   ),
+            ge::core::convertTo<const GLfloat*>(this->value   )
+          );
+        }
+    };
+
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -2846,6 +3241,14 @@ namespace ge{
       typename NAME_TYPE       = const GLchar*>
     class GetSubroutineUniformLocation:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"       )return(void*)&this->ret       ;
+          if(name == "program"   )return(void*)&this->program   ;
+          if(name == "shadertype")return(void*)&this->shadertype;
+          if(name == "name"      )return(void*)&this->name      ;
+          return NULL;
+        }
       public:
         RET_TYPE        ret       ;
         PROGRAM_TYPE    program   ;
@@ -2877,6 +3280,13 @@ namespace ge{
       typename INDICES_TYPE    = const GLuint*>
     class UniformSubroutinesuiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "shadertype")return(void*)&this->shadertype;
+          if(name == "count"     )return(void*)&this->count     ;
+          if(name == "indices"   )return(void*)&this->indices   ;
+          return NULL;
+        }
       public:
         SHADERTYPE_TYPE shadertype;
         COUNT_TYPE      count     ;
@@ -2900,50 +3310,20 @@ namespace ge{
     };
 
     template<
-      typename PROGRAM_TYPE   = GLuint         ,
-      typename LOCATION_TYPE  = GLint          ,
-      typename COUNT_TYPE     = GLsizei        ,
-      typename TRANSPOSE_TYPE = GLboolean      ,
-      typename VALUE_TYPE     = const GLdouble*>
-    class ProgramUniformMatrix4x2dv:
-        public ge::core::Command{
-      public:
-        PROGRAM_TYPE   program  ;
-        LOCATION_TYPE  location ;
-        COUNT_TYPE     count    ;
-        TRANSPOSE_TYPE transpose;
-        VALUE_TYPE     value    ;
-        ProgramUniformMatrix4x2dv(
-            PROGRAM_TYPE   const&program  ,
-            LOCATION_TYPE  const&location ,
-            COUNT_TYPE     const&count    ,
-            TRANSPOSE_TYPE const&transpose,
-            VALUE_TYPE     const&value    ){
-          this->program   = program  ;
-          this->location  = location ;
-          this->count     = count    ;
-          this->transpose = transpose;
-          this->value     = value    ;
-        }
-        virtual~ProgramUniformMatrix4x2dv(){}
-        virtual void operator()(){
-          glProgramUniformMatrix4x2dv(
-            ge::core::convertTo<GLuint         >(this->program  ),
-            ge::core::convertTo<GLint          >(this->location ),
-            ge::core::convertTo<GLsizei        >(this->count    ),
-            ge::core::convertTo<GLboolean      >(this->transpose),
-            ge::core::convertTo<const GLdouble*>(this->value    )
-          );
-        }
-    };
-
-    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix3x2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -2975,6 +3355,12 @@ namespace ge{
       typename V0_TYPE       = GLint>
     class Uniform1i:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -2994,12 +3380,67 @@ namespace ge{
     };
 
     template<
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint,
+      typename V2_TYPE       = GLuint,
+      typename V3_TYPE       = GLuint>
+    class Uniform4ui:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
+      public:
+        LOCATION_TYPE location;
+        V0_TYPE       v0      ;
+        V1_TYPE       v1      ;
+        V2_TYPE       v2      ;
+        V3_TYPE       v3      ;
+        Uniform4ui(
+            LOCATION_TYPE const&location,
+            V0_TYPE       const&v0      ,
+            V1_TYPE       const&v1      ,
+            V2_TYPE       const&v2      ,
+            V3_TYPE       const&v3      ){
+          this->location = location;
+          this->v0       = v0      ;
+          this->v1       = v1      ;
+          this->v2       = v2      ;
+          this->v3       = v3      ;
+        }
+        virtual~Uniform4ui(){}
+        virtual void operator()(){
+          glUniform4ui(
+            ge::core::convertTo<GLint >(this->location),
+            ge::core::convertTo<GLuint>(this->v0      ),
+            ge::core::convertTo<GLuint>(this->v1      ),
+            ge::core::convertTo<GLuint>(this->v2      ),
+            ge::core::convertTo<GLuint>(this->v3      )
+          );
+        }
+    };
+
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix3x4fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -3033,6 +3474,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix4x3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -3069,6 +3518,17 @@ namespace ge{
       typename NAME_TYPE    = GLchar* >
     class GetActiveUniform:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          if(name == "index"  )return(void*)&this->index  ;
+          if(name == "bufSize")return(void*)&this->bufSize;
+          if(name == "length" )return(void*)&this->length ;
+          if(name == "size"   )return(void*)&this->size   ;
+          if(name == "type"   )return(void*)&this->type   ;
+          if(name == "name"   )return(void*)&this->name   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         INDEX_TYPE   index  ;
@@ -3113,6 +3573,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class Uniform2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -3142,6 +3609,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform2iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3174,6 +3649,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class Uniform4iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -3203,6 +3685,14 @@ namespace ge{
       typename V1_TYPE       = GLdouble>
     class ProgramUniform2d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3235,6 +3725,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLfloat*>
     class Uniform3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -3265,6 +3762,15 @@ namespace ge{
       typename W_TYPE        = GLdouble>
     class Uniform4d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "x"       )return(void*)&this->x       ;
+          if(name == "y"       )return(void*)&this->y       ;
+          if(name == "z"       )return(void*)&this->z       ;
+          if(name == "w"       )return(void*)&this->w       ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         X_TYPE        x       ;
@@ -3302,6 +3808,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLint*>
     class ProgramUniform4iv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3334,6 +3848,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class Uniform1uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -3364,6 +3885,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix2x3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -3401,6 +3931,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -3433,6 +3971,13 @@ namespace ge{
       typename V0_TYPE       = GLfloat>
     class ProgramUniform1f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3463,6 +4008,15 @@ namespace ge{
       typename V3_TYPE       = GLfloat>
     class Uniform4f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -3500,6 +4054,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix4x2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -3532,6 +4094,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class Uniform4uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -3560,6 +4129,13 @@ namespace ge{
       typename V1_TYPE       = GLuint>
     class Uniform2ui:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -3590,6 +4166,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class ProgramUniformMatrix3x2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -3626,6 +4211,13 @@ namespace ge{
       typename PARAMS_TYPE     = GLuint*>
     class GetUniformSubroutineuiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "shadertype")return(void*)&this->shadertype;
+          if(name == "location"  )return(void*)&this->location  ;
+          if(name == "params"    )return(void*)&this->params    ;
+          return NULL;
+        }
       public:
         SHADERTYPE_TYPE shadertype;
         LOCATION_TYPE   location  ;
@@ -3657,6 +4249,16 @@ namespace ge{
       typename V3_TYPE       = GLdouble>
     class ProgramUniform4d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          if(name == "v3"      )return(void*)&this->v3      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3698,6 +4300,14 @@ namespace ge{
       typename PARAMS_TYPE            = GLint*>
     class GetActiveUniformBlockiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"          )return(void*)&this->program          ;
+          if(name == "uniformBlockIndex")return(void*)&this->uniformBlockIndex;
+          if(name == "pname"            )return(void*)&this->pname            ;
+          if(name == "params"           )return(void*)&this->params           ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE           program          ;
         UNIFORMBLOCKINDEX_TYPE uniformBlockIndex;
@@ -3732,6 +4342,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix4x2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -3770,6 +4389,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -3807,6 +4435,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class UniformMatrix3x2fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -3839,6 +4475,13 @@ namespace ge{
       typename PARAMS_TYPE   = GLdouble*>
     class GetUniformdv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "params"  )return(void*)&this->params  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3868,6 +4511,14 @@ namespace ge{
       typename V2_TYPE       = GLfloat>
     class Uniform3f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          if(name == "v2"      )return(void*)&this->v2      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -3901,6 +4552,14 @@ namespace ge{
       typename V1_TYPE       = GLfloat>
     class ProgramUniform2f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          if(name == "v1"      )return(void*)&this->v1      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3934,6 +4593,14 @@ namespace ge{
       typename VALUE_TYPE    = const GLdouble*>
     class ProgramUniform1dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -3967,6 +4634,14 @@ namespace ge{
       typename VALUE_TYPE     = const GLdouble*>
     class UniformMatrix2dv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE  location ;
         COUNT_TYPE     count    ;
@@ -3999,6 +4674,13 @@ namespace ge{
       typename NAME_TYPE    = const GLchar*>
     class GetUniformLocation:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"    )return(void*)&this->ret    ;
+          if(name == "program")return(void*)&this->program;
+          if(name == "name"   )return(void*)&this->name   ;
+          return NULL;
+        }
       public:
         RET_TYPE     ret    ;
         PROGRAM_TYPE program;
@@ -4025,6 +4707,12 @@ namespace ge{
       typename V0_TYPE       = GLfloat>
     class Uniform1f:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         V0_TYPE       v0      ;
@@ -4049,6 +4737,13 @@ namespace ge{
       typename VALUE_TYPE    = const GLuint*>
     class Uniform3uiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         COUNT_TYPE    count   ;
@@ -4079,6 +4774,15 @@ namespace ge{
       typename VALUE_TYPE     = const GLfloat*>
     class ProgramUniformMatrix4x3fv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"  )return(void*)&this->program  ;
+          if(name == "location" )return(void*)&this->location ;
+          if(name == "count"    )return(void*)&this->count    ;
+          if(name == "transpose")return(void*)&this->transpose;
+          if(name == "value"    )return(void*)&this->value    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE   program  ;
         LOCATION_TYPE  location ;
@@ -4114,6 +4818,12 @@ namespace ge{
       typename X_TYPE        = GLdouble>
     class Uniform1d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "location")return(void*)&this->location;
+          if(name == "x"       )return(void*)&this->x       ;
+          return NULL;
+        }
       public:
         LOCATION_TYPE location;
         X_TYPE        x       ;
@@ -4140,6 +4850,15 @@ namespace ge{
       typename UNIFORMNAME_TYPE  = GLchar* >
     class GetActiveUniformName:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"     )return(void*)&this->program     ;
+          if(name == "uniformIndex")return(void*)&this->uniformIndex;
+          if(name == "bufSize"     )return(void*)&this->bufSize     ;
+          if(name == "length"      )return(void*)&this->length      ;
+          if(name == "uniformName" )return(void*)&this->uniformName ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE      program     ;
         UNIFORMINDEX_TYPE uniformIndex;
@@ -4176,6 +4895,13 @@ namespace ge{
       typename V0_TYPE       = GLdouble>
     class ProgramUniform1d:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "v0"      )return(void*)&this->v0      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE  program ;
         LOCATION_TYPE location;
@@ -4199,67 +4925,6 @@ namespace ge{
     };
 
     template<
-      typename LOCATION_TYPE = GLint         ,
-      typename COUNT_TYPE    = GLsizei       ,
-      typename VALUE_TYPE    = const GLfloat*>
-    class Uniform4fv:
-        public ge::core::Command{
-      public:
-        LOCATION_TYPE location;
-        COUNT_TYPE    count   ;
-        VALUE_TYPE    value   ;
-        Uniform4fv(
-            LOCATION_TYPE const&location,
-            COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ){
-          this->location = location;
-          this->count    = count   ;
-          this->value    = value   ;
-        }
-        virtual~Uniform4fv(){}
-        virtual void operator()(){
-          glUniform4fv(
-            ge::core::convertTo<GLint         >(this->location),
-            ge::core::convertTo<GLsizei       >(this->count   ),
-            ge::core::convertTo<const GLfloat*>(this->value   )
-          );
-        }
-    };
-
-    template<
-      typename PROGRAM_TYPE  = GLuint      ,
-      typename LOCATION_TYPE = GLint       ,
-      typename COUNT_TYPE    = GLsizei     ,
-      typename VALUE_TYPE    = const GLint*>
-    class ProgramUniform1iv:
-        public ge::core::Command{
-      public:
-        PROGRAM_TYPE  program ;
-        LOCATION_TYPE location;
-        COUNT_TYPE    count   ;
-        VALUE_TYPE    value   ;
-        ProgramUniform1iv(
-            PROGRAM_TYPE  const&program ,
-            LOCATION_TYPE const&location,
-            COUNT_TYPE    const&count   ,
-            VALUE_TYPE    const&value   ){
-          this->program  = program ;
-          this->location = location;
-          this->count    = count   ;
-          this->value    = value   ;
-        }
-        virtual~ProgramUniform1iv(){}
-        virtual void operator()(){
-          glProgramUniform1iv(
-            ge::core::convertTo<GLuint      >(this->program ),
-            ge::core::convertTo<GLint       >(this->location),
-            ge::core::convertTo<GLsizei     >(this->count   ),
-            ge::core::convertTo<const GLint*>(this->value   )
-          );
-        }
-    };
-
-    template<
       typename PROGRAM_TYPE    = GLuint  ,
       typename SHADERTYPE_TYPE = GLenum  ,
       typename INDEX_TYPE      = GLuint  ,
@@ -4268,6 +4933,16 @@ namespace ge{
       typename NAME_TYPE       = GLchar* >
     class GetActiveSubroutineUniformName:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"   )return(void*)&this->program   ;
+          if(name == "shadertype")return(void*)&this->shadertype;
+          if(name == "index"     )return(void*)&this->index     ;
+          if(name == "bufsize"   )return(void*)&this->bufsize   ;
+          if(name == "length"    )return(void*)&this->length    ;
+          if(name == "name"      )return(void*)&this->name      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE    program   ;
         SHADERTYPE_TYPE shadertype;
@@ -4298,6 +4973,47 @@ namespace ge{
             ge::core::convertTo<GLsizei >(this->bufsize   ),
             ge::core::convertTo<GLsizei*>(this->length    ),
             ge::core::convertTo<GLchar* >(this->name      )
+          );
+        }
+    };
+
+    template<
+      typename PROGRAM_TYPE  = GLuint         ,
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    class ProgramUniform4dv:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program" )return(void*)&this->program ;
+          if(name == "location")return(void*)&this->location;
+          if(name == "count"   )return(void*)&this->count   ;
+          if(name == "value"   )return(void*)&this->value   ;
+          return NULL;
+        }
+      public:
+        PROGRAM_TYPE  program ;
+        LOCATION_TYPE location;
+        COUNT_TYPE    count   ;
+        VALUE_TYPE    value   ;
+        ProgramUniform4dv(
+            PROGRAM_TYPE  const&program ,
+            LOCATION_TYPE const&location,
+            COUNT_TYPE    const&count   ,
+            VALUE_TYPE    const&value   ){
+          this->program  = program ;
+          this->location = location;
+          this->count    = count   ;
+          this->value    = value   ;
+        }
+        virtual~ProgramUniform4dv(){}
+        virtual void operator()(){
+          glProgramUniform4dv(
+            ge::core::convertTo<GLuint         >(this->program ),
+            ge::core::convertTo<GLint          >(this->location),
+            ge::core::convertTo<GLsizei        >(this->count   ),
+            ge::core::convertTo<const GLdouble*>(this->value   )
           );
         }
     };
@@ -4344,35 +5060,6 @@ namespace ge{
               location,
               bufSize ,
               params  );
-    }
-    template<
-      typename PROGRAM_TYPE           = GLuint  ,
-      typename UNIFORMBLOCKINDEX_TYPE = GLuint  ,
-      typename BUFSIZE_TYPE           = GLsizei ,
-      typename LENGTH_TYPE            = GLsizei*,
-      typename UNIFORMBLOCKNAME_TYPE  = GLchar* >
-    inline GetActiveUniformBlockName<
-      PROGRAM_TYPE          ,
-      UNIFORMBLOCKINDEX_TYPE,
-      BUFSIZE_TYPE          ,
-      LENGTH_TYPE           ,
-      UNIFORMBLOCKNAME_TYPE >* newGetActiveUniformBlockName(
-        PROGRAM_TYPE           const&program          ,
-        UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
-        BUFSIZE_TYPE           const&bufSize          ,
-        LENGTH_TYPE            const&length           ,
-        UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ){
-        return new GetActiveUniformBlockName<
-          PROGRAM_TYPE          ,
-          UNIFORMBLOCKINDEX_TYPE,
-          BUFSIZE_TYPE          ,
-          LENGTH_TYPE           ,
-          UNIFORMBLOCKNAME_TYPE >(
-              program          ,
-              uniformBlockIndex,
-              bufSize          ,
-              length           ,
-              uniformBlockName );
     }
     template<
       typename PROGRAM_TYPE   = GLuint         ,
@@ -4543,6 +5230,35 @@ namespace ge{
               values    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline ProgramUniformMatrix4x2dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >* newProgramUniformMatrix4x2dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return new ProgramUniformMatrix4x2dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+    template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint>
@@ -4579,35 +5295,6 @@ namespace ge{
               program            ,
               uniformBlockIndex  ,
               uniformBlockBinding);
-    }
-    template<
-      typename LOCATION_TYPE = GLint ,
-      typename V0_TYPE       = GLuint,
-      typename V1_TYPE       = GLuint,
-      typename V2_TYPE       = GLuint,
-      typename V3_TYPE       = GLuint>
-    inline Uniform4ui<
-      LOCATION_TYPE,
-      V0_TYPE      ,
-      V1_TYPE      ,
-      V2_TYPE      ,
-      V3_TYPE      >* newUniform4ui(
-        LOCATION_TYPE const&location,
-        V0_TYPE       const&v0      ,
-        V1_TYPE       const&v1      ,
-        V2_TYPE       const&v2      ,
-        V3_TYPE       const&v3      ){
-        return new Uniform4ui<
-          LOCATION_TYPE,
-          V0_TYPE      ,
-          V1_TYPE      ,
-          V2_TYPE      ,
-          V3_TYPE      >(
-              location,
-              v0      ,
-              v1      ,
-              v2      ,
-              v3      );
     }
     template<
       typename PROGRAM_TYPE  = GLuint   ,
@@ -4695,6 +5382,30 @@ namespace ge{
               count    ,
               transpose,
               value    );
+    }
+    template<
+      typename PROGRAM_TYPE  = GLuint      ,
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline ProgramUniform1iv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >* newProgramUniform1iv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return new ProgramUniform1iv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >(
+              program ,
+              location,
+              count   ,
+              value   );
     }
     template<
       typename LOCATION_TYPE = GLint        ,
@@ -4829,6 +5540,35 @@ namespace ge{
               location,
               count   ,
               value   );
+    }
+    template<
+      typename PROGRAM_TYPE           = GLuint  ,
+      typename UNIFORMBLOCKINDEX_TYPE = GLuint  ,
+      typename BUFSIZE_TYPE           = GLsizei ,
+      typename LENGTH_TYPE            = GLsizei*,
+      typename UNIFORMBLOCKNAME_TYPE  = GLchar* >
+    inline GetActiveUniformBlockName<
+      PROGRAM_TYPE          ,
+      UNIFORMBLOCKINDEX_TYPE,
+      BUFSIZE_TYPE          ,
+      LENGTH_TYPE           ,
+      UNIFORMBLOCKNAME_TYPE >* newGetActiveUniformBlockName(
+        PROGRAM_TYPE           const&program          ,
+        UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
+        BUFSIZE_TYPE           const&bufSize          ,
+        LENGTH_TYPE            const&length           ,
+        UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ){
+        return new GetActiveUniformBlockName<
+          PROGRAM_TYPE          ,
+          UNIFORMBLOCKINDEX_TYPE,
+          BUFSIZE_TYPE          ,
+          LENGTH_TYPE           ,
+          UNIFORMBLOCKNAME_TYPE >(
+              program          ,
+              uniformBlockIndex,
+              bufSize          ,
+              length           ,
+              uniformBlockName );
     }
     template<
       typename PROGRAM_TYPE        = GLuint             ,
@@ -5109,35 +5849,6 @@ namespace ge{
               v2      );
     }
     template<
-      typename PROGRAM_TYPE   = GLuint         ,
-      typename LOCATION_TYPE  = GLint          ,
-      typename COUNT_TYPE     = GLsizei        ,
-      typename TRANSPOSE_TYPE = GLboolean      ,
-      typename VALUE_TYPE     = const GLdouble*>
-    inline ProgramUniformMatrix3dv<
-      PROGRAM_TYPE  ,
-      LOCATION_TYPE ,
-      COUNT_TYPE    ,
-      TRANSPOSE_TYPE,
-      VALUE_TYPE    >* newProgramUniformMatrix3dv(
-        PROGRAM_TYPE   const&program  ,
-        LOCATION_TYPE  const&location ,
-        COUNT_TYPE     const&count    ,
-        TRANSPOSE_TYPE const&transpose,
-        VALUE_TYPE     const&value    ){
-        return new ProgramUniformMatrix3dv<
-          PROGRAM_TYPE  ,
-          LOCATION_TYPE ,
-          COUNT_TYPE    ,
-          TRANSPOSE_TYPE,
-          VALUE_TYPE    >(
-              program  ,
-              location ,
-              count    ,
-              transpose,
-              value    );
-    }
-    template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
       typename V0_TYPE       = GLdouble,
@@ -5165,6 +5876,35 @@ namespace ge{
               v0      ,
               v1      ,
               v2      );
+    }
+    template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline ProgramUniformMatrix3dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >* newProgramUniformMatrix3dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return new ProgramUniformMatrix3dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
     }
     template<
       typename LOCATION_TYPE = GLint  ,
@@ -6056,30 +6796,6 @@ namespace ge{
               value    );
     }
     template<
-      typename PROGRAM_TYPE  = GLuint         ,
-      typename LOCATION_TYPE = GLint          ,
-      typename COUNT_TYPE    = GLsizei        ,
-      typename VALUE_TYPE    = const GLdouble*>
-    inline ProgramUniform4dv<
-      PROGRAM_TYPE ,
-      LOCATION_TYPE,
-      COUNT_TYPE   ,
-      VALUE_TYPE   >* newProgramUniform4dv(
-        PROGRAM_TYPE  const&program ,
-        LOCATION_TYPE const&location,
-        COUNT_TYPE    const&count   ,
-        VALUE_TYPE    const&value   ){
-        return new ProgramUniform4dv<
-          PROGRAM_TYPE ,
-          LOCATION_TYPE,
-          COUNT_TYPE   ,
-          VALUE_TYPE   >(
-              program ,
-              location,
-              count   ,
-              value   );
-    }
-    template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -6157,6 +6873,25 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline Uniform4fv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >* newUniform4fv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return new Uniform4fv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >(
+              location,
+              count   ,
+              value   );
+    }
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
@@ -6224,35 +6959,6 @@ namespace ge{
               indices   );
     }
     template<
-      typename PROGRAM_TYPE   = GLuint         ,
-      typename LOCATION_TYPE  = GLint          ,
-      typename COUNT_TYPE     = GLsizei        ,
-      typename TRANSPOSE_TYPE = GLboolean      ,
-      typename VALUE_TYPE     = const GLdouble*>
-    inline ProgramUniformMatrix4x2dv<
-      PROGRAM_TYPE  ,
-      LOCATION_TYPE ,
-      COUNT_TYPE    ,
-      TRANSPOSE_TYPE,
-      VALUE_TYPE    >* newProgramUniformMatrix4x2dv(
-        PROGRAM_TYPE   const&program  ,
-        LOCATION_TYPE  const&location ,
-        COUNT_TYPE     const&count    ,
-        TRANSPOSE_TYPE const&transpose,
-        VALUE_TYPE     const&value    ){
-        return new ProgramUniformMatrix4x2dv<
-          PROGRAM_TYPE  ,
-          LOCATION_TYPE ,
-          COUNT_TYPE    ,
-          TRANSPOSE_TYPE,
-          VALUE_TYPE    >(
-              program  ,
-              location ,
-              count    ,
-              transpose,
-              value    );
-    }
-    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
@@ -6289,6 +6995,35 @@ namespace ge{
           V0_TYPE      >(
               location,
               v0      );
+    }
+    template<
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint,
+      typename V2_TYPE       = GLuint,
+      typename V3_TYPE       = GLuint>
+    inline Uniform4ui<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >* newUniform4ui(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return new Uniform4ui<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >(
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
     }
     template<
       typename LOCATION_TYPE  = GLint         ,
@@ -7164,49 +7899,6 @@ namespace ge{
               v0      );
     }
     template<
-      typename LOCATION_TYPE = GLint         ,
-      typename COUNT_TYPE    = GLsizei       ,
-      typename VALUE_TYPE    = const GLfloat*>
-    inline Uniform4fv<
-      LOCATION_TYPE,
-      COUNT_TYPE   ,
-      VALUE_TYPE   >* newUniform4fv(
-        LOCATION_TYPE const&location,
-        COUNT_TYPE    const&count   ,
-        VALUE_TYPE    const&value   ){
-        return new Uniform4fv<
-          LOCATION_TYPE,
-          COUNT_TYPE   ,
-          VALUE_TYPE   >(
-              location,
-              count   ,
-              value   );
-    }
-    template<
-      typename PROGRAM_TYPE  = GLuint      ,
-      typename LOCATION_TYPE = GLint       ,
-      typename COUNT_TYPE    = GLsizei     ,
-      typename VALUE_TYPE    = const GLint*>
-    inline ProgramUniform1iv<
-      PROGRAM_TYPE ,
-      LOCATION_TYPE,
-      COUNT_TYPE   ,
-      VALUE_TYPE   >* newProgramUniform1iv(
-        PROGRAM_TYPE  const&program ,
-        LOCATION_TYPE const&location,
-        COUNT_TYPE    const&count   ,
-        VALUE_TYPE    const&value   ){
-        return new ProgramUniform1iv<
-          PROGRAM_TYPE ,
-          LOCATION_TYPE,
-          COUNT_TYPE   ,
-          VALUE_TYPE   >(
-              program ,
-              location,
-              count   ,
-              value   );
-    }
-    template<
       typename PROGRAM_TYPE    = GLuint  ,
       typename SHADERTYPE_TYPE = GLenum  ,
       typename INDEX_TYPE      = GLuint  ,
@@ -7239,6 +7931,30 @@ namespace ge{
               bufsize   ,
               length    ,
               name      );
+    }
+    template<
+      typename PROGRAM_TYPE  = GLuint         ,
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline ProgramUniform4dv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >* newProgramUniform4dv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return new ProgramUniform4dv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >(
+              program ,
+              location,
+              count   ,
+              value   );
     }
   }
 }

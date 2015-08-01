@@ -2,6 +2,7 @@
 
 using namespace ge::gl;
 
+/*
 UniformCommand::UniformCommand(GLint location){
   this->_location=location;
 }
@@ -139,4 +140,4 @@ UniformSubroutines::~UniformSubroutines(){
 void UniformSubroutines::operator()(){
   glUniformSubroutinesuiv(this->_shaderType,this->_count,this->_indices);
 }
-
+*/

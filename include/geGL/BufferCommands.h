@@ -3,7 +3,6 @@
 #include<geCore/Command.h>
 #include<geGL/Export.h>
 #include<GL/glew.h>
-#include<geGL/BufferObject.h>
 #include<geGL/AllAttribs.h>
 
 namespace ge{
@@ -14,6 +13,13 @@ namespace ge{
       typename LENGTH_TYPE = GLsizeiptr>
     class InvalidateBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "length")return(void*)&this->length;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         OFFSET_TYPE offset;
@@ -37,12 +43,49 @@ namespace ge{
     };
 
     template<
+      typename SIZE_TYPE   = GLsizei,
+      typename BUFFER_TYPE = GLuint*>
+    class SelectBuffer:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
+      public:
+        SIZE_TYPE   size  ;
+        BUFFER_TYPE buffer;
+        SelectBuffer(
+            SIZE_TYPE   const&size  ,
+            BUFFER_TYPE const&buffer){
+          this->size   = size  ;
+          this->buffer = buffer;
+        }
+        virtual~SelectBuffer(){}
+        virtual void operator()(){
+          glSelectBuffer(
+            ge::core::convertTo<GLsizei>(this->size  ),
+            ge::core::convertTo<GLuint*>(this->buffer)
+          );
+        }
+    };
+
+    template<
       typename ID_TYPE     = GLuint  ,
       typename BUFFER_TYPE = GLuint  ,
       typename PNAME_TYPE  = GLenum  ,
       typename OFFSET_TYPE = GLintptr>
     class GetQueryBufferObjectiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "id"    )return(void*)&this->id    ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "offset")return(void*)&this->offset;
+          return NULL;
+        }
       public:
         ID_TYPE     id    ;
         BUFFER_TYPE buffer;
@@ -77,6 +120,15 @@ namespace ge{
       typename DATA_TYPE           = const void*>
     class ClearNamedBufferData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer"        )return(void*)&this->buffer        ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "format"        )return(void*)&this->format        ;
+          if(name == "type"          )return(void*)&this->type          ;
+          if(name == "data"          )return(void*)&this->data          ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE         buffer        ;
         INTERNALFORMAT_TYPE internalformat;
@@ -114,6 +166,14 @@ namespace ge{
       typename PARAMS_TYPE      = GLint*>
     class GetActiveAtomicCounterBufferiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"    )return(void*)&this->program    ;
+          if(name == "bufferIndex")return(void*)&this->bufferIndex;
+          if(name == "pname"      )return(void*)&this->pname      ;
+          if(name == "params"     )return(void*)&this->params     ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE     program    ;
         BUFFERINDEX_TYPE bufferIndex;
@@ -141,12 +201,43 @@ namespace ge{
     };
 
     template<
+      typename MODE_TYPE = GLenum>
+    class DrawBuffer:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "mode")return(void*)&this->mode;
+          return NULL;
+        }
+      public:
+        MODE_TYPE mode;
+        DrawBuffer(
+            MODE_TYPE const&mode){
+          this->mode = mode;
+        }
+        virtual~DrawBuffer(){}
+        virtual void operator()(){
+          glDrawBuffer(
+            ge::core::convertTo<GLenum>(this->mode)
+          );
+        }
+    };
+
+    template<
       typename ID_TYPE     = GLuint  ,
       typename BUFFER_TYPE = GLuint  ,
       typename PNAME_TYPE  = GLenum  ,
       typename OFFSET_TYPE = GLintptr>
     class GetQueryBufferObjectuiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "id"    )return(void*)&this->id    ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "offset")return(void*)&this->offset;
+          return NULL;
+        }
       public:
         ID_TYPE     id    ;
         BUFFER_TYPE buffer;
@@ -180,6 +271,14 @@ namespace ge{
       typename FLAGS_TYPE  = GLbitfield >
     class NamedBufferStorage:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          if(name == "flags" )return(void*)&this->flags ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         SIZE_TYPE   size  ;
@@ -212,6 +311,13 @@ namespace ge{
       typename VALUE_TYPE      = const GLuint*>
     class ClearBufferuiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer"    )return(void*)&this->buffer    ;
+          if(name == "drawbuffer")return(void*)&this->drawbuffer;
+          if(name == "value"     )return(void*)&this->value     ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE     buffer    ;
         DRAWBUFFER_TYPE drawbuffer;
@@ -240,6 +346,13 @@ namespace ge{
       typename VALUE_TYPE      = const GLfloat*>
     class ClearBufferfv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer"    )return(void*)&this->buffer    ;
+          if(name == "drawbuffer")return(void*)&this->drawbuffer;
+          if(name == "value"     )return(void*)&this->value     ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE     buffer    ;
         DRAWBUFFER_TYPE drawbuffer;
@@ -267,6 +380,12 @@ namespace ge{
       typename BUFFER_TYPE = GLuint   >
     class UnmapNamedBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         BUFFER_TYPE buffer;
@@ -292,6 +411,15 @@ namespace ge{
       typename SIZE_TYPE   = GLsizeiptr>
     class TransformFeedbackBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "xfb"   )return(void*)&this->xfb   ;
+          if(name == "index" )return(void*)&this->index ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "size"  )return(void*)&this->size  ;
+          return NULL;
+        }
       public:
         XFB_TYPE    xfb   ;
         INDEX_TYPE  index ;
@@ -328,6 +456,13 @@ namespace ge{
       typename PARAMS_TYPE = void**>
     class GetNamedBufferPointerv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "params")return(void*)&this->params;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         PNAME_TYPE  pname ;
@@ -357,6 +492,14 @@ namespace ge{
       typename DATA_TYPE   = void*     >
     class GetBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         OFFSET_TYPE offset;
@@ -388,6 +531,12 @@ namespace ge{
       typename BUFS_TYPE = const GLenum*>
     class DrawBuffers:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "n"   )return(void*)&this->n   ;
+          if(name == "bufs")return(void*)&this->bufs;
+          return NULL;
+        }
       public:
         N_TYPE    n   ;
         BUFS_TYPE bufs;
@@ -407,38 +556,16 @@ namespace ge{
     };
 
     template<
-      typename TARGET_TYPE = GLenum,
-      typename PNAME_TYPE  = GLenum,
-      typename PARAMS_TYPE = void**>
-    class GetBufferPointerv:
-        public ge::core::Command{
-      public:
-        TARGET_TYPE target;
-        PNAME_TYPE  pname ;
-        PARAMS_TYPE params;
-        GetBufferPointerv(
-            TARGET_TYPE const&target,
-            PNAME_TYPE  const&pname ,
-            PARAMS_TYPE const&params){
-          this->target = target;
-          this->pname  = pname ;
-          this->params = params;
-        }
-        virtual~GetBufferPointerv(){}
-        virtual void operator()(){
-          glGetBufferPointerv(
-            ge::core::convertTo<GLenum>(this->target),
-            ge::core::convertTo<GLenum>(this->pname ),
-            ge::core::convertTo<void**>(this->params)
-          );
-        }
-    };
-
-    template<
       typename N_TYPE       = GLsizei,
       typename BUFFERS_TYPE = GLuint*>
     class GenBuffers:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "n"      )return(void*)&this->n      ;
+          if(name == "buffers")return(void*)&this->buffers;
+          return NULL;
+        }
       public:
         N_TYPE       n      ;
         BUFFERS_TYPE buffers;
@@ -458,44 +585,6 @@ namespace ge{
     };
 
     template<
-      typename FIRST_TYPE   = GLuint         ,
-      typename COUNT_TYPE   = GLsizei        ,
-      typename BUFFERS_TYPE = const GLuint*  ,
-      typename OFFSETS_TYPE = const GLintptr*,
-      typename STRIDES_TYPE = const GLsizei* >
-    class BindVertexBuffers:
-        public ge::core::Command{
-      public:
-        FIRST_TYPE   first  ;
-        COUNT_TYPE   count  ;
-        BUFFERS_TYPE buffers;
-        OFFSETS_TYPE offsets;
-        STRIDES_TYPE strides;
-        BindVertexBuffers(
-            FIRST_TYPE   const&first  ,
-            COUNT_TYPE   const&count  ,
-            BUFFERS_TYPE const&buffers,
-            OFFSETS_TYPE const&offsets,
-            STRIDES_TYPE const&strides){
-          this->first   = first  ;
-          this->count   = count  ;
-          this->buffers = buffers;
-          this->offsets = offsets;
-          this->strides = strides;
-        }
-        virtual~BindVertexBuffers(){}
-        virtual void operator()(){
-          glBindVertexBuffers(
-            ge::core::convertTo<GLuint         >(this->first  ),
-            ge::core::convertTo<GLsizei        >(this->count  ),
-            ge::core::convertTo<const GLuint*  >(this->buffers),
-            ge::core::convertTo<const GLintptr*>(this->offsets),
-            ge::core::convertTo<const GLsizei* >(this->strides)
-          );
-        }
-    };
-
-    template<
       typename RET_TYPE    = void*     ,
       typename TARGET_TYPE = GLenum    ,
       typename OFFSET_TYPE = GLintptr  ,
@@ -503,6 +592,15 @@ namespace ge{
       typename ACCESS_TYPE = GLbitfield>
     class MapBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "target")return(void*)&this->target;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "length")return(void*)&this->length;
+          if(name == "access")return(void*)&this->access;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         TARGET_TYPE target;
@@ -533,11 +631,53 @@ namespace ge{
     };
 
     template<
+      typename SIZE_TYPE   = GLsizei ,
+      typename TYPE_TYPE   = GLenum  ,
+      typename BUFFER_TYPE = GLfloat*>
+    class FeedbackBuffer:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "type"  )return(void*)&this->type  ;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
+      public:
+        SIZE_TYPE   size  ;
+        TYPE_TYPE   type  ;
+        BUFFER_TYPE buffer;
+        FeedbackBuffer(
+            SIZE_TYPE   const&size  ,
+            TYPE_TYPE   const&type  ,
+            BUFFER_TYPE const&buffer){
+          this->size   = size  ;
+          this->type   = type  ;
+          this->buffer = buffer;
+        }
+        virtual~FeedbackBuffer(){}
+        virtual void operator()(){
+          glFeedbackBuffer(
+            ge::core::convertTo<GLsizei >(this->size  ),
+            ge::core::convertTo<GLenum  >(this->type  ),
+            ge::core::convertTo<GLfloat*>(this->buffer)
+          );
+        }
+    };
+
+    template<
       typename TARGET_TYPE = GLenum    ,
       typename OFFSET_TYPE = GLintptr  ,
       typename LENGTH_TYPE = GLsizeiptr>
     class FlushMappedBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "length")return(void*)&this->length;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         OFFSET_TYPE offset;
@@ -570,6 +710,17 @@ namespace ge{
       typename DATA_TYPE           = const void*>
     class ClearBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target"        )return(void*)&this->target        ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "offset"        )return(void*)&this->offset        ;
+          if(name == "size"          )return(void*)&this->size          ;
+          if(name == "format"        )return(void*)&this->format        ;
+          if(name == "type"          )return(void*)&this->type          ;
+          if(name == "data"          )return(void*)&this->data          ;
+          return NULL;
+        }
       public:
         TARGET_TYPE         target        ;
         INTERNALFORMAT_TYPE internalformat;
@@ -609,11 +760,53 @@ namespace ge{
     };
 
     template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = void**>
+    class GetBufferPointerv:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "params")return(void*)&this->params;
+          return NULL;
+        }
+      public:
+        TARGET_TYPE target;
+        PNAME_TYPE  pname ;
+        PARAMS_TYPE params;
+        GetBufferPointerv(
+            TARGET_TYPE const&target,
+            PNAME_TYPE  const&pname ,
+            PARAMS_TYPE const&params){
+          this->target = target;
+          this->pname  = pname ;
+          this->params = params;
+        }
+        virtual~GetBufferPointerv(){}
+        virtual void operator()(){
+          glGetBufferPointerv(
+            ge::core::convertTo<GLenum>(this->target),
+            ge::core::convertTo<GLenum>(this->pname ),
+            ge::core::convertTo<void**>(this->params)
+          );
+        }
+    };
+
+    template<
       typename TARGET_TYPE = GLenum  ,
       typename PNAME_TYPE  = GLenum  ,
       typename PARAMS_TYPE = GLint64*>
     class GetBufferParameteri64v:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "params")return(void*)&this->params;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         PNAME_TYPE  pname ;
@@ -645,6 +838,16 @@ namespace ge{
       typename SIZES_TYPE   = const GLsizeiptr*>
     class BindBuffersRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target" )return(void*)&this->target ;
+          if(name == "first"  )return(void*)&this->first  ;
+          if(name == "count"  )return(void*)&this->count  ;
+          if(name == "buffers")return(void*)&this->buffers;
+          if(name == "offsets")return(void*)&this->offsets;
+          if(name == "sizes"  )return(void*)&this->sizes  ;
+          return NULL;
+        }
       public:
         TARGET_TYPE  target ;
         FIRST_TYPE   first  ;
@@ -680,55 +883,20 @@ namespace ge{
     };
 
     template<
-      typename VAOBJ_TYPE   = GLuint         ,
-      typename FIRST_TYPE   = GLuint         ,
-      typename COUNT_TYPE   = GLsizei        ,
-      typename BUFFERS_TYPE = const GLuint*  ,
-      typename OFFSETS_TYPE = const GLintptr*,
-      typename STRIDES_TYPE = const GLsizei* >
-    class VertexArrayVertexBuffers:
-        public ge::core::Command{
-      public:
-        VAOBJ_TYPE   vaobj  ;
-        FIRST_TYPE   first  ;
-        COUNT_TYPE   count  ;
-        BUFFERS_TYPE buffers;
-        OFFSETS_TYPE offsets;
-        STRIDES_TYPE strides;
-        VertexArrayVertexBuffers(
-            VAOBJ_TYPE   const&vaobj  ,
-            FIRST_TYPE   const&first  ,
-            COUNT_TYPE   const&count  ,
-            BUFFERS_TYPE const&buffers,
-            OFFSETS_TYPE const&offsets,
-            STRIDES_TYPE const&strides){
-          this->vaobj   = vaobj  ;
-          this->first   = first  ;
-          this->count   = count  ;
-          this->buffers = buffers;
-          this->offsets = offsets;
-          this->strides = strides;
-        }
-        virtual~VertexArrayVertexBuffers(){}
-        virtual void operator()(){
-          glVertexArrayVertexBuffers(
-            ge::core::convertTo<GLuint         >(this->vaobj  ),
-            ge::core::convertTo<GLuint         >(this->first  ),
-            ge::core::convertTo<GLsizei        >(this->count  ),
-            ge::core::convertTo<const GLuint*  >(this->buffers),
-            ge::core::convertTo<const GLintptr*>(this->offsets),
-            ge::core::convertTo<const GLsizei* >(this->strides)
-          );
-        }
-    };
-
-    template<
       typename TARGET_TYPE = GLenum     ,
       typename OFFSET_TYPE = GLintptr   ,
       typename SIZE_TYPE   = GLsizeiptr ,
       typename DATA_TYPE   = const void*>
     class BufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         OFFSET_TYPE offset;
@@ -756,33 +924,16 @@ namespace ge{
     };
 
     template<
-      typename VAOBJ_TYPE  = GLuint,
-      typename BUFFER_TYPE = GLuint>
-    class VertexArrayElementBuffer:
-        public ge::core::Command{
-      public:
-        VAOBJ_TYPE  vaobj ;
-        BUFFER_TYPE buffer;
-        VertexArrayElementBuffer(
-            VAOBJ_TYPE  const&vaobj ,
-            BUFFER_TYPE const&buffer){
-          this->vaobj  = vaobj ;
-          this->buffer = buffer;
-        }
-        virtual~VertexArrayElementBuffer(){}
-        virtual void operator()(){
-          glVertexArrayElementBuffer(
-            ge::core::convertTo<GLuint>(this->vaobj ),
-            ge::core::convertTo<GLuint>(this->buffer)
-          );
-        }
-    };
-
-    template<
       typename N_TYPE       = GLsizei,
       typename BUFFERS_TYPE = GLuint*>
     class CreateBuffers:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "n"      )return(void*)&this->n      ;
+          if(name == "buffers")return(void*)&this->buffers;
+          return NULL;
+        }
       public:
         N_TYPE       n      ;
         BUFFERS_TYPE buffers;
@@ -802,50 +953,20 @@ namespace ge{
     };
 
     template<
-      typename VAOBJ_TYPE        = GLuint  ,
-      typename BINDINGINDEX_TYPE = GLuint  ,
-      typename BUFFER_TYPE       = GLuint  ,
-      typename OFFSET_TYPE       = GLintptr,
-      typename STRIDE_TYPE       = GLsizei >
-    class VertexArrayVertexBuffer:
-        public ge::core::Command{
-      public:
-        VAOBJ_TYPE        vaobj       ;
-        BINDINGINDEX_TYPE bindingindex;
-        BUFFER_TYPE       buffer      ;
-        OFFSET_TYPE       offset      ;
-        STRIDE_TYPE       stride      ;
-        VertexArrayVertexBuffer(
-            VAOBJ_TYPE        const&vaobj       ,
-            BINDINGINDEX_TYPE const&bindingindex,
-            BUFFER_TYPE       const&buffer      ,
-            OFFSET_TYPE       const&offset      ,
-            STRIDE_TYPE       const&stride      ){
-          this->vaobj        = vaobj       ;
-          this->bindingindex = bindingindex;
-          this->buffer       = buffer      ;
-          this->offset       = offset      ;
-          this->stride       = stride      ;
-        }
-        virtual~VertexArrayVertexBuffer(){}
-        virtual void operator()(){
-          glVertexArrayVertexBuffer(
-            ge::core::convertTo<GLuint  >(this->vaobj       ),
-            ge::core::convertTo<GLuint  >(this->bindingindex),
-            ge::core::convertTo<GLuint  >(this->buffer      ),
-            ge::core::convertTo<GLintptr>(this->offset      ),
-            ge::core::convertTo<GLsizei >(this->stride      )
-          );
-        }
-    };
-
-    template<
       typename TARGET_TYPE  = GLenum       ,
       typename FIRST_TYPE   = GLuint       ,
       typename COUNT_TYPE   = GLsizei      ,
       typename BUFFERS_TYPE = const GLuint*>
     class BindBuffersBase:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target" )return(void*)&this->target ;
+          if(name == "first"  )return(void*)&this->first  ;
+          if(name == "count"  )return(void*)&this->count  ;
+          if(name == "buffers")return(void*)&this->buffers;
+          return NULL;
+        }
       public:
         TARGET_TYPE  target ;
         FIRST_TYPE   first  ;
@@ -877,6 +998,12 @@ namespace ge{
       typename BUFFERS_TYPE = const GLuint*>
     class DeleteBuffers:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "n"      )return(void*)&this->n      ;
+          if(name == "buffers")return(void*)&this->buffers;
+          return NULL;
+        }
       public:
         N_TYPE       n      ;
         BUFFERS_TYPE buffers;
@@ -901,6 +1028,13 @@ namespace ge{
       typename PARAMS_TYPE = GLint*>
     class GetNamedBufferParameteriv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "params")return(void*)&this->params;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         PNAME_TYPE  pname ;
@@ -925,9 +1059,67 @@ namespace ge{
 
     template<
       typename FRAMEBUFFER_TYPE = GLuint,
+      typename BUF_TYPE         = GLenum>
+    class NamedFramebufferDrawBuffer:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "framebuffer")return(void*)&this->framebuffer;
+          if(name == "buf"        )return(void*)&this->buf        ;
+          return NULL;
+        }
+      public:
+        FRAMEBUFFER_TYPE framebuffer;
+        BUF_TYPE         buf        ;
+        NamedFramebufferDrawBuffer(
+            FRAMEBUFFER_TYPE const&framebuffer,
+            BUF_TYPE         const&buf        ){
+          this->framebuffer = framebuffer;
+          this->buf         = buf        ;
+        }
+        virtual~NamedFramebufferDrawBuffer(){}
+        virtual void operator()(){
+          glNamedFramebufferDrawBuffer(
+            ge::core::convertTo<GLuint>(this->framebuffer),
+            ge::core::convertTo<GLenum>(this->buf        )
+          );
+        }
+    };
+
+    template<
+      typename MODE_TYPE = GLenum>
+    class ReadBuffer:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "mode")return(void*)&this->mode;
+          return NULL;
+        }
+      public:
+        MODE_TYPE mode;
+        ReadBuffer(
+            MODE_TYPE const&mode){
+          this->mode = mode;
+        }
+        virtual~ReadBuffer(){}
+        virtual void operator()(){
+          glReadBuffer(
+            ge::core::convertTo<GLenum>(this->mode)
+          );
+        }
+    };
+
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
       typename SRC_TYPE         = GLenum>
     class NamedFramebufferReadBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "framebuffer")return(void*)&this->framebuffer;
+          if(name == "src"        )return(void*)&this->src        ;
+          return NULL;
+        }
       public:
         FRAMEBUFFER_TYPE framebuffer;
         SRC_TYPE         src        ;
@@ -952,6 +1144,13 @@ namespace ge{
       typename LENGTH_TYPE = GLsizeiptr>
     class FlushMappedNamedBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "length")return(void*)&this->length;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         OFFSET_TYPE offset;
@@ -981,6 +1180,14 @@ namespace ge{
       typename STENCIL_TYPE    = GLint  >
     class ClearBufferfi:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer"    )return(void*)&this->buffer    ;
+          if(name == "drawbuffer")return(void*)&this->drawbuffer;
+          if(name == "depth"     )return(void*)&this->depth     ;
+          if(name == "stencil"   )return(void*)&this->stencil   ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE     buffer    ;
         DRAWBUFFER_TYPE drawbuffer;
@@ -1013,6 +1220,13 @@ namespace ge{
       typename BUFFER_TYPE         = GLuint>
     class TextureBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "texture"       )return(void*)&this->texture       ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "buffer"        )return(void*)&this->buffer        ;
+          return NULL;
+        }
       public:
         TEXTURE_TYPE        texture       ;
         INTERNALFORMAT_TYPE internalformat;
@@ -1042,6 +1256,14 @@ namespace ge{
       typename OFFSET_TYPE = GLintptr>
     class GetQueryBufferObjecti64v:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "id"    )return(void*)&this->id    ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "offset")return(void*)&this->offset;
+          return NULL;
+        }
       public:
         ID_TYPE     id    ;
         BUFFER_TYPE buffer;
@@ -1075,6 +1297,14 @@ namespace ge{
       typename OFFSET_TYPE = GLintptr>
     class GetQueryBufferObjectui64v:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "id"    )return(void*)&this->id    ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "offset")return(void*)&this->offset;
+          return NULL;
+        }
       public:
         ID_TYPE     id    ;
         BUFFER_TYPE buffer;
@@ -1107,6 +1337,13 @@ namespace ge{
       typename BUFS_TYPE        = const GLenum*>
     class NamedFramebufferDrawBuffers:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "framebuffer")return(void*)&this->framebuffer;
+          if(name == "n"          )return(void*)&this->n          ;
+          if(name == "bufs"       )return(void*)&this->bufs       ;
+          return NULL;
+        }
       public:
         FRAMEBUFFER_TYPE framebuffer;
         N_TYPE           n          ;
@@ -1137,6 +1374,15 @@ namespace ge{
       typename DATA_TYPE           = const void*>
     class ClearBufferData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target"        )return(void*)&this->target        ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "format"        )return(void*)&this->format        ;
+          if(name == "type"          )return(void*)&this->type          ;
+          if(name == "data"          )return(void*)&this->data          ;
+          return NULL;
+        }
       public:
         TARGET_TYPE         target        ;
         INTERNALFORMAT_TYPE internalformat;
@@ -1173,6 +1419,13 @@ namespace ge{
       typename ACCESS_TYPE = GLenum>
     class MapNamedBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "access")return(void*)&this->access;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         BUFFER_TYPE buffer;
@@ -1201,6 +1454,14 @@ namespace ge{
       typename STRIDE_TYPE       = GLsizei >
     class BindVertexBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "bindingindex")return(void*)&this->bindingindex;
+          if(name == "buffer"      )return(void*)&this->buffer      ;
+          if(name == "offset"      )return(void*)&this->offset      ;
+          if(name == "stride"      )return(void*)&this->stride      ;
+          return NULL;
+        }
       public:
         BINDINGINDEX_TYPE bindingindex;
         BUFFER_TYPE       buffer      ;
@@ -1233,6 +1494,13 @@ namespace ge{
       typename BUFFER_TYPE = GLuint>
     class BindBufferBase:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "index" )return(void*)&this->index ;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         INDEX_TYPE  index ;
@@ -1262,6 +1530,14 @@ namespace ge{
       typename USAGE_TYPE  = GLenum     >
     class BufferData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          if(name == "usage" )return(void*)&this->usage ;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         SIZE_TYPE   size  ;
@@ -1295,6 +1571,14 @@ namespace ge{
       typename FLAGS_TYPE  = GLbitfield >
     class BufferStorage:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          if(name == "flags" )return(void*)&this->flags ;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         SIZE_TYPE   size  ;
@@ -1328,6 +1612,14 @@ namespace ge{
       typename USAGE_TYPE  = GLenum     >
     class NamedBufferData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          if(name == "usage" )return(void*)&this->usage ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         SIZE_TYPE   size  ;
@@ -1360,6 +1652,13 @@ namespace ge{
       typename BUFFER_TYPE         = GLuint>
     class TexBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target"        )return(void*)&this->target        ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "buffer"        )return(void*)&this->buffer        ;
+          return NULL;
+        }
       public:
         TARGET_TYPE         target        ;
         INTERNALFORMAT_TYPE internalformat;
@@ -1390,6 +1689,15 @@ namespace ge{
       typename SIZE_TYPE        = GLsizeiptr>
     class CopyBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "readTarget" )return(void*)&this->readTarget ;
+          if(name == "writeTarget")return(void*)&this->writeTarget;
+          if(name == "readOffset" )return(void*)&this->readOffset ;
+          if(name == "writeOffset")return(void*)&this->writeOffset;
+          if(name == "size"       )return(void*)&this->size       ;
+          return NULL;
+        }
       public:
         READTARGET_TYPE  readTarget ;
         WRITETARGET_TYPE writeTarget;
@@ -1424,6 +1732,11 @@ namespace ge{
       typename BUFFER_TYPE = GLuint>
     class InvalidateBufferData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         InvalidateBufferData(
@@ -1446,6 +1759,15 @@ namespace ge{
       typename SIZE_TYPE   = GLsizeiptr>
     class BindBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "index" )return(void*)&this->index ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "size"  )return(void*)&this->size  ;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         INDEX_TYPE  index ;
@@ -1482,6 +1804,13 @@ namespace ge{
       typename BUFFER_TYPE = GLuint>
     class TransformFeedbackBufferBase:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "xfb"   )return(void*)&this->xfb   ;
+          if(name == "index" )return(void*)&this->index ;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
       public:
         XFB_TYPE    xfb   ;
         INDEX_TYPE  index ;
@@ -1514,6 +1843,17 @@ namespace ge{
       typename DATA_TYPE           = const void*>
     class ClearNamedBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer"        )return(void*)&this->buffer        ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "offset"        )return(void*)&this->offset        ;
+          if(name == "size"          )return(void*)&this->size          ;
+          if(name == "format"        )return(void*)&this->format        ;
+          if(name == "type"          )return(void*)&this->type          ;
+          if(name == "data"          )return(void*)&this->data          ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE         buffer        ;
         INTERNALFORMAT_TYPE internalformat;
@@ -1560,6 +1900,15 @@ namespace ge{
       typename ACCESS_TYPE = GLbitfield>
     class MapNamedBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "length")return(void*)&this->length;
+          if(name == "access")return(void*)&this->access;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         BUFFER_TYPE buffer;
@@ -1597,6 +1946,15 @@ namespace ge{
       typename SIZE_TYPE           = GLsizeiptr>
     class TextureBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "texture"       )return(void*)&this->texture       ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "buffer"        )return(void*)&this->buffer        ;
+          if(name == "offset"        )return(void*)&this->offset        ;
+          if(name == "size"          )return(void*)&this->size          ;
+          return NULL;
+        }
       public:
         TEXTURE_TYPE        texture       ;
         INTERNALFORMAT_TYPE internalformat;
@@ -1628,24 +1986,48 @@ namespace ge{
     };
 
     template<
-      typename FRAMEBUFFER_TYPE = GLuint,
-      typename BUF_TYPE         = GLenum>
-    class NamedFramebufferDrawBuffer:
+      typename FIRST_TYPE   = GLuint         ,
+      typename COUNT_TYPE   = GLsizei        ,
+      typename BUFFERS_TYPE = const GLuint*  ,
+      typename OFFSETS_TYPE = const GLintptr*,
+      typename STRIDES_TYPE = const GLsizei* >
+    class BindVertexBuffers:
         public ge::core::Command{
-      public:
-        FRAMEBUFFER_TYPE framebuffer;
-        BUF_TYPE         buf        ;
-        NamedFramebufferDrawBuffer(
-            FRAMEBUFFER_TYPE const&framebuffer,
-            BUF_TYPE         const&buf        ){
-          this->framebuffer = framebuffer;
-          this->buf         = buf        ;
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "first"  )return(void*)&this->first  ;
+          if(name == "count"  )return(void*)&this->count  ;
+          if(name == "buffers")return(void*)&this->buffers;
+          if(name == "offsets")return(void*)&this->offsets;
+          if(name == "strides")return(void*)&this->strides;
+          return NULL;
         }
-        virtual~NamedFramebufferDrawBuffer(){}
+      public:
+        FIRST_TYPE   first  ;
+        COUNT_TYPE   count  ;
+        BUFFERS_TYPE buffers;
+        OFFSETS_TYPE offsets;
+        STRIDES_TYPE strides;
+        BindVertexBuffers(
+            FIRST_TYPE   const&first  ,
+            COUNT_TYPE   const&count  ,
+            BUFFERS_TYPE const&buffers,
+            OFFSETS_TYPE const&offsets,
+            STRIDES_TYPE const&strides){
+          this->first   = first  ;
+          this->count   = count  ;
+          this->buffers = buffers;
+          this->offsets = offsets;
+          this->strides = strides;
+        }
+        virtual~BindVertexBuffers(){}
         virtual void operator()(){
-          glNamedFramebufferDrawBuffer(
-            ge::core::convertTo<GLuint>(this->framebuffer),
-            ge::core::convertTo<GLenum>(this->buf        )
+          glBindVertexBuffers(
+            ge::core::convertTo<GLuint         >(this->first  ),
+            ge::core::convertTo<GLsizei        >(this->count  ),
+            ge::core::convertTo<const GLuint*  >(this->buffers),
+            ge::core::convertTo<const GLintptr*>(this->offsets),
+            ge::core::convertTo<const GLsizei* >(this->strides)
           );
         }
     };
@@ -1656,6 +2038,13 @@ namespace ge{
       typename PARAMS_TYPE = GLint*>
     class GetBufferParameteriv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "params")return(void*)&this->params;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         PNAME_TYPE  pname ;
@@ -1686,6 +2075,15 @@ namespace ge{
       typename SIZE_TYPE           = GLsizeiptr>
     class TexBufferRange:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target"        )return(void*)&this->target        ;
+          if(name == "internalformat")return(void*)&this->internalformat;
+          if(name == "buffer"        )return(void*)&this->buffer        ;
+          if(name == "offset"        )return(void*)&this->offset        ;
+          if(name == "size"          )return(void*)&this->size          ;
+          return NULL;
+        }
       public:
         TARGET_TYPE         target        ;
         INTERNALFORMAT_TYPE internalformat;
@@ -1721,6 +2119,12 @@ namespace ge{
       typename TARGET_TYPE = GLenum   >
     class UnmapBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "target")return(void*)&this->target;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         TARGET_TYPE target;
@@ -1744,6 +2148,13 @@ namespace ge{
       typename ACCESS_TYPE = GLenum>
     class MapBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "target")return(void*)&this->target;
+          if(name == "access")return(void*)&this->access;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         TARGET_TYPE target;
@@ -1773,6 +2184,15 @@ namespace ge{
       typename SIZE_TYPE        = GLsizeiptr>
     class CopyNamedBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "readBuffer" )return(void*)&this->readBuffer ;
+          if(name == "writeBuffer")return(void*)&this->writeBuffer;
+          if(name == "readOffset" )return(void*)&this->readOffset ;
+          if(name == "writeOffset")return(void*)&this->writeOffset;
+          if(name == "size"       )return(void*)&this->size       ;
+          return NULL;
+        }
       public:
         READBUFFER_TYPE  readBuffer ;
         WRITEBUFFER_TYPE writeBuffer;
@@ -1809,6 +2229,13 @@ namespace ge{
       typename VALUE_TYPE      = const GLint*>
     class ClearBufferiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer"    )return(void*)&this->buffer    ;
+          if(name == "drawbuffer")return(void*)&this->drawbuffer;
+          if(name == "value"     )return(void*)&this->value     ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE     buffer    ;
         DRAWBUFFER_TYPE drawbuffer;
@@ -1836,6 +2263,12 @@ namespace ge{
       typename BUFFER_TYPE = GLuint   >
     class IsBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"   )return(void*)&this->ret   ;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
       public:
         RET_TYPE    ret   ;
         BUFFER_TYPE buffer;
@@ -1859,6 +2292,13 @@ namespace ge{
       typename PARAMS_TYPE = GLint64*>
     class GetNamedBufferParameteri64v:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "pname" )return(void*)&this->pname ;
+          if(name == "params")return(void*)&this->params;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         PNAME_TYPE  pname ;
@@ -1888,6 +2328,14 @@ namespace ge{
       typename DATA_TYPE   = void*     >
     class GetNamedBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         OFFSET_TYPE offset;
@@ -1921,6 +2369,14 @@ namespace ge{
       typename DATA_TYPE   = const void*>
     class NamedBufferSubData:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "buffer")return(void*)&this->buffer;
+          if(name == "offset")return(void*)&this->offset;
+          if(name == "size"  )return(void*)&this->size  ;
+          if(name == "data"  )return(void*)&this->data  ;
+          return NULL;
+        }
       public:
         BUFFER_TYPE buffer;
         OFFSET_TYPE offset;
@@ -1952,6 +2408,12 @@ namespace ge{
       typename BUFFER_TYPE = GLuint>
     class BindBuffer:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "target")return(void*)&this->target;
+          if(name == "buffer")return(void*)&this->buffer;
+          return NULL;
+        }
       public:
         TARGET_TYPE target;
         BUFFER_TYPE buffer;
@@ -1988,6 +2450,20 @@ namespace ge{
               buffer,
               offset,
               length);
+    }
+    template<
+      typename SIZE_TYPE   = GLsizei,
+      typename BUFFER_TYPE = GLuint*>
+    inline SelectBuffer<
+      SIZE_TYPE  ,
+      BUFFER_TYPE>* newSelectBuffer(
+        SIZE_TYPE   const&size  ,
+        BUFFER_TYPE const&buffer){
+        return new SelectBuffer<
+          SIZE_TYPE  ,
+          BUFFER_TYPE>(
+              size  ,
+              buffer);
     }
     template<
       typename ID_TYPE     = GLuint  ,
@@ -2065,6 +2541,15 @@ namespace ge{
               bufferIndex,
               pname      ,
               params     );
+    }
+    template<
+      typename MODE_TYPE = GLenum>
+    inline DrawBuffer<
+      MODE_TYPE>* newDrawBuffer(
+        MODE_TYPE const&mode){
+        return new DrawBuffer<
+          MODE_TYPE>(
+              mode);
     }
     template<
       typename ID_TYPE     = GLuint  ,
@@ -2253,25 +2738,6 @@ namespace ge{
               bufs);
     }
     template<
-      typename TARGET_TYPE = GLenum,
-      typename PNAME_TYPE  = GLenum,
-      typename PARAMS_TYPE = void**>
-    inline GetBufferPointerv<
-      TARGET_TYPE,
-      PNAME_TYPE ,
-      PARAMS_TYPE>* newGetBufferPointerv(
-        TARGET_TYPE const&target,
-        PNAME_TYPE  const&pname ,
-        PARAMS_TYPE const&params){
-        return new GetBufferPointerv<
-          TARGET_TYPE,
-          PNAME_TYPE ,
-          PARAMS_TYPE>(
-              target,
-              pname ,
-              params);
-    }
-    template<
       typename N_TYPE       = GLsizei,
       typename BUFFERS_TYPE = GLuint*>
     inline GenBuffers<
@@ -2284,35 +2750,6 @@ namespace ge{
           BUFFERS_TYPE>(
               n      ,
               buffers);
-    }
-    template<
-      typename FIRST_TYPE   = GLuint         ,
-      typename COUNT_TYPE   = GLsizei        ,
-      typename BUFFERS_TYPE = const GLuint*  ,
-      typename OFFSETS_TYPE = const GLintptr*,
-      typename STRIDES_TYPE = const GLsizei* >
-    inline BindVertexBuffers<
-      FIRST_TYPE  ,
-      COUNT_TYPE  ,
-      BUFFERS_TYPE,
-      OFFSETS_TYPE,
-      STRIDES_TYPE>* newBindVertexBuffers(
-        FIRST_TYPE   const&first  ,
-        COUNT_TYPE   const&count  ,
-        BUFFERS_TYPE const&buffers,
-        OFFSETS_TYPE const&offsets,
-        STRIDES_TYPE const&strides){
-        return new BindVertexBuffers<
-          FIRST_TYPE  ,
-          COUNT_TYPE  ,
-          BUFFERS_TYPE,
-          OFFSETS_TYPE,
-          STRIDES_TYPE>(
-              first  ,
-              count  ,
-              buffers,
-              offsets,
-              strides);
     }
     template<
       typename RET_TYPE    = void*     ,
@@ -2342,6 +2779,25 @@ namespace ge{
               offset,
               length,
               access);
+    }
+    template<
+      typename SIZE_TYPE   = GLsizei ,
+      typename TYPE_TYPE   = GLenum  ,
+      typename BUFFER_TYPE = GLfloat*>
+    inline FeedbackBuffer<
+      SIZE_TYPE  ,
+      TYPE_TYPE  ,
+      BUFFER_TYPE>* newFeedbackBuffer(
+        SIZE_TYPE   const&size  ,
+        TYPE_TYPE   const&type  ,
+        BUFFER_TYPE const&buffer){
+        return new FeedbackBuffer<
+          SIZE_TYPE  ,
+          TYPE_TYPE  ,
+          BUFFER_TYPE>(
+              size  ,
+              type  ,
+              buffer);
     }
     template<
       typename TARGET_TYPE = GLenum    ,
@@ -2402,6 +2858,25 @@ namespace ge{
               data          );
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = void**>
+    inline GetBufferPointerv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>* newGetBufferPointerv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return new GetBufferPointerv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>(
+              target,
+              pname ,
+              params);
+    }
+    template<
       typename TARGET_TYPE = GLenum  ,
       typename PNAME_TYPE  = GLenum  ,
       typename PARAMS_TYPE = GLint64*>
@@ -2455,40 +2930,6 @@ namespace ge{
               sizes  );
     }
     template<
-      typename VAOBJ_TYPE   = GLuint         ,
-      typename FIRST_TYPE   = GLuint         ,
-      typename COUNT_TYPE   = GLsizei        ,
-      typename BUFFERS_TYPE = const GLuint*  ,
-      typename OFFSETS_TYPE = const GLintptr*,
-      typename STRIDES_TYPE = const GLsizei* >
-    inline VertexArrayVertexBuffers<
-      VAOBJ_TYPE  ,
-      FIRST_TYPE  ,
-      COUNT_TYPE  ,
-      BUFFERS_TYPE,
-      OFFSETS_TYPE,
-      STRIDES_TYPE>* newVertexArrayVertexBuffers(
-        VAOBJ_TYPE   const&vaobj  ,
-        FIRST_TYPE   const&first  ,
-        COUNT_TYPE   const&count  ,
-        BUFFERS_TYPE const&buffers,
-        OFFSETS_TYPE const&offsets,
-        STRIDES_TYPE const&strides){
-        return new VertexArrayVertexBuffers<
-          VAOBJ_TYPE  ,
-          FIRST_TYPE  ,
-          COUNT_TYPE  ,
-          BUFFERS_TYPE,
-          OFFSETS_TYPE,
-          STRIDES_TYPE>(
-              vaobj  ,
-              first  ,
-              count  ,
-              buffers,
-              offsets,
-              strides);
-    }
-    template<
       typename TARGET_TYPE = GLenum     ,
       typename OFFSET_TYPE = GLintptr   ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -2513,20 +2954,6 @@ namespace ge{
               data  );
     }
     template<
-      typename VAOBJ_TYPE  = GLuint,
-      typename BUFFER_TYPE = GLuint>
-    inline VertexArrayElementBuffer<
-      VAOBJ_TYPE ,
-      BUFFER_TYPE>* newVertexArrayElementBuffer(
-        VAOBJ_TYPE  const&vaobj ,
-        BUFFER_TYPE const&buffer){
-        return new VertexArrayElementBuffer<
-          VAOBJ_TYPE ,
-          BUFFER_TYPE>(
-              vaobj ,
-              buffer);
-    }
-    template<
       typename N_TYPE       = GLsizei,
       typename BUFFERS_TYPE = GLuint*>
     inline CreateBuffers<
@@ -2539,35 +2966,6 @@ namespace ge{
           BUFFERS_TYPE>(
               n      ,
               buffers);
-    }
-    template<
-      typename VAOBJ_TYPE        = GLuint  ,
-      typename BINDINGINDEX_TYPE = GLuint  ,
-      typename BUFFER_TYPE       = GLuint  ,
-      typename OFFSET_TYPE       = GLintptr,
-      typename STRIDE_TYPE       = GLsizei >
-    inline VertexArrayVertexBuffer<
-      VAOBJ_TYPE       ,
-      BINDINGINDEX_TYPE,
-      BUFFER_TYPE      ,
-      OFFSET_TYPE      ,
-      STRIDE_TYPE      >* newVertexArrayVertexBuffer(
-        VAOBJ_TYPE        const&vaobj       ,
-        BINDINGINDEX_TYPE const&bindingindex,
-        BUFFER_TYPE       const&buffer      ,
-        OFFSET_TYPE       const&offset      ,
-        STRIDE_TYPE       const&stride      ){
-        return new VertexArrayVertexBuffer<
-          VAOBJ_TYPE       ,
-          BINDINGINDEX_TYPE,
-          BUFFER_TYPE      ,
-          OFFSET_TYPE      ,
-          STRIDE_TYPE      >(
-              vaobj       ,
-              bindingindex,
-              buffer      ,
-              offset      ,
-              stride      );
     }
     template<
       typename TARGET_TYPE  = GLenum       ,
@@ -2625,6 +3023,29 @@ namespace ge{
               buffer,
               pname ,
               params);
+    }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename BUF_TYPE         = GLenum>
+    inline NamedFramebufferDrawBuffer<
+      FRAMEBUFFER_TYPE,
+      BUF_TYPE        >* newNamedFramebufferDrawBuffer(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        BUF_TYPE         const&buf        ){
+        return new NamedFramebufferDrawBuffer<
+          FRAMEBUFFER_TYPE,
+          BUF_TYPE        >(
+              framebuffer,
+              buf        );
+    }
+    template<
+      typename MODE_TYPE = GLenum>
+    inline ReadBuffer<
+      MODE_TYPE>* newReadBuffer(
+        MODE_TYPE const&mode){
+        return new ReadBuffer<
+          MODE_TYPE>(
+              mode);
     }
     template<
       typename FRAMEBUFFER_TYPE = GLuint,
@@ -3135,18 +3556,33 @@ namespace ge{
               size          );
     }
     template<
-      typename FRAMEBUFFER_TYPE = GLuint,
-      typename BUF_TYPE         = GLenum>
-    inline NamedFramebufferDrawBuffer<
-      FRAMEBUFFER_TYPE,
-      BUF_TYPE        >* newNamedFramebufferDrawBuffer(
-        FRAMEBUFFER_TYPE const&framebuffer,
-        BUF_TYPE         const&buf        ){
-        return new NamedFramebufferDrawBuffer<
-          FRAMEBUFFER_TYPE,
-          BUF_TYPE        >(
-              framebuffer,
-              buf        );
+      typename FIRST_TYPE   = GLuint         ,
+      typename COUNT_TYPE   = GLsizei        ,
+      typename BUFFERS_TYPE = const GLuint*  ,
+      typename OFFSETS_TYPE = const GLintptr*,
+      typename STRIDES_TYPE = const GLsizei* >
+    inline BindVertexBuffers<
+      FIRST_TYPE  ,
+      COUNT_TYPE  ,
+      BUFFERS_TYPE,
+      OFFSETS_TYPE,
+      STRIDES_TYPE>* newBindVertexBuffers(
+        FIRST_TYPE   const&first  ,
+        COUNT_TYPE   const&count  ,
+        BUFFERS_TYPE const&buffers,
+        OFFSETS_TYPE const&offsets,
+        STRIDES_TYPE const&strides){
+        return new BindVertexBuffers<
+          FIRST_TYPE  ,
+          COUNT_TYPE  ,
+          BUFFERS_TYPE,
+          OFFSETS_TYPE,
+          STRIDES_TYPE>(
+              first  ,
+              count  ,
+              buffers,
+              offsets,
+              strides);
     }
     template<
       typename TARGET_TYPE = GLenum,
@@ -3374,4 +3810,3 @@ namespace ge{
     }
   }
 }
-

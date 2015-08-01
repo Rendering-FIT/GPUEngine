@@ -1,7 +1,7 @@
 #include<geGL/ProgramObjectUniformCommands.h>
 
 using namespace ge::gl;
-
+/*
 ge::core::Command*ge::gl::newUniform(ProgramObject*program,std::string name,GLfloat a0){
   return new Uniform<1,GLfloat>(program->getUniform(name),a0);
 }
@@ -227,4 +227,4 @@ ge::core::Command*ge::gl::newProgramUniformMatrix(ProgramObject*program,std::str
                          return NULL;
   }
 }
-
+*/

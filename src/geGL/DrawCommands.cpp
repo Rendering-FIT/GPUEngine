@@ -3,7 +3,7 @@
 using namespace ge::gl;
 
 
-
+/*
 DrawArrays::DrawArrays(
     GLenum  mode ,
     GLint   first,
@@ -340,3 +340,4 @@ const GLint*MultiDrawElementsBaseVertex::getBaseVertex(){
 void MultiDrawElementsBaseVertex::setBaseVertex(const GLint*baseVertex){
   this->_baseVertex = baseVertex;
 }
+*/

@@ -8,11 +8,15 @@
 
 namespace ge{
   namespace core{
-    class GECORE_EXPORT Command : public Functor
-    {
+    class GECORE_EXPORT Command : public Functor{
+      protected:
+        virtual void*_getAttribAddress(std::string){return NULL;}
       public:
-         virtual void operator()(){};
+        virtual void operator()(){};
         virtual ~Command(){};
+        template<typename T>T&getAttrib(std::string name){
+          return *((T*)this->_getAttribAddress(name));
+        }
     };
 
     class GECORE_EXPORT CommandContainer: public Command

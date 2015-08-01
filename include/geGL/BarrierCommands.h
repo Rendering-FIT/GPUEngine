@@ -7,10 +7,33 @@
 
 namespace ge{
   namespace gl{
+    class TextureBarrier:
+        public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          return NULL;
+        }
+      public:
+        TextureBarrier(
+            ){
+        }
+        virtual~TextureBarrier(){}
+        virtual void operator()(){
+          glTextureBarrier(
+
+          );
+        }
+    };
+
     template<
       typename BARRIERS_TYPE = GLbitfield>
     class MemoryBarrierByRegion:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "barriers")return(void*)&this->barriers;
+          return NULL;
+        }
       public:
         BARRIERS_TYPE barriers;
         MemoryBarrierByRegion(
@@ -29,6 +52,11 @@ namespace ge{
       typename BARRIERS_TYPE = GLbitfield>
     class MemoryBarrier:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "barriers")return(void*)&this->barriers;
+          return NULL;
+        }
       public:
         BARRIERS_TYPE barriers;
         MemoryBarrier(
@@ -42,6 +70,7 @@ namespace ge{
           );
         }
     };
+
 
     template<
       typename BARRIERS_TYPE = GLbitfield>

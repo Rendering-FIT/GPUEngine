@@ -8,6 +8,7 @@
 
 namespace ge{
   namespace gl{
+    /*
     GEGL_EXPORT ge::core::Command*newUniform(ProgramObject*program,std::string name,GLfloat a0);
     GEGL_EXPORT ge::core::Command*newUniform(ProgramObject*program,std::string name,GLfloat a0,GLfloat a1);
     GEGL_EXPORT ge::core::Command*newUniform(ProgramObject*program,std::string name,GLfloat a0,GLfloat a1,GLfloat a2);
@@ -53,6 +54,6 @@ namespace ge{
     GEGL_EXPORT ge::core::Command*newProgramUniformV(ProgramObject*program,std::string name,const GLdouble*data,GLsizei count=1);
     GEGL_EXPORT ge::core::Command*newProgramUniformMatrix(ProgramObject*program,std::string name,const GLfloat* data,GLsizei count=1,GLboolean transpose = GL_FALSE);
     GEGL_EXPORT ge::core::Command*newProgramUniformMatrix(ProgramObject*program,std::string name,const GLdouble*data,GLsizei count=1,GLboolean transpose = GL_FALSE);
-   
+    */
   }
 }

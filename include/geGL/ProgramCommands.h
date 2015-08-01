@@ -11,6 +11,11 @@ namespace ge{
       typename PROGRAM_TYPE = GLuint>
     class UseProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         UseProgram(
@@ -36,6 +41,18 @@ namespace ge{
       typename PARAMS_TYPE           = GLint*       >
     class GetProgramResourceiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "programInterface")return(void*)&this->programInterface;
+          if(name == "index"           )return(void*)&this->index           ;
+          if(name == "propCount"       )return(void*)&this->propCount       ;
+          if(name == "props"           )return(void*)&this->props           ;
+          if(name == "bufSize"         )return(void*)&this->bufSize         ;
+          if(name == "length"          )return(void*)&this->length          ;
+          if(name == "params"          )return(void*)&this->params          ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE          program         ;
         PROGRAMINTERFACE_TYPE programInterface;
@@ -86,6 +103,15 @@ namespace ge{
       typename BINARY_TYPE       = void*   >
     class GetProgramBinary:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"     )return(void*)&this->program     ;
+          if(name == "bufSize"     )return(void*)&this->bufSize     ;
+          if(name == "length"      )return(void*)&this->length      ;
+          if(name == "binaryFormat")return(void*)&this->binaryFormat;
+          if(name == "binary"      )return(void*)&this->binary      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE      program     ;
         BUFSIZE_TYPE      bufSize     ;
@@ -120,6 +146,11 @@ namespace ge{
       typename RET_TYPE = GLuint>
     class CreateProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret")return(void*)&this->ret;
+          return NULL;
+        }
       public:
         RET_TYPE ret;
         CreateProgram(
@@ -140,6 +171,14 @@ namespace ge{
       typename NAME_TYPE             = const GLchar*>
     class GetProgramResourceLocation:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"             )return(void*)&this->ret             ;
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "programInterface")return(void*)&this->programInterface;
+          if(name == "name"            )return(void*)&this->name            ;
+          return NULL;
+        }
       public:
         RET_TYPE              ret             ;
         PROGRAM_TYPE          program         ;
@@ -172,6 +211,14 @@ namespace ge{
       typename INFOLOG_TYPE = GLchar* >
     class GetProgramInfoLog:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          if(name == "bufSize")return(void*)&this->bufSize;
+          if(name == "length" )return(void*)&this->length ;
+          if(name == "infoLog")return(void*)&this->infoLog;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         BUFSIZE_TYPE bufSize;
@@ -202,6 +249,11 @@ namespace ge{
       typename PROGRAM_TYPE = GLuint>
     class ValidateProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         ValidateProgram(
@@ -223,6 +275,14 @@ namespace ge{
       typename VALUES_TYPE     = GLint*>
     class GetProgramStageiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"   )return(void*)&this->program   ;
+          if(name == "shadertype")return(void*)&this->shadertype;
+          if(name == "pname"     )return(void*)&this->pname     ;
+          if(name == "values"    )return(void*)&this->values    ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE    program   ;
         SHADERTYPE_TYPE shadertype;
@@ -254,6 +314,12 @@ namespace ge{
       typename PROGRAM_TYPE = GLuint   >
     class IsProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"    )return(void*)&this->ret    ;
+          if(name == "program")return(void*)&this->program;
+          return NULL;
+        }
       public:
         RET_TYPE     ret    ;
         PROGRAM_TYPE program;
@@ -278,6 +344,14 @@ namespace ge{
       typename PARAMS_TYPE           = GLint*>
     class GetProgramInterfaceiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "programInterface")return(void*)&this->programInterface;
+          if(name == "pname"           )return(void*)&this->pname           ;
+          if(name == "params"          )return(void*)&this->params          ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE          program         ;
         PROGRAMINTERFACE_TYPE programInterface;
@@ -310,6 +384,13 @@ namespace ge{
       typename PARAMS_TYPE  = GLint*>
     class GetProgramiv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          if(name == "pname"  )return(void*)&this->pname  ;
+          if(name == "params" )return(void*)&this->params ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         PNAME_TYPE   pname  ;
@@ -337,6 +418,12 @@ namespace ge{
       typename PROGRAM_TYPE  = GLuint>
     class ActiveShaderProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "pipeline")return(void*)&this->pipeline;
+          if(name == "program" )return(void*)&this->program ;
+          return NULL;
+        }
       public:
         PIPELINE_TYPE pipeline;
         PROGRAM_TYPE  program ;
@@ -362,6 +449,14 @@ namespace ge{
       typename NAME_TYPE             = const GLchar*>
     class GetProgramResourceIndex:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"             )return(void*)&this->ret             ;
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "programInterface")return(void*)&this->programInterface;
+          if(name == "name"            )return(void*)&this->name            ;
+          return NULL;
+        }
       public:
         RET_TYPE              ret             ;
         PROGRAM_TYPE          program         ;
@@ -391,6 +486,11 @@ namespace ge{
       typename PROGRAM_TYPE = GLuint>
     class LinkProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         LinkProgram(
@@ -412,6 +512,14 @@ namespace ge{
       typename NAME_TYPE             = const GLchar*>
     class GetProgramResourceLocationIndex:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"             )return(void*)&this->ret             ;
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "programInterface")return(void*)&this->programInterface;
+          if(name == "name"            )return(void*)&this->name            ;
+          return NULL;
+        }
       public:
         RET_TYPE              ret             ;
         PROGRAM_TYPE          program         ;
@@ -444,6 +552,14 @@ namespace ge{
       typename STRINGS_TYPE = const GLchar*const*>
     class CreateShaderProgramv:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "ret"    )return(void*)&this->ret    ;
+          if(name == "type"   )return(void*)&this->type   ;
+          if(name == "count"  )return(void*)&this->count  ;
+          if(name == "strings")return(void*)&this->strings;
+          return NULL;
+        }
       public:
         RET_TYPE     ret    ;
         TYPE_TYPE    type   ;
@@ -478,6 +594,16 @@ namespace ge{
       typename NAME_TYPE             = GLchar* >
     class GetProgramResourceName:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"         )return(void*)&this->program         ;
+          if(name == "programInterface")return(void*)&this->programInterface;
+          if(name == "index"           )return(void*)&this->index           ;
+          if(name == "bufSize"         )return(void*)&this->bufSize         ;
+          if(name == "length"          )return(void*)&this->length          ;
+          if(name == "name"            )return(void*)&this->name            ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE          program         ;
         PROGRAMINTERFACE_TYPE programInterface;
@@ -519,6 +645,14 @@ namespace ge{
       typename LENGTH_TYPE       = GLsizei    >
     class ProgramBinary:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program"     )return(void*)&this->program     ;
+          if(name == "binaryFormat")return(void*)&this->binaryFormat;
+          if(name == "binary"      )return(void*)&this->binary      ;
+          if(name == "length"      )return(void*)&this->length      ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE      program     ;
         BINARYFORMAT_TYPE binaryFormat;
@@ -551,6 +685,13 @@ namespace ge{
       typename PROGRAM_TYPE  = GLuint    >
     class UseProgramStages:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "pipeline")return(void*)&this->pipeline;
+          if(name == "stages"  )return(void*)&this->stages  ;
+          if(name == "program" )return(void*)&this->program ;
+          return NULL;
+        }
       public:
         PIPELINE_TYPE pipeline;
         STAGES_TYPE   stages  ;
@@ -577,6 +718,11 @@ namespace ge{
       typename PROGRAM_TYPE = GLuint>
     class DeleteProgram:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         DeleteProgram(
@@ -597,6 +743,13 @@ namespace ge{
       typename VALUE_TYPE   = GLint >
     class ProgramParameteri:
         public ge::core::Command{
+      protected:
+        void*_getAttribAddress(std::string name){
+          if(name == "program")return(void*)&this->program;
+          if(name == "pname"  )return(void*)&this->pname  ;
+          if(name == "value"  )return(void*)&this->value  ;
+          return NULL;
+        }
       public:
         PROGRAM_TYPE program;
         PNAME_TYPE   pname  ;
