@@ -3,6 +3,7 @@
 #include<geCore/dtemplates.h>
 #include<geGL/ProgramObject.h>
 #include<geGL/BufferObject.h>
+#include<geGL/VertexArrayObject.h>
 
 namespace ge{
   namespace gl{
@@ -267,6 +268,14 @@ namespace ge{
     template<typename TYPE>
       inline TYPE convertTo(std::shared_ptr<ge::gl::ProgramObject>const&sharedProgramObject){
         return sharedProgramObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(ge::gl::VertexArrayObject*const&vertexArrayObject){
+        return vertexArrayObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(std::shared_ptr<ge::gl::VertexArrayObject>const&sharedVertexArrayObject){
+        return sharedVertexArrayObject->getId();
       }
 
   }
