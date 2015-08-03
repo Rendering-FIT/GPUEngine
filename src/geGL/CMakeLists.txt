@@ -27,26 +27,26 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
     ${HEADER_PATH}/RenderbufferObject.h
-#    ${HEADER_PATH}/Blend.h
-    ${HEADER_PATH}/BlendCommands.h
-    ${HEADER_PATH}/DepthCommands.h
-    ${HEADER_PATH}/LogicalOperationsCommands.h
-    ${HEADER_PATH}/MultisampleFragmentOperationsCommands.h
-    ${HEADER_PATH}/OcclusionQueriesCommands.h
-    ${HEADER_PATH}/ScissorCommands.h
-#    ${HEADER_PATH}/Stencil.h
-    ${HEADER_PATH}/StencilCommands.h
+    #${HEADER_PATH}/Blend.h
+    #${HEADER_PATH}/BlendCommands.h
+    #${HEADER_PATH}/DepthCommands.h
+    #${HEADER_PATH}/LogicalOperationsCommands.h
+    #${HEADER_PATH}/MultisampleFragmentOperationsCommands.h
+    #${HEADER_PATH}/OcclusionQueriesCommands.h
+    #${HEADER_PATH}/ScissorCommands.h
+    #${HEADER_PATH}/Stencil.h
+    #${HEADER_PATH}/StencilCommands.h
     ${HEADER_PATH}/OpenGL.h
     ${HEADER_PATH}/OpenGLCommon.h
-    ${HEADER_PATH}/ConditionalRenderingCommands.h
-    ${HEADER_PATH}/DrawCommands.h
-    ${HEADER_PATH}/DrawCommandsBases.h
-    ${HEADER_PATH}/UniformCommands.h
-    ${HEADER_PATH}/GenericVertexAttributeArraysCommands.h
-    ${HEADER_PATH}/PrimitiveRestartCommands.h
+    #${HEADER_PATH}/ConditionalRenderingCommands.h
+    #${HEADER_PATH}/DrawCommands.h
+    #${HEADER_PATH}/DrawCommandsBases.h
+    #${HEADER_PATH}/UniformCommands.h
+    #${HEADER_PATH}/GenericVertexAttributeArraysCommands.h
+    #${HEADER_PATH}/PrimitiveRestartCommands.h
     ${HEADER_PATH}/VertexArrayObjectsCommands.h
     ${HEADER_PATH}/VertexArrayObjectsManager.h
-    ${HEADER_PATH}/VertexAttributeDivisorsCommands.h
+    #${HEADER_PATH}/VertexAttributeDivisorsCommands.h
     ${HEADER_PATH}/ShaderObjectsCommands.h
     ${HEADER_PATH}/ShaderObjectsManager.h
     ${HEADER_PATH}/AsynchronousQueryObject.h
@@ -54,18 +54,19 @@ set(GL_INCLUDES
     ${HEADER_PATH}/RasterizationState.h
     ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
-    ${HEADER_PATH}/ProgramCommands.h
-    ${HEADER_PATH}/BufferCommands.h
+    #${HEADER_PATH}/ProgramCommands.h
+    #${HEADER_PATH}/BufferCommands.h
     ${HEADER_PATH}/BufferObjectCommands.h
     ${HEADER_PATH}/ProgramObjectCommands.h
     ${HEADER_PATH}/ObjectCommands.h
     ${HEADER_PATH}/ProgramObjectUniformCommands.h
     ${HEADER_PATH}/TextureObjectCommands.h
     ${HEADER_PATH}/AllAttribs.h
-    ${HEADER_PATH}/TextureCommands.h
-    ${HEADER_PATH}/BarrierCommands.h
-    ${HEADER_PATH}/DispatchCommands.h
-    ${HEADER_PATH}/VertexArrayCommands.h
+    ${HEADER_PATH}/OpenGLCommands.h
+    #${HEADER_PATH}/TextureCommands.h
+    #${HEADER_PATH}/BarrierCommands.h
+    #${HEADER_PATH}/DispatchCommands.h
+    #${HEADER_PATH}/VertexArrayCommands.h
   )
 
 set(GL_SOURCES
@@ -81,39 +82,42 @@ set(GL_SOURCES
     ShaderObjectSubroutine.cpp
     ShaderObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
-#    Blend.cpp
-    BlendCommands.cpp
-    DepthCommands.cpp
-    LogicalOperationsCommands.cpp
-    MultisampleFragmentOperationsCommands.cpp
-    OcclusionQueriesCommands.cpp
-    ScissorCommands.cpp
-#    Stencil.cpp
-    StencilCommands.cpp
     OpenGL.cpp
     OpenGLCommon.cpp
-    ConditionalRenderingCommands.cpp
-    DrawCommands.cpp
-    DrawCommandsBases.cpp
-    UniformCommands.cpp
-    GenericVertexAttributeArraysCommands.cpp
-    PrimitiveRestartCommands.cpp
-    VertexArrayObjectsCommands.cpp
     VertexArrayObjectsManager.cpp
-    VertexAttributeDivisorsCommands.cpp
-    ShaderObjectsCommands.cpp
     ShaderObjectsManager.cpp
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
     RasterizationState.cpp
     OpenGLObject.cpp
+    #
     #ProgramCommands.cpp
-    BufferCommands.cpp
+    #VertexAttributeDivisorsCommands.cpp
+    #ConditionalRenderingCommands.cpp
+    #Blend.cpp
+    #BlendCommands.cpp
+    #DepthCommands.cpp
+    #LogicalOperationsCommands.cpp
+    #MultisampleFragmentOperationsCommands.cpp
+    #OcclusionQueriesCommands.cpp
+    #ScissorCommands.cpp
+    #Stencil.cpp
+    #StencilCommands.cpp
+
+    #DrawCommands.cpp
+    #DrawCommandsBases.cpp
+    #UniformCommands.cpp
+    #GenericVertexAttributeArraysCommands.cpp
+    #PrimitiveRestartCommands.cpp
+    #BufferCommands.cpp
+
+    TextureCommands.cpp
+    VertexArrayObjectsCommands.cpp
+    ShaderObjectsCommands.cpp
     BufferObjectCommands.cpp
     ProgramObjectCommands.cpp
     ProgramObjectUniformCommands.cpp
     TextureObjectCommands.cpp
-    TextureCommands.cpp
   )
 
 
