@@ -20,6 +20,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/InitAndFinalize.h
     ${HEADER_PATH}/Object.h
     ${HEADER_PATH}/StandardSemanticsNames.h
+    ${HEADER_PATH}/TypeRegister.h
   )
 
 set(CORE_SOURCES
@@ -29,6 +30,7 @@ set(CORE_SOURCES
     Command.cpp
     EnumRegister.cpp
     StandardSemanticsNames.cpp
+    TypeRegister.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

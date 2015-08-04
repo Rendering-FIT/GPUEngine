@@ -4,6 +4,7 @@
 #include<geGL/ProgramObject.h>
 #include<geGL/BufferObject.h>
 #include<geGL/VertexArrayObject.h>
+#include<geGL/FramebufferObject.h>
 
 namespace ge{
   namespace gl{
@@ -276,6 +277,14 @@ namespace ge{
     template<typename TYPE>
       inline TYPE convertTo(std::shared_ptr<ge::gl::VertexArrayObject>const&sharedVertexArrayObject){
         return sharedVertexArrayObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(ge::gl::FramebufferObject*const&framebufferObject){
+        return framebufferObject->getId();
+      }
+    template<typename TYPE>
+      inline TYPE convertTo(std::shared_ptr<ge::gl::FramebufferObject>const&sharedFramebufferObject){
+        return sharedFramebufferObject->getId();
       }
 
   }
