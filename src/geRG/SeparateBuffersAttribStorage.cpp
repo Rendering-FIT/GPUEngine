@@ -74,7 +74,7 @@ void SeparateBuffersAttribStorage::uploadVertices(Mesh &mesh,const void*const *a
                                                   int numVertices,int fromIndex)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->configData();
-   unsigned c=_arrayBuffers.size();
+   unsigned c = unsigned(_arrayBuffers.size());
    assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
                                "AttribStorage must match.");
    for(unsigned i=0; i<c; i++)

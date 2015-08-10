@@ -13,13 +13,13 @@
 #      define @LIB_NAME_UPPER@_EXPORT __declspec(dllexport)
 #   else
 #      define @LIB_NAME_UPPER@_EXPORT __declspec(dllimport)
-#   endif 
+#   endif
 #else
 #   ifdef GE_LIBRARY
 #      define @LIB_NAME_UPPER@_EXPORT __attribute__ ((visibility("default")))
 #   else
 #      define @LIB_NAME_UPPER@_EXPORT
-#   endif 
+#   endif
 #endif
 
 

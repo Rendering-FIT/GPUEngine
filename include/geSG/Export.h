@@ -13,13 +13,13 @@
 #      define GESG_EXPORT __declspec(dllexport)
 #   else
 #      define GESG_EXPORT __declspec(dllimport)
-#   endif 
+#   endif
 #else
 #   ifdef GE_LIBRARY
 #      define GESG_EXPORT __attribute__ ((visibility("default")))
 #   else
 #      define GESG_EXPORT
-#   endif 
+#   endif
 #endif
 
 

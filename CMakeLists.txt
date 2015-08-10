@@ -36,6 +36,10 @@ ENDFOREACH()
 IF(MSVC)
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
+   # disable MSVC warning "LNK4221: This object file does not define any previously undefined public symbols,
+   # so it will not be used by any link operation that consumes this library"
+   SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
+
    OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." OFF)
    IF(GLEW_STATIC)
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DGLEW_STATIC")
