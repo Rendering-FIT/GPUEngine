@@ -5,6 +5,7 @@
 #include<iostream>
 #include<vector>
 #include<map>
+#include<memory>
 
 namespace ge{
   namespace core{
@@ -45,8 +46,20 @@ namespace ge{
         virtual ~CommandList();
         virtual unsigned add(Command*command);
         Command* getCommand(unsigned i);
+        unsigned size();
         virtual void operator()();
         void step();
+    };
+
+    class GECORE_EXPORT SharedCommandList: public Command{
+      protected:
+        std::vector<std::shared_ptr<Command>>_commands;
+      public:
+        SharedCommandList();
+        virtual ~SharedCommandList();
+        std::shared_ptr<Command>&getCommand(unsigned i);
+        unsigned size();
+        virtual void operator()();
     };
 
     class GECORE_EXPORT CommandListWithAccessor: public CommandList{

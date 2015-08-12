@@ -48,6 +48,22 @@ Command* CommandList::getCommand(unsigned i){
   if(i>=this->_commands.size())return NULL;
   return this->_commands[i];
 }
+unsigned CommandList::size(){return this->_commands.size();}
+
+SharedCommandList::SharedCommandList(){}
+
+SharedCommandList::~SharedCommandList(){}
+
+std::shared_ptr<Command>&SharedCommandList::getCommand(unsigned i){
+  return this->_commands[i];
+}
+
+unsigned SharedCommandList::size(){return this->_commands.size();}
+
+void SharedCommandList::operator()(){
+  for(auto x:this->_commands)
+    (*x)();
+}
 
 
 Command*CommandListWithAccessor::operator[](std::string name){
