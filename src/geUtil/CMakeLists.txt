@@ -22,6 +22,11 @@ set(GL_INCLUDES
   ${HEADER_PATH}/macros.h
   ${HEADER_PATH}/Progress.h
   ${HEADER_PATH}/geUtil.h
+  ${HEADER_PATH}/ArgData.h
+  ${HEADER_PATH}/BaseData.h
+  ${HEADER_PATH}/ArrayData.h
+  ${HEADER_PATH}/StructData.h
+  ${HEADER_PATH}/ArgumentManager.h
   )
 
 set(GL_SOURCES
@@ -31,6 +36,11 @@ set(GL_SOURCES
   HighResolutionTimer.cpp
   FPSPrinter.cpp
   Progress.cpp
+  ArgData.cpp
+  BaseData.cpp
+  ArrayData.cpp
+  StructData.cpp
+  ArgumentManager.cpp
   )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)

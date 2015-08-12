@@ -37,30 +37,30 @@ set(GL_INCLUDES
     #${HEADER_PATH}/Stencil.h
     #${HEADER_PATH}/StencilCommands.h
     ${HEADER_PATH}/OpenGL.h
-    ${HEADER_PATH}/OpenGLCommon.h
+    #${HEADER_PATH}/OpenGLCommon.h
     #${HEADER_PATH}/ConditionalRenderingCommands.h
     #${HEADER_PATH}/DrawCommands.h
     #${HEADER_PATH}/DrawCommandsBases.h
     #${HEADER_PATH}/UniformCommands.h
     #${HEADER_PATH}/GenericVertexAttributeArraysCommands.h
     #${HEADER_PATH}/PrimitiveRestartCommands.h
-    ${HEADER_PATH}/VertexArrayObjectsCommands.h
+    #${HEADER_PATH}/VertexArrayObjectsCommands.h
     ${HEADER_PATH}/VertexArrayObjectsManager.h
     #${HEADER_PATH}/VertexAttributeDivisorsCommands.h
-    ${HEADER_PATH}/ShaderObjectsCommands.h
-    ${HEADER_PATH}/ShaderObjectsManager.h
+    #${HEADER_PATH}/ShaderObjectsCommands.h
+    #${HEADER_PATH}/ShaderObjectsManager.h
     ${HEADER_PATH}/AsynchronousQueryObject.h
     ${HEADER_PATH}/DebugMessage.h
-    ${HEADER_PATH}/RasterizationState.h
+    #${HEADER_PATH}/RasterizationState.h
     ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
     #${HEADER_PATH}/ProgramCommands.h
     #${HEADER_PATH}/BufferCommands.h
-    ${HEADER_PATH}/BufferObjectCommands.h
-    ${HEADER_PATH}/ProgramObjectCommands.h
-    ${HEADER_PATH}/ObjectCommands.h
-    ${HEADER_PATH}/ProgramObjectUniformCommands.h
-    ${HEADER_PATH}/TextureObjectCommands.h
+    #${HEADER_PATH}/BufferObjectCommands.h
+    #${HEADER_PATH}/ProgramObjectCommands.h
+    #${HEADER_PATH}/ObjectCommands.h
+    #${HEADER_PATH}/ProgramObjectUniformCommands.h
+    #${HEADER_PATH}/TextureObjectCommands.h
     ${HEADER_PATH}/AllAttribs.h
     ${HEADER_PATH}/OpenGLCommands.h
     #${HEADER_PATH}/TextureCommands.h
@@ -83,12 +83,12 @@ set(GL_SOURCES
     ShaderObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
     OpenGL.cpp
-    OpenGLCommon.cpp
-    VertexArrayObjectsManager.cpp
-    ShaderObjectsManager.cpp
+    #OpenGLCommon.cpp
+    #VertexArrayObjectsManager.cpp
+    #ShaderObjectsManager.cpp
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
-    RasterizationState.cpp
+    #RasterizationState.cpp
     OpenGLObject.cpp
     #
     #ProgramCommands.cpp
@@ -111,13 +111,13 @@ set(GL_SOURCES
     #PrimitiveRestartCommands.cpp
     #BufferCommands.cpp
 
-    TextureCommands.cpp
-    VertexArrayObjectsCommands.cpp
+    #TextureCommands.cpp
+    #VertexArrayObjectsCommands.cpp
     ShaderObjectsCommands.cpp
-    BufferObjectCommands.cpp
-    ProgramObjectCommands.cpp
-    ProgramObjectUniformCommands.cpp
-    TextureObjectCommands.cpp
+    #BufferObjectCommands.cpp
+    #ProgramObjectCommands.cpp
+    #ProgramObjectUniformCommands.cpp
+    #TextureObjectCommands.cpp
   )
 
 

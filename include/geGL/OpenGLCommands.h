@@ -25194,6 +25194,26 @@ namespace ge{
               param  );
     }
     template<
+      typename TEXTURE_TYPE = GLuint        ,
+      typename PNAME_TYPE   = GLenum        ,
+      typename PARAM_TYPE   = const GLfloat*>
+    inline std::shared_ptr<TextureParameterfv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedTextureParameterfv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<TextureParameterfv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              texture,
+              pname  ,
+              param  );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLuint,
       typename Y_TYPE     = GLuint,
@@ -25218,6 +25238,31 @@ namespace ge{
               z    );
     }
     template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLuint,
+      typename Y_TYPE     = GLuint,
+      typename Z_TYPE     = GLuint>
+    inline std::shared_ptr<VertexAttribI3ui<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    >> sharedVertexAttribI3ui(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ){
+        return std::make_shared<VertexAttribI3ui<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    );
+    }
+
+    template<
       typename VAOBJ_TYPE  = GLuint,
       typename BUFFER_TYPE = GLuint>
     inline VertexArrayElementBuffer<
@@ -25232,6 +25277,21 @@ namespace ge{
               buffer);
     }
     template<
+      typename VAOBJ_TYPE  = GLuint,
+      typename BUFFER_TYPE = GLuint>
+    inline std::shared_ptr<VertexArrayElementBuffer<
+      VAOBJ_TYPE ,
+      BUFFER_TYPE>> sharedVertexArrayElementBuffer(
+        VAOBJ_TYPE  const&vaobj ,
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<VertexArrayElementBuffer<
+          VAOBJ_TYPE ,
+          BUFFER_TYPE>>(
+              vaobj ,
+              buffer);
+    }
+
+    template<
       typename FACE_TYPE = GLenum,
       typename MASK_TYPE = GLuint>
     inline StencilMaskSeparate<
@@ -25245,6 +25305,21 @@ namespace ge{
               face,
               mask);
     }
+    template<
+      typename FACE_TYPE = GLenum,
+      typename MASK_TYPE = GLuint>
+    inline std::shared_ptr<StencilMaskSeparate<
+      FACE_TYPE,
+      MASK_TYPE>> sharedStencilMaskSeparate(
+        FACE_TYPE const&face,
+        MASK_TYPE const&mask){
+        return std::make_shared<StencilMaskSeparate<
+          FACE_TYPE,
+          MASK_TYPE>>(
+              face,
+              mask);
+    }
+
     template<
       typename TEXTURE_TYPE              = GLuint   ,
       typename SAMPLES_TYPE              = GLsizei  ,
@@ -25285,6 +25360,46 @@ namespace ge{
               fixedsamplelocations);
     }
     template<
+      typename TEXTURE_TYPE              = GLuint   ,
+      typename SAMPLES_TYPE              = GLsizei  ,
+      typename INTERNALFORMAT_TYPE       = GLenum   ,
+      typename WIDTH_TYPE                = GLsizei  ,
+      typename HEIGHT_TYPE               = GLsizei  ,
+      typename DEPTH_TYPE                = GLsizei  ,
+      typename FIXEDSAMPLELOCATIONS_TYPE = GLboolean>
+    inline std::shared_ptr<TextureStorage3DMultisample<
+      TEXTURE_TYPE             ,
+      SAMPLES_TYPE             ,
+      INTERNALFORMAT_TYPE      ,
+      WIDTH_TYPE               ,
+      HEIGHT_TYPE              ,
+      DEPTH_TYPE               ,
+      FIXEDSAMPLELOCATIONS_TYPE>> sharedTextureStorage3DMultisample(
+        TEXTURE_TYPE              const&texture             ,
+        SAMPLES_TYPE              const&samples             ,
+        INTERNALFORMAT_TYPE       const&internalformat      ,
+        WIDTH_TYPE                const&width               ,
+        HEIGHT_TYPE               const&height              ,
+        DEPTH_TYPE                const&depth               ,
+        FIXEDSAMPLELOCATIONS_TYPE const&fixedsamplelocations){
+        return std::make_shared<TextureStorage3DMultisample<
+          TEXTURE_TYPE             ,
+          SAMPLES_TYPE             ,
+          INTERNALFORMAT_TYPE      ,
+          WIDTH_TYPE               ,
+          HEIGHT_TYPE              ,
+          DEPTH_TYPE               ,
+          FIXEDSAMPLELOCATIONS_TYPE>>(
+              texture             ,
+              samples             ,
+              internalformat      ,
+              width               ,
+              height              ,
+              depth               ,
+              fixedsamplelocations);
+    }
+
+    template<
       typename TARGET_TYPE         = GLenum ,
       typename LEVEL_TYPE          = GLint  ,
       typename INTERNALFORMAT_TYPE = GLenum ,
@@ -25324,6 +25439,46 @@ namespace ge{
               border        );
     }
     template<
+      typename TARGET_TYPE         = GLenum ,
+      typename LEVEL_TYPE          = GLint  ,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename X_TYPE              = GLint  ,
+      typename Y_TYPE              = GLint  ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename BORDER_TYPE         = GLint  >
+    inline std::shared_ptr<CopyTexImage1D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      X_TYPE             ,
+      Y_TYPE             ,
+      WIDTH_TYPE         ,
+      BORDER_TYPE        >> sharedCopyTexImage1D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        X_TYPE              const&x             ,
+        Y_TYPE              const&y             ,
+        WIDTH_TYPE          const&width         ,
+        BORDER_TYPE         const&border        ){
+        return std::make_shared<CopyTexImage1D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          X_TYPE             ,
+          Y_TYPE             ,
+          WIDTH_TYPE         ,
+          BORDER_TYPE        >>(
+              target        ,
+              level         ,
+              internalformat,
+              x             ,
+              y             ,
+              width         ,
+              border        );
+    }
+
+    template<
       typename VALUE_TYPE = GLfloat>
     inline MinSampleShading<
       VALUE_TYPE>* newMinSampleShading(
@@ -25332,6 +25487,16 @@ namespace ge{
           VALUE_TYPE>(
               value);
     }
+    template<
+      typename VALUE_TYPE = GLfloat>
+    inline std::shared_ptr<MinSampleShading<
+      VALUE_TYPE>> sharedMinSampleShading(
+        VALUE_TYPE const&value){
+        return std::make_shared<MinSampleShading<
+          VALUE_TYPE>>(
+              value);
+    }
+
     template<
       typename TARGET_TYPE             = GLenum,
       typename ATTACHMENT_TYPE         = GLenum,
@@ -25357,6 +25522,31 @@ namespace ge{
               renderbuffer      );
     }
     template<
+      typename TARGET_TYPE             = GLenum,
+      typename ATTACHMENT_TYPE         = GLenum,
+      typename RENDERBUFFERTARGET_TYPE = GLenum,
+      typename RENDERBUFFER_TYPE       = GLuint>
+    inline std::shared_ptr<FramebufferRenderbuffer<
+      TARGET_TYPE            ,
+      ATTACHMENT_TYPE        ,
+      RENDERBUFFERTARGET_TYPE,
+      RENDERBUFFER_TYPE      >> sharedFramebufferRenderbuffer(
+        TARGET_TYPE             const&target            ,
+        ATTACHMENT_TYPE         const&attachment        ,
+        RENDERBUFFERTARGET_TYPE const&renderbuffertarget,
+        RENDERBUFFER_TYPE       const&renderbuffer      ){
+        return std::make_shared<FramebufferRenderbuffer<
+          TARGET_TYPE            ,
+          ATTACHMENT_TYPE        ,
+          RENDERBUFFERTARGET_TYPE,
+          RENDERBUFFER_TYPE      >>(
+              target            ,
+              attachment        ,
+              renderbuffertarget,
+              renderbuffer      );
+    }
+
+    template<
       typename SHADERTYPE_TYPE = GLenum       ,
       typename COUNT_TYPE      = GLsizei      ,
       typename INDICES_TYPE    = const GLuint*>
@@ -25375,6 +25565,26 @@ namespace ge{
               count     ,
               indices   );
     }
+    template<
+      typename SHADERTYPE_TYPE = GLenum       ,
+      typename COUNT_TYPE      = GLsizei      ,
+      typename INDICES_TYPE    = const GLuint*>
+    inline std::shared_ptr<UniformSubroutinesuiv<
+      SHADERTYPE_TYPE,
+      COUNT_TYPE     ,
+      INDICES_TYPE   >> sharedUniformSubroutinesuiv(
+        SHADERTYPE_TYPE const&shadertype,
+        COUNT_TYPE      const&count     ,
+        INDICES_TYPE    const&indices   ){
+        return std::make_shared<UniformSubroutinesuiv<
+          SHADERTYPE_TYPE,
+          COUNT_TYPE     ,
+          INDICES_TYPE   >>(
+              shadertype,
+              count     ,
+              indices   );
+    }
+
     template<
       typename TARGET_TYPE    = GLenum     ,
       typename LEVEL_TYPE     = GLint      ,
@@ -25435,6 +25645,66 @@ namespace ge{
               data     );
     }
     template<
+      typename TARGET_TYPE    = GLenum     ,
+      typename LEVEL_TYPE     = GLint      ,
+      typename XOFFSET_TYPE   = GLint      ,
+      typename YOFFSET_TYPE   = GLint      ,
+      typename ZOFFSET_TYPE   = GLint      ,
+      typename WIDTH_TYPE     = GLsizei    ,
+      typename HEIGHT_TYPE    = GLsizei    ,
+      typename DEPTH_TYPE     = GLsizei    ,
+      typename FORMAT_TYPE    = GLenum     ,
+      typename IMAGESIZE_TYPE = GLsizei    ,
+      typename DATA_TYPE      = const void*>
+    inline std::shared_ptr<CompressedTexSubImage3D<
+      TARGET_TYPE   ,
+      LEVEL_TYPE    ,
+      XOFFSET_TYPE  ,
+      YOFFSET_TYPE  ,
+      ZOFFSET_TYPE  ,
+      WIDTH_TYPE    ,
+      HEIGHT_TYPE   ,
+      DEPTH_TYPE    ,
+      FORMAT_TYPE   ,
+      IMAGESIZE_TYPE,
+      DATA_TYPE     >> sharedCompressedTexSubImage3D(
+        TARGET_TYPE    const&target   ,
+        LEVEL_TYPE     const&level    ,
+        XOFFSET_TYPE   const&xoffset  ,
+        YOFFSET_TYPE   const&yoffset  ,
+        ZOFFSET_TYPE   const&zoffset  ,
+        WIDTH_TYPE     const&width    ,
+        HEIGHT_TYPE    const&height   ,
+        DEPTH_TYPE     const&depth    ,
+        FORMAT_TYPE    const&format   ,
+        IMAGESIZE_TYPE const&imageSize,
+        DATA_TYPE      const&data     ){
+        return std::make_shared<CompressedTexSubImage3D<
+          TARGET_TYPE   ,
+          LEVEL_TYPE    ,
+          XOFFSET_TYPE  ,
+          YOFFSET_TYPE  ,
+          ZOFFSET_TYPE  ,
+          WIDTH_TYPE    ,
+          HEIGHT_TYPE   ,
+          DEPTH_TYPE    ,
+          FORMAT_TYPE   ,
+          IMAGESIZE_TYPE,
+          DATA_TYPE     >>(
+              target   ,
+              level    ,
+              xoffset  ,
+              yoffset  ,
+              zoffset  ,
+              width    ,
+              height   ,
+              depth    ,
+              format   ,
+              imageSize,
+              data     );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum   ,
       typename INDEX_TYPE  = GLuint   ,
       typename DATA_TYPE   = GLdouble*>
@@ -25454,6 +25724,26 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum   ,
+      typename INDEX_TYPE  = GLuint   ,
+      typename DATA_TYPE   = GLdouble*>
+    inline std::shared_ptr<GetDoublei_v<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      DATA_TYPE  >> sharedGetDoublei_v(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetDoublei_v<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          DATA_TYPE  >>(
+              target,
+              index ,
+              data  );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLshort*>
     inline VertexAttrib1sv<
@@ -25467,6 +25757,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLshort*>
+    inline std::shared_ptr<VertexAttrib1sv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib1sv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib1sv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename VAOBJ_TYPE   = GLuint         ,
       typename FIRST_TYPE   = GLuint         ,
@@ -25502,6 +25807,41 @@ namespace ge{
               strides);
     }
     template<
+      typename VAOBJ_TYPE   = GLuint         ,
+      typename FIRST_TYPE   = GLuint         ,
+      typename COUNT_TYPE   = GLsizei        ,
+      typename BUFFERS_TYPE = const GLuint*  ,
+      typename OFFSETS_TYPE = const GLintptr*,
+      typename STRIDES_TYPE = const GLsizei* >
+    inline std::shared_ptr<VertexArrayVertexBuffers<
+      VAOBJ_TYPE  ,
+      FIRST_TYPE  ,
+      COUNT_TYPE  ,
+      BUFFERS_TYPE,
+      OFFSETS_TYPE,
+      STRIDES_TYPE>> sharedVertexArrayVertexBuffers(
+        VAOBJ_TYPE   const&vaobj  ,
+        FIRST_TYPE   const&first  ,
+        COUNT_TYPE   const&count  ,
+        BUFFERS_TYPE const&buffers,
+        OFFSETS_TYPE const&offsets,
+        STRIDES_TYPE const&strides){
+        return std::make_shared<VertexArrayVertexBuffers<
+          VAOBJ_TYPE  ,
+          FIRST_TYPE  ,
+          COUNT_TYPE  ,
+          BUFFERS_TYPE,
+          OFFSETS_TYPE,
+          STRIDES_TYPE>>(
+              vaobj  ,
+              first  ,
+              count  ,
+              buffers,
+              offsets,
+              strides);
+    }
+
+    template<
       typename UNIT_TYPE    = GLuint,
       typename SAMPLER_TYPE = GLuint>
     inline BindSampler<
@@ -25516,6 +25856,21 @@ namespace ge{
               sampler);
     }
     template<
+      typename UNIT_TYPE    = GLuint,
+      typename SAMPLER_TYPE = GLuint>
+    inline std::shared_ptr<BindSampler<
+      UNIT_TYPE   ,
+      SAMPLER_TYPE>> sharedBindSampler(
+        UNIT_TYPE    const&unit   ,
+        SAMPLER_TYPE const&sampler){
+        return std::make_shared<BindSampler<
+          UNIT_TYPE   ,
+          SAMPLER_TYPE>>(
+              unit   ,
+              sampler);
+    }
+
+    template<
       typename WIDTH_TYPE = GLfloat>
     inline LineWidth<
       WIDTH_TYPE>* newLineWidth(
@@ -25524,6 +25879,16 @@ namespace ge{
           WIDTH_TYPE>(
               width);
     }
+    template<
+      typename WIDTH_TYPE = GLfloat>
+    inline std::shared_ptr<LineWidth<
+      WIDTH_TYPE>> sharedLineWidth(
+        WIDTH_TYPE const&width){
+        return std::make_shared<LineWidth<
+          WIDTH_TYPE>>(
+              width);
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint,
@@ -25544,6 +25909,26 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint,
+      typename DATA_TYPE   = GLint*>
+    inline std::shared_ptr<GetIntegeri_v<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      DATA_TYPE  >> sharedGetIntegeri_v(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetIntegeri_v<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          DATA_TYPE  >>(
+              target,
+              index ,
+              data  );
+    }
+
+    template<
       typename SHADER_TYPE = GLuint>
     inline CompileShader<
       SHADER_TYPE>* newCompileShader(
@@ -25552,6 +25937,16 @@ namespace ge{
           SHADER_TYPE>(
               shader);
     }
+    template<
+      typename SHADER_TYPE = GLuint>
+    inline std::shared_ptr<CompileShader<
+      SHADER_TYPE>> sharedCompileShader(
+        SHADER_TYPE const&shader){
+        return std::make_shared<CompileShader<
+          SHADER_TYPE>>(
+              shader);
+    }
+
     template<
       typename PROGRAM_TYPE = GLuint  ,
       typename INDEX_TYPE   = GLuint  ,
@@ -25591,6 +25986,46 @@ namespace ge{
               type   ,
               name   );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint  ,
+      typename INDEX_TYPE   = GLuint  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename SIZE_TYPE    = GLsizei*,
+      typename TYPE_TYPE    = GLenum* ,
+      typename NAME_TYPE    = GLchar* >
+    inline std::shared_ptr<GetTransformFeedbackVarying<
+      PROGRAM_TYPE,
+      INDEX_TYPE  ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      SIZE_TYPE   ,
+      TYPE_TYPE   ,
+      NAME_TYPE   >> sharedGetTransformFeedbackVarying(
+        PROGRAM_TYPE const&program,
+        INDEX_TYPE   const&index  ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        SIZE_TYPE    const&size   ,
+        TYPE_TYPE    const&type   ,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetTransformFeedbackVarying<
+          PROGRAM_TYPE,
+          INDEX_TYPE  ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          SIZE_TYPE   ,
+          TYPE_TYPE   ,
+          NAME_TYPE   >>(
+              program,
+              index  ,
+              bufSize,
+              length ,
+              size   ,
+              type   ,
+              name   );
+    }
+
     template<
       typename TEXTURE_TYPE   = GLuint     ,
       typename LEVEL_TYPE     = GLint      ,
@@ -25651,6 +26086,66 @@ namespace ge{
               data     );
     }
     template<
+      typename TEXTURE_TYPE   = GLuint     ,
+      typename LEVEL_TYPE     = GLint      ,
+      typename XOFFSET_TYPE   = GLint      ,
+      typename YOFFSET_TYPE   = GLint      ,
+      typename ZOFFSET_TYPE   = GLint      ,
+      typename WIDTH_TYPE     = GLsizei    ,
+      typename HEIGHT_TYPE    = GLsizei    ,
+      typename DEPTH_TYPE     = GLsizei    ,
+      typename FORMAT_TYPE    = GLenum     ,
+      typename IMAGESIZE_TYPE = GLsizei    ,
+      typename DATA_TYPE      = const void*>
+    inline std::shared_ptr<CompressedTextureSubImage3D<
+      TEXTURE_TYPE  ,
+      LEVEL_TYPE    ,
+      XOFFSET_TYPE  ,
+      YOFFSET_TYPE  ,
+      ZOFFSET_TYPE  ,
+      WIDTH_TYPE    ,
+      HEIGHT_TYPE   ,
+      DEPTH_TYPE    ,
+      FORMAT_TYPE   ,
+      IMAGESIZE_TYPE,
+      DATA_TYPE     >> sharedCompressedTextureSubImage3D(
+        TEXTURE_TYPE   const&texture  ,
+        LEVEL_TYPE     const&level    ,
+        XOFFSET_TYPE   const&xoffset  ,
+        YOFFSET_TYPE   const&yoffset  ,
+        ZOFFSET_TYPE   const&zoffset  ,
+        WIDTH_TYPE     const&width    ,
+        HEIGHT_TYPE    const&height   ,
+        DEPTH_TYPE     const&depth    ,
+        FORMAT_TYPE    const&format   ,
+        IMAGESIZE_TYPE const&imageSize,
+        DATA_TYPE      const&data     ){
+        return std::make_shared<CompressedTextureSubImage3D<
+          TEXTURE_TYPE  ,
+          LEVEL_TYPE    ,
+          XOFFSET_TYPE  ,
+          YOFFSET_TYPE  ,
+          ZOFFSET_TYPE  ,
+          WIDTH_TYPE    ,
+          HEIGHT_TYPE   ,
+          DEPTH_TYPE    ,
+          FORMAT_TYPE   ,
+          IMAGESIZE_TYPE,
+          DATA_TYPE     >>(
+              texture  ,
+              level    ,
+              xoffset  ,
+              yoffset  ,
+              zoffset  ,
+              width    ,
+              height   ,
+              depth    ,
+              format   ,
+              imageSize,
+              data     );
+    }
+
+    template<
       typename XFB_TYPE    = GLuint    ,
       typename INDEX_TYPE  = GLuint    ,
       typename BUFFER_TYPE = GLuint    ,
@@ -25680,6 +26175,36 @@ namespace ge{
               size  );
     }
     template<
+      typename XFB_TYPE    = GLuint    ,
+      typename INDEX_TYPE  = GLuint    ,
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE   = GLsizeiptr>
+    inline std::shared_ptr<TransformFeedbackBufferRange<
+      XFB_TYPE   ,
+      INDEX_TYPE ,
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  >> sharedTransformFeedbackBufferRange(
+        XFB_TYPE    const&xfb   ,
+        INDEX_TYPE  const&index ,
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ){
+        return std::make_shared<TransformFeedbackBufferRange<
+          XFB_TYPE   ,
+          INDEX_TYPE ,
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  >>(
+              xfb   ,
+              index ,
+              buffer,
+              offset,
+              size  );
+    }
+
+    template<
       typename N_TYPE = GLfloat,
       typename F_TYPE = GLfloat>
     inline DepthRangef<
@@ -25693,6 +26218,21 @@ namespace ge{
               n,
               f);
     }
+    template<
+      typename N_TYPE = GLfloat,
+      typename F_TYPE = GLfloat>
+    inline std::shared_ptr<DepthRangef<
+      N_TYPE,
+      F_TYPE>> sharedDepthRangef(
+        N_TYPE const&n,
+        F_TYPE const&f){
+        return std::make_shared<DepthRangef<
+          N_TYPE,
+          F_TYPE>>(
+              n,
+              f);
+    }
+
     template<
       typename INDEX_TYPE   = GLuint     ,
       typename SIZE_TYPE    = GLint      ,
@@ -25723,6 +26263,36 @@ namespace ge{
               pointer);
     }
     template<
+      typename INDEX_TYPE   = GLuint     ,
+      typename SIZE_TYPE    = GLint      ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename STRIDE_TYPE  = GLsizei    ,
+      typename POINTER_TYPE = const void*>
+    inline std::shared_ptr<VertexAttribIPointer<
+      INDEX_TYPE  ,
+      SIZE_TYPE   ,
+      TYPE_TYPE   ,
+      STRIDE_TYPE ,
+      POINTER_TYPE>> sharedVertexAttribIPointer(
+        INDEX_TYPE   const&index  ,
+        SIZE_TYPE    const&size   ,
+        TYPE_TYPE    const&type   ,
+        STRIDE_TYPE  const&stride ,
+        POINTER_TYPE const&pointer){
+        return std::make_shared<VertexAttribIPointer<
+          INDEX_TYPE  ,
+          SIZE_TYPE   ,
+          TYPE_TYPE   ,
+          STRIDE_TYPE ,
+          POINTER_TYPE>>(
+              index  ,
+              size   ,
+              type   ,
+              stride ,
+              pointer);
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = GLint*>
@@ -25741,6 +26311,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename BUFFER_TYPE = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetNamedBufferParameteriv<
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetNamedBufferParameteriv(
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetNamedBufferParameteriv<
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              buffer,
+              pname ,
+              params);
+    }
+
     template<
       typename MODE_TYPE          = GLenum     ,
       typename COUNT_TYPE         = GLsizei    ,
@@ -25776,6 +26366,41 @@ namespace ge{
               baseinstance );
     }
     template<
+      typename MODE_TYPE          = GLenum     ,
+      typename COUNT_TYPE         = GLsizei    ,
+      typename TYPE_TYPE          = GLenum     ,
+      typename INDICES_TYPE       = const void*,
+      typename INSTANCECOUNT_TYPE = GLsizei    ,
+      typename BASEINSTANCE_TYPE  = GLuint     >
+    inline std::shared_ptr<DrawElementsInstancedBaseInstance<
+      MODE_TYPE         ,
+      COUNT_TYPE        ,
+      TYPE_TYPE         ,
+      INDICES_TYPE      ,
+      INSTANCECOUNT_TYPE,
+      BASEINSTANCE_TYPE >> sharedDrawElementsInstancedBaseInstance(
+        MODE_TYPE          const&mode         ,
+        COUNT_TYPE         const&count        ,
+        TYPE_TYPE          const&type         ,
+        INDICES_TYPE       const&indices      ,
+        INSTANCECOUNT_TYPE const&instancecount,
+        BASEINSTANCE_TYPE  const&baseinstance ){
+        return std::make_shared<DrawElementsInstancedBaseInstance<
+          MODE_TYPE         ,
+          COUNT_TYPE        ,
+          TYPE_TYPE         ,
+          INDICES_TYPE      ,
+          INSTANCECOUNT_TYPE,
+          BASEINSTANCE_TYPE >>(
+              mode         ,
+              count        ,
+              type         ,
+              indices      ,
+              instancecount,
+              baseinstance );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint>
     inline Enablei<
@@ -25789,6 +26414,21 @@ namespace ge{
               target,
               index );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint>
+    inline std::shared_ptr<Enablei<
+      TARGET_TYPE,
+      INDEX_TYPE >> sharedEnablei(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ){
+        return std::make_shared<Enablei<
+          TARGET_TYPE,
+          INDEX_TYPE >>(
+              target,
+              index );
+    }
+
     template<
       typename INDEX_TYPE      = GLuint   ,
       typename TYPE_TYPE       = GLenum   ,
@@ -25814,6 +26454,31 @@ namespace ge{
               value     );
     }
     template<
+      typename INDEX_TYPE      = GLuint   ,
+      typename TYPE_TYPE       = GLenum   ,
+      typename NORMALIZED_TYPE = GLboolean,
+      typename VALUE_TYPE      = GLuint   >
+    inline std::shared_ptr<VertexAttribP4ui<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP4ui(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP4ui<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
+    template<
       typename RET_TYPE  = GLuint,
       typename TYPE_TYPE = GLenum>
     inline CreateShader<
@@ -25828,6 +26493,21 @@ namespace ge{
               type);
     }
     template<
+      typename RET_TYPE  = GLuint,
+      typename TYPE_TYPE = GLenum>
+    inline std::shared_ptr<CreateShader<
+      RET_TYPE ,
+      TYPE_TYPE>> sharedCreateShader(
+        RET_TYPE  const&ret ,
+        TYPE_TYPE const&type){
+        return std::make_shared<CreateShader<
+          RET_TYPE ,
+          TYPE_TYPE>>(
+              ret ,
+              type);
+    }
+
+    template<
       typename RET_TYPE    = GLboolean,
       typename BUFFER_TYPE = GLuint   >
     inline IsBuffer<
@@ -25841,6 +26521,21 @@ namespace ge{
               ret   ,
               buffer);
     }
+    template<
+      typename RET_TYPE    = GLboolean,
+      typename BUFFER_TYPE = GLuint   >
+    inline std::shared_ptr<IsBuffer<
+      RET_TYPE   ,
+      BUFFER_TYPE>> sharedIsBuffer(
+        RET_TYPE    const&ret   ,
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<IsBuffer<
+          RET_TYPE   ,
+          BUFFER_TYPE>>(
+              ret   ,
+              buffer);
+    }
+
     template<
       typename PNAME_TYPE = GLenum  ,
       typename INDEX_TYPE = GLuint  ,
@@ -25860,6 +26555,26 @@ namespace ge{
               index,
               val  );
     }
+    template<
+      typename PNAME_TYPE = GLenum  ,
+      typename INDEX_TYPE = GLuint  ,
+      typename VAL_TYPE   = GLfloat*>
+    inline std::shared_ptr<GetMultisamplefv<
+      PNAME_TYPE,
+      INDEX_TYPE,
+      VAL_TYPE  >> sharedGetMultisamplefv(
+        PNAME_TYPE const&pname,
+        INDEX_TYPE const&index,
+        VAL_TYPE   const&val  ){
+        return std::make_shared<GetMultisamplefv<
+          PNAME_TYPE,
+          INDEX_TYPE,
+          VAL_TYPE  >>(
+              pname,
+              index,
+              val  );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -25890,6 +26605,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix2dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix2dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix2dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename N_TYPE             = GLsizei,
       typename RENDERBUFFERS_TYPE = GLuint*>
     inline GenRenderbuffers<
@@ -25903,6 +26648,21 @@ namespace ge{
               n            ,
               renderbuffers);
     }
+    template<
+      typename N_TYPE             = GLsizei,
+      typename RENDERBUFFERS_TYPE = GLuint*>
+    inline std::shared_ptr<GenRenderbuffers<
+      N_TYPE            ,
+      RENDERBUFFERS_TYPE>> sharedGenRenderbuffers(
+        N_TYPE             const&n            ,
+        RENDERBUFFERS_TYPE const&renderbuffers){
+        return std::make_shared<GenRenderbuffers<
+          N_TYPE            ,
+          RENDERBUFFERS_TYPE>>(
+              n            ,
+              renderbuffers);
+    }
+
     template<
       typename TARGET_TYPE  = GLenum ,
       typename LEVEL_TYPE   = GLint  ,
@@ -25948,6 +26708,51 @@ namespace ge{
               height );
     }
     template<
+      typename TARGET_TYPE  = GLenum ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei>
+    inline std::shared_ptr<CopyTexSubImage2D<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE >> sharedCopyTexSubImage2D(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ){
+        return std::make_shared<CopyTexSubImage2D<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE >>(
+              target ,
+              level  ,
+              xoffset,
+              yoffset,
+              x      ,
+              y      ,
+              width  ,
+              height );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble>
     inline VertexAttrib1d<
@@ -25962,6 +26767,21 @@ namespace ge{
               x    );
     }
     template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttrib1d<
+      INDEX_TYPE,
+      X_TYPE    >> sharedVertexAttrib1d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ){
+        return std::make_shared<VertexAttrib1d<
+          INDEX_TYPE,
+          X_TYPE    >>(
+              index,
+              x    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLfloat>
     inline VertexAttrib1f<
@@ -25975,6 +26795,21 @@ namespace ge{
               index,
               x    );
     }
+    template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLfloat>
+    inline std::shared_ptr<VertexAttrib1f<
+      INDEX_TYPE,
+      X_TYPE    >> sharedVertexAttrib1f(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ){
+        return std::make_shared<VertexAttrib1f<
+          INDEX_TYPE,
+          X_TYPE    >>(
+              index,
+              x    );
+    }
+
     template<
       typename SFACTORRGB_TYPE   = GLenum,
       typename DFACTORRGB_TYPE   = GLenum,
@@ -25999,6 +26834,31 @@ namespace ge{
               sfactorAlpha,
               dfactorAlpha);
     }
+    template<
+      typename SFACTORRGB_TYPE   = GLenum,
+      typename DFACTORRGB_TYPE   = GLenum,
+      typename SFACTORALPHA_TYPE = GLenum,
+      typename DFACTORALPHA_TYPE = GLenum>
+    inline std::shared_ptr<BlendFuncSeparate<
+      SFACTORRGB_TYPE  ,
+      DFACTORRGB_TYPE  ,
+      SFACTORALPHA_TYPE,
+      DFACTORALPHA_TYPE>> sharedBlendFuncSeparate(
+        SFACTORRGB_TYPE   const&sfactorRGB  ,
+        DFACTORRGB_TYPE   const&dfactorRGB  ,
+        SFACTORALPHA_TYPE const&sfactorAlpha,
+        DFACTORALPHA_TYPE const&dfactorAlpha){
+        return std::make_shared<BlendFuncSeparate<
+          SFACTORRGB_TYPE  ,
+          DFACTORRGB_TYPE  ,
+          SFACTORALPHA_TYPE,
+          DFACTORALPHA_TYPE>>(
+              sfactorRGB  ,
+              dfactorRGB  ,
+              sfactorAlpha,
+              dfactorAlpha);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
@@ -26029,6 +26889,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix4fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix4fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix4fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint       ,
       typename BUFFER_TYPE      = GLenum       ,
       typename DEPTH_TYPE       = const GLfloat,
@@ -26052,6 +26942,31 @@ namespace ge{
               depth      ,
               stencil    );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint       ,
+      typename BUFFER_TYPE      = GLenum       ,
+      typename DEPTH_TYPE       = const GLfloat,
+      typename STENCIL_TYPE     = GLint        >
+    inline std::shared_ptr<ClearNamedFramebufferfi<
+      FRAMEBUFFER_TYPE,
+      BUFFER_TYPE     ,
+      DEPTH_TYPE      ,
+      STENCIL_TYPE    >> sharedClearNamedFramebufferfi(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        BUFFER_TYPE      const&buffer     ,
+        DEPTH_TYPE       const&depth      ,
+        STENCIL_TYPE     const&stencil    ){
+        return std::make_shared<ClearNamedFramebufferfi<
+          FRAMEBUFFER_TYPE,
+          BUFFER_TYPE     ,
+          DEPTH_TYPE      ,
+          STENCIL_TYPE    >>(
+              framebuffer,
+              buffer     ,
+              depth      ,
+              stencil    );
+    }
+
     template<
       typename ID_TYPE     = GLuint  ,
       typename BUFFER_TYPE = GLuint  ,
@@ -26077,6 +26992,31 @@ namespace ge{
               offset);
     }
     template<
+      typename ID_TYPE     = GLuint  ,
+      typename BUFFER_TYPE = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename OFFSET_TYPE = GLintptr>
+    inline std::shared_ptr<GetQueryBufferObjectuiv<
+      ID_TYPE    ,
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      OFFSET_TYPE>> sharedGetQueryBufferObjectuiv(
+        ID_TYPE     const&id    ,
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        OFFSET_TYPE const&offset){
+        return std::make_shared<GetQueryBufferObjectuiv<
+          ID_TYPE    ,
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          OFFSET_TYPE>>(
+              id    ,
+              buffer,
+              pname ,
+              offset);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLshort,
       typename Y_TYPE     = GLshort>
@@ -26095,6 +27035,26 @@ namespace ge{
               x    ,
               y    );
     }
+    template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLshort,
+      typename Y_TYPE     = GLshort>
+    inline std::shared_ptr<VertexAttrib2s<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    >> sharedVertexAttrib2s(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ){
+        return std::make_shared<VertexAttrib2s<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    >>(
+              index,
+              x    ,
+              y    );
+    }
+
     template<
       typename FRAMEBUFFER_TYPE = GLuint        ,
       typename BUFFER_TYPE      = GLenum        ,
@@ -26120,6 +27080,31 @@ namespace ge{
               value      );
     }
     template<
+      typename FRAMEBUFFER_TYPE = GLuint        ,
+      typename BUFFER_TYPE      = GLenum        ,
+      typename DRAWBUFFER_TYPE  = GLint         ,
+      typename VALUE_TYPE       = const GLfloat*>
+    inline std::shared_ptr<ClearNamedFramebufferfv<
+      FRAMEBUFFER_TYPE,
+      BUFFER_TYPE     ,
+      DRAWBUFFER_TYPE ,
+      VALUE_TYPE      >> sharedClearNamedFramebufferfv(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        BUFFER_TYPE      const&buffer     ,
+        DRAWBUFFER_TYPE  const&drawbuffer ,
+        VALUE_TYPE       const&value      ){
+        return std::make_shared<ClearNamedFramebufferfv<
+          FRAMEBUFFER_TYPE,
+          BUFFER_TYPE     ,
+          DRAWBUFFER_TYPE ,
+          VALUE_TYPE      >>(
+              framebuffer,
+              buffer     ,
+              drawbuffer ,
+              value      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLshort>
     inline VertexAttrib1s<
@@ -26134,6 +27119,21 @@ namespace ge{
               x    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLshort>
+    inline std::shared_ptr<VertexAttrib1s<
+      INDEX_TYPE,
+      X_TYPE    >> sharedVertexAttrib1s(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ){
+        return std::make_shared<VertexAttrib1s<
+          INDEX_TYPE,
+          X_TYPE    >>(
+              index,
+              x    );
+    }
+
+    template<
       typename MASKNUMBER_TYPE = GLuint    ,
       typename MASK_TYPE       = GLbitfield>
     inline SampleMaski<
@@ -26147,6 +27147,21 @@ namespace ge{
               maskNumber,
               mask      );
     }
+    template<
+      typename MASKNUMBER_TYPE = GLuint    ,
+      typename MASK_TYPE       = GLbitfield>
+    inline std::shared_ptr<SampleMaski<
+      MASKNUMBER_TYPE,
+      MASK_TYPE      >> sharedSampleMaski(
+        MASKNUMBER_TYPE const&maskNumber,
+        MASK_TYPE       const&mask      ){
+        return std::make_shared<SampleMaski<
+          MASKNUMBER_TYPE,
+          MASK_TYPE      >>(
+              maskNumber,
+              mask      );
+    }
+
     template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -26171,6 +27186,31 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix3x2fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix3x2fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix3x2fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename SOURCE_TYPE   = GLenum       ,
       typename TYPE_TYPE     = GLenum       ,
@@ -26206,6 +27246,41 @@ namespace ge{
               enabled );
     }
     template<
+      typename SOURCE_TYPE   = GLenum       ,
+      typename TYPE_TYPE     = GLenum       ,
+      typename SEVERITY_TYPE = GLenum       ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename IDS_TYPE      = const GLuint*,
+      typename ENABLED_TYPE  = GLboolean    >
+    inline std::shared_ptr<DebugMessageControl<
+      SOURCE_TYPE  ,
+      TYPE_TYPE    ,
+      SEVERITY_TYPE,
+      COUNT_TYPE   ,
+      IDS_TYPE     ,
+      ENABLED_TYPE >> sharedDebugMessageControl(
+        SOURCE_TYPE   const&source  ,
+        TYPE_TYPE     const&type    ,
+        SEVERITY_TYPE const&severity,
+        COUNT_TYPE    const&count   ,
+        IDS_TYPE      const&ids     ,
+        ENABLED_TYPE  const&enabled ){
+        return std::make_shared<DebugMessageControl<
+          SOURCE_TYPE  ,
+          TYPE_TYPE    ,
+          SEVERITY_TYPE,
+          COUNT_TYPE   ,
+          IDS_TYPE     ,
+          ENABLED_TYPE >>(
+              source  ,
+              type    ,
+              severity,
+              count   ,
+              ids     ,
+              enabled );
+    }
+
+    template<
       typename SIZE_TYPE = GLfloat>
     inline PointSize<
       SIZE_TYPE>* newPointSize(
@@ -26214,6 +27289,16 @@ namespace ge{
           SIZE_TYPE>(
               size);
     }
+    template<
+      typename SIZE_TYPE = GLfloat>
+    inline std::shared_ptr<PointSize<
+      SIZE_TYPE>> sharedPointSize(
+        SIZE_TYPE const&size){
+        return std::make_shared<PointSize<
+          SIZE_TYPE>>(
+              size);
+    }
+
     template<
       typename UNIT_TYPE    = GLuint,
       typename TEXTURE_TYPE = GLuint>
@@ -26229,6 +27314,21 @@ namespace ge{
               texture);
     }
     template<
+      typename UNIT_TYPE    = GLuint,
+      typename TEXTURE_TYPE = GLuint>
+    inline std::shared_ptr<BindTextureUnit<
+      UNIT_TYPE   ,
+      TEXTURE_TYPE>> sharedBindTextureUnit(
+        UNIT_TYPE    const&unit   ,
+        TEXTURE_TYPE const&texture){
+        return std::make_shared<BindTextureUnit<
+          UNIT_TYPE   ,
+          TEXTURE_TYPE>>(
+              unit   ,
+              texture);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttrib2dv<
@@ -26242,6 +27342,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttrib2dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib2dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib2dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename ID_TYPE     = GLuint  ,
       typename BUFFER_TYPE = GLuint  ,
@@ -26267,6 +27382,31 @@ namespace ge{
               offset);
     }
     template<
+      typename ID_TYPE     = GLuint  ,
+      typename BUFFER_TYPE = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename OFFSET_TYPE = GLintptr>
+    inline std::shared_ptr<GetQueryBufferObjectiv<
+      ID_TYPE    ,
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      OFFSET_TYPE>> sharedGetQueryBufferObjectiv(
+        ID_TYPE     const&id    ,
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        OFFSET_TYPE const&offset){
+        return std::make_shared<GetQueryBufferObjectiv<
+          ID_TYPE    ,
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          OFFSET_TYPE>>(
+              id    ,
+              buffer,
+              pname ,
+              offset);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLuint*>
     inline VertexAttrib4Nuiv<
@@ -26280,6 +27420,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLuint*>
+    inline std::shared_ptr<VertexAttrib4Nuiv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4Nuiv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4Nuiv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum ,
       typename LEVELS_TYPE         = GLsizei,
@@ -26311,6 +27466,36 @@ namespace ge{
     }
     template<
       typename TARGET_TYPE         = GLenum ,
+      typename LEVELS_TYPE         = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei>
+    inline std::shared_ptr<TexStorage2D<
+      TARGET_TYPE        ,
+      LEVELS_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedTexStorage2D(
+        TARGET_TYPE         const&target        ,
+        LEVELS_TYPE         const&levels        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<TexStorage2D<
+          TARGET_TYPE        ,
+          LEVELS_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              target        ,
+              levels        ,
+              internalformat,
+              width         ,
+              height        );
+    }
+
+    template<
+      typename TARGET_TYPE         = GLenum ,
       typename INTERNALFORMAT_TYPE = GLenum ,
       typename WIDTH_TYPE          = GLsizei,
       typename HEIGHT_TYPE         = GLsizei>
@@ -26334,6 +27519,31 @@ namespace ge{
               height        );
     }
     template<
+      typename TARGET_TYPE         = GLenum ,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei>
+    inline std::shared_ptr<RenderbufferStorage<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedRenderbufferStorage(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<RenderbufferStorage<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              target        ,
+              internalformat,
+              width         ,
+              height        );
+    }
+
+    template<
       typename SYNC_TYPE    = GLsync    ,
       typename FLAGS_TYPE   = GLbitfield,
       typename TIMEOUT_TYPE = GLuint64  >
@@ -26352,6 +27562,26 @@ namespace ge{
               flags  ,
               timeout);
     }
+    template<
+      typename SYNC_TYPE    = GLsync    ,
+      typename FLAGS_TYPE   = GLbitfield,
+      typename TIMEOUT_TYPE = GLuint64  >
+    inline std::shared_ptr<WaitSync<
+      SYNC_TYPE   ,
+      FLAGS_TYPE  ,
+      TIMEOUT_TYPE>> sharedWaitSync(
+        SYNC_TYPE    const&sync   ,
+        FLAGS_TYPE   const&flags  ,
+        TIMEOUT_TYPE const&timeout){
+        return std::make_shared<WaitSync<
+          SYNC_TYPE   ,
+          FLAGS_TYPE  ,
+          TIMEOUT_TYPE>>(
+              sync   ,
+              flags  ,
+              timeout);
+    }
+
     template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -26377,6 +27607,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix4x3fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix4x3fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix4x3fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint,
       typename V0_TYPE       = GLint,
       typename V1_TYPE       = GLint,
@@ -26400,6 +27655,31 @@ namespace ge{
               v1      ,
               v2      );
     }
+    template<
+      typename LOCATION_TYPE = GLint,
+      typename V0_TYPE       = GLint,
+      typename V1_TYPE       = GLint,
+      typename V2_TYPE       = GLint>
+    inline std::shared_ptr<Uniform3i<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedUniform3i(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<Uniform3i<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
     template<
       typename IDENTIFIER_TYPE = GLenum  ,
       typename NAME_TYPE       = GLuint  ,
@@ -26430,6 +27710,36 @@ namespace ge{
               label     );
     }
     template<
+      typename IDENTIFIER_TYPE = GLenum  ,
+      typename NAME_TYPE       = GLuint  ,
+      typename BUFSIZE_TYPE    = GLsizei ,
+      typename LENGTH_TYPE     = GLsizei*,
+      typename LABEL_TYPE      = GLchar* >
+    inline std::shared_ptr<GetObjectLabel<
+      IDENTIFIER_TYPE,
+      NAME_TYPE      ,
+      BUFSIZE_TYPE   ,
+      LENGTH_TYPE    ,
+      LABEL_TYPE     >> sharedGetObjectLabel(
+        IDENTIFIER_TYPE const&identifier,
+        NAME_TYPE       const&name      ,
+        BUFSIZE_TYPE    const&bufSize   ,
+        LENGTH_TYPE     const&length    ,
+        LABEL_TYPE      const&label     ){
+        return std::make_shared<GetObjectLabel<
+          IDENTIFIER_TYPE,
+          NAME_TYPE      ,
+          BUFSIZE_TYPE   ,
+          LENGTH_TYPE    ,
+          LABEL_TYPE     >>(
+              identifier,
+              name      ,
+              bufSize   ,
+              length    ,
+              label     );
+    }
+
+    template<
       typename COUNT_TYPE    = GLsizei      ,
       typename SAMPLERS_TYPE = const GLuint*>
     inline DeleteSamplers<
@@ -26443,6 +27753,21 @@ namespace ge{
               count   ,
               samplers);
     }
+    template<
+      typename COUNT_TYPE    = GLsizei      ,
+      typename SAMPLERS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteSamplers<
+      COUNT_TYPE   ,
+      SAMPLERS_TYPE>> sharedDeleteSamplers(
+        COUNT_TYPE    const&count   ,
+        SAMPLERS_TYPE const&samplers){
+        return std::make_shared<DeleteSamplers<
+          COUNT_TYPE   ,
+          SAMPLERS_TYPE>>(
+              count   ,
+              samplers);
+    }
+
     template<
       typename BUF_TYPE       = GLuint,
       typename MODERGB_TYPE   = GLenum,
@@ -26462,6 +27787,26 @@ namespace ge{
               modeRGB  ,
               modeAlpha);
     }
+    template<
+      typename BUF_TYPE       = GLuint,
+      typename MODERGB_TYPE   = GLenum,
+      typename MODEALPHA_TYPE = GLenum>
+    inline std::shared_ptr<BlendEquationSeparatei<
+      BUF_TYPE      ,
+      MODERGB_TYPE  ,
+      MODEALPHA_TYPE>> sharedBlendEquationSeparatei(
+        BUF_TYPE       const&buf      ,
+        MODERGB_TYPE   const&modeRGB  ,
+        MODEALPHA_TYPE const&modeAlpha){
+        return std::make_shared<BlendEquationSeparatei<
+          BUF_TYPE      ,
+          MODERGB_TYPE  ,
+          MODEALPHA_TYPE>>(
+              buf      ,
+              modeRGB  ,
+              modeAlpha);
+    }
+
 
     template<
       typename LOCATION_TYPE = GLint   ,
@@ -26488,6 +27833,31 @@ namespace ge{
               z       );
     }
     template<
+      typename LOCATION_TYPE = GLint   ,
+      typename X_TYPE        = GLdouble,
+      typename Y_TYPE        = GLdouble,
+      typename Z_TYPE        = GLdouble>
+    inline std::shared_ptr<Uniform3d<
+      LOCATION_TYPE,
+      X_TYPE       ,
+      Y_TYPE       ,
+      Z_TYPE       >> sharedUniform3d(
+        LOCATION_TYPE const&location,
+        X_TYPE        const&x       ,
+        Y_TYPE        const&y       ,
+        Z_TYPE        const&z       ){
+        return std::make_shared<Uniform3d<
+          LOCATION_TYPE,
+          X_TYPE       ,
+          Y_TYPE       ,
+          Z_TYPE       >>(
+              location,
+              x       ,
+              y       ,
+              z       );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat,
       typename V1_TYPE       = GLfloat,
@@ -26512,6 +27882,31 @@ namespace ge{
               v2      );
     }
     template<
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat,
+      typename V1_TYPE       = GLfloat,
+      typename V2_TYPE       = GLfloat>
+    inline std::shared_ptr<Uniform3f<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedUniform3f(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<Uniform3f<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLubyte*>
     inline VertexAttrib4ubv<
@@ -26525,6 +27920,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLubyte*>
+    inline std::shared_ptr<VertexAttrib4ubv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4ubv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4ubv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
@@ -26544,6 +27954,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetBufferParameteriv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetBufferParameteriv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetBufferParameteriv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename INDEX_TYPE = GLuint   ,
       typename R_TYPE     = GLboolean,
@@ -26574,6 +28004,36 @@ namespace ge{
               a    );
     }
     template<
+      typename INDEX_TYPE = GLuint   ,
+      typename R_TYPE     = GLboolean,
+      typename G_TYPE     = GLboolean,
+      typename B_TYPE     = GLboolean,
+      typename A_TYPE     = GLboolean>
+    inline std::shared_ptr<ColorMaski<
+      INDEX_TYPE,
+      R_TYPE    ,
+      G_TYPE    ,
+      B_TYPE    ,
+      A_TYPE    >> sharedColorMaski(
+        INDEX_TYPE const&index,
+        R_TYPE     const&r    ,
+        G_TYPE     const&g    ,
+        B_TYPE     const&b    ,
+        A_TYPE     const&a    ){
+        return std::make_shared<ColorMaski<
+          INDEX_TYPE,
+          R_TYPE    ,
+          G_TYPE    ,
+          B_TYPE    ,
+          A_TYPE    >>(
+              index,
+              r    ,
+              g    ,
+              b    ,
+              a    );
+    }
+
+    template<
       typename BUFFER_TYPE     = GLenum ,
       typename DRAWBUFFER_TYPE = GLint  ,
       typename DEPTH_TYPE      = GLfloat,
@@ -26598,6 +28058,31 @@ namespace ge{
               stencil   );
     }
     template<
+      typename BUFFER_TYPE     = GLenum ,
+      typename DRAWBUFFER_TYPE = GLint  ,
+      typename DEPTH_TYPE      = GLfloat,
+      typename STENCIL_TYPE    = GLint  >
+    inline std::shared_ptr<ClearBufferfi<
+      BUFFER_TYPE    ,
+      DRAWBUFFER_TYPE,
+      DEPTH_TYPE     ,
+      STENCIL_TYPE   >> sharedClearBufferfi(
+        BUFFER_TYPE     const&buffer    ,
+        DRAWBUFFER_TYPE const&drawbuffer,
+        DEPTH_TYPE      const&depth     ,
+        STENCIL_TYPE    const&stencil   ){
+        return std::make_shared<ClearBufferfi<
+          BUFFER_TYPE    ,
+          DRAWBUFFER_TYPE,
+          DEPTH_TYPE     ,
+          STENCIL_TYPE   >>(
+              buffer    ,
+              drawbuffer,
+              depth     ,
+              stencil   );
+    }
+
+    template<
       typename MODE_TYPE     = GLenum     ,
       typename INDIRECT_TYPE = const void*>
     inline DrawArraysIndirect<
@@ -26611,6 +28096,21 @@ namespace ge{
               mode    ,
               indirect);
     }
+    template<
+      typename MODE_TYPE     = GLenum     ,
+      typename INDIRECT_TYPE = const void*>
+    inline std::shared_ptr<DrawArraysIndirect<
+      MODE_TYPE    ,
+      INDIRECT_TYPE>> sharedDrawArraysIndirect(
+        MODE_TYPE     const&mode    ,
+        INDIRECT_TYPE const&indirect){
+        return std::make_shared<DrawArraysIndirect<
+          MODE_TYPE    ,
+          INDIRECT_TYPE>>(
+              mode    ,
+              indirect);
+    }
+
     template<
       typename N_TYPE      = GLsizei,
       typename ARRAYS_TYPE = GLuint*>
@@ -26626,6 +28126,21 @@ namespace ge{
               arrays);
     }
     template<
+      typename N_TYPE      = GLsizei,
+      typename ARRAYS_TYPE = GLuint*>
+    inline std::shared_ptr<GenVertexArrays<
+      N_TYPE     ,
+      ARRAYS_TYPE>> sharedGenVertexArrays(
+        N_TYPE      const&n     ,
+        ARRAYS_TYPE const&arrays){
+        return std::make_shared<GenVertexArrays<
+          N_TYPE     ,
+          ARRAYS_TYPE>>(
+              n     ,
+              arrays);
+    }
+
+    template<
       typename VAOBJ_TYPE = GLuint,
       typename INDEX_TYPE = GLuint>
     inline EnableVertexArrayAttrib<
@@ -26639,6 +28154,21 @@ namespace ge{
               vaobj,
               index);
     }
+    template<
+      typename VAOBJ_TYPE = GLuint,
+      typename INDEX_TYPE = GLuint>
+    inline std::shared_ptr<EnableVertexArrayAttrib<
+      VAOBJ_TYPE,
+      INDEX_TYPE>> sharedEnableVertexArrayAttrib(
+        VAOBJ_TYPE const&vaobj,
+        INDEX_TYPE const&index){
+        return std::make_shared<EnableVertexArrayAttrib<
+          VAOBJ_TYPE,
+          INDEX_TYPE>>(
+              vaobj,
+              index);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -26669,6 +28199,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix3x2dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix3x2dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix3x2dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename READBUFFER_TYPE  = GLuint    ,
       typename WRITEBUFFER_TYPE = GLuint    ,
       typename READOFFSET_TYPE  = GLintptr  ,
@@ -26697,6 +28257,36 @@ namespace ge{
               writeOffset,
               size       );
     }
+    template<
+      typename READBUFFER_TYPE  = GLuint    ,
+      typename WRITEBUFFER_TYPE = GLuint    ,
+      typename READOFFSET_TYPE  = GLintptr  ,
+      typename WRITEOFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE        = GLsizeiptr>
+    inline std::shared_ptr<CopyNamedBufferSubData<
+      READBUFFER_TYPE ,
+      WRITEBUFFER_TYPE,
+      READOFFSET_TYPE ,
+      WRITEOFFSET_TYPE,
+      SIZE_TYPE       >> sharedCopyNamedBufferSubData(
+        READBUFFER_TYPE  const&readBuffer ,
+        WRITEBUFFER_TYPE const&writeBuffer,
+        READOFFSET_TYPE  const&readOffset ,
+        WRITEOFFSET_TYPE const&writeOffset,
+        SIZE_TYPE        const&size       ){
+        return std::make_shared<CopyNamedBufferSubData<
+          READBUFFER_TYPE ,
+          WRITEBUFFER_TYPE,
+          READOFFSET_TYPE ,
+          WRITEOFFSET_TYPE,
+          SIZE_TYPE       >>(
+              readBuffer ,
+              writeBuffer,
+              readOffset ,
+              writeOffset,
+              size       );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
@@ -26727,6 +28317,36 @@ namespace ge{
               v2      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat,
+      typename V1_TYPE       = GLfloat,
+      typename V2_TYPE       = GLfloat>
+    inline std::shared_ptr<ProgramUniform3f<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedProgramUniform3f(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<ProgramUniform3f<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
+    template<
       typename SAMPLER_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
       typename PARAMS_TYPE  = GLint*>
@@ -26746,6 +28366,26 @@ namespace ge{
               params );
     }
     template<
+      typename SAMPLER_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAMS_TYPE  = GLint*>
+    inline std::shared_ptr<GetSamplerParameterIiv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetSamplerParameterIiv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetSamplerParameterIiv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              sampler,
+              pname  ,
+              params );
+    }
+
+    template<
       typename RET_TYPE     = GLint        ,
       typename PROGRAM_TYPE = GLuint       ,
       typename NAME_TYPE    = const GLchar*>
@@ -26764,6 +28404,26 @@ namespace ge{
               program,
               name   );
     }
+    template<
+      typename RET_TYPE     = GLint        ,
+      typename PROGRAM_TYPE = GLuint       ,
+      typename NAME_TYPE    = const GLchar*>
+    inline std::shared_ptr<GetFragDataIndex<
+      RET_TYPE    ,
+      PROGRAM_TYPE,
+      NAME_TYPE   >> sharedGetFragDataIndex(
+        RET_TYPE     const&ret    ,
+        PROGRAM_TYPE const&program,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetFragDataIndex<
+          RET_TYPE    ,
+          PROGRAM_TYPE,
+          NAME_TYPE   >>(
+              ret    ,
+              program,
+              name   );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum ,
       typename LEVELS_TYPE         = GLsizei,
@@ -26799,6 +28459,41 @@ namespace ge{
               depth         );
     }
     template<
+      typename TARGET_TYPE         = GLenum ,
+      typename LEVELS_TYPE         = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei,
+      typename DEPTH_TYPE          = GLsizei>
+    inline std::shared_ptr<TexStorage3D<
+      TARGET_TYPE        ,
+      LEVELS_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      DEPTH_TYPE         >> sharedTexStorage3D(
+        TARGET_TYPE         const&target        ,
+        LEVELS_TYPE         const&levels        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        DEPTH_TYPE          const&depth         ){
+        return std::make_shared<TexStorage3D<
+          TARGET_TYPE        ,
+          LEVELS_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          DEPTH_TYPE         >>(
+              target        ,
+              levels        ,
+              internalformat,
+              width         ,
+              height        ,
+              depth         );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
@@ -26823,6 +28518,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix4x2fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix4x2fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix4x2fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint      ,
       typename PNAME_TYPE   = GLenum      ,
       typename PARAM_TYPE   = const GLint*>
@@ -26841,6 +28561,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint      ,
+      typename PNAME_TYPE   = GLenum      ,
+      typename PARAM_TYPE   = const GLint*>
+    inline std::shared_ptr<TextureParameteriv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedTextureParameteriv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<TextureParameteriv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              texture,
+              pname  ,
+              param  );
+    }
+
     template<
       typename ID_TYPE     = GLuint  ,
       typename BUFFER_TYPE = GLuint  ,
@@ -26866,6 +28606,31 @@ namespace ge{
               offset);
     }
     template<
+      typename ID_TYPE     = GLuint  ,
+      typename BUFFER_TYPE = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename OFFSET_TYPE = GLintptr>
+    inline std::shared_ptr<GetQueryBufferObjecti64v<
+      ID_TYPE    ,
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      OFFSET_TYPE>> sharedGetQueryBufferObjecti64v(
+        ID_TYPE     const&id    ,
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        OFFSET_TYPE const&offset){
+        return std::make_shared<GetQueryBufferObjecti64v<
+          ID_TYPE    ,
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          OFFSET_TYPE>>(
+              id    ,
+              buffer,
+              pname ,
+              offset);
+    }
+
+    template<
       typename INDEX_TYPE  = GLuint   ,
       typename PNAME_TYPE  = GLenum   ,
       typename PARAMS_TYPE = GLdouble*>
@@ -26884,6 +28649,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename INDEX_TYPE  = GLuint   ,
+      typename PNAME_TYPE  = GLenum   ,
+      typename PARAMS_TYPE = GLdouble*>
+    inline std::shared_ptr<GetVertexAttribdv<
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetVertexAttribdv(
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetVertexAttribdv<
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              index ,
+              pname ,
+              params);
+    }
+
     template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -26909,6 +28694,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix3x4fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix3x4fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix3x4fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
@@ -26932,6 +28742,31 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix3dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix3dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix3dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -26962,6 +28797,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix3x4dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix3x4dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix3x4dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename ATTACHMENT_TYPE  = GLenum,
       typename TEXTURE_TYPE     = GLuint,
@@ -26985,6 +28850,31 @@ namespace ge{
               texture    ,
               level      );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename ATTACHMENT_TYPE  = GLenum,
+      typename TEXTURE_TYPE     = GLuint,
+      typename LEVEL_TYPE       = GLint >
+    inline std::shared_ptr<NamedFramebufferTexture<
+      FRAMEBUFFER_TYPE,
+      ATTACHMENT_TYPE ,
+      TEXTURE_TYPE    ,
+      LEVEL_TYPE      >> sharedNamedFramebufferTexture(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        ATTACHMENT_TYPE  const&attachment ,
+        TEXTURE_TYPE     const&texture    ,
+        LEVEL_TYPE       const&level      ){
+        return std::make_shared<NamedFramebufferTexture<
+          FRAMEBUFFER_TYPE,
+          ATTACHMENT_TYPE ,
+          TEXTURE_TYPE    ,
+          LEVEL_TYPE      >>(
+              framebuffer,
+              attachment ,
+              texture    ,
+              level      );
+    }
+
     template<
       typename TARGET_TYPE  = GLenum           ,
       typename FIRST_TYPE   = GLuint           ,
@@ -27020,6 +28910,41 @@ namespace ge{
               sizes  );
     }
     template<
+      typename TARGET_TYPE  = GLenum           ,
+      typename FIRST_TYPE   = GLuint           ,
+      typename COUNT_TYPE   = GLsizei          ,
+      typename BUFFERS_TYPE = const GLuint*    ,
+      typename OFFSETS_TYPE = const GLintptr*  ,
+      typename SIZES_TYPE   = const GLsizeiptr*>
+    inline std::shared_ptr<BindBuffersRange<
+      TARGET_TYPE ,
+      FIRST_TYPE  ,
+      COUNT_TYPE  ,
+      BUFFERS_TYPE,
+      OFFSETS_TYPE,
+      SIZES_TYPE  >> sharedBindBuffersRange(
+        TARGET_TYPE  const&target ,
+        FIRST_TYPE   const&first  ,
+        COUNT_TYPE   const&count  ,
+        BUFFERS_TYPE const&buffers,
+        OFFSETS_TYPE const&offsets,
+        SIZES_TYPE   const&sizes  ){
+        return std::make_shared<BindBuffersRange<
+          TARGET_TYPE ,
+          FIRST_TYPE  ,
+          COUNT_TYPE  ,
+          BUFFERS_TYPE,
+          OFFSETS_TYPE,
+          SIZES_TYPE  >>(
+              target ,
+              first  ,
+              count  ,
+              buffers,
+              offsets,
+              sizes  );
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint    ,
       typename OFFSET_TYPE = GLintptr  ,
       typename LENGTH_TYPE = GLsizeiptr>
@@ -27038,6 +28963,26 @@ namespace ge{
               offset,
               length);
     }
+    template<
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename LENGTH_TYPE = GLsizeiptr>
+    inline std::shared_ptr<InvalidateBufferSubData<
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      LENGTH_TYPE>> sharedInvalidateBufferSubData(
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        LENGTH_TYPE const&length){
+        return std::make_shared<InvalidateBufferSubData<
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          LENGTH_TYPE>>(
+              buffer,
+              offset,
+              length);
+    }
+
 
     template<
       typename PROGRAM_TYPE   = GLuint        ,
@@ -27069,6 +29014,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix4x3fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix4x3fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix4x3fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename FIRST_TYPE = GLuint        ,
       typename COUNT_TYPE = GLsizei       ,
       typename V_TYPE     = const GLfloat*>
@@ -27088,6 +29063,26 @@ namespace ge{
               v    );
     }
     template<
+      typename FIRST_TYPE = GLuint        ,
+      typename COUNT_TYPE = GLsizei       ,
+      typename V_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ViewportArrayv<
+      FIRST_TYPE,
+      COUNT_TYPE,
+      V_TYPE    >> sharedViewportArrayv(
+        FIRST_TYPE const&first,
+        COUNT_TYPE const&count,
+        V_TYPE     const&v    ){
+        return std::make_shared<ViewportArrayv<
+          FIRST_TYPE,
+          COUNT_TYPE,
+          V_TYPE    >>(
+              first,
+              count,
+              v    );
+    }
+
+    template<
       typename N_TYPE            = GLsizei      ,
       typename FRAMEBUFFERS_TYPE = const GLuint*>
     inline DeleteFramebuffers<
@@ -27101,6 +29096,21 @@ namespace ge{
               n           ,
               framebuffers);
     }
+    template<
+      typename N_TYPE            = GLsizei      ,
+      typename FRAMEBUFFERS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteFramebuffers<
+      N_TYPE           ,
+      FRAMEBUFFERS_TYPE>> sharedDeleteFramebuffers(
+        N_TYPE            const&n           ,
+        FRAMEBUFFERS_TYPE const&framebuffers){
+        return std::make_shared<DeleteFramebuffers<
+          N_TYPE           ,
+          FRAMEBUFFERS_TYPE>>(
+              n           ,
+              framebuffers);
+    }
+
     template<
       typename MODE_TYPE  = GLenum ,
       typename FIRST_TYPE = GLint  ,
@@ -27121,6 +29131,26 @@ namespace ge{
               count);
     }
     template<
+      typename MODE_TYPE  = GLenum ,
+      typename FIRST_TYPE = GLint  ,
+      typename COUNT_TYPE = GLsizei>
+    inline std::shared_ptr<DrawArrays<
+      MODE_TYPE ,
+      FIRST_TYPE,
+      COUNT_TYPE>> sharedDrawArrays(
+        MODE_TYPE  const&mode ,
+        FIRST_TYPE const&first,
+        COUNT_TYPE const&count){
+        return std::make_shared<DrawArrays<
+          MODE_TYPE ,
+          FIRST_TYPE,
+          COUNT_TYPE>>(
+              mode ,
+              first,
+              count);
+    }
+
+    template<
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint>
     inline Uniform1ui<
@@ -27135,6 +29165,21 @@ namespace ge{
               v0      );
     }
     template<
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint>
+    inline std::shared_ptr<Uniform1ui<
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedUniform1ui(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<Uniform1ui<
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              location,
+              v0      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttrib1dv<
@@ -27148,6 +29193,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttrib1dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib1dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib1dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLint ,
@@ -27167,6 +29227,26 @@ namespace ge{
               x    ,
               y    );
     }
+    template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLint ,
+      typename Y_TYPE     = GLint >
+    inline std::shared_ptr<VertexAttribI2i<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    >> sharedVertexAttribI2i(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ){
+        return std::make_shared<VertexAttribI2i<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    >>(
+              index,
+              x    ,
+              y    );
+    }
+
     template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble,
@@ -27192,6 +29272,31 @@ namespace ge{
               z    );
     }
     template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble,
+      typename Y_TYPE     = GLdouble,
+      typename Z_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttrib3d<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    >> sharedVertexAttrib3d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ){
+        return std::make_shared<VertexAttrib3d<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    );
+    }
+
+    template<
       typename MASK_TYPE = GLbitfield>
     inline Clear<
       MASK_TYPE>* newClear(
@@ -27200,6 +29305,16 @@ namespace ge{
           MASK_TYPE>(
               mask);
     }
+    template<
+      typename MASK_TYPE = GLbitfield>
+    inline std::shared_ptr<Clear<
+      MASK_TYPE>> sharedClear(
+        MASK_TYPE const&mask){
+        return std::make_shared<Clear<
+          MASK_TYPE>>(
+              mask);
+    }
+
     template<
       typename PROGRAM_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
@@ -27219,6 +29334,26 @@ namespace ge{
               pname  ,
               value  );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename VALUE_TYPE   = GLint >
+    inline std::shared_ptr<ProgramParameteri<
+      PROGRAM_TYPE,
+      PNAME_TYPE  ,
+      VALUE_TYPE  >> sharedProgramParameteri(
+        PROGRAM_TYPE const&program,
+        PNAME_TYPE   const&pname  ,
+        VALUE_TYPE   const&value  ){
+        return std::make_shared<ProgramParameteri<
+          PROGRAM_TYPE,
+          PNAME_TYPE  ,
+          VALUE_TYPE  >>(
+              program,
+              pname  ,
+              value  );
+    }
+
     template<
       typename PROGRAM_TYPE      = GLuint  ,
       typename UNIFORMINDEX_TYPE = GLuint  ,
@@ -27249,6 +29384,36 @@ namespace ge{
               uniformName );
     }
     template<
+      typename PROGRAM_TYPE      = GLuint  ,
+      typename UNIFORMINDEX_TYPE = GLuint  ,
+      typename BUFSIZE_TYPE      = GLsizei ,
+      typename LENGTH_TYPE       = GLsizei*,
+      typename UNIFORMNAME_TYPE  = GLchar* >
+    inline std::shared_ptr<GetActiveUniformName<
+      PROGRAM_TYPE     ,
+      UNIFORMINDEX_TYPE,
+      BUFSIZE_TYPE     ,
+      LENGTH_TYPE      ,
+      UNIFORMNAME_TYPE >> sharedGetActiveUniformName(
+        PROGRAM_TYPE      const&program     ,
+        UNIFORMINDEX_TYPE const&uniformIndex,
+        BUFSIZE_TYPE      const&bufSize     ,
+        LENGTH_TYPE       const&length      ,
+        UNIFORMNAME_TYPE  const&uniformName ){
+        return std::make_shared<GetActiveUniformName<
+          PROGRAM_TYPE     ,
+          UNIFORMINDEX_TYPE,
+          BUFSIZE_TYPE     ,
+          LENGTH_TYPE      ,
+          UNIFORMNAME_TYPE >>(
+              program     ,
+              uniformIndex,
+              bufSize     ,
+              length      ,
+              uniformName );
+    }
+
+    template<
       typename BARRIERS_TYPE = GLbitfield>
     inline MemoryBarrier<
       BARRIERS_TYPE>* newMemoryBarrier(
@@ -27258,6 +29423,16 @@ namespace ge{
               barriers);
     }
     template<
+      typename BARRIERS_TYPE = GLbitfield>
+    inline std::shared_ptr<MemoryBarrier<
+      BARRIERS_TYPE>> sharedMemoryBarrier(
+        BARRIERS_TYPE const&barriers){
+        return std::make_shared<MemoryBarrier<
+          BARRIERS_TYPE>>(
+              barriers);
+    }
+
+    template<
       typename RET_TYPE = GLenum>
     inline GetGraphicsResetStatus<
       RET_TYPE>* newGetGraphicsResetStatus(
@@ -27266,6 +29441,16 @@ namespace ge{
           RET_TYPE>(
               ret);
     }
+    template<
+      typename RET_TYPE = GLenum>
+    inline std::shared_ptr<GetGraphicsResetStatus<
+      RET_TYPE>> sharedGetGraphicsResetStatus(
+        RET_TYPE const&ret){
+        return std::make_shared<GetGraphicsResetStatus<
+          RET_TYPE>>(
+              ret);
+    }
+
     template<
       typename TARGET_TYPE  = GLenum,
       typename TEXTURE_TYPE = GLuint>
@@ -27281,6 +29466,21 @@ namespace ge{
               texture);
     }
     template<
+      typename TARGET_TYPE  = GLenum,
+      typename TEXTURE_TYPE = GLuint>
+    inline std::shared_ptr<BindTexture<
+      TARGET_TYPE ,
+      TEXTURE_TYPE>> sharedBindTexture(
+        TARGET_TYPE  const&target ,
+        TEXTURE_TYPE const&texture){
+        return std::make_shared<BindTexture<
+          TARGET_TYPE ,
+          TEXTURE_TYPE>>(
+              target ,
+              texture);
+    }
+
+    template<
       typename RET_TYPE = GLboolean,
       typename CAP_TYPE = GLenum   >
     inline IsEnabled<
@@ -27294,6 +29494,21 @@ namespace ge{
               ret,
               cap);
     }
+    template<
+      typename RET_TYPE = GLboolean,
+      typename CAP_TYPE = GLenum   >
+    inline std::shared_ptr<IsEnabled<
+      RET_TYPE,
+      CAP_TYPE>> sharedIsEnabled(
+        RET_TYPE const&ret,
+        CAP_TYPE const&cap){
+        return std::make_shared<IsEnabled<
+          RET_TYPE,
+          CAP_TYPE>>(
+              ret,
+              cap);
+    }
+
     template<
       typename INDEX_TYPE      = GLuint   ,
       typename TYPE_TYPE       = GLenum   ,
@@ -27318,6 +29533,31 @@ namespace ge{
               normalized,
               value     );
     }
+    template<
+      typename INDEX_TYPE      = GLuint   ,
+      typename TYPE_TYPE       = GLenum   ,
+      typename NORMALIZED_TYPE = GLboolean,
+      typename VALUE_TYPE      = GLuint   >
+    inline std::shared_ptr<VertexAttribP2ui<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP2ui(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP2ui<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
     template<
       typename TARGET_TYPE     = GLenum,
       typename ATTACHMENT_TYPE = GLenum,
@@ -27350,6 +29590,36 @@ namespace ge{
     template<
       typename TARGET_TYPE     = GLenum,
       typename ATTACHMENT_TYPE = GLenum,
+      typename TEXTARGET_TYPE  = GLenum,
+      typename TEXTURE_TYPE    = GLuint,
+      typename LEVEL_TYPE      = GLint >
+    inline std::shared_ptr<FramebufferTexture2D<
+      TARGET_TYPE    ,
+      ATTACHMENT_TYPE,
+      TEXTARGET_TYPE ,
+      TEXTURE_TYPE   ,
+      LEVEL_TYPE     >> sharedFramebufferTexture2D(
+        TARGET_TYPE     const&target    ,
+        ATTACHMENT_TYPE const&attachment,
+        TEXTARGET_TYPE  const&textarget ,
+        TEXTURE_TYPE    const&texture   ,
+        LEVEL_TYPE      const&level     ){
+        return std::make_shared<FramebufferTexture2D<
+          TARGET_TYPE    ,
+          ATTACHMENT_TYPE,
+          TEXTARGET_TYPE ,
+          TEXTURE_TYPE   ,
+          LEVEL_TYPE     >>(
+              target    ,
+              attachment,
+              textarget ,
+              texture   ,
+              level     );
+    }
+
+    template<
+      typename TARGET_TYPE     = GLenum,
+      typename ATTACHMENT_TYPE = GLenum,
       typename PNAME_TYPE      = GLenum,
       typename PARAMS_TYPE     = GLint*>
     inline GetFramebufferAttachmentParameteriv<
@@ -27371,6 +29641,31 @@ namespace ge{
               pname     ,
               params    );
     }
+    template<
+      typename TARGET_TYPE     = GLenum,
+      typename ATTACHMENT_TYPE = GLenum,
+      typename PNAME_TYPE      = GLenum,
+      typename PARAMS_TYPE     = GLint*>
+    inline std::shared_ptr<GetFramebufferAttachmentParameteriv<
+      TARGET_TYPE    ,
+      ATTACHMENT_TYPE,
+      PNAME_TYPE     ,
+      PARAMS_TYPE    >> sharedGetFramebufferAttachmentParameteriv(
+        TARGET_TYPE     const&target    ,
+        ATTACHMENT_TYPE const&attachment,
+        PNAME_TYPE      const&pname     ,
+        PARAMS_TYPE     const&params    ){
+        return std::make_shared<GetFramebufferAttachmentParameteriv<
+          TARGET_TYPE    ,
+          ATTACHMENT_TYPE,
+          PNAME_TYPE     ,
+          PARAMS_TYPE    >>(
+              target    ,
+              attachment,
+              pname     ,
+              params    );
+    }
+
     template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLubyte,
@@ -27401,6 +29696,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLubyte,
+      typename Y_TYPE     = GLubyte,
+      typename Z_TYPE     = GLubyte,
+      typename W_TYPE     = GLubyte>
+    inline std::shared_ptr<VertexAttrib4Nub<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttrib4Nub(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttrib4Nub<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename RET_TYPE    = void*     ,
       typename BUFFER_TYPE = GLuint    ,
       typename OFFSET_TYPE = GLintptr  ,
@@ -27430,6 +29755,36 @@ namespace ge{
               access);
     }
     template<
+      typename RET_TYPE    = void*     ,
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename LENGTH_TYPE = GLsizeiptr,
+      typename ACCESS_TYPE = GLbitfield>
+    inline std::shared_ptr<MapNamedBufferRange<
+      RET_TYPE   ,
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      LENGTH_TYPE,
+      ACCESS_TYPE>> sharedMapNamedBufferRange(
+        RET_TYPE    const&ret   ,
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        LENGTH_TYPE const&length,
+        ACCESS_TYPE const&access){
+        return std::make_shared<MapNamedBufferRange<
+          RET_TYPE   ,
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          LENGTH_TYPE,
+          ACCESS_TYPE>>(
+              ret   ,
+              buffer,
+              offset,
+              length,
+              access);
+    }
+
+    template<
       typename RET_TYPE     = GLint        ,
       typename PROGRAM_TYPE = GLuint       ,
       typename NAME_TYPE    = const GLchar*>
@@ -27449,6 +29804,26 @@ namespace ge{
               name   );
     }
     template<
+      typename RET_TYPE     = GLint        ,
+      typename PROGRAM_TYPE = GLuint       ,
+      typename NAME_TYPE    = const GLchar*>
+    inline std::shared_ptr<GetFragDataLocation<
+      RET_TYPE    ,
+      PROGRAM_TYPE,
+      NAME_TYPE   >> sharedGetFragDataLocation(
+        RET_TYPE     const&ret    ,
+        PROGRAM_TYPE const&program,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetFragDataLocation<
+          RET_TYPE    ,
+          PROGRAM_TYPE,
+          NAME_TYPE   >>(
+              ret    ,
+              program,
+              name   );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
       typename PARAMS_TYPE  = GLint*>
@@ -27467,6 +29842,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAMS_TYPE  = GLint*>
+    inline std::shared_ptr<GetTextureParameterIiv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetTextureParameterIiv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetTextureParameterIiv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              pname  ,
+              params );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename LEVEL_TYPE          = GLint      ,
@@ -27512,6 +29907,51 @@ namespace ge{
               pixels        );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename LEVEL_TYPE          = GLint      ,
+      typename INTERNALFORMAT_TYPE = GLint      ,
+      typename WIDTH_TYPE          = GLsizei    ,
+      typename BORDER_TYPE         = GLint      ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename PIXELS_TYPE         = const void*>
+    inline std::shared_ptr<TexImage1D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      BORDER_TYPE        ,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      PIXELS_TYPE        >> sharedTexImage1D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        BORDER_TYPE         const&border        ,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        PIXELS_TYPE         const&pixels        ){
+        return std::make_shared<TexImage1D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          BORDER_TYPE        ,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          PIXELS_TYPE        >>(
+              target        ,
+              level         ,
+              internalformat,
+              width         ,
+              border        ,
+              format        ,
+              type          ,
+              pixels        );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum      ,
       typename PNAME_TYPE  = GLenum      ,
       typename PARAMS_TYPE = const GLint*>
@@ -27530,6 +29970,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum      ,
+      typename PNAME_TYPE  = GLenum      ,
+      typename PARAMS_TYPE = const GLint*>
+    inline std::shared_ptr<TexParameteriv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedTexParameteriv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<TexParameteriv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename VAOBJ_TYPE          = GLuint,
       typename ATTRIBINDEX_TYPE    = GLuint,
@@ -27560,6 +30020,36 @@ namespace ge{
               relativeoffset);
     }
     template<
+      typename VAOBJ_TYPE          = GLuint,
+      typename ATTRIBINDEX_TYPE    = GLuint,
+      typename SIZE_TYPE           = GLint ,
+      typename TYPE_TYPE           = GLenum,
+      typename RELATIVEOFFSET_TYPE = GLuint>
+    inline std::shared_ptr<VertexArrayAttribIFormat<
+      VAOBJ_TYPE         ,
+      ATTRIBINDEX_TYPE   ,
+      SIZE_TYPE          ,
+      TYPE_TYPE          ,
+      RELATIVEOFFSET_TYPE>> sharedVertexArrayAttribIFormat(
+        VAOBJ_TYPE          const&vaobj         ,
+        ATTRIBINDEX_TYPE    const&attribindex   ,
+        SIZE_TYPE           const&size          ,
+        TYPE_TYPE           const&type          ,
+        RELATIVEOFFSET_TYPE const&relativeoffset){
+        return std::make_shared<VertexArrayAttribIFormat<
+          VAOBJ_TYPE         ,
+          ATTRIBINDEX_TYPE   ,
+          SIZE_TYPE          ,
+          TYPE_TYPE          ,
+          RELATIVEOFFSET_TYPE>>(
+              vaobj         ,
+              attribindex   ,
+              size          ,
+              type          ,
+              relativeoffset);
+    }
+
+    template<
       typename VAOBJ_TYPE        = GLuint  ,
       typename BINDINGINDEX_TYPE = GLuint  ,
       typename BUFFER_TYPE       = GLuint  ,
@@ -27588,6 +30078,36 @@ namespace ge{
               offset      ,
               stride      );
     }
+    template<
+      typename VAOBJ_TYPE        = GLuint  ,
+      typename BINDINGINDEX_TYPE = GLuint  ,
+      typename BUFFER_TYPE       = GLuint  ,
+      typename OFFSET_TYPE       = GLintptr,
+      typename STRIDE_TYPE       = GLsizei >
+    inline std::shared_ptr<VertexArrayVertexBuffer<
+      VAOBJ_TYPE       ,
+      BINDINGINDEX_TYPE,
+      BUFFER_TYPE      ,
+      OFFSET_TYPE      ,
+      STRIDE_TYPE      >> sharedVertexArrayVertexBuffer(
+        VAOBJ_TYPE        const&vaobj       ,
+        BINDINGINDEX_TYPE const&bindingindex,
+        BUFFER_TYPE       const&buffer      ,
+        OFFSET_TYPE       const&offset      ,
+        STRIDE_TYPE       const&stride      ){
+        return std::make_shared<VertexArrayVertexBuffer<
+          VAOBJ_TYPE       ,
+          BINDINGINDEX_TYPE,
+          BUFFER_TYPE      ,
+          OFFSET_TYPE      ,
+          STRIDE_TYPE      >>(
+              vaobj       ,
+              bindingindex,
+              buffer      ,
+              offset      ,
+              stride      );
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename LEVEL_TYPE  = GLint ,
@@ -27618,6 +30138,36 @@ namespace ge{
               pixels);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename LEVEL_TYPE  = GLint ,
+      typename FORMAT_TYPE = GLenum,
+      typename TYPE_TYPE   = GLenum,
+      typename PIXELS_TYPE = void* >
+    inline std::shared_ptr<GetTexImage<
+      TARGET_TYPE,
+      LEVEL_TYPE ,
+      FORMAT_TYPE,
+      TYPE_TYPE  ,
+      PIXELS_TYPE>> sharedGetTexImage(
+        TARGET_TYPE const&target,
+        LEVEL_TYPE  const&level ,
+        FORMAT_TYPE const&format,
+        TYPE_TYPE   const&type  ,
+        PIXELS_TYPE const&pixels){
+        return std::make_shared<GetTexImage<
+          TARGET_TYPE,
+          LEVEL_TYPE ,
+          FORMAT_TYPE,
+          TYPE_TYPE  ,
+          PIXELS_TYPE>>(
+              target,
+              level ,
+              format,
+              type  ,
+              pixels);
+    }
+
+    template<
       typename ID_TYPE     = GLuint  ,
       typename PNAME_TYPE  = GLenum  ,
       typename PARAMS_TYPE = GLint64*>
@@ -27637,6 +30187,26 @@ namespace ge{
               params);
     }
     template<
+      typename ID_TYPE     = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename PARAMS_TYPE = GLint64*>
+    inline std::shared_ptr<GetQueryObjecti64v<
+      ID_TYPE    ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetQueryObjecti64v(
+        ID_TYPE     const&id    ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetQueryObjecti64v<
+          ID_TYPE    ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              id    ,
+              pname ,
+              params);
+    }
+
+    template<
       typename N_TYPE            = GLsizei,
       typename FRAMEBUFFERS_TYPE = GLuint*>
     inline GenFramebuffers<
@@ -27650,6 +30220,21 @@ namespace ge{
               n           ,
               framebuffers);
     }
+    template<
+      typename N_TYPE            = GLsizei,
+      typename FRAMEBUFFERS_TYPE = GLuint*>
+    inline std::shared_ptr<GenFramebuffers<
+      N_TYPE           ,
+      FRAMEBUFFERS_TYPE>> sharedGenFramebuffers(
+        N_TYPE            const&n           ,
+        FRAMEBUFFERS_TYPE const&framebuffers){
+        return std::make_shared<GenFramebuffers<
+          N_TYPE           ,
+          FRAMEBUFFERS_TYPE>>(
+              n           ,
+              framebuffers);
+    }
+
     template<
       typename XFB_TYPE    = GLuint,
       typename INDEX_TYPE  = GLuint,
@@ -27669,6 +30254,26 @@ namespace ge{
               index ,
               buffer);
     }
+    template<
+      typename XFB_TYPE    = GLuint,
+      typename INDEX_TYPE  = GLuint,
+      typename BUFFER_TYPE = GLuint>
+    inline std::shared_ptr<TransformFeedbackBufferBase<
+      XFB_TYPE   ,
+      INDEX_TYPE ,
+      BUFFER_TYPE>> sharedTransformFeedbackBufferBase(
+        XFB_TYPE    const&xfb   ,
+        INDEX_TYPE  const&index ,
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<TransformFeedbackBufferBase<
+          XFB_TYPE   ,
+          INDEX_TYPE ,
+          BUFFER_TYPE>>(
+              xfb   ,
+              index ,
+              buffer);
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -27729,6 +30334,66 @@ namespace ge{
               data   );
     }
     template<
+      typename TEXTURE_TYPE = GLuint     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename YOFFSET_TYPE = GLint      ,
+      typename ZOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename HEIGHT_TYPE  = GLsizei    ,
+      typename DEPTH_TYPE   = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename DATA_TYPE    = const void*>
+    inline std::shared_ptr<ClearTexSubImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      DEPTH_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      DATA_TYPE   >> sharedClearTexSubImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        DEPTH_TYPE   const&depth  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        DATA_TYPE    const&data   ){
+        return std::make_shared<ClearTexSubImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          DEPTH_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          DATA_TYPE   >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              width  ,
+              height ,
+              depth  ,
+              format ,
+              type   ,
+              data   );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename MAXCOUNT_TYPE = GLsizei ,
       typename COUNT_TYPE    = GLsizei*,
@@ -27753,6 +30418,31 @@ namespace ge{
               shaders );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename MAXCOUNT_TYPE = GLsizei ,
+      typename COUNT_TYPE    = GLsizei*,
+      typename SHADERS_TYPE  = GLuint* >
+    inline std::shared_ptr<GetAttachedShaders<
+      PROGRAM_TYPE ,
+      MAXCOUNT_TYPE,
+      COUNT_TYPE   ,
+      SHADERS_TYPE >> sharedGetAttachedShaders(
+        PROGRAM_TYPE  const&program ,
+        MAXCOUNT_TYPE const&maxCount,
+        COUNT_TYPE    const&count   ,
+        SHADERS_TYPE  const&shaders ){
+        return std::make_shared<GetAttachedShaders<
+          PROGRAM_TYPE ,
+          MAXCOUNT_TYPE,
+          COUNT_TYPE   ,
+          SHADERS_TYPE >>(
+              program ,
+              maxCount,
+              count   ,
+              shaders );
+    }
+
+    template<
       typename RET_TYPE          = GLboolean,
       typename RENDERBUFFER_TYPE = GLuint   >
     inline IsRenderbuffer<
@@ -27766,6 +30456,21 @@ namespace ge{
               ret         ,
               renderbuffer);
     }
+    template<
+      typename RET_TYPE          = GLboolean,
+      typename RENDERBUFFER_TYPE = GLuint   >
+    inline std::shared_ptr<IsRenderbuffer<
+      RET_TYPE         ,
+      RENDERBUFFER_TYPE>> sharedIsRenderbuffer(
+        RET_TYPE          const&ret         ,
+        RENDERBUFFER_TYPE const&renderbuffer){
+        return std::make_shared<IsRenderbuffer<
+          RET_TYPE         ,
+          RENDERBUFFER_TYPE>>(
+              ret         ,
+              renderbuffer);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint       ,
       typename LOCATION_TYPE = GLint        ,
@@ -27790,6 +30495,31 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint       ,
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<ProgramUniform3uiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform3uiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform3uiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename FIRST_TYPE   = GLuint         ,
       typename COUNT_TYPE   = GLsizei        ,
@@ -27820,6 +30550,36 @@ namespace ge{
               strides);
     }
     template<
+      typename FIRST_TYPE   = GLuint         ,
+      typename COUNT_TYPE   = GLsizei        ,
+      typename BUFFERS_TYPE = const GLuint*  ,
+      typename OFFSETS_TYPE = const GLintptr*,
+      typename STRIDES_TYPE = const GLsizei* >
+    inline std::shared_ptr<BindVertexBuffers<
+      FIRST_TYPE  ,
+      COUNT_TYPE  ,
+      BUFFERS_TYPE,
+      OFFSETS_TYPE,
+      STRIDES_TYPE>> sharedBindVertexBuffers(
+        FIRST_TYPE   const&first  ,
+        COUNT_TYPE   const&count  ,
+        BUFFERS_TYPE const&buffers,
+        OFFSETS_TYPE const&offsets,
+        STRIDES_TYPE const&strides){
+        return std::make_shared<BindVertexBuffers<
+          FIRST_TYPE  ,
+          COUNT_TYPE  ,
+          BUFFERS_TYPE,
+          OFFSETS_TYPE,
+          STRIDES_TYPE>>(
+              first  ,
+              count  ,
+              buffers,
+              offsets,
+              strides);
+    }
+
+    template<
       typename RET_TYPE    = void*     ,
       typename TARGET_TYPE = GLenum    ,
       typename OFFSET_TYPE = GLintptr  ,
@@ -27849,6 +30609,36 @@ namespace ge{
               access);
     }
     template<
+      typename RET_TYPE    = void*     ,
+      typename TARGET_TYPE = GLenum    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename LENGTH_TYPE = GLsizeiptr,
+      typename ACCESS_TYPE = GLbitfield>
+    inline std::shared_ptr<MapBufferRange<
+      RET_TYPE   ,
+      TARGET_TYPE,
+      OFFSET_TYPE,
+      LENGTH_TYPE,
+      ACCESS_TYPE>> sharedMapBufferRange(
+        RET_TYPE    const&ret   ,
+        TARGET_TYPE const&target,
+        OFFSET_TYPE const&offset,
+        LENGTH_TYPE const&length,
+        ACCESS_TYPE const&access){
+        return std::make_shared<MapBufferRange<
+          RET_TYPE   ,
+          TARGET_TYPE,
+          OFFSET_TYPE,
+          LENGTH_TYPE,
+          ACCESS_TYPE>>(
+              ret   ,
+              target,
+              offset,
+              length,
+              access);
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint    ,
       typename OFFSET_TYPE = GLintptr  ,
       typename SIZE_TYPE   = GLsizeiptr,
@@ -27873,6 +30663,31 @@ namespace ge{
               data  );
     }
     template<
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE   = GLsizeiptr,
+      typename DATA_TYPE   = void*     >
+    inline std::shared_ptr<GetNamedBufferSubData<
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  >> sharedGetNamedBufferSubData(
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetNamedBufferSubData<
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  >>(
+              buffer,
+              offset,
+              size  ,
+              data  );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint>
     inline DisableVertexAttribArray<
       INDEX_TYPE>* newDisableVertexAttribArray(
@@ -27881,6 +30696,16 @@ namespace ge{
           INDEX_TYPE>(
               index);
     }
+    template<
+      typename INDEX_TYPE = GLuint>
+    inline std::shared_ptr<DisableVertexAttribArray<
+      INDEX_TYPE>> sharedDisableVertexAttribArray(
+        INDEX_TYPE const&index){
+        return std::make_shared<DisableVertexAttribArray<
+          INDEX_TYPE>>(
+              index);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint      ,
       typename LOCATION_TYPE = GLint       ,
@@ -27906,6 +30731,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint      ,
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<ProgramUniform2iv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform2iv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform2iv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = GLint*>
@@ -27925,6 +30775,26 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetQueryiv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetQueryiv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetQueryiv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
+    template<
       typename XFB_TYPE   = GLuint,
       typename PNAME_TYPE = GLenum,
       typename PARAM_TYPE = GLint*>
@@ -27943,6 +30813,26 @@ namespace ge{
               pname,
               param);
     }
+    template<
+      typename XFB_TYPE   = GLuint,
+      typename PNAME_TYPE = GLenum,
+      typename PARAM_TYPE = GLint*>
+    inline std::shared_ptr<GetTransformFeedbackiv<
+      XFB_TYPE  ,
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedGetTransformFeedbackiv(
+        XFB_TYPE   const&xfb  ,
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<GetTransformFeedbackiv<
+          XFB_TYPE  ,
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              xfb  ,
+              pname,
+              param);
+    }
+
     template<
       typename READFRAMEBUFFER_TYPE = GLuint    ,
       typename DRAWFRAMEBUFFER_TYPE = GLuint    ,
@@ -28008,6 +30898,71 @@ namespace ge{
               filter         );
     }
     template<
+      typename READFRAMEBUFFER_TYPE = GLuint    ,
+      typename DRAWFRAMEBUFFER_TYPE = GLuint    ,
+      typename SRCX0_TYPE           = GLint     ,
+      typename SRCY0_TYPE           = GLint     ,
+      typename SRCX1_TYPE           = GLint     ,
+      typename SRCY1_TYPE           = GLint     ,
+      typename DSTX0_TYPE           = GLint     ,
+      typename DSTY0_TYPE           = GLint     ,
+      typename DSTX1_TYPE           = GLint     ,
+      typename DSTY1_TYPE           = GLint     ,
+      typename MASK_TYPE            = GLbitfield,
+      typename FILTER_TYPE          = GLenum    >
+    inline std::shared_ptr<BlitNamedFramebuffer<
+      READFRAMEBUFFER_TYPE,
+      DRAWFRAMEBUFFER_TYPE,
+      SRCX0_TYPE          ,
+      SRCY0_TYPE          ,
+      SRCX1_TYPE          ,
+      SRCY1_TYPE          ,
+      DSTX0_TYPE          ,
+      DSTY0_TYPE          ,
+      DSTX1_TYPE          ,
+      DSTY1_TYPE          ,
+      MASK_TYPE           ,
+      FILTER_TYPE         >> sharedBlitNamedFramebuffer(
+        READFRAMEBUFFER_TYPE const&readFramebuffer,
+        DRAWFRAMEBUFFER_TYPE const&drawFramebuffer,
+        SRCX0_TYPE           const&srcX0          ,
+        SRCY0_TYPE           const&srcY0          ,
+        SRCX1_TYPE           const&srcX1          ,
+        SRCY1_TYPE           const&srcY1          ,
+        DSTX0_TYPE           const&dstX0          ,
+        DSTY0_TYPE           const&dstY0          ,
+        DSTX1_TYPE           const&dstX1          ,
+        DSTY1_TYPE           const&dstY1          ,
+        MASK_TYPE            const&mask           ,
+        FILTER_TYPE          const&filter         ){
+        return std::make_shared<BlitNamedFramebuffer<
+          READFRAMEBUFFER_TYPE,
+          DRAWFRAMEBUFFER_TYPE,
+          SRCX0_TYPE          ,
+          SRCY0_TYPE          ,
+          SRCX1_TYPE          ,
+          SRCY1_TYPE          ,
+          DSTX0_TYPE          ,
+          DSTY0_TYPE          ,
+          DSTX1_TYPE          ,
+          DSTY1_TYPE          ,
+          MASK_TYPE           ,
+          FILTER_TYPE         >>(
+              readFramebuffer,
+              drawFramebuffer,
+              srcX0          ,
+              srcY0          ,
+              srcX1          ,
+              srcY1          ,
+              dstX0          ,
+              dstY0          ,
+              dstX1          ,
+              dstY1          ,
+              mask           ,
+              filter         );
+    }
+
+    template<
       typename VAOBJ_TYPE          = GLuint,
       typename ATTRIBINDEX_TYPE    = GLuint,
       typename SIZE_TYPE           = GLint ,
@@ -28037,6 +30992,36 @@ namespace ge{
               relativeoffset);
     }
     template<
+      typename VAOBJ_TYPE          = GLuint,
+      typename ATTRIBINDEX_TYPE    = GLuint,
+      typename SIZE_TYPE           = GLint ,
+      typename TYPE_TYPE           = GLenum,
+      typename RELATIVEOFFSET_TYPE = GLuint>
+    inline std::shared_ptr<VertexArrayAttribLFormat<
+      VAOBJ_TYPE         ,
+      ATTRIBINDEX_TYPE   ,
+      SIZE_TYPE          ,
+      TYPE_TYPE          ,
+      RELATIVEOFFSET_TYPE>> sharedVertexArrayAttribLFormat(
+        VAOBJ_TYPE          const&vaobj         ,
+        ATTRIBINDEX_TYPE    const&attribindex   ,
+        SIZE_TYPE           const&size          ,
+        TYPE_TYPE           const&type          ,
+        RELATIVEOFFSET_TYPE const&relativeoffset){
+        return std::make_shared<VertexArrayAttribLFormat<
+          VAOBJ_TYPE         ,
+          ATTRIBINDEX_TYPE   ,
+          SIZE_TYPE          ,
+          TYPE_TYPE          ,
+          RELATIVEOFFSET_TYPE>>(
+              vaobj         ,
+              attribindex   ,
+              size          ,
+              type          ,
+              relativeoffset);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum ,
       typename N_TYPE      = GLsizei,
       typename IDS_TYPE    = GLuint*>
@@ -28055,6 +31040,26 @@ namespace ge{
               n     ,
               ids   );
     }
+    template<
+      typename TARGET_TYPE = GLenum ,
+      typename N_TYPE      = GLsizei,
+      typename IDS_TYPE    = GLuint*>
+    inline std::shared_ptr<CreateQueries<
+      TARGET_TYPE,
+      N_TYPE     ,
+      IDS_TYPE   >> sharedCreateQueries(
+        TARGET_TYPE const&target,
+        N_TYPE      const&n     ,
+        IDS_TYPE    const&ids   ){
+        return std::make_shared<CreateQueries<
+          TARGET_TYPE,
+          N_TYPE     ,
+          IDS_TYPE   >>(
+              target,
+              n     ,
+              ids   );
+    }
+
     template<
       typename SAMPLER_TYPE = GLuint  ,
       typename PNAME_TYPE   = GLenum  ,
@@ -28075,6 +31080,26 @@ namespace ge{
               params );
     }
     template<
+      typename SAMPLER_TYPE = GLuint  ,
+      typename PNAME_TYPE   = GLenum  ,
+      typename PARAMS_TYPE  = GLfloat*>
+    inline std::shared_ptr<GetSamplerParameterfv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetSamplerParameterfv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetSamplerParameterfv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              sampler,
+              pname  ,
+              params );
+    }
+
+    template<
       typename PROGRAM_TYPE             = GLuint,
       typename STORAGEBLOCKINDEX_TYPE   = GLuint,
       typename STORAGEBLOCKBINDING_TYPE = GLuint>
@@ -28093,6 +31118,26 @@ namespace ge{
               storageBlockIndex  ,
               storageBlockBinding);
     }
+    template<
+      typename PROGRAM_TYPE             = GLuint,
+      typename STORAGEBLOCKINDEX_TYPE   = GLuint,
+      typename STORAGEBLOCKBINDING_TYPE = GLuint>
+    inline std::shared_ptr<ShaderStorageBlockBinding<
+      PROGRAM_TYPE            ,
+      STORAGEBLOCKINDEX_TYPE  ,
+      STORAGEBLOCKBINDING_TYPE>> sharedShaderStorageBlockBinding(
+        PROGRAM_TYPE             const&program            ,
+        STORAGEBLOCKINDEX_TYPE   const&storageBlockIndex  ,
+        STORAGEBLOCKBINDING_TYPE const&storageBlockBinding){
+        return std::make_shared<ShaderStorageBlockBinding<
+          PROGRAM_TYPE            ,
+          STORAGEBLOCKINDEX_TYPE  ,
+          STORAGEBLOCKBINDING_TYPE>>(
+              program            ,
+              storageBlockIndex  ,
+              storageBlockBinding);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -28123,6 +31168,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix4x2dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix4x2dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix4x2dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PROGRAM_TYPE        = GLuint             ,
       typename UNIFORMCOUNT_TYPE   = GLsizei            ,
       typename UNIFORMNAMES_TYPE   = const GLchar*const*,
@@ -28147,6 +31222,31 @@ namespace ge{
               uniformIndices);
     }
     template<
+      typename PROGRAM_TYPE        = GLuint             ,
+      typename UNIFORMCOUNT_TYPE   = GLsizei            ,
+      typename UNIFORMNAMES_TYPE   = const GLchar*const*,
+      typename UNIFORMINDICES_TYPE = GLuint*            >
+    inline std::shared_ptr<GetUniformIndices<
+      PROGRAM_TYPE       ,
+      UNIFORMCOUNT_TYPE  ,
+      UNIFORMNAMES_TYPE  ,
+      UNIFORMINDICES_TYPE>> sharedGetUniformIndices(
+        PROGRAM_TYPE        const&program       ,
+        UNIFORMCOUNT_TYPE   const&uniformCount  ,
+        UNIFORMNAMES_TYPE   const&uniformNames  ,
+        UNIFORMINDICES_TYPE const&uniformIndices){
+        return std::make_shared<GetUniformIndices<
+          PROGRAM_TYPE       ,
+          UNIFORMCOUNT_TYPE  ,
+          UNIFORMNAMES_TYPE  ,
+          UNIFORMINDICES_TYPE>>(
+              program       ,
+              uniformCount  ,
+              uniformNames  ,
+              uniformIndices);
+    }
+
+    template<
       typename RET_TYPE    = GLboolean,
       typename SHADER_TYPE = GLuint   >
     inline IsShader<
@@ -28161,6 +31261,21 @@ namespace ge{
               shader);
     }
     template<
+      typename RET_TYPE    = GLboolean,
+      typename SHADER_TYPE = GLuint   >
+    inline std::shared_ptr<IsShader<
+      RET_TYPE   ,
+      SHADER_TYPE>> sharedIsShader(
+        RET_TYPE    const&ret   ,
+        SHADER_TYPE const&shader){
+        return std::make_shared<IsShader<
+          RET_TYPE   ,
+          SHADER_TYPE>>(
+              ret   ,
+              shader);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLubyte*>
     inline VertexAttribI4ubv<
@@ -28174,6 +31289,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLubyte*>
+    inline std::shared_ptr<VertexAttribI4ubv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI4ubv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI4ubv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint,
@@ -28194,6 +31324,26 @@ namespace ge{
               id    );
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint,
+      typename ID_TYPE     = GLuint>
+    inline std::shared_ptr<BeginQueryIndexed<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      ID_TYPE    >> sharedBeginQueryIndexed(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        ID_TYPE     const&id    ){
+        return std::make_shared<BeginQueryIndexed<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          ID_TYPE    >>(
+              target,
+              index ,
+              id    );
+    }
+
+    template<
       typename PNAME_TYPE  = GLenum      ,
       typename PARAMS_TYPE = const GLint*>
     inline PointParameteriv<
@@ -28207,6 +31357,21 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename PNAME_TYPE  = GLenum      ,
+      typename PARAMS_TYPE = const GLint*>
+    inline std::shared_ptr<PointParameteriv<
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedPointParameteriv(
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<PointParameteriv<
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              pname ,
+              params);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
@@ -28237,6 +31402,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix2x3fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix2x3fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix2x3fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PROGRAM_TYPE        = GLuint       ,
       typename UNIFORMCOUNT_TYPE   = GLsizei      ,
       typename UNIFORMINDICES_TYPE = const GLuint*,
@@ -28266,6 +31461,36 @@ namespace ge{
               params        );
     }
     template<
+      typename PROGRAM_TYPE        = GLuint       ,
+      typename UNIFORMCOUNT_TYPE   = GLsizei      ,
+      typename UNIFORMINDICES_TYPE = const GLuint*,
+      typename PNAME_TYPE          = GLenum       ,
+      typename PARAMS_TYPE         = GLint*       >
+    inline std::shared_ptr<GetActiveUniformsiv<
+      PROGRAM_TYPE       ,
+      UNIFORMCOUNT_TYPE  ,
+      UNIFORMINDICES_TYPE,
+      PNAME_TYPE         ,
+      PARAMS_TYPE        >> sharedGetActiveUniformsiv(
+        PROGRAM_TYPE        const&program       ,
+        UNIFORMCOUNT_TYPE   const&uniformCount  ,
+        UNIFORMINDICES_TYPE const&uniformIndices,
+        PNAME_TYPE          const&pname         ,
+        PARAMS_TYPE         const&params        ){
+        return std::make_shared<GetActiveUniformsiv<
+          PROGRAM_TYPE       ,
+          UNIFORMCOUNT_TYPE  ,
+          UNIFORMINDICES_TYPE,
+          PNAME_TYPE         ,
+          PARAMS_TYPE        >>(
+              program       ,
+              uniformCount  ,
+              uniformIndices,
+              pname         ,
+              params        );
+    }
+
+    template<
       typename VAOBJ_TYPE        = GLuint,
       typename ATTRIBINDEX_TYPE  = GLuint,
       typename BINDINGINDEX_TYPE = GLuint>
@@ -28284,6 +31509,26 @@ namespace ge{
               attribindex ,
               bindingindex);
     }
+    template<
+      typename VAOBJ_TYPE        = GLuint,
+      typename ATTRIBINDEX_TYPE  = GLuint,
+      typename BINDINGINDEX_TYPE = GLuint>
+    inline std::shared_ptr<VertexArrayAttribBinding<
+      VAOBJ_TYPE       ,
+      ATTRIBINDEX_TYPE ,
+      BINDINGINDEX_TYPE>> sharedVertexArrayAttribBinding(
+        VAOBJ_TYPE        const&vaobj       ,
+        ATTRIBINDEX_TYPE  const&attribindex ,
+        BINDINGINDEX_TYPE const&bindingindex){
+        return std::make_shared<VertexArrayAttribBinding<
+          VAOBJ_TYPE       ,
+          ATTRIBINDEX_TYPE ,
+          BINDINGINDEX_TYPE>>(
+              vaobj       ,
+              attribindex ,
+              bindingindex);
+    }
+
     template<
       typename TEXTURE_TYPE        = GLuint ,
       typename LEVELS_TYPE         = GLsizei,
@@ -28309,6 +31554,31 @@ namespace ge{
               width         );
     }
     template<
+      typename TEXTURE_TYPE        = GLuint ,
+      typename LEVELS_TYPE         = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei>
+    inline std::shared_ptr<TextureStorage1D<
+      TEXTURE_TYPE       ,
+      LEVELS_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         >> sharedTextureStorage1D(
+        TEXTURE_TYPE        const&texture       ,
+        LEVELS_TYPE         const&levels        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ){
+        return std::make_shared<TextureStorage1D<
+          TEXTURE_TYPE       ,
+          LEVELS_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         >>(
+              texture       ,
+              levels        ,
+              internalformat,
+              width         );
+    }
+
+    template<
       typename BARRIERS_TYPE = GLbitfield>
     inline MemoryBarrierByRegion<
       BARRIERS_TYPE>* newMemoryBarrierByRegion(
@@ -28317,6 +31587,16 @@ namespace ge{
           BARRIERS_TYPE>(
               barriers);
     }
+    template<
+      typename BARRIERS_TYPE = GLbitfield>
+    inline std::shared_ptr<MemoryBarrierByRegion<
+      BARRIERS_TYPE>> sharedMemoryBarrierByRegion(
+        BARRIERS_TYPE const&barriers){
+        return std::make_shared<MemoryBarrierByRegion<
+          BARRIERS_TYPE>>(
+              barriers);
+    }
+
     template<
       typename BUF_TYPE  = GLuint,
       typename MODE_TYPE = GLenum>
@@ -28331,6 +31611,21 @@ namespace ge{
               buf ,
               mode);
     }
+    template<
+      typename BUF_TYPE  = GLuint,
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<BlendEquationi<
+      BUF_TYPE ,
+      MODE_TYPE>> sharedBlendEquationi(
+        BUF_TYPE  const&buf ,
+        MODE_TYPE const&mode){
+        return std::make_shared<BlendEquationi<
+          BUF_TYPE ,
+          MODE_TYPE>>(
+              buf ,
+              mode);
+    }
+
     template<
       typename RET_TYPE     = GLint        ,
       typename PROGRAM_TYPE = GLuint       ,
@@ -28351,6 +31646,26 @@ namespace ge{
               name   );
     }
     template<
+      typename RET_TYPE     = GLint        ,
+      typename PROGRAM_TYPE = GLuint       ,
+      typename NAME_TYPE    = const GLchar*>
+    inline std::shared_ptr<GetAttribLocation<
+      RET_TYPE    ,
+      PROGRAM_TYPE,
+      NAME_TYPE   >> sharedGetAttribLocation(
+        RET_TYPE     const&ret    ,
+        PROGRAM_TYPE const&program,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetAttribLocation<
+          RET_TYPE    ,
+          PROGRAM_TYPE,
+          NAME_TYPE   >>(
+              ret    ,
+              program,
+              name   );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttrib4dv<
@@ -28364,6 +31679,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttrib4dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
@@ -28383,6 +31713,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAMS_TYPE  = GLint*>
+    inline std::shared_ptr<GetTextureParameteriv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetTextureParameteriv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetTextureParameteriv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              pname  ,
+              params );
+    }
+
     template<
       typename PROGRAM_TYPE          = GLuint,
       typename PROGRAMINTERFACE_TYPE = GLenum,
@@ -28408,6 +31758,31 @@ namespace ge{
               params          );
     }
     template<
+      typename PROGRAM_TYPE          = GLuint,
+      typename PROGRAMINTERFACE_TYPE = GLenum,
+      typename PNAME_TYPE            = GLenum,
+      typename PARAMS_TYPE           = GLint*>
+    inline std::shared_ptr<GetProgramInterfaceiv<
+      PROGRAM_TYPE         ,
+      PROGRAMINTERFACE_TYPE,
+      PNAME_TYPE           ,
+      PARAMS_TYPE          >> sharedGetProgramInterfaceiv(
+        PROGRAM_TYPE          const&program         ,
+        PROGRAMINTERFACE_TYPE const&programInterface,
+        PNAME_TYPE            const&pname           ,
+        PARAMS_TYPE           const&params          ){
+        return std::make_shared<GetProgramInterfaceiv<
+          PROGRAM_TYPE         ,
+          PROGRAMINTERFACE_TYPE,
+          PNAME_TYPE           ,
+          PARAMS_TYPE          >>(
+              program         ,
+              programInterface,
+              pname           ,
+              params          );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint          ,
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
@@ -28427,6 +31802,26 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<Uniform2dv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform2dv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform2dv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename RET_TYPE    = void* ,
       typename BUFFER_TYPE = GLuint,
       typename ACCESS_TYPE = GLenum>
@@ -28445,6 +31840,26 @@ namespace ge{
               buffer,
               access);
     }
+    template<
+      typename RET_TYPE    = void* ,
+      typename BUFFER_TYPE = GLuint,
+      typename ACCESS_TYPE = GLenum>
+    inline std::shared_ptr<MapNamedBuffer<
+      RET_TYPE   ,
+      BUFFER_TYPE,
+      ACCESS_TYPE>> sharedMapNamedBuffer(
+        RET_TYPE    const&ret   ,
+        BUFFER_TYPE const&buffer,
+        ACCESS_TYPE const&access){
+        return std::make_shared<MapNamedBuffer<
+          RET_TYPE   ,
+          BUFFER_TYPE,
+          ACCESS_TYPE>>(
+              ret   ,
+              buffer,
+              access);
+    }
+
     template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble,
@@ -28475,6 +31890,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble,
+      typename Y_TYPE     = GLdouble,
+      typename Z_TYPE     = GLdouble,
+      typename W_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttrib4d<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttrib4d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttrib4d<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename INDEX_TYPE      = GLuint   ,
       typename TYPE_TYPE       = GLenum   ,
       typename NORMALIZED_TYPE = GLboolean,
@@ -28498,6 +31943,31 @@ namespace ge{
               normalized,
               value     );
     }
+    template<
+      typename INDEX_TYPE      = GLuint   ,
+      typename TYPE_TYPE       = GLenum   ,
+      typename NORMALIZED_TYPE = GLboolean,
+      typename VALUE_TYPE      = GLuint   >
+    inline std::shared_ptr<VertexAttribP3ui<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP3ui(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP3ui<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
     template<
       typename TARGET_TYPE     = GLenum,
       typename ATTACHMENT_TYPE = GLenum,
@@ -28528,6 +31998,36 @@ namespace ge{
               level     );
     }
     template<
+      typename TARGET_TYPE     = GLenum,
+      typename ATTACHMENT_TYPE = GLenum,
+      typename TEXTARGET_TYPE  = GLenum,
+      typename TEXTURE_TYPE    = GLuint,
+      typename LEVEL_TYPE      = GLint >
+    inline std::shared_ptr<FramebufferTexture1D<
+      TARGET_TYPE    ,
+      ATTACHMENT_TYPE,
+      TEXTARGET_TYPE ,
+      TEXTURE_TYPE   ,
+      LEVEL_TYPE     >> sharedFramebufferTexture1D(
+        TARGET_TYPE     const&target    ,
+        ATTACHMENT_TYPE const&attachment,
+        TEXTARGET_TYPE  const&textarget ,
+        TEXTURE_TYPE    const&texture   ,
+        LEVEL_TYPE      const&level     ){
+        return std::make_shared<FramebufferTexture1D<
+          TARGET_TYPE    ,
+          ATTACHMENT_TYPE,
+          TEXTARGET_TYPE ,
+          TEXTURE_TYPE   ,
+          LEVEL_TYPE     >>(
+              target    ,
+              attachment,
+              textarget ,
+              texture   ,
+              level     );
+    }
+
+    template<
       typename TEXTURE_TYPE        = GLuint    ,
       typename INTERNALFORMAT_TYPE = GLenum    ,
       typename BUFFER_TYPE         = GLuint    ,
@@ -28557,6 +32057,36 @@ namespace ge{
               size          );
     }
     template<
+      typename TEXTURE_TYPE        = GLuint    ,
+      typename INTERNALFORMAT_TYPE = GLenum    ,
+      typename BUFFER_TYPE         = GLuint    ,
+      typename OFFSET_TYPE         = GLintptr  ,
+      typename SIZE_TYPE           = GLsizeiptr>
+    inline std::shared_ptr<TextureBufferRange<
+      TEXTURE_TYPE       ,
+      INTERNALFORMAT_TYPE,
+      BUFFER_TYPE        ,
+      OFFSET_TYPE        ,
+      SIZE_TYPE          >> sharedTextureBufferRange(
+        TEXTURE_TYPE        const&texture       ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        BUFFER_TYPE         const&buffer        ,
+        OFFSET_TYPE         const&offset        ,
+        SIZE_TYPE           const&size          ){
+        return std::make_shared<TextureBufferRange<
+          TEXTURE_TYPE       ,
+          INTERNALFORMAT_TYPE,
+          BUFFER_TYPE        ,
+          OFFSET_TYPE        ,
+          SIZE_TYPE          >>(
+              texture       ,
+              internalformat,
+              buffer        ,
+              offset        ,
+              size          );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint   ,
       typename LOCATION_TYPE = GLint    ,
       typename BUFSIZE_TYPE  = GLsizei  ,
@@ -28580,6 +32110,31 @@ namespace ge{
               bufSize ,
               params  );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint   ,
+      typename LOCATION_TYPE = GLint    ,
+      typename BUFSIZE_TYPE  = GLsizei  ,
+      typename PARAMS_TYPE   = GLdouble*>
+    inline std::shared_ptr<GetnUniformdv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      BUFSIZE_TYPE ,
+      PARAMS_TYPE  >> sharedGetnUniformdv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        BUFSIZE_TYPE  const&bufSize ,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetnUniformdv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          BUFSIZE_TYPE ,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              bufSize ,
+              params  );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
@@ -28610,6 +32165,36 @@ namespace ge{
               v2      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint,
+      typename V2_TYPE       = GLuint>
+    inline std::shared_ptr<ProgramUniform3ui<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedProgramUniform3ui(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<ProgramUniform3ui<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
+    template<
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = void**>
     inline GetPointerv<
@@ -28623,6 +32208,21 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = void**>
+    inline std::shared_ptr<GetPointerv<
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetPointerv(
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetPointerv<
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              pname ,
+              params);
+    }
+
     template<
       typename BINDINGINDEX_TYPE = GLuint,
       typename DIVISOR_TYPE      = GLuint>
@@ -28638,6 +32238,21 @@ namespace ge{
               divisor     );
     }
     template<
+      typename BINDINGINDEX_TYPE = GLuint,
+      typename DIVISOR_TYPE      = GLuint>
+    inline std::shared_ptr<VertexBindingDivisor<
+      BINDINGINDEX_TYPE,
+      DIVISOR_TYPE     >> sharedVertexBindingDivisor(
+        BINDINGINDEX_TYPE const&bindingindex,
+        DIVISOR_TYPE      const&divisor     ){
+        return std::make_shared<VertexBindingDivisor<
+          BINDINGINDEX_TYPE,
+          DIVISOR_TYPE     >>(
+              bindingindex,
+              divisor     );
+    }
+
+    template<
       typename FACTOR_TYPE = GLfloat,
       typename UNITS_TYPE  = GLfloat>
     inline PolygonOffset<
@@ -28651,6 +32266,21 @@ namespace ge{
               factor,
               units );
     }
+    template<
+      typename FACTOR_TYPE = GLfloat,
+      typename UNITS_TYPE  = GLfloat>
+    inline std::shared_ptr<PolygonOffset<
+      FACTOR_TYPE,
+      UNITS_TYPE >> sharedPolygonOffset(
+        FACTOR_TYPE const&factor,
+        UNITS_TYPE  const&units ){
+        return std::make_shared<PolygonOffset<
+          FACTOR_TYPE,
+          UNITS_TYPE >>(
+              factor,
+              units );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
@@ -28671,6 +32301,26 @@ namespace ge{
               params  );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename PARAMS_TYPE   = GLuint*>
+    inline std::shared_ptr<GetUniformuiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      PARAMS_TYPE  >> sharedGetUniformuiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetUniformuiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              params  );
+    }
+
+    template<
       typename CAP_TYPE = GLenum>
     inline Enable<
       CAP_TYPE>* newEnable(
@@ -28679,6 +32329,16 @@ namespace ge{
           CAP_TYPE>(
               cap);
     }
+    template<
+      typename CAP_TYPE = GLenum>
+    inline std::shared_ptr<Enable<
+      CAP_TYPE>> sharedEnable(
+        CAP_TYPE const&cap){
+        return std::make_shared<Enable<
+          CAP_TYPE>>(
+              cap);
+    }
+
     template<
       typename INDEX_TYPE  = GLuint,
       typename PNAME_TYPE  = GLenum,
@@ -28699,6 +32359,26 @@ namespace ge{
               params);
     }
     template<
+      typename INDEX_TYPE  = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetVertexAttribIiv<
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetVertexAttribIiv(
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetVertexAttribIiv<
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              index ,
+              pname ,
+              params);
+    }
+
+    template<
       typename VAOBJ_TYPE        = GLuint,
       typename BINDINGINDEX_TYPE = GLuint,
       typename DIVISOR_TYPE      = GLuint>
@@ -28718,6 +32398,26 @@ namespace ge{
               divisor     );
     }
     template<
+      typename VAOBJ_TYPE        = GLuint,
+      typename BINDINGINDEX_TYPE = GLuint,
+      typename DIVISOR_TYPE      = GLuint>
+    inline std::shared_ptr<VertexArrayBindingDivisor<
+      VAOBJ_TYPE       ,
+      BINDINGINDEX_TYPE,
+      DIVISOR_TYPE     >> sharedVertexArrayBindingDivisor(
+        VAOBJ_TYPE        const&vaobj       ,
+        BINDINGINDEX_TYPE const&bindingindex,
+        DIVISOR_TYPE      const&divisor     ){
+        return std::make_shared<VertexArrayBindingDivisor<
+          VAOBJ_TYPE       ,
+          BINDINGINDEX_TYPE,
+          DIVISOR_TYPE     >>(
+              vaobj       ,
+              bindingindex,
+              divisor     );
+    }
+
+    template<
       typename BUF_TYPE = GLenum>
     inline DrawBuffer<
       BUF_TYPE>* newDrawBuffer(
@@ -28726,6 +32426,16 @@ namespace ge{
           BUF_TYPE>(
               buf);
     }
+    template<
+      typename BUF_TYPE = GLenum>
+    inline std::shared_ptr<DrawBuffer<
+      BUF_TYPE>> sharedDrawBuffer(
+        BUF_TYPE const&buf){
+        return std::make_shared<DrawBuffer<
+          BUF_TYPE>>(
+              buf);
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint>
@@ -28740,6 +32450,21 @@ namespace ge{
               target,
               index );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint>
+    inline std::shared_ptr<EndQueryIndexed<
+      TARGET_TYPE,
+      INDEX_TYPE >> sharedEndQueryIndexed(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ){
+        return std::make_shared<EndQueryIndexed<
+          TARGET_TYPE,
+          INDEX_TYPE >>(
+              target,
+              index );
+    }
+
     template<
       typename BUFFER_TYPE     = GLenum       ,
       typename DRAWBUFFER_TYPE = GLint        ,
@@ -28759,6 +32484,26 @@ namespace ge{
               drawbuffer,
               value     );
     }
+    template<
+      typename BUFFER_TYPE     = GLenum       ,
+      typename DRAWBUFFER_TYPE = GLint        ,
+      typename VALUE_TYPE      = const GLuint*>
+    inline std::shared_ptr<ClearBufferuiv<
+      BUFFER_TYPE    ,
+      DRAWBUFFER_TYPE,
+      VALUE_TYPE     >> sharedClearBufferuiv(
+        BUFFER_TYPE     const&buffer    ,
+        DRAWBUFFER_TYPE const&drawbuffer,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<ClearBufferuiv<
+          BUFFER_TYPE    ,
+          DRAWBUFFER_TYPE,
+          VALUE_TYPE     >>(
+              buffer    ,
+              drawbuffer,
+              value     );
+    }
+
     template<
       typename MODE_TYPE          = GLenum     ,
       typename COUNT_TYPE         = GLsizei    ,
@@ -28789,6 +32534,36 @@ namespace ge{
               instancecount);
     }
     template<
+      typename MODE_TYPE          = GLenum     ,
+      typename COUNT_TYPE         = GLsizei    ,
+      typename TYPE_TYPE          = GLenum     ,
+      typename INDICES_TYPE       = const void*,
+      typename INSTANCECOUNT_TYPE = GLsizei    >
+    inline std::shared_ptr<DrawElementsInstanced<
+      MODE_TYPE         ,
+      COUNT_TYPE        ,
+      TYPE_TYPE         ,
+      INDICES_TYPE      ,
+      INSTANCECOUNT_TYPE>> sharedDrawElementsInstanced(
+        MODE_TYPE          const&mode         ,
+        COUNT_TYPE         const&count        ,
+        TYPE_TYPE          const&type         ,
+        INDICES_TYPE       const&indices      ,
+        INSTANCECOUNT_TYPE const&instancecount){
+        return std::make_shared<DrawElementsInstanced<
+          MODE_TYPE         ,
+          COUNT_TYPE        ,
+          TYPE_TYPE         ,
+          INDICES_TYPE      ,
+          INSTANCECOUNT_TYPE>>(
+              mode         ,
+              count        ,
+              type         ,
+              indices      ,
+              instancecount);
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLint >
@@ -28808,6 +32583,26 @@ namespace ge{
               v0      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLint >
+    inline std::shared_ptr<ProgramUniform1i<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedProgramUniform1i(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<ProgramUniform1i<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              program ,
+              location,
+              v0      );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum,
       typename VALUE_TYPE = GLint >
     inline PatchParameteri<
@@ -28821,6 +32616,21 @@ namespace ge{
               pname,
               value);
     }
+    template<
+      typename PNAME_TYPE = GLenum,
+      typename VALUE_TYPE = GLint >
+    inline std::shared_ptr<PatchParameteri<
+      PNAME_TYPE,
+      VALUE_TYPE>> sharedPatchParameteri(
+        PNAME_TYPE const&pname,
+        VALUE_TYPE const&value){
+        return std::make_shared<PatchParameteri<
+          PNAME_TYPE,
+          VALUE_TYPE>>(
+              pname,
+              value);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
@@ -28841,6 +32651,26 @@ namespace ge{
               v0      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename LOCATION_TYPE = GLint   ,
+      typename V0_TYPE       = GLdouble>
+    inline std::shared_ptr<ProgramUniform1d<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedProgramUniform1d(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<ProgramUniform1d<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              program ,
+              location,
+              v0      );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat>
@@ -28860,6 +32690,26 @@ namespace ge{
               v0      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat>
+    inline std::shared_ptr<ProgramUniform1f<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedProgramUniform1f(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<ProgramUniform1f<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              program ,
+              location,
+              v0      );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename PNAME_TYPE       = GLenum,
       typename PARAM_TYPE       = GLint*>
@@ -28878,6 +32728,26 @@ namespace ge{
               pname      ,
               param      );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename PNAME_TYPE       = GLenum,
+      typename PARAM_TYPE       = GLint*>
+    inline std::shared_ptr<GetNamedFramebufferParameteriv<
+      FRAMEBUFFER_TYPE,
+      PNAME_TYPE      ,
+      PARAM_TYPE      >> sharedGetNamedFramebufferParameteriv(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        PNAME_TYPE       const&pname      ,
+        PARAM_TYPE       const&param      ){
+        return std::make_shared<GetNamedFramebufferParameteriv<
+          FRAMEBUFFER_TYPE,
+          PNAME_TYPE      ,
+          PARAM_TYPE      >>(
+              framebuffer,
+              pname      ,
+              param      );
+    }
+
 
     template<
       typename TARGET_TYPE = GLenum,
@@ -28898,6 +32768,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetRenderbufferParameteriv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetRenderbufferParameteriv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetRenderbufferParameteriv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint      ,
       typename LOCATION_TYPE = GLint       ,
@@ -28922,6 +32812,31 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint      ,
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<ProgramUniform3iv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform3iv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform3iv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename RET_TYPE        = GLuint  ,
       typename COUNT_TYPE      = GLuint  ,
@@ -28972,6 +32887,56 @@ namespace ge{
               messageLog);
     }
     template<
+      typename RET_TYPE        = GLuint  ,
+      typename COUNT_TYPE      = GLuint  ,
+      typename BUFSIZE_TYPE    = GLsizei ,
+      typename SOURCES_TYPE    = GLenum* ,
+      typename TYPES_TYPE      = GLenum* ,
+      typename IDS_TYPE        = GLuint* ,
+      typename SEVERITIES_TYPE = GLenum* ,
+      typename LENGTHS_TYPE    = GLsizei*,
+      typename MESSAGELOG_TYPE = GLchar* >
+    inline std::shared_ptr<GetDebugMessageLog<
+      RET_TYPE       ,
+      COUNT_TYPE     ,
+      BUFSIZE_TYPE   ,
+      SOURCES_TYPE   ,
+      TYPES_TYPE     ,
+      IDS_TYPE       ,
+      SEVERITIES_TYPE,
+      LENGTHS_TYPE   ,
+      MESSAGELOG_TYPE>> sharedGetDebugMessageLog(
+        RET_TYPE        const&ret       ,
+        COUNT_TYPE      const&count     ,
+        BUFSIZE_TYPE    const&bufSize   ,
+        SOURCES_TYPE    const&sources   ,
+        TYPES_TYPE      const&types     ,
+        IDS_TYPE        const&ids       ,
+        SEVERITIES_TYPE const&severities,
+        LENGTHS_TYPE    const&lengths   ,
+        MESSAGELOG_TYPE const&messageLog){
+        return std::make_shared<GetDebugMessageLog<
+          RET_TYPE       ,
+          COUNT_TYPE     ,
+          BUFSIZE_TYPE   ,
+          SOURCES_TYPE   ,
+          TYPES_TYPE     ,
+          IDS_TYPE       ,
+          SEVERITIES_TYPE,
+          LENGTHS_TYPE   ,
+          MESSAGELOG_TYPE>>(
+              ret       ,
+              count     ,
+              bufSize   ,
+              sources   ,
+              types     ,
+              ids       ,
+              severities,
+              lengths   ,
+              messageLog);
+    }
+
+    template<
       typename RENDERBUFFER_TYPE   = GLuint ,
       typename INTERNALFORMAT_TYPE = GLenum ,
       typename WIDTH_TYPE          = GLsizei,
@@ -28995,6 +32960,31 @@ namespace ge{
               width         ,
               height        );
     }
+    template<
+      typename RENDERBUFFER_TYPE   = GLuint ,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei>
+    inline std::shared_ptr<NamedRenderbufferStorage<
+      RENDERBUFFER_TYPE  ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedNamedRenderbufferStorage(
+        RENDERBUFFER_TYPE   const&renderbuffer  ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<NamedRenderbufferStorage<
+          RENDERBUFFER_TYPE  ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              renderbuffer  ,
+              internalformat,
+              width         ,
+              height        );
+    }
+
     template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename ATTACHMENT_TYPE  = GLenum,
@@ -29020,6 +33010,31 @@ namespace ge{
               params     );
     }
     template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename ATTACHMENT_TYPE  = GLenum,
+      typename PNAME_TYPE       = GLenum,
+      typename PARAMS_TYPE      = GLint*>
+    inline std::shared_ptr<GetNamedFramebufferAttachmentParameteriv<
+      FRAMEBUFFER_TYPE,
+      ATTACHMENT_TYPE ,
+      PNAME_TYPE      ,
+      PARAMS_TYPE     >> sharedGetNamedFramebufferAttachmentParameteriv(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        ATTACHMENT_TYPE  const&attachment ,
+        PNAME_TYPE       const&pname      ,
+        PARAMS_TYPE      const&params     ){
+        return std::make_shared<GetNamedFramebufferAttachmentParameteriv<
+          FRAMEBUFFER_TYPE,
+          ATTACHMENT_TYPE ,
+          PNAME_TYPE      ,
+          PARAMS_TYPE     >>(
+              framebuffer,
+              attachment ,
+              pname      ,
+              params     );
+    }
+
+    template<
       typename INDEX_TYPE   = GLuint,
       typename PNAME_TYPE   = GLenum,
       typename POINTER_TYPE = void**>
@@ -29038,6 +33053,26 @@ namespace ge{
               pname  ,
               pointer);
     }
+    template<
+      typename INDEX_TYPE   = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename POINTER_TYPE = void**>
+    inline std::shared_ptr<GetVertexAttribPointerv<
+      INDEX_TYPE  ,
+      PNAME_TYPE  ,
+      POINTER_TYPE>> sharedGetVertexAttribPointerv(
+        INDEX_TYPE   const&index  ,
+        PNAME_TYPE   const&pname  ,
+        POINTER_TYPE const&pointer){
+        return std::make_shared<GetVertexAttribPointerv<
+          INDEX_TYPE  ,
+          PNAME_TYPE  ,
+          POINTER_TYPE>>(
+              index  ,
+              pname  ,
+              pointer);
+    }
+
     template<
       typename RET_TYPE       = GLsync    ,
       typename CONDITION_TYPE = GLenum    ,
@@ -29058,6 +33093,26 @@ namespace ge{
               flags    );
     }
     template<
+      typename RET_TYPE       = GLsync    ,
+      typename CONDITION_TYPE = GLenum    ,
+      typename FLAGS_TYPE     = GLbitfield>
+    inline std::shared_ptr<FenceSync<
+      RET_TYPE      ,
+      CONDITION_TYPE,
+      FLAGS_TYPE    >> sharedFenceSync(
+        RET_TYPE       const&ret      ,
+        CONDITION_TYPE const&condition,
+        FLAGS_TYPE     const&flags    ){
+        return std::make_shared<FenceSync<
+          RET_TYPE      ,
+          CONDITION_TYPE,
+          FLAGS_TYPE    >>(
+              ret      ,
+              condition,
+              flags    );
+    }
+
+    template<
       typename N_TYPE      = GLsizei      ,
       typename ARRAYS_TYPE = const GLuint*>
     inline DeleteVertexArrays<
@@ -29071,6 +33126,21 @@ namespace ge{
               n     ,
               arrays);
     }
+    template<
+      typename N_TYPE      = GLsizei      ,
+      typename ARRAYS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteVertexArrays<
+      N_TYPE     ,
+      ARRAYS_TYPE>> sharedDeleteVertexArrays(
+        N_TYPE      const&n     ,
+        ARRAYS_TYPE const&arrays){
+        return std::make_shared<DeleteVertexArrays<
+          N_TYPE     ,
+          ARRAYS_TYPE>>(
+              n     ,
+              arrays);
+    }
+
     template<
       typename MODE_TYPE          = GLenum     ,
       typename COUNT_TYPE         = GLsizei    ,
@@ -29111,6 +33181,46 @@ namespace ge{
               baseinstance );
     }
     template<
+      typename MODE_TYPE          = GLenum     ,
+      typename COUNT_TYPE         = GLsizei    ,
+      typename TYPE_TYPE          = GLenum     ,
+      typename INDICES_TYPE       = const void*,
+      typename INSTANCECOUNT_TYPE = GLsizei    ,
+      typename BASEVERTEX_TYPE    = GLint      ,
+      typename BASEINSTANCE_TYPE  = GLuint     >
+    inline std::shared_ptr<DrawElementsInstancedBaseVertexBaseInstance<
+      MODE_TYPE         ,
+      COUNT_TYPE        ,
+      TYPE_TYPE         ,
+      INDICES_TYPE      ,
+      INSTANCECOUNT_TYPE,
+      BASEVERTEX_TYPE   ,
+      BASEINSTANCE_TYPE >> sharedDrawElementsInstancedBaseVertexBaseInstance(
+        MODE_TYPE          const&mode         ,
+        COUNT_TYPE         const&count        ,
+        TYPE_TYPE          const&type         ,
+        INDICES_TYPE       const&indices      ,
+        INSTANCECOUNT_TYPE const&instancecount,
+        BASEVERTEX_TYPE    const&basevertex   ,
+        BASEINSTANCE_TYPE  const&baseinstance ){
+        return std::make_shared<DrawElementsInstancedBaseVertexBaseInstance<
+          MODE_TYPE         ,
+          COUNT_TYPE        ,
+          TYPE_TYPE         ,
+          INDICES_TYPE      ,
+          INSTANCECOUNT_TYPE,
+          BASEVERTEX_TYPE   ,
+          BASEINSTANCE_TYPE >>(
+              mode         ,
+              count        ,
+              type         ,
+              indices      ,
+              instancecount,
+              basevertex   ,
+              baseinstance );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLshort*>
     inline VertexAttrib3sv<
@@ -29124,6 +33234,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLshort*>
+    inline std::shared_ptr<VertexAttrib3sv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib3sv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib3sv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLshort,
@@ -29154,6 +33279,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLshort,
+      typename Y_TYPE     = GLshort,
+      typename Z_TYPE     = GLshort,
+      typename W_TYPE     = GLshort>
+    inline std::shared_ptr<VertexAttrib4s<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttrib4s(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttrib4s<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename PIPELINE_TYPE = GLuint>
     inline ValidateProgramPipeline<
       PIPELINE_TYPE>* newValidateProgramPipeline(
@@ -29162,6 +33317,16 @@ namespace ge{
           PIPELINE_TYPE>(
               pipeline);
     }
+    template<
+      typename PIPELINE_TYPE = GLuint>
+    inline std::shared_ptr<ValidateProgramPipeline<
+      PIPELINE_TYPE>> sharedValidateProgramPipeline(
+        PIPELINE_TYPE const&pipeline){
+        return std::make_shared<ValidateProgramPipeline<
+          PIPELINE_TYPE>>(
+              pipeline);
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename LEVEL_TYPE  = GLint ,
@@ -29187,6 +33352,31 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename LEVEL_TYPE  = GLint ,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetTexLevelParameteriv<
+      TARGET_TYPE,
+      LEVEL_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetTexLevelParameteriv(
+        TARGET_TYPE const&target,
+        LEVEL_TYPE  const&level ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetTexLevelParameteriv<
+          TARGET_TYPE,
+          LEVEL_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              level ,
+              pname ,
+              params);
+    }
+
+    template<
       typename FIRST_TYPE = GLuint      ,
       typename COUNT_TYPE = GLsizei     ,
       typename V_TYPE     = const GLint*>
@@ -29205,6 +33395,26 @@ namespace ge{
               count,
               v    );
     }
+    template<
+      typename FIRST_TYPE = GLuint      ,
+      typename COUNT_TYPE = GLsizei     ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<ScissorArrayv<
+      FIRST_TYPE,
+      COUNT_TYPE,
+      V_TYPE    >> sharedScissorArrayv(
+        FIRST_TYPE const&first,
+        COUNT_TYPE const&count,
+        V_TYPE     const&v    ){
+        return std::make_shared<ScissorArrayv<
+          FIRST_TYPE,
+          COUNT_TYPE,
+          V_TYPE    >>(
+              first,
+              count,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE               = GLenum   ,
       typename SAMPLES_TYPE              = GLsizei  ,
@@ -29245,6 +33455,46 @@ namespace ge{
               fixedsamplelocations);
     }
     template<
+      typename TARGET_TYPE               = GLenum   ,
+      typename SAMPLES_TYPE              = GLsizei  ,
+      typename INTERNALFORMAT_TYPE       = GLenum   ,
+      typename WIDTH_TYPE                = GLsizei  ,
+      typename HEIGHT_TYPE               = GLsizei  ,
+      typename DEPTH_TYPE                = GLsizei  ,
+      typename FIXEDSAMPLELOCATIONS_TYPE = GLboolean>
+    inline std::shared_ptr<TexStorage3DMultisample<
+      TARGET_TYPE              ,
+      SAMPLES_TYPE             ,
+      INTERNALFORMAT_TYPE      ,
+      WIDTH_TYPE               ,
+      HEIGHT_TYPE              ,
+      DEPTH_TYPE               ,
+      FIXEDSAMPLELOCATIONS_TYPE>> sharedTexStorage3DMultisample(
+        TARGET_TYPE               const&target              ,
+        SAMPLES_TYPE              const&samples             ,
+        INTERNALFORMAT_TYPE       const&internalformat      ,
+        WIDTH_TYPE                const&width               ,
+        HEIGHT_TYPE               const&height              ,
+        DEPTH_TYPE                const&depth               ,
+        FIXEDSAMPLELOCATIONS_TYPE const&fixedsamplelocations){
+        return std::make_shared<TexStorage3DMultisample<
+          TARGET_TYPE              ,
+          SAMPLES_TYPE             ,
+          INTERNALFORMAT_TYPE      ,
+          WIDTH_TYPE               ,
+          HEIGHT_TYPE              ,
+          DEPTH_TYPE               ,
+          FIXEDSAMPLELOCATIONS_TYPE>>(
+              target              ,
+              samples             ,
+              internalformat      ,
+              width               ,
+              height              ,
+              depth               ,
+              fixedsamplelocations);
+    }
+
+    template<
       typename FACE_TYPE = GLenum,
       typename FUNC_TYPE = GLenum,
       typename REF_TYPE  = GLint ,
@@ -29269,6 +33519,31 @@ namespace ge{
               mask);
     }
     template<
+      typename FACE_TYPE = GLenum,
+      typename FUNC_TYPE = GLenum,
+      typename REF_TYPE  = GLint ,
+      typename MASK_TYPE = GLuint>
+    inline std::shared_ptr<StencilFuncSeparate<
+      FACE_TYPE,
+      FUNC_TYPE,
+      REF_TYPE ,
+      MASK_TYPE>> sharedStencilFuncSeparate(
+        FACE_TYPE const&face,
+        FUNC_TYPE const&func,
+        REF_TYPE  const&ref ,
+        MASK_TYPE const&mask){
+        return std::make_shared<StencilFuncSeparate<
+          FACE_TYPE,
+          FUNC_TYPE,
+          REF_TYPE ,
+          MASK_TYPE>>(
+              face,
+              func,
+              ref ,
+              mask);
+    }
+
+    template<
       typename VAOBJ_TYPE = GLuint,
       typename INDEX_TYPE = GLuint>
     inline DisableVertexArrayAttrib<
@@ -29282,6 +33557,21 @@ namespace ge{
               vaobj,
               index);
     }
+    template<
+      typename VAOBJ_TYPE = GLuint,
+      typename INDEX_TYPE = GLuint>
+    inline std::shared_ptr<DisableVertexArrayAttrib<
+      VAOBJ_TYPE,
+      INDEX_TYPE>> sharedDisableVertexArrayAttrib(
+        VAOBJ_TYPE const&vaobj,
+        INDEX_TYPE const&index){
+        return std::make_shared<DisableVertexArrayAttrib<
+          VAOBJ_TYPE,
+          INDEX_TYPE>>(
+              vaobj,
+              index);
+    }
+
     template<
       typename COUNT_TYPE    = GLsizei,
       typename SAMPLERS_TYPE = GLuint*>
@@ -29297,6 +33587,21 @@ namespace ge{
               samplers);
     }
     template<
+      typename COUNT_TYPE    = GLsizei,
+      typename SAMPLERS_TYPE = GLuint*>
+    inline std::shared_ptr<GenSamplers<
+      COUNT_TYPE   ,
+      SAMPLERS_TYPE>> sharedGenSamplers(
+        COUNT_TYPE    const&count   ,
+        SAMPLERS_TYPE const&samplers){
+        return std::make_shared<GenSamplers<
+          COUNT_TYPE   ,
+          SAMPLERS_TYPE>>(
+              count   ,
+              samplers);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename CLAMP_TYPE  = GLenum>
     inline ClampColor<
@@ -29310,6 +33615,21 @@ namespace ge{
               target,
               clamp );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename CLAMP_TYPE  = GLenum>
+    inline std::shared_ptr<ClampColor<
+      TARGET_TYPE,
+      CLAMP_TYPE >> sharedClampColor(
+        TARGET_TYPE const&target,
+        CLAMP_TYPE  const&clamp ){
+        return std::make_shared<ClampColor<
+          TARGET_TYPE,
+          CLAMP_TYPE >>(
+              target,
+              clamp );
+    }
+
     template<
       typename LOCATION_TYPE = GLint       ,
       typename COUNT_TYPE    = GLsizei     ,
@@ -29330,6 +33650,26 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<Uniform4iv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform4iv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform4iv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename S_TYPE = GLint>
     inline ClearStencil<
       S_TYPE>* newClearStencil(
@@ -29338,6 +33678,16 @@ namespace ge{
           S_TYPE>(
               s);
     }
+    template<
+      typename S_TYPE = GLint>
+    inline std::shared_ptr<ClearStencil<
+      S_TYPE>> sharedClearStencil(
+        S_TYPE const&s){
+        return std::make_shared<ClearStencil<
+          S_TYPE>>(
+              s);
+    }
+
     template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLuint*>
@@ -29352,6 +33702,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLuint*>
+    inline std::shared_ptr<VertexAttribI4uiv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI4uiv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI4uiv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename RENDERBUFFER_TYPE = GLuint,
       typename PNAME_TYPE        = GLenum,
@@ -29372,6 +33737,26 @@ namespace ge{
               params      );
     }
     template<
+      typename RENDERBUFFER_TYPE = GLuint,
+      typename PNAME_TYPE        = GLenum,
+      typename PARAMS_TYPE       = GLint*>
+    inline std::shared_ptr<GetNamedRenderbufferParameteriv<
+      RENDERBUFFER_TYPE,
+      PNAME_TYPE       ,
+      PARAMS_TYPE      >> sharedGetNamedRenderbufferParameteriv(
+        RENDERBUFFER_TYPE const&renderbuffer,
+        PNAME_TYPE        const&pname       ,
+        PARAMS_TYPE       const&params      ){
+        return std::make_shared<GetNamedRenderbufferParameteriv<
+          RENDERBUFFER_TYPE,
+          PNAME_TYPE       ,
+          PARAMS_TYPE      >>(
+              renderbuffer,
+              pname       ,
+              params      );
+    }
+
+    template<
       typename MODE_TYPE          = GLenum ,
       typename ID_TYPE            = GLuint ,
       typename INSTANCECOUNT_TYPE = GLsizei>
@@ -29391,6 +33776,26 @@ namespace ge{
               instancecount);
     }
     template<
+      typename MODE_TYPE          = GLenum ,
+      typename ID_TYPE            = GLuint ,
+      typename INSTANCECOUNT_TYPE = GLsizei>
+    inline std::shared_ptr<DrawTransformFeedbackInstanced<
+      MODE_TYPE         ,
+      ID_TYPE           ,
+      INSTANCECOUNT_TYPE>> sharedDrawTransformFeedbackInstanced(
+        MODE_TYPE          const&mode         ,
+        ID_TYPE            const&id           ,
+        INSTANCECOUNT_TYPE const&instancecount){
+        return std::make_shared<DrawTransformFeedbackInstanced<
+          MODE_TYPE         ,
+          ID_TYPE           ,
+          INSTANCECOUNT_TYPE>>(
+              mode         ,
+              id           ,
+              instancecount);
+    }
+
+    template<
       typename N_TYPE        = GLsizei,
       typename TEXTURES_TYPE = GLuint*>
     inline GenTextures<
@@ -29404,6 +33809,21 @@ namespace ge{
               n       ,
               textures);
     }
+    template<
+      typename N_TYPE        = GLsizei,
+      typename TEXTURES_TYPE = GLuint*>
+    inline std::shared_ptr<GenTextures<
+      N_TYPE       ,
+      TEXTURES_TYPE>> sharedGenTextures(
+        N_TYPE        const&n       ,
+        TEXTURES_TYPE const&textures){
+        return std::make_shared<GenTextures<
+          N_TYPE       ,
+          TEXTURES_TYPE>>(
+              n       ,
+              textures);
+    }
+
     template<
       typename TEXTURE_TYPE              = GLuint   ,
       typename SAMPLES_TYPE              = GLsizei  ,
@@ -29439,6 +33859,41 @@ namespace ge{
               fixedsamplelocations);
     }
     template<
+      typename TEXTURE_TYPE              = GLuint   ,
+      typename SAMPLES_TYPE              = GLsizei  ,
+      typename INTERNALFORMAT_TYPE       = GLenum   ,
+      typename WIDTH_TYPE                = GLsizei  ,
+      typename HEIGHT_TYPE               = GLsizei  ,
+      typename FIXEDSAMPLELOCATIONS_TYPE = GLboolean>
+    inline std::shared_ptr<TextureStorage2DMultisample<
+      TEXTURE_TYPE             ,
+      SAMPLES_TYPE             ,
+      INTERNALFORMAT_TYPE      ,
+      WIDTH_TYPE               ,
+      HEIGHT_TYPE              ,
+      FIXEDSAMPLELOCATIONS_TYPE>> sharedTextureStorage2DMultisample(
+        TEXTURE_TYPE              const&texture             ,
+        SAMPLES_TYPE              const&samples             ,
+        INTERNALFORMAT_TYPE       const&internalformat      ,
+        WIDTH_TYPE                const&width               ,
+        HEIGHT_TYPE               const&height              ,
+        FIXEDSAMPLELOCATIONS_TYPE const&fixedsamplelocations){
+        return std::make_shared<TextureStorage2DMultisample<
+          TEXTURE_TYPE             ,
+          SAMPLES_TYPE             ,
+          INTERNALFORMAT_TYPE      ,
+          WIDTH_TYPE               ,
+          HEIGHT_TYPE              ,
+          FIXEDSAMPLELOCATIONS_TYPE>>(
+              texture             ,
+              samples             ,
+              internalformat      ,
+              width               ,
+              height              ,
+              fixedsamplelocations);
+    }
+
+    template<
       typename MODE_TYPE = GLenum,
       typename ID_TYPE   = GLuint>
     inline DrawTransformFeedback<
@@ -29453,6 +33908,21 @@ namespace ge{
               id  );
     }
     template<
+      typename MODE_TYPE = GLenum,
+      typename ID_TYPE   = GLuint>
+    inline std::shared_ptr<DrawTransformFeedback<
+      MODE_TYPE,
+      ID_TYPE  >> sharedDrawTransformFeedback(
+        MODE_TYPE const&mode,
+        ID_TYPE   const&id  ){
+        return std::make_shared<DrawTransformFeedback<
+          MODE_TYPE,
+          ID_TYPE  >>(
+              mode,
+              id  );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum   ,
       typename DATA_TYPE  = GLdouble*>
     inline GetDoublev<
@@ -29466,6 +33936,21 @@ namespace ge{
               pname,
               data );
     }
+    template<
+      typename PNAME_TYPE = GLenum   ,
+      typename DATA_TYPE  = GLdouble*>
+    inline std::shared_ptr<GetDoublev<
+      PNAME_TYPE,
+      DATA_TYPE >> sharedGetDoublev(
+        PNAME_TYPE const&pname,
+        DATA_TYPE  const&data ){
+        return std::make_shared<GetDoublev<
+          PNAME_TYPE,
+          DATA_TYPE >>(
+              pname,
+              data );
+    }
+
     template<
       typename TARGET_TYPE = GLenum ,
       typename PNAME_TYPE  = GLenum ,
@@ -29485,6 +33970,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum ,
+      typename PNAME_TYPE  = GLenum ,
+      typename PARAMS_TYPE = GLuint*>
+    inline std::shared_ptr<GetTexParameterIuiv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetTexParameterIuiv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetTexParameterIuiv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename XFB_TYPE   = GLuint,
       typename PNAME_TYPE = GLenum,
@@ -29510,6 +34015,31 @@ namespace ge{
               param);
     }
     template<
+      typename XFB_TYPE   = GLuint,
+      typename PNAME_TYPE = GLenum,
+      typename INDEX_TYPE = GLuint,
+      typename PARAM_TYPE = GLint*>
+    inline std::shared_ptr<GetTransformFeedbacki_v<
+      XFB_TYPE  ,
+      PNAME_TYPE,
+      INDEX_TYPE,
+      PARAM_TYPE>> sharedGetTransformFeedbacki_v(
+        XFB_TYPE   const&xfb  ,
+        PNAME_TYPE const&pname,
+        INDEX_TYPE const&index,
+        PARAM_TYPE const&param){
+        return std::make_shared<GetTransformFeedbacki_v<
+          XFB_TYPE  ,
+          PNAME_TYPE,
+          INDEX_TYPE,
+          PARAM_TYPE>>(
+              xfb  ,
+              pname,
+              index,
+              param);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLbyte*>
     inline VertexAttrib4Nbv<
@@ -29523,6 +34053,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLbyte*>
+    inline std::shared_ptr<VertexAttrib4Nbv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4Nbv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4Nbv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum ,
       typename LEVELS_TYPE         = GLsizei,
@@ -29548,6 +34093,31 @@ namespace ge{
               width         );
     }
     template<
+      typename TARGET_TYPE         = GLenum ,
+      typename LEVELS_TYPE         = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei>
+    inline std::shared_ptr<TexStorage1D<
+      TARGET_TYPE        ,
+      LEVELS_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         >> sharedTexStorage1D(
+        TARGET_TYPE         const&target        ,
+        LEVELS_TYPE         const&levels        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ){
+        return std::make_shared<TexStorage1D<
+          TARGET_TYPE        ,
+          LEVELS_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         >>(
+              target        ,
+              levels        ,
+              internalformat,
+              width         );
+    }
+
+    template<
       typename RET_TYPE  = GLboolean,
       typename SYNC_TYPE = GLsync   >
     inline IsSync<
@@ -29562,6 +34132,21 @@ namespace ge{
               sync);
     }
     template<
+      typename RET_TYPE  = GLboolean,
+      typename SYNC_TYPE = GLsync   >
+    inline std::shared_ptr<IsSync<
+      RET_TYPE ,
+      SYNC_TYPE>> sharedIsSync(
+        RET_TYPE  const&ret ,
+        SYNC_TYPE const&sync){
+        return std::make_shared<IsSync<
+          RET_TYPE ,
+          SYNC_TYPE>>(
+              ret ,
+              sync);
+    }
+
+    template<
       typename RET_TYPE = GLuint>
     inline CreateProgram<
       RET_TYPE>* newCreateProgram(
@@ -29570,6 +34155,16 @@ namespace ge{
           RET_TYPE>(
               ret);
     }
+    template<
+      typename RET_TYPE = GLuint>
+    inline std::shared_ptr<CreateProgram<
+      RET_TYPE>> sharedCreateProgram(
+        RET_TYPE const&ret){
+        return std::make_shared<CreateProgram<
+          RET_TYPE>>(
+              ret);
+    }
+
     template<
       typename PROGRAM_TYPE           = GLuint  ,
       typename UNIFORMBLOCKINDEX_TYPE = GLuint  ,
@@ -29600,6 +34195,36 @@ namespace ge{
               uniformBlockName );
     }
     template<
+      typename PROGRAM_TYPE           = GLuint  ,
+      typename UNIFORMBLOCKINDEX_TYPE = GLuint  ,
+      typename BUFSIZE_TYPE           = GLsizei ,
+      typename LENGTH_TYPE            = GLsizei*,
+      typename UNIFORMBLOCKNAME_TYPE  = GLchar* >
+    inline std::shared_ptr<GetActiveUniformBlockName<
+      PROGRAM_TYPE          ,
+      UNIFORMBLOCKINDEX_TYPE,
+      BUFSIZE_TYPE          ,
+      LENGTH_TYPE           ,
+      UNIFORMBLOCKNAME_TYPE >> sharedGetActiveUniformBlockName(
+        PROGRAM_TYPE           const&program          ,
+        UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
+        BUFSIZE_TYPE           const&bufSize          ,
+        LENGTH_TYPE            const&length           ,
+        UNIFORMBLOCKNAME_TYPE  const&uniformBlockName ){
+        return std::make_shared<GetActiveUniformBlockName<
+          PROGRAM_TYPE          ,
+          UNIFORMBLOCKINDEX_TYPE,
+          BUFSIZE_TYPE          ,
+          LENGTH_TYPE           ,
+          UNIFORMBLOCKNAME_TYPE >>(
+              program          ,
+              uniformBlockIndex,
+              bufSize          ,
+              length           ,
+              uniformBlockName );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint,
       typename V0_TYPE       = GLint,
       typename V1_TYPE       = GLint>
@@ -29618,6 +34243,26 @@ namespace ge{
               v0      ,
               v1      );
     }
+    template<
+      typename LOCATION_TYPE = GLint,
+      typename V0_TYPE       = GLint,
+      typename V1_TYPE       = GLint>
+    inline std::shared_ptr<Uniform2i<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedUniform2i(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<Uniform2i<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              location,
+              v0      ,
+              v1      );
+    }
+
     template<
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat,
@@ -29638,6 +34283,26 @@ namespace ge{
               v1      );
     }
     template<
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat,
+      typename V1_TYPE       = GLfloat>
+    inline std::shared_ptr<Uniform2f<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedUniform2f(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<Uniform2f<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              location,
+              v0      ,
+              v1      );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint   ,
       typename X_TYPE        = GLdouble,
       typename Y_TYPE        = GLdouble>
@@ -29656,6 +34321,26 @@ namespace ge{
               x       ,
               y       );
     }
+    template<
+      typename LOCATION_TYPE = GLint   ,
+      typename X_TYPE        = GLdouble,
+      typename Y_TYPE        = GLdouble>
+    inline std::shared_ptr<Uniform2d<
+      LOCATION_TYPE,
+      X_TYPE       ,
+      Y_TYPE       >> sharedUniform2d(
+        LOCATION_TYPE const&location,
+        X_TYPE        const&x       ,
+        Y_TYPE        const&y       ){
+        return std::make_shared<Uniform2d<
+          LOCATION_TYPE,
+          X_TYPE       ,
+          Y_TYPE       >>(
+              location,
+              x       ,
+              y       );
+    }
+
     template<
       typename SHADER_TYPE = GLuint             ,
       typename COUNT_TYPE  = GLsizei            ,
@@ -29681,6 +34366,31 @@ namespace ge{
               length);
     }
     template<
+      typename SHADER_TYPE = GLuint             ,
+      typename COUNT_TYPE  = GLsizei            ,
+      typename STRING_TYPE = const GLchar*const*,
+      typename LENGTH_TYPE = const GLint*       >
+    inline std::shared_ptr<ShaderSource<
+      SHADER_TYPE,
+      COUNT_TYPE ,
+      STRING_TYPE,
+      LENGTH_TYPE>> sharedShaderSource(
+        SHADER_TYPE const&shader,
+        COUNT_TYPE  const&count ,
+        STRING_TYPE const&string,
+        LENGTH_TYPE const&length){
+        return std::make_shared<ShaderSource<
+          SHADER_TYPE,
+          COUNT_TYPE ,
+          STRING_TYPE,
+          LENGTH_TYPE>>(
+              shader,
+              count ,
+              string,
+              length);
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
       typename PARAMS_TYPE  = GLint*>
@@ -29699,6 +34409,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAMS_TYPE  = GLint*>
+    inline std::shared_ptr<GetProgramiv<
+      PROGRAM_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetProgramiv(
+        PROGRAM_TYPE const&program,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetProgramiv<
+          PROGRAM_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              program,
+              pname  ,
+              params );
+    }
+
     template<
       typename INDEX_TYPE      = GLuint     ,
       typename SIZE_TYPE       = GLint      ,
@@ -29734,6 +34464,41 @@ namespace ge{
               pointer   );
     }
     template<
+      typename INDEX_TYPE      = GLuint     ,
+      typename SIZE_TYPE       = GLint      ,
+      typename TYPE_TYPE       = GLenum     ,
+      typename NORMALIZED_TYPE = GLboolean  ,
+      typename STRIDE_TYPE     = GLsizei    ,
+      typename POINTER_TYPE    = const void*>
+    inline std::shared_ptr<VertexAttribPointer<
+      INDEX_TYPE     ,
+      SIZE_TYPE      ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      STRIDE_TYPE    ,
+      POINTER_TYPE   >> sharedVertexAttribPointer(
+        INDEX_TYPE      const&index     ,
+        SIZE_TYPE       const&size      ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        STRIDE_TYPE     const&stride    ,
+        POINTER_TYPE    const&pointer   ){
+        return std::make_shared<VertexAttribPointer<
+          INDEX_TYPE     ,
+          SIZE_TYPE      ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          STRIDE_TYPE    ,
+          POINTER_TYPE   >>(
+              index     ,
+              size      ,
+              type      ,
+              normalized,
+              stride    ,
+              pointer   );
+    }
+
+    template<
       typename TARGET_TYPE     = GLenum,
       typename ATTACHMENT_TYPE = GLenum,
       typename TEXTURE_TYPE    = GLuint,
@@ -29763,6 +34528,36 @@ namespace ge{
               layer     );
     }
     template<
+      typename TARGET_TYPE     = GLenum,
+      typename ATTACHMENT_TYPE = GLenum,
+      typename TEXTURE_TYPE    = GLuint,
+      typename LEVEL_TYPE      = GLint ,
+      typename LAYER_TYPE      = GLint >
+    inline std::shared_ptr<FramebufferTextureLayer<
+      TARGET_TYPE    ,
+      ATTACHMENT_TYPE,
+      TEXTURE_TYPE   ,
+      LEVEL_TYPE     ,
+      LAYER_TYPE     >> sharedFramebufferTextureLayer(
+        TARGET_TYPE     const&target    ,
+        ATTACHMENT_TYPE const&attachment,
+        TEXTURE_TYPE    const&texture   ,
+        LEVEL_TYPE      const&level     ,
+        LAYER_TYPE      const&layer     ){
+        return std::make_shared<FramebufferTextureLayer<
+          TARGET_TYPE    ,
+          ATTACHMENT_TYPE,
+          TEXTURE_TYPE   ,
+          LEVEL_TYPE     ,
+          LAYER_TYPE     >>(
+              target    ,
+              attachment,
+              texture   ,
+              level     ,
+              layer     );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint        ,
       typename LOCATION_TYPE = GLint         ,
       typename COUNT_TYPE    = GLsizei       ,
@@ -29786,6 +34581,31 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint        ,
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<ProgramUniform4fv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform4fv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform4fv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename PTR_TYPE     = const void*,
       typename BUFSIZE_TYPE = GLsizei    ,
@@ -29811,6 +34631,31 @@ namespace ge{
               label  );
     }
     template<
+      typename PTR_TYPE     = const void*,
+      typename BUFSIZE_TYPE = GLsizei    ,
+      typename LENGTH_TYPE  = GLsizei*   ,
+      typename LABEL_TYPE   = GLchar*    >
+    inline std::shared_ptr<GetObjectPtrLabel<
+      PTR_TYPE    ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      LABEL_TYPE  >> sharedGetObjectPtrLabel(
+        PTR_TYPE     const&ptr    ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        LABEL_TYPE   const&label  ){
+        return std::make_shared<GetObjectPtrLabel<
+          PTR_TYPE    ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          LABEL_TYPE  >>(
+              ptr    ,
+              bufSize,
+              length ,
+              label  );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
       typename PARAM_TYPE   = GLint >
@@ -29829,6 +34674,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAM_TYPE   = GLint >
+    inline std::shared_ptr<TextureParameteri<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedTextureParameteri(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<TextureParameteri<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              texture,
+              pname  ,
+              param  );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename PNAME_TYPE   = GLenum ,
@@ -29849,6 +34714,26 @@ namespace ge{
               param  );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename PNAME_TYPE   = GLenum ,
+      typename PARAM_TYPE   = GLfloat>
+    inline std::shared_ptr<TextureParameterf<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedTextureParameterf(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<TextureParameterf<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              texture,
+              pname  ,
+              param  );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum    ,
       typename OFFSET_TYPE = GLintptr  ,
       typename LENGTH_TYPE = GLsizeiptr>
@@ -29867,6 +34752,26 @@ namespace ge{
               offset,
               length);
     }
+    template<
+      typename TARGET_TYPE = GLenum    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename LENGTH_TYPE = GLsizeiptr>
+    inline std::shared_ptr<FlushMappedBufferRange<
+      TARGET_TYPE,
+      OFFSET_TYPE,
+      LENGTH_TYPE>> sharedFlushMappedBufferRange(
+        TARGET_TYPE const&target,
+        OFFSET_TYPE const&offset,
+        LENGTH_TYPE const&length){
+        return std::make_shared<FlushMappedBufferRange<
+          TARGET_TYPE,
+          OFFSET_TYPE,
+          LENGTH_TYPE>>(
+              target,
+              offset,
+              length);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint        ,
       typename LOCATION_TYPE = GLint         ,
@@ -29892,6 +34797,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint        ,
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<ProgramUniform2fv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform2fv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform2fv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
@@ -29916,6 +34846,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix2x3dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix2x3dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix2x3dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble,
       typename Y_TYPE     = GLdouble,
@@ -29939,6 +34894,31 @@ namespace ge{
               y    ,
               z    );
     }
+    template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble,
+      typename Y_TYPE     = GLdouble,
+      typename Z_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttribL3d<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    >> sharedVertexAttribL3d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ){
+        return std::make_shared<VertexAttribL3d<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -29969,6 +34949,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix2x4dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix2x4dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix2x4dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint   ,
       typename X_TYPE        = GLdouble>
     inline Uniform1d<
@@ -29983,6 +34993,21 @@ namespace ge{
               x       );
     }
     template<
+      typename LOCATION_TYPE = GLint   ,
+      typename X_TYPE        = GLdouble>
+    inline std::shared_ptr<Uniform1d<
+      LOCATION_TYPE,
+      X_TYPE       >> sharedUniform1d(
+        LOCATION_TYPE const&location,
+        X_TYPE        const&x       ){
+        return std::make_shared<Uniform1d<
+          LOCATION_TYPE,
+          X_TYPE       >>(
+              location,
+              x       );
+    }
+
+    template<
       typename N_TYPE   = GLsizei,
       typename IDS_TYPE = GLuint*>
     inline GenQueries<
@@ -29996,6 +35021,21 @@ namespace ge{
               n  ,
               ids);
     }
+    template<
+      typename N_TYPE   = GLsizei,
+      typename IDS_TYPE = GLuint*>
+    inline std::shared_ptr<GenQueries<
+      N_TYPE  ,
+      IDS_TYPE>> sharedGenQueries(
+        N_TYPE   const&n  ,
+        IDS_TYPE const&ids){
+        return std::make_shared<GenQueries<
+          N_TYPE  ,
+          IDS_TYPE>>(
+              n  ,
+              ids);
+    }
+
     template<
       typename INDEX_TYPE      = GLuint   ,
       typename TYPE_TYPE       = GLenum   ,
@@ -30020,6 +35060,31 @@ namespace ge{
               normalized,
               value     );
     }
+    template<
+      typename INDEX_TYPE      = GLuint   ,
+      typename TYPE_TYPE       = GLenum   ,
+      typename NORMALIZED_TYPE = GLboolean,
+      typename VALUE_TYPE      = GLuint   >
+    inline std::shared_ptr<VertexAttribP1ui<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP1ui(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP1ui<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
     template<
       typename TARGET_TYPE  = GLenum     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -30080,6 +35145,66 @@ namespace ge{
               pixels );
     }
     template<
+      typename TARGET_TYPE  = GLenum     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename YOFFSET_TYPE = GLint      ,
+      typename ZOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename HEIGHT_TYPE  = GLsizei    ,
+      typename DEPTH_TYPE   = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename PIXELS_TYPE  = const void*>
+    inline std::shared_ptr<TexSubImage3D<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      DEPTH_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      PIXELS_TYPE >> sharedTexSubImage3D(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        DEPTH_TYPE   const&depth  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<TexSubImage3D<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          DEPTH_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          PIXELS_TYPE >>(
+              target ,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              width  ,
+              height ,
+              depth  ,
+              format ,
+              type   ,
+              pixels );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum  ,
       typename INDEX_TYPE  = GLuint  ,
       typename DATA_TYPE   = GLint64*>
@@ -30099,6 +35224,26 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum  ,
+      typename INDEX_TYPE  = GLuint  ,
+      typename DATA_TYPE   = GLint64*>
+    inline std::shared_ptr<GetInteger64i_v<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      DATA_TYPE  >> sharedGetInteger64i_v(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetInteger64i_v<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          DATA_TYPE  >>(
+              target,
+              index ,
+              data  );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint>
@@ -30117,6 +35262,26 @@ namespace ge{
               location,
               v0      );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint>
+    inline std::shared_ptr<ProgramUniform1ui<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedProgramUniform1ui(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<ProgramUniform1ui<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              program ,
+              location,
+              v0      );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum ,
       typename LEVEL_TYPE          = GLint  ,
@@ -30161,6 +35326,51 @@ namespace ge{
               height        ,
               border        );
     }
+    template<
+      typename TARGET_TYPE         = GLenum ,
+      typename LEVEL_TYPE          = GLint  ,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename X_TYPE              = GLint  ,
+      typename Y_TYPE              = GLint  ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei,
+      typename BORDER_TYPE         = GLint  >
+    inline std::shared_ptr<CopyTexImage2D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      X_TYPE             ,
+      Y_TYPE             ,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      BORDER_TYPE        >> sharedCopyTexImage2D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        X_TYPE              const&x             ,
+        Y_TYPE              const&y             ,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        BORDER_TYPE         const&border        ){
+        return std::make_shared<CopyTexImage2D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          X_TYPE             ,
+          Y_TYPE             ,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          BORDER_TYPE        >>(
+              target        ,
+              level         ,
+              internalformat,
+              x             ,
+              y             ,
+              width         ,
+              height        ,
+              border        );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -30226,6 +35436,71 @@ namespace ge{
               pixels );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename ZOFFSET_TYPE = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei,
+      typename DEPTH_TYPE   = GLsizei,
+      typename FORMAT_TYPE  = GLenum ,
+      typename TYPE_TYPE    = GLenum ,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename PIXELS_TYPE  = void*  >
+    inline std::shared_ptr<GetTextureSubImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      DEPTH_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      BUFSIZE_TYPE,
+      PIXELS_TYPE >> sharedGetTextureSubImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        DEPTH_TYPE   const&depth  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        BUFSIZE_TYPE const&bufSize,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<GetTextureSubImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          DEPTH_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          BUFSIZE_TYPE,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              width  ,
+              height ,
+              depth  ,
+              format ,
+              type   ,
+              bufSize,
+              pixels );
+    }
+
+    template<
       typename SRCX0_TYPE  = GLint     ,
       typename SRCY0_TYPE  = GLint     ,
       typename SRCX1_TYPE  = GLint     ,
@@ -30280,6 +35555,61 @@ namespace ge{
               filter);
     }
     template<
+      typename SRCX0_TYPE  = GLint     ,
+      typename SRCY0_TYPE  = GLint     ,
+      typename SRCX1_TYPE  = GLint     ,
+      typename SRCY1_TYPE  = GLint     ,
+      typename DSTX0_TYPE  = GLint     ,
+      typename DSTY0_TYPE  = GLint     ,
+      typename DSTX1_TYPE  = GLint     ,
+      typename DSTY1_TYPE  = GLint     ,
+      typename MASK_TYPE   = GLbitfield,
+      typename FILTER_TYPE = GLenum    >
+    inline std::shared_ptr<BlitFramebuffer<
+      SRCX0_TYPE ,
+      SRCY0_TYPE ,
+      SRCX1_TYPE ,
+      SRCY1_TYPE ,
+      DSTX0_TYPE ,
+      DSTY0_TYPE ,
+      DSTX1_TYPE ,
+      DSTY1_TYPE ,
+      MASK_TYPE  ,
+      FILTER_TYPE>> sharedBlitFramebuffer(
+        SRCX0_TYPE  const&srcX0 ,
+        SRCY0_TYPE  const&srcY0 ,
+        SRCX1_TYPE  const&srcX1 ,
+        SRCY1_TYPE  const&srcY1 ,
+        DSTX0_TYPE  const&dstX0 ,
+        DSTY0_TYPE  const&dstY0 ,
+        DSTX1_TYPE  const&dstX1 ,
+        DSTY1_TYPE  const&dstY1 ,
+        MASK_TYPE   const&mask  ,
+        FILTER_TYPE const&filter){
+        return std::make_shared<BlitFramebuffer<
+          SRCX0_TYPE ,
+          SRCY0_TYPE ,
+          SRCX1_TYPE ,
+          SRCY1_TYPE ,
+          DSTX0_TYPE ,
+          DSTY0_TYPE ,
+          DSTX1_TYPE ,
+          DSTY1_TYPE ,
+          MASK_TYPE  ,
+          FILTER_TYPE>>(
+              srcX0 ,
+              srcY0 ,
+              srcX1 ,
+              srcY1 ,
+              dstX0 ,
+              dstY0 ,
+              dstX1 ,
+              dstY1 ,
+              mask  ,
+              filter);
+    }
+
+    template<
       typename RET_TYPE    = GLboolean,
       typename TARGET_TYPE = GLenum   ,
       typename INDEX_TYPE  = GLuint   >
@@ -30299,6 +35629,26 @@ namespace ge{
               index );
     }
     template<
+      typename RET_TYPE    = GLboolean,
+      typename TARGET_TYPE = GLenum   ,
+      typename INDEX_TYPE  = GLuint   >
+    inline std::shared_ptr<IsEnabledi<
+      RET_TYPE   ,
+      TARGET_TYPE,
+      INDEX_TYPE >> sharedIsEnabledi(
+        RET_TYPE    const&ret   ,
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ){
+        return std::make_shared<IsEnabledi<
+          RET_TYPE   ,
+          TARGET_TYPE,
+          INDEX_TYPE >>(
+              ret   ,
+              target,
+              index );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint  ,
       typename PNAME_TYPE   = GLenum  ,
       typename PARAMS_TYPE  = GLfloat*>
@@ -30317,6 +35667,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint  ,
+      typename PNAME_TYPE   = GLenum  ,
+      typename PARAMS_TYPE  = GLfloat*>
+    inline std::shared_ptr<GetTextureParameterfv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetTextureParameterfv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetTextureParameterfv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              pname  ,
+              params );
+    }
+
     template<
       typename PROGRAM_TYPE     = GLuint       ,
       typename COLORNUMBER_TYPE = GLuint       ,
@@ -30342,6 +35712,31 @@ namespace ge{
               name       );
     }
     template<
+      typename PROGRAM_TYPE     = GLuint       ,
+      typename COLORNUMBER_TYPE = GLuint       ,
+      typename INDEX_TYPE       = GLuint       ,
+      typename NAME_TYPE        = const GLchar*>
+    inline std::shared_ptr<BindFragDataLocationIndexed<
+      PROGRAM_TYPE    ,
+      COLORNUMBER_TYPE,
+      INDEX_TYPE      ,
+      NAME_TYPE       >> sharedBindFragDataLocationIndexed(
+        PROGRAM_TYPE     const&program    ,
+        COLORNUMBER_TYPE const&colorNumber,
+        INDEX_TYPE       const&index      ,
+        NAME_TYPE        const&name       ){
+        return std::make_shared<BindFragDataLocationIndexed<
+          PROGRAM_TYPE    ,
+          COLORNUMBER_TYPE,
+          INDEX_TYPE      ,
+          NAME_TYPE       >>(
+              program    ,
+              colorNumber,
+              index      ,
+              name       );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint       ,
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
@@ -30361,6 +35756,26 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<Uniform2iv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform2iv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform2iv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLfloat*>
     inline VertexAttrib1fv<
@@ -30374,6 +35789,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLfloat*>
+    inline std::shared_ptr<VertexAttrib1fv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib1fv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib1fv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename LOCATION_TYPE = GLint        ,
       typename COUNT_TYPE    = GLsizei      ,
@@ -30393,6 +35823,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<Uniform4uiv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform4uiv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform4uiv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -30453,6 +35903,66 @@ namespace ge{
               pixels );
     }
     template<
+      typename TEXTURE_TYPE = GLuint     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename YOFFSET_TYPE = GLint      ,
+      typename ZOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename HEIGHT_TYPE  = GLsizei    ,
+      typename DEPTH_TYPE   = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename PIXELS_TYPE  = const void*>
+    inline std::shared_ptr<TextureSubImage3D<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      DEPTH_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      PIXELS_TYPE >> sharedTextureSubImage3D(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        DEPTH_TYPE   const&depth  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<TextureSubImage3D<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          DEPTH_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              width  ,
+              height ,
+              depth  ,
+              format ,
+              type   ,
+              pixels );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttribL1dv<
@@ -30466,6 +35976,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttribL1dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribL1dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribL1dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename SHADER_TYPE = GLuint,
       typename PNAME_TYPE  = GLenum,
@@ -30485,6 +36010,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename SHADER_TYPE = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetShaderiv<
+      SHADER_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetShaderiv(
+        SHADER_TYPE const&shader,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetShaderiv<
+          SHADER_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              shader,
+              pname ,
+              params);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
@@ -30515,6 +36060,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix3fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix3fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix3fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PTR_TYPE    = const void*  ,
       typename LENGTH_TYPE = GLsizei      ,
       typename LABEL_TYPE  = const GLchar*>
@@ -30533,6 +36108,26 @@ namespace ge{
               length,
               label );
     }
+    template<
+      typename PTR_TYPE    = const void*  ,
+      typename LENGTH_TYPE = GLsizei      ,
+      typename LABEL_TYPE  = const GLchar*>
+    inline std::shared_ptr<ObjectPtrLabel<
+      PTR_TYPE   ,
+      LENGTH_TYPE,
+      LABEL_TYPE >> sharedObjectPtrLabel(
+        PTR_TYPE    const&ptr   ,
+        LENGTH_TYPE const&length,
+        LABEL_TYPE  const&label ){
+        return std::make_shared<ObjectPtrLabel<
+          PTR_TYPE   ,
+          LENGTH_TYPE,
+          LABEL_TYPE >>(
+              ptr   ,
+              length,
+              label );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum       ,
       typename NUMATTACHMENTS_TYPE = GLsizei      ,
@@ -30553,6 +36148,26 @@ namespace ge{
               attachments   );
     }
     template<
+      typename TARGET_TYPE         = GLenum       ,
+      typename NUMATTACHMENTS_TYPE = GLsizei      ,
+      typename ATTACHMENTS_TYPE    = const GLenum*>
+    inline std::shared_ptr<InvalidateFramebuffer<
+      TARGET_TYPE        ,
+      NUMATTACHMENTS_TYPE,
+      ATTACHMENTS_TYPE   >> sharedInvalidateFramebuffer(
+        TARGET_TYPE         const&target        ,
+        NUMATTACHMENTS_TYPE const&numAttachments,
+        ATTACHMENTS_TYPE    const&attachments   ){
+        return std::make_shared<InvalidateFramebuffer<
+          TARGET_TYPE        ,
+          NUMATTACHMENTS_TYPE,
+          ATTACHMENTS_TYPE   >>(
+              target        ,
+              numAttachments,
+              attachments   );
+    }
+
+    template<
       typename FIRST_TYPE    = GLuint       ,
       typename COUNT_TYPE    = GLsizei      ,
       typename TEXTURES_TYPE = const GLuint*>
@@ -30572,6 +36187,26 @@ namespace ge{
               textures);
     }
     template<
+      typename FIRST_TYPE    = GLuint       ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename TEXTURES_TYPE = const GLuint*>
+    inline std::shared_ptr<BindTextures<
+      FIRST_TYPE   ,
+      COUNT_TYPE   ,
+      TEXTURES_TYPE>> sharedBindTextures(
+        FIRST_TYPE    const&first   ,
+        COUNT_TYPE    const&count   ,
+        TEXTURES_TYPE const&textures){
+        return std::make_shared<BindTextures<
+          FIRST_TYPE   ,
+          COUNT_TYPE   ,
+          TEXTURES_TYPE>>(
+              first   ,
+              count   ,
+              textures);
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint       ,
       typename COLOR_TYPE   = GLuint       ,
       typename NAME_TYPE    = const GLchar*>
@@ -30590,6 +36225,26 @@ namespace ge{
               color  ,
               name   );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint       ,
+      typename COLOR_TYPE   = GLuint       ,
+      typename NAME_TYPE    = const GLchar*>
+    inline std::shared_ptr<BindFragDataLocation<
+      PROGRAM_TYPE,
+      COLOR_TYPE  ,
+      NAME_TYPE   >> sharedBindFragDataLocation(
+        PROGRAM_TYPE const&program,
+        COLOR_TYPE   const&color  ,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<BindFragDataLocation<
+          PROGRAM_TYPE,
+          COLOR_TYPE  ,
+          NAME_TYPE   >>(
+              program,
+              color  ,
+              name   );
+    }
+
     template<
       typename BUFFER_TYPE = GLuint     ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -30615,6 +36270,31 @@ namespace ge{
               flags );
     }
     template<
+      typename BUFFER_TYPE = GLuint     ,
+      typename SIZE_TYPE   = GLsizeiptr ,
+      typename DATA_TYPE   = const void*,
+      typename FLAGS_TYPE  = GLbitfield >
+    inline std::shared_ptr<NamedBufferStorage<
+      BUFFER_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  ,
+      FLAGS_TYPE >> sharedNamedBufferStorage(
+        BUFFER_TYPE const&buffer,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ,
+        FLAGS_TYPE  const&flags ){
+        return std::make_shared<NamedBufferStorage<
+          BUFFER_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  ,
+          FLAGS_TYPE >>(
+              buffer,
+              size  ,
+              data  ,
+              flags );
+    }
+
+    template<
       typename TARGET_TYPE   = GLenum ,
       typename N_TYPE        = GLsizei,
       typename TEXTURES_TYPE = GLuint*>
@@ -30633,6 +36313,26 @@ namespace ge{
               n       ,
               textures);
     }
+    template<
+      typename TARGET_TYPE   = GLenum ,
+      typename N_TYPE        = GLsizei,
+      typename TEXTURES_TYPE = GLuint*>
+    inline std::shared_ptr<CreateTextures<
+      TARGET_TYPE  ,
+      N_TYPE       ,
+      TEXTURES_TYPE>> sharedCreateTextures(
+        TARGET_TYPE   const&target  ,
+        N_TYPE        const&n       ,
+        TEXTURES_TYPE const&textures){
+        return std::make_shared<CreateTextures<
+          TARGET_TYPE  ,
+          N_TYPE       ,
+          TEXTURES_TYPE>>(
+              target  ,
+              n       ,
+              textures);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
@@ -30653,6 +36353,26 @@ namespace ge{
               params  );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename LOCATION_TYPE = GLint   ,
+      typename PARAMS_TYPE   = GLfloat*>
+    inline std::shared_ptr<GetUniformfv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      PARAMS_TYPE  >> sharedGetUniformfv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetUniformfv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              params  );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint          ,
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
@@ -30671,6 +36391,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<Uniform1dv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform1dv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform1dv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename LEVEL_TYPE          = GLint      ,
@@ -30716,6 +36456,51 @@ namespace ge{
               data          );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename LEVEL_TYPE          = GLint      ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename WIDTH_TYPE          = GLsizei    ,
+      typename HEIGHT_TYPE         = GLsizei    ,
+      typename BORDER_TYPE         = GLint      ,
+      typename IMAGESIZE_TYPE      = GLsizei    ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<CompressedTexImage2D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      BORDER_TYPE        ,
+      IMAGESIZE_TYPE     ,
+      DATA_TYPE          >> sharedCompressedTexImage2D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        BORDER_TYPE         const&border        ,
+        IMAGESIZE_TYPE      const&imageSize     ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<CompressedTexImage2D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          BORDER_TYPE        ,
+          IMAGESIZE_TYPE     ,
+          DATA_TYPE          >>(
+              target        ,
+              level         ,
+              internalformat,
+              width         ,
+              height        ,
+              border        ,
+              imageSize     ,
+              data          );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint          ,
       typename COUNT_TYPE    = GLsizei        ,
       typename VALUE_TYPE    = const GLdouble*>
@@ -30734,6 +36519,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<Uniform4dv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform4dv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform4dv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint         ,
       typename LOCATION_TYPE = GLint          ,
@@ -30759,6 +36564,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint         ,
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<ProgramUniform3dv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform3dv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform3dv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename CAP_TYPE = GLenum>
     inline Disable<
       CAP_TYPE>* newDisable(
@@ -30768,6 +36598,16 @@ namespace ge{
               cap);
     }
     template<
+      typename CAP_TYPE = GLenum>
+    inline std::shared_ptr<Disable<
+      CAP_TYPE>> sharedDisable(
+        CAP_TYPE const&cap){
+        return std::make_shared<Disable<
+          CAP_TYPE>>(
+              cap);
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint>
     inline InvalidateBufferData<
       BUFFER_TYPE>* newInvalidateBufferData(
@@ -30776,6 +36616,16 @@ namespace ge{
           BUFFER_TYPE>(
               buffer);
     }
+    template<
+      typename BUFFER_TYPE = GLuint>
+    inline std::shared_ptr<InvalidateBufferData<
+      BUFFER_TYPE>> sharedInvalidateBufferData(
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<InvalidateBufferData<
+          BUFFER_TYPE>>(
+              buffer);
+    }
+
     template<
       typename TEXTURE_TYPE   = GLuint     ,
       typename LEVEL_TYPE     = GLint      ,
@@ -30816,6 +36666,46 @@ namespace ge{
               data     );
     }
     template<
+      typename TEXTURE_TYPE   = GLuint     ,
+      typename LEVEL_TYPE     = GLint      ,
+      typename XOFFSET_TYPE   = GLint      ,
+      typename WIDTH_TYPE     = GLsizei    ,
+      typename FORMAT_TYPE    = GLenum     ,
+      typename IMAGESIZE_TYPE = GLsizei    ,
+      typename DATA_TYPE      = const void*>
+    inline std::shared_ptr<CompressedTextureSubImage1D<
+      TEXTURE_TYPE  ,
+      LEVEL_TYPE    ,
+      XOFFSET_TYPE  ,
+      WIDTH_TYPE    ,
+      FORMAT_TYPE   ,
+      IMAGESIZE_TYPE,
+      DATA_TYPE     >> sharedCompressedTextureSubImage1D(
+        TEXTURE_TYPE   const&texture  ,
+        LEVEL_TYPE     const&level    ,
+        XOFFSET_TYPE   const&xoffset  ,
+        WIDTH_TYPE     const&width    ,
+        FORMAT_TYPE    const&format   ,
+        IMAGESIZE_TYPE const&imageSize,
+        DATA_TYPE      const&data     ){
+        return std::make_shared<CompressedTextureSubImage1D<
+          TEXTURE_TYPE  ,
+          LEVEL_TYPE    ,
+          XOFFSET_TYPE  ,
+          WIDTH_TYPE    ,
+          FORMAT_TYPE   ,
+          IMAGESIZE_TYPE,
+          DATA_TYPE     >>(
+              texture  ,
+              level    ,
+              xoffset  ,
+              width    ,
+              format   ,
+              imageSize,
+              data     );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint         ,
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
@@ -30835,6 +36725,26 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<Uniform3fv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform3fv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform3fv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename ID_TYPE     = GLuint>
     inline BeginQuery<
@@ -30849,6 +36759,21 @@ namespace ge{
               id    );
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename ID_TYPE     = GLuint>
+    inline std::shared_ptr<BeginQuery<
+      TARGET_TYPE,
+      ID_TYPE    >> sharedBeginQuery(
+        TARGET_TYPE const&target,
+        ID_TYPE     const&id    ){
+        return std::make_shared<BeginQuery<
+          TARGET_TYPE,
+          ID_TYPE    >>(
+              target,
+              id    );
+    }
+
+    template<
       typename NEAR_TYPE = GLdouble,
       typename FAR_TYPE  = GLdouble>
     inline DepthRange<
@@ -30862,6 +36787,21 @@ namespace ge{
               near,
               far );
     }
+    template<
+      typename NEAR_TYPE = GLdouble,
+      typename FAR_TYPE  = GLdouble>
+    inline std::shared_ptr<DepthRange<
+      NEAR_TYPE,
+      FAR_TYPE >> sharedDepthRange(
+        NEAR_TYPE const&near,
+        FAR_TYPE  const&far ){
+        return std::make_shared<DepthRange<
+          NEAR_TYPE,
+          FAR_TYPE >>(
+              near,
+              far );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum       ,
       typename NUMATTACHMENTS_TYPE = GLsizei      ,
@@ -30902,6 +36842,46 @@ namespace ge{
               height        );
     }
     template<
+      typename TARGET_TYPE         = GLenum       ,
+      typename NUMATTACHMENTS_TYPE = GLsizei      ,
+      typename ATTACHMENTS_TYPE    = const GLenum*,
+      typename X_TYPE              = GLint        ,
+      typename Y_TYPE              = GLint        ,
+      typename WIDTH_TYPE          = GLsizei      ,
+      typename HEIGHT_TYPE         = GLsizei      >
+    inline std::shared_ptr<InvalidateSubFramebuffer<
+      TARGET_TYPE        ,
+      NUMATTACHMENTS_TYPE,
+      ATTACHMENTS_TYPE   ,
+      X_TYPE             ,
+      Y_TYPE             ,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedInvalidateSubFramebuffer(
+        TARGET_TYPE         const&target        ,
+        NUMATTACHMENTS_TYPE const&numAttachments,
+        ATTACHMENTS_TYPE    const&attachments   ,
+        X_TYPE              const&x             ,
+        Y_TYPE              const&y             ,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<InvalidateSubFramebuffer<
+          TARGET_TYPE        ,
+          NUMATTACHMENTS_TYPE,
+          ATTACHMENTS_TYPE   ,
+          X_TYPE             ,
+          Y_TYPE             ,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              target        ,
+              numAttachments,
+              attachments   ,
+              x             ,
+              y             ,
+              width         ,
+              height        );
+    }
+
+    template<
       typename RET_TYPE    = void* ,
       typename TARGET_TYPE = GLenum,
       typename ACCESS_TYPE = GLenum>
@@ -30920,6 +36900,26 @@ namespace ge{
               target,
               access);
     }
+    template<
+      typename RET_TYPE    = void* ,
+      typename TARGET_TYPE = GLenum,
+      typename ACCESS_TYPE = GLenum>
+    inline std::shared_ptr<MapBuffer<
+      RET_TYPE   ,
+      TARGET_TYPE,
+      ACCESS_TYPE>> sharedMapBuffer(
+        RET_TYPE    const&ret   ,
+        TARGET_TYPE const&target,
+        ACCESS_TYPE const&access){
+        return std::make_shared<MapBuffer<
+          RET_TYPE   ,
+          TARGET_TYPE,
+          ACCESS_TYPE>>(
+              ret   ,
+              target,
+              access);
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -30950,6 +36950,36 @@ namespace ge{
               data   );
     }
     template<
+      typename TEXTURE_TYPE = GLuint     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename DATA_TYPE    = const void*>
+    inline std::shared_ptr<ClearTexImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      DATA_TYPE   >> sharedClearTexImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        DATA_TYPE    const&data   ){
+        return std::make_shared<ClearTexImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          DATA_TYPE   >>(
+              texture,
+              level  ,
+              format ,
+              type   ,
+              data   );
+    }
+
+    template<
       typename ATTRIBINDEX_TYPE    = GLuint,
       typename SIZE_TYPE           = GLint ,
       typename TYPE_TYPE           = GLenum,
@@ -30973,6 +37003,31 @@ namespace ge{
               type          ,
               relativeoffset);
     }
+    template<
+      typename ATTRIBINDEX_TYPE    = GLuint,
+      typename SIZE_TYPE           = GLint ,
+      typename TYPE_TYPE           = GLenum,
+      typename RELATIVEOFFSET_TYPE = GLuint>
+    inline std::shared_ptr<VertexAttribLFormat<
+      ATTRIBINDEX_TYPE   ,
+      SIZE_TYPE          ,
+      TYPE_TYPE          ,
+      RELATIVEOFFSET_TYPE>> sharedVertexAttribLFormat(
+        ATTRIBINDEX_TYPE    const&attribindex   ,
+        SIZE_TYPE           const&size          ,
+        TYPE_TYPE           const&type          ,
+        RELATIVEOFFSET_TYPE const&relativeoffset){
+        return std::make_shared<VertexAttribLFormat<
+          ATTRIBINDEX_TYPE   ,
+          SIZE_TYPE          ,
+          TYPE_TYPE          ,
+          RELATIVEOFFSET_TYPE>>(
+              attribindex   ,
+              size          ,
+              type          ,
+              relativeoffset);
+    }
+
     template<
       typename SOURCE_TYPE  = GLenum       ,
       typename ID_TYPE      = GLuint       ,
@@ -30998,6 +37053,31 @@ namespace ge{
               message);
     }
     template<
+      typename SOURCE_TYPE  = GLenum       ,
+      typename ID_TYPE      = GLuint       ,
+      typename LENGTH_TYPE  = GLsizei      ,
+      typename MESSAGE_TYPE = const GLchar*>
+    inline std::shared_ptr<PushDebugGroup<
+      SOURCE_TYPE ,
+      ID_TYPE     ,
+      LENGTH_TYPE ,
+      MESSAGE_TYPE>> sharedPushDebugGroup(
+        SOURCE_TYPE  const&source ,
+        ID_TYPE      const&id     ,
+        LENGTH_TYPE  const&length ,
+        MESSAGE_TYPE const&message){
+        return std::make_shared<PushDebugGroup<
+          SOURCE_TYPE ,
+          ID_TYPE     ,
+          LENGTH_TYPE ,
+          MESSAGE_TYPE>>(
+              source ,
+              id     ,
+              length ,
+              message);
+    }
+
+    template<
       typename SYNC_TYPE = GLsync>
     inline DeleteSync<
       SYNC_TYPE>* newDeleteSync(
@@ -31006,6 +37086,16 @@ namespace ge{
           SYNC_TYPE>(
               sync);
     }
+    template<
+      typename SYNC_TYPE = GLsync>
+    inline std::shared_ptr<DeleteSync<
+      SYNC_TYPE>> sharedDeleteSync(
+        SYNC_TYPE const&sync){
+        return std::make_shared<DeleteSync<
+          SYNC_TYPE>>(
+              sync);
+    }
+
     template<
       typename TARGET_TYPE  = GLenum ,
       typename LEVEL_TYPE   = GLint  ,
@@ -31056,6 +37146,56 @@ namespace ge{
               height );
     }
     template<
+      typename TARGET_TYPE  = GLenum ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename ZOFFSET_TYPE = GLint  ,
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei>
+    inline std::shared_ptr<CopyTexSubImage3D<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE >> sharedCopyTexSubImage3D(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ){
+        return std::make_shared<CopyTexSubImage3D<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE >>(
+              target ,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              x      ,
+              y      ,
+              width  ,
+              height );
+    }
+
+    template<
       typename XFB_TYPE   = GLuint  ,
       typename PNAME_TYPE = GLenum  ,
       typename INDEX_TYPE = GLuint  ,
@@ -31079,6 +37219,31 @@ namespace ge{
               index,
               param);
     }
+    template<
+      typename XFB_TYPE   = GLuint  ,
+      typename PNAME_TYPE = GLenum  ,
+      typename INDEX_TYPE = GLuint  ,
+      typename PARAM_TYPE = GLint64*>
+    inline std::shared_ptr<GetTransformFeedbacki64_v<
+      XFB_TYPE  ,
+      PNAME_TYPE,
+      INDEX_TYPE,
+      PARAM_TYPE>> sharedGetTransformFeedbacki64_v(
+        XFB_TYPE   const&xfb  ,
+        PNAME_TYPE const&pname,
+        INDEX_TYPE const&index,
+        PARAM_TYPE const&param){
+        return std::make_shared<GetTransformFeedbacki64_v<
+          XFB_TYPE  ,
+          PNAME_TYPE,
+          INDEX_TYPE,
+          PARAM_TYPE>>(
+              xfb  ,
+              pname,
+              index,
+              param);
+    }
+
     template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -31104,6 +37269,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix4dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix4dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix4dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename INDEX_TYPE  = GLuint,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = GLint*>
@@ -31122,6 +37312,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename INDEX_TYPE  = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetVertexAttribiv<
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetVertexAttribiv(
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetVertexAttribiv<
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              index ,
+              pname ,
+              params);
+    }
+
     template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -31146,6 +37356,31 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix4x2dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix4x2dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix4x2dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename MODE_TYPE      = GLenum           ,
       typename COUNT_TYPE     = const GLsizei*   ,
@@ -31176,6 +37411,36 @@ namespace ge{
               drawcount);
     }
     template<
+      typename MODE_TYPE      = GLenum           ,
+      typename COUNT_TYPE     = const GLsizei*   ,
+      typename TYPE_TYPE      = GLenum           ,
+      typename INDICES_TYPE   = const void*const*,
+      typename DRAWCOUNT_TYPE = GLsizei          >
+    inline std::shared_ptr<MultiDrawElements<
+      MODE_TYPE     ,
+      COUNT_TYPE    ,
+      TYPE_TYPE     ,
+      INDICES_TYPE  ,
+      DRAWCOUNT_TYPE>> sharedMultiDrawElements(
+        MODE_TYPE      const&mode     ,
+        COUNT_TYPE     const&count    ,
+        TYPE_TYPE      const&type     ,
+        INDICES_TYPE   const&indices  ,
+        DRAWCOUNT_TYPE const&drawcount){
+        return std::make_shared<MultiDrawElements<
+          MODE_TYPE     ,
+          COUNT_TYPE    ,
+          TYPE_TYPE     ,
+          INDICES_TYPE  ,
+          DRAWCOUNT_TYPE>>(
+              mode     ,
+              count    ,
+              type     ,
+              indices  ,
+              drawcount);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLfloat*>
     inline VertexAttrib3fv<
@@ -31189,6 +37454,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLfloat*>
+    inline std::shared_ptr<VertexAttrib3fv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib3fv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib3fv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename LOCATION_TYPE = GLint       ,
       typename COUNT_TYPE    = GLsizei     ,
@@ -31209,6 +37489,26 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<Uniform3iv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform3iv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform3iv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename FACE_TYPE = GLenum,
       typename MODE_TYPE = GLenum>
     inline PolygonMode<
@@ -31222,6 +37522,21 @@ namespace ge{
               face,
               mode);
     }
+    template<
+      typename FACE_TYPE = GLenum,
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<PolygonMode<
+      FACE_TYPE,
+      MODE_TYPE>> sharedPolygonMode(
+        FACE_TYPE const&face,
+        MODE_TYPE const&mode){
+        return std::make_shared<PolygonMode<
+          FACE_TYPE,
+          MODE_TYPE>>(
+              face,
+              mode);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -31252,6 +37567,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix4dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix4dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix4dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PROGRAM_TYPE           = GLuint,
       typename UNIFORMBLOCKINDEX_TYPE = GLuint,
       typename PNAME_TYPE             = GLenum,
@@ -31276,6 +37621,31 @@ namespace ge{
               params           );
     }
     template<
+      typename PROGRAM_TYPE           = GLuint,
+      typename UNIFORMBLOCKINDEX_TYPE = GLuint,
+      typename PNAME_TYPE             = GLenum,
+      typename PARAMS_TYPE            = GLint*>
+    inline std::shared_ptr<GetActiveUniformBlockiv<
+      PROGRAM_TYPE          ,
+      UNIFORMBLOCKINDEX_TYPE,
+      PNAME_TYPE            ,
+      PARAMS_TYPE           >> sharedGetActiveUniformBlockiv(
+        PROGRAM_TYPE           const&program          ,
+        UNIFORMBLOCKINDEX_TYPE const&uniformBlockIndex,
+        PNAME_TYPE             const&pname            ,
+        PARAMS_TYPE            const&params           ){
+        return std::make_shared<GetActiveUniformBlockiv<
+          PROGRAM_TYPE          ,
+          UNIFORMBLOCKINDEX_TYPE,
+          PNAME_TYPE            ,
+          PARAMS_TYPE           >>(
+              program          ,
+              uniformBlockIndex,
+              pname            ,
+              params           );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename SRC_TYPE         = GLenum>
     inline NamedFramebufferReadBuffer<
@@ -31289,6 +37659,21 @@ namespace ge{
               framebuffer,
               src        );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename SRC_TYPE         = GLenum>
+    inline std::shared_ptr<NamedFramebufferReadBuffer<
+      FRAMEBUFFER_TYPE,
+      SRC_TYPE        >> sharedNamedFramebufferReadBuffer(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        SRC_TYPE         const&src        ){
+        return std::make_shared<NamedFramebufferReadBuffer<
+          FRAMEBUFFER_TYPE,
+          SRC_TYPE        >>(
+              framebuffer,
+              src        );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint      ,
       typename LOCATION_TYPE = GLint       ,
@@ -31314,6 +37699,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint      ,
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<ProgramUniform4iv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform4iv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform4iv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
@@ -31338,6 +37748,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix2fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix2fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix2fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint>
     inline UseProgram<
       PROGRAM_TYPE>* newUseProgram(
@@ -31346,6 +37781,16 @@ namespace ge{
           PROGRAM_TYPE>(
               program);
     }
+    template<
+      typename PROGRAM_TYPE = GLuint>
+    inline std::shared_ptr<UseProgram<
+      PROGRAM_TYPE>> sharedUseProgram(
+        PROGRAM_TYPE const&program){
+        return std::make_shared<UseProgram<
+          PROGRAM_TYPE>>(
+              program);
+    }
+
     template<
       typename PROGRAM_TYPE = GLuint  ,
       typename BUFSIZE_TYPE = GLsizei ,
@@ -31371,6 +37816,31 @@ namespace ge{
               infoLog);
     }
     template<
+      typename PROGRAM_TYPE = GLuint  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename INFOLOG_TYPE = GLchar* >
+    inline std::shared_ptr<GetProgramInfoLog<
+      PROGRAM_TYPE,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      INFOLOG_TYPE>> sharedGetProgramInfoLog(
+        PROGRAM_TYPE const&program,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        INFOLOG_TYPE const&infoLog){
+        return std::make_shared<GetProgramInfoLog<
+          PROGRAM_TYPE,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          INFOLOG_TYPE>>(
+              program,
+              bufSize,
+              length ,
+              infoLog);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename ID_TYPE     = GLuint>
     inline BindTransformFeedback<
@@ -31385,6 +37855,21 @@ namespace ge{
               id    );
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename ID_TYPE     = GLuint>
+    inline std::shared_ptr<BindTransformFeedback<
+      TARGET_TYPE,
+      ID_TYPE    >> sharedBindTransformFeedback(
+        TARGET_TYPE const&target,
+        ID_TYPE     const&id    ){
+        return std::make_shared<BindTransformFeedback<
+          TARGET_TYPE,
+          ID_TYPE    >>(
+              target,
+              id    );
+    }
+
+    template<
       typename ARRAY_TYPE = GLuint>
     inline BindVertexArray<
       ARRAY_TYPE>* newBindVertexArray(
@@ -31393,6 +37878,16 @@ namespace ge{
           ARRAY_TYPE>(
               array);
     }
+    template<
+      typename ARRAY_TYPE = GLuint>
+    inline std::shared_ptr<BindVertexArray<
+      ARRAY_TYPE>> sharedBindVertexArray(
+        ARRAY_TYPE const&array){
+        return std::make_shared<BindVertexArray<
+          ARRAY_TYPE>>(
+              array);
+    }
+
     template<
       typename N_TYPE       = GLsizei      ,
       typename BUFFERS_TYPE = const GLuint*>
@@ -31408,6 +37903,21 @@ namespace ge{
               buffers);
     }
     template<
+      typename N_TYPE       = GLsizei      ,
+      typename BUFFERS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteBuffers<
+      N_TYPE      ,
+      BUFFERS_TYPE>> sharedDeleteBuffers(
+        N_TYPE       const&n      ,
+        BUFFERS_TYPE const&buffers){
+        return std::make_shared<DeleteBuffers<
+          N_TYPE      ,
+          BUFFERS_TYPE>>(
+              n      ,
+              buffers);
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint>
     inline GenerateTextureMipmap<
       TEXTURE_TYPE>* newGenerateTextureMipmap(
@@ -31416,6 +37926,16 @@ namespace ge{
           TEXTURE_TYPE>(
               texture);
     }
+    template<
+      typename TEXTURE_TYPE = GLuint>
+    inline std::shared_ptr<GenerateTextureMipmap<
+      TEXTURE_TYPE>> sharedGenerateTextureMipmap(
+        TEXTURE_TYPE const&texture){
+        return std::make_shared<GenerateTextureMipmap<
+          TEXTURE_TYPE>>(
+              texture);
+    }
+
     template<
       typename SAMPLER_TYPE = GLuint      ,
       typename PNAME_TYPE   = GLenum      ,
@@ -31435,6 +37955,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint      ,
+      typename PNAME_TYPE   = GLenum      ,
+      typename PARAM_TYPE   = const GLint*>
+    inline std::shared_ptr<SamplerParameterIiv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedSamplerParameterIiv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<SamplerParameterIiv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              sampler,
+              pname  ,
+              param  );
+    }
+
     template<
       typename MODE_TYPE       = GLenum           ,
       typename COUNT_TYPE      = const GLsizei*   ,
@@ -31470,6 +38010,41 @@ namespace ge{
               basevertex);
     }
     template<
+      typename MODE_TYPE       = GLenum           ,
+      typename COUNT_TYPE      = const GLsizei*   ,
+      typename TYPE_TYPE       = GLenum           ,
+      typename INDICES_TYPE    = const void*const*,
+      typename DRAWCOUNT_TYPE  = GLsizei          ,
+      typename BASEVERTEX_TYPE = const GLint*     >
+    inline std::shared_ptr<MultiDrawElementsBaseVertex<
+      MODE_TYPE      ,
+      COUNT_TYPE     ,
+      TYPE_TYPE      ,
+      INDICES_TYPE   ,
+      DRAWCOUNT_TYPE ,
+      BASEVERTEX_TYPE>> sharedMultiDrawElementsBaseVertex(
+        MODE_TYPE       const&mode      ,
+        COUNT_TYPE      const&count     ,
+        TYPE_TYPE       const&type      ,
+        INDICES_TYPE    const&indices   ,
+        DRAWCOUNT_TYPE  const&drawcount ,
+        BASEVERTEX_TYPE const&basevertex){
+        return std::make_shared<MultiDrawElementsBaseVertex<
+          MODE_TYPE      ,
+          COUNT_TYPE     ,
+          TYPE_TYPE      ,
+          INDICES_TYPE   ,
+          DRAWCOUNT_TYPE ,
+          BASEVERTEX_TYPE>>(
+              mode      ,
+              count     ,
+              type      ,
+              indices   ,
+              drawcount ,
+              basevertex);
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint     ,
       typename OFFSET_TYPE = GLintptr   ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -31494,6 +38069,31 @@ namespace ge{
               data  );
     }
     template<
+      typename BUFFER_TYPE = GLuint     ,
+      typename OFFSET_TYPE = GLintptr   ,
+      typename SIZE_TYPE   = GLsizeiptr ,
+      typename DATA_TYPE   = const void*>
+    inline std::shared_ptr<NamedBufferSubData<
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  >> sharedNamedBufferSubData(
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<NamedBufferSubData<
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  >>(
+              buffer,
+              offset,
+              size  ,
+              data  );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint        ,
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
@@ -31512,6 +38112,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<Uniform2uiv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform2uiv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform2uiv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename TARGET_TYPE    = GLenum     ,
       typename LEVEL_TYPE     = GLint      ,
@@ -31551,6 +38171,46 @@ namespace ge{
               imageSize,
               data     );
     }
+    template<
+      typename TARGET_TYPE    = GLenum     ,
+      typename LEVEL_TYPE     = GLint      ,
+      typename XOFFSET_TYPE   = GLint      ,
+      typename WIDTH_TYPE     = GLsizei    ,
+      typename FORMAT_TYPE    = GLenum     ,
+      typename IMAGESIZE_TYPE = GLsizei    ,
+      typename DATA_TYPE      = const void*>
+    inline std::shared_ptr<CompressedTexSubImage1D<
+      TARGET_TYPE   ,
+      LEVEL_TYPE    ,
+      XOFFSET_TYPE  ,
+      WIDTH_TYPE    ,
+      FORMAT_TYPE   ,
+      IMAGESIZE_TYPE,
+      DATA_TYPE     >> sharedCompressedTexSubImage1D(
+        TARGET_TYPE    const&target   ,
+        LEVEL_TYPE     const&level    ,
+        XOFFSET_TYPE   const&xoffset  ,
+        WIDTH_TYPE     const&width    ,
+        FORMAT_TYPE    const&format   ,
+        IMAGESIZE_TYPE const&imageSize,
+        DATA_TYPE      const&data     ){
+        return std::make_shared<CompressedTexSubImage1D<
+          TARGET_TYPE   ,
+          LEVEL_TYPE    ,
+          XOFFSET_TYPE  ,
+          WIDTH_TYPE    ,
+          FORMAT_TYPE   ,
+          IMAGESIZE_TYPE,
+          DATA_TYPE     >>(
+              target   ,
+              level    ,
+              xoffset  ,
+              width    ,
+              format   ,
+              imageSize,
+              data     );
+    }
+
 
     template<
       typename INDEX_TYPE = GLuint  ,
@@ -31572,6 +38232,26 @@ namespace ge{
               f    );
     }
     template<
+      typename INDEX_TYPE = GLuint  ,
+      typename N_TYPE     = GLdouble,
+      typename F_TYPE     = GLdouble>
+    inline std::shared_ptr<DepthRangeIndexed<
+      INDEX_TYPE,
+      N_TYPE    ,
+      F_TYPE    >> sharedDepthRangeIndexed(
+        INDEX_TYPE const&index,
+        N_TYPE     const&n    ,
+        F_TYPE     const&f    ){
+        return std::make_shared<DepthRangeIndexed<
+          INDEX_TYPE,
+          N_TYPE    ,
+          F_TYPE    >>(
+              index,
+              n    ,
+              f    );
+    }
+
+    template<
       typename SHADER_TYPE = GLuint>
     inline DeleteShader<
       SHADER_TYPE>* newDeleteShader(
@@ -31580,6 +38260,16 @@ namespace ge{
           SHADER_TYPE>(
               shader);
     }
+    template<
+      typename SHADER_TYPE = GLuint>
+    inline std::shared_ptr<DeleteShader<
+      SHADER_TYPE>> sharedDeleteShader(
+        SHADER_TYPE const&shader){
+        return std::make_shared<DeleteShader<
+          SHADER_TYPE>>(
+              shader);
+    }
+
     template<
       typename TARGET_TYPE         = GLenum  ,
       typename INTERNALFORMAT_TYPE = GLenum  ,
@@ -31609,6 +38299,36 @@ namespace ge{
               bufSize       ,
               params        );
     }
+    template<
+      typename TARGET_TYPE         = GLenum  ,
+      typename INTERNALFORMAT_TYPE = GLenum  ,
+      typename PNAME_TYPE          = GLenum  ,
+      typename BUFSIZE_TYPE        = GLsizei ,
+      typename PARAMS_TYPE         = GLint64*>
+    inline std::shared_ptr<GetInternalformati64v<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      PNAME_TYPE         ,
+      BUFSIZE_TYPE       ,
+      PARAMS_TYPE        >> sharedGetInternalformati64v(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        PNAME_TYPE          const&pname         ,
+        BUFSIZE_TYPE        const&bufSize       ,
+        PARAMS_TYPE         const&params        ){
+        return std::make_shared<GetInternalformati64v<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          PNAME_TYPE         ,
+          BUFSIZE_TYPE       ,
+          PARAMS_TYPE        >>(
+              target        ,
+              internalformat,
+              pname         ,
+              bufSize       ,
+              params        );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -31643,6 +38363,41 @@ namespace ge{
               y      ,
               width  );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei>
+    inline std::shared_ptr<CopyTextureSubImage1D<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  >> sharedCopyTextureSubImage1D(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ){
+        return std::make_shared<CopyTextureSubImage1D<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  >>(
+              texture,
+              level  ,
+              xoffset,
+              x      ,
+              y      ,
+              width  );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename LEVEL_TYPE          = GLint      ,
@@ -31693,6 +38448,56 @@ namespace ge{
               data          );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename LEVEL_TYPE          = GLint      ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename WIDTH_TYPE          = GLsizei    ,
+      typename HEIGHT_TYPE         = GLsizei    ,
+      typename DEPTH_TYPE          = GLsizei    ,
+      typename BORDER_TYPE         = GLint      ,
+      typename IMAGESIZE_TYPE      = GLsizei    ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<CompressedTexImage3D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      DEPTH_TYPE         ,
+      BORDER_TYPE        ,
+      IMAGESIZE_TYPE     ,
+      DATA_TYPE          >> sharedCompressedTexImage3D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        DEPTH_TYPE          const&depth         ,
+        BORDER_TYPE         const&border        ,
+        IMAGESIZE_TYPE      const&imageSize     ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<CompressedTexImage3D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          DEPTH_TYPE         ,
+          BORDER_TYPE        ,
+          IMAGESIZE_TYPE     ,
+          DATA_TYPE          >>(
+              target        ,
+              level         ,
+              internalformat,
+              width         ,
+              height        ,
+              depth         ,
+              border        ,
+              imageSize     ,
+              data          );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLshort*>
     inline VertexAttrib4Nsv<
@@ -31706,6 +38511,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLshort*>
+    inline std::shared_ptr<VertexAttrib4Nsv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4Nsv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4Nsv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename RET_TYPE              = GLint        ,
       typename PROGRAM_TYPE          = GLuint       ,
@@ -31731,6 +38551,31 @@ namespace ge{
               name            );
     }
     template<
+      typename RET_TYPE              = GLint        ,
+      typename PROGRAM_TYPE          = GLuint       ,
+      typename PROGRAMINTERFACE_TYPE = GLenum       ,
+      typename NAME_TYPE             = const GLchar*>
+    inline std::shared_ptr<GetProgramResourceLocationIndex<
+      RET_TYPE             ,
+      PROGRAM_TYPE         ,
+      PROGRAMINTERFACE_TYPE,
+      NAME_TYPE            >> sharedGetProgramResourceLocationIndex(
+        RET_TYPE              const&ret             ,
+        PROGRAM_TYPE          const&program         ,
+        PROGRAMINTERFACE_TYPE const&programInterface,
+        NAME_TYPE             const&name            ){
+        return std::make_shared<GetProgramResourceLocationIndex<
+          RET_TYPE             ,
+          PROGRAM_TYPE         ,
+          PROGRAMINTERFACE_TYPE,
+          NAME_TYPE            >>(
+              ret             ,
+              program         ,
+              programInterface,
+              name            );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint       ,
       typename PNAME_TYPE   = GLenum       ,
       typename PARAMS_TYPE  = const GLuint*>
@@ -31749,6 +38594,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint       ,
+      typename PNAME_TYPE   = GLenum       ,
+      typename PARAMS_TYPE  = const GLuint*>
+    inline std::shared_ptr<TextureParameterIuiv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedTextureParameterIuiv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<TextureParameterIuiv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              pname  ,
+              params );
+    }
+
     template<
       typename X_TYPE      = GLint  ,
       typename Y_TYPE      = GLint  ,
@@ -31774,6 +38639,31 @@ namespace ge{
               height);
     }
     template<
+      typename X_TYPE      = GLint  ,
+      typename Y_TYPE      = GLint  ,
+      typename WIDTH_TYPE  = GLsizei,
+      typename HEIGHT_TYPE = GLsizei>
+    inline std::shared_ptr<Viewport<
+      X_TYPE     ,
+      Y_TYPE     ,
+      WIDTH_TYPE ,
+      HEIGHT_TYPE>> sharedViewport(
+        X_TYPE      const&x     ,
+        Y_TYPE      const&y     ,
+        WIDTH_TYPE  const&width ,
+        HEIGHT_TYPE const&height){
+        return std::make_shared<Viewport<
+          X_TYPE     ,
+          Y_TYPE     ,
+          WIDTH_TYPE ,
+          HEIGHT_TYPE>>(
+              x     ,
+              y     ,
+              width ,
+              height);
+    }
+
+    template<
       typename LOCATION_TYPE = GLint        ,
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
@@ -31792,6 +38682,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<Uniform1uiv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform1uiv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform1uiv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename PROGRAM_TYPE    = GLuint             ,
       typename COUNT_TYPE      = GLsizei            ,
@@ -31817,6 +38727,31 @@ namespace ge{
               bufferMode);
     }
     template<
+      typename PROGRAM_TYPE    = GLuint             ,
+      typename COUNT_TYPE      = GLsizei            ,
+      typename VARYINGS_TYPE   = const GLchar*const*,
+      typename BUFFERMODE_TYPE = GLenum             >
+    inline std::shared_ptr<TransformFeedbackVaryings<
+      PROGRAM_TYPE   ,
+      COUNT_TYPE     ,
+      VARYINGS_TYPE  ,
+      BUFFERMODE_TYPE>> sharedTransformFeedbackVaryings(
+        PROGRAM_TYPE    const&program   ,
+        COUNT_TYPE      const&count     ,
+        VARYINGS_TYPE   const&varyings  ,
+        BUFFERMODE_TYPE const&bufferMode){
+        return std::make_shared<TransformFeedbackVaryings<
+          PROGRAM_TYPE   ,
+          COUNT_TYPE     ,
+          VARYINGS_TYPE  ,
+          BUFFERMODE_TYPE>>(
+              program   ,
+              count     ,
+              varyings  ,
+              bufferMode);
+    }
+
+    template<
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint,
       typename V1_TYPE       = GLuint>
@@ -31836,6 +38771,26 @@ namespace ge{
               v1      );
     }
     template<
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint>
+    inline std::shared_ptr<Uniform2ui<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedUniform2ui(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<Uniform2ui<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              location,
+              v0      ,
+              v1      );
+    }
+
+    template<
       typename CALLBACK_TYPE  = GLDEBUGPROC,
       typename USERPARAM_TYPE = const void*>
     inline DebugMessageCallback<
@@ -31849,6 +38804,21 @@ namespace ge{
               callback ,
               userParam);
     }
+    template<
+      typename CALLBACK_TYPE  = GLDEBUGPROC,
+      typename USERPARAM_TYPE = const void*>
+    inline std::shared_ptr<DebugMessageCallback<
+      CALLBACK_TYPE ,
+      USERPARAM_TYPE>> sharedDebugMessageCallback(
+        CALLBACK_TYPE  const&callback ,
+        USERPARAM_TYPE const&userParam){
+        return std::make_shared<DebugMessageCallback<
+          CALLBACK_TYPE ,
+          USERPARAM_TYPE>>(
+              callback ,
+              userParam);
+    }
+
     template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLint ,
@@ -31874,6 +38844,31 @@ namespace ge{
               z    );
     }
     template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLint ,
+      typename Y_TYPE     = GLint ,
+      typename Z_TYPE     = GLint >
+    inline std::shared_ptr<VertexAttribI3i<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    >> sharedVertexAttribI3i(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ){
+        return std::make_shared<VertexAttribI3i<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint,
       typename LEVEL_TYPE   = GLint >
     inline InvalidateTexImage<
@@ -31887,6 +38882,21 @@ namespace ge{
               texture,
               level  );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint,
+      typename LEVEL_TYPE   = GLint >
+    inline std::shared_ptr<InvalidateTexImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  >> sharedInvalidateTexImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ){
+        return std::make_shared<InvalidateTexImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  >>(
+              texture,
+              level  );
+    }
+
     template<
       typename ATTRIBINDEX_TYPE    = GLuint   ,
       typename SIZE_TYPE           = GLint    ,
@@ -31916,6 +38926,36 @@ namespace ge{
               normalized    ,
               relativeoffset);
     }
+    template<
+      typename ATTRIBINDEX_TYPE    = GLuint   ,
+      typename SIZE_TYPE           = GLint    ,
+      typename TYPE_TYPE           = GLenum   ,
+      typename NORMALIZED_TYPE     = GLboolean,
+      typename RELATIVEOFFSET_TYPE = GLuint   >
+    inline std::shared_ptr<VertexAttribFormat<
+      ATTRIBINDEX_TYPE   ,
+      SIZE_TYPE          ,
+      TYPE_TYPE          ,
+      NORMALIZED_TYPE    ,
+      RELATIVEOFFSET_TYPE>> sharedVertexAttribFormat(
+        ATTRIBINDEX_TYPE    const&attribindex   ,
+        SIZE_TYPE           const&size          ,
+        TYPE_TYPE           const&type          ,
+        NORMALIZED_TYPE     const&normalized    ,
+        RELATIVEOFFSET_TYPE const&relativeoffset){
+        return std::make_shared<VertexAttribFormat<
+          ATTRIBINDEX_TYPE   ,
+          SIZE_TYPE          ,
+          TYPE_TYPE          ,
+          NORMALIZED_TYPE    ,
+          RELATIVEOFFSET_TYPE>>(
+              attribindex   ,
+              size          ,
+              type          ,
+              normalized    ,
+              relativeoffset);
+    }
+
     template<
       typename TARGET_TYPE               = GLenum   ,
       typename SAMPLES_TYPE              = GLsizei  ,
@@ -31951,6 +38991,41 @@ namespace ge{
               fixedsamplelocations);
     }
     template<
+      typename TARGET_TYPE               = GLenum   ,
+      typename SAMPLES_TYPE              = GLsizei  ,
+      typename INTERNALFORMAT_TYPE       = GLenum   ,
+      typename WIDTH_TYPE                = GLsizei  ,
+      typename HEIGHT_TYPE               = GLsizei  ,
+      typename FIXEDSAMPLELOCATIONS_TYPE = GLboolean>
+    inline std::shared_ptr<TexStorage2DMultisample<
+      TARGET_TYPE              ,
+      SAMPLES_TYPE             ,
+      INTERNALFORMAT_TYPE      ,
+      WIDTH_TYPE               ,
+      HEIGHT_TYPE              ,
+      FIXEDSAMPLELOCATIONS_TYPE>> sharedTexStorage2DMultisample(
+        TARGET_TYPE               const&target              ,
+        SAMPLES_TYPE              const&samples             ,
+        INTERNALFORMAT_TYPE       const&internalformat      ,
+        WIDTH_TYPE                const&width               ,
+        HEIGHT_TYPE               const&height              ,
+        FIXEDSAMPLELOCATIONS_TYPE const&fixedsamplelocations){
+        return std::make_shared<TexStorage2DMultisample<
+          TARGET_TYPE              ,
+          SAMPLES_TYPE             ,
+          INTERNALFORMAT_TYPE      ,
+          WIDTH_TYPE               ,
+          HEIGHT_TYPE              ,
+          FIXEDSAMPLELOCATIONS_TYPE>>(
+              target              ,
+              samples             ,
+              internalformat      ,
+              width               ,
+              height              ,
+              fixedsamplelocations);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLushort*>
     inline VertexAttribI4usv<
@@ -31964,6 +39039,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLushort*>
+    inline std::shared_ptr<VertexAttribI4usv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI4usv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI4usv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum ,
       typename PNAME_TYPE  = GLenum ,
@@ -31984,6 +39074,26 @@ namespace ge{
               param );
     }
     template<
+      typename TARGET_TYPE = GLenum ,
+      typename PNAME_TYPE  = GLenum ,
+      typename PARAM_TYPE  = GLfloat>
+    inline std::shared_ptr<TexParameterf<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAM_TYPE >> sharedTexParameterf(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAM_TYPE  const&param ){
+        return std::make_shared<TexParameterf<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAM_TYPE >>(
+              target,
+              pname ,
+              param );
+    }
+
+    template<
       typename ATTRIBINDEX_TYPE  = GLuint,
       typename BINDINGINDEX_TYPE = GLuint>
     inline VertexAttribBinding<
@@ -31997,6 +39107,21 @@ namespace ge{
               attribindex ,
               bindingindex);
     }
+    template<
+      typename ATTRIBINDEX_TYPE  = GLuint,
+      typename BINDINGINDEX_TYPE = GLuint>
+    inline std::shared_ptr<VertexAttribBinding<
+      ATTRIBINDEX_TYPE ,
+      BINDINGINDEX_TYPE>> sharedVertexAttribBinding(
+        ATTRIBINDEX_TYPE  const&attribindex ,
+        BINDINGINDEX_TYPE const&bindingindex){
+        return std::make_shared<VertexAttribBinding<
+          ATTRIBINDEX_TYPE ,
+          BINDINGINDEX_TYPE>>(
+              attribindex ,
+              bindingindex);
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
@@ -32016,6 +39141,26 @@ namespace ge{
               pname ,
               param );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAM_TYPE  = GLint >
+    inline std::shared_ptr<TexParameteri<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAM_TYPE >> sharedTexParameteri(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAM_TYPE  const&param ){
+        return std::make_shared<TexParameteri<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAM_TYPE >>(
+              target,
+              pname ,
+              param );
+    }
+
     template<
       typename PROGRAM_TYPE    = GLuint,
       typename SHADERTYPE_TYPE = GLenum,
@@ -32046,6 +39191,36 @@ namespace ge{
               values    );
     }
     template<
+      typename PROGRAM_TYPE    = GLuint,
+      typename SHADERTYPE_TYPE = GLenum,
+      typename INDEX_TYPE      = GLuint,
+      typename PNAME_TYPE      = GLenum,
+      typename VALUES_TYPE     = GLint*>
+    inline std::shared_ptr<GetActiveSubroutineUniformiv<
+      PROGRAM_TYPE   ,
+      SHADERTYPE_TYPE,
+      INDEX_TYPE     ,
+      PNAME_TYPE     ,
+      VALUES_TYPE    >> sharedGetActiveSubroutineUniformiv(
+        PROGRAM_TYPE    const&program   ,
+        SHADERTYPE_TYPE const&shadertype,
+        INDEX_TYPE      const&index     ,
+        PNAME_TYPE      const&pname     ,
+        VALUES_TYPE     const&values    ){
+        return std::make_shared<GetActiveSubroutineUniformiv<
+          PROGRAM_TYPE   ,
+          SHADERTYPE_TYPE,
+          INDEX_TYPE     ,
+          PNAME_TYPE     ,
+          VALUES_TYPE    >>(
+              program   ,
+              shadertype,
+              index     ,
+              pname     ,
+              values    );
+    }
+
+    template<
       typename SHADER_TYPE  = GLuint  ,
       typename BUFSIZE_TYPE = GLsizei ,
       typename LENGTH_TYPE  = GLsizei*,
@@ -32070,6 +39245,31 @@ namespace ge{
               source );
     }
     template<
+      typename SHADER_TYPE  = GLuint  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename SOURCE_TYPE  = GLchar* >
+    inline std::shared_ptr<GetShaderSource<
+      SHADER_TYPE ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      SOURCE_TYPE >> sharedGetShaderSource(
+        SHADER_TYPE  const&shader ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        SOURCE_TYPE  const&source ){
+        return std::make_shared<GetShaderSource<
+          SHADER_TYPE ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          SOURCE_TYPE >>(
+              shader ,
+              bufSize,
+              length ,
+              source );
+    }
+
+    template<
       typename TARGET_TYPE         = GLenum,
       typename INTERNALFORMAT_TYPE = GLenum,
       typename BUFFER_TYPE         = GLuint>
@@ -32089,6 +39289,26 @@ namespace ge{
               buffer        );
     }
     template<
+      typename TARGET_TYPE         = GLenum,
+      typename INTERNALFORMAT_TYPE = GLenum,
+      typename BUFFER_TYPE         = GLuint>
+    inline std::shared_ptr<TexBuffer<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      BUFFER_TYPE        >> sharedTexBuffer(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        BUFFER_TYPE         const&buffer        ){
+        return std::make_shared<TexBuffer<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          BUFFER_TYPE        >>(
+              target        ,
+              internalformat,
+              buffer        );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum,
       typename PARAM_TYPE = GLint >
     inline PixelStorei<
@@ -32103,6 +39323,21 @@ namespace ge{
               param);
     }
     template<
+      typename PNAME_TYPE = GLenum,
+      typename PARAM_TYPE = GLint >
+    inline std::shared_ptr<PixelStorei<
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedPixelStorei(
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<PixelStorei<
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              pname,
+              param);
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint>
     inline ValidateProgram<
       PROGRAM_TYPE>* newValidateProgram(
@@ -32111,6 +39346,16 @@ namespace ge{
           PROGRAM_TYPE>(
               program);
     }
+    template<
+      typename PROGRAM_TYPE = GLuint>
+    inline std::shared_ptr<ValidateProgram<
+      PROGRAM_TYPE>> sharedValidateProgram(
+        PROGRAM_TYPE const&program){
+        return std::make_shared<ValidateProgram<
+          PROGRAM_TYPE>>(
+              program);
+    }
+
     template<
       typename PNAME_TYPE = GLenum ,
       typename PARAM_TYPE = GLfloat>
@@ -32126,6 +39371,21 @@ namespace ge{
               param);
     }
     template<
+      typename PNAME_TYPE = GLenum ,
+      typename PARAM_TYPE = GLfloat>
+    inline std::shared_ptr<PixelStoref<
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedPixelStoref(
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<PixelStoref<
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              pname,
+              param);
+    }
+
+    template<
       typename N_TYPE       = GLsizei,
       typename BUFFERS_TYPE = GLuint*>
     inline CreateBuffers<
@@ -32139,6 +39399,21 @@ namespace ge{
               n      ,
               buffers);
     }
+    template<
+      typename N_TYPE       = GLsizei,
+      typename BUFFERS_TYPE = GLuint*>
+    inline std::shared_ptr<CreateBuffers<
+      N_TYPE      ,
+      BUFFERS_TYPE>> sharedCreateBuffers(
+        N_TYPE       const&n      ,
+        BUFFERS_TYPE const&buffers){
+        return std::make_shared<CreateBuffers<
+          N_TYPE      ,
+          BUFFERS_TYPE>>(
+              n      ,
+              buffers);
+    }
+
     template<
       typename TARGET_TYPE = GLenum    ,
       typename INDEX_TYPE  = GLuint    ,
@@ -32159,6 +39434,26 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum    ,
+      typename INDEX_TYPE  = GLuint    ,
+      typename DATA_TYPE   = GLboolean*>
+    inline std::shared_ptr<GetBooleani_v<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      DATA_TYPE  >> sharedGetBooleani_v(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetBooleani_v<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          DATA_TYPE  >>(
+              target,
+              index ,
+              data  );
+    }
+
+    template<
       typename ORIGIN_TYPE = GLenum,
       typename DEPTH_TYPE  = GLenum>
     inline ClipControl<
@@ -32173,6 +39468,21 @@ namespace ge{
               depth );
     }
     template<
+      typename ORIGIN_TYPE = GLenum,
+      typename DEPTH_TYPE  = GLenum>
+    inline std::shared_ptr<ClipControl<
+      ORIGIN_TYPE,
+      DEPTH_TYPE >> sharedClipControl(
+        ORIGIN_TYPE const&origin,
+        DEPTH_TYPE  const&depth ){
+        return std::make_shared<ClipControl<
+          ORIGIN_TYPE,
+          DEPTH_TYPE >>(
+              origin,
+              depth );
+    }
+
+    template<
       typename N_TYPE         = GLsizei,
       typename PIPELINES_TYPE = GLuint*>
     inline GenProgramPipelines<
@@ -32186,6 +39496,21 @@ namespace ge{
               n        ,
               pipelines);
     }
+    template<
+      typename N_TYPE         = GLsizei,
+      typename PIPELINES_TYPE = GLuint*>
+    inline std::shared_ptr<GenProgramPipelines<
+      N_TYPE        ,
+      PIPELINES_TYPE>> sharedGenProgramPipelines(
+        N_TYPE         const&n        ,
+        PIPELINES_TYPE const&pipelines){
+        return std::make_shared<GenProgramPipelines<
+          N_TYPE        ,
+          PIPELINES_TYPE>>(
+              n        ,
+              pipelines);
+    }
+
     template<
       typename TARGET_TYPE         = GLenum ,
       typename INTERNALFORMAT_TYPE = GLenum ,
@@ -32216,6 +39541,36 @@ namespace ge{
               params        );
     }
     template<
+      typename TARGET_TYPE         = GLenum ,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename PNAME_TYPE          = GLenum ,
+      typename BUFSIZE_TYPE        = GLsizei,
+      typename PARAMS_TYPE         = GLint* >
+    inline std::shared_ptr<GetInternalformativ<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      PNAME_TYPE         ,
+      BUFSIZE_TYPE       ,
+      PARAMS_TYPE        >> sharedGetInternalformativ(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        PNAME_TYPE          const&pname         ,
+        BUFSIZE_TYPE        const&bufSize       ,
+        PARAMS_TYPE         const&params        ){
+        return std::make_shared<GetInternalformativ<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          PNAME_TYPE         ,
+          BUFSIZE_TYPE       ,
+          PARAMS_TYPE        >>(
+              target        ,
+              internalformat,
+              pname         ,
+              bufSize       ,
+              params        );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum  ,
       typename DATA_TYPE  = GLfloat*>
     inline GetFloatv<
@@ -32229,6 +39584,21 @@ namespace ge{
               pname,
               data );
     }
+    template<
+      typename PNAME_TYPE = GLenum  ,
+      typename DATA_TYPE  = GLfloat*>
+    inline std::shared_ptr<GetFloatv<
+      PNAME_TYPE,
+      DATA_TYPE >> sharedGetFloatv(
+        PNAME_TYPE const&pname,
+        DATA_TYPE  const&data ){
+        return std::make_shared<GetFloatv<
+          PNAME_TYPE,
+          DATA_TYPE >>(
+              pname,
+              data );
+    }
+
     template<
       typename INDEX_TYPE      = GLuint       ,
       typename TYPE_TYPE       = GLenum       ,
@@ -32254,6 +39624,31 @@ namespace ge{
               value     );
     }
     template<
+      typename INDEX_TYPE      = GLuint       ,
+      typename TYPE_TYPE       = GLenum       ,
+      typename NORMALIZED_TYPE = GLboolean    ,
+      typename VALUE_TYPE      = const GLuint*>
+    inline std::shared_ptr<VertexAttribP1uiv<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP1uiv(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP1uiv<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint>
     inline LinkProgram<
       PROGRAM_TYPE>* newLinkProgram(
@@ -32262,6 +39657,16 @@ namespace ge{
           PROGRAM_TYPE>(
               program);
     }
+    template<
+      typename PROGRAM_TYPE = GLuint>
+    inline std::shared_ptr<LinkProgram<
+      PROGRAM_TYPE>> sharedLinkProgram(
+        PROGRAM_TYPE const&program){
+        return std::make_shared<LinkProgram<
+          PROGRAM_TYPE>>(
+              program);
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename MODE_TYPE   = GLenum>
@@ -32276,6 +39681,21 @@ namespace ge{
               target,
               mode  );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename MODE_TYPE   = GLenum>
+    inline std::shared_ptr<Hint<
+      TARGET_TYPE,
+      MODE_TYPE  >> sharedHint(
+        TARGET_TYPE const&target,
+        MODE_TYPE   const&mode  ){
+        return std::make_shared<Hint<
+          TARGET_TYPE,
+          MODE_TYPE  >>(
+              target,
+              mode  );
+    }
+
     template<
       typename MODE_TYPE      = GLenum     ,
       typename INDIRECT_TYPE  = const void*,
@@ -32301,6 +39721,31 @@ namespace ge{
               stride   );
     }
     template<
+      typename MODE_TYPE      = GLenum     ,
+      typename INDIRECT_TYPE  = const void*,
+      typename DRAWCOUNT_TYPE = GLsizei    ,
+      typename STRIDE_TYPE    = GLsizei    >
+    inline std::shared_ptr<MultiDrawArraysIndirect<
+      MODE_TYPE     ,
+      INDIRECT_TYPE ,
+      DRAWCOUNT_TYPE,
+      STRIDE_TYPE   >> sharedMultiDrawArraysIndirect(
+        MODE_TYPE      const&mode     ,
+        INDIRECT_TYPE  const&indirect ,
+        DRAWCOUNT_TYPE const&drawcount,
+        STRIDE_TYPE    const&stride   ){
+        return std::make_shared<MultiDrawArraysIndirect<
+          MODE_TYPE     ,
+          INDIRECT_TYPE ,
+          DRAWCOUNT_TYPE,
+          STRIDE_TYPE   >>(
+              mode     ,
+              indirect ,
+              drawcount,
+              stride   );
+    }
+
+    template<
       typename FIRST_TYPE    = GLuint       ,
       typename COUNT_TYPE    = GLsizei      ,
       typename TEXTURES_TYPE = const GLuint*>
@@ -32319,6 +39764,26 @@ namespace ge{
               count   ,
               textures);
     }
+    template<
+      typename FIRST_TYPE    = GLuint       ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename TEXTURES_TYPE = const GLuint*>
+    inline std::shared_ptr<BindImageTextures<
+      FIRST_TYPE   ,
+      COUNT_TYPE   ,
+      TEXTURES_TYPE>> sharedBindImageTextures(
+        FIRST_TYPE    const&first   ,
+        COUNT_TYPE    const&count   ,
+        TEXTURES_TYPE const&textures){
+        return std::make_shared<BindImageTextures<
+          FIRST_TYPE   ,
+          COUNT_TYPE   ,
+          TEXTURES_TYPE>>(
+              first   ,
+              count   ,
+              textures);
+    }
+
     template<
       typename PIPELINE_TYPE = GLuint  ,
       typename BUFSIZE_TYPE  = GLsizei ,
@@ -32344,6 +39809,31 @@ namespace ge{
               infoLog );
     }
     template<
+      typename PIPELINE_TYPE = GLuint  ,
+      typename BUFSIZE_TYPE  = GLsizei ,
+      typename LENGTH_TYPE   = GLsizei*,
+      typename INFOLOG_TYPE  = GLchar* >
+    inline std::shared_ptr<GetProgramPipelineInfoLog<
+      PIPELINE_TYPE,
+      BUFSIZE_TYPE ,
+      LENGTH_TYPE  ,
+      INFOLOG_TYPE >> sharedGetProgramPipelineInfoLog(
+        PIPELINE_TYPE const&pipeline,
+        BUFSIZE_TYPE  const&bufSize ,
+        LENGTH_TYPE   const&length  ,
+        INFOLOG_TYPE  const&infoLog ){
+        return std::make_shared<GetProgramPipelineInfoLog<
+          PIPELINE_TYPE,
+          BUFSIZE_TYPE ,
+          LENGTH_TYPE  ,
+          INFOLOG_TYPE >>(
+              pipeline,
+              bufSize ,
+              length  ,
+              infoLog );
+    }
+
+    template<
       typename RET_TYPE  = const GLubyte*,
       typename NAME_TYPE = GLenum        >
     inline GetString<
@@ -32357,6 +39847,21 @@ namespace ge{
               ret ,
               name);
     }
+    template<
+      typename RET_TYPE  = const GLubyte*,
+      typename NAME_TYPE = GLenum        >
+    inline std::shared_ptr<GetString<
+      RET_TYPE ,
+      NAME_TYPE>> sharedGetString(
+        RET_TYPE  const&ret ,
+        NAME_TYPE const&name){
+        return std::make_shared<GetString<
+          RET_TYPE ,
+          NAME_TYPE>>(
+              ret ,
+              name);
+    }
+
     template<
       typename INDEX_TYPE      = GLuint       ,
       typename TYPE_TYPE       = GLenum       ,
@@ -32382,6 +39887,31 @@ namespace ge{
               value     );
     }
     template<
+      typename INDEX_TYPE      = GLuint       ,
+      typename TYPE_TYPE       = GLenum       ,
+      typename NORMALIZED_TYPE = GLboolean    ,
+      typename VALUE_TYPE      = const GLuint*>
+    inline std::shared_ptr<VertexAttribP2uiv<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP2uiv(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP2uiv<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint,
       typename SHADER_TYPE  = GLuint>
     inline DetachShader<
@@ -32395,6 +39925,21 @@ namespace ge{
               program,
               shader );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint,
+      typename SHADER_TYPE  = GLuint>
+    inline std::shared_ptr<DetachShader<
+      PROGRAM_TYPE,
+      SHADER_TYPE >> sharedDetachShader(
+        PROGRAM_TYPE const&program,
+        SHADER_TYPE  const&shader ){
+        return std::make_shared<DetachShader<
+          PROGRAM_TYPE,
+          SHADER_TYPE >>(
+              program,
+              shader );
+    }
+
     template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -32420,6 +39965,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix3x4dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix3x4dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix3x4dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum>
     inline EndQuery<
       TARGET_TYPE>* newEndQuery(
@@ -32428,6 +39998,16 @@ namespace ge{
           TARGET_TYPE>(
               target);
     }
+    template<
+      typename TARGET_TYPE = GLenum>
+    inline std::shared_ptr<EndQuery<
+      TARGET_TYPE>> sharedEndQuery(
+        TARGET_TYPE const&target){
+        return std::make_shared<EndQuery<
+          TARGET_TYPE>>(
+              target);
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
@@ -32447,6 +40027,26 @@ namespace ge{
               pname ,
               param );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAM_TYPE  = GLint >
+    inline std::shared_ptr<FramebufferParameteri<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAM_TYPE >> sharedFramebufferParameteri(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAM_TYPE  const&param ){
+        return std::make_shared<FramebufferParameteri<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAM_TYPE >>(
+              target,
+              pname ,
+              param );
+    }
+
     template<
       typename PROGRAM_TYPE          = GLuint  ,
       typename PROGRAMINTERFACE_TYPE = GLenum  ,
@@ -32482,6 +40082,41 @@ namespace ge{
               name            );
     }
     template<
+      typename PROGRAM_TYPE          = GLuint  ,
+      typename PROGRAMINTERFACE_TYPE = GLenum  ,
+      typename INDEX_TYPE            = GLuint  ,
+      typename BUFSIZE_TYPE          = GLsizei ,
+      typename LENGTH_TYPE           = GLsizei*,
+      typename NAME_TYPE             = GLchar* >
+    inline std::shared_ptr<GetProgramResourceName<
+      PROGRAM_TYPE         ,
+      PROGRAMINTERFACE_TYPE,
+      INDEX_TYPE           ,
+      BUFSIZE_TYPE         ,
+      LENGTH_TYPE          ,
+      NAME_TYPE            >> sharedGetProgramResourceName(
+        PROGRAM_TYPE          const&program         ,
+        PROGRAMINTERFACE_TYPE const&programInterface,
+        INDEX_TYPE            const&index           ,
+        BUFSIZE_TYPE          const&bufSize         ,
+        LENGTH_TYPE           const&length          ,
+        NAME_TYPE             const&name            ){
+        return std::make_shared<GetProgramResourceName<
+          PROGRAM_TYPE         ,
+          PROGRAMINTERFACE_TYPE,
+          INDEX_TYPE           ,
+          BUFSIZE_TYPE         ,
+          LENGTH_TYPE          ,
+          NAME_TYPE            >>(
+              program         ,
+              programInterface,
+              index           ,
+              bufSize         ,
+              length          ,
+              name            );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
@@ -32506,6 +40141,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix4x3dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix4x3dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix4x3dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename FIRST_TYPE = GLuint         ,
       typename COUNT_TYPE = GLsizei        ,
       typename V_TYPE     = const GLdouble*>
@@ -32525,6 +40185,26 @@ namespace ge{
               v    );
     }
     template<
+      typename FIRST_TYPE = GLuint         ,
+      typename COUNT_TYPE = GLsizei        ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<DepthRangeArrayv<
+      FIRST_TYPE,
+      COUNT_TYPE,
+      V_TYPE    >> sharedDepthRangeArrayv(
+        FIRST_TYPE const&first,
+        COUNT_TYPE const&count,
+        V_TYPE     const&v    ){
+        return std::make_shared<DepthRangeArrayv<
+          FIRST_TYPE,
+          COUNT_TYPE,
+          V_TYPE    >>(
+              first,
+              count,
+              v    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLuint,
       typename Y_TYPE     = GLuint>
@@ -32543,6 +40223,26 @@ namespace ge{
               x    ,
               y    );
     }
+    template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLuint,
+      typename Y_TYPE     = GLuint>
+    inline std::shared_ptr<VertexAttribI2ui<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    >> sharedVertexAttribI2ui(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ){
+        return std::make_shared<VertexAttribI2ui<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    >>(
+              index,
+              x    ,
+              y    );
+    }
+
     template<
       typename RET_TYPE              = GLint        ,
       typename PROGRAM_TYPE          = GLuint       ,
@@ -32568,6 +40268,31 @@ namespace ge{
               name            );
     }
     template<
+      typename RET_TYPE              = GLint        ,
+      typename PROGRAM_TYPE          = GLuint       ,
+      typename PROGRAMINTERFACE_TYPE = GLenum       ,
+      typename NAME_TYPE             = const GLchar*>
+    inline std::shared_ptr<GetProgramResourceLocation<
+      RET_TYPE             ,
+      PROGRAM_TYPE         ,
+      PROGRAMINTERFACE_TYPE,
+      NAME_TYPE            >> sharedGetProgramResourceLocation(
+        RET_TYPE              const&ret             ,
+        PROGRAM_TYPE          const&program         ,
+        PROGRAMINTERFACE_TYPE const&programInterface,
+        NAME_TYPE             const&name            ){
+        return std::make_shared<GetProgramResourceLocation<
+          RET_TYPE             ,
+          PROGRAM_TYPE         ,
+          PROGRAMINTERFACE_TYPE,
+          NAME_TYPE            >>(
+              ret             ,
+              program         ,
+              programInterface,
+              name            );
+    }
+
+    template<
       typename N_TYPE        = GLsizei      ,
       typename TEXTURES_TYPE = const GLuint*>
     inline DeleteTextures<
@@ -32581,6 +40306,21 @@ namespace ge{
               n       ,
               textures);
     }
+    template<
+      typename N_TYPE        = GLsizei      ,
+      typename TEXTURES_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteTextures<
+      N_TYPE       ,
+      TEXTURES_TYPE>> sharedDeleteTextures(
+        N_TYPE        const&n       ,
+        TEXTURES_TYPE const&textures){
+        return std::make_shared<DeleteTextures<
+          N_TYPE       ,
+          TEXTURES_TYPE>>(
+              n       ,
+              textures);
+    }
+
     template<
       typename PROGRAM_TYPE     = GLuint,
       typename BUFFERINDEX_TYPE = GLuint,
@@ -32606,6 +40346,31 @@ namespace ge{
               params     );
     }
     template<
+      typename PROGRAM_TYPE     = GLuint,
+      typename BUFFERINDEX_TYPE = GLuint,
+      typename PNAME_TYPE       = GLenum,
+      typename PARAMS_TYPE      = GLint*>
+    inline std::shared_ptr<GetActiveAtomicCounterBufferiv<
+      PROGRAM_TYPE    ,
+      BUFFERINDEX_TYPE,
+      PNAME_TYPE      ,
+      PARAMS_TYPE     >> sharedGetActiveAtomicCounterBufferiv(
+        PROGRAM_TYPE     const&program    ,
+        BUFFERINDEX_TYPE const&bufferIndex,
+        PNAME_TYPE       const&pname      ,
+        PARAMS_TYPE      const&params     ){
+        return std::make_shared<GetActiveAtomicCounterBufferiv<
+          PROGRAM_TYPE    ,
+          BUFFERINDEX_TYPE,
+          PNAME_TYPE      ,
+          PARAMS_TYPE     >>(
+              program    ,
+              bufferIndex,
+              pname      ,
+              params     );
+    }
+
+    template<
       typename FACE_TYPE   = GLenum,
       typename SFAIL_TYPE  = GLenum,
       typename DPFAIL_TYPE = GLenum,
@@ -32630,6 +40395,31 @@ namespace ge{
               dppass);
     }
     template<
+      typename FACE_TYPE   = GLenum,
+      typename SFAIL_TYPE  = GLenum,
+      typename DPFAIL_TYPE = GLenum,
+      typename DPPASS_TYPE = GLenum>
+    inline std::shared_ptr<StencilOpSeparate<
+      FACE_TYPE  ,
+      SFAIL_TYPE ,
+      DPFAIL_TYPE,
+      DPPASS_TYPE>> sharedStencilOpSeparate(
+        FACE_TYPE   const&face  ,
+        SFAIL_TYPE  const&sfail ,
+        DPFAIL_TYPE const&dpfail,
+        DPPASS_TYPE const&dppass){
+        return std::make_shared<StencilOpSeparate<
+          FACE_TYPE  ,
+          SFAIL_TYPE ,
+          DPFAIL_TYPE,
+          DPPASS_TYPE>>(
+              face  ,
+              sfail ,
+              dpfail,
+              dppass);
+    }
+
+    template<
       typename N_TYPE   = GLsizei      ,
       typename IDS_TYPE = const GLuint*>
     inline DeleteQueries<
@@ -32643,6 +40433,21 @@ namespace ge{
               n  ,
               ids);
     }
+    template<
+      typename N_TYPE   = GLsizei      ,
+      typename IDS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteQueries<
+      N_TYPE  ,
+      IDS_TYPE>> sharedDeleteQueries(
+        N_TYPE   const&n  ,
+        IDS_TYPE const&ids){
+        return std::make_shared<DeleteQueries<
+          N_TYPE  ,
+          IDS_TYPE>>(
+              n  ,
+              ids);
+    }
+
     template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLfloat,
@@ -32673,6 +40478,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLfloat,
+      typename Y_TYPE     = GLfloat,
+      typename Z_TYPE     = GLfloat,
+      typename W_TYPE     = GLfloat>
+    inline std::shared_ptr<VertexAttrib4f<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttrib4f(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttrib4f<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename PNAME_TYPE       = GLenum,
       typename PARAM_TYPE       = GLint >
@@ -32692,6 +40527,26 @@ namespace ge{
               param      );
     }
     template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename PNAME_TYPE       = GLenum,
+      typename PARAM_TYPE       = GLint >
+    inline std::shared_ptr<NamedFramebufferParameteri<
+      FRAMEBUFFER_TYPE,
+      PNAME_TYPE      ,
+      PARAM_TYPE      >> sharedNamedFramebufferParameteri(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        PNAME_TYPE       const&pname      ,
+        PARAM_TYPE       const&param      ){
+        return std::make_shared<NamedFramebufferParameteri<
+          FRAMEBUFFER_TYPE,
+          PNAME_TYPE      ,
+          PARAM_TYPE      >>(
+              framebuffer,
+              pname      ,
+              param      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLfloat*>
     inline ViewportIndexedfv<
@@ -32705,6 +40560,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ViewportIndexedfv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedViewportIndexedfv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<ViewportIndexedfv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE  = GLenum       ,
       typename FIRST_TYPE   = GLuint       ,
@@ -32730,6 +40600,31 @@ namespace ge{
               buffers);
     }
     template<
+      typename TARGET_TYPE  = GLenum       ,
+      typename FIRST_TYPE   = GLuint       ,
+      typename COUNT_TYPE   = GLsizei      ,
+      typename BUFFERS_TYPE = const GLuint*>
+    inline std::shared_ptr<BindBuffersBase<
+      TARGET_TYPE ,
+      FIRST_TYPE  ,
+      COUNT_TYPE  ,
+      BUFFERS_TYPE>> sharedBindBuffersBase(
+        TARGET_TYPE  const&target ,
+        FIRST_TYPE   const&first  ,
+        COUNT_TYPE   const&count  ,
+        BUFFERS_TYPE const&buffers){
+        return std::make_shared<BindBuffersBase<
+          TARGET_TYPE ,
+          FIRST_TYPE  ,
+          COUNT_TYPE  ,
+          BUFFERS_TYPE>>(
+              target ,
+              first  ,
+              count  ,
+              buffers);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttribL4dv<
@@ -32743,6 +40638,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttribL4dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribL4dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribL4dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
@@ -32763,6 +40673,26 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetTexParameteriv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetTexParameteriv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetTexParameteriv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
+    template<
       typename N_TYPE      = GLsizei,
       typename ARRAYS_TYPE = GLuint*>
     inline CreateVertexArrays<
@@ -32776,6 +40706,21 @@ namespace ge{
               n     ,
               arrays);
     }
+    template<
+      typename N_TYPE      = GLsizei,
+      typename ARRAYS_TYPE = GLuint*>
+    inline std::shared_ptr<CreateVertexArrays<
+      N_TYPE     ,
+      ARRAYS_TYPE>> sharedCreateVertexArrays(
+        N_TYPE      const&n     ,
+        ARRAYS_TYPE const&arrays){
+        return std::make_shared<CreateVertexArrays<
+          N_TYPE     ,
+          ARRAYS_TYPE>>(
+              n     ,
+              arrays);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint         ,
       typename LOCATION_TYPE = GLint          ,
@@ -32801,6 +40746,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint         ,
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<ProgramUniform1dv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform1dv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform1dv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename ID_TYPE   = GLuint,
       typename MODE_TYPE = GLenum>
     inline BeginConditionalRender<
@@ -32814,6 +40784,21 @@ namespace ge{
               id  ,
               mode);
     }
+    template<
+      typename ID_TYPE   = GLuint,
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<BeginConditionalRender<
+      ID_TYPE  ,
+      MODE_TYPE>> sharedBeginConditionalRender(
+        ID_TYPE   const&id  ,
+        MODE_TYPE const&mode){
+        return std::make_shared<BeginConditionalRender<
+          ID_TYPE  ,
+          MODE_TYPE>>(
+              id  ,
+              mode);
+    }
+
     template<
       typename MODE_TYPE       = GLenum     ,
       typename COUNT_TYPE      = GLsizei    ,
@@ -32844,6 +40829,36 @@ namespace ge{
               basevertex);
     }
     template<
+      typename MODE_TYPE       = GLenum     ,
+      typename COUNT_TYPE      = GLsizei    ,
+      typename TYPE_TYPE       = GLenum     ,
+      typename INDICES_TYPE    = const void*,
+      typename BASEVERTEX_TYPE = GLint      >
+    inline std::shared_ptr<DrawElementsBaseVertex<
+      MODE_TYPE      ,
+      COUNT_TYPE     ,
+      TYPE_TYPE      ,
+      INDICES_TYPE   ,
+      BASEVERTEX_TYPE>> sharedDrawElementsBaseVertex(
+        MODE_TYPE       const&mode      ,
+        COUNT_TYPE      const&count     ,
+        TYPE_TYPE       const&type      ,
+        INDICES_TYPE    const&indices   ,
+        BASEVERTEX_TYPE const&basevertex){
+        return std::make_shared<DrawElementsBaseVertex<
+          MODE_TYPE      ,
+          COUNT_TYPE     ,
+          TYPE_TYPE      ,
+          INDICES_TYPE   ,
+          BASEVERTEX_TYPE>>(
+              mode      ,
+              count     ,
+              type      ,
+              indices   ,
+              basevertex);
+    }
+
+    template<
       typename VALUE_TYPE  = GLfloat  ,
       typename INVERT_TYPE = GLboolean>
     inline SampleCoverage<
@@ -32857,6 +40872,21 @@ namespace ge{
               value ,
               invert);
     }
+    template<
+      typename VALUE_TYPE  = GLfloat  ,
+      typename INVERT_TYPE = GLboolean>
+    inline std::shared_ptr<SampleCoverage<
+      VALUE_TYPE ,
+      INVERT_TYPE>> sharedSampleCoverage(
+        VALUE_TYPE  const&value ,
+        INVERT_TYPE const&invert){
+        return std::make_shared<SampleCoverage<
+          VALUE_TYPE ,
+          INVERT_TYPE>>(
+              value ,
+              invert);
+    }
+
     template<
       typename SAMPLER_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
@@ -32876,6 +40906,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAM_TYPE   = GLint >
+    inline std::shared_ptr<SamplerParameteri<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedSamplerParameteri(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<SamplerParameteri<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              sampler,
+              pname  ,
+              param  );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename INTERNALFORMAT_TYPE = GLenum     ,
@@ -32916,6 +40966,46 @@ namespace ge{
               data          );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename OFFSET_TYPE         = GLintptr   ,
+      typename SIZE_TYPE           = GLsizeiptr ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<ClearBufferSubData<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      OFFSET_TYPE        ,
+      SIZE_TYPE          ,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      DATA_TYPE          >> sharedClearBufferSubData(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        OFFSET_TYPE         const&offset        ,
+        SIZE_TYPE           const&size          ,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<ClearBufferSubData<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          OFFSET_TYPE        ,
+          SIZE_TYPE          ,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          DATA_TYPE          >>(
+              target        ,
+              internalformat,
+              offset        ,
+              size          ,
+              format        ,
+              type          ,
+              data          );
+    }
+
+    template<
       typename SAMPLER_TYPE = GLuint ,
       typename PNAME_TYPE   = GLenum ,
       typename PARAM_TYPE   = GLfloat>
@@ -32934,6 +41024,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint ,
+      typename PNAME_TYPE   = GLenum ,
+      typename PARAM_TYPE   = GLfloat>
+    inline std::shared_ptr<SamplerParameterf<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedSamplerParameterf(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<SamplerParameterf<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              sampler,
+              pname  ,
+              param  );
+    }
+
     template<
       typename FRAMEBUFFER_TYPE = GLuint       ,
       typename BUFFER_TYPE      = GLenum       ,
@@ -32959,6 +41069,31 @@ namespace ge{
               value      );
     }
     template<
+      typename FRAMEBUFFER_TYPE = GLuint       ,
+      typename BUFFER_TYPE      = GLenum       ,
+      typename DRAWBUFFER_TYPE  = GLint        ,
+      typename VALUE_TYPE       = const GLuint*>
+    inline std::shared_ptr<ClearNamedFramebufferuiv<
+      FRAMEBUFFER_TYPE,
+      BUFFER_TYPE     ,
+      DRAWBUFFER_TYPE ,
+      VALUE_TYPE      >> sharedClearNamedFramebufferuiv(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        BUFFER_TYPE      const&buffer     ,
+        DRAWBUFFER_TYPE  const&drawbuffer ,
+        VALUE_TYPE       const&value      ){
+        return std::make_shared<ClearNamedFramebufferuiv<
+          FRAMEBUFFER_TYPE,
+          BUFFER_TYPE     ,
+          DRAWBUFFER_TYPE ,
+          VALUE_TYPE      >>(
+              framebuffer,
+              buffer     ,
+              drawbuffer ,
+              value      );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat>
     inline Uniform1f<
@@ -32972,6 +41107,21 @@ namespace ge{
               location,
               v0      );
     }
+    template<
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat>
+    inline std::shared_ptr<Uniform1f<
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedUniform1f(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<Uniform1f<
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              location,
+              v0      );
+    }
+
     template<
       typename INDEX_TYPE  = GLuint  ,
       typename PNAME_TYPE  = GLenum  ,
@@ -32992,6 +41142,26 @@ namespace ge{
               params);
     }
     template<
+      typename INDEX_TYPE  = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename PARAMS_TYPE = GLfloat*>
+    inline std::shared_ptr<GetVertexAttribfv<
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetVertexAttribfv(
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetVertexAttribfv<
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              index ,
+              pname ,
+              params);
+    }
+
+    template<
       typename NUM_GROUPS_X_TYPE = GLuint,
       typename NUM_GROUPS_Y_TYPE = GLuint,
       typename NUM_GROUPS_Z_TYPE = GLuint>
@@ -33011,6 +41181,26 @@ namespace ge{
               num_groups_z);
     }
     template<
+      typename NUM_GROUPS_X_TYPE = GLuint,
+      typename NUM_GROUPS_Y_TYPE = GLuint,
+      typename NUM_GROUPS_Z_TYPE = GLuint>
+    inline std::shared_ptr<DispatchCompute<
+      NUM_GROUPS_X_TYPE,
+      NUM_GROUPS_Y_TYPE,
+      NUM_GROUPS_Z_TYPE>> sharedDispatchCompute(
+        NUM_GROUPS_X_TYPE const&num_groups_x,
+        NUM_GROUPS_Y_TYPE const&num_groups_y,
+        NUM_GROUPS_Z_TYPE const&num_groups_z){
+        return std::make_shared<DispatchCompute<
+          NUM_GROUPS_X_TYPE,
+          NUM_GROUPS_Y_TYPE,
+          NUM_GROUPS_Z_TYPE>>(
+              num_groups_x,
+              num_groups_y,
+              num_groups_z);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename LEVEL_TYPE  = GLint ,
       typename IMG_TYPE    = void* >
@@ -33029,6 +41219,26 @@ namespace ge{
               level ,
               img   );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename LEVEL_TYPE  = GLint ,
+      typename IMG_TYPE    = void* >
+    inline std::shared_ptr<GetCompressedTexImage<
+      TARGET_TYPE,
+      LEVEL_TYPE ,
+      IMG_TYPE   >> sharedGetCompressedTexImage(
+        TARGET_TYPE const&target,
+        LEVEL_TYPE  const&level ,
+        IMG_TYPE    const&img   ){
+        return std::make_shared<GetCompressedTexImage<
+          TARGET_TYPE,
+          LEVEL_TYPE ,
+          IMG_TYPE   >>(
+              target,
+              level ,
+              img   );
+    }
+
     template<
       typename TARGET_TYPE  = GLenum ,
       typename LOD_TYPE     = GLint  ,
@@ -33054,6 +41264,31 @@ namespace ge{
               pixels );
     }
     template<
+      typename TARGET_TYPE  = GLenum ,
+      typename LOD_TYPE     = GLint  ,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename PIXELS_TYPE  = void*  >
+    inline std::shared_ptr<GetnCompressedTexImage<
+      TARGET_TYPE ,
+      LOD_TYPE    ,
+      BUFSIZE_TYPE,
+      PIXELS_TYPE >> sharedGetnCompressedTexImage(
+        TARGET_TYPE  const&target ,
+        LOD_TYPE     const&lod    ,
+        BUFSIZE_TYPE const&bufSize,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<GetnCompressedTexImage<
+          TARGET_TYPE ,
+          LOD_TYPE    ,
+          BUFSIZE_TYPE,
+          PIXELS_TYPE >>(
+              target ,
+              lod    ,
+              bufSize,
+              pixels );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint,
       typename V0_TYPE       = GLint>
     inline Uniform1i<
@@ -33067,6 +41302,21 @@ namespace ge{
               location,
               v0      );
     }
+    template<
+      typename LOCATION_TYPE = GLint,
+      typename V0_TYPE       = GLint>
+    inline std::shared_ptr<Uniform1i<
+      LOCATION_TYPE,
+      V0_TYPE      >> sharedUniform1i(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ){
+        return std::make_shared<Uniform1i<
+          LOCATION_TYPE,
+          V0_TYPE      >>(
+              location,
+              v0      );
+    }
+
     template<
       typename PROGRAM_TYPE = GLuint  ,
       typename INDEX_TYPE   = GLuint  ,
@@ -33106,6 +41356,46 @@ namespace ge{
               type   ,
               name   );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint  ,
+      typename INDEX_TYPE   = GLuint  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename SIZE_TYPE    = GLint*  ,
+      typename TYPE_TYPE    = GLenum* ,
+      typename NAME_TYPE    = GLchar* >
+    inline std::shared_ptr<GetActiveAttrib<
+      PROGRAM_TYPE,
+      INDEX_TYPE  ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      SIZE_TYPE   ,
+      TYPE_TYPE   ,
+      NAME_TYPE   >> sharedGetActiveAttrib(
+        PROGRAM_TYPE const&program,
+        INDEX_TYPE   const&index  ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        SIZE_TYPE    const&size   ,
+        TYPE_TYPE    const&type   ,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetActiveAttrib<
+          PROGRAM_TYPE,
+          INDEX_TYPE  ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          SIZE_TYPE   ,
+          TYPE_TYPE   ,
+          NAME_TYPE   >>(
+              program,
+              index  ,
+              bufSize,
+              length ,
+              size   ,
+              type   ,
+              name   );
+    }
+
     template<
       typename TARGET_TYPE  = GLenum     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -33156,6 +41446,56 @@ namespace ge{
               pixels );
     }
     template<
+      typename TARGET_TYPE  = GLenum     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename YOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename HEIGHT_TYPE  = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename PIXELS_TYPE  = const void*>
+    inline std::shared_ptr<TexSubImage2D<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      PIXELS_TYPE >> sharedTexSubImage2D(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<TexSubImage2D<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          PIXELS_TYPE >>(
+              target ,
+              level  ,
+              xoffset,
+              yoffset,
+              width  ,
+              height ,
+              format ,
+              type   ,
+              pixels );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
       typename PARAMS_TYPE   = GLint*>
@@ -33174,6 +41514,26 @@ namespace ge{
               location,
               params  );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename PARAMS_TYPE   = GLint*>
+    inline std::shared_ptr<GetUniformiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      PARAMS_TYPE  >> sharedGetUniformiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetUniformiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              params  );
+    }
+
     template<
       typename BUFFER_TYPE     = GLenum        ,
       typename DRAWBUFFER_TYPE = GLint         ,
@@ -33194,6 +41554,26 @@ namespace ge{
               value     );
     }
     template<
+      typename BUFFER_TYPE     = GLenum        ,
+      typename DRAWBUFFER_TYPE = GLint         ,
+      typename VALUE_TYPE      = const GLfloat*>
+    inline std::shared_ptr<ClearBufferfv<
+      BUFFER_TYPE    ,
+      DRAWBUFFER_TYPE,
+      VALUE_TYPE     >> sharedClearBufferfv(
+        BUFFER_TYPE     const&buffer    ,
+        DRAWBUFFER_TYPE const&drawbuffer,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<ClearBufferfv<
+          BUFFER_TYPE    ,
+          DRAWBUFFER_TYPE,
+          VALUE_TYPE     >>(
+              buffer    ,
+              drawbuffer,
+              value     );
+    }
+
+    template<
       typename OPCODE_TYPE = GLenum>
     inline LogicOp<
       OPCODE_TYPE>* newLogicOp(
@@ -33202,6 +41582,16 @@ namespace ge{
           OPCODE_TYPE>(
               opcode);
     }
+    template<
+      typename OPCODE_TYPE = GLenum>
+    inline std::shared_ptr<LogicOp<
+      OPCODE_TYPE>> sharedLogicOp(
+        OPCODE_TYPE const&opcode){
+        return std::make_shared<LogicOp<
+          OPCODE_TYPE>>(
+              opcode);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
@@ -33232,6 +41622,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix3x4fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix3x4fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix3x4fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint ,
       typename PNAME_TYPE   = GLenum ,
       typename PARAMS_TYPE  = GLuint*>
@@ -33250,6 +41670,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename PNAME_TYPE   = GLenum ,
+      typename PARAMS_TYPE  = GLuint*>
+    inline std::shared_ptr<GetTextureParameterIuiv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetTextureParameterIuiv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetTextureParameterIuiv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              pname  ,
+              params );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint       ,
       typename LOCATION_TYPE = GLint        ,
@@ -33274,6 +41714,31 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint       ,
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<ProgramUniform4uiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform4uiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform4uiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint,
@@ -33303,6 +41768,36 @@ namespace ge{
               v2      ,
               v3      );
     }
+    template<
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint,
+      typename V2_TYPE       = GLuint,
+      typename V3_TYPE       = GLuint>
+    inline std::shared_ptr<Uniform4ui<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedUniform4ui(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<Uniform4ui<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -33348,6 +41843,51 @@ namespace ge{
               height );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei>
+    inline std::shared_ptr<CopyTextureSubImage2D<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE >> sharedCopyTextureSubImage2D(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ){
+        return std::make_shared<CopyTextureSubImage2D<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              x      ,
+              y      ,
+              width  ,
+              height );
+    }
+
+    template<
       typename TARGET_TYPE      = GLenum,
       typename FRAMEBUFFER_TYPE = GLuint>
     inline BindFramebuffer<
@@ -33362,6 +41902,21 @@ namespace ge{
               framebuffer);
     }
     template<
+      typename TARGET_TYPE      = GLenum,
+      typename FRAMEBUFFER_TYPE = GLuint>
+    inline std::shared_ptr<BindFramebuffer<
+      TARGET_TYPE     ,
+      FRAMEBUFFER_TYPE>> sharedBindFramebuffer(
+        TARGET_TYPE      const&target     ,
+        FRAMEBUFFER_TYPE const&framebuffer){
+        return std::make_shared<BindFramebuffer<
+          TARGET_TYPE     ,
+          FRAMEBUFFER_TYPE>>(
+              target     ,
+              framebuffer);
+    }
+
+    template<
       typename MODE_TYPE = GLenum>
     inline CullFace<
       MODE_TYPE>* newCullFace(
@@ -33370,6 +41925,16 @@ namespace ge{
           MODE_TYPE>(
               mode);
     }
+    template<
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<CullFace<
+      MODE_TYPE>> sharedCullFace(
+        MODE_TYPE const&mode){
+        return std::make_shared<CullFace<
+          MODE_TYPE>>(
+              mode);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
@@ -33405,6 +41970,41 @@ namespace ge{
               v3      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLint ,
+      typename V1_TYPE       = GLint ,
+      typename V2_TYPE       = GLint ,
+      typename V3_TYPE       = GLint >
+    inline std::shared_ptr<ProgramUniform4i<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedProgramUniform4i(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<ProgramUniform4i<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat,
@@ -33439,6 +42039,41 @@ namespace ge{
               v3      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat,
+      typename V1_TYPE       = GLfloat,
+      typename V2_TYPE       = GLfloat,
+      typename V3_TYPE       = GLfloat>
+    inline std::shared_ptr<ProgramUniform4f<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedProgramUniform4f(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<ProgramUniform4f<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLfloat,
       typename Y_TYPE     = GLfloat,
@@ -33467,6 +42102,36 @@ namespace ge{
               w    ,
               h    );
     }
+    template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLfloat,
+      typename Y_TYPE     = GLfloat,
+      typename W_TYPE     = GLfloat,
+      typename H_TYPE     = GLfloat>
+    inline std::shared_ptr<ViewportIndexedf<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      W_TYPE    ,
+      H_TYPE    >> sharedViewportIndexedf(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        W_TYPE     const&w    ,
+        H_TYPE     const&h    ){
+        return std::make_shared<ViewportIndexedf<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          W_TYPE    ,
+          H_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              w    ,
+              h    );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
@@ -33502,6 +42167,41 @@ namespace ge{
               v3      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename LOCATION_TYPE = GLint   ,
+      typename V0_TYPE       = GLdouble,
+      typename V1_TYPE       = GLdouble,
+      typename V2_TYPE       = GLdouble,
+      typename V3_TYPE       = GLdouble>
+    inline std::shared_ptr<ProgramUniform4d<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedProgramUniform4d(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<ProgramUniform4d<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint      ,
       typename PNAME_TYPE   = GLenum      ,
       typename PARAMS_TYPE  = const GLint*>
@@ -33521,6 +42221,26 @@ namespace ge{
               params );
     }
     template<
+      typename TEXTURE_TYPE = GLuint      ,
+      typename PNAME_TYPE   = GLenum      ,
+      typename PARAMS_TYPE  = const GLint*>
+    inline std::shared_ptr<TextureParameterIiv<
+      TEXTURE_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedTextureParameterIiv(
+        TEXTURE_TYPE const&texture,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<TextureParameterIiv<
+          TEXTURE_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              pname  ,
+              params );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLuint*>
     inline VertexAttribI2uiv<
@@ -33534,6 +42254,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLuint*>
+    inline std::shared_ptr<VertexAttribI2uiv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI2uiv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI2uiv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -33584,6 +42319,56 @@ namespace ge{
               pixels );
     }
     template<
+      typename TEXTURE_TYPE = GLuint     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename YOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename HEIGHT_TYPE  = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename PIXELS_TYPE  = const void*>
+    inline std::shared_ptr<TextureSubImage2D<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      PIXELS_TYPE >> sharedTextureSubImage2D(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<TextureSubImage2D<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              width  ,
+              height ,
+              format ,
+              type   ,
+              pixels );
+    }
+
+    template<
       typename INDEX_TYPE  = GLuint ,
       typename LEFT_TYPE   = GLint  ,
       typename BOTTOM_TYPE = GLint  ,
@@ -33613,6 +42398,36 @@ namespace ge{
               height);
     }
     template<
+      typename INDEX_TYPE  = GLuint ,
+      typename LEFT_TYPE   = GLint  ,
+      typename BOTTOM_TYPE = GLint  ,
+      typename WIDTH_TYPE  = GLsizei,
+      typename HEIGHT_TYPE = GLsizei>
+    inline std::shared_ptr<ScissorIndexed<
+      INDEX_TYPE ,
+      LEFT_TYPE  ,
+      BOTTOM_TYPE,
+      WIDTH_TYPE ,
+      HEIGHT_TYPE>> sharedScissorIndexed(
+        INDEX_TYPE  const&index ,
+        LEFT_TYPE   const&left  ,
+        BOTTOM_TYPE const&bottom,
+        WIDTH_TYPE  const&width ,
+        HEIGHT_TYPE const&height){
+        return std::make_shared<ScissorIndexed<
+          INDEX_TYPE ,
+          LEFT_TYPE  ,
+          BOTTOM_TYPE,
+          WIDTH_TYPE ,
+          HEIGHT_TYPE>>(
+              index ,
+              left  ,
+              bottom,
+              width ,
+              height);
+    }
+
+    template<
       typename MODE_TYPE   = GLenum,
       typename ID_TYPE     = GLuint,
       typename STREAM_TYPE = GLuint>
@@ -33632,6 +42447,26 @@ namespace ge{
               stream);
     }
     template<
+      typename MODE_TYPE   = GLenum,
+      typename ID_TYPE     = GLuint,
+      typename STREAM_TYPE = GLuint>
+    inline std::shared_ptr<DrawTransformFeedbackStream<
+      MODE_TYPE  ,
+      ID_TYPE    ,
+      STREAM_TYPE>> sharedDrawTransformFeedbackStream(
+        MODE_TYPE   const&mode  ,
+        ID_TYPE     const&id    ,
+        STREAM_TYPE const&stream){
+        return std::make_shared<DrawTransformFeedbackStream<
+          MODE_TYPE  ,
+          ID_TYPE    ,
+          STREAM_TYPE>>(
+              mode  ,
+              id    ,
+              stream);
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint,
       typename SHADER_TYPE  = GLuint>
     inline AttachShader<
@@ -33645,6 +42480,21 @@ namespace ge{
               program,
               shader );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint,
+      typename SHADER_TYPE  = GLuint>
+    inline std::shared_ptr<AttachShader<
+      PROGRAM_TYPE,
+      SHADER_TYPE >> sharedAttachShader(
+        PROGRAM_TYPE const&program,
+        SHADER_TYPE  const&shader ){
+        return std::make_shared<AttachShader<
+          PROGRAM_TYPE,
+          SHADER_TYPE >>(
+              program,
+              shader );
+    }
+
     template<
       typename TEXTURE_TYPE        = GLuint,
       typename INTERNALFORMAT_TYPE = GLenum,
@@ -33665,6 +42515,26 @@ namespace ge{
               buffer        );
     }
     template<
+      typename TEXTURE_TYPE        = GLuint,
+      typename INTERNALFORMAT_TYPE = GLenum,
+      typename BUFFER_TYPE         = GLuint>
+    inline std::shared_ptr<TextureBuffer<
+      TEXTURE_TYPE       ,
+      INTERNALFORMAT_TYPE,
+      BUFFER_TYPE        >> sharedTextureBuffer(
+        TEXTURE_TYPE        const&texture       ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        BUFFER_TYPE         const&buffer        ){
+        return std::make_shared<TextureBuffer<
+          TEXTURE_TYPE       ,
+          INTERNALFORMAT_TYPE,
+          BUFFER_TYPE        >>(
+              texture       ,
+              internalformat,
+              buffer        );
+    }
+
+    template<
       typename ID_TYPE     = GLuint,
       typename TARGET_TYPE = GLenum>
     inline QueryCounter<
@@ -33679,6 +42549,21 @@ namespace ge{
               target);
     }
     template<
+      typename ID_TYPE     = GLuint,
+      typename TARGET_TYPE = GLenum>
+    inline std::shared_ptr<QueryCounter<
+      ID_TYPE    ,
+      TARGET_TYPE>> sharedQueryCounter(
+        ID_TYPE     const&id    ,
+        TARGET_TYPE const&target){
+        return std::make_shared<QueryCounter<
+          ID_TYPE    ,
+          TARGET_TYPE>>(
+              id    ,
+              target);
+    }
+
+    template<
       typename PROGRAM_TYPE = GLuint>
     inline DeleteProgram<
       PROGRAM_TYPE>* newDeleteProgram(
@@ -33688,6 +42573,16 @@ namespace ge{
               program);
     }
     template<
+      typename PROGRAM_TYPE = GLuint>
+    inline std::shared_ptr<DeleteProgram<
+      PROGRAM_TYPE>> sharedDeleteProgram(
+        PROGRAM_TYPE const&program){
+        return std::make_shared<DeleteProgram<
+          PROGRAM_TYPE>>(
+              program);
+    }
+
+    template<
       typename MODE_TYPE = GLenum>
     inline ProvokingVertex<
       MODE_TYPE>* newProvokingVertex(
@@ -33696,6 +42591,16 @@ namespace ge{
           MODE_TYPE>(
               mode);
     }
+    template<
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<ProvokingVertex<
+      MODE_TYPE>> sharedProvokingVertex(
+        MODE_TYPE const&mode){
+        return std::make_shared<ProvokingVertex<
+          MODE_TYPE>>(
+              mode);
+    }
+
     template<
       typename COUNT_TYPE        = GLsizei      ,
       typename SHADERS_TYPE      = const GLuint*,
@@ -33726,6 +42631,36 @@ namespace ge{
               length      );
     }
     template<
+      typename COUNT_TYPE        = GLsizei      ,
+      typename SHADERS_TYPE      = const GLuint*,
+      typename BINARYFORMAT_TYPE = GLenum       ,
+      typename BINARY_TYPE       = const void*  ,
+      typename LENGTH_TYPE       = GLsizei      >
+    inline std::shared_ptr<ShaderBinary<
+      COUNT_TYPE       ,
+      SHADERS_TYPE     ,
+      BINARYFORMAT_TYPE,
+      BINARY_TYPE      ,
+      LENGTH_TYPE      >> sharedShaderBinary(
+        COUNT_TYPE        const&count       ,
+        SHADERS_TYPE      const&shaders     ,
+        BINARYFORMAT_TYPE const&binaryformat,
+        BINARY_TYPE       const&binary      ,
+        LENGTH_TYPE       const&length      ){
+        return std::make_shared<ShaderBinary<
+          COUNT_TYPE       ,
+          SHADERS_TYPE     ,
+          BINARYFORMAT_TYPE,
+          BINARY_TYPE      ,
+          LENGTH_TYPE      >>(
+              count       ,
+              shaders     ,
+              binaryformat,
+              binary      ,
+              length      );
+    }
+
+    template<
       typename RET_TYPE    = GLboolean,
       typename BUFFER_TYPE = GLuint   >
     inline UnmapNamedBuffer<
@@ -33739,6 +42674,21 @@ namespace ge{
               ret   ,
               buffer);
     }
+    template<
+      typename RET_TYPE    = GLboolean,
+      typename BUFFER_TYPE = GLuint   >
+    inline std::shared_ptr<UnmapNamedBuffer<
+      RET_TYPE   ,
+      BUFFER_TYPE>> sharedUnmapNamedBuffer(
+        RET_TYPE    const&ret   ,
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<UnmapNamedBuffer<
+          RET_TYPE   ,
+          BUFFER_TYPE>>(
+              ret   ,
+              buffer);
+    }
+
     template<
       typename MODE_TYPE    = GLenum     ,
       typename COUNT_TYPE   = GLsizei    ,
@@ -33763,6 +42713,31 @@ namespace ge{
               type   ,
               indices);
     }
+    template<
+      typename MODE_TYPE    = GLenum     ,
+      typename COUNT_TYPE   = GLsizei    ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename INDICES_TYPE = const void*>
+    inline std::shared_ptr<DrawElements<
+      MODE_TYPE   ,
+      COUNT_TYPE  ,
+      TYPE_TYPE   ,
+      INDICES_TYPE>> sharedDrawElements(
+        MODE_TYPE    const&mode   ,
+        COUNT_TYPE   const&count  ,
+        TYPE_TYPE    const&type   ,
+        INDICES_TYPE const&indices){
+        return std::make_shared<DrawElements<
+          MODE_TYPE   ,
+          COUNT_TYPE  ,
+          TYPE_TYPE   ,
+          INDICES_TYPE>>(
+              mode   ,
+              count  ,
+              type   ,
+              indices);
+    }
+
     template<
       typename RENDERBUFFER_TYPE   = GLuint ,
       typename SAMPLES_TYPE        = GLsizei,
@@ -33793,6 +42768,36 @@ namespace ge{
               height        );
     }
     template<
+      typename RENDERBUFFER_TYPE   = GLuint ,
+      typename SAMPLES_TYPE        = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei>
+    inline std::shared_ptr<NamedRenderbufferStorageMultisample<
+      RENDERBUFFER_TYPE  ,
+      SAMPLES_TYPE       ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedNamedRenderbufferStorageMultisample(
+        RENDERBUFFER_TYPE   const&renderbuffer  ,
+        SAMPLES_TYPE        const&samples       ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<NamedRenderbufferStorageMultisample<
+          RENDERBUFFER_TYPE  ,
+          SAMPLES_TYPE       ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              renderbuffer  ,
+              samples       ,
+              internalformat,
+              width         ,
+              height        );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLshort*>
     inline VertexAttribI4sv<
@@ -33806,6 +42811,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLshort*>
+    inline std::shared_ptr<VertexAttribI4sv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI4sv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI4sv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename BUFFER_TYPE         = GLuint     ,
       typename INTERNALFORMAT_TYPE = GLenum     ,
@@ -33836,6 +42856,36 @@ namespace ge{
               data          );
     }
     template<
+      typename BUFFER_TYPE         = GLuint     ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<ClearNamedBufferData<
+      BUFFER_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      DATA_TYPE          >> sharedClearNamedBufferData(
+        BUFFER_TYPE         const&buffer        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<ClearNamedBufferData<
+          BUFFER_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          DATA_TYPE          >>(
+              buffer        ,
+              internalformat,
+              format        ,
+              type          ,
+              data          );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint       ,
       typename COUNT_TYPE    = GLsizei     ,
       typename VALUE_TYPE    = const GLint*>
@@ -33854,6 +42904,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<Uniform1iv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform1iv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform1iv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename RET_TYPE     = GLuint             ,
       typename TYPE_TYPE    = GLenum             ,
@@ -33879,6 +42949,31 @@ namespace ge{
               strings);
     }
     template<
+      typename RET_TYPE     = GLuint             ,
+      typename TYPE_TYPE    = GLenum             ,
+      typename COUNT_TYPE   = GLsizei            ,
+      typename STRINGS_TYPE = const GLchar*const*>
+    inline std::shared_ptr<CreateShaderProgramv<
+      RET_TYPE    ,
+      TYPE_TYPE   ,
+      COUNT_TYPE  ,
+      STRINGS_TYPE>> sharedCreateShaderProgramv(
+        RET_TYPE     const&ret    ,
+        TYPE_TYPE    const&type   ,
+        COUNT_TYPE   const&count  ,
+        STRINGS_TYPE const&strings){
+        return std::make_shared<CreateShaderProgramv<
+          RET_TYPE    ,
+          TYPE_TYPE   ,
+          COUNT_TYPE  ,
+          STRINGS_TYPE>>(
+              ret    ,
+              type   ,
+              count  ,
+              strings);
+    }
+
+    template<
       typename ID_TYPE     = GLuint,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = GLint*>
@@ -33898,6 +42993,26 @@ namespace ge{
               params);
     }
     template<
+      typename ID_TYPE     = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetQueryObjectiv<
+      ID_TYPE    ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetQueryObjectiv(
+        ID_TYPE     const&id    ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetQueryObjectiv<
+          ID_TYPE    ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              id    ,
+              pname ,
+              params);
+    }
+
+    template<
       typename SRC_TYPE = GLenum>
     inline ReadBuffer<
       SRC_TYPE>* newReadBuffer(
@@ -33906,6 +43021,16 @@ namespace ge{
           SRC_TYPE>(
               src);
     }
+    template<
+      typename SRC_TYPE = GLenum>
+    inline std::shared_ptr<ReadBuffer<
+      SRC_TYPE>> sharedReadBuffer(
+        SRC_TYPE const&src){
+        return std::make_shared<ReadBuffer<
+          SRC_TYPE>>(
+              src);
+    }
+
     template<
       typename TARGET_TYPE = GLenum       ,
       typename PNAME_TYPE  = GLenum       ,
@@ -33925,6 +43050,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum       ,
+      typename PNAME_TYPE  = GLenum       ,
+      typename PARAMS_TYPE = const GLuint*>
+    inline std::shared_ptr<TexParameterIuiv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedTexParameterIuiv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<TexParameterIuiv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename MODE_TYPE          = GLenum ,
       typename FIRST_TYPE         = GLint  ,
@@ -33950,6 +43095,31 @@ namespace ge{
               instancecount);
     }
     template<
+      typename MODE_TYPE          = GLenum ,
+      typename FIRST_TYPE         = GLint  ,
+      typename COUNT_TYPE         = GLsizei,
+      typename INSTANCECOUNT_TYPE = GLsizei>
+    inline std::shared_ptr<DrawArraysInstanced<
+      MODE_TYPE         ,
+      FIRST_TYPE        ,
+      COUNT_TYPE        ,
+      INSTANCECOUNT_TYPE>> sharedDrawArraysInstanced(
+        MODE_TYPE          const&mode         ,
+        FIRST_TYPE         const&first        ,
+        COUNT_TYPE         const&count        ,
+        INSTANCECOUNT_TYPE const&instancecount){
+        return std::make_shared<DrawArraysInstanced<
+          MODE_TYPE         ,
+          FIRST_TYPE        ,
+          COUNT_TYPE        ,
+          INSTANCECOUNT_TYPE>>(
+              mode         ,
+              first        ,
+              count        ,
+              instancecount);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum>
     inline GenerateMipmap<
       TARGET_TYPE>* newGenerateMipmap(
@@ -33958,6 +43128,16 @@ namespace ge{
           TARGET_TYPE>(
               target);
     }
+    template<
+      typename TARGET_TYPE = GLenum>
+    inline std::shared_ptr<GenerateMipmap<
+      TARGET_TYPE>> sharedGenerateMipmap(
+        TARGET_TYPE const&target){
+        return std::make_shared<GenerateMipmap<
+          TARGET_TYPE>>(
+              target);
+    }
+
     template<
       typename TEXTURE_TYPE   = GLuint     ,
       typename LEVEL_TYPE     = GLint      ,
@@ -34008,6 +43188,56 @@ namespace ge{
               data     );
     }
     template<
+      typename TEXTURE_TYPE   = GLuint     ,
+      typename LEVEL_TYPE     = GLint      ,
+      typename XOFFSET_TYPE   = GLint      ,
+      typename YOFFSET_TYPE   = GLint      ,
+      typename WIDTH_TYPE     = GLsizei    ,
+      typename HEIGHT_TYPE    = GLsizei    ,
+      typename FORMAT_TYPE    = GLenum     ,
+      typename IMAGESIZE_TYPE = GLsizei    ,
+      typename DATA_TYPE      = const void*>
+    inline std::shared_ptr<CompressedTextureSubImage2D<
+      TEXTURE_TYPE  ,
+      LEVEL_TYPE    ,
+      XOFFSET_TYPE  ,
+      YOFFSET_TYPE  ,
+      WIDTH_TYPE    ,
+      HEIGHT_TYPE   ,
+      FORMAT_TYPE   ,
+      IMAGESIZE_TYPE,
+      DATA_TYPE     >> sharedCompressedTextureSubImage2D(
+        TEXTURE_TYPE   const&texture  ,
+        LEVEL_TYPE     const&level    ,
+        XOFFSET_TYPE   const&xoffset  ,
+        YOFFSET_TYPE   const&yoffset  ,
+        WIDTH_TYPE     const&width    ,
+        HEIGHT_TYPE    const&height   ,
+        FORMAT_TYPE    const&format   ,
+        IMAGESIZE_TYPE const&imageSize,
+        DATA_TYPE      const&data     ){
+        return std::make_shared<CompressedTextureSubImage2D<
+          TEXTURE_TYPE  ,
+          LEVEL_TYPE    ,
+          XOFFSET_TYPE  ,
+          YOFFSET_TYPE  ,
+          WIDTH_TYPE    ,
+          HEIGHT_TYPE   ,
+          FORMAT_TYPE   ,
+          IMAGESIZE_TYPE,
+          DATA_TYPE     >>(
+              texture  ,
+              level    ,
+              xoffset  ,
+              yoffset  ,
+              width    ,
+              height   ,
+              format   ,
+              imageSize,
+              data     );
+    }
+
+    template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -34037,6 +43267,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix2fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix2fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix2fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename SAMPLER_TYPE = GLuint      ,
       typename PNAME_TYPE   = GLenum      ,
       typename PARAM_TYPE   = const GLint*>
@@ -34055,6 +43315,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint      ,
+      typename PNAME_TYPE   = GLenum      ,
+      typename PARAM_TYPE   = const GLint*>
+    inline std::shared_ptr<SamplerParameteriv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedSamplerParameteriv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<SamplerParameteriv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              sampler,
+              pname  ,
+              param  );
+    }
+
     template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLfloat,
@@ -34080,6 +43360,31 @@ namespace ge{
               z    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLfloat,
+      typename Y_TYPE     = GLfloat,
+      typename Z_TYPE     = GLfloat>
+    inline std::shared_ptr<VertexAttrib3f<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    >> sharedVertexAttrib3f(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ){
+        return std::make_shared<VertexAttrib3f<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLuint*>
     inline VertexAttrib4uiv<
@@ -34094,6 +43399,21 @@ namespace ge{
               v    );
     }
     template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLuint*>
+    inline std::shared_ptr<VertexAttrib4uiv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4uiv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4uiv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum,
       typename PARAM_TYPE = GLint >
     inline PointParameteri<
@@ -34107,6 +43427,21 @@ namespace ge{
               pname,
               param);
     }
+    template<
+      typename PNAME_TYPE = GLenum,
+      typename PARAM_TYPE = GLint >
+    inline std::shared_ptr<PointParameteri<
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedPointParameteri(
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<PointParameteri<
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              pname,
+              param);
+    }
+
     template<
       typename RED_TYPE   = GLfloat,
       typename GREEN_TYPE = GLfloat,
@@ -34132,6 +43467,31 @@ namespace ge{
               alpha);
     }
     template<
+      typename RED_TYPE   = GLfloat,
+      typename GREEN_TYPE = GLfloat,
+      typename BLUE_TYPE  = GLfloat,
+      typename ALPHA_TYPE = GLfloat>
+    inline std::shared_ptr<BlendColor<
+      RED_TYPE  ,
+      GREEN_TYPE,
+      BLUE_TYPE ,
+      ALPHA_TYPE>> sharedBlendColor(
+        RED_TYPE   const&red  ,
+        GREEN_TYPE const&green,
+        BLUE_TYPE  const&blue ,
+        ALPHA_TYPE const&alpha){
+        return std::make_shared<BlendColor<
+          RED_TYPE  ,
+          GREEN_TYPE,
+          BLUE_TYPE ,
+          ALPHA_TYPE>>(
+              red  ,
+              green,
+              blue ,
+              alpha);
+    }
+
+    template<
       typename SAMPLER_TYPE = GLuint       ,
       typename PNAME_TYPE   = GLenum       ,
       typename PARAM_TYPE   = const GLuint*>
@@ -34150,6 +43510,26 @@ namespace ge{
               pname  ,
               param  );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint       ,
+      typename PNAME_TYPE   = GLenum       ,
+      typename PARAM_TYPE   = const GLuint*>
+    inline std::shared_ptr<SamplerParameterIuiv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedSamplerParameterIuiv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<SamplerParameterIuiv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              sampler,
+              pname  ,
+              param  );
+    }
+
     template<
       typename BUFFER_TYPE = GLuint    ,
       typename OFFSET_TYPE = GLintptr  ,
@@ -34175,6 +43555,31 @@ namespace ge{
               commit);
     }
     template<
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE   = GLsizeiptr,
+      typename COMMIT_TYPE = GLboolean >
+    inline std::shared_ptr<NamedBufferPageCommitmentEXT<
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  ,
+      COMMIT_TYPE>> sharedNamedBufferPageCommitmentEXT(
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ,
+        COMMIT_TYPE const&commit){
+        return std::make_shared<NamedBufferPageCommitmentEXT<
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  ,
+          COMMIT_TYPE>>(
+              buffer,
+              offset,
+              size  ,
+              commit);
+    }
+
+    template<
       typename RET_TYPE         = GLenum,
       typename FRAMEBUFFER_TYPE = GLuint,
       typename TARGET_TYPE      = GLenum>
@@ -34194,6 +43599,26 @@ namespace ge{
               target     );
     }
     template<
+      typename RET_TYPE         = GLenum,
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename TARGET_TYPE      = GLenum>
+    inline std::shared_ptr<CheckNamedFramebufferStatus<
+      RET_TYPE        ,
+      FRAMEBUFFER_TYPE,
+      TARGET_TYPE     >> sharedCheckNamedFramebufferStatus(
+        RET_TYPE         const&ret        ,
+        FRAMEBUFFER_TYPE const&framebuffer,
+        TARGET_TYPE      const&target     ){
+        return std::make_shared<CheckNamedFramebufferStatus<
+          RET_TYPE        ,
+          FRAMEBUFFER_TYPE,
+          TARGET_TYPE     >>(
+              ret        ,
+              framebuffer,
+              target     );
+    }
+
+    template<
       typename RET_TYPE    = GLboolean,
       typename TARGET_TYPE = GLenum   >
     inline UnmapBuffer<
@@ -34208,6 +43633,21 @@ namespace ge{
               target);
     }
     template<
+      typename RET_TYPE    = GLboolean,
+      typename TARGET_TYPE = GLenum   >
+    inline std::shared_ptr<UnmapBuffer<
+      RET_TYPE   ,
+      TARGET_TYPE>> sharedUnmapBuffer(
+        RET_TYPE    const&ret   ,
+        TARGET_TYPE const&target){
+        return std::make_shared<UnmapBuffer<
+          RET_TYPE   ,
+          TARGET_TYPE>>(
+              ret   ,
+              target);
+    }
+
+    template<
       typename PNAME_TYPE = GLenum ,
       typename PARAM_TYPE = GLfloat>
     inline PointParameterf<
@@ -34221,6 +43661,21 @@ namespace ge{
               pname,
               param);
     }
+    template<
+      typename PNAME_TYPE = GLenum ,
+      typename PARAM_TYPE = GLfloat>
+    inline std::shared_ptr<PointParameterf<
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedPointParameterf(
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<PointParameterf<
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              pname,
+              param);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint      ,
       typename LOCATION_TYPE = GLint       ,
@@ -34246,6 +43701,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint      ,
+      typename LOCATION_TYPE = GLint       ,
+      typename COUNT_TYPE    = GLsizei     ,
+      typename VALUE_TYPE    = const GLint*>
+    inline std::shared_ptr<ProgramUniform1iv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform1iv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform1iv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLshort*>
     inline VertexAttrib4sv<
@@ -34259,6 +43739,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLshort*>
+    inline std::shared_ptr<VertexAttrib4sv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4sv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4sv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLshort,
@@ -34284,6 +43779,31 @@ namespace ge{
               z    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLshort,
+      typename Y_TYPE     = GLshort,
+      typename Z_TYPE     = GLshort>
+    inline std::shared_ptr<VertexAttrib3s<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    >> sharedVertexAttrib3s(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ){
+        return std::make_shared<VertexAttrib3s<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    );
+    }
+
+    template<
       typename TARGET_TYPE       = GLenum,
       typename RENDERBUFFER_TYPE = GLuint>
     inline BindRenderbuffer<
@@ -34297,6 +43817,21 @@ namespace ge{
               target      ,
               renderbuffer);
     }
+    template<
+      typename TARGET_TYPE       = GLenum,
+      typename RENDERBUFFER_TYPE = GLuint>
+    inline std::shared_ptr<BindRenderbuffer<
+      TARGET_TYPE      ,
+      RENDERBUFFER_TYPE>> sharedBindRenderbuffer(
+        TARGET_TYPE       const&target      ,
+        RENDERBUFFER_TYPE const&renderbuffer){
+        return std::make_shared<BindRenderbuffer<
+          TARGET_TYPE      ,
+          RENDERBUFFER_TYPE>>(
+              target      ,
+              renderbuffer);
+    }
+
     template<
       typename INDEX_TYPE      = GLuint       ,
       typename TYPE_TYPE       = GLenum       ,
@@ -34322,6 +43857,31 @@ namespace ge{
               value     );
     }
     template<
+      typename INDEX_TYPE      = GLuint       ,
+      typename TYPE_TYPE       = GLenum       ,
+      typename NORMALIZED_TYPE = GLboolean    ,
+      typename VALUE_TYPE      = const GLuint*>
+    inline std::shared_ptr<VertexAttribP4uiv<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP4uiv(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP4uiv<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
+    template<
       typename PROGRAM_TYPE    = GLuint,
       typename SHADERTYPE_TYPE = GLenum,
       typename PNAME_TYPE      = GLenum,
@@ -34346,6 +43906,31 @@ namespace ge{
               values    );
     }
     template<
+      typename PROGRAM_TYPE    = GLuint,
+      typename SHADERTYPE_TYPE = GLenum,
+      typename PNAME_TYPE      = GLenum,
+      typename VALUES_TYPE     = GLint*>
+    inline std::shared_ptr<GetProgramStageiv<
+      PROGRAM_TYPE   ,
+      SHADERTYPE_TYPE,
+      PNAME_TYPE     ,
+      VALUES_TYPE    >> sharedGetProgramStageiv(
+        PROGRAM_TYPE    const&program   ,
+        SHADERTYPE_TYPE const&shadertype,
+        PNAME_TYPE      const&pname     ,
+        VALUES_TYPE     const&values    ){
+        return std::make_shared<GetProgramStageiv<
+          PROGRAM_TYPE   ,
+          SHADERTYPE_TYPE,
+          PNAME_TYPE     ,
+          VALUES_TYPE    >>(
+              program   ,
+              shadertype,
+              pname     ,
+              values    );
+    }
+
+    template<
       typename RET_TYPE     = GLboolean,
       typename PROGRAM_TYPE = GLuint   >
     inline IsProgram<
@@ -34360,6 +43945,21 @@ namespace ge{
               program);
     }
     template<
+      typename RET_TYPE     = GLboolean,
+      typename PROGRAM_TYPE = GLuint   >
+    inline std::shared_ptr<IsProgram<
+      RET_TYPE    ,
+      PROGRAM_TYPE>> sharedIsProgram(
+        RET_TYPE     const&ret    ,
+        PROGRAM_TYPE const&program){
+        return std::make_shared<IsProgram<
+          RET_TYPE    ,
+          PROGRAM_TYPE>>(
+              ret    ,
+              program);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLbyte*>
     inline VertexAttrib4bv<
@@ -34373,6 +43973,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLbyte*>
+    inline std::shared_ptr<VertexAttrib4bv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4bv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4bv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TEXTURE_TYPE        = GLuint ,
       typename LEVELS_TYPE         = GLsizei,
@@ -34408,6 +44023,41 @@ namespace ge{
               depth         );
     }
     template<
+      typename TEXTURE_TYPE        = GLuint ,
+      typename LEVELS_TYPE         = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei,
+      typename DEPTH_TYPE          = GLsizei>
+    inline std::shared_ptr<TextureStorage3D<
+      TEXTURE_TYPE       ,
+      LEVELS_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      DEPTH_TYPE         >> sharedTextureStorage3D(
+        TEXTURE_TYPE        const&texture       ,
+        LEVELS_TYPE         const&levels        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        DEPTH_TYPE          const&depth         ){
+        return std::make_shared<TextureStorage3D<
+          TEXTURE_TYPE       ,
+          LEVELS_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          DEPTH_TYPE         >>(
+              texture       ,
+              levels        ,
+              internalformat,
+              width         ,
+              height        ,
+              depth         );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
@@ -34432,6 +44082,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix3x2dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix3x2dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix3x2dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLfloat*>
     inline VertexAttrib4fv<
@@ -34445,6 +44120,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLfloat*>
+    inline std::shared_ptr<VertexAttrib4fv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4fv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4fv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -34475,6 +44165,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix2x3dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix2x3dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix2x3dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename RET_TYPE = GLboolean,
       typename ID_TYPE  = GLuint   >
     inline IsTransformFeedback<
@@ -34488,6 +44208,21 @@ namespace ge{
               ret,
               id );
     }
+    template<
+      typename RET_TYPE = GLboolean,
+      typename ID_TYPE  = GLuint   >
+    inline std::shared_ptr<IsTransformFeedback<
+      RET_TYPE,
+      ID_TYPE >> sharedIsTransformFeedback(
+        RET_TYPE const&ret,
+        ID_TYPE  const&id ){
+        return std::make_shared<IsTransformFeedback<
+          RET_TYPE,
+          ID_TYPE >>(
+              ret,
+              id );
+    }
+
     template<
       typename LOCATION_TYPE = GLint,
       typename V0_TYPE       = GLint,
@@ -34518,6 +44253,36 @@ namespace ge{
               v3      );
     }
     template<
+      typename LOCATION_TYPE = GLint,
+      typename V0_TYPE       = GLint,
+      typename V1_TYPE       = GLint,
+      typename V2_TYPE       = GLint,
+      typename V3_TYPE       = GLint>
+    inline std::shared_ptr<Uniform4i<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedUniform4i(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<Uniform4i<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLenum>
     inline ActiveTexture<
       TEXTURE_TYPE>* newActiveTexture(
@@ -34527,6 +44292,16 @@ namespace ge{
               texture);
     }
     template<
+      typename TEXTURE_TYPE = GLenum>
+    inline std::shared_ptr<ActiveTexture<
+      TEXTURE_TYPE>> sharedActiveTexture(
+        TEXTURE_TYPE const&texture){
+        return std::make_shared<ActiveTexture<
+          TEXTURE_TYPE>>(
+              texture);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint>
     inline EnableVertexAttribArray<
       INDEX_TYPE>* newEnableVertexAttribArray(
@@ -34535,6 +44310,16 @@ namespace ge{
           INDEX_TYPE>(
               index);
     }
+    template<
+      typename INDEX_TYPE = GLuint>
+    inline std::shared_ptr<EnableVertexAttribArray<
+      INDEX_TYPE>> sharedEnableVertexAttribArray(
+        INDEX_TYPE const&index){
+        return std::make_shared<EnableVertexAttribArray<
+          INDEX_TYPE>>(
+              index);
+    }
+
     template<
       typename RET_TYPE      = GLboolean,
       typename PIPELINE_TYPE = GLuint   >
@@ -34549,6 +44334,21 @@ namespace ge{
               ret     ,
               pipeline);
     }
+    template<
+      typename RET_TYPE      = GLboolean,
+      typename PIPELINE_TYPE = GLuint   >
+    inline std::shared_ptr<IsProgramPipeline<
+      RET_TYPE     ,
+      PIPELINE_TYPE>> sharedIsProgramPipeline(
+        RET_TYPE      const&ret     ,
+        PIPELINE_TYPE const&pipeline){
+        return std::make_shared<IsProgramPipeline<
+          RET_TYPE     ,
+          PIPELINE_TYPE>>(
+              ret     ,
+              pipeline);
+    }
+
     template<
       typename X_TYPE      = GLint  ,
       typename Y_TYPE      = GLint  ,
@@ -34589,6 +44389,46 @@ namespace ge{
               pixels);
     }
     template<
+      typename X_TYPE      = GLint  ,
+      typename Y_TYPE      = GLint  ,
+      typename WIDTH_TYPE  = GLsizei,
+      typename HEIGHT_TYPE = GLsizei,
+      typename FORMAT_TYPE = GLenum ,
+      typename TYPE_TYPE   = GLenum ,
+      typename PIXELS_TYPE = void*  >
+    inline std::shared_ptr<ReadPixels<
+      X_TYPE     ,
+      Y_TYPE     ,
+      WIDTH_TYPE ,
+      HEIGHT_TYPE,
+      FORMAT_TYPE,
+      TYPE_TYPE  ,
+      PIXELS_TYPE>> sharedReadPixels(
+        X_TYPE      const&x     ,
+        Y_TYPE      const&y     ,
+        WIDTH_TYPE  const&width ,
+        HEIGHT_TYPE const&height,
+        FORMAT_TYPE const&format,
+        TYPE_TYPE   const&type  ,
+        PIXELS_TYPE const&pixels){
+        return std::make_shared<ReadPixels<
+          X_TYPE     ,
+          Y_TYPE     ,
+          WIDTH_TYPE ,
+          HEIGHT_TYPE,
+          FORMAT_TYPE,
+          TYPE_TYPE  ,
+          PIXELS_TYPE>>(
+              x     ,
+              y     ,
+              width ,
+              height,
+              format,
+              type  ,
+              pixels);
+    }
+
+    template<
       typename LOCATION_TYPE = GLint   ,
       typename X_TYPE        = GLdouble,
       typename Y_TYPE        = GLdouble,
@@ -34617,6 +44457,36 @@ namespace ge{
               z       ,
               w       );
     }
+    template<
+      typename LOCATION_TYPE = GLint   ,
+      typename X_TYPE        = GLdouble,
+      typename Y_TYPE        = GLdouble,
+      typename Z_TYPE        = GLdouble,
+      typename W_TYPE        = GLdouble>
+    inline std::shared_ptr<Uniform4d<
+      LOCATION_TYPE,
+      X_TYPE       ,
+      Y_TYPE       ,
+      Z_TYPE       ,
+      W_TYPE       >> sharedUniform4d(
+        LOCATION_TYPE const&location,
+        X_TYPE        const&x       ,
+        Y_TYPE        const&y       ,
+        Z_TYPE        const&z       ,
+        W_TYPE        const&w       ){
+        return std::make_shared<Uniform4d<
+          LOCATION_TYPE,
+          X_TYPE       ,
+          Y_TYPE       ,
+          Z_TYPE       ,
+          W_TYPE       >>(
+              location,
+              x       ,
+              y       ,
+              z       ,
+              w       );
+    }
+
     template<
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat,
@@ -34647,6 +44517,36 @@ namespace ge{
               v3      );
     }
     template<
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat,
+      typename V1_TYPE       = GLfloat,
+      typename V2_TYPE       = GLfloat,
+      typename V3_TYPE       = GLfloat>
+    inline std::shared_ptr<Uniform4f<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedUniform4f(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<Uniform4f<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
+    template<
       typename TARGET_TYPE         = GLenum ,
       typename SAMPLES_TYPE        = GLsizei,
       typename INTERNALFORMAT_TYPE = GLenum ,
@@ -34676,6 +44576,36 @@ namespace ge{
               height        );
     }
     template<
+      typename TARGET_TYPE         = GLenum ,
+      typename SAMPLES_TYPE        = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei>
+    inline std::shared_ptr<RenderbufferStorageMultisample<
+      TARGET_TYPE        ,
+      SAMPLES_TYPE       ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedRenderbufferStorageMultisample(
+        TARGET_TYPE         const&target        ,
+        SAMPLES_TYPE        const&samples       ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<RenderbufferStorageMultisample<
+          TARGET_TYPE        ,
+          SAMPLES_TYPE       ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              target        ,
+              samples       ,
+              internalformat,
+              width         ,
+              height        );
+    }
+
+    template<
       typename N_TYPE         = GLsizei,
       typename PIPELINES_TYPE = GLuint*>
     inline CreateProgramPipelines<
@@ -34689,6 +44619,21 @@ namespace ge{
               n        ,
               pipelines);
     }
+    template<
+      typename N_TYPE         = GLsizei,
+      typename PIPELINES_TYPE = GLuint*>
+    inline std::shared_ptr<CreateProgramPipelines<
+      N_TYPE        ,
+      PIPELINES_TYPE>> sharedCreateProgramPipelines(
+        N_TYPE         const&n        ,
+        PIPELINES_TYPE const&pipelines){
+        return std::make_shared<CreateProgramPipelines<
+          N_TYPE        ,
+          PIPELINES_TYPE>>(
+              n        ,
+              pipelines);
+    }
+
     template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -34713,6 +44658,31 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix3fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix3fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix3fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename INDEX_TYPE   = GLuint     ,
       typename SIZE_TYPE    = GLint      ,
@@ -34743,6 +44713,36 @@ namespace ge{
               pointer);
     }
     template<
+      typename INDEX_TYPE   = GLuint     ,
+      typename SIZE_TYPE    = GLint      ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename STRIDE_TYPE  = GLsizei    ,
+      typename POINTER_TYPE = const void*>
+    inline std::shared_ptr<VertexAttribLPointer<
+      INDEX_TYPE  ,
+      SIZE_TYPE   ,
+      TYPE_TYPE   ,
+      STRIDE_TYPE ,
+      POINTER_TYPE>> sharedVertexAttribLPointer(
+        INDEX_TYPE   const&index  ,
+        SIZE_TYPE    const&size   ,
+        TYPE_TYPE    const&type   ,
+        STRIDE_TYPE  const&stride ,
+        POINTER_TYPE const&pointer){
+        return std::make_shared<VertexAttribLPointer<
+          INDEX_TYPE  ,
+          SIZE_TYPE   ,
+          TYPE_TYPE   ,
+          STRIDE_TYPE ,
+          POINTER_TYPE>>(
+              index  ,
+              size   ,
+              type   ,
+              stride ,
+              pointer);
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
       typename BUFSIZE_TYPE  = GLsizei ,
@@ -34766,6 +44766,31 @@ namespace ge{
               bufSize ,
               params  );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename LOCATION_TYPE = GLint   ,
+      typename BUFSIZE_TYPE  = GLsizei ,
+      typename PARAMS_TYPE   = GLfloat*>
+    inline std::shared_ptr<GetnUniformfv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      BUFSIZE_TYPE ,
+      PARAMS_TYPE  >> sharedGetnUniformfv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        BUFSIZE_TYPE  const&bufSize ,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetnUniformfv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          BUFSIZE_TYPE ,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              bufSize ,
+              params  );
+    }
+
     template<
       typename MODE_TYPE          = GLenum     ,
       typename COUNT_TYPE         = GLsizei    ,
@@ -34801,6 +44826,41 @@ namespace ge{
               basevertex   );
     }
     template<
+      typename MODE_TYPE          = GLenum     ,
+      typename COUNT_TYPE         = GLsizei    ,
+      typename TYPE_TYPE          = GLenum     ,
+      typename INDICES_TYPE       = const void*,
+      typename INSTANCECOUNT_TYPE = GLsizei    ,
+      typename BASEVERTEX_TYPE    = GLint      >
+    inline std::shared_ptr<DrawElementsInstancedBaseVertex<
+      MODE_TYPE         ,
+      COUNT_TYPE        ,
+      TYPE_TYPE         ,
+      INDICES_TYPE      ,
+      INSTANCECOUNT_TYPE,
+      BASEVERTEX_TYPE   >> sharedDrawElementsInstancedBaseVertex(
+        MODE_TYPE          const&mode         ,
+        COUNT_TYPE         const&count        ,
+        TYPE_TYPE          const&type         ,
+        INDICES_TYPE       const&indices      ,
+        INSTANCECOUNT_TYPE const&instancecount,
+        BASEVERTEX_TYPE    const&basevertex   ){
+        return std::make_shared<DrawElementsInstancedBaseVertex<
+          MODE_TYPE         ,
+          COUNT_TYPE        ,
+          TYPE_TYPE         ,
+          INDICES_TYPE      ,
+          INSTANCECOUNT_TYPE,
+          BASEVERTEX_TYPE   >>(
+              mode         ,
+              count        ,
+              type         ,
+              indices      ,
+              instancecount,
+              basevertex   );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttribL2dv<
@@ -34814,6 +44874,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttribL2dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribL2dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribL2dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename MODE_TYPE          = GLenum ,
       typename ID_TYPE            = GLuint ,
@@ -34838,6 +44913,31 @@ namespace ge{
               stream       ,
               instancecount);
     }
+    template<
+      typename MODE_TYPE          = GLenum ,
+      typename ID_TYPE            = GLuint ,
+      typename STREAM_TYPE        = GLuint ,
+      typename INSTANCECOUNT_TYPE = GLsizei>
+    inline std::shared_ptr<DrawTransformFeedbackStreamInstanced<
+      MODE_TYPE         ,
+      ID_TYPE           ,
+      STREAM_TYPE       ,
+      INSTANCECOUNT_TYPE>> sharedDrawTransformFeedbackStreamInstanced(
+        MODE_TYPE          const&mode         ,
+        ID_TYPE            const&id           ,
+        STREAM_TYPE        const&stream       ,
+        INSTANCECOUNT_TYPE const&instancecount){
+        return std::make_shared<DrawTransformFeedbackStreamInstanced<
+          MODE_TYPE         ,
+          ID_TYPE           ,
+          STREAM_TYPE       ,
+          INSTANCECOUNT_TYPE>>(
+              mode         ,
+              id           ,
+              stream       ,
+              instancecount);
+    }
+
     template<
       typename PROGRAM_TYPE    = GLuint  ,
       typename SHADERTYPE_TYPE = GLenum  ,
@@ -34873,6 +44973,41 @@ namespace ge{
               name      );
     }
     template<
+      typename PROGRAM_TYPE    = GLuint  ,
+      typename SHADERTYPE_TYPE = GLenum  ,
+      typename INDEX_TYPE      = GLuint  ,
+      typename BUFSIZE_TYPE    = GLsizei ,
+      typename LENGTH_TYPE     = GLsizei*,
+      typename NAME_TYPE       = GLchar* >
+    inline std::shared_ptr<GetActiveSubroutineName<
+      PROGRAM_TYPE   ,
+      SHADERTYPE_TYPE,
+      INDEX_TYPE     ,
+      BUFSIZE_TYPE   ,
+      LENGTH_TYPE    ,
+      NAME_TYPE      >> sharedGetActiveSubroutineName(
+        PROGRAM_TYPE    const&program   ,
+        SHADERTYPE_TYPE const&shadertype,
+        INDEX_TYPE      const&index     ,
+        BUFSIZE_TYPE    const&bufsize   ,
+        LENGTH_TYPE     const&length    ,
+        NAME_TYPE       const&name      ){
+        return std::make_shared<GetActiveSubroutineName<
+          PROGRAM_TYPE   ,
+          SHADERTYPE_TYPE,
+          INDEX_TYPE     ,
+          BUFSIZE_TYPE   ,
+          LENGTH_TYPE    ,
+          NAME_TYPE      >>(
+              program   ,
+              shadertype,
+              index     ,
+              bufsize   ,
+              length    ,
+              name      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble,
       typename Y_TYPE     = GLdouble>
@@ -34891,6 +45026,26 @@ namespace ge{
               x    ,
               y    );
     }
+    template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble,
+      typename Y_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttribL2d<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    >> sharedVertexAttribL2d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ){
+        return std::make_shared<VertexAttribL2d<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    >>(
+              index,
+              x    ,
+              y    );
+    }
+
     template<
       typename FUNC_TYPE = GLenum,
       typename REF_TYPE  = GLint ,
@@ -34911,6 +45066,26 @@ namespace ge{
               mask);
     }
     template<
+      typename FUNC_TYPE = GLenum,
+      typename REF_TYPE  = GLint ,
+      typename MASK_TYPE = GLuint>
+    inline std::shared_ptr<StencilFunc<
+      FUNC_TYPE,
+      REF_TYPE ,
+      MASK_TYPE>> sharedStencilFunc(
+        FUNC_TYPE const&func,
+        REF_TYPE  const&ref ,
+        MASK_TYPE const&mask){
+        return std::make_shared<StencilFunc<
+          FUNC_TYPE,
+          REF_TYPE ,
+          MASK_TYPE>>(
+              func,
+              ref ,
+              mask);
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE    = GLuint       ,
       typename NUMATTACHMENTS_TYPE = GLsizei      ,
       typename ATTACHMENTS_TYPE    = const GLenum*>
@@ -34929,6 +45104,26 @@ namespace ge{
               numAttachments,
               attachments   );
     }
+    template<
+      typename FRAMEBUFFER_TYPE    = GLuint       ,
+      typename NUMATTACHMENTS_TYPE = GLsizei      ,
+      typename ATTACHMENTS_TYPE    = const GLenum*>
+    inline std::shared_ptr<InvalidateNamedFramebufferData<
+      FRAMEBUFFER_TYPE   ,
+      NUMATTACHMENTS_TYPE,
+      ATTACHMENTS_TYPE   >> sharedInvalidateNamedFramebufferData(
+        FRAMEBUFFER_TYPE    const&framebuffer   ,
+        NUMATTACHMENTS_TYPE const&numAttachments,
+        ATTACHMENTS_TYPE    const&attachments   ){
+        return std::make_shared<InvalidateNamedFramebufferData<
+          FRAMEBUFFER_TYPE   ,
+          NUMATTACHMENTS_TYPE,
+          ATTACHMENTS_TYPE   >>(
+              framebuffer   ,
+              numAttachments,
+              attachments   );
+    }
+
 
     template<
       typename PROGRAM_TYPE             = GLuint,
@@ -34949,6 +45144,26 @@ namespace ge{
               uniformBlockIndex  ,
               uniformBlockBinding);
     }
+    template<
+      typename PROGRAM_TYPE             = GLuint,
+      typename UNIFORMBLOCKINDEX_TYPE   = GLuint,
+      typename UNIFORMBLOCKBINDING_TYPE = GLuint>
+    inline std::shared_ptr<UniformBlockBinding<
+      PROGRAM_TYPE            ,
+      UNIFORMBLOCKINDEX_TYPE  ,
+      UNIFORMBLOCKBINDING_TYPE>> sharedUniformBlockBinding(
+        PROGRAM_TYPE             const&program            ,
+        UNIFORMBLOCKINDEX_TYPE   const&uniformBlockIndex  ,
+        UNIFORMBLOCKBINDING_TYPE const&uniformBlockBinding){
+        return std::make_shared<UniformBlockBinding<
+          PROGRAM_TYPE            ,
+          UNIFORMBLOCKINDEX_TYPE  ,
+          UNIFORMBLOCKBINDING_TYPE>>(
+              program            ,
+              uniformBlockIndex  ,
+              uniformBlockBinding);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
@@ -34979,6 +45194,36 @@ namespace ge{
               v2      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLint ,
+      typename V1_TYPE       = GLint ,
+      typename V2_TYPE       = GLint >
+    inline std::shared_ptr<ProgramUniform3i<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedProgramUniform3i(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<ProgramUniform3i<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
+    template<
       typename PIPELINE_TYPE = GLuint    ,
       typename STAGES_TYPE   = GLbitfield,
       typename PROGRAM_TYPE  = GLuint    >
@@ -34997,6 +45242,26 @@ namespace ge{
               stages  ,
               program );
     }
+    template<
+      typename PIPELINE_TYPE = GLuint    ,
+      typename STAGES_TYPE   = GLbitfield,
+      typename PROGRAM_TYPE  = GLuint    >
+    inline std::shared_ptr<UseProgramStages<
+      PIPELINE_TYPE,
+      STAGES_TYPE  ,
+      PROGRAM_TYPE >> sharedUseProgramStages(
+        PIPELINE_TYPE const&pipeline,
+        STAGES_TYPE   const&stages  ,
+        PROGRAM_TYPE  const&program ){
+        return std::make_shared<UseProgramStages<
+          PIPELINE_TYPE,
+          STAGES_TYPE  ,
+          PROGRAM_TYPE >>(
+              pipeline,
+              stages  ,
+              program );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
@@ -35027,6 +45292,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix3x2fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix3x2fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix3x2fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
       typename V0_TYPE       = GLdouble,
@@ -35056,6 +45351,36 @@ namespace ge{
               v2      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename LOCATION_TYPE = GLint   ,
+      typename V0_TYPE       = GLdouble,
+      typename V1_TYPE       = GLdouble,
+      typename V2_TYPE       = GLdouble>
+    inline std::shared_ptr<ProgramUniform3d<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedProgramUniform3d(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<ProgramUniform3d<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
     inline VertexAttribI4iv<
@@ -35069,6 +45394,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<VertexAttribI4iv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI4iv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI4iv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename PIPELINE_TYPE = GLuint,
       typename PNAME_TYPE    = GLenum,
@@ -35088,6 +45428,26 @@ namespace ge{
               pname   ,
               params  );
     }
+    template<
+      typename PIPELINE_TYPE = GLuint,
+      typename PNAME_TYPE    = GLenum,
+      typename PARAMS_TYPE   = GLint*>
+    inline std::shared_ptr<GetProgramPipelineiv<
+      PIPELINE_TYPE,
+      PNAME_TYPE   ,
+      PARAMS_TYPE  >> sharedGetProgramPipelineiv(
+        PIPELINE_TYPE const&pipeline,
+        PNAME_TYPE    const&pname   ,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetProgramPipelineiv<
+          PIPELINE_TYPE,
+          PNAME_TYPE   ,
+          PARAMS_TYPE  >>(
+              pipeline,
+              pname   ,
+              params  );
+    }
+
     template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble,
@@ -35118,6 +45478,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble,
+      typename Y_TYPE     = GLdouble,
+      typename Z_TYPE     = GLdouble,
+      typename W_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttribL4d<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttribL4d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttribL4d<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename BUF_TYPE         = GLenum>
     inline NamedFramebufferDrawBuffer<
@@ -35131,6 +45521,21 @@ namespace ge{
               framebuffer,
               buf        );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename BUF_TYPE         = GLenum>
+    inline std::shared_ptr<NamedFramebufferDrawBuffer<
+      FRAMEBUFFER_TYPE,
+      BUF_TYPE        >> sharedNamedFramebufferDrawBuffer(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        BUF_TYPE         const&buf        ){
+        return std::make_shared<NamedFramebufferDrawBuffer<
+          FRAMEBUFFER_TYPE,
+          BUF_TYPE        >>(
+              framebuffer,
+              buf        );
+    }
+
     template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint,
@@ -35156,6 +45561,31 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetQueryIndexediv<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetQueryIndexediv(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetQueryIndexediv<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              index ,
+              pname ,
+              params);
+    }
+
+    template<
       typename SHADER_TYPE  = GLuint  ,
       typename BUFSIZE_TYPE = GLsizei ,
       typename LENGTH_TYPE  = GLsizei*,
@@ -35180,6 +45610,31 @@ namespace ge{
               infoLog);
     }
     template<
+      typename SHADER_TYPE  = GLuint  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename INFOLOG_TYPE = GLchar* >
+    inline std::shared_ptr<GetShaderInfoLog<
+      SHADER_TYPE ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      INFOLOG_TYPE>> sharedGetShaderInfoLog(
+        SHADER_TYPE  const&shader ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        INFOLOG_TYPE const&infoLog){
+        return std::make_shared<GetShaderInfoLog<
+          SHADER_TYPE ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          INFOLOG_TYPE>>(
+              shader ,
+              bufSize,
+              length ,
+              infoLog);
+    }
+
+    template<
       typename IDENTIFIER_TYPE = GLenum       ,
       typename NAME_TYPE       = GLuint       ,
       typename LENGTH_TYPE     = GLsizei      ,
@@ -35203,6 +45658,31 @@ namespace ge{
               length    ,
               label     );
     }
+    template<
+      typename IDENTIFIER_TYPE = GLenum       ,
+      typename NAME_TYPE       = GLuint       ,
+      typename LENGTH_TYPE     = GLsizei      ,
+      typename LABEL_TYPE      = const GLchar*>
+    inline std::shared_ptr<ObjectLabel<
+      IDENTIFIER_TYPE,
+      NAME_TYPE      ,
+      LENGTH_TYPE    ,
+      LABEL_TYPE     >> sharedObjectLabel(
+        IDENTIFIER_TYPE const&identifier,
+        NAME_TYPE       const&name      ,
+        LENGTH_TYPE     const&length    ,
+        LABEL_TYPE      const&label     ){
+        return std::make_shared<ObjectLabel<
+          IDENTIFIER_TYPE,
+          NAME_TYPE      ,
+          LENGTH_TYPE    ,
+          LABEL_TYPE     >>(
+              identifier,
+              name      ,
+              length    ,
+              label     );
+    }
+
     template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLint ,
@@ -35233,6 +45713,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLint ,
+      typename Y_TYPE     = GLint ,
+      typename Z_TYPE     = GLint ,
+      typename W_TYPE     = GLint >
+    inline std::shared_ptr<VertexAttribI4i<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttribI4i(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttribI4i<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum    ,
       typename OFFSET_TYPE = GLintptr  ,
       typename SIZE_TYPE   = GLsizeiptr,
@@ -35257,6 +45767,31 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE   = GLsizeiptr,
+      typename DATA_TYPE   = void*     >
+    inline std::shared_ptr<GetBufferSubData<
+      TARGET_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  >> sharedGetBufferSubData(
+        TARGET_TYPE const&target,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetBufferSubData<
+          TARGET_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  >>(
+              target,
+              offset,
+              size  ,
+              data  );
+    }
+
+    template<
       typename INDEX_TYPE  = GLuint   ,
       typename PNAME_TYPE  = GLenum   ,
       typename PARAMS_TYPE = GLdouble*>
@@ -35275,6 +45810,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename INDEX_TYPE  = GLuint   ,
+      typename PNAME_TYPE  = GLenum   ,
+      typename PARAMS_TYPE = GLdouble*>
+    inline std::shared_ptr<GetVertexAttribLdv<
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetVertexAttribLdv(
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetVertexAttribLdv<
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              index ,
+              pname ,
+              params);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
@@ -35300,6 +45855,31 @@ namespace ge{
               params  );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename BUFSIZE_TYPE  = GLsizei,
+      typename PARAMS_TYPE   = GLuint*>
+    inline std::shared_ptr<GetnUniformuiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      BUFSIZE_TYPE ,
+      PARAMS_TYPE  >> sharedGetnUniformuiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        BUFSIZE_TYPE  const&bufSize ,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetnUniformuiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          BUFSIZE_TYPE ,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              bufSize ,
+              params  );
+    }
+
+    template<
       typename MODERGB_TYPE   = GLenum,
       typename MODEALPHA_TYPE = GLenum>
     inline BlendEquationSeparate<
@@ -35313,6 +45893,21 @@ namespace ge{
               modeRGB  ,
               modeAlpha);
     }
+    template<
+      typename MODERGB_TYPE   = GLenum,
+      typename MODEALPHA_TYPE = GLenum>
+    inline std::shared_ptr<BlendEquationSeparate<
+      MODERGB_TYPE  ,
+      MODEALPHA_TYPE>> sharedBlendEquationSeparate(
+        MODERGB_TYPE   const&modeRGB  ,
+        MODEALPHA_TYPE const&modeAlpha){
+        return std::make_shared<BlendEquationSeparate<
+          MODERGB_TYPE  ,
+          MODEALPHA_TYPE>>(
+              modeRGB  ,
+              modeAlpha);
+    }
+
     template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLuint>
@@ -35328,6 +45923,21 @@ namespace ge{
               x    );
     }
     template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLuint>
+    inline std::shared_ptr<VertexAttribI1ui<
+      INDEX_TYPE,
+      X_TYPE    >> sharedVertexAttribI1ui(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ){
+        return std::make_shared<VertexAttribI1ui<
+          INDEX_TYPE,
+          X_TYPE    >>(
+              index,
+              x    );
+    }
+
+    template<
       typename N_TYPE       = GLsizei,
       typename BUFFERS_TYPE = GLuint*>
     inline GenBuffers<
@@ -35341,6 +45951,21 @@ namespace ge{
               n      ,
               buffers);
     }
+    template<
+      typename N_TYPE       = GLsizei,
+      typename BUFFERS_TYPE = GLuint*>
+    inline std::shared_ptr<GenBuffers<
+      N_TYPE      ,
+      BUFFERS_TYPE>> sharedGenBuffers(
+        N_TYPE       const&n      ,
+        BUFFERS_TYPE const&buffers){
+        return std::make_shared<GenBuffers<
+          N_TYPE      ,
+          BUFFERS_TYPE>>(
+              n      ,
+              buffers);
+    }
+
     template<
       typename RET_TYPE        = GLuint       ,
       typename PROGRAM_TYPE    = GLuint       ,
@@ -35366,6 +45991,31 @@ namespace ge{
               name      );
     }
     template<
+      typename RET_TYPE        = GLuint       ,
+      typename PROGRAM_TYPE    = GLuint       ,
+      typename SHADERTYPE_TYPE = GLenum       ,
+      typename NAME_TYPE       = const GLchar*>
+    inline std::shared_ptr<GetSubroutineIndex<
+      RET_TYPE       ,
+      PROGRAM_TYPE   ,
+      SHADERTYPE_TYPE,
+      NAME_TYPE      >> sharedGetSubroutineIndex(
+        RET_TYPE        const&ret       ,
+        PROGRAM_TYPE    const&program   ,
+        SHADERTYPE_TYPE const&shadertype,
+        NAME_TYPE       const&name      ){
+        return std::make_shared<GetSubroutineIndex<
+          RET_TYPE       ,
+          PROGRAM_TYPE   ,
+          SHADERTYPE_TYPE,
+          NAME_TYPE      >>(
+              ret       ,
+              program   ,
+              shadertype,
+              name      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLshort*>
     inline VertexAttrib2sv<
@@ -35380,6 +46030,21 @@ namespace ge{
               v    );
     }
     template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLshort*>
+    inline std::shared_ptr<VertexAttrib2sv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib2sv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib2sv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
+    template<
       typename SFACTOR_TYPE = GLenum,
       typename DFACTOR_TYPE = GLenum>
     inline BlendFunc<
@@ -35393,6 +46058,21 @@ namespace ge{
               sfactor,
               dfactor);
     }
+    template<
+      typename SFACTOR_TYPE = GLenum,
+      typename DFACTOR_TYPE = GLenum>
+    inline std::shared_ptr<BlendFunc<
+      SFACTOR_TYPE,
+      DFACTOR_TYPE>> sharedBlendFunc(
+        SFACTOR_TYPE const&sfactor,
+        DFACTOR_TYPE const&dfactor){
+        return std::make_shared<BlendFunc<
+          SFACTOR_TYPE,
+          DFACTOR_TYPE>>(
+              sfactor,
+              dfactor);
+    }
+
     template<
       typename FRAMEBUFFER_TYPE = GLuint      ,
       typename BUFFER_TYPE      = GLenum      ,
@@ -35417,6 +46097,31 @@ namespace ge{
               drawbuffer ,
               value      );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint      ,
+      typename BUFFER_TYPE      = GLenum      ,
+      typename DRAWBUFFER_TYPE  = GLint       ,
+      typename VALUE_TYPE       = const GLint*>
+    inline std::shared_ptr<ClearNamedFramebufferiv<
+      FRAMEBUFFER_TYPE,
+      BUFFER_TYPE     ,
+      DRAWBUFFER_TYPE ,
+      VALUE_TYPE      >> sharedClearNamedFramebufferiv(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        BUFFER_TYPE      const&buffer     ,
+        DRAWBUFFER_TYPE  const&drawbuffer ,
+        VALUE_TYPE       const&value      ){
+        return std::make_shared<ClearNamedFramebufferiv<
+          FRAMEBUFFER_TYPE,
+          BUFFER_TYPE     ,
+          DRAWBUFFER_TYPE ,
+          VALUE_TYPE      >>(
+              framebuffer,
+              buffer     ,
+              drawbuffer ,
+              value      );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename LEVEL_TYPE          = GLint      ,
@@ -35472,6 +46177,61 @@ namespace ge{
               pixels        );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename LEVEL_TYPE          = GLint      ,
+      typename INTERNALFORMAT_TYPE = GLint      ,
+      typename WIDTH_TYPE          = GLsizei    ,
+      typename HEIGHT_TYPE         = GLsizei    ,
+      typename DEPTH_TYPE          = GLsizei    ,
+      typename BORDER_TYPE         = GLint      ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename PIXELS_TYPE         = const void*>
+    inline std::shared_ptr<TexImage3D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      DEPTH_TYPE         ,
+      BORDER_TYPE        ,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      PIXELS_TYPE        >> sharedTexImage3D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        DEPTH_TYPE          const&depth         ,
+        BORDER_TYPE         const&border        ,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        PIXELS_TYPE         const&pixels        ){
+        return std::make_shared<TexImage3D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          DEPTH_TYPE         ,
+          BORDER_TYPE        ,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          PIXELS_TYPE        >>(
+              target        ,
+              level         ,
+              internalformat,
+              width         ,
+              height        ,
+              depth         ,
+              border        ,
+              format        ,
+              type          ,
+              pixels        );
+    }
+
+    template<
       typename RET_TYPE         = GLboolean,
       typename FRAMEBUFFER_TYPE = GLuint   >
     inline IsFramebuffer<
@@ -35486,6 +46246,21 @@ namespace ge{
               framebuffer);
     }
     template<
+      typename RET_TYPE         = GLboolean,
+      typename FRAMEBUFFER_TYPE = GLuint   >
+    inline std::shared_ptr<IsFramebuffer<
+      RET_TYPE        ,
+      FRAMEBUFFER_TYPE>> sharedIsFramebuffer(
+        RET_TYPE         const&ret        ,
+        FRAMEBUFFER_TYPE const&framebuffer){
+        return std::make_shared<IsFramebuffer<
+          RET_TYPE        ,
+          FRAMEBUFFER_TYPE>>(
+              ret        ,
+              framebuffer);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint>
     inline PrimitiveRestartIndex<
       INDEX_TYPE>* newPrimitiveRestartIndex(
@@ -35494,6 +46269,16 @@ namespace ge{
           INDEX_TYPE>(
               index);
     }
+    template<
+      typename INDEX_TYPE = GLuint>
+    inline std::shared_ptr<PrimitiveRestartIndex<
+      INDEX_TYPE>> sharedPrimitiveRestartIndex(
+        INDEX_TYPE const&index){
+        return std::make_shared<PrimitiveRestartIndex<
+          INDEX_TYPE>>(
+              index);
+    }
+
     template<
       typename BUFFER_TYPE = GLuint    ,
       typename OFFSET_TYPE = GLintptr  ,
@@ -35513,6 +46298,26 @@ namespace ge{
               offset,
               length);
     }
+    template<
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename LENGTH_TYPE = GLsizeiptr>
+    inline std::shared_ptr<FlushMappedNamedBufferRange<
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      LENGTH_TYPE>> sharedFlushMappedNamedBufferRange(
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        LENGTH_TYPE const&length){
+        return std::make_shared<FlushMappedNamedBufferRange<
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          LENGTH_TYPE>>(
+              buffer,
+              offset,
+              length);
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -35558,6 +46363,51 @@ namespace ge{
               depth  );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename ZOFFSET_TYPE = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei,
+      typename DEPTH_TYPE   = GLsizei>
+    inline std::shared_ptr<InvalidateTexSubImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      DEPTH_TYPE  >> sharedInvalidateTexSubImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        DEPTH_TYPE   const&depth  ){
+        return std::make_shared<InvalidateTexSubImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          DEPTH_TYPE  >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              width  ,
+              height ,
+              depth  );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum  ,
       typename DATA_TYPE  = GLint64*>
     inline GetInteger64v<
@@ -35572,6 +46422,21 @@ namespace ge{
               data );
     }
     template<
+      typename PNAME_TYPE = GLenum  ,
+      typename DATA_TYPE  = GLint64*>
+    inline std::shared_ptr<GetInteger64v<
+      PNAME_TYPE,
+      DATA_TYPE >> sharedGetInteger64v(
+        PNAME_TYPE const&pname,
+        DATA_TYPE  const&data ){
+        return std::make_shared<GetInteger64v<
+          PNAME_TYPE,
+          DATA_TYPE >>(
+              pname,
+              data );
+    }
+
+    template<
       typename PIPELINE_TYPE = GLuint>
     inline BindProgramPipeline<
       PIPELINE_TYPE>* newBindProgramPipeline(
@@ -35580,6 +46445,16 @@ namespace ge{
           PIPELINE_TYPE>(
               pipeline);
     }
+    template<
+      typename PIPELINE_TYPE = GLuint>
+    inline std::shared_ptr<BindProgramPipeline<
+      PIPELINE_TYPE>> sharedBindProgramPipeline(
+        PIPELINE_TYPE const&pipeline){
+        return std::make_shared<BindProgramPipeline<
+          PIPELINE_TYPE>>(
+              pipeline);
+    }
+
     template<
       typename X_TYPE      = GLint  ,
       typename Y_TYPE      = GLint  ,
@@ -35605,6 +46480,31 @@ namespace ge{
               height);
     }
     template<
+      typename X_TYPE      = GLint  ,
+      typename Y_TYPE      = GLint  ,
+      typename WIDTH_TYPE  = GLsizei,
+      typename HEIGHT_TYPE = GLsizei>
+    inline std::shared_ptr<Scissor<
+      X_TYPE     ,
+      Y_TYPE     ,
+      WIDTH_TYPE ,
+      HEIGHT_TYPE>> sharedScissor(
+        X_TYPE      const&x     ,
+        Y_TYPE      const&y     ,
+        WIDTH_TYPE  const&width ,
+        HEIGHT_TYPE const&height){
+        return std::make_shared<Scissor<
+          X_TYPE     ,
+          Y_TYPE     ,
+          WIDTH_TYPE ,
+          HEIGHT_TYPE>>(
+              x     ,
+              y     ,
+              width ,
+              height);
+    }
+
+    template<
       typename PNAME_TYPE = GLenum    ,
       typename DATA_TYPE  = GLboolean*>
     inline GetBooleanv<
@@ -35618,6 +46518,21 @@ namespace ge{
               pname,
               data );
     }
+    template<
+      typename PNAME_TYPE = GLenum    ,
+      typename DATA_TYPE  = GLboolean*>
+    inline std::shared_ptr<GetBooleanv<
+      PNAME_TYPE,
+      DATA_TYPE >> sharedGetBooleanv(
+        PNAME_TYPE const&pname,
+        DATA_TYPE  const&data ){
+        return std::make_shared<GetBooleanv<
+          PNAME_TYPE,
+          DATA_TYPE >>(
+              pname,
+              data );
+    }
+
     template<
       typename FRAMEBUFFER_TYPE        = GLuint,
       typename ATTACHMENT_TYPE         = GLenum,
@@ -35643,6 +46558,31 @@ namespace ge{
               renderbuffer      );
     }
     template<
+      typename FRAMEBUFFER_TYPE        = GLuint,
+      typename ATTACHMENT_TYPE         = GLenum,
+      typename RENDERBUFFERTARGET_TYPE = GLenum,
+      typename RENDERBUFFER_TYPE       = GLuint>
+    inline std::shared_ptr<NamedFramebufferRenderbuffer<
+      FRAMEBUFFER_TYPE       ,
+      ATTACHMENT_TYPE        ,
+      RENDERBUFFERTARGET_TYPE,
+      RENDERBUFFER_TYPE      >> sharedNamedFramebufferRenderbuffer(
+        FRAMEBUFFER_TYPE        const&framebuffer       ,
+        ATTACHMENT_TYPE         const&attachment        ,
+        RENDERBUFFERTARGET_TYPE const&renderbuffertarget,
+        RENDERBUFFER_TYPE       const&renderbuffer      ){
+        return std::make_shared<NamedFramebufferRenderbuffer<
+          FRAMEBUFFER_TYPE       ,
+          ATTACHMENT_TYPE        ,
+          RENDERBUFFERTARGET_TYPE,
+          RENDERBUFFER_TYPE      >>(
+              framebuffer       ,
+              attachment        ,
+              renderbuffertarget,
+              renderbuffer      );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint        ,
       typename COUNT_TYPE    = GLsizei      ,
       typename VALUE_TYPE    = const GLuint*>
@@ -35661,6 +46601,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<Uniform3uiv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform3uiv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform3uiv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename RED_TYPE   = GLfloat,
       typename GREEN_TYPE = GLfloat,
@@ -35686,6 +46646,31 @@ namespace ge{
               alpha);
     }
     template<
+      typename RED_TYPE   = GLfloat,
+      typename GREEN_TYPE = GLfloat,
+      typename BLUE_TYPE  = GLfloat,
+      typename ALPHA_TYPE = GLfloat>
+    inline std::shared_ptr<ClearColor<
+      RED_TYPE  ,
+      GREEN_TYPE,
+      BLUE_TYPE ,
+      ALPHA_TYPE>> sharedClearColor(
+        RED_TYPE   const&red  ,
+        GREEN_TYPE const&green,
+        BLUE_TYPE  const&blue ,
+        ALPHA_TYPE const&alpha){
+        return std::make_shared<ClearColor<
+          RED_TYPE  ,
+          GREEN_TYPE,
+          BLUE_TYPE ,
+          ALPHA_TYPE>>(
+              red  ,
+              green,
+              blue ,
+              alpha);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
     inline VertexAttrib4Niv<
@@ -35699,6 +46684,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<VertexAttrib4Niv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4Niv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4Niv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename BUFFER_TYPE     = GLenum      ,
       typename DRAWBUFFER_TYPE = GLint       ,
@@ -35719,6 +46719,26 @@ namespace ge{
               value     );
     }
     template<
+      typename BUFFER_TYPE     = GLenum      ,
+      typename DRAWBUFFER_TYPE = GLint       ,
+      typename VALUE_TYPE      = const GLint*>
+    inline std::shared_ptr<ClearBufferiv<
+      BUFFER_TYPE    ,
+      DRAWBUFFER_TYPE,
+      VALUE_TYPE     >> sharedClearBufferiv(
+        BUFFER_TYPE     const&buffer    ,
+        DRAWBUFFER_TYPE const&drawbuffer,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<ClearBufferiv<
+          BUFFER_TYPE    ,
+          DRAWBUFFER_TYPE,
+          VALUE_TYPE     >>(
+              buffer    ,
+              drawbuffer,
+              value     );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum  ,
       typename PNAME_TYPE  = GLenum  ,
       typename PARAMS_TYPE = GLint64*>
@@ -35737,6 +46757,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename PARAMS_TYPE = GLint64*>
+    inline std::shared_ptr<GetBufferParameteri64v<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetBufferParameteri64v(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetBufferParameteri64v<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint         ,
       typename LOCATION_TYPE = GLint          ,
@@ -35762,6 +46802,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint         ,
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<ProgramUniform4dv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform4dv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform4dv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename TEXTURE_TYPE = GLuint,
       typename LEVEL_TYPE   = GLint ,
       typename PNAME_TYPE   = GLenum,
@@ -35785,6 +46850,31 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint,
+      typename LEVEL_TYPE   = GLint ,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAMS_TYPE  = GLint*>
+    inline std::shared_ptr<GetTextureLevelParameteriv<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetTextureLevelParameteriv(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetTextureLevelParameteriv<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              level  ,
+              pname  ,
+              params );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
@@ -35810,6 +46900,31 @@ namespace ge{
               params  );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename BUFSIZE_TYPE  = GLsizei,
+      typename PARAMS_TYPE   = GLint* >
+    inline std::shared_ptr<GetnUniformiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      BUFSIZE_TYPE ,
+      PARAMS_TYPE  >> sharedGetnUniformiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        BUFSIZE_TYPE  const&bufSize ,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetnUniformiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          BUFSIZE_TYPE ,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              bufSize ,
+              params  );
+    }
+
+    template<
       typename RET_TYPE   = const GLubyte*,
       typename NAME_TYPE  = GLenum        ,
       typename INDEX_TYPE = GLuint        >
@@ -35828,6 +46943,26 @@ namespace ge{
               name ,
               index);
     }
+    template<
+      typename RET_TYPE   = const GLubyte*,
+      typename NAME_TYPE  = GLenum        ,
+      typename INDEX_TYPE = GLuint        >
+    inline std::shared_ptr<GetStringi<
+      RET_TYPE  ,
+      NAME_TYPE ,
+      INDEX_TYPE>> sharedGetStringi(
+        RET_TYPE   const&ret  ,
+        NAME_TYPE  const&name ,
+        INDEX_TYPE const&index){
+        return std::make_shared<GetStringi<
+          RET_TYPE  ,
+          NAME_TYPE ,
+          INDEX_TYPE>>(
+              ret  ,
+              name ,
+              index);
+    }
+
     template<
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLuint,
@@ -35853,6 +46988,31 @@ namespace ge{
               v2      );
     }
     template<
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint,
+      typename V2_TYPE       = GLuint>
+    inline std::shared_ptr<Uniform3ui<
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      >> sharedUniform3ui(
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ){
+        return std::make_shared<Uniform3ui<
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      >>(
+              location,
+              v0      ,
+              v1      ,
+              v2      );
+    }
+
+    template<
       typename VAOBJ_TYPE = GLuint,
       typename INDEX_TYPE = GLuint,
       typename PNAME_TYPE = GLenum,
@@ -35877,6 +47037,31 @@ namespace ge{
               param);
     }
     template<
+      typename VAOBJ_TYPE = GLuint,
+      typename INDEX_TYPE = GLuint,
+      typename PNAME_TYPE = GLenum,
+      typename PARAM_TYPE = GLint*>
+    inline std::shared_ptr<GetVertexArrayIndexediv<
+      VAOBJ_TYPE,
+      INDEX_TYPE,
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedGetVertexArrayIndexediv(
+        VAOBJ_TYPE const&vaobj,
+        INDEX_TYPE const&index,
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<GetVertexArrayIndexediv<
+          VAOBJ_TYPE,
+          INDEX_TYPE,
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              vaobj,
+              index,
+              pname,
+              param);
+    }
+
+    template<
       typename PNAME_TYPE  = GLenum        ,
       typename PARAMS_TYPE = const GLfloat*>
     inline PointParameterfv<
@@ -35890,6 +47075,21 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename PNAME_TYPE  = GLenum        ,
+      typename PARAMS_TYPE = const GLfloat*>
+    inline std::shared_ptr<PointParameterfv<
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedPointParameterfv(
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<PointParameterfv<
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              pname ,
+              params);
+    }
+
     template<
       typename LOCATION_TYPE = GLint         ,
       typename COUNT_TYPE    = GLsizei       ,
@@ -35909,6 +47109,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<Uniform2fv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform2fv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform2fv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename PROGRAM_TYPE    = GLuint  ,
       typename SHADERTYPE_TYPE = GLenum  ,
@@ -35944,6 +47164,41 @@ namespace ge{
               name      );
     }
     template<
+      typename PROGRAM_TYPE    = GLuint  ,
+      typename SHADERTYPE_TYPE = GLenum  ,
+      typename INDEX_TYPE      = GLuint  ,
+      typename BUFSIZE_TYPE    = GLsizei ,
+      typename LENGTH_TYPE     = GLsizei*,
+      typename NAME_TYPE       = GLchar* >
+    inline std::shared_ptr<GetActiveSubroutineUniformName<
+      PROGRAM_TYPE   ,
+      SHADERTYPE_TYPE,
+      INDEX_TYPE     ,
+      BUFSIZE_TYPE   ,
+      LENGTH_TYPE    ,
+      NAME_TYPE      >> sharedGetActiveSubroutineUniformName(
+        PROGRAM_TYPE    const&program   ,
+        SHADERTYPE_TYPE const&shadertype,
+        INDEX_TYPE      const&index     ,
+        BUFSIZE_TYPE    const&bufsize   ,
+        LENGTH_TYPE     const&length    ,
+        NAME_TYPE       const&name      ){
+        return std::make_shared<GetActiveSubroutineUniformName<
+          PROGRAM_TYPE   ,
+          SHADERTYPE_TYPE,
+          INDEX_TYPE     ,
+          BUFSIZE_TYPE   ,
+          LENGTH_TYPE    ,
+          NAME_TYPE      >>(
+              program   ,
+              shadertype,
+              index     ,
+              bufsize   ,
+              length    ,
+              name      );
+    }
+
+    template<
       typename RET_TYPE              = GLuint       ,
       typename PROGRAM_TYPE          = GLuint       ,
       typename PROGRAMINTERFACE_TYPE = GLenum       ,
@@ -35968,6 +47223,31 @@ namespace ge{
               name            );
     }
     template<
+      typename RET_TYPE              = GLuint       ,
+      typename PROGRAM_TYPE          = GLuint       ,
+      typename PROGRAMINTERFACE_TYPE = GLenum       ,
+      typename NAME_TYPE             = const GLchar*>
+    inline std::shared_ptr<GetProgramResourceIndex<
+      RET_TYPE             ,
+      PROGRAM_TYPE         ,
+      PROGRAMINTERFACE_TYPE,
+      NAME_TYPE            >> sharedGetProgramResourceIndex(
+        RET_TYPE              const&ret             ,
+        PROGRAM_TYPE          const&program         ,
+        PROGRAMINTERFACE_TYPE const&programInterface,
+        NAME_TYPE             const&name            ){
+        return std::make_shared<GetProgramResourceIndex<
+          RET_TYPE             ,
+          PROGRAM_TYPE         ,
+          PROGRAMINTERFACE_TYPE,
+          NAME_TYPE            >>(
+              ret             ,
+              program         ,
+              programInterface,
+              name            );
+    }
+
+    template<
       typename MODE_TYPE     = GLenum     ,
       typename TYPE_TYPE     = GLenum     ,
       typename INDIRECT_TYPE = const void*>
@@ -35986,6 +47266,26 @@ namespace ge{
               type    ,
               indirect);
     }
+    template<
+      typename MODE_TYPE     = GLenum     ,
+      typename TYPE_TYPE     = GLenum     ,
+      typename INDIRECT_TYPE = const void*>
+    inline std::shared_ptr<DrawElementsIndirect<
+      MODE_TYPE    ,
+      TYPE_TYPE    ,
+      INDIRECT_TYPE>> sharedDrawElementsIndirect(
+        MODE_TYPE     const&mode    ,
+        TYPE_TYPE     const&type    ,
+        INDIRECT_TYPE const&indirect){
+        return std::make_shared<DrawElementsIndirect<
+          MODE_TYPE    ,
+          TYPE_TYPE    ,
+          INDIRECT_TYPE>>(
+              mode    ,
+              type    ,
+              indirect);
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint  ,
       typename LEVEL_TYPE   = GLint   ,
@@ -36011,6 +47311,31 @@ namespace ge{
               params );
     }
     template<
+      typename TEXTURE_TYPE = GLuint  ,
+      typename LEVEL_TYPE   = GLint   ,
+      typename PNAME_TYPE   = GLenum  ,
+      typename PARAMS_TYPE  = GLfloat*>
+    inline std::shared_ptr<GetTextureLevelParameterfv<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetTextureLevelParameterfv(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetTextureLevelParameterfv<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              texture,
+              level  ,
+              pname  ,
+              params );
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = void**>
@@ -36030,6 +47355,26 @@ namespace ge{
               params);
     }
     template<
+      typename BUFFER_TYPE = GLuint,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = void**>
+    inline std::shared_ptr<GetNamedBufferPointerv<
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetNamedBufferPointerv(
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetNamedBufferPointerv<
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              buffer,
+              pname ,
+              params);
+    }
+
+    template<
       typename INDIRECT_TYPE = GLintptr>
     inline DispatchComputeIndirect<
       INDIRECT_TYPE>* newDispatchComputeIndirect(
@@ -36038,6 +47383,16 @@ namespace ge{
           INDIRECT_TYPE>(
               indirect);
     }
+    template<
+      typename INDIRECT_TYPE = GLintptr>
+    inline std::shared_ptr<DispatchComputeIndirect<
+      INDIRECT_TYPE>> sharedDispatchComputeIndirect(
+        INDIRECT_TYPE const&indirect){
+        return std::make_shared<DispatchComputeIndirect<
+          INDIRECT_TYPE>>(
+              indirect);
+    }
+
     template<
       typename FRAMEBUFFER_TYPE    = GLuint       ,
       typename NUMATTACHMENTS_TYPE = GLsizei      ,
@@ -36078,6 +47433,46 @@ namespace ge{
               height        );
     }
     template<
+      typename FRAMEBUFFER_TYPE    = GLuint       ,
+      typename NUMATTACHMENTS_TYPE = GLsizei      ,
+      typename ATTACHMENTS_TYPE    = const GLenum*,
+      typename X_TYPE              = GLint        ,
+      typename Y_TYPE              = GLint        ,
+      typename WIDTH_TYPE          = GLsizei      ,
+      typename HEIGHT_TYPE         = GLsizei      >
+    inline std::shared_ptr<InvalidateNamedFramebufferSubData<
+      FRAMEBUFFER_TYPE   ,
+      NUMATTACHMENTS_TYPE,
+      ATTACHMENTS_TYPE   ,
+      X_TYPE             ,
+      Y_TYPE             ,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedInvalidateNamedFramebufferSubData(
+        FRAMEBUFFER_TYPE    const&framebuffer   ,
+        NUMATTACHMENTS_TYPE const&numAttachments,
+        ATTACHMENTS_TYPE    const&attachments   ,
+        X_TYPE              const&x             ,
+        Y_TYPE              const&y             ,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<InvalidateNamedFramebufferSubData<
+          FRAMEBUFFER_TYPE   ,
+          NUMATTACHMENTS_TYPE,
+          ATTACHMENTS_TYPE   ,
+          X_TYPE             ,
+          Y_TYPE             ,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              framebuffer   ,
+              numAttachments,
+              attachments   ,
+              x             ,
+              y             ,
+              width         ,
+              height        );
+    }
+
+    template<
       typename SAMPLER_TYPE = GLuint ,
       typename PNAME_TYPE   = GLenum ,
       typename PARAMS_TYPE  = GLuint*>
@@ -36096,6 +47491,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint ,
+      typename PNAME_TYPE   = GLenum ,
+      typename PARAMS_TYPE  = GLuint*>
+    inline std::shared_ptr<GetSamplerParameterIuiv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetSamplerParameterIuiv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetSamplerParameterIuiv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              sampler,
+              pname  ,
+              params );
+    }
+
     template<
       typename TARGET_TYPE = GLenum    ,
       typename INDEX_TYPE  = GLuint    ,
@@ -36125,6 +47540,36 @@ namespace ge{
               offset,
               size  );
     }
+    template<
+      typename TARGET_TYPE = GLenum    ,
+      typename INDEX_TYPE  = GLuint    ,
+      typename BUFFER_TYPE = GLuint    ,
+      typename OFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE   = GLsizeiptr>
+    inline std::shared_ptr<BindBufferRange<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      BUFFER_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  >> sharedBindBufferRange(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        BUFFER_TYPE const&buffer,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ){
+        return std::make_shared<BindBufferRange<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          BUFFER_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  >>(
+              target,
+              index ,
+              buffer,
+              offset,
+              size  );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint     ,
       typename LEVEL_TYPE   = GLint      ,
@@ -36165,6 +47610,46 @@ namespace ge{
               pixels );
     }
     template<
+      typename TEXTURE_TYPE = GLuint     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename PIXELS_TYPE  = const void*>
+    inline std::shared_ptr<TextureSubImage1D<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      PIXELS_TYPE >> sharedTextureSubImage1D(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        WIDTH_TYPE   const&width  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<TextureSubImage1D<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              width  ,
+              format ,
+              type   ,
+              pixels );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttribL3dv<
@@ -36178,6 +47663,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttribL3dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribL3dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribL3dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint   ,
       typename LOCATION_TYPE = GLint    ,
@@ -36197,6 +47697,26 @@ namespace ge{
               location,
               params  );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint   ,
+      typename LOCATION_TYPE = GLint    ,
+      typename PARAMS_TYPE   = GLdouble*>
+    inline std::shared_ptr<GetUniformdv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      PARAMS_TYPE  >> sharedGetUniformdv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        PARAMS_TYPE   const&params  ){
+        return std::make_shared<GetUniformdv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          PARAMS_TYPE  >>(
+              program ,
+              location,
+              params  );
+    }
+
     template<
       typename ID_TYPE     = GLuint  ,
       typename BUFFER_TYPE = GLuint  ,
@@ -36222,6 +47742,31 @@ namespace ge{
               offset);
     }
     template<
+      typename ID_TYPE     = GLuint  ,
+      typename BUFFER_TYPE = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename OFFSET_TYPE = GLintptr>
+    inline std::shared_ptr<GetQueryBufferObjectui64v<
+      ID_TYPE    ,
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      OFFSET_TYPE>> sharedGetQueryBufferObjectui64v(
+        ID_TYPE     const&id    ,
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        OFFSET_TYPE const&offset){
+        return std::make_shared<GetQueryBufferObjectui64v<
+          ID_TYPE    ,
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          OFFSET_TYPE>>(
+              id    ,
+              buffer,
+              pname ,
+              offset);
+    }
+
+    template<
       typename D_TYPE = GLfloat>
     inline ClearDepthf<
       D_TYPE>* newClearDepthf(
@@ -36230,6 +47775,16 @@ namespace ge{
           D_TYPE>(
               d);
     }
+    template<
+      typename D_TYPE = GLfloat>
+    inline std::shared_ptr<ClearDepthf<
+      D_TYPE>> sharedClearDepthf(
+        D_TYPE const&d){
+        return std::make_shared<ClearDepthf<
+          D_TYPE>>(
+              d);
+    }
+
     template<
       typename INDEX_TYPE  = GLuint ,
       typename PNAME_TYPE  = GLenum ,
@@ -36249,6 +47804,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename INDEX_TYPE  = GLuint ,
+      typename PNAME_TYPE  = GLenum ,
+      typename PARAMS_TYPE = GLuint*>
+    inline std::shared_ptr<GetVertexAttribIuiv<
+      INDEX_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetVertexAttribIuiv(
+        INDEX_TYPE  const&index ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetVertexAttribIuiv<
+          INDEX_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              index ,
+              pname ,
+              params);
+    }
+
     template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -36274,6 +47849,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix2x3fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix2x3fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix2x3fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename N_TYPE   = GLsizei,
       typename IDS_TYPE = GLuint*>
     inline GenTransformFeedbacks<
@@ -36287,6 +47887,21 @@ namespace ge{
               n  ,
               ids);
     }
+    template<
+      typename N_TYPE   = GLsizei,
+      typename IDS_TYPE = GLuint*>
+    inline std::shared_ptr<GenTransformFeedbacks<
+      N_TYPE  ,
+      IDS_TYPE>> sharedGenTransformFeedbacks(
+        N_TYPE   const&n  ,
+        IDS_TYPE const&ids){
+        return std::make_shared<GenTransformFeedbacks<
+          N_TYPE  ,
+          IDS_TYPE>>(
+              n  ,
+              ids);
+    }
+
     template<
       typename N_TYPE             = GLsizei,
       typename RENDERBUFFERS_TYPE = GLuint*>
@@ -36302,6 +47917,21 @@ namespace ge{
               renderbuffers);
     }
     template<
+      typename N_TYPE             = GLsizei,
+      typename RENDERBUFFERS_TYPE = GLuint*>
+    inline std::shared_ptr<CreateRenderbuffers<
+      N_TYPE            ,
+      RENDERBUFFERS_TYPE>> sharedCreateRenderbuffers(
+        N_TYPE             const&n            ,
+        RENDERBUFFERS_TYPE const&renderbuffers){
+        return std::make_shared<CreateRenderbuffers<
+          N_TYPE            ,
+          RENDERBUFFERS_TYPE>>(
+              n            ,
+              renderbuffers);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLushort*>
     inline VertexAttrib4Nusv<
@@ -36315,6 +47945,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLushort*>
+    inline std::shared_ptr<VertexAttrib4Nusv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4Nusv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4Nusv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -36345,6 +47990,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix4x3dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix4x3dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix4x3dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename RED_TYPE   = GLboolean,
       typename GREEN_TYPE = GLboolean,
       typename BLUE_TYPE  = GLboolean,
@@ -36368,6 +48043,31 @@ namespace ge{
               blue ,
               alpha);
     }
+    template<
+      typename RED_TYPE   = GLboolean,
+      typename GREEN_TYPE = GLboolean,
+      typename BLUE_TYPE  = GLboolean,
+      typename ALPHA_TYPE = GLboolean>
+    inline std::shared_ptr<ColorMask<
+      RED_TYPE  ,
+      GREEN_TYPE,
+      BLUE_TYPE ,
+      ALPHA_TYPE>> sharedColorMask(
+        RED_TYPE   const&red  ,
+        GREEN_TYPE const&green,
+        BLUE_TYPE  const&blue ,
+        ALPHA_TYPE const&alpha){
+        return std::make_shared<ColorMask<
+          RED_TYPE  ,
+          GREEN_TYPE,
+          BLUE_TYPE ,
+          ALPHA_TYPE>>(
+              red  ,
+              green,
+              blue ,
+              alpha);
+    }
+
     template<
       typename X_TYPE       = GLint  ,
       typename Y_TYPE       = GLint  ,
@@ -36413,6 +48113,51 @@ namespace ge{
               data   );
     }
     template<
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei,
+      typename FORMAT_TYPE  = GLenum ,
+      typename TYPE_TYPE    = GLenum ,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename DATA_TYPE    = void*  >
+    inline std::shared_ptr<ReadnPixels<
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      BUFSIZE_TYPE,
+      DATA_TYPE   >> sharedReadnPixels(
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        BUFSIZE_TYPE const&bufSize,
+        DATA_TYPE    const&data   ){
+        return std::make_shared<ReadnPixels<
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          BUFSIZE_TYPE,
+          DATA_TYPE   >>(
+              x      ,
+              y      ,
+              width  ,
+              height ,
+              format ,
+              type   ,
+              bufSize,
+              data   );
+    }
+
+    template<
       typename RET_TYPE   = GLboolean,
       typename ARRAY_TYPE = GLuint   >
     inline IsVertexArray<
@@ -36426,6 +48171,21 @@ namespace ge{
               ret  ,
               array);
     }
+    template<
+      typename RET_TYPE   = GLboolean,
+      typename ARRAY_TYPE = GLuint   >
+    inline std::shared_ptr<IsVertexArray<
+      RET_TYPE  ,
+      ARRAY_TYPE>> sharedIsVertexArray(
+        RET_TYPE   const&ret  ,
+        ARRAY_TYPE const&array){
+        return std::make_shared<IsVertexArray<
+          RET_TYPE  ,
+          ARRAY_TYPE>>(
+              ret  ,
+              array);
+    }
+
     template<
       typename PROGRAM_TYPE      = GLuint     ,
       typename BINARYFORMAT_TYPE = GLenum     ,
@@ -36451,6 +48211,31 @@ namespace ge{
               length      );
     }
     template<
+      typename PROGRAM_TYPE      = GLuint     ,
+      typename BINARYFORMAT_TYPE = GLenum     ,
+      typename BINARY_TYPE       = const void*,
+      typename LENGTH_TYPE       = GLsizei    >
+    inline std::shared_ptr<ProgramBinary<
+      PROGRAM_TYPE     ,
+      BINARYFORMAT_TYPE,
+      BINARY_TYPE      ,
+      LENGTH_TYPE      >> sharedProgramBinary(
+        PROGRAM_TYPE      const&program     ,
+        BINARYFORMAT_TYPE const&binaryFormat,
+        BINARY_TYPE       const&binary      ,
+        LENGTH_TYPE       const&length      ){
+        return std::make_shared<ProgramBinary<
+          PROGRAM_TYPE     ,
+          BINARYFORMAT_TYPE,
+          BINARY_TYPE      ,
+          LENGTH_TYPE      >>(
+              program     ,
+              binaryFormat,
+              binary      ,
+              length      );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLbyte*>
     inline VertexAttribI4bv<
@@ -36464,6 +48249,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLbyte*>
+    inline std::shared_ptr<VertexAttribI4bv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI4bv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI4bv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum  ,
       typename PNAME_TYPE  = GLenum  ,
@@ -36484,6 +48284,26 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename PARAMS_TYPE = GLfloat*>
+    inline std::shared_ptr<GetTexParameterfv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetTexParameterfv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetTexParameterfv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
+    template<
       typename BUF_TYPE = GLuint,
       typename SRC_TYPE = GLenum,
       typename DST_TYPE = GLenum>
@@ -36502,6 +48322,26 @@ namespace ge{
               src,
               dst);
     }
+    template<
+      typename BUF_TYPE = GLuint,
+      typename SRC_TYPE = GLenum,
+      typename DST_TYPE = GLenum>
+    inline std::shared_ptr<BlendFunci<
+      BUF_TYPE,
+      SRC_TYPE,
+      DST_TYPE>> sharedBlendFunci(
+        BUF_TYPE const&buf,
+        SRC_TYPE const&src,
+        DST_TYPE const&dst){
+        return std::make_shared<BlendFunci<
+          BUF_TYPE,
+          SRC_TYPE,
+          DST_TYPE>>(
+              buf,
+              src,
+              dst);
+    }
+
     template<
       typename TARGET_TYPE = GLenum     ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -36527,6 +48367,31 @@ namespace ge{
               flags );
     }
     template<
+      typename TARGET_TYPE = GLenum     ,
+      typename SIZE_TYPE   = GLsizeiptr ,
+      typename DATA_TYPE   = const void*,
+      typename FLAGS_TYPE  = GLbitfield >
+    inline std::shared_ptr<BufferStorage<
+      TARGET_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  ,
+      FLAGS_TYPE >> sharedBufferStorage(
+        TARGET_TYPE const&target,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ,
+        FLAGS_TYPE  const&flags ){
+        return std::make_shared<BufferStorage<
+          TARGET_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  ,
+          FLAGS_TYPE >>(
+              target,
+              size  ,
+              data  ,
+              flags );
+    }
+
+    template<
       typename RET_TYPE     = GLenum    ,
       typename SYNC_TYPE    = GLsync    ,
       typename FLAGS_TYPE   = GLbitfield,
@@ -36550,6 +48415,31 @@ namespace ge{
               flags  ,
               timeout);
     }
+    template<
+      typename RET_TYPE     = GLenum    ,
+      typename SYNC_TYPE    = GLsync    ,
+      typename FLAGS_TYPE   = GLbitfield,
+      typename TIMEOUT_TYPE = GLuint64  >
+    inline std::shared_ptr<ClientWaitSync<
+      RET_TYPE    ,
+      SYNC_TYPE   ,
+      FLAGS_TYPE  ,
+      TIMEOUT_TYPE>> sharedClientWaitSync(
+        RET_TYPE     const&ret    ,
+        SYNC_TYPE    const&sync   ,
+        FLAGS_TYPE   const&flags  ,
+        TIMEOUT_TYPE const&timeout){
+        return std::make_shared<ClientWaitSync<
+          RET_TYPE    ,
+          SYNC_TYPE   ,
+          FLAGS_TYPE  ,
+          TIMEOUT_TYPE>>(
+              ret    ,
+              sync   ,
+              flags  ,
+              timeout);
+    }
+
     template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLuint,
@@ -36580,6 +48470,36 @@ namespace ge{
               w    );
     }
     template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLuint,
+      typename Y_TYPE     = GLuint,
+      typename Z_TYPE     = GLuint,
+      typename W_TYPE     = GLuint>
+    inline std::shared_ptr<VertexAttribI4ui<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    ,
+      Z_TYPE    ,
+      W_TYPE    >> sharedVertexAttribI4ui(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ,
+        Z_TYPE     const&z    ,
+        W_TYPE     const&w    ){
+        return std::make_shared<VertexAttribI4ui<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    ,
+          Z_TYPE    ,
+          W_TYPE    >>(
+              index,
+              x    ,
+              y    ,
+              z    ,
+              w    );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum  ,
       typename INDEX_TYPE  = GLuint  ,
       typename DATA_TYPE   = GLfloat*>
@@ -36599,6 +48519,26 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum  ,
+      typename INDEX_TYPE  = GLuint  ,
+      typename DATA_TYPE   = GLfloat*>
+    inline std::shared_ptr<GetFloati_v<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      DATA_TYPE  >> sharedGetFloati_v(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<GetFloati_v<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          DATA_TYPE  >>(
+              target,
+              index ,
+              data  );
+    }
+
+    template<
       typename FUNC_TYPE = GLenum>
     inline DepthFunc<
       FUNC_TYPE>* newDepthFunc(
@@ -36607,6 +48547,16 @@ namespace ge{
           FUNC_TYPE>(
               func);
     }
+    template<
+      typename FUNC_TYPE = GLenum>
+    inline std::shared_ptr<DepthFunc<
+      FUNC_TYPE>> sharedDepthFunc(
+        FUNC_TYPE const&func){
+        return std::make_shared<DepthFunc<
+          FUNC_TYPE>>(
+              func);
+    }
+
     template<
       typename VAOBJ_TYPE = GLuint  ,
       typename INDEX_TYPE = GLuint  ,
@@ -36632,6 +48582,31 @@ namespace ge{
               param);
     }
     template<
+      typename VAOBJ_TYPE = GLuint  ,
+      typename INDEX_TYPE = GLuint  ,
+      typename PNAME_TYPE = GLenum  ,
+      typename PARAM_TYPE = GLint64*>
+    inline std::shared_ptr<GetVertexArrayIndexed64iv<
+      VAOBJ_TYPE,
+      INDEX_TYPE,
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedGetVertexArrayIndexed64iv(
+        VAOBJ_TYPE const&vaobj,
+        INDEX_TYPE const&index,
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<GetVertexArrayIndexed64iv<
+          VAOBJ_TYPE,
+          INDEX_TYPE,
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              vaobj,
+              index,
+              pname,
+              param);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum      ,
       typename PNAME_TYPE  = GLenum      ,
       typename PARAMS_TYPE = const GLint*>
@@ -36651,6 +48626,26 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum      ,
+      typename PNAME_TYPE  = GLenum      ,
+      typename PARAMS_TYPE = const GLint*>
+    inline std::shared_ptr<TexParameterIiv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedTexParameterIiv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<TexParameterIiv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
+    template<
       typename MODE_TYPE = GLenum>
     inline BlendEquation<
       MODE_TYPE>* newBlendEquation(
@@ -36659,6 +48654,16 @@ namespace ge{
           MODE_TYPE>(
               mode);
     }
+    template<
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<BlendEquation<
+      MODE_TYPE>> sharedBlendEquation(
+        MODE_TYPE const&mode){
+        return std::make_shared<BlendEquation<
+          MODE_TYPE>>(
+              mode);
+    }
+
     template<
       typename RET_TYPE     = GLint        ,
       typename PROGRAM_TYPE = GLuint       ,
@@ -36678,6 +48683,26 @@ namespace ge{
               program,
               name   );
     }
+    template<
+      typename RET_TYPE     = GLint        ,
+      typename PROGRAM_TYPE = GLuint       ,
+      typename NAME_TYPE    = const GLchar*>
+    inline std::shared_ptr<GetUniformLocation<
+      RET_TYPE    ,
+      PROGRAM_TYPE,
+      NAME_TYPE   >> sharedGetUniformLocation(
+        RET_TYPE     const&ret    ,
+        PROGRAM_TYPE const&program,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetUniformLocation<
+          RET_TYPE    ,
+          PROGRAM_TYPE,
+          NAME_TYPE   >>(
+              ret    ,
+              program,
+              name   );
+    }
+
     template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
@@ -36702,6 +48727,31 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix2x4dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix2x4dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix2x4dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename VAOBJ_TYPE          = GLuint   ,
       typename ATTRIBINDEX_TYPE    = GLuint   ,
@@ -36736,6 +48786,41 @@ namespace ge{
               normalized    ,
               relativeoffset);
     }
+    template<
+      typename VAOBJ_TYPE          = GLuint   ,
+      typename ATTRIBINDEX_TYPE    = GLuint   ,
+      typename SIZE_TYPE           = GLint    ,
+      typename TYPE_TYPE           = GLenum   ,
+      typename NORMALIZED_TYPE     = GLboolean,
+      typename RELATIVEOFFSET_TYPE = GLuint   >
+    inline std::shared_ptr<VertexArrayAttribFormat<
+      VAOBJ_TYPE         ,
+      ATTRIBINDEX_TYPE   ,
+      SIZE_TYPE          ,
+      TYPE_TYPE          ,
+      NORMALIZED_TYPE    ,
+      RELATIVEOFFSET_TYPE>> sharedVertexArrayAttribFormat(
+        VAOBJ_TYPE          const&vaobj         ,
+        ATTRIBINDEX_TYPE    const&attribindex   ,
+        SIZE_TYPE           const&size          ,
+        TYPE_TYPE           const&type          ,
+        NORMALIZED_TYPE     const&normalized    ,
+        RELATIVEOFFSET_TYPE const&relativeoffset){
+        return std::make_shared<VertexArrayAttribFormat<
+          VAOBJ_TYPE         ,
+          ATTRIBINDEX_TYPE   ,
+          SIZE_TYPE          ,
+          TYPE_TYPE          ,
+          NORMALIZED_TYPE    ,
+          RELATIVEOFFSET_TYPE>>(
+              vaobj         ,
+              attribindex   ,
+              size          ,
+              type          ,
+              normalized    ,
+              relativeoffset);
+    }
+
     template<
       typename TARGET_TYPE    = GLenum     ,
       typename LEVEL_TYPE     = GLint      ,
@@ -36786,6 +48871,56 @@ namespace ge{
               data     );
     }
     template<
+      typename TARGET_TYPE    = GLenum     ,
+      typename LEVEL_TYPE     = GLint      ,
+      typename XOFFSET_TYPE   = GLint      ,
+      typename YOFFSET_TYPE   = GLint      ,
+      typename WIDTH_TYPE     = GLsizei    ,
+      typename HEIGHT_TYPE    = GLsizei    ,
+      typename FORMAT_TYPE    = GLenum     ,
+      typename IMAGESIZE_TYPE = GLsizei    ,
+      typename DATA_TYPE      = const void*>
+    inline std::shared_ptr<CompressedTexSubImage2D<
+      TARGET_TYPE   ,
+      LEVEL_TYPE    ,
+      XOFFSET_TYPE  ,
+      YOFFSET_TYPE  ,
+      WIDTH_TYPE    ,
+      HEIGHT_TYPE   ,
+      FORMAT_TYPE   ,
+      IMAGESIZE_TYPE,
+      DATA_TYPE     >> sharedCompressedTexSubImage2D(
+        TARGET_TYPE    const&target   ,
+        LEVEL_TYPE     const&level    ,
+        XOFFSET_TYPE   const&xoffset  ,
+        YOFFSET_TYPE   const&yoffset  ,
+        WIDTH_TYPE     const&width    ,
+        HEIGHT_TYPE    const&height   ,
+        FORMAT_TYPE    const&format   ,
+        IMAGESIZE_TYPE const&imageSize,
+        DATA_TYPE      const&data     ){
+        return std::make_shared<CompressedTexSubImage2D<
+          TARGET_TYPE   ,
+          LEVEL_TYPE    ,
+          XOFFSET_TYPE  ,
+          YOFFSET_TYPE  ,
+          WIDTH_TYPE    ,
+          HEIGHT_TYPE   ,
+          FORMAT_TYPE   ,
+          IMAGESIZE_TYPE,
+          DATA_TYPE     >>(
+              target   ,
+              level    ,
+              xoffset  ,
+              yoffset  ,
+              width    ,
+              height   ,
+              format   ,
+              imageSize,
+              data     );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint       ,
       typename N_TYPE           = GLsizei      ,
       typename BUFS_TYPE        = const GLenum*>
@@ -36804,6 +48939,26 @@ namespace ge{
               n          ,
               bufs       );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint       ,
+      typename N_TYPE           = GLsizei      ,
+      typename BUFS_TYPE        = const GLenum*>
+    inline std::shared_ptr<NamedFramebufferDrawBuffers<
+      FRAMEBUFFER_TYPE,
+      N_TYPE          ,
+      BUFS_TYPE       >> sharedNamedFramebufferDrawBuffers(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        N_TYPE           const&n          ,
+        BUFS_TYPE        const&bufs       ){
+        return std::make_shared<NamedFramebufferDrawBuffers<
+          FRAMEBUFFER_TYPE,
+          N_TYPE          ,
+          BUFS_TYPE       >>(
+              framebuffer,
+              n          ,
+              bufs       );
+    }
+
 
     template<
       typename INDEX_TYPE = GLuint         ,
@@ -36819,6 +48974,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLushort*>
+    inline std::shared_ptr<VertexAttrib4usv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4usv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4usv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename SHADERTYPE_TYPE = GLenum ,
       typename LOCATION_TYPE   = GLint  ,
@@ -36838,6 +49008,26 @@ namespace ge{
               location  ,
               params    );
     }
+    template<
+      typename SHADERTYPE_TYPE = GLenum ,
+      typename LOCATION_TYPE   = GLint  ,
+      typename PARAMS_TYPE     = GLuint*>
+    inline std::shared_ptr<GetUniformSubroutineuiv<
+      SHADERTYPE_TYPE,
+      LOCATION_TYPE  ,
+      PARAMS_TYPE    >> sharedGetUniformSubroutineuiv(
+        SHADERTYPE_TYPE const&shadertype,
+        LOCATION_TYPE   const&location  ,
+        PARAMS_TYPE     const&params    ){
+        return std::make_shared<GetUniformSubroutineuiv<
+          SHADERTYPE_TYPE,
+          LOCATION_TYPE  ,
+          PARAMS_TYPE    >>(
+              shadertype,
+              location  ,
+              params    );
+    }
+
     template<
       typename TARGET_TYPE               = GLenum   ,
       typename SAMPLES_TYPE              = GLsizei  ,
@@ -36873,6 +49063,41 @@ namespace ge{
               fixedsamplelocations);
     }
     template<
+      typename TARGET_TYPE               = GLenum   ,
+      typename SAMPLES_TYPE              = GLsizei  ,
+      typename INTERNALFORMAT_TYPE       = GLenum   ,
+      typename WIDTH_TYPE                = GLsizei  ,
+      typename HEIGHT_TYPE               = GLsizei  ,
+      typename FIXEDSAMPLELOCATIONS_TYPE = GLboolean>
+    inline std::shared_ptr<TexImage2DMultisample<
+      TARGET_TYPE              ,
+      SAMPLES_TYPE             ,
+      INTERNALFORMAT_TYPE      ,
+      WIDTH_TYPE               ,
+      HEIGHT_TYPE              ,
+      FIXEDSAMPLELOCATIONS_TYPE>> sharedTexImage2DMultisample(
+        TARGET_TYPE               const&target              ,
+        SAMPLES_TYPE              const&samples             ,
+        INTERNALFORMAT_TYPE       const&internalformat      ,
+        WIDTH_TYPE                const&width               ,
+        HEIGHT_TYPE               const&height              ,
+        FIXEDSAMPLELOCATIONS_TYPE const&fixedsamplelocations){
+        return std::make_shared<TexImage2DMultisample<
+          TARGET_TYPE              ,
+          SAMPLES_TYPE             ,
+          INTERNALFORMAT_TYPE      ,
+          WIDTH_TYPE               ,
+          HEIGHT_TYPE              ,
+          FIXEDSAMPLELOCATIONS_TYPE>>(
+              target              ,
+              samples             ,
+              internalformat      ,
+              width               ,
+              height              ,
+              fixedsamplelocations);
+    }
+
+    template<
       typename BINDINGINDEX_TYPE = GLuint  ,
       typename BUFFER_TYPE       = GLuint  ,
       typename OFFSET_TYPE       = GLintptr,
@@ -36896,6 +49121,31 @@ namespace ge{
               offset      ,
               stride      );
     }
+    template<
+      typename BINDINGINDEX_TYPE = GLuint  ,
+      typename BUFFER_TYPE       = GLuint  ,
+      typename OFFSET_TYPE       = GLintptr,
+      typename STRIDE_TYPE       = GLsizei >
+    inline std::shared_ptr<BindVertexBuffer<
+      BINDINGINDEX_TYPE,
+      BUFFER_TYPE      ,
+      OFFSET_TYPE      ,
+      STRIDE_TYPE      >> sharedBindVertexBuffer(
+        BINDINGINDEX_TYPE const&bindingindex,
+        BUFFER_TYPE       const&buffer      ,
+        OFFSET_TYPE       const&offset      ,
+        STRIDE_TYPE       const&stride      ){
+        return std::make_shared<BindVertexBuffer<
+          BINDINGINDEX_TYPE,
+          BUFFER_TYPE      ,
+          OFFSET_TYPE      ,
+          STRIDE_TYPE      >>(
+              bindingindex,
+              buffer      ,
+              offset      ,
+              stride      );
+    }
+
     template<
       typename SOURCE_TYPE   = GLenum       ,
       typename TYPE_TYPE     = GLenum       ,
@@ -36931,6 +49181,41 @@ namespace ge{
               buf     );
     }
     template<
+      typename SOURCE_TYPE   = GLenum       ,
+      typename TYPE_TYPE     = GLenum       ,
+      typename ID_TYPE       = GLuint       ,
+      typename SEVERITY_TYPE = GLenum       ,
+      typename LENGTH_TYPE   = GLsizei      ,
+      typename BUF_TYPE      = const GLchar*>
+    inline std::shared_ptr<DebugMessageInsert<
+      SOURCE_TYPE  ,
+      TYPE_TYPE    ,
+      ID_TYPE      ,
+      SEVERITY_TYPE,
+      LENGTH_TYPE  ,
+      BUF_TYPE     >> sharedDebugMessageInsert(
+        SOURCE_TYPE   const&source  ,
+        TYPE_TYPE     const&type    ,
+        ID_TYPE       const&id      ,
+        SEVERITY_TYPE const&severity,
+        LENGTH_TYPE   const&length  ,
+        BUF_TYPE      const&buf     ){
+        return std::make_shared<DebugMessageInsert<
+          SOURCE_TYPE  ,
+          TYPE_TYPE    ,
+          ID_TYPE      ,
+          SEVERITY_TYPE,
+          LENGTH_TYPE  ,
+          BUF_TYPE     >>(
+              source  ,
+              type    ,
+              id      ,
+              severity,
+              length  ,
+              buf     );
+    }
+
+    template<
       typename N_TYPE        = GLsizei,
       typename SAMPLERS_TYPE = GLuint*>
     inline CreateSamplers<
@@ -36944,6 +49229,21 @@ namespace ge{
               n       ,
               samplers);
     }
+    template<
+      typename N_TYPE        = GLsizei,
+      typename SAMPLERS_TYPE = GLuint*>
+    inline std::shared_ptr<CreateSamplers<
+      N_TYPE       ,
+      SAMPLERS_TYPE>> sharedCreateSamplers(
+        N_TYPE        const&n       ,
+        SAMPLERS_TYPE const&samplers){
+        return std::make_shared<CreateSamplers<
+          N_TYPE       ,
+          SAMPLERS_TYPE>>(
+              n       ,
+              samplers);
+    }
+
     template<
       typename PROGRAM_TYPE          = GLuint       ,
       typename PROGRAMINTERFACE_TYPE = GLenum       ,
@@ -36989,6 +49289,51 @@ namespace ge{
               params          );
     }
     template<
+      typename PROGRAM_TYPE          = GLuint       ,
+      typename PROGRAMINTERFACE_TYPE = GLenum       ,
+      typename INDEX_TYPE            = GLuint       ,
+      typename PROPCOUNT_TYPE        = GLsizei      ,
+      typename PROPS_TYPE            = const GLenum*,
+      typename BUFSIZE_TYPE          = GLsizei      ,
+      typename LENGTH_TYPE           = GLsizei*     ,
+      typename PARAMS_TYPE           = GLint*       >
+    inline std::shared_ptr<GetProgramResourceiv<
+      PROGRAM_TYPE         ,
+      PROGRAMINTERFACE_TYPE,
+      INDEX_TYPE           ,
+      PROPCOUNT_TYPE       ,
+      PROPS_TYPE           ,
+      BUFSIZE_TYPE         ,
+      LENGTH_TYPE          ,
+      PARAMS_TYPE          >> sharedGetProgramResourceiv(
+        PROGRAM_TYPE          const&program         ,
+        PROGRAMINTERFACE_TYPE const&programInterface,
+        INDEX_TYPE            const&index           ,
+        PROPCOUNT_TYPE        const&propCount       ,
+        PROPS_TYPE            const&props           ,
+        BUFSIZE_TYPE          const&bufSize         ,
+        LENGTH_TYPE           const&length          ,
+        PARAMS_TYPE           const&params          ){
+        return std::make_shared<GetProgramResourceiv<
+          PROGRAM_TYPE         ,
+          PROGRAMINTERFACE_TYPE,
+          INDEX_TYPE           ,
+          PROPCOUNT_TYPE       ,
+          PROPS_TYPE           ,
+          BUFSIZE_TYPE         ,
+          LENGTH_TYPE          ,
+          PARAMS_TYPE          >>(
+              program         ,
+              programInterface,
+              index           ,
+              propCount       ,
+              props           ,
+              bufSize         ,
+              length          ,
+              params          );
+    }
+
+    template<
       typename TARGET_TYPE         = GLenum     ,
       typename INTERNALFORMAT_TYPE = GLenum     ,
       typename FORMAT_TYPE         = GLenum     ,
@@ -37018,6 +49363,36 @@ namespace ge{
               data          );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<ClearBufferData<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      DATA_TYPE          >> sharedClearBufferData(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<ClearBufferData<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          DATA_TYPE          >>(
+              target        ,
+              internalformat,
+              format        ,
+              type          ,
+              data          );
+    }
+
+    template<
       typename PRIMITIVEMODE_TYPE = GLenum>
     inline BeginTransformFeedback<
       PRIMITIVEMODE_TYPE>* newBeginTransformFeedback(
@@ -37026,6 +49401,16 @@ namespace ge{
           PRIMITIVEMODE_TYPE>(
               primitiveMode);
     }
+    template<
+      typename PRIMITIVEMODE_TYPE = GLenum>
+    inline std::shared_ptr<BeginTransformFeedback<
+      PRIMITIVEMODE_TYPE>> sharedBeginTransformFeedback(
+        PRIMITIVEMODE_TYPE const&primitiveMode){
+        return std::make_shared<BeginTransformFeedback<
+          PRIMITIVEMODE_TYPE>>(
+              primitiveMode);
+    }
+
     template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
@@ -37041,6 +49426,21 @@ namespace ge{
               v    );
     }
     template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<VertexAttribI1iv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI1iv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI1iv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
+    template<
       typename RET_TYPE     = GLboolean,
       typename SAMPLER_TYPE = GLuint   >
     inline IsSampler<
@@ -37055,6 +49455,21 @@ namespace ge{
               sampler);
     }
     template<
+      typename RET_TYPE     = GLboolean,
+      typename SAMPLER_TYPE = GLuint   >
+    inline std::shared_ptr<IsSampler<
+      RET_TYPE    ,
+      SAMPLER_TYPE>> sharedIsSampler(
+        RET_TYPE     const&ret    ,
+        SAMPLER_TYPE const&sampler){
+        return std::make_shared<IsSampler<
+          RET_TYPE    ,
+          SAMPLER_TYPE>>(
+              ret    ,
+              sampler);
+    }
+
+    template<
       typename INDEX_TYPE   = GLuint,
       typename DIVISOR_TYPE = GLuint>
     inline VertexAttribDivisor<
@@ -37068,6 +49483,21 @@ namespace ge{
               index  ,
               divisor);
     }
+    template<
+      typename INDEX_TYPE   = GLuint,
+      typename DIVISOR_TYPE = GLuint>
+    inline std::shared_ptr<VertexAttribDivisor<
+      INDEX_TYPE  ,
+      DIVISOR_TYPE>> sharedVertexAttribDivisor(
+        INDEX_TYPE   const&index  ,
+        DIVISOR_TYPE const&divisor){
+        return std::make_shared<VertexAttribDivisor<
+          INDEX_TYPE  ,
+          DIVISOR_TYPE>>(
+              index  ,
+              divisor);
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -37092,6 +49522,31 @@ namespace ge{
               bufSize,
               pixels );
     }
+    template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename PIXELS_TYPE  = void*  >
+    inline std::shared_ptr<GetCompressedTextureImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      BUFSIZE_TYPE,
+      PIXELS_TYPE >> sharedGetCompressedTextureImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        BUFSIZE_TYPE const&bufSize,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<GetCompressedTextureImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          BUFSIZE_TYPE,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              bufSize,
+              pixels );
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename LEVEL_TYPE          = GLint      ,
@@ -37132,6 +49587,46 @@ namespace ge{
               data          );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename LEVEL_TYPE          = GLint      ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename WIDTH_TYPE          = GLsizei    ,
+      typename BORDER_TYPE         = GLint      ,
+      typename IMAGESIZE_TYPE      = GLsizei    ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<CompressedTexImage1D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      BORDER_TYPE        ,
+      IMAGESIZE_TYPE     ,
+      DATA_TYPE          >> sharedCompressedTexImage1D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        BORDER_TYPE         const&border        ,
+        IMAGESIZE_TYPE      const&imageSize     ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<CompressedTexImage1D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          BORDER_TYPE        ,
+          IMAGESIZE_TYPE     ,
+          DATA_TYPE          >>(
+              target        ,
+              level         ,
+              internalformat,
+              width         ,
+              border        ,
+              imageSize     ,
+              data          );
+    }
+
+    template<
       typename N_TYPE   = GLsizei      ,
       typename IDS_TYPE = const GLuint*>
     inline DeleteTransformFeedbacks<
@@ -37145,6 +49640,21 @@ namespace ge{
               n  ,
               ids);
     }
+    template<
+      typename N_TYPE   = GLsizei      ,
+      typename IDS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteTransformFeedbacks<
+      N_TYPE  ,
+      IDS_TYPE>> sharedDeleteTransformFeedbacks(
+        N_TYPE   const&n  ,
+        IDS_TYPE const&ids){
+        return std::make_shared<DeleteTransformFeedbacks<
+          N_TYPE  ,
+          IDS_TYPE>>(
+              n  ,
+              ids);
+    }
+
     template<
       typename TARGET_TYPE  = GLenum ,
       typename LEVEL_TYPE   = GLint  ,
@@ -37179,6 +49689,41 @@ namespace ge{
               y      ,
               width  );
     }
+    template<
+      typename TARGET_TYPE  = GLenum ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei>
+    inline std::shared_ptr<CopyTexSubImage1D<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  >> sharedCopyTexSubImage1D(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ){
+        return std::make_shared<CopyTexSubImage1D<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  >>(
+              target ,
+              level  ,
+              xoffset,
+              x      ,
+              y      ,
+              width  );
+    }
+
     template<
       typename MODE_TYPE       = GLenum     ,
       typename START_TYPE      = GLuint     ,
@@ -37219,6 +49764,46 @@ namespace ge{
               basevertex);
     }
     template<
+      typename MODE_TYPE       = GLenum     ,
+      typename START_TYPE      = GLuint     ,
+      typename END_TYPE        = GLuint     ,
+      typename COUNT_TYPE      = GLsizei    ,
+      typename TYPE_TYPE       = GLenum     ,
+      typename INDICES_TYPE    = const void*,
+      typename BASEVERTEX_TYPE = GLint      >
+    inline std::shared_ptr<DrawRangeElementsBaseVertex<
+      MODE_TYPE      ,
+      START_TYPE     ,
+      END_TYPE       ,
+      COUNT_TYPE     ,
+      TYPE_TYPE      ,
+      INDICES_TYPE   ,
+      BASEVERTEX_TYPE>> sharedDrawRangeElementsBaseVertex(
+        MODE_TYPE       const&mode      ,
+        START_TYPE      const&start     ,
+        END_TYPE        const&end       ,
+        COUNT_TYPE      const&count     ,
+        TYPE_TYPE       const&type      ,
+        INDICES_TYPE    const&indices   ,
+        BASEVERTEX_TYPE const&basevertex){
+        return std::make_shared<DrawRangeElementsBaseVertex<
+          MODE_TYPE      ,
+          START_TYPE     ,
+          END_TYPE       ,
+          COUNT_TYPE     ,
+          TYPE_TYPE      ,
+          INDICES_TYPE   ,
+          BASEVERTEX_TYPE>>(
+              mode      ,
+              start     ,
+              end       ,
+              count     ,
+              type      ,
+              indices   ,
+              basevertex);
+    }
+
+    template<
       typename RET_TYPE    = GLenum,
       typename TARGET_TYPE = GLenum>
     inline CheckFramebufferStatus<
@@ -37232,6 +49817,21 @@ namespace ge{
               ret   ,
               target);
     }
+    template<
+      typename RET_TYPE    = GLenum,
+      typename TARGET_TYPE = GLenum>
+    inline std::shared_ptr<CheckFramebufferStatus<
+      RET_TYPE   ,
+      TARGET_TYPE>> sharedCheckFramebufferStatus(
+        RET_TYPE    const&ret   ,
+        TARGET_TYPE const&target){
+        return std::make_shared<CheckFramebufferStatus<
+          RET_TYPE   ,
+          TARGET_TYPE>>(
+              ret   ,
+              target);
+    }
+
 
     template<
       typename PROGRAM_TYPE = GLuint       ,
@@ -37252,6 +49852,26 @@ namespace ge{
               index  ,
               name   );
     }
+    template<
+      typename PROGRAM_TYPE = GLuint       ,
+      typename INDEX_TYPE   = GLuint       ,
+      typename NAME_TYPE    = const GLchar*>
+    inline std::shared_ptr<BindAttribLocation<
+      PROGRAM_TYPE,
+      INDEX_TYPE  ,
+      NAME_TYPE   >> sharedBindAttribLocation(
+        PROGRAM_TYPE const&program,
+        INDEX_TYPE   const&index  ,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<BindAttribLocation<
+          PROGRAM_TYPE,
+          INDEX_TYPE  ,
+          NAME_TYPE   >>(
+              program,
+              index  ,
+              name   );
+    }
+
     template<
       typename UNIT_TYPE    = GLuint   ,
       typename TEXTURE_TYPE = GLuint   ,
@@ -37292,6 +49912,46 @@ namespace ge{
               format );
     }
     template<
+      typename UNIT_TYPE    = GLuint   ,
+      typename TEXTURE_TYPE = GLuint   ,
+      typename LEVEL_TYPE   = GLint    ,
+      typename LAYERED_TYPE = GLboolean,
+      typename LAYER_TYPE   = GLint    ,
+      typename ACCESS_TYPE  = GLenum   ,
+      typename FORMAT_TYPE  = GLenum   >
+    inline std::shared_ptr<BindImageTexture<
+      UNIT_TYPE   ,
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      LAYERED_TYPE,
+      LAYER_TYPE  ,
+      ACCESS_TYPE ,
+      FORMAT_TYPE >> sharedBindImageTexture(
+        UNIT_TYPE    const&unit   ,
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        LAYERED_TYPE const&layered,
+        LAYER_TYPE   const&layer  ,
+        ACCESS_TYPE  const&access ,
+        FORMAT_TYPE  const&format ){
+        return std::make_shared<BindImageTexture<
+          UNIT_TYPE   ,
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          LAYERED_TYPE,
+          LAYER_TYPE  ,
+          ACCESS_TYPE ,
+          FORMAT_TYPE >>(
+              unit   ,
+              texture,
+              level  ,
+              layered,
+              layer  ,
+              access ,
+              format );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint          ,
       typename COUNT_TYPE     = GLsizei        ,
       typename TRANSPOSE_TYPE = GLboolean      ,
@@ -37316,6 +49976,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<UniformMatrix2dv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix2dv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix2dv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint       ,
       typename LOCATION_TYPE = GLint        ,
       typename COUNT_TYPE    = GLsizei      ,
@@ -37339,6 +50024,31 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint       ,
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<ProgramUniform2uiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform2uiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform2uiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename MODE_TYPE    = GLenum     ,
       typename START_TYPE   = GLuint     ,
@@ -37374,6 +50084,41 @@ namespace ge{
               indices);
     }
     template<
+      typename MODE_TYPE    = GLenum     ,
+      typename START_TYPE   = GLuint     ,
+      typename END_TYPE     = GLuint     ,
+      typename COUNT_TYPE   = GLsizei    ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename INDICES_TYPE = const void*>
+    inline std::shared_ptr<DrawRangeElements<
+      MODE_TYPE   ,
+      START_TYPE  ,
+      END_TYPE    ,
+      COUNT_TYPE  ,
+      TYPE_TYPE   ,
+      INDICES_TYPE>> sharedDrawRangeElements(
+        MODE_TYPE    const&mode   ,
+        START_TYPE   const&start  ,
+        END_TYPE     const&end    ,
+        COUNT_TYPE   const&count  ,
+        TYPE_TYPE    const&type   ,
+        INDICES_TYPE const&indices){
+        return std::make_shared<DrawRangeElements<
+          MODE_TYPE   ,
+          START_TYPE  ,
+          END_TYPE    ,
+          COUNT_TYPE  ,
+          TYPE_TYPE   ,
+          INDICES_TYPE>>(
+              mode   ,
+              start  ,
+              end    ,
+              count  ,
+              type   ,
+              indices);
+    }
+
+    template<
       typename ID_TYPE     = GLuint ,
       typename PNAME_TYPE  = GLenum ,
       typename PARAMS_TYPE = GLuint*>
@@ -37393,6 +50138,26 @@ namespace ge{
               params);
     }
     template<
+      typename ID_TYPE     = GLuint ,
+      typename PNAME_TYPE  = GLenum ,
+      typename PARAMS_TYPE = GLuint*>
+    inline std::shared_ptr<GetQueryObjectuiv<
+      ID_TYPE    ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetQueryObjectuiv(
+        ID_TYPE     const&id    ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetQueryObjectuiv<
+          ID_TYPE    ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              id    ,
+              pname ,
+              params);
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint,
       typename BUFFER_TYPE = GLuint>
@@ -37411,6 +50176,26 @@ namespace ge{
               index ,
               buffer);
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint,
+      typename BUFFER_TYPE = GLuint>
+    inline std::shared_ptr<BindBufferBase<
+      TARGET_TYPE,
+      INDEX_TYPE ,
+      BUFFER_TYPE>> sharedBindBufferBase(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ,
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<BindBufferBase<
+          TARGET_TYPE,
+          INDEX_TYPE ,
+          BUFFER_TYPE>>(
+              target,
+              index ,
+              buffer);
+    }
+
     template<
       typename PROGRAM_TYPE = GLuint  ,
       typename INDEX_TYPE   = GLuint  ,
@@ -37451,6 +50236,46 @@ namespace ge{
               name   );
     }
     template<
+      typename PROGRAM_TYPE = GLuint  ,
+      typename INDEX_TYPE   = GLuint  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename SIZE_TYPE    = GLint*  ,
+      typename TYPE_TYPE    = GLenum* ,
+      typename NAME_TYPE    = GLchar* >
+    inline std::shared_ptr<GetActiveUniform<
+      PROGRAM_TYPE,
+      INDEX_TYPE  ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      SIZE_TYPE   ,
+      TYPE_TYPE   ,
+      NAME_TYPE   >> sharedGetActiveUniform(
+        PROGRAM_TYPE const&program,
+        INDEX_TYPE   const&index  ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        SIZE_TYPE    const&size   ,
+        TYPE_TYPE    const&type   ,
+        NAME_TYPE    const&name   ){
+        return std::make_shared<GetActiveUniform<
+          PROGRAM_TYPE,
+          INDEX_TYPE  ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          SIZE_TYPE   ,
+          TYPE_TYPE   ,
+          NAME_TYPE   >>(
+              program,
+              index  ,
+              bufSize,
+              length ,
+              size   ,
+              type   ,
+              name   );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum     ,
       typename OFFSET_TYPE = GLintptr   ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -37475,6 +50300,31 @@ namespace ge{
               data  );
     }
     template<
+      typename TARGET_TYPE = GLenum     ,
+      typename OFFSET_TYPE = GLintptr   ,
+      typename SIZE_TYPE   = GLsizeiptr ,
+      typename DATA_TYPE   = const void*>
+    inline std::shared_ptr<BufferSubData<
+      TARGET_TYPE,
+      OFFSET_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  >> sharedBufferSubData(
+        TARGET_TYPE const&target,
+        OFFSET_TYPE const&offset,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ){
+        return std::make_shared<BufferSubData<
+          TARGET_TYPE,
+          OFFSET_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  >>(
+              target,
+              offset,
+              size  ,
+              data  );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
     inline VertexAttrib4iv<
@@ -37488,6 +50338,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<VertexAttrib4iv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4iv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4iv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint       ,
       typename LOCATION_TYPE = GLint        ,
@@ -37513,6 +50378,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint       ,
+      typename LOCATION_TYPE = GLint        ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename VALUE_TYPE    = const GLuint*>
+    inline std::shared_ptr<ProgramUniform1uiv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform1uiv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform1uiv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename TARGET_TYPE     = GLenum,
       typename ATTACHMENT_TYPE = GLenum,
       typename TEXTURE_TYPE    = GLuint,
@@ -37536,6 +50426,31 @@ namespace ge{
               texture   ,
               level     );
     }
+    template<
+      typename TARGET_TYPE     = GLenum,
+      typename ATTACHMENT_TYPE = GLenum,
+      typename TEXTURE_TYPE    = GLuint,
+      typename LEVEL_TYPE      = GLint >
+    inline std::shared_ptr<FramebufferTexture<
+      TARGET_TYPE    ,
+      ATTACHMENT_TYPE,
+      TEXTURE_TYPE   ,
+      LEVEL_TYPE     >> sharedFramebufferTexture(
+        TARGET_TYPE     const&target    ,
+        ATTACHMENT_TYPE const&attachment,
+        TEXTURE_TYPE    const&texture   ,
+        LEVEL_TYPE      const&level     ){
+        return std::make_shared<FramebufferTexture<
+          TARGET_TYPE    ,
+          ATTACHMENT_TYPE,
+          TEXTURE_TYPE   ,
+          LEVEL_TYPE     >>(
+              target    ,
+              attachment,
+              texture   ,
+              level     );
+    }
+
     template<
       typename BUF_TYPE      = GLuint,
       typename SRCRGB_TYPE   = GLenum,
@@ -37566,6 +50481,36 @@ namespace ge{
               dstAlpha);
     }
     template<
+      typename BUF_TYPE      = GLuint,
+      typename SRCRGB_TYPE   = GLenum,
+      typename DSTRGB_TYPE   = GLenum,
+      typename SRCALPHA_TYPE = GLenum,
+      typename DSTALPHA_TYPE = GLenum>
+    inline std::shared_ptr<BlendFuncSeparatei<
+      BUF_TYPE     ,
+      SRCRGB_TYPE  ,
+      DSTRGB_TYPE  ,
+      SRCALPHA_TYPE,
+      DSTALPHA_TYPE>> sharedBlendFuncSeparatei(
+        BUF_TYPE      const&buf     ,
+        SRCRGB_TYPE   const&srcRGB  ,
+        DSTRGB_TYPE   const&dstRGB  ,
+        SRCALPHA_TYPE const&srcAlpha,
+        DSTALPHA_TYPE const&dstAlpha){
+        return std::make_shared<BlendFuncSeparatei<
+          BUF_TYPE     ,
+          SRCRGB_TYPE  ,
+          DSTRGB_TYPE  ,
+          SRCALPHA_TYPE,
+          DSTALPHA_TYPE>>(
+              buf     ,
+              srcRGB  ,
+              dstRGB  ,
+              srcAlpha,
+              dstAlpha);
+    }
+
+    template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
@@ -37595,6 +50540,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix4x2fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix4x2fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix4x2fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename ID_TYPE     = GLuint   ,
       typename PNAME_TYPE  = GLenum   ,
       typename PARAMS_TYPE = GLuint64*>
@@ -37613,6 +50588,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename ID_TYPE     = GLuint   ,
+      typename PNAME_TYPE  = GLenum   ,
+      typename PARAMS_TYPE = GLuint64*>
+    inline std::shared_ptr<GetQueryObjectui64v<
+      ID_TYPE    ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetQueryObjectui64v(
+        ID_TYPE     const&id    ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetQueryObjectui64v<
+          ID_TYPE    ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              id    ,
+              pname ,
+              params);
+    }
+
     template<
       typename MODE_TYPE      = GLenum        ,
       typename FIRST_TYPE     = const GLint*  ,
@@ -37638,6 +50633,31 @@ namespace ge{
               drawcount);
     }
     template<
+      typename MODE_TYPE      = GLenum        ,
+      typename FIRST_TYPE     = const GLint*  ,
+      typename COUNT_TYPE     = const GLsizei*,
+      typename DRAWCOUNT_TYPE = GLsizei       >
+    inline std::shared_ptr<MultiDrawArrays<
+      MODE_TYPE     ,
+      FIRST_TYPE    ,
+      COUNT_TYPE    ,
+      DRAWCOUNT_TYPE>> sharedMultiDrawArrays(
+        MODE_TYPE      const&mode     ,
+        FIRST_TYPE     const&first    ,
+        COUNT_TYPE     const&count    ,
+        DRAWCOUNT_TYPE const&drawcount){
+        return std::make_shared<MultiDrawArrays<
+          MODE_TYPE     ,
+          FIRST_TYPE    ,
+          COUNT_TYPE    ,
+          DRAWCOUNT_TYPE>>(
+              mode     ,
+              first    ,
+              count    ,
+              drawcount);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
     inline VertexAttribI2iv<
@@ -37651,6 +50671,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<VertexAttribI2iv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI2iv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI2iv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename SHADERTYPE_TYPE    = GLenum,
       typename PRECISIONTYPE_TYPE = GLenum,
@@ -37676,6 +50711,31 @@ namespace ge{
               precision    );
     }
     template<
+      typename SHADERTYPE_TYPE    = GLenum,
+      typename PRECISIONTYPE_TYPE = GLenum,
+      typename RANGE_TYPE         = GLint*,
+      typename PRECISION_TYPE     = GLint*>
+    inline std::shared_ptr<GetShaderPrecisionFormat<
+      SHADERTYPE_TYPE   ,
+      PRECISIONTYPE_TYPE,
+      RANGE_TYPE        ,
+      PRECISION_TYPE    >> sharedGetShaderPrecisionFormat(
+        SHADERTYPE_TYPE    const&shadertype   ,
+        PRECISIONTYPE_TYPE const&precisiontype,
+        RANGE_TYPE         const&range        ,
+        PRECISION_TYPE     const&precision    ){
+        return std::make_shared<GetShaderPrecisionFormat<
+          SHADERTYPE_TYPE   ,
+          PRECISIONTYPE_TYPE,
+          RANGE_TYPE        ,
+          PRECISION_TYPE    >>(
+              shadertype   ,
+              precisiontype,
+              range        ,
+              precision    );
+    }
+
+    template<
       typename FLAG_TYPE = GLboolean>
     inline DepthMask<
       FLAG_TYPE>* newDepthMask(
@@ -37684,6 +50744,16 @@ namespace ge{
           FLAG_TYPE>(
               flag);
     }
+    template<
+      typename FLAG_TYPE = GLboolean>
+    inline std::shared_ptr<DepthMask<
+      FLAG_TYPE>> sharedDepthMask(
+        FLAG_TYPE const&flag){
+        return std::make_shared<DepthMask<
+          FLAG_TYPE>>(
+              flag);
+    }
+
     template<
       typename TEXTURE_TYPE        = GLuint,
       typename TARGET_TYPE         = GLenum,
@@ -37729,6 +50799,51 @@ namespace ge{
               numlayers     );
     }
     template<
+      typename TEXTURE_TYPE        = GLuint,
+      typename TARGET_TYPE         = GLenum,
+      typename ORIGTEXTURE_TYPE    = GLuint,
+      typename INTERNALFORMAT_TYPE = GLenum,
+      typename MINLEVEL_TYPE       = GLuint,
+      typename NUMLEVELS_TYPE      = GLuint,
+      typename MINLAYER_TYPE       = GLuint,
+      typename NUMLAYERS_TYPE      = GLuint>
+    inline std::shared_ptr<TextureView<
+      TEXTURE_TYPE       ,
+      TARGET_TYPE        ,
+      ORIGTEXTURE_TYPE   ,
+      INTERNALFORMAT_TYPE,
+      MINLEVEL_TYPE      ,
+      NUMLEVELS_TYPE     ,
+      MINLAYER_TYPE      ,
+      NUMLAYERS_TYPE     >> sharedTextureView(
+        TEXTURE_TYPE        const&texture       ,
+        TARGET_TYPE         const&target        ,
+        ORIGTEXTURE_TYPE    const&origtexture   ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        MINLEVEL_TYPE       const&minlevel      ,
+        NUMLEVELS_TYPE      const&numlevels     ,
+        MINLAYER_TYPE       const&minlayer      ,
+        NUMLAYERS_TYPE      const&numlayers     ){
+        return std::make_shared<TextureView<
+          TEXTURE_TYPE       ,
+          TARGET_TYPE        ,
+          ORIGTEXTURE_TYPE   ,
+          INTERNALFORMAT_TYPE,
+          MINLEVEL_TYPE      ,
+          NUMLEVELS_TYPE     ,
+          MINLAYER_TYPE      ,
+          NUMLAYERS_TYPE     >>(
+              texture       ,
+              target        ,
+              origtexture   ,
+              internalformat,
+              minlevel      ,
+              numlevels     ,
+              minlayer      ,
+              numlayers     );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename INDEX_TYPE  = GLuint>
     inline Disablei<
@@ -37742,6 +50857,21 @@ namespace ge{
               target,
               index );
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename INDEX_TYPE  = GLuint>
+    inline std::shared_ptr<Disablei<
+      TARGET_TYPE,
+      INDEX_TYPE >> sharedDisablei(
+        TARGET_TYPE const&target,
+        INDEX_TYPE  const&index ){
+        return std::make_shared<Disablei<
+          TARGET_TYPE,
+          INDEX_TYPE >>(
+              target,
+              index );
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint        ,
       typename LOCATION_TYPE  = GLint         ,
@@ -37772,6 +50902,36 @@ namespace ge{
               value    );
     }
     template<
+      typename PROGRAM_TYPE   = GLuint        ,
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<ProgramUniformMatrix2x4fv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix2x4fv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix2x4fv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename READTARGET_TYPE  = GLenum    ,
       typename WRITETARGET_TYPE = GLenum    ,
       typename READOFFSET_TYPE  = GLintptr  ,
@@ -37801,6 +50961,36 @@ namespace ge{
               size       );
     }
     template<
+      typename READTARGET_TYPE  = GLenum    ,
+      typename WRITETARGET_TYPE = GLenum    ,
+      typename READOFFSET_TYPE  = GLintptr  ,
+      typename WRITEOFFSET_TYPE = GLintptr  ,
+      typename SIZE_TYPE        = GLsizeiptr>
+    inline std::shared_ptr<CopyBufferSubData<
+      READTARGET_TYPE ,
+      WRITETARGET_TYPE,
+      READOFFSET_TYPE ,
+      WRITEOFFSET_TYPE,
+      SIZE_TYPE       >> sharedCopyBufferSubData(
+        READTARGET_TYPE  const&readTarget ,
+        WRITETARGET_TYPE const&writeTarget,
+        READOFFSET_TYPE  const&readOffset ,
+        WRITEOFFSET_TYPE const&writeOffset,
+        SIZE_TYPE        const&size       ){
+        return std::make_shared<CopyBufferSubData<
+          READTARGET_TYPE ,
+          WRITETARGET_TYPE,
+          READOFFSET_TYPE ,
+          WRITEOFFSET_TYPE,
+          SIZE_TYPE       >>(
+              readTarget ,
+              writeTarget,
+              readOffset ,
+              writeOffset,
+              size       );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble>
     inline VertexAttribL1d<
@@ -37814,6 +51004,21 @@ namespace ge{
               index,
               x    );
     }
+    template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttribL1d<
+      INDEX_TYPE,
+      X_TYPE    >> sharedVertexAttribL1d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ){
+        return std::make_shared<VertexAttribL1d<
+          INDEX_TYPE,
+          X_TYPE    >>(
+              index,
+              x    );
+    }
+
     template<
       typename N_TYPE             = GLsizei      ,
       typename RENDERBUFFERS_TYPE = const GLuint*>
@@ -37829,6 +51034,21 @@ namespace ge{
               renderbuffers);
     }
     template<
+      typename N_TYPE             = GLsizei      ,
+      typename RENDERBUFFERS_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteRenderbuffers<
+      N_TYPE            ,
+      RENDERBUFFERS_TYPE>> sharedDeleteRenderbuffers(
+        N_TYPE             const&n            ,
+        RENDERBUFFERS_TYPE const&renderbuffers){
+        return std::make_shared<DeleteRenderbuffers<
+          N_TYPE            ,
+          RENDERBUFFERS_TYPE>>(
+              n            ,
+              renderbuffers);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLuint*>
     inline VertexAttribI3uiv<
@@ -37842,6 +51062,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLuint*>
+    inline std::shared_ptr<VertexAttribI3uiv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI3uiv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI3uiv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
 
     template<
       typename ATTRIBINDEX_TYPE    = GLuint,
@@ -37868,6 +51103,31 @@ namespace ge{
               relativeoffset);
     }
     template<
+      typename ATTRIBINDEX_TYPE    = GLuint,
+      typename SIZE_TYPE           = GLint ,
+      typename TYPE_TYPE           = GLenum,
+      typename RELATIVEOFFSET_TYPE = GLuint>
+    inline std::shared_ptr<VertexAttribIFormat<
+      ATTRIBINDEX_TYPE   ,
+      SIZE_TYPE          ,
+      TYPE_TYPE          ,
+      RELATIVEOFFSET_TYPE>> sharedVertexAttribIFormat(
+        ATTRIBINDEX_TYPE    const&attribindex   ,
+        SIZE_TYPE           const&size          ,
+        TYPE_TYPE           const&type          ,
+        RELATIVEOFFSET_TYPE const&relativeoffset){
+        return std::make_shared<VertexAttribIFormat<
+          ATTRIBINDEX_TYPE   ,
+          SIZE_TYPE          ,
+          TYPE_TYPE          ,
+          RELATIVEOFFSET_TYPE>>(
+              attribindex   ,
+              size          ,
+              type          ,
+              relativeoffset);
+    }
+
+    template<
       typename N_TYPE            = GLsizei,
       typename FRAMEBUFFERS_TYPE = GLuint*>
     inline CreateFramebuffers<
@@ -37881,6 +51141,21 @@ namespace ge{
               n           ,
               framebuffers);
     }
+    template<
+      typename N_TYPE            = GLsizei,
+      typename FRAMEBUFFERS_TYPE = GLuint*>
+    inline std::shared_ptr<CreateFramebuffers<
+      N_TYPE           ,
+      FRAMEBUFFERS_TYPE>> sharedCreateFramebuffers(
+        N_TYPE            const&n           ,
+        FRAMEBUFFERS_TYPE const&framebuffers){
+        return std::make_shared<CreateFramebuffers<
+          N_TYPE           ,
+          FRAMEBUFFERS_TYPE>>(
+              n           ,
+              framebuffers);
+    }
+
     template<
       typename SYNC_TYPE    = GLsync  ,
       typename PNAME_TYPE   = GLenum  ,
@@ -37911,6 +51186,36 @@ namespace ge{
               values );
     }
     template<
+      typename SYNC_TYPE    = GLsync  ,
+      typename PNAME_TYPE   = GLenum  ,
+      typename BUFSIZE_TYPE = GLsizei ,
+      typename LENGTH_TYPE  = GLsizei*,
+      typename VALUES_TYPE  = GLint*  >
+    inline std::shared_ptr<GetSynciv<
+      SYNC_TYPE   ,
+      PNAME_TYPE  ,
+      BUFSIZE_TYPE,
+      LENGTH_TYPE ,
+      VALUES_TYPE >> sharedGetSynciv(
+        SYNC_TYPE    const&sync   ,
+        PNAME_TYPE   const&pname  ,
+        BUFSIZE_TYPE const&bufSize,
+        LENGTH_TYPE  const&length ,
+        VALUES_TYPE  const&values ){
+        return std::make_shared<GetSynciv<
+          SYNC_TYPE   ,
+          PNAME_TYPE  ,
+          BUFSIZE_TYPE,
+          LENGTH_TYPE ,
+          VALUES_TYPE >>(
+              sync   ,
+              pname  ,
+              bufSize,
+              length ,
+              values );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint         ,
       typename LOCATION_TYPE = GLint          ,
       typename COUNT_TYPE    = GLsizei        ,
@@ -37934,6 +51239,31 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint         ,
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<ProgramUniform2dv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform2dv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform2dv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename TARGET_TYPE               = GLenum   ,
       typename SAMPLES_TYPE              = GLsizei  ,
@@ -37974,6 +51304,46 @@ namespace ge{
               fixedsamplelocations);
     }
     template<
+      typename TARGET_TYPE               = GLenum   ,
+      typename SAMPLES_TYPE              = GLsizei  ,
+      typename INTERNALFORMAT_TYPE       = GLenum   ,
+      typename WIDTH_TYPE                = GLsizei  ,
+      typename HEIGHT_TYPE               = GLsizei  ,
+      typename DEPTH_TYPE                = GLsizei  ,
+      typename FIXEDSAMPLELOCATIONS_TYPE = GLboolean>
+    inline std::shared_ptr<TexImage3DMultisample<
+      TARGET_TYPE              ,
+      SAMPLES_TYPE             ,
+      INTERNALFORMAT_TYPE      ,
+      WIDTH_TYPE               ,
+      HEIGHT_TYPE              ,
+      DEPTH_TYPE               ,
+      FIXEDSAMPLELOCATIONS_TYPE>> sharedTexImage3DMultisample(
+        TARGET_TYPE               const&target              ,
+        SAMPLES_TYPE              const&samples             ,
+        INTERNALFORMAT_TYPE       const&internalformat      ,
+        WIDTH_TYPE                const&width               ,
+        HEIGHT_TYPE               const&height              ,
+        DEPTH_TYPE                const&depth               ,
+        FIXEDSAMPLELOCATIONS_TYPE const&fixedsamplelocations){
+        return std::make_shared<TexImage3DMultisample<
+          TARGET_TYPE              ,
+          SAMPLES_TYPE             ,
+          INTERNALFORMAT_TYPE      ,
+          WIDTH_TYPE               ,
+          HEIGHT_TYPE              ,
+          DEPTH_TYPE               ,
+          FIXEDSAMPLELOCATIONS_TYPE>>(
+              target              ,
+              samples             ,
+              internalformat      ,
+              width               ,
+              height              ,
+              depth               ,
+              fixedsamplelocations);
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
       typename V0_TYPE       = GLint ,
@@ -37998,6 +51368,31 @@ namespace ge{
               v1      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLint ,
+      typename V1_TYPE       = GLint >
+    inline std::shared_ptr<ProgramUniform2i<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedProgramUniform2i(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<ProgramUniform2i<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      );
+    }
+
+    template<
       typename BUFFER_TYPE = GLuint  ,
       typename PNAME_TYPE  = GLenum  ,
       typename PARAMS_TYPE = GLint64*>
@@ -38016,6 +51411,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename BUFFER_TYPE = GLuint  ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename PARAMS_TYPE = GLint64*>
+    inline std::shared_ptr<GetNamedBufferParameteri64v<
+      BUFFER_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetNamedBufferParameteri64v(
+        BUFFER_TYPE const&buffer,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetNamedBufferParameteri64v<
+          BUFFER_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              buffer,
+              pname ,
+              params);
+    }
+
     template<
       typename MODE_TYPE      = GLenum     ,
       typename TYPE_TYPE      = GLenum     ,
@@ -38046,6 +51461,36 @@ namespace ge{
               stride   );
     }
     template<
+      typename MODE_TYPE      = GLenum     ,
+      typename TYPE_TYPE      = GLenum     ,
+      typename INDIRECT_TYPE  = const void*,
+      typename DRAWCOUNT_TYPE = GLsizei    ,
+      typename STRIDE_TYPE    = GLsizei    >
+    inline std::shared_ptr<MultiDrawElementsIndirect<
+      MODE_TYPE     ,
+      TYPE_TYPE     ,
+      INDIRECT_TYPE ,
+      DRAWCOUNT_TYPE,
+      STRIDE_TYPE   >> sharedMultiDrawElementsIndirect(
+        MODE_TYPE      const&mode     ,
+        TYPE_TYPE      const&type     ,
+        INDIRECT_TYPE  const&indirect ,
+        DRAWCOUNT_TYPE const&drawcount,
+        STRIDE_TYPE    const&stride   ){
+        return std::make_shared<MultiDrawElementsIndirect<
+          MODE_TYPE     ,
+          TYPE_TYPE     ,
+          INDIRECT_TYPE ,
+          DRAWCOUNT_TYPE,
+          STRIDE_TYPE   >>(
+              mode     ,
+              type     ,
+              indirect ,
+              drawcount,
+              stride   );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
@@ -38070,6 +51515,31 @@ namespace ge{
               value    );
     }
     template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix4fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix4fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix4fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename BUFFER_TYPE = GLuint>
     inline BindBuffer<
@@ -38084,6 +51554,21 @@ namespace ge{
               buffer);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename BUFFER_TYPE = GLuint>
+    inline std::shared_ptr<BindBuffer<
+      TARGET_TYPE,
+      BUFFER_TYPE>> sharedBindBuffer(
+        TARGET_TYPE const&target,
+        BUFFER_TYPE const&buffer){
+        return std::make_shared<BindBuffer<
+          TARGET_TYPE,
+          BUFFER_TYPE>>(
+              target,
+              buffer);
+    }
+
+    template<
       typename DEPTH_TYPE = GLdouble>
     inline ClearDepth<
       DEPTH_TYPE>* newClearDepth(
@@ -38092,6 +51577,16 @@ namespace ge{
           DEPTH_TYPE>(
               depth);
     }
+    template<
+      typename DEPTH_TYPE = GLdouble>
+    inline std::shared_ptr<ClearDepth<
+      DEPTH_TYPE>> sharedClearDepth(
+        DEPTH_TYPE const&depth){
+        return std::make_shared<ClearDepth<
+          DEPTH_TYPE>>(
+              depth);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint  ,
       typename LOCATION_TYPE = GLint   ,
@@ -38117,6 +51612,31 @@ namespace ge{
               v1      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint  ,
+      typename LOCATION_TYPE = GLint   ,
+      typename V0_TYPE       = GLdouble,
+      typename V1_TYPE       = GLdouble>
+    inline std::shared_ptr<ProgramUniform2d<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedProgramUniform2d(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<ProgramUniform2d<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      );
+    }
+
+    template<
       typename PROGRAM_TYPE  = GLuint ,
       typename LOCATION_TYPE = GLint  ,
       typename V0_TYPE       = GLfloat,
@@ -38140,6 +51660,31 @@ namespace ge{
               v0      ,
               v1      );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint ,
+      typename LOCATION_TYPE = GLint  ,
+      typename V0_TYPE       = GLfloat,
+      typename V1_TYPE       = GLfloat>
+    inline std::shared_ptr<ProgramUniform2f<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedProgramUniform2f(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<ProgramUniform2f<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      );
+    }
+
     template<
       typename PROGRAM_TYPE      = GLuint  ,
       typename BUFSIZE_TYPE      = GLsizei ,
@@ -38170,6 +51715,36 @@ namespace ge{
               binary      );
     }
     template<
+      typename PROGRAM_TYPE      = GLuint  ,
+      typename BUFSIZE_TYPE      = GLsizei ,
+      typename LENGTH_TYPE       = GLsizei*,
+      typename BINARYFORMAT_TYPE = GLenum* ,
+      typename BINARY_TYPE       = void*   >
+    inline std::shared_ptr<GetProgramBinary<
+      PROGRAM_TYPE     ,
+      BUFSIZE_TYPE     ,
+      LENGTH_TYPE      ,
+      BINARYFORMAT_TYPE,
+      BINARY_TYPE      >> sharedGetProgramBinary(
+        PROGRAM_TYPE      const&program     ,
+        BUFSIZE_TYPE      const&bufSize     ,
+        LENGTH_TYPE       const&length      ,
+        BINARYFORMAT_TYPE const&binaryFormat,
+        BINARY_TYPE       const&binary      ){
+        return std::make_shared<GetProgramBinary<
+          PROGRAM_TYPE     ,
+          BUFSIZE_TYPE     ,
+          LENGTH_TYPE      ,
+          BINARYFORMAT_TYPE,
+          BINARY_TYPE      >>(
+              program     ,
+              bufSize     ,
+              length      ,
+              binaryFormat,
+              binary      );
+    }
+
+    template<
       typename LOCATION_TYPE  = GLint         ,
       typename COUNT_TYPE     = GLsizei       ,
       typename TRANSPOSE_TYPE = GLboolean     ,
@@ -38193,6 +51768,31 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename LOCATION_TYPE  = GLint         ,
+      typename COUNT_TYPE     = GLsizei       ,
+      typename TRANSPOSE_TYPE = GLboolean     ,
+      typename VALUE_TYPE     = const GLfloat*>
+    inline std::shared_ptr<UniformMatrix2x4fv<
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedUniformMatrix2x4fv(
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<UniformMatrix2x4fv<
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum     ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -38218,6 +51818,31 @@ namespace ge{
               usage );
     }
     template<
+      typename TARGET_TYPE = GLenum     ,
+      typename SIZE_TYPE   = GLsizeiptr ,
+      typename DATA_TYPE   = const void*,
+      typename USAGE_TYPE  = GLenum     >
+    inline std::shared_ptr<BufferData<
+      TARGET_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  ,
+      USAGE_TYPE >> sharedBufferData(
+        TARGET_TYPE const&target,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ,
+        USAGE_TYPE  const&usage ){
+        return std::make_shared<BufferData<
+          TARGET_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  ,
+          USAGE_TYPE >>(
+              target,
+              size  ,
+              data  ,
+              usage );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = GLint*>
@@ -38236,6 +51861,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetTexParameterIiv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetTexParameterIiv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetTexParameterIiv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
 
     template<
       typename RET_TYPE = GLenum>
@@ -38246,6 +51891,16 @@ namespace ge{
           RET_TYPE>(
               ret);
     }
+    template<
+      typename RET_TYPE = GLenum>
+    inline std::shared_ptr<GetError<
+      RET_TYPE>> sharedGetError(
+        RET_TYPE const&ret){
+        return std::make_shared<GetError<
+          RET_TYPE>>(
+              ret);
+    }
+
     template<
       typename N_TYPE   = GLsizei,
       typename IDS_TYPE = GLuint*>
@@ -38260,6 +51915,21 @@ namespace ge{
               n  ,
               ids);
     }
+    template<
+      typename N_TYPE   = GLsizei,
+      typename IDS_TYPE = GLuint*>
+    inline std::shared_ptr<CreateTransformFeedbacks<
+      N_TYPE  ,
+      IDS_TYPE>> sharedCreateTransformFeedbacks(
+        N_TYPE   const&n  ,
+        IDS_TYPE const&ids){
+        return std::make_shared<CreateTransformFeedbacks<
+          N_TYPE  ,
+          IDS_TYPE>>(
+              n  ,
+              ids);
+    }
+
     template<
       typename FAIL_TYPE  = GLenum,
       typename ZFAIL_TYPE = GLenum,
@@ -38279,6 +51949,26 @@ namespace ge{
               zfail,
               zpass);
     }
+    template<
+      typename FAIL_TYPE  = GLenum,
+      typename ZFAIL_TYPE = GLenum,
+      typename ZPASS_TYPE = GLenum>
+    inline std::shared_ptr<StencilOp<
+      FAIL_TYPE ,
+      ZFAIL_TYPE,
+      ZPASS_TYPE>> sharedStencilOp(
+        FAIL_TYPE  const&fail ,
+        ZFAIL_TYPE const&zfail,
+        ZPASS_TYPE const&zpass){
+        return std::make_shared<StencilOp<
+          FAIL_TYPE ,
+          ZFAIL_TYPE,
+          ZPASS_TYPE>>(
+              fail ,
+              zfail,
+              zpass);
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -38329,6 +52019,56 @@ namespace ge{
               height );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename ZOFFSET_TYPE = GLint  ,
+      typename X_TYPE       = GLint  ,
+      typename Y_TYPE       = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei>
+    inline std::shared_ptr<CopyTextureSubImage3D<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      X_TYPE      ,
+      Y_TYPE      ,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE >> sharedCopyTextureSubImage3D(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        X_TYPE       const&x      ,
+        Y_TYPE       const&y      ,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ){
+        return std::make_shared<CopyTextureSubImage3D<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          X_TYPE      ,
+          Y_TYPE      ,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              x      ,
+              y      ,
+              width  ,
+              height );
+    }
+
+    template<
       typename TARGET_TYPE  = GLenum     ,
       typename LEVEL_TYPE   = GLint      ,
       typename XOFFSET_TYPE = GLint      ,
@@ -38368,6 +52108,46 @@ namespace ge{
               pixels );
     }
     template<
+      typename TARGET_TYPE  = GLenum     ,
+      typename LEVEL_TYPE   = GLint      ,
+      typename XOFFSET_TYPE = GLint      ,
+      typename WIDTH_TYPE   = GLsizei    ,
+      typename FORMAT_TYPE  = GLenum     ,
+      typename TYPE_TYPE    = GLenum     ,
+      typename PIXELS_TYPE  = const void*>
+    inline std::shared_ptr<TexSubImage1D<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      PIXELS_TYPE >> sharedTexSubImage1D(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        WIDTH_TYPE   const&width  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<TexSubImage1D<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          PIXELS_TYPE >>(
+              target ,
+              level  ,
+              xoffset,
+              width  ,
+              format ,
+              type   ,
+              pixels );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLfloat*>
     inline VertexAttrib2fv<
@@ -38381,6 +52161,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLfloat*>
+    inline std::shared_ptr<VertexAttrib2fv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib2fv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib2fv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename TARGET_TYPE = GLenum  ,
       typename LEVEL_TYPE  = GLint   ,
@@ -38406,6 +52201,31 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum  ,
+      typename LEVEL_TYPE  = GLint   ,
+      typename PNAME_TYPE  = GLenum  ,
+      typename PARAMS_TYPE = GLfloat*>
+    inline std::shared_ptr<GetTexLevelParameterfv<
+      TARGET_TYPE,
+      LEVEL_TYPE ,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetTexLevelParameterfv(
+        TARGET_TYPE const&target,
+        LEVEL_TYPE  const&level ,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetTexLevelParameterfv<
+          TARGET_TYPE,
+          LEVEL_TYPE ,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              level ,
+              pname ,
+              params);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint,
       typename X_TYPE     = GLint >
     inline VertexAttribI1i<
@@ -38419,6 +52239,21 @@ namespace ge{
               index,
               x    );
     }
+    template<
+      typename INDEX_TYPE = GLuint,
+      typename X_TYPE     = GLint >
+    inline std::shared_ptr<VertexAttribI1i<
+      INDEX_TYPE,
+      X_TYPE    >> sharedVertexAttribI1i(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ){
+        return std::make_shared<VertexAttribI1i<
+          INDEX_TYPE,
+          X_TYPE    >>(
+              index,
+              x    );
+    }
+
     template<
       typename INDEX_TYPE      = GLuint       ,
       typename TYPE_TYPE       = GLenum       ,
@@ -38444,6 +52279,31 @@ namespace ge{
               value     );
     }
     template<
+      typename INDEX_TYPE      = GLuint       ,
+      typename TYPE_TYPE       = GLenum       ,
+      typename NORMALIZED_TYPE = GLboolean    ,
+      typename VALUE_TYPE      = const GLuint*>
+    inline std::shared_ptr<VertexAttribP3uiv<
+      INDEX_TYPE     ,
+      TYPE_TYPE      ,
+      NORMALIZED_TYPE,
+      VALUE_TYPE     >> sharedVertexAttribP3uiv(
+        INDEX_TYPE      const&index     ,
+        TYPE_TYPE       const&type      ,
+        NORMALIZED_TYPE const&normalized,
+        VALUE_TYPE      const&value     ){
+        return std::make_shared<VertexAttribP3uiv<
+          INDEX_TYPE     ,
+          TYPE_TYPE      ,
+          NORMALIZED_TYPE,
+          VALUE_TYPE     >>(
+              index     ,
+              type      ,
+              normalized,
+              value     );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
     inline VertexAttribI3iv<
@@ -38458,6 +52318,21 @@ namespace ge{
               v    );
     }
     template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<VertexAttribI3iv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI3iv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI3iv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
+    template<
       typename PNAME_TYPE = GLenum,
       typename DATA_TYPE  = GLint*>
     inline GetIntegerv<
@@ -38471,6 +52346,21 @@ namespace ge{
               pname,
               data );
     }
+    template<
+      typename PNAME_TYPE = GLenum,
+      typename DATA_TYPE  = GLint*>
+    inline std::shared_ptr<GetIntegerv<
+      PNAME_TYPE,
+      DATA_TYPE >> sharedGetIntegerv(
+        PNAME_TYPE const&pname,
+        DATA_TYPE  const&data ){
+        return std::make_shared<GetIntegerv<
+          PNAME_TYPE,
+          DATA_TYPE >>(
+              pname,
+              data );
+    }
+
     template<
       typename TARGET_TYPE  = GLenum ,
       typename LEVEL_TYPE   = GLint  ,
@@ -38506,6 +52396,41 @@ namespace ge{
               pixels );
     }
     template<
+      typename TARGET_TYPE  = GLenum ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename FORMAT_TYPE  = GLenum ,
+      typename TYPE_TYPE    = GLenum ,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename PIXELS_TYPE  = void*  >
+    inline std::shared_ptr<GetnTexImage<
+      TARGET_TYPE ,
+      LEVEL_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      BUFSIZE_TYPE,
+      PIXELS_TYPE >> sharedGetnTexImage(
+        TARGET_TYPE  const&target ,
+        LEVEL_TYPE   const&level  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        BUFSIZE_TYPE const&bufSize,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<GetnTexImage<
+          TARGET_TYPE ,
+          LEVEL_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          BUFSIZE_TYPE,
+          PIXELS_TYPE >>(
+              target ,
+              level  ,
+              format ,
+              type   ,
+              bufSize,
+              pixels );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = void**>
@@ -38524,6 +52449,26 @@ namespace ge{
               pname ,
               params);
     }
+    template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = void**>
+    inline std::shared_ptr<GetBufferPointerv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetBufferPointerv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetBufferPointerv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
     template<
       typename PROGRAM_TYPE   = GLuint         ,
       typename LOCATION_TYPE  = GLint          ,
@@ -38553,6 +52498,36 @@ namespace ge{
               transpose,
               value    );
     }
+    template<
+      typename PROGRAM_TYPE   = GLuint         ,
+      typename LOCATION_TYPE  = GLint          ,
+      typename COUNT_TYPE     = GLsizei        ,
+      typename TRANSPOSE_TYPE = GLboolean      ,
+      typename VALUE_TYPE     = const GLdouble*>
+    inline std::shared_ptr<ProgramUniformMatrix3dv<
+      PROGRAM_TYPE  ,
+      LOCATION_TYPE ,
+      COUNT_TYPE    ,
+      TRANSPOSE_TYPE,
+      VALUE_TYPE    >> sharedProgramUniformMatrix3dv(
+        PROGRAM_TYPE   const&program  ,
+        LOCATION_TYPE  const&location ,
+        COUNT_TYPE     const&count    ,
+        TRANSPOSE_TYPE const&transpose,
+        VALUE_TYPE     const&value    ){
+        return std::make_shared<ProgramUniformMatrix3dv<
+          PROGRAM_TYPE  ,
+          LOCATION_TYPE ,
+          COUNT_TYPE    ,
+          TRANSPOSE_TYPE,
+          VALUE_TYPE    >>(
+              program  ,
+              location ,
+              count    ,
+              transpose,
+              value    );
+    }
+
     template<
       typename TARGET_TYPE     = GLenum,
       typename ATTACHMENT_TYPE = GLenum,
@@ -38588,6 +52563,41 @@ namespace ge{
               zoffset   );
     }
     template<
+      typename TARGET_TYPE     = GLenum,
+      typename ATTACHMENT_TYPE = GLenum,
+      typename TEXTARGET_TYPE  = GLenum,
+      typename TEXTURE_TYPE    = GLuint,
+      typename LEVEL_TYPE      = GLint ,
+      typename ZOFFSET_TYPE    = GLint >
+    inline std::shared_ptr<FramebufferTexture3D<
+      TARGET_TYPE    ,
+      ATTACHMENT_TYPE,
+      TEXTARGET_TYPE ,
+      TEXTURE_TYPE   ,
+      LEVEL_TYPE     ,
+      ZOFFSET_TYPE   >> sharedFramebufferTexture3D(
+        TARGET_TYPE     const&target    ,
+        ATTACHMENT_TYPE const&attachment,
+        TEXTARGET_TYPE  const&textarget ,
+        TEXTURE_TYPE    const&texture   ,
+        LEVEL_TYPE      const&level     ,
+        ZOFFSET_TYPE    const&zoffset   ){
+        return std::make_shared<FramebufferTexture3D<
+          TARGET_TYPE    ,
+          ATTACHMENT_TYPE,
+          TEXTARGET_TYPE ,
+          TEXTURE_TYPE   ,
+          LEVEL_TYPE     ,
+          ZOFFSET_TYPE   >>(
+              target    ,
+              attachment,
+              textarget ,
+              texture   ,
+              level     ,
+              zoffset   );
+    }
+
+    template<
       typename RET_TYPE = GLboolean,
       typename ID_TYPE  = GLuint   >
     inline IsQuery<
@@ -38601,6 +52611,21 @@ namespace ge{
               ret,
               id );
     }
+    template<
+      typename RET_TYPE = GLboolean,
+      typename ID_TYPE  = GLuint   >
+    inline std::shared_ptr<IsQuery<
+      RET_TYPE,
+      ID_TYPE >> sharedIsQuery(
+        RET_TYPE const&ret,
+        ID_TYPE  const&id ){
+        return std::make_shared<IsQuery<
+          RET_TYPE,
+          ID_TYPE >>(
+              ret,
+              id );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
@@ -38625,6 +52650,31 @@ namespace ge{
               v0      ,
               v1      );
     }
+    template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint>
+    inline std::shared_ptr<ProgramUniform2ui<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      >> sharedProgramUniform2ui(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ){
+        return std::make_shared<ProgramUniform2ui<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint,
       typename LOCATION_TYPE = GLint ,
@@ -38660,6 +52710,41 @@ namespace ge{
               v3      );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint,
+      typename LOCATION_TYPE = GLint ,
+      typename V0_TYPE       = GLuint,
+      typename V1_TYPE       = GLuint,
+      typename V2_TYPE       = GLuint,
+      typename V3_TYPE       = GLuint>
+    inline std::shared_ptr<ProgramUniform4ui<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      V0_TYPE      ,
+      V1_TYPE      ,
+      V2_TYPE      ,
+      V3_TYPE      >> sharedProgramUniform4ui(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        V0_TYPE       const&v0      ,
+        V1_TYPE       const&v1      ,
+        V2_TYPE       const&v2      ,
+        V3_TYPE       const&v3      ){
+        return std::make_shared<ProgramUniform4ui<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          V0_TYPE      ,
+          V1_TYPE      ,
+          V2_TYPE      ,
+          V3_TYPE      >>(
+              program ,
+              location,
+              v0      ,
+              v1      ,
+              v2      ,
+              v3      );
+    }
+
+    template<
       typename VAOBJ_TYPE = GLuint,
       typename PNAME_TYPE = GLenum,
       typename PARAM_TYPE = GLint*>
@@ -38678,6 +52763,26 @@ namespace ge{
               pname,
               param);
     }
+    template<
+      typename VAOBJ_TYPE = GLuint,
+      typename PNAME_TYPE = GLenum,
+      typename PARAM_TYPE = GLint*>
+    inline std::shared_ptr<GetVertexArrayiv<
+      VAOBJ_TYPE,
+      PNAME_TYPE,
+      PARAM_TYPE>> sharedGetVertexArrayiv(
+        VAOBJ_TYPE const&vaobj,
+        PNAME_TYPE const&pname,
+        PARAM_TYPE const&param){
+        return std::make_shared<GetVertexArrayiv<
+          VAOBJ_TYPE,
+          PNAME_TYPE,
+          PARAM_TYPE>>(
+              vaobj,
+              pname,
+              param);
+    }
+
     template<
       typename TARGET_TYPE         = GLenum     ,
       typename LEVEL_TYPE          = GLint      ,
@@ -38728,6 +52833,56 @@ namespace ge{
               pixels        );
     }
     template<
+      typename TARGET_TYPE         = GLenum     ,
+      typename LEVEL_TYPE          = GLint      ,
+      typename INTERNALFORMAT_TYPE = GLint      ,
+      typename WIDTH_TYPE          = GLsizei    ,
+      typename HEIGHT_TYPE         = GLsizei    ,
+      typename BORDER_TYPE         = GLint      ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename PIXELS_TYPE         = const void*>
+    inline std::shared_ptr<TexImage2D<
+      TARGET_TYPE        ,
+      LEVEL_TYPE         ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        ,
+      BORDER_TYPE        ,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      PIXELS_TYPE        >> sharedTexImage2D(
+        TARGET_TYPE         const&target        ,
+        LEVEL_TYPE          const&level         ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ,
+        BORDER_TYPE         const&border        ,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        PIXELS_TYPE         const&pixels        ){
+        return std::make_shared<TexImage2D<
+          TARGET_TYPE        ,
+          LEVEL_TYPE         ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        ,
+          BORDER_TYPE        ,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          PIXELS_TYPE        >>(
+              target        ,
+              level         ,
+              internalformat,
+              width         ,
+              height        ,
+              border        ,
+              format        ,
+              type          ,
+              pixels        );
+    }
+
+    template<
       typename MASK_TYPE = GLuint>
     inline StencilMask<
       MASK_TYPE>* newStencilMask(
@@ -38736,6 +52891,16 @@ namespace ge{
           MASK_TYPE>(
               mask);
     }
+    template<
+      typename MASK_TYPE = GLuint>
+    inline std::shared_ptr<StencilMask<
+      MASK_TYPE>> sharedStencilMask(
+        MASK_TYPE const&mask){
+        return std::make_shared<StencilMask<
+          MASK_TYPE>>(
+              mask);
+    }
+
     template<
       typename SAMPLER_TYPE = GLuint        ,
       typename PNAME_TYPE   = GLenum        ,
@@ -38756,6 +52921,26 @@ namespace ge{
               param  );
     }
     template<
+      typename SAMPLER_TYPE = GLuint        ,
+      typename PNAME_TYPE   = GLenum        ,
+      typename PARAM_TYPE   = const GLfloat*>
+    inline std::shared_ptr<SamplerParameterfv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAM_TYPE  >> sharedSamplerParameterfv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAM_TYPE   const&param  ){
+        return std::make_shared<SamplerParameterfv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAM_TYPE  >>(
+              sampler,
+              pname  ,
+              param  );
+    }
+
+    template<
       typename RET_TYPE     = GLboolean,
       typename TEXTURE_TYPE = GLuint   >
     inline IsTexture<
@@ -38769,6 +52954,21 @@ namespace ge{
               ret    ,
               texture);
     }
+    template<
+      typename RET_TYPE     = GLboolean,
+      typename TEXTURE_TYPE = GLuint   >
+    inline std::shared_ptr<IsTexture<
+      RET_TYPE    ,
+      TEXTURE_TYPE>> sharedIsTexture(
+        RET_TYPE     const&ret    ,
+        TEXTURE_TYPE const&texture){
+        return std::make_shared<IsTexture<
+          RET_TYPE    ,
+          TEXTURE_TYPE>>(
+              ret    ,
+              texture);
+    }
+
     template<
       typename BUFFER_TYPE = GLuint     ,
       typename SIZE_TYPE   = GLsizeiptr ,
@@ -38794,6 +52994,31 @@ namespace ge{
               usage );
     }
     template<
+      typename BUFFER_TYPE = GLuint     ,
+      typename SIZE_TYPE   = GLsizeiptr ,
+      typename DATA_TYPE   = const void*,
+      typename USAGE_TYPE  = GLenum     >
+    inline std::shared_ptr<NamedBufferData<
+      BUFFER_TYPE,
+      SIZE_TYPE  ,
+      DATA_TYPE  ,
+      USAGE_TYPE >> sharedNamedBufferData(
+        BUFFER_TYPE const&buffer,
+        SIZE_TYPE   const&size  ,
+        DATA_TYPE   const&data  ,
+        USAGE_TYPE  const&usage ){
+        return std::make_shared<NamedBufferData<
+          BUFFER_TYPE,
+          SIZE_TYPE  ,
+          DATA_TYPE  ,
+          USAGE_TYPE >>(
+              buffer,
+              size  ,
+              data  ,
+              usage );
+    }
+
+    template<
       typename LOCATION_TYPE = GLint         ,
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
@@ -38813,6 +53038,26 @@ namespace ge{
               value   );
     }
     template<
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<Uniform1fv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform1fv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform1fv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint        ,
       typename V_TYPE     = const GLubyte*>
     inline VertexAttrib4Nubv<
@@ -38826,6 +53071,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint        ,
+      typename V_TYPE     = const GLubyte*>
+    inline std::shared_ptr<VertexAttrib4Nubv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib4Nubv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib4Nubv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename BUFFER_TYPE         = GLuint     ,
       typename INTERNALFORMAT_TYPE = GLenum     ,
@@ -38866,6 +53126,46 @@ namespace ge{
               data          );
     }
     template<
+      typename BUFFER_TYPE         = GLuint     ,
+      typename INTERNALFORMAT_TYPE = GLenum     ,
+      typename OFFSET_TYPE         = GLintptr   ,
+      typename SIZE_TYPE           = GLsizeiptr ,
+      typename FORMAT_TYPE         = GLenum     ,
+      typename TYPE_TYPE           = GLenum     ,
+      typename DATA_TYPE           = const void*>
+    inline std::shared_ptr<ClearNamedBufferSubData<
+      BUFFER_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      OFFSET_TYPE        ,
+      SIZE_TYPE          ,
+      FORMAT_TYPE        ,
+      TYPE_TYPE          ,
+      DATA_TYPE          >> sharedClearNamedBufferSubData(
+        BUFFER_TYPE         const&buffer        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        OFFSET_TYPE         const&offset        ,
+        SIZE_TYPE           const&size          ,
+        FORMAT_TYPE         const&format        ,
+        TYPE_TYPE           const&type          ,
+        DATA_TYPE           const&data          ){
+        return std::make_shared<ClearNamedBufferSubData<
+          BUFFER_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          OFFSET_TYPE        ,
+          SIZE_TYPE          ,
+          FORMAT_TYPE        ,
+          TYPE_TYPE          ,
+          DATA_TYPE          >>(
+              buffer        ,
+              internalformat,
+              offset        ,
+              size          ,
+              format        ,
+              type          ,
+              data          );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum        ,
       typename PNAME_TYPE  = GLenum        ,
       typename PARAMS_TYPE = const GLfloat*>
@@ -38885,6 +53185,26 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum        ,
+      typename PNAME_TYPE  = GLenum        ,
+      typename PARAMS_TYPE = const GLfloat*>
+    inline std::shared_ptr<TexParameterfv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedTexParameterfv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<TexParameterfv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint      ,
       typename V_TYPE     = const GLint*>
     inline ScissorIndexedv<
@@ -38898,6 +53218,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint      ,
+      typename V_TYPE     = const GLint*>
+    inline std::shared_ptr<ScissorIndexedv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedScissorIndexedv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<ScissorIndexedv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename LOCATION_TYPE = GLint          ,
       typename COUNT_TYPE    = GLsizei        ,
@@ -38917,6 +53252,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint          ,
+      typename COUNT_TYPE    = GLsizei        ,
+      typename VALUE_TYPE    = const GLdouble*>
+    inline std::shared_ptr<Uniform3dv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform3dv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform3dv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint        ,
       typename LOCATION_TYPE = GLint         ,
@@ -38942,6 +53297,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint        ,
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<ProgramUniform3fv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform3fv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform3fv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename RET_TYPE        = GLint        ,
       typename PROGRAM_TYPE    = GLuint       ,
       typename SHADERTYPE_TYPE = GLenum       ,
@@ -38966,6 +53346,31 @@ namespace ge{
               name      );
     }
     template<
+      typename RET_TYPE        = GLint        ,
+      typename PROGRAM_TYPE    = GLuint       ,
+      typename SHADERTYPE_TYPE = GLenum       ,
+      typename NAME_TYPE       = const GLchar*>
+    inline std::shared_ptr<GetSubroutineUniformLocation<
+      RET_TYPE       ,
+      PROGRAM_TYPE   ,
+      SHADERTYPE_TYPE,
+      NAME_TYPE      >> sharedGetSubroutineUniformLocation(
+        RET_TYPE        const&ret       ,
+        PROGRAM_TYPE    const&program   ,
+        SHADERTYPE_TYPE const&shadertype,
+        NAME_TYPE       const&name      ){
+        return std::make_shared<GetSubroutineUniformLocation<
+          RET_TYPE       ,
+          PROGRAM_TYPE   ,
+          SHADERTYPE_TYPE,
+          NAME_TYPE      >>(
+              ret       ,
+              program   ,
+              shadertype,
+              name      );
+    }
+
+    template<
       typename TARGET_TYPE = GLenum,
       typename PNAME_TYPE  = GLenum,
       typename PARAMS_TYPE = GLint*>
@@ -38985,6 +53390,26 @@ namespace ge{
               params);
     }
     template<
+      typename TARGET_TYPE = GLenum,
+      typename PNAME_TYPE  = GLenum,
+      typename PARAMS_TYPE = GLint*>
+    inline std::shared_ptr<GetFramebufferParameteriv<
+      TARGET_TYPE,
+      PNAME_TYPE ,
+      PARAMS_TYPE>> sharedGetFramebufferParameteriv(
+        TARGET_TYPE const&target,
+        PNAME_TYPE  const&pname ,
+        PARAMS_TYPE const&params){
+        return std::make_shared<GetFramebufferParameteriv<
+          TARGET_TYPE,
+          PNAME_TYPE ,
+          PARAMS_TYPE>>(
+              target,
+              pname ,
+              params);
+    }
+
+    template<
       typename SAMPLER_TYPE = GLuint,
       typename PNAME_TYPE   = GLenum,
       typename PARAMS_TYPE  = GLint*>
@@ -39003,6 +53428,26 @@ namespace ge{
               pname  ,
               params );
     }
+    template<
+      typename SAMPLER_TYPE = GLuint,
+      typename PNAME_TYPE   = GLenum,
+      typename PARAMS_TYPE  = GLint*>
+    inline std::shared_ptr<GetSamplerParameteriv<
+      SAMPLER_TYPE,
+      PNAME_TYPE  ,
+      PARAMS_TYPE >> sharedGetSamplerParameteriv(
+        SAMPLER_TYPE const&sampler,
+        PNAME_TYPE   const&pname  ,
+        PARAMS_TYPE  const&params ){
+        return std::make_shared<GetSamplerParameteriv<
+          SAMPLER_TYPE,
+          PNAME_TYPE  ,
+          PARAMS_TYPE >>(
+              sampler,
+              pname  ,
+              params );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -39058,6 +53503,61 @@ namespace ge{
               pixels );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename XOFFSET_TYPE = GLint  ,
+      typename YOFFSET_TYPE = GLint  ,
+      typename ZOFFSET_TYPE = GLint  ,
+      typename WIDTH_TYPE   = GLsizei,
+      typename HEIGHT_TYPE  = GLsizei,
+      typename DEPTH_TYPE   = GLsizei,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename PIXELS_TYPE  = void*  >
+    inline std::shared_ptr<GetCompressedTextureSubImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      XOFFSET_TYPE,
+      YOFFSET_TYPE,
+      ZOFFSET_TYPE,
+      WIDTH_TYPE  ,
+      HEIGHT_TYPE ,
+      DEPTH_TYPE  ,
+      BUFSIZE_TYPE,
+      PIXELS_TYPE >> sharedGetCompressedTextureSubImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        XOFFSET_TYPE const&xoffset,
+        YOFFSET_TYPE const&yoffset,
+        ZOFFSET_TYPE const&zoffset,
+        WIDTH_TYPE   const&width  ,
+        HEIGHT_TYPE  const&height ,
+        DEPTH_TYPE   const&depth  ,
+        BUFSIZE_TYPE const&bufSize,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<GetCompressedTextureSubImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          XOFFSET_TYPE,
+          YOFFSET_TYPE,
+          ZOFFSET_TYPE,
+          WIDTH_TYPE  ,
+          HEIGHT_TYPE ,
+          DEPTH_TYPE  ,
+          BUFSIZE_TYPE,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              xoffset,
+              yoffset,
+              zoffset,
+              width  ,
+              height ,
+              depth  ,
+              bufSize,
+              pixels );
+    }
+
+    template<
       typename N_TYPE    = GLsizei      ,
       typename BUFS_TYPE = const GLenum*>
     inline DrawBuffers<
@@ -39071,6 +53571,21 @@ namespace ge{
               n   ,
               bufs);
     }
+    template<
+      typename N_TYPE    = GLsizei      ,
+      typename BUFS_TYPE = const GLenum*>
+    inline std::shared_ptr<DrawBuffers<
+      N_TYPE   ,
+      BUFS_TYPE>> sharedDrawBuffers(
+        N_TYPE    const&n   ,
+        BUFS_TYPE const&bufs){
+        return std::make_shared<DrawBuffers<
+          N_TYPE   ,
+          BUFS_TYPE>>(
+              n   ,
+              bufs);
+    }
+
     template<
       typename FIRST_TYPE    = GLuint       ,
       typename COUNT_TYPE    = GLsizei      ,
@@ -39091,6 +53606,26 @@ namespace ge{
               samplers);
     }
     template<
+      typename FIRST_TYPE    = GLuint       ,
+      typename COUNT_TYPE    = GLsizei      ,
+      typename SAMPLERS_TYPE = const GLuint*>
+    inline std::shared_ptr<BindSamplers<
+      FIRST_TYPE   ,
+      COUNT_TYPE   ,
+      SAMPLERS_TYPE>> sharedBindSamplers(
+        FIRST_TYPE    const&first   ,
+        COUNT_TYPE    const&count   ,
+        SAMPLERS_TYPE const&samplers){
+        return std::make_shared<BindSamplers<
+          FIRST_TYPE   ,
+          COUNT_TYPE   ,
+          SAMPLERS_TYPE>>(
+              first   ,
+              count   ,
+              samplers);
+    }
+
+    template<
       typename INDEX_TYPE = GLuint       ,
       typename V_TYPE     = const GLuint*>
     inline VertexAttribI1uiv<
@@ -39104,6 +53639,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint       ,
+      typename V_TYPE     = const GLuint*>
+    inline std::shared_ptr<VertexAttribI1uiv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttribI1uiv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttribI1uiv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename INDEX_TYPE = GLuint  ,
       typename X_TYPE     = GLdouble,
@@ -39124,6 +53674,26 @@ namespace ge{
               y    );
     }
     template<
+      typename INDEX_TYPE = GLuint  ,
+      typename X_TYPE     = GLdouble,
+      typename Y_TYPE     = GLdouble>
+    inline std::shared_ptr<VertexAttrib2d<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    >> sharedVertexAttrib2d(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ){
+        return std::make_shared<VertexAttrib2d<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    >>(
+              index,
+              x    ,
+              y    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint ,
       typename X_TYPE     = GLfloat,
       typename Y_TYPE     = GLfloat>
@@ -39143,6 +53713,26 @@ namespace ge{
               y    );
     }
     template<
+      typename INDEX_TYPE = GLuint ,
+      typename X_TYPE     = GLfloat,
+      typename Y_TYPE     = GLfloat>
+    inline std::shared_ptr<VertexAttrib2f<
+      INDEX_TYPE,
+      X_TYPE    ,
+      Y_TYPE    >> sharedVertexAttrib2f(
+        INDEX_TYPE const&index,
+        X_TYPE     const&x    ,
+        Y_TYPE     const&y    ){
+        return std::make_shared<VertexAttrib2f<
+          INDEX_TYPE,
+          X_TYPE    ,
+          Y_TYPE    >>(
+              index,
+              x    ,
+              y    );
+    }
+
+    template<
       typename INDEX_TYPE = GLuint         ,
       typename V_TYPE     = const GLdouble*>
     inline VertexAttrib3dv<
@@ -39156,6 +53746,21 @@ namespace ge{
               index,
               v    );
     }
+    template<
+      typename INDEX_TYPE = GLuint         ,
+      typename V_TYPE     = const GLdouble*>
+    inline std::shared_ptr<VertexAttrib3dv<
+      INDEX_TYPE,
+      V_TYPE    >> sharedVertexAttrib3dv(
+        INDEX_TYPE const&index,
+        V_TYPE     const&v    ){
+        return std::make_shared<VertexAttrib3dv<
+          INDEX_TYPE,
+          V_TYPE    >>(
+              index,
+              v    );
+    }
+
     template<
       typename SRCNAME_TYPE   = GLuint ,
       typename SRCTARGET_TYPE = GLenum ,
@@ -39236,6 +53841,86 @@ namespace ge{
               srcDepth );
     }
     template<
+      typename SRCNAME_TYPE   = GLuint ,
+      typename SRCTARGET_TYPE = GLenum ,
+      typename SRCLEVEL_TYPE  = GLint  ,
+      typename SRCX_TYPE      = GLint  ,
+      typename SRCY_TYPE      = GLint  ,
+      typename SRCZ_TYPE      = GLint  ,
+      typename DSTNAME_TYPE   = GLuint ,
+      typename DSTTARGET_TYPE = GLenum ,
+      typename DSTLEVEL_TYPE  = GLint  ,
+      typename DSTX_TYPE      = GLint  ,
+      typename DSTY_TYPE      = GLint  ,
+      typename DSTZ_TYPE      = GLint  ,
+      typename SRCWIDTH_TYPE  = GLsizei,
+      typename SRCHEIGHT_TYPE = GLsizei,
+      typename SRCDEPTH_TYPE  = GLsizei>
+    inline std::shared_ptr<CopyImageSubData<
+      SRCNAME_TYPE  ,
+      SRCTARGET_TYPE,
+      SRCLEVEL_TYPE ,
+      SRCX_TYPE     ,
+      SRCY_TYPE     ,
+      SRCZ_TYPE     ,
+      DSTNAME_TYPE  ,
+      DSTTARGET_TYPE,
+      DSTLEVEL_TYPE ,
+      DSTX_TYPE     ,
+      DSTY_TYPE     ,
+      DSTZ_TYPE     ,
+      SRCWIDTH_TYPE ,
+      SRCHEIGHT_TYPE,
+      SRCDEPTH_TYPE >> sharedCopyImageSubData(
+        SRCNAME_TYPE   const&srcName  ,
+        SRCTARGET_TYPE const&srcTarget,
+        SRCLEVEL_TYPE  const&srcLevel ,
+        SRCX_TYPE      const&srcX     ,
+        SRCY_TYPE      const&srcY     ,
+        SRCZ_TYPE      const&srcZ     ,
+        DSTNAME_TYPE   const&dstName  ,
+        DSTTARGET_TYPE const&dstTarget,
+        DSTLEVEL_TYPE  const&dstLevel ,
+        DSTX_TYPE      const&dstX     ,
+        DSTY_TYPE      const&dstY     ,
+        DSTZ_TYPE      const&dstZ     ,
+        SRCWIDTH_TYPE  const&srcWidth ,
+        SRCHEIGHT_TYPE const&srcHeight,
+        SRCDEPTH_TYPE  const&srcDepth ){
+        return std::make_shared<CopyImageSubData<
+          SRCNAME_TYPE  ,
+          SRCTARGET_TYPE,
+          SRCLEVEL_TYPE ,
+          SRCX_TYPE     ,
+          SRCY_TYPE     ,
+          SRCZ_TYPE     ,
+          DSTNAME_TYPE  ,
+          DSTTARGET_TYPE,
+          DSTLEVEL_TYPE ,
+          DSTX_TYPE     ,
+          DSTY_TYPE     ,
+          DSTZ_TYPE     ,
+          SRCWIDTH_TYPE ,
+          SRCHEIGHT_TYPE,
+          SRCDEPTH_TYPE >>(
+              srcName  ,
+              srcTarget,
+              srcLevel ,
+              srcX     ,
+              srcY     ,
+              srcZ     ,
+              dstName  ,
+              dstTarget,
+              dstLevel ,
+              dstX     ,
+              dstY     ,
+              dstZ     ,
+              srcWidth ,
+              srcHeight,
+              srcDepth );
+    }
+
+    template<
       typename PIPELINE_TYPE = GLuint,
       typename PROGRAM_TYPE  = GLuint>
     inline ActiveShaderProgram<
@@ -39249,6 +53934,21 @@ namespace ge{
               pipeline,
               program );
     }
+    template<
+      typename PIPELINE_TYPE = GLuint,
+      typename PROGRAM_TYPE  = GLuint>
+    inline std::shared_ptr<ActiveShaderProgram<
+      PIPELINE_TYPE,
+      PROGRAM_TYPE >> sharedActiveShaderProgram(
+        PIPELINE_TYPE const&pipeline,
+        PROGRAM_TYPE  const&program ){
+        return std::make_shared<ActiveShaderProgram<
+          PIPELINE_TYPE,
+          PROGRAM_TYPE >>(
+              pipeline,
+              program );
+    }
+
     template<
       typename TEXTURE_TYPE = GLuint ,
       typename LEVEL_TYPE   = GLint  ,
@@ -39284,6 +53984,41 @@ namespace ge{
               pixels );
     }
     template<
+      typename TEXTURE_TYPE = GLuint ,
+      typename LEVEL_TYPE   = GLint  ,
+      typename FORMAT_TYPE  = GLenum ,
+      typename TYPE_TYPE    = GLenum ,
+      typename BUFSIZE_TYPE = GLsizei,
+      typename PIXELS_TYPE  = void*  >
+    inline std::shared_ptr<GetTextureImage<
+      TEXTURE_TYPE,
+      LEVEL_TYPE  ,
+      FORMAT_TYPE ,
+      TYPE_TYPE   ,
+      BUFSIZE_TYPE,
+      PIXELS_TYPE >> sharedGetTextureImage(
+        TEXTURE_TYPE const&texture,
+        LEVEL_TYPE   const&level  ,
+        FORMAT_TYPE  const&format ,
+        TYPE_TYPE    const&type   ,
+        BUFSIZE_TYPE const&bufSize,
+        PIXELS_TYPE  const&pixels ){
+        return std::make_shared<GetTextureImage<
+          TEXTURE_TYPE,
+          LEVEL_TYPE  ,
+          FORMAT_TYPE ,
+          TYPE_TYPE   ,
+          BUFSIZE_TYPE,
+          PIXELS_TYPE >>(
+              texture,
+              level  ,
+              format ,
+              type   ,
+              bufSize,
+              pixels );
+    }
+
+    template<
       typename PNAME_TYPE  = GLenum        ,
       typename VALUES_TYPE = const GLfloat*>
     inline PatchParameterfv<
@@ -39297,6 +54032,21 @@ namespace ge{
               pname ,
               values);
     }
+    template<
+      typename PNAME_TYPE  = GLenum        ,
+      typename VALUES_TYPE = const GLfloat*>
+    inline std::shared_ptr<PatchParameterfv<
+      PNAME_TYPE ,
+      VALUES_TYPE>> sharedPatchParameterfv(
+        PNAME_TYPE  const&pname ,
+        VALUES_TYPE const&values){
+        return std::make_shared<PatchParameterfv<
+          PNAME_TYPE ,
+          VALUES_TYPE>>(
+              pname ,
+              values);
+    }
+
     template<
       typename PROGRAM_TYPE  = GLuint        ,
       typename LOCATION_TYPE = GLint         ,
@@ -39322,6 +54072,31 @@ namespace ge{
               value   );
     }
     template<
+      typename PROGRAM_TYPE  = GLuint        ,
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<ProgramUniform1fv<
+      PROGRAM_TYPE ,
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedProgramUniform1fv(
+        PROGRAM_TYPE  const&program ,
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<ProgramUniform1fv<
+          PROGRAM_TYPE ,
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              program ,
+              location,
+              count   ,
+              value   );
+    }
+
+    template<
       typename RET_TYPE              = GLuint       ,
       typename PROGRAM_TYPE          = GLuint       ,
       typename UNIFORMBLOCKNAME_TYPE = const GLchar*>
@@ -39341,6 +54116,26 @@ namespace ge{
               uniformBlockName);
     }
     template<
+      typename RET_TYPE              = GLuint       ,
+      typename PROGRAM_TYPE          = GLuint       ,
+      typename UNIFORMBLOCKNAME_TYPE = const GLchar*>
+    inline std::shared_ptr<GetUniformBlockIndex<
+      RET_TYPE             ,
+      PROGRAM_TYPE         ,
+      UNIFORMBLOCKNAME_TYPE>> sharedGetUniformBlockIndex(
+        RET_TYPE              const&ret             ,
+        PROGRAM_TYPE          const&program         ,
+        UNIFORMBLOCKNAME_TYPE const&uniformBlockName){
+        return std::make_shared<GetUniformBlockIndex<
+          RET_TYPE             ,
+          PROGRAM_TYPE         ,
+          UNIFORMBLOCKNAME_TYPE>>(
+              ret             ,
+              program         ,
+              uniformBlockName);
+    }
+
+    template<
       typename LOCATION_TYPE = GLint         ,
       typename COUNT_TYPE    = GLsizei       ,
       typename VALUE_TYPE    = const GLfloat*>
@@ -39359,6 +54154,26 @@ namespace ge{
               count   ,
               value   );
     }
+    template<
+      typename LOCATION_TYPE = GLint         ,
+      typename COUNT_TYPE    = GLsizei       ,
+      typename VALUE_TYPE    = const GLfloat*>
+    inline std::shared_ptr<Uniform4fv<
+      LOCATION_TYPE,
+      COUNT_TYPE   ,
+      VALUE_TYPE   >> sharedUniform4fv(
+        LOCATION_TYPE const&location,
+        COUNT_TYPE    const&count   ,
+        VALUE_TYPE    const&value   ){
+        return std::make_shared<Uniform4fv<
+          LOCATION_TYPE,
+          COUNT_TYPE   ,
+          VALUE_TYPE   >>(
+              location,
+              count   ,
+              value   );
+    }
+
     template<
       typename TEXTURE_TYPE        = GLuint ,
       typename LEVELS_TYPE         = GLsizei,
@@ -39389,6 +54204,36 @@ namespace ge{
               height        );
     }
     template<
+      typename TEXTURE_TYPE        = GLuint ,
+      typename LEVELS_TYPE         = GLsizei,
+      typename INTERNALFORMAT_TYPE = GLenum ,
+      typename WIDTH_TYPE          = GLsizei,
+      typename HEIGHT_TYPE         = GLsizei>
+    inline std::shared_ptr<TextureStorage2D<
+      TEXTURE_TYPE       ,
+      LEVELS_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      WIDTH_TYPE         ,
+      HEIGHT_TYPE        >> sharedTextureStorage2D(
+        TEXTURE_TYPE        const&texture       ,
+        LEVELS_TYPE         const&levels        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        WIDTH_TYPE          const&width         ,
+        HEIGHT_TYPE         const&height        ){
+        return std::make_shared<TextureStorage2D<
+          TEXTURE_TYPE       ,
+          LEVELS_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          WIDTH_TYPE         ,
+          HEIGHT_TYPE        >>(
+              texture       ,
+              levels        ,
+              internalformat,
+              width         ,
+              height        );
+    }
+
+    template<
       typename MODE_TYPE = GLenum>
     inline FrontFace<
       MODE_TYPE>* newFrontFace(
@@ -39397,6 +54242,16 @@ namespace ge{
           MODE_TYPE>(
               mode);
     }
+    template<
+      typename MODE_TYPE = GLenum>
+    inline std::shared_ptr<FrontFace<
+      MODE_TYPE>> sharedFrontFace(
+        MODE_TYPE const&mode){
+        return std::make_shared<FrontFace<
+          MODE_TYPE>>(
+              mode);
+    }
+
     template<
       typename TARGET_TYPE         = GLenum    ,
       typename INTERNALFORMAT_TYPE = GLenum    ,
@@ -39427,6 +54282,36 @@ namespace ge{
               size          );
     }
     template<
+      typename TARGET_TYPE         = GLenum    ,
+      typename INTERNALFORMAT_TYPE = GLenum    ,
+      typename BUFFER_TYPE         = GLuint    ,
+      typename OFFSET_TYPE         = GLintptr  ,
+      typename SIZE_TYPE           = GLsizeiptr>
+    inline std::shared_ptr<TexBufferRange<
+      TARGET_TYPE        ,
+      INTERNALFORMAT_TYPE,
+      BUFFER_TYPE        ,
+      OFFSET_TYPE        ,
+      SIZE_TYPE          >> sharedTexBufferRange(
+        TARGET_TYPE         const&target        ,
+        INTERNALFORMAT_TYPE const&internalformat,
+        BUFFER_TYPE         const&buffer        ,
+        OFFSET_TYPE         const&offset        ,
+        SIZE_TYPE           const&size          ){
+        return std::make_shared<TexBufferRange<
+          TARGET_TYPE        ,
+          INTERNALFORMAT_TYPE,
+          BUFFER_TYPE        ,
+          OFFSET_TYPE        ,
+          SIZE_TYPE          >>(
+              target        ,
+              internalformat,
+              buffer        ,
+              offset        ,
+              size          );
+    }
+
+    template<
       typename FRAMEBUFFER_TYPE = GLuint,
       typename ATTACHMENT_TYPE  = GLenum,
       typename TEXTURE_TYPE     = GLuint,
@@ -39455,6 +54340,36 @@ namespace ge{
               level      ,
               layer      );
     }
+    template<
+      typename FRAMEBUFFER_TYPE = GLuint,
+      typename ATTACHMENT_TYPE  = GLenum,
+      typename TEXTURE_TYPE     = GLuint,
+      typename LEVEL_TYPE       = GLint ,
+      typename LAYER_TYPE       = GLint >
+    inline std::shared_ptr<NamedFramebufferTextureLayer<
+      FRAMEBUFFER_TYPE,
+      ATTACHMENT_TYPE ,
+      TEXTURE_TYPE    ,
+      LEVEL_TYPE      ,
+      LAYER_TYPE      >> sharedNamedFramebufferTextureLayer(
+        FRAMEBUFFER_TYPE const&framebuffer,
+        ATTACHMENT_TYPE  const&attachment ,
+        TEXTURE_TYPE     const&texture    ,
+        LEVEL_TYPE       const&level      ,
+        LAYER_TYPE       const&layer      ){
+        return std::make_shared<NamedFramebufferTextureLayer<
+          FRAMEBUFFER_TYPE,
+          ATTACHMENT_TYPE ,
+          TEXTURE_TYPE    ,
+          LEVEL_TYPE      ,
+          LAYER_TYPE      >>(
+              framebuffer,
+              attachment ,
+              texture    ,
+              level      ,
+              layer      );
+    }
+
     template<
       typename MODE_TYPE          = GLenum ,
       typename FIRST_TYPE         = GLint  ,
@@ -39485,6 +54400,36 @@ namespace ge{
               baseinstance );
     }
     template<
+      typename MODE_TYPE          = GLenum ,
+      typename FIRST_TYPE         = GLint  ,
+      typename COUNT_TYPE         = GLsizei,
+      typename INSTANCECOUNT_TYPE = GLsizei,
+      typename BASEINSTANCE_TYPE  = GLuint >
+    inline std::shared_ptr<DrawArraysInstancedBaseInstance<
+      MODE_TYPE         ,
+      FIRST_TYPE        ,
+      COUNT_TYPE        ,
+      INSTANCECOUNT_TYPE,
+      BASEINSTANCE_TYPE >> sharedDrawArraysInstancedBaseInstance(
+        MODE_TYPE          const&mode         ,
+        FIRST_TYPE         const&first        ,
+        COUNT_TYPE         const&count        ,
+        INSTANCECOUNT_TYPE const&instancecount,
+        BASEINSTANCE_TYPE  const&baseinstance ){
+        return std::make_shared<DrawArraysInstancedBaseInstance<
+          MODE_TYPE         ,
+          FIRST_TYPE        ,
+          COUNT_TYPE        ,
+          INSTANCECOUNT_TYPE,
+          BASEINSTANCE_TYPE >>(
+              mode         ,
+              first        ,
+              count        ,
+              instancecount,
+              baseinstance );
+    }
+
+    template<
       typename N_TYPE         = GLsizei      ,
       typename PIPELINES_TYPE = const GLuint*>
     inline DeleteProgramPipelines<
@@ -39498,5 +54443,20 @@ namespace ge{
               n        ,
               pipelines);
     }
+    template<
+      typename N_TYPE         = GLsizei      ,
+      typename PIPELINES_TYPE = const GLuint*>
+    inline std::shared_ptr<DeleteProgramPipelines<
+      N_TYPE        ,
+      PIPELINES_TYPE>> sharedDeleteProgramPipelines(
+        N_TYPE         const&n        ,
+        PIPELINES_TYPE const&pipelines){
+        return std::make_shared<DeleteProgramPipelines<
+          N_TYPE        ,
+          PIPELINES_TYPE>>(
+              n        ,
+              pipelines);
+    }
+
   }
 }
