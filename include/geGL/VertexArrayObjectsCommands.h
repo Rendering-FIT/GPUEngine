@@ -57,7 +57,7 @@ namespace ge{
             GLenum    type,
             GLboolean normalized,
             GLuint    relativeOffset);
-        void operator()();
+        //void operator()();
     };
     class GEGL_EXPORT VertexAttribIFormat: public ge::core::Command
     {
@@ -71,7 +71,7 @@ namespace ge{
             GLint  size,
             GLenum type,
             GLuint relativeOffset);
-        void operator()();
+        //void operator()();
     };
     class VertexAttribLFormat: public ge::core::Command
     {

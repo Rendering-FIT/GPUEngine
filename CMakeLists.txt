@@ -34,6 +34,7 @@ FOREACH(CONF ${CMAKE_CONFIGURATION_TYPES})        # For each configuration (Debu
 ENDFOREACH()
 
 IF(MSVC)
+   # enable multithreaded compilation
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
    # disable MSVC warning "LNK4221: This object file does not define any previously undefined public symbols,
@@ -81,9 +82,9 @@ FIND_PACKAGE(osgDB       QUIET)
 
 FIND_PATH(GLM_INCLUDE_DIR glm/glm.hpp)
 
-INCLUDE_DIRECTORIES(
-    ${GPUEngine_SOURCE_DIR}/include
-  )
+#INCLUDE_DIRECTORIES(
+#    ${GPUEngine_SOURCE_DIR}/include
+#  )
 
 
 ##################################################
