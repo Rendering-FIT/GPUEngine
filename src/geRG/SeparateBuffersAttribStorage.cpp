@@ -82,8 +82,8 @@ void SeparateBuffersAttribStorage::bind() const
 }
 
 
-bool SeparateBuffersAttribStorage::reallocData(Mesh &mesh,int numVertices,
-        int numIndices,bool preserveContent)
+bool SeparateBuffersAttribStorage::reallocData(Mesh &/*mesh*/,int /*numVertices*/,
+        int /*numIndices*/,bool /*preserveContent*/)
 {
    // FIXME: not implemented yet
    return false;

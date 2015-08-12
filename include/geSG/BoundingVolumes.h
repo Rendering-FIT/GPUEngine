@@ -100,7 +100,7 @@ namespace ge
              for(auto BS : container)
              {
                 float rad = glm::distance(newCenter, BS->center) + BS->radius;
-                this->radius = newRadius >= rad ? newCenter : rad;
+                this->radius = newRadius >= rad ? newRadius : rad;
              }
           }
 

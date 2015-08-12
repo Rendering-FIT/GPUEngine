@@ -7,8 +7,8 @@ bool ge::util::RaySphereIntersector::intersects(const Ray & ray, const ge::sg::B
    float  b = 2 * glm::dot(ray.direction, (ray.origin - bs.center));
    float  c = glm::dot((ray.origin - bs.center), (ray.origin - bs.center)) - r2;
    float  D = b * b - 4 * a * c;
-   float t1 = 0.0f;
-   float t2;
+   //float t1 = 0.0f;
+   //float t2;
    if(D < 0.0f) return false;
    return true;
 }

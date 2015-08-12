@@ -83,8 +83,8 @@ bool AttribConfig::allocData(Mesh &mesh,int numVertices,int numIndices,int numDr
 }
 
 
-bool AttribConfig::reallocData(Mesh &mesh,int numVertices,int numIndices,
-                               int numDrawCommands,bool preserveContent)
+bool AttribConfig::reallocData(Mesh &/*mesh*/,int /*numVertices*/,int /*numIndices*/,
+                               int /*numDrawCommands*/,bool /*preserveContent*/)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space

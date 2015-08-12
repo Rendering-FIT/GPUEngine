@@ -28,3 +28,8 @@ install_manifest.txt
 *.kdev4
 /doc/
 /build*/
+include/geCore/Export.h
+include/geGL/Export.h
+include/geRG/Export.h
+include/geSG/Export.h
+include/geUtil/Export.h

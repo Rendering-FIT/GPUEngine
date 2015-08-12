@@ -90,8 +90,8 @@ bool AttribStorage::allocData(Mesh &mesh,int numVertices,int numIndices)
  *  If preserveContent is false, content of element and index data are undefined
  *  after reallocation.
  */
-bool AttribStorage::reallocData(Mesh &mesh,int numVertices,int numIndices,
-                                bool preserveContent)
+bool AttribStorage::reallocData(Mesh &/*mesh*/,int /*numVertices*/,int /*numIndices*/,
+                                bool /*preserveContent*/)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
