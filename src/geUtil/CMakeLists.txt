@@ -1,14 +1,16 @@
+set(LIB_NAME geUtil)
+
+set(LIB_NAME_UPPER)
+string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
+
 IF   (DYNAMIC_GPUENGINE)
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-DGEUTIL_LIBRARY)
+    ADD_DEFINITIONS(-D"${LIB_NAME_UPPER}"_LIBRARY)
 ELSE ()
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
     ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
 ENDIF()
 
-set(LIB_NAME geUtil)
-
-project(${LIB_NAME})
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(GL_INCLUDES
@@ -17,10 +19,12 @@ set(GL_INCLUDES
   ${HEADER_PATH}/ArgumentObject.h
   ${HEADER_PATH}/CameraObject.h
   ${HEADER_PATH}/CameraPath.h
-  ${HEADER_PATH}/HighResolutionTimer.h
   ${HEADER_PATH}/FPSPrinter.h
+  ${HEADER_PATH}/HighResolutionTimer.h
+  ${HEADER_PATH}/Intersectors.h
   ${HEADER_PATH}/macros.h
   ${HEADER_PATH}/Progress.h
+  ${HEADER_PATH}/Ray.h
   ${HEADER_PATH}/geUtil.h
   ${HEADER_PATH}/ArgData.h
   ${HEADER_PATH}/BaseData.h
@@ -33,8 +37,9 @@ set(GL_SOURCES
   ArgumentObject.cpp  
   CameraObject.cpp
   CameraPath.cpp
-  HighResolutionTimer.cpp
   FPSPrinter.cpp
+  HighResolutionTimer.cpp
+  Intersectors.cpp
   Progress.cpp
   ArgData.cpp
   BaseData.cpp
@@ -56,10 +61,23 @@ ADD_LIBRARY(${LIB_NAME}
 
 find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
+  
+################################################
+# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
+# External_deps - other than 'ge' packages goes here (e.g. glew), it configures this package intra project dependencies and also configures the config file
+# External_export_libs - probably not used right now or ever
+# External_export_includes - probably not used right now or ever
+# Internal_inc - Additional include directories
+# Includes_to_export - includes to be exported from this target in current project - which is kinda weird
 
 set(Internal_deps geGL)
-set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
+set(External_deps )
+set(External_export_libs )
+set(External_export_includes )
+set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
+set(Includes_to_export )
 
+#Searched for in the top most CMakeList - don't ask me why.
 IF(ANTTWEAKBAR_FOUND)
    list(APPEND Internal_inc ${ANTTWEAKBAR_INCLUDE_DIR})
    target_link_libraries(${LIB_NAME} ${ANTTWEAKBAR_LIBRARY})
@@ -70,12 +88,10 @@ IF(SDL2_FOUND)
    target_link_libraries(${LIB_NAME} ${SDL2_LIBRARY})
 ENDIF()
 
-set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
-#include_directories(${includes_to_export})
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps})
 set_target_properties(${LIB_NAME} PROPERTIES
 	INCLUDE_DIRECTORIES "${Internal_inc}"
-	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
+	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
 
@@ -95,13 +111,20 @@ install(TARGETS ${LIB_NAME}
 #Export
 
 configure_file(
-   geUtilConfig.cmake.in
-   geUtilConfig.cmake
+   ../CMake/geConfig.cmake.in
+   "${LIB_NAME}Config.cmake"
+   @ONLY
+)
+
+
+configure_file(
+   ../CMake/geExport.h.in
+   "${GPUEngine_SOURCE_DIR}/include/${LIB_NAME}/Export.h"
    @ONLY
 )
 
 # INSTALL_CM_DIR is defined in master CMakeLists file
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geUtilConfig.cmake"
-        DESTINATION "${INSTALL_CM_DIR}/geUtil"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/${LIB_NAME}"
         )

@@ -72,7 +72,7 @@ namespace ge{
             , stride(0)
             , offset(0)
             , semantic(ge::core::EnumRegister::notRegistered)
-            , data(NULL)
+            , data(nullptr)
          {
 
          }

@@ -1,12 +1,15 @@
+set(LIB_NAME geRG)
+set(LIB_NAME_UPPER)
+string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
+
 IF   (DYNAMIC_GPUENGINE)
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-DGERG_LIBRARY)
+    ADD_DEFINITIONS(-D"${LIB_NAME_UPPER}"_LIBRARY)
 ELSE ()
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-    ADD_DEFINITIONS(-DGERG_LIBRARY_STATIC)
+    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
 ENDIF()
 
-set(LIB_NAME geRG)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(RG_INCLUDES
@@ -48,14 +51,27 @@ ADD_LIBRARY(${LIB_NAME}
     ${RG_SOURCES}
   )
 
-include_directories()
+################################################
+# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
+# External_deps - other than 'ge' packages goes here (e.g. glew), it configures this package intra project dependencies and also configures the config file
+# External_export_libs - probably not used right now or ever
+# External_export_includes - probably not used right now or ever
+# Internal_inc - Additional include directories
+# Includes_to_export - includes to be exported from this target in current project - which is kinda weird
+
 
 set(Internal_deps geGL)
+set(External_deps )
+set(External_export_libs )
+set(External_export_includes )
 set(Internal_inc ${GLM_INCLUDE_DIR} ${GLEW_INCLUDE_DIR})
+set(Includes_to_export )
+
 target_link_libraries(${LIB_NAME} ${Internal_deps})
+
 set_target_properties(${LIB_NAME} PROPERTIES 
     INCLUDE_DIRECTORIES "${Internal_inc}"
-    INTERFACE_INCLUDE_DIRECTORIES "${GPUEngine_SOURCE_DIR}/include"
+    INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
 
@@ -76,6 +92,12 @@ install(TARGETS ${LIB_NAME}
 configure_file(
    geRGConfig.cmake.in
    geRGConfig.cmake
+   @ONLY
+)
+
+configure_file(
+   ../CMake/geExport.h.in
+   "${GPUEngine_SOURCE_DIR}/include/${LIB_NAME}/Export.h"
    @ONLY
 )
 

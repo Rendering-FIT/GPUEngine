@@ -43,6 +43,27 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
                "   numIndices parameter must be zero.\n"<<endl;
       _ebo = NULL;
    }
+
+   // append transformation matrix to VAO
+   if(_renderingContext->useARBShaderDrawParameters()==false) {
+      _vao->bind();
+      ge::gl::BufferObject *bo=_renderingContext->instancingMatrixBuffer();
+      bo->bind(GL_ARRAY_BUFFER);
+      const GLuint index=12;
+      glEnableVertexAttribArray(index+0);
+      glEnableVertexAttribArray(index+1);
+      glEnableVertexAttribArray(index+2);
+      glEnableVertexAttribArray(index+3);
+      glVertexAttribPointer(index+0,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*0));
+      glVertexAttribPointer(index+1,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*4));
+      glVertexAttribPointer(index+2,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*8));
+      glVertexAttribPointer(index+3,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*12));
+      glVertexAttribDivisor(index+0,1);
+      glVertexAttribDivisor(index+1,1);
+      glVertexAttribDivisor(index+2,1);
+      glVertexAttribDivisor(index+3,1);
+      _vao->unbind();
+   }
 }
 
 
@@ -74,7 +95,7 @@ void SeparateBuffersAttribStorage::uploadVertices(Mesh &mesh,const void*const *a
                                                   int numVertices,int fromIndex)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->configData();
-   unsigned c=_arrayBuffers.size();
+   unsigned c = unsigned(_arrayBuffers.size());
    assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
                                "AttribStorage must match.");
    for(unsigned i=0; i<c; i++)

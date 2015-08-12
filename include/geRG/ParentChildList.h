@@ -257,10 +257,10 @@ namespace ge
          typedef ParentIterator iterator;
          typedef ParentReverseIterator reverse_iterator;
 
-         inline ParentIterator         begin() const   { return ParentIterator(((ParentListTemplate<ParentT,ChildT>*)this)->begin()); }
-         inline ParentIterator         end() const     { return ParentIterator(((ParentListTemplate<ParentT,ChildT>*)this)->end()); }
-         inline ParentReverseIterator  rbegin() const  { return ParentReverseIterator(((ParentListTemplate<ParentT,ChildT>*)this)->rbegin()); }
-         inline ParentReverseIterator  rend() const    { return ParentReverseIterator(((ParentListTemplate<ParentT,ChildT>*)this)->rend()); }
+         inline ParentIterator         begin()   { return ParentIterator(inherited::_list.begin()); }
+         inline ParentIterator         end()     { return ParentIterator(inherited::_list.end()); }
+         inline ParentReverseIterator  rbegin()  { return ParentReverseIterator(inherited::_list.rbegin()); }
+         inline ParentReverseIterator  rend()    { return ParentReverseIterator(inherited::_list.rend()); }
 
          inline void push_back(std::shared_ptr<ParentT> &parent,std::shared_ptr<ChildT> &self,ChildListTemplate<ChildT,ParentT> &childList)  { childList.push_back(self,parent,*this); }
          inline void push_front(std::shared_ptr<ParentT> &parent,std::shared_ptr<ChildT> &self,ChildListTemplate<ChildT,ParentT> &childList)  { childList.push_front(self,parent,*this); }
@@ -370,7 +370,7 @@ namespace ge
 
       template<typename ParentT,typename ChildT>
       typename ParentListTemplate<ParentT,ChildT>::ParentIterator ParentListTemplate<ParentT,ChildT>::insert(
-            ParentListTemplate<ParentT,ChildT>::ParentIterator pos,std::shared_ptr<ParentT> &parent,std::shared_ptr<ChildT> &self,
+            typename ParentListTemplate<ParentT,ChildT>::ParentIterator pos,std::shared_ptr<ParentT> &parent,std::shared_ptr<ChildT> &self,
             ChildListTemplate<ChildT,ParentT> &childList)
       {
          auto childIt =childList.getInternalList().emplace(childList.getInternalList().end(),self,this->getInternalList().end());

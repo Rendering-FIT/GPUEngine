@@ -20,7 +20,6 @@ namespace ge
    }
    namespace rg
    {
-      class AttribStorage;
       class InstancingMatrices;
       class StateSet;
       class Transformation;
@@ -47,10 +46,12 @@ namespace ge
       protected:
 
          AttribConfigList _attribConfigList;
+         unsigned _numAttribStorages;
          //StateSetList
          typedef std::vector<std::shared_ptr<ge::rg::Transformation>> TransformationGraphList;
          TransformationGraphList _transformationGraphs;
          std::shared_ptr<InstancingMatrices> _identityInstancingMatrix;
+         bool _useARBShaderDrawParameters;
 
          ge::gl::BufferObject *_stateSetBuffer;
          ge::gl::BufferObject *_drawCommandBuffer;
@@ -83,6 +84,7 @@ namespace ge
          void* _mappedInstancingMatrixBufferPtr;
          MappedBufferAccess _instancingMatrixBufferMappedAccess;
 
+         static bool _initialUseARBShaderDrawParametersValue;
          static int _initialStateSetBufferNumElements;
          static int _initialDrawCommandBufferSize;
          static int _initialInstanceBufferNumElements;
@@ -114,6 +116,12 @@ namespace ge
                                                 AttribConfigId id);
          void removeAttribConfig(AttribConfigList::iterator it);
 
+         inline bool useARBShaderDrawParameters() const;
+         void setUseARBShaderDrawParameters(bool value);
+         inline unsigned numAttribStorages() const;
+         void onAttribStorageInit(AttribStorage *a);
+         void onAttribStorageRelease(AttribStorage *a);
+	 
          inline ge::gl::BufferObject* drawCommandBuffer();      ///< Returns the buffer containing draw commands of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline ge::gl::BufferObject* instanceBuffer();         ///< Returns the buffer containing instances. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline ge::gl::BufferObject* indirectCommandBuffer();  ///< Returns indirect command buffer used for indirect rendering.
@@ -221,6 +229,8 @@ namespace ge
          virtual void setupRendering();
          virtual void render();
 
+         static inline bool initialUseARBShaderDrawParametersValue();
+         static inline void setInitialUseARBShaderDrawParametersValue(bool value);
          static inline int initialStateSetBufferNumElements();
          static inline void setInitialStateSetBufferNumElements(int value);
          static inline int initialDrawCommandBufferSize();
@@ -285,6 +295,8 @@ namespace ge
       { return getAttribConfig(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo)); }
       inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
       { return getAttribConfig(AttribConfig::ConfigData(attribTypes,ebo,id)); }
+      inline bool RenderingContext::useARBShaderDrawParameters() const  { return _useARBShaderDrawParameters; }
+      inline unsigned RenderingContext::numAttribStorages() const  { return _numAttribStorages; }
       inline ge::gl::BufferObject* RenderingContext::drawCommandBuffer()  { return _drawCommandBuffer; }
       inline ge::gl::BufferObject* RenderingContext::instanceBuffer()  { return _instanceBuffer; }
       inline ge::gl::BufferObject* RenderingContext::indirectCommandBuffer()  { return _indirectCommandBuffer; }
@@ -345,6 +357,8 @@ namespace ge
       inline const RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs() const  { return _transformationGraphs; }
       inline unsigned RenderingContext::positionInIndirectBuffer4() const  { return _indirectBufferAllocatedSpace4; }
       inline void RenderingContext::setPositionInIndirectBuffer4(unsigned pos)  { _indirectBufferAllocatedSpace4=pos; }
+      inline bool RenderingContext::initialUseARBShaderDrawParametersValue()  { return _initialUseARBShaderDrawParametersValue; }
+      inline void RenderingContext::setInitialUseARBShaderDrawParametersValue(bool value)  { _initialUseARBShaderDrawParametersValue=value; }
       inline int RenderingContext::initialStateSetBufferNumElements()  { return _initialStateSetBufferNumElements; }
       inline void RenderingContext::setInitialStateSetBufferNumElements(int value)  { _initialStateSetBufferNumElements=value; }
       inline int RenderingContext::initialDrawCommandBufferSize()  { return _initialDrawCommandBufferSize; }

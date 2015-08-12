@@ -1,12 +1,15 @@
+set(LIB_NAME geCore)
+
+set(LIB_NAME_UPPER)
+string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
+
 IF   (DYNAMIC_GPUENGINE)
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-DGECORE_LIBRARY)
+    ADD_DEFINITIONS(-D"${LIB_NAME_UPPER}"_LIBRARY)
 ELSE ()
     SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
     ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
 ENDIF()
-
-set(LIB_NAME geCore)
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(CORE_INCLUDES
@@ -38,9 +41,27 @@ ADD_LIBRARY(${LIB_NAME}
     ${CORE_INCLUDES}
     ${CORE_SOURCES}
   )
+ 
+################################################
+# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
+# External_deps - other than 'ge' packages goes here (e.g. glew), it configures this package intra project dependencies and also configures the config file
+# External_export_libs - probably not used right now or ever
+# External_export_includes - probably not used right now or ever
+# Internal_inc - Additional include directories
+# Includes_to_export - includes to be exported from this target in current project - which is kinda weird
+
+set(Internal_deps )
+set(External_deps )
+set(External_export_libs )
+set(External_export_includes )
+set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
+set(Includes_to_export )  
+
+target_link_libraries(${LIB_NAME} ${Internal_deps} )
 
 set_target_properties(${LIB_NAME} PROPERTIES
-	INTERFACE_INCLUDE_DIRECTORIES "${GPUEngine_SOURCE_DIR}/include"
+   INCLUDE_DIRECTORIES "${Internal_inc}"
+	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
 
@@ -58,12 +79,22 @@ install(TARGETS ${LIB_NAME}
   
 #########################################
 #Export
-   
+ 
 configure_file(
-   geCoreConfig.cmake.in
-   geCoreConfig.cmake
+   ../CMake/geConfig.cmake.in
+   "${LIB_NAME}Config.cmake"
    @ONLY
 )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/geCoreConfig.cmake"
-   DESTINATION "${INSTALL_CM_DIR}/geCore"
-   )
+
+
+configure_file(
+   ../CMake/geExport.h.in
+   "${GPUEngine_SOURCE_DIR}/include/${LIB_NAME}/Export.h"
+   @ONLY
+)
+
+# INSTALL_CM_DIR is defined in master CMakeLists file
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
+        DESTINATION "${INSTALL_CM_DIR}/${LIB_NAME}"
+        )
