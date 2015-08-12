@@ -1,4 +1,5 @@
 set(LIB_NAME geSG)
+
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
@@ -15,6 +16,7 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(SG_INCLUDES
    ${HEADER_PATH}/Export.h
    ${HEADER_PATH}/AttributeDescriptor.h
+   ${HEADER_PATH}/BoundingVolumes.h
    ${HEADER_PATH}/Drawable.h
    ${HEADER_PATH}/Image.h
    ${HEADER_PATH}/Material.h
@@ -38,19 +40,27 @@ ADD_LIBRARY(${LIB_NAME}
     ${SG_INCLUDES}
     ${SG_SOURCES}
   )
+  
+################################################
+# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
+# External_deps - other than 'ge' packages goes here (e.g. glew), it configures this package intra project dependencies and also configures the config file
+# External_export_libs - probably not used right now or ever
+# External_export_includes - probably not used right now or ever
+# Internal_inc - Additional include directories
+# Includes_to_export - includes to be exported from this target in current project - which is kinda weird
 
 set(Internal_deps geCore)
-#set(External_deps ste)
+set(External_deps )
 set(External_export_libs )
 set(External_export_includes )
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GLM_INCLUDE_DIR})
-set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)  
+set(Internal_inc ${GLM_INCLUDE_DIR} ${GPUEngine_SOURCE_DIR}/include)
+set(Includes_to_export )
 
-target_link_libraries(${LIB_NAME} ${Internal_deps} )#ste)
+target_link_libraries(${LIB_NAME} ${Internal_deps} )
  
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"
-	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
+	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
 install(FILES
@@ -63,6 +73,9 @@ install(TARGETS ${LIB_NAME}
    ARCHIVE DESTINATION lib
    RUNTIME DESTINATION bin
 )
+  
+#########################################
+#Export
   
 configure_file(
    ../CMake/geConfig.cmake.in

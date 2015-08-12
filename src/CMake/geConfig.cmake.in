@@ -1,3 +1,19 @@
+###############################################################################
+# The variables that needs to be set before the call like this
+# configure_file(../CMake/geConfig.cmake.in "${LIB_NAME}Config.cmake" @ONLY)
+# LIB_NAME - name of the current lib such as geSG
+# Internal_deps - internal dependencies for the current lib, means other packages
+#                 of this project like geCore
+# External_deps - Other dependencies (3rdparties), not all of them are configured
+#                 as an import target so futher checking is needed. Currently, if 
+#                 the find_package(called for_each External_deps) doesnt produce
+#                 target it then uses ${dep}_LIBRARY and ${dep}_INCLUDE_DIR vars
+#                 for library (only release build libs should be present) and 
+#                 include directories respectively. This way all find module are
+#                 expected to produce these variables.
+#
+##################################################################################
+
 
 @PACKAGE_INIT@
 

@@ -127,7 +127,7 @@ namespace ge{
             return *this;
           }
         template<typename T>
-          &operator T&(){
+          operator T&(){
             return *((T*)((Accessor*)this)->getData());
           }
     };
