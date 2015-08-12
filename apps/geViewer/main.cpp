@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 #include <vector>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -45,6 +46,7 @@ bool DisableAnttweakbar=true;
 ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
+static bool useARBShaderDrawParameters=false;
 static ProgramObject *ambientProgram = NULL;
 static ProgramObject *simplifiedPhongProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
@@ -91,6 +93,7 @@ int main(int Argc,char*Argv[])
 
   glewExperimental=GL_TRUE;
   glewInit();
+  RenderingContext::setInitialUseARBShaderDrawParametersValue(useARBShaderDrawParameters);
   RenderingContext::setCurrent(make_shared<RenderingContext>());
 
   // OpenGL debugging messages
@@ -142,8 +145,11 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
 
 void Idle()
 {
-   // prepare for rendering
+   // compute transformation matrices
    RenderingContext::current()->evaluateTransformationGraph();
+   RenderingContext::current()->unmapInstancingMatrixBuffer();
+
+   // prepare for rendering
    RenderingContext::current()->setupRendering();
    RenderingContext::current()->mapStateSetBuffer();
    stateSet->setupRendering();
@@ -160,13 +166,16 @@ void Idle()
    RenderingContext::current()->stateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
    glDispatchCompute((numInstances+63)/64,1,1);
 
-   // draw few triangles by very low-level approach
+   // clear screen
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
    // wait for compute shader
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+
+   // bind buffers for rendering
    RenderingContext::current()->indirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
-   RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   if(useARBShaderDrawParameters)
+      RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
 
 #if 0
    printIntBufferContent(RenderingContext::current()->instanceBuffer(),
@@ -178,7 +187,6 @@ void Idle()
 #endif
 
    // render ambient scene
-   glDisable(GL_CULL_FACE);
    ambientProgram->use();
    stateSet->render();
 
@@ -265,9 +273,11 @@ public:
       shared_ptr<Transformation> t=make_shared<Transformation>();
       transformationStack.back()->appendChild(t,transformationStack.back());
       transformationStack.emplace_back(t);
+
       t->allocTransformationGpuData();
       t->uploadMatrix(osg::Matrixf(m).ptr());
       traverse(transform);
+
       transformationStack.pop_back();
    }
 
@@ -516,7 +526,6 @@ void Init()
          root->accept(graphBuilder);
          root->unref();
 
-#if 1
          shared_ptr<Transformation> t1=make_shared<Transformation>();
          t1->appendChild(graphBuilder.transformationStack.front(),t1);
          RenderingContext::current()->appendTransformationGraph(t1);
@@ -528,43 +537,6 @@ void Init()
          };
          t1->allocTransformationGpuData();
          t1->uploadMatrix(m1);
-#else
-         shared_ptr<Transformation> t1=make_shared<Transformation>();
-         t1->appendChild(graphBuilder.transformationStack.front(),t1);
-         RenderingContext::current()->appendTransformationGraph(t1);
-         const float m1[16] = {
-            1.f, 0.f, 0.f, 0.f,
-            0.f, 1.f, 0.f, 0.f,
-            0.f, 0.f, 1.f, 0.f,
-            0.f,-2.f,-10.f, 1.f,
-         };
-         t1->allocTransformationGpuData();
-         t1->uploadMatrix(m1);
-
-         const float m2[16] = {
-            1.f, 0.f, 0.f, 0.f,
-            0.f, 1.f, 0.f, 0.f,
-            0.f, 0.f, 1.f, 0.f,
-           -3.f, 3.f,-10.f, 1.f,
-         };
-         shared_ptr<Transformation> t2=make_shared<Transformation>();
-         t2->allocTransformationGpuData();
-         t2->uploadMatrix(m2);
-         t2->setInstancingMatrices(t1->getOrCreateInstancingMatrices());
-         RenderingContext::current()->appendTransformationGraph(t2);
-
-         const float m3[16] = {
-            1.f, 0.f, 0.f, 0.f,
-            0.f, 1.f, 0.f, 0.f,
-            0.f, 0.f, 1.f, 0.f,
-            3.f, 3.f, 0.f, 1.f,
-         };
-         shared_ptr<Transformation> t3=make_shared<Transformation>();
-         t3->allocTransformationGpuData();
-         t3->uploadMatrix(m3);
-         t3->appendChild(t1,t3);
-         RenderingContext::current()->appendTransformationGraph(t3);
-#endif
       }
 
       // release OSG memory
@@ -582,31 +554,42 @@ void Init()
    ge::gl::initShadersAndPrograms();
    ambientProgram = new ProgramObject(
       GL_VERTEX_SHADER,
+      static_cast<std::stringstream&>(stringstream()<<
       "#version 430\n"
-      "#extension GL_ARB_shader_draw_parameters : enable\n"
-      "\n"
-      "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-      "   mat4 instancingMatrixBuffer[];\n"
-      "};\n"
+      <<(useARBShaderDrawParameters
+      ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+        "\n"
+        "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+        "   mat4 instancingMatrixBuffer[];\n"
+        "};\n"
+      : ""
+      )<<
       "\n"
       "layout(location=0) in vec4 position;\n"
-      "layout(location=2) in vec4 diffuse;\n"
-      //"layout(location=3) in vec2 texCoord;\n"
+      "layout(location=2) in vec4 color;\n"
+      "layout(location=3) in vec2 texCoord;\n"
+      <<(useARBShaderDrawParameters
+      ? ""
+      : "layout(location=12) in mat4 instancingMatrix;\n"
+      )<<
       "\n"
       "layout(location=0) out vec4 colorOut;\n"
       "\n"
-      "uniform vec4 globalAmbientLight; // alpha should be 1\n"
+      "uniform vec4 globalAmbientLight; // alpha must be 1\n"
       "uniform mat4 projection;\n"
       "\n"
       "void main()\n"
       "{\n"
       "   // ambient lighting\n"
-      "   colorOut=globalAmbientLight*diffuse;\n"
+      "   colorOut=globalAmbientLight*color;\n"
       "\n"
       "   // vertex position\n"
-      "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-      "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
-      "}\n",
+      <<(useARBShaderDrawParameters
+      ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+        "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
+      : "   gl_Position=projection*instancingMatrix*position;\n"
+      )<<
+      "}\n").str(),
       GL_FRAGMENT_SHADER,
       "#version 330\n"
       "\n"
@@ -620,43 +603,60 @@ void Init()
       "}\n");
    simplifiedPhongProgram = new ProgramObject(
       GL_VERTEX_SHADER,
+      static_cast<std::stringstream&>(stringstream()<<
       "#version 430\n"
-      "#extension GL_ARB_shader_draw_parameters : enable\n"
-      "\n"
-      "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-      "   mat4 instancingMatrixBuffer[];\n"
-      "};\n"
+      <<(useARBShaderDrawParameters
+      ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+        "\n"
+        "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+        "   mat4 instancingMatrixBuffer[];\n"
+        "};\n"
+      : ""
+      )<<
       "\n"
       "layout(location=0) in vec4 position;\n"
       "layout(location=1) in vec3 normal;\n"
-      "layout(location=2) in vec4 diffuse;\n"
+      "layout(location=2) in vec4 color;\n"
       "layout(location=3) in vec2 texCoord;\n"
+      <<(useARBShaderDrawParameters
+      ? ""
+      : "layout(location=12) in mat4 instancingMatrix;\n"
+      )<<
       "\n"
       "layout(location=0) out vec3 eyePosition;\n"
       "layout(location=1) out vec3 eyeNormal;\n"
-      "layout(location=2) out vec4 diffuseOut;\n"
+      "layout(location=2) out vec4 colorOut;\n"
+      "layout(location=3) out vec2 texCoordOut;\n"
       "\n"
       "uniform mat4 projection;\n"
       "\n"
       "void main()\n"
       "{\n"
-      "   diffuseOut=diffuse;\n"
-      "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-      "   vec4 v=instancingMatrixBuffer[matrixOffset64]*position;\n"
+      "   colorOut=color;\n"
+      "   texCoordOut=texCoord;\n"
+      <<(useARBShaderDrawParameters
+      ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+        "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
+        "   vec4 v=instancingMatrix*position;\n"
+      : "   vec4 v=instancingMatrix*position;\n"
+      )<<
       "   eyePosition=v.xyz;\n"
-      "   eyeNormal=transpose(inverse(mat3(instancingMatrixBuffer[matrixOffset64])))*normal;\n"
+      "   eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
       "   gl_Position=projection*v;\n"
-      "}\n",
+      "}\n").str(),
       GL_FRAGMENT_SHADER,
       "#version 330\n"
       "\n"
       "in vec3 eyePosition;\n"
       "in vec3 eyeNormal;\n"
-      "in vec4 diffuse;\n"
+      "in vec4 color;\n"
+      "in vec2 texCoord;\n"
       "\n"
       "layout(location=0) out vec4 fragColor;\n"
       "\n"
       "uniform vec4 specularAndShininess; // shininess in alpha\n"
+      "uniform bool colorTexturing;\n"
+      "uniform sampler2D colorTexture;\n"
       "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
       "uniform vec3 lightColor;\n"
       "uniform vec3 lightAttenuation;\n"
@@ -678,8 +678,15 @@ void Init()
       "\n"
       "   // fragments facing the light get all the lighting\n"
       "   // while those not facing the light get only ambient lighting\n"
-      "   if(NdotL>0.) {\n"
-      "\n"
+      "   if(NdotL<=0.)\n"
+      "   {\n"
+      "      // final sum for light-not-facing fragments\n"
+      "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
+      "      // or we can simply drop the fragment.)\n"
+      "      discard;\n"
+      "   }\n"
+      "   else\n"
+      "   {\n"
       "      // specular effect\n"
       "      float specularEffect;\n"
       "      vec3 R=reflect(-VLdir,N);\n"
@@ -695,16 +702,18 @@ void Init()
       "                        lightAttenuation[1]*VLlen+\n"
       "                        lightAttenuation[2]*VLlen*VLlen;\n"
       "\n"
+      "      // texturing\n"
+      "      vec4 c;\n;"
+      "      if(colorTexturing)\n"
+      "         c=texture(colorTexture,texCoord)*color;\n"
+      "      else\n"
+      "         c=color;\n"
+      "\n"
       "      // final sum for light-facing fragments\n"
-      "      fragColor=vec4((diffuse.rgb*lightColor*NdotL+\n"
+      "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
       "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
       "                      attenuation,\n"
-      "                     diffuse.a);\n"
-      "   }\n"
-      "   else\n"
-      "   {\n"
-      "      // final sum for light-not-facing fragments\n"
-      "      fragColor=vec4(0,0,0,diffuse.a);\n"
+      "                     c.a);\n"
       "   }\n"
       "}\n");
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);

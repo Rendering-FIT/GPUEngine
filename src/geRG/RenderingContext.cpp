@@ -15,6 +15,8 @@ using namespace std;
 
 thread_local RenderingContext::AutoInitRenderingContext RenderingContext::_currentContext;
 
+bool RenderingContext::_initialUseARBShaderDrawParametersValue = false;
+
 int RenderingContext::_initialStateSetBufferNumElements = 100; // 800 bytes
 int RenderingContext::_initialDrawCommandBufferSize = 8000; // 8'000 bytes
 int RenderingContext::_initialInstanceBufferNumElements = 1000; // 12'000 bytes
@@ -78,7 +80,9 @@ RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
 
 
 RenderingContext::RenderingContext()
-   : _stateSetBufferAllocationManager(_initialStateSetBufferNumElements)
+   : _useARBShaderDrawParameters(_initialUseARBShaderDrawParametersValue)
+   , _numAttribStorages(0)
+   , _stateSetBufferAllocationManager(_initialStateSetBufferNumElements)
    , _drawCommandAllocationManager(_initialDrawCommandBufferSize)
    , _instanceAllocationManager(_initialInstanceBufferNumElements)
    , _transformationAllocationManager(_initialTransformationBufferSize/64,1)
@@ -174,6 +178,28 @@ void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
    if(it->second!=NULL)
       it->second->detachFromRenderingContext();
    _attribConfigList.erase(it);
+}
+
+
+void RenderingContext::setUseARBShaderDrawParameters(bool value)
+{
+   if(_numAttribStorages==0)
+      _useARBShaderDrawParameters=value;
+   else
+      cerr<<"RenderingContext::setUseARBShaderDrawParameters(): The method can be used\n"
+            "   only until the first AttribStorage is created for the rendering context."<<endl;
+}
+
+
+void RenderingContext::onAttribStorageInit(AttribStorage *a)
+{
+   _numAttribStorages++;
+}
+
+
+void RenderingContext::onAttribStorageRelease(AttribStorage *a)
+{
+   _numAttribStorages--;
 }
 
 

@@ -19,12 +19,14 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    , _attribConfig(config)
    , _renderingContext(config->renderingContext())
 {
+   _renderingContext->onAttribStorageInit(this);
 }
 
 
 AttribStorage::~AttribStorage()
 {
    cancelAllAllocations();
+   _renderingContext->onAttribStorageRelease(this);
 }
 
 
