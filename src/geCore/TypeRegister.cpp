@@ -633,3 +633,75 @@ void Accessor::free(){
 const void*Accessor::getPointer(){return (void*)this->getData();}
 
 
+std::string Accessor::data2Str(){
+  TypeRegister::Type type=this->_manager->getTypeIdType(this->_id);
+  std::stringstream ss;
+  bool first;
+  switch(type){
+    case TypeRegister::VOID  :
+      break;
+    case TypeRegister::I8    :
+      ss<<(char)(*this);
+      break;
+    case TypeRegister::I16   :
+      ss<<(short)(*this);
+      break;
+    case TypeRegister::I32   :
+      ss<<(int)(*this);
+      break;
+    case TypeRegister::I64   :
+      ss<<(int long long)(*this);
+      break;
+    case TypeRegister::U8    :
+      ss<<(unsigned char)(*this);
+      break;
+    case TypeRegister::U16   :
+      ss<<(unsigned short)(*this);
+      break;
+    case TypeRegister::U32   :
+      ss<<(unsigned)(*this);
+      break;
+    case TypeRegister::U64   :
+      ss<<(unsigned long long)(*this);
+      break;
+    case TypeRegister::F32   :
+      ss<<(float)(*this);
+      break;
+    case TypeRegister::F64   :
+      ss<<(double)(*this);
+      break;
+    case TypeRegister::PTR   :
+      ss<<(void*)(*this);
+      break;
+    case TypeRegister::STRING:
+      ss<<(std::string&)(*this);
+      break;
+    case TypeRegister::ARRAY:
+      ss<<"[";
+      first=true;
+      for(unsigned i=0;i<this->_manager->getArraySize(this->_id);++i){
+        if(first)first=false;
+        else ss<<",";
+        ss<<((*this)[i]).data2Str();
+      }
+      ss<<"]";
+      break;
+    case TypeRegister::STRUCT:
+      ss<<"{";
+      first=true;
+      for(unsigned e=0;e<this->_manager->getNofStructElements(this->_id);++e){
+        if(first)first=false;
+        else ss<<",";
+        ss<<((*this)[e]).data2Str();
+      }
+      ss<<"}";
+      break;
+    case TypeRegister::FCE:
+      break;
+    case TypeRegister::OBJ:
+      break;
+    default:
+      break;
+  }
+  return ss.str();
+}

@@ -6,6 +6,7 @@
 #include<map>
 #include<set>
 #include<typeinfo>
+#include<functional>
 
 namespace ge{
   namespace core{
@@ -227,6 +228,7 @@ namespace ge{
         unsigned getNofElements();
         void     free();
         const void*getPointer();
+        std::string data2Str();
         template<typename T>
           Accessor& operator=(const T&data){
             *((T*)this->getData()) = data;
