@@ -2248,10 +2248,6 @@ namespace ge{
 
     class TextureBarrier:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         TextureBarrier(
             ){
@@ -3260,10 +3256,6 @@ namespace ge{
 
     class ResumeTransformFeedback:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         ResumeTransformFeedback(
             ){
@@ -6525,10 +6517,6 @@ namespace ge{
 
     class Flush:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         Flush(
             ){
@@ -9949,30 +9937,30 @@ namespace ge{
     };
 
     template<
-      typename NEAR_TYPE = GLdouble,
-      typename FAR_TYPE  = GLdouble>
+      typename NEAR__TYPE = GLdouble,
+      typename FAR__TYPE  = GLdouble>
     class DepthRange:
         public ge::core::Command{
       protected:
         void*_getAttribAddress(std::string name){
-          if(name == "near")return(void*)&this->near;
-          if(name == "far" )return(void*)&this->far ;
+          if(name == "near_")return(void*)&this->near_;
+          if(name == "far_" )return(void*)&this->far_ ;
           return NULL;
         }
       public:
-        NEAR_TYPE near;
-        FAR_TYPE  far ;
+        NEAR__TYPE near_;
+        FAR__TYPE  far_ ;
         DepthRange(
-            NEAR_TYPE const&near,
-            FAR_TYPE  const&far ){
-          this->near = near;
-          this->far  = far ;
+            NEAR__TYPE const&near_,
+            FAR__TYPE  const&far_ ){
+          this->near_ = near_;
+          this->far_  = far_ ;
         }
         virtual~DepthRange(){}
         virtual void operator()(){
           glDepthRange(
-            ge::core::convertTo<GLdouble>(this->near),
-            ge::core::convertTo<GLdouble>(this->far )
+            ge::core::convertTo<GLdouble>(this->near_),
+            ge::core::convertTo<GLdouble>(this->far_ )
           );
         }
     };
@@ -11183,10 +11171,6 @@ namespace ge{
 
     class Finish:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         Finish(
             ){
@@ -17171,10 +17155,6 @@ namespace ge{
 
     class PopDebugGroup:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         PopDebugGroup(
             ){
@@ -20480,10 +20460,6 @@ namespace ge{
 
     class EndTransformFeedback:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         EndTransformFeedback(
             ){
@@ -21228,10 +21204,6 @@ namespace ge{
 
     class EndConditionalRender:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         EndConditionalRender(
             ){
@@ -22294,10 +22266,6 @@ namespace ge{
 
     class ReleaseShaderCompiler:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         ReleaseShaderCompiler(
             ){
@@ -22991,10 +22959,6 @@ namespace ge{
 
     class PauseTransformFeedback:
         public ge::core::Command{
-      protected:
-        void*_getAttribAddress(std::string name){
-          return NULL;
-        }
       public:
         PauseTransformFeedback(
             ){
@@ -36774,32 +36738,32 @@ namespace ge{
     }
 
     template<
-      typename NEAR_TYPE = GLdouble,
-      typename FAR_TYPE  = GLdouble>
+      typename NEAR__TYPE = GLdouble,
+      typename FAR__TYPE  = GLdouble>
     inline DepthRange<
-      NEAR_TYPE,
-      FAR_TYPE >* newDepthRange(
-        NEAR_TYPE const&near,
-        FAR_TYPE  const&far ){
+      NEAR__TYPE,
+      FAR__TYPE >* newDepthRange(
+        NEAR__TYPE const&near_,
+        FAR__TYPE  const&far_ ){
         return new DepthRange<
-          NEAR_TYPE,
-          FAR_TYPE >(
-              near,
-              far );
+          NEAR__TYPE,
+          FAR__TYPE >(
+              near_,
+              far_ );
     }
     template<
-      typename NEAR_TYPE = GLdouble,
-      typename FAR_TYPE  = GLdouble>
+      typename NEAR__TYPE = GLdouble,
+      typename FAR__TYPE  = GLdouble>
     inline std::shared_ptr<DepthRange<
-      NEAR_TYPE,
-      FAR_TYPE >> sharedDepthRange(
-        NEAR_TYPE const&near,
-        FAR_TYPE  const&far ){
+      NEAR__TYPE,
+      FAR__TYPE >> sharedDepthRange(
+        NEAR__TYPE const&near_,
+        FAR__TYPE  const&far_ ){
         return std::make_shared<DepthRange<
-          NEAR_TYPE,
-          FAR_TYPE >>(
-              near,
-              far );
+          NEAR__TYPE,
+          FAR__TYPE >>(
+              near_,
+              far_ );
     }
 
     template<

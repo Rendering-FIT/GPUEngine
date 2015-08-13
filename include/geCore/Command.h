@@ -33,6 +33,22 @@ namespace ge{
         Command* getCommand();
     };
 
+
+    class GECORE_EXPORT CommandList: public std::vector<Command*>, public Command{
+      public:
+        CommandList();
+        virtual ~CommandList();
+        virtual void operator()();
+    };
+
+    class GECORE_EXPORT SharedCommandList: public std::vector<std::shared_ptr<Command>>, public Command{
+      public:
+        SharedCommandList();
+        virtual ~SharedCommandList();
+        virtual void operator()();
+    };
+
+    /*
     class GECORE_EXPORT CommandList: public Command
     {
       protected:
@@ -60,13 +76,13 @@ namespace ge{
         std::shared_ptr<Command>&getCommand(unsigned i);
         unsigned size();
         virtual void operator()();
-    };
+    };*/
 
     class GECORE_EXPORT CommandListWithAccessor: public CommandList{
       protected:
         std::map<std::string,Command*>_name2Command;
       public:
-        CommandListWithAccessor(bool outOfOrder=false):CommandList(outOfOrder){}
+        CommandListWithAccessor();
         virtual Command*operator[](std::string name);
         virtual unsigned add(Command*command,std::string name="");
     };

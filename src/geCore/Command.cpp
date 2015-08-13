@@ -23,16 +23,12 @@ Command*CommandContainer::getCommand(){
   return NULL;
 }
 
+/*
 void CommandList::operator()(){
   for(unsigned i=0;i<this->_commands.size();++i)
     (*this->_commands[i])();
 }
 
-/**
- * @brief constructs command list
- *
- * @param outOfOrder if it is set to true, commands can be executed out of order
- */
 CommandList::CommandList(bool outOfOrder){
   this->_outOfOrder=outOfOrder;
 }
@@ -49,22 +45,22 @@ Command* CommandList::getCommand(unsigned i){
   return this->_commands[i];
 }
 unsigned CommandList::size(){return this->_commands.size();}
+*/
+CommandList::CommandList(){}
+CommandList::~CommandList(){
+  for(auto x:*this)delete x;
+}
+void CommandList::operator()(){
+  for(auto x:*this)(*x)();
+}
 
 SharedCommandList::SharedCommandList(){}
-
 SharedCommandList::~SharedCommandList(){}
-
-std::shared_ptr<Command>&SharedCommandList::getCommand(unsigned i){
-  return this->_commands[i];
-}
-
-unsigned SharedCommandList::size(){return this->_commands.size();}
-
 void SharedCommandList::operator()(){
-  for(auto x:this->_commands)
-    (*x)();
+  for(auto x:*this)(*x)();
 }
 
+CommandListWithAccessor::CommandListWithAccessor():CommandList(){}
 
 Command*CommandListWithAccessor::operator[](std::string name){
   auto it=this->_name2Command.find(name);
@@ -74,7 +70,8 @@ Command*CommandListWithAccessor::operator[](std::string name){
 
 unsigned CommandListWithAccessor::add(Command*command,std::string name){
   if(name!="")this->_name2Command[name]=command;
-  return this->CommandList::add(command);
+  this->CommandList::push_back(command);
+  return this->size()-1;
 }
 
 void CommandIf::operator()(){
