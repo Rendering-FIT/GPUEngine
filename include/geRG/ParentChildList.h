@@ -38,7 +38,7 @@ namespace ge
          inline ParentPointerAbstractTemplate() {}
          inline ParentPointerAbstractTemplate(ParentT* aParent,
                ChildListDeleteIterator aChildListDeleteIterator)
-            : parent(aParent),childListDeleteIterator(childListDeleteIterator) {}
+            : parent(aParent),childListDeleteIterator(aChildListDeleteIterator) {}
       };
 
 
