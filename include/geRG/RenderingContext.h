@@ -192,7 +192,6 @@ namespace ge
                                             const Mesh::DrawCommandControlData *data,
                                             int numDrawCommands);
          static std::vector<Mesh::DrawCommandControlData> generateDrawCommandControlData(
-                                            const void *drawCommandBuffer,
                                             const unsigned *modesAndOffsets4,int numDrawCommands);
 
          virtual void uploadDrawCommands(Mesh &mesh,
@@ -349,7 +348,7 @@ namespace ge
       inline BlockAllocationManager<InstancingMatrices>& RenderingContext::instancingMatrixAllocationManager()  { return _instancingMatrixAllocationManager; }
       inline const BlockAllocationManager<InstancingMatrices>& RenderingContext::instancingMatrixAllocationManager() const  { return _instancingMatrixAllocationManager; }
       inline void RenderingContext::uploadDrawCommands(Mesh &mesh,void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *modesAndOffsets4,int numDrawCommands)
-      { uploadDrawCommands(mesh,nonConstDrawCommandBuffer,bytesToCopy,generateDrawCommandControlData(nonConstDrawCommandBuffer,modesAndOffsets4,numDrawCommands).data(),numDrawCommands); }
+      { uploadDrawCommands(mesh,nonConstDrawCommandBuffer,bytesToCopy,generateDrawCommandControlData(modesAndOffsets4,numDrawCommands).data(),numDrawCommands); }
       inline void RenderingContext::clearDrawCommands(Mesh &mesh)  { setNumDrawCommands(mesh,0); }
       inline InstanceGroupId RenderingContext::createInstances(Mesh &mesh,InstancingMatrices *im,StateSet *stateSet)
       { return createInstances(mesh,nullptr,-1,im,stateSet); }

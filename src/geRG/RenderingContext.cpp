@@ -80,8 +80,8 @@ RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
 
 
 RenderingContext::RenderingContext()
-   : _useARBShaderDrawParameters(_initialUseARBShaderDrawParametersValue)
-   , _numAttribStorages(0)
+   : _numAttribStorages(0)
+   , _useARBShaderDrawParameters(_initialUseARBShaderDrawParametersValue)
    , _stateSetBufferAllocationManager(_initialStateSetBufferNumElements)
    , _drawCommandAllocationManager(_initialDrawCommandBufferSize)
    , _instanceAllocationManager(_initialInstanceBufferNumElements)
@@ -191,13 +191,13 @@ void RenderingContext::setUseARBShaderDrawParameters(bool value)
 }
 
 
-void RenderingContext::onAttribStorageInit(AttribStorage *a)
+void RenderingContext::onAttribStorageInit(AttribStorage*)
 {
    _numAttribStorages++;
 }
 
 
-void RenderingContext::onAttribStorageRelease(AttribStorage *a)
+void RenderingContext::onAttribStorageRelease(AttribStorage*)
 {
    _numAttribStorages--;
 }
@@ -291,7 +291,7 @@ bool RenderingContext::allocDrawCommands(Mesh &mesh,unsigned size)
 }
 
 
-bool RenderingContext::reallocDrawCommands(Mesh &mesh,int newSize,bool preserveContent)
+bool RenderingContext::reallocDrawCommands(Mesh& /*mesh*/,int /*newSize*/,bool /*preserveContent*/)
 {
    // not implemented yet
    return false;
@@ -371,8 +371,7 @@ void RenderingContext::preprocessDrawCommands(Mesh &mesh,
 
 
 vector<Mesh::DrawCommandControlData>
-RenderingContext::generateDrawCommandControlData(const void *drawCommandBuffer,
-                                                 const unsigned *modesAndOffsets4,int numDrawCommands)
+RenderingContext::generateDrawCommandControlData(const unsigned *modesAndOffsets4,int numDrawCommands)
 {
    vector<Mesh::DrawCommandControlData> r;
    r.reserve(numDrawCommands);

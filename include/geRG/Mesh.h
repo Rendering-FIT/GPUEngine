@@ -103,7 +103,6 @@ namespace ge
                                             const DrawCommandControlData *data,
                                             int numDrawCommands);
          inline static std::vector<DrawCommandControlData> generateDrawCommandControlData(
-                                            const void *drawCommandBuffer,
                                             const unsigned *modesAndOffsets4,int numDrawCommands);
 
          inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
@@ -214,8 +213,8 @@ namespace ge
       { RenderingContext::current()->setDrawCommandControlData(*this,data,numDrawCommands,startIndex,truncate); }
       inline void Mesh::preprocessDrawCommands(void *drawCommandBuffer,const DrawCommandControlData *data,int numDrawCommands)
       { RenderingContext::current()->preprocessDrawCommands(*this,drawCommandBuffer,data,numDrawCommands); }
-      inline std::vector<Mesh::DrawCommandControlData> Mesh::generateDrawCommandControlData(const void *drawCommandBuffer,const unsigned *offsets4,int numDrawCommands)
-      { return RenderingContext::generateDrawCommandControlData(drawCommandBuffer,offsets4,numDrawCommands); }
+      inline std::vector<Mesh::DrawCommandControlData> Mesh::generateDrawCommandControlData(const unsigned *modesAndOffsets4,int numDrawCommands)
+      { return RenderingContext::generateDrawCommandControlData(modesAndOffsets4,numDrawCommands); }
       inline void Mesh::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const DrawCommandControlData *data,int numDrawCommands)
       { RenderingContext::current()->uploadDrawCommands(*this,nonConstDrawCommandBuffer,bytesToCopy,data,numDrawCommands); }
       inline void Mesh::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
