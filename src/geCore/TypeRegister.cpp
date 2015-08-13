@@ -415,7 +415,7 @@ TypeRegister::TypeID TypeRegister::addType(const char*name,std::vector<unsigned>
 }
 
 void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor> constructor){
-  if(!constructor){
+   if(!constructor){
     this->_id2Constructor.erase(id);
     return;
   }
@@ -423,7 +423,7 @@ void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor> constr
 }
 
 void TypeRegister::addDestructor(TypeID id,std::function<OBJDestructor> destructor){
-  if(!destructor){
+   if(!destructor){
     this->_id2Destructor.erase(id);
     return;
   }

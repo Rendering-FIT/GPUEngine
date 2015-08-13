@@ -201,9 +201,9 @@ namespace ge{
           
             //std::cerr<<"const: "<<this->_argsTo<std::function<OBJConstructor>>(args...)<<std::endl;
             //std::cerr<<"destr: "<<this->_argsTo<std::function<OBJDestructor>> (args...)<<std::endl;
-            return this->addType(name,typeConfig,this->_argsTo<std::function<OBJConstructor>>(args...),this->_argsTo<std::function<OBJDestructor>>(args...));
+            return this->addType(name, typeConfig);// , (std::function<OBJConstructor>)NULL, (std::function<OBJDestructor>)NULL);// this->_argsTo<std::function<OBJConstructor>>(args...), this->_argsTo<std::function<OBJDestructor>>(args...));
           }
-        TypeID addType(const char*name,std::vector<unsigned>&type,std::function<OBJConstructor> constructor=NULL,std::function<OBJDestructor> destructor=NULL);
+        TypeID addType(const char*name,std::vector<unsigned>&type,std::function<OBJConstructor> constructor=nullptr,std::function<OBJDestructor> destructor=nullptr);
         void addConstructor(TypeID id,std::function<OBJConstructor> constructor = NULL);
         void addDestructor(TypeID id,std::function<OBJDestructor> destructor = NULL);
 
