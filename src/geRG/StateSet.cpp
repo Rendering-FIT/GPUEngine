@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <GL/glew.h>
 #include <geRG/StateSet.h>
 #include <geRG/RenderingContext.h>
@@ -80,6 +81,14 @@ void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned
    auto storageDataIterator=getOrCreateAttribStorageData(storage);
    decrementDrawCommandModeCounter(decrementAmount,mode,storageDataIterator->second);
    releaseAttribStorageDataIfEmpty(storageDataIterator);
+}
+
+
+void StateSet::removeCommand(const std::shared_ptr<ge::core::Command>& command)
+{
+   auto it=std::find(_commandList.begin(),_commandList.end(),command);
+   if(it!=_commandList.end())
+      _commandList.erase(it);
 }
 
 

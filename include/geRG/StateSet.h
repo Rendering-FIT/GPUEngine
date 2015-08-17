@@ -82,9 +82,10 @@ namespace ge
          void decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned mode,
                                               AttribStorageData &storageData);
 
-         inline unsigned addCommand(std::shared_ptr<ge::core::Command> command);
+         inline unsigned addCommand(const std::shared_ptr<ge::core::Command>& command);
+         inline unsigned insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command);
          inline void removeCommand(unsigned index);
-         inline void removeCommand(std::shared_ptr<ge::core::Command> command);
+         void removeCommand(const std::shared_ptr<ge::core::Command>& command);
          inline void clearCommands();
          inline const std::vector<std::shared_ptr<ge::core::Command>>& commandList() const;
          inline std::vector<std::shared_ptr<ge::core::Command>>& commandList();
@@ -113,6 +114,12 @@ namespace ge
       { return storageData.renderingData[storageData.indexToRenderingData(mode&0x0f)].stateSetBufferOffset4; }
       inline void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned mode,const AttribStorage *storage)
       { if(incrementAmount!=0) incrementDrawCommandModeCounter(incrementAmount,mode,getOrCreateAttribStorageData(storage)->second); }
+      inline unsigned StateSet::addCommand(const std::shared_ptr<ge::core::Command>& command)  { unsigned r=_commandList.size(); _commandList.push_back(command); return r; }
+      inline unsigned StateSet::insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command)  { return std::distance(_commandList.emplace(_commandList.begin()+index,command),_commandList.begin()); }
+      inline void StateSet::removeCommand(unsigned index)  { _commandList.erase(_commandList.begin()+index); }
+      inline void StateSet::clearCommands()  { _commandList.clear(); }
+      inline const std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList() const  { return _commandList; }
+      inline std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList()  { return _commandList; }
 
    }
 }
