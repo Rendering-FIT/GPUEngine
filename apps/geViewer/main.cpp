@@ -195,8 +195,17 @@ void Idle()
 
    // render ambient scene
    ambientProgram->use();
+   glUniform1i(ambientProgram->getUniform("colorTexture"),0);
    for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
+   {
+      if((*it)->commandList().size()==0)
+         glUniform1i(ambientProgram->getUniform("colorTexturingMode"),0); // no texturing
+      else
+         glUniform1i(ambientProgram->getUniform("colorTexturingMode"),1); // modulate
+      for_each((*it)->commandList().begin(),(*it)->commandList().end(),
+               [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
       (*it)->render();
+   }
 
    // render light pass
    glEnable(GL_BLEND);
@@ -786,6 +795,7 @@ void Init()
       )<<
       "\n"
       "layout(location=0) out vec4 colorOut;\n"
+      "layout(location=1) out vec2 texCoordOut;\n"
       "\n"
       "uniform vec4 globalAmbientLight; // alpha must be 1\n"
       "uniform mat4 projection;\n"
@@ -794,6 +804,7 @@ void Init()
       "{\n"
       "   // ambient lighting\n"
       "   colorOut=globalAmbientLight*color;\n"
+      "   texCoordOut=texCoord;\n"
       "\n"
       "   // vertex position\n"
       <<(useARBShaderDrawParameters
@@ -806,12 +817,22 @@ void Init()
       "#version 330\n"
       "\n"
       "in vec4 color;\n"
+      "in vec2 texCoord;\n"
       "\n"
       "layout(location=0) out vec4 fragColor;\n"
       "\n"
+      "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+      "uniform sampler2D colorTexture;\n"
+      "\n"
       "void main()\n"
       "{\n"
-      "   fragColor=color;\n"
+      "   // texturing and final color\n"
+      "   if(colorTexturingMode==0) // no texturing\n"
+      "      fragColor=color;\n"
+      "   else if(colorTexturingMode==1) // modulate\n"
+      "      fragColor=color*texture(colorTexture,texCoord);\n"
+      "   else // replace\n"
+      "      fragColor=texture(colorTexture,texCoord);\n"
       "}\n");
    simplifiedPhongProgram = new ProgramObject(
       GL_VERTEX_SHADER,
