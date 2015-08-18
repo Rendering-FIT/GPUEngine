@@ -76,7 +76,7 @@ void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned
 }
 
 
-void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned mode,const AttribStorage *storage)
+void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned mode,AttribStorage *storage)
 {
    auto storageDataIterator=getOrCreateAttribStorageData(storage);
    decrementDrawCommandModeCounter(decrementAmount,mode,storageDataIterator->second);
@@ -127,22 +127,6 @@ void StateSet::setupRendering()
 void StateSet::render()
 {
    for(auto it1=_attribStorageData.begin(); it1!=_attribStorageData.end(); it1++)
-   {
-      if(it1->second.numDrawCommands==0)
-         continue;
-
-      it1->second.attribStorage->bind();
-      if(it1->second.attribStorage->attribConfig()->configData().ebo)
-         for(auto it2=it1->second.renderingData.begin(),e=it1->second.renderingData.end(); it2!=e; it2++)
-         {
-            GLintptr offset=it2->indirectBufferOffset4*4;
-            glMultiDrawElementsIndirect(it2->glMode,GL_UNSIGNED_INT,(const void*)offset,it2->drawCommandCount,0);
-         }
-      else
-         for(auto it2=it1->second.renderingData.begin(),e=it1->second.renderingData.end(); it2!=e; it2++)
-         {
-            GLintptr offset=it2->indirectBufferOffset4*4;
-            glMultiDrawArraysIndirect(it2->glMode,(const void*)offset,it2->drawCommandCount,0);
-         }
-   }
+      if(it1->second.numDrawCommands!=0)
+         it1->second.attribStorage->render(it1->second.renderingData);
 }
