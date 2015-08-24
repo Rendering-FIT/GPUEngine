@@ -3,6 +3,7 @@
 #include <geRG/AttribStorage.h>
 #include <geRG/Mesh.h>
 #include <geRG/SeparateBuffersAttribStorage.h> // for DefaultFactory
+#include <geRG/StateSet.h>
 
 using namespace ge::rg;
 using namespace std;
@@ -139,6 +140,29 @@ void AttribStorage::freeData(Mesh &mesh)
 
    // update Mesh
    mesh.setAttribStorage(nullptr);
+}
+
+
+void AttribStorage::render(const std::vector<RenderingCommandData>& renderingDataList)
+{
+   // bind VAO
+   bind();
+
+   // perform indirect draw calls
+   if(attribConfig()->configData().ebo)
+      for(auto it2=renderingDataList.begin(),e=renderingDataList.end(); it2!=e; it2++)
+      {
+         // call MultiDrawElementsIndirect
+         GLintptr offset=it2->indirectBufferOffset4*4;
+         glMultiDrawElementsIndirect(it2->glMode,GL_UNSIGNED_INT,(const void*)offset,it2->drawCommandCount,0);
+      }
+   else
+      for(auto it2=renderingDataList.begin(),e=renderingDataList.end(); it2!=e; it2++)
+      {
+         // call MultiDrawArraysIndirect
+         GLintptr offset=it2->indirectBufferOffset4*4;
+         glMultiDrawArraysIndirect(it2->glMode,(const void*)offset,it2->drawCommandCount,0);
+      }
 }
 
 

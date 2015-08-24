@@ -14,6 +14,7 @@ namespace ge
    namespace rg
    {
       class Mesh;
+      class RenderingCommandData;
 
 
       /** \brief AttribStorage class maintains vertex attributes,
@@ -61,6 +62,7 @@ namespace ge
          inline RenderingContext* renderingContext() const;
          inline bool isPrivate() const;
 
+         virtual void render(const std::vector<RenderingCommandData>& renderingDataList);
          virtual void cancelAllAllocations();
 
          class Factory {

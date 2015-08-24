@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
+#include <geGL/OpenGLCommands.h>
 #include <geGL/ProgramObject.h>
 #include <geRG/Mesh.h>
 #include <geRG/AttribType.h>
@@ -16,6 +17,8 @@
 #include <geRG/Transformation.h>
 #include <geUtil/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
+#include <osg/ref_ptr>
+#include <osg/StateSet>
 #include <osgDB/ReadFile>
 
 using namespace std;
@@ -50,7 +53,7 @@ static bool useARBShaderDrawParameters=false;
 static ProgramObject *ambientProgram = NULL;
 static ProgramObject *simplifiedPhongProgram = NULL;
 static ProgramObject *processInstanceProgram = NULL;
-static shared_ptr<StateSet> stateSet;
+static list<shared_ptr<StateSet>> stateSetList;
 static list<Mesh> meshList;
 static vector<Mesh> notUsedVector;
 static string fileName;
@@ -93,6 +96,9 @@ int main(int Argc,char*Argv[])
 
   glewExperimental=GL_TRUE;
   glewInit();
+  glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
+                // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
   RenderingContext::setInitialUseARBShaderDrawParametersValue(useARBShaderDrawParameters);
   RenderingContext::setCurrent(make_shared<RenderingContext>());
 
@@ -118,7 +124,7 @@ void Mouse(){
 }
 
 
-void Wheel(int d){
+void Wheel(int){
 }
 
 
@@ -152,7 +158,8 @@ void Idle()
    // prepare for rendering
    RenderingContext::current()->setupRendering();
    RenderingContext::current()->mapStateSetBuffer();
-   stateSet->setupRendering();
+   for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
+      (*it)->setupRendering();
    RenderingContext::current()->unmapStateSetBuffer();
 
    // indirect buffer update - setup and start compute shader
@@ -188,13 +195,33 @@ void Idle()
 
    // render ambient scene
    ambientProgram->use();
-   stateSet->render();
+   glUniform1i(ambientProgram->getUniform("colorTexture"),0);
+   for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
+   {
+      if((*it)->commandList().size()==0)
+         glUniform1i(ambientProgram->getUniform("colorTexturingMode"),0); // no texturing
+      else
+         glUniform1i(ambientProgram->getUniform("colorTexturingMode"),1); // modulate
+      for_each((*it)->commandList().begin(),(*it)->commandList().end(),
+               [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
+      (*it)->render();
+   }
 
    // render light pass
    glEnable(GL_BLEND);
    glBlendFunc(GL_ONE,GL_ONE);
    simplifiedPhongProgram->use();
-   stateSet->render();
+   glUniform1i(simplifiedPhongProgram->getUniform("colorTexture"),0);
+   for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
+   {
+      if((*it)->commandList().size()==0)
+         glUniform1i(simplifiedPhongProgram->getUniform("colorTexturingMode"),0); // no texturing
+      else
+         glUniform1i(simplifiedPhongProgram->getUniform("colorTexturingMode"),1); // modulate
+      for_each((*it)->commandList().begin(),(*it)->commandList().end(),
+               [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
+      (*it)->render();
+   }
    glDisable(GL_BLEND);
 
    Window->swap();
@@ -257,6 +284,26 @@ class BuildGpuEngineGraphVisitor : public osg::NodeVisitor {
 public:
 
    vector<shared_ptr<Transformation>> transformationStack;
+   vector<osg::ref_ptr<osg::StateSet>> osgStateSetStack;
+
+   struct OsgState {
+
+      osg::Texture* colorTexture;
+
+      inline bool operator<(const OsgState& rhs) const
+      {
+         return colorTexture<rhs.colorTexture;
+      }
+
+      OsgState(osg::StateSet *ss)
+      {
+         colorTexture=static_cast<osg::Texture*>(ss->getNumTextureAttributeLists()>=1?
+               ss->getTextureAttribute(0,osg::Texture::TEXTURE):nullptr);
+      }
+
+   };
+
+   map<OsgState,shared_ptr<ge::rg::StateSet>> stateSetMap;
 
    inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
    {
@@ -264,10 +311,38 @@ public:
       transformationStack.emplace_back(t);
       t->allocTransformationGpuData();
       t->uploadMatrix(osg2glTransformation);
+      osgStateSetStack.push_back(new osg::StateSet);
+   }
+
+   void pushState(osg::StateSet& stateSet)
+   {
+      // combine with previous state set
+      osg::StateSet *ss=new osg::StateSet(*osgStateSetStack.back(),osg::CopyOp::SHALLOW_COPY);
+      ss->merge(stateSet);
+      osgStateSetStack.push_back(ss);
+   }
+
+   void popState()
+   {
+      osgStateSetStack.pop_back();
+   }
+
+   virtual void apply(osg::Node& node)
+   {
+      if(node.getStateSet())
+         pushState(*node.getStateSet());
+
+      traverse(node);
+
+      if(node.getStateSet())
+         popState();
    }
 
    virtual void apply(osg::Transform& transform)
    {
+      if(transform.getStateSet())
+         pushState(*transform.getStateSet());
+
       osg::Matrix m;
       transform.computeLocalToWorldMatrix(m,this);
       shared_ptr<Transformation> t=make_shared<Transformation>();
@@ -279,16 +354,161 @@ public:
       traverse(transform);
 
       transformationStack.pop_back();
+
+      if(transform.getStateSet())
+         popState();
    }
 
    virtual void apply(osg::Geode& node)
    {
+      if(node.getStateSet())
+         pushState(*node.getStateSet());
+
       for(int i=0,c=node.getNumDrawables(); i<c; i++)
          apply(*node.getDrawable(i));
+
+      if(node.getStateSet())
+         popState();
    }
 
    virtual void apply(osg::Drawable& drawable)
    {
+      // push new OSG stateSet on the stack
+      if(drawable.getStateSet())
+         pushState(*drawable.getStateSet());
+
+      // find (or create new) geRG StateSet
+      shared_ptr<ge::rg::StateSet> stateSet;
+      OsgState osgState(osgStateSetStack.back());
+      auto it=stateSetMap.find(osgState);
+      if(it!=stateSetMap.end())
+      {
+         // reuse StateSet
+         stateSet=it->second;
+      }
+      else
+      {
+         // create new StateSet
+         stateSet=make_shared<ge::rg::StateSet>();
+         stateSetMap.emplace(make_pair(osgState,stateSet));
+         stateSetList.push_back(stateSet);
+
+         if(osgState.colorTexture==nullptr)
+         {
+            // leave commandList empty
+         }
+         else
+         {
+            // create texture object
+            osg::Texture *osgTexture=osgState.colorTexture;
+            GLenum target=osgTexture->getTextureTarget();
+            osg::Image *osgImage=osgTexture->getNumImages()>0?osgTexture->getImage(0):nullptr;
+            int w=osgImage?osgImage->s():osgTexture->getTextureWidth();
+            int h=osgImage?osgImage->t():osgTexture->getTextureHeight();
+            int d=osgImage?osgImage->r():osgTexture->getTextureDepth();
+            GLenum format=osgImage?osgImage->getPixelFormat():osgTexture->getSourceFormat();
+            GLenum type=osgImage?osgImage->getDataType():osgTexture->getSourceType();
+            auto data=osgImage?osgImage->data():nullptr;
+
+            // compute internalFormat;
+            GLint internalFormat=0;
+            switch(format) {
+               case GL_RED:
+               case GL_RED_INTEGER:
+                  switch(type) {
+                     case GL_UNSIGNED_BYTE:
+                     case GL_BYTE:           internalFormat=GL_R8; break;
+                     case GL_UNSIGNED_SHORT:
+                     case GL_SHORT:          internalFormat=GL_R16; break;
+                     case GL_UNSIGNED_INT:
+                     case GL_INT:            internalFormat=GL_R16; break;
+                     case GL_FLOAT:          internalFormat=GL_R16; break;
+                     default:                break;
+                  };
+                  break;
+               case GL_RG:
+               case GL_RG_INTEGER:
+                  switch(type) {
+                     case GL_UNSIGNED_BYTE:
+                     case GL_BYTE:           internalFormat=GL_RG8; break;
+                     case GL_UNSIGNED_SHORT:
+                     case GL_SHORT:          internalFormat=GL_RG16; break;
+                     case GL_UNSIGNED_INT:
+                     case GL_INT:            internalFormat=GL_RG16; break;
+                     case GL_FLOAT:          internalFormat=GL_RG16; break;
+                     default:                break;
+                  };
+                  break;
+               case GL_RGB:
+               case GL_BGR:
+               case GL_RGB_INTEGER:
+               case GL_BGR_INTEGER:
+                  switch(type) {
+                     case GL_UNSIGNED_BYTE:
+                     case GL_BYTE:           internalFormat=GL_RGB8; break;
+                     case GL_UNSIGNED_SHORT:
+                     case GL_SHORT:          internalFormat=GL_RGB16; break;
+                     case GL_UNSIGNED_INT:
+                     case GL_INT:            internalFormat=GL_RGB16; break;
+                     case GL_FLOAT:          internalFormat=GL_RGB16; break;
+                     case GL_UNSIGNED_BYTE_3_3_2:
+                     case GL_UNSIGNED_BYTE_2_3_3_REV:  internalFormat=GL_R3_G3_B2; break;
+                     case GL_UNSIGNED_SHORT_5_6_5:
+                     case GL_UNSIGNED_SHORT_5_6_5_REV: internalFormat=GL_RGB8; break;
+                     default:                          break;
+                  };
+                  break;
+               case GL_RGBA:
+               case GL_BGRA:
+               case GL_RGBA_INTEGER:
+               case GL_BGRA_INTEGER:
+                  switch(type) {
+                     case GL_UNSIGNED_BYTE:
+                     case GL_BYTE:           internalFormat=GL_RGBA8; break;
+                     case GL_UNSIGNED_SHORT:
+                     case GL_SHORT:          internalFormat=GL_RGBA16; break;
+                     case GL_UNSIGNED_INT:
+                     case GL_INT:            internalFormat=GL_RGBA16; break;
+                     case GL_FLOAT:          internalFormat=GL_RGBA16; break;
+                     case GL_UNSIGNED_SHORT_4_4_4_4:
+                     case GL_UNSIGNED_SHORT_4_4_4_4_REV:  internalFormat=GL_RGBA4; break;
+                     case GL_UNSIGNED_SHORT_5_5_5_1:
+                     case GL_UNSIGNED_SHORT_1_5_5_5_REV:  internalFormat=GL_RGB5_A1; break;
+                     case GL_UNSIGNED_INT_8_8_8_8:
+                     case GL_UNSIGNED_INT_8_8_8_8_REV:    internalFormat=GL_RGBA8; break;
+                     case GL_UNSIGNED_INT_10_10_10_2:
+                     case GL_UNSIGNED_INT_2_10_10_10_REV: internalFormat=GL_RGB10_A2; break;
+                     default:                             break;
+                  };
+                  break;
+               default: break;
+            }
+
+            // create texture object
+            shared_ptr<ge::gl::TextureObject> textureObject=
+                  d<=1 ? make_shared<ge::gl::TextureObject>(target,internalFormat,
+                                                            1+int(floor(logf(std::max(w,h))/logf(2.0f))),w,h)
+                       : make_shared<ge::gl::TextureObject>(target,internalFormat,
+                                                            1+int(floor(logf(std::max(w,h))/logf(2.0f))),w,h,d);
+
+            // fill texture object with data
+            if(data) {
+               textureObject->bind(GL_TEXTURE0);
+               if(d<=1) glTexSubImage2D(target,0,0,0,w,h,format,type,data);
+               else     glTexSubImage3D(target,0,0,0,0,w,h,d,format,type,data);
+               glGenerateMipmap(target);
+            }
+
+            // create ActiveTexture command
+            stateSet->addCommand(ge::gl::sharedActiveTexture(GL_TEXTURE0));
+
+            // create BindTexture command
+            auto bindTexture=ge::gl::sharedBindTexture(GL_TEXTURE_2D,textureObject);
+            stateSet->addCommand(bindTexture);
+         }
+      }
+
+      // process geometry
       osg::Geometry *g=drawable.asGeometry();
       if(g)
       {
@@ -504,6 +724,9 @@ public:
          }
 
       }
+
+      if(drawable.getStateSet())
+         popState();
    }
 
 };
@@ -511,8 +734,6 @@ public:
 
 void Init()
 {
-   stateSet=make_shared<StateSet>();
-
    // load model
    if(!fileName.empty())
    {
@@ -574,6 +795,7 @@ void Init()
       )<<
       "\n"
       "layout(location=0) out vec4 colorOut;\n"
+      "layout(location=1) out vec2 texCoordOut;\n"
       "\n"
       "uniform vec4 globalAmbientLight; // alpha must be 1\n"
       "uniform mat4 projection;\n"
@@ -582,6 +804,7 @@ void Init()
       "{\n"
       "   // ambient lighting\n"
       "   colorOut=globalAmbientLight*color;\n"
+      "   texCoordOut=texCoord;\n"
       "\n"
       "   // vertex position\n"
       <<(useARBShaderDrawParameters
@@ -594,12 +817,22 @@ void Init()
       "#version 330\n"
       "\n"
       "in vec4 color;\n"
+      "in vec2 texCoord;\n"
       "\n"
       "layout(location=0) out vec4 fragColor;\n"
       "\n"
+      "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+      "uniform sampler2D colorTexture;\n"
+      "\n"
       "void main()\n"
       "{\n"
-      "   fragColor=color;\n"
+      "   // texturing and final color\n"
+      "   if(colorTexturingMode==0) // no texturing\n"
+      "      fragColor=color;\n"
+      "   else if(colorTexturingMode==1) // modulate\n"
+      "      fragColor=color*texture(colorTexture,texCoord);\n"
+      "   else // replace\n"
+      "      fragColor=texture(colorTexture,texCoord);\n"
       "}\n");
    simplifiedPhongProgram = new ProgramObject(
       GL_VERTEX_SHADER,
@@ -655,7 +888,7 @@ void Init()
       "layout(location=0) out vec4 fragColor;\n"
       "\n"
       "uniform vec4 specularAndShininess; // shininess in alpha\n"
-      "uniform bool colorTexturing;\n"
+      "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
       "uniform sampler2D colorTexture;\n"
       "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
       "uniform vec3 lightColor;\n"
@@ -704,10 +937,12 @@ void Init()
       "\n"
       "      // texturing\n"
       "      vec4 c;\n;"
-      "      if(colorTexturing)\n"
-      "         c=texture(colorTexture,texCoord)*color;\n"
-      "      else\n"
+      "      if(colorTexturingMode==0) // no texturing\n"
       "         c=color;\n"
+      "      else if(colorTexturingMode==1) // modulate\n"
+      "         c=texture(colorTexture,texCoord)*color;\n"
+      "      else // replace\n"
+      "         c=texture(colorTexture,texCoord);\n"
       "\n"
       "      // final sum for light-facing fragments\n"
       "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
