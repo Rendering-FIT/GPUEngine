@@ -8,9 +8,9 @@ namespace ge{
     class GEGL_EXPORT BufferObject:public OpenGLObject{
       public:
         enum ReallocFlags{
-          EMPTY     = 0u    ,
-          KEEP_ID   = 1u<<0u,
-          KEEP_DATA = 1u<<1u,
+          NEW_BUFFER = 0u    ,
+          KEEP_ID    = 1u<<0u,
+          KEEP_DATA  = 1u<<1u,
         };
       private:
         GLint   _getBufferParameter(GLenum pname);
@@ -48,7 +48,7 @@ namespace ge{
         void unbind     (GLenum target);
         void unbindRange(GLenum target,GLuint index);
         void unbindBase (GLenum target,GLuint index);
-        void realloc(GLsizeiptr newSize,ReallocFlags flags=EMPTY);
+        void realloc(GLsizeiptr newSize,ReallocFlags flags = NEW_BUFFER);
         void copy(BufferObject*buffer);
         void flushMapped(
             GLsizeiptr size   = 0,

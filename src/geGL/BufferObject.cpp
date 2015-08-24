@@ -287,15 +287,15 @@ void BufferObject::realloc(GLsizeiptr newSize,ReallocFlags flags){
     this->_bufferData(newSize,NULL,bufferFlags);
     this->copy(temp);
     delete temp;
-  }else if(flags==KEEP_ID          ){
+  }else if(flags==KEEP_ID            ){
     this->_bufferData(newSize,NULL,bufferFlags);
-  }else if(flags==KEEP_DATA        ){
+  }else if(flags==KEEP_DATA          ){
     BufferObject*newBuffer=new BufferObject(newSize,NULL,bufferFlags);
     newBuffer->copy(this);
     this->~BufferObject();
     this->_id = newBuffer->_id;
     delete(char*)newBuffer;
-  }else if(flags==EMPTY            ){
+  }else if(flags==NEW_BUFFER         ){
     this->~BufferObject();
     new(this)BufferObject(newSize,NULL,bufferFlags);
   }else{
