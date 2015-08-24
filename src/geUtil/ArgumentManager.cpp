@@ -18,7 +18,40 @@ template<typename T>void pvec(std::vector<T>vec){
 }
 
 ArgumentManager::ArgumentManager(int num,char*args[]){
-  for(int i=0;i<num;++i){
+  std::vector<std::string>arg;
+  for(int i=0;i<num;++i)
+    arg.push_back(std::string(args[i]));
+
+  bool hasArgumentFile;
+  do{
+    hasArgumentFile=false;
+    for(unsigned i=0;i<arg.size();++i)
+      if(arg[i]=="<"){
+        if(i+1>=arg.size()){
+          std::cerr<<"expected filename after <"<<std::endl;
+          break;
+        }
+        std::vector<std::string>newArgs;
+        //std::cout<<"file: #"<<arg[i+1]<<"#"<<std::endl;
+        this->_loadArgs(newArgs,arg[++i]);
+        hasArgumentFile=true;
+        std::vector<std::string>withLoadedFile;
+        for(unsigned j=0;j<i-1;++j)withLoadedFile.push_back(arg[j]);
+        for(auto x:newArgs)withLoadedFile.push_back(x);
+        for(unsigned j=i+1;j<arg.size();++j)withLoadedFile.push_back(arg[j]);
+        arg.clear();
+        for(auto x:withLoadedFile)arg.push_back(x);
+        break;
+      }
+  }while(hasArgumentFile);
+  for(auto x:arg){
+    this->_arguments.push_back(x);
+    //std::cout<<x<<std::endl;
+  }
+  /*
+  
+  
+  {
     std::string arg=std::string(args[i]);
     if(arg=="<"){
       if(i+1>=num){
@@ -34,6 +67,7 @@ ArgumentManager::ArgumentManager(int num,char*args[]){
       this->_arguments.push_back(arg);
     }
   }
+  */
   this->_parse(this->_arguments,"");
 }
 
@@ -77,20 +111,22 @@ void ArgumentManager::_tokenize(std::vector<std::string>&tokens,std::string file
     switch(actState){
       case STATE_S:
         if(std::isspace(ch)||ch=='\n'||ch=='\r')actState=STATE_E;
+        else if(ch=='#')actState=STATE_C;
         else{actWord+=ch;actState=STATE_W;}
         break;
       case STATE_E:
         if(std::isspace(ch)||ch=='\n'||ch=='\r')actState=STATE_E;
+        else if(ch=='#')actState=STATE_C;
         else{actWord+=ch;actState=STATE_W;}
         break;
       case STATE_W:
         if(ch=='\\')actState=STATE_ESC;
         else if(ch=='#')actState=STATE_C;
-        else if(std::isspace(ch)||ch=='\n'||ch=='\r'){tokens.push_back(actWord);actWord="";actState=STATE_S;}
+        else if(std::isspace(ch)||ch=='\n'||ch=='\r'){tokens.push_back(actWord);actWord="";actState=STATE_E;}
         else actWord+=ch;
         break;
       case STATE_C:
-        if(ch=='\n'||ch=='\r')actState=STATE_S;
+        if(ch=='\n'||ch=='\r')actState=STATE_E;
         break;
       case STATE_ESC:
         actWord+=ch;
@@ -99,6 +135,12 @@ void ArgumentManager::_tokenize(std::vector<std::string>&tokens,std::string file
     }
   }
   if(actWord!="")tokens.push_back(actWord);
+  /*
+  std::cout<<"############"<<std::endl;
+  for(auto x:tokens)
+    std::cout<<x<<std::endl;
+  std::cout<<"############"<<std::endl<<std::endl;
+  // */
 }
 
 void ArgumentManager::_loadArgs(std::vector<std::string>&args,std::string file){
@@ -121,7 +163,47 @@ void ArgumentManager::_loadArgs(std::vector<std::string>&args,std::string file){
   this->_tokenize(args,strData);
 }
 
-bool ArgumentManager::_toFloat(float&data,std::string input){
+bool ArgumentManager::_toBOOL  (bool&              data,std::string input){
+  if     (input=="true" )data=true ;
+  else if(input=="false")data=false;
+  else return false;
+  return true;
+}
+
+bool ArgumentManager::_toI8    (char&              data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+
+bool ArgumentManager::_toI16   (short&             data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toI32   (int&               data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toI64   (long long int&     data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toU8    (unsigned char&     data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toU16   (unsigned short&    data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toU32   (unsigned int&      data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toU64   (unsigned long long&data,std::string input){
+  data=std::atoi(input.c_str());
+  return true;
+}
+bool ArgumentManager::_toF32   (float&data,std::string input){
   if(input[0]=='-')data=-std::atof(input.substr(1).c_str());
   if(
       input=="inf" ||
@@ -136,13 +218,21 @@ bool ArgumentManager::_toFloat(float&data,std::string input){
   else data=std::atof(input.c_str());
   return true;
 }
-
-bool ArgumentManager::_toInt  (int&  data,std::string input){
-  data=std::atoi(input.c_str());
+bool ArgumentManager::_toF64   (double&data,std::string input){
+  if(input[0]=='-')data=-std::atof(input.substr(1).c_str());
+  if(
+      input=="inf" ||
+      input=="INF" ||
+      input=="Inf" )
+    data=std::numeric_limits<double>::infinity();
+  else if( 
+      input=="nan" ||
+      input=="NAN" ||
+      input=="NaN" )
+    data=std::numeric_limits<double>::quiet_NaN();
+  else data=std::atof(input.c_str());
   return true;
 }
-
-
 
 void ArgumentManager::_parse(std::vector<std::string>&args,std::string name){
   //std::cerr<<"_PARSE"<<std::endl;
@@ -150,8 +240,17 @@ void ArgumentManager::_parse(std::vector<std::string>&args,std::string name){
   //<START>         ::= e
   //<START>         ::= <ARGUMENT> <VALUE>     <START>
   //<START>         ::= <ARGUMENT> { <START> } <START>
-  //<VALUE>         ::= float      <ARGUMENT>
-  //<VALUE>         ::= int        <ARGUMENT>
+  //<VALUE>         ::= bool       <ARGUMENT>
+  //<VALUE>         ::= i8         <ARGUMENT>
+  //<VALUE>         ::= i16        <ARGUMENT>
+  //<VALUE>         ::= i32        <ARGUMENT>
+  //<VALUE>         ::= i64        <ARGUMENT>
+  //<VALUE>         ::= u8         <ARGUMENT>
+  //<VALUE>         ::= u16        <ARGUMENT>
+  //<VALUE>         ::= u32        <ARGUMENT>
+  //<VALUE>         ::= u64        <ARGUMENT>
+  //<VALUE>         ::= f32        <ARGUMENT>
+  //<VALUE>         ::= f64        <ARGUMENT>
   //<VALUE>         ::= string     <ARGUMENT>
   //<VALUE>         ::= [          <SAME_VALUES> ]
   //<VALUE>         ::= struct     { <VALUES> }
@@ -198,24 +297,49 @@ bool ArgumentManager::_START(std::vector<std::string>&args,unsigned&pos,std::str
   return this->_START(args,pos,prefix);
 }
 
-ArgData*ArgumentManager::_FLOAT (std::vector<std::string>&args,unsigned&pos){
-  //printStatus("_FLOAT",args,pos);
-  if(args.size()<=pos+1||args[pos]!="float")return NULL;
-  float data;
-  if(!this->_toFloat(data,args[pos+1])){std::cerr<<"can't convert "<<args[pos+1]<<" to float"<<std::endl;return NULL;}
-  pos+=2;
-  ArgData*ptr=new BaseData<float>(data);
-  return ptr;
+
+#define DEF_NONTERM_TYPE(FCE,MFCE,TYPE)\
+  ArgData*ArgumentManager::_##FCE (std::vector<std::string>&args,unsigned&pos){\
+    if(args.size()<=pos+1||args[pos]!=MFCE)return NULL;\
+    TYPE data;\
+    if(!this->_to##FCE(data,args[pos+1])){std::cerr<<"can't convert "<<args[pos+1]<<" to "<<MFCE<<std::endl;return NULL;}\
+    pos+=2;\
+    ArgData*ptr=new BaseData<TYPE>(data);\
+    return ptr;\
+  }
+
+DEF_NONTERM_TYPE(BOOL,"bool",bool              )
+DEF_NONTERM_TYPE(I8  ,"i8"  ,char              )
+DEF_NONTERM_TYPE(I16 ,"i16" ,short             )
+DEF_NONTERM_TYPE(I32 ,"i32" ,int               )
+DEF_NONTERM_TYPE(I64 ,"i64" ,long long int     )
+DEF_NONTERM_TYPE(U8  ,"u8"  ,unsigned char     )
+DEF_NONTERM_TYPE(U16 ,"u16" ,unsigned short    )
+DEF_NONTERM_TYPE(U32 ,"u32" ,unsigned          )
+DEF_NONTERM_TYPE(U64 ,"u64" ,unsigned long long)
+DEF_NONTERM_TYPE(F32 ,"f32" ,float             )
+DEF_NONTERM_TYPE(F64 ,"f64" ,double            )
+
+/*
+   ArgData*ArgumentManager::_F32 (std::vector<std::string>&args,unsigned&pos){
+//printStatus("_FLOAT",args,pos);
+if(args.size()<=pos+1||args[pos]!="f32")return NULL;
+float data;
+if(!this->_toF32(data,args[pos+1])){std::cerr<<"can't convert "<<args[pos+1]<<" to f32"<<std::endl;return NULL;}
+pos+=2;
+ArgData*ptr=new BaseData<float>(data);
+return ptr;
 }
 
-ArgData*ArgumentManager::_INT   (std::vector<std::string>&args,unsigned&pos){
-  //printStatus("_INT",args,pos);
-  if(args.size()<=pos+1||args[pos]!="int")return NULL;
-  int data;
-  if(!this->_toInt(data,args[pos+1])){std::cerr<<"can't convert "<<args[pos+1]<<" to int"<<std::endl;return NULL;}
-  pos+=2;
-  return new BaseData<int>(data);
+ArgData*ArgumentManager::_I32   (std::vector<std::string>&args,unsigned&pos){
+//printStatus("_INT",args,pos);
+if(args.size()<=pos+1||args[pos]!="i8")return NULL;
+int data;
+if(!this->_toI32(data,args[pos+1])){std::cerr<<"can't convert "<<args[pos+1]<<" to i8"<<std::endl;return NULL;}
+pos+=2;
+return new BaseData<int>(data);
 }
+*/
 
 ArgData*ArgumentManager::_STRING(std::vector<std::string>&args,unsigned&pos){
   //printStatus("_STRING",args,pos);
@@ -259,8 +383,17 @@ ArgData*ArgumentManager::_STRUCT(std::vector<std::string>&args,unsigned&pos){
 ArgData*ArgumentManager::_VALUE(std::vector<std::string>&args,unsigned&pos){
   //printStatus("_VALUE",args,pos);
   ArgData*result;
-  if((result=this->_FLOAT (args,pos)))return result;
-  if((result=this->_INT   (args,pos)))return result;
+  if((result=this->_BOOL  (args,pos)))return result;
+  if((result=this->_I8    (args,pos)))return result;
+  if((result=this->_I16   (args,pos)))return result;
+  if((result=this->_I32   (args,pos)))return result;
+  if((result=this->_I64   (args,pos)))return result;
+  if((result=this->_U8    (args,pos)))return result;
+  if((result=this->_U16   (args,pos)))return result;
+  if((result=this->_U32   (args,pos)))return result;
+  if((result=this->_U64   (args,pos)))return result;
+  if((result=this->_F32   (args,pos)))return result;
+  if((result=this->_F64   (args,pos)))return result;
   if((result=this->_STRING(args,pos)))return result;
   if((result=this->_ARRAY (args,pos)))return result;
   if((result=this->_STRUCT(args,pos)))return result;

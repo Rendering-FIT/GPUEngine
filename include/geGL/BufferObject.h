@@ -1,32 +1,32 @@
 #pragma once
 
-#include <geGL/OpenGL.h>
-#include <geGL/OpenGLObject.h>
-
-#include <iostream>
+#include<geGL/OpenGLObject.h>
+#include<iostream>
 
 namespace ge{
   namespace gl{
-    GEGL_EXPORT std::string translateBufferTarget (GLenum target );
-    GEGL_EXPORT std::string translateBufferBinding(GLenum binding);
-    GEGL_EXPORT GLenum      bufferTarget2Binding  (GLenum target );
-    GEGL_EXPORT GLenum      bufferBinding2Target  (GLenum binding);
-
-    /**
-     * Abstraction of the OpenGL Buffer Object.
-     */
-    class GEGL_EXPORT BufferObject:public OpenGLObject
-    {
+    class GEGL_EXPORT BufferObject:public OpenGLObject{
+      public:
+        enum ReallocFlags{
+          EMPTY     = 0u    ,
+          KEEP_ID   = 1u<<0u,
+          KEEP_DATA = 1u<<1u,
+        };
       private:
         GLint   _getBufferParameter(GLenum pname);
         GLvoid* _getBufferPointer  (GLenum pname);
+        void    _bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags);
       public:
-        static bool areFlagsMutable(GLbitfield flags);
+        BufferObject();
         BufferObject(
             GLsizeiptr    size                  ,
             const GLvoid* data  = NULL          ,
             GLbitfield    flags = GL_STATIC_DRAW);
         virtual ~BufferObject();
+        void alloc(
+            GLsizeiptr    size                  ,
+            const GLvoid* data  = NULL          ,
+            GLbitfield    flags = GL_STATIC_DRAW);
         GLvoid*map(
             GLbitfield access = GL_MAP_READ_BIT|GL_MAP_WRITE_BIT);
         GLvoid*map(
@@ -48,6 +48,7 @@ namespace ge{
         void unbind     (GLenum target);
         void unbindRange(GLenum target,GLuint index);
         void unbindBase (GLenum target,GLuint index);
+        void realloc(GLsizeiptr newSize,ReallocFlags flags=EMPTY);
         void copy(BufferObject*buffer);
         void flushMapped(
             GLsizeiptr size   = 0,
@@ -67,9 +68,8 @@ namespace ge{
             GLenum        format                  ,
             GLenum        type                    ,
             const GLvoid *Data           = NULL   );
-        void operator &=(BufferObject*buffer);
         GLsizeiptr getSize       ();
-        GLenum     getUsage      ();
+        GLbitfield getUsage      ();
         GLenum     getAccess     ();
         GLbitfield getAccessFlags();
         GLboolean  isMapped      ();
@@ -77,6 +77,11 @@ namespace ge{
         GLsizeiptr getMapSize    ();
         GLvoid*    getMapPointer ();
         GLboolean  isImmutable   ();
+        static std::string target2Str     (GLenum     target );
+        static std::string binding2Str    (GLenum     binding);
+        static GLenum      target2Binding (GLenum     target );
+        static GLenum      binding2Target (GLenum     binding);
+        static bool        areFlagsMutable(GLbitfield flags  );
     };
   }
 }

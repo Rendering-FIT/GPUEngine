@@ -7,8 +7,17 @@ namespace ge{
     class ArgData{
       public:
         enum Type{
-          FLOAT = 0   ,
-          INT         ,
+          BOOL = 0    ,
+          I8          ,
+          I16         ,
+          I32         ,
+          I64         ,
+          U8          ,
+          U16         ,
+          U32         ,
+          U64         ,
+          F32         ,
+          F64         ,
           STRING      ,
           ARRAY       ,
           STRUCT      ,

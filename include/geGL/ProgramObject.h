@@ -6,6 +6,7 @@
 #include<stdarg.h>
 #include<vector>
 #include<map>
+#include<set>
 #include<geGL/ShaderObject.h>
 #include<geGL/ShaderObjectParameter.h>
 #include<geGL/ShaderObjectSubroutine.h>
@@ -16,6 +17,19 @@
 
 namespace ge{
   namespace gl{
+    class GEGL_EXPORT Program: public OpenGLObject{
+      protected:
+        std::set<std::shared_ptr<Shader>>_shaders;
+      public:
+        Program();
+        ~Program();
+        GLboolean isProgram();
+        void attachShader(std::shared_ptr<Shader>const&shader);
+        void detachShader(std::shared_ptr<Shader>const&shader);
+        void link();
+        void use();
+    };
+
     /**
      * @brief Initialise shader manager
      */

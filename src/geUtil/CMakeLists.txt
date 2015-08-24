@@ -31,6 +31,10 @@ set(GL_INCLUDES
   ${HEADER_PATH}/ArrayData.h
   ${HEADER_PATH}/StructData.h
   ${HEADER_PATH}/ArgumentManager.h
+  ${HEADER_PATH}/Namespace.h
+  ${HEADER_PATH}/NamespaceWithUsers.h
+  ${HEADER_PATH}/User.h
+  ${HEADER_PATH}/copyArgumentManager2Namespace.h
   )
 
 set(GL_SOURCES
@@ -46,6 +50,9 @@ set(GL_SOURCES
   ArrayData.cpp
   StructData.cpp
   ArgumentManager.cpp
+  Namespace.cpp
+  NamespaceWithUsers.cpp
+  copyArgumentManager2Namespace.cpp
   )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)

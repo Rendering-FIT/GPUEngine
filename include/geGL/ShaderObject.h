@@ -13,9 +13,12 @@ namespace ge{
       protected:
         GLint _getParam(GLenum pname);
       public:
+        Shader();
         Shader(GLenum type,std::string source="");
-        void        setSource(std::string source);
-        void        compile(std::string source="");
+        ~Shader();
+        void        create(GLenum type,std::string source="");
+        void        setSource(std::string source   );
+        void        compile  (std::string source="");
         GLboolean   isShader        ();
         GLenum      getType         ();
         GLboolean   getDeleteStatus ();

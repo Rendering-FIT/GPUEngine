@@ -1,7 +1,6 @@
 #pragma once
 
-#include <geGL/OpenGL.h>
-#include <geCore/Object.h>
+#include<geGL/OpenGL.h>
 
 namespace ge{
   namespace gl{

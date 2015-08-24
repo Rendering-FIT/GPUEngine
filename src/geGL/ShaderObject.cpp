@@ -15,7 +15,19 @@ GLint Shader::_getParam(GLenum pname){
   return params;
 }
 
+Shader::Shader(){
+  this->_id = 0;
+}
+
 Shader::Shader(GLenum type,std::string source){
+  this->create(type,source);
+}
+
+Shader::~Shader(){
+  glDeleteShader(this->_id);
+}
+
+void Shader::create(GLenum type,std::string source){
   this->_id = glCreateShader(type);
   if(source!="")this->compile(source);
 }

@@ -1,4 +1,4 @@
-#include <geGL/BufferObject.h>
+#include<geGL/BufferObject.h>
 
 //toggle usage of direct state access
 //#define USE_DSA
@@ -27,7 +27,7 @@ using namespace ge::gl;
  *
  * @return string representation of target
  */
-std::string ge::gl::translateBufferTarget(GLenum target){
+std::string BufferObject::target2Str(GLenum target){
   switch(target){
     case GL_ARRAY_BUFFER             :return "GL_ARRAY_BUFFER"             ;
     case GL_UNIFORM_BUFFER           :return "GL_UNIFORM_BUFFER"           ;
@@ -46,6 +46,7 @@ std::string ge::gl::translateBufferTarget(GLenum target){
     default                          :return "unknown"                     ;
   }
 }
+
 /**
  * @brief Function translates buffer bindings to strings
  *
@@ -53,7 +54,7 @@ std::string ge::gl::translateBufferTarget(GLenum target){
  *
  * @return string representation of buffer binding
  */
-std::string ge::gl::translateBufferBinding(GLenum binding){
+std::string BufferObject::binding2Str(GLenum binding){
   switch(binding){
     case GL_ARRAY_BUFFER_BINDING             :return "GL_ARRAY_BUFFER_BINDING"             ;
     case GL_UNIFORM_BUFFER_BINDING           :return "GL_UNIFORM_BUFFER_BINDING"           ;
@@ -72,6 +73,7 @@ std::string ge::gl::translateBufferBinding(GLenum binding){
     default                                  :return "unknown"                             ;
   }
 }
+
 /**
  * @brief Function converts buffer target to buffer binding
  *
@@ -79,7 +81,7 @@ std::string ge::gl::translateBufferBinding(GLenum binding){
  *
  * @return buffer bingding for buffer target
  */
-GLenum ge::gl::bufferTarget2Binding(GLenum target){
+GLenum BufferObject::target2Binding(GLenum target){
   switch(target){
     case GL_ARRAY_BUFFER             :return GL_ARRAY_BUFFER_BINDING             ;
     case GL_UNIFORM_BUFFER           :return GL_UNIFORM_BUFFER_BINDING           ;
@@ -106,7 +108,7 @@ GLenum ge::gl::bufferTarget2Binding(GLenum target){
  *
  * @return buffer target of buffer binding
  */
-GLenum ge::gl::bufferBinding2Target(GLenum binding){
+GLenum BufferObject::binding2Target(GLenum binding){
   switch(binding){
     case GL_ARRAY_BUFFER_BINDING             :return GL_ARRAY_BUFFER             ;
     case GL_UNIFORM_BUFFER_BINDING           :return GL_UNIFORM_BUFFER           ;
@@ -139,13 +141,23 @@ bool BufferObject::areFlagsMutable(GLbitfield flags){
     flags == GL_DYNAMIC_READ;
 }
 
+BufferObject::BufferObject(){
+  this->_id = 0;
+}
+
 BufferObject::BufferObject(
     GLsizeiptr    size,
     const GLvoid *data,
     GLbitfield    flags){
-#ifndef USE_DSA
-  glGenBuffers(1,&this->_id);
+  this->alloc(size,data,flags);
+}
 
+BufferObject::~BufferObject(){
+  glDeleteBuffers(1,&this->_id);
+}
+
+void BufferObject::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags){
+#ifndef USE_DSA
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
   glGetIntegerv(bufferTarget2Binding(GL_COPY_WRITE_BUFFER),(GLint*)&oldId);
@@ -162,15 +174,23 @@ BufferObject::BufferObject(
 #endif//SAVE_PREVIOUS_BINDING
 
 #else //USE_DSA
-  glCreateBuffers(1,&this->_id);
   if(BufferObject::areFlagsMutable(flags))
     glNamedBufferData(this->_id,size,data,flags);
   else
     glNamedBufferStorage(this->_id,size,data,flags);
 #endif//USE_DSA
 }
-BufferObject::~BufferObject(){
-  glDeleteBuffers(1,&this->_id);
+
+void BufferObject::alloc(
+    GLsizeiptr    size,
+    const GLvoid *data,
+    GLbitfield    flags){
+#ifndef USE_DSA
+  glGenBuffers(1,&this->_id);
+#else //USE_DSA
+  glCreateBuffers(1,&this->_id);
+#endif//USE_DSA
+  this->_bufferData(size,data,flags);
 }
 
 /**
@@ -248,6 +268,43 @@ void BufferObject::unbindBase(GLenum target,GLuint index){
   glBindBufferBase(target,index,0);
 }
 
+
+/**
+ * @brief Reallocates buffer
+ *
+ * @param newSize new size
+ * @param flags KEEP_ID|KEEP_DATA
+ */
+void BufferObject::realloc(GLsizeiptr newSize,ReallocFlags flags){
+  if((flags&KEEP_ID)&&this->isImmutable()){
+    std::cerr<<"ERROR: can't sustain buffer id: "<<this->getId()<<", buffer is immutable"<<std::endl;
+    return;
+  }
+  GLbitfield bufferFlags=this->getUsage();
+  if      (flags==(KEEP_ID|KEEP_DATA)){
+    BufferObject*temp=new BufferObject(newSize,NULL,bufferFlags);
+    temp->copy(this);
+    this->_bufferData(newSize,NULL,bufferFlags);
+    this->copy(temp);
+    delete temp;
+  }else if(flags==KEEP_ID          ){
+    this->_bufferData(newSize,NULL,bufferFlags);
+  }else if(flags==KEEP_DATA        ){
+    BufferObject*newBuffer=new BufferObject(newSize,NULL,bufferFlags);
+    newBuffer->copy(this);
+    this->~BufferObject();
+    this->_id = newBuffer->_id;
+    delete(char*)newBuffer;
+  }else if(flags==EMPTY            ){
+    this->~BufferObject();
+    new(this)BufferObject(newSize,NULL,bufferFlags);
+  }else{
+    std::cerr<<"ERROR: invalid buffer reallocation flags: "<<flags<<std::endl;
+    return;
+  }
+}
+
+
 /**
  * @brief Copies data from another buffer into this buffer
  *
@@ -290,15 +347,6 @@ void BufferObject::copy(
       0,
       maxSize);
 #endif//USE_DSA
-}
-
-/**
- * @brief Copies data from another buffer into this buffer
- *
- * @param buffer another buffer
- */
-void BufferObject::operator &=(BufferObject*buffer){
-  this->copy(buffer);
 }
 
 /**
@@ -577,12 +625,13 @@ GLsizeiptr BufferObject::getSize(){
 GLenum BufferObject::getUsage(){
   return this->_getBufferParameter(GL_BUFFER_USAGE);
 }
-GLenum BufferObject::getAccess(){
+GLbitfield BufferObject::getAccess(){
   return this->_getBufferParameter(GL_BUFFER_ACCESS);
 }
 GLbitfield BufferObject::getAccessFlags(){
   return this->_getBufferParameter(GL_BUFFER_ACCESS_FLAGS);
 }
+
 GLboolean BufferObject::isMapped(){
   return this->_getBufferParameter(GL_BUFFER_MAPPED);
 }

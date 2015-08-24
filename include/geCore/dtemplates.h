@@ -9,6 +9,8 @@
 #include<map>
 #include<memory>
 
+#define ___ std::cerr<<__FILE__<<": "<<__LINE__<<std::endl
+
 #define DEF_ENUM(name,...)\
   enum name{\
     __VA_ARGS__\
