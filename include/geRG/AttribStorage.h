@@ -14,7 +14,7 @@ namespace ge
    namespace rg
    {
       class Mesh;
-      class RenderingCommandData;
+      struct RenderingCommandData;
 
 
       /** \brief AttribStorage class maintains vertex attributes,

@@ -1,8 +1,15 @@
+#include <algorithm>
 #include <cassert>
 #include <geRG/AllocationManagers.h>
 
 using namespace ge::rg;
 
+
+
+void ItemAllocationManager::setCapacity(unsigned value)
+{
+   resize(value);
+}
 
 
 // brief doc in declaration
@@ -14,9 +21,11 @@ using namespace ge::rg;
  */
 bool ItemAllocationManager::alloc(unsigned *id)
 {
+   // handle out of free items
    if(_numItemsAvailableAtTheEnd==0)
       return false;
 
+   // alloc item
    (*this)[_firstItemAvailableAtTheEnd]=id;
    (*id)=_firstItemAvailableAtTheEnd;
    _numItemsAvailable--;
@@ -38,9 +47,11 @@ bool ItemAllocationManager::alloc(unsigned *id)
  */
 bool ItemAllocationManager::alloc(unsigned numItems,unsigned* ids)
 {
+   // handle out of free items
    if(_numItemsAvailableAtTheEnd<numItems)
       return false;
 
+   // alloc item
    for(unsigned i=0; i<numItems; i++)
    {
       (*this)[_firstItemAvailableAtTheEnd+i]=&ids[i];

@@ -59,8 +59,7 @@ IF(MSVC)
       # - no local_thread storage
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS")
    ELSE()
-      # MSVC 2015 Preview does not fully support constexpr (only partial implementation yet):
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /D_ALLOW_KEYWORD_MACROS")
+      # MSVC 2015 workarounds to be placed here (currently none)
    ENDIF()
 ENDIF()
 

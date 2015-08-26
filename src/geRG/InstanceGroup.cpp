@@ -47,5 +47,3 @@ void InstanceAllocationManager::free(InstanceData* ids,unsigned num)
       (*this)[ids[i].index()]=nullptr;
    _numItemsAvailable+=num;
 }
-
-

@@ -53,14 +53,19 @@ namespace ge
 
       public:
 
+         typedef ChunkOwnerType AllocationOwner;
+
          inline unsigned numBytesTotal() const;              ///< Returns total number of bytes, e.g. sum of allocated and unallocated space.
          inline unsigned numBytesAvailable() const;          ///< Returns the number of bytes available for allocation.
          inline unsigned numBytesAvailableAtTheEnd() const;  ///< Returns the number of available bytes at the end of the managed memory, e.g. size of the block of available bytes residing at the end.
          inline unsigned firstByteAvailableAtTheEnd() const; ///< Returns the offset of the first available byte at the end of the managed memory, e.g. the first available byte that is followed by available space only.
          inline unsigned idOfBlockAtTheEnd() const;          ///< Returns id (index to std::vector\<BlockAllocation\>) of the last allocated block at the end of the managed memory.
 
-         inline ChunkAllocationManager(unsigned capacity);
+         inline ChunkAllocationManager(unsigned capacity=0);
          inline ChunkAllocationManager(unsigned capacity,unsigned nullObjectSize);
+         void setCapacity(unsigned value);
+         inline unsigned capacity() const;
+
          inline bool canAllocate(unsigned numBytes) const;
          unsigned alloc(unsigned numBytes,ChunkOwnerType &owner);  // Allocates memory block. Returns id of the block or zero on failure.
          inline void free(unsigned id);  // Frees allocated block. Id must be valid allocated block. Zero id is allowed and safely ignored.
@@ -80,14 +85,19 @@ namespace ge
 
       public:
 
+         typedef BlockOwnerType AllocationOwner;
+
          inline unsigned numItemsTotal() const;              ///< Returns total number of items (allocated and unallocated).
          inline unsigned numItemsAvailable() const;          ///< Returns the number of items that are available for allocation.
          inline unsigned numItemsAvailableAtTheEnd() const;  ///< Returns the number of items that are available at the end of the managed memory, e.g. number of items in the block at the end.
          inline unsigned firstItemAvailableAtTheEnd() const; ///< Returns the index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
          inline unsigned idOfBlockAtTheEnd() const;          ///< Returns id (index to std::vector\<BlockAllocation\>) of the last allocated block at the end of the managed memory.
 
-         inline BlockAllocationManager(unsigned capacity);
+         inline BlockAllocationManager(unsigned capacity=0);
          inline BlockAllocationManager(unsigned capacity,unsigned nullObjectNumElements);
+         void setCapacity(unsigned value);
+         inline unsigned capacity() const;
+
          inline bool canAllocate(unsigned numItems) const;
          unsigned alloc(unsigned numItems,BlockOwnerType &owner);  // Allocates number of items. Returns id or zero on failure.
          inline void free(unsigned id);  // Frees allocated items. Id must be valid. Zero id is allowed and safely ignored.
@@ -112,8 +122,11 @@ namespace ge
          inline unsigned firstItemAvailableAtTheEnd() const; ///< Returns the index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
          inline unsigned numNullObjects() const;             ///< Returns the number of null objects (null design pattern) allocated at the beginning of the managed memory.
 
-         inline ItemAllocationManager(unsigned capacity);
+         inline ItemAllocationManager(unsigned capacity=0);
          inline ItemAllocationManager(unsigned capacity,unsigned numNullObjects);
+         void setCapacity(unsigned value);
+         inline unsigned capacity() const;
+
          inline bool canAllocate(unsigned numItems) const;
          bool alloc(unsigned *id);  ///< \brief Allocates one item and stores the item's id to the variable pointed by id parameter.
          bool alloc(unsigned numItems,unsigned* ids);  ///< \brief Allocates number of items.
@@ -197,6 +210,11 @@ namespace ge
          for(unsigned i=0; i<numNullObjects; i++)
             emplace_back(nullptr);
       }
+      template<typename OwnerType> void ChunkAllocationManager<OwnerType>::setCapacity(unsigned value)  { std::vector<ChunkAllocation<OwnerType>>::resize(value); }
+      template<typename OwnerType> void BlockAllocationManager<OwnerType>::setCapacity(unsigned value)  { std::vector<BlockAllocation<OwnerType>>::resize(value); }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::capacity() const  { return std::vector<ChunkAllocation<OwnerType>>::size(); }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::capacity() const  { return std::vector<BlockAllocation<OwnerType>>::size(); }
+      inline unsigned ItemAllocationManager::capacity() const  { return size(); }
       template<typename OwnerType> inline bool ChunkAllocationManager<OwnerType>::canAllocate(unsigned numBytes) const
       { return _numBytesAvailableAtTheEnd>=numBytes; }
       template<typename OwnerType> inline bool BlockAllocationManager<OwnerType>::canAllocate(unsigned numItems) const

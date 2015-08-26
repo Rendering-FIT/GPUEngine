@@ -260,7 +260,10 @@ namespace ge
             AutoInitRenderingContext();
             ~AutoInitRenderingContext();
          };
-         static thread_local AutoInitRenderingContext _currentContext;
+         struct NoExport { // workaround for MSVC 2015: thread_local can not be DLL-exported,
+                           // solution: nested structures are not DLL-exported do not inherit DLL-export of parent class
+            static thread_local AutoInitRenderingContext _currentContext;
+         };
       };
 
 
@@ -373,7 +376,7 @@ namespace ge
       inline int RenderingContext::initialInstancingMatricesBufferSize()  { return _initialInstancingMatricesBufferSize; }
       inline void RenderingContext::setInitialInstancingMatricesBufferSize(int value)  { _initialInstancingMatricesBufferSize=value; }
       inline std::shared_ptr<RenderingContext>& RenderingContext::current()
-      { return _currentContext.get(); }
+      { return NoExport::_currentContext.get(); }
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
       { (uint8_t&)a|=(uint8_t)b; return a; }
