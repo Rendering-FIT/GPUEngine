@@ -1,5 +1,6 @@
 #pragma once
 
+#include<geCore/Export.h>
 #include<geCore/dtemplates.h>
 #include<iostream>
 #include<vector>
@@ -11,7 +12,7 @@
 namespace ge{
   namespace core{
     class Accessor;
-    class TypeRegister: public std::enable_shared_from_this<TypeRegister>{
+    class GECORE_EXPORT TypeRegister: public std::enable_shared_from_this<TypeRegister>{
       public:
         DEF_ENUM(Type,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID);
         typedef unsigned TypeID;
@@ -58,7 +59,7 @@ namespace ge{
 
         template<typename TO>
         TO _argsTo(){
-          return NULL;
+          return nullptr;
         }
         template<typename TO,typename... ARGS>
         TO _argsTo(TO to,ARGS... args){
@@ -181,14 +182,14 @@ namespace ge{
           return this->addType(name,TypeRegister::OBJ,sizeof(CLASS));
         }
 
-        void addConstructor(TypeID id,std::function<OBJConstructor> constructor = NULL);
-        void addDestructor (TypeID id,std::function<OBJDestructor > destructor  = NULL);
+        void addConstructor(TypeID id,std::function<OBJConstructor> constructor = nullptr);
+        void addDestructor (TypeID id,std::function<OBJDestructor > destructor  = nullptr);
 
         std::string toStr(TypeID id);
         std::string toStr();
     };
 
-    class Accessor{
+    class GECORE_EXPORT Accessor{
       protected:
         std::shared_ptr<TypeRegister>_manager;
         void*                        _data   ;
