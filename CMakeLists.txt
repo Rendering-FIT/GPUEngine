@@ -13,6 +13,8 @@ SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
+SET(GPUENGINE_BUILD_APPS OFF CACHE BOOL "Add apps subdirectory. This is for building applications.")
+
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
@@ -69,7 +71,7 @@ ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 # Dynamic vs Static Linking
-OPTION(DYNAMIC_GPUENGINE "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
+OPTION(GPUENGINE_DYNAMIC "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
 
 #FIND_PACKAGE(OPENGL      REQUIRED)
 #FIND_PACKAGE(GLEW        REQUIRED)
@@ -118,4 +120,6 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
 
 
 add_subdirectory(src)
-add_subdirectory(apps)
+if(GPUENGINE_BUILD_APPS)
+   add_subdirectory(apps)
+endif()
