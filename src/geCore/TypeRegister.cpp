@@ -130,7 +130,7 @@ TypeRegister::~TypeRegister(){
 }
 
 unsigned TypeRegister::getNofTypes(){
-  return this->_typeStart.size();
+  return (unsigned)this->_typeStart.size();
 }
 
 TypeRegister::TypeID TypeRegister::getTypeId(unsigned index){
@@ -143,7 +143,7 @@ unsigned TypeRegister::getIndex(TypeID id){
 
 unsigned TypeRegister::getTypeDescriptionLength(TypeID id){
   unsigned index=this->getIndex(id);
-  if(this->_typeStart.size()-1==index)return this->_types.size()-this->_typeStart[index];
+  if(this->_typeStart.size()-1==index)return (unsigned)(this->_types.size()-this->_typeStart[index]);
   return this->_typeStart[index+1]-this->_typeStart[index];
 }
 
@@ -236,13 +236,13 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>&type,unsign
     case TypeRegister::ARRAY:
       //if(!this->_incrCheck(type.size(),start))                              return falseBranch();
       if(this->getArraySize(et)!=type[start])                               return falseBranch();
-      if(!this->_incrCheck(type.size(),start))                              return falseBranch();
+      if(!this->_incrCheck((unsigned)type.size(),start))                    return falseBranch();
       if(!this->_isNewTypeEqualTo(this->getArrayInnerTypeId(et),type,start))return falseBranch();
       return true;
     case TypeRegister::STRUCT:
       //if(!this->_incrCheck(type.size(),start))       return falseBranch();
-      if(this->getNofStructElements(et)!=type[start])return falseBranch();
-      if(!this->_incrCheck(type.size(),start))       return falseBranch();
+      if(this->getNofStructElements(et)!=type[start])   return falseBranch();
+      if(!this->_incrCheck((unsigned)type.size(),start))return falseBranch();
       for(unsigned e=0;e<this->getNofStructElements(et);++e)
         if(!this->_isNewTypeEqualTo(this->getStructElementTypeId(et,e),type,start))return falseBranch();
       return true;
@@ -254,7 +254,7 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>&type,unsign
       //if(!this->_incrCheck(type.size(),start))                             return falseBranch();
       if(!this->_isNewTypeEqualTo(this->getFceReturnTypeId(et),type,start))return falseBranch();
       if(this->getNofFceArgs(et)!=type[start])                             return falseBranch();
-      if(!this->_incrCheck(type.size(),start))                             return falseBranch();
+      if(!this->_incrCheck((unsigned)type.size(),start))                   return falseBranch();
       for(unsigned e=0;e<this->getNofFceArgs(et);++e)
         if(!this->_isNewTypeEqualTo(this->getFceArgTypeId(et,e),type,start))return falseBranch();
       return true;
@@ -325,7 +325,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
     case TypeRegister::F32   :
     case TypeRegister::F64   :
     case TypeRegister::STRING:
-      this->_typeStart.push_back(this->_types.size());
+      this->_typeStart.push_back((unsigned)this->_types.size());
       this->_types.push_back(newType);//write type
       start++;
       return this->getTypeId(this->getNofTypes()-1);
@@ -337,7 +337,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
       size=type[start-1];
       innerTypes.push_back(this->_typeAdd(type,start));
       if(innerTypes[0]==0)return err("new arrays inner type has invalid description");
-      this->_typeStart.push_back(this->_types.size());
+      this->_typeStart.push_back((unsigned)this->_types.size());
       this->_types.push_back(newType);//write type
       this->_types.push_back(size);//write length
       this->_types.push_back(innerTypes[0]);//write inner type
@@ -352,7 +352,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
         innerTypes.push_back(id);
       }
       if(innerTypes.size()!=size)return err("new struct has "+getStr(size)+" elements by only "+getStr(innerTypes.size())+" elements were provided");
-      this->_typeStart.push_back(this->_types.size());
+      this->_typeStart.push_back((unsigned)this->_types.size());
       this->_types.push_back(newType);//write type
       this->_types.push_back(size);//write length
       for(unsigned e=0;e<size;++e)
@@ -362,7 +362,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
       start+=1;
       innerTypes.push_back(this->_typeAdd(type,start));
       if(innerTypes[0]==0)return err("new ptrs inner type has invalid format");
-      this->_typeStart.push_back(this->_types.size());
+      this->_typeStart.push_back((unsigned)this->_types.size());
       this->_types.push_back(newType);//write type
       this->_types.push_back(innerTypes[0]);
       return this->getTypeId(this->getNofTypes()-1);
@@ -378,7 +378,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
         if(id==0)return err("new functions argument number: "+getStr(e)+" has invalid format");
         innerTypes.push_back(id);
       }
-      this->_typeStart.push_back(this->_types.size());
+      this->_typeStart.push_back((unsigned)this->_types.size());
       this->_types.push_back(newType);//write type
       this->_types.push_back(innerTypes[0]);//write return type
       this->_types.push_back(size);//write length
@@ -388,7 +388,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
     case TypeRegister::OBJ:
       if(start+1>=type.size())return err("new OBJ has no size");
       size=type[start+1];
-      this->_typeStart.push_back(this->_types.size());
+      this->_typeStart.push_back((unsigned)this->_types.size());
       this->_types.push_back(newType);//write type
       this->_types.push_back(size);//write size
       start++;

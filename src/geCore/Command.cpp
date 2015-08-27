@@ -71,7 +71,7 @@ Command*CommandListWithAccessor::operator[](std::string name){
 unsigned CommandListWithAccessor::add(Command*command,std::string name){
   if(name!="")this->_name2Command[name]=command;
   this->CommandList::push_back(command);
-  return this->size()-1;
+  return (unsigned)this->size()-1;
 }
 
 void CommandIf::operator()(){
