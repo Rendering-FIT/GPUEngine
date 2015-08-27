@@ -18,9 +18,10 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 include_directories(
   ${GLEW_INCLUDE_DIR}
-  ${OPENGL_INCLUDE_PATH}
-  ${SDL2_INCLUDE_PATH}
-  ${ANTTWEAKBAR_INCLUDE_PATH}
+  ${OPENGL_INCLUDE_DIR}
+  ${GLM_INCLUDE_DIR}
+  ${SDL2_INCLUDE_DIR}
+  ${ANTTWEAKBAR_INCLUDE_DIR}
   )
 
 target_link_libraries(${APP_NAME}

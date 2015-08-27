@@ -112,8 +112,8 @@ namespace ge
       { return storageData.renderingData[storageData.indexToRenderingData(mode&0x0f)].stateSetBufferOffset4; }
       inline void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned mode,AttribStorage *storage)
       { if(incrementAmount!=0) incrementDrawCommandModeCounter(incrementAmount,mode,getOrCreateAttribStorageData(storage)->second); }
-      inline unsigned StateSet::addCommand(const std::shared_ptr<ge::core::Command>& command)  { unsigned r=_commandList.size(); _commandList.push_back(command); return r; }
-      inline unsigned StateSet::insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command)  { return std::distance(_commandList.emplace(_commandList.begin()+index,command),_commandList.begin()); }
+      inline unsigned StateSet::addCommand(const std::shared_ptr<ge::core::Command>& command)  { unsigned r=unsigned(_commandList.size()); _commandList.push_back(command); return r; }
+      inline unsigned StateSet::insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command)  { return unsigned(std::distance(_commandList.emplace(_commandList.begin()+index,command),_commandList.begin())); }
       inline void StateSet::removeCommand(unsigned index)  { _commandList.erase(_commandList.begin()+index); }
       inline void StateSet::clearCommands()  { _commandList.clear(); }
       inline const std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList() const  { return _commandList; }

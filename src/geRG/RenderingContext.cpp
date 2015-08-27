@@ -13,7 +13,7 @@ using namespace ge::rg;
 using namespace ge::gl;
 using namespace std;
 
-thread_local RenderingContext::AutoInitRenderingContext RenderingContext::_currentContext;
+thread_local RenderingContext::AutoInitRenderingContext RenderingContext::NoExport::_currentContext;
 
 bool RenderingContext::_initialUseARBShaderDrawParametersValue = false;
 
@@ -39,11 +39,11 @@ void RenderingContext::init()
 {
    // init _currentContext.data.value
    // (use placement new on shared_ptr, memory is statically preallocated)
-   _currentContext.usingNiftyCounter=true; // this attempt to write into local thread storage (lts)
-                                           // may trigger all the constructors in lts
-   if(_currentContext.initialized==false) {
-      ::new(&_currentContext.ptr[0])shared_ptr<RenderingContext>();
-      _currentContext.initialized=true;
+   NoExport::_currentContext.usingNiftyCounter=true; // this will write into local thread storage (lts)
+                                                     // and may trigger all the constructors in lts
+   if(NoExport::_currentContext.initialized==false) {
+      ::new(&NoExport::_currentContext.ptr[0])shared_ptr<RenderingContext>();
+      NoExport::_currentContext.initialized=true;
    }
 }
 
@@ -52,7 +52,7 @@ void RenderingContext::finalize()
 {
    // call in-place shared_ptr destructor
    // (do not free static memory)
-   _currentContext.get().~shared_ptr();
+   NoExport::_currentContext.get().~shared_ptr();
 }
 
 
@@ -626,5 +626,5 @@ void RenderingContext::render()
 
 void RenderingContext::setCurrent(const shared_ptr<RenderingContext>& ptr)
 {
-   _currentContext.get()=ptr;
+   NoExport::_currentContext.get()=ptr;
 }
