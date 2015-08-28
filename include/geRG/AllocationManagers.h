@@ -212,9 +212,9 @@ namespace ge
       }
       template<typename OwnerType> void ChunkAllocationManager<OwnerType>::setCapacity(unsigned value)  { std::vector<ChunkAllocation<OwnerType>>::resize(value); }
       template<typename OwnerType> void BlockAllocationManager<OwnerType>::setCapacity(unsigned value)  { std::vector<BlockAllocation<OwnerType>>::resize(value); }
-      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::capacity() const  { return std::vector<ChunkAllocation<OwnerType>>::size(); }
-      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::capacity() const  { return std::vector<BlockAllocation<OwnerType>>::size(); }
-      inline unsigned ItemAllocationManager::capacity() const  { return size(); }
+      template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::capacity() const  { return unsigned(std::vector<ChunkAllocation<OwnerType>>::size()); }
+      template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::capacity() const  { return unsigned(std::vector<BlockAllocation<OwnerType>>::size()); }
+      inline unsigned ItemAllocationManager::capacity() const  { return unsigned(size()); }
       template<typename OwnerType> inline bool ChunkAllocationManager<OwnerType>::canAllocate(unsigned numBytes) const
       { return _numBytesAvailableAtTheEnd>=numBytes; }
       template<typename OwnerType> inline bool BlockAllocationManager<OwnerType>::canAllocate(unsigned numItems) const
