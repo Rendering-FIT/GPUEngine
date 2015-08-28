@@ -10,5 +10,4 @@
 #include<geGL/TextureObject.h>
 #include<geGL/SamplerObject.h>
 #include<geGL/RenderbufferObject.h>
-#include<geGL/RasterizationState.h>
 #include<geGL/DebugMessage.h>
