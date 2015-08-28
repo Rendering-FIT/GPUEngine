@@ -19,28 +19,28 @@ namespace ge{
         typedef void(OBJConstructor)(signed   char*);
         typedef void(OBJDestructor )(unsigned char*);
       protected:
-        struct{
+        struct POSITION{
           static const unsigned TYPE = 0u;
-          struct{
+          struct ARRAY{
             static const unsigned SIZE       = 1u;
             static const unsigned INNER_TYPE = 2u;
-          }static const ARRAY;
-          struct{
+          };
+          struct STRUCT{
             static const unsigned NOF_ELEMENTS      = 1u;
             static const unsigned INNER_TYPES_START = 2u;
-          }static const STRUCT;
-          struct{
+          };
+          struct PTR{
             static const unsigned INNER_TYPE = 1u;
-          }static const PTR;
-          struct{
+          };
+          struct FCE{
             static const unsigned RETURN_TYPE     = 1u;
             static const unsigned NOF_ARGUMENTS   = 2u;
             static const unsigned ARGUMENTS_START = 3u;
-          }static const FCE;
-          struct{
+          };
+          struct OBJ{
             static const unsigned SIZE = 1u;
-          }static const OBJ;
-        }static const POSITION;
+          };
+        };
 
         std::vector<unsigned>       _typeStart;
         std::vector<unsigned>       _types    ;

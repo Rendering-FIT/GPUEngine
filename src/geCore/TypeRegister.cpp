@@ -158,44 +158,44 @@ TypeRegister::Type TypeRegister::getElementType(unsigned element){
 }
 
 TypeRegister::Type TypeRegister::getTypeIdType(TypeID id){
-  unsigned element=this->getTypeDescriptionElem(id,this->POSITION.TYPE);
+  unsigned element=this->getTypeDescriptionElem(id,TypeRegister::POSITION::TYPE);
   return this->getElementType(element);
 }
 
 unsigned TypeRegister::getNofStructElements(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.STRUCT.NOF_ELEMENTS);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::STRUCT::NOF_ELEMENTS);
 }
 
 TypeRegister::TypeID TypeRegister::getStructElementTypeId(TypeID id,unsigned element){
-  return this->getTypeDescriptionElem(id,this->POSITION.STRUCT.INNER_TYPES_START+element);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::STRUCT::INNER_TYPES_START+element);
 }
 
 unsigned TypeRegister::getArraySize(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.ARRAY.SIZE);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::ARRAY::SIZE);
 }
 
 TypeRegister::TypeID TypeRegister::getArrayInnerTypeId(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.ARRAY.INNER_TYPE);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::ARRAY::INNER_TYPE);
 }
 
 TypeRegister::TypeID TypeRegister::getPtrInnerTypeId(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.PTR.INNER_TYPE);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::PTR::INNER_TYPE);
 }
 
 TypeRegister::TypeID TypeRegister::getFceReturnTypeId(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.FCE.RETURN_TYPE);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::FCE::RETURN_TYPE);
 }
 
 unsigned TypeRegister::getNofFceArgs(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.FCE.NOF_ARGUMENTS);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::FCE::NOF_ARGUMENTS);
 }
 
 TypeRegister::TypeID TypeRegister::getFceArgTypeId(TypeID id,unsigned element){
-  return this->getTypeDescriptionElem(id,this->POSITION.FCE.ARGUMENTS_START+element);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::FCE::ARGUMENTS_START+element);
 }
 
 unsigned TypeRegister::getObjSize(TypeID id){
-  return this->getTypeDescriptionElem(id,this->POSITION.OBJ.SIZE);
+  return this->getTypeDescriptionElem(id,TypeRegister::POSITION::OBJ::SIZE);
 }
 
 bool TypeRegister::_incrCheck(unsigned size,unsigned&start){
