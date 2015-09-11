@@ -60,7 +60,10 @@ namespace ge{
       };
 
       /**
-       * Base class for 2D image. ImageImpl template should
+       * Base class for 2D image. Derived class should wrap the
+       * 3rd party image implementation such as fipImage in
+       * FreeImage library. In this example the fipImage would be
+       * substituded for ImageImpl template parametr.
        */
       template<typename ImageImpl>
       class ImageTemplate : public Image

@@ -14,7 +14,7 @@ namespace ge{
    namespace sg
    {
       struct AttributeDescriptor;
-      class MaterialComponent;
+      class Material;
 
       /**
        * Basic geometrical drawable. Represents one type of primitive described

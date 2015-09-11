@@ -4,13 +4,13 @@
 #include <algorithm>
 
 
-ge::sg::MatrixTransform::MatrixTransform()
+ge::sg::MatrixTransformBase::MatrixTransformBase()
    : _matrix(std::make_shared<glm::mat4>())
 {
 
 }
 
-ge::sg::MatrixTransform::MatrixTransform(const float* matrix)
+ge::sg::MatrixTransformBase::MatrixTransformBase(const float* matrix)
    : _matrix(std::make_shared<glm::mat4>())
 {
    std::copy_n(matrix, 16, glm::value_ptr(*_matrix));
@@ -19,55 +19,102 @@ ge::sg::MatrixTransform::MatrixTransform(const float* matrix)
 /**
  * BEWARE!! Change of ownership.
  */
-ge::sg::MatrixTransform::MatrixTransform(glm::mat4 * matrix)
+ge::sg::MatrixTransformBase::MatrixTransformBase(glm::mat4 * matrix)
 {
    _matrix = std::shared_ptr<glm::mat4>(matrix);
 }
 
-ge::sg::MatrixTransform::MatrixTransform(const glm::mat4& matrix)
+ge::sg::MatrixTransformBase::MatrixTransformBase(const glm::mat4& matrix)
    : _matrix(std::make_shared<glm::mat4>(matrix))
 {
 
 }
 
-ge::sg::MatrixTransform::MatrixTransform(const std::shared_ptr<glm::mat4> &matrix)
+ge::sg::MatrixTransformBase::MatrixTransformBase(const std::shared_ptr<glm::mat4> &matrix)
    : _matrix(matrix)
 {
 
 }
 
-ge::sg::MatrixTransform::MatrixTransform(std::shared_ptr<glm::mat4> && matrix)
+ge::sg::MatrixTransformBase::MatrixTransformBase(std::shared_ptr<glm::mat4> && matrix)
 {
    _matrix.swap(matrix);
 }
 
-ge::sg::MatrixTransform::MatrixTransform(ge::sg::MatrixTransform & matrix)
-   : _matrix(matrix.getMatrix())
+ge::sg::MatrixTransformBase::MatrixTransformBase(ge::sg::MatrixTransformBase & matrix)
+   : _matrix(matrix.getRefMatrix())
 {
 
 }
 
-ge::sg::MatrixTransform::MatrixTransform(const ge::sg::Transform &transform)
+ge::sg::MatrixTransformBase::MatrixTransformBase(const ge::sg::Transform &transform)
 {
    std::copy_n(transform.getMatrixData(), 16, glm::value_ptr(*_matrix));
 }
 
-float* ge::sg::MatrixTransform::getMatrixData()
+float* ge::sg::MatrixTransformBase::getMatrixData()
 {
    return glm::value_ptr(*_matrix);
 }
 
-const float* ge::sg::MatrixTransform::getMatrixData() const
+const float* ge::sg::MatrixTransformBase::getMatrixData() const
 {
    return glm::value_ptr(*_matrix);
 }
 
-std::shared_ptr<glm::mat4>& ge::sg::MatrixTransform::getMatrix()
+std::shared_ptr<glm::mat4>& ge::sg::MatrixTransformBase::getRefMatrix()
 {
    return _matrix;
 }
 
-ge::sg::MatrixTransform::~MatrixTransform()
+ge::sg::MatrixTransformBase::~MatrixTransformBase()
 {
 
+}
+
+///////////////////////////////////////////////////////////////////////////
+// MatrixTransform
+
+ge::sg::MatrixTransform::MatrixTransform()
+   : MatrixTransformBase()
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(const float* matrix)
+   : MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(const glm::mat4& matrix)
+   : MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(glm::mat4* matrix)
+   : MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(const std::shared_ptr<glm::mat4>& matrix)
+   : MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(std::shared_ptr<glm::mat4>&& matrix)
+   : MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(MatrixTransform& matrix)
+   : MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::MatrixTransform::MatrixTransform(const Transform& transform)
+   : MatrixTransformBase(transform)
+{
+}
+
+ge::sg::MatrixTransform::~MatrixTransform()
+{
 }
