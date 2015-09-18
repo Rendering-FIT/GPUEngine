@@ -20,8 +20,9 @@ namespace ge{
    {
 
       /**
-       * Class representing a model inside scene. This should be an output
-       * of some loader which loads 3D models files
+       * Class representing a model inside scene. It is collection
+       * of meshes and materials placed in MatrixTransfom hieararchy
+       * (DAG).
        */
       class /*GESG_EXPORT*/ Model
       {
