@@ -5,14 +5,14 @@
 using namespace ge::core;
 
 template<typename T>
-void printVec(std::vector<T>&data,unsigned from=0){
+void printVec(const std::vector<T>&data,unsigned from=0){
   for(unsigned i=from;i<data.size();++i)
     std::cerr<<data[i]<<" ";
   std::cerr<<std::endl;
 }
 
 template<typename T>
-std::string vec2str(std::vector<T>&data,unsigned from=0){
+std::string vec2str(std::vector<T>const&data,unsigned from=0){
   std::stringstream ss;
   ss<<"[";
   if(from<data.size())ss<<data[from];
@@ -21,21 +21,38 @@ std::string vec2str(std::vector<T>&data,unsigned from=0){
   ss<<"]";
   return ss.str();
 }
+namespace ge{
+  namespace core{
+    template<>const char* TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
+    template<>const char* TypeRegister::getTypeKeyword<bool              >(){return"bool"  ;}
+    template<>const char* TypeRegister::getTypeKeyword<char              >(){return"i8"    ;}
+    template<>const char* TypeRegister::getTypeKeyword<short             >(){return"i16"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<int               >(){return"i32"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<long long int     >(){return"void"  ;}
+    template<>const char* TypeRegister::getTypeKeyword<unsigned char     >(){return"u8"    ;}
+    template<>const char* TypeRegister::getTypeKeyword<unsigned short    >(){return"u16"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<unsigned          >(){return"u32"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<unsigned long long>(){return"u64"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<float             >(){return"f32"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<double            >(){return"f64"   ;}
+    template<>const char* TypeRegister::getTypeKeyword<std::string       >(){return"string";}
+  }
+}
 
 TypeRegister::TypeRegister(){
-  this->addType("void"  ,TypeRegister::VOID         );
-  this->addType("bool"  ,TypeRegister::BOOL         );
-  this->addType("i8"    ,TypeRegister::I8           );
-  this->addType("i16"   ,TypeRegister::I16          );
-  this->addType("i32"   ,TypeRegister::I32          );
-  this->addType("i64"   ,TypeRegister::I64          );
-  this->addType("u8"    ,TypeRegister::U8           );
-  this->addType("u16"   ,TypeRegister::U16          );
-  this->addType("u32"   ,TypeRegister::U32          );
-  this->addType("u64"   ,TypeRegister::U64          );
-  this->addType("f32"   ,TypeRegister::F32          );
-  this->addType("f64"   ,TypeRegister::F64          );
-  this->addType("string",TypeRegister::STRING       );
+  this->addType(TypeRegister::getTypeKeyword<void              >(),TypeRegister::VOID  );
+  this->addType(TypeRegister::getTypeKeyword<bool              >(),TypeRegister::BOOL  );
+  this->addType(TypeRegister::getTypeKeyword<char              >(),TypeRegister::I8    );
+  this->addType(TypeRegister::getTypeKeyword<short             >(),TypeRegister::I16   );
+  this->addType(TypeRegister::getTypeKeyword<int               >(),TypeRegister::I32   );
+  this->addType(TypeRegister::getTypeKeyword<long long int     >(),TypeRegister::I64   );
+  this->addType(TypeRegister::getTypeKeyword<unsigned char     >(),TypeRegister::U8    );
+  this->addType(TypeRegister::getTypeKeyword<unsigned short    >(),TypeRegister::U16   );
+  this->addType(TypeRegister::getTypeKeyword<unsigned          >(),TypeRegister::U32   );
+  this->addType(TypeRegister::getTypeKeyword<unsigned long long>(),TypeRegister::U64   );
+  this->addType(TypeRegister::getTypeKeyword<float             >(),TypeRegister::F32   );
+  this->addType(TypeRegister::getTypeKeyword<double            >(),TypeRegister::F64   );
+  this->addType(TypeRegister::getTypeKeyword<std::string       >(),TypeRegister::STRING);
   this->addType("ivec2" ,TypeRegister::ARRAY,2,"i32");
   this->addType("ivec3" ,TypeRegister::ARRAY,3,"i32");
   this->addType("ivec4" ,TypeRegister::ARRAY,4,"i32");
@@ -47,15 +64,16 @@ TypeRegister::TypeRegister(){
   this->addType("vec4"  ,TypeRegister::ARRAY,4,"f32");
 }
 
-TypeRegister::TypeID TypeRegister::getTypeId(const char*name){
+TypeRegister::TypeID TypeRegister::getTypeId(const char*name)const{
   if(!this->_name2Id.count(name)){
     std::cerr<<"ERROR: name: \""<<name<<"\" does not have TypeId"<<std::endl;
     return -1;
   }
-  return this->_name2Id[name];
+  return this->_name2Id.find(name)->second;
+  //  return this->_name2Id[name];
 }
 
-std::string TypeRegister::toStr(TypeID id){
+std::string TypeRegister::toStr(TypeID id)const{
   TypeRegister::Type type=this->getTypeIdType(id);
   std::stringstream ss;
   switch(type){
@@ -103,14 +121,14 @@ std::string TypeRegister::toStr(TypeID id){
       ss<<"class "<<this->getTypeIdName(id);
       return ss.str();
     case TypeRegister::TYPEID:
-      //ss<<"asdasd: "<<id<<"#"<<this->getTypeIdName(id)<<"#";
+      ss<<"asdasd: "<<id<<"#"<<this->getTypeIdName(id)<<"#";
       return ss.str();
     default:
       return "unknown";
   }
 }
 
-std::string TypeRegister::toStr(){
+std::string TypeRegister::toStr()const{
   printVec(this->_types);
 
   std::stringstream ss;
@@ -129,72 +147,72 @@ TypeRegister::~TypeRegister(){
 
 }
 
-unsigned TypeRegister::getNofTypes(){
+unsigned TypeRegister::getNofTypes()const{
   return (unsigned)this->_typeStart.size();
 }
 
-TypeRegister::TypeID TypeRegister::getTypeId(unsigned index){
+TypeRegister::TypeID TypeRegister::getTypeId(unsigned index)const{
   return index+TypeRegister::TYPEID;
 }
 
-unsigned TypeRegister::getIndex(TypeID id){
+unsigned TypeRegister::getIndex(TypeID id)const{
   return id-TypeRegister::TYPEID;
 }
 
-unsigned TypeRegister::getTypeDescriptionLength(TypeID id){
+unsigned TypeRegister::getTypeDescriptionLength(TypeID id)const{
   unsigned index=this->getIndex(id);
   if(this->_typeStart.size()-1==index)return (unsigned)(this->_types.size()-this->_typeStart[index]);
   return this->_typeStart[index+1]-this->_typeStart[index];
 }
 
-unsigned TypeRegister::getTypeDescriptionElem  (TypeID id,unsigned i){
+unsigned TypeRegister::getTypeDescriptionElem  (TypeID id,unsigned i)const{
   //std::cerr<<"id: "<<id<<", i: "<<i<<std::endl;
   return this->_types[this->_typeStart[this->getIndex(id)]+i];
 }
 
-TypeRegister::Type TypeRegister::getElementType(unsigned element){
+TypeRegister::Type TypeRegister::getElementType(unsigned element)const{
   if(element>=TYPEID)return TYPEID;
   return (TypeRegister::Type)element;
 }
 
-TypeRegister::Type TypeRegister::getTypeIdType(TypeID id){
+TypeRegister::Type TypeRegister::getTypeIdType(TypeID id)const{
   unsigned element=this->getTypeDescriptionElem(id,TypeRegister::POSITION::TYPE);
   return this->getElementType(element);
 }
 
-unsigned TypeRegister::getNofStructElements(TypeID id){
+unsigned TypeRegister::getNofStructElements(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::STRUCT::NOF_ELEMENTS);
 }
 
-TypeRegister::TypeID TypeRegister::getStructElementTypeId(TypeID id,unsigned element){
+TypeRegister::TypeID TypeRegister::getStructElementTypeId(TypeID id,unsigned element)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::STRUCT::INNER_TYPES_START+element);
 }
 
-unsigned TypeRegister::getArraySize(TypeID id){
+unsigned TypeRegister::getArraySize(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::ARRAY::SIZE);
 }
 
-TypeRegister::TypeID TypeRegister::getArrayInnerTypeId(TypeID id){
+TypeRegister::TypeID TypeRegister::getArrayInnerTypeId(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::ARRAY::INNER_TYPE);
 }
 
-TypeRegister::TypeID TypeRegister::getPtrInnerTypeId(TypeID id){
+TypeRegister::TypeID TypeRegister::getPtrInnerTypeId(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::PTR::INNER_TYPE);
 }
 
-TypeRegister::TypeID TypeRegister::getFceReturnTypeId(TypeID id){
+TypeRegister::TypeID TypeRegister::getFceReturnTypeId(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::FCE::RETURN_TYPE);
 }
 
-unsigned TypeRegister::getNofFceArgs(TypeID id){
+unsigned TypeRegister::getNofFceArgs(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::FCE::NOF_ARGUMENTS);
 }
 
-TypeRegister::TypeID TypeRegister::getFceArgTypeId(TypeID id,unsigned element){
+TypeRegister::TypeID TypeRegister::getFceArgTypeId(TypeID id,unsigned element)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::FCE::ARGUMENTS_START+element);
 }
 
-unsigned TypeRegister::getObjSize(TypeID id){
+unsigned TypeRegister::getObjSize(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::OBJ::SIZE);
 }
 
@@ -203,7 +221,7 @@ bool TypeRegister::_incrCheck(unsigned size,unsigned&start){
   return start<size;
 }
 
-bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>&type,unsigned&start){
+bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,unsigned&start){
   //std::cout<<"TypeRegister::_isNewTypeEqualTo("<<et<<","<<vec2str(type)<<","<<start<<")"<<std::endl;
   if(start>=type.size())return false;
   unsigned lastStart=start;
@@ -216,7 +234,6 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>&type,unsign
     return false;
   }
   if(this->getTypeIdType(et)!=this->getElementType(type[start]))return falseBranch();
-  start++;
   switch(this->getTypeIdType(et)){
     case TypeRegister::VOID  :
     case TypeRegister::BOOL  :
@@ -232,26 +249,27 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>&type,unsign
     case TypeRegister::F64   :
     case TypeRegister::STRING:
     case TypeRegister::TYPEID:
+      ++start;
       return true;
     case TypeRegister::ARRAY:
-      //if(!this->_incrCheck(type.size(),start))                              return falseBranch();
+      if(!this->_incrCheck(type.size(),start))                              return falseBranch();
       if(this->getArraySize(et)!=type[start])                               return falseBranch();
       if(!this->_incrCheck((unsigned)type.size(),start))                    return falseBranch();
       if(!this->_isNewTypeEqualTo(this->getArrayInnerTypeId(et),type,start))return falseBranch();
       return true;
     case TypeRegister::STRUCT:
-      //if(!this->_incrCheck(type.size(),start))       return falseBranch();
+      if(!this->_incrCheck(type.size(),start))          return falseBranch();
       if(this->getNofStructElements(et)!=type[start])   return falseBranch();
       if(!this->_incrCheck((unsigned)type.size(),start))return falseBranch();
       for(unsigned e=0;e<this->getNofStructElements(et);++e)
         if(!this->_isNewTypeEqualTo(this->getStructElementTypeId(et,e),type,start))return falseBranch();
       return true;
     case TypeRegister::PTR:
-      //if(!this->_incrCheck(type.size(),start))                            return falseBranch();
+      if(!this->_incrCheck(type.size(),start))                            return falseBranch();
       if(!this->_isNewTypeEqualTo(this->getPtrInnerTypeId(et),type,start))return falseBranch();
       return true;
     case TypeRegister::FCE:
-      //if(!this->_incrCheck(type.size(),start))                             return falseBranch();
+      if(!this->_incrCheck(type.size(),start))                             return falseBranch();
       if(!this->_isNewTypeEqualTo(this->getFceReturnTypeId(et),type,start))return falseBranch();
       if(this->getNofFceArgs(et)!=type[start])                             return falseBranch();
       if(!this->_incrCheck((unsigned)type.size(),start))                   return falseBranch();
@@ -266,7 +284,7 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>&type,unsign
   }
 }
 
-bool TypeRegister::_typeExists(TypeRegister::TypeID*id,std::vector<unsigned>&type,unsigned&start){
+bool TypeRegister::_typeExists(TypeRegister::TypeID*id,std::vector<unsigned>const&type,unsigned&start){
   for(unsigned t=0;t<this->getNofTypes();++t)
     if(this->_isNewTypeEqualTo(this->getTypeId(t),type,start)){
       *id=this->getTypeId(t);
@@ -275,20 +293,20 @@ bool TypeRegister::_typeExists(TypeRegister::TypeID*id,std::vector<unsigned>&typ
   return false;
 }
 
-std::string TypeRegister::getTypeIdName(TypeID id){
-  //for(auto x:this->_id2name)
-  //  std::cout<<x.first<<" "<<x.second<<" ";
-  //std::cout<<std::endl;
+std::string TypeRegister::getTypeIdName(TypeID id)const{
   if(!this->_id2name.count(id))return"";
-  return this->_id2name[id];
+  return this->_id2name.find(id)->second;
 }
-std::set<std::string>&TypeRegister::getTypeIdSynonyms(TypeID id){
-  return this->_id2Synonyms[id];
+
+std::set<std::string>const &TypeRegister::getTypeIdSynonyms(TypeID id)const{
+  return this->_id2Synonyms.find(id)->second;
 }
-bool                  TypeRegister::hasSynonyms      (TypeID id){
-  return this->_id2Synonyms[id].size()>1;
+
+bool TypeRegister::hasSynonyms(TypeID id)const{
+  return this->_id2Synonyms.find(id)->second.size()>1;
 }
-bool                  TypeRegister::areSynonyms      (const char*name0,const char*name1){
+
+bool TypeRegister::areSynonyms(const char*name0,const char*name1)const{
   return this->getTypeId(name0)==this->getTypeId(name1);
 }
 
@@ -299,7 +317,7 @@ std::string getStr(T t){
   return ss.str();
 }
 
-TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&start){
+TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>const&type,unsigned&start){
   unsigned lastStart=start;
   auto err=[&start,&lastStart](std::string m){std::cerr<<"ERROR: "<<m<<std::endl;start=lastStart;return 0;};
   //std::cout<<"TypeRegister::_typeAdd("<<vec2str(type)<<","<<start<<")"<<std::endl;
@@ -335,6 +353,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
       if(start+1>=type.size())return err("new array type has no size");
       start+=2;
       size=type[start-1];
+      if(size==0)return err("number of arrays elements cannot be zero");
       innerTypes.push_back(this->_typeAdd(type,start));
       if(innerTypes[0]==0)return err("new arrays inner type has invalid description");
       this->_typeStart.push_back((unsigned)this->_types.size());
@@ -346,6 +365,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>&type,unsigned&
       if(start+1>=type.size())return err("new struct type has no size");
       start+=2;
       size=type[start-1];
+      if(size==0)return err("number of structs elements cannot be zero");
       for(unsigned e=0;e<size;++e){
         TypeRegister::TypeID id=this->_typeAdd(type,start);
         if(id==0)return err("new structs element number: "+getStr(e)+" has invalid format");
@@ -408,7 +428,7 @@ void TypeRegister::_bindTypeIdName(TypeID id,const char*name){
   this->_id2Synonyms[id].insert(name);
 }
 
-TypeRegister::TypeID TypeRegister::addType(const char*name,std::vector<unsigned>&type,std::function<OBJConstructor> constructor,std::function<OBJDestructor> destructor){
+TypeRegister::TypeID TypeRegister::addType(const char*name,std::vector<unsigned>const&type,std::function<OBJConstructor> constructor,std::function<OBJDestructor> destructor){
   //std::cerr<<"TypeRegister::addType(\""<<name<<"\","<<vec2str(type)<<");"<<std::endl;
   unsigned start=0;
   TypeRegister::TypeID id;
@@ -450,13 +470,13 @@ void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor> constr
 void TypeRegister::addDestructor(TypeID id,std::function<OBJDestructor> destructor){
   //std::cerr<<"pridavam destructor k: "<<this->getTypeIdName(id)<<"ktery existuje? "<<(!destructor?"ne":"ano")<<std::endl;
   if(!destructor){
-    this->_id2Destructor.erase(id);
+    this->_id2Destructor[id]=nullptr;//.erase(id);
     return;
   }
   this->_id2Destructor[id]=destructor;
 }
 
-unsigned TypeRegister::computeTypeIdSize(TypeID id){
+unsigned TypeRegister::computeTypeIdSize(TypeID id)const{
   TypeRegister::Type type=this->getTypeIdType(id);
   unsigned size=0;
   switch(type){
@@ -493,7 +513,7 @@ unsigned TypeRegister::computeTypeIdSize(TypeID id){
   }
 }
 
-void   TypeRegister::_callConstructors(char*ptr,TypeID id){
+void   TypeRegister::_callConstructors(char*ptr,TypeID id)const{
   //std::cerr<<"TypeRegister::_callConstructors: "<<id<<" "<<this->getTypeIdType(id)<<std::endl;
   TypeRegister::Type type=this->getTypeIdType(id);
   switch(type){
@@ -534,84 +554,146 @@ void   TypeRegister::_callConstructors(char*ptr,TypeID id){
   }
 }
 
-void* TypeRegister::alloc(TypeID id){
+void* TypeRegister::alloc(TypeID id)const{
   unsigned size=this->computeTypeIdSize(id);
   void*ptr=(void*)(new char[size]);
   this->_callConstructors((char*)ptr,id);
   return ptr;
 }
 
-Accessor TypeRegister::allocAccessor(TypeID id){
+Accessor TypeRegister::allocAccessor(TypeID id)const{
   return Accessor(this->shared_from_this(),this->alloc(id),id);
 }
 
-Accessor TypeRegister::allocAccessor(const char*name){
+Accessor TypeRegister::allocAccessor(const char*name)const{
   return this->allocAccessor(this->getTypeId(name));
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedAccessor(TypeID id){
+std::shared_ptr<Accessor>TypeRegister::sharedAccessor(TypeID id)const{
   return std::make_shared<Accessor>(this->shared_from_this(),this->alloc(id),id);
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedAccessor(const char*name){
+std::shared_ptr<Accessor>TypeRegister::sharedAccessor(const char*name)const{
   return this->sharedAccessor(this->getTypeId(name));
 }
 
-void TypeRegister::destroyUsingCustomDestroyer(unsigned char*ptr,TypeID id){
+Accessor TypeRegister::emptyAccessor(TypeID id)const{
+  return Accessor(this->shared_from_this(),id);
+}
+
+Accessor TypeRegister::emptyAccessor(const char*name)const{
+  return this->emptyAccessor(this->getTypeId(name));
+}
+
+std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(TypeID id,std::function<OBJDestructor>destructor)const{
+  if(destructor)
+    return std::shared_ptr<Accessor>(new Accessor(this->shared_from_this(),id),[destructor](Accessor*ac){destructor((unsigned char*)ac->getData());delete ac;});
+  //return std::shared_ptr<Accessor>(new Accessor(this->shared_from_this(),id),[](Accessor*ac){ac->free();delete ac;});
+  return std::make_shared<Accessor>(this->shared_from_this(),id);
+}
+
+std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(const char*name,std::function<OBJDestructor>destructor)const{
+  return this->sharedEmptyAccessor(this->getTypeId(name),destructor);
+}
+
+
+void TypeRegister::destroyUsingCustomDestroyer(unsigned char*ptr,TypeID id)const{
   //std::cerr<<"volam destroyUsingCustomDestroyer"<<std::endl;
-  std::map<TypeID,std::function<OBJDestructor>>::iterator ii=this->_id2Destructor.find(id);
+  std::map<TypeID,std::function<OBJDestructor>>::const_iterator ii=this->_id2Destructor.find(id);
   if(ii!=this->_id2Destructor.end()){
     //std::cerr<<"mam customDeleter"<<std::endl;
     ii->second(ptr);
   }
 }
 
-void TypeRegister::constructUsingCustomConstructor(signed char*ptr,TypeID id){
-  std::map<TypeID,std::function<OBJConstructor>>::iterator ii=this->_id2Constructor.find(id);
+void TypeRegister::constructUsingCustomConstructor(signed char*ptr,TypeID id)const{
+  std::map<TypeID,std::function<OBJConstructor>>::const_iterator ii=this->_id2Constructor.find(id);
   if(ii!=this->_id2Constructor.end()){
     ii->second(ptr);
   }
 }
 
+unsigned TypeRegister::getNofDescriptionUints()const{
+  return this->_types.size();
+}
 
-Accessor::Accessor(){}
+unsigned TypeRegister::getDescription(unsigned i)const{
+  return this->_types[i];
+}
+
 
 Accessor::Accessor(Accessor const& ac){
   this->_manager = ac._manager;
   this->_data    = ac._data   ;
   this->_id      = ac._id     ;
+  this->_offset  = ac._offset ;
 }
 
-Accessor::Accessor(std::shared_ptr<TypeRegister>const&manager,const void*data,TypeRegister::TypeID id){
+Accessor::Accessor(
+    std::shared_ptr<const TypeRegister>const&manager,
+    const void*                              data   ,
+    TypeRegister::TypeID                     id     ,
+    unsigned                                 offset ){
   this->_manager =        manager;
-  this->_data    = (void*)data   ;
   this->_id      =        id     ;
+  this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){Accessor::_callDestructors(ptr,id,manager);delete[]ptr;});
+  this->_offset  =        offset ;
 }
 
+Accessor::Accessor(
+    std::shared_ptr<const TypeRegister>const&manager,
+    std::shared_ptr<char>const&              data   ,
+    TypeRegister::TypeID                     id     ,
+    unsigned                                 offset ){
+  this->_manager = manager;
+  this->_data    = data   ;
+  this->_id      = id     ;
+  this->_offset  = offset ;
+}
 
-std::shared_ptr<TypeRegister>&Accessor::getManager(){return this->_manager;}
-void*               Accessor::getData   (){return this->_data   ;}
-TypeRegister::TypeID Accessor::getId     (){return this->_id     ;}
+Accessor::Accessor(
+    std::shared_ptr<const TypeRegister>const&manager,
+    TypeRegister::TypeID               id           ){
+  this->_manager = manager;
+  this->_data    = nullptr;
+  this->_id      = id     ;
+  this->_offset  = 0      ;
+}
 
-Accessor Accessor::operator[](unsigned elem){
+Accessor::~Accessor(){
+}
+
+std::shared_ptr<const TypeRegister>Accessor::getManager()const{
+  return this->_manager;
+}
+
+void*Accessor::getData()const{
+  return (char*)&(*this->_data)+this->_offset;
+}
+
+TypeRegister::TypeID Accessor::getId()const{
+  return this->_id;
+}
+
+Accessor Accessor::operator[](unsigned elem)const{
   TypeRegister::TypeID innerType = 0;
   unsigned            offset    = 0;
   switch(this->getManager()->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
       innerType = this->getManager()->getArrayInnerTypeId(this->getId());
       offset    = this->getManager()->computeTypeIdSize(innerType)*elem;
-      return Accessor(this->getManager(),((char*)this->getData())+offset,innerType);
+      return Accessor(this->getManager(),this->_data,innerType,offset);
     case TypeRegister::STRUCT:
       innerType = this->getManager()->getStructElementTypeId(this->getId(),elem);
       for(unsigned i=0;i<elem;++i)
         offset += this->getManager()->computeTypeIdSize(this->getManager()->getStructElementTypeId(this->getId(),i));
-      return Accessor(this->getManager(),((char*)this->getData())+offset,innerType);
+      return Accessor(this->getManager(),this->_data,innerType,offset);
     default:
-      return Accessor(this->getManager(),this->getData(),this->getId());
+      return Accessor(this->getManager(),this->_data,this->getId());
   }
 }
 
-unsigned Accessor::getNofElements(){
+unsigned Accessor::getNofElements()const{
   switch(this->_id){
     case TypeRegister::ARRAY :
       return this->getManager()->getArraySize(this->getId());
@@ -622,9 +704,8 @@ unsigned Accessor::getNofElements(){
   }
 }
 
-void Accessor::_callDesctuctors(char*ptr,TypeRegister::TypeID id){
-  //std::cerr<<"volam _callDesctuctors "<<id<<" "<<this->_manager->getTypeIdName(id)<<std::endl;
-  TypeRegister::Type type=this->_manager->getTypeIdType(id);
+void Accessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shared_ptr<const TypeRegister>const&manager){
+  TypeRegister::Type type=manager->getTypeIdType(id);
   switch(type){
     case TypeRegister::VOID  :
     case TypeRegister::BOOL  :
@@ -643,38 +724,31 @@ void Accessor::_callDesctuctors(char*ptr,TypeRegister::TypeID id){
                               ((std::string*)ptr)->~basic_string();
                               break;
     case TypeRegister::ARRAY:
-                              for(unsigned i=0;i<this->_manager->getArraySize(id);++i)
-                                this->_callDesctuctors(ptr+this->_manager->computeTypeIdSize(this->_manager->getArrayInnerTypeId(id))*i,this->_manager->getArrayInnerTypeId(id));
+                              for(unsigned i=0;i<manager->getArraySize(id);++i)
+                                Accessor::_callDestructors(ptr+manager->computeTypeIdSize(manager->getArrayInnerTypeId(id))*i,manager->getArrayInnerTypeId(id),manager);
                               break;
     case TypeRegister::STRUCT:
-                              for(unsigned e=0;e<this->_manager->getNofStructElements(id);++e){
-                                this->_callDesctuctors(ptr,this->_manager->getStructElementTypeId(id,e));
-                                ptr+=this->_manager->computeTypeIdSize(this->_manager->getStructElementTypeId(id,e));
+                              for(unsigned e=0;e<manager->getNofStructElements(id);++e){
+                                Accessor::_callDestructors(ptr,manager->getStructElementTypeId(id,e),manager);
+                                ptr+=manager->computeTypeIdSize(manager->getStructElementTypeId(id,e));
                               }
                               break;
     case TypeRegister::FCE:
                               //TODO CO S FUNKCI
                               break;
     case TypeRegister::OBJ:
-                              this->_manager->destroyUsingCustomDestroyer((unsigned char*)ptr,id);
+                              manager->destroyUsingCustomDestroyer((unsigned char*)ptr,id);
                               break;
     default:
                               break;
   }
 }
 
-void Accessor::free(){
-  //std::cout<<"volam free"<<std::endl;
-  this->_callDesctuctors((char*)this->_data,this->_id);
-  delete[](char*)this->_data;
-  this->_data = NULL;
-  this->_id   = 0;
+const void*Accessor::getPointer()const{
+  return (void*)this->getData();
 }
 
-const void*Accessor::getPointer(){return (void*)this->getData();}
-
-
-std::string Accessor::data2Str(){
+std::string Accessor::data2Str()const{
   TypeRegister::Type type=this->_manager->getTypeIdType(this->_id);
   std::stringstream ss;
   bool first;
@@ -694,7 +768,7 @@ std::string Accessor::data2Str(){
       ss<<(int)(*this);
       break;
     case TypeRegister::I64   :
-      ss<<(int long long)(*this);
+      ss<<(long long int)(*this);
       break;
     case TypeRegister::U8    :
       ss<<(unsigned char)(*this);

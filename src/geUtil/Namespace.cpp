@@ -59,6 +59,7 @@ void Namespace::insert(std::string name,std::shared_ptr<ge::core::Accessor>const
     std::cerr<<"ERROR: can't insert variable "+name+" into "+this->_name+" - incorrect variable name, there is no namespace name before \".\""<<std::endl;
     return;
   }
+  if(this->contain(name))this->erase(name);
   this->_name2Variable[name]=variable;
   if(pos==std::string::npos)return;
   std::string rest=name.substr(pos+1);
@@ -92,7 +93,12 @@ void Namespace::erase(std::string name){
     this->_name2Namespace.erase(namespaceName);
 }
 
-std::shared_ptr<ge::core::Accessor>&Namespace::getVariable (std::string name){
+std::shared_ptr<ge::core::Accessor>Namespace::getVariable (std::string name){
+  auto it=this->_name2Variable.find(name);
+  if(it==this->_name2Variable.end()){
+    std::cerr<<"Namespace::getVariable Error: there is no variable with name: "<<name<<std::endl;
+    return nullptr;
+  }
   return this->_name2Variable[name];
 }
 

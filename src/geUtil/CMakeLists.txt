@@ -35,6 +35,11 @@ set(GL_INCLUDES
   ${HEADER_PATH}/NamespaceWithUsers.h
   ${HEADER_PATH}/User.h
   ${HEADER_PATH}/copyArgumentManager2Namespace.h
+  ${HEADER_PATH}/LibraryLoader.h
+  ${HEADER_PATH}/LibraryObjectLoader.h
+  ${HEADER_PATH}/ClassMetaData.h
+  ${HEADER_PATH}/RuntimeClassMetaData.h
+  ${HEADER_PATH}/RuntimeClassInterface.h
   )
 
 set(GL_SOURCES
@@ -53,6 +58,10 @@ set(GL_SOURCES
   Namespace.cpp
   NamespaceWithUsers.cpp
   copyArgumentManager2Namespace.cpp
+  LibraryLoader.cpp
+  LibraryObjectLoader.cpp
+  RuntimeClassMetaData.cpp
+  RuntimeClassInterface.cpp
   )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)

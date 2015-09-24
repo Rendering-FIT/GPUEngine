@@ -108,7 +108,9 @@ void ge::util::sim::copyArgumentManager2Namespace(ge::util::sim::Namespace*ns,ge
   for(auto x:*argm){
     std::vector<unsigned>typeDescriptor;
     ArgData2TypeDescriptor(typeDescriptor,x.second);
-    std::shared_ptr<ge::core::Accessor>sac=std::shared_ptr<ge::core::Accessor>(new ge::core::Accessor(typeRegister->allocAccessor(typeRegister->addType(/*ss.str().c_str()*/"",typeDescriptor))),[](ge::core::Accessor*ac){ac->free();delete ac;});
+    //std::shared_ptr<ge::core::Accessor>sac=std::shared_ptr<ge::core::Accessor>(new ge::core::Accessor(typeRegister->allocAccessor(typeRegister->addType(/*ss.str().c_str()*/"",typeDescriptor))),[](ge::core::Accessor*ac){ac->free();delete ac;});
+//    std::shared_ptr<ge::core::Accessor>sac=std::make_shared<ge::core::Accessor>(typeRegister->allocAccessor(typeRegister->addType("",typeDescriptor)));
+    std::shared_ptr<ge::core::Accessor>sac=typeRegister->sharedAccessor(typeRegister->addType("",typeDescriptor));
     ArgData2Accessor(*sac,x.second);
     ns->insert(x.first,sac);
   }

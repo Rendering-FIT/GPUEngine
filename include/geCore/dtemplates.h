@@ -30,23 +30,27 @@ friend std::ostream& operator<<(std::ostream& os,const name&val){\
 namespace ge{
   namespace core{
     template<typename T>
-      void argsToVector(std::vector<T>&vec,T v){
+      void argsToVector(std::vector<T>&){
+      }
+
+    template<typename T>
+      void argsToVector(std::vector<T>&vec,T const&v){
         vec.push_back(v);
       }
 
     template<typename T,typename... Args>
-      void argsToVector(std::vector<T>&vec,T v,Args... args){
+      void argsToVector(std::vector<T>&vec,T const&v,Args... args){
         argsToVector(vec,v);
         argsToVector(vec,args...);
       }
 
 
     template<unsigned SIZE,typename TYPE>
-      void argsToArray(TYPE data[SIZE],TYPE v){
+      void argsToArray(TYPE data[SIZE],TYPE const&v){
         data[SIZE-1]=v;
       }
     template<unsigned SIZE,typename TYPE,typename... Args>
-      inline void argsToArray(TYPE data[SIZE],TYPE v, Args... args){
+      inline void argsToArray(TYPE data[SIZE],TYPE const&v, Args... args){
         data[SIZE-1-sizeof...(args)]=v;
         argsToArray<SIZE,TYPE>(data,args...);
       }
@@ -65,7 +69,7 @@ namespace ge{
 
 
     template<typename T>
-      void filterArgsToVector(std::vector<T>&data,T t){
+      void filterArgsToVector(std::vector<T>&data,T const& t){
         data.push_back(t);
       }
 
@@ -76,7 +80,7 @@ namespace ge{
       void filterArgsToVector(std::vector<T>&data,T2,Args... args);
 
     template<typename T,typename... Args>
-      void filterArgsToVector(std::vector<T>&data,T t,Args... args){
+      void filterArgsToVector(std::vector<T>&data,T const& t,Args... args){
         filterArgsToVector(data,t);
         filterArgsToVector(data,args...);
       }

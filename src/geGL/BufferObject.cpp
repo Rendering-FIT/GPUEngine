@@ -156,7 +156,7 @@ BufferObject::~BufferObject(){
   glDeleteBuffers(1,&this->_id);
 }
 
-void BufferObject::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags){
+void BufferObject::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const{
 #ifndef USE_DSA
 #ifdef  SAVE_PREVIOUS_BINDING
   GLuint oldId;
@@ -199,7 +199,7 @@ void BufferObject::alloc(
  * @param target target
  */
 void BufferObject::bind(
-    GLenum target){
+    GLenum target)const{
   //we just bind buffer object to another binding point
   //original binding point stays the same
   glBindBuffer(
@@ -218,7 +218,7 @@ void BufferObject::bindRange(
     GLenum     target,
     GLuint     index,
     GLintptr   offset,
-    GLsizeiptr size){
+    GLsizeiptr size)const{
   //we just bind buffer object to another binding point
   //original binding point stays the same
   glBindBufferRange(
@@ -235,7 +235,7 @@ void BufferObject::bindRange(
  * @param target target
  * @param index index
  */
-void BufferObject::bindBase(GLenum target,GLuint index){
+void BufferObject::bindBase(GLenum target,GLuint index)const{
   glBindBufferBase(target,index,this->_id);
 }
 
@@ -244,7 +244,7 @@ void BufferObject::bindBase(GLenum target,GLuint index){
  *
  * @param target target
  */
-void BufferObject::unbind(GLenum target){
+void BufferObject::unbind(GLenum target)const{
   glBindBuffer(target,0);
 }
 
@@ -254,7 +254,7 @@ void BufferObject::unbind(GLenum target){
  * @param target target
  * @param index  index
  */
-void BufferObject::unbindRange(GLenum target,GLuint index){
+void BufferObject::unbindRange(GLenum target,GLuint index)const{
   glBindBufferBase(target,index,0);
 }
 
@@ -264,7 +264,7 @@ void BufferObject::unbindRange(GLenum target,GLuint index){
  * @param target target
  * @param index  index
  */
-void BufferObject::unbindBase(GLenum target,GLuint index){
+void BufferObject::unbindBase(GLenum target,GLuint index)const{
   glBindBufferBase(target,index,0);
 }
 
@@ -311,7 +311,7 @@ void BufferObject::realloc(GLsizeiptr newSize,ReallocFlags flags){
  * @param buffer another buffer
  */
 void BufferObject::copy(
-    BufferObject*buffer){
+    BufferObject*buffer)const{
   //compute size
   GLsizeiptr maxSize=(this->getSize()>buffer->getSize())?buffer->getSize():this->getSize();
 #ifndef USE_DSA
@@ -356,7 +356,7 @@ void BufferObject::copy(
  * @param offset offset into buffer in bytes
  * @param size   length of data in bytes
  */
-void BufferObject::flushMapped(GLsizeiptr size,GLintptr offset){
+void BufferObject::flushMapped(GLsizeiptr size,GLintptr offset)const{
   if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
@@ -384,7 +384,7 @@ void BufferObject::flushMapped(GLsizeiptr size,GLintptr offset){
  * @param offset offset of region in bytes
  * @param size   length of region in bytes
  */
-void BufferObject::invalidate(GLsizeiptr size,GLintptr offset){
+void BufferObject::invalidate(GLsizeiptr size,GLintptr offset)const{
   glInvalidateBufferSubData(this->_id,offset,size);
 }
 
@@ -400,7 +400,7 @@ void BufferObject::clear(
     GLenum        internalFormat,
     GLenum        format,
     GLenum        type,
-    const GLvoid *data){
+    const GLvoid *data)const{
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
@@ -435,7 +435,7 @@ void BufferObject::clear(
     GLsizeiptr    size,
     GLenum        format,
     GLenum        type,
-    const GLvoid *data){
+    const GLvoid *data)const{
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
@@ -455,7 +455,7 @@ void BufferObject::clear(
 #endif//USE_DSA
 }
 GLvoid*BufferObject::map(
-    GLbitfield access){
+    GLbitfield access)const{
   GLvoid*ptr;
   if(access==GL_READ_ONLY )access=GL_MAP_READ_BIT ;
   if(access==GL_WRITE_ONLY)access=GL_MAP_WRITE_BIT;
@@ -483,7 +483,7 @@ GLvoid*BufferObject::map(
 GLvoid*BufferObject::map(
     GLintptr   offset,
     GLsizeiptr size,
-    GLbitfield access){
+    GLbitfield access)const{
   GLvoid*ptr;
 #ifndef USE_DSA
 
@@ -505,7 +505,7 @@ GLvoid*BufferObject::map(
   return ptr;
 }
 
-void BufferObject::unmap(){
+void BufferObject::unmap()const{
 #ifndef USE_DSA
 
 #ifdef  SAVE_PREVIOUS_BINDING
@@ -528,7 +528,7 @@ void BufferObject::unmap(){
 void BufferObject::setData(
     const GLvoid* data  ,
     GLsizeiptr    size  ,
-    GLintptr      offset){
+    GLintptr      offset)const{
   if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
@@ -553,7 +553,7 @@ void BufferObject::setData(
 void BufferObject::getData(
     GLvoid     *data,
     GLsizeiptr  size,
-    GLintptr    offset){
+    GLintptr    offset)const{
   if(size==0)
     size=this->getSize();
 #ifndef USE_DSA
@@ -575,7 +575,7 @@ void BufferObject::getData(
 #endif//USE_DSA
 }
 
-GLint BufferObject::_getBufferParameter(GLenum pname){
+GLint BufferObject::_getBufferParameter(GLenum pname)const{
   GLint param;
 #ifndef USE_DSA
 
@@ -597,7 +597,7 @@ GLint BufferObject::_getBufferParameter(GLenum pname){
   return param;
 }
 
-GLvoid*BufferObject::_getBufferPointer(GLenum pname){
+GLvoid*BufferObject::_getBufferPointer(GLenum pname)const{
   GLvoid *param;
 #ifndef USE_DSA
 
@@ -619,32 +619,39 @@ GLvoid*BufferObject::_getBufferPointer(GLenum pname){
   return param;
 }
 
-GLsizeiptr BufferObject::getSize(){
+GLsizeiptr BufferObject::getSize()const{
   return this->_getBufferParameter(GL_BUFFER_SIZE);
 }
-GLenum BufferObject::getUsage(){
+
+GLenum BufferObject::getUsage()const{
   return this->_getBufferParameter(GL_BUFFER_USAGE);
 }
-GLbitfield BufferObject::getAccess(){
+
+GLbitfield BufferObject::getAccess()const{
   return this->_getBufferParameter(GL_BUFFER_ACCESS);
 }
-GLbitfield BufferObject::getAccessFlags(){
+
+GLbitfield BufferObject::getAccessFlags()const{
   return this->_getBufferParameter(GL_BUFFER_ACCESS_FLAGS);
 }
 
-GLboolean BufferObject::isMapped(){
+GLboolean BufferObject::isMapped()const{
   return this->_getBufferParameter(GL_BUFFER_MAPPED);
 }
-GLintptr BufferObject::getMapOffset(){
+
+GLintptr BufferObject::getMapOffset()const{
   return this->_getBufferParameter(GL_BUFFER_MAP_OFFSET);
 }
-GLsizeiptr BufferObject::getMapSize(){
+
+GLsizeiptr BufferObject::getMapSize()const{
   return this->_getBufferParameter(GL_BUFFER_MAP_LENGTH);
 }
-GLboolean BufferObject::isImmutable(){
+
+GLboolean BufferObject::isImmutable()const{
   return this->_getBufferParameter(GL_BUFFER_IMMUTABLE_STORAGE);
 }
-GLvoid*BufferObject::getMapPointer(){
+
+GLvoid*BufferObject::getMapPointer()const{
   return this->_getBufferPointer(GL_BUFFER_MAP_POINTER);
 }
 

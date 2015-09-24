@@ -1,12 +1,9 @@
-#ifndef _WINDOWOBJECT_H_
-#define _WINDOWOBJECT_H_
+#pragma once
 
 #include<iostream>
 #include<map>
 
 #include<geUtil/Export.h>
-
-#define USE_SDL2
 
 #define WINDOWOBJECT_WINDOWSIZE      NULL
 #define WINDOWOBJECT_WIDTH           100
@@ -29,11 +26,7 @@
 #define WINDOWOBJECT_PROFILETEXT     "core"
 #define WINDOWOBJECT_CONTEXTFLAGTEXT "debug"
 
-#ifdef USE_SDL2
-	#include<SDL2/SDL.h>
-#else
-	#include<SDL/SDL.h>
-#endif//USE_SDL2
+#include<SDL2/SDL.h>
 
 #include<geUtil/ArgumentObject.h>
 
@@ -77,16 +70,11 @@ namespace ge{
         Uint32   _lastIdleTime;//last idle time
         Uint32   _currentMouseTime;//current mouse time
         Uint32   _currentIdleTime;//current idle time
-#ifdef USE_SDL2
         std::map<SDL_Keycode,int>_mapKeyDown;
         std::map<SDL_Keycode,int>_mapKeyOffOn;
         std::map<SDL_Keycode,int>_mapKeyHit;
         SDL_Window    *_mainWindow;
         SDL_GLContext  _mainContext;
-#else
-        std::map<SDLKey,int>_mapKeyDown;
-        std::map<SDLKey,int>_mapKeyOffOn;
-#endif//USE_SDL2
 
         void(*_idle )(); //idle call back function
         void(*_mouse)();//mouse call back function
@@ -114,8 +102,8 @@ namespace ge{
             );
 
         ~WindowObject();
-        SDL_GLContext  getContext();
-        SDL_Window    *getWindow ();
+        SDL_GLContext  getContext()const;
+        SDL_Window    *getWindow ()const;
         void messageBox(
             std::string message = WINDOWOBJECT_MSG_BOX_MSG,
             std::string title   = WINDOWOBJECT_MSG_BOX_TITLE,
@@ -123,30 +111,27 @@ namespace ge{
         void changeTitle(const char*title);
         void mainLoop    ();
         void stopMainLoop();
-        void swap        ();
+        void swap        ()const;
         void setIdle (void(*idle )());
         void setMouse(void(*mouse)());
-        float     getDeltaIdleTime ();
-        float     getDeltaMouseTime();
-        int      *getMousePosition     ();
-        int      *getDeltaMousePosition();
+        float     getDeltaIdleTime ()const;
+        float     getDeltaMouseTime()const;
+        int const* getMousePosition     ()const;
+        int const* getDeltaMousePosition()const;
         void      setMouseWarp(bool wrapMouse);
-        unsigned *getWindowSize();
+        unsigned const* getWindowSize()const;
 
         int wasKeyHit(int  key);
         int isKeyDown(int  key);
         int isKeyOn  (int  key);
-        int isKeyDown(char key);
-        int isKeyOn  (char key);
-        int isLeftDown  ();
-        int isLeftOn    ();
-        int isRightDown ();
-        int isRightOn   ();
-        int isMiddleDown();
-        int isMiddleOn  ();
+        int isLeftDown  ()const;
+        int isLeftOn    ()const;
+        int isRightDown ()const;
+        int isRightOn   ()const;
+        int isMiddleDown()const;
+        int isMiddleOn  ()const;
         void setKeyOn(int k);
     };
   }//util
 }//ge
 
-#endif//_WINDOWOBJECT_H_

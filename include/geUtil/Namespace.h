@@ -10,8 +10,8 @@ namespace ge{
     namespace sim{
       class Namespace{
         protected:
-          std::string _name  ;
-          Namespace*  _parent;
+          std::string _name   = ""     ;
+          Namespace*  _parent = nullptr;
           std::map<std::string,Namespace*>_name2Namespace   ;
           std::map<std::string,std::shared_ptr<ge::core::Accessor>> _name2Variable;
           std::string _toUpper(std::string str);
@@ -25,7 +25,7 @@ namespace ge{
           void erase(std::string name);
           std::string toStr(unsigned indentation);
           Namespace*getNamespace(std::string name);
-          std::shared_ptr<ge::core::Accessor>&getVariable(std::string name);
+          std::shared_ptr<ge::core::Accessor>getVariable(std::string name);
           bool contain(std::string name);
           template<typename TYPE>
             TYPE&get(std::string name){
