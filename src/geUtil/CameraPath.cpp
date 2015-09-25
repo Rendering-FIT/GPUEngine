@@ -71,22 +71,18 @@ namespace ge{
         "out vec4 fColor;\n"
         "void main(){fColor=Color;}";
 
-      ge::gl::ShaderObject*LV=NULL;
-      ge::gl::ShaderObject*LG=NULL;
-      ge::gl::ShaderObject*LF=NULL;
+      std::shared_ptr<ge::gl::ShaderObject>LV=nullptr;
+      std::shared_ptr<ge::gl::ShaderObject>LG=nullptr;
+      std::shared_ptr<ge::gl::ShaderObject>LF=nullptr;
 
       try{
-        LV=new ge::gl::ShaderObject(GL_VERTEX_SHADER  ,LineVertex);
-        LG=new ge::gl::ShaderObject(GL_GEOMETRY_SHADER,LineGeometry);
-        LF=new ge::gl::ShaderObject(GL_FRAGMENT_SHADER,LineFragment);
-        this->_lineProgram=new ge::gl::ProgramObject(3,LV,LG,LF);
+        LV=std::make_shared<ge::gl::ShaderObject>(GL_VERTEX_SHADER  ,LineVertex  );
+        LG=std::make_shared<ge::gl::ShaderObject>(GL_GEOMETRY_SHADER,LineGeometry);
+        LF=std::make_shared<ge::gl::ShaderObject>(GL_FRAGMENT_SHADER,LineFragment);
+        this->_lineProgram=new ge::gl::ProgramObject(LV,LG,LF);
       }catch(std::string&e){
         std::cerr<<e<<std::endl;
       }
-
-      if(LV)delete LV;
-      if(LG)delete LG;
-      if(LF)delete LF;
 
       std::string PointVertex=
         "#version 430\n"
@@ -117,20 +113,17 @@ namespace ge{
         "out vec4 fColor;\n"
         "void main(){fColor=Color;}";
 
-      ge::gl::ShaderObject*PV=NULL;
-      ge::gl::ShaderObject*PG=NULL;
-      ge::gl::ShaderObject*PF=NULL;
+      std::shared_ptr<ge::gl::ShaderObject>PV=NULL;
+      std::shared_ptr<ge::gl::ShaderObject>PG=NULL;
+      std::shared_ptr<ge::gl::ShaderObject>PF=NULL;
       try{
-        PV=new ge::gl::ShaderObject(GL_VERTEX_SHADER,PointVertex);
-        PG=new ge::gl::ShaderObject(GL_GEOMETRY_SHADER,PointGeometry);
-        PF=new ge::gl::ShaderObject(GL_FRAGMENT_SHADER,PointFragment);
-        this->_pointProgram=new ge::gl::ProgramObject(3,PV,PG,PF);
+        PV=std::make_shared<ge::gl::ShaderObject>(GL_VERTEX_SHADER  ,PointVertex  );
+        PG=std::make_shared<ge::gl::ShaderObject>(GL_GEOMETRY_SHADER,PointGeometry);
+        PF=std::make_shared<ge::gl::ShaderObject>(GL_FRAGMENT_SHADER,PointFragment);
+        this->_pointProgram=new ge::gl::ProgramObject(PV,PG,PF);
       }catch(std::string&e){
         std::cerr<<e<<std::endl;
       }
-      if(PV)delete PV;
-      if(PG)delete PG;
-      if(PF)delete PF;
 #endif//ENABLE_DRAWING
     }
 

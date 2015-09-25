@@ -526,26 +526,18 @@ void ProgramObject::compileShaders(
     std::string*Defs,
     unsigned Version,
     std::string Profile){
-  this->createShaderProgram_Prologue();//create shader program
-  ShaderObject**S=new ShaderObject*[NumShaders];//alocate shaders array
-  for(unsigned s=0;s<NumShaders;++s)S[s]=NULL;//initilize
 
-  try{//try to create shaders
-    for(unsigned s=0;s<NumShaders;++s)//loop over shaders
-      S[s]=new ShaderObject(Shaders[s],Defs[s],Version,Profile);//create shader
-  }catch(std::string&e){//catch errors
-    for(unsigned s=0;s<NumShaders;++s)//loop over shaders
-      if(S[s])delete S[s];//free allocate shaders
-    delete[]S;//free shaders array
+  this->createShaderProgram_Prologue();//create shader program
+  try{
+    for(unsigned s=0;s<NumShaders;++s)
+      this->_shaders.push_back(std::make_shared<ShaderObject>(Shaders[s],Defs[s],Version,Profile));
+  }catch(std::string&e){
+    this->_shaders.clear();
     std::cerr<<e<<std::endl;
     return;
-    //throw e;//send error message
   }
-  for(unsigned s=0;s<NumShaders;++s){
-    glAttachShader(this->_id,S[s]->getId());
-    this->_shaders.push_back(S[s]);
-  }
-  delete[]S;//free shaders array
+  for(auto x:this->_shaders)
+    glAttachShader(this->getId(),x->getId());
   this->createShaderProgram_Epilogue();//gets attributes and uniforms
 }
 
@@ -692,388 +684,35 @@ if(shaderSubset(presentShaders,allowedCombinations[i]))
 }
 */
 void ProgramObject::sortAndCompileShaders(
-    unsigned NumStrings,
-    std::string*Strings,
+    std::vector<std::string>strings,
     unsigned Version,
     std::string Profile){
   unsigned NumShaders=0;
-  for(unsigned s=0;s<NumStrings;++s)//loop over strings
-    if(ShaderObject::file2ShaderType(Strings[s])!=0)//it is not definition
+  for(unsigned s=0;s<strings.size();++s)//loop over strings
+    if(ShaderObject::file2ShaderType(strings[s])!=0)//it is not definition
       NumShaders++;//increment shader count
   std::string*ShaderSources=new std::string[NumShaders];//allocate shaders
   std::string*Defs=new std::string[NumShaders];//allocate definitions
   for(unsigned s=0;s<NumShaders;++s)Defs[s]="";//initialize definitions
   int ActShader=-1;
-  for(unsigned s=0;s<NumStrings;++s){//loop over strings
-    if(ShaderObject::file2ShaderType(Strings[s])!=0){//it is shaders
+  for(unsigned s=0;s<strings.size();++s){//loop over strings
+    if(ShaderObject::file2ShaderType(strings[s])!=0){//it is shaders
       ActShader++;//increment shader index
-      ShaderSources[ActShader]=Strings[s];//insert shader
+      ShaderSources[ActShader]=strings[s];//insert shader
     }else{//it is definitions
       if(ActShader<0){//there was no shader
         delete[]ShaderSources;//deallocate shader array
         delete[]Defs;//deallaocate definitions array
-        /*throw*/
         std::cerr<<std::string("bad arguments")<<std::endl;//throw error
         return;
-      }else Defs[ActShader]+=Strings[s];//set definitinos
+      }else Defs[ActShader]+=strings[s];//set definitinos
     }
   }
-  //std::cerr<<"NumShaders: "<<NumShaders<<std::endl;
-  //for(unsigned s=0;s<NumShaders;++s){
-  //  std::cerr<<ShaderSources[s]<<std::endl;
-  //  std::cerr<<Defs[s]<<std::endl;
-  //}
-  //std::cerr<<"Before this->ComputeShaders\n";
   this->compileShaders(NumShaders,ShaderSources,Defs,Version,Profile);//compile
-  //std::cerr<<"CompileShaders\n";
   delete[]ShaderSources;//deallocate shaders
   delete[]Defs;//deallocate definitions
 }
 
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[1];
-  Strings[0]=Shader0;
-  this->sortAndCompileShaders(1,Strings,Version,Profile);
-  delete[]Strings;
-}
-
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[2];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  this->sortAndCompileShaders(2,Strings,Version,Profile);
-  delete[]Strings;
-}
-
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[3];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  this->sortAndCompileShaders(3,Strings,Version,Profile);
-  delete[]Strings;
-}
-
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[4];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  this->sortAndCompileShaders(4,Strings,Version,Profile);
-  delete[]Strings;
-
-}
-
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    std::string Shader4,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[5];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  Strings[4]=Shader4;
-
-  this->sortAndCompileShaders(5,Strings,Version,Profile);
-  delete[]Strings;
-}
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    std::string Shader4,
-    std::string Shader5,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[6];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  Strings[4]=Shader4;
-  Strings[5]=Shader5;
-
-  this->sortAndCompileShaders(6,Strings,Version,Profile);
-  delete[]Strings;
-
-}
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    std::string Shader4,
-    std::string Shader5,
-    std::string Shader6,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[7];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  Strings[4]=Shader4;
-  Strings[5]=Shader5;
-  Strings[6]=Shader6;
-
-  this->sortAndCompileShaders(7,Strings,Version,Profile);
-  delete[]Strings;
-
-}
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    std::string Shader4,
-    std::string Shader5,
-    std::string Shader6,
-    std::string Shader7,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[8];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  Strings[4]=Shader4;
-  Strings[5]=Shader5;
-  Strings[6]=Shader6;
-  Strings[7]=Shader7;
-
-  this->sortAndCompileShaders(8,Strings,Version,Profile);
-  delete[]Strings;
-}
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    std::string Shader4,
-    std::string Shader5,
-    std::string Shader6,
-    std::string Shader7,
-    std::string Shader8,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[9];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  Strings[4]=Shader4;
-  Strings[5]=Shader5;
-  Strings[6]=Shader6;
-  Strings[7]=Shader7;
-  Strings[8]=Shader8;
-
-  this->sortAndCompileShaders(9,Strings,Version,Profile);
-  delete[]Strings;
-}
-ProgramObject::ProgramObject(
-    std::string Shader0,
-    std::string Shader1,
-    std::string Shader2,
-    std::string Shader3,
-    std::string Shader4,
-    std::string Shader5,
-    std::string Shader6,
-    std::string Shader7,
-    std::string Shader8,
-    std::string Shader9,
-    unsigned    Version,
-    std::string Profile){
-  std::string*Strings=new std::string[10];
-  Strings[0]=Shader0;
-  Strings[1]=Shader1;
-  Strings[2]=Shader2;
-  Strings[3]=Shader3;
-  Strings[4]=Shader4;
-  Strings[5]=Shader5;
-  Strings[6]=Shader6;
-  Strings[7]=Shader7;
-  Strings[8]=Shader8;
-  Strings[9]=Shader9;
-
-  this->sortAndCompileShaders(10,Strings,Version,Profile);
-  delete[]Strings;
-}
-ProgramObject::ProgramObject(
-    GLenum Type0,std::string Shader0){
-  this->createShaderProgram_Prologue();
-  ShaderObject*S0=NULL;
-
-  try{
-    S0=new ShaderObject(Type0,Shader0);
-  }catch(std::string&e){
-    if(S0)delete S0;
-    std::cerr<<e<<std::endl;
-    return;
-    //throw e;
-  }
-
-  glAttachShader(this->_id,S0->getId());
-  this->_shaders.push_back(S0);
-  this->createShaderProgram_Epilogue();
-}
-ProgramObject::ProgramObject(
-    GLenum Type0,std::string Shader0,
-    GLenum Type1,std::string Shader1){
-  this->createShaderProgram_Prologue();
-  ShaderObject*S0=NULL;
-  ShaderObject*S1=NULL;
-
-  try{
-    S0=new ShaderObject(Type0,Shader0);
-    S1=new ShaderObject(Type1,Shader1);
-  }catch(std::string&e){
-    if(S0)delete S0;
-    if(S1)delete S1;
-    std::cerr<<e<<std::endl;
-    return;
-    //throw e;
-  }
-
-  glAttachShader(this->_id,S0->getId());
-  glAttachShader(this->_id,S1->getId());
-  this->_shaders.push_back(S0);
-  this->_shaders.push_back(S1);
-  this->createShaderProgram_Epilogue();
-
-}
-ProgramObject::ProgramObject(
-    GLenum Type0,std::string Shader0,
-    GLenum Type1,std::string Shader1,
-    GLenum Type2,std::string Shader2){
-  this->createShaderProgram_Prologue();
-  ShaderObject*S0=NULL;
-  ShaderObject*S1=NULL;
-  ShaderObject*S2=NULL;
-
-  try{
-    S0=new ShaderObject(Type0,Shader0);
-    S1=new ShaderObject(Type1,Shader1);
-    S2=new ShaderObject(Type2,Shader2);
-  }catch(std::string&e){
-    if(S0)delete S0;
-    if(S1)delete S1;
-    if(S2)delete S2;
-    std::cerr<<e<<std::endl;
-    return;
-    //throw e;
-  }
-
-  glAttachShader(this->_id,S0->getId());
-  glAttachShader(this->_id,S1->getId());
-  glAttachShader(this->_id,S2->getId());
-  this->_shaders.push_back(S0);
-  this->_shaders.push_back(S1);
-  this->_shaders.push_back(S2);
-  this->createShaderProgram_Epilogue();
-}
-ProgramObject::ProgramObject(
-    GLenum Type0,std::string Shader0,
-    GLenum Type1,std::string Shader1,
-    GLenum Type2,std::string Shader2,
-    GLenum Type3,std::string Shader3){
-  this->createShaderProgram_Prologue();
-  ShaderObject*S0=NULL;
-  ShaderObject*S1=NULL;
-  ShaderObject*S2=NULL;
-  ShaderObject*S3=NULL;
-
-  try{
-    S0=new ShaderObject(Type0,Shader0);
-    S1=new ShaderObject(Type1,Shader1);
-    S2=new ShaderObject(Type2,Shader2);
-    S3=new ShaderObject(Type3,Shader3);
-  }catch(std::string&e){
-    if(S0)delete S0;
-    if(S1)delete S1;
-    if(S2)delete S2;
-    if(S3)delete S3;
-    std::cerr<<e<<std::endl;
-    return;
-    //throw e;
-  }
-
-  glAttachShader(this->_id,S0->getId());
-  glAttachShader(this->_id,S1->getId());
-  glAttachShader(this->_id,S2->getId());
-  glAttachShader(this->_id,S3->getId());
-  this->_shaders.push_back(S0);
-  this->_shaders.push_back(S1);
-  this->_shaders.push_back(S2);
-  this->_shaders.push_back(S3);
-  this->createShaderProgram_Epilogue();
-}
-ProgramObject::ProgramObject(
-    GLenum Type0,std::string Shader0,
-    GLenum Type1,std::string Shader1,
-    GLenum Type2,std::string Shader2,
-    GLenum Type3,std::string Shader3,
-    GLenum Type4,std::string Shader4){
-  this->createShaderProgram_Prologue();
-  ShaderObject*S0=NULL;
-  ShaderObject*S1=NULL;
-  ShaderObject*S2=NULL;
-  ShaderObject*S3=NULL;
-  ShaderObject*S4=NULL;
-
-  try{
-    S0=new ShaderObject(Type0,Shader0);
-    S1=new ShaderObject(Type1,Shader1);
-    S2=new ShaderObject(Type2,Shader2);
-    S3=new ShaderObject(Type3,Shader3);
-    S4=new ShaderObject(Type4,Shader4);
-  }catch(std::string&e){
-    if(S0)delete S0;
-    if(S1)delete S1;
-    if(S2)delete S2;
-    if(S3)delete S3;
-    if(S4)delete S4;
-    std::cerr<<e<<std::endl;
-    return;
-    //throw e;
-  }
-
-  glAttachShader(this->_id,S0->getId());
-  glAttachShader(this->_id,S1->getId());
-  glAttachShader(this->_id,S2->getId());
-  glAttachShader(this->_id,S3->getId());
-  glAttachShader(this->_id,S4->getId());
-  this->_shaders.push_back(S0);
-  this->_shaders.push_back(S1);
-  this->_shaders.push_back(S2);
-  this->_shaders.push_back(S3);
-  this->_shaders.push_back(S4);
-  this->createShaderProgram_Epilogue();
-}
 void ProgramObject::setVersion(unsigned Version,std::string Profile){
   for(unsigned s=0;s<this->_shaders.size();++s)
     this->_shaders[s]->setVersion(Version,Profile);
@@ -1121,42 +760,8 @@ void ProgramObject::relink(){
   this->createShaderProgram_Epilogue();//get attribs and uniforms,...
 }
 
-
-ProgramObject::ProgramObject(unsigned Num,...){
-  this->createShaderProgram_Prologue();//prologue of creating of shader prg.
-  va_list args;//arguments
-  va_start(args,Num);//start point of arguments
-  for(size_t i=0;i<Num;++i){//loop over arguments
-    ShaderObject*Shader=(ShaderObject*)va_arg(args,ShaderObject*);
-    glAttachShader(//attach shader object to shader program
-        this->_id,//shader program
-        Shader->getId());
-    this->_shaders.push_back(Shader);
-  }
-  va_end(args);//end point of arguments
-  this->createShaderProgram_Epilogue();//epilogue of creating of shader prg.
-}
-
-ProgramObject::ProgramObject(ShaderObject**Shader,unsigned Num){
-  this->createShaderProgram_Prologue();//prologue of creating of shader prg.
-  for(unsigned i=0;i<Num;++i){//loop over shaders
-    glAttachShader(//attach shader object to shader program
-        this->_id,//shader program
-        Shader[i]->getId());
-    this->_shaders.push_back(Shader[i]);
-  }
-  this->createShaderProgram_Epilogue();//epilogue of creating of shader prg.
-}
-
 ProgramObject::~ProgramObject(){
   this->deleteProgram();
-
-  for(unsigned s=0;s<this->_shaders.size();++s)
-    delete this->_shaders[s];
-
-  //this->ShaderList.clear();//clear list of shader object
-  //delete this->AttributeList;
-  //delete this->UniformList;
 }
 
 GLint ProgramObject::operator[](std::string Name){

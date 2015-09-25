@@ -58,9 +58,79 @@ namespace ge{
       private:
         int _floatMatrixType2Index(GLenum type);
         int _doubleMatrixType2Index(GLenum type);
+
+        template<typename...>
+          void _typeStringConstructor(){}
+        template<typename... ARGS>
+          void _typeStringConstructor(GLenum type,std::string shader,ARGS...args){
+            std::shared_ptr<ShaderObject>s;
+            try{
+              s=std::make_shared<ShaderObject>(type,shader);
+            }catch(std::string&e){
+              std::cerr<<e<<std::endl;
+              return;
+            }
+            glAttachShader(this->getId(),s->getId());
+            this->_shaders.push_back(s);
+            this->_typeStringConstructor(args...);
+          }
+
+        template<typename...>
+          void _sharedShaderConstructor(){}
+        template<typename... ARGS>
+          void _sharedShaderConstructor(std::shared_ptr<ShaderObject>const&shader,ARGS...args){
+            glAttachShader(this->getId(),shader->getId());
+            this->_shaders.push_back(shader);
+            this->_sharedShaderConstructor(args...);
+          }
+
+        template<typename...>
+          void _copyStringList2Vector(std::vector<std::string>&){}
+        template<typename TYPE>
+          void _copyStringList2Vector(std::vector<std::string>&,unsigned){}
+        template<typename...ARGS>
+          void _copyStringList2Vector(std::vector<std::string>&vec,std::string shader,ARGS...args){
+            vec.push_back(shader);
+            this->_copyStringList2Vector(vec,args...);
+          }
+
+        template<typename...>
+          void _copyVersionProfile(unsigned&versionOut,std::string&profileOut,unsigned version = 0,std::string profile=""){
+            versionOut = version;
+            profileOut = profile;
+          }
+        template<typename...ARGS>
+          void _copyVersionProfile(unsigned&versionOut,std::string&profileOut,std::string,ARGS...args){
+            this->_copyVersionProfile(versionOut,profileOut,args...);
+          }
+
+        template<typename...>
+          void _stringListConstructor(){}
+        template<typename...ARGS>
+          void _stringListConstructor(std::string shader,ARGS...args){
+            std::vector<std::string>shaderStrings;
+            unsigned version;
+            std::string profile;
+            this->_copyStringList2Vector(shaderStrings,shader,args...);
+            this->_copyVersionProfile(version,profile,args...);
+            this->sortAndCompileShaders(shaderStrings,version,profile);
+          }
+
+        template<typename...ARGS>
+          void _resolveConstructorArgs(GLenum type,std::string shader,ARGS...args){
+            this->_typeStringConstructor(type,shader,args...);
+          }
+        template<typename...ARGS>
+          void _resolveConstructorArgs(std::shared_ptr<ShaderObject>const&shader,ARGS...args){
+            this->_sharedShaderConstructor(shader,args...);
+          }
+        template<typename...ARGS>
+          void _resolveConstructorArgs(std::string shader,ARGS...args){
+            this->_stringListConstructor(shader,args...);
+          }
+
       protected:
-        std::vector<GLuint>                        _shaderList    ;///<list of shader object
-        std::vector<ShaderObject*>                 _shaders       ;///<list of shaders
+        std::vector<std::shared_ptr<ShaderObject>> _shaders       ;///<list of shaders
         std::map<std::string,ShaderObjectParameter>_attributeList ;///<list of attributes
         std::map<std::string,ShaderObjectParameter>_uniformList   ;///<list of uniforms
         std::map<std::string,BufferParams>         _bufferList    ;///<list of buffers
@@ -81,21 +151,20 @@ namespace ge{
             unsigned     version,
             std::string  profile);
         void sortAndCompileShaders(
-            unsigned     numStrings,
-            std::string *strings,
+            std::vector<std::string>strings,
             unsigned     version,
             std::string  profile);
         /*
-        void _createProgram(
-            std::vector<std::string>& data         ,
-            unsigned                  version = 0  ,
-            std::string               profile = "" );
-        bool        _isShader       (std::string data);///<has to contain void main() in some form
-        bool        _isFile         (std::string data);///<has to exist
-        std::string _composeShaderSource(std::vector<std::string>&data,unsigned version=0,std::string profile="");
-        std::string _getShaderSource(std::string data);///<if its file open it and return its content
-        unsigned    _getShaderSourceTypeMask(std::string data);///if it can be vs gp or fs it returns 0x1|0x8|0x10
-        */
+           void _createProgram(
+           std::vector<std::string>& data         ,
+           unsigned                  version = 0  ,
+           std::string               profile = "" );
+           bool        _isShader       (std::string data);///<has to contain void main() in some form
+           bool        _isFile         (std::string data);///<has to exist
+           std::string _composeShaderSource(std::vector<std::string>&data,unsigned version=0,std::string profile="");
+           std::string _getShaderSource(std::string data);///<if its file open it and return its content
+           unsigned    _getShaderSourceTypeMask(std::string data);///if it can be vs gp or fs it returns 0x1|0x8|0x10
+           */
       public:
         std::string uniformsToStr();
         GLint workGroupSize[3];///< work group size
@@ -103,226 +172,10 @@ namespace ge{
         void resetSeparable  ();
         void setRetrievable  ();
         void resetRetrievable();
-        /**
-         * Constructor
-         * @param shader list of shaders
-         * @param num number of shaders
-         */
-        ProgramObject(ShaderObject**shader,unsigned num);
-        /**
-         * Constructor
-         * @param num number of shaders
-         */
-        ProgramObject(unsigned num,...);
-        /**
-         * @brief Constructor
-         *
-         * @param shader0 shader 0
-         * @param version version of shader
-         * @param profile profile version of shader
-         */
-        ProgramObject(
-            std::string shader0,
-            unsigned    version=0,
-            std::string profile="");
-        /**
-         * @brief Constructor
-         *
-         * @param shader0 shader 0
-         * @param shader1 shader 1
-         * @param version version of shader
-         * @param profile profile version of shader
-         */
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            unsigned    version=0,
-            std::string profile="");
-        /**
-         * @brief Constructor
-         *
-         * @param shader0 shader 0
-         * @param shader1 shader 1
-         * @param shader2 shader 2
-         * @param version version of shader
-         * @param profile profile version of shader
-         */
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            unsigned    version=0,
-            std::string profile="");
-        /**
-         * @brief Constructor
-         *
-         * @param shader0 shader 0
-         * @param shader1 shader 1
-         * @param shader2 shader 2
-         * @param shader3 shader 3
-         * @param version version of shader
-         * @param profile profile version of shader
-         */
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            unsigned    version=0,
-            std::string profile="");
-        /**
-         * @brief Constructor
-         *
-         * @param shader0 shader 0
-         * @param shader1 shader 1
-         * @param shader2 shader 2
-         * @param shader3 shader 3
-         * @param shader4 shader 4
-         * @param version version of shader
-         * @param profile profile version of shader
-         */
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            std::string shader4,
-            unsigned    version=0,
-            std::string profile="");
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            std::string shader4,
-            std::string shader5,
-            unsigned    version=0,
-            std::string profile="");
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            std::string shader4,
-            std::string shader5,
-            std::string shader6,
-            unsigned    version=0,
-            std::string profile="");
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            std::string shader4,
-            std::string shader5,
-            std::string shader6,
-            std::string shader7,
-            unsigned    version=0,
-            std::string profile="");
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            std::string shader4,
-            std::string shader5,
-            std::string shader6,
-            std::string shader7,
-            std::string shader8,
-            unsigned    version=0,
-            std::string profile="");
-        ProgramObject(
-            std::string shader0,
-            std::string shader1,
-            std::string shader2,
-            std::string shader3,
-            std::string shader4,
-            std::string shader5,
-            std::string shader6,
-            std::string shader7,
-            std::string shader8,
-            std::string shader9,
-            unsigned    version=0,
-            std::string profile="");
-        /*
-        template<typename... Args>
-        ProgramObject(Args... args,unsigned version=430,std::string profile=""){
-          std::vector<std::string>sources;
-          ge::core::argsToVector(sources,args...);
-          this->_createProgram(sources,version,profile);
-        }*/
-
-        /**
-         * @brief Constructor
-         *
-         * @param type0 type of shader0
-         * @param shader0 text of shader0
-         */
-        ProgramObject(
-            GLenum type0,std::string shader0);
-        /**
-         * @brief Constructor
-         *
-         * @param type0 type of shader0
-         * @param shader0 text of shader0
-         * @param type1 type of shader1
-         * @param shader1 test of shader1
-         */
-        ProgramObject(
-            GLenum type0,std::string shader0,
-            GLenum type1,std::string shader1);
-        /**
-         * @brief Constructor
-         *
-         * @param type0 type of shader0
-         * @param shader0 text of shader0
-         * @param type1 type of shader1
-         * @param shader1 test of shader1
-         * @param type2 type of shader2
-         * @param shader2 text of shader2
-         */
-        ProgramObject(
-            GLenum type0,std::string shader0,
-            GLenum type1,std::string shader1,
-            GLenum type2,std::string shader2);
-        /**
-         * @brief Constructor
-         *
-         * @param type0 type of shader0
-         * @param shader0 text of shader0
-         * @param type1 type of shader1
-         * @param shader1 test of shader1
-         * @param type2 type of shader2
-         * @param shader2 text of shader2
-         * @param type3 type of shader3
-         * @param shader3 text of shader3
-         */
-        ProgramObject(
-            GLenum type0,std::string shader0,
-            GLenum type1,std::string shader1,
-            GLenum type2,std::string shader2,
-            GLenum type3,std::string shader3);
-        /**
-         * @brief Constructor
-         *
-         * @param type0 type of shader0
-         * @param shader0 text of shader0
-         * @param type1 type of shader1
-         * @param shader1 test of shader1
-         * @param type2 type of shader2
-         * @param shader2 text of shader2
-         * @param type3 type of shader3
-         * @param shader3 text of shader3
-         * @param type4 type of shader4
-         * @param shader4 text of shader4
-         */
-        ProgramObject(
-            GLenum type0,std::string shader0,
-            GLenum type1,std::string shader1,
-            GLenum type2,std::string shader2,
-            GLenum type3,std::string shader3,
-            GLenum type4,std::string shader4);
-
+        template<typename...ARGS>
+          ProgramObject(ARGS...args){
+            this->_resolveConstructorArgs(args...);
+          }
         /**
          * @brief Sets version of every shader in shader program
          *
