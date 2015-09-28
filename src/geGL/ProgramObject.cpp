@@ -4,15 +4,17 @@
 
 using namespace ge::gl;
 
+#if 0
+
 Program::Program(){
-  this->_id = 0;
+  this->_id = glCreateProgram();
 }
 
 Program::~Program(){
   glDeleteProgram(this->_id);
 }
 
-GLboolean Program::isProgram(){
+GLboolean Program::isProgram()const{
   return glIsProgram(this->_id);
 }
 
@@ -26,14 +28,15 @@ void Program::detachShader(std::shared_ptr<Shader>const&shader){
   glDetachShader(this->_id,shader->getId());
 }
 
-void Program::link(){
+void Program::link()const{
   glLinkProgram(this->_id);
 }
 
-void Program::use(){
+void Program::use()const{
   glUseProgram(this->_id);
 }
 
+#endif 
 
 bool OpenGL320=false;
 bool OpenGL400=false;
@@ -435,7 +438,7 @@ void ProgramObject::_getSubroutineUniformList(){
         GLuint Location=glGetSubroutineIndex(this->_id,
             ShaderType[i],BufferName);//obtain index of subroutine
         std::string Name=std::string(BufferName);//convert buffer to string
-        this->_subroutines[i].subroutineList[Name]=Location;
+        this->_subroutines[i].addSubroutine(Name,Location);
       }
       delete[]BufferName;//free buffer
     }
@@ -469,14 +472,10 @@ void ProgramObject::_getSubroutineUniformList(){
         ShaderObjectSubroutineUniform ShaderSubroutineUniform=
           ShaderObjectSubroutineUniform(Location,Size,NumCompatible,Name,ActIndex);
         ActIndex+=Size;
-        this->_subroutines[i].subroutineUniformList.insert(
-            std::pair<std::string,ShaderObjectSubroutineUniform>(Name,ShaderSubroutineUniform));
+        this->_subroutines[i].addUniform(Name,ShaderSubroutineUniform);
       }
       delete[]BufferName;//free buffer
-      this->_subroutines[i].numIndices=ActIndex;
-      this->_subroutines[i].indices=new GLuint[this->_subroutines[i].numIndices];
-      for(GLsizei ind=0;ind<this->_subroutines[i].numIndices;++ind)
-        this->_subroutines[i].indices[ind]=0;
+      this->_subroutines[i].allocInidices(ActIndex);
     }
   }
 }
@@ -516,12 +515,7 @@ void ProgramObject::setSubroutine(
     case GL_FRAGMENT_SHADER       :WH=4;break;
     case GL_COMPUTE_SHADER        :WH=5;break;
   }
-  this->_subroutines[WH].indices[
-    this->_subroutines[WH].subroutineUniformList[Uniform].Index+OffSet
-    ]=this->_subroutines[WH].subroutineList[SubroutineName];
-  glUniformSubroutinesuiv(ShaderType,
-      this->_subroutines[WH].numIndices,
-      this->_subroutines[WH].indices);
+  this->_subroutines[WH].set(ShaderType,Uniform,OffSet,SubroutineName);
 }
 
 
@@ -700,14 +694,14 @@ void ProgramObject::_sortAndCompileShaders(
     std::string profile){
   unsigned NumShaders=0;
   for(unsigned s=0;s<strings.size();++s)//loop over strings
-    if(ShaderObject::file2ShaderType(strings[s])!=0)//it is not definition
+    if(file2ShaderType(strings[s])!=0)//it is not definition
       NumShaders++;//increment shader count
   std::vector<std::string>shaderSources;
   std::vector<std::string>defs;
   for(unsigned s=0;s<NumShaders;++s)defs.push_back("");//initialize definitions
   int ActShader=-1;
   for(unsigned s=0;s<strings.size();++s){//loop over strings
-    if(ShaderObject::file2ShaderType(strings[s])!=0){//it is shaders
+    if(file2ShaderType(strings[s])!=0){//it is shaders
       ActShader++;//increment shader index
       shaderSources.push_back(strings[s]);//insert shader
     }else{//it is definitions
@@ -781,15 +775,6 @@ void ProgramObject::_deleteProgram(){
 /**
  * @brief Relink program
  */
-void ProgramObject::relink(){
-  this->_deleteProgram();//delete previous program
-  this->_createShaderProgram_Prologue();//create new program
-  for(auto x:this->_shaders){
-    x->recompile();
-    glAttachShader(this->getId(),x->getId());
-  }
-  this->_createShaderProgram_Epilogue();//get attribs and uniforms,...
-}
 
 /**
  * @brief Destructor

@@ -21,6 +21,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/TextureObject.h
     ${HEADER_PATH}/SamplerObject.h
     ${HEADER_PATH}/ProgramPipelineObject.h
+    ${HEADER_PATH}/Shader.h
     ${HEADER_PATH}/ShaderObject.h
     ${HEADER_PATH}/ProgramObject.h
     ${HEADER_PATH}/ProgramObjectMacro.h
@@ -30,7 +31,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
     ${HEADER_PATH}/RenderbufferObject.h
     ${HEADER_PATH}/OpenGL.h
-    ${HEADER_PATH}/VertexArrayObjectsManager.h
+    #${HEADER_PATH}/VertexArrayObjectsManager.h
     ${HEADER_PATH}/AsynchronousQueryObject.h
     ${HEADER_PATH}/DebugMessage.h
     ${HEADER_PATH}/OpenGLObject.h
@@ -46,6 +47,7 @@ set(GL_SOURCES
     TextureObject.cpp
     SamplerObject.cpp
     ProgramPipelineObject.cpp
+    Shader.cpp
     ShaderObject.cpp
     ProgramObject.cpp
     ProgramObjectParameter.cpp

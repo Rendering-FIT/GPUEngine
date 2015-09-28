@@ -1,5 +1,4 @@
-#ifndef _SHADEROBJECTSUBROUTINE_H_
-#define _SHADEROBJECTSUBROUTINE_H_
+#pragma once
 
 #include<iostream>
 #include<map>
@@ -7,33 +6,20 @@
 
 namespace ge{
   namespace gl{
-    /**
-     * @brief This class represents shader parameter
-     */
-    class GEGL_EXPORT ShaderObjectSubroutine
-    {
+    class GEGL_EXPORT ShaderObjectSubroutine{
+      protected:
+        std::map<std::string,ShaderObjectSubroutineUniform>_subroutineUniformList;
+        std::map<std::string,GLuint>                       _subroutineList;
+        GLuint* _indices    = nullptr;
+        GLsizei _numIndices = 0      ;
       public:
-        /**
-         * @brief List of subroutines uniforms
-         */
-        std::map<std::string,ShaderObjectSubroutineUniform>subroutineUniformList;
-        /**
-         * @brief List of subroutines
-         */
-        std::map<std::string,GLuint>subroutineList;
-        GLuint*indices = nullptr;///<
-        GLsizei numIndices = 0;///<
-        /**
-         * @brief Destructor
-         */
         ~ShaderObjectSubroutine();
-        /**
-         * @brief Constructor
-         */
         ShaderObjectSubroutine();
+        void addUniform(std::string name,ShaderObjectSubroutineUniform const&uniform);
+        void addSubroutine(std::string name,GLuint location);
+        void allocInidices(unsigned num);
+        void set(GLenum type,std::string uniform,unsigned offset,std::string subroutine);
     };
   }//gl
 }//ge
 
-
-#endif//_CSHADEROBJECTSUBROUTINE_H_

@@ -6,7 +6,11 @@ OpenGLObject::OpenGLObject(GLuint id){
   this->_id = id;
 }
 
-GLuint OpenGLObject::getId(){
+OpenGLObject::~OpenGLObject(){
+  this->_id = 0;
+}
+
+GLuint OpenGLObject::getId()const{
   return this->_id;
 }
 

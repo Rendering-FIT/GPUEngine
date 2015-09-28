@@ -3,15 +3,15 @@
 using namespace ge::gl;
 
 ShaderObjectSubroutineUniform::ShaderObjectSubroutineUniform(
-    GLint Location,
-    GLint Size,
-    GLint NumCompatible,
-    std::string Name,
-    unsigned Index){
-  this->Location=Location;//parameter id
-  this->Size=Size;
-  this->NumCompatible=NumCompatible;
-  this->Name=Name;
-  this->Index=Index;
+    GLint       location     ,
+    GLint       size         ,
+    GLint       numCompatible,
+    std::string name         ,
+    unsigned    index        ){
+  this->location      = location;//parameter id
+  this->size          = size;
+  this->numCompatible = numCompatible;
+  this->name          = name;
+  this->index         = index;
 }
 

@@ -12,11 +12,11 @@ namespace ge{
     class GEGL_EXPORT ShaderObjectSubroutineUniform
     {
       public:
-        GLint Location;///< location of subroutine uniform
-        GLint Size;///< size of subroutine uniform array
-        GLint NumCompatible;///< number of compatible subroutines
-        std::string Name;///<subroutine uniform name
-        unsigned Index;///<index into array indices
+        GLint location;///< location of subroutine uniform
+        GLint size;///< size of subroutine uniform array
+        GLint numCompatible;///< number of compatible subroutines
+        std::string name;///<subroutine uniform name
+        unsigned index;///<index into array indices
         /**
          * @brief Constructor
          *
