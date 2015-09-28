@@ -3,7 +3,7 @@
 
 #include<iostream>
 #include<map>
-#include<geGL/ShaderObjectSubroutineUniform.h>
+#include<geGL/ProgramObjectSubroutineUniform.h>
 
 namespace ge{
   namespace gl{
@@ -16,13 +16,13 @@ namespace ge{
         /**
          * @brief List of subroutines uniforms
          */
-        std::map<std::string,ShaderObjectSubroutineUniform>SubroutineUniformList;
+        std::map<std::string,ShaderObjectSubroutineUniform>subroutineUniformList;
         /**
          * @brief List of subroutines
          */
-        std::map<std::string,GLuint>SubroutineList;
-        GLuint*Indices;///<
-        GLsizei NumIndices;///<
+        std::map<std::string,GLuint>subroutineList;
+        GLuint*indices = nullptr;///<
+        GLsizei numIndices = 0;///<
         /**
          * @brief Destructor
          */

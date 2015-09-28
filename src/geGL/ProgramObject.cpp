@@ -84,6 +84,9 @@ void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
   glProgramUniformMatrix4x3dv
 };
 
+/**
+ * @brief Initialise shader manager
+ */
 void ge::gl::initShadersAndPrograms(){
   OpenGL320=true;
   OpenGL400=true;
@@ -233,6 +236,14 @@ void ge::gl::initShadersAndPrograms(){
   matrixdFceDsa[7]=glProgramUniformMatrix3x4dv;
   matrixdFceDsa[8]=glProgramUniformMatrix4x3dv;
 }
+
+/**
+ * @brief Function converts complex type (GL_FLOAT_VEC3 to GL_FLOAT)
+ *
+ * @param Type OpenGL Type GL_FLOAT_VEC2, ...
+ *
+ * @return GL_FLOAT, ...
+ */
 GLenum ge::gl::complexType2SimpleType(GLenum type){
   switch(type){
     case GL_FLOAT            :return GL_FLOAT       ;
@@ -259,6 +270,13 @@ GLenum ge::gl::complexType2SimpleType(GLenum type){
   }
 }
 
+/**
+ * @brief Function converts complex type (GL_FLOAT_VEC3 to 3)
+ *
+ * @param Type OpenGL Type GL_FLOAT_VEC2, ...
+ *
+ * @return 2, ...
+ */
 GLint ge::gl::complexType2Size(GLenum type){
   switch(type){
     case GL_FLOAT            :return 1;
@@ -287,9 +305,8 @@ GLint ge::gl::complexType2Size(GLenum type){
 
 std::string ProgramObject::uniformsToStr(){
   std::stringstream ss;
-  for(std::map<std::string,ShaderObjectParameter>::iterator it=this->_uniformList.begin();it!=this->_uniformList.end();++it){
-    ss<<it->first<<" ";
-  }
+  for(auto x:this->_uniformList)
+    ss<<x.first<<" ";
   return ss.str();
 }
 
@@ -309,56 +326,50 @@ void ProgramObject::resetRetrievable(){
   glProgramParameteri(this->_id,GL_PROGRAM_BINARY_RETRIEVABLE_HINT,GL_FALSE);
   glLinkProgram(this->_id);
 }
-void ProgramObject::createShaderProgram_Prologue(){
+
+void ProgramObject::_createShaderProgram_Prologue(){
   if(!OpenGL320){
-    /*throw*/std::cerr<<std::string("OpenGL 3.2 not available")<<std::endl;
+    std::cerr<<std::string("OpenGL 3.2 not available")<<std::endl;
     return;
   }
   this->_id=glCreateProgram();//creates a shader program
   if(!this->_id){//something is wrong
-    /*throw*/ std::cerr<< std::string("glCreateProgram failed")<<std::endl;//+GetGLError());//error message
+    std::cerr<< std::string("glCreateProgram failed")<<std::endl;
     return;
   }
-  //this->AttributeList=new std::map<std::string,ShaderObjectParameter>();
-  //this->UniformList=new std::map<std::string,int>();
 }
 
-void ProgramObject::createShaderProgram_Epilogue(){
+void ProgramObject::_createShaderProgram_Epilogue(){
   glLinkProgram(this->_id);//link shader program
-  std::cerr<<this->getProgramInfo(this->_id);
+  std::cerr<<this->_getProgramInfo(this->_id);
   GLint Status;//status of linking
   glGetProgramiv(this->_id,GL_LINK_STATUS,&Status);//status
   if(static_cast<GLboolean>(Status)==GL_FALSE){//something is wrong
-    /*throw*/std::cerr << std::string("Shader linking failed")<<std::endl;//+GetGLError());//error message
+    std::cerr << std::string("program linking failed")<<std::endl;
     return;
   }
-  this->getParameterList();//get list of shader program parameter
+  this->_getParameterList();//get list of shader program parameter
 
   if(OpenGL400)
-    this->getSubroutineUniformList();
+    this->_getSubroutineUniformList();
 
   if(OpenGL400)
-    this->getBufferList();
+    this->_getBufferList();
 
-  bool HasComputeShader=false;
-  //for(unsigned i=0;i<this->ShaderList.size();++i){
-  for(unsigned i=0;i<this->_shaders.size();++i){
-    GLenum Type=GL_VERTEX_SHADER;
-    GLuint Shader=this->_shaders[i]->getId();
-    glGetShaderiv(Shader,GL_SHADER_TYPE,reinterpret_cast<GLint*>(&Type));
-    if(Type==GL_COMPUTE_SHADER){
-      HasComputeShader=true;
+  bool hasComputeShader=false;
+  for(auto x:this->_shaders)
+    if(x->getType()==GL_COMPUTE_SHADER){
+      hasComputeShader=true;
       break;
     }
-  }
-  if(HasComputeShader)
+  if(hasComputeShader)
     glGetProgramiv(this->_id,GL_COMPUTE_WORK_GROUP_SIZE,
         this->workGroupSize);
 }
 
 typedef void (*GETACTIVEFCE  )(GLuint,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLchar*);
 typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
-void ProgramObject::getParameterList(){
+void ProgramObject::_getParameterList(){
   const GETACTIVEFCE   getActive[]   = {
     (GETACTIVEFCE)glGetActiveAttrib ,
     (GETACTIVEFCE)glGetActiveUniform};
@@ -392,14 +403,14 @@ void ProgramObject::getParameterList(){
         glGetUniformiv(this->getId(),location,&binding);
         this->_samplerList[name]=SamplerParam(name,location,type,binding);
       }
-      ShaderObjectParameter Param = ShaderObjectParameter(location,type,name,size);//param
+      ProgramObjectParameter Param = ProgramObjectParameter(location,type,name,size);//param
       if(Active[t]==GL_ACTIVE_ATTRIBUTES)this->_attributeList[name]=Param;
       else                               this->_uniformList  [name]=Param;
     }
     delete[]Buffer;//free buffer
   }
 }
-void ProgramObject::getSubroutineUniformList(){
+void ProgramObject::_getSubroutineUniformList(){
   const GLenum ShaderType[]={
     GL_VERTEX_SHADER         ,
     GL_TESS_CONTROL_SHADER   ,
@@ -424,8 +435,7 @@ void ProgramObject::getSubroutineUniformList(){
         GLuint Location=glGetSubroutineIndex(this->_id,
             ShaderType[i],BufferName);//obtain index of subroutine
         std::string Name=std::string(BufferName);//convert buffer to string
-        this->_subroutines[i].SubroutineList.insert(//insert subroutine
-            std::pair<std::string,GLuint>(Name,Location));
+        this->_subroutines[i].subroutineList[Name]=Location;
       }
       delete[]BufferName;//free buffer
     }
@@ -459,19 +469,19 @@ void ProgramObject::getSubroutineUniformList(){
         ShaderObjectSubroutineUniform ShaderSubroutineUniform=
           ShaderObjectSubroutineUniform(Location,Size,NumCompatible,Name,ActIndex);
         ActIndex+=Size;
-        this->_subroutines[i].SubroutineUniformList.insert(
+        this->_subroutines[i].subroutineUniformList.insert(
             std::pair<std::string,ShaderObjectSubroutineUniform>(Name,ShaderSubroutineUniform));
       }
       delete[]BufferName;//free buffer
-      this->_subroutines[i].NumIndices=ActIndex;
-      this->_subroutines[i].Indices=new GLuint[this->_subroutines[i].NumIndices];
-      for(GLsizei ind=0;ind<this->_subroutines[i].NumIndices;++ind)
-        this->_subroutines[i].Indices[ind]=0;
+      this->_subroutines[i].numIndices=ActIndex;
+      this->_subroutines[i].indices=new GLuint[this->_subroutines[i].numIndices];
+      for(GLsizei ind=0;ind<this->_subroutines[i].numIndices;++ind)
+        this->_subroutines[i].indices[ind]=0;
     }
   }
 }
 
-void ProgramObject::getBufferList(){
+void ProgramObject::_getBufferList(){
   GLint nofBuffers=0;
   glGetProgramInterfaceiv(
       this->getId(),
@@ -479,15 +489,19 @@ void ProgramObject::getBufferList(){
       GL_ACTIVE_RESOURCES,
       &nofBuffers);
   for(GLint i=0;i<nofBuffers;++i){
-    BufferParams params(this->getId(),i);
-    this->_bufferList.insert(
-        std::pair<std::string,BufferParams>(
-          params.getName(),
-          params));
+    ProgramObjectBufferParams params(this->getId(),i);
+    this->_bufferList[params.getName()]=params;
     this->_bufferNames.push_back(params.getName());
   }
 }
 
+/**
+ * @brief Sets subroutine with name SubroutineName as active in Uniform
+ *
+ * @param shaderType type of shader
+ * @param uniform uniform name
+ * @param subroutineName subroutine name
+ */
 void ProgramObject::setSubroutine(
     GLenum ShaderType,
     std::string Uniform,
@@ -502,16 +516,16 @@ void ProgramObject::setSubroutine(
     case GL_FRAGMENT_SHADER       :WH=4;break;
     case GL_COMPUTE_SHADER        :WH=5;break;
   }
-  this->_subroutines[WH].Indices[
-    this->_subroutines[WH].SubroutineUniformList[Uniform].Index+OffSet
-    ]=this->_subroutines[WH].SubroutineList[SubroutineName];
+  this->_subroutines[WH].indices[
+    this->_subroutines[WH].subroutineUniformList[Uniform].Index+OffSet
+    ]=this->_subroutines[WH].subroutineList[SubroutineName];
   glUniformSubroutinesuiv(ShaderType,
-      this->_subroutines[WH].NumIndices,
-      this->_subroutines[WH].Indices);
+      this->_subroutines[WH].numIndices,
+      this->_subroutines[WH].indices);
 }
 
 
-std::string ProgramObject::getProgramInfo(GLuint ID){
+std::string ProgramObject::_getProgramInfo(GLuint ID){
   int Len=0;//length of message
   glGetProgramiv(ID,GL_INFO_LOG_LENGTH,&Len);//gets length of message
   if(Len<=1)return"";
@@ -520,25 +534,22 @@ std::string ProgramObject::getProgramInfo(GLuint ID){
   return Info;//return message
 }
 
-void ProgramObject::compileShaders(
-    unsigned NumShaders,
-    std::string*Shaders,
-    std::string*Defs,
-    unsigned Version,
-    std::string Profile){
+void ProgramObject::_compileShaders(
+    std::vector<std::string>shaders,
+    std::vector<std::string>defs,
+    unsigned version,
+    std::string profile){
 
-  this->createShaderProgram_Prologue();//create shader program
+  this->_createShaderProgram_Prologue();//create shader program
   try{
-    for(unsigned s=0;s<NumShaders;++s)
-      this->_shaders.push_back(std::make_shared<ShaderObject>(Shaders[s],Defs[s],Version,Profile));
+    for(unsigned s=0;s<shaders.size();++s)
+      this->attachShader(std::make_shared<ShaderObject>(shaders[s],defs[s],version,profile));
   }catch(std::string&e){
     this->_shaders.clear();
     std::cerr<<e<<std::endl;
     return;
   }
-  for(auto x:this->_shaders)
-    glAttachShader(this->getId(),x->getId());
-  this->createShaderProgram_Epilogue();//gets attributes and uniforms
+  this->_createShaderProgram_Epilogue();//gets attributes and uniforms
 }
 
 /*
@@ -683,141 +694,217 @@ if(shaderSubset(presentShaders,allowedCombinations[i]))
 
 }
 */
-void ProgramObject::sortAndCompileShaders(
+void ProgramObject::_sortAndCompileShaders(
     std::vector<std::string>strings,
-    unsigned Version,
-    std::string Profile){
+    unsigned version,
+    std::string profile){
   unsigned NumShaders=0;
   for(unsigned s=0;s<strings.size();++s)//loop over strings
     if(ShaderObject::file2ShaderType(strings[s])!=0)//it is not definition
       NumShaders++;//increment shader count
-  std::string*ShaderSources=new std::string[NumShaders];//allocate shaders
-  std::string*Defs=new std::string[NumShaders];//allocate definitions
-  for(unsigned s=0;s<NumShaders;++s)Defs[s]="";//initialize definitions
+  std::vector<std::string>shaderSources;
+  std::vector<std::string>defs;
+  for(unsigned s=0;s<NumShaders;++s)defs.push_back("");//initialize definitions
   int ActShader=-1;
   for(unsigned s=0;s<strings.size();++s){//loop over strings
     if(ShaderObject::file2ShaderType(strings[s])!=0){//it is shaders
       ActShader++;//increment shader index
-      ShaderSources[ActShader]=strings[s];//insert shader
+      shaderSources.push_back(strings[s]);//insert shader
     }else{//it is definitions
       if(ActShader<0){//there was no shader
-        delete[]ShaderSources;//deallocate shader array
-        delete[]Defs;//deallaocate definitions array
         std::cerr<<std::string("bad arguments")<<std::endl;//throw error
         return;
-      }else Defs[ActShader]+=strings[s];//set definitinos
+      }else defs[ActShader]+=strings[s];//set definitinos
     }
   }
-  this->compileShaders(NumShaders,ShaderSources,Defs,Version,Profile);//compile
-  delete[]ShaderSources;//deallocate shaders
-  delete[]Defs;//deallocate definitions
+  this->_compileShaders(shaderSources,defs,version,profile);//compile
 }
 
-void ProgramObject::setVersion(unsigned Version,std::string Profile){
-  for(unsigned s=0;s<this->_shaders.size();++s)
-    this->_shaders[s]->setVersion(Version,Profile);
+/**
+ * @brief Sets version of every shader in shader program
+ *
+ * @param version version
+ * @param profile profile
+ */
+void ProgramObject::setVersion(unsigned version,std::string profile){
+  for(auto x:this->_shaders)
+    x->setVersion(version,profile);
 }
 
-void ProgramObject::setVersion(GLenum Type,unsigned Version,std::string Profile){
-  for(unsigned s=0;s<this->_shaders.size();++s){
-    if(this->_shaders[s]->getType()==Type){
-      this->_shaders[s]->setVersion(Version,Profile);
-    }
-  }
+/**
+ * @brief Sets version in specific shader of shader program 
+ *
+ * @param type shader type
+ * @param version version
+ * @param profile profile
+ */
+void ProgramObject::setVersion(GLenum type,unsigned version,std::string profile){
+  for(auto x:this->_shaders)
+    if(x->getType()==type)
+      x->setVersion(version,profile);
 }
 
-void ProgramObject::appendAfterVersion(std::string Defs){
-  for(unsigned s=0;s<this->_shaders.size();++s)
-    this->_shaders[s]->appendAfterVersion(Defs);
+/**
+ * @brief Appends definitions after version in every shader of program
+ *
+ * @param defs definitions
+ */
+void ProgramObject::appendAfterVersion(std::string defs){
+  for(auto x:this->_shaders)
+    x->appendAfterVersion(defs);
 }
 
-void ProgramObject::appendAfterVersion(GLenum Type,std::string Defs){
-  for(unsigned s=0;s<this->_shaders.size();++s){
-    if(this->_shaders[s]->getType()==Type){
-      this->_shaders[s]->appendAfterVersion(Defs);
-    }
-  }
+/**
+ * @brief Appends definitions after version in specific shader
+ *
+ * @param type type of shader
+ * @param defs definitions
+ */
+void ProgramObject::appendAfterVersion(GLenum type,std::string defs){
+  for(auto x:this->_shaders)
+    if(x->getType()==type)
+      x->appendAfterVersion(defs);
 }
 
-void ProgramObject::deleteProgram(){
-  for(unsigned i=0;i<this->_shaders.size();++i)//loop over shader objects
-    glDetachShader(this->_id,this->_shaders[i]->getId());//detach shader
+void ProgramObject::_deleteProgram(){
+  for(auto x:this->_shaders)
+    this->detachShader(x);
   glDeleteProgram(this->_id);//deletes shader program
+  this->_shaders      .clear();
   this->_attributeList.clear();
-  this->_uniformList.clear();
+  this->_uniformList  .clear();
+  this->_bufferList   .clear();
+  this->_bufferNames  .clear();
+  this->_samplerList  .clear();
 }
 
+/**
+ * @brief Relink program
+ */
 void ProgramObject::relink(){
-  this->deleteProgram();//delete previous program
-
-  this->createShaderProgram_Prologue();//create new program
-
-  for(unsigned s=0;s<this->_shaders.size();++s){
-    this->_shaders[s]->recompile();//recompile shaders
-    glAttachShader(this->_id,this->_shaders[s]->getId());//attach shader
+  this->_deleteProgram();//delete previous program
+  this->_createShaderProgram_Prologue();//create new program
+  for(auto x:this->_shaders){
+    x->recompile();
+    glAttachShader(this->getId(),x->getId());
   }
-
-  this->createShaderProgram_Epilogue();//get attribs and uniforms,...
+  this->_createShaderProgram_Epilogue();//get attribs and uniforms,...
 }
 
+/**
+ * @brief Destructor
+ */
 ProgramObject::~ProgramObject(){
-  this->deleteProgram();
+  this->_deleteProgram();
 }
 
-GLint ProgramObject::operator[](std::string Name){
-  return this->_uniformList[Name].location;//uniform id
+/**
+ * @brief Attach shader to program
+ *
+ * @param shader shader
+ */
+void ProgramObject::attachShader(std::shared_ptr<ShaderObject>const&shader){
+  this->_shaders.insert(shader);
+  glAttachShader(this->getId(),shader->getId());
 }
 
-GLint ProgramObject::getAttribute(std::string name){
-  if(!this->_attributeList.count(name))return-1;
-  return this->_attributeList[name].location;
+/**
+ * @brief Detach shader from program
+ *
+ * @param shader shader
+ */
+void ProgramObject::detachShader(std::shared_ptr<ShaderObject>const&shader){
+  this->_shaders.erase(shader);
+  glDetachShader(this->getId(),shader->getId());
 }
 
-GLenum ProgramObject::getAttributeType(std::string AttributeName){
-  return this->_attributeList[AttributeName].type;
+void err(std::string error){
+  std::cerr<<"ERROR: "<<error<<std::endl;
 }
 
-GLint ProgramObject::getAttributeSize(std::string AttributeName){
-  return this->_attributeList[AttributeName].size;
+/**
+ * @brief Gets uniform meta data
+ *
+ * @param name uniform name
+ *
+ * @return meta data (location,type,name,size)
+ */
+ProgramObjectParameter const&ProgramObject::getUniform  (std::string name)const{
+  auto i=this->_uniformList.find(name);
+  if(i==this->_uniformList.end()){
+    err("ProgramObject::getUniform("+name+") - there is no such uniform");
+    static const ProgramObjectParameter er;
+    return er;
+  }
+  return i->second;
 }
 
-GLint ProgramObject::getUniform(std::string UniformName){
-  if(!this->_uniformList.count(UniformName))return-1;
-  return this->_uniformList[UniformName].location;
+/**
+ * @brief Gets attribute meta data
+ *
+ * @param name attribute name
+ *
+ * @return meta data (location,type,name,size)
+ */
+ProgramObjectParameter const&ProgramObject::getAttribute(std::string name)const{
+  auto i=this->_attributeList.find(name);
+  if(i==this->_attributeList.end()){
+    err("ProgramObject::getAttribute("+name+") - there is no such attribute");
+    static const ProgramObjectParameter er;
+    return er;
+  }
+  return i->second;
 }
 
-GLenum ProgramObject::getUniformType(std::string UniformName){
-  return this->_uniformList[UniformName].type;
+/**
+ * @brief Gets buffer meta data
+ *
+ * @param name buffer name
+ *
+ * @return meta data (binding,name,params)
+ */
+ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name)const{
+  auto i=this->_bufferList.find(name);
+  if(i==this->_bufferList.end()){
+    err("ProgramObject::getBuffer("+name+") - there is no such buffer");
+    static const ProgramObjectBufferParams er;
+    return er;
+  }
+  return i->second;
 }
 
-GLint ProgramObject::getUniformSize(std::string UniformName){
-  return this->_uniformList[UniformName].size;
+/**
+ * @brief Gets number of uniforms
+ *
+ * @return number of uniforms
+ */
+unsigned ProgramObject::getNofUniforms()const{
+  return this->_uniformList.size();
 }
 
-unsigned ProgramObject::getNofBuffers(){
+/**
+ * @brief Gets number of attributes
+ *
+ * @return number of attributes
+ */
+unsigned ProgramObject::getNofAttributes()const{
+  return this->_attributeList.size();
+}
+
+/**
+ * @brief gets number of buffers
+ *
+ * @return number of buffers
+ */
+unsigned ProgramObject::getNofBuffers()const{
   return this->_bufferNames.size();
 }
-std::string ProgramObject::getBufferName(unsigned i){
-  return this->_bufferNames[i];
-}
-GLuint ProgramObject::getBuffer(std::string name){
-  if(!this->_bufferList.count(name))return-1;
-  return this->_bufferList[name].getBinding();
-}
-GLint ProgramObject::getBufferProperty(
-    std::string name,
-    BufferParams::Properties property){
-  if(!this->_bufferList.count(name))return 0;
-  return this->_bufferList[name].getProperty(property);
-}
-BufferParams ProgramObject::getBufferParams(std::string name){
-  return this->_bufferList[name];
-}
+
 void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer){
-  buffer->bindBase(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name));
+  buffer->bindBase(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name).getBinding());
 }
 void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size){
-  buffer->bindRange(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name),offset,size);
+  buffer->bindRange(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name).getBinding(),offset,size);
 }
 
 GLenum ProgramObject::getSamplerBinding(std::string uniform){
@@ -838,7 +925,10 @@ void ProgramObject::bindImage(
   texture->bindImage(this->_samplerList[uniform].getBinding(),level,format,access,layered,layer);
 }
 
-void ProgramObject::use(){
+/**
+ * @brief Sets this program as active
+ */
+void ProgramObject::use()const{
   glUseProgram(this->_id);
 }
 
@@ -857,17 +947,17 @@ int ProgramObject::_doubleMatrixType2Index(GLenum type){
 
 #define MATRIXBODYA(TYPE)\
   if(!this->_uniformList.count(name))return;\
-ShaderObjectParameter param=this->_uniformList[name];\
-int index=this->_##TYPE##MatrixType2Index(param.type);\
+ProgramObjectParameter param=this->_uniformList[name];\
+int index=this->_##TYPE##MatrixType2Index(param.getType());\
 if(index<0)return;\
 
 #define MATRIXBODY(FCE,TYPE)\
   MATRIXBODYA(TYPE)\
-FCE[index](param.location,count,transpose,value);
+FCE[index](param.getLocation(),count,transpose,value)
 
 #define MATRIXBODYDSA(FCE,TYPE)\
   MATRIXBODYA(TYPE)\
-FCE[index](this->_id,param.location,count,transpose,value);
+FCE[index](this->_id,param.getLocation(),count,transpose,value)
 
 
 void ProgramObject::set(
@@ -875,7 +965,7 @@ void ProgramObject::set(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-  MATRIXBODY(matrixfFce,float)
+  MATRIXBODY(matrixfFce,float);
 }
 
 void ProgramObject::set(
@@ -883,7 +973,7 @@ void ProgramObject::set(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-  MATRIXBODY(matrixdFce,double)
+  MATRIXBODY(matrixdFce,double);
 }
 
 void ProgramObject::setdsa(
@@ -891,7 +981,7 @@ void ProgramObject::setdsa(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-  MATRIXBODYDSA(matrixfFceDsa,float)
+  MATRIXBODYDSA(matrixfFceDsa,float);
 }
 
 void ProgramObject::setdsa(
@@ -899,7 +989,7 @@ void ProgramObject::setdsa(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-  MATRIXBODYDSA(matrixdFceDsa,double)
+  MATRIXBODYDSA(matrixdFceDsa,double);
 }
 
   DEFFCE(1,f)

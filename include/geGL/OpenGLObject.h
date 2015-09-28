@@ -6,9 +6,9 @@ namespace ge{
   namespace gl{
     class GEGL_EXPORT OpenGLObject{
       protected:
-        GLuint _id;///<object id
+        GLuint _id = 0u;///<object id
       public:
-        OpenGLObject(GLuint id = 0);
+        OpenGLObject(GLuint id = 0u);
         GLuint getId();
         virtual ~OpenGLObject(){};
     };

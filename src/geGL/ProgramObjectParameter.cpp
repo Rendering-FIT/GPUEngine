@@ -1,19 +1,78 @@
-#include<geGL/ShaderObjectParameter.h>
+#include<geGL/ProgramObjectParameter.h>
 #include<sstream>
 
 using namespace ge::gl;
 
-ShaderObjectParameter::ShaderObjectParameter(
+/**
+ * @brief Constructor
+ *
+ * @param location parameter location
+ * @param type parameter type
+ * @param name parameter name
+ * @param size parameter Size
+ */
+ProgramObjectParameter::ProgramObjectParameter(
     GLint       location,
-    GLenum      type,
-    std::string name,
-    GLint       size){
-  this->location = location;//parameter id
-  this->type     = type;//parameter type
-  this->name     = name;//parameter name
-  this->size     = size;//parameter size
+    GLenum      type    ,
+    std::string name    ,
+    GLint       size    ){
+  this->_location = location;//parameter id
+  this->_type     = type;//parameter type
+  this->_name     = name;//parameter name
+  this->_size     = size;//parameter size
 }
 
+/**
+ * @brief Destructor
+ */
+ProgramObjectParameter::~ProgramObjectParameter(){
+}
+
+/**
+ * @brief Gets property location
+ *
+ * @return location
+ */
+GLint ProgramObjectParameter::getLocation()const{
+  return this->_location;
+}
+
+/**
+ * @brief Gets property type
+ *
+ * @return type
+ */
+GLenum ProgramObjectParameter::getType()const{
+  return this->_type;
+}
+
+/**
+ * @brief Gets property name
+ *
+ * @return name
+ */
+std::string ProgramObjectParameter::getName()const{
+  return this->_name;
+}
+
+/**
+ * @brief Gets property size
+ *
+ * @return size
+ */
+GLint ProgramObjectParameter::getSize()const{
+  return this->_size;
+}
+
+
+
+/**
+ * @brief translates enum to string for uniform types
+ *
+ * @param type uniform type
+ *
+ * @return string representation
+ */
 std::string ge::gl::translateUniformType(GLenum type){
   switch(type){
     case GL_FLOAT                                    :return"GL_FLOAT"                                    ;
@@ -93,6 +152,14 @@ std::string ge::gl::translateUniformType(GLenum type){
     default                                          :return"unknown"                                     ;
   }
 }
+
+/**
+ * @brief translates enum to string for buffer property types
+ *
+ * @param property buffer property type
+ *
+ * @return string representation
+ */
 std::string ge::gl::translateBufferProperty(GLenum property){
   switch(property){
     case GL_TYPE                                :return"GL_TYPE"                                ;
@@ -114,6 +181,19 @@ std::string ge::gl::translateBufferProperty(GLenum property){
   }
 }
 
+/**
+ * @brief If name contains "[0]" it is chopped
+ *
+ * @param name name of uniform/buffer shader input
+ *
+ * @return name without "[0]"
+ */
+std::string ge::gl::chopIndexingInPropertyName(std::string name){
+  std::size_t pos=name.find("[0]");
+  if(pos!=std::string::npos)return name.substr(0,pos);
+  return name;
+}
+
 const GLenum bufferProperties[]={
   GL_TYPE                                ,
   GL_ARRAY_SIZE                          ,
@@ -133,14 +213,10 @@ const GLenum bufferProperties[]={
 };
 const unsigned nofBufferProperties = sizeof(bufferProperties)/sizeof(GLenum);
 
-std::string ge::gl::chopIndexingInPropertyName(std::string name){
-  std::size_t pos=name.find("[0]");
-  if(pos!=std::string::npos)return name.substr(0,pos);
-  return name;
-}
 
-BufferParams::BufferParams(GLuint program,GLuint index){
-  //std::cerr<<"BufferParams\n";
+
+ProgramObjectBufferParams::ProgramObjectBufferParams(GLuint program,GLuint index){
+  //std::cerr<<"ProgramObjectBufferParams\n";
   GLint lenght;
   glGetProgramResourceiv(
       program,
@@ -175,13 +251,16 @@ BufferParams::BufferParams(GLuint program,GLuint index){
   //std::cerr<<"name: "<<this->_name<<std::endl;
   //std::cerr<<"binding: "<<this->_binding<<std::endl;
 }
-GLint BufferParams::getProperty(enum Properties property){
+
+GLint ProgramObjectBufferParams::getProperty(enum Properties property)const{
   return this->_params[(int)property];
 }
-std::string BufferParams::getName(){
+
+std::string ProgramObjectBufferParams::getName()const{
   return this->_name;
 }
-std::string BufferParams::toStr(){
+
+std::string ProgramObjectBufferParams::toStr()const{
   std::stringstream ss;
   for(unsigned i=0;i<nofBufferProperties;++i){
     ss<<translateBufferProperty(bufferProperties[i])<<" : ";
@@ -192,10 +271,39 @@ std::string BufferParams::toStr(){
   return ss.str();
 }
 
-GLint BufferParams::getBinding(){
+GLint ProgramObjectBufferParams::getBinding()const{
   return this->_binding;
 }
 
+
+
+SamplerParam::SamplerParam(
+    std::string name    ,
+    GLint       location,
+    GLenum      type    ,
+    GLint       binding ){
+  this->_name     = name    ;
+  this->_location = location;
+  this->_type     = type    ;
+  this->_binding  = binding ;
+}
+
+std::string SamplerParam::getName()const{
+  return this->_name;
+}
+
+GLint SamplerParam::getBinding()const{
+  return this->_binding;
+}
+
+GLint SamplerParam::getLocation()const{
+  return this->_location;
+}
+
+void SamplerParam::setBinding(GLint binding){
+  this->_binding = binding;
+  glUniform1i(this->_location,binding);
+}
 
 bool SamplerParam::isSampler(GLenum type){
   switch(type){
@@ -235,36 +343,9 @@ bool SamplerParam::isSampler(GLenum type){
     case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
     case GL_UNSIGNED_INT_SAMPLER_BUFFER              :
     case GL_UNSIGNED_INT_SAMPLER_2D_RECT             :
-                                                      return true;
+      return true;
     default:
-                                                      return false;
+      return false;
   }
 }
-
-SamplerParam::SamplerParam(){}
-
-SamplerParam::SamplerParam(std::string name,GLint location,GLenum type,GLint binding){
-  this->_name     = name    ;
-  this->_location = location;
-  this->_type     = type    ;
-  this->_binding  = binding ;
-}
-
-std::string SamplerParam::getName(){
-  return this->_name;
-}
-
-void SamplerParam::setBinding(GLint binding){
-  this->_binding = binding;
-  glUniform1i(this->_location,binding);
-}
-
-GLint SamplerParam::getBinding(){
-  return this->_binding;
-}
-
-GLint SamplerParam::getLocation(){
-  return this->_location;
-}
-
 

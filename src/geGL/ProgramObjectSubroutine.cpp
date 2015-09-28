@@ -1,12 +1,12 @@
-#include<geGL/ShaderObjectSubroutine.h>
+#include<geGL/ProgramObjectSubroutine.h>
 
 using namespace ge::gl;
 
 ShaderObjectSubroutine::~ShaderObjectSubroutine(){
-  if(this->Indices)
-    delete[]this->Indices;
+  if(this->indices)
+    delete[]this->indices;
 }
 ShaderObjectSubroutine::ShaderObjectSubroutine(){
-  this->Indices=NULL;
+  this->indices=nullptr;
 }
 

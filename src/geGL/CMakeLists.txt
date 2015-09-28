@@ -21,13 +21,13 @@ set(GL_INCLUDES
     ${HEADER_PATH}/TextureObject.h
     ${HEADER_PATH}/SamplerObject.h
     ${HEADER_PATH}/ProgramPipelineObject.h
+    ${HEADER_PATH}/ShaderObject.h
     ${HEADER_PATH}/ProgramObject.h
     ${HEADER_PATH}/ProgramObjectMacro.h
-    ${HEADER_PATH}/ShaderObject.h
-    ${HEADER_PATH}/ShaderObjectParameter.h
-    ${HEADER_PATH}/ShaderObjectSubroutine.h
-    ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
-    ${HEADER_PATH}/ShaderObjectSubroutineUniform.h
+    ${HEADER_PATH}/ProgramObjectParameter.h
+    ${HEADER_PATH}/ProgramObjectSubroutine.h
+    ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
+    ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
     ${HEADER_PATH}/RenderbufferObject.h
     #${HEADER_PATH}/Blend.h
     #${HEADER_PATH}/BlendCommands.h
@@ -78,11 +78,11 @@ set(GL_SOURCES
     TextureObject.cpp
     SamplerObject.cpp
     ProgramPipelineObject.cpp
-    ProgramObject.cpp
     ShaderObject.cpp
-    ShaderObjectParameter.cpp
-    ShaderObjectSubroutine.cpp
-    ShaderObjectSubroutineUniform.cpp
+    ProgramObject.cpp
+    ProgramObjectParameter.cpp
+    ProgramObjectSubroutine.cpp
+    ProgramObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
     OpenGL.cpp
     #OpenGLCommon.cpp
