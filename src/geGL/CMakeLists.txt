@@ -31,7 +31,6 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
     ${HEADER_PATH}/RenderbufferObject.h
     ${HEADER_PATH}/OpenGL.h
-    #${HEADER_PATH}/VertexArrayObjectsManager.h
     ${HEADER_PATH}/AsynchronousQueryObject.h
     ${HEADER_PATH}/DebugMessage.h
     ${HEADER_PATH}/OpenGLObject.h
