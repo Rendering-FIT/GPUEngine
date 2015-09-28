@@ -1,4 +1,4 @@
-#include<geGL/ShaderObjectSubroutineUniform.h>
+#include<geGL/ProgramObjectSubroutineUniform.h>
 
 using namespace ge::gl;
 
