@@ -36,7 +36,7 @@ namespace ge{
          * @param Far distance to far plane
          * @param Fovy field of view
          */
-        CameraObject(unsigned Size[2],float Near,float Far,float Fovy);
+        CameraObject(unsigned const Size[2],float Near,float Far,float Fovy);
         /**
          * @brief Shifts camera up
          *

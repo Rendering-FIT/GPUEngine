@@ -10,7 +10,7 @@
 
 namespace ge{
   namespace util{
-    CameraObject::CameraObject(unsigned Size[2],float Near,float Far,float Fovy){
+    CameraObject::CameraObject(unsigned const Size[2],float Near,float Far,float Fovy){
       this->_size[0]      = Size[0];//sets width of viewport/window
       this->_size[1]      = Size[1];//sets height of viewport/window
       this->_near         = Near;//near plane

@@ -4,40 +4,6 @@
 
 using namespace ge::gl;
 
-#if 0
-
-Program::Program(){
-  this->_id = glCreateProgram();
-}
-
-Program::~Program(){
-  glDeleteProgram(this->_id);
-}
-
-GLboolean Program::isProgram()const{
-  return glIsProgram(this->_id);
-}
-
-void Program::attachShader(std::shared_ptr<Shader>const&shader){
-  this->_shaders.insert(shader);
-  glAttachShader(this->_id,shader->getId());
-}
-
-void Program::detachShader(std::shared_ptr<Shader>const&shader){
-  this->_shaders.erase(shader);
-  glDetachShader(this->_id,shader->getId());
-}
-
-void Program::link()const{
-  glLinkProgram(this->_id);
-}
-
-void Program::use()const{
-  glUseProgram(this->_id);
-}
-
-#endif 
-
 bool OpenGL320=false;
 bool OpenGL400=false;
 bool OpenGL410=false;

@@ -20,7 +20,7 @@ Namespace::~Namespace(){
     delete x.second;
 }
 
-bool Namespace::empty(){
+bool Namespace::empty()const{
   return this->_name2Variable.size()==0 && this->_name2Namespace.size()==0;
 }
 
@@ -32,7 +32,7 @@ void Namespace::insertNamespace(std::string name,Namespace*nmspace){
   this->_name2Namespace.insert(std::pair<std::string,Namespace*>(name,nmspace));
 }
 
-std::string Namespace::toStr(unsigned indentation){
+std::string Namespace::toStr(unsigned indentation)const{
   std::stringstream ss;
   std::string ind="";
   for(unsigned i=0;i<indentation;++i)ind+=" ";
@@ -47,9 +47,9 @@ std::string Namespace::toStr(unsigned indentation){
   return ss.str();
 }
 
-Namespace*Namespace::getNamespace(std::string name){
+Namespace*Namespace::getNamespace(std::string name)const{
   if(this->_name2Namespace.count(name))
-    return this->_name2Namespace[name];
+    return this->_name2Namespace.find(name)->second;
   return nullptr;
 }
 
@@ -93,16 +93,33 @@ void Namespace::erase(std::string name){
     this->_name2Namespace.erase(namespaceName);
 }
 
-std::shared_ptr<ge::core::Accessor>Namespace::getVariable (std::string name){
+std::shared_ptr<ge::core::Accessor>Namespace::getVariable (std::string name)const{
   auto it=this->_name2Variable.find(name);
   if(it==this->_name2Variable.end()){
     std::cerr<<"Namespace::getVariable Error: there is no variable with name: "<<name<<std::endl;
     return nullptr;
   }
-  return this->_name2Variable[name];
+  return it->second;
 }
 
-bool Namespace::contain(std::string name){
+bool Namespace::contain(std::string name)const{
   return this->_name2Variable.find(name)!=this->_name2Variable.end();
 }
+
+Namespace::CNSIter  Namespace::namespacesBegin()const{
+  return this->_name2Namespace.begin();
+}
+
+Namespace::CNSIter  Namespace::namespacesEnd  ()const{
+  return this->_name2Namespace.end();
+}
+
+Namespace::CVarIter Namespace::varsBegin()const{
+  return this->_name2Variable.begin();
+}
+
+Namespace::CVarIter Namespace::varsEnd  ()const{
+  return this->_name2Variable.end();
+}
+
 

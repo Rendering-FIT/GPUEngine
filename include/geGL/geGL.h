@@ -11,3 +11,5 @@
 #include<geGL/SamplerObject.h>
 #include<geGL/RenderbufferObject.h>
 #include<geGL/DebugMessage.h>
+
+void initGEGL();

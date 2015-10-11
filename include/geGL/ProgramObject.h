@@ -16,20 +16,6 @@
 
 namespace ge{
   namespace gl{
-#if 0
-    class GEGL_EXPORT Program: public OpenGLObject{
-      protected:
-        std::set<std::shared_ptr<Shader>>_shaders;
-      public:
-        Program();
-        ~Program();
-        GLboolean isProgram()const;
-        void attachShader(std::shared_ptr<Shader>const&shader);
-        void detachShader(std::shared_ptr<Shader>const&shader);
-        void link()const;
-        void use()const;
-    };
-#endif
     GEGL_EXPORT void   initShadersAndPrograms();
     GEGL_EXPORT GLenum complexType2SimpleType(GLenum Type);
     GEGL_EXPORT GLint  complexType2Size(GLenum Type);

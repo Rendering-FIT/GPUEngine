@@ -23,6 +23,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/ProgramPipelineObject.h
     ${HEADER_PATH}/Shader.h
     ${HEADER_PATH}/ShaderObject.h
+    ${HEADER_PATH}/Program.h
     ${HEADER_PATH}/ProgramObject.h
     ${HEADER_PATH}/ProgramObjectMacro.h
     ${HEADER_PATH}/ProgramObjectParameter.h
@@ -48,6 +49,7 @@ set(GL_SOURCES
     ProgramPipelineObject.cpp
     Shader.cpp
     ShaderObject.cpp
+    Program.cpp
     ProgramObject.cpp
     ProgramObjectParameter.cpp
     ProgramObjectSubroutine.cpp
@@ -57,6 +59,7 @@ set(GL_SOURCES
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
     OpenGLObject.cpp
+    geGL.cpp
   )
 
 

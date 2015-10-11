@@ -142,6 +142,8 @@ namespace ge{
         inline std::shared_ptr<Accessor>sharedAccessor(TypeID id,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
         inline std::shared_ptr<Accessor>sharedAccessor(const char*name,ARGS... args)const;
+        template<typename CLASS,typename... ARGS>
+        inline std::shared_ptr<Accessor>sharedAccessor(ARGS... args)const;
 
         template<typename CLASS,typename... ARGS>
         inline std::shared_ptr<Accessor>sharedAccessorAddCD(const char*name,ARGS... args);
@@ -199,7 +201,6 @@ namespace ge{
     class GECORE_EXPORT Accessor{
       protected:
         std::shared_ptr<const TypeRegister>_manager       = nullptr                   ;
-//        void*                              _data          = nullptr                   ;
         std::shared_ptr<char>              _data          = nullptr                   ;
         unsigned                           _offset        = 0u                        ;
         TypeRegister::TypeID               _id            = TypeRegister::UNREGISTERED;
@@ -234,7 +235,6 @@ namespace ge{
         TypeRegister::TypeID getId()const;
         Accessor operator[](unsigned elem)const;
         unsigned getNofElements()const;
-        //void free();
         const void*getPointer()const;
         std::string data2Str()const;
         template<typename T>
@@ -273,6 +273,11 @@ namespace ge{
         TypeID id=this->getTypeId(name);
         return this->sharedAccessor<CLASS>(id,args...);
       }
+    template<typename CLASS,typename... ARGS>
+      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(ARGS... args)const{
+        return this->sharedAccessor<CLASS>(this->getTypeKeyword<CLASS>(),args...);
+      }
+
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorAddCD(const char*name,ARGS... args){
         this->addClassCD<CLASS>(name);

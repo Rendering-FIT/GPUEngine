@@ -7,9 +7,9 @@ namespace ge{
     namespace sim{
       class User{
         protected:
-          Namespace*_sData;
+          std::shared_ptr<Namespace>_sData;
         public:
-          User(Namespace*ns){this->_sData=ns;}
+          User(std::shared_ptr<Namespace>const&ns){this->_sData=ns;}
           virtual void update(){}
       };
     }

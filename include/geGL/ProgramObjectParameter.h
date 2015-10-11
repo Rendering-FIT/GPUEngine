@@ -53,7 +53,7 @@ namespace ge{
         };
       protected:
         GLint       _binding = 0;
-        GLint       _params[TOP_LEVEL_ARRAY_STRIDE+1] = {0};
+        GLint       _params[TOP_LEVEL_ARRAY_STRIDE+1];
         std::string _name = "";
       public:
         ProgramObjectBufferParams(GLuint program,GLuint index);
