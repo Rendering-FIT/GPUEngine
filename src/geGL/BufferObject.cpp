@@ -190,12 +190,9 @@ void BufferObject::alloc(
  */
 void BufferObject::bind(
     GLenum target)const{
-  //we just bind buffer object to another binding point
-  //original binding point stays the same
-  glBindBuffer(
-      target,
-      this->_id);
+  glBindBuffer(target,this->_id);
 }
+
 /**
  * @brief Binds range of buffer to specific indexed target
  *
@@ -209,14 +206,7 @@ void BufferObject::bindRange(
     GLuint     index,
     GLintptr   offset,
     GLsizeiptr size)const{
-  //we just bind buffer object to another binding point
-  //original binding point stays the same
-  glBindBufferRange(
-      target,
-      index,
-      this->_id,
-      offset,
-      size);
+  glBindBufferRange(target,index,this->_id,offset,size);
 }
 
 /**
@@ -258,7 +248,6 @@ void BufferObject::unbindBase(GLenum target,GLuint index)const{
   glBindBufferBase(target,index,0);
 }
 
-
 /**
  * @brief Reallocates buffer
  *
@@ -272,26 +261,24 @@ void BufferObject::realloc(GLsizeiptr newSize,ReallocFlags flags){
   }
   GLbitfield bufferFlags=this->getUsage();
   if      (flags==(KEEP_ID|KEEP_DATA)){
-    BufferObject*temp=new BufferObject(newSize,NULL,bufferFlags);
+    BufferObject*temp=new BufferObject(newSize,nullptr,bufferFlags);
     temp->copy(this);
-    this->_bufferData(newSize,NULL,bufferFlags);
+    this->_bufferData(newSize,nullptr,bufferFlags);
     this->copy(temp);
     delete temp;
   }else if(flags==KEEP_ID            ){
-    this->_bufferData(newSize,NULL,bufferFlags);
+    this->_bufferData(newSize,nullptr,bufferFlags);
   }else if(flags==KEEP_DATA          ){
-    BufferObject*newBuffer=new BufferObject(newSize,NULL,bufferFlags);
+    BufferObject*newBuffer=new BufferObject(newSize,nullptr,bufferFlags);
     newBuffer->copy(this);
     this->~BufferObject();
     this->_id = newBuffer->_id;
     delete(char*)newBuffer;
   }else if(flags==NEW_BUFFER         ){
     this->~BufferObject();
-    new(this)BufferObject(newSize,NULL,bufferFlags);
-  }else{
+    new(this)BufferObject(newSize,nullptr,bufferFlags);
+  }else
     std::cerr<<"ERROR: invalid buffer reallocation flags: "<<flags<<std::endl;
-    return;
-  }
 }
 
 
@@ -303,12 +290,7 @@ void BufferObject::realloc(GLsizeiptr newSize,ReallocFlags flags){
 void BufferObject::copy(
     BufferObject*buffer)const{
   GLsizeiptr maxSize=(this->getSize()>buffer->getSize())?buffer->getSize():this->getSize();
-  glCopyNamedBufferSubData(
-      buffer->_id,
-      this  ->_id,
-      0,
-      0,
-      maxSize);
+  glCopyNamedBufferSubData(buffer->_id,this->_id,0,0,maxSize);
 }
 
 /**

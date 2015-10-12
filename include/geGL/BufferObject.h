@@ -20,12 +20,12 @@ namespace ge{
         BufferObject();
         BufferObject(
             GLsizeiptr    size                  ,
-            const GLvoid* data  = NULL          ,
+            const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
         virtual ~BufferObject();
         void alloc(
             GLsizeiptr    size                  ,
-            const GLvoid* data  = NULL          ,
+            const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
         GLvoid*map(
             GLbitfield access = GL_MAP_READ_BIT|GL_MAP_WRITE_BIT)const;
@@ -57,17 +57,17 @@ namespace ge{
             GLsizeiptr size   = 0,
             GLintptr   offset = 0)const;
         void clear(
-            GLenum        internalFormat       ,
-            GLenum        format               ,
-            GLenum        type                 ,
-            const GLvoid *Data           = NULL)const;
+            GLenum        internalFormat          ,
+            GLenum        format                  ,
+            GLenum        type                    ,
+            const GLvoid *Data           = nullptr)const;
         void clear(
             GLenum        internalFormat          ,
             GLintptr      offset                  ,
             GLsizeiptr    size                    ,
             GLenum        format                  ,
             GLenum        type                    ,
-            const GLvoid *Data           = NULL   )const;
+            const GLvoid *Data           = nullptr)const;
         GLsizeiptr getSize       ()const;
         GLbitfield getUsage      ()const;
         GLenum     getAccess     ()const;

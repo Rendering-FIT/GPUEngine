@@ -1,105 +1,59 @@
-#include <limits>
-#include <string>
-#include <GL/glew.h>
-#include <geGL/DebugMessage.h>
-#include <geUtil/ArgumentObject.h>
-#include <geUtil/WindowObject.h>
+#include<limits>
+#include<string>
+#include<GL/glew.h>
+#include<geGL/geGL.h>
+#include<geUtil/NamespaceWithUsers.h>
+#include<geUtil/copyArgumentManager2Namespace.h>
+#include<geUtil/ArgumentManager.h>
+#include<geUtil/WindowObject.h>
 
-void Init();
-void Idle();
-void Mouse();
-void Wheel(int d);
+void init();
+void idle();
+void mouse();
 
-struct SContextParam{
-  unsigned    Version;
-  std::string Profile;
-  std::string Flag;
-}ContextParam;
+ge::util::WindowObject*                           window       = nullptr;
+std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
+std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
 
-struct SWindowParam{
-  unsigned Size[2];
-  bool     Fullscreen;
-}WindowParam;
+int main(int argc,char*argv[]){
+  typeRegister = std::make_shared<ge::core::TypeRegister>();
+  sData        = std::make_shared<ge::util::sim::NamespaceWithUsers>("*");
+  ge::util::ArgumentManager*argm = new ge::util::ArgumentManager(argc-1,argv+1);
+  ge::util::sim::copyArgumentManager2Namespace(sData,argm,typeRegister);
 
+  window = new ge::util::WindowObject(
+      sData->get<unsigned[] >("window.size"      ,{1024u,1024u})[0],
+      sData->get<unsigned[] >("window.size"      ,{1024u,1024u})[1],
+      sData->get<bool       >("window.fullscreen",false        )   ,
+      idle,
+      mouse,
+      sData->get<bool       >("enableAntTweakBar",true         )   ,
+      sData->get<unsigned   >("context.version"  ,450          )   ,
+      sData->get<std::string>("context.profile"  ,"core"       )   ,
+      sData->get<std::string>("context.debug"    ,"debug"      )   );
 
-bool DisableAnttweakbar=true;
-ge::util::ArgumentObject *Args;
-ge::util::WindowObject   *Window;
+  init();
+  window->mainLoop();
+  delete window;
+  delete argm;
+  return 0;
+}
 
-/*#include <geRG/AllocationManagers.h>
-#include <geRG/BufferStorage.h>
-#include <geRG/RenderingContext.h>
-#include <geRG/StateSet.h>
-using namespace ge::rg;
-int main(int Argc,char*Argv[])
-{
-   ge::rg::BufferStorage<ItemAllocationManager,sizeof(InstanceData)> bs_i;
-   unsigned id;
-   bs_i.alloc(&id);
-   bs_i.alloc(1,&id);
+void mouse(){
+}
 
-   ge::rg::BufferStorage<BlockAllocationManager<AttribStorage>,sizeof(InstanceData)> bs_b;
-   AttribStorage* a=nullptr;
-   bs_b.alloc(1,*a);
-   ge::rg::BufferStorage<ChunkAllocationManager<AttribStorage>> bs_c;
-   bs_c.alloc(1,*a);*/
+void idle(){
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  window->swap();
+}
 
-int main(int Argc,char*Argv[]){
-
-  Args=new ge::util::ArgumentObject(Argc,Argv);
-
-  DisableAnttweakbar=Args->isPresent("--disable-anttweakbar");
-
-  //window args
-  WindowParam.Size[0]    = atoi(Args->getArg("-w","800").c_str());
-  WindowParam.Size[1]    = atoi(Args->getArg("-h","600").c_str());
-  WindowParam.Fullscreen = Args->isPresent("-f");
-
-  //context args
-  ContextParam.Version = atoi(Args->getArg("--context-version","430").c_str());
-  ContextParam.Profile = Args->getArg("--context-profile","core");
-  ContextParam.Flag    = Args->getArg("--context-flag","debug");
-
-  Window=new ge::util::WindowObject(
-      WindowParam.Size[0],
-      WindowParam.Size[1],
-      WindowParam.Fullscreen,
-      Idle,
-      Mouse,
-      !DisableAnttweakbar,
-      ContextParam.Version,
-      ContextParam.Profile,
-      ContextParam.Flag);
-
+void init(){
   glewExperimental=GL_TRUE;
   glewInit();
 
   ge::gl::setDefaultDebugMessage();
 
-  //EmptyVAO=new NDormon::CVertexArray();
-
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glDisable(GL_CULL_FACE);
-
-  Init();
-  Window->mainLoop();
-  delete Window;
-  delete Args;
-  return 0;
-}
-
-void Mouse(){
-}
-
-void Wheel(int /*d*/){
-}
-
-void Idle(){
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  Window->swap();
-}
-
-void Init(){
-
 }

@@ -3,7 +3,7 @@ if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
 endif()
 
 
-set(APP_NAME EmptyWindow)
+set(APP_NAME emptyWindow)
 
 project(${APP_NAME})
 
@@ -32,3 +32,4 @@ target_link_libraries(${APP_NAME}
   ${ANTTWEAKBAR_LIBRARY}
   ${X11_LIBRARIES}
   )
+
