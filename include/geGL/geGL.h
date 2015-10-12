@@ -11,5 +11,10 @@
 #include<geGL/SamplerObject.h>
 #include<geGL/RenderbufferObject.h>
 #include<geGL/DebugMessage.h>
+#include <geGL/Export.h>
 
-void initGEGL();
+namespace ge{
+  namespace gl{
+    void GEGL_EXPORT init();
+  }
+}

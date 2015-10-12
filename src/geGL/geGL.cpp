@@ -1,5 +1,7 @@
 #include<geGL/geGL.h>
 
+using namespace ge::gl;
+
 //toggle saving previous bindings
 #define SAVE_PREVIOUS_BINDING
 
@@ -146,7 +148,7 @@ void implementBufferDSA(){
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
-void initGEGL(){
+void ge::gl::init(){
   implementBufferDSA();
 }
 
