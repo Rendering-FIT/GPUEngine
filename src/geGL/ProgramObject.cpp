@@ -765,7 +765,6 @@ void ProgramObject::attachShader(std::shared_ptr<ShaderObject>const&shader){
  * @param shader shader
  */
 void ProgramObject::detachShader(std::shared_ptr<ShaderObject>const&shader){
-  this->_shaders.erase(shader);
   glDetachShader(this->getId(),shader->getId());
 }
 

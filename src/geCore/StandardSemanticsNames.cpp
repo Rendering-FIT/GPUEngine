@@ -22,6 +22,7 @@ std::string StandardSemanticNames::reflectionTexture = "reflectionTexture";
 
 std::string StandardSemanticNames::position = "position";
 std::string StandardSemanticNames::normal = "normal";
+std::string StandardSemanticNames::tangent = "tangent";
 std::string StandardSemanticNames::binormal = "binormal";
 std::string StandardSemanticNames::indices = "indices";
 std::string StandardSemanticNames::texcoord = "texcoord";

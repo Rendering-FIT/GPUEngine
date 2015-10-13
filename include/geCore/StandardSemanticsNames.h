@@ -29,6 +29,7 @@ namespace ge
 
          static std::string position;
          static std::string normal;
+         static std::string tangent;
          static std::string binormal;
          static std::string indices;
          static std::string texcoord;
