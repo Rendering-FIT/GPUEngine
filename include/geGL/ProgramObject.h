@@ -232,11 +232,15 @@ namespace ge{
 
     template<typename...ARGS>
       void ProgramObject::_resolveConstructorArgs(GLenum type,std::string shader,ARGS...args){
+        this->_createShaderProgram_Prologue();
         this->_typeStringConstructor(type,shader,args...);
+        this->_createShaderProgram_Epilogue();
       }
     template<typename...ARGS>
       void ProgramObject::_resolveConstructorArgs(std::shared_ptr<ShaderObject>const&shader,ARGS...args){
+        this->_createShaderProgram_Prologue();
         this->_sharedShaderConstructor(shader,args...);
+        this->_createShaderProgram_Epilogue();
       }
     template<typename...ARGS>
       void ProgramObject::_resolveConstructorArgs(std::string shader,ARGS...args){
