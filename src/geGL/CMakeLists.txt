@@ -61,7 +61,9 @@ set(GL_SOURCES
     OpenGLObject.cpp
     geGL.cpp
   )
-
+  
+################################################
+# PACKAGES
 
 find_package(GLEW   REQUIRED)
 find_package(OPENGL REQUIRED)
@@ -74,20 +76,18 @@ ADD_LIBRARY(${LIB_NAME}
   
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
-# External_deps - other than 'ge' packages goes here (e.g. glew), it configures this package intra project dependencies and also configures the config file
-# External_export_libs - probably not used right now or ever
-# External_export_includes - probably not used right now or ever
-# Internal_inc - Additional include directories
-# Includes_to_export - includes to be exported from this target in current project - which is kinda weird
+# External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
+# External_libs - external libs or targets to link with
+# Internal_inc - additional include directories
+# Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps geCore)
-set(External_deps GLEW OPENGL)
-set(External_export_libs  ${OPENGL_LIBRARY} ${GLEW_LIBRARY})
-set(External_export_includes  GLEW_INCLUDE_DIR OPENGL_INCLUDE_DIR)
+set(External_deps_Export GLEW OPENGL)
+set(External_libs  ${OPENGL_LIBRARY} ${GLEW_LIBRARY})
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
-target_link_libraries(${LIB_NAME} ${OPENGL_LIBRARY} ${GLEW_LIBRARY} ${Internal_deps})
+target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
 set_target_properties(${LIB_NAME} PROPERTIES
 	INCLUDE_DIRECTORIES "${Internal_inc}"
 	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"

@@ -3,21 +3,17 @@
 #include <geSG/Export.h>
 #include <geSG/Mesh.h>
 #include <geSG/Material.h>
-#include <ste/DAG.h>
 #include <geSG/Node.h>
-#include <geSG/MatrixTransform.h>
 
 #include <memory>
 
-namespace geSG
-{
-   class Mesh;
-   class Material;
-}
 
 namespace ge{
    namespace sg
    {
+
+      class Mesh;
+      class Material;
 
       /**
        * Class representing a model inside scene. It is collection

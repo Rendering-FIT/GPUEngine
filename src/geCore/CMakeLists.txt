@@ -41,23 +41,22 @@ ADD_LIBRARY(${LIB_NAME}
     ${CORE_INCLUDES}
     ${CORE_SOURCES}
   )
+
  
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
-# External_deps - other than 'ge' packages goes here (e.g. glew), it configures this package intra project dependencies and also configures the config file
-# External_export_libs - probably not used right now or ever
-# External_export_includes - probably not used right now or ever
-# Internal_inc - Additional include directories
-# Includes_to_export - includes to be exported from this target in current project - which is kinda weird
+# External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
+# External_libs - external libs or targets to link with
+# Internal_inc - additional include directories
+# Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps )
-set(External_deps )
-set(External_export_libs )
-set(External_export_includes )
+set(External_deps_Export )
+set(External_libs )
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
-set(Includes_to_export )  
+set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)  
 
-target_link_libraries(${LIB_NAME} ${Internal_deps} )
+target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_deps} )
 
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"
