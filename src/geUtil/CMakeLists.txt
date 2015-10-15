@@ -30,6 +30,21 @@ set(ARGUMENTMANAGER_INCLUDES
   ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
   )
 
+set(LIBRARYLOADER_SOURCES
+  LibraryLoader/LibraryLoader.cpp
+  LibraryLoader/LibraryObjectLoader.cpp
+  LibraryLoader/RuntimeClassMetaData.cpp
+  LibraryLoader/RuntimeClassInterface.cpp
+  )
+
+set(LIBRARYLOADER_INCLUDES
+  ${HEADER_PATH}/LibraryLoader/LibraryLoader.h
+  ${HEADER_PATH}/LibraryLoader/LibraryObjectLoader.h
+  ${HEADER_PATH}/LibraryLoader/ClassMetaData.h
+  ${HEADER_PATH}/LibraryLoader/RuntimeClassMetaData.h
+  ${HEADER_PATH}/LibraryLoader/RuntimeClassInterface.h
+  )
+
 set(GL_INCLUDES
   ${HEADER_PATH}/Export.h
   ${HEADER_PATH}/algorithms.h
@@ -47,11 +62,6 @@ set(GL_INCLUDES
   ${HEADER_PATH}/NamespaceWithUsers.h
   ${HEADER_PATH}/User.h
   ${HEADER_PATH}/copyArgumentManager2Namespace.h
-  ${HEADER_PATH}/LibraryLoader.h
-  ${HEADER_PATH}/LibraryObjectLoader.h
-  ${HEADER_PATH}/ClassMetaData.h
-  ${HEADER_PATH}/RuntimeClassMetaData.h
-  ${HEADER_PATH}/RuntimeClassInterface.h
   )
 
 
@@ -66,10 +76,6 @@ set(GL_SOURCES
   Namespace.cpp
   NamespaceWithUsers.cpp
   copyArgumentManager2Namespace.cpp
-  LibraryLoader.cpp
-  LibraryObjectLoader.cpp
-  RuntimeClassMetaData.cpp
-  RuntimeClassInterface.cpp
   )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)
@@ -81,8 +87,10 @@ ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${GL_INCLUDES}
     ${ARGUMENTMANAGER_INCLUDES}
+    ${LIBRARYLOADER_INCLUDES}
     ${GL_SOURCES}
     ${ARGUMENTMANAGER_SOURCES}
+    ${LIBRARYLOADER_SOURCES}
 )
 
 find_package(GLEW   REQUIRED)
@@ -123,6 +131,11 @@ set_target_properties(${LIB_NAME} PROPERTIES
 install(FILES
     ${ARGUMENTMANAGER_INCLUDES}
     DESTINATION include/${LIB_NAME}/ArgumentManager
+  )
+
+install(FILES
+    ${LIBRARYLOADER_INCLUDES}
+    DESTINATION include/${LIB_NAME}/LibraryLoader
   )
 
 install(FILES

@@ -1,9 +1,9 @@
 #pragma once
 
 #include<geUtil/Export.h>
-#include<geUtil/LibraryLoader.h>
+#include<geUtil/LibraryLoader/LibraryLoader.h>
 #include<geCore/TypeRegister.h>
-#include<geUtil/RuntimeClassInterface.h>
+#include<geUtil/LibraryLoader/RuntimeClassInterface.h>
 
 namespace ge{
   namespace util{

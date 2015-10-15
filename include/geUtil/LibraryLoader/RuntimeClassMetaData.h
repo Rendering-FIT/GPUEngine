@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geUtil/ClassMetaData.h>
+#include<geUtil/LibraryLoader/ClassMetaData.h>
 #include<geCore/TypeRegister.h>
 
 namespace ge{

@@ -3,8 +3,8 @@
 #include<iostream>
 #include<vector>
 #include<geCore/TypeRegister.h>
-#include<geUtil/ClassMetaData.h>
-#include<geUtil/RuntimeClassMetaData.h>
+#include<geUtil/LibraryLoader/ClassMetaData.h>
+#include<geUtil/LibraryLoader/RuntimeClassMetaData.h>
 
 namespace ge{
   namespace util{

@@ -1,4 +1,4 @@
-#include<geUtil/RuntimeClassInterface.h>
+#include<geUtil/LibraryLoader/RuntimeClassInterface.h>
 #include<sstream>
 
 using namespace ge::util;
