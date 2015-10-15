@@ -13,6 +13,23 @@ ENDIF()
 
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
+
+set(ARGUMENTMANAGER_SOURCES
+  ArgumentManager/ArgData.cpp
+  ArgumentManager/BaseData.cpp
+  ArgumentManager/ArrayData.cpp
+  ArgumentManager/StructData.cpp
+  ArgumentManager/ArgumentManager.cpp
+  )
+
+set(ARGUMENTMANAGER_INCLUDES
+  ${HEADER_PATH}/ArgumentManager/ArgData.h
+  ${HEADER_PATH}/ArgumentManager/BaseData.h
+  ${HEADER_PATH}/ArgumentManager/ArrayData.h
+  ${HEADER_PATH}/ArgumentManager/StructData.h
+  ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
+  )
+
 set(GL_INCLUDES
   ${HEADER_PATH}/Export.h
   ${HEADER_PATH}/algorithms.h
@@ -26,11 +43,6 @@ set(GL_INCLUDES
   ${HEADER_PATH}/Progress.h
   ${HEADER_PATH}/Ray.h
   ${HEADER_PATH}/geUtil.h
-  ${HEADER_PATH}/ArgData.h
-  ${HEADER_PATH}/BaseData.h
-  ${HEADER_PATH}/ArrayData.h
-  ${HEADER_PATH}/StructData.h
-  ${HEADER_PATH}/ArgumentManager.h
   ${HEADER_PATH}/Namespace.h
   ${HEADER_PATH}/NamespaceWithUsers.h
   ${HEADER_PATH}/User.h
@@ -42,6 +54,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/RuntimeClassInterface.h
   )
 
+
 set(GL_SOURCES
   ArgumentObject.cpp  
   CameraObject.cpp
@@ -50,11 +63,6 @@ set(GL_SOURCES
   HighResolutionTimer.cpp
   Intersectors.cpp
   Progress.cpp
-  ArgData.cpp
-  BaseData.cpp
-  ArrayData.cpp
-  StructData.cpp
-  ArgumentManager.cpp
   Namespace.cpp
   NamespaceWithUsers.cpp
   copyArgumentManager2Namespace.cpp
@@ -72,7 +80,9 @@ endif()
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${GL_INCLUDES}
+    ${ARGUMENTMANAGER_INCLUDES}
     ${GL_SOURCES}
+    ${ARGUMENTMANAGER_SOURCES}
 )
 
 find_package(GLEW   REQUIRED)
@@ -110,6 +120,10 @@ set_target_properties(${LIB_NAME} PROPERTIES
 	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
+install(FILES
+    ${ARGUMENTMANAGER_INCLUDES}
+    DESTINATION include/${LIB_NAME}/ArgumentManager
+  )
 
 install(FILES
     ${GL_INCLUDES}

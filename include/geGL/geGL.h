@@ -15,6 +15,6 @@
 
 namespace ge{
   namespace gl{
-    void GEGL_EXPORT init();
+    GEGL_EXPORT void init();
   }
 }

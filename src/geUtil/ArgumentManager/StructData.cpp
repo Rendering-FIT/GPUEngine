@@ -1,5 +1,5 @@
-#include<geUtil/StructData.h>
-#include<geUtil/ArgData.h>
+#include<geUtil/ArgumentManager/StructData.h>
+#include<geUtil/ArgumentManager/ArgData.h>
 #include<sstream>
 
 using namespace ge::util;

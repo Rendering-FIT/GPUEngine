@@ -4,10 +4,10 @@
 #include<vector>
 #include<map>
 
-#include<geUtil/ArgData.h>
-#include<geUtil/BaseData.h>
-#include<geUtil/ArrayData.h>
-#include<geUtil/StructData.h>
+#include<geUtil/ArgumentManager/ArgData.h>
+#include<geUtil/ArgumentManager/BaseData.h>
+#include<geUtil/ArgumentManager/ArrayData.h>
+#include<geUtil/ArgumentManager/StructData.h>
 
 namespace ge{
   namespace util{

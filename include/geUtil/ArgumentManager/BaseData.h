@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geUtil/ArgData.h>
+#include<geUtil/ArgumentManager/ArgData.h>
 #include<sstream>
 
 namespace ge{

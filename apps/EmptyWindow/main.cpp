@@ -4,7 +4,7 @@
 #include<geGL/geGL.h>
 #include<geUtil/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
-#include<geUtil/ArgumentManager.h>
+#include<geUtil/ArgumentManager/ArgumentManager.h>
 #include<geUtil/WindowObject.h>
 
 void init();

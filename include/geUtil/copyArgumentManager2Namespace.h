@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geUtil/ArgumentManager.h>
+#include<geUtil/ArgumentManager/ArgumentManager.h>
 #include"NamespaceWithUsers.h"
 
 namespace ge{
