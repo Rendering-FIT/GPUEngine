@@ -13,6 +13,7 @@ ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/geAdd/${LIB_NAME}/CMakeModules;${CMAKE_MODULE_PATH}")
 
+set(SDL2_BUILDING_LIBRARY ON)
 FIND_PACKAGE(SDL2        QUIET)
 FIND_PACKAGE(AntTweakBar QUIET)
 
@@ -45,10 +46,10 @@ ADD_LIBRARY(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps)
-set(External_deps_Export SDL2 AntTweakBar)
-set(External_libs  ${SDL2_LIBRARY} ${ANTTWEAKBAR_LIBRARY})
+set(External_deps_Export SDL2 AntTweakBar )
+set(External_libs ${SDL2_LIBRARY} ${ANTTWEAKBAR_LIBRARY})
 set(Internal_inc ${SDL2_INCLUDE_DIR} ${ANTTWEAKBAR_INCLUDE_DIR} ${GPUEngine_SOURCE_DIR} ${GPUEngine_SOURCE_DIR}/include)
-set(includes_to_export )
+set(includes_to_export)
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
 set_target_properties(${LIB_NAME} PROPERTIES
