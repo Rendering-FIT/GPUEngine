@@ -1,10 +1,10 @@
 #pragma once
 
 #include<map>
-#include"transition.h"
+#include<geCore/fsa/transition.h>
 
 namespace ge{
-  namespace util{
+  namespace core{
     class FSA;
     class State{
       private:

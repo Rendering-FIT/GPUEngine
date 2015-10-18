@@ -3,7 +3,7 @@
 #include<iostream>
 
 namespace ge{
-  namespace util{
+  namespace core{
     class FSA;
     typedef void(*RuleCallback)(FSA*,void*);
     class State;

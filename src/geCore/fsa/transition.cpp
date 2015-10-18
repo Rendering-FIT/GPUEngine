@@ -3,7 +3,7 @@
 
 #include<sstream>
 
-using namespace ge::util;
+using namespace ge::core;
 
 Transition::Transition(State*state,RuleCallback callback,void* data){
   this->_nextState    = state   ;

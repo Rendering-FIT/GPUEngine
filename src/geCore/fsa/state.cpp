@@ -3,7 +3,7 @@
 #include<iostream>
 #include<sstream>
 
-using namespace ge::util;
+using namespace ge::core;
 
 State::State(const char* name){
   this->_name = name;

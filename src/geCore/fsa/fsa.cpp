@@ -2,7 +2,7 @@
 #include<sstream>
 #include<algorithm>
 
-using namespace ge::util;
+using namespace ge::core;
 
 State* FSA::_addState(const char* name){
   if(!this->_name2State.count(name)){

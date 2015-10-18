@@ -8,7 +8,7 @@
 #include<geCore/fsa/state.h>
 
 namespace ge{
-  namespace util{
+  namespace core{
     class State;
     class FSA{
       public:
