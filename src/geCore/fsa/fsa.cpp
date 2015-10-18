@@ -4,7 +4,7 @@
 
 using namespace ge::core;
 
-State* FSA::_addState(const char* name){
+State* FSA::_addState(std::string name){
   if(!this->_name2State.count(name)){
     State*newState=new State(name);
     this->_states.push_back(newState);
@@ -13,13 +13,13 @@ State* FSA::_addState(const char* name){
   return this->_name2State[name];
 }
 
-State*FSA::_getState(const char* name)const{
+State*FSA::_getState(std::string name)const{
   return this->_name2State.find(name)->second;
 }
 
-std::string FSA::_expandLex(const char*lex)const{
+std::string FSA::_expandLex(std::string lex)const{
   std::string elex="";
-  unsigned len=std::strlen(lex);
+  unsigned len=lex.size();
   char lastChar='\0';
   enum State{
     START         ,
@@ -47,7 +47,7 @@ std::string FSA::_expandLex(const char*lex)const{
           state=START;
           break;
         }else if(c==FSA::space[1]){//SPACE
-          for(unsigned i=0;i<std::strlen(FSA::space);++i)elex+=FSA::space[i];
+          for(unsigned i=0;i<FSA::space.size();++i)elex+=FSA::space[i];
           lastChar='\0';
           state=START;
           break;
@@ -100,20 +100,20 @@ std::string FSA::_expandLex(const char*lex)const{
   return elex;
 }
 
-FSA::FSA(const char*start){
+FSA::FSA(std::string start){
   this->_start = start;
   this->_addState(start);
 }
 
 FSA::~FSA(){
-  for(unsigned i=0;i<this->_states.size();++i)
-    delete this->_states[i];
+  for(auto x:this->_states)
+    delete x;
 }
 
 void FSA::addTransition(
-    const char*  stateA  ,
+    std::string  stateA  ,
     char         lex     ,
-    const char*  stateB  ,
+    std::string  stateB  ,
     RuleCallback callback,
     void*        data    ){
   State*sa=this->_addState(stateA);
@@ -122,9 +122,9 @@ void FSA::addTransition(
 }
 
 void FSA::addTransition(
-    const char*  stateA  ,
-    const char*  lex     ,
-    const char*  stateB  ,
+    std::string  stateA  ,
+    std::string  lex     ,
+    std::string  stateB  ,
     RuleCallback callback,
     void*        data    ){
   std::string elex=this->_expandLex(lex);
@@ -133,8 +133,8 @@ void FSA::addTransition(
   }
 }
 void FSA::addAllTransition(
-    const char*  stateA  ,
-    const char*  stateB  ,
+    std::string  stateA  ,
+    std::string  stateB  ,
     RuleCallback callback,
     void*        data    ){
   State*sa=this->_addState(stateA);
@@ -144,8 +144,8 @@ void FSA::addAllTransition(
 }
 
 void FSA::addElseTransition(
-    const char*  stateA  ,
-    const char*  stateB  ,
+    std::string  stateA  ,
+    std::string  stateB  ,
     RuleCallback callback,
     void*        data    ){
   State*sa=this->_addState(stateA);
@@ -154,8 +154,8 @@ void FSA::addElseTransition(
 }
 
 void FSA::addEOFTransition(
-    const char*  stateA  ,
-    const char*  stateB  ,
+    std::string  stateA  ,
+    std::string  stateB  ,
     RuleCallback callback,
     void*        data    ){
   State*sa=this->_addState(stateA);
@@ -189,7 +189,7 @@ std::string FSA::getAlreadyReadString()const{
   return this->_alreadyRead;
 }
 
-const char*FSA::getCurrentStateName()const{
+std::string FSA::getCurrentStateName()const{
   return this->_currentStateName;
 }
 
@@ -199,15 +199,15 @@ unsigned FSA::getCurrentPosition()const{
 
 std::string FSA::toStr()const{
   std::stringstream ss;
-  for(unsigned i=0;i<this->_states.size();++i)
-    ss<<this->_states[i]->getName()<<": "<<this->_states[i]->toStr()<<std::endl;
+  for(auto x:this->_states)
+    ss<<x->getName()<<": "<<x->toStr()<<std::endl;
   return ss.str();
 }
 
-const char*FSA::els   = ""       ;
-const char*FSA::eof   = "\\e"    ;
-const char*FSA::digit = "\\d"    ;
-const char*FSA::range = "\\-"    ;
-const char*FSA::all   = "\\."    ;
-const char*FSA::space = " \t\r\n";
+const std::string FSA::els   = ""       ;
+const std::string FSA::eof   = "\\e"    ;
+const std::string FSA::digit = "\\d"    ;
+const std::string FSA::range = "\\-"    ;
+const std::string FSA::all   = "\\."    ;
+const std::string FSA::space = " \t\r\n";
 

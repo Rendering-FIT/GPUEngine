@@ -11,12 +11,15 @@ Transition::Transition(State*state,RuleCallback callback,void* data){
   this->_callbackData = data    ;
 }
 
+Transition::~Transition(){
+}
+
 void Transition::setCallback(RuleCallback callback,void* data){
   this->_callback     = callback;
   this->_callbackData = data    ;
 }
 
-State* Transition::getNextState(){
+State* Transition::getNextState()const{
   return this->_nextState;
 }
 
@@ -24,18 +27,18 @@ void Transition::setNextState(State*state){
   this->_nextState = state;
 }
 
-RuleCallback Transition::getCallback(){
+RuleCallback Transition::getCallback()const{
   return this->_callback;
 }
 
-void* Transition::getCallbackData(){
+void* Transition::getCallbackData()const{
   return this->_callbackData;
 }
 
-void Transition::callCallback(FSA*fsa){
+void Transition::callCallback(FSA*fsa)const{
   if(this->_callback)this->_callback(fsa,this->_callbackData);
 }
-std::string Transition::toStr(){
+std::string Transition::toStr()const{
   std::stringstream ss;
   ss<<this->_nextState->getName();
   return ss.str();

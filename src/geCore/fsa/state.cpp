@@ -5,12 +5,15 @@
 
 using namespace ge::core;
 
-State::State(const char* name){
+State::State(std::string name){
   this->_name = name;
-  this->_elseTransition.setCallback (NULL);
-  this->_elseTransition.setNextState(NULL);
-  this->_eofTransition .setCallback (NULL);
-  this->_eofTransition .setNextState(NULL);
+  this->_elseTransition.setCallback (nullptr);
+  this->_elseTransition.setNextState(nullptr);
+  this->_eofTransition .setCallback (nullptr);
+  this->_eofTransition .setNextState(nullptr);
+}
+
+State::~State(){
 }
 
 void State::addTransition(
@@ -18,12 +21,17 @@ void State::addTransition(
     State*       state   ,
     RuleCallback callback,
     void*        data    ){
-  if(this->_transitions.count(lex)){
-    if(this->_transitions[lex].getNextState()!=state){
-      std::cerr<<"you cannot create nondeterministic fsa: "
-        <<this->getName()<<"-"<<lex<<"->"<<state->getName()<<std::endl;
-    }else this->_transitions[lex].setCallback(callback,data);
-  }else this->_transitions[lex]=Transition(state,callback,data);
+  auto ii=this->_transitions.find(lex);
+  if(ii==this->_transitions.end()){
+    this->_transitions[lex]=Transition(state,callback,data);
+    return;
+  }
+  if(ii->second.getNextState()!=state){
+    std::cerr<<"you cannot create nondeterministic fsa: "
+      <<this->getName()<<"-"<<lex<<"->"<<state->getName()<<std::endl;
+    return;
+  }
+  ii->second.setCallback(callback,data);
 }
 
 void State::addElseTransition(
@@ -54,31 +62,31 @@ void State::setEOFCallback(RuleCallback cb,void*data){
   this->_eofTransition.setCallback(cb,data);
 }
 
-Transition&State::getTransition(char lex){
-  return this->_transitions[lex];
+Transition const&State::getTransition(char lex)const{
+  return this->_transitions.find(lex)->second;
 }
 
-Transition&State::getElseTransition(){
+Transition const&State::getElseTransition()const{
   return this->_elseTransition;
 }
 
-Transition&State::getEOFTransition(){
+Transition const&State::getEOFTransition()const{
   return this->_eofTransition;
 }
 
-const char* State::getName(){
+std::string State::getName()const{
   return this->_name;
 }
 
-unsigned State::getNofTransition(){
+unsigned State::getNofTransition()const{
   return this->_transitions.size();
 }
 
-char State::getTransitionLex(unsigned i){
-  std::map<char,Transition>::iterator ii=this->_transitions.begin();
-  for(unsigned j=0;j<i;++j)
-    ii++;
-  return ii->first;
+char State::getTransitionLex(unsigned i)const{
+  unsigned counter=0;
+  for(auto x:this->_transitions)
+    if(counter==i)return x.first;
+  return 0;
 }
 
 void State::clearTransitions   (){
@@ -106,29 +114,32 @@ void State::setEOFEndState(State*state){
 }
 
 State* State::apply(char lex,FSA*fsa){
-  //std::cerr<<"apply: "<<this->getName()<<":"<<lex<<std::endl;
-  if(!this->_transitions.count(lex)){
+  auto ii=this->_transitions.find(lex);
+  if(ii==this->_transitions.end()){
     this->_elseTransition.callCallback(fsa);
     return this->_elseTransition.getNextState();
   }
-  Transition tt=this->_transitions[lex];
-  tt.callCallback(fsa);
-  return tt.getNextState();
+  ii->second.callCallback(fsa);
+  return ii->second.getNextState();
 }
 
-std::string State::toStr(){
+std::string State::toStr()const{
   std::stringstream ss;
-  std::map<char,Transition>::iterator ii=this->_transitions.begin();
-  if(ii!=this->_transitions.end()){
-    ss<<ii->first<<"->"<<ii->second.toStr();
-    ii++;
+  bool first=true;
+  for(auto x:this->_transitions){
+    if(first)first=false;
+    else ss<<",";
+    ss<<x.first<<"->"<<x.second.toStr();
   }
-  for(;ii!=this->_transitions.end();++ii)
-    ss<<","<<ii->first<<"->"<<ii->second.toStr();
-  if(this->_elseTransition.getNextState())
-    ss<<",else->"<<this->_elseTransition.getNextState()->getName();
-  if(this->_eofTransition.getNextState())
-    ss<<",eof->"<<this->_eofTransition.getNextState()->getName();
+
+  if(this->_elseTransition.getNextState()){
+    if(this->_transitions.size()>0)ss<<",";
+    ss<<"else->"<<this->_elseTransition.getNextState()->getName();
+  }
+  if(this->_eofTransition.getNextState()){
+    if(this->_transitions.size()>0||this->_elseTransition.getNextState()!=nullptr)ss<<",";
+    ss<<"eof->"<<this->_eofTransition.getNextState()->getName();
+  }
   return ss.str();
 }
 

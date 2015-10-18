@@ -1,29 +1,31 @@
 #pragma once
 
 #include<iostream>
+#include<geCore/Export.h>
 
 namespace ge{
   namespace core{
     class FSA;
     typedef void(*RuleCallback)(FSA*,void*);
     class State;
-    class Transition{
+    class GECORE_EXPORT Transition{
       private:
-        State*       _nextState   ;
-        RuleCallback _callback    ;
-        void*        _callbackData;
+        State*       _nextState    = nullptr;
+        RuleCallback _callback     = nullptr;
+        void*        _callbackData = nullptr;
       public:
         Transition(
-            State*       state        = NULL,
-            RuleCallback callback     = NULL,
-            void*        callbackData = NULL);
-        void setCallback(RuleCallback callback=NULL,void* callbackData=NULL);
-        State*       getNextState   (           );
-        void         setNextState   (State*state = NULL);
-        RuleCallback getCallback    (           );
-        void*        getCallbackData(           );
-        void         callCallback   (FSA*fsa    );
-        std::string  toStr          (           );
+            State*       state        = nullptr,
+            RuleCallback callback     = nullptr,
+            void*        callbackData = nullptr);
+        virtual ~Transition();
+        void setCallback(RuleCallback callback = nullptr,void* callbackData = nullptr);
+        State*       getNextState   (           )const;
+        RuleCallback getCallback    (           )const;
+        void*        getCallbackData(           )const;
+        void         callCallback   (FSA*fsa    )const;
+        std::string  toStr          (           )const;
+        void         setNextState   (State*state = nullptr);
     };
   }
 }

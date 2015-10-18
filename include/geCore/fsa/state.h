@@ -1,49 +1,51 @@
 #pragma once
 
 #include<map>
+#include<geCore/Export.h>
 #include<geCore/fsa/transition.h>
 
 namespace ge{
   namespace core{
     class FSA;
-    class State{
+    class GECORE_EXPORT State{
       private:
-        const char*              _name          ;
+        std::string              _name          ;
         std::map<char,Transition>_transitions   ;
         Transition               _elseTransition;
         Transition               _eofTransition ;
       public:
-        State(const char* name);
+        State(std::string name);
+        virtual ~State();
         void addTransition(
-            char         lex            ,
-            State*       state    = NULL,
-            RuleCallback callback = NULL,
-            void*        data     = NULL);
+            char         lex               ,
+            State*       state    = nullptr,
+            RuleCallback callback = nullptr,
+            void*        data     = nullptr);
         void addElseTransition(
-            State*       state    = NULL,
-            RuleCallback callback = NULL,
-            void*        data     = NULL);
+            State*       state    = nullptr,
+            RuleCallback callback = nullptr,
+            void*        data     = nullptr);
         void addEOFTransition(
-            State*       state    = NULL,
-            RuleCallback callback = NULL,
-            void*        data     = NULL);
-        void setCallback    (char lex,RuleCallback callback = NULL,void* data = NULL);
-        void setElseCallback(         RuleCallback callback = NULL,void* data = NULL);
-        void setEOFCallback (         RuleCallback callback = NULL,void* data = NULL);
-        Transition&getTransition    (char lex);
-        Transition&getElseTransition(        );
-        Transition&getEOFTransition (        );
+            State*       state    = nullptr,
+            RuleCallback callback = nullptr,
+            void*        data     = nullptr);
+        void setCallback    (char lex,RuleCallback callback = nullptr,void* data = nullptr);
+        void setElseCallback(         RuleCallback callback = nullptr,void* data = nullptr);
+        void setEOFCallback (         RuleCallback callback = nullptr,void* data = nullptr);
+        Transition const&getTransition    (char lex)const;
+        Transition const&getElseTransition(        )const;
+        Transition const&getEOFTransition (        )const;
         void       clearTransitions   ();
         void       clearElseTransition();
         void       clearEofTransition ();
-        const char* getName();
-        unsigned   getNofTransition();
-        char       getTransitionLex(unsigned i);
-        void       setEndState    (char lex,State*state = NULL);
-        void       setElseEndState(         State*state = NULL);
-        void       setEOFEndState (         State*state = NULL);
+        std::string getName()const;
+        unsigned   getNofTransition()const;
+        char       getTransitionLex(unsigned i)const;
+        void       setEndState    (char lex,State*state = nullptr);
+        void       setElseEndState(         State*state = nullptr);
+        void       setEOFEndState (         State*state = nullptr);
         State*     apply(char lex,FSA*fsa);
-        std::string toStr();
+        std::string toStr()const;
     };
   }
 }
