@@ -45,7 +45,13 @@ namespace ge{
         void       setElseEndState(         State*state = nullptr);
         void       setEOFEndState (         State*state = nullptr);
         State*     apply(char lex,FSA*fsa);
+        bool       hasElseTransition()const;
+        bool       hasEOFTransition()const;
+        bool       hasTransition(char lex)const;
         std::string toStr()const;
+        typedef std::map<char,Transition>::const_iterator Iterator;
+        Iterator begin()const;
+        Iterator end  ()const;
     };
   }
 }

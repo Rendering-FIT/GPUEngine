@@ -1,6 +1,8 @@
 #include<geCore/fsa/fsa.h>
 #include<sstream>
+#include<set>
 #include<algorithm>
+#include<geCore/disjointSet.h>
 
 using namespace ge::core;
 
@@ -100,9 +102,113 @@ std::string FSA::_expandLex(std::string lex)const{
   return elex;
 }
 
+void FSA::removeUnreachableStates(){
+  std::set<State*>reachable;
+  reachable.insert(this->_name2State[this->_start]);
+  unsigned oldSize=reachable.size();
+  unsigned newSize=0;
+  do{
+    std::vector<State*>newStates;
+    for(auto x:reachable){
+      for(auto y:*x)
+        newStates.push_back(y.second.getNextState());
+      if(x->getElseTransition().getNextState())
+        newStates.push_back(x->getElseTransition().getNextState());
+      if(x->getEOFTransition().getNextState())
+        newStates.push_back(x->getEOFTransition().getNextState());
+    }
+    for(auto x:newStates)
+      reachable.insert(x);
+    newSize=reachable.size();
+  }while(oldSize!=newSize);
+  std::vector<State*>statesToRemove;
+  for(auto x:this->_states)
+    if(reachable.find(x)==reachable.end())
+      statesToRemove.push_back(x);
+  this->_states.clear();
+  this->_name2State.clear();
+  for(auto x:statesToRemove)
+    delete x;
+  for(auto x:reachable){
+    this->_states.push_back(x);
+    this->_name2State[x->getName()]=x;
+  }
+}
+
+void FSA::removeUndistinguishabeStates(){
+  std::vector<ge::core::DisjointSet<State*>>eq;
+  eq.push_back(ge::core::DisjointSet<State*>());
+  for(auto p:this->_states)
+    for(auto q:this->_states){
+      if(
+          p->getEOFTransition().getNextState()!=nullptr &&
+          q->getEOFTransition().getNextState()!=nullptr &&
+          p->getEOFTransition().getCallback() == q->getEOFTransition().getCallback() &&
+          p->getEOFTransition().getCallbackData() == q->getEOFTransition().getCallbackData()
+          )
+        eq[0].add(p,q);
+    }
+  do{
+    ge::core::DisjointSet<State*>newEq;
+    for(auto p:this->_states)
+      for(auto q:this->_states){
+        auto lastRel=eq[eq.size()-1];
+        if(!lastRel.eq(p,q))continue;
+        if(p->getNofTransition()!=q->getNofTransition())continue;
+        bool transitionsOk=true;
+        for(unsigned i=0;i<p->getNofTransition();++i){
+          char lex=p->getTransitionLex(i);
+          if(!q->hasTransition(lex)){
+            transitionsOk=false;
+            break;
+          }
+          if(p->getTransition(lex).getCallbackData()!=q->getTransition(lex).getCallbackData()){
+            transitionsOk=false;
+            break;
+          }
+          if(p->getTransition(lex).getCallback()!=q->getTransition(lex).getCallback()){
+            transitionsOk=false;
+            break;
+          }
+          if(!lastRel.eq(p->getTransition(lex).getNextState(),q->getTransition(lex).getNextState())){
+            transitionsOk=false;
+            break;
+          }
+        }
+        if(!transitionsOk)continue;
+        if(q->hasElseTransition()!=p->hasElseTransition())continue;
+        if(q->hasEOFTransition()!=p->hasEOFTransition())continue;
+        if(q->getElseTransition().getNextState()   !=p->getElseTransition().getNextState())continue;
+        if(q->getElseTransition().getCallback()    !=p->getElseTransition().getCallback())continue;
+        if(q->getElseTransition().getCallbackData()!=p->getElseTransition().getCallbackData())continue;
+        if(q->getEOFTransition().getNextState()   !=p->getEOFTransition().getNextState())continue;
+        if(q->getEOFTransition().getCallback()    !=p->getEOFTransition().getCallback())continue;
+        if(q->getEOFTransition().getCallbackData()!=p->getEOFTransition().getCallbackData())continue;
+        newEq.add(p,q);
+      }
+    eq.push_back(newEq);
+  }while(!(eq[eq.size()-1]==eq[eq.size()-2]));
+  auto lastRel=eq[eq.size()-1];
+  std::vector<State*>newStates;
+  std::map<std::string,State*>newName2State;
+  for(auto x:lastRel){
+    std::string name="";
+    for(auto y:x)
+      name+=y->getName();
+    auto newState=new State(name);
+    newStates.push_back(newState);
+    newName2State[name]=newState;
+
+
+
+  }
+
+}
+
 FSA::FSA(std::string start){
   this->_start = start;
-  this->_addState(start);
+  if(this->_start!="")
+    this->_addState(start);
 }
 
 FSA::~FSA(){
@@ -177,6 +283,7 @@ bool FSA::run(std::string text){
     pos++;
     curState=newState;
   }
+  if(!curState->getEOFTransition().getNextState())return false;
   curState->getEOFTransition().callCallback(this);
   return true;
 }
@@ -203,6 +310,22 @@ std::string FSA::toStr()const{
     ss<<x->getName()<<": "<<x->toStr()<<std::endl;
   return ss.str();
 }
+
+/*
+State*recPlus(FSA*result,State*a,State*b){
+  auto newState=new State(a->getName()+b->getName());
+  return newState;
+}
+*/
+FSA*FSA::operator+(FSA const&other)const{
+  FSA*result=new FSA(this->_start+other._start);
+  //auto s=this->_name2State.find(this->_start)->second;
+  return result;
+}
+/*
+FSA const& FSA::operator*(FSA const&other)const{
+}
+*/
 
 const std::string FSA::els   = ""       ;
 const std::string FSA::eof   = "\\e"    ;

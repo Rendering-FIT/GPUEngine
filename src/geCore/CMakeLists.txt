@@ -37,6 +37,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/Object.h
     ${HEADER_PATH}/StandardSemanticsNames.h
     ${HEADER_PATH}/TypeRegister.h
+    ${HEADER_PATH}/disjointSet.h
   )
 
 set(CORE_SOURCES

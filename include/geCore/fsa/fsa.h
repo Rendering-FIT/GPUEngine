@@ -75,14 +75,13 @@ namespace ge{
           this->_processArgs(stateA,lex,stateB);
           this->_processArgs(a0,args...);
         }
-
       public:
         template<typename...Args>
           FSA(std::string start,Args... args){
             this->_start=start;
             this->_processArgs(args...);
           }
-        FSA(std::string start);
+        FSA(std::string start = "");
         virtual ~FSA();
         void addTransition(
             std::string  stateA            ,
@@ -118,8 +117,10 @@ namespace ge{
         std::string getCurrentStateName ()const;
         unsigned    getCurrentPosition  ()const;
         std::string toStr()const;
-        void unionFsa    (FSA const&other);
-        void intersectFsa(FSA const&other);
+        void removeUnreachableStates();
+        void removeUndistinguishabeStates();
+        FSA* operator+(FSA const&other)const;
+        FSA* operator*(FSA const&other)const;
     };
 
   }

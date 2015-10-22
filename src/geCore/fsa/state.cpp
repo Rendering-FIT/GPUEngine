@@ -123,6 +123,18 @@ State* State::apply(char lex,FSA*fsa){
   return ii->second.getNextState();
 }
 
+bool State::hasElseTransition()const{
+  return this->_elseTransition.getNextState()!=nullptr;
+}
+
+bool State::hasEOFTransition()const{
+  return this->_eofTransition.getNextState()!=nullptr;
+}
+
+bool State::hasTransition(char lex)const{
+  return this->_transitions.find(lex)!=this->_transitions.end();
+}
+
 std::string State::toStr()const{
   std::stringstream ss;
   bool first=true;
@@ -143,4 +155,11 @@ std::string State::toStr()const{
   return ss.str();
 }
 
+State::Iterator State::begin()const{
+  return this->_transitions.begin();
+}
+
+State::Iterator State::end  ()const{
+  return this->_transitions.end();
+}
 
