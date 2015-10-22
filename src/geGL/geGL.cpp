@@ -21,6 +21,11 @@ using namespace ge::gl;
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId)
   #define  POP_VAO()\
     glBindVertexArray(oldId)
+  #define PUSH_SAMPLER()\
+    GLuint oldId;\
+    glGetIntegeri_v(GL_SAMPLER_BINDING,0,(GLint*)&oldId);
+  #define POP_SAMPLER()\
+    glBindSampler(0,oldId);
 #else //SAVE_PREVIOUS_BINDING
   #define PUSH_WRITE_BUFFER()
   #define POP_WRITE_BUFFER()
@@ -28,6 +33,8 @@ using namespace ge::gl;
   #define POP_READ_BUFFER()
   #define PUSH_VAO()
   #define  POP_VAO()
+  #define PUSH_SAMPLER()
+  #define POP_SAMPLER()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -211,6 +218,13 @@ void geGL_glVertexArrayAttribBinding(GLuint id,GLuint attribindex,GLuint binding
   POP_VAO();
 }
 
+void geGL_glCreateSamplers(GLsizei n,GLuint*samplers){
+  PUSH_SAMPLER();
+  glGenSamplers(n,samplers);
+  for(GLsizei i=0;i<n;++i)
+    glBindSampler(0,samplers[i]);
+  POP_SAMPLER();
+}
 
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
@@ -281,12 +295,17 @@ void implementVertexArrayDSA(){
   IMPLEMENT (glVertexArrayAttribBinding     );
 }
 
+void implementSamplerDSA(){
+  IMPLEMENT(glCreateSamplers);
+}
+
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
 void ge::gl::init(){
   implementBufferDSA     ();
   implementVertexArrayDSA();
+  implementSamplerDSA    ();
 }
 
 
