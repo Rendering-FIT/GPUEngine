@@ -12,7 +12,7 @@ namespace ge{
     GEGL_EXPORT unsigned    getTypeSize        (GLenum    type   );
     class GEGL_EXPORT VertexArrayObject: public OpenGLObject{
       protected:
-        inline GLint _getAttrib(GLuint index,GLenum pname);
+        inline GLint _getAttrib(GLuint index,GLenum pname)const;
       public:
         enum AttribPointerType{
           NONE,
@@ -30,24 +30,24 @@ namespace ge{
             const GLvoid           *pointer           = NULL    ,
             GLboolean               normalized        = GL_FALSE,  
             GLuint                  divisor           = 0       ,
-            enum AttribPointerType  attribPointerType = NONE    );
+            enum AttribPointerType  attribPointerType = NONE    )const;
         void addElementBuffer(
-            GLuint  buffer);
-        void bind  ();
-        void unbind();
-        GLuint    getAttribBufferBinding (GLuint index);
-        GLboolean isAttribEnabled        (GLuint index);
-        GLint     getAttribSize          (GLuint index);
-        GLsizei   getAttribStride        (GLuint index);
-        GLenum    getAttribType          (GLuint index);
-        GLboolean isAttribNormalized     (GLuint index);
-        GLboolean isAttribInteger        (GLuint index);
-        GLboolean isAttribLong           (GLuint index);
-        GLuint    getAttribDivisor       (GLuint index);
-        GLuint    getAttribBinding       (GLuint index);
-        GLuint    getAttribRelativeOffset(GLuint index);
-        GLuint    getElementBuffer();
-        std::string getInfo();
+            GLuint  buffer)const;
+        void bind  ()const;
+        void unbind()const;
+        GLuint    getAttribBufferBinding (GLuint index)const;
+        GLboolean isAttribEnabled        (GLuint index)const;
+        GLint     getAttribSize          (GLuint index)const;
+        GLsizei   getAttribStride        (GLuint index)const;
+        GLenum    getAttribType          (GLuint index)const;
+        GLboolean isAttribNormalized     (GLuint index)const;
+        GLboolean isAttribInteger        (GLuint index)const;
+        GLboolean isAttribLong           (GLuint index)const;
+        GLuint    getAttribDivisor       (GLuint index)const;
+        GLuint    getAttribBinding       (GLuint index)const;
+        GLuint    getAttribRelativeOffset(GLuint index)const;
+        GLuint    getElementBuffer()const;
+        std::string getInfo()const;
         void addAttrib(
             ge::gl::BufferObject   *buffer                      ,
             GLuint                  index                       ,
@@ -57,9 +57,9 @@ namespace ge{
             const GLvoid           *pointer           = NULL    ,
             GLboolean               normalized        = GL_FALSE,  
             GLuint                  divisor           = 0       ,
-            enum AttribPointerType  attribPointerType = NONE    );
+            enum AttribPointerType  attribPointerType = NONE    )const;
         void addElementBuffer(
-            ge::gl::BufferObject *buffer);
+            ge::gl::BufferObject *buffer)const;
     };
   }//gl
 }//ge

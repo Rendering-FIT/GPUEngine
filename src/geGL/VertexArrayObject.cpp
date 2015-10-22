@@ -81,7 +81,7 @@ void VertexArrayObject::addAttrib(
     const GLvoid           *pointer      ,
     GLboolean               normalized   ,
     GLuint                  divisor      ,
-    enum AttribPointerType  apt          ){
+    enum AttribPointerType  apt          )const{
   if(stride==0)
     stride=ge::gl::getTypeSize(type)*nofComponents;
   glVertexArrayAttribBinding (this->_id,index,index);
@@ -99,75 +99,75 @@ void VertexArrayObject::addAttrib(
 }
 
 void VertexArrayObject::addElementBuffer(
-    GLuint buffer){
+    GLuint buffer)const{
   glVertexArrayElementBuffer(this->_id,buffer);
 }
 
-void VertexArrayObject::bind(){
+void VertexArrayObject::bind()const{
   glBindVertexArray(this->_id);
 }
 
-void VertexArrayObject::unbind(){
+void VertexArrayObject::unbind()const{
   glBindVertexArray(0);
 }
 
-GLint VertexArrayObject::_getAttrib(GLuint index,GLenum pname){
+GLint VertexArrayObject::_getAttrib(GLuint index,GLenum pname)const{
   GLint param;
   glGetVertexArrayIndexediv(this->_id,index,pname,&param);
   return param;
 }
 
-GLuint    VertexArrayObject::getAttribBufferBinding (GLuint index){
+GLuint    VertexArrayObject::getAttribBufferBinding (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
 }
 
-GLboolean VertexArrayObject::isAttribEnabled        (GLuint index){
+GLboolean VertexArrayObject::isAttribEnabled        (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_ENABLED);
 }
 
-GLint     VertexArrayObject::getAttribSize          (GLuint index){
+GLint     VertexArrayObject::getAttribSize          (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_SIZE);
 }
 
-GLsizei   VertexArrayObject::getAttribStride        (GLuint index){
+GLsizei   VertexArrayObject::getAttribStride        (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_STRIDE);
 }
 
-GLenum    VertexArrayObject::getAttribType          (GLuint index){
+GLenum    VertexArrayObject::getAttribType          (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_TYPE);
 }
 
-GLboolean VertexArrayObject::isAttribNormalized    (GLuint index){
+GLboolean VertexArrayObject::isAttribNormalized    (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_NORMALIZED);
 }
 
-GLboolean VertexArrayObject::isAttribInteger       (GLuint index){
+GLboolean VertexArrayObject::isAttribInteger       (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_INTEGER);
 }
 
-GLboolean VertexArrayObject::isAttribLong          (GLuint index){
+GLboolean VertexArrayObject::isAttribLong          (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_LONG);
 }
 
-GLuint    VertexArrayObject::getAttribDivisor       (GLuint index){
+GLuint    VertexArrayObject::getAttribDivisor       (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_DIVISOR);
 }
 
-GLuint    VertexArrayObject::getAttribBinding       (GLuint index){
+GLuint    VertexArrayObject::getAttribBinding       (GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_BINDING);
 }
 
-GLuint    VertexArrayObject::getAttribRelativeOffset(GLuint index){
+GLuint    VertexArrayObject::getAttribRelativeOffset(GLuint index)const{
   return this->_getAttrib(index,GL_VERTEX_ATTRIB_RELATIVE_OFFSET);
 }
 
-GLuint    VertexArrayObject::getElementBuffer(){
+GLuint    VertexArrayObject::getElementBuffer()const{
   GLint id;
   glGetVertexArrayiv(this->_id,GL_ELEMENT_ARRAY_BUFFER_BINDING,&id);
   return id;
 }
 
-std::string VertexArrayObject::getInfo(){
+std::string VertexArrayObject::getInfo()const{
   std::stringstream ss;
   GLint maxVertexAttribs;
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&maxVertexAttribs);
@@ -205,7 +205,7 @@ void VertexArrayObject::addAttrib(
     const GLvoid           *pointer      ,
     GLboolean               normalized   ,
     GLuint                  divisor      ,
-    enum AttribPointerType  apt          ){
+    enum AttribPointerType  apt          )const{
   this->addAttrib(
       buffer->getId(),
       index,
@@ -219,7 +219,7 @@ void VertexArrayObject::addAttrib(
 }
 
 void VertexArrayObject::addElementBuffer(
-    ge::gl::BufferObject *buffer){
+    ge::gl::BufferObject *buffer)const{
   this->addElementBuffer(buffer->getId());
 }
 
