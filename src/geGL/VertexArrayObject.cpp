@@ -45,91 +45,20 @@ unsigned ge::gl::getTypeSize(GLenum type){
   }
 }
 
-namespace ge{
-  namespace gl{
-    void _glCreateVertexArrays(GLsizei n,GLuint*arrays);
-  }
-}
-
-void ge::gl::_glCreateVertexArrays(GLsizei n,GLuint*arrays){
-  GLint oldVAO;
-  glGetIntegerv(GL_VERTEX_ARRAY_BINDING,&oldVAO);
-  glGenVertexArrays(n,arrays);
-  for(GLint i=0;i<n;++n)glBindVertexArray(arrays[n]);
-  glBindVertexArray(oldVAO);
-}
-
-void initVertexArrayObjects(){
-  std::string result320  = "";
-  std::string result420  = "";
-  std::string warning320 = "";
-  std::string warning420 = "";
-  bool openGL320=true;
-  bool openGL420=true;
-  if(!glBindBuffer             ){result320+="glBindBuffer "             ;openGL320=false;}
-  if(!glBindVertexArray        ){result320+="glBindVertexArray "        ;openGL320=false;}
-  if(!glDeleteVertexArrays     ){result320+="glDeleteVertexArrays "     ;openGL320=false;}
-  if(!glEnableVertexAttribArray){result320+="glEnableVertexAttribArray ";openGL320=false;}
-  if(!glGenVertexArrays        ){result320+="glGenVertexArrays "        ;openGL320=false;}
-  //if(!glGetIntegerv            ){result320+="glGetIntegerv "            ;openGL320=false;}
-  if(!glGetVertexAttribiv      ){result320+="glGetVertexAttribiv "      ;openGL320=false;}
-  if(!glVertexAttribPointer    ){
-    if(glVertexAttribPointerARB){
-      glVertexAttribPointer=glVertexAttribPointerARB;
-      warning320+="glVertexAttribPointer=glVertexAttribPointerARB ";
-    /*}else if(glVertexAttribPointerNV){
-      glVertexAttribPointer=glVertexAttribPointerNV;
-      warning320+="glVertexAttribPointer=glVertexAttribPointerNV";*/
-    }else{
-      result320+="glVertexAttribPointer "    ;
-      openGL320=false;
-    }
-  }
-  if(!glVertexAttribIPointer   ){
-    if(glVertexAttribIPointerEXT){
-      glVertexAttribIPointer=glVertexAttribIPointerEXT;
-      warning320="glVertexAttribIPointer=glVertexAttribIPointerEXT";
-    }else{
-      result320+="glVertexAttribIPointer "   ;
-      openGL320=false;
-    }
-  }
-//  if(!glCreateVertexArrays){
-//    glCreateVertexArrays=ge::gl::_glCreateVertexArrays;
-//  }
-  if(!glVertexAttribLPointer){
-    if(glVertexAttribLPointerEXT){
-      glVertexAttribLPointer=glVertexAttribLPointerEXT;
-      warning420+="glVertexAttribLPointer=glVertexAttribLPointerEXT";
-    }else{
-      result420+="glVertexAttribLPointer "   ;
-      openGL420=false;
-    }
-  }
-  if(!openGL320){
-    throw(std::string(result320));
-  }
-  if(!openGL420){
-    throw(std::string(result420));
-  }
-}
-
 /**
  * @brief Creates empty vertex array object
  */
 VertexArrayObject::VertexArrayObject (){
-#ifndef USE_DSA
-  glGenVertexArrays   (1,&this->_id);
-#else //USE_DSA
   glCreateVertexArrays(1,&this->_id);
-#endif//USE_DSA
 }
+
 /**
  * @brief Destroyes vertex array object
  */
 VertexArrayObject::~VertexArrayObject(){
   glDeleteVertexArrays(1,&this->_id);
 }
+
 /**
  * @brief Adds vertex attrib into vertex array object
  *
@@ -153,22 +82,7 @@ void VertexArrayObject::addAttrib(
     GLboolean               normalized   ,
     GLuint                  divisor      ,
     enum AttribPointerType  apt          ){
-#ifndef USE_DSA
-  this->bind();
-  glBindBuffer(GL_ARRAY_BUFFER,buffer);
-  glEnableVertexAttribArray(index);
-
-  if(apt==VertexArrayObject::AttribPointerType::NONE)
-    glVertexAttribPointer (index,nofComponents,type,normalized,stride,pointer);
-  else if(apt==VertexArrayObject::AttribPointerType::I)
-    glVertexAttribIPointer(index,nofComponents,type,stride,pointer);
-  else if(apt==VertexArrayObject::AttribPointerType::L)
-    glVertexAttribLPointer(index,nofComponents,type,stride,pointer);    
-
-  glVertexAttribDivisor    (index,divisor);
-  this->unbind();
-#else //USE_DSA
-  if(stride==VERTEXARRAYOBJECT_DEFAULT_STRIDE)
+  if(stride==0)
     stride=ge::gl::getTypeSize(type)*nofComponents;
   glVertexArrayAttribBinding (this->_id,index,index);
   glEnableVertexArrayAttrib  (this->_id,index);
@@ -182,81 +96,77 @@ void VertexArrayObject::addAttrib(
 
   glVertexArrayVertexBuffer  (this->_id,index,buffer,(GLintptr)pointer,stride);
   glVertexArrayBindingDivisor(this->_id,index,divisor);
-#endif//USE_DSA
 }
+
 void VertexArrayObject::addElementBuffer(
     GLuint buffer){
-#ifndef USE_DSA
-  this->bind();
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffer);
-  this->unbind();
-#else //USE_DSA
   glVertexArrayElementBuffer(this->_id,buffer);
-#endif//USE_DSA
 }
+
 void VertexArrayObject::bind(){
   glBindVertexArray(this->_id);
 }
+
 void VertexArrayObject::unbind(){
-  glBindVertexArray(VERTExARRAYOBJECT_DEFAULT_ID);
+  glBindVertexArray(0);
 }
 
-GLint     VertexArrayObject::getAttrib(GLuint index,GLenum pname){
+GLint VertexArrayObject::_getAttrib(GLuint index,GLenum pname){
   GLint param;
-#ifndef USE_DSA
-  this->bind();
-  glGetVertexAttribiv(index,pname,&param);
-  this->unbind();
-#else //USE_DSA
   glGetVertexArrayIndexediv(this->_id,index,pname,&param);
-#endif//USE_DSA
   return param;
 }
 
 GLuint    VertexArrayObject::getAttribBufferBinding (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
 }
+
 GLboolean VertexArrayObject::isAttribEnabled        (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_ENABLED);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_ENABLED);
 }
+
 GLint     VertexArrayObject::getAttribSize          (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_SIZE);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_SIZE);
 }
+
 GLsizei   VertexArrayObject::getAttribStride        (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_STRIDE);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_STRIDE);
 }
+
 GLenum    VertexArrayObject::getAttribType          (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_TYPE);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_TYPE);
 }
+
 GLboolean VertexArrayObject::isAttribNormalized    (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_NORMALIZED);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_NORMALIZED);
 }
+
 GLboolean VertexArrayObject::isAttribInteger       (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_INTEGER);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_INTEGER);
 }
+
 GLboolean VertexArrayObject::isAttribLong          (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_LONG);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_LONG);
 }
+
 GLuint    VertexArrayObject::getAttribDivisor       (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_DIVISOR);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_DIVISOR);
 }
+
 GLuint    VertexArrayObject::getAttribBinding       (GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_BINDING);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_BINDING);
 }
+
 GLuint    VertexArrayObject::getAttribRelativeOffset(GLuint index){
-  return this->getAttrib(index,GL_VERTEX_ATTRIB_RELATIVE_OFFSET);
+  return this->_getAttrib(index,GL_VERTEX_ATTRIB_RELATIVE_OFFSET);
 }
+
 GLuint    VertexArrayObject::getElementBuffer(){
   GLint id;
-#ifndef USE_DSA
-  this->bind();
-  glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER,&id);
-  this->unbind();
-#else //USE_DSA
   glGetVertexArrayiv(this->_id,GL_ELEMENT_ARRAY_BUFFER_BINDING,&id);
-#endif//USE_DSA
   return id;
 }
+
 std::string VertexArrayObject::getInfo(){
   std::stringstream ss;
   GLint maxVertexAttribs;
@@ -285,7 +195,7 @@ std::string VertexArrayObject::getInfo(){
   }
   return ss.str();
 }
-#ifndef REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
+
 void VertexArrayObject::addAttrib(
     ge::gl::BufferObject   *buffer       ,
     GLuint                  index        ,
@@ -307,6 +217,7 @@ void VertexArrayObject::addAttrib(
       divisor,
       apt);
 }
+
 void VertexArrayObject::addElementBuffer(
     ge::gl::BufferObject *buffer){
   this->addElementBuffer(buffer->getId());
@@ -341,5 +252,3 @@ void VertexArrayObject::addElementBuffer(
 //glVertexArrayElementBuffer
 //glVertexArrayVertexBuffer
 
-
-#endif//REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS

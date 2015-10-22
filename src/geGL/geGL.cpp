@@ -16,11 +16,18 @@ using namespace ge::gl;
     glGetIntegerv(GL_COPY_WRITE_BUFFER_BINDING,(GLint*)&oldReadId)
   #define POP_READ_BUFFER()\
     glBindBuffer(GL_COPY_WRITE_BUFFER,oldReadId)
+  #define PUSH_VAO()\
+    GLuint oldId;\
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId)
+  #define  POP_VAO()\
+    glBindVertexArray(oldId)
 #else //SAVE_PREVIOUS_BINDING
   #define PUSH_WRITE_BUFFER()
   #define POP_WRITE_BUFFER()
   #define PUSH_READ_BUFFER()
   #define POP_READ_BUFFER()
+  #define PUSH_VAO()
+  #define  POP_VAO()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -126,30 +133,160 @@ void geGL_glGetNamedBufferPointerv(GLuint buffer,GLenum pname,GLvoid**param){
   POP_WRITE_BUFFER();
 }
 
+void geGL_glGetVertexArrayiv(GLuint id,GLenum pname,GLint*param){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glGetIntegerv(pname,param);
+  POP_VAO();
+}
+
+void geGL_glGetVertexArrayIndexediv(GLuint id,GLuint index,GLenum pname,GLint*param){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glGetVertexAttribiv(index,pname,param);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayElementBuffer(GLuint id,GLuint buffer){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,buffer);
+  POP_VAO();
+}
+
+void geGL_glCreateVertexArrays(GLsizei n,GLuint*arrays){
+  PUSH_VAO();
+  glGenVertexArrays(n,arrays);
+  for(GLsizei i=0;i<n;++i)
+    glBindVertexArray(arrays[i]);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayBindingDivisor(GLuint id,GLuint bindingindex,GLuint divisor){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glVertexBindingDivisor(bindingindex,divisor);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayVertexBuffer(GLuint id,GLuint bindingindex,GLuint buffer,GLintptr offset,GLsizei stride){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glBindVertexBuffer(bindingindex,buffer,offset,stride);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayAttribLFormat(GLuint id,GLuint attribindex,GLint size,GLenum type,GLuint relativeoffset){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glVertexAttribLFormat(attribindex,size,type,relativeoffset);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayAttribIFormat(GLuint id,GLuint attribindex,GLint size,GLenum type,GLuint relativeoffset){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glVertexAttribIFormat(attribindex,size,type,relativeoffset);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayAttribFormat(GLuint id,GLuint attribindex,GLint size,GLenum type,GLboolean normalized,GLuint relativeoffset){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glVertexAttribFormat(attribindex,size,type,normalized,relativeoffset);
+  POP_VAO();
+}
+
+void geGL_glEnableVertexArrayAttrib(GLuint id,GLuint index){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glEnableVertexAttribArray(index);
+  POP_VAO();
+}
+
+void geGL_glVertexArrayAttribBinding(GLuint id,GLuint attribindex,GLuint bindingindex){
+  PUSH_VAO();
+  glBindVertexArray(id);
+  glVertexAttribBinding(attribindex,bindingindex);
+  POP_VAO();
+}
+
+
+#define IMPLEMENT_VENDOR(name,ven)\
+  if(name##ven)name=name##ven;
+
+#define IMPLEMENT_VENDOR_ELSEIF(name,ven)\
+  else if(name##ven)=name=name##ven;
+
+#define IMPLEMENT1(name,ven0)\
+  if(!name){\
+    IMPLEMENT_VENDOR(name,ven0)\
+    else name = geGL_##name;\
+  }
+
+#define IMPLEMENT2(name,ven0,ven1)\
+  if(!name){\
+    IMPLEMENT_VENDOR(name,ven0)\
+    IMPLEMENT_VENDOR_ELSEIF(name,ven1)\
+    else name = geGL_##name;\
+  }
+
+#define IMPLEMENT3(name,ven0,ven1,ven2)\
+  if(!name){\
+    IMPLEMENT_VENDOR(name,ven0)\
+    IMPLEMENT_VENDOR_ELSEIF(name,ven1)\
+    IMPLEMENT_VENDOR_ELSEIF(name,ven2)\
+    else name = geGL_##name;\
+  }
+
+#define IMPLEMENT4(name,ven0,ven1,ven2,ven3)\
+  if(!name){\
+    IMPLEMENT_VENDOR(name,ven0)\
+    IMPLEMENT_VENDOR_ELSEIF(name,ven1)\
+    IMPLEMENT_VENDOR_ELSEIF(name,ven2)\
+    IMPLEMENT_VENDOR_ELSEIF(name,ven3)\
+    else name = geGL_##name;\
+  }
+
 #define IMPLEMENT(name)\
   if(!name)name = geGL_##name
 
 void implementBufferDSA(){
-  IMPLEMENT(glNamedBufferData            );
-  IMPLEMENT(glNamedBufferStorage         );
-  IMPLEMENT(glCreateBuffers              );
-  IMPLEMENT(glCopyNamedBufferSubData     );
-  IMPLEMENT(glFlushMappedNamedBufferRange);
-  IMPLEMENT(glClearNamedBufferData       );
-  IMPLEMENT(glClearNamedBufferSubData    );
-  IMPLEMENT(glMapNamedBufferRange        );
-  IMPLEMENT(glUnmapNamedBuffer           );
-  IMPLEMENT(glNamedBufferSubData         );
-  IMPLEMENT(glGetNamedBufferSubData      );
-  IMPLEMENT(glGetNamedBufferParameteriv  );
-  IMPLEMENT(glGetNamedBufferPointerv     );
+  IMPLEMENT1(glNamedBufferData            ,EXT);
+  IMPLEMENT1(glNamedBufferStorage         ,EXT);
+  IMPLEMENT (glCreateBuffers                  );
+  IMPLEMENT (glCopyNamedBufferSubData         );
+  IMPLEMENT1(glFlushMappedNamedBufferRange,EXT);
+  IMPLEMENT1(glClearNamedBufferData       ,EXT);
+  IMPLEMENT1(glClearNamedBufferSubData    ,EXT);
+  IMPLEMENT1(glMapNamedBufferRange        ,EXT);
+  IMPLEMENT1(glUnmapNamedBuffer           ,EXT);
+  IMPLEMENT1(glNamedBufferSubData         ,EXT);
+  IMPLEMENT1(glGetNamedBufferSubData      ,EXT);
+  IMPLEMENT1(glGetNamedBufferParameteriv  ,EXT);
+  IMPLEMENT1(glGetNamedBufferPointerv     ,EXT);
+}
+
+void implementVertexArrayDSA(){
+  IMPLEMENT (glCreateVertexArrays           );
+  IMPLEMENT (glGetVertexArrayiv             );
+  IMPLEMENT (glGetVertexArrayIndexediv      );
+  IMPLEMENT (glVertexArrayElementBuffer     );
+  IMPLEMENT (glVertexArrayBindingDivisor    );
+  IMPLEMENT (glVertexArrayVertexBuffer      );
+  IMPLEMENT (glVertexArrayAttribLFormat     );
+  IMPLEMENT (glVertexArrayAttribIFormat     );
+  IMPLEMENT (glVertexArrayAttribFormat      );
+  IMPLEMENT1(glEnableVertexArrayAttrib  ,EXT);
+  IMPLEMENT (glVertexArrayAttribBinding     );
 }
 
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
 void ge::gl::init(){
-  implementBufferDSA();
+  implementBufferDSA     ();
+  implementVertexArrayDSA();
 }
 
 
