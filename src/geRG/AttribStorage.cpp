@@ -75,7 +75,7 @@ bool AttribStorage::allocData(Mesh &mesh,int numVertices,int numIndices)
    mesh.setAttribStorage(this);
    mesh.setVerticesDataId(verticesDataId);
    mesh.setIndicesDataId(indicesDataId);
-   mesh.setDrawCommandBlockId(0);
+   mesh.setPrimitivesDataId(0);
 
    return true;
 }
@@ -127,10 +127,11 @@ void AttribStorage::freeData(Mesh &mesh)
    // make sure that there are no draw commands
    // (draw commands has to be freed first, otherwise we can not mark
    // Mesh as empty by setting attribStorage member to NULL)
-   if(mesh.drawCommandBlockId()!=0)
+   if(mesh.primitivesDataId()!=0)
    {
       cerr<<"Error: calling AttribStorage::freeData() on Mesh\n"
-            "   that has still draw commands allocated."<<endl;
+            "   that still has primitive sets allocated.\n"
+            "   Free primitive sets of associated Mesh first."<<endl;
       return;
    }
 

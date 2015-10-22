@@ -5,10 +5,24 @@
 
 using namespace ge::rg;
 
-static_assert(sizeof(StateSet::StateSetData)==4,
+static_assert(sizeof(StateSetGpuData)==4,
               "StateSet::StateSetData size is not 4 bytes.\n"
               "If it is ok, check related code and consider rewising this assert.");
 
+
+
+RenderingCommandData& RenderingCommandData::operator=(RenderingCommandData&& rhs)
+{
+   indirectBufferOffset4=rhs.indirectBufferOffset4;
+   glMode=rhs.glMode;
+   drawCommandCount=rhs.drawCommandCount;
+
+   auto sss=RenderingContext::current()->stateSetStorage();
+   sss->operator[](rhs.stateSetBufferOffset4)=&stateSetBufferOffset4;
+   const_cast<RenderingCommandData&>(rhs).stateSetBufferOffset4=0;
+
+   return *this;
+}
 
 
 void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned mode,
@@ -28,8 +42,8 @@ void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned
       // allocate StateSet buffer data
       // and create RenderingData
       storageData.setIndexToRenderingData(glMode,unsigned(storageData.renderingData.size()));
-      unsigned stateSetBufferIndex=RenderingContext::current()->allocStateSetBufferItem();
-      storageData.renderingData.emplace_back(0,stateSetBufferIndex*unsigned(sizeof(StateSetData))/4,glMode,newNum);
+      storageData.renderingData.emplace_back(0,glMode,newNum);
+      RenderingContext::current()->stateSetStorage()->alloc(&storageData.renderingData.back().stateSetBufferOffset4);
    }
    else
    {
@@ -62,14 +76,13 @@ void StateSet::decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned
       // and delete RenderingData
       unsigned index=storageData.indexToRenderingData(glMode);
       storageData.numDrawCommandsOfKindAndIndex[glMode]=0;
-      RenderingContext::current()->freeStateSetBufferItem(
-            storageData.renderingData[index].stateSetBufferOffset4*4/sizeof(StateSetData));
+      RenderingContext::current()->stateSetStorage()->free(storageData.renderingData[index].stateSetBufferOffset4);
 
       unsigned lastIndex=unsigned(storageData.renderingData.size())-1;
       if(index<lastIndex)
       {
          storageData.setIndexToRenderingData(storageData.renderingData[lastIndex].glMode,index);
-         storageData.renderingData[index]=storageData.renderingData[lastIndex];
+         storageData.renderingData[index]=std::move(storageData.renderingData[lastIndex]);
       }
       storageData.renderingData.pop_back();
    }
@@ -92,10 +105,16 @@ void StateSet::removeCommand(const std::shared_ptr<ge::core::Command>& command)
 }
 
 
+/** The method updates internal data structures and buffers and
+ *  makes them ready for indirect rendering.
+ *
+ *  The method requires RenderingContext::stateSetStorage() buffer to
+ *  be mapped for writing.
+ */
 void StateSet::setupRendering()
 {
    unsigned indirectBufferOffset4=RenderingContext::current()->positionInIndirectBuffer4();
-   unsigned *stateSetMappedBufferPtr=static_cast<unsigned*>(RenderingContext::current()->mappedStateSetBufferPtr());
+   unsigned *stateSetBufferPtr=reinterpret_cast<unsigned*>(RenderingContext::current()->stateSetStorage()->ptr());
 
    // iterate through all AttribStorageData
    for(auto it1=_attribStorageData.begin(); it1!=_attribStorageData.end(); it1++)
@@ -114,7 +133,7 @@ void StateSet::setupRendering()
       {
          // reserve the space in the indirect buffer for the draw calls
          // (this is done by seting indrectBufferOffset4 if StateSetBuffer and StateSet::RenderingData)
-         stateSetMappedBufferPtr[it2->stateSetBufferOffset4]=indirectBufferOffset4;
+         stateSetBufferPtr[it2->stateSetBufferOffset4]=indirectBufferOffset4;
          it2->indirectBufferOffset4=indirectBufferOffset4;
          indirectBufferOffset4+=increment*it2->drawCommandCount;
       }

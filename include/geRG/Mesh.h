@@ -1,10 +1,11 @@
 #ifndef GE_RG_MESH_H
 #define GE_RG_MESH_H
 
-#include <geRG/Export.h>
-#include <geRG/InstanceGroup.h>
 #include <vector>
 #include <cstdint>
+#include <geRG/Export.h>
+#include <geRG/Object.h>
+#include <geRG/Primitive.h>
 
 namespace ge
 {
@@ -12,49 +13,19 @@ namespace ge
    {
       class AttribConfigRef;
       class AttribStorage;
-      class InstancingMatrices;
+      class MatrixList;
       class StateSet;
 
 
       class GERG_EXPORT Mesh {
-      public:
-
-         /** DrawCommandControlData carries offset and mode of particular draw command.
-          *
-          *  Offset is given in multiple of 4 (shaders access memory as int array,
-          *  thus index is memory address divided by four). Real memory offset is
-          *  computed as offset4()*4.
-          *
-          *  Mode is OpenGL mode, such as GL_TRIANGLES, GL_PATCH, GL_LINE_STRIP. The upmost
-          *  bit is used to distinguish between glDrawArrays and glDrawElements draw commands,
-          *  e.g. whether EBO is used or not.
-          *
-          *  Implementation note: The structure provides setters and getters as we want to
-          *  make sure the structure occupies only 4 bytes. (Bit fields are known to not be
-          *  always tightly packed on MSVC.)
-          */
-         struct DrawCommandControlData {
-         protected:
-            uint32_t data;
-         public:
-            inline uint32_t offset4() const  { return data&0x07ffffff; } // return lowest 27 bits
-            inline uint16_t mode() const     { return data>>27; } // return upmost 5 bits
-            inline void setOffset4(uint32_t value)  { data=(data&0xf8000000)|value; } // set lowest 27 bits, value must fit to 27 bits
-            inline void setMode(uint16_t value)     { data=(data&0x07ffffff)|(uint32_t(value)<<27); } // set upmost 5 bits
-            inline void set(uint32_t offset4,uint16_t mode)  { data=offset4|(uint32_t(mode)<<27); } // set data, offset4 must fit to 27 bits
-
-            inline DrawCommandControlData() {}
-            inline DrawCommandControlData(uint32_t offset4,uint16_t mode);
-         };
-
       protected:
 
          AttribStorage *_attribStorage;
          unsigned _verticesDataId;
          unsigned _indicesDataId;
-         unsigned _drawCommandBlockId;
-         std::vector<DrawCommandControlData> _drawCommandControlData;
-         InstanceGroupList _instances;
+         unsigned _primitivesDataId;
+         std::vector<Primitive> _primitiveList;
+         ObjectList _objects;
 
       public:
 
@@ -72,53 +43,50 @@ namespace ge
          inline void setVerticesDataId(unsigned value);
          inline unsigned indicesDataId() const;
          inline void setIndicesDataId(unsigned value);
-         inline unsigned drawCommandBlockId() const;
-         inline void setDrawCommandBlockId(unsigned value);
-         inline const std::vector<DrawCommandControlData>& drawCommandControlData() const;
-         inline std::vector<DrawCommandControlData>& drawCommandControlData();
-         inline const InstanceGroupList& instances() const;
-         inline InstanceGroupList& instances();
+         inline unsigned primitivesDataId() const;
+         inline void setPrimitivesDataId(unsigned value);
+         inline const PrimitiveList& primitiveList() const;
+         inline PrimitiveList& primitiveList();
+         inline const ObjectList& objects() const;
+         inline ObjectList& objects();
          inline bool valid() const;
 
          inline void allocData(const AttribConfigRef& config,int numVertices,
-                               int numIndices,int drawCommandBlockSize);
+                               int numIndices,unsigned numPrimitives);
          inline void reallocData(int numVertices,int numIndices,
-                                 int numDrawCommands,bool preserveContent=true);
+                                 unsigned numPrimitives,bool preserveContent=true);
          inline void freeData();
 
          inline int numVertices() const;
          inline int numIndices() const;
-         inline int drawCommandBlockSize() const;
+         inline int numPrimitives() const;
 
          inline void uploadVertices(const void*const *attribList,unsigned attribListSize,
                                     int numVertices,int fromIndex=0);
          inline void uploadIndices(const void *indices,int numIndices,int fromIndex=0);
 
-         inline void uploadPreprocessedDrawCommands(const void *drawCommandBuffer,
-                                                    unsigned bytesToCopy,unsigned dstOffset=0);
-         inline void setDrawCommandControlData(const DrawCommandControlData *data,
-                                               int numDrawCommands,unsigned startIndex=0,
-                                               bool truncate=true);
-         inline void preprocessDrawCommands(void *drawCommandBuffer,
-                                            const DrawCommandControlData *data,
-                                            int numDrawCommands);
-         inline static std::vector<DrawCommandControlData> generateDrawCommandControlData(
-                                            const unsigned *modesAndOffsets4,int numDrawCommands);
+         inline void uploadPrimitives(const PrimitiveGpuData *bufferData,
+                                      unsigned numPrimitives,unsigned dstIndex=0);
+         inline void setPrimitives(const Primitive *primitiveList,
+                                   int numPrimitives,unsigned startIndex=0,
+                                   bool truncate=true);
+         inline void setAndUploadPrimitives(PrimitiveGpuData *nonConstBufferData,
+                                            const Primitive *primitiveList,int numPrimitives);
+         inline void setAndUploadPrimitives(PrimitiveGpuData *nonConstBufferData,
+                                            const unsigned *modesAndOffsets4,int numPrimitives);
+         inline void updateVertexOffsets(void *primitiveBuffer,
+                                         const Primitive *primitiveList,int numPrimitives);
+         inline static std::vector<Primitive> generatePrimitiveList(
+                                         const unsigned *modesAndOffsets4,int numPrimitives);
 
-         inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
-                                        const DrawCommandControlData *data,
-                                        int numDrawCommands);
-         inline void uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,
-                                        const unsigned *modesAndOffsets4,int numDrawCommands);
+         inline void clearPrimitives();
+         inline void setNumPrimitives(unsigned num);
 
-         inline void clearDrawCommands();
-         inline void setNumDrawCommands(unsigned num);
-
-         inline InstanceGroupId createInstances(InstancingMatrices *im,StateSet *stateSet);
-         inline InstanceGroupId createInstances(const unsigned *drawCommandIndices,
-                                                const int drawCommandsCount,
-                                                InstancingMatrices *im,StateSet *stateSet);
-         inline void deleteInstances(InstanceGroupId id);
+         inline ObjectId createObject(MatrixList *ml,StateSet *stateSet);
+         inline ObjectId createObject(const unsigned *primitiveIndices,
+                                      const int primitiveCount,
+                                      MatrixList *ml,StateSet *stateSet);
+         inline void deleteObject(ObjectId id);
       };
 
    }
@@ -133,22 +101,21 @@ namespace ge
 //       inline methods to avoid incomplete type compiler error
 
 #include <geRG/AttribStorage.h>
-#include <geRG/InstancingMatrices.h>
+#include <geRG/MatrixList.h>
 #include <geRG/RenderingContext.h>
 
 namespace ge
 {
    namespace rg
    {
-      inline Mesh::DrawCommandControlData::DrawCommandControlData(uint32_t offset4,uint16_t mode)  { set(offset4,mode); }
       inline Mesh::Mesh() : _attribStorage(NULL)  {}
       inline Mesh::Mesh(Mesh&& ref)
          : _attribStorage(ref._attribStorage)
          , _verticesDataId(ref._verticesDataId)
          , _indicesDataId(ref._indicesDataId)
-         , _drawCommandBlockId(ref._drawCommandBlockId)
-         , _drawCommandControlData(std::move(ref._drawCommandControlData))
-         , _instances(std::move(ref._instances))
+         , _primitivesDataId(ref._primitivesDataId)
+         , _primitiveList(std::move(ref._primitiveList))
+         , _objects(std::move(ref._objects))
       {
          ref._attribStorage=NULL;
       }
@@ -157,9 +124,9 @@ namespace ge
          _attribStorage=rhs._attribStorage;
          _verticesDataId=rhs._verticesDataId;
          _indicesDataId=rhs._indicesDataId;
-         _drawCommandBlockId=rhs._drawCommandBlockId;
-         _drawCommandControlData=std::move(rhs._drawCommandControlData);
-         _instances=std::move(rhs._instances);
+         _primitivesDataId=rhs._primitivesDataId;
+         _primitiveList=std::move(rhs._primitiveList);
+         _objects=std::move(rhs._objects);
          rhs._attribStorage=NULL;
          return *this;
       }
@@ -173,30 +140,30 @@ namespace ge
       inline void Mesh::setVerticesDataId(unsigned value)  { _verticesDataId=value; }
       inline unsigned Mesh::indicesDataId() const  { return _indicesDataId; }
       inline void Mesh::setIndicesDataId(unsigned value)  { _indicesDataId=value; }
-      inline unsigned Mesh::drawCommandBlockId() const  { return _drawCommandBlockId; }
-      inline void Mesh::setDrawCommandBlockId(unsigned value)  { _drawCommandBlockId=value; }
-      inline const std::vector<Mesh::DrawCommandControlData>& Mesh::drawCommandControlData() const  { return _drawCommandControlData; }
-      inline std::vector<Mesh::DrawCommandControlData>& Mesh::drawCommandControlData()  { return _drawCommandControlData; }
-      inline const InstanceGroupList& Mesh::instances() const  { return _instances; }
-      inline InstanceGroupList& Mesh::instances()  { return _instances; }
+      inline unsigned Mesh::primitivesDataId() const  { return _primitivesDataId; }
+      inline void Mesh::setPrimitivesDataId(unsigned value)  { _primitivesDataId=value; }
+      inline const PrimitiveList& Mesh::primitiveList() const  { return _primitiveList; }
+      inline PrimitiveList& Mesh::primitiveList()  { return _primitiveList; }
+      inline const ObjectList& Mesh::objects() const  { return _objects; }
+      inline ObjectList& Mesh::objects()  { return _objects; }
       inline bool Mesh::valid() const  { return _attribStorage!=NULL; }
-      inline void Mesh::allocData(const AttribConfigRef& config,int numVertices,int numIndices,int numDrawCommands)
-      { config->allocData(*this,numVertices,numIndices,numDrawCommands); }
-      inline void Mesh::reallocData(int numVertices,int numIndices,int numDrawCommands,bool preserveContent)
+      inline void Mesh::allocData(const AttribConfigRef& config,int numVertices,int numIndices,unsigned numPrimitives)
+      { config->allocData(*this,numVertices,numIndices,numPrimitives); }
+      inline void Mesh::reallocData(int numVertices,int numIndices,unsigned numPrimitives,bool preserveContent)
       {
          _attribStorage->reallocData(*this,numVertices,numIndices,preserveContent);
-         RenderingContext::current()->reallocDrawCommands(*this,numDrawCommands,preserveContent);
+         RenderingContext::current()->reallocPrimitives(*this,numPrimitives,preserveContent);
       }
       inline void Mesh::freeData()
       {
          if(_attribStorage) {
-            RenderingContext::current()->freeDrawCommands(*this);
+            RenderingContext::current()->freePrimitives(*this);
             _attribStorage->freeData(*this);
          }
       }
-      inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexAllocationBlock(_verticesDataId).numElements : 0; }
-      inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexAllocationBlock(_indicesDataId).numElements : 0; }
-      inline int Mesh::drawCommandBlockSize() const  { return RenderingContext::current()->drawCommandAllocation(_drawCommandBlockId).size; }
+      inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexAllocationBlock(_verticesDataId).numItems : 0; }
+      inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexAllocationBlock(_indicesDataId).numItems : 0; }
+      inline int Mesh::numPrimitives() const  { return RenderingContext::current()->primitiveStorage()->operator[](_primitivesDataId).numItems; }
       inline void Mesh::uploadVertices(const void*const *attribList,unsigned attribListSize,int numVertices,int fromIndex)
       {
          if(_attribStorage)
@@ -207,27 +174,27 @@ namespace ge
          if(_attribStorage)
             _attribStorage->uploadIndices(*this,indices,numIndices,fromIndex);
       }
-      inline void Mesh::uploadPreprocessedDrawCommands(const void *drawCommandBuffer,unsigned bytesToCopy,unsigned dstOffset)
-      { RenderingContext::current()->uploadPreprocessedDrawCommands(*this,drawCommandBuffer,bytesToCopy,dstOffset); }
-      inline void Mesh::setDrawCommandControlData(const DrawCommandControlData *data,int numDrawCommands,unsigned startIndex,bool truncate)
-      { RenderingContext::current()->setDrawCommandControlData(*this,data,numDrawCommands,startIndex,truncate); }
-      inline void Mesh::preprocessDrawCommands(void *drawCommandBuffer,const DrawCommandControlData *data,int numDrawCommands)
-      { RenderingContext::current()->preprocessDrawCommands(*this,drawCommandBuffer,data,numDrawCommands); }
-      inline std::vector<Mesh::DrawCommandControlData> Mesh::generateDrawCommandControlData(const unsigned *modesAndOffsets4,int numDrawCommands)
-      { return RenderingContext::generateDrawCommandControlData(modesAndOffsets4,numDrawCommands); }
-      inline void Mesh::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const DrawCommandControlData *data,int numDrawCommands)
-      { RenderingContext::current()->uploadDrawCommands(*this,nonConstDrawCommandBuffer,bytesToCopy,data,numDrawCommands); }
-      inline void Mesh::uploadDrawCommands(void *nonConstDrawCommandBuffer,unsigned bytesToCopy,const unsigned *offsets4,int numDrawCommands)
-      { RenderingContext::current()->uploadDrawCommands(*this,nonConstDrawCommandBuffer,bytesToCopy,offsets4,numDrawCommands); }
-      inline void Mesh::clearDrawCommands()  { setNumDrawCommands(0); }
-      inline void Mesh::setNumDrawCommands(unsigned num)
-      { RenderingContext::current()->setNumDrawCommands(*this,num); }
-      inline InstanceGroupId Mesh::createInstances(InstancingMatrices *im,StateSet *stateSet)
-      { return RenderingContext::current()->createInstances(*this,im,stateSet); }
-      inline InstanceGroupId Mesh::createInstances(const unsigned *drawCommandIndices,const int drawCommandsCount,InstancingMatrices *im,StateSet *stateSet)
-      { return RenderingContext::current()->createInstances(*this,drawCommandIndices,drawCommandsCount,im,stateSet); }
-      inline void Mesh::deleteInstances(InstanceGroupId id)
-      { RenderingContext::current()->deleteInstances(*this,id); }
+      inline void Mesh::uploadPrimitives(const PrimitiveGpuData* bufferData,unsigned int numPrimitives,unsigned int dstIndex)
+      { RenderingContext::current()->uploadPrimitives(*this,bufferData,numPrimitives,dstIndex); }
+      inline void Mesh::setPrimitives(const Primitive *primitiveList,int numPrimitives,unsigned startIndex,bool truncate)
+      { RenderingContext::current()->setPrimitives(*this,primitiveList,numPrimitives,startIndex,truncate); }
+      inline void Mesh::setAndUploadPrimitives(PrimitiveGpuData* nonConstBufferData,const Primitive* primitiveList,int numPrimitives)
+      { RenderingContext::current()->setAndUploadPrimitives(*this,nonConstBufferData,primitiveList,numPrimitives); }
+      inline void Mesh::setAndUploadPrimitives(PrimitiveGpuData* nonConstBufferData,const unsigned int* modesAndOffsets4,int numPrimitives)
+      { RenderingContext::current()->setAndUploadPrimitives(*this,nonConstBufferData,modesAndOffsets4,numPrimitives); }
+      inline void Mesh::updateVertexOffsets(void *primitiveBuffer,const Primitive *primitiveList,int numPrimitives)
+      { RenderingContext::current()->updateVertexOffsets(*this,primitiveBuffer,primitiveList,numPrimitives); }
+      inline std::vector<Primitive> Mesh::generatePrimitiveList(const unsigned *modesAndOffsets4,int numPrimitives)
+      { return RenderingContext::generatePrimitiveList(modesAndOffsets4,numPrimitives); }
+      inline void Mesh::clearPrimitives()  { setNumPrimitives(0); }
+      inline void Mesh::setNumPrimitives(unsigned num)
+      { RenderingContext::current()->setNumPrimitives(*this,num); }
+      inline ObjectId Mesh::createObject(MatrixList *ml,StateSet *stateSet)
+      { return RenderingContext::current()->createObject(*this,ml,stateSet); }
+      inline ObjectId Mesh::createObject(const unsigned *primitiveIndices,const int primitiveCount,MatrixList *ml,StateSet *stateSet)
+      { return RenderingContext::current()->createObject(*this,primitiveIndices,primitiveCount,ml,stateSet); }
+      inline void Mesh::deleteObject(ObjectId id)
+      { RenderingContext::current()->deleteObject(*this,id); }
    }
 }
 

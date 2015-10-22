@@ -8,23 +8,26 @@ namespace ge
 {
    namespace rg
    {
-
-      class GERG_EXPORT ListItemBase {
-      public:
-         ListItemBase *next;
-         ListItemBase *prev;
-      };
+      class ListItemBase;
 
 
+      /** FlexibleArray template allows to create a data structure
+       *  whose last data item is array of variable size.
+       */
       template<typename T,typename BASE=ListItemBase>
       class FlexibleArray : public BASE {
       public:
 
-         unsigned count;
-         T items[1];
+         unsigned numItems;
+         T itemStorage[1];
 
+         inline T* items();
+         inline const T* items() const;
+         inline T& item(int index);
+         inline const T& item(int index) const;
          inline T& operator[](int index);
          inline const T& operator[](int index) const;
+
          static FlexibleArray<T,BASE>* alloc(int numItems);
          inline void free();
 
@@ -34,6 +37,24 @@ namespace ge
       };
 
 
+      /** ListItemBase allows derived classes to be used
+       *  as list members of FlexibleArrayList.
+       */
+      class GERG_EXPORT ListItemBase {
+      public:
+         ListItemBase *next;
+         ListItemBase *prev;
+      };
+
+
+      /** FlexibleArrayList template provides list functionality
+       *  for FlexibleArray objects.
+       *
+       *  FlexibleArray objects can not be stored in std::list
+       *  because of their variable size. FlexibleArrayList
+       *  provides alternative approach that can be applied
+       *  to any object derived from ListItemBase class.
+       */
       template<typename T>
       class FlexibleArrayList {
       public:
@@ -93,6 +114,15 @@ namespace ge
       };
 
 
+
+      template<typename T,typename BASE>
+      inline T* FlexibleArray<T,BASE>::items()  { return itemStorage; }
+      template<typename T,typename BASE>
+      inline const T* FlexibleArray<T,BASE>::items() const  { return itemStorage; }
+      template<typename T,typename BASE>
+      inline T& FlexibleArray<T,BASE>::item(int index)  { return itemStorage[index]; }
+      template<typename T,typename BASE>
+      inline const T& FlexibleArray<T,BASE>::item(int index) const  { return itemStorage[index]; }
       template<typename T,typename BASE>
       inline T& FlexibleArray<T,BASE>::operator[](int index)  { return items[index]; }
       template<typename T,typename BASE>
@@ -120,13 +150,13 @@ namespace ge
       template<typename T>
       inline bool FlexibleArrayList<T>::Iterator::operator!=(typename FlexibleArrayList<T>::Iterator const &rhs) const  { return node!=rhs.node; }
       template<typename T>
-      inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator++()  { node=node->next; return this; }
+      inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator++()  { node=static_cast<T*>(node->next); return this; }
       template<typename T>
-      inline typename FlexibleArrayList<T>::Iterator  FlexibleArrayList<T>::Iterator::operator++(int)  { FlexibleArrayList<T>::Iterator tmp=*this; node=node->next; return tmp; }
+      inline typename FlexibleArrayList<T>::Iterator  FlexibleArrayList<T>::Iterator::operator++(int)  { FlexibleArrayList<T>::Iterator tmp=*this; node=static_cast<T*>(node->next); return tmp; }
       template<typename T>
-      inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator--()  { node=node->prev; return this; }
+      inline typename FlexibleArrayList<T>::Iterator& FlexibleArrayList<T>::Iterator::operator--()  { node=static_cast<T*>(node->prev); return this; }
       template<typename T>
-      inline typename FlexibleArrayList<T>::Iterator  FlexibleArrayList<T>::Iterator::operator--(int)  { FlexibleArrayList<T>::Iterator tmp=*this; node=node->prev; return tmp; }
+      inline typename FlexibleArrayList<T>::Iterator  FlexibleArrayList<T>::Iterator::operator--(int)  { FlexibleArrayList<T>::Iterator tmp=*this; node=static_cast<T*>(node->prev); return tmp; }
 
       template<typename T>
       inline FlexibleArrayList<T>::FlexibleArrayList()  { head.next=&head; head.prev=&head; }

@@ -1,4 +1,4 @@
-set(APP_NAME emptyWindow)
+set(APP_NAME EmptyWindow)
 
 project(${APP_NAME})
 
@@ -21,7 +21,7 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geGL geUtil WindowObject)
 set(External_deps_Export)
-set(External_libs 
+set(External_libs
   ${GLEW_LIBRARY}
   ${OPENGL_LIBRARY}
   ${SDL2_LIBRARY}
@@ -30,6 +30,7 @@ set(External_libs
   )
 set(Internal_inc
   ${GLEW_INCLUDE_DIR}
+  ${GLM_INCLUDE_DIR}
   ${OPENGL_INCLUDE_DIR}
   ${SDL2_INCLUDE_DIR}
   ${ANTTWEAKBAR_INCLUDE_DIR}

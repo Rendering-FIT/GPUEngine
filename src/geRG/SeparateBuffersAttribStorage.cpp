@@ -47,7 +47,7 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
    // append transformation matrix to VAO
    if(_renderingContext->useARBShaderDrawParameters()==false) {
       _vao->bind();
-      ge::gl::BufferObject *bo=_renderingContext->instancingMatrixBuffer();
+      ge::gl::BufferObject *bo=_renderingContext->matrixStorage()->bufferObject();
       bo->bind(GL_ARRAY_BUFFER);
       const GLuint index=12;
       glEnableVertexAttribArray(index+0);

@@ -48,7 +48,7 @@ void AttribConfig::deleteAllAttribStorages()
 }
 
 
-bool AttribConfig::allocData(Mesh &mesh,int numVertices,int numIndices,int numDrawCommands)
+bool AttribConfig::allocData(Mesh& mesh,int numVertices,int numIndices,unsigned numPrimitives)
 {
    // iterate AttribStorage list
    // and look if there is one with enough empty space
@@ -77,14 +77,13 @@ bool AttribConfig::allocData(Mesh &mesh,int numVertices,int numIndices,int numDr
    (*storageIt)->allocData(mesh,numVertices,numIndices);
 
    // perform allocation of draw commands
-   _renderingContext->allocDrawCommands(mesh,numDrawCommands);
+   _renderingContext->allocPrimitives(mesh,numPrimitives);
 
    return true;
 }
 
 
-bool AttribConfig::reallocData(Mesh &/*mesh*/,int /*numVertices*/,int /*numIndices*/,
-                               int /*numDrawCommands*/,bool /*preserveContent*/)
+bool AttribConfig::reallocData(Mesh& /*mesh*/,int /*numVertices*/,int /*numIndices*/,unsigned /*numPrimitives*/,bool /*preserveContent*/)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
