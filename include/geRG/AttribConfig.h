@@ -20,10 +20,28 @@ namespace ge
       typedef uint16_t AttribConfigId;  ///< \brief Integer-based type for the most frequently used attribute configurations.
 
 
+      /** AttribConfig class represents particular OpenGL attribute configuration.
+       *
+       *  Each mesh uses particular attribute configuration. For instance,
+       *  it uses coordinates on the attribute index 0 using vector of three floats,
+       *  color attribute on the index 1 using vector of four unsigned bytes,
+       *  and indexing (e.g. element buffer object is used).
+       *
+       *  Each attribute has its index and AttribType. AttribConfig holds the vector
+       *  of these attribute configurations, the flag whether indexing (element buffer
+       *  object) are used, and AttribConfigId.
+       *  AttribConfigId is an integer value for the most typically used attribute
+       *  configurations, used for fast comparison, lookups, etc.
+       *  See AttribConfig::ConfigData for more details.
+       *
+       *  AttribConfig object is singleton-style object. There is only one AttribConfig
+       *  object for each attribute configuration per graphics context.
+       *  The user should use AttribConfigRef class if he needs reference to the AttribConfig.
+       */
       class GERG_EXPORT AttribConfig {
       public:
 
-         /** ConfigData holds complete information about attribute configuration.
+         /** ConfigData holds the complete information about the attributes configuration.
           *
           *  It includes types of all active attributes, whether Element Buffer Object is used
           *  and id for quick ConfigData comparison and lookup. */
@@ -73,9 +91,9 @@ namespace ge
 
          inline const AttribStorageList& getAttribStorageList() const;
 
-         virtual bool allocData(Mesh &mesh,int numVertices,int numIndices,int numDrawCommands);
+         virtual bool allocData(Mesh &mesh,int numVertices,int numIndices,unsigned numPrimitives);
          virtual bool reallocData(Mesh &mesh,int numVertices,int numIndices,
-                                  int numDrawCommands,bool preserveContent=true);
+                                  unsigned numPrimitives,bool preserveContent=true);
          inline void freeData(Mesh &mesh);
 
          inline AttribConfigRef createReference();
@@ -127,6 +145,12 @@ namespace ge
       };
 
 
+      /** AttribConfigRef provides reference counting for AttribConfig class.
+       *  AttribConfig is singleton style object. More AttribConfig instances
+       *  may exist in single graphics context, but each with a different
+       *  attribute configuration. To keep reference to any AttribConfig,
+       *  AttribConfigRef should be used.
+       */
       class GERG_EXPORT AttribConfigRef {
       protected:
          AttribConfig* _pointer;

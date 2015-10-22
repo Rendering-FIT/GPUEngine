@@ -8,7 +8,11 @@ using namespace ge::rg;
 
 void ItemAllocationManager::setCapacity(unsigned value)
 {
+   unsigned delta=value-_numItemsTotal;
    resize(value);
+   _numItemsTotal=value;
+   _numItemsAvailable+=delta;
+   _numItemsAvailableAtTheEnd+=delta;
 }
 
 
@@ -103,7 +107,6 @@ void ItemAllocationManager::clear()
 
 void ItemAllocationManager::assertEmpty()
 {
-   assert(size()==_numNullObjects && "ItemAllocationManager still contains elements.");
    assert(_numItemsAvailable+_numNullObjects==_numItemsTotal &&
           "ItemAllocationManager::_numItemsAvailable does not contain valid value.");
 }
