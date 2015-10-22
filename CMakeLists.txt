@@ -13,7 +13,7 @@ SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
-SET(GPUENGINE_BUILD_geAdd OFF CACHE BOOL "Add geAdd subdirectory. This is for addons.")
+SET(GPUENGINE_BUILD_geAd OFF CACHE BOOL "Add geAd subdirectory. This is for addons.")
 SET(GPUENGINE_BUILD_APPS OFF CACHE BOOL "Add apps subdirectory. This is for building applications.")
 SET(GPUENGINE_BUILD_TESTS OFF CACHE BOOL "Add tests subdirectory. This is for building unit tests.")
 
@@ -124,8 +124,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
 
 add_subdirectory(src)
 
-if(GPUENGINE_BUILD_geAdd)
-  add_subdirectory(geAdd)
+if(GPUENGINE_BUILD_geAd)
+  add_subdirectory(geAd)
 endif()
 
 

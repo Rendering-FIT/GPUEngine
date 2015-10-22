@@ -3,7 +3,7 @@
 #include<iostream>
 #include<map>
 
-#include<geAdd/WindowObject/Export.h>
+#include<geAd/WindowObject/Export.h>
 
 #define WINDOWOBJECT_WINDOWSIZE      NULL
 #define WINDOWOBJECT_WIDTH           100

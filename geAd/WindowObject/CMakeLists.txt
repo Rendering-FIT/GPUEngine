@@ -11,7 +11,7 @@ ELSE ()
     ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
 ENDIF()
 
-SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/geAdd/CMakeModules;${CMAKE_MODULE_PATH}")
+SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/geAd/CMakeModules;${CMAKE_MODULE_PATH}")
 
 set(SDL2_BUILDING_LIBRARY ON)
 FIND_PACKAGE(SDL2        QUIET)
@@ -21,7 +21,7 @@ FIND_PACKAGE(AntTweakBar QUIET)
 #   return()
 #endif()
 
-set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAdd/${LIB_NAME})
+set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
 set (ADD_INCLUDES
   ${HEADER_PATH}/Export.h
@@ -59,7 +59,7 @@ set_target_properties(${LIB_NAME} PROPERTIES
 
 install(FILES
     ${ADD_INCLUDES}
-    DESTINATION include/geAdd/${LIB_NAME}
+    DESTINATION include/geAd/${LIB_NAME}
   )
 
 install(TARGETS ${LIB_NAME}
@@ -85,7 +85,7 @@ configure_file(
 
 configure_file(
    ../../src/CMake/geExport.h.in
-   "${GPUEngine_SOURCE_DIR}/geAdd/${LIB_NAME}/Export.h"
+   "${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/Export.h"
    @ONLY
 )
 
