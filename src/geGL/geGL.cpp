@@ -23,9 +23,15 @@ using namespace ge::gl;
     glBindVertexArray(oldId)
   #define PUSH_SAMPLER()\
     GLuint oldId;\
-    glGetIntegeri_v(GL_SAMPLER_BINDING,0,(GLint*)&oldId);
+    glGetIntegeri_v(GL_SAMPLER_BINDING,0,(GLint*)&oldId)
   #define POP_SAMPLER()\
-    glBindSampler(0,oldId);
+    glBindSampler(0,oldId)
+  #define PUSH_FRAMEBUFFER()\
+    GLuint oldId;\
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,(GLint*)&oldId)
+  #define POP_FRAMEBUFFER()\
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER,oldId)
+
 #else //SAVE_PREVIOUS_BINDING
   #define PUSH_WRITE_BUFFER()
   #define POP_WRITE_BUFFER()
@@ -35,6 +41,8 @@ using namespace ge::gl;
   #define  POP_VAO()
   #define PUSH_SAMPLER()
   #define POP_SAMPLER()
+  #define PUSH_FRAMEBUFFER()
+  #define POP_FRAMEBUFFER()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -226,6 +234,15 @@ void geGL_glCreateSamplers(GLsizei n,GLuint*samplers){
   POP_SAMPLER();
 }
 
+GLenum geGL_glCheckNamedFramebufferStatus(GLuint id,GLenum target){
+  GLenum result;
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  result = glCheckFramebufferStatus(target);
+  POP_FRAMEBUFFER();
+  return result;
+}
+
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
 
@@ -299,6 +316,10 @@ void implementSamplerDSA(){
   IMPLEMENT(glCreateSamplers);
 }
 
+void implementFramebufferDSA(){
+  IMPLEMENT1(glCheckNamedFramebufferStatus,EXT);
+}
+
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
@@ -306,6 +327,7 @@ void ge::gl::init(){
   implementBufferDSA     ();
   implementVertexArrayDSA();
   implementSamplerDSA    ();
+  implementFramebufferDSA();
 }
 
 

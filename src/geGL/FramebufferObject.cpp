@@ -265,15 +265,9 @@ void FramebufferObject::attachColorRenderbuffer(GLenum attachment,GLuint renderb
 }
 
 bool FramebufferObject::check(){
-#ifndef USE_DSA
-  this->bind();
-  GLenum Status=glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  this->unbind();
-#else //USE_DSA
-  glCheckNamedFramebufferStatus(this->_id);
-#endif//USE_DSA
-  return Status==GL_FRAMEBUFFER_COMPLETE;
+  return glCheckNamedFramebufferStatus(this->_id,GL_DRAW_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE;
 }
+
 void FramebufferObject::drawBuffer(GLenum buffer){
   glDrawBuffer(buffer);
 }
