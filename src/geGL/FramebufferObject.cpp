@@ -72,74 +72,102 @@ std::string ge::gl::translateCubeMapFace(GLenum face){
 
 GLint FramebufferObject::getParam(GLenum pname){
   GLint param;
-#ifndef USE_DSA
-  this->bind();
-  glGetFramebufferParameteriv(FRAMEBUFFEROBJECT_DEFAULT_TARGET,pname,&param);
-  this->unbind();
-#else //USE_DSA
   glGetNamedFramebufferParameteriv(this->_id,pname,&param);
-#endif//USE_DSA
   return param;
 }
 
 void FramebufferObject::setParam(GLenum pname,GLint param){
-#ifndef USE_DSA
-  this->bind();
-  glFramebufferParameteri(FRAMEBUFFEROBJECT_DEFAULT_TARGET,pname,param);
-  this->unbind();
-#else //USE_DSA
   glNamedFramebufferParameteri(this->_id,pname,param);
-#endif//USE_DSA
 }
 
 GLint FramebufferObject::getAttachmentParam(GLenum attachment,GLenum pname){
   GLint param;
-#ifndef USE_DSA
-  this->bind();
-  glGetFramebufferAttachmentParameteriv(FRAMEBUFFEROBJECT_DEFAULT_TARGET,attachment,pname,&param);
-  this->unbind();
-#else //USE_DSA
   glGetNamedFramebufferAttachmentParameteriv(this->_id,attachment,pname,&param);
-#endif//USE_DSA
   return param;
 }
 
-void FramebufferObject::attachRenderbuffer(GLenum attachment,GLuint renderbuffer){
-#ifndef USE_DSA
-  this->bind();
-  glFramebufferRenderbuffer(FRAMEBUFFEROBJECT_DEFAULT_TARGET,attachment,GL_RENDERBUFFER,renderbuffer);
-  this->unbind();
-#else //USE_DSA
-  glNamedFramebufferRenderbuffer(this->_id,attachment,GL_RENDERBUFFER,renderbuffer);
-#endif//USE_DSA
+FramebufferObject::FramebufferObject (bool defaultFramebuffer){
+  if(defaultFramebuffer)this->_id=0;
+  else glCreateFramebuffers(1,&this->_id);
 }
 
-void FramebufferObject::attachTexture(GLenum attachment,GLuint texture,GLint level){
-#ifndef USE_DSA
-  this->bind();
-  glFramebufferTexture(FRAMEBUFFEROBJECT_DEFAULT_TARGET,attachment,texture,level);
-  this->unbind();
-#else //USE_DSA
-  glNamedFramebufferTexture(this->_id,attachment,texture,level);
-#endif//USE_DSA
-}
-
-
-
-FramebufferObject::FramebufferObject(GLuint){
-  this->_id=0;
-}
-FramebufferObject::FramebufferObject (){
-#ifndef USE_DSA
-  glGenFramebuffers(1,&this->_id);
-  this->bind();
-  this->unbind();
-#else //USE_DSA
-  glCreateFramebuffers(1,&this->_id);
-#endif//USE_DSA
-}
 FramebufferObject::~FramebufferObject(){
   glDeleteFramebuffers(1,&this->_id);
+}
+
+void FramebufferObject::attachRenderbuffer(GLenum attachment,GLuint renderbuffer)const{
+  glNamedFramebufferRenderbuffer(this->_id,attachment,GL_RENDERBUFFER,renderbuffer);
+}
+
+void FramebufferObject::attachTexture(GLenum attachment,GLuint texture,GLint level,GLint layer)const{
+  if(layer==-1)
+    glNamedFramebufferTexture(this->_id,attachment,texture,level);
+  else
+    glNamedFramebufferTextureLayer(this->_id,attachment,texture,level,layer);
+}
+
+void FramebufferObject::bind  (GLenum target)const{
+  glBindFramebuffer(target,this->_id);
+}
+void FramebufferObject::unbind(GLenum target)const{
+  glBindFramebuffer(target,0);
+}
+
+bool FramebufferObject::check()const{
+  return glCheckNamedFramebufferStatus(this->_id,GL_DRAW_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE;
+}
+
+void FramebufferObject::drawBuffer(GLenum buffer)const{
+  glNamedFramebufferDrawBuffer(this->_id,buffer);
+}
+
+void FramebufferObject::drawBuffers(GLsizei n,const GLenum *buffers)const{
+  glNamedFramebufferDrawBuffers(this->_id,n,buffers);
+}
+
+void FramebufferObject::drawBuffers(GLsizei n,...)const{
+  GLenum*drawBuffers=new GLenum[n];
+  va_list args;
+  va_start(args,n);
+  for(GLsizei i=0;i<n;++i){
+    drawBuffers[i]=(GLenum)va_arg(args,GLenum);
+  }
+  va_end(args);
+  this->drawBuffers(n,drawBuffers);
+  delete[]drawBuffers;
+}
+
+void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*value)const{
+  glClearNamedFramebufferiv(this->_id,buffer,drawBuffer,value);
+}
+
+void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat*value)const{
+  glClearNamedFramebufferfv(this->_id,buffer,drawBuffer,value);
+}
+
+void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*value)const{
+  glClearNamedFramebufferuiv(this->_id,buffer,drawBuffer,value);
+}
+
+void FramebufferObject::clearBuffer (GLenum buffer,GLfloat depth,GLint stencil)const{
+  glClearNamedFramebufferfi(this->_id,buffer,depth,stencil);
+}
+
+void FramebufferObject::invalidateFramebuffer(
+    GLsizei       numAttachments,
+    const GLenum* attachments   ,
+    GLint         x             ,
+    GLint         y             ,
+    GLsizei       width         ,
+    GLsizei       height        )const{
+  if(x==-1)
+    glInvalidateNamedFramebufferData(this->_id,numAttachments,attachments);
+  else
+    glInvalidateNamedFramebufferSubData(this->_id,numAttachments,attachments,x,y,width,height);
+}
+
+GLboolean FramebufferObject::isFramebuffer()const{
+  return glIsFramebuffer(this->_id);
 }
 
 void FramebufferObject::setDefaultWidth(GLint width){
@@ -236,67 +264,6 @@ GLint FramebufferObject::getImplementationColorReadType  (){
 GLint FramebufferObject::getStereo(){
   return this->getParam(GL_STEREO);
 }
-
-void FramebufferObject::bind  (GLenum target){
-  glBindFramebuffer(target,this->_id);
-}
-void FramebufferObject::unbind(GLenum target){
-  glBindFramebuffer(target,0);
-}
-
-void FramebufferObject::attachDepthTexture(GLuint texture,GLint level){ 
-  this->attachTexture(GL_DEPTH_ATTACHMENT,texture,level);
-}
-void FramebufferObject::attachStencilTexture(GLuint texture,GLint level){ 
-  this->attachTexture(GL_STENCIL_ATTACHMENT,texture,level);
-}
-void FramebufferObject::attachColorTexture(GLenum attachment,GLuint texture,GLint level){
-  this->attachTexture(attachment,texture,level);
-}
-
-void FramebufferObject::attachDepthRenderbuffer(GLuint renderbuffer){
-  this->attachRenderbuffer(GL_DEPTH_ATTACHMENT,renderbuffer);
-}
-void FramebufferObject::attachStencilRenderbuffer(GLuint renderbuffer){
-  this->attachRenderbuffer(GL_STENCIL_ATTACHMENT,renderbuffer);
-}
-void FramebufferObject::attachColorRenderbuffer(GLenum attachment,GLuint renderbuffer){
-  this->attachRenderbuffer(attachment,renderbuffer);
-}
-
-bool FramebufferObject::check(){
-  return glCheckNamedFramebufferStatus(this->_id,GL_DRAW_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE;
-}
-
-void FramebufferObject::drawBuffer(GLenum buffer){
-  glDrawBuffer(buffer);
-}
-void FramebufferObject::drawBuffers(GLsizei n,GLenum *buffers){
-  glDrawBuffers(n,buffers);
-}
-void FramebufferObject::drawBuffers(GLsizei n,...){
-  GLenum*drawBuffers=new GLenum[n];
-  va_list args;
-  va_start(args,n);
-  for(GLsizei i=0;i<n;++i){
-    drawBuffers[i]=(GLenum)va_arg(args,GLenum);
-  }
-  va_end(args);
-  this->bind();
-  glDrawBuffers(n,drawBuffers);
-  this->unbind();
-  delete[]drawBuffers;
-}
-
-/*
-   glFramebufferTexture
-   glFramebufferTexture1D;
-   glFramebufferTexture2D;
-   glFramebufferTexture3D;
-   glFramebufferTextureLayer;
-   glNamedFramebufferTexture;
-   glNamedFramebufferTextureLayer;
-   */
 
 std::string FramebufferObject::getInfo(){
   std::stringstream ss;

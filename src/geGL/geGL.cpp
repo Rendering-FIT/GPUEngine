@@ -243,6 +243,112 @@ GLenum geGL_glCheckNamedFramebufferStatus(GLuint id,GLenum target){
   return result;
 }
 
+void geGL_glCreateFramebuffers(GLsizei n,GLuint*ids){
+  PUSH_FRAMEBUFFER();
+  glGenFramebuffers(n,ids);
+  for(GLsizei i=0;i<n;++i)
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER,ids[i]);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glNamedFramebufferTexture(GLuint id,GLenum attachment,GLuint texture,GLint level){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glFramebufferTexture(GL_DRAW_FRAMEBUFFER,attachment,texture,level);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glNamedFramebufferRenderbuffer(GLuint id,GLenum attachment,GLenum rtarget,GLuint renderbuffer){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER,attachment,rtarget,renderbuffer);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glGetNamedFramebufferAttachmentParameteriv(GLuint id,GLenum attachment,GLenum pname,GLint*params){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glGetFramebufferAttachmentParameteriv(GL_DRAW_FRAMEBUFFER,attachment,pname,params);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glNamedFramebufferParameteri(GLuint id,GLenum pname,GLint param){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glFramebufferParameteri(GL_DRAW_FRAMEBUFFER,pname,param);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glGetNamedFramebufferParameteriv(GLuint id,GLenum pname,GLint*params){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glGetFramebufferParameteriv(GL_DRAW_FRAMEBUFFER,pname,params);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glNamedFramebufferDrawBuffer(GLuint id,GLenum buffer){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glDrawBuffer(buffer);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glNamedFramebufferDrawBuffers(GLuint id,GLsizei n,const GLenum*bufs){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glDrawBuffers(n,bufs);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glNamedFramebufferTextureLayer(GLuint id,GLenum attachment,GLuint texture,GLint level,GLint layer){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER,attachment,texture,level,layer);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glClearNamedFramebufferiv(GLuint id,GLenum buffer,GLint drawBuffer,const GLint*value){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glClearBufferiv(buffer,drawBuffer,value);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glClearNamedFramebufferfv(GLuint id,GLenum buffer,GLint drawBuffer,const GLfloat*value){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glClearBufferfv(buffer,drawBuffer,value);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glClearNamedFramebufferuiv(GLuint id,GLenum buffer,GLint drawBuffer,const GLuint*value){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glClearBufferuiv(buffer,drawBuffer,value);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glClearNamedFramebufferfi(GLuint id,GLenum buffer,GLfloat depth,GLint stencil){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glClearBufferfi(GL_DRAW_FRAMEBUFFER,buffer,depth,stencil);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glInvalidateNamedFramebufferData(GLuint id,GLsizei numAttachments,const GLenum*attachments){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER,numAttachments,attachments);
+  POP_FRAMEBUFFER();
+}
+
+void geGL_glInvalidateNamedFramebufferSubData(GLuint id,GLsizei numAttachments,const GLenum*attachments,GLint x,GLint y,GLsizei width,GLsizei height){
+  PUSH_FRAMEBUFFER();
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,id);
+  glInvalidateSubFramebuffer(GL_DRAW_FRAMEBUFFER,numAttachments,attachments,x,y,width,height);
+  POP_FRAMEBUFFER();
+}
+
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
 
@@ -317,7 +423,22 @@ void implementSamplerDSA(){
 }
 
 void implementFramebufferDSA(){
-  IMPLEMENT1(glCheckNamedFramebufferStatus,EXT);
+  IMPLEMENT1(glCheckNamedFramebufferStatus             ,EXT);
+  IMPLEMENT (glCreateFramebuffers                          );
+  IMPLEMENT1(glNamedFramebufferTexture                 ,EXT);
+  IMPLEMENT1(glNamedFramebufferRenderbuffer            ,EXT);
+  IMPLEMENT1(glGetNamedFramebufferAttachmentParameteriv,EXT);
+  IMPLEMENT1(glNamedFramebufferParameteri              ,EXT);
+  IMPLEMENT1(glGetNamedFramebufferParameteriv          ,EXT);
+  IMPLEMENT (glNamedFramebufferDrawBuffer                  );
+  IMPLEMENT (glNamedFramebufferDrawBuffers                 );
+  IMPLEMENT1(glNamedFramebufferTextureLayer            ,EXT);
+  IMPLEMENT (glClearNamedFramebufferiv                     );
+  IMPLEMENT (glClearNamedFramebufferfv                     );
+  IMPLEMENT (glClearNamedFramebufferuiv                    );
+  IMPLEMENT (glClearNamedFramebufferfi                     );
+  IMPLEMENT (glInvalidateNamedFramebufferData              );
+  IMPLEMENT (glInvalidateNamedFramebufferSubData           );
 }
 
 /**
