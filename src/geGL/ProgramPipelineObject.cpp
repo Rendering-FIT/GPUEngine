@@ -5,43 +5,39 @@
 using namespace ge::gl;
 
 ProgramPipelineObject::ProgramPipelineObject(){
-#ifndef USE_DSA
-  glGenProgramPipelines(1,&this->_id);
-#else //USE_DSA
-  glCreateProgramPipelines(1,&this->id);
-#endif//USE_DSA
+  glCreateProgramPipelines(1,&this->_id);
 }
 
 ProgramPipelineObject::~ProgramPipelineObject(){
   glDeleteProgramPipelines(1,&this->_id);
 }
 
-void ProgramPipelineObject::bind(){
+void ProgramPipelineObject::bind()const{
   glBindProgramPipeline(this->_id);
 }
 
-void ProgramPipelineObject::unbind(){
+void ProgramPipelineObject::unbind()const{
   glBindProgramPipeline(0);
 }
-void ProgramPipelineObject::useProgramStages(GLbitfield stages,GLuint program){
+void ProgramPipelineObject::useProgramStages(GLbitfield stages,GLuint program)const{
   glUseProgramStages(this->_id,stages,program);
 }
-void ProgramPipelineObject::useVertexStage    (GLuint program){
+void ProgramPipelineObject::useVertexStage    (GLuint program)const{
   glUseProgramStages(this->_id,GL_VERTEX_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useControlStage   (GLuint program){
+void ProgramPipelineObject::useControlStage   (GLuint program)const{
   glUseProgramStages(this->_id,GL_TESS_CONTROL_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useEvaluationStage(GLuint program){
+void ProgramPipelineObject::useEvaluationStage(GLuint program)const{
   glUseProgramStages(this->_id,GL_TESS_EVALUATION_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useGeometryStage  (GLuint program){
+void ProgramPipelineObject::useGeometryStage  (GLuint program)const{
   glUseProgramStages(this->_id,GL_GEOMETRY_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useFragmentStage  (GLuint program){
+void ProgramPipelineObject::useFragmentStage  (GLuint program)const{
   glUseProgramStages(this->_id,GL_FRAGMENT_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useComputeStage   (GLuint program){
+void ProgramPipelineObject::useComputeStage   (GLuint program)const{
   glUseProgramStages(this->_id,GL_COMPUTE_SHADER_BIT,program);
 }
 

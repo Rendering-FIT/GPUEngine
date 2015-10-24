@@ -36,6 +36,11 @@ using namespace ge::gl;
     glGetIntegerv(GL_RENDERBUFFER_BINDING,(GLint*)&oldId)
   #define POP_RENDERBUFFER()\
     glBindRenderbuffer(GL_RENDERBUFFER,oldId)
+  #define PUSH_PIPELINE()\
+    GLuint oldId;\
+    glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING,(GLint*)&oldId)
+  #define POP_PIPELINE()\
+    glBindProgramPipeline(oldId)
 #else //SAVE_PREVIOUS_BINDING
   #define PUSH_WRITE_BUFFER()
   #define POP_WRITE_BUFFER()
@@ -49,6 +54,8 @@ using namespace ge::gl;
   #define POP_FRAMEBUFFER()
   #define PUSH_RENDERBUFFER()
   #define POP_RENDERBUFFER()
+  #define PUSH_PIPELINE()
+  #define POP_PIPELINE()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -384,6 +391,14 @@ void geGL_glCreateRenderbuffers(GLsizei n,GLuint*ids){
   POP_RENDERBUFFER();
 }
 
+void geGL_glCreateProgramPipelines(GLsizei n,GLuint*ids){
+  PUSH_PIPELINE();
+  glGenProgramPipelines(n,ids);
+  for(GLsizei i=0;i<n;++i)
+    glBindProgramPipeline(ids[i]);
+  POP_PIPELINE();
+}
+
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
 
@@ -483,6 +498,10 @@ void implementRenderbufferDSA(){
   IMPLEMENT (glCreateRenderbuffers                    );
 }
 
+void implementPipelineDSA(){
+  IMPLEMENT(glCreateProgramPipelines);
+}
+
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
@@ -492,6 +511,7 @@ void ge::gl::init(){
   implementSamplerDSA     ();
   implementFramebufferDSA ();
   implementRenderbufferDSA();
+  implementPipelineDSA    ();
 }
 
 
