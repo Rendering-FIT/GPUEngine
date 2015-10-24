@@ -31,7 +31,11 @@ using namespace ge::gl;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,(GLint*)&oldId)
   #define POP_FRAMEBUFFER()\
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER,oldId)
-
+  #define PUSH_RENDERBUFFER()\
+    GLuint oldId;\
+    glGetIntegerv(GL_RENDERBUFFER_BINDING,(GLint*)&oldId)
+  #define POP_RENDERBUFFER()\
+    glBindRenderbuffer(GL_RENDERBUFFER,oldId)
 #else //SAVE_PREVIOUS_BINDING
   #define PUSH_WRITE_BUFFER()
   #define POP_WRITE_BUFFER()
@@ -43,6 +47,8 @@ using namespace ge::gl;
   #define POP_SAMPLER()
   #define PUSH_FRAMEBUFFER()
   #define POP_FRAMEBUFFER()
+  #define PUSH_RENDERBUFFER()
+  #define POP_RENDERBUFFER()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -349,6 +355,35 @@ void geGL_glInvalidateNamedFramebufferSubData(GLuint id,GLsizei numAttachments,c
   POP_FRAMEBUFFER();
 }
 
+void geGL_glGetNamedRenderbufferParameteriv(GLuint id,GLenum pname,GLint*params){
+  PUSH_RENDERBUFFER();
+  glBindRenderbuffer(GL_RENDERBUFFER,id);
+  glGetRenderbufferParameteriv(GL_RENDERBUFFER,pname,params);
+  POP_RENDERBUFFER();
+}
+
+void geGL_glNamedRenderbufferStorageMultisample(GLuint id,GLsizei samples,GLenum internalFormat,GLsizei width,GLsizei height){
+  PUSH_RENDERBUFFER();
+  glBindRenderbuffer(GL_RENDERBUFFER,id);
+  glRenderbufferStorageMultisample(GL_RENDERBUFFER,samples,internalFormat,width,height);
+  POP_RENDERBUFFER();
+}
+
+void geGL_glNamedRenderbufferStorage(GLuint id,GLenum internalFormat,GLsizei width,GLsizei height){
+  PUSH_RENDERBUFFER();
+  glBindRenderbuffer(GL_RENDERBUFFER,id);
+  glRenderbufferStorage(GL_RENDERBUFFER,internalFormat,width,height);
+  POP_RENDERBUFFER();
+}
+
+void geGL_glCreateRenderbuffers(GLsizei n,GLuint*ids){
+  PUSH_RENDERBUFFER();
+  glGenRenderbuffers(n,ids);
+  for(GLsizei i=0;i<n;++i)
+    glBindRenderbuffer(GL_RENDERBUFFER,ids[i]);
+  POP_RENDERBUFFER();
+}
+
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
 
@@ -441,14 +476,22 @@ void implementFramebufferDSA(){
   IMPLEMENT (glInvalidateNamedFramebufferSubData           );
 }
 
+void implementRenderbufferDSA(){
+  IMPLEMENT1(glGetNamedRenderbufferParameteriv    ,EXT);
+  IMPLEMENT1(glNamedRenderbufferStorageMultisample,EXT);
+  IMPLEMENT1(glNamedRenderbufferStorage           ,EXT);
+  IMPLEMENT (glCreateRenderbuffers                    );
+}
+
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
 void ge::gl::init(){
-  implementBufferDSA     ();
-  implementVertexArrayDSA();
-  implementSamplerDSA    ();
-  implementFramebufferDSA();
+  implementBufferDSA      ();
+  implementVertexArrayDSA ();
+  implementSamplerDSA     ();
+  implementFramebufferDSA ();
+  implementRenderbufferDSA();
 }
 
 

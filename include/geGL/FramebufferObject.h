@@ -1,5 +1,4 @@
-#ifndef _FRAMEBUFFEROBJECT_H_
-#define _FRAMEBUFFEROBJECT_H_
+#pragma once
 
 #include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
@@ -92,4 +91,3 @@ namespace ge{
   }//gl
 }//ge
 
-#endif//_FRAMEBUFFEROBJECT_H_

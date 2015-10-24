@@ -1,13 +1,11 @@
-#ifndef _RENDERBUFFEROBJECT_H_
-#define _RENDERBUFFEROBJECT_H_
+#pragma once
 
 #include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT RenderbufferObject: public OpenGLObject
-    {
+    class GEGL_EXPORT RenderbufferObject: public OpenGLObject{
       public:
         RenderbufferObject(
             GLenum  internalFormat,
@@ -19,21 +17,20 @@ namespace ge{
             GLsizei width,
             GLsizei height);
         ~RenderbufferObject();
-        void   bind             ();
-        void   unbind           ();
-        GLint  getWidth         ();
-        GLint  getHeight        ();
-        GLenum getInternalFormat();
-        GLint  getSamples       ();
-        GLint  getRedSize       ();
-        GLint  getGreenSize     ();
-        GLint  getBlueSize      ();
-        GLint  getAlphaSize     ();
-        GLint  getDepthSize     ();
-        GLint  getStencilSize   ();
+        void   bind             ()const;
+        void   unbind           ()const;
+        GLint  getWidth         ()const;
+        GLint  getHeight        ()const;
+        GLenum getInternalFormat()const;
+        GLint  getSamples       ()const;
+        GLint  getRedSize       ()const;
+        GLint  getGreenSize     ()const;
+        GLint  getBlueSize      ()const;
+        GLint  getAlphaSize     ()const;
+        GLint  getDepthSize     ()const;
+        GLint  getStencilSize   ()const;
     };
   }//gl
 }//ge
 
-#endif//_RENDERBUFFEROBJECT_H_
 
