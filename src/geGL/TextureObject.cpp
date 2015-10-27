@@ -264,9 +264,9 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
  */
 TextureObject::TextureObject(
     GLenum  target,
-    GLsizei width,
     GLenum  internalFormat,
-    GLsizei levels){
+    GLsizei levels,
+    GLsizei width){
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(this->_target,1,&this->_id);
@@ -292,10 +292,10 @@ glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,p
  */
 TextureObject::TextureObject(
     GLenum  target,
-    GLsizei width,
-    GLsizei height,
     GLenum  internalFormat,
-    GLsizei levels){
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height){
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -316,11 +316,11 @@ TextureObject::TextureObject(
  */
 TextureObject::TextureObject(
     GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
     GLsizei width,
     GLsizei height,
-    GLsizei depth,
-    GLenum  internalFormat,
-    GLsizei levels){
+    GLsizei depth){
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);

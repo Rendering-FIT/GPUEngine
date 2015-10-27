@@ -29,23 +29,23 @@ namespace ge{
         GLenum  _format;
       public:
         TextureObject(
-            GLenum  target                     ,
-            GLsizei width                      ,
-            GLenum  internalFormat = GL_RGBA8UI,
-            GLsizei levels         = 0         );
+            GLenum  target        ,
+            GLenum  internalFormat,
+            GLsizei levels        ,
+            GLsizei width         );
         TextureObject(
-            GLenum  target                     ,
-            GLsizei width                      ,
-            GLsizei height                     ,
-            GLenum  internalFormat = GL_RGBA8UI,
-            GLsizei levels         = 0         );
+            GLenum  target        ,
+            GLenum  internalFormat,
+            GLsizei levels        ,
+            GLsizei width         ,
+            GLsizei height        );
         TextureObject(
-            GLenum  target                     ,
-            GLsizei width                      ,
-            GLsizei height                     ,
-            GLsizei depth                      ,
-            GLenum  internalFormat = GL_RGBA8UI,
-            GLsizei levels         = 0         );
+            GLenum  target        ,
+            GLenum  internalFormat,
+            GLsizei levels        ,
+            GLsizei width         ,
+            GLsizei height        ,
+            GLsizei depth         );
         ~TextureObject();
         void bind     (GLuint unit)const;
         void unbind   (GLuint unit)const;
