@@ -18,3 +18,5 @@ namespace ge{
     GEGL_EXPORT void init();
   }
 }
+
+

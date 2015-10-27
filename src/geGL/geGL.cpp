@@ -41,6 +41,16 @@ using namespace ge::gl;
     glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING,(GLint*)&oldId)
   #define POP_PIPELINE()\
     glBindProgramPipeline(oldId)
+  #define PUSH_TEXTURE(x)\
+    GLuint oldId;\
+    glGetIntegerv(ge::gl::textureTarget2Binding(x),(GLint*)&oldId)
+  #define POP_TEXTURE(x)\
+    glBindTexture(x,oldId)
+  #define PUSH_ACTIVE_TEXTURE()\
+    GLenum oldTex;\
+    glGetIntegerv(GL_ACTIVE_TEXTURE,(GLint*)&oldTex)
+  #define POP_ACTIVE_TEXTURE()\
+    glActiveTexture(oldTex)
 #else //SAVE_PREVIOUS_BINDING
   #define PUSH_WRITE_BUFFER()
   #define POP_WRITE_BUFFER()
@@ -56,6 +66,10 @@ using namespace ge::gl;
   #define POP_RENDERBUFFER()
   #define PUSH_PIPELINE()
   #define POP_PIPELINE()
+  #define PUSH_TEXTURE(x)
+  #define POP_TEXTURE(x)
+  #define PUSH_ACTIVE_TEXTURE()
+  #define POP_ACTIVE_TEXTURE()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -399,6 +413,100 @@ void geGL_glCreateProgramPipelines(GLsizei n,GLuint*ids){
   POP_PIPELINE();
 }
 
+std::map<GLuint,GLenum>_texture2Target;
+
+void geGL_glCreateTextures(GLenum target,GLsizei n,GLuint*ids){
+  PUSH_TEXTURE(target);
+  glGenTextures(n,ids);
+  for(GLsizei i=0;i<n;++i){
+    glBindTexture(target,ids[i]);
+    _texture2Target[ids[i]]=target;
+  }
+  POP_TEXTURE(target);
+}
+
+void geGL_glDeleteTextures(GLsizei n,const GLuint*ids){
+  glDeleteTextures(n,ids);
+  for(GLsizei i=0;i<n;++i)
+    _texture2Target.erase(ids[i]);
+}
+
+void geGL_glTextureImage1DEXT(GLuint id,GLenum target,GLint level,GLint internalFormat,GLsizei width,GLint border,GLenum format,GLenum type,const GLvoid*pixels){
+  PUSH_TEXTURE(target);
+  glBindTexture(target,id);
+  glTexImage1D(target,level,internalFormat,width,border,format,type,pixels);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureImage2DEXT(GLuint id,GLenum target,GLint level,GLint internalFormat,GLsizei width,GLsizei height,GLint border,GLenum format,GLenum type,const GLvoid*pixels){
+  PUSH_TEXTURE(target);
+  glBindTexture(target,id);
+  glTexImage2D(target,level,internalFormat,width,height,border,format,type,pixels);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureImage3DEXT(GLuint id,GLenum target,GLint level,GLint internalFormat,GLsizei width,GLsizei height,GLsizei depth,GLint border,GLenum format,GLenum type,const GLvoid*pixels){
+  PUSH_TEXTURE(target);
+  glBindTexture(target,id);
+  glTexImage3D(target,level,internalFormat,width,height,depth,border,format,type,pixels);
+  POP_TEXTURE(target);
+}
+
+void geGL_glCompressedTextureImage1DEXT(GLuint texture,GLenum target,GLint level,GLenum internalFormat,GLsizei width,GLint border, GLsizei imageSize,const GLvoid *data){
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glCompressedTexImage1D(target,level,internalFormat,width,border,imageSize,data);
+  POP_TEXTURE(target);
+}
+ 
+void geGL_glCompressedTextureImage2DEXT(GLuint texture,GLenum target,GLint level,GLenum internalFormat,GLsizei width,GLsizei height,GLint border, GLsizei imageSize,const GLvoid *data){
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glCompressedTexImage2D(target,level,internalFormat,width,height,border,imageSize,data);
+  POP_TEXTURE(target);
+}
+
+void geGL_glCompressedTextureImage3DEXT(GLuint texture,GLenum target,GLint level,GLenum internalFormat,GLsizei width,GLsizei height,GLsizei depth,GLint border, GLsizei imageSize,const GLvoid *data){
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glCompressedTexImage3D(target,level,internalFormat,width,height,depth,border,imageSize,data);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureSubImage1D(GLuint texture,GLint level,GLint xoffset,GLsizei width,GLenum format,GLenum type,const GLvoid*data){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexSubImage1D(target,level,xoffset,width,format,type,data);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureSubImage2D(GLuint texture,GLint level,GLint xoffset,GLint yoffset,GLsizei width,GLsizei height,GLenum format,GLenum type,const GLvoid*data){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexSubImage2D(target,level,xoffset,yoffset,width,height,format,type,data);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureSubImage3D(GLuint texture,GLint level,GLint xoffset,GLint yoffset,GLint zoffset,GLsizei width,GLsizei height,GLsizei depth,GLenum format,GLenum type,const GLvoid*data){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexSubImage3D(target,level,xoffset,yoffset,zoffset,width,height,depth,format,type,data);
+  POP_TEXTURE(target);
+}
+
+void geGL_glBindTextureUnit(GLuint unit,GLuint texture){
+  GLenum target=_texture2Target[texture];
+  PUSH_ACTIVE_TEXTURE();
+  PUSH_TEXTURE(target);
+  glActiveTexture(GL_TEXTURE0+unit);
+  glBindTexture(target,texture);
+  POP_TEXTURE(target);
+  POP_ACTIVE_TEXTURE();
+}
+
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
 
@@ -502,6 +610,28 @@ void implementPipelineDSA(){
   IMPLEMENT(glCreateProgramPipelines);
 }
 
+decltype(glDeleteTextures)*glDeleteTexturesGEGL=nullptr;
+
+void implementTextureDSA(){
+  if(!glCreateTextures){
+    glCreateTextures     = geGL_glCreateTextures;
+    glDeleteTexturesGEGL = geGL_glDeleteTextures;
+  }else{
+    glDeleteTexturesGEGL = glDeleteTextures;
+  }
+
+  IMPLEMENT(glTextureImage1DEXT          );
+  IMPLEMENT(glTextureImage2DEXT          );
+  IMPLEMENT(glTextureImage3DEXT          );
+  IMPLEMENT(glCompressedTextureImage1DEXT);
+  IMPLEMENT(glCompressedTextureImage2DEXT);
+  IMPLEMENT(glCompressedTextureImage3DEXT);
+  IMPLEMENT(glTextureSubImage1D          );//EXT has additional target
+  IMPLEMENT(glTextureSubImage2D          );
+  IMPLEMENT(glTextureSubImage3D          );
+  IMPLEMENT(glBindTextureUnit            );
+}
+
 /**
  * @brief initialize geGL it shout be called fater glewInit
  */
@@ -512,6 +642,40 @@ void ge::gl::init(){
   implementFramebufferDSA ();
   implementRenderbufferDSA();
   implementPipelineDSA    ();
+  implementTextureDSA     ();
 }
+
+/*
+#ifndef glTextureImage3D
+decltype(glTextureImage3DEXT) glTextureImage3D = nullptr;
+#endif
+
+#ifndef glTextureImage2D
+decltype(glTextureImage2DEXT) glTextureImage2D = nullptr;
+#endif
+
+#ifndef glTextureImage1D
+decltype(glTextureImage1DEXT) glTextureImage1D = nullptr;
+#endif
+
+#ifndef glCompressedTextureImage3D
+decltype(glCompressedTextureImage3DEXT) glCompressedTextureImage3D = nullptr;
+#endif
+
+#ifndef glCompressedTextureImage2D
+decltype(glCompressedTextureImage2DEXT) glCompressedTextureImage2D = nullptr;
+#endif
+
+#ifndef glCompressedTextureImage1D
+decltype(glCompressedTextureImage1DEXT) glCompressedTextureImage1D = nullptr;
+#endif
+*/
+#ifndef glTextureImage3DMultisample
+void (*glTextureImage3DMultisample) (GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations) = nullptr;
+#endif
+
+#ifndef glTextureImage2DMultisample
+void (*glTextureImage2DMultisample) (GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations) = nullptr;
+#endif
 
 
