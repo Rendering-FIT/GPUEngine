@@ -130,6 +130,9 @@ endif()
 
 
 if(GPUENGINE_BUILD_APPS)
+   if(NOT GPUENGINE_BUILD_geAd)
+      message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
+   endif() 
    add_subdirectory(apps)
 endif()
 
