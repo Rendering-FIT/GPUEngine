@@ -1,11 +1,15 @@
+set(APP_NAME TriangleRendering)
+
+project(${APP_NAME})
+
+find_package(SDL2)
+find_package(AntTweakBar)
+
+
 if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
    return()
 endif()
 
-
-set(APP_NAME TriangleRendering)
-
-project(${APP_NAME})
 
 set(APP_SOURCES
   main.cpp

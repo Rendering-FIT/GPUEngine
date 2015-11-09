@@ -1,13 +1,17 @@
-if(NOT OSG_FOUND OR NOT OSGDB_FOUND OR
-   NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND OR
-   NOT OSGDB_FOUND)
-   return()
-endif()
-
-
 set(APP_NAME geViewer)
 
 project(${APP_NAME})
+
+find_package(SDL2)
+find_package(AntTweakBar)
+find_package(OSG))
+find_package(OSGDB)
+
+
+if(NOT OSG_FOUND OR NOT OSGDB_FOUND OR
+   NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+   return()
+endif()
 
 set(APP_SOURCES
   main.cpp
