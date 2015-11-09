@@ -5,6 +5,10 @@ project(${APP_NAME})
 find_package(SDL2)
 find_package(AntTweakBar)
 
+if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+   return()
+endif()
+
 set(APP_SOURCES
   main.cpp
   )
@@ -19,9 +23,7 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-
 set(Internal_deps geGL geUtil WindowObject)
-set(External_deps_Export)
 set(External_libs
   ${GLEW_LIBRARY}
   ${OPENGL_LIBRARY}
