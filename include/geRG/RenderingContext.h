@@ -31,7 +31,14 @@ namespace ge
       class DrawCommandStorage : public BufferStorage<DrawCommandAllocationManager,
             DrawCommandGpuData> {
       public:
+#if _MSC_VER<=1900
+         // MSVC 2013 fails to inherit constructors according to C++11 standard
+         inline DrawCommandStorage(unsigned capacity=0,unsigned flags=0x88E8/*GL_DYNAMIC_DRAW*/,void *data=nullptr) : BufferStorage(capacity,flags,data) {}
+         inline DrawCommandStorage(unsigned capacity,unsigned numNullItems,unsigned flags,void *data=nullptr) : BufferStorage(capacity,numNullItems,flags,data) {}
+         inline DrawCommandStorage(unsigned bufferSize,unsigned allocManagerCapacity,unsigned numNullItems,unsigned flags,void *data=nullptr) : BufferStorage(bufferSize,allocManagerCapacity,numNullItems,flags,data) {}
+#else
          using BufferStorage::BufferStorage;
+#endif
          inline void alloc(DrawCommand* id)  { BufferStorage<DrawCommandAllocationManager,DrawCommandGpuData>::alloc(&id->data); }  ///< \brief Allocates one draw command and stores its index in the DrawCommand pointed by id parameter.
          inline void alloc(unsigned num,DrawCommand *ids)  { BufferStorage<DrawCommandAllocationManager,DrawCommandGpuData>::alloc(num,&ids->data); }  ///< \brief Allocates number of draw commands. Array pointed by ids must be at least num DrawCommands long.
       };
