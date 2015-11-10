@@ -1,29 +1,27 @@
 #include<geCore/fsa/state.h>
 
+#include<set>
 #include<iostream>
 #include<sstream>
 
 using namespace ge::core;
 
-State::State(std::string name){
+FSAState::FSAState(std::string name){
   this->_name = name;
-  this->_elseTransition.setCallback (nullptr);
-  this->_elseTransition.setNextState(nullptr);
-  this->_eofTransition .setCallback (nullptr);
-  this->_eofTransition .setNextState(nullptr);
+  this->_eofTransition .setCallback ();
+  this->_eofTransition .setNextState();
 }
 
-State::~State(){
+FSAState::~FSAState(){
 }
 
-void State::addTransition(
-    char         lex     ,
-    State*       state   ,
-    RuleCallback callback,
-    void*        data    ){
+void FSAState::addTransition(
+    char             lex     ,
+    FSAState*        state   ,
+    FSAFusedCallback callback){
   auto ii=this->_transitions.find(lex);
   if(ii==this->_transitions.end()){
-    this->_transitions[lex]=Transition(state,callback,data);
+    this->_transitions[lex]=FSATransition(state,callback);
     return;
   }
   if(ii->second.getNextState()!=state){
@@ -31,111 +29,90 @@ void State::addTransition(
       <<this->getName()<<"-"<<lex<<"->"<<state->getName()<<std::endl;
     return;
   }
-  ii->second.setCallback(callback,data);
+  ii->second.setCallback(callback);
 }
 
-void State::addElseTransition(
-    State*       state   ,
-    RuleCallback callback,
-    void*        data    ){
-  this->_elseTransition.setNextState(state   );
-  this->_elseTransition.setCallback (callback,data);
+void FSAState::addElseTransition(
+    FSAState*        state   ,
+    FSAFusedCallback callback){
+  std::set<char>present;
+  for(auto x:this->_transitions)
+    present.insert(x.first);
+  for(unsigned c=0;c<256;++c)
+    if(present.find(c)==present.end())
+      this->_transitions[c]=FSATransition(state,callback);
 }
 
-void State::addEOFTransition(
-    State*       state   ,
-    RuleCallback callback,
-    void*        data    ){
+void FSAState::addEOFTransition(
+    FSAState*        state   ,
+    FSAFusedCallback callback){
   this->_eofTransition.setNextState(state   );
-  this->_eofTransition.setCallback (callback,data);
+  this->_eofTransition.setCallback (callback);
 }
 
-void State::setCallback(char lex,RuleCallback cb,void*data){
-  this->_transitions[lex].setCallback(cb,data);
+void FSAState::setCallback(char lex,FSAFusedCallback cb){
+  this->_transitions[lex].setCallback(cb);
 }
 
-void State::setElseCallback(RuleCallback cb,void*data){
-  this->_elseTransition.setCallback(cb,data);
+void FSAState::setEOFCallback(FSAFusedCallback cb){
+  this->_eofTransition.setCallback(cb);
 }
 
-void State::setEOFCallback(RuleCallback cb,void*data){
-  this->_eofTransition.setCallback(cb,data);
-}
-
-Transition const&State::getTransition(char lex)const{
+FSATransition const&FSAState::getTransition(char lex)const{
   return this->_transitions.find(lex)->second;
 }
 
-Transition const&State::getElseTransition()const{
-  return this->_elseTransition;
-}
-
-Transition const&State::getEOFTransition()const{
+FSATransition const&FSAState::getEOFTransition()const{
   return this->_eofTransition;
 }
 
-std::string State::getName()const{
+std::string FSAState::getName()const{
   return this->_name;
 }
 
-unsigned State::getNofTransition()const{
+unsigned FSAState::getNofTransition()const{
   return this->_transitions.size();
 }
 
-char State::getTransitionLex(unsigned i)const{
+char FSAState::getTransitionLex(unsigned i)const{
   unsigned counter=0;
   for(auto x:this->_transitions)
     if(counter==i)return x.first;
   return 0;
 }
 
-void State::clearTransitions   (){
+void FSAState::clearTransitions   (){
   this->_transitions.clear();
 }
-void State::clearElseTransition(){
-  this->_elseTransition.setCallback ();
-  this->_elseTransition.setNextState();
-}
-void State::clearEofTransition (){
+
+void FSAState::clearEofTransition (){
   this->_eofTransition.setCallback ();
   this->_eofTransition.setNextState();
 }
 
-void State::setEndState(char lex,State*state){
+void FSAState::setEndState(char lex,FSAState*state){
   this->_transitions[lex].setNextState(state);
 }
 
-void State::setElseEndState(State*state){
-  this->_elseTransition.setNextState(state);
-}
-
-void State::setEOFEndState(State*state){
+void FSAState::setEOFEndState(FSAState*state){
   this->_eofTransition.setNextState(state);
 }
 
-State* State::apply(char lex,FSA*fsa){
+FSAState* FSAState::apply(char lex,FSA*fsa){
   auto ii=this->_transitions.find(lex);
-  if(ii==this->_transitions.end()){
-    this->_elseTransition.callCallback(fsa);
-    return this->_elseTransition.getNextState();
-  }
   ii->second.callCallback(fsa);
   return ii->second.getNextState();
 }
 
-bool State::hasElseTransition()const{
-  return this->_elseTransition.getNextState()!=nullptr;
-}
-
-bool State::hasEOFTransition()const{
+bool FSAState::hasEOFTransition()const{
   return this->_eofTransition.getNextState()!=nullptr;
 }
 
-bool State::hasTransition(char lex)const{
+bool FSAState::hasTransition(char lex)const{
   return this->_transitions.find(lex)!=this->_transitions.end();
 }
 
-std::string State::toStr()const{
+std::string FSAState::toStr()const{
   std::stringstream ss;
   bool first=true;
   for(auto x:this->_transitions){
@@ -144,22 +121,18 @@ std::string State::toStr()const{
     ss<<x.first<<"->"<<x.second.toStr();
   }
 
-  if(this->_elseTransition.getNextState()){
-    if(this->_transitions.size()>0)ss<<",";
-    ss<<"else->"<<this->_elseTransition.getNextState()->getName();
-  }
   if(this->_eofTransition.getNextState()){
-    if(this->_transitions.size()>0||this->_elseTransition.getNextState()!=nullptr)ss<<",";
+    if(this->_transitions.size()>0)ss<<",";
     ss<<"eof->"<<this->_eofTransition.getNextState()->getName();
   }
   return ss.str();
 }
 
-State::Iterator State::begin()const{
+FSAState::Iterator FSAState::begin()const{
   return this->_transitions.begin();
 }
 
-State::Iterator State::end  ()const{
+FSAState::Iterator FSAState::end  ()const{
   return this->_transitions.end();
 }
 

@@ -3,42 +3,47 @@
 
 #include<sstream>
 
+#include<geCore/fsa/fusedCallbackData.h>
+
 using namespace ge::core;
 
-Transition::Transition(State*state,RuleCallback callback,void* data){
-  this->_nextState    = state   ;
-  this->_callback     = callback;
-  this->_callbackData = data    ;
+FSATransition::FSATransition(FSAState*state,FSAFusedCallback const&callback){
+  this->_nextState = state   ;
+  this->_callback  = callback;
 }
 
-Transition::~Transition(){
+FSATransition::~FSATransition(){
 }
 
-void Transition::setCallback(RuleCallback callback,void* data){
-  this->_callback     = callback;
-  this->_callbackData = data    ;
+bool FSATransition::operator==(FSATransition const&other)const{
+  return this->_nextState == other._nextState && this->_callback == other._callback;
 }
 
-State* Transition::getNextState()const{
+bool FSATransition::operator!=(FSATransition const&other)const{
+  return !(*this==other);
+}
+
+void FSATransition::setCallback(FSAFusedCallback const& callback){
+  this->_callback = callback;
+}
+
+FSAState* FSATransition::getNextState()const{
   return this->_nextState;
 }
 
-void Transition::setNextState(State*state){
+void FSATransition::setNextState(FSAState*state){
   this->_nextState = state;
 }
 
-RuleCallback Transition::getCallback()const{
+FSAFusedCallback const&FSATransition::getCallback()const{
   return this->_callback;
 }
 
-void* Transition::getCallbackData()const{
-  return this->_callbackData;
+void FSATransition::callCallback(FSA*fsa)const{
+  this->_callback(fsa);
 }
 
-void Transition::callCallback(FSA*fsa)const{
-  if(this->_callback)this->_callback(fsa,this->_callbackData);
-}
-std::string Transition::toStr()const{
+std::string FSATransition::toStr()const{
   std::stringstream ss;
   ss<<this->_nextState->getName();
   return ss.str();

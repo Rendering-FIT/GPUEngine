@@ -10,8 +10,8 @@ void registerStart(ge::core::FSA*fsa,void*data){
 }
 
 struct ReadData{
-  unsigned startPosition;
-  std::string read;
+  unsigned startPosition = 0;
+  std::string read = "";
 };
 
 void getReadData(ge::core::FSA*fsa,void*data){
@@ -19,17 +19,36 @@ void getReadData(ge::core::FSA*fsa,void*data){
   rd->read=fsa->getAlreadyReadString().substr(rd->startPosition);
 }
 
-SCENARIO( "FSA float test", "[FSA]" ) {
+SCENARIO("FSA basic tests"){
+  GIVEN("empty FSA with only start symbol"){
+    FSA fsaa("S");
+    WHEN("parsing word"){
+      THEN("it should fail"){
+        REQUIRE(fsaa.run("word")==false);
+      }
+    }
+    WHEN("parsing empty word"){
+      THEN("it should pass"){
+        REQUIRE(fsaa.run("")==false);
+      }
+    }
+  }
+}
 
+//*
+SCENARIO( "FSA float test", "[FSA]" ) {
   GIVEN( "float FSA" ) {
-    unsigned startPos;
+    unsigned startPos = 0;
     ReadData readData;
     std::string exponent  = "eE" ;
     std::string sufix     = "f"  ;
     std::string delimiter = "."  ;
     std::string sign      = "+-" ;
 
-    std::shared_ptr<FSA>fsa=std::make_shared<FSA>("S",
+    FSA fsa(
+//    std::shared_ptr<FSA>fsa=std::make_shared<FSA>(
+
+        "S",
       "S",sign                ,"A",registerStart,(void*)&startPos,
       "S",delimiter           ,"B",registerStart,(void*)&startPos,
       "S",ge::core::FSA::digit,"C",registerStart,(void*)&startPos,
@@ -42,45 +61,144 @@ SCENARIO( "FSA float test", "[FSA]" ) {
       "C",exponent            ,"E",
       "C",sufix               ,"H",
 //      "C",ge::core::FSA::els  ,"S",getReadData,(void*)&readData,
-      "C",ge::core::FSA::eof  ,"S",getReadData,(void*)&readData,
+      "C",ge::core::FSA::eof  ,"X",getReadData,(void*)&readData,
       "D",ge::core::FSA::digit,"D",
       "D",exponent            ,"E",
       "D",sufix               ,"H",
 //      "D",ge::core::FSA::els  ,"S",getReadData,(void*)&readData,
-      "D",ge::core::FSA::eof  ,"S",getReadData,(void*)&readData,
+      "D",ge::core::FSA::eof  ,"X",getReadData,(void*)&readData,
       "E",sign                ,"F",
       "E",ge::core::FSA::digit,"G",
       "F",ge::core::FSA::digit,"G",
       "G",ge::core::FSA::digit,"G",
       "G",sufix               ,"H",
 //      "G",ge::core::FSA::els  ,"S",getReadData,(void*)&readData,
-      "G",ge::core::FSA::eof  ,"S",getReadData,(void*)&readData,
+      "G",ge::core::FSA::eof  ,"X",getReadData,(void*)&readData,
 //      "H",ge::core::FSA::els  ,"S",getReadData,(void*)&readData,
-      "H",ge::core::FSA::eof  ,"S",getReadData,(void*)&readData);
+      "H",ge::core::FSA::eof  ,"X",getReadData,(void*)&readData);
 
     WHEN( "lexing \"+832.3232e32f\"" ) {
       THEN( "it should pass and read \"+832.3232e32f\"" ) {
-        REQUIRE(fsa->run("+832.3232e32f")==true);
+        REQUIRE(fsa.run("+832.3232e32f")==true);
         REQUIRE(readData.read=="+832.3232e32f");
       }
     }
     WHEN( "lexing \"10\""){
       THEN( "it should pass and read \"10\""){
-        REQUIRE(fsa->run("10")==true);
+        REQUIRE(fsa.run("10")==true);
         REQUIRE(readData.read=="10");
       }
     }
     WHEN( "lexing \"10asd\""){
       THEN( "it should fail"){
-        REQUIRE(fsa->run("10asd")==false);
+        REQUIRE(fsa.run("10asd")==false);
       }
     }
     WHEN( "lexing \"10.10f\""){
       THEN( "it should pass and read \"10.10f\""){
-        REQUIRE(fsa->run("10.10f")==true);
+        REQUIRE(fsa.run("10.10f")==true);
         REQUIRE(readData.read=="10.10f");
+      }
+    }
+    
+    WHEN( "minimalizing and lexing \"+832.3232e32f\""){
+      fsa.minimalize();
+      THEN( "it should pass and read \"+832.3232e32f\""){
+        REQUIRE(fsa.run("+832.3232e32f")==true);
+        REQUIRE(readData.read=="+832.3232e32f");
+      }
+    }
+  }
+
+  GIVEN ("fsa with undistinguishable states"){
+    FSA fsa(
+    //std::shared_ptr<FSA>fsa=std::make_shared<FSA>(
+        "S",
+      "S","a","A",
+      "S","b","B",
+      "A","a","AA",
+      "B","a","BB",
+      "AA","c","C",
+      "BB","c","C",
+      "C","c","D",
+      "D",ge::core::FSA::eof,"E");
+    WHEN("minimalizing"){
+      fsa.minimalize();
+      THEN( "it should have merged states"){
+        std::set<std::string>finalStates={
+          "AB",
+          "AABB",
+          "C",
+          "D",
+          "E",
+          "S"};
+        
+        for(auto x:fsa)
+          std::cout<<"0- "<<x.first<<std::endl;
+
+        for(auto x:fsa){
+          std::cout<<"0 "<<x.first<<std::endl;
+          REQUIRE(finalStates.find(x.second->getName())!=finalStates.end());
+        }
+      }
+    }
+  }
+  GIVEN ("fsa with unreachable states"){
+    FSA fsa(
+    //std::shared_ptr<FSA>fsa=std::make_shared<FSA>(
+        "S",
+      "S","a","A",
+      "S","b","B",
+      "A","a","AA",
+      "B","a","BB",
+      "AA","c","C",
+      "BB","c","C",
+      "C","c","D",
+      "G","r","K",
+      "G","a","AA",
+      "D",ge::core::FSA::eof,"E");
+    WHEN("minimalizing"){
+      fsa.minimalize();
+      THEN( "it should have fewer states"){
+        std::set<std::string>finalStates{
+          "AABB",
+          "AB",
+          "C",
+          "D",
+          "E",
+          "S"
+        };
+        for(auto x:fsa)
+          std::cout<<"1- "<<x.first<<std::endl;
+
+        for(auto x:fsa){
+          std::cout<<"1 "<<x.first<<std::endl;
+          REQUIRE(finalStates.find(x.second->getName())!=finalStates.end());
+        }
+      }
+    }
+
+  }
+}
+// */
+/*
+SCENARIO( "FSA operator tests", "[FSA]" ) {
+  GIVEN("two fsa"){
+    std::shared_ptr<FSA>fsa0=std::make_shared<FSA>("S",
+        "S","a","A",
+        "A","b","B",
+        "B",ge::core::FSA::eof,"E");
+    std::shared_ptr<FSA>fsa1=std::make_shared<FSA>("S",
+        "S","c","C",
+        "C","b","B",
+        "B",ge::core::FSA::eof,"E");
+    WHEN("uniting"){
+      auto fsa=*fsa0+*fsa1;
+      THEN("it should parse words from both languages"){
+        REQUIRE(fsa.run("ab")==true);
+        REQUIRE(fsa.run("cb")==true);
       }
     }
   }
 }
-
+*/

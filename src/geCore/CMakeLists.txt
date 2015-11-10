@@ -17,12 +17,14 @@ set(FSA_SOURCES
   fsa/fsa.cpp
   fsa/state.cpp
   fsa/transition.cpp
+  fsa/fusedCallbackData.cpp
   )
 
 set(FSA_INCLUDES
   ${HEADER_PATH}/fsa/fsa.h
   ${HEADER_PATH}/fsa/state.h
   ${HEADER_PATH}/fsa/transition.h
+  ${HEADER_PATH}/fsa/fusedCallbackData.h
   )
 
 set(CORE_INCLUDES

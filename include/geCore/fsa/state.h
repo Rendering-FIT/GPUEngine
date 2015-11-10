@@ -7,49 +7,34 @@
 namespace ge{
   namespace core{
     class FSA;
-    class GECORE_EXPORT State{
+    class GECORE_EXPORT FSAState{
       private:
-        std::string              _name          ;
-        std::map<char,Transition>_transitions   ;
-        Transition               _elseTransition;
-        Transition               _eofTransition ;
+        std::string                 _name          ;
+        std::map<char,FSATransition>_transitions   ;
+        FSATransition               _eofTransition ;
       public:
-        State(std::string name);
-        virtual ~State();
-        void addTransition(
-            char         lex               ,
-            State*       state    = nullptr,
-            RuleCallback callback = nullptr,
-            void*        data     = nullptr);
-        void addElseTransition(
-            State*       state    = nullptr,
-            RuleCallback callback = nullptr,
-            void*        data     = nullptr);
-        void addEOFTransition(
-            State*       state    = nullptr,
-            RuleCallback callback = nullptr,
-            void*        data     = nullptr);
-        void setCallback    (char lex,RuleCallback callback = nullptr,void* data = nullptr);
-        void setElseCallback(         RuleCallback callback = nullptr,void* data = nullptr);
-        void setEOFCallback (         RuleCallback callback = nullptr,void* data = nullptr);
-        Transition const&getTransition    (char lex)const;
-        Transition const&getElseTransition(        )const;
-        Transition const&getEOFTransition (        )const;
+        FSAState(std::string name);
+        virtual ~FSAState();
+        void addTransition    (char lex,FSAState*state,FSAFusedCallback callback);
+        void addElseTransition(         FSAState*state,FSAFusedCallback callback);
+        void addEOFTransition (         FSAState*state,FSAFusedCallback callback);
+        void setCallback    (char lex,FSAFusedCallback callback);
+        void setElseCallback(         FSAFusedCallback callback);
+        void setEOFCallback (         FSAFusedCallback callback);
+        FSATransition const&getTransition    (char lex)const;
+        FSATransition const&getEOFTransition (        )const;
         void       clearTransitions   ();
-        void       clearElseTransition();
         void       clearEofTransition ();
         std::string getName()const;
         unsigned   getNofTransition()const;
         char       getTransitionLex(unsigned i)const;
-        void       setEndState    (char lex,State*state = nullptr);
-        void       setElseEndState(         State*state = nullptr);
-        void       setEOFEndState (         State*state = nullptr);
-        State*     apply(char lex,FSA*fsa);
-        bool       hasElseTransition()const;
-        bool       hasEOFTransition()const;
-        bool       hasTransition(char lex)const;
+        void       setEndState    (char lex,FSAState*state = nullptr);
+        void       setEOFEndState (         FSAState*state = nullptr);
+        FSAState*  apply(char lex,FSA*fsa);
+        bool       hasEOFTransition (        )const;
+        bool       hasTransition    (char lex)const;
         std::string toStr()const;
-        typedef std::map<char,Transition>::const_iterator Iterator;
+        typedef std::map<char,FSATransition>::const_iterator Iterator;
         Iterator begin()const;
         Iterator end  ()const;
     };

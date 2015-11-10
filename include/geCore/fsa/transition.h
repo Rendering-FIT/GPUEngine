@@ -2,30 +2,27 @@
 
 #include<iostream>
 #include<geCore/Export.h>
+#include<geCore/fsa/fusedCallbackData.h>
 
 namespace ge{
   namespace core{
     class FSA;
-    typedef void(*RuleCallback)(FSA*,void*);
-    class State;
-    class GECORE_EXPORT Transition{
+    class FSAState;
+    class GECORE_EXPORT FSATransition{
       private:
-        State*       _nextState    = nullptr;
-        RuleCallback _callback     = nullptr;
-        void*        _callbackData = nullptr;
+        FSAState*        _nextState = nullptr;
+        FSAFusedCallback _callback           ;
       public:
-        Transition(
-            State*       state        = nullptr,
-            RuleCallback callback     = nullptr,
-            void*        callbackData = nullptr);
-        virtual ~Transition();
-        void setCallback(RuleCallback callback = nullptr,void* callbackData = nullptr);
-        State*       getNextState   (           )const;
-        RuleCallback getCallback    (           )const;
-        void*        getCallbackData(           )const;
+        FSATransition(FSAState*state = nullptr,FSAFusedCallback const& callback = FSAFusedCallback());
+        virtual ~FSATransition();
+        bool operator==(FSATransition const&other)const;
+        bool operator!=(FSATransition const&other)const;
+        void setCallback(FSAFusedCallback const& callback = FSAFusedCallback());
+        FSAState*getNextState()const;
+        FSAFusedCallback const&getCallback()const;
         void         callCallback   (FSA*fsa    )const;
         std::string  toStr          (           )const;
-        void         setNextState   (State*state = nullptr);
+        void         setNextState   (FSAState*state = nullptr);
     };
   }
 }
