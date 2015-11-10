@@ -31,8 +31,8 @@ namespace ge
       class DrawCommandStorage : public BufferStorage<DrawCommandAllocationManager,
             DrawCommandGpuData> {
       public:
-#if _MSC_VER<=1900
-         // MSVC 2013 fails to inherit constructors according to C++11 standard
+#if _MSC_VER<1900
+         // MSVC 2013 (tested with Update 4 and 5) fails to inherit constructors according to C++11 standard
          inline DrawCommandStorage(unsigned capacity=0,unsigned flags=0x88E8/*GL_DYNAMIC_DRAW*/,void *data=nullptr) : BufferStorage(capacity,flags,data) {}
          inline DrawCommandStorage(unsigned capacity,unsigned numNullItems,unsigned flags,void *data=nullptr) : BufferStorage(capacity,numNullItems,flags,data) {}
          inline DrawCommandStorage(unsigned bufferSize,unsigned allocManagerCapacity,unsigned numNullItems,unsigned flags,void *data=nullptr) : BufferStorage(bufferSize,allocManagerCapacity,numNullItems,flags,data) {}

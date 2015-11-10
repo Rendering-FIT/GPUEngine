@@ -2,6 +2,9 @@
 #include <GL/glew.h>
 #include <geRG/StateSet.h>
 #include <geRG/RenderingContext.h>
+#if _MSC_VER<1900
+# include <cstdlib>
+#endif
 
 using namespace ge::rg;
 
@@ -9,6 +12,18 @@ static_assert(sizeof(StateSetGpuData)==4,
               "StateSet::StateSetData size is not 4 bytes.\n"
               "If it is ok, check related code and consider rewising this assert.");
 
+
+
+#if _MSC_VER<1900
+// MSVC 2013 (tested with Update 4 and 5) fails to embed this class into the std::vector
+// unless there is copy constructor (this does not meet C++11 standard)
+RenderingCommandData::RenderingCommandData(const RenderingCommandData&) // this should be never called
+{
+   std::cout<<"RenderingCommandData copy constructor fatal error: this constructor should be\n"
+              "   never called. Application will be terminated."<<std::endl;
+   exit(-1);
+}
+#endif
 
 
 RenderingCommandData& RenderingCommandData::operator=(RenderingCommandData&& rhs)

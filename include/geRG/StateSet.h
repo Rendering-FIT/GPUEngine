@@ -29,7 +29,13 @@ namespace ge
          unsigned glMode;
          unsigned drawCommandCount;
 
+#if _MSC_VER<1900
+         // MSVC 2013 (tested with Update 4 and 5) fails to embed this class into the std::vector
+         // unless there is copy constructor (this does not meet C++11 standard)
+         RenderingCommandData(const RenderingCommandData&); // this should be never called
+#else
          RenderingCommandData(const RenderingCommandData&) = delete;
+#endif
          inline RenderingCommandData(RenderingCommandData&& rhs)  { *this=std::move(rhs); }
          RenderingCommandData& operator=(RenderingCommandData&& rhs);
 
