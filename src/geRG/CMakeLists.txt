@@ -46,7 +46,7 @@ set(RG_SOURCES
     Transformation.cpp
     MatrixList.cpp
   )
-  
+
 ################################################
 # PACKAGES
 

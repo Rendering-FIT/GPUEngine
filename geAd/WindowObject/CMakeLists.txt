@@ -17,16 +17,16 @@ set(SDL2_BUILDING_LIBRARY ON)
 FIND_PACKAGE(SDL2        QUIET)
 FIND_PACKAGE(AntTweakBar QUIET)
 
-#if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
-#   return()
-#endif()
+if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+   return()
+endif()
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
 set (ADD_INCLUDES
   ${HEADER_PATH}/Export.h
   ${HEADER_PATH}/WindowObject.h
-  ) 
+  )
 set (ADD_SOURCES
   WindowObject.cpp
   )
@@ -53,8 +53,8 @@ set(includes_to_export)
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
 set_target_properties(${LIB_NAME} PROPERTIES
-	INCLUDE_DIRECTORIES "${Internal_inc}"
-	INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
+   INCLUDE_DIRECTORIES "${Internal_inc}"
+   INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
 )
 
 install(FILES
@@ -67,7 +67,7 @@ install(TARGETS ${LIB_NAME}
     ARCHIVE DESTINATION lib
     RUNTIME DESTINATION bin
   )
-  
+
 #########################################
 #Export
 #configure_package_config_file( 
