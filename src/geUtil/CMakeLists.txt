@@ -53,8 +53,10 @@ set(GL_INCLUDES
   ${HEADER_PATH}/CameraPath.h
   ${HEADER_PATH}/FPSPrinter.h
   ${HEADER_PATH}/HighResolutionTimer.h
+  ${HEADER_PATH}/Interpolator.h
   ${HEADER_PATH}/Intersectors.h
   ${HEADER_PATH}/macros.h
+  ${HEADER_PATH}/MatrixStack.h
   ${HEADER_PATH}/Progress.h
   ${HEADER_PATH}/Ray.h
   ${HEADER_PATH}/geUtil.h

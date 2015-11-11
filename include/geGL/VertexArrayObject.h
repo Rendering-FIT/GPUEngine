@@ -1,33 +1,18 @@
-#ifndef _VERTEXARRAYOBJECT_H_
-#define _VERTEXARRAYOBJECT_H_
+#pragma once
 
 #include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
-#include<iostream>
-
-//#define REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
-
-#ifndef REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
 #include<geGL/BufferObject.h>
-#endif//REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
-
-#define VERTEXARRAYOBJECT_DEFAULT_STRIDE      0       
-#define VERTEXARRAYOBJECT_DEFAULT_POINTER     NULL    
-#define VERTEXARRAYOBJECT_DEFAULT_NORMALIZED  GL_FALSE
-#define VERTEXARRAYOBJECT_DEFAULT_DIVISOR     0       
-#define VERTExARRAYOBJECT_DEFAULT_ID          0       
-#define VERTEXARRAYOBJECT_DEFAULT_APT         VertexArrayObject::AttribPointerType::NONE
+#include<iostream>
 
 namespace ge{
   namespace gl{
     GEGL_EXPORT std::string translateAttribType(GLenum    type   );
     GEGL_EXPORT std::string translateBoolean   (GLboolean boolean);
     GEGL_EXPORT unsigned    getTypeSize        (GLenum    type   );
-    GEGL_EXPORT void initVertexArrayObjects    ();
-    class GEGL_EXPORT VertexArrayObject: public OpenGLObject
-    {
-      private:
-        inline GLint getAttrib(GLuint index,GLenum pname);
+    class GEGL_EXPORT VertexArrayObject: public OpenGLObject{
+      protected:
+        inline GLint _getAttrib(GLuint index,GLenum pname)const;
       public:
         enum AttribPointerType{
           NONE,
@@ -37,48 +22,45 @@ namespace ge{
         VertexArrayObject ();
         ~VertexArrayObject();
         void addAttrib(
-            GLuint                  buffer                                                  ,
-            GLuint                  index                                                   ,
-            GLint                   nofComponents                                           ,
-            GLenum                  type                                                    ,
-            GLsizei                 stride            = VERTEXARRAYOBJECT_DEFAULT_STRIDE    ,
-            const GLvoid           *pointer           = VERTEXARRAYOBJECT_DEFAULT_POINTER   ,
-            GLboolean               normalized        = VERTEXARRAYOBJECT_DEFAULT_NORMALIZED,  
-            GLuint                  divisor           = VERTEXARRAYOBJECT_DEFAULT_DIVISOR   ,
-            enum AttribPointerType  attribPointerType = VERTEXARRAYOBJECT_DEFAULT_APT       );
+            GLuint                  buffer                      ,
+            GLuint                  index                       ,
+            GLint                   nofComponents               ,
+            GLenum                  type                        ,
+            GLsizei                 stride            = 0       ,
+            const GLvoid           *pointer           = NULL    ,
+            GLboolean               normalized        = GL_FALSE,  
+            GLuint                  divisor           = 0       ,
+            enum AttribPointerType  attribPointerType = NONE    )const;
         void addElementBuffer(
-            GLuint  buffer);
-        void bind  ();
-        void unbind();
-        GLuint    getAttribBufferBinding (GLuint index);
-        GLboolean isAttribEnabled        (GLuint index);
-        GLint     getAttribSize          (GLuint index);
-        GLsizei   getAttribStride        (GLuint index);
-        GLenum    getAttribType          (GLuint index);
-        GLboolean isAttribNormalized     (GLuint index);
-        GLboolean isAttribInteger        (GLuint index);
-        GLboolean isAttribLong           (GLuint index);
-        GLuint    getAttribDivisor       (GLuint index);
-        GLuint    getAttribBinding       (GLuint index);
-        GLuint    getAttribRelativeOffset(GLuint index);
-        GLuint    getElementBuffer();
-        std::string getInfo();
-#ifndef REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
+            GLuint  buffer)const;
+        void bind  ()const;
+        void unbind()const;
+        GLuint    getAttribBufferBinding (GLuint index)const;
+        GLboolean isAttribEnabled        (GLuint index)const;
+        GLint     getAttribSize          (GLuint index)const;
+        GLsizei   getAttribStride        (GLuint index)const;
+        GLenum    getAttribType          (GLuint index)const;
+        GLboolean isAttribNormalized     (GLuint index)const;
+        GLboolean isAttribInteger        (GLuint index)const;
+        GLboolean isAttribLong           (GLuint index)const;
+        GLuint    getAttribDivisor       (GLuint index)const;
+        GLuint    getAttribBinding       (GLuint index)const;
+        GLuint    getAttribRelativeOffset(GLuint index)const;
+        GLuint    getElementBuffer()const;
+        std::string getInfo()const;
         void addAttrib(
-            ge::gl::BufferObject   *buffer                                                  ,
-            GLuint                  index                                                   ,
-            GLint                   nofComponentsa                                          ,
-            GLenum                  type                                                    ,
-            GLsizei                 stride            = VERTEXARRAYOBJECT_DEFAULT_STRIDE    ,
-            const GLvoid           *pointer           = VERTEXARRAYOBJECT_DEFAULT_POINTER   ,
-            GLboolean               normalized        = VERTEXARRAYOBJECT_DEFAULT_NORMALIZED,  
-            GLuint                  divisor           = VERTEXARRAYOBJECT_DEFAULT_DIVISOR   ,
-            enum AttribPointerType  attribPointerType = VERTEXARRAYOBJECT_DEFAULT_APT       );
+            ge::gl::BufferObject   *buffer                      ,
+            GLuint                  index                       ,
+            GLint                   nofComponentsa              ,
+            GLenum                  type                        ,
+            GLsizei                 stride            = 0       ,
+            const GLvoid           *pointer           = NULL    ,
+            GLboolean               normalized        = GL_FALSE,  
+            GLuint                  divisor           = 0       ,
+            enum AttribPointerType  attribPointerType = NONE    )const;
         void addElementBuffer(
-            ge::gl::BufferObject *buffer);
-#endif//REMOVE_FUNCTIONS_WITH_OBJECTS_AS_PARAMETERS
+            ge::gl::BufferObject *buffer)const;
     };
   }//gl
 }//ge
 
-#endif//_VERTEXARRAYOBJECT_H_

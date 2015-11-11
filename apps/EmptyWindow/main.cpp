@@ -5,7 +5,7 @@
 #include<geUtil/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
 #include<geUtil/ArgumentManager/ArgumentManager.h>
-#include<geUtil/WindowObject.h>
+#include<geAd/WindowObject/WindowObject.h>
 
 void init();
 void idle();

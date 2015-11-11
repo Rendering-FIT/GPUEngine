@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
+#include <geGL/geGL.h>
 #include <geGL/OpenGLCommands.h>
 #include <geGL/ProgramObject.h>
 #include <geRG/Mesh.h>
@@ -15,7 +16,7 @@
 #include <geRG/RenderingContext.h>
 #include <geRG/StateSet.h>
 #include <geRG/Transformation.h>
-#include <geUtil/WindowObject.h>
+#include <geAd/WindowObject/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 #include <osg/ref_ptr>
 #include <osg/StateSet>
@@ -99,8 +100,9 @@ int main(int Argc,char*Argv[])
   glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
                 // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
                 // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
-  RenderingContext::setInitialUseARBShaderDrawParametersValue(useARBShaderDrawParameters);
+  ge::gl::init();
   RenderingContext::setCurrent(make_shared<RenderingContext>());
+  RenderingContext::current()->setUseARBShaderDrawParameters(useARBShaderDrawParameters);
 
   // OpenGL debugging messages
   //ge::gl::setDefaultDebugMessage();
@@ -153,24 +155,24 @@ void Idle()
 {
    // compute transformation matrices
    RenderingContext::current()->evaluateTransformationGraph();
-   RenderingContext::current()->unmapInstancingMatrixBuffer();
+   RenderingContext::current()->matrixStorage()->unmap();
 
    // prepare for rendering
    RenderingContext::current()->setupRendering();
-   RenderingContext::current()->mapStateSetBuffer();
+   RenderingContext::current()->stateSetStorage()->map(BufferStorageAccess::WRITE);
    for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
       (*it)->setupRendering();
-   RenderingContext::current()->unmapStateSetBuffer();
+   RenderingContext::current()->stateSetStorage()->unmap();
 
    // indirect buffer update - setup and start compute shader
    processInstanceProgram->use();
-   unsigned numInstances=RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd();
+   unsigned numInstances=RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd();
    processInstanceProgram->set("numToProcess",numInstances);
-   RenderingContext::current()->drawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   RenderingContext::current()->instanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->instancingMatricesControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
-   RenderingContext::current()->indirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
-   RenderingContext::current()->stateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
+   RenderingContext::current()->primitiveStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->drawCommandStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   RenderingContext::current()->matrixListControlStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->drawIndirectBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
+   RenderingContext::current()->stateSetStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
    glDispatchCompute((numInstances+63)/64,1,1);
 
    // clear screen
@@ -180,28 +182,28 @@ void Idle()
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
 
    // bind buffers for rendering
-   RenderingContext::current()->indirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   RenderingContext::current()->drawIndirectBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
    if(useARBShaderDrawParameters)
-      RenderingContext::current()->instancingMatrixBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+      RenderingContext::current()->matrixStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
 
 #if 0
-   printIntBufferContent(RenderingContext::current()->instanceBuffer(),
-                         RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd()*3);
-   printIntBufferContent(RenderingContext::current()->drawCommandBuffer(),
-                         (RenderingContext::current()->drawCommandAllocationManager().firstByteAvailableAtTheEnd()+3)/sizeof(unsigned));
-   printIntBufferContent(RenderingContext::current()->indirectCommandBuffer(),
-                         RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd()*5);
+   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->bufferObject(),
+                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->primitiveStorage()->bufferObject(),
+                         RenderingContext::current()->primitiveStorage()->firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->drawIndirectBuffer(),
+                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*5);
 #endif
 
    // render ambient scene
    ambientProgram->use();
-   glUniform1i(ambientProgram->getUniform("colorTexture"),0);
+   ambientProgram->set("colorTexture",0);
    for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
    {
       if((*it)->commandList().size()==0)
-         glUniform1i(ambientProgram->getUniform("colorTexturingMode"),0); // no texturing
+         ambientProgram->set("colorTexturingMode",int(0)); // no texturing
       else
-         glUniform1i(ambientProgram->getUniform("colorTexturingMode"),1); // modulate
+         ambientProgram->set("colorTexturingMode",int(1)); // modulate
       for_each((*it)->commandList().begin(),(*it)->commandList().end(),
                [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
       (*it)->render();
@@ -211,13 +213,13 @@ void Idle()
    glEnable(GL_BLEND);
    glBlendFunc(GL_ONE,GL_ONE);
    simplifiedPhongProgram->use();
-   glUniform1i(simplifiedPhongProgram->getUniform("colorTexture"),0);
+   simplifiedPhongProgram->set("colorTexture",int(0));
    for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
    {
       if((*it)->commandList().size()==0)
-         glUniform1i(simplifiedPhongProgram->getUniform("colorTexturingMode"),0); // no texturing
+         simplifiedPhongProgram->set("colorTexturingMode",int(0)); // no texturing
       else
-         glUniform1i(simplifiedPhongProgram->getUniform("colorTexturingMode"),1); // modulate
+         simplifiedPhongProgram->set("colorTexturingMode",int(1)); // modulate
       for_each((*it)->commandList().begin(),(*it)->commandList().end(),
                [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
       (*it)->render();
@@ -493,7 +495,7 @@ public:
 
             // fill texture object with data
             if(data) {
-               textureObject->bind(GL_TEXTURE0);
+               textureObject->bind(0);
                if(d<=1) glTexSubImage2D(target,0,0,0,w,h,format,type,data);
                else     glTexSubImage3D(target,0,0,0,0,w,h,d,format,type,data);
                glGenerateMipmap(target);
@@ -537,13 +539,13 @@ public:
          }
 
          // generate draw commands
-         unsigned numDrawCommands=g->getNumPrimitiveSets();
-         vector<unsigned> drawCommands;
-         vector<Mesh::DrawCommandControlData> drawCommandsControlData;
-         drawCommands.reserve(numDrawCommands*3);
-         drawCommandsControlData.reserve(numDrawCommands);
+         unsigned numPrimitives=g->getNumPrimitiveSets();
+         vector<PrimitiveGpuData> primitiveData;
+         vector<Primitive> primitives;
+         primitiveData.reserve(numPrimitives);
+         primitives.reserve(numPrimitives);
          unsigned numIndices=0;
-         for(unsigned i=0; i<numDrawCommands; i++)
+         for(unsigned i=0; i<numPrimitives; i++)
          {
             osg::PrimitiveSet *ps=g->getPrimitiveSet(i);
             unsigned glMode=ps->getMode();
@@ -552,7 +554,8 @@ public:
             osg::DrawElements *e=ps->getDrawElements();
             if(e!=nullptr)
             {
-               drawCommandsControlData.emplace_back(drawCommands.size(),mode);
+               primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                                       mode);
                count=e->getNumIndices();
                first=numIndices;
                numIndices+=count;
@@ -562,7 +565,8 @@ public:
                switch(ps->getType()) {
                   case osg::PrimitiveSet::DrawArraysPrimitiveType:
                   {
-                     drawCommandsControlData.emplace_back(drawCommands.size(),mode);
+                     primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                                             mode);
                      osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
                      count=a->getCount();
                      if(useIndices)
@@ -580,11 +584,11 @@ public:
                      first=useIndices?numIndices:a->getFirst();
                      for(unsigned i=0,c=a->size(); i<c; i++)
                      {
-                        drawCommandsControlData.emplace_back(drawCommands.size(),mode);
+                        primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                                                mode);
                         unsigned count=a->operator[](i);
-                        drawCommands.push_back(useIndices?count|0x80000000:count); // countAndIndexedFlag
-                        drawCommands.push_back(first);
-                        drawCommands.push_back(0);
+                        primitiveData.emplace_back(useIndices?count|0x80000000:count, // countAndIndexedFlag
+                                                   first,0);
                         first+=count;
                         if(useIndices)
                            numIndices+=count;
@@ -595,9 +599,8 @@ public:
                      continue;
                }
             }
-            drawCommands.push_back(useIndices?count|0x80000000:count);
-            drawCommands.push_back(first);
-            drawCommands.push_back(0);
+            primitiveData.emplace_back(useIndices?count|0x80000000:count, // countAndIndexedFlag
+                                       first,0);
          }
 
          // create AttribConfig::ConfigData
@@ -638,15 +641,15 @@ public:
          // create Mesh
          meshList.emplace_back();
          Mesh &m=meshList.back();
-         m.allocData(config,numVertices,numIndices,drawCommands.size()*sizeof(unsigned));
+         m.allocData(config,numVertices,numIndices,primitiveData.size());
 
-         // upload draw commands
-         m.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
-                              drawCommandsControlData.data(),drawCommandsControlData.size());
+         // upload primitives
+         m.setAndUploadPrimitives(primitiveData.data(),
+                                  primitives.data(),primitiveData.size());
 
          // create instances
-         shared_ptr<InstancingMatrices> &im=transformationStack.back()->getOrCreateInstancingMatrices();
-         m.createInstances(im.get(),stateSet.get());
+         shared_ptr<MatrixList> &ml=transformationStack.back()->getOrCreateMatrixList();
+         m.createObject(ml.get(),stateSet.get());
 
          // upload vertices
          vector<void*> geArrays;
@@ -766,10 +769,9 @@ void Init()
    }
 
 
-   // unmap instance buffer
-   // (it has to be done before rendering, for sure always before the frame,
-   // or at least when there were any modifications to the instance buffer)
-   RenderingContext::current()->unmapInstanceBuffer();
+   // unmap buffers
+   // (it has to be done before rendering)
+   RenderingContext::current()->unmapBuffers();
 
 
    ge::gl::initShadersAndPrograms();

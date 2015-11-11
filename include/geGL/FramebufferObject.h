@@ -1,14 +1,9 @@
-#ifndef _FRAMEBUFFEROBJECT_H_
-#define _FRAMEBUFFEROBJECT_H_
+#pragma once
 
 #include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<stdarg.h>
 #include<iostream>
-
-#define FRAMEBUFFEROBJECT_DEFAULT_TARGET        GL_FRAMEBUFFER
-#define FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LAYER 0
-#define FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL 0
 
 namespace ge{
   namespace gl{
@@ -20,18 +15,41 @@ namespace ge{
     /**
      * @brief 
      */
-    class GEGL_EXPORT FramebufferObject: public OpenGLObject
-    {
+    class GEGL_EXPORT FramebufferObject: public OpenGLObject{
       private:
         inline GLint getParam(GLenum pname);
         inline void  setParam(GLenum pname,GLint);
         inline GLint getAttachmentParam(GLenum attachment,GLenum pname);
-        inline void  attachRenderbuffer(GLenum attachment,GLuint renderbuffer);
-        inline void  attachTexture     (GLenum attachment,GLuint texture,GLint level);
       public:
-        FramebufferObject (GLuint framebuffer);
-        FramebufferObject ();
+        FramebufferObject (bool defaultFramebuffer=false);
         ~FramebufferObject();
+        void   bind  (GLenum target = GL_DRAW_FRAMEBUFFER)const;
+        void   unbind(GLenum target = GL_DRAW_FRAMEBUFFER)const;
+        void attachTexture(
+            GLenum attachment     ,
+            GLuint texture        ,
+            GLint  level      =  0,
+            GLint  layer      = -1)const;
+        void attachRenderbuffer(
+            GLenum attachment  ,
+            GLuint renderbuffer)const;
+        bool check()const;
+        void drawBuffer(GLenum buffer)const;
+        void drawBuffers(GLsizei n,const GLenum *buffers)const;
+        void drawBuffers(GLsizei n,...)const;
+        void clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*   value)const;
+        void clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat* value)const;
+        void clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*  value)const;
+        void clearBuffer (GLenum buffer,GLfloat depth,GLint stencil)const;
+        void invalidateFramebuffer(
+            GLsizei       numAttachments     ,
+            const GLenum* attachments        ,
+            GLint         x              = -1,
+            GLint         y              = -1,
+            GLsizei       width          = -1,
+            GLsizei       height         = -1)const;
+        GLboolean isFramebuffer()const;
+
         void   setDefaultWidth               (GLint width   );
         void   setDefaultHeight              (GLint height  );
         void   setDefaultFixedSampleLocations(GLint location);
@@ -63,67 +81,13 @@ namespace ge{
         GLint  getImplementationColorReadFormat();
         GLint  getImplementationColorReadType  ();
         GLint  getStereo();
-        void   bind  (GLenum target = FRAMEBUFFEROBJECT_DEFAULT_TARGET);
-        void   unbind(GLenum target = FRAMEBUFFEROBJECT_DEFAULT_TARGET);
-        void attachDepthTexture(
-            GLuint texture,
-            GLint  level = FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL);
-        void attachDepthTexture(
-            GLuint texture,
-            GLenum target,
-            GLint  level = FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL);
-        void attachStencilTexture(
-            GLuint texture,
-            GLint  level = FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL);
-        void attachStencilTexture(
-            GLuint texture,
-            GLenum target,
-            GLint  level = FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL);
-        void attachColorTexture(
-            GLenum   attachment,
-            GLuint   texture,
-            GLint    level = FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL);
-        void attachColorTexture(
-            GLenum   attachment,
-            GLuint   texture,
-            GLenum   target,
-            GLint    level = FRAMEBUFFEROBJECT_DEFAULT_TEXTURE_LEVEL);
-        void attachColorRenderbuffer(
-            GLenum   attachment,
-            GLuint   renderbuffer);
-        void attachStencilRenderbuffer(
-            GLuint renderbuffer);
-        void attachDepthRenderbuffer(
-            GLuint renderbuffer);
-
-        bool check();
-        void drawBuffer(GLenum buffer);
-        void drawBuffers(GLsizei n,GLenum *buffers);
-        void drawBuffers(GLsizei n,...);
         void clear(GLbitfield buffers);
         void clearColor  (GLfloat r,GLfloat g,GLfloat b,GLfloat a);
         void clearDepth  (GLdouble d);
         void clearDepth  (GLfloat  d);
         void clearStencil(GLint    s);
-        void clearBuffer (GLenum buffer,GLint drawBuffer,GLint   *value);
-        void clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat *value);
-        void clearBuffer (GLenum buffer,GLint drawBuffer,GLuint  *value);
-        void clearBuffer (GLenum buffer,GLint drawbuffer,GLfloat depth,GLint stencil);
-        void invalidateFramebuffer(
-            GLenum   target,
-            GLsizei  numAttachments,
-            GLenum  *attachments,
-            GLint    x,
-            GLint    y,
-            GLsizei  width,
-            GLsizei  height);
-        void invalidateFramebuffer(
-            GLenum   target,
-            GLsizei  numAttachments,
-            GLenum  *attachments);
         std::string getInfo();
     };
   }//gl
 }//ge
 
-#endif//_FRAMEBUFFEROBJECT_H_

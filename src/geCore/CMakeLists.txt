@@ -12,6 +12,19 @@ ELSE ()
 ENDIF()
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
+
+set(FSA_SOURCES
+  fsa/fsa.cpp
+  fsa/state.cpp
+  fsa/transition.cpp
+  )
+
+set(FSA_INCLUDES
+  ${HEADER_PATH}/fsa/fsa.h
+  ${HEADER_PATH}/fsa/state.h
+  ${HEADER_PATH}/fsa/transition.h
+  )
+
 set(CORE_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/geCore.h
@@ -24,6 +37,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/Object.h
     ${HEADER_PATH}/StandardSemanticsNames.h
     ${HEADER_PATH}/TypeRegister.h
+    ${HEADER_PATH}/disjointSet.h
   )
 
 set(CORE_SOURCES
@@ -39,7 +53,9 @@ set(CORE_SOURCES
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${CORE_INCLUDES}
+    ${FSA_INCLUDES}
     ${CORE_SOURCES}
+    ${FSA_SOURCES}
   )
 
  
@@ -63,6 +79,10 @@ set_target_properties(${LIB_NAME} PROPERTIES
 	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
+install(FILES
+    ${FSA_INCLUDES}
+    DESTINATION include/${LIB_NAME}/fsa
+  )
 
 install(FILES
   ${CORE_INCLUDES}

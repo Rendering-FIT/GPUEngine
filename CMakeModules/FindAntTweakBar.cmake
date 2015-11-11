@@ -4,7 +4,8 @@
 # ANTTWEAKBAR_INCLUDE_DIR, where to find glfw include files.
 # ANTTWEAKBAR_FOUND, true if both the ANTTWEAKBAR_LIBRARY and ANTTWEAKBAR_INCLUDE_DIR have been found.
 #Search for the include file...
-FIND_PATH(ANTTWEAKBAR_INCLUDE_DIR AntTweakBar.h DOC "Path to AntTweakBar include directory."
+FIND_PATH( ANTTWEAKBAR_INCLUDE_DIR AntTweakBar.h
+  DOC "Path to AntTweakBar include directory."
   HINTS
   $ENV{ANTTWEAKBAR_ROOT}
   PATH_SUFFIX include #For finding the include file under the root of the glfw expanded archive, typically on Windows.
@@ -14,9 +15,8 @@ FIND_PATH(ANTTWEAKBAR_INCLUDE_DIR AntTweakBar.h DOC "Path to AntTweakBar include
   ${ANTTWEAKBAR_ROOT_DIR}/include/ # added by ptr
   ${CMAKE_SOURCE_DIR}/extlibs/headers
   )
-SET(ANTTWEAKBAR_LIB_NAMES libAntTweakBar.dylib libAntTweakBar.a AntTweakBar.lib AntTweakBar)
 FIND_LIBRARY(ANTTWEAKBAR_LIBRARY DOC "Absolute path to AntTweakBar library."
-  NAMES ${ANTTWEAKBAR_LIB_NAMES}
+  NAMES AntTweakBar
   HINTS
   $ENV{ANTTWEAKBAR_ROOT}
   PATH_SUFFIXES lib/win32 #For finding the library file under the root of the glfw expanded archive, typically on Windows.
@@ -25,6 +25,7 @@ FIND_LIBRARY(ANTTWEAKBAR_LIBRARY DOC "Absolute path to AntTweakBar library."
   /usr/lib
   ${ANTTWEAKBAR_ROOT_DIR}/lib-msvc100/release # added by ptr
   )
+
 IF(ANTTWEAKBAR_LIBRARY AND ANTTWEAKBAR_INCLUDE_DIR)
   SET(ANTTWEAKBAR_FOUND TRUE)
   message(STATUS "Found AntTweakBar: ${ANTTWEAKBAR_LIBRARY}")

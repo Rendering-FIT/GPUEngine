@@ -11,7 +11,7 @@
 #include <geRG/Mesh.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/StateSet.h>
-#include <geUtil/WindowObject.h>
+#include <geAd/WindowObject/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 
 using namespace std;
@@ -112,19 +112,19 @@ void Idle()
    // prepare for rendering
    RenderingContext::current()->evaluateTransformationGraph();
    RenderingContext::current()->setupRendering();
-   RenderingContext::current()->mapStateSetBuffer();
+   RenderingContext::current()->stateSetStorage()->map(BufferStorageAccess::WRITE);
    stateSet->setupRendering();
-   RenderingContext::current()->unmapStateSetBuffer();
+   RenderingContext::current()->stateSetStorage()->unmap();
 
    // indirect buffer update - setup and start compute shader
    processInstanceProgram->use();
-   unsigned numInstances=RenderingContext::current()->instanceAllocationManager().firstItemAvailableAtTheEnd();
+   unsigned numInstances=RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd();
    processInstanceProgram->set("numToProcess",numInstances);
-   RenderingContext::current()->drawCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   RenderingContext::current()->instanceBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->instancingMatricesControlBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
-   RenderingContext::current()->indirectCommandBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
-   RenderingContext::current()->stateSetBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
+   RenderingContext::current()->primitiveStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   RenderingContext::current()->drawCommandStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   RenderingContext::current()->matrixListControlStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   RenderingContext::current()->drawIndirectBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
+   RenderingContext::current()->stateSetStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
    glDispatchCompute((numInstances+63)/64,1,1);
 
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -138,7 +138,7 @@ void Idle()
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
 
-   RenderingContext::current()->indirectCommandBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   RenderingContext::current()->drawIndirectBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
    attribsRefNI.attribStorage()->bind();
    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
    glMultiDrawArraysIndirect(GL_TRIANGLES,nullptr,2,0);
@@ -204,9 +204,9 @@ void Init()
       glm::vec3(niShiftX+0,instanceShiftY-1,z),
       glm::vec3(niShiftX-1,instanceShiftY+0,z),
    };
-   vector<unsigned> drawCommands = {
-      3,0,0,
-      3,3,3,
+   vector<PrimitiveGpuData> primitiveData = {
+      { 3,0,0 },
+      { 3,3,3 }
    };
    const vector<unsigned> modesAndOffsets4 = {
       GL_TRIANGLES,0,
@@ -216,17 +216,19 @@ void Init()
    config.ebo=false;
    config.updateId();
    stateSet=make_shared<StateSet>();
-   attribsRefInstNI.allocData(config,6,0,drawCommands.size()*sizeof(unsigned));
+   attribsRefInstNI.allocData(config,6,0,primitiveData.size());
    attribsRefInstNI.uploadVertices(a.data(),a.size(),twoTriangleInstancesNI.size());
-   attribsRefInstNI.uploadDrawCommands(drawCommands.data(),drawCommands.size()*sizeof(unsigned),
-                                       modesAndOffsets4.data(),modesAndOffsets4.size()/2);
-   attribsRefInstNI.createInstances(RenderingContext::current()->identityInstancingMatrix().get(),stateSet.get());
+   attribsRefInstNI.setAndUploadPrimitives(primitiveData.data(),
+                                           modesAndOffsets4.data(),primitiveData.size());
+   shared_ptr<MatrixList> identity=make_shared<MatrixList>(1);
+   identity->upload(RenderingContext::identityMatrix,1);
+   attribsRefInstNI.createObject(identity.get(),stateSet.get());
 
 
-   // unmap instance buffer
-   // (it has to be done before rendering, for sure always before the frame,
-   // or at least when there were any modifications to the instance buffer)
-   RenderingContext::current()->unmapInstanceBuffer();
+   // unmap drawCommandStorage
+   // (it must be unmapped before rendering; for sure, do it always before the rendering,
+   // or at least when there were modifications to the drawCommandStorage buffer)
+   RenderingContext::current()->drawCommandStorage()->unmap();
 
 
    ge::gl::initShadersAndPrograms();

@@ -1,8 +1,7 @@
-#ifndef _SAMPLEROBJECT_H_
-#define _SAMPLEROBJECT_H_
+#pragma once
 
 #include<geGL/OpenGL.h>
-#include <geGL/OpenGLObject.h>
+#include<geGL/OpenGLObject.h>
 
 
 namespace ge{
@@ -10,39 +9,36 @@ namespace ge{
     /**
      * @brief table 23.18
      */
-    class GEGL_EXPORT SamplerObject: public OpenGLObject
-    {
+    class GEGL_EXPORT SamplerObject: public OpenGLObject{
       public:
         SamplerObject ();
         SamplerObject (SamplerObject*sampler);
         ~SamplerObject();
-        void setBorderColor(GLfloat*color    );
-        void setCompareFunc(GLenum  func     );
-        void setCompareMode(GLenum  mode     );
-        void setLodBias    (GLfloat lodBias  );
-        void setMinLod     (GLfloat minLod   );
-        void setMaxLod     (GLfloat maxLod   );
-        void setMinFilter  (GLenum  minFilter);
-        void setMagFilter  (GLenum  magFilter);
-        void setWrapS      (GLenum  wrapS    );
-        void setWrapT      (GLenum  wrapT    );
-        void setWrapR      (GLenum  wrapR    );
-        void    getBorderColor(GLfloat*color    );
-        GLenum  getCompareFunc();
-        GLenum  getCompareMode();
-        GLfloat getLodBias    ();
-        GLfloat getMinLod     ();
-        GLfloat getMaxLod     ();
-        GLenum  getMinFilter  ();
-        GLenum  getMagFilter  ();
-        GLenum  getWrapS      ();
-        GLenum  getWrapT      ();
-        GLenum  getWrapR      ();
-        void bind          (GLuint  unit     );
-        void unbind        (GLuint  unit     );
+        void setBorderColor(GLfloat*color    )const;
+        void setCompareFunc(GLenum  func     )const;
+        void setCompareMode(GLenum  mode     )const;
+        void setLodBias    (GLfloat lodBias  )const;
+        void setMinLod     (GLfloat minLod   )const;
+        void setMaxLod     (GLfloat maxLod   )const;
+        void setMinFilter  (GLenum  minFilter)const;
+        void setMagFilter  (GLenum  magFilter)const;
+        void setWrapS      (GLenum  wrapS    )const;
+        void setWrapT      (GLenum  wrapT    )const;
+        void setWrapR      (GLenum  wrapR    )const;
+        void    getBorderColor(GLfloat*color)const;
+        GLenum  getCompareFunc()const;
+        GLenum  getCompareMode()const;
+        GLfloat getLodBias    ()const;
+        GLfloat getMinLod     ()const;
+        GLfloat getMaxLod     ()const;
+        GLenum  getMinFilter  ()const;
+        GLenum  getMagFilter  ()const;
+        GLenum  getWrapS      ()const;
+        GLenum  getWrapT      ()const;
+        GLenum  getWrapR      ()const;
+        void bind  (GLuint unit)const;
+        void unbind(GLuint unit)const;
     };
   }//gl
 }//ge
 
-
-#endif//_SAMPLEROBJECT_H_

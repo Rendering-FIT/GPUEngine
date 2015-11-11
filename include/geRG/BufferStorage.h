@@ -3,10 +3,6 @@
 
 #include <geRG/Export.h>
 
-#include <iostream>
-#include <typeinfo>
-#include <typeindex>
-
 namespace ge
 {
    namespace gl
@@ -15,40 +11,38 @@ namespace ge
    }
    namespace rg
    {
-      struct NoAllocationManager {};
+      /** Helper structure allowing BufferStorage to have no allocation manager.
+       */
+      struct NoAllocationManager {
+         inline NoAllocationManager(unsigned=0)  {}
+         inline NoAllocationManager(unsigned,unsigned)  {}
+      };
 
 
-      template<typename AllocationManagerT=NoAllocationManager,unsigned AllocationItemSize=1>
+      enum class BufferStorageAccess { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
+      inline BufferStorageAccess operator|(const BufferStorageAccess a, const BufferStorageAccess b)
+      { return BufferStorageAccess(uint8_t(a) | uint8_t(b)); }
+
+
+      /** BufferStorage template combines the functionality of ge::gl::BufferObject
+       *  and allocation manager functionality (such as ItemMemoryManager, BlockMemoryManager,
+       *  ChunkMemoryManager) into the single class.
+       *
+       *  BufferStorage maintains buffer (using ge::gl::BufferObject) and allows to
+       *  allocate data inside it using one of allocation managers. When the buffer
+       *  free space is exhausted or gets low, it allows for buffer reallocation.
+       */
+      template<typename AllocationManagerT=NoAllocationManager,typename Type=char,unsigned AllocationItemSize=sizeof(Type)>
       class BufferStorage : public AllocationManagerT {
-      public:
-
-         enum MappedBufferAccess { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
-
       protected:
 
          ge::gl::BufferObject* _bufferObject;
-         void* _mappedBufferPtr;
-         MappedBufferAccess _mappedBufferAccess;
-
-         //template<typename T> static auto test_allocWithPointer(int) -> decltype(std::declval<T>().alloc((unsigned*)nullptr) == 1,std::true_type());
-         //template<typename T> static std::false_type test_allocWithPointer(...);
-
-         //template<typename T> static auto test_allocWithPointer(int) -> decltype(std::true_type());
-         //template<typename T> static char test_allocWithPointer(int);
-         //template<typename T> static std::false_type test_allocWithPointer(...);
-         //template<typename T> static int test_allocWithPointer(int);
-         //template<typename T> static char test_allocWithPointer(...);
-         /*template<typename T> static auto test_allocWithNumAndPointer(int) -> decltype(std::declval<T>().alloc(0u,(unsigned*)nullptr) == 1,std::true_type());
-         template<typename T> static std::false_type test_allocWithNumAndPointer(...);
-         template<typename T> static auto test_allocWithNumAndOwner(int) -> decltype(std::declval<T>().alloc(0u,*((typename T::AllocationOwner*)nullptr)) == 1,std::true_type());
-         template<typename T> static std::false_type test_allocWithNumAndOwner(...);*/
-         //static const bool has_allocWithPointer = true;// std::is_same<decltype(test_allocWithPointer<AllocationManagerT>(0)), std::true_type>::value;
-         //static const bool has_allocWithNumAndPointer=std::is_same<decltype(test_allocWithNumAndPointer<AllocationManagerT>(0)),std::true_type>::value;
-         //static const bool has_allocWithNumAndOwner=std::is_same<decltype(test_allocWithNumAndOwner<AllocationManagerT>(0)),std::true_type>::value;
+         Type* _mappedBufferPtr;
+         BufferStorageAccess _mappedBufferAccess;
 
       public:
          // MSVC 2013 requires following templated structures to be public
-         // (other compilers such as g++ and MSVC 2015 does not require this)
+         // (other compilers such as g++ and MSVC 2015 does not require it)
          template<typename T,typename P=decltype(std::declval<T>().alloc((unsigned*)nullptr))>
          struct test_allocWithPointer : std::true_type {};
          template<typename T,typename P=decltype(std::declval<T>().alloc(0u,(unsigned*)nullptr))>
@@ -58,13 +52,19 @@ namespace ge
 
       public:
 
-         BufferStorage(unsigned /*bufferSize*/=0)  {}
-         BufferStorage(unsigned capacity,unsigned numNullElements=0)  {}
-         BufferStorage(unsigned bufferSize,unsigned allocManagerCapacity,unsigned nullObjectSize=0)  {}
+         BufferStorage(unsigned capacity=0,
+                       unsigned flags=0x88E8/*GL_DYNAMIC_DRAW*/,void *data=nullptr);
+         BufferStorage(unsigned capacity,unsigned numNullItems,
+                       unsigned flags,void *data=nullptr);
+         BufferStorage(unsigned bufferSize,unsigned allocManagerCapacity,unsigned numNullItems,
+                       unsigned flags,void *data=nullptr);
+         virtual ~BufferStorage();
 
-         inline void* map(MappedBufferAccess access=MappedBufferAccess::READ_WRITE);
-         inline void* mappedBufferPtr() const;
-         inline void unmap();
+         inline ge::gl::BufferObject* bufferObject() const;
+
+         inline Type* ptr() const;
+         Type* map(BufferStorageAccess access=BufferStorageAccess::READ_WRITE);
+         void unmap();
 
 #if !defined(_MSC_VER)
          // g++ and similar compilers
@@ -83,16 +83,7 @@ namespace ge
          template<typename T=AllocationManagerT,typename=typename std::enable_if<test_allocWithNumAndOwner<AllocationManagerT>::value>::type>
          unsigned alloc(unsigned num,typename T::AllocationOwner &owner);
 #endif
-
-         //template<bool B = std::is_same<ge::rg::BufferStorage<AllocationManagerT>::test_allocWithPointer<AllocationManagerT>(0), std::true_type>::value,
-         //template<bool B = std::is_same<test_allocWithPointer<AllocationManagerT>(0), std::true_type>::value,
-         //template<typename T=AllocationManagerT,typename=std::enable_if<std::is_function<decltype(int())>::value>::type>
-         //template<typename T=AllocationManagerT,typename=std::enable_if<std::is_member_function_pointer<typeof(&T::alloc)>::value>::type>
-
-         /*template<bool B=has_allocWithNumAndPointer,typename std::enable_if<B,int>::type=0>
-         void alloc(unsigned numItems,unsigned* ids);
-         template<bool B=has_allocWithNumAndOwner,typename std::enable_if<B,int>::type=0,typename A=AllocationManagerT>
-         unsigned alloc(unsigned num,typename A::AllocationOwner &owner);*/
+         virtual void grow(unsigned freeBlockSizeRequest);
 
       };
    }
@@ -103,65 +94,137 @@ namespace ge
 // inline and template methods
 
 #include <geGL/BufferObject.h>
+#include <assert.h>
 
 namespace ge
 {
    namespace rg
    {
 
-      template<typename AllocationManagerT,unsigned AllocationItemSize>
-      //template<bool B, typename std::enable_if<B, int>::type>
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(unsigned capacity,unsigned flags,void *data)
+         : AllocationManagerT(capacity)
+         , _bufferObject(new ge::gl::BufferObject(capacity*AllocationItemSize,data,flags))
+         , _mappedBufferPtr(nullptr)
+         , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
+      {}
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(unsigned capacity,unsigned numNullItems,unsigned flags,void *data)
+         : AllocationManagerT(capacity,numNullItems)
+         , _bufferObject(new ge::gl::BufferObject(capacity*AllocationItemSize,data,flags))
+         , _mappedBufferPtr(nullptr)
+         , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
+      {}
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(
+            unsigned bufferSize,unsigned allocManagerCapacity,unsigned numNullItems,unsigned flags,void *data)
+         : AllocationManagerT(allocManagerCapacity,numNullItems)
+         , _bufferObject(new ge::gl::BufferObject(bufferSize,data,flags))
+         , _mappedBufferPtr(nullptr)
+         , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
+      {
+         assert(bufferSize>=allocManagerCapacity*AllocationItemSize &&
+                "BufferStorage error: Buffer is not large enough to hold all items of AllocationManager.");
+      }
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      BufferStorage<AllocationManagerT,Type,AllocationItemSize>::~BufferStorage()
+      {
+         delete _bufferObject;
+      }
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      inline ge::gl::BufferObject* BufferStorage<AllocationManagerT,Type,AllocationItemSize>::bufferObject() const
+      { return _bufferObject; }
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      inline Type* BufferStorage<AllocationManagerT,Type,AllocationItemSize>::ptr() const
+      { return _mappedBufferPtr; }
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      Type* BufferStorage<AllocationManagerT,Type,AllocationItemSize>::map(BufferStorageAccess requestedAccess)
+      {
+         if(_mappedBufferAccess==BufferStorageAccess::READ_WRITE ||
+            _mappedBufferAccess==requestedAccess ||
+            requestedAccess==BufferStorageAccess::NO_ACCESS)
+            return _mappedBufferPtr;
+
+         if(_mappedBufferAccess!=BufferStorageAccess::NO_ACCESS)
+            _bufferObject->unmap();
+
+         _mappedBufferAccess=_mappedBufferAccess|requestedAccess;
+         _mappedBufferPtr=static_cast<Type*>(_bufferObject->map(static_cast<GLbitfield>(_mappedBufferAccess)));
+         return _mappedBufferPtr;
+      }
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      void BufferStorage<AllocationManagerT,Type,AllocationItemSize>::unmap()
+      {
+         if(_mappedBufferAccess==BufferStorageAccess::NO_ACCESS)
+            return;
+
+         _bufferObject->unmap();
+         _mappedBufferPtr=nullptr;
+         _mappedBufferAccess=BufferStorageAccess::NO_ACCESS;
+      }
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       template<typename,typename>
-      void BufferStorage<AllocationManagerT, AllocationItemSize>::alloc(unsigned *id)
+      void BufferStorage<AllocationManagerT,Type,AllocationItemSize>::alloc(unsigned *id)
       {
          bool r=AllocationManagerT::alloc(id);
-         if(r)
-            return;
-
-         unsigned c=AllocationManagerT::capacity();
-         unsigned newCapacity=(c==0)?4:c*2;
-         AllocationManagerT::setCapacity(newCapacity);
-         unsigned s=unsigned(_bufferObject->getSize());
-         unsigned newSize=newCapacity*AllocationItemSize;
-         if(newSize>s)
-            _bufferObject->realloc(newSize,ge::gl::BufferObject::KEEP_DATA);
-         AllocationManagerT::alloc(id);
+         if(!r) {
+            grow(1);
+            AllocationManagerT::alloc(id);
+         }
       }
-      template<typename AllocationManagerT,unsigned AllocationItemSize>
-      //template<bool B,typename std::enable_if<B,int>::type>
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       template<typename,typename>
-      void BufferStorage<AllocationManagerT,AllocationItemSize>::alloc(unsigned numItems,unsigned* ids)
+      void BufferStorage<AllocationManagerT,Type,AllocationItemSize>::alloc(unsigned numItems,unsigned* ids)
       {
          bool r=AllocationManagerT::alloc(numItems,ids);
-         if(r)
-            return;
-
-         unsigned c=AllocationManagerT::capacity();
-         unsigned newCapacity=(c==0)?4:c*2;
-         AllocationManagerT::setCapacity(newCapacity);
-         unsigned s=unsigned(_bufferObject->getSize());
-         unsigned newSize=newCapacity*AllocationItemSize;
-         if(newSize>s)
-            _bufferObject->realloc(newSize,ge::gl::BufferObject::KEEP_DATA);
-         AllocationManagerT::alloc(numItems,ids);
+         if(!r) {
+            grow(numItems);
+            AllocationManagerT::alloc(numItems,ids);
+         }
       }
-      template<typename AllocationManagerT,unsigned AllocationItemSize>
-      //template<bool B,typename std::enable_if<B,int>::type,typename A>
+
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       template<typename T,typename>
-      unsigned BufferStorage<AllocationManagerT,AllocationItemSize>::alloc(unsigned num,typename T::AllocationOwner &owner)
+      unsigned BufferStorage<AllocationManagerT,Type,AllocationItemSize>::alloc(unsigned num,typename T::AllocationOwner &owner)
       {
          unsigned id=AllocationManagerT::alloc(num,owner);
-         if(id!=0)
-            return id;
+         if(id==0) {
+            grow(num);
+            id=AllocationManagerT::alloc(num,owner);
+         }
+         return id;
+      }
 
-         unsigned c=AllocationManagerT::capacity();
-         unsigned newCapacity=(c==0)?4:c*2;
+      template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
+      void BufferStorage<AllocationManagerT,Type,AllocationItemSize>::grow(unsigned freeBlockSizeRequest)
+      {
+         // do we have enough space?
+         unsigned largest=AllocationManagerT::largestAvailableBlock();
+         if(largest>=freeBlockSizeRequest)
+            return;
+
+         // set new capacity
+         unsigned capacity=AllocationManagerT::capacity();
+         unsigned delta=(capacity==0)?4:capacity; // double the capacity, only if empty set initial size to 4
+         if(delta+AllocationManagerT::availableSpaceAtTheEnd() < freeBlockSizeRequest)
+            delta=freeBlockSizeRequest-AllocationManagerT::availableSpaceAtTheEnd();
+         unsigned newCapacity=capacity+delta;
          AllocationManagerT::setCapacity(newCapacity);
-         unsigned s=unsigned(_bufferObject->getSize());
-         unsigned newSize=newCapacity*AllocationItemSize;
-         if(newSize>s)
-            _bufferObject->realloc(newSize,ge::gl::BufferObject::KEEP_DATA);
-         return AllocationManagerT::alloc(num,owner);
+
+         // realloc BufferObject
+         unsigned bufferSize=unsigned(_bufferObject->getSize());
+         unsigned newBufferSize=newCapacity*AllocationItemSize;
+         if(newBufferSize>bufferSize)
+            _bufferObject->realloc(newBufferSize,ge::gl::BufferObject::KEEP_DATA);
       }
 
    }

@@ -1,19 +1,11 @@
-set(APP_NAME typeRegisterTest)
+set(TYPEREGISTERTEST_NAME typeRegisterTest)
+project(${TYPEREGISTERTEST_NAME})
+set(TYPEREGISTERTEST_SOURCES typeRegisterTest.cpp)
+add_executable(${TYPEREGISTERTEST_NAME} ${TYPEREGISTERTEST_SOURCES})
+target_link_libraries(${TYPEREGISTERTEST_NAME} geCore)
 
-project(${APP_NAME})
-
-set(APP_SOURCES
-  typeRegisterTest.cpp
-  )
-
-set(APP_INCLUDES
-  )
-
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
-
-include_directories(
-  )
-
-target_link_libraries(${APP_NAME}
-  geCore
-  )
+set(FSA_NAME fsaTest)
+project(${FSA_NAME})
+set(FSA_SOURCES fsaTest.cpp)
+add_executable(${FSA_NAME} ${FSA_SOURCES})
+target_link_libraries(${FSA_NAME} geCore)

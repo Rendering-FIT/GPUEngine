@@ -2,7 +2,6 @@
 #define GE_RG_TRANSFORMATION_H
 
 #include <memory>
-#include <glm/mat4x4.hpp>
 #include <geRG/Export.h>
 #include <geRG/ParentChildList.h>
 
@@ -10,7 +9,7 @@ namespace ge
 {
    namespace rg
    {
-      class InstancingMatrices;
+      class MatrixList;
 
 
       struct TransformationThreadGpuData {
@@ -19,13 +18,16 @@ namespace ge
       };
 
 
-      struct TransformationMatrixGpuData {
-         float matrix[16];
-         inline float* asFloats()  { return matrix; }
-         inline glm::mat4& asGlmMatrix()  { return *reinterpret_cast<glm::mat4*>(&matrix[0]); }
-      };
-
-
+      /** Transformation class maintains 4x4 matrix transformation.
+       *
+       *  Matrix data are usually placed in the GPU buffer.
+       *  Each Transformation may point to its own matrix or
+       *  number of Transformation objects may point to the same matrix
+       *  if sharing of the value is required.
+       *
+       *  Transformation objects are organized in graph structure,
+       *  allowing for hierarchical transformations.
+       */
       class GERG_EXPORT Transformation {
       public:
 
@@ -43,7 +45,7 @@ namespace ge
          unsigned _gpuDataOffset64;
          GERG_CHILD_LIST(Transformation);
          GERG_PARENT_LIST(Transformation);
-         std::shared_ptr<InstancingMatrices> _instancingMatrices;
+         std::shared_ptr<MatrixList> _matrixList;
 
          void cancelSharedTransformation();
 
@@ -57,11 +59,11 @@ namespace ge
          void allocTransformationGpuData();
          void shareTransformationFrom(const Transformation &t);
 
-         inline std::shared_ptr<InstancingMatrices>& getOrCreateInstancingMatrices();
-         inline const std::shared_ptr<InstancingMatrices>& getOrCreateInstancingMatrices() const;
-         inline std::shared_ptr<InstancingMatrices>& instancingMatrices();
-         inline const std::shared_ptr<InstancingMatrices>& instancingMatrices() const;
-         inline void setInstancingMatrices(std::shared_ptr<InstancingMatrices>& im);
+         inline std::shared_ptr<MatrixList>& getOrCreateMatrixList();
+         inline const std::shared_ptr<MatrixList>& getOrCreateMatrixList() const;
+         inline std::shared_ptr<MatrixList>& matrixList();
+         inline const std::shared_ptr<MatrixList>& matrixList() const;
+         inline void setMatrixList(std::shared_ptr<MatrixList>& ml);
 
          enum ConstructionFlags { SHARE_MATRIX=0x1, SHARE_INSTANCING_MATRIX_COLLECTION=0x2,
                                   COPY_CHILDREN=0x4, SHARE_AND_COPY_ALL=0x7 };
@@ -85,20 +87,20 @@ namespace ge
 }
 
 
-#include <geRG/InstancingMatrices.h>
+#include <geRG/MatrixList.h>
 
 namespace ge
 {
    namespace rg
    {
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
-      inline std::shared_ptr<InstancingMatrices>& Transformation::getOrCreateInstancingMatrices()
-      { if(_instancingMatrices==nullptr) _instancingMatrices=std::make_shared<InstancingMatrices>(); return _instancingMatrices; }
-      inline const std::shared_ptr<InstancingMatrices>& Transformation::getOrCreateInstancingMatrices() const
-      { if(_instancingMatrices==nullptr) const_cast<Transformation*>(this)->_instancingMatrices=std::make_shared<InstancingMatrices>(); return _instancingMatrices; }
-      inline std::shared_ptr<InstancingMatrices>& Transformation::instancingMatrices()  { return _instancingMatrices; }
-      inline const std::shared_ptr<InstancingMatrices>& Transformation::instancingMatrices() const  { return _instancingMatrices; }
-      inline void Transformation::setInstancingMatrices(std::shared_ptr<InstancingMatrices>& im)  { _instancingMatrices=im; }
+      inline std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList()
+      { if(_matrixList==nullptr) _matrixList=std::make_shared<MatrixList>(); return _matrixList; }
+      inline const std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList() const
+      { if(_matrixList==nullptr) const_cast<Transformation*>(this)->_matrixList=std::make_shared<MatrixList>(); return _matrixList; }
+      inline std::shared_ptr<MatrixList>& Transformation::matrixList()  { return _matrixList; }
+      inline const std::shared_ptr<MatrixList>& Transformation::matrixList() const  { return _matrixList; }
+      inline void Transformation::setMatrixList(std::shared_ptr<MatrixList>& ml)  { _matrixList=ml; }
       inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}
       inline Transformation::~Transformation()  { RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
          if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } removeAllChildren(); }

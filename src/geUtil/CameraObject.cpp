@@ -131,10 +131,10 @@ namespace ge{
       return this->_projection;
     }
     glm::vec3 CameraObject::getPosition(){
-      return -this->_position;
+      return this->_position;
     }
     void CameraObject::setPosition(glm::vec3 p){
-      this->_position=-p;
+      this->_position=p;
     }
     glm::vec3 CameraObject::getVector(int k){
       return glm::vec3(glm::row(this->_viewRotation,k));

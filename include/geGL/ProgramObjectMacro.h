@@ -92,7 +92,7 @@
 #define DEFDEFFCE(a,b)\
 	void set(std::string uniformName,DEF_GLTYPEPAR(a,b))
 
-#define DEFFCE(a,b)\
+#define DEF_PROGRAMOBJECT_SET(a,b)\
 	void ProgramObject::set(std::string uniformName,DEF_GLTYPEPAR(a,b)){\
     if(!this->_uniformList.count(uniformName))return;\
 		DEF_GLUNIFORM(a,b)(this->_uniformList[uniformName].getLocation(),DEF_GLTYPEPARCONV(a,b));\
@@ -102,7 +102,7 @@
 	void set(std::string uniformName,GLsizei count,\
 			DEF_GLTYPE(type) *value)
 
-#define DEFFCEV(type_name)\
+#define DEF_PROGRAMOBJECT_SETV(type_name)\
 	void ProgramObject::set(\
 			std::string uniformName,\
 			GLsizei count,\
@@ -130,7 +130,7 @@
 #define DEFDEFDSAFCE(a,b)\
 	void setdsa(std::string uniformName,DEF_GLTYPEPAR(a,b))
 
-#define DEFDSAFCE(a,b)\
+#define DEF_PROGRAMOBJECT_SETDSA(a,b)\
 	void ProgramObject::setdsa(std::string uniformName,DEF_GLTYPEPAR(a,b)){\
     if(!this->_uniformList.count(uniformName))return;\
 		DEF_GLPROGRAMUNIFORM(a,b)(this->_id,this->_uniformList[uniformName].getLocation(),DEF_GLTYPEPARCONV(a,b));\
@@ -140,7 +140,7 @@
 	void setdsa(std::string uniformName,GLsizei count,\
 			DEF_GLTYPE(type) *value)
 
-#define DEFDSAFCEV(type_name)\
+#define DEF_PROGRAMOBJECT_SETDSAV(type_name)\
 	void ProgramObject::setdsa(\
 			std::string uniformName,\
 			GLsizei count,\

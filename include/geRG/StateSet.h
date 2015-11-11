@@ -17,13 +17,30 @@ namespace ge
       class AttribStorage;
 
 
+      struct StateSetGpuData {
+         unsigned drawIndirectBufferOffset;
+      };
+
+
       struct GERG_EXPORT RenderingCommandData
       {
          unsigned indirectBufferOffset4;
          unsigned stateSetBufferOffset4;
          unsigned glMode;
          unsigned drawCommandCount;
-         inline RenderingCommandData(unsigned indirectBufferOffset,unsigned stateSetBufferOffset4,
+
+#if _MSC_VER<1900
+         // MSVC 2013 (tested with Update 4 and 5) fails to embed this class into the std::vector
+         // unless there is copy constructor (this does not meet C++11 standard)
+         RenderingCommandData(const RenderingCommandData&); // this should be never called
+#else
+         RenderingCommandData(const RenderingCommandData&) = delete;
+#endif
+         inline RenderingCommandData(RenderingCommandData&& rhs)  { *this=std::move(rhs); }
+         RenderingCommandData& operator=(RenderingCommandData&& rhs);
+
+         inline RenderingCommandData() = default;
+         inline RenderingCommandData(unsigned indirectBufferOffset4,
                                      unsigned glMode,unsigned drawCommandCount);
       };
 
@@ -48,10 +65,6 @@ namespace ge
             inline void setIndexToRenderingData(unsigned mode,unsigned value)  { numDrawCommandsOfKindAndIndex[mode]=(numDrawCommandsOfKindAndIndex[mode]&0x0fffffff)|(value<<28); }
 
             inline AttribStorageData(AttribStorage *storage);
-         };
-
-         struct GERG_EXPORT StateSetData {
-            unsigned indirectBufferOffset;
          };
 
       protected:
@@ -95,10 +108,20 @@ namespace ge
 
       };
 
+   }
+}
 
 
-      inline RenderingCommandData::RenderingCommandData(unsigned indirectBufferOffset4,unsigned stateSetBufferOffset4,unsigned glMode,unsigned drawCommandCount)
-      { this->indirectBufferOffset4=indirectBufferOffset4; this->stateSetBufferOffset4=stateSetBufferOffset4; this->glMode=glMode; this->drawCommandCount=drawCommandCount; }
+
+// inline methods
+
+namespace ge
+{
+   namespace rg
+   {
+      inline RenderingCommandData::RenderingCommandData(unsigned indirectBufferOffset4,
+            unsigned glMode,unsigned drawCommandCount)
+      { this->indirectBufferOffset4=indirectBufferOffset4; this->glMode=glMode; this->drawCommandCount=drawCommandCount; }
       inline StateSet::AttribStorageData::AttribStorageData(AttribStorage *storage) : attribStorage(storage), numDrawCommands(0)  { numDrawCommandsOfKindAndIndex.fill(0); }
       inline StateSet::AttribStorageData* StateSet::getAttribStorageData(const AttribStorage *storage) const
       { auto it=_attribStorageData.find(const_cast<AttribStorage*>(storage)); return it!=_attribStorageData.end() ? const_cast<AttribStorageData*>(&it->second) : nullptr; }

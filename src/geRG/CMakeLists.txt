@@ -16,17 +16,21 @@ set(RG_INCLUDES
     ${HEADER_PATH}/Export.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/AllocationManagers.h
+    ${HEADER_PATH}/BufferStorage.h
     ${HEADER_PATH}/FlexibleArrayList.h
     ${HEADER_PATH}/AttribType.h
     ${HEADER_PATH}/AttribConfig.h
     ${HEADER_PATH}/AttribStorage.h
     ${HEADER_PATH}/SeparateBuffersAttribStorage.h
     ${HEADER_PATH}/Mesh.h
-    ${HEADER_PATH}/InstanceGroup.h
+    ${HEADER_PATH}/Primitive.h
+    ${HEADER_PATH}/Object.h
+    ${HEADER_PATH}/DrawCommand.h
     ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/StateSet.h
     ${HEADER_PATH}/Transformation.h
-    ${HEADER_PATH}/InstancingMatrices.h
+    ${HEADER_PATH}/MatrixList.h
+    ${HEADER_PATH}/MatrixGpuData.h
   )
 
 set(RG_SOURCES
@@ -35,14 +39,14 @@ set(RG_SOURCES
     AttribConfig.cpp
     AttribStorage.cpp
     SeparateBuffersAttribStorage.cpp
-    Mesh.cpp
-    InstanceGroup.cpp
+    Primitive.cpp
+    DrawCommand.cpp
     RenderingContext.cpp
     StateSet.cpp
     Transformation.cpp
-    InstancingMatrices.cpp
+    MatrixList.cpp
   )
-  
+
 ################################################
 # PACKAGES
 
