@@ -24,6 +24,7 @@ set(SG_INCLUDES
    ${HEADER_PATH}/DefaultImage.h
    ${HEADER_PATH}/Drawable.h
    ${HEADER_PATH}/Image.h
+   ${HEADER_PATH}/Light.h
    ${HEADER_PATH}/Material.h
    ${HEADER_PATH}/MatrixTransform.h
    ${HEADER_PATH}/Mesh.h
