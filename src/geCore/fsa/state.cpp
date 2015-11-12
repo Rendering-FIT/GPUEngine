@@ -100,6 +100,7 @@ void FSAState::setEOFEndState(FSAState*state){
 
 FSAState* FSAState::apply(char lex,FSA*fsa){
   auto ii=this->_transitions.find(lex);
+  if(ii==this->_transitions.end())return nullptr;
   ii->second.callCallback(fsa);
   return ii->second.getNextState();
 }

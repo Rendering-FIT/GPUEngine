@@ -40,6 +40,8 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/StandardSemanticsNames.h
     ${HEADER_PATH}/TypeRegister.h
     ${HEADER_PATH}/disjointSet.h
+    ${HEADER_PATH}/interpret.h
+    ${HEADER_PATH}/stdFunctions.h
   )
 
 set(CORE_SOURCES
@@ -50,6 +52,8 @@ set(CORE_SOURCES
     EnumRegister.cpp
     StandardSemanticsNames.cpp
     TypeRegister.cpp
+    interpret.cpp
+    stdFunctions.cpp
   )
 
 ADD_LIBRARY(${LIB_NAME}

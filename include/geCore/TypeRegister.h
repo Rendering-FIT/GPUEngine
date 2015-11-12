@@ -139,7 +139,7 @@ namespace ge{
         std::shared_ptr<Accessor>sharedEmptyAccessor(const char*name,std::function<OBJDestructor> destructor  = nullptr)const;
 
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessor(TypeID id,ARGS... args)const;
+        inline std::shared_ptr<Accessor>sharedAccessorTypeID(TypeID id,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
         inline std::shared_ptr<Accessor>sharedAccessor(const char*name,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
@@ -262,7 +262,7 @@ namespace ge{
 
 
     template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(TypeID id,ARGS... args)const{
+      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorTypeID(TypeID id,ARGS... args)const{
         //std::shared_ptr<ge::core::Accessor>ptr=std::shared_ptr<Accessor>(new Accessor(this->shared_from_this(),this->alloc(id),id),[](Accessor*ac){ac->free();delete ac;});
         std::shared_ptr<ge::core::Accessor>ptr=std::make_shared<Accessor>(this->shared_from_this(),this->alloc(id),id);
         ptr->callConstructor<CLASS>(args...);
@@ -271,7 +271,7 @@ namespace ge{
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(const char*name,ARGS... args)const{
         TypeID id=this->getTypeId(name);
-        return this->sharedAccessor<CLASS>(id,args...);
+        return this->sharedAccessorTypeID<CLASS>(id,args...);
       }
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(ARGS... args)const{
