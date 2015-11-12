@@ -85,7 +85,9 @@ void Function::endOperator(){
 }
 
 bool Function::inputChanged(unsigned i)const{
-  return this->_inputsTicks[i]<this->_inputs[i]->getTick();
+  if(this->_lazy[i])
+    return this->_inputsTicks[i]<this->_inputs[i]->getTick();
+  return true;
 }
 
 /* jsme scitacka:
