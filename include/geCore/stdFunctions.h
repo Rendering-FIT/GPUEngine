@@ -21,9 +21,10 @@ namespace ge{
                this->setOutput(output);\
              }\
       virtual void operator()(){\
-        this->resolveInputs()
+        this->beginOperator()
 
 #define DEF_CLASS_EPILOGUE()\
+        this->endOperator();\
       }\
     }
 
@@ -135,8 +136,9 @@ namespace ge{
             this->setOutput(output);
           }
           virtual void operator()(){
-            this->resolveInputs();
+            this->beginOperator();
             (TO&)(*this->_output)=(FROM)(*this->_inputs[0]->getOutput());
+            this->endOperator();
           }
       };
   }

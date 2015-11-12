@@ -10,8 +10,11 @@ Statement::~Statement(){
 }
 
 Function::Function(unsigned n):Statement(FUNCTION){
-  for(unsigned i=0;i<n;++i)
+  for(unsigned i=0;i<n;++i){
     this->_inputs.push_back(nullptr);
+    this->_inputsTicks.push_back(0);//this has to be less than this->_tickNumber
+    this->_lazy.push_back(false);
+  }
 }
 
 Function::~Function(){
@@ -30,8 +33,11 @@ void Function::updateTick(){
   this->_tickNumber++;
 }
 
-void Function::setInput(unsigned i,std::shared_ptr<Function>function){
+void Function::setInput(unsigned i,std::shared_ptr<Function>function,bool lazy){
   this->_inputs[i]=function;
+  this->_lazy[i]=lazy;
+  if(lazy)
+    this->_inputsTicks[i]=function->getTick()-1;
 }
 
 void Function::setOutput(std::shared_ptr<ge::core::Accessor>data){
@@ -53,16 +59,65 @@ Function::Iterator Function::end  ()const{
 void Function::operator()(){
 }
 
-void Function::resolveInputs(){
+void Function::beginOperator(){
   this->updateTick();
+  for(unsigned i=0;i<this->_inputs.size();++i){
+    if(!this->_lazy[i]){
+      if(this->_inputs[i]->getTick()<this->getTick()){
+        (*this->_inputs[i])();
+        this->_inputs[i]->setTick(this->getTick());
+      }
+    }
+  }
+  /*
   for(auto x:this->_inputs){
     if(x->getTick()<this->getTick()){
       (*x)();
       x->setTick(this->getTick());
     }
-  }
+  }*/
 }
 
+void Function::endOperator(){
+  for(unsigned i=0;i<this->_inputs.size();++i)
+    if(this->_lazy[i])
+      this->_inputsTicks[i]=this->_inputs[i]->getTick();
+}
+
+bool Function::inputChanged(unsigned i)const{
+  return this->_inputsTicks[i]<this->_inputs[i]->getTick();
+}
+
+/* jsme scitacka:
+ * chci secist sve vstupy a dat je na vystup
+ * musis zazadat sve vstupy aby se obnovily
+ * vstupy se obnovi
+ * reknou mi jestli maji novou hodnotu
+ * pokud nemaji novou hodnotu, nemusis pocitat vystup a dale budu rikat ze nemam novou hodnotu
+ * nechci vypocitavat vstup pokud jeho hodna je jiz aktualni kvuli vypoctu jineho vstupu
+ *
+ * pokud je inputA.tick < this.tick je input stary a je jej potreba vypocitat
+ * pokud je inputA.tick == this.inputs[inputA].tick input se nezmenil a neni potreba jej vyvolavat
+ * pokud je inputA.tick > this.tick je input novejsi a nepotrebuji jej vyhodnotit?
+ * pokud je inputA.tick > this.inputs[inputA].tick, input je novejsi musis se podle tohoto zaridit a pote si poznaci this.inputs[inputA].tick = inputA.tick
+ *
+ * jsou tu asi dva pristupy:
+ * 1. vynucovat vyhodnoceni vstupu pokud nejsou alespon tak stare jako ja
+ * 2. nevynucovat vyhodnoceni vstupu, pouze se zaridi podle toho jetli je novejsi nez jak si jej pamatuji
+ *
+ * f0 = a+b
+ * f1 = f0 + c
+ * f2 = f0 + d
+ * f3 = f1 + f2
+ *
+ * f3() => f1(), f2()
+ * f3() => f0() + d, f2
+ *
+ *
+ *
+ *
+ *
+ */
 
 
 Body::Body():Statement(BODY){
@@ -90,9 +145,9 @@ Body::Iterator Body::end()const{
 
 void Body::operator()(){
   for(auto x:this->_statements){
-//    std::cerr<<"body{";
+    //    std::cerr<<"body{";
     (*x)();
-//    std::cerr<<"}"<<std::endl;
+    //    std::cerr<<"}"<<std::endl;
   }
 }
 
@@ -125,13 +180,13 @@ std::shared_ptr<Statement>const&While::getBody()const{
 
 void While::operator()(){
   for(;;){
-//    std::cerr<<"cyklim"<<std::endl;
+    //    std::cerr<<"cyklim"<<std::endl;
     (*this->_condition)();
-//    std::cerr<<"po condition"<<std::endl;
+    //    std::cerr<<"po condition"<<std::endl;
     if(!(bool)*(this->_condition->getOutput()))return;
-//    std::cerr<<"pred body"<<std::endl;
+    //    std::cerr<<"pred body"<<std::endl;
     (*this->_body)();
-//    std::cerr<<"po body"<<std::endl;
+    //    std::cerr<<"po body"<<std::endl;
   }
 }
 

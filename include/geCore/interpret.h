@@ -24,22 +24,26 @@ namespace ge{
     class Function: public Statement{
       protected:
         std::vector<std::shared_ptr<Function>>_inputs;
+        std::vector<bool>_lazy;
+        std::vector<unsigned long long>_inputsTicks;
         std::shared_ptr<ge::core::Accessor>_output = nullptr;
-        unsigned long long _tickNumber = 0;
+        unsigned long long _tickNumber = 1;//this has to be one to call init in parent Function at least once
       public:
         Function(unsigned n);
         virtual ~Function();
         unsigned long long getTick()const;
         void setTick(unsigned long long tick);
         void updateTick();
-        void setInput(unsigned i,std::shared_ptr<Function>function=nullptr);
+        void setInput(unsigned i,std::shared_ptr<Function>function=nullptr,bool lazy=false);
         void setOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
         std::shared_ptr<ge::core::Accessor>const&getOutput()const;
         typedef std::vector<std::shared_ptr<Function>>::const_iterator Iterator;
         Iterator begin()const;
         Iterator end  ()const;
         virtual void operator()();
-        void resolveInputs();
+        void beginOperator();
+        void endOperator();
+        bool inputChanged(unsigned i)const;
     };
 
     class Body: public Statement{
