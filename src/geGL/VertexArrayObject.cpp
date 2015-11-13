@@ -195,6 +195,15 @@ std::string VertexArrayObject::getInfo()const{
   }
   return ss.str();
 }
+std::shared_ptr<ge::gl::BufferObject>const&VertexArrayObject::getElement()const{
+  return this->_elementBuffer;
+}
+
+std::shared_ptr<ge::gl::BufferObject>VertexArrayObject::getBuffer(GLuint index)const{
+  auto ii=this->_buffers.find(index);
+  if(ii==this->_buffers.end())return nullptr;
+  return ii->second;
+}
 
 void VertexArrayObject::addAttrib(
     ge::gl::BufferObject   *buffer       ,
@@ -218,8 +227,37 @@ void VertexArrayObject::addAttrib(
       apt);
 }
 
+void VertexArrayObject::addAttrib(
+    std::shared_ptr<ge::gl::BufferObject>const&buffer           ,
+    GLuint                                     index            ,
+    GLint                                      nofComponents    ,
+    GLenum                                     type             ,
+    GLsizei                                    stride           ,
+    const GLvoid*                              pointer          ,
+    GLboolean                                  normalized       ,  
+    GLuint                                     divisor          ,
+    enum AttribPointerType                     attribPointerType){
+  this->_buffers[index]=buffer;
+  this->addAttrib(
+      buffer->getId(),
+      index,
+      nofComponents,
+      type,
+      stride,
+      pointer,
+      normalized,
+      divisor,
+      attribPointerType);
+}
+
 void VertexArrayObject::addElementBuffer(
     ge::gl::BufferObject *buffer)const{
+  this->addElementBuffer(buffer->getId());
+}
+
+void VertexArrayObject::addElementBuffer(
+    std::shared_ptr<ge::gl::BufferObject>const&buffer){
+  this->_elementBuffer = buffer;
   this->addElementBuffer(buffer->getId());
 }
 

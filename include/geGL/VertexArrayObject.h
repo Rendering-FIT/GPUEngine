@@ -4,6 +4,8 @@
 #include<geGL/OpenGLObject.h>
 #include<geGL/BufferObject.h>
 #include<iostream>
+#include<map>
+#include<memory>
 
 namespace ge{
   namespace gl{
@@ -12,6 +14,8 @@ namespace ge{
     GEGL_EXPORT unsigned    getTypeSize        (GLenum    type   );
     class GEGL_EXPORT VertexArrayObject: public OpenGLObject{
       protected:
+        std::map<GLuint,std::shared_ptr<ge::gl::BufferObject>>_buffers;
+        std::shared_ptr<ge::gl::BufferObject>_elementBuffer = nullptr;
         inline GLint _getAttrib(GLuint index,GLenum pname)const;
       public:
         enum AttribPointerType{
@@ -48,6 +52,8 @@ namespace ge{
         GLuint    getAttribRelativeOffset(GLuint index)const;
         GLuint    getElementBuffer()const;
         std::string getInfo()const;
+        std::shared_ptr<ge::gl::BufferObject>const&getElement()const;
+        std::shared_ptr<ge::gl::BufferObject>getBuffer(GLuint index)const;
         void addAttrib(
             ge::gl::BufferObject   *buffer                      ,
             GLuint                  index                       ,
@@ -58,8 +64,20 @@ namespace ge{
             GLboolean               normalized        = GL_FALSE,  
             GLuint                  divisor           = 0       ,
             enum AttribPointerType  attribPointerType = NONE    )const;
+        void addAttrib(
+            std::shared_ptr<ge::gl::BufferObject>const&buffer   ,
+            GLuint                  index                       ,
+            GLint                   nofComponentsa              ,
+            GLenum                  type                        ,
+            GLsizei                 stride            = 0       ,
+            const GLvoid           *pointer           = NULL    ,
+            GLboolean               normalized        = GL_FALSE,  
+            GLuint                  divisor           = 0       ,
+            enum AttribPointerType  attribPointerType = NONE    );
         void addElementBuffer(
             ge::gl::BufferObject *buffer)const;
+        void addElementBuffer(
+            std::shared_ptr<ge::gl::BufferObject>const&buffer);
     };
   }//gl
 }//ge
