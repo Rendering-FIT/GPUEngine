@@ -139,6 +139,9 @@ namespace ge{
           template<typename T = TYPE>
             inline void set(typename std::enable_if<SET,T>::type const&value){this->_value = value;}
       };
+    template<typename TO,typename FROM>
+      TO convertTo(FROM const&d);
+
     template<typename TYPE>
       inline TYPE convertTo(std::shared_ptr<TYPE> const&sharedPtr){
         return *sharedPtr;
