@@ -143,21 +143,6 @@ namespace ge{
       TO convertTo(FROM const&d);
 
     template<typename TYPE>
-      inline TYPE convertTo(std::shared_ptr<TYPE> const&sharedPtr){
-        return *sharedPtr;
-      }
-
-    template<typename TYPE>
-      inline TYPE convertTo(TYPE*const&ptr){
-        return *ptr;
-      }
-
-    template<typename TYPE>
-      inline TYPE convertTo(TYPE const&val){
-        return val;
-      }
-
-    template<typename TYPE>
       inline void convertFrom(std::shared_ptr<TYPE>&output,TYPE const&input){
         *output=input;
       }
