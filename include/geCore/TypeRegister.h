@@ -258,6 +258,7 @@ namespace ge{
           void callConstructor(ARGS... args){
             new(this->getData())CLASS(args...);
           }
+        void callDestructor();
     };
 
 

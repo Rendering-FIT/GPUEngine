@@ -20,6 +20,14 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(r->getArrayInnerTypeId(t)==r->getTypeId("i32"));
       }
     }
+    WHEN( "creating string accessor"){
+      auto s=r->sharedAccessor("string");
+      *s=std::string("ahoj svete");
+      THEN("it should contain string"){
+        REQUIRE(((std::string&)*s)=="ahoj svete");
+      }
+
+    }
   }
 }
 

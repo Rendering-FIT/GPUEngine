@@ -83,6 +83,7 @@ namespace ge{
           ProgramObject(ARGS...args){
             this->_resolveConstructorArgs(args...);
           }
+        ProgramObject(std::vector<std::string>const&data,unsigned version = 450,std::string profile = "core");
         ~ProgramObject();
         void attachShader(std::shared_ptr<ShaderObject>const&shader);
         void detachShader(std::shared_ptr<ShaderObject>const&shader);

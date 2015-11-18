@@ -48,6 +48,14 @@ std::shared_ptr<ge::core::Accessor>const&Function::getOutput()const{
   return this->_output;
 }
 
+bool Function::isInput(unsigned i)const{
+  return this->_inputs[i]!=nullptr;
+}
+
+bool Function::isOutput()const{
+  return this->_output!=nullptr;
+}
+
 Function::Iterator Function::begin()const{
   return this->_inputs.begin();
 }
@@ -70,12 +78,12 @@ void Function::beginOperator(){
     }
   }
   /*
-  for(auto x:this->_inputs){
-    if(x->getTick()<this->getTick()){
-      (*x)();
-      x->setTick(this->getTick());
-    }
-  }*/
+     for(auto x:this->_inputs){
+     if(x->getTick()<this->getTick()){
+     (*x)();
+     x->setTick(this->getTick());
+     }
+     }*/
 }
 
 void Function::endOperator(){
@@ -85,6 +93,7 @@ void Function::endOperator(){
 }
 
 bool Function::inputChanged(unsigned i)const{
+  if(!this->isInput(i))return false;
   if(this->_lazy[i])
     return this->_inputsTicks[i]<this->_inputs[i]->getTick();
   return true;

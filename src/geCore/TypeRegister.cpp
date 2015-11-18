@@ -823,3 +823,7 @@ std::string Accessor::data2Str()const{
   }
   return ss.str();
 }
+
+void Accessor::callDestructor(){
+  this->_callDestructors(&*this->_data,this->_id,this->_manager);
+}

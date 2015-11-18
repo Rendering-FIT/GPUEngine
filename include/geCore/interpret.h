@@ -37,6 +37,8 @@ namespace ge{
         void setInput(unsigned i,std::shared_ptr<Function>function=nullptr,bool lazy=false);
         void setOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
         std::shared_ptr<ge::core::Accessor>const&getOutput()const;
+        bool isInput(unsigned i)const;
+        bool isOutput()const;
         typedef std::vector<std::shared_ptr<Function>>::const_iterator Iterator;
         Iterator begin()const;
         Iterator end  ()const;
