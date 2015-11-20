@@ -33,6 +33,7 @@ namespace ge {
          virtual float* getMatrixData();
          virtual const float* getMatrixData() const;
          virtual std::shared_ptr<glm::mat4>& getRefMatrix();
+         virtual glm::mat4 getMatrix()const;
 
       protected:
          std::shared_ptr<glm::mat4> _matrix;
