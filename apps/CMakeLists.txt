@@ -1,3 +1,4 @@
 add_subdirectory(EmptyWindow)
 add_subdirectory(TriangleRendering)
-add_subdirectory(geViewer)
+add_subdirectory(geViewerAssimp)
+add_subdirectory(geViewerOSG)

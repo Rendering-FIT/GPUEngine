@@ -34,8 +34,8 @@ namespace ge
          // fails to embed this class into the std::vector
          // unless there is a copy constructor (this does not meet C++11 standard)
          // MSVC 2015 (original release) requires assignment operator as well.
-         RenderingCommandData(const RenderingCommandData&); // this should be never called
-         RenderingCommandData& operator=(const RenderingCommandData&); // this should be never called
+         RenderingCommandData(const RenderingCommandData&); // this must be never called
+         RenderingCommandData& operator=(const RenderingCommandData&); // this must be never called
 #else
          RenderingCommandData(const RenderingCommandData&) = delete;
 #endif

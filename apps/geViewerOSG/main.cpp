@@ -838,15 +838,15 @@ void Init()
       "}\n");
    simplifiedPhongProgram = new ProgramObject(
       GL_VERTEX_SHADER,
-      static_cast<std::stringstream&>(stringstream()<<
-      "#version 430\n"
+      static_cast<std::stringstream&>(stringstream()
       <<(useARBShaderDrawParameters
-      ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+      ? "#version 430\n"
+        "#extension GL_ARB_shader_draw_parameters : enable\n"
         "\n"
         "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
         "   mat4 instancingMatrixBuffer[];\n"
         "};\n"
-      : ""
+      : "#version 330\n"
       )<<
       "\n"
       "layout(location=0) in vec4 position;\n"
@@ -858,10 +858,10 @@ void Init()
       : "layout(location=12) in mat4 instancingMatrix;\n"
       )<<
       "\n"
-      "layout(location=0) out vec3 eyePosition;\n"
-      "layout(location=1) out vec3 eyeNormal;\n"
-      "layout(location=2) out vec4 colorOut;\n"
-      "layout(location=3) out vec2 texCoordOut;\n"
+      "out vec3 eyePosition;\n"
+      "out vec3 eyeNormal;\n"
+      "out vec4 colorOut;\n"
+      "out vec2 texCoordOut;\n"
       "\n"
       "uniform mat4 projection;\n"
       "\n"
