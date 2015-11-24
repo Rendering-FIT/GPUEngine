@@ -56,7 +56,7 @@
 using namespace std;
 
 
-#if defined(__WIN32__)
+#if defined(_WIN32)
 static const char directoryNativeSeparator='\\';
 static const char directoryNonNativeSeparator='/';
 #else

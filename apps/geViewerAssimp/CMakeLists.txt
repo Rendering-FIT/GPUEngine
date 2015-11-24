@@ -31,14 +31,15 @@ set(APP_INCLUDES
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
-set(Internal_deps geGL geRG geSG geUtil)
+set(Internal_deps geGL geRG geSG geUtil geCore)
 set(External_libs
   ${GLFW3_LIBRARY}
   ${GLEW_LIBRARY}
   ${OPENGL_LIBRARY}
-  ${ASSIMP_LIBRARIES}
   ${FREEIMAGE_LIBRARY}
   ${FREEIMAGEPLUS_LIBRARY}
+   optimized ${ASSIMP_LIBRARY_DIRS}/assimp.lib
+   debug ${ASSIMP_LIBRARY_DIRS}/assimpd.lib
   )
 if(UNIX)
   # this is a list of libraries that are not properly included
@@ -56,7 +57,7 @@ set(Internal_inc
   ${OPENGL_INCLUDE_DIR}
   ${ASSIMP_INCLUDE_DIRS}
   ${FREEIMAGE_INCLUDE_DIR}
-  ${FREEIMAGEPLUS_INCLUDE_DIR}
+  ${FREEIMAGEPLUS_INCLUDE_PATH}
   )
 
 target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})
