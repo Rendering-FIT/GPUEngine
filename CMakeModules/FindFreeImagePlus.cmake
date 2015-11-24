@@ -3,7 +3,7 @@
 # Once done this will define
 #
 # FREEIMAGEPLUS_FOUND
-# FREEIMAGEPLUS_INCLUDE_PATH
+# FREEIMAGEPLUS_INCLUDE_DIR
 # FREEIMAGEPLUS_LIBRARY
 #
 # original by castano
@@ -21,7 +21,7 @@ ENDIF()
 
 # use regular old-style approach
 IF (WIN32)
-	FIND_PATH(FREEIMAGEPLUS_INCLUDE_PATH FreeImagePlus.h
+	FIND_PATH(FREEIMAGEPLUS_INCLUDE_DIR FreeImagePlus.h
 		${FREEIMAGEPLUS_ROOT_DIR}/include
 		${FREEIMAGEPLUS_ROOT_DIR}
 		DOC "The directory where FreeImagePlus.h resides")
@@ -32,7 +32,7 @@ IF (WIN32)
 		${FREEIMAGEPLUS_ROOT_DIR}
 		DOC "The FreeImagePlus library")
 ELSE (WIN32)
-	FIND_PATH(FREEIMAGEPLUS_INCLUDE_PATH FreeImagePlus.h
+	FIND_PATH(FREEIMAGEPLUS_INCLUDE_DIR FreeImagePlus.h
 		/usr/include
 		/usr/local/include
 		/sw/include
@@ -52,7 +52,7 @@ ENDIF (WIN32)
 
 SET(FREEIMAGEPLUS_FOUND OFF  BOOL "Set to TRUE if FreeImagePlus is found, FALSE otherwise")
 
-IF (FREEIMAGEPLUS_INCLUDE_PATH AND FREEIMAGEPLUS_LIBRARY)
+IF (FREEIMAGEPLUS_INCLUDE_DIR AND FREEIMAGEPLUS_LIBRARY)
 	SET(FREEIMAGEPLUS_FOUND ON  BOOL "Set to TRUE if FreeImagePlus is found, FALSE otherwise")
 ENDIF ()
 

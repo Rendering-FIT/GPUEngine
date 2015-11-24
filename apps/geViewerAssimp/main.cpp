@@ -135,6 +135,8 @@ int main(int argc, char** argv)
       // load scene
       scene=shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene(filename.c_str(),
             aiProcess_Triangulate|aiProcess_SortByPType|aiProcess_CalcTangentSpace));
+      if(!scene)
+         cout<<"Scene loading failed on file: "<<filename<<endl;
 
       // load images
       if(scene && scene->models.size()>0) {

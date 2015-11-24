@@ -36,10 +36,9 @@ set(External_libs
   ${GLFW3_LIBRARY}
   ${GLEW_LIBRARY}
   ${OPENGL_LIBRARY}
+  ${ASSIMP_LIBRARY}
   ${FREEIMAGE_LIBRARY}
   ${FREEIMAGEPLUS_LIBRARY}
-   optimized ${ASSIMP_LIBRARY_DIRS}/assimp.lib
-   debug ${ASSIMP_LIBRARY_DIRS}/assimpd.lib
   )
 if(UNIX)
   # this is a list of libraries that are not properly included
@@ -55,9 +54,9 @@ set(Internal_inc
   ${GLFW3_INCLUDE_DIR}
   ${GLEW_INCLUDE_DIR}
   ${OPENGL_INCLUDE_DIR}
-  ${ASSIMP_INCLUDE_DIRS}
+  ${ASSIMP_INCLUDE_DIR}
   ${FREEIMAGE_INCLUDE_DIR}
-  ${FREEIMAGEPLUS_INCLUDE_PATH}
+  ${FREEIMAGEPLUS_INCLUDE_DIR}
   )
 
 target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})
