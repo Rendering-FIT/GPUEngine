@@ -75,21 +75,6 @@ SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}
 # Dynamic vs Static Linking
 OPTION(GPUENGINE_DYNAMIC "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
 
-#FIND_PACKAGE(OPENGL      REQUIRED)
-#FIND_PACKAGE(GLEW        REQUIRED)
-#FIND_PACKAGE(X11         QUIET)
-#FIND_PACKAGE(SDL2        QUIET)
-#FIND_PACKAGE(AntTweakBar QUIET)
-#FIND_PACKAGE(osg         QUIET)
-#FIND_PACKAGE(osgDB       QUIET)
-#FIND_PACKAGE(glm)
-
-#FIND_PATH(GLM_INCLUDE_DIR glm/glm.hpp)
-
-#INCLUDE_DIRECTORIES(
-#    ${GPUEngine_SOURCE_DIR}/include
-#  )
-
 
 ##################################################
 # Export Things

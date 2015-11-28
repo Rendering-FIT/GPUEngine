@@ -81,7 +81,7 @@ namespace ge{
       {
       public:
          //ENUM_CLASS_FRIEND_OPERATOR(Semantic, UNKNOWN, DIFFUSE, SPECULAR, AMBIENT, EMISSIVE, HEIGHT, NORMAL, SHININESS, OPACITY, DISPLACEMENT, LIGHTMAP, REFLECTION, TEXT)
-         static ge::core::EnumRegister semanticRegister;
+         GESG_EXPORT static ge::core::EnumRegister semanticRegister;
 
          MaterialImageComponent()
             : MaterialComponent()

@@ -1,4 +1,4 @@
-set(APP_NAME geViewer)
+set(APP_NAME geViewerOSG)
 
 project(${APP_NAME})
 

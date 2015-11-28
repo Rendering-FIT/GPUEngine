@@ -62,6 +62,11 @@ const float* ge::sg::MatrixTransformBase::getMatrixData() const
    return glm::value_ptr(*_matrix);
 }
 
+glm::mat4 ge::sg::MatrixTransformBase::getMatrix() const
+{
+   return *_matrix;
+}
+
 std::shared_ptr<glm::mat4>& ge::sg::MatrixTransformBase::getRefMatrix()
 {
    return _matrix;
