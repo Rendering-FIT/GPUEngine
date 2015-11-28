@@ -24,10 +24,10 @@ namespace ge{
     class Function;
     class FunctionInput{
       protected:
-        std::shared_ptr<Function>      _function = nullptr;
-        bool                           _lazy     = false  ;
-        ge::core::TypeRegister::TypeID _type     = 0      ;
-        unsigned long long             _ticks    = 0      ;
+        std::shared_ptr<Function>      _function = nullptr                   ;
+        bool                           _lazy     = false                     ;
+        ge::core::TypeRegister::TypeID _type     = TypeRegister::UNREGISTERED;
+        unsigned long long             _ticks    = 0                         ;
       public:
         FunctionInput(std::shared_ptr<Function>const&function,bool lazy,ge::core::TypeRegister::TypeID type);
         std::shared_ptr<Function>const&getFunction()const;
@@ -43,12 +43,12 @@ namespace ge{
 
     class Function: public Statement{
       protected:
-        std::vector<FunctionInput>         _inputs              ;
-        std::map<unsigned,std::string>     _input2Name          ;
-        std::map<std::string,unsigned>     _name2Input          ;
-        std::shared_ptr<ge::core::Accessor>_output     = nullptr;
-        ge::core::TypeRegister::TypeID     _outputType = 0      ;
-        unsigned long long                 _tickNumber = 1      ;//this has to be one. to be able to call init in parent Function at least once
+        std::vector<FunctionInput>         _inputs                                 ;
+        std::map<unsigned,std::string>     _input2Name                             ;
+        std::map<std::string,unsigned>     _name2Input                             ;
+        std::shared_ptr<ge::core::Accessor>_output     = nullptr                   ;
+        ge::core::TypeRegister::TypeID     _outputType = TypeRegister::UNREGISTERED;
+        unsigned long long                 _tickNumber = 1                         ;//this has to be one. to be able to call init in parent Function at least once
       public:
         Function(unsigned n);
         template<typename... ARGS>

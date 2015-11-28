@@ -75,7 +75,7 @@ void Function::updateTick(){
 }
 
 void Function::bindInput(unsigned i,std::shared_ptr<Function>function,bool lazy){
-  if(function!=nullptr&&function->getOutput()->getId()!=(*this)[i].getType()){
+  if(function!=nullptr&&function->getOutput()->getId()!=(*this)[i].getType()&&(*this)[i].getType()!=TypeRegister::UNREGISTERED){
     std::cerr<<"ERROR: input: "<<i<<" has diferrent type - ";
     std::cerr<<function->getOutput()->getManager()->getTypeIdName((*this)[i].getType());
     std::cerr<<" != ";
