@@ -21,31 +21,124 @@ namespace ge{
         virtual void operator()()=0;
     };
 
+    class Function;
+    class FunctionInput{
+      protected:
+        std::shared_ptr<Function>      _function = nullptr;
+        bool                           _lazy     = false  ;
+        ge::core::TypeRegister::TypeID _type     = 0      ;
+        unsigned long long             _ticks    = 0      ;
+      public:
+        FunctionInput(std::shared_ptr<Function>const&function,bool lazy,ge::core::TypeRegister::TypeID type);
+        std::shared_ptr<Function>const&getFunction()const;
+        bool                           getLazy    ()const;
+        ge::core::TypeRegister::TypeID getType    ()const;
+        unsigned long long             getTicks   ()const;
+        void setFunction(std::shared_ptr<Function>const&function);
+        void setLazy    (bool lazy                              );
+        void setType    (ge::core::TypeRegister::TypeID type    );
+        void setTicks   (unsigned long long ticks               );
+        void updateTicks(                                       );
+    };
+
     class Function: public Statement{
       protected:
-        std::vector<std::shared_ptr<Function>>_inputs;
-        std::vector<bool>_lazy;
-        std::vector<unsigned long long>_inputsTicks;
-        std::shared_ptr<ge::core::Accessor>_output = nullptr;
-        unsigned long long _tickNumber = 1;//this has to be one to call init in parent Function at least once
+        std::vector<FunctionInput>         _inputs              ;
+        std::map<unsigned,std::string>     _input2Name          ;
+        std::map<std::string,unsigned>     _name2Input          ;
+        std::shared_ptr<ge::core::Accessor>_output     = nullptr;
+        ge::core::TypeRegister::TypeID     _outputType = 0      ;
+        unsigned long long                 _tickNumber = 1      ;//this has to be one. to be able to call init in parent Function at least once
       public:
         Function(unsigned n);
+        template<typename... ARGS>
+          Function(unsigned n,std::shared_ptr<ge::core::Accessor>const&output,ARGS... args):Statement(FUNCTION){
+            this->_constructor(n,args...);
+            this->bindOutput(output);
+          }
+        template<typename... ARGS>
+          Function(unsigned n,ARGS... args):Statement(FUNCTION){
+            this->_constructor(n,args...);
+          }
+
         virtual ~Function();
-        unsigned long long getTick()const;
+        unsigned long long getTicks()const;
         void setTick(unsigned long long tick);
         void updateTick();
-        void setInput(unsigned i,std::shared_ptr<Function>function=nullptr,bool lazy=false);
-        void setOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
+        void bindOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
         std::shared_ptr<ge::core::Accessor>const&getOutput()const;
-        bool isInput(unsigned i)const;
-        bool isOutput()const;
-        typedef std::vector<std::shared_ptr<Function>>::const_iterator Iterator;
-        Iterator begin()const;
-        Iterator end  ()const;
+        bool hasOutput()const;
+        ge::core::TypeRegister::TypeID getOutputType()const;
+        void setOutputType(ge::core::TypeRegister::TypeID type);
+        //setOutput - type
+        //setInput - type, name
+        //setFunctions - correct type
+
+        void setInput(unsigned i,ge::core::TypeRegister::TypeID type,std::string name = "");
+        void setOutput(ge::core::TypeRegister::TypeID type);
+        bool hasInput(unsigned    i   )const;
+        bool hasInput(std::string name)const;
+        void bindInput(unsigned    i   ,std::shared_ptr<Function>function=nullptr,bool lazy=false);
+        void bindInput(std::string name,std::shared_ptr<Function>function=nullptr,bool lazy=false);
+        FunctionInput&operator[](unsigned    i    );
+        FunctionInput&operator[](std::string input);
         virtual void operator()();
         void beginOperator();
         void endOperator();
         bool inputChanged(unsigned i)const;
+      private:
+        std::string _genDefaultName(unsigned i)const;
+        void _defaultNames(unsigned n);
+        template<typename... ARGS>
+          void _getInputs(
+              std::vector<std::pair<std::shared_ptr<Function>,bool>>&){}
+        template<typename... ARGS>
+          void _getInputs(
+              std::vector<std::pair<std::shared_ptr<Function>,bool>>&inputs,
+              std::shared_ptr<Function>const&function0){
+            inputs.push_back(std::pair<std::shared_ptr<Function>,bool>(function0,false));
+          }
+        template<typename... ARGS>
+          void _getInputs(
+              std::vector<std::pair<std::shared_ptr<Function>,bool>>&inputs,
+              std::shared_ptr<Function>const&function0,
+              std::shared_ptr<Function>const&function1,
+              ARGS...args){
+            inputs.push_back(std::pair<std::shared_ptr<Function>,bool>(function0,false));
+            this->_getInputs(inputs,function1,args...);
+          }
+        template<typename... ARGS>
+          void _getInputs(
+              std::vector<std::pair<std::shared_ptr<Function>,bool>>&inputs,
+              std::shared_ptr<Function>const&function,
+              bool lazy,
+              ARGS...args){
+            inputs.push_back(std::pair<std::shared_ptr<Function>,bool>(function,lazy));
+            this->_getInputs(inputs,args...);
+          }
+        template<typename... ARGS>
+          void _constructor(unsigned n,std::shared_ptr<Function>const&f,ARGS... args){
+            std::vector<std::pair<std::shared_ptr<Function>,bool>>inputs;
+            this->_getInputs(inputs,f,args...);
+            for(unsigned i=0;i<n;++i){
+              if(i<inputs.size())
+                this->_inputs.push_back(FunctionInput(inputs[i].first,inputs[i].second,inputs[i].first->getOutput()->getId()));
+              else
+                this->_inputs.push_back(FunctionInput(nullptr,false,0));
+            }
+          }
+        template<typename... ARGS>
+          void _constructor(unsigned n,ge::core::TypeRegister::TypeID type,ARGS... args){
+            std::vector<ge::core::TypeRegister::TypeID>types;
+            ge::core::argsToVector(types,type,args...);
+            for(unsigned i=0;i<n;++i){
+              if(i<types.size())
+                this->_inputs.push_back(FunctionInput(nullptr,false,types[i]));
+              else
+                this->_inputs.push_back(FunctionInput(nullptr,false,0));
+            }
+            this->_defaultNames(n);
+          }
     };
 
     class Body: public Statement{

@@ -9,19 +9,60 @@ Statement::Statement(Type type){
 Statement::~Statement(){
 }
 
+FunctionInput::FunctionInput(std::shared_ptr<Function>const&function,bool lazy,ge::core::TypeRegister::TypeID type){
+  this->_function = function;
+  this->_lazy     = lazy    ;
+  this->_type     = type    ;
+  this->_ticks    = 0       ;
+}
+
+std::shared_ptr<Function>const&FunctionInput::getFunction()const{
+  return this->_function;
+}
+
+bool FunctionInput::getLazy()const{
+  return this->_lazy;
+}
+
+ge::core::TypeRegister::TypeID FunctionInput::getType()const{
+  return this->_type;
+}
+
+unsigned long long FunctionInput::getTicks()const{
+  return this->_ticks;
+}
+
+void FunctionInput::setFunction(std::shared_ptr<Function>const&function){
+  this->_function = function;
+}
+
+void FunctionInput::setLazy(bool lazy){
+  this->_lazy = lazy;
+}
+
+void FunctionInput::setType(ge::core::TypeRegister::TypeID type){
+  this->_type = type;
+}
+
+void FunctionInput::setTicks(unsigned long long ticks){
+  this->_ticks = ticks;
+}
+
+void FunctionInput::updateTicks(){
+  this->_ticks++;
+}
+
 Function::Function(unsigned n):Statement(FUNCTION){
-  for(unsigned i=0;i<n;++i){
-    this->_inputs.push_back(nullptr);
-    this->_inputsTicks.push_back(0);//this has to be less than this->_tickNumber
-    this->_lazy.push_back(false);
-  }
+  for(unsigned i=0;i<n;++i)
+    this->_inputs.push_back(FunctionInput(nullptr,false,0));
+  this->_defaultNames(n);
 }
 
 Function::~Function(){
 
 }
 
-unsigned long long Function::getTick()const{
+unsigned long long Function::getTicks()const{
   return this->_tickNumber;
 }
 
@@ -33,14 +74,21 @@ void Function::updateTick(){
   this->_tickNumber++;
 }
 
-void Function::setInput(unsigned i,std::shared_ptr<Function>function,bool lazy){
-  this->_inputs[i]=function;
-  this->_lazy[i]=lazy;
-  if(lazy)
-    this->_inputsTicks[i]=function->getTick()-1;
+void Function::bindInput(unsigned i,std::shared_ptr<Function>function,bool lazy){
+  if(function!=nullptr&&function->getOutput()->getId()!=(*this)[i].getType()){
+    std::cerr<<"ERROR: input: "<<i<<" has diferrent type - ";
+    std::cerr<<function->getOutput()->getManager()->getTypeIdName((*this)[i].getType());
+    std::cerr<<" != ";
+    std::cerr<<function->getOutput()->getManager()->getTypeIdName(function->getOutput()->getId());
+    std::cerr<<std::endl;
+    return;
+  }
+  (*this)[i].setFunction(function);
+  (*this)[i].setLazy(lazy);
+  if(lazy)(*this)[i].setTicks(function->getTicks()-1);
 }
 
-void Function::setOutput(std::shared_ptr<ge::core::Accessor>data){
+void Function::bindOutput(std::shared_ptr<ge::core::Accessor>data){
   this->_output = data;
 }
 
@@ -48,20 +96,61 @@ std::shared_ptr<ge::core::Accessor>const&Function::getOutput()const{
   return this->_output;
 }
 
-bool Function::isInput(unsigned i)const{
-  return this->_inputs[i]!=nullptr;
+void Function::bindInput(std::string name,std::shared_ptr<Function>function,bool lazy){
+  this->bindInput(this->_name2Input[name],function,lazy);
 }
 
-bool Function::isOutput()const{
+void Function::setInput(unsigned i,ge::core::TypeRegister::TypeID type,std::string name){
+  if(name=="")name=this->_genDefaultName(i);
+  auto jj=this->_name2Input.find(name);
+  if(jj!=this->_name2Input.end()&&jj->second!=i){
+    std::cerr<<"ERROR: Function::setInput("<<i<<","<<type<<","<<name<<")";
+    std::cerr<<" - name "<<name<<" is already used for input number: ";
+    std::cerr<<jj->second<<std::endl;
+    return;
+  }
+  auto ii=this->_input2Name.find(i);
+  if(ii!=this->_input2Name.end()){
+    if(this->_name2Input.find(ii->second)!=this->_name2Input.end())
+      this->_name2Input.erase(ii->second);
+    this->_input2Name.erase(i);
+  }
+  this->_name2Input[name] = i   ;
+  this->_input2Name[i   ] = name;
+  this->_inputs[i].setType(type);
+}
+
+void Function::setOutput(ge::core::TypeRegister::TypeID type){
+  this->_outputType = type;
+}
+
+bool Function::hasInput(unsigned i)const{
+  return this->_inputs[i].getFunction()!=nullptr;
+}
+
+bool Function::hasInput(std::string name)const{
+  return this->_name2Input.find(name)!=this->_name2Input.end();
+}
+
+bool Function::hasOutput()const{
   return this->_output!=nullptr;
 }
 
-Function::Iterator Function::begin()const{
-  return this->_inputs.begin();
+
+void Function::setOutputType(ge::core::TypeRegister::TypeID type){
+  this->_outputType = type;
 }
 
-Function::Iterator Function::end  ()const{
-  return this->_inputs.end();
+ge::core::TypeRegister::TypeID Function::getOutputType()const{
+  return this->_outputType;
+}
+
+FunctionInput&Function::operator[](unsigned i){
+  return this->_inputs[i];
+}
+
+FunctionInput&Function::operator[](std::string input){
+  return this->_inputs[this->_name2Input[input]];
 }
 
 void Function::operator()(){
@@ -70,10 +159,11 @@ void Function::operator()(){
 void Function::beginOperator(){
   this->updateTick();
   for(unsigned i=0;i<this->_inputs.size();++i){
-    if(!this->_lazy[i]){
-      if(this->_inputs[i]->getTick()<this->getTick()){
-        (*this->_inputs[i])();
-        this->_inputs[i]->setTick(this->getTick());
+    if(!this->hasInput(i))continue;
+    if(!(*this)[i].getLazy()){
+      if((*this)[i].getTicks()<this->getTicks()){
+        (*(*this)[i].getFunction())();
+        (*this)[i].setTicks(this->getTicks());
       }
     }
   }
@@ -87,17 +177,34 @@ void Function::beginOperator(){
 }
 
 void Function::endOperator(){
-  for(unsigned i=0;i<this->_inputs.size();++i)
-    if(this->_lazy[i])
-      this->_inputsTicks[i]=this->_inputs[i]->getTick();
+  for(unsigned i=0;i<this->_inputs.size();++i){
+    if(!this->hasInput(i))continue;
+    if((*this)[i].getLazy())
+      (*this)[i].setTicks((*this)[i].getFunction()->getTicks());
+  }
 }
 
 bool Function::inputChanged(unsigned i)const{
-  if(!this->isInput(i))return false;
-  if(this->_lazy[i])
-    return this->_inputsTicks[i]<this->_inputs[i]->getTick();
+  if(!this->hasInput(i))return false;
+  if(this->_inputs[i].getLazy())
+    return this->_inputs[i].getTicks()<this->_inputs[i].getFunction()->getTicks();
   return true;
 }
+
+std::string Function::_genDefaultName(unsigned i)const{
+  std::stringstream ss;
+  ss<<"input"<<i;
+  return ss.str();
+}
+
+void Function::_defaultNames(unsigned n){
+  for(unsigned i=0;i<n;++i){
+    std::string name=this->_genDefaultName(i);
+    this->_name2Input[name]=i;
+    this->_input2Name[i]=name;
+  }
+}
+
 
 /* jsme scitacka:
  * chci secist sve vstupy a dat je na vystup

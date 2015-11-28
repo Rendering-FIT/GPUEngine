@@ -20,16 +20,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fd=std::make_shared<ge::core::Nullary>(vd);
 
     auto f0=std::make_shared<ge::core::Add<float>>(typeRegister->sharedAccessor("f32"));
-    f0->setInput(0,fa);
-    f0->setInput(1,fb);
+    f0->bindInput(0,fa);
+    f0->bindInput(1,fb);
     auto f1=std::make_shared<ge::core::Add<float>>(typeRegister->sharedAccessor("f32"));
-    f1->setInput(0,f0);
-    f1->setInput(1,fc);
+    f1->bindInput(0,f0);
+    f1->bindInput(1,fc);
     auto f2=std::make_shared<ge::core::Sub<float>>(typeRegister->sharedAccessor("f32"));
-    f2->setInput(0,f0);
-    f2->setInput(1,fd);
+    f2->bindInput(0,f0);
+    f2->bindInput(1,fd);
     auto f3=std::make_shared<ge::core::Cast<float,int>>(typeRegister->sharedAccessor("i32"));
-    f3->setInput(0,f2);
+    f3->bindInput(0,f2);
 
     WHEN("running f1"){
       (*f1)();
@@ -65,16 +65,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fc=std::make_shared<ge::core::Nullary>((unsigned)0 ,typeRegister);
 
     auto cond=std::make_shared<ge::core::Less<unsigned>>(typeRegister->sharedAccessor("bool"));
-    cond->setInput(0,fa);
-    cond->setInput(1,fb);
+    cond->bindInput(0,fa);
+    cond->bindInput(1,fb);
 
     auto trueBody = std::make_shared<ge::core::Ass<unsigned>>();
-    trueBody->setInput(0,fc);
-    trueBody->setInput(1,fa);
+    trueBody->bindInput(0,fc);
+    trueBody->bindInput(1,fa);
 
     auto falseBody = std::make_shared<ge::core::Ass<unsigned>>();
-    falseBody->setInput(0,fc);
-    falseBody->setInput(1,fb);
+    falseBody->bindInput(0,fc);
+    falseBody->bindInput(1,fb);
 
     auto iff=std::make_shared<ge::core::If>(cond,trueBody,falseBody);
 
@@ -99,15 +99,15 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fiend = std::make_shared<ge::core::Nullary>((unsigned)10u,typeRegister);
 
     auto cond=std::make_shared<ge::core::Less<unsigned>>(typeRegister->sharedAccessor("bool"));
-    cond->setInput(0,fi   );
-    cond->setInput(1,fiend);
+    cond->bindInput(0,fi   );
+    cond->bindInput(1,fiend);
 
     auto mult=std::make_shared<ge::core::Muls<unsigned>>();
-    mult->setInput(0,fk);
-    mult->setInput(1,fi);
+    mult->bindInput(0,fk);
+    mult->bindInput(1,fi);
 
     auto inc=std::make_shared<ge::core::IncrPost<unsigned>>();
-    inc->setInput(0,fi);
+    inc->bindInput(0,fi);
 
     auto body=std::make_shared<ge::core::Body>();
     body->addStatement(mult);

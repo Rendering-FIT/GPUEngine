@@ -94,6 +94,8 @@ namespace ge{
         template<typename TYPE>
         static const char* getTypeKeyword();
         template<typename TYPE>
+        static TypeID getTypeTypeId();
+        template<typename TYPE>
         static std::function<OBJConstructor> getConstructor(){
           return std::function<OBJConstructor>([](signed char*ptr){new(ptr)TYPE();});
         }
