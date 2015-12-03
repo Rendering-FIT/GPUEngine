@@ -1,6 +1,7 @@
 #include<geCore/TypeRegister.h>
 
 #include<sstream>
+#include<geCore/interpret.h>
 
 using namespace ge::core;
 
@@ -516,10 +517,13 @@ unsigned TypeRegister::computeTypeIdSize(TypeID id)const{
                                 size+=this->computeTypeIdSize(this->getStructElementTypeId(id,e));
                               return size;
     case TypeRegister::FCE:
+                              return sizeof(std::shared_ptr<ge::core::Function>);
+                              /*
                               size+=this->computeTypeIdSize(this->getFceReturnTypeId(id));
                               for(unsigned e=0;e<this->getNofFceArgs(id);++e)
                                 size+=this->computeTypeIdSize(this->getFceArgTypeId(id,e));
                               return size;
+                              */
     case TypeRegister::OBJ:
                               return this->getObjSize(id);
     default:
@@ -559,6 +563,7 @@ void   TypeRegister::_callConstructors(char*ptr,TypeID id)const{
                               }
                               break;
     case TypeRegister::FCE:
+                              new(ptr)std::shared_ptr<ge::core::Function>();
                               //TODO CO S FUNKCI
                               break;
     case TypeRegister::OBJ:
@@ -749,6 +754,7 @@ void Accessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shared_ptr
                               }
                               break;
     case TypeRegister::FCE:
+                              ((std::shared_ptr<ge::core::Function>*)ptr)->~shared_ptr();
                               //TODO CO S FUNKCI
                               break;
     case TypeRegister::OBJ:

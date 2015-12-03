@@ -82,10 +82,15 @@ namespace ge{
         void bindInput(std::string name,std::shared_ptr<Function>function=nullptr,bool lazy=false);
         FunctionInput&operator[](unsigned    i    );
         FunctionInput&operator[](std::string input);
+        bool isLazy(unsigned i       )const;
+        bool isLazy(std::string input)const;
         virtual void operator()();
         void beginOperator();
         void endOperator();
         bool inputChanged(unsigned i)const;
+        bool inputChanged(std::string input)const;
+        std::shared_ptr<ge::core::Accessor>const&getInputData(unsigned i       )const;
+        std::shared_ptr<ge::core::Accessor>const&getInputData(std::string input)const;
       private:
         std::string _genDefaultName(unsigned i)const;
         void _defaultNames(unsigned n);
