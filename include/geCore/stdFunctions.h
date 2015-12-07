@@ -11,12 +11,12 @@ namespace ge{
         template<typename TYPE>
           Nullary(TYPE const&data,std::shared_ptr<ge::core::TypeRegister>const&typeRegister):Function(0){
             this->_output=typeRegister->sharedAccessor<TYPE>(data);//data);
-            this->setOutputType(this->_output->getId());
+            this->_setOutput(this->_output->getId());
           }
         template<typename TYPE>
           void update(TYPE const&data){
             (TYPE&)*this->_output=data;
-            this->updateTick();
+            this->_updateTick();
           }
 
     };
@@ -26,26 +26,26 @@ namespace ge{
       public:\
              CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
                this->bindOutput(output);\
-               this->setOutputType(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
-               this->setInput(1,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
+               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
+               this->_setInput(1,TypeRegister::getTypeTypeId<INPUT1>());\
              }\
       virtual void operator()(){\
-        this->beginOperator()
+        this->_beginOperator()
 
 #define DEF_CLASS_PROLOGUE1(CLASS,NARRY,OUTPUT,INPUT0)\
     class CLASS: public Function{\
       public:\
              CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
                this->bindOutput(output);\
-               this->setOutputType(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
+               this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
+               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
              }\
       virtual void operator()(){\
-        this->beginOperator()
+        this->_beginOperator()
 
 #define DEF_CLASS_EPILOGUE()\
-        this->endOperator();\
+        this->_endOperator();\
       }\
     }
 
@@ -155,13 +155,13 @@ namespace ge{
         public:
           Cast(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1){
             this->bindOutput(output);
-            this->setOutputType(TypeRegister::getTypeTypeId<TO>());
-            this->setInput(0,TypeRegister::getTypeTypeId<FROM>());
+            this->_setOutput(TypeRegister::getTypeTypeId<TO>());
+            this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
           }
           virtual void operator()(){
-            this->beginOperator();
+            this->_beginOperator();
             (TO&)(*this->_output)=(FROM)(*this->_inputs[0].getFunction()->getOutput());
-            this->endOperator();
+            this->_endOperator();
           }
       };
   }
