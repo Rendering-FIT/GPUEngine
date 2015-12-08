@@ -5,7 +5,7 @@
 
 namespace ge{
   namespace util{
-    class Progress{
+    class GEUTIL_EXPORT Progress{
       protected:
         unsigned long long _size       ;
         unsigned long long _chunk      ;

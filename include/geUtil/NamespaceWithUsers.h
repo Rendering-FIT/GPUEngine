@@ -3,15 +3,17 @@
 #include<iostream>
 #include<vector>
 #include<map>
+
+#include<geUtil/Export.h>
 #include<geCore/TypeRegister.h>
-#include"Namespace.h"
+#include<geUtil/Namespace.h>
 
 namespace ge{
   namespace util{
     namespace sim{
       class User;
 
-      class NamespaceWithUsers: public Namespace{
+      class GEUTIL_EXPORT NamespaceWithUsers: public Namespace{
         protected:
           std::set<User*>                      _allUsers      ;
           std::map<std::string,std::set<User*>>_variableUser  ;

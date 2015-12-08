@@ -5,7 +5,7 @@
 namespace ge{
   namespace util{
     namespace sim{
-      class User{
+      class GEUTIL_EXPORT User{
         protected:
           std::shared_ptr<Namespace>_sData;
         public:

@@ -8,7 +8,7 @@
 
 namespace ge{
   namespace util{
-    class RuntimeClassInterface{
+    class GEUTIL_EXPORT RuntimeClassInterface{
       protected:
         RuntimeClassMetaData*_classMetaData = nullptr;
         std::shared_ptr<ge::core::TypeRegister>_typeRegister = nullptr;

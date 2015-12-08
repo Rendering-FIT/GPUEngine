@@ -124,5 +124,62 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
   }
 }
 
+SCENARIO( "ticks tests", "[Function]" ) {
+  std::shared_ptr<ge::core::TypeRegister>typeRegister = std::make_shared<ge::core::TypeRegister>();
+  GIVEN( "basic expression" ) {
+    class AddTen: public ge::core::Function{
+      public:
+        unsigned counter=0;
+        AddTen(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(1){
+          this->_setInput(0,tr->getTypeId("f32"));
+          this->_setOutput(tr->getTypeId("f32"));
+        }
+      protected:
+        virtual void _do(){
+          if(!this->hasInput(0)||!this->hasInput(1)||!this->hasOutput())return;
+          counter++;
+          (float&)(*this->_output)=
+            (float&)(*this->getInputData(0))+10.f;
+        }
+    };
+    class Add: public ge::core::Function{
+      public:
+        unsigned counter=0;
+        Add(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(2){
+          this->_setInput(0,tr->getTypeId("f32"));
+          this->_setInput(1,tr->getTypeId("f32"));
+          this->_setOutput(tr->getTypeId("f32"));
+        }
+      protected:
+        virtual void _do(){
+          if(!this->hasInput(0)||!this->hasInput(1)||!this->hasOutput())return;
+          counter++;
+          (float&)(*this->_output)=
+            (float&)(*this->getInputData(0))+(float&)(*this->getInputData(1));
+        }
+    };
+
+    auto fa=std::make_shared<ge::core::Nullary>(10.f,typeRegister);
+    auto faddten = std::make_shared<AddTen>(typeRegister);
+    auto fadd    = std::make_shared<Add>(typeRegister);
+
+    faddten->bindInput(0,fa);
+    faddten->bindOutput(typeRegister->sharedAccessor("f32"));
+    fadd->bindInput(0,faddten);
+    fadd->bindInput(1,faddten);
+    fadd->bindOutput(typeRegister->sharedAccessor("f32"));
+    
+
+    WHEN("running fadd"){
+      (*fadd)();
+      THEN( "output of fadd should be 40.f" ) {
+        REQUIRE((float&)*fadd->getOutput() == 40.f);
+      }
+      THEN( "faddten should be called only once"){
+        REQUIRE(faddten->counter == 1);
+      }
+    }
+  }
+}
 
 

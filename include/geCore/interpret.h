@@ -5,7 +5,7 @@
 
 namespace ge{
   namespace core{
-    class Statement: public ge::core::Command{
+    class GECORE_EXPORT Statement: public ge::core::Command{
       public:
         enum Type{
           FUNCTION,
@@ -21,8 +21,8 @@ namespace ge{
         virtual void operator()()=0;
     };
 
-    class Function;
-    class FunctionInput{
+    class GECORE_EXPORT Function;
+    class GECORE_EXPORT FunctionInput{
       protected:
         std::shared_ptr<Function>      _function = nullptr                   ;
         bool                           _lazy     = false                     ;
@@ -41,7 +41,7 @@ namespace ge{
         void updateTicks(                                       );
     };
 
-    class Function: public Statement{
+    class GECORE_EXPORT Function: public Statement{
       protected:
         std::vector<FunctionInput>         _inputs                                 ;
         std::map<unsigned,std::string>     _input2Name                             ;
@@ -58,6 +58,7 @@ namespace ge{
         void _endOperator  ();
         bool _inputChanged(unsigned    i    )const;
         bool _inputChanged(std::string input)const;
+        virtual void _do();
       public:
         Function(unsigned n);
         template<typename... ARGS>
@@ -144,7 +145,7 @@ namespace ge{
         this->_constructor(n,args...);
       }
 
-    class Body: public Statement{
+    class GECORE_EXPORT Body: public Statement{
       protected:
         std::vector<std::shared_ptr<Statement>>_statements;
       public:
@@ -158,7 +159,7 @@ namespace ge{
         virtual void operator()();
     };
 
-    class While: public Statement{
+    class GECORE_EXPORT While: public Statement{
       protected:
         std::shared_ptr<Function >_condition = nullptr;
         std::shared_ptr<Statement>_body      = nullptr;
@@ -172,7 +173,7 @@ namespace ge{
         virtual void operator()();
     };
 
-    class If: public Statement{
+    class GECORE_EXPORT If: public Statement{
       protected:
         std::shared_ptr<Function >_condition = nullptr;
         std::shared_ptr<Statement>_trueBody  = nullptr;

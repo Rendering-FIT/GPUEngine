@@ -45,6 +45,6 @@ namespace ge{
      *
      * @return LibraryLoader
      */
-    LibraryLoader*getLoader();
+    GEUTIL_EXPORT LibraryLoader*getLoader();
   }
 }

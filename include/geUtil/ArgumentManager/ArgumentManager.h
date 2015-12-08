@@ -4,6 +4,7 @@
 #include<vector>
 #include<map>
 
+#include<geUtil/Export.h>
 #include<geUtil/ArgumentManager/ArgData.h>
 #include<geUtil/ArgumentManager/BaseData.h>
 #include<geUtil/ArgumentManager/ArrayData.h>
@@ -11,7 +12,7 @@
 
 namespace ge{
   namespace util{
-    class ArgumentManager{
+    class GEUTIL_EXPORT ArgumentManager{
       protected:
         std::vector<std::string>_arguments;
         std::map<std::string,ArgData*>_data;

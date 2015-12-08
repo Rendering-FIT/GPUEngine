@@ -1,11 +1,11 @@
 #pragma once
 
-#include"interpret.h"
+#include<geCore/interpret.h>
 
 namespace ge{
   namespace core{
 
-    class Nullary: public Function{
+    class GECORE_EXPORT Nullary: public Function{
       public:
         Nullary(std::shared_ptr<ge::core::Accessor>data = nullptr);
         template<typename TYPE>
@@ -22,7 +22,7 @@ namespace ge{
     };
 
 #define DEF_CLASS_PROLOGUE2(CLASS,NARRY,OUTPUT,INPUT0,INPUT1)\
-    class CLASS: public Function{\
+    class GECORE_EXPORT CLASS: public Function{\
       public:\
              CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
                this->bindOutput(output);\
@@ -30,23 +30,25 @@ namespace ge{
                this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
                this->_setInput(1,TypeRegister::getTypeTypeId<INPUT1>());\
              }\
-      virtual void operator()(){\
-        this->_beginOperator()
+      protected:\
+        virtual void _do(){
+//        this->_beginOperator()
 
 #define DEF_CLASS_PROLOGUE1(CLASS,NARRY,OUTPUT,INPUT0)\
-    class CLASS: public Function{\
+    class GECORE_EXPORT CLASS: public Function{\
       public:\
              CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
                this->bindOutput(output);\
                this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
                this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
              }\
-      virtual void operator()(){\
-        this->_beginOperator()
+      protected:\
+        virtual void _do(){
+//        this->_beginOperator()
 
 #define DEF_CLASS_EPILOGUE()\
-        this->_endOperator();\
-      }\
+/*        this->_endOperator();*/\
+        }\
     }
 
 #define DEF_SPEC_OPERATOR_2(CLASS,OPERATOR,OUTPUT,INPUT0,INPUT1)\
@@ -151,17 +153,18 @@ namespace ge{
     DEF_SPEC_OPERATOR_1INTPOST(DecrPost,--);
 
     template<typename FROM,typename TO>
-      class Cast: public Function{
+      class GECORE_EXPORT Cast: public Function{
         public:
           Cast(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1){
             this->bindOutput(output);
             this->_setOutput(TypeRegister::getTypeTypeId<TO>());
             this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
           }
-          virtual void operator()(){
-            this->_beginOperator();
+        protected:
+          virtual void _do(){
+//            this->_beginOperator();
             (TO&)(*this->_output)=(FROM)(*this->_inputs[0].getFunction()->getOutput());
-            this->_endOperator();
+//            this->_endOperator();
           }
       };
   }

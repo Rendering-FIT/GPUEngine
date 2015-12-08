@@ -157,26 +157,22 @@ bool Function::isLazy(std::string input)const{
 }
 
 void Function::operator()(){
+  this->_beginOperator();
+  this->_do();
+  this->_endOperator();
 }
 
 void Function::_beginOperator(){
   this->_updateTick();
   for(unsigned i=0;i<this->_inputs.size();++i){
     if(!this->hasInput(i))continue;
-    if(!(*this)[i].getLazy()){
-      if((*this)[i].getTicks()<this->_getTicks()){
+    if(!this->isLazy(i)){
+      if((*this)[i].getFunction()->_getTicks()<this->_getTicks()){
         (*(*this)[i].getFunction())();
         (*this)[i].setTicks(this->_getTicks());
       }
     }
   }
-  /*
-     for(auto x:this->_inputs){
-     if(x->getTick()<this->getTick()){
-     (*x)();
-     x->setTick(this->getTick());
-     }
-     }*/
 }
 
 void Function::_endOperator(){
@@ -196,6 +192,9 @@ bool Function::_inputChanged(unsigned i)const{
 
 bool Function::_inputChanged(std::string input)const{
   return this->_inputChanged(this->_name2Input.find(input)->second);
+}
+
+void Function::_do(){
 }
 
 std::shared_ptr<ge::core::Accessor>const&Function::getInputData(unsigned i       )const{

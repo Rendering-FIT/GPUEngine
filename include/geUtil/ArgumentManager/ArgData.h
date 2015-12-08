@@ -1,10 +1,11 @@
 #pragma once
 
 #include<iostream>
+#include<geUtil/Export.h>
 
 namespace ge{
   namespace util{
-    class ArgData{
+    class GEUTIL_EXPORT ArgData{
       public:
         enum Type{
           BOOL = 0    ,

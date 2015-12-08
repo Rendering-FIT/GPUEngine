@@ -1,11 +1,12 @@
 #pragma once
 
 #include<vector>
+#include<geUtil/Export.h>
 #include<geUtil/ArgumentManager/ArgData.h>
 
 namespace ge{
   namespace util{
-    class ArrayData: public ArgData{
+    class GEUTIL_EXPORT ArrayData: public ArgData{
       protected:
         ArgData::Type _innerType;
         std::vector<ArgData*>_data;

@@ -3,12 +3,14 @@
 #include<iostream>
 #include<vector>
 #include<map>
+
+#include<geUtil/Export.h>
 #include<geCore/TypeRegister.h>
 
 namespace ge{
   namespace util{
     namespace sim{
-      class Namespace{
+      class GEUTIL_EXPORT Namespace{
         protected:
           std::string _name   = ""     ;
           Namespace*  _parent = nullptr;

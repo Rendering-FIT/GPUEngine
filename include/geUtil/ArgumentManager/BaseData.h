@@ -1,12 +1,13 @@
 #pragma once
 
+#include<geUtil/Export.h>
 #include<geUtil/ArgumentManager/ArgData.h>
 #include<sstream>
 
 namespace ge{
   namespace util{
     template<typename TYPE>
-      class BaseData: public ArgData{
+      class GEUTIL_EXPORT BaseData: public ArgData{
         protected:
           TYPE _data;
         public:
