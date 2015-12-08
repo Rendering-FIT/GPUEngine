@@ -1,7 +1,7 @@
+#include<geCore/fsa/fsa.h>
+
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
-
-#include<geCore/fsa/fsa.h>
 
 using namespace ge::core;
 

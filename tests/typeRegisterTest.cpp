@@ -1,7 +1,7 @@
+#include<geCore/TypeRegister.h>
+
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
-
-#include<geCore/TypeRegister.h>
 
 using namespace ge::core;
 

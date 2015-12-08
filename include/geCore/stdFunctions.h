@@ -22,7 +22,7 @@ namespace ge{
     };
 
 #define DEF_CLASS_PROLOGUE2(CLASS,NARRY,OUTPUT,INPUT0,INPUT1)\
-    class GECORE_EXPORT CLASS: public Function{\
+    class CLASS: public Function{\
       public:\
              CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
                this->bindOutput(output);\
@@ -35,7 +35,7 @@ namespace ge{
 //        this->_beginOperator()
 
 #define DEF_CLASS_PROLOGUE1(CLASS,NARRY,OUTPUT,INPUT0)\
-    class GECORE_EXPORT CLASS: public Function{\
+    class CLASS: public Function{\
       public:\
              CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
                this->bindOutput(output);\
@@ -153,7 +153,7 @@ namespace ge{
     DEF_SPEC_OPERATOR_1INTPOST(DecrPost,--);
 
     template<typename FROM,typename TO>
-      class GECORE_EXPORT Cast: public Function{
+      class Cast: public Function{
         public:
           Cast(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1){
             this->bindOutput(output);

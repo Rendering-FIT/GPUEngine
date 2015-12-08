@@ -22,6 +22,7 @@ std::string vec2str(std::vector<T>const&data,unsigned from=0){
   ss<<"]";
   return ss.str();
 }
+
 namespace ge{
   namespace core{
     template<>const char* TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
@@ -51,6 +52,8 @@ namespace ge{
     template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<float             >(){return TypeRegister::TYPEID+TypeRegister::F32   -1;}
     template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<double            >(){return TypeRegister::TYPEID+TypeRegister::F64   -1;}
     template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<std::string       >(){return TypeRegister::TYPEID+TypeRegister::STRING-1;}
+
+
 
   }
 }
@@ -519,11 +522,11 @@ unsigned TypeRegister::computeTypeIdSize(TypeID id)const{
     case TypeRegister::FCE:
                               return sizeof(std::shared_ptr<ge::core::Function>);
                               /*
-                              size+=this->computeTypeIdSize(this->getFceReturnTypeId(id));
-                              for(unsigned e=0;e<this->getNofFceArgs(id);++e)
-                                size+=this->computeTypeIdSize(this->getFceArgTypeId(id,e));
-                              return size;
-                              */
+                                 size+=this->computeTypeIdSize(this->getFceReturnTypeId(id));
+                                 for(unsigned e=0;e<this->getNofFceArgs(id);++e)
+                                 size+=this->computeTypeIdSize(this->getFceArgTypeId(id,e));
+                                 return size;
+                                 */
     case TypeRegister::OBJ:
                               return this->getObjSize(id);
     default:
