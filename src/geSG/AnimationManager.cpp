@@ -23,7 +23,7 @@ void AnimationManager::update(double t)
    removeFinishedAnimation();
 }
 
-void AnimationManager::pauseAnimation(std::shared_ptr<Animation> animation)
+void AnimationManager::pauseAnimation(std::shared_ptr<Animation> /*animation*/)
 {
 }
 

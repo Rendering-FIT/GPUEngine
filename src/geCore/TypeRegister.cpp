@@ -200,15 +200,15 @@ unsigned TypeRegister::getObjSize(TypeID id)const{
   return this->getTypeDescriptionElem(id,TypeRegister::POSITION::OBJ::SIZE);
 }
 
-bool TypeRegister::_incrCheck(unsigned size,unsigned&start){
+bool TypeRegister::_incrCheck(std::vector<unsigned>::size_type size,std::vector<unsigned>::size_type&start){
   start++;
   return start<size;
 }
 
-bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,unsigned&start){
+bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start){
   //std::cout<<"TypeRegister::_isNewTypeEqualTo("<<et<<","<<vec2str(type)<<","<<start<<")"<<std::endl;
   if(start>=type.size())return false;
-  unsigned lastStart=start;
+  std::vector<unsigned>::size_type lastStart=start;
   auto falseBranch=[&start,&lastStart](){start=lastStart;return false;};
   if(this->getElementType(type[start])==TypeRegister::TYPEID){
     if(et==type[start]){
@@ -268,7 +268,7 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,u
   }
 }
 
-bool TypeRegister::_typeExists(TypeRegister::TypeID*id,std::vector<unsigned>const&type,unsigned&start){
+bool TypeRegister::_typeExists(TypeRegister::TypeID*id,std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start){
   for(unsigned t=0;t<this->getNofTypes();++t)
     if(this->_isNewTypeEqualTo(this->getTypeId(t),type,start)){
       *id=this->getTypeId(t);
@@ -301,8 +301,8 @@ std::string getStr(T t){
   return ss.str();
 }
 
-TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>const&type,unsigned&start){
-  unsigned lastStart=start;
+TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start){
+  std::vector<unsigned>::size_type lastStart=start;
   auto err=[&start,&lastStart](std::string m){std::cerr<<"ERROR: "<<m<<std::endl;start=lastStart;return 0;};
   //std::cout<<"TypeRegister::_typeAdd("<<vec2str(type)<<","<<start<<")"<<std::endl;
   if(start>=type.size())return err("new type has no description");
@@ -414,7 +414,7 @@ void TypeRegister::_bindTypeIdName(TypeID id,const char*name){
 
 TypeRegister::TypeID TypeRegister::addType(const char*name,std::vector<unsigned>const&type,std::function<OBJConstructor> constructor,std::function<OBJDestructor> destructor){
   //std::cerr<<"TypeRegister::addType(\""<<name<<"\","<<vec2str(type)<<");"<<std::endl;
-  unsigned start=0;
+  std::vector<unsigned>::size_type start=0;
   TypeRegister::TypeID id;
   if(this->_typeExists(&id,type,start)){
     if(this->_name2Id.count(name)&&this->_name2Id[name]!=id)
@@ -601,7 +601,7 @@ void TypeRegister::constructUsingCustomConstructor(signed char*ptr,TypeID id)con
   }
 }
 
-unsigned TypeRegister::getNofDescriptionUints()const{
+std::vector<unsigned>::size_type TypeRegister::getNofDescriptionUints()const{
   return this->_types.size();
 }
 

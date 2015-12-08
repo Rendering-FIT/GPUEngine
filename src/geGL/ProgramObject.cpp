@@ -832,7 +832,7 @@ ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name)const{
  *
  * @return number of uniforms
  */
-unsigned ProgramObject::getNofUniforms()const{
+decltype(ProgramObject::_uniformList)::size_type ProgramObject::getNofUniforms()const{
   return this->_uniformList.size();
 }
 
@@ -841,7 +841,7 @@ unsigned ProgramObject::getNofUniforms()const{
  *
  * @return number of attributes
  */
-unsigned ProgramObject::getNofAttributes()const{
+decltype(ProgramObject::_attributeList)::size_type ProgramObject::getNofAttributes()const{
   return this->_attributeList.size();
 }
 
@@ -850,7 +850,7 @@ unsigned ProgramObject::getNofAttributes()const{
  *
  * @return number of buffers
  */
-unsigned ProgramObject::getNofBuffers()const{
+decltype(ProgramObject::_bufferNames)::size_type ProgramObject::getNofBuffers()const{
   return this->_bufferNames.size();
 }
 

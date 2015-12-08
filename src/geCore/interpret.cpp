@@ -264,7 +264,7 @@ void Body::addStatement(std::shared_ptr<Statement>const&statement){
   this->_statements.push_back(statement);
 }
 
-unsigned Body::size()const{
+std::vector<std::shared_ptr<Statement>>::size_type Body::size()const{
   return this->_statements.size();
 }
 

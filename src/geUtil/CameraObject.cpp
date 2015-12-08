@@ -24,7 +24,7 @@ namespace ge{
       if(this->_far==std::numeric_limits<float>::infinity()){//is far inifinty?
         float top=glm::tan(glm::radians(this->_fovy/2))*this->_near;//top border of viewport
         float bottom=-top;//bottom border of viewport
-        float right=(top*this->_size[0])/this->_size[1];//right border of viewport
+        float right=(top*(float)this->_size[0])/(float)this->_size[1];//right border of viewport
         float left=-right;//left border of viewport
         //0. column
         this->_projection[0][0]=2*this->_near/(right-left);
@@ -49,7 +49,7 @@ namespace ge{
       }else//far is finite
         this->_projection=glm::perspective(
             glm::radians<float>(this->_fovy),//field of view
-            1.f*this->_size[0]/this->_size[1],//aspect ratio
+            (float)this->_size[0]/(float)this->_size[1],//aspect ratio
             this->_near,//near plane
             this->_far);//far plane
     }
@@ -176,27 +176,27 @@ namespace ge{
       this->_size[1]=std::atoi(data.substr(0,pos).c_str());
 
       data=data.substr(pos+1);pos=data.find(" ");
-      this->_fovy=std::atof(data.substr(0,pos).c_str());
+      this->_fovy=(float)std::atof(data.substr(0,pos).c_str());
 
       data=data.substr(pos+1);pos=data.find(" ");
-      this->_near=std::atof(data.substr(0,pos).c_str());
+      this->_near=(float)std::atof(data.substr(0,pos).c_str());
 
       data=data.substr(pos+1);pos=data.find(" ");
-      this->_far=std::atof(data.substr(0,pos).c_str());
+      this->_far=(float)std::atof(data.substr(0,pos).c_str());
 
       data=data.substr(pos+1);pos=data.find(" ");
-      this->_position[0]=std::atof(data.substr(0,pos).c_str());
+      this->_position[0]=(float)std::atof(data.substr(0,pos).c_str());
       data=data.substr(pos+1);pos=data.find(" ");
-      this->_position[1]=std::atof(data.substr(0,pos).c_str());
+      this->_position[1]=(float)std::atof(data.substr(0,pos).c_str());
       data=data.substr(pos+1);pos=data.find(" ");
-      this->_position[2]=std::atof(data.substr(0,pos).c_str());
+      this->_position[2]=(float)std::atof(data.substr(0,pos).c_str());
 
       for(unsigned i=0;i<15;++i){
         data=data.substr(pos+1);pos=data.find(" ");
-        glm::value_ptr(this->_viewRotation)[i]=std::atof(data.substr(0,pos).c_str());
+        glm::value_ptr(this->_viewRotation)[i]=(float)std::atof(data.substr(0,pos).c_str());
       }
       data=data.substr(pos+1);
-      glm::value_ptr(this->_viewRotation)[15]=std::atof(data.c_str());
+      glm::value_ptr(this->_viewRotation)[15]=(float)std::atof(data.c_str());
       this->_computeProjection();
     }
     void CameraObject::loadFromFile(std::string file){
@@ -218,11 +218,11 @@ namespace ge{
 
 
     glm::vec3 CameraObject::getPickVector(unsigned x,unsigned y){
-      float dy=2.*x/this->_size[0]-1;
-      float dx=2.*y/this->_size[1]-1;
+      float dy=2.f*(float)x/(float)this->_size[0]-1.f;
+      float dx=2.f*(float)y/(float)this->_size[1]-1.f;
 
-      float ratio=1.*this->_size[0]/this->_size[1];
-      float tangle=tan(this->_fovy/2);
+      float ratio=(float)this->_size[0]/(float)this->_size[1];
+      float tangle=tanf(this->_fovy/2.f);
       glm::vec3 X= glm::vec3(glm::row(this->_viewRotation,0));
       glm::vec3 Y= glm::vec3(glm::row(this->_viewRotation,1));
       glm::vec3 Z=-glm::vec3(glm::row(this->_viewRotation,2));

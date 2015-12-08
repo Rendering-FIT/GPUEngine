@@ -260,11 +260,11 @@ void WindowObject::setMouse(void(*Mouse)()){
 }
 
 float WindowObject::getDeltaIdleTime()const{
-  return(this->_currentIdleTime-this->_lastIdleTime)*1e-3;
+  return(float)(this->_currentIdleTime-this->_lastIdleTime)*1e-3f;
 }
 
 float WindowObject::getDeltaMouseTime()const{
-  return(this->_currentMouseTime-this->_lastMouseTime)*1e-3;
+  return(float)(this->_currentMouseTime-this->_lastMouseTime)*1e-3f;
 }
 
 const int*WindowObject::getMousePosition()const{

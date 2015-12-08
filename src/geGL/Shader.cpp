@@ -96,7 +96,7 @@ GLenum Shader::getType()const{
  * @return delete status of shader
  */
 GLboolean Shader::getDeleteStatus()const{
-  return this->_getParam(GL_DELETE_STATUS);
+  return (GLboolean)this->_getParam(GL_DELETE_STATUS);
 }
 
 /**
@@ -105,7 +105,7 @@ GLboolean Shader::getDeleteStatus()const{
  * @return compile status of shader
  */
 GLboolean Shader::getCompileStatus()const{
-  return this->_getParam(GL_COMPILE_STATUS);
+  return (GLboolean)this->_getParam(GL_COMPILE_STATUS);
 }
 
 /**

@@ -37,10 +37,10 @@ namespace ge{
         std::string dir()const;
         virtual ~RuntimeClassInterface();
         std::string getClassName()const;
-        unsigned    getNofFunctions()const;
+        std::vector<ge::util::RuntimeFceMetaData>::size_type getNofFunctions()const;
         std::string getFunctionName(unsigned id)const;
         ge::core::TypeRegister::TypeID getFunctionReturnTypeID(unsigned id)const;
-        unsigned getNofFunctionArguments(unsigned id)const;
+        std::vector<ge::util::RuntimeArgMetaData>::size_type getNofFunctionArguments(unsigned id)const;
         ge::core::TypeRegister::TypeID getFunctionArgumentTypeID(unsigned id,unsigned arg)const;
         std::string getFunctionArgumentName(unsigned fce,unsigned arg)const;
         virtual void call(void*instance,std::string fce,std::vector<ge::core::Accessor>&args);
@@ -50,9 +50,8 @@ namespace ge{
             this->_argsToAccessorVector(this->_typeRegister,a,args...);
             this->call(instance,fce,a);
           }
-
-        unsigned getNofConstructors()const;
-        unsigned getNofConstructorArguments(unsigned id)const;
+        std::vector<ge::util::RuntimeConstructorMetaData>::size_type getNofConstructors()const;
+        std::vector<ge::util::RuntimeArgMetaData>::size_type getNofConstructorArguments(unsigned id)const;
         ge::core::TypeRegister::TypeID getConstructorArgumentTypeID(unsigned id,unsigned arg)const;
         std::string getConstructorArgumentName(unsigned id,unsigned arg)const;
         virtual void*construct(std::vector<ge::core::Accessor>&args)const;

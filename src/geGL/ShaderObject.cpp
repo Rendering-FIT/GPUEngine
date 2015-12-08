@@ -36,7 +36,7 @@ GLenum ge::gl::file2ShaderType(std::string fileName){
 int ge::gl::fileTypeSwitch(std::string fileName,unsigned numType,...){
   va_list args;//argumenty
   va_start(args,numType);//zacatek argumentu
-  for(size_t i=0;i<numType;++i){
+  for(unsigned i=0;i<numType;++i){
     char* ext=(char*)va_arg(args,char*);
     if(fileName.length()-fileName.rfind(ext)==std::strlen(ext)){//nalezl se
       va_end(args);//konec sekvence argumentu
@@ -69,10 +69,8 @@ std::string ShaderObject::_appendAfterVersion(
     std::string source,
     std::string defs){
    if(defs=="")return source;
-  int versionPosition=0;
-  int lineEndPosition=0;
-  versionPosition=source.find("#version");
-  lineEndPosition=source.find("\n",versionPosition);
+  auto versionPosition=source.find("#version");
+  auto lineEndPosition=source.find("\n",versionPosition);
   source.insert(lineEndPosition+1,defs);
   return source;
 }
@@ -82,9 +80,9 @@ std::string ShaderObject::_setVersion(
     unsigned    version,
     std::string profile){
   if(version==0)return source;
-  int Position=0;
-  while((Position=source.find("#version",Position))>=0){
-    int LineEndPosition=source.find("\n",Position);
+  std::basic_string<char>::size_type Position=0;
+  while((Position=source.find("#version",Position))!=std::string::npos){
+    auto LineEndPosition=source.find("\n",Position);
     source.erase(Position,LineEndPosition-Position);
   }
   std::stringstream result;

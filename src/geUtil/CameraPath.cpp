@@ -131,10 +131,10 @@ namespace ge{
       float t2=t1*t1;
       float t3=t2*t1;
       return
-        ( -.5*t3 +    t2 - .5*t1 + 0 )*A+
-        ( 1.5*t3 -2.5*t2 + 0     + 1.)*B+
-        (-1.5*t3 +  2*t2 + .5*t1 + 0.)*C+
-        (  .5*t3 - .5*t2 + 0     + 0.)*D;
+        ( -.5f*t3 +     t2 -  .5f*t1 + 0.f )*A+
+        ( 1.5f*t3 -2.5f*t2 + 0.0f    + 1.f )*B+
+        (-1.5f*t3 +2.0f*t2 +  .5f*t1 + 0.f )*C+
+        (  .5f*t3 - .5f*t2 + 0.0f    + 0.f )*D;
     }
     CameraPath::~CameraPath(){
       for(unsigned i=0;i<this->_keyPoints.size();++i)
@@ -149,13 +149,13 @@ namespace ge{
     void CameraPath::getCameraPoint(CameraKeyPoint*Point,float Time){
       if(this->_keyPoints.size()<1)return;
       if(this->_cyclic)
-        Time=fmod(fmod(Time,this->_duration)+this->_duration,this->_duration);
+        Time=fmodf(fmodf(Time,this->_duration)+this->_duration,this->_duration);
       else
         if(Time>this->_duration)Time=this->_duration;
-      unsigned Divider=this->_keyPoints.size()-(this->_cyclic?0:1);
+      std::vector<ge::util::CameraKeyPoint*>::size_type Divider=this->_keyPoints.size()-(this->_cyclic?0:1);
       float l=Time/this->_duration;
-      unsigned Index[4];
-      Index[1]=((unsigned)(l*Divider))%this->_keyPoints.size();
+      std::vector<ge::util::CameraKeyPoint*>::size_type Index[4];
+      Index[1]=((std::vector<ge::util::CameraKeyPoint*>::size_type)(l*(float)Divider))%this->_keyPoints.size();
       if(this->_cyclic){
         Index[0]=Index[1]?Index[1]-1:this->_keyPoints.size()-1;
         Index[2]=(Index[1]+1==this->_keyPoints.size())?0:Index[1]+1;
@@ -165,7 +165,7 @@ namespace ge{
         Index[2]=(Index[1]+1==this->_keyPoints.size())?Index[1]:Index[1]+1;
         Index[3]=(Index[2]+1==this->_keyPoints.size())?Index[2]:Index[2]+1;
       }
-      float t=Divider*Time/this->_duration-Index[1];
+      float t=(float)Divider*Time/this->_duration-(float)Index[1];
       /*std::cerr<<"Divider: "<<Divider<<std::endl;
         std::cerr<<"_duration: "<<this->_duration<<std::endl;
         std::cerr<<"Time: "<<Time<<std::endl;
@@ -199,11 +199,11 @@ namespace ge{
           t);
       float lvv=0;
       for(int k=0;k<3;++k)lvv+=Point->viewVector[k]*Point->viewVector[k];
-      lvv=sqrt(lvv);
+      lvv=sqrtf(lvv);
       if(lvv>0)for(int k=0;k<3;++k)Point->viewVector[k]/=lvv;
       float luv=0;
       for(int k=0;k<3;++k)luv+=Point->upVector[k]*Point->upVector[k];
-      luv=sqrt(luv);
+      luv=sqrtf(luv);
       if(luv>0)for(int k=0;k<3;++k)Point->upVector[k]/=luv;
     }
     void CameraPath::setDuration(float _duration){
@@ -230,22 +230,22 @@ namespace ge{
         for(int k=0;k<3;++k){
           std::string s;
           getline( ss, s, ',' );
-          P[k]=std::atof(s.c_str());
+          P[k]=(float)std::atof(s.c_str());
         }
         for(int k=0;k<3;++k){
           std::string s;
           getline( ss, s, ',' );
-          V[k]=std::atof(s.c_str());
+          V[k]=(float)std::atof(s.c_str());
         }
         for(int k=0;k<3;++k){
           std::string s;
           getline( ss, s, ',' );
-          U[k]=std::atof(s.c_str());
+          U[k]=(float)std::atof(s.c_str());
         }
         for(int k=0;k<1;++k){
           std::string s;
           getline( ss, s, ',' );
-          Fovy=std::atof(s.c_str());
+          Fovy=(float)std::atof(s.c_str());
         }
         this->_keyPoints.push_back(new CameraKeyPoint(P,V,U,Fovy));
       }
@@ -268,7 +268,7 @@ namespace ge{
     void CameraPath::insertToEnd(CameraKeyPoint*CameraPoint){
       this->_keyPoints.push_back(CameraPoint);
     }
-    unsigned CameraPath::getLength(){
+    decltype(CameraPath::_keyPoints)::size_type CameraPath::getLength(){
       return this->_keyPoints.size();
     }
 

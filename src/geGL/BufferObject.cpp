@@ -440,7 +440,7 @@ GLbitfield BufferObject::getAccessFlags()const{
  * @return true if this buffer is mapped
  */
 GLboolean BufferObject::isMapped()const{
-  return this->_getBufferParameter(GL_BUFFER_MAPPED);
+  return (GLboolean)this->_getBufferParameter(GL_BUFFER_MAPPED);
 }
 
 /**
@@ -467,7 +467,7 @@ GLsizeiptr BufferObject::getMapSize()const{
  * @return true if this buffer is immutable
  */
 GLboolean BufferObject::isImmutable()const{
-  return this->_getBufferParameter(GL_BUFFER_IMMUTABLE_STORAGE);
+  return (GLboolean)this->_getBufferParameter(GL_BUFFER_IMMUTABLE_STORAGE);
 }
 
 /**

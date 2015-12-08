@@ -68,7 +68,7 @@ std::string RuntimeClassInterface::getClassName()const{
   return this->_classMetaData->getName();
 }
 
-unsigned    RuntimeClassInterface::getNofFunctions()const{
+std::vector<ge::util::RuntimeFceMetaData>::size_type RuntimeClassInterface::getNofFunctions()const{
   return this->_classMetaData->getNofFces();
 }
 
@@ -80,7 +80,7 @@ ge::core::TypeRegister::TypeID RuntimeClassInterface::getFunctionReturnTypeID(un
   return this->_classMetaData->getFce(fce).getReturnType();
 }
 
-unsigned RuntimeClassInterface::getNofFunctionArguments(unsigned fce)const{
+std::vector<ge::util::RuntimeArgMetaData>::size_type RuntimeClassInterface::getNofFunctionArguments(unsigned fce)const{
   return this->_classMetaData->getFce(fce).getNofArgs();
 }
 
@@ -95,11 +95,11 @@ std::string RuntimeClassInterface::getFunctionArgumentName(unsigned fce,unsigned
 void RuntimeClassInterface::call(void*,std::string,std::vector<ge::core::Accessor>&){
 }
 
-unsigned RuntimeClassInterface::getNofConstructors()const{
+std::vector<ge::util::RuntimeConstructorMetaData>::size_type RuntimeClassInterface::getNofConstructors()const{
   return this->_classMetaData->getNofConstructors();
 }
 
-unsigned RuntimeClassInterface::getNofConstructorArguments(unsigned id)const{
+std::vector<ge::util::RuntimeArgMetaData>::size_type RuntimeClassInterface::getNofConstructorArguments(unsigned id)const{
   return this->_classMetaData->getConstructor(id).getNofArgs();
 }
 

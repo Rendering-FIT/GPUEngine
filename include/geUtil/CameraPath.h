@@ -49,7 +49,7 @@ namespace ge{
         void saveCSV(std::string FileName);
         void select(unsigned Index);
         void insertToEnd(CameraKeyPoint*CameraPoint);
-        unsigned getLength();
+        decltype(_keyPoints)::size_type getLength();
 #ifdef ENABLE_DRAWING
         void draw(float*MVP);
 #endif//ENABLE_DRAWING

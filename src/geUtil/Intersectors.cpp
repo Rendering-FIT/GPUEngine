@@ -25,12 +25,12 @@ float ge::util::RaySphereIntersector::computeIntersection(Ray ray, ge::sg::Bound
    if(D < 0.0f) return -1.0f;
    else if(D == 0.0f)
    {
-      t1 = (-b - sqrt(D)) / (2 * a);
+      t1 = (-b - sqrtf(D)) / (2 * a);
    }
    else
    {
-      t1 = (-b - sqrt(D)) / (2 * a);
-      t2 = (-b + sqrt(D)) / (2 * a);
+      t1 = (-b - sqrtf(D)) / (2 * a);
+      t2 = (-b + sqrtf(D)) / (2 * a);
       t1 = t1 < t2 ? t1 : t2;
    }
 

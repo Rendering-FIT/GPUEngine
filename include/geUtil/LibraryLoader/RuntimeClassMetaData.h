@@ -30,7 +30,7 @@ namespace ge{
             FceMetaData const&fceMetaData);
         ge::core::TypeRegister::TypeID getReturnType()const;
         std::string getName()const;
-        unsigned getNofArgs()const;
+        decltype(_args)::size_type getNofArgs()const;
         RuntimeArgMetaData const&getArg(unsigned i)const;
     };
 
@@ -41,7 +41,7 @@ namespace ge{
         RuntimeConstructorMetaData(
             std::shared_ptr<ge::core::TypeRegister>&typeRegister,
             ConstructorMetaData const&constructorMetaData);
-        unsigned getNofArgs()const;
+        decltype(_args)::size_type getNofArgs()const;
         RuntimeArgMetaData const&getArg(unsigned i)const;
     };
 
@@ -55,9 +55,9 @@ namespace ge{
             std::shared_ptr<ge::core::TypeRegister>&typeRegister,
             ClassMetaData const&classMetaData);
         std::string getName()const;
-        unsigned getNofFces()const;
+        decltype(_fces)::size_type getNofFces()const;
         RuntimeFceMetaData const&getFce(unsigned i)const;
-        unsigned getNofConstructors()const;
+        decltype(_constructors)::size_type getNofConstructors()const;
         RuntimeConstructorMetaData const&getConstructor(unsigned i)const;
     };
 

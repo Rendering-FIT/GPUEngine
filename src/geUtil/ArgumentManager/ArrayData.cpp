@@ -20,7 +20,7 @@ void ArrayData::add(ArgData*item){
   this->_data.push_back(item);
 }
 
-unsigned ArrayData::size(){
+decltype(ArrayData::_data)::size_type ArrayData::size(){
   return this->_data.size();
 }
 

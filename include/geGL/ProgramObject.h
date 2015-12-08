@@ -101,9 +101,9 @@ namespace ge{
         ProgramObjectParameter    const&getUniform  (std::string name)const;
         ProgramObjectParameter    const&getAttribute(std::string name)const;
         ProgramObjectBufferParams const&getBuffer   (std::string name)const;
-        unsigned getNofUniforms  ()const;
-        unsigned getNofAttributes()const;
-        unsigned getNofBuffers   ()const;
+        decltype(_uniformList  )::size_type getNofUniforms  ()const;
+        decltype(_attributeList)::size_type getNofAttributes()const;
+        decltype(_bufferNames  )::size_type getNofBuffers   ()const;
         void use()const;
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);

@@ -15,7 +15,7 @@ namespace ge{
         virtual ~ArrayData();
         ArgData*operator[](unsigned i);
         void add(ArgData*item);
-        unsigned size();
+        decltype(_data)::size_type size();
         ArgData::Type getInnerType();
         virtual bool sameType(ArgData*other);
         virtual std::string toStr();

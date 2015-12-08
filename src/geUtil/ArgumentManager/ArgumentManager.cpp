@@ -150,7 +150,7 @@ void ArgumentManager::_loadArgs(std::vector<std::string>&args,std::string file){
     return;
   }
   f.seekg(0,std::ios::end);//jdeme na konec
-  unsigned len=f.tellg();//tak tu mame delku (pozice hlavy)
+  std::streamoff len=f.tellg();//tak tu mame delku (pozice hlavy)
   f.seekg(0,std::ios::beg);//navrat na zacatek
   unsigned char*data=new unsigned char[len+1];//alokace dat
   f.read((char*)data,len);//precteni souboru
@@ -171,12 +171,12 @@ bool ArgumentManager::_toBOOL  (bool&              data,std::string input){
 }
 
 bool ArgumentManager::_toI8    (char&              data,std::string input){
-  data=std::atoi(input.c_str());
+  data=(char)std::atoi(input.c_str());
   return true;
 }
 
 bool ArgumentManager::_toI16   (short&             data,std::string input){
-  data=std::atoi(input.c_str());
+  data=(short)std::atoi(input.c_str());
   return true;
 }
 bool ArgumentManager::_toI32   (int&               data,std::string input){
@@ -188,11 +188,11 @@ bool ArgumentManager::_toI64   (long long int&     data,std::string input){
   return true;
 }
 bool ArgumentManager::_toU8    (unsigned char&     data,std::string input){
-  data=std::atoi(input.c_str());
+  data=(unsigned char)std::atoi(input.c_str());
   return true;
 }
 bool ArgumentManager::_toU16   (unsigned short&    data,std::string input){
-  data=std::atoi(input.c_str());
+  data=(unsigned short)std::atoi(input.c_str());
   return true;
 }
 bool ArgumentManager::_toU32   (unsigned int&      data,std::string input){
@@ -204,7 +204,7 @@ bool ArgumentManager::_toU64   (unsigned long long&data,std::string input){
   return true;
 }
 bool ArgumentManager::_toF32   (float&data,std::string input){
-  if(input[0]=='-')data=-std::atof(input.substr(1).c_str());
+  if(input[0]=='-')data=-(float)std::atof(input.substr(1).c_str());
   if(
       input=="inf" ||
       input=="INF" ||
@@ -215,7 +215,7 @@ bool ArgumentManager::_toF32   (float&data,std::string input){
       input=="NAN" ||
       input=="NaN" )
     data=std::numeric_limits<float>::quiet_NaN();
-  else data=std::atof(input.c_str());
+  else data=(float)std::atof(input.c_str());
   return true;
 }
 bool ArgumentManager::_toF64   (double&data,std::string input){

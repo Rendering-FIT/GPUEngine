@@ -26,7 +26,7 @@ namespace ge{
         void       clearTransitions   ();
         void       clearEofTransition ();
         std::string getName()const;
-        unsigned   getNofTransition()const;
+        decltype(_transitions)::size_type getNofTransition()const;
         char       getTransitionLex(unsigned i)const;
         void       setEndState    (char lex,FSAState*state = nullptr);
         void       setEOFEndState (         FSAState*state = nullptr);

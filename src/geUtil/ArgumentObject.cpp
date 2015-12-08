@@ -6,10 +6,10 @@
 using namespace ge::util;
 
 float ge::util::atof(const char*s){
-  if(s[0]=='-')return -std::atof(s+1);
+  if(s[0]=='-')return -(float)std::atof(s+1);
   std::string str(s);
   if(str=="inf")return std::numeric_limits<float>::infinity();
-  else return std::atof(s);
+  else return (float)std::atof(s);
   //todo Inf INF -inf -Inf -INF NAN NaN nan ...
 }
 

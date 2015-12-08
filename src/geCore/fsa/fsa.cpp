@@ -35,7 +35,7 @@ FSAState*FSA::_getState(std::string name)const{
 
 std::string FSA::_expandLex(std::string lex)const{
   std::string elex="";
-  unsigned len=lex.size();
+  std::basic_string<char>::size_type len=lex.size();
   char lastChar='\0';
   enum FSAState{
     START         ,
@@ -79,7 +79,7 @@ std::string FSA::_expandLex(std::string lex)const{
           state=START;
           break;
         }else if(c==FSA::all[1]){//ALL
-          for(int i=1;i<=255;++i)elex+=i;
+          for(int i=1;i<=255;++i)elex+=(char)i;
           state=START;
           break;
         }else{
@@ -92,7 +92,7 @@ std::string FSA::_expandLex(std::string lex)const{
           state=RANGEBACKSLASH;
           break;
         }else{
-          for(int i=lastChar;i<=c;++i)elex+=i;
+          for(int i=lastChar;i<=c;++i)elex+=(char)i;
           lastChar='\0';
           state=START;
           break;
@@ -102,7 +102,7 @@ std::string FSA::_expandLex(std::string lex)const{
           std::cerr<<"range right side cant be \\"<<c<<std::endl;
           return"";
         }else{
-          for(int i=lastChar;i<=c;++i)elex+=i;
+          for(int i=lastChar;i<=c;++i)elex+=(char)i;
           lastChar='\0';
           state=START;
           break;
@@ -126,15 +126,15 @@ void FSA::_computeEndStates(){
 void FSA::removeUnreachableStates(){
   std::set<FSAState*>reachable;
   reachable.insert(this->_name2State[this->_start]);
-  unsigned oldSize=0;
-  unsigned newSize=reachable.size();
+  std::set<ge::core::FSAState*>::size_type oldSize=0;
+  std::set<ge::core::FSAState*>::size_type newSize=reachable.size();
   do{
     oldSize=newSize;
     std::set<FSAState*>newFSAStates;
     for(auto x:reachable){
       for(unsigned c=0;c<256;++c)
-        if(x->hasTransition(c))
-          newFSAStates.insert(x->getTransition(c).getNextState());
+        if(x->hasTransition((char)c))
+          newFSAStates.insert(x->getTransition((char)c).getNextState());
       if(x->getEOFTransition().getNextState())
         newFSAStates.insert(x->getEOFTransition().getNextState());
     }
@@ -180,7 +180,8 @@ void FSA::removeUndistinguishabeStates(){
         if(!lastRel.eq(p,q))continue;
         if(p->getNofTransition()!=q->getNofTransition())continue;
         bool transitionsOk=true;
-        for(unsigned c=0;c<256;++c){
+        for(unsigned i=0;i<256;++i){
+          char c=(char)i;
           if(p->hasTransition(c)!=q->hasTransition(c)){
             transitionsOk=false;
             break;
@@ -266,7 +267,7 @@ void FSA::minimalize(){
 }
 
 bool FSA::_createStates(FSAState**sa,FSAState**sb,std::string nameA,std::string nameB,bool end){
-  unsigned nofFSAStates=this->_name2State.size();
+  auto nofFSAStates=this->_name2State.size();
   *sa=this->_addState(nameA);
   if(!*sa)return false;
   if(this->_endStates.find(*sa)!=this->_endStates.end()){
@@ -480,7 +481,8 @@ FSA FSA::operator+(FSA const&other)const{
   for(auto ip:this->_name2State)
     for(auto iq:other._name2State){
       auto p=ip.second,q=iq.second;
-      for(unsigned c=0;c<256;++c){
+      for(unsigned i=0;i<256;++i){
+        char c=(char)i;
         FSAState*from=nullptr,*to=nullptr;
         FSAFusedCallback callback;
         DO_TRANSITION(hasTransition(c),getTransition(c));

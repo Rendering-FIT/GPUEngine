@@ -55,11 +55,11 @@ namespace ge{
     DEF_CLASS_PROLOGUE2(CLASS,2,OUTPUT,INPUT0,INPUT1);\
     if(this->_output)\
     (OUTPUT&)*(this->_output)=\
-    (INPUT0&)(*((*this)[0].getFunction()->getOutput())) OPERATOR\
-    (INPUT1 )(*((*this)[1].getFunction()->getOutput()));\
+    (INPUT0&)(*this->getInputData(0)) OPERATOR\
+    (INPUT1 )(*this->getInputData(1));\
     else\
-    (INPUT0&)(*((*this)[0].getFunction()->getOutput())) OPERATOR\
-    (INPUT1 )(*((*this)[1].getFunction()->getOutput()));\
+    (INPUT0&)(*this->getInputData(0)) OPERATOR\
+    (INPUT1 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
 
     //OUTPUT means that function requires output to be defined
@@ -67,45 +67,45 @@ namespace ge{
 #define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT0,INPUT1)\
     DEF_CLASS_PROLOGUE2(CLASS,2,OUTPUT,INPUT0,INPUT1);\
     (OUTPUT&)*(this->_output)=\
-    (INPUT0&)(*((*this)[0].getFunction()->getOutput())) OPERATOR\
-    (INPUT1 )(*((*this)[1].getFunction()->getOutput()));\
+    (INPUT0&)(*this->getInputData(0)) OPERATOR\
+    (INPUT1 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_OPERATOR_2INT(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,2,TYPE,TYPE,TYPE);\
     if(this->_output)\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&) *(this->_output)=\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*((*this)[0].getFunction()->getOutput())) OPERATOR\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*((*this)[1].getFunction()->getOutput()));\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     else\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*((*this)[0].getFunction()->getOutput())) OPERATOR\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*((*this)[1].getFunction()->getOutput()));\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_OPERATOR_2OUTPUT_INT(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,2,TYPE,TYPE,TYPE);\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&) *(this->_output)=\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*((*this)[0].getFunction()->getOutput())) OPERATOR\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*((*this)[1].getFunction()->getOutput()));\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_SPEC_OPERATOR_1INTPRE(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,1,TYPE,TYPE);\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)*(this->_output)=\
-    OPERATOR ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*((*this)[0].getFunction()->getOutput())));\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    OPERATOR ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_SPEC_OPERATOR_1INTPOST(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,1,TYPE,TYPE);\
     if(this->_output)\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)*(this->_output)=\
-    ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*((*this)[0].getFunction()->getOutput()))) OPERATOR;\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
     else\
-    ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*((*this)[0].getFunction()->getOutput()))) OPERATOR;\
+    ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
     DEF_CLASS_EPILOGUE()
 
 
@@ -163,7 +163,7 @@ namespace ge{
         protected:
           virtual void _do(){
 //            this->_beginOperator();
-            (TO&)(*this->_output)=(FROM)(*this->_inputs[0].getFunction()->getOutput());
+            (TO&)(*this->_output)=(TO)((FROM)(*this->getInputData(0)));
 //            this->_endOperator();
           }
       };

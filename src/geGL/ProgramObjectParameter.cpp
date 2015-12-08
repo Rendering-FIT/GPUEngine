@@ -211,7 +211,7 @@ const GLenum bufferProperties[]={
   GL_TOP_LEVEL_ARRAY_SIZE                ,
   GL_TOP_LEVEL_ARRAY_STRIDE              ,
 };
-const unsigned nofBufferProperties = sizeof(bufferProperties)/sizeof(GLenum);
+const long unsigned nofBufferProperties = sizeof(bufferProperties)/sizeof(GLenum);
 
 
 
@@ -224,7 +224,7 @@ ProgramObjectBufferParams::ProgramObjectBufferParams(GLuint program,GLuint index
       index,
       nofBufferProperties,
       bufferProperties,
-      sizeof(this->_params)/sizeof(GLint),
+      (GLsizei)(sizeof(this->_params)/sizeof(GLint)),
       &lenght,
       this->_params);
   GLint bufLen=0;

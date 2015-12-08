@@ -85,7 +85,7 @@ void MovementAnimationChannel::update(double t)
          else{
             QuatKeyFrame& a = *(it - 1);
             QuatKeyFrame& b = *it;
-            double dn_t = (t - a.t) / (b.t - a.t);
+            //double dn_t = (t - a.t) / (b.t - a.t); //TODO unused?
             oriantation = interpolateSLerp(a.val, b.val, t);
             //oriantation = it->val;
          }

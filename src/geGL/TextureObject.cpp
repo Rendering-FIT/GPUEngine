@@ -580,7 +580,7 @@ GLuint TextureObject::getSamples(GLint level)const{
  * @return fixed sample location
  */
 GLboolean TextureObject::getFixedSampleLocation(GLint level)const{
-  return this->_getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
+  return (GLboolean)this->_getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
 }
 
 /**
@@ -734,7 +734,7 @@ GLenum TextureObject::getDepthType(GLint level)const{
  * @return compressed flag
  */
 GLboolean TextureObject::getCompressed(GLint level)const{
-  return this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
+  return (GLboolean)this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
 }
 
 /**
@@ -977,7 +977,7 @@ GLenum TextureObject::getImageFormatCompatibilityType()const{
  * @return texture immutable format
  */
 GLboolean TextureObject::getImmutableFormat()const{
-  return this->_getTexParameter(GL_TEXTURE_IMMUTABLE_FORMAT);
+  return (GLboolean)this->_getTexParameter(GL_TEXTURE_IMMUTABLE_FORMAT);
 }
 
 /**

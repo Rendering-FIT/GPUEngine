@@ -49,10 +49,10 @@ namespace ge{
         std::map<TypeID,std::set<std::string>>_id2Synonyms;
         std::map<TypeID,std::function<OBJConstructor>>_id2Constructor;
         std::map<TypeID,std::function<OBJDestructor>>_id2Destructor;
-        bool   _isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,unsigned&start);
-        bool   _typeExists      (TypeID*et,std::vector<unsigned>const&type,unsigned&start);
-        TypeID _typeAdd         (          std::vector<unsigned>const&type,unsigned&start);
-        bool   _incrCheck(unsigned size,unsigned&start);
+        bool   _isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start);
+        bool   _typeExists      (TypeID*et,std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start);
+        TypeID _typeAdd         (          std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start);
+        bool   _incrCheck(std::vector<unsigned>::size_type size,std::vector<unsigned>::size_type&start);
         void   _bindTypeIdName(TypeID id,const char*name);
         void   _callConstructors(char*ptr,TypeID id)const;
 
@@ -196,7 +196,7 @@ namespace ge{
         std::string toStr(TypeID id)const;
         std::string toStr()const;
 
-        unsigned getNofDescriptionUints()const;
+        std::vector<unsigned>::size_type getNofDescriptionUints()const;
         unsigned getDescription(unsigned i)const;
     };
 

@@ -35,7 +35,7 @@ std::string RuntimeFceMetaData::getName()const{
   return this->_name;
 }
 
-unsigned RuntimeFceMetaData::getNofArgs()const{
+decltype(RuntimeFceMetaData::_args)::size_type RuntimeFceMetaData::getNofArgs()const{
   return this->_args.size();
 }
 
@@ -50,7 +50,7 @@ RuntimeConstructorMetaData::RuntimeConstructorMetaData(
     this->_args.push_back(RuntimeArgMetaData(typeRegister,constructorMetaData.args[a]));
 }
 
-unsigned RuntimeConstructorMetaData::getNofArgs()const{
+decltype(RuntimeConstructorMetaData::_args)::size_type RuntimeConstructorMetaData::getNofArgs()const{
   return this->_args.size();
 }
 
@@ -73,7 +73,7 @@ std::string RuntimeClassMetaData::getName()const{
   return this->_name;
 }
 
-unsigned RuntimeClassMetaData::getNofFces()const{
+decltype(RuntimeClassMetaData::_fces)::size_type RuntimeClassMetaData::getNofFces()const{
   return this->_fces.size();
 }
 
@@ -81,7 +81,7 @@ RuntimeFceMetaData const&RuntimeClassMetaData::getFce(unsigned i)const{
   return this->_fces[i];
 }
 
-unsigned RuntimeClassMetaData::getNofConstructors()const{
+decltype(RuntimeClassMetaData::_constructors)::size_type RuntimeClassMetaData::getNofConstructors()const{
   return this->_constructors.size();
 }
 

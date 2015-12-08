@@ -38,9 +38,11 @@ void FSAState::addElseTransition(
   std::set<char>present;
   for(auto x:this->_transitions)
     present.insert(x.first);
-  for(unsigned c=0;c<256;++c)
+  for(unsigned i=0;i<256;++i){
+    char c=(char)i;
     if(present.find(c)==present.end())
       this->_transitions[c]=FSATransition(state,callback);
+  }
 }
 
 void FSAState::addEOFTransition(
@@ -70,7 +72,7 @@ std::string FSAState::getName()const{
   return this->_name;
 }
 
-unsigned FSAState::getNofTransition()const{
+decltype(FSAState::_transitions)::size_type FSAState::getNofTransition()const{
   return this->_transitions.size();
 }
 

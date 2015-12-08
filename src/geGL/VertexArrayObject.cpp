@@ -122,7 +122,7 @@ GLuint    VertexArrayObject::getAttribBufferBinding (GLuint index)const{
 }
 
 GLboolean VertexArrayObject::isAttribEnabled        (GLuint index)const{
-  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_ENABLED);
+  return (GLboolean)this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_ENABLED);
 }
 
 GLint     VertexArrayObject::getAttribSize          (GLuint index)const{
@@ -138,15 +138,15 @@ GLenum    VertexArrayObject::getAttribType          (GLuint index)const{
 }
 
 GLboolean VertexArrayObject::isAttribNormalized    (GLuint index)const{
-  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_NORMALIZED);
+  return (GLboolean)this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_NORMALIZED);
 }
 
 GLboolean VertexArrayObject::isAttribInteger       (GLuint index)const{
-  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_INTEGER);
+  return (GLboolean)this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_INTEGER);
 }
 
 GLboolean VertexArrayObject::isAttribLong          (GLuint index)const{
-  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_LONG);
+  return (GLboolean)this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_LONG);
 }
 
 GLuint    VertexArrayObject::getAttribDivisor       (GLuint index)const{

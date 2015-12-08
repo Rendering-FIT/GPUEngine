@@ -4,8 +4,8 @@
 using namespace ge::sg;
 
 Animation::Animation()
-   : currentTime(0.0)
-   , mode(Mode::ONCE)
+   : mode(Mode::ONCE)
+   , currentTime(0.0)
 {
 }
 

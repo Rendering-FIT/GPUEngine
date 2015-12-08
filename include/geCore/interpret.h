@@ -152,7 +152,7 @@ namespace ge{
         Body();
         virtual ~Body();
         void addStatement(std::shared_ptr<Statement>const&statement);
-        unsigned size()const;
+        std::vector<std::shared_ptr<Statement>>::size_type size()const;
         typedef std::vector<std::shared_ptr<Statement>>::const_iterator Iterator;
         Iterator begin()const;
         Iterator end  ()const;

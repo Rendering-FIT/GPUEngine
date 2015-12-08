@@ -245,7 +245,7 @@ GLenum    FramebufferObject::getAttachmentTextureCubeMapFace(GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE);
 }
 GLboolean FramebufferObject::isAttachmentLayered            (GLenum attachment){
-  return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_LAYERED);
+  return (GLboolean)this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_LAYERED);
 }
 GLint     FramebufferObject::getAttachmentTextureLayer      (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER);
