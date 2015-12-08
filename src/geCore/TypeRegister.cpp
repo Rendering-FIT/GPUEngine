@@ -23,41 +23,6 @@ std::string vec2str(std::vector<T>const&data,unsigned from=0){
   return ss.str();
 }
 
-namespace ge{
-  namespace core{
-    template<>const char* TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
-    template<>const char* TypeRegister::getTypeKeyword<bool              >(){return"bool"  ;}
-    template<>const char* TypeRegister::getTypeKeyword<char              >(){return"i8"    ;}
-    template<>const char* TypeRegister::getTypeKeyword<short             >(){return"i16"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<int               >(){return"i32"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<long long int     >(){return"void"  ;}
-    template<>const char* TypeRegister::getTypeKeyword<unsigned char     >(){return"u8"    ;}
-    template<>const char* TypeRegister::getTypeKeyword<unsigned short    >(){return"u16"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<unsigned          >(){return"u32"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<unsigned long long>(){return"u64"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<float             >(){return"f32"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<double            >(){return"f64"   ;}
-    template<>const char* TypeRegister::getTypeKeyword<std::string       >(){return"string";}
-
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<void              >(){return TypeRegister::TYPEID+TypeRegister::VOID  -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<bool              >(){return TypeRegister::TYPEID+TypeRegister::BOOL  -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<char              >(){return TypeRegister::TYPEID+TypeRegister::I8    -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<short             >(){return TypeRegister::TYPEID+TypeRegister::I16   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<int               >(){return TypeRegister::TYPEID+TypeRegister::I32   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<long long int     >(){return TypeRegister::TYPEID+TypeRegister::I64   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<unsigned char     >(){return TypeRegister::TYPEID+TypeRegister::U8    -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<unsigned short    >(){return TypeRegister::TYPEID+TypeRegister::U16   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<unsigned          >(){return TypeRegister::TYPEID+TypeRegister::U32   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<unsigned long long>(){return TypeRegister::TYPEID+TypeRegister::U64   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<float             >(){return TypeRegister::TYPEID+TypeRegister::F32   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<double            >(){return TypeRegister::TYPEID+TypeRegister::F64   -1;}
-    template<>TypeRegister::TypeID TypeRegister::getTypeTypeId<std::string       >(){return TypeRegister::TYPEID+TypeRegister::STRING-1;}
-
-
-
-  }
-}
-
 TypeRegister::TypeRegister(){
   this->addType(TypeRegister::getTypeKeyword<void              >(),TypeRegister::VOID  );
   this->addType(TypeRegister::getTypeKeyword<bool              >(),TypeRegister::BOOL  );
