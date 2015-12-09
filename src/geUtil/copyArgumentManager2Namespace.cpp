@@ -42,12 +42,12 @@ void ArgData2TypeDescriptor(std::vector<unsigned>&descriptor,ge::util::ArgData*d
       return;
     case ge::util::ArgData::ARRAY:
       descriptor.push_back(ge::core::TypeRegister::ARRAY);
-      descriptor.push_back(((ge::util::ArrayData*)data)->size());
+      descriptor.push_back((unsigned)((ge::util::ArrayData*)data)->size());
       ArgData2TypeDescriptor(descriptor,(*((ge::util::ArrayData*)data))[0]);
       return;
     case ge::util::ArgData::STRUCT:
       descriptor.push_back(ge::core::TypeRegister::STRUCT);
-      descriptor.push_back(((ge::util::StructData*)data)->size());
+      descriptor.push_back((unsigned)((ge::util::StructData*)data)->size());
       for(unsigned i=0;i<((ge::util::StructData*)data)->size();++i)
         ArgData2TypeDescriptor(descriptor,(*((ge::util::StructData*)data))[i]);
       return;

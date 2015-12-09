@@ -1034,7 +1034,7 @@ std::string TextureObject::getInfo()const{
     ss<<"GL_TEXTURE_DEPTH: "           <<this->getDepth (0)<<std::endl;
 
   ss<<"GL_TEXTURE_SAMPLES: "                  <<this->getSamples               (0)<<std::endl;
-  ss<<"GL_TEXTURE_FIXED_SAMPLE_LOCATIONS: "   <<(bool)this->getFixedSampleLocation   (0)<<std::endl;
+  ss<<"GL_TEXTURE_FIXED_SAMPLE_LOCATIONS: "   <<(bool)(0!=this->getFixedSampleLocation   (0))<<std::endl;
   ss<<"GL_TEXTURE_INTERNAL_FORMAT: "          <<ge::gl::translateInternalFormat(this->getInternalFormat(0))<<std::endl;
   ss<<"GL_TEXTURE_RED_SIZE: "                 <<this->getRedSize               (0)<<std::endl;
   ss<<"GL_TEXTURE_BLUE_SIZE: "                <<this->getBlueSize              (0)<<std::endl;
@@ -1078,7 +1078,7 @@ std::string TextureObject::getInfo()const{
   ss<<"GL_TEXTURE_COMPARE_MODE: "      <<ge::gl::translateTextureCompareMode(this->getCompareMode())<<std::endl;
   ss<<"GL_TEXTURE_COMPARE_FUNC: "      <<ge::gl::translateTextureCompareFunc(this->getCompareFunc())<<std::endl;
   ss<<"GL_IMAGE_FORMAT_COMPATIBILITY_TYPE: "<<this->getImageFormatCompatibilityType()<<std::endl;
-  ss<<"GL_TEXTURE_IMMUTABLE_FORMAT: "  <<(bool)this->getImmutableFormat()<<std::endl;
+  ss<<"GL_TEXTURE_IMMUTABLE_FORMAT: "  <<(bool)(0!=this->getImmutableFormat())<<std::endl;
   ss<<"GL_TEXTURE_IMMUTABLE_LEVELS: "  <<this->getImmutableLevels()<<std::endl;
   ss<<"GL_TEXTURE_VIEW_MIN_LEVEL: "    <<this->getViewMinLevel ()<<std::endl;
   ss<<"GL_TEXTURE_VIEW_NUM_LEVELS: "   <<this->getViewNumLevels()<<std::endl;

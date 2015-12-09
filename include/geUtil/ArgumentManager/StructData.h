@@ -14,7 +14,7 @@ namespace ge{
         virtual ~StructData();
         ArgData*operator[](unsigned i);
         void add(ArgData*item);
-        unsigned size();
+        decltype(_data)::size_type size();
         virtual bool sameType(ArgData*other);
         virtual std::string toStr();
     };

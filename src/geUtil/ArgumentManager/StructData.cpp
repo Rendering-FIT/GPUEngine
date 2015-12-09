@@ -19,7 +19,7 @@ void StructData::add(ArgData*item){
   this->_data.push_back(item);
 }
 
-unsigned StructData::size(){
+decltype(StructData::_data)::size_type StructData::size(){
   return this->_data.size();
 }
 

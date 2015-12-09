@@ -11,19 +11,42 @@
 
 #define ___ std::cerr<<__FILE__<<": "<<__LINE__<<std::endl
 
+namespace ge{
+  namespace core{
+    class FSA;
+    class ParseEnumArgs{
+      protected:
+        struct ParserData{
+          unsigned      start;
+          std::string   key  ;
+          ParseEnumArgs*_this;
+          unsigned      id   ;
+        }_pData;
+        static void _begin         (ge::core::FSA*fsa,void*data);
+        static void _writeKey      (ge::core::FSA*fsa,void*data);
+        static void _storeKey      (ge::core::FSA*fsa,void*data);
+        static void _writeStoredKey(ge::core::FSA*fsa,void*data);
+        static void _writeValue    (ge::core::FSA*fsa,void*data);
+        std::shared_ptr<ge::core::FSA>_f = nullptr;
+        std::map<unsigned,std::string>_id2Name;
+      public:
+        ParseEnumArgs();
+        std::map<unsigned,std::string>operator()(const char*args);
+    };
+  }
+}
+
+#define VA_ARGS_TO_STRING(...)\
+  #__VA_ARGS__
+
 #define DEF_ENUM(name,...)\
   enum name{\
     __VA_ARGS__\
   };\
 friend std::ostream& operator<<(std::ostream& os,const name&val){\
-  char data[]=#__VA_ARGS__;\
-  char*token=std::strtok(data,",");\
-  unsigned counter=0;\
-  while(counter<unsigned(val)){\
-    token=std::strtok(NULL,",");\
-    counter++;\
-  }\
-  os << token;\
+  static std::map<unsigned,std::string>table = ParseEnumArgs()(VA_ARGS_TO_STRING(__VA_ARGS__));\
+  auto a=table.find(val);\
+  if(a!=table.end())os << a->second;\
   return os;\
 }
 
