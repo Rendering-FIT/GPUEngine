@@ -3,7 +3,6 @@
 #include <vector>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <geGL/BufferObject.h>
@@ -13,6 +12,7 @@
 #include <geGL/ProgramObject.h>
 #include <geRG/Mesh.h>
 #include <geRG/AttribType.h>
+#include <geRG/FlexibleUniform.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/StateSet.h>
 #include <geRG/Transformation.h>
@@ -51,10 +51,11 @@ ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
 static bool useARBShaderDrawParameters=false;
-static ProgramObject *ambientProgram = NULL;
-static ProgramObject *simplifiedPhongProgram = NULL;
-static ProgramObject *processInstanceProgram = NULL;
-static list<shared_ptr<StateSet>> stateSetList;
+static shared_ptr<ProgramObject> ambientProgram;
+static shared_ptr<ProgramObject> simplifiedPhongProgram;
+static shared_ptr<ProgramObject> processInstanceProgram;
+static list<shared_ptr<StateSet>> renderPassStateSetList;
+static shared_ptr<StateSet> sceneRootStateSet=make_shared<StateSet>();
 static list<Mesh> meshList;
 static vector<Mesh> notUsedVector;
 static string fileName;
@@ -113,9 +114,6 @@ int main(int Argc,char*Argv[])
 
   Init();
   Window->mainLoop();
-  delete ambientProgram;
-  delete simplifiedPhongProgram;
-  delete processInstanceProgram;
   delete Window;
   delete Args;
   return 0;
@@ -153,6 +151,9 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
 
 void Idle()
 {
+   // clear screen
+   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
    // compute transformation matrices
    RenderingContext::current()->evaluateTransformationGraph();
    RenderingContext::current()->matrixStorage()->unmap();
@@ -160,8 +161,7 @@ void Idle()
    // prepare for rendering
    RenderingContext::current()->setupRendering();
    RenderingContext::current()->stateSetStorage()->map(BufferStorageAccess::WRITE);
-   for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
-      (*it)->setupRendering();
+   sceneRootStateSet->setupRendering();
    RenderingContext::current()->stateSetStorage()->unmap();
 
    // indirect buffer update - setup and start compute shader
@@ -175,11 +175,15 @@ void Idle()
    RenderingContext::current()->stateSetStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
    glDispatchCompute((numInstances+63)/64,1,1);
 
-   // clear screen
-   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
    // wait for compute shader
-   glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+   GLsync syncObj=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
+#if 0 // glWaitSync does not work on my Quadro K1000M (Keppler architecture), drivers 352.21
+   //glFlush();
+   //glWaitSync(syncObj,0,GL_TIMEOUT_IGNORED);
+#else
+   glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,1e9);
+#endif
+   glDeleteSync(syncObj);
 
    // bind buffers for rendering
    RenderingContext::current()->drawIndirectBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
@@ -196,35 +200,10 @@ void Idle()
 #endif
 
    // render ambient scene
-   ambientProgram->use();
-   ambientProgram->set("colorTexture",0);
-   for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
-   {
-      if((*it)->commandList().size()==0)
-         ambientProgram->set("colorTexturingMode",int(0)); // no texturing
-      else
-         ambientProgram->set("colorTexturingMode",int(1)); // modulate
-      for_each((*it)->commandList().begin(),(*it)->commandList().end(),
-               [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
-      (*it)->render();
-   }
+   renderPassStateSetList.front()->render();
 
    // render light pass
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_ONE,GL_ONE);
-   simplifiedPhongProgram->use();
-   simplifiedPhongProgram->set("colorTexture",int(0));
-   for(auto it=stateSetList.begin(); it!=stateSetList.end(); it++)
-   {
-      if((*it)->commandList().size()==0)
-         simplifiedPhongProgram->set("colorTexturingMode",int(0)); // no texturing
-      else
-         simplifiedPhongProgram->set("colorTexturingMode",int(1)); // modulate
-      for_each((*it)->commandList().begin(),(*it)->commandList().end(),
-               [](shared_ptr<ge::core::Command>& c){ (*c.get())(); });
-      (*it)->render();
-   }
-   glDisable(GL_BLEND);
+   renderPassStateSetList.back()->render();
 
    Window->swap();
 }
@@ -306,6 +285,9 @@ public:
    };
 
    map<OsgState,shared_ptr<ge::rg::StateSet>> stateSetMap;
+   shared_ptr<ge::rg::StateSet> coloredStateSet;
+   shared_ptr<ge::rg::StateSet> texturedStateSet;
+   shared_ptr<ge::rg::StateSet> textureReplaceStateSet;
 
    inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
    {
@@ -348,7 +330,7 @@ public:
       osg::Matrix m;
       transform.computeLocalToWorldMatrix(m,this);
       shared_ptr<Transformation> t=make_shared<Transformation>();
-      transformationStack.back()->appendChild(t,transformationStack.back());
+      transformationStack.back()->addChild(t,transformationStack.back());
       transformationStack.emplace_back(t);
 
       t->allocTransformationGpuData();
@@ -393,14 +375,35 @@ public:
          // create new StateSet
          stateSet=make_shared<ge::rg::StateSet>();
          stateSetMap.emplace(make_pair(osgState,stateSet));
-         stateSetList.push_back(stateSet);
 
          if(osgState.colorTexture==nullptr)
          {
-            // leave commandList empty
+            // create coloredStateSet if it does not exist
+            if(!coloredStateSet)
+            {
+               coloredStateSet=make_shared<ge::rg::StateSet>();
+               coloredStateSet->addCommand(make_shared<FlexibleUniform1i>("colorTexturingMode",int(0)));
+               coloredStateSet->addRenderCommand();
+               sceneRootStateSet->addChild(coloredStateSet);
+            }
+
+            // append stateSet as a child of coloredStateSet
+            coloredStateSet->addChild(stateSet);
          }
          else
          {
+            // create texturedStateSet if it does not exist
+            if(!texturedStateSet)
+            {
+               texturedStateSet=make_shared<ge::rg::StateSet>();
+               texturedStateSet->addCommand(make_shared<FlexibleUniform1i>("colorTexturingMode",int(1)));
+               texturedStateSet->addRenderCommand();
+               sceneRootStateSet->addChild(texturedStateSet);
+            }
+
+            // append stateSet as a child of texturedStateSet
+            texturedStateSet->addChild(stateSet);
+
             // create texture object
             osg::Texture *osgTexture=osgState.colorTexture;
             GLenum target=osgTexture->getTextureTarget();
@@ -509,6 +512,9 @@ public:
             stateSet->addCommand(bindTexture);
          }
       }
+
+      // append render command as the last command
+      stateSet->addRenderCommand();
 
       // process geometry
       osg::Geometry *g=drawable.asGeometry();
@@ -751,7 +757,7 @@ void Init()
          root->unref();
 
          shared_ptr<Transformation> t1=make_shared<Transformation>();
-         t1->appendChild(graphBuilder.transformationStack.front(),t1);
+         t1->addChild(graphBuilder.transformationStack.front(),t1);
          RenderingContext::current()->appendTransformationGraph(t1);
          const float m1[16] = {
             1.f, 0.f, 0.f, 0.f,
@@ -775,7 +781,7 @@ void Init()
 
 
    ge::gl::initShadersAndPrograms();
-   ambientProgram = new ProgramObject(
+   ambientProgram=make_shared<ProgramObject>(
       GL_VERTEX_SHADER,
       static_cast<std::stringstream&>(stringstream()<<
       "#version 430\n"
@@ -796,8 +802,10 @@ void Init()
       : "layout(location=12) in mat4 instancingMatrix;\n"
       )<<
       "\n"
-      "layout(location=0) out vec4 colorOut;\n"
-      "layout(location=1) out vec2 texCoordOut;\n"
+      "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+      "   vec4 color;\n"
+      "   vec2 texCoord;\n"
+      "} o;\n"
       "\n"
       "uniform vec4 globalAmbientLight; // alpha must be 1\n"
       "uniform mat4 projection;\n"
@@ -805,8 +813,8 @@ void Init()
       "void main()\n"
       "{\n"
       "   // ambient lighting\n"
-      "   colorOut=globalAmbientLight*color;\n"
-      "   texCoordOut=texCoord;\n"
+      "   o.color=globalAmbientLight*color;\n"
+      "   o.texCoord=texCoord;\n"
       "\n"
       "   // vertex position\n"
       <<(useARBShaderDrawParameters
@@ -818,8 +826,10 @@ void Init()
       GL_FRAGMENT_SHADER,
       "#version 330\n"
       "\n"
-      "in vec4 color;\n"
-      "in vec2 texCoord;\n"
+      "in VertexData {\n"
+      "   vec4 color;\n"
+      "   vec2 texCoord;\n"
+      "};\n"
       "\n"
       "layout(location=0) out vec4 fragColor;\n"
       "\n"
@@ -836,7 +846,7 @@ void Init()
       "   else // replace\n"
       "      fragColor=texture(colorTexture,texCoord);\n"
       "}\n");
-   simplifiedPhongProgram = new ProgramObject(
+   simplifiedPhongProgram=make_shared<ProgramObject>(
       GL_VERTEX_SHADER,
       static_cast<std::stringstream&>(stringstream()
       <<(useARBShaderDrawParameters
@@ -858,34 +868,38 @@ void Init()
       : "layout(location=12) in mat4 instancingMatrix;\n"
       )<<
       "\n"
-      "out vec3 eyePosition;\n"
-      "out vec3 eyeNormal;\n"
-      "out vec4 colorOut;\n"
-      "out vec2 texCoordOut;\n"
+      "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+      "   vec3 eyePosition;\n"
+      "   vec3 eyeNormal;\n"
+      "   vec4 color;\n"
+      "   vec2 texCoord;\n"
+      "} o;\n"
       "\n"
       "uniform mat4 projection;\n"
       "\n"
       "void main()\n"
       "{\n"
-      "   colorOut=color;\n"
-      "   texCoordOut=texCoord;\n"
+      "   o.color=color;\n"
+      "   o.texCoord=texCoord;\n"
       <<(useARBShaderDrawParameters
       ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
         "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
         "   vec4 v=instancingMatrix*position;\n"
       : "   vec4 v=instancingMatrix*position;\n"
       )<<
-      "   eyePosition=v.xyz;\n"
-      "   eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+      "   o.eyePosition=v.xyz;\n"
+      "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
       "   gl_Position=projection*v;\n"
       "}\n").str(),
       GL_FRAGMENT_SHADER,
       "#version 330\n"
       "\n"
-      "in vec3 eyePosition;\n"
-      "in vec3 eyeNormal;\n"
-      "in vec4 color;\n"
-      "in vec2 texCoord;\n"
+      "in VertexData {\n"
+      "   vec3 eyePosition;\n"
+      "   vec3 eyeNormal;\n"
+      "   vec4 color;\n"
+      "   vec2 texCoord;\n"
+      "};\n"
       "\n"
       "layout(location=0) out vec4 fragColor;\n"
       "\n"
@@ -957,13 +971,28 @@ void Init()
    ambientProgram->use();
    ambientProgram->set("globalAmbientLight",0.2f,0.2f,0.2f,1.f);
    ambientProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   ambientProgram->set("colorTexture",int(0));
+   auto ss=make_shared<StateSet>();
+   ss->addCommand(make_shared<FlexibleUseProgram>(ambientProgram));
+   ss->addRenderCommand();
+   ss->addChild(sceneRootStateSet);
+   renderPassStateSetList.push_back(ss);
    simplifiedPhongProgram->use();
    simplifiedPhongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    simplifiedPhongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
    simplifiedPhongProgram->set("lightPosition",0.f,0.f,0.f,1.f); // in eye coordinates, w must be 0 or 1
    simplifiedPhongProgram->set("lightColor",1.f,1.f,1.f);
    simplifiedPhongProgram->set("lightAttenuation",1.f,0.f,0.f);
-   processInstanceProgram=new ProgramObject(
+   simplifiedPhongProgram->set("colorTexture",int(0));
+   ss=make_shared<StateSet>();
+   ss->addCommand(make_shared<FlexibleUseProgram>(simplifiedPhongProgram));
+   ss->addCommand(make_shared<ge::gl::BlendFunc<>>(GL_ONE,GL_ONE));
+   ss->addCommand(make_shared<ge::gl::Enable<>>(GL_BLEND));
+   ss->addRenderCommand();
+   ss->addCommand(make_shared<ge::gl::Disable<>>(GL_BLEND));
+   ss->addChild(sceneRootStateSet);
+   renderPassStateSetList.push_back(ss);
+   processInstanceProgram=make_shared<ProgramObject>(
       GL_COMPUTE_SHADER,
       "#version 430\n"
       "\n"

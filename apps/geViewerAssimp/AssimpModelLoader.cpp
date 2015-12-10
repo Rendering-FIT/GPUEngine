@@ -92,7 +92,7 @@ void AssimpModelLoader::processSceneMeshes(const aiScene* scene, ge::sg::Model *
 /**
  * TBD: Load other attributes as well. Will be probably done on need to have basis.
  */
-ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene* scene)
+ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene* /*scene*/)
 {
    ge::sg::Mesh* mesh = new ge::sg::Mesh;
    mesh->count = aimesh->mNumVertices; //should be triangles
@@ -277,11 +277,11 @@ void AssimpModelLoader::processSceneMaterials(const aiScene * scene, ge::sg::Mod
  * It processes textures and materials beginning with "$clr" and "$mat"
  * TBD: Process all of them. Will be done if needed.
  */
-ge::sg::Material* AssimpModelLoader::createMaterial(aiMaterial* aimat, const aiScene * scene)
+ge::sg::Material* AssimpModelLoader::createMaterial(aiMaterial* aimat, const aiScene* /*scene*/)
 {
    ge::sg::Material *mat = new ge::sg::Material;
    //for each property
-   for(int i = 0; i < aimat->mNumProperties; i++)
+   for(unsigned i = 0; i < aimat->mNumProperties; i++)
    {
       aiMaterialProperty* matprop = aimat->mProperties[i];
       if(matprop->mSemantic == 0) //non-texture property
@@ -332,7 +332,7 @@ void AssimpModelLoader::copy_MofN(float* src, float * dst, unsigned m, unsigned 
    }
    int rest = n - m - 1;
    int j = 0;
-   for(int i=0; i<count ; ++i)
+   for(unsigned i=0; i<count ; ++i)
    {
       if(cnt < m)
       {
@@ -363,7 +363,7 @@ void AssimpModelLoader::processScene(const aiScene * scene, ge::sg::Model* model
       rootMatrixNode->data = MT;
       fillTransformWithMeshes(currentNode, model, MT.get());
       aiNode *parent = currentNode;
-      for(int i = 0; i<scene->mRootNode->mNumChildren; i++)
+      for(unsigned i = 0; i<scene->mRootNode->mNumChildren; i++)
       {
          currentNode = parent->mChildren[i];
          processNode(currentNode, model, rootMatrixNode.get(),animationMap);
@@ -383,7 +383,7 @@ std::shared_ptr<ge::sg::MatrixTransform> AssimpModelLoader::createMatrixTransfor
 
 void AssimpModelLoader::fillTransformWithMeshes(const aiNode * node, ge::sg::Model *model, ge::sg::MatrixTransform * matrixTransform)
 {
-   for(int i=0; i<node->mNumMeshes ; i++)
+   for(unsigned i=0; i<node->mNumMeshes ; i++)
    {
       matrixTransform->meshes.push_back(model->meshes[node->mMeshes[i]]);
    }
@@ -400,7 +400,7 @@ void AssimpModelLoader::processNode(aiNode * ainode, ge::sg::Model *model, ge::s
       std::string name(ainode->mName.C_Str());
       animationMap[name] = {ainode, childNode};
       fillTransformWithMeshes(ainode, model, MT.get());
-      for(int i = 0; i < ainode->mNumChildren; i++)
+      for(unsigned i = 0; i < ainode->mNumChildren; i++)
       {
          aiNode *currentNode = ainode->mChildren[i];
          processNode(currentNode, model, childNode.get(),animationMap);
@@ -408,7 +408,7 @@ void AssimpModelLoader::processNode(aiNode * ainode, ge::sg::Model *model, ge::s
    }
 }
 
-ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNodeAnim* ai_node_anim, ge::sg::Scene& scene, double frame_time, AssimpModelLoader::AnimationMap& animationMap)
+ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNodeAnim* ai_node_anim, ge::sg::Scene& /*scene*/, double frame_time, AssimpModelLoader::AnimationMap& animationMap)
 {
    ge::sg::MovementAnimationChannel* channel = new ge::sg::MovementAnimationChannel;
    //findTarget();
@@ -432,7 +432,7 @@ ge::sg::Animation * AssimpModelLoader::createAnimation(aiAnimation& m_animation,
    double frameTime = 1.0 / m_animation.mTicksPerSecond;
    ge::sg::Animation* animation = new ge::sg::Animation;
    animation->duration = (m_animation.mDuration) / m_animation.mTicksPerSecond;
-   for (int i = 0; i < m_animation.mNumChannels; ++i)
+   for (unsigned i = 0; i < m_animation.mNumChannels; ++i)
    {
       animation->channels.emplace_back(createMovementAnimationChannel(m_animation.mChannels[i],scene,frameTime, animationMap));
    }
@@ -441,7 +441,7 @@ ge::sg::Animation * AssimpModelLoader::createAnimation(aiAnimation& m_animation,
 
 void AssimpModelLoader::processAnimations(const aiScene& ai_scene, ge::sg::Scene& scene, AssimpModelLoader::AnimationMap& animationMap)
 {
-   for (int i = 0; i < ai_scene.mNumAnimations; ++i)
+   for (unsigned i = 0; i < ai_scene.mNumAnimations; ++i)
    {
       //two allocations in shared_ptr
       scene.animations.emplace_back(createAnimation(*ai_scene.mAnimations[i], scene,animationMap));
