@@ -52,8 +52,8 @@ ge::sg::Image::Format FreeImageImage::getFormat()
          {
             case 16:return Format::R;
             case 32:return Format::RG;
-            case 48: FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGR : Format::RGB;
-            case 64: FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGRA : Format::RGBA;
+            case 48: return FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGR : Format::RGB;
+            case 64: return FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGRA : Format::RGBA;
             default: return Format::UNKNOWN;
          }
       case FIT_UINT32 :
@@ -62,8 +62,8 @@ ge::sg::Image::Format FreeImageImage::getFormat()
          {
             case 32:return Format::R;
             case 64:return Format::RG;
-            case 96: FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGR : Format::RGB;
-            case 128: FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGRA : Format::RGBA;
+            case 96: return FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGR : Format::RGB;
+            case 128: return FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR ? Format::BGRA : Format::RGBA;
             default: return Format::UNKNOWN;
          }
       case FIT_FLOAT  :
