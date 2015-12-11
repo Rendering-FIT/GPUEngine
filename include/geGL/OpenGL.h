@@ -12,6 +12,19 @@ namespace ge
   }
 }
 
+//TODO remove after glew fix
+#ifndef GL_COPY_READ_BUFFER_BINDING
+#define GL_COPY_READ_BUFFER_BINDING 0x8F36
+#endif//GL_COPY_READ_BUFFER_BINDING
+
+#ifndef GL_COPY_WRITE_BUFFER_BINDING
+#define GL_COPY_WRITE_BUFFER_BINDING 0x8F37
+#endif//GL_COPY_WRITE_BUFFER_BINDING
+
+#ifndef GL_TEXTURE_BUFFER_BINDING // since glew 1.11, missing on 1.10 and before
+#define GL_TEXTURE_BUFFER_BINDING 0x8C2A
+#endif//GL_TEXTURE_BUFFER_BINDING
+
 /*
 #ifndef glTextureImage3D
 extern decltype(glTextureImage3DEXT) glTextureImage3D;

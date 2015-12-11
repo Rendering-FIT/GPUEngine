@@ -41,7 +41,7 @@ void Function::bindInput(unsigned i,std::shared_ptr<Function>function){
     return;
   }
   this->_inputs[i].function = function;
-  this->_inputs[i].updateTicks = function->_updateTicks - 1;
+  if(function)this->_inputs[i].updateTicks = function->_updateTicks - 1;
   this->_inputs[i].changed  = true;
 }
 
