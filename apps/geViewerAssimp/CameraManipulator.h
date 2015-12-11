@@ -21,7 +21,33 @@ namespace fsg{
 
    class OrbitObjectManipulator : public ObjectManipulator
    {
+   protected:
+
+      bool _dirty;
+
+      std::shared_ptr<glm::mat4> _matrix;
+      std::shared_ptr<glm::mat4> _matrixInverse;
+      //ge::util::CameraObject _camera;
+
+      glm::vec3 _localUp;
+      glm::vec3 _center;
+      glm::quat _rotation;
+      float _distance;
+      float _angleX;
+      float _angleY;
+
+      bool _diableFlipOver;
+      bool _fixVerticalAxis;
+      glm::mat4 _rotationMat;
+      float _minimalDistance;
+
    public:
+
+      float sensitivityX;
+      float sensitivityY;
+      float sensitivityZ;
+      glm::vec3 forward;
+
       OrbitObjectManipulator();
 
       virtual void operator()();
@@ -46,29 +72,5 @@ namespace fsg{
 
       inline glm::vec3 getLocalUp() const { return _localUp; }
       virtual void setLocalUp(glm::vec3 val) { _localUp = glm::normalize(val); }
-
-      float sensitivityX;
-      float sensitivityY;
-      float sensitivityZ;
-      glm::vec3 forward;
-
-   protected:
-      bool _dirty;
-
-      std::shared_ptr<glm::mat4> _matrix;
-      std::shared_ptr<glm::mat4> _matrixInverse;
-      //ge::util::CameraObject _camera;
-
-      glm::vec3 _localUp;
-      glm::vec3 _center;
-      glm::quat _rotation;
-      float _distance;
-      float _angleX;
-      float _angleY;
-
-      bool _diableFlipOver;
-      bool _fixVerticalAxis;
-      glm::mat4 _rotationMat;
-      float _minimalDistance;
    };
 }

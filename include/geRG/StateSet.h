@@ -52,9 +52,6 @@ namespace ge
       {
       public:
 
-         typedef ChildListTemplate<StateSet> ChildList;
-         typedef ParentListTemplate<StateSet> ParentList;
-
          struct GERG_EXPORT AttribStorageData
          {
             AttribStorage *attribStorage;
@@ -70,10 +67,13 @@ namespace ge
             inline AttribStorageData(AttribStorage *storage);
          };
 
-      protected:
+         typedef ChildListTemplate<StateSet> ChildList;
+         typedef ParentListTemplate<StateSet> ParentList;
 
-         ChildList _children;
-         ParentList _parents;
+         GERG_CHILD_LIST(StateSet);
+         GERG_PARENT_LIST(StateSet);
+
+      protected:
 
          unsigned _numDrawCommands;
          std::map<AttribStorage*,AttribStorageData> _attribStorageData;
@@ -98,7 +98,11 @@ namespace ge
          void decrementDrawCommandModeCounter(unsigned decrementAmount,unsigned mode,
                                               AttribStorageData &storageData);
 
+         void setupRendering();
+         void render();
+
          inline unsigned addCommand(const std::shared_ptr<ge::core::Command>& command);
+         inline unsigned addRenderCommand();
          inline unsigned insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command);
          inline void removeCommand(unsigned index);
          void removeCommand(const std::shared_ptr<ge::core::Command>& command);
@@ -106,8 +110,22 @@ namespace ge
          inline const std::vector<std::shared_ptr<ge::core::Command>>& commandList() const;
          inline std::vector<std::shared_ptr<ge::core::Command>>& commandList();
 
-         void setupRendering();
-         void render();
+         class GERG_EXPORT RenderCommand : public ge::core::Command {
+         protected:
+            StateSet *_stateSet; // not shared_ptr to avoid circular reference
+         public:
+
+            static void execute(StateSet *stateSet);
+            static inline std::shared_ptr<RenderCommand> create(StateSet *owner);
+
+            inline RenderCommand();
+            inline RenderCommand(StateSet *owner);
+            virtual void operator()();
+
+            inline StateSet* stateSet() const;
+            inline void setStateSet(StateSet *owner);
+
+         };
 
       };
 
@@ -138,12 +156,20 @@ namespace ge
       { return storageData.renderingData[storageData.indexToRenderingData(mode&0x0f)].stateSetBufferOffset4; }
       inline void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned mode,AttribStorage *storage)
       { if(incrementAmount!=0) incrementDrawCommandModeCounter(incrementAmount,mode,getOrCreateAttribStorageData(storage)->second); }
+
       inline unsigned StateSet::addCommand(const std::shared_ptr<ge::core::Command>& command)  { unsigned r=unsigned(_commandList.size()); _commandList.push_back(command); return r; }
+      inline unsigned StateSet::addRenderCommand()  { return addCommand(RenderCommand::create(this)); }
       inline unsigned StateSet::insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command)  { return unsigned(std::distance(_commandList.emplace(_commandList.begin()+index,command),_commandList.begin())); }
       inline void StateSet::removeCommand(unsigned index)  { _commandList.erase(_commandList.begin()+index); }
       inline void StateSet::clearCommands()  { _commandList.clear(); }
       inline const std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList() const  { return _commandList; }
       inline std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList()  { return _commandList; }
+
+      inline std::shared_ptr<StateSet::RenderCommand> StateSet::RenderCommand::create(StateSet *owner)  { return std::make_shared<StateSet::RenderCommand>(owner); }
+      inline StateSet::RenderCommand::RenderCommand() : _stateSet(nullptr)  {}
+      inline StateSet::RenderCommand::RenderCommand(StateSet *owner) : _stateSet(owner)  {}
+      inline StateSet* StateSet::RenderCommand::stateSet() const  { return _stateSet; }
+      inline void StateSet::RenderCommand::setStateSet(StateSet *owner)  { _stateSet=owner; }
 
    }
 }

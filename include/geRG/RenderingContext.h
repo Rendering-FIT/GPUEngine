@@ -183,8 +183,8 @@ namespace ge
             AutoInitRenderingContext();
             ~AutoInitRenderingContext();
          };
-         struct NoExport { // workaround for MSVC 2015: thread_local can not be DLL-exported,
-                           // solution: nested structures are not DLL-exported do not inherit DLL-export of parent class
+         struct NoExport { // workaround for MSVC 2015: thread_local variables can not have DLL-export interface,
+                           // solution: nested structures are not DLL-exported and do not inherit DLL-export of parent class
             static thread_local AutoInitRenderingContext _currentContext;
          };
       };

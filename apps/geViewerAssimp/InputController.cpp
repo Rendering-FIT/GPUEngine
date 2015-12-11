@@ -7,7 +7,7 @@ InputController::MM InputController::_MM;
 InputController::MB InputController::_MB;
 std::shared_ptr<fsg::OrbitObjectManipulator> InputController::_cameraManipulator;
 
-void InputController::GLFW_MB_callback(GLFWwindow* window, int button, int action, int mods)
+void InputController::GLFW_MB_callback(GLFWwindow* window, int button, int action, int /*mods*/)
 {
    switch(button)
    {
@@ -65,7 +65,7 @@ void InputController::GLFW_MM_callback(GLFWwindow* window, double xpos, double y
    }
 }
 
-void InputController::GLFW_MW_callback(GLFWwindow* window, double xoffset, double yoffset)
+void InputController::GLFW_MW_callback(GLFWwindow* /*window*/, double /*xoffset*/, double yoffset)
 {
    //offset is either + or - 1
    _cameraManipulator->zoom(0.5 * (-yoffset));

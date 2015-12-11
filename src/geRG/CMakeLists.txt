@@ -45,6 +45,7 @@ set(RG_SOURCES
     StateSet.cpp
     Transformation.cpp
     MatrixList.cpp
+    FlexibleUniform.cpp
   )
 
 ################################################

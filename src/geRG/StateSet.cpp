@@ -136,13 +136,14 @@ void StateSet::removeCommand(const std::shared_ptr<ge::core::Command>& command)
  */
 void StateSet::setupRendering()
 {
+   // initialize variables
    unsigned indirectBufferOffset4=RenderingContext::current()->positionInIndirectBuffer4();
    unsigned *stateSetBufferPtr=reinterpret_cast<unsigned*>(RenderingContext::current()->stateSetStorage()->ptr());
 
    // iterate through all AttribStorageData
    for(auto it1=_attribStorageData.begin(); it1!=_attribStorageData.end(); it1++)
    {
-      // there might be empty AttribStorageData
+      // skip empty AttribStorages
       if(it1->second.numDrawCommands==0)
          continue;
 
@@ -162,13 +163,44 @@ void StateSet::setupRendering()
       }
    }
 
+   // update positionInIndirectBuffer4 variable
    RenderingContext::current()->setPositionInIndirectBuffer4(indirectBufferOffset4);
+
+   // process child StateSets
+   for(auto& child : _childList)
+      child->setupRendering();
 }
 
 
 void StateSet::render()
 {
-   for(auto it1=_attribStorageData.begin(); it1!=_attribStorageData.end(); it1++)
-      if(it1->second.numDrawCommands!=0)
-         it1->second.attribStorage->render(it1->second.renderingData);
+   if(_commandList.empty())
+   {
+      StateSet::RenderCommand::execute(this);
+   }
+   else
+   {
+      // process command list
+      for(auto& it : _commandList)
+         it->operator()();
+   }
+}
+
+
+void StateSet::RenderCommand::execute(StateSet *stateSet)
+{
+   // render all attached geometry
+   for(auto& i : stateSet->_attribStorageData)
+      if(i.second.numDrawCommands!=0)
+         i.second.attribStorage->render(i.second.renderingData);
+
+   // render all child StateSets
+   for(auto& child : stateSet->_childList)
+      child->render();
+}
+
+
+void StateSet::RenderCommand::operator()()
+{
+   execute(_stateSet);
 }
