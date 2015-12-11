@@ -16,7 +16,7 @@ namespace ge{
         template<typename TYPE>
           void update(TYPE const&data){
             (TYPE&)*this->_output=data;
-            this->_updateTick();
+            this->_updateTicks++;
           }
 
     };
@@ -31,7 +31,7 @@ namespace ge{
                this->_setInput(1,TypeRegister::getTypeTypeId<INPUT1>());\
              }\
       protected:\
-        virtual void _do(){
+        virtual bool _do(){
 //        this->_beginOperator()
 
 #define DEF_CLASS_PROLOGUE1(CLASS,NARRY,OUTPUT,INPUT0)\
@@ -43,10 +43,11 @@ namespace ge{
                this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
              }\
       protected:\
-        virtual void _do(){
+        virtual bool _do(){
 //        this->_beginOperator()
 
 #define DEF_CLASS_EPILOGUE()\
+          return true;\
 /*        this->_endOperator();*/\
         }\
     }
@@ -161,10 +162,10 @@ namespace ge{
             this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
           }
         protected:
-          virtual void _do(){
-//            this->_beginOperator();
+          virtual bool _do(){
+            if(!this->_inputChanged(0))return false;
             (TO&)(*this->_output)=(TO)((FROM)(*this->getInputData(0)));
-//            this->_endOperator();
+            return true;
           }
       };
   }

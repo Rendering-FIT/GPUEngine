@@ -23,42 +23,33 @@ namespace ge{
 
     class GECORE_EXPORT Function;
     class GECORE_EXPORT FunctionInput{
-      protected:
-        std::shared_ptr<Function>      _function = nullptr                   ;
-        bool                           _lazy     = false                     ;
-        ge::core::TypeRegister::TypeID _type     = TypeRegister::UNREGISTERED;
-        unsigned long long             _ticks    = 0                         ;
       public:
-        FunctionInput(std::shared_ptr<Function>const&function,bool lazy,ge::core::TypeRegister::TypeID type);
-        std::shared_ptr<Function>const&getFunction()const;
-        bool                           getLazy    ()const;
-        ge::core::TypeRegister::TypeID getType    ()const;
-        unsigned long long             getTicks   ()const;
-        void setFunction(std::shared_ptr<Function>const&function);
-        void setLazy    (bool lazy                              );
-        void setType    (ge::core::TypeRegister::TypeID type    );
-        void setTicks   (unsigned long long ticks               );
-        void updateTicks(                                       );
+        std::shared_ptr<Function>      function    = nullptr                   ;
+        bool                           changed     = false                     ;
+        ge::core::TypeRegister::TypeID type        = TypeRegister::UNREGISTERED;
+        unsigned long long             updateTicks = 0                         ;
+        FunctionInput(
+            std::shared_ptr<Function>      fce         = nullptr                             ,
+            unsigned long long             updateTicks = 0                                   ,
+            bool                           changed     = false                               ,
+            ge::core::TypeRegister::TypeID type        = ge::core::TypeRegister::UNREGISTERED);
     };
 
     class GECORE_EXPORT Function: public Statement{
       protected:
-        std::vector<FunctionInput>         _inputs                                 ;
-        std::map<unsigned,std::string>     _input2Name                             ;
-        std::map<std::string,unsigned>     _name2Input                             ;
-        std::shared_ptr<ge::core::Accessor>_output     = nullptr                   ;
-        ge::core::TypeRegister::TypeID     _outputType = TypeRegister::UNREGISTERED;
-        unsigned long long                 _tickNumber = 1                         ;//this has to be one. to be able to call init in parent Function at least once
-        void _setOutput(ge::core::TypeRegister::TypeID type);
-        void _setInput(unsigned i,ge::core::TypeRegister::TypeID type,std::string name = "");
-        unsigned long long _getTicks()const;
-        void _setTick(unsigned long long tick);
-        void _updateTick   ();
-        void _beginOperator();
-        void _endOperator  ();
+        std::vector<FunctionInput>         _inputs                                  ;
+        std::map<unsigned,std::string>     _input2Name                              ;
+        std::map<std::string,unsigned>     _name2Input                              ;
+        std::shared_ptr<ge::core::Accessor>_output      = nullptr                   ;
+        ge::core::TypeRegister::TypeID     _outputType  = TypeRegister::UNREGISTERED;
+        std::string                        _outputName  = "output"                  ;
+        unsigned long long                 _checkTicks  = 0                         ;
+        unsigned long long                 _updateTicks = 1                         ;
+        void _setOutput(           ge::core::TypeRegister::TypeID type,std::string name = "");
+        void _setInput (unsigned i,ge::core::TypeRegister::TypeID type,std::string name = "");
+        virtual bool _do();
         bool _inputChanged(unsigned    i    )const;
         bool _inputChanged(std::string input)const;
-        virtual void _do();
       public:
         Function(unsigned n);
         template<typename... ARGS>
@@ -66,24 +57,23 @@ namespace ge{
         template<typename... ARGS>
           Function(unsigned n,ARGS... args);
         virtual ~Function();
-        virtual void bindOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
+        virtual void operator()();
         std::shared_ptr<ge::core::Accessor>const&getOutput()const;
-        bool hasOutput()const;
         ge::core::TypeRegister::TypeID getOutputType()const;
         bool hasInput(unsigned    i   )const;
         bool hasInput(std::string name)const;
-        virtual void bindInput(unsigned    i   ,std::shared_ptr<Function>function=nullptr,bool lazy=false);
-        virtual void bindInput(std::string name,std::shared_ptr<Function>function=nullptr,bool lazy=false);
+        bool hasOutput()const;
+        virtual void bindInput (unsigned    i   ,std::shared_ptr<Function>function=nullptr);
+        virtual void bindInput (std::string name,std::shared_ptr<Function>function=nullptr);
+        virtual void bindOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
         FunctionInput&operator[](unsigned    i    );
         FunctionInput&operator[](std::string input);
-        bool isLazy(unsigned i       )const;
-        bool isLazy(std::string input)const;
-        virtual void operator()();
         std::shared_ptr<ge::core::Accessor>const&getInputData(unsigned i       )const;
         std::shared_ptr<ge::core::Accessor>const&getInputData(std::string input)const;
       private:
         std::string _genDefaultName(unsigned i)const;
         void _defaultNames(unsigned n);
+        void _processInputs();
         template<typename... ARGS>
           void _getInputs(
               std::vector<std::pair<std::shared_ptr<Function>,bool>>&){}
