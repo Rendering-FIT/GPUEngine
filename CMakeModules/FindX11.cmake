@@ -66,6 +66,18 @@ IF (UNIX)
   ENDIF(X11_X11_LIB)
 
   IF(X11_FOUND)
+  
+   #TARGET
+   if(CMAKE_VERSION VERSION_EQUAL 3.0.0 OR CMAKE_VERSION VERSION_GREATER 3.0.0)
+      if(NOT TARGET X11)
+         add_library(X11 INTERFACE IMPORTED)
+         set_target_properties(X11 PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${X11_INCLUDE_DIR}"
+            INTERFACE_LINK_LIBRARIES "${X11_LIBRARIES}"
+         )
+      endif()
+   endif()
+  
     INCLUDE(CheckFunctionExists)
     INCLUDE(CheckLibraryExists)
 

@@ -71,8 +71,8 @@ ADD_LIBRARY(${LIB_NAME}
 
 set(Internal_deps geGL)
 set(External_deps_Export glm GLEW)
-set(External_libs glm ${GLEW_LIBRARY})
-set(Internal_inc  ${GLEW_INCLUDE_DIR} ${GPUEngine_SOURCE_DIR}/include)
+set(External_libs glm GLEW)
+set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs})
