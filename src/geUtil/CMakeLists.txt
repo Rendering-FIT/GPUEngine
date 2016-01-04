@@ -99,8 +99,6 @@ ADD_LIBRARY(${LIB_NAME}
 # PACKAGES
 
 find_package(glm)
-find_package(GLEW   REQUIRED)
-find_package(OPENGL REQUIRED)
   
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
@@ -111,20 +109,10 @@ find_package(OPENGL REQUIRED)
 
 set(Internal_deps geGL)
 set(External_deps_Export glm)
-set(External_libs glm)
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GLEW_INCLUDE_DIR})
+set(External_libs glm )
+set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
-#Searched for in the top most CMakeList - don't ask me why.
-IF(ANTTWEAKBAR_FOUND)
-   list(APPEND Internal_inc ${ANTTWEAKBAR_INCLUDE_DIR})
-   target_link_libraries(${LIB_NAME} ${ANTTWEAKBAR_LIBRARY})
-ENDIF()
-
-IF(SDL2_FOUND)
-   list(APPEND Internal_inc ${SDL2_INCLUDE_DIR})
-   target_link_libraries(${LIB_NAME} ${SDL2_LIBRARY})
-ENDIF()
 
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps} ${External_libs})
 set_target_properties(${LIB_NAME} PROPERTIES
