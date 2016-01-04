@@ -142,11 +142,12 @@ IF(OPENGL_INCLUDE_DIR OR OPENGL_gl_LIBRARY)
     # The following deprecated settings are for backwards 
     # compatibility with CMake1.4
     
-    #TARGET
-     if(CMAKE_VERSION VERSION_EQUAL 3.0.0 OR CMAKE_VERSION VERSION_GREATER 3.0.0)
-      if(NOT TARGET OpenGL)
-         add_library(OpenGL INTERFACE IMPORTED)
-         set_target_properties(OpenGL PROPERTIES
+    
+    # TARGET
+    if(CMAKE_VERSION VERSION_EQUAL 3.0.0 OR CMAKE_VERSION VERSION_GREATER 3.0.0)
+      if(NOT TARGET OPENGL)
+         add_library(OPENGL INTERFACE IMPORTED)
+         set_target_properties(OPENGL PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${OPENGL_INCLUDE_DIR}"
             INTERFACE_LINK_LIBRARIES "${OPENGL_LIBRARIES}"
          )

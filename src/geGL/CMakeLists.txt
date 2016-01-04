@@ -66,8 +66,8 @@ set(GL_SOURCES
 # PACKAGES
 
 find_package(GLEW   REQUIRED)
-find_package(OpenGL REQUIRED)
-  
+find_package(OPENGL REQUIRED)
+ 
 ADD_LIBRARY(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
     ${GL_INCLUDES}
@@ -83,7 +83,7 @@ ADD_LIBRARY(${LIB_NAME}
 
 set(Internal_deps geCore)
 set(External_deps_Export "GLEW OPENGL")
-set(External_libs OpenGL GLEW)#${GLEW_LIBRARY}
+set(External_libs OPENGL GLEW)#${GLEW_LIBRARY}
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)#${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR}
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
