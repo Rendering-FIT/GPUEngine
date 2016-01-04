@@ -392,20 +392,20 @@ void FSA::addEOFTransition(
 bool FSA::run(std::string text){
   this->_initRun();
   FSAState*curFSAState=this->_name2State[this->_start];
-  unsigned pos=0;
-  while(pos<text.size()){
-    this->_currentChar      = text[pos];
+  this->_currentPosition = 0;
+  while(this->_currentPosition<text.size()){
+    this->_currentChar      = text[this->_currentPosition];
     this->_currentStateName = curFSAState->getName();
-    this->_currentPosition  = pos;
-    FSAState*newFSAState=curFSAState->apply(text[pos],this);
+    this->_currentPosition  = this->_currentPosition;
+    this->_alreadyRead      = text.substr(0,this->_currentPosition+1);
+    FSAState*newFSAState=curFSAState->apply(text[this->_currentPosition],this);
     if(!newFSAState){
       auto ii=this->_state2MessageFce.find(this->_currentStateName);
       if(ii!=this->_state2MessageFce.end())
         ii->second(this,this->_state2MessageData[this->_currentStateName]);
       return false;
     }
-    this->_alreadyRead+=text[pos];
-    pos++;
+    this->_currentPosition++;
     curFSAState=newFSAState;
   }
   if(!curFSAState->getEOFTransition().getNextState()){
@@ -432,6 +432,10 @@ std::string FSA::getCurrentStateName()const{
 
 unsigned FSA::getCurrentPosition()const{
   return this->_currentPosition;
+}
+
+void FSA::goBack(){
+  this->_currentPosition--;
 }
 
 std::string FSA::toStr()const{

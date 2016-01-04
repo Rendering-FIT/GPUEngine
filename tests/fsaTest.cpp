@@ -35,6 +35,74 @@ SCENARIO("FSA basic tests"){
   }
 }
 
+void createPgoBack(ge::core::FSA*fsa,void*data){
+  std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
+  op->push_back(0);
+  fsa->goBack();
+}
+
+void createP(ge::core::FSA*,void*data){
+  std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
+  op->push_back(1);
+}
+
+void createPP(ge::core::FSA*,void*data){
+  std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
+  op->push_back(1);
+}
+
+void createMgoBack(ge::core::FSA*fsa,void*data){
+  std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
+  op->push_back(2);
+  fsa->goBack();
+}
+
+void createM(ge::core::FSA*,void*data){
+  std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
+  op->push_back(2);
+}
+
+void createMM(ge::core::FSA*,void*data){
+  std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
+  op->push_back(3);
+}
+
+SCENARIO("FSA goBack tests","[FSA]"){
+  GIVEN("operator FSA"){
+    std::vector<unsigned>op;
+    FSA fsa(
+        "START",
+        "START","+"               ,"PLUS" ,
+        "START","-"               ,"MINUS",
+        "START",ge::core::FSA::eof,"END"  ,
+        "PLUS" ,"+"               ,"START",createPP     ,(void*)&op,//create ++
+        "PLUS" ,"-"               ,"START",createPgoBack,(void*)&op,//create +, goBack
+        "PLUS" ,ge::core::FSA::eof,"END"  ,createP      ,(void*)&op,//create +
+        "MINUS","-"               ,"START",createMM     ,(void*)&op,//create -, goBack
+        "MINUS","+"               ,"START",createMgoBack,(void*)&op,//create --
+        "MINUS",ge::core::FSA::eof,"END"  ,createM      ,(void*)&op //create -
+        );
+    WHEN("lexin ++--"){
+      THEN("then it should pass and parse ++ --"){
+        REQUIRE(fsa.run("++--")==true);
+        REQUIRE(op.size()==2);
+        REQUIRE(op[0]==1);
+        REQUIRE(op[1]==3);
+      }
+    }
+    WHEN("lexin +++---"){
+      THEN("then it should pass and parse ++ + -- -"){
+        REQUIRE(fsa.run("+++---")==true);
+        REQUIRE(op.size()==4);
+        REQUIRE(op[0]==1);
+        REQUIRE(op[1]==0);
+        REQUIRE(op[2]==3);
+        REQUIRE(op[3]==2);
+      }
+    }
+  }
+}
+
 //*
 SCENARIO( "FSA float test", "[FSA]" ) {
   GIVEN( "float FSA" ) {
@@ -109,7 +177,7 @@ SCENARIO( "FSA float test", "[FSA]" ) {
       }
     }
   }
-
+/*
   GIVEN ("fsa with undistinguishable states"){
     FSA fsa(
     //std::shared_ptr<FSA>fsa=std::make_shared<FSA>(
@@ -179,6 +247,7 @@ SCENARIO( "FSA float test", "[FSA]" ) {
     }
 
   }
+  */
 }
 // */
 /*

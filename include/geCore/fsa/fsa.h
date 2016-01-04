@@ -85,6 +85,7 @@ namespace ge{
         std::string getAlreadyReadString()const;
         std::string getCurrentStateName ()const;
         unsigned    getCurrentPosition  ()const;
+        void        goBack();
         std::string toStr()const;
         void removeUnreachableStates();
         void removeUndistinguishabeStates();
