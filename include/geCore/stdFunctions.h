@@ -7,28 +7,34 @@ namespace ge{
 
     class GECORE_EXPORT Nullary: public Function{
       public:
-        Nullary(std::shared_ptr<ge::core::Accessor>data = nullptr);
+        Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,
+            std::shared_ptr<ge::core::Accessor>data = nullptr);
         template<typename TYPE>
-          Nullary(TYPE const&data,std::shared_ptr<ge::core::TypeRegister>const&typeRegister):Function(0){
-            this->_output=typeRegister->sharedAccessor<TYPE>(data);//data);
-            this->_setOutput(this->_output->getId());
+          Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,TYPE const&data):Function(0,"Nullary"){
+            this->_getOutput().data=tr->sharedAccessor<TYPE>(data);//data);
           }
         template<typename TYPE>
           void update(TYPE const&data){
-            (TYPE&)*this->_output=data;
+            (TYPE&)*this->_getOutput().data=data;
             this->_updateTicks++;
           }
-
+        static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){
+          return std::make_shared<Nullary>(tr);
+        }
+        static inline std::string name(){
+          return "Nullary";
+        }
     };
 
 #define DEF_CLASS_PROLOGUE2(CLASS,NARRY,OUTPUT,INPUT0,INPUT1)\
     class CLASS: public Function{\
       public:\
-             CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
-               this->bindOutput(output);\
+             CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
+                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY,#CLASS){\
                this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
                this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
                this->_setInput(1,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->bindOutput(output);\
              }\
       protected:\
         virtual bool _do(){
@@ -37,10 +43,11 @@ namespace ge{
 #define DEF_CLASS_PROLOGUE1(CLASS,NARRY,OUTPUT,INPUT0)\
     class CLASS: public Function{\
       public:\
-             CLASS(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY){\
-               this->bindOutput(output);\
+             CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
+                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY,#CLASS){\
                this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
                this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
+               this->bindOutput(output);\
              }\
       protected:\
         virtual bool _do(){
@@ -54,8 +61,8 @@ namespace ge{
 
 #define DEF_SPEC_OPERATOR_2(CLASS,OPERATOR,OUTPUT,INPUT0,INPUT1)\
     DEF_CLASS_PROLOGUE2(CLASS,2,OUTPUT,INPUT0,INPUT1);\
-    if(this->_output)\
-    (OUTPUT&)*(this->_output)=\
+    if(this->hasOutput())\
+    (OUTPUT&)*(this->_getOutput().data)=\
     (INPUT0&)(*this->getInputData(0)) OPERATOR\
     (INPUT1 )(*this->getInputData(1));\
     else\
@@ -67,7 +74,7 @@ namespace ge{
 
 #define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT0,INPUT1)\
     DEF_CLASS_PROLOGUE2(CLASS,2,OUTPUT,INPUT0,INPUT1);\
-    (OUTPUT&)*(this->_output)=\
+    (OUTPUT&)*(this->_getOutput().data)=\
     (INPUT0&)(*this->getInputData(0)) OPERATOR\
     (INPUT1 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
@@ -75,8 +82,8 @@ namespace ge{
 #define DEF_OPERATOR_2INT(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,2,TYPE,TYPE,TYPE);\
-    if(this->_output)\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    if(this->hasOutput())\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     else\
@@ -87,7 +94,7 @@ namespace ge{
 #define DEF_OPERATOR_2OUTPUT_INT(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,2,TYPE,TYPE,TYPE);\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
@@ -95,15 +102,15 @@ namespace ge{
 #define DEF_SPEC_OPERATOR_1INTPRE(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,1,TYPE,TYPE);\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     OPERATOR ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_SPEC_OPERATOR_1INTPOST(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,1,TYPE,TYPE);\
-    if(this->_output)\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_output)=\
+    if(this->hasOutput())\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
     else\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
@@ -156,17 +163,92 @@ namespace ge{
     template<typename FROM,typename TO>
       class Cast: public Function{
         public:
-          Cast(std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1){
-            this->bindOutput(output);
+          Cast(std::shared_ptr<ge::core::TypeRegister>const&,
+              std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1,"Cast"){
             this->_setOutput(TypeRegister::getTypeTypeId<TO>());
             this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
+            this->bindOutput(output);
           }
         protected:
           virtual bool _do(){
             if(!this->_inputChanged(0))return false;
-            (TO&)(*this->_output)=(TO)((FROM)(*this->getInputData(0)));
+            (TO&)(*this->_getOutput().data)=(TO)((FROM)(*this->getInputData(0)));
             return true;
           }
       };
+
+    class MacroFunction: public Function{
+      protected:
+        std::vector<ge::core::FunctionInput*>_in;
+        Function::Output*_out = nullptr;
+        virtual bool _do();
+        std::shared_ptr<ge::core::Function>_outputFce = nullptr;
+        virtual inline FunctionInput      &_getInput(unsigned i);
+        virtual inline FunctionInput const&_getInput(unsigned i)const;
+        virtual inline decltype(_inputs)::size_type _getNofInputs()const;
+        virtual inline Output      &_getOutput();
+        virtual inline Output const&_getOutput()const;
+      public:
+        MacroFunction(unsigned inputs,std::shared_ptr<ge::core::TypeRegister>const&tr);
+        virtual ~MacroFunction();
+        inline virtual void operator()();
+        inline void setFunctionInput(
+            unsigned                                 i            ,
+            std::shared_ptr<ge::core::Function>const&fce          ,
+            unsigned                                 fceInput     ,
+            std::string                              name     = "");
+        inline void setFunctionOutput(
+            std::shared_ptr<ge::core::Function>const&fce      ,
+            std::string                              name = "output");
+    };
+
+    inline void MacroFunction::operator()(){
+      if(!this->_outputFce){
+        std::cerr<<"ERROR: MacroFunction::operator()() - ";
+        std::cerr<<"there is no output function"<<std::endl;
+        return;
+      }
+      (*this->_outputFce)();
+    }
+
+    inline void MacroFunction::setFunctionInput(
+        unsigned                                 i       ,
+        std::shared_ptr<ge::core::Function>const&fce     ,
+        unsigned                                 fceInput,
+        std::string                              name    ){
+      if(name=="")name=this->_genDefaultName(i);
+      this->_in[i]=&fce->_getInput(fceInput);
+      this->_name2Input[name]=i   ;
+      this->_input2Name[i   ]=name;
+    }
+
+    inline void MacroFunction::setFunctionOutput(
+        std::shared_ptr<ge::core::Function>const&fce ,
+        std::string                              name){
+      this->_output.name = name;
+      this->_out         = &fce->_output;
+      this->_outputFce   = fce;
+    }
+
+
+    inline FunctionInput      &MacroFunction::_getInput(unsigned i){
+      return *this->_in[i];
+    }
+
+    inline FunctionInput const&MacroFunction::_getInput(unsigned i)const{
+      return *this->_in[i];
+    }
+
+    inline decltype(MacroFunction::_inputs)::size_type MacroFunction::_getNofInputs()const{
+      return this->_in.size();
+    }
+
+    inline Function::Output      &MacroFunction::_getOutput(){
+      return *this->_out;
+    }
+    inline Function::Output const&MacroFunction::_getOutput()const{
+      return *this->_out;
+    }
+    //}}
   }
 }

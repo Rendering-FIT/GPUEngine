@@ -21,47 +21,67 @@ FunctionInput::FunctionInput(
 }
 
 
-Function::Function(unsigned n):Statement(FUNCTION){
+Function::Function(unsigned n,std::string name):Statement(FUNCTION){
   for(unsigned i=0;i<n;++i)
     this->_inputs.push_back(FunctionInput());
   this->_defaultNames(n);
+  this->_name = name;
 }
 
 Function::~Function(){
 
 }
 
-void Function::bindInput(unsigned i,std::shared_ptr<Function>function){
-  if(function!=nullptr&&function->getOutput()->getId()!=this->_inputs[i].type&&this->_inputs[i].type!=TypeRegister::UNREGISTERED){
-    std::cerr<<"ERROR: input: "<<i<<" has diferrent type - ";
-    std::cerr<<function->getOutput()->getManager()->getTypeIdName(this->_inputs[i].type);
+bool Function::bindInput(unsigned i,std::shared_ptr<Function>function){
+  if(i>=(unsigned)(this->_inputs.size())){
+    std::cerr<<"ERROR: "<<this->_name<<"::bindInput("<<i<<",";
+    if(function==nullptr)std::cerr<<"nullptr";
+    else std::cerr<<function->_name;
+    std::cerr<<") - out of range"<<std::endl;
+    return false;
+  }
+  if(
+      function                       != nullptr                   &&
+      function->getOutput()->getId() != this->_getInput(i).type   &&
+      this->_getInput(i).type        != TypeRegister::UNREGISTERED){
+    std::cerr<<"ERROR: "<<this->_name<<".input["<<this->getInputName(i)<<"] has different type - ";
+    std::cerr<<function->getOutput()->getManager()->getTypeIdName(this->_getInput(i).type);
     std::cerr<<" != ";
     std::cerr<<function->getOutput()->getManager()->getTypeIdName(function->getOutput()->getId());
     std::cerr<<std::endl;
-    return;
+    return false;
   }
-  this->_inputs[i].function = function;
-  if(function)this->_inputs[i].updateTicks = function->_updateTicks - 1;
-  this->_inputs[i].changed  = true;
+  this->_getInput(i).function = function;
+  if(function)this->_getInput(i).updateTicks = function->_updateTicks - 1;
+  this->_getInput(i).changed  = true;
+  return true;
 }
 
-void Function::bindOutput(std::shared_ptr<ge::core::Accessor>data){
-  this->_output = data;
+bool Function::bindOutput(std::shared_ptr<ge::core::Accessor>data){
+  if(
+      data                    != nullptr                   &&
+      data->getId()           != this->_getOutput().type   &&
+      this->_getOutput().type != TypeRegister::UNREGISTERED){
+    std::cerr<<"ERROR: "<<this->_name<<".output has different type - ";
+    std::cerr<<data->getManager()->getTypeIdName(this->_getOutput().type);
+    std::cerr<<" != ";
+    std::cerr<<data->getManager()->getTypeIdName(data->getId()    );
+    std::cerr<<std::endl;
+    return false;
+  }
+  this->_getOutput().data = data;
+  return true;
 }
 
-std::shared_ptr<ge::core::Accessor>const&Function::getOutput()const{
-  return this->_output;
-}
-
-void Function::bindInput(std::string name,std::shared_ptr<Function>function){
-  this->bindInput(this->_name2Input[name],function);
+bool Function::bindInput(std::string name,std::shared_ptr<Function>function){
+  return this->bindInput(this->getInputIndex(name),function);
 }
 
 void Function::_setInput(unsigned i,ge::core::TypeRegister::TypeID type,std::string name){
   if(name=="")name=this->_genDefaultName(i);
   auto jj=this->_name2Input.find(name);
   if(jj!=this->_name2Input.end()&&jj->second!=i){
-    std::cerr<<"ERROR: Function::setInput("<<i<<","<<type<<","<<name<<")";
+    std::cerr<<"ERROR: "<<this->_name<<"::setInput("<<i<<","<<type<<","<<name<<")";
     std::cerr<<" - name "<<name<<" is already used for input number: ";
     std::cerr<<jj->second<<std::endl;
     return;
@@ -79,32 +99,8 @@ void Function::_setInput(unsigned i,ge::core::TypeRegister::TypeID type,std::str
 
 void Function::_setOutput(ge::core::TypeRegister::TypeID type,std::string name){
   if(name=="")name="output";
-  this->_outputName = name;
-  this->_outputType = type;
-}
-
-bool Function::hasInput(unsigned i)const{
-  return this->_inputs[i].function!=nullptr;
-}
-
-bool Function::hasInput(std::string name)const{
-  return this->_name2Input.find(name)!=this->_name2Input.end();
-}
-
-bool Function::hasOutput()const{
-  return this->_output!=nullptr;
-}
-
-ge::core::TypeRegister::TypeID Function::getOutputType()const{
-  return this->_outputType;
-}
-
-FunctionInput&Function::operator[](unsigned i){
-  return this->_inputs[i];
-}
-
-FunctionInput&Function::operator[](std::string input){
-  return this->_inputs[this->_name2Input[input]];
+  this->_getOutput().name = name;
+  this->_getOutput().type = type;
 }
 
 void Function::operator()(){
@@ -115,38 +111,22 @@ void Function::operator()(){
 }
 
 void Function::_processInputs(){
-  for(unsigned i=0;i<this->_inputs.size();++i){
-    if(!this->hasInput(i)||this->_inputs[i].function->_checkTicks>=this->_checkTicks){
-      this->_inputs[i].changed=false;
+  for(unsigned i=0;i<this->_getNofInputs();++i){
+    if(!this->hasInput(i)||this->_getInput(i).function->_checkTicks>=this->_checkTicks){
+      this->_getInput(i).changed = false;
       continue;
     }
-    (*this->_inputs[i].function)();
-    this->_inputs[i].function->_checkTicks = this->_checkTicks;
-    this->_inputs[i].changed=this->_inputs[i].updateTicks<this->_inputs[i].function->_updateTicks;
-    if(this->_inputs[i].changed)this->_inputs[i].updateTicks=this->_inputs[i].function->_updateTicks;
+    (*this->_getInput(i).function)();
+    this->_getInput(i).function->_checkTicks = this->_checkTicks;
+    this->_getInput(i).changed=
+      this->_getInput(i).updateTicks<this->_getInput(i).function->_updateTicks;
+    if(this->_getInput(i).changed)
+      this->_getInput(i).updateTicks=this->_getInput(i).function->_updateTicks;
   }
 }
 
-
 bool Function::_do(){
   return true;
-}
-
-
-bool Function::_inputChanged(unsigned i)const{
-  return this->_inputs[i].changed;
-}
-
-bool Function::_inputChanged(std::string input)const{
-  return this->_inputChanged(this->_name2Input.find(input)->second);
-}
-
-std::shared_ptr<ge::core::Accessor>const&Function::getInputData(unsigned i       )const{
-  return this->_inputs[i].function->getOutput();
-}
-
-std::shared_ptr<ge::core::Accessor>const&Function::getInputData(std::string input)const{
-  return this->getInputData(this->_name2Input.find(input)->second);
 }
 
 std::string Function::_genDefaultName(unsigned i)const{

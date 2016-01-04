@@ -34,3 +34,4 @@ include/geRG/Export.h
 include/geSG/Export.h
 include/geUtil/Export.h
 geAd/WindowObject/Export.h
+geAd/Export.h

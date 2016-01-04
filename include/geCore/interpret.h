@@ -35,105 +35,180 @@ namespace ge{
             ge::core::TypeRegister::TypeID type        = ge::core::TypeRegister::UNREGISTERED);
     };
 
+    class MacroFunction;
     class GECORE_EXPORT Function: public Statement{
       protected:
-        std::vector<FunctionInput>         _inputs                                  ;
-        std::map<unsigned,std::string>     _input2Name                              ;
-        std::map<std::string,unsigned>     _name2Input                              ;
-        std::shared_ptr<ge::core::Accessor>_output      = nullptr                   ;
-        ge::core::TypeRegister::TypeID     _outputType  = TypeRegister::UNREGISTERED;
-        std::string                        _outputName  = "output"                  ;
-        unsigned long long                 _checkTicks  = 0                         ;
-        unsigned long long                 _updateTicks = 1                         ;
-        void _setOutput(           ge::core::TypeRegister::TypeID type,std::string name = "");
-        void _setInput (unsigned i,ge::core::TypeRegister::TypeID type,std::string name = "");
-        virtual bool _do();
-        bool _inputChanged(unsigned    i    )const;
-        bool _inputChanged(std::string input)const;
-      public:
-        Function(unsigned n);
-        template<typename... ARGS>
-          Function(unsigned n,std::shared_ptr<ge::core::Accessor>const&output,ARGS... args);
-        template<typename... ARGS>
-          Function(unsigned n,ARGS... args);
-        virtual ~Function();
-        virtual void operator()();
-        std::shared_ptr<ge::core::Accessor>const&getOutput()const;
-        ge::core::TypeRegister::TypeID getOutputType()const;
-        bool hasInput(unsigned    i   )const;
-        bool hasInput(std::string name)const;
-        bool hasOutput()const;
-        virtual void bindInput (unsigned    i   ,std::shared_ptr<Function>function=nullptr);
-        virtual void bindInput (std::string name,std::shared_ptr<Function>function=nullptr);
-        virtual void bindOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
-        FunctionInput&operator[](unsigned    i    );
-        FunctionInput&operator[](std::string input);
-        std::shared_ptr<ge::core::Accessor>const&getInputData(unsigned i       )const;
-        std::shared_ptr<ge::core::Accessor>const&getInputData(std::string input)const;
-      private:
+        friend class MacroFunction;
+        std::string                        _name      ;
+        std::vector<FunctionInput>         _inputs    ;
+        std::map<unsigned,std::string>     _input2Name;
+        std::map<std::string,unsigned>     _name2Input;
+        struct Output{
+          std::shared_ptr<ge::core::Accessor>data = nullptr                   ;
+          ge::core::TypeRegister::TypeID     type = TypeRegister::UNREGISTERED;
+          std::string                        name = "output"                  ;
+        }_output;
+        unsigned long long                 _checkTicks  = 0;
+        unsigned long long                 _updateTicks = 1;
         std::string _genDefaultName(unsigned i)const;
         void _defaultNames(unsigned n);
         void _processInputs();
+        void _setOutput(           ge::core::TypeRegister::TypeID type,std::string name = "");
+        void _setInput (unsigned i,ge::core::TypeRegister::TypeID type,std::string name = "");
+        virtual bool _do();
+        inline bool _inputChanged(unsigned    i    )const;
+        inline bool _inputChanged(std::string input)const;
+        virtual inline FunctionInput      &_getInput(unsigned i);
+        virtual inline FunctionInput const&_getInput(unsigned i)const;
+        virtual inline decltype(_inputs)::size_type _getNofInputs()const;
+        virtual inline Output      &_getOutput();
+        virtual inline Output const&_getOutput()const;
         template<typename... ARGS>
-          void _getInputs(
-              std::vector<std::pair<std::shared_ptr<Function>,bool>>&){}
-        template<typename... ARGS>
-          void _getInputs(
-              std::vector<std::pair<std::shared_ptr<Function>,bool>>&inputs,
-              std::shared_ptr<Function>const&function0){
-            inputs.push_back(std::pair<std::shared_ptr<Function>,bool>(function0,false));
+          unsigned _computeNumberOfInputs(ARGS...args){
+            return (sizeof...(args)-2)/2;
           }
         template<typename... ARGS>
-          void _getInputs(
-              std::vector<std::pair<std::shared_ptr<Function>,bool>>&inputs,
-              std::shared_ptr<Function>const&function0,
-              std::shared_ptr<Function>const&function1,
-              ARGS...args){
-            inputs.push_back(std::pair<std::shared_ptr<Function>,bool>(function0,false));
-            this->_getInputs(inputs,function1,args...);
+          void _setTypes(
+              std::shared_ptr<ge::core::TypeRegister>const&tr,
+              unsigned nofInputs,
+              const char* type,
+              const char* name,
+              ARGS... args){
+            this->_setOutput(tr->getTypeId(type),name);
+            this->_setInputs(tr,nofInputs,args...);
           }
         template<typename... ARGS>
-          void _getInputs(
-              std::vector<std::pair<std::shared_ptr<Function>,bool>>&inputs,
-              std::shared_ptr<Function>const&function,
-              bool lazy,
-              ARGS...args){
-            inputs.push_back(std::pair<std::shared_ptr<Function>,bool>(function,lazy));
-            this->_getInputs(inputs,args...);
+          void _setInputs(
+              std::shared_ptr<ge::core::TypeRegister>const&tr,
+              unsigned nofInputs,
+              const char* type,
+              const char* name,
+              ARGS... args){
+            this->_setInput(nofInputs-(sizeof...(args))/2-1,tr->getTypeId(type),name);
+            this->_setInputs(tr,nofInputs,args...);
           }
         template<typename... ARGS>
-          void _constructor(unsigned n,std::shared_ptr<Function>const&f,ARGS... args){
-            std::vector<std::pair<std::shared_ptr<Function>,bool>>inputs;
-            this->_getInputs(inputs,f,args...);
-            for(unsigned i=0;i<n;++i){
-              if(i<inputs.size())
-                this->_inputs.push_back(FunctionInput(inputs[i].first,inputs[i].second,inputs[i].first->getOutput()->getId()));
-              else
-                this->_inputs.push_back(FunctionInput(nullptr,false,0));
-            }
+          void _setInputs(
+              std::shared_ptr<ge::core::TypeRegister>const&,
+              unsigned){
           }
-        template<typename... ARGS>
-          void _constructor(unsigned n,ge::core::TypeRegister::TypeID type,ARGS... args){
-            std::vector<ge::core::TypeRegister::TypeID>types;
-            ge::core::argsToVector(types,type,args...);
-            for(unsigned i=0;i<n;++i){
-              if(i<types.size())
-                this->_inputs.push_back(FunctionInput(nullptr,false,types[i]));
-              else
-                this->_inputs.push_back(FunctionInput(nullptr,false,0));
-            }
-            this->_defaultNames(n);
-          }
+      public:
+        Function(unsigned n,std::string name = "");
+        virtual ~Function();
+        virtual void operator()();
+        inline std::shared_ptr<ge::core::Accessor>const&getOutput()const;
+        inline ge::core::TypeRegister::TypeID getOutputType()const;
+        inline std::string getOutputName()const;
+        inline bool hasInput(unsigned    i   )const;
+        inline bool hasInput(std::string name)const;
+        inline bool hasOutput()const;
+        bool bindInput (unsigned    i   ,std::shared_ptr<Function>function=nullptr);
+        bool bindInput (std::string name,std::shared_ptr<Function>function=nullptr);
+        bool bindOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
+        inline std::shared_ptr<ge::core::Accessor>const&getInputData(unsigned i       )const;
+        inline std::shared_ptr<ge::core::Accessor>const&getInputData(std::string input)const;
+        inline ge::core::TypeRegister::TypeID getInputType(unsigned    i   )const;
+        inline ge::core::TypeRegister::TypeID getInputType(std::string name)const;
+        inline decltype(_inputs)::size_type getNofInputs()const;
+        virtual inline std::string getInputName (unsigned    i   )const;
+        virtual inline unsigned    getInputIndex(std::string name)const;
+        virtual inline std::string doc()const;
     };
-    template<typename... ARGS>
-      Function::Function(unsigned n,std::shared_ptr<ge::core::Accessor>const&output,ARGS... args):Statement(FUNCTION){
-        this->_constructor(n,args...);
-        this->bindOutput(output);
+
+    inline std::shared_ptr<ge::core::Accessor>const&Function::getOutput()const{
+      return this->_getOutput().data;
+    }
+
+    inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
+      return this->_getOutput().type;
+    }
+
+    inline std::string Function::getOutputName()const{
+      return this->_getOutput().name;
+    }
+
+    inline bool Function::hasInput(unsigned i)const{
+      return this->_getInput(i).function!=nullptr;
+    }
+
+    inline bool Function::hasInput(std::string name)const{
+      return this->hasInput(this->getInputIndex(name));
+    }
+
+    inline std::string Function::doc()const{
+      return"";
+    }
+
+    inline bool Function::hasOutput()const{
+      return this->_getOutput().data!=nullptr;
+    }
+
+    inline std::shared_ptr<ge::core::Accessor>const&Function::getInputData(unsigned i       )const{
+      return this->_getInput(i).function->getOutput();
+    }
+
+    inline std::shared_ptr<ge::core::Accessor>const&Function::getInputData(std::string input)const{
+      return this->getInputData(this->_name2Input.find(input)->second);
+    }
+
+    inline ge::core::TypeRegister::TypeID Function::getInputType(unsigned    i   )const{
+      return this->_getInput(i).type;
+    }
+
+    inline ge::core::TypeRegister::TypeID Function::getInputType(std::string name)const{
+      return this->_getInput(this->getInputIndex(name)).type;
+    }
+
+    inline decltype(Function::_inputs)::size_type Function::getNofInputs()const{
+      return this->_inputs.size();
+    }
+
+    inline bool Function::_inputChanged(unsigned i)const{
+      return this->_getInput(i).changed;
+    }
+
+    inline bool Function::_inputChanged(std::string input)const{
+      return this->_inputChanged(this->_name2Input.find(input)->second);
+    }
+
+    inline FunctionInput&Function::_getInput(unsigned i){
+      return this->_inputs[i];
+    }
+
+    inline FunctionInput const&Function::_getInput(unsigned i)const{
+      return this->_inputs[i];
+    }
+
+    inline decltype(Function::_inputs)::size_type Function::_getNofInputs()const{
+      return this->_inputs.size();
+    }
+
+    inline Function::Output      &Function::_getOutput(){
+      return this->_output;
+    }
+
+    inline Function::Output const&Function::_getOutput()const{
+      return this->_output;
+    }
+
+    inline std::string Function::getInputName(unsigned i)const{
+      if(i>=this->_getNofInputs()){
+        std::cerr<<"ERROR: "<<this->_name<<"::getInputName("<<i<<") - ";
+        std::cerr<<"input out of range"<<std::endl;
+        return "";
       }
-    template<typename... ARGS>
-      Function::Function(unsigned n,ARGS... args):Statement(FUNCTION){
-        this->_constructor(n,args...);
+      return this->_input2Name.find(i)->second;
+    }
+
+    inline unsigned Function::getInputIndex(std::string name)const{
+      auto ii=this->_name2Input.find(name);
+      if(ii==this->_name2Input.end()){
+        std::cerr<<"ERROR: "<<this->_name<<"::getInputIndex(\""<<name<<"\") - ";
+        std::cerr<<"there is no input with that name"<<std::endl;
+        return -1;
       }
+      return ii->second;
+    }
 
     class GECORE_EXPORT Body: public Statement{
       protected:
@@ -184,3 +259,37 @@ namespace ge{
     };
   }
 }
+
+#define BEGIN_INTERPRET_FUNCTION_HPP(NAME)\
+  class GECORE_EXPORT NAME: public ge::core::Function{\
+    protected:\
+              bool _do();\
+    public:\
+           static inline std::string name(){return #NAME;}\
+    static inline std::shared_ptr<ge::core::Function> sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+      return std::make_shared<NAME>(tr);\
+    }\
+    NAME(std::shared_ptr<ge::core::TypeRegister>const&typeRegister)
+#define END_INTERPRET_FUNCTION_HPP()\
+  }
+
+#define NEW_INTERPRET_FUNCTION_HPP(NAME)\
+  BEGIN_INTERPRET_FUNCTION_HPP(NAME);\
+END_INTERPRET_FUNCTION_HPP()
+
+#define BEGIN_INTERPRET_FUNCTION_CPP(NAME,...)\
+  NAME::NAME(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(this->_computeNumberOfInputs(__VA_ARGS__),NAME::name()){\
+    this->_setTypes(tr,this->_computeNumberOfInputs(__VA_ARGS__),__VA_ARGS__)
+
+#define MID_INTERPRET_FUNCTION_CPP(NAME)\
+  }\
+bool NAME::_do(){
+
+#define END_INTERPRET_FUNCTION_CPP()\
+}
+
+#define NEW_INTERPRET_FUNCTION_CPP(NAME,...)\
+  BEGIN_INTERPRET_FUNCTION_CPP(NAME,__VA_ARGS__)\
+BODY_OF_INTERPRET_FUNCTION\
+END_INTERPRET_FUNCTION_CPP()
+

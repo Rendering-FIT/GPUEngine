@@ -24,7 +24,7 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
 set (ADD_INCLUDES
-  ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/../Export.h
   ${HEADER_PATH}/WindowObject.h
   )
 set (ADD_SOURCES
@@ -82,12 +82,6 @@ configure_file(
    @ONLY
 )
 
-
-configure_file(
-   ../../src/CMake/geExport.h.in
-   "${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/Export.h"
-   @ONLY
-)
 
 # INSTALL_CM_DIR is defined in master CMakeLists file
 

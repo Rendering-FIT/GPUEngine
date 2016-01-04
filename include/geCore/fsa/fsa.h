@@ -16,6 +16,8 @@ namespace ge{
         std::string                    _start            = "";
         std::set<FSAState*>            _endStates            ;
         std::map<std::string,FSAState*>_name2State           ;
+        std::map<std::string,FSACallback::Fce>_state2MessageFce;
+        std::map<std::string,void*>_state2MessageData;
         std::string                    _alreadyRead      = "";
         char                           _currentChar      = 0 ;
         std::string                    _currentStateName = "";
@@ -123,6 +125,11 @@ namespace ge{
           std::string      stateB  ,
           FSACallback::Fce callback,
           void*            data    ){
+        if(stateB==""){
+          this->_state2MessageFce [stateA]=callback;
+          this->_state2MessageData[stateA]=data    ;
+          return;
+        }
         if(lex==FSA::all)this->addAllTransition (stateA,stateB,callback,data);
         if(lex==FSA::els)this->addElseTransition(stateA,stateB,callback,data);
         if(lex==FSA::eof)this->addEOFTransition (stateA,stateB,callback,data);

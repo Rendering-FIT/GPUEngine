@@ -398,12 +398,22 @@ bool FSA::run(std::string text){
     this->_currentStateName = curFSAState->getName();
     this->_currentPosition  = pos;
     FSAState*newFSAState=curFSAState->apply(text[pos],this);
-    if(!newFSAState)return false;
+    if(!newFSAState){
+      auto ii=this->_state2MessageFce.find(this->_currentStateName);
+      if(ii!=this->_state2MessageFce.end())
+        ii->second(this,this->_state2MessageData[this->_currentStateName]);
+      return false;
+    }
     this->_alreadyRead+=text[pos];
     pos++;
     curFSAState=newFSAState;
   }
-  if(!curFSAState->getEOFTransition().getNextState())return false;
+  if(!curFSAState->getEOFTransition().getNextState()){
+    auto ii=this->_state2MessageFce.find(this->_currentStateName);
+    if(ii!=this->_state2MessageFce.end())
+      ii->second(this,this->_state2MessageData[this->_currentStateName]);
+    return false;
+  }
   curFSAState->getEOFTransition().callCallback(this);
   return true;
 }

@@ -3,7 +3,7 @@
 #include<iostream>
 #include<map>
 
-#include<geAd/WindowObject/Export.h>
+#include<geAd/Export.h>
 
 #define WINDOWOBJECT_WINDOWSIZE      NULL
 #define WINDOWOBJECT_WIDTH           100
@@ -32,20 +32,20 @@
 
 namespace ge{
   namespace util{
-    struct WINDOWOBJECT_EXPORT ContextParam{
+    struct GEAD_EXPORT ContextParam{
       unsigned    version;
       std::string profile;
       std::string flag;
     };
-    struct WINDOWOBJECT_EXPORT WindowParam{
+    struct GEAD_EXPORT WindowParam{
       unsigned size[2];
       bool     fullscreen;
     };
 
-    WINDOWOBJECT_EXPORT void loadContextParam(ContextParam*p,ArgumentObject*args);
-    WINDOWOBJECT_EXPORT void loadWindowParam (WindowParam *p,ArgumentObject*args);
+    GEAD_EXPORT void loadContextParam(ContextParam*p,ArgumentObject*args);
+    GEAD_EXPORT void loadWindowParam (WindowParam *p,ArgumentObject*args);
 
-    class WINDOWOBJECT_EXPORT WindowObject
+    class GEAD_EXPORT WindowObject
     {
       protected:
         unsigned _windowSize[2];//size of window
