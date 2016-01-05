@@ -12,4 +12,3 @@ install(FILES
   )
 
 add_subdirectory(WindowObject)
-

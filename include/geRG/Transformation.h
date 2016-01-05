@@ -31,11 +31,8 @@ namespace ge
       class GERG_EXPORT Transformation : public std::enable_shared_from_this<Transformation> {
       public:
 
-         typedef ChildListTemplate<Transformation> ChildList;
-         typedef ParentListTemplate<Transformation> ParentList;
-
-         GERG_CHILD_LIST(Transformation);
-         GERG_PARENT_LIST(Transformation);
+         GERG_CHILD_LIST(Transformation*,std::shared_ptr<Transformation>)
+         GERG_PARENT_LIST(std::shared_ptr<Transformation>,Transformation*)
 
       protected:
 

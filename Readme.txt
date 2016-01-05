@@ -45,6 +45,7 @@ glm:
 - CentOS: no rpm (seems that no rpm is available for Fedora)
 
 glew:
+- version 1.9.0 was seen to generate GL_INVALID_ENUM after glewInit()
 - Ubuntu 15.04: version 1.10.0 (main)
 - Ubuntu 14.04: version 1.10.0 (main)
 - CentOS 7.1: version 1.9.0 (base repository)

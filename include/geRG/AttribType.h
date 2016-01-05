@@ -262,13 +262,13 @@ namespace ge
       inline uint16_t AttribType::glTypeAsInt() const  { return _data16[1]; }
       inline void AttribType::setGLType(GLType value)  { _data16[1]=uint16_t(value); }
       inline int AttribType::numComponents() const  { return (_data16[0]&0xf800)>>11; }
-      inline void AttribType::setNumComponents(int value)  { _data16[0]&=0x07ff; _data16[0]|=uint16_t(value<<11); }
+      inline void AttribType::setNumComponents(int value)  { auto v=_data16[0]&0x07ff; _data16[0]=uint16_t(v|(value<<11)); }
       inline bool AttribType::bgra() const  { return (_data16[0]&0x0400)!=0; }
       inline void AttribType::setBGRA(bool value)  { if(value) _data16[0]|=0x0400; else _data16[0]&=0xfbff; }
       inline int AttribType::elementSize() const  { return _data16[0]&0x00ff; }
-      inline void AttribType::setElementSize(int value)  { _data16[0]&=0xff00; _data16[0]|=uint16_t(value&0xff); }
+      inline void AttribType::setElementSize(int value)  { auto v=_data16[0]&0xff00; _data16[0]=uint16_t(v|(value&0xff)); }
       inline AttribType::TypeHandling AttribType::typeHandling() const  { return TypeHandling((_data16[0]&0x0300)>>8); }
-      inline void AttribType::setTypeHandling(AttribType::TypeHandling value)  { _data16[0]&=0xfc00; _data16[0]|=uint16_t(value); }
+      inline void AttribType::setTypeHandling(AttribType::TypeHandling value)  { auto v=_data16[0]&0xfc00; _data16[0]=uint16_t(v|value); }
       inline uint32_t AttribType::divisor() const  { return _data32[1]; }
       inline void AttribType::setDivisor(uint32_t value)  { _data32[1]=value; }
       inline uint64_t AttribType::asInt64() const  { return _data64; }
