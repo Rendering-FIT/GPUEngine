@@ -25,13 +25,8 @@ namespace ge
 
          typedef typename std::conditional<std::is_trivially_copyable<ChildT>::value &&
                sizeof(ChildT)<=sizeof(void*),ChildT,const ChildT&>::type ChildParamT;
-      #if defined(__GNUC__) && (__GNUC__==4) && (__GNUC_MINOR__<=8)
          typedef typename std::list<ParentPointerAbstractTemplate<ParentT,
                ChildT>>::iterator ParentListDeleteIterator;
-      #else
-         typedef typename std::list<ParentPointerAbstractTemplate<ParentT,
-               ChildT>>::const_iterator ParentListDeleteIterator;
-      #endif
 
          ChildT child;
          ParentListDeleteIterator parentListDeleteIterator;
@@ -49,13 +44,8 @@ namespace ge
 
          typedef typename std::conditional<std::is_trivially_copyable<ParentT>::value &&
                sizeof(ParentT)<=sizeof(void*),ParentT,const ParentT&>::type ParentParamT;
-      #if defined(__GNUC__) && (__GNUC__==4) && (__GNUC_MINOR__<=8)
          typedef typename std::list<ChildPointerAbstractTemplate<ChildT,
                ParentT>>::iterator ChildListDeleteIterator;
-      #else
-         typedef typename std::list<ChildPointerAbstractTemplate<ChildT,
-               ParentT>>::const_iterator ChildListDeleteIterator;
-      #endif
 
          ParentT parent;
          ChildListDeleteIterator childListDeleteIterator;
@@ -114,7 +104,7 @@ namespace ge
          {
          protected:
 
-            typename std::list<ListItemT>::const_iterator _it;
+            typename std::list<ListItemT>::iterator _it;
 
          public:
 
@@ -122,13 +112,9 @@ namespace ge
             typedef std::bidirectional_iterator_tag    iterator_category;
 
             inline AbstractIterator()  {}
-            explicit inline AbstractIterator(typename std::list<ListItemT>::const_iterator it) : _it(it)  {}
+            explicit inline AbstractIterator(typename std::list<ListItemT>::iterator it) : _it(it)  {}
 
-         #if defined(__GNUC__) && (__GNUC__==4) && (__GNUC_MINOR__<=8)
-            inline typename std::list<ListItemT>::iterator getInternalIterator() const  { return *reinterpret_cast<typename std::list<ListItemT>::iterator*>(const_cast<typename std::list<ListItemT>::const_iterator*>(&_it)); }
-         #else
-            inline typename std::list<ListItemT>::const_iterator getInternalIterator() const  { return _it; }
-         #endif
+            inline typename std::list<ListItemT>::iterator getInternalIterator() const  { return _it; }
 
             inline AbstractIterator& operator++()     { _it++; return *this; }
             inline AbstractIterator  operator++(int)  { AbstractIterator tmp = *this; _it++; return tmp; }
@@ -152,7 +138,7 @@ namespace ge
 
             inline ChildIterator()  {}
             inline ChildIterator(const ChildIterator& it) : inherited(it.getInternalIterator())  {}
-            explicit inline ChildIterator(typename std::list<ChildData>::const_iterator it) : inherited(it)  {}
+            explicit inline ChildIterator(typename std::list<ChildData>::iterator it) : inherited(it)  {}
 
             inline reference operator*() const  { return inherited::_it->child; }
             inline pointer operator->() const   { return std::addressof(inherited::_it->child); }
@@ -171,9 +157,9 @@ namespace ge
 
             inline ParentIterator()  {}
             inline ParentIterator(const ParentIterator& it) : inherited(it.getInternalIterator())  {}
-            explicit inline ParentIterator(typename std::list<ParentData>::const_iterator it) : inherited(it)  {}
+            explicit inline ParentIterator(typename std::list<ParentData>::iterator it) : inherited(it)  {}
 
-            inline reference operator*() const  { return const_cast<reference>(inherited::_it->parent); }
+            inline reference operator*() const  { return inherited::_it->parent; }
             inline pointer operator->() const   { return std::addressof(inherited::_it->parent); }
          };
 
@@ -343,13 +329,16 @@ namespace ge
          GERG_CHILD_LIST_NAMED_4(,Children,std::shared_ptr<_type_>,_type_*)
 
       #define GERG_CHILD_LIST_GET_MACRO(_1,_2,_3,_macro_name_,...) _macro_name_
+      #define GERG_CHILD_LIST_MSVC_WORKAROUND(x) x
 
-      // note: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ 4.8.2
+      // note1: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ (seen on version 4.8.2)
       // note2: second parameter "true" is just empty argument, offsetting the rest of arguments
+      // note3: GERG_CHILD_LIST_MSVC_WORKAROUND workarounds different expansion behaviour of MSVC (seen on version 2015.0 (no update))
       #define GERG_CHILD_LIST(...) \
-         GERG_CHILD_LIST_GET_MACRO(__VA_ARGS__,true,GERG_CHILD_LIST_2,GERG_CHILD_LIST_1,true)(__VA_ARGS__)
+         GERG_CHILD_LIST_MSVC_WORKAROUND(GERG_CHILD_LIST_GET_MACRO( \
+               __VA_ARGS__,true,GERG_CHILD_LIST_2,GERG_CHILD_LIST_1,true)(__VA_ARGS__))
 
-      // note: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ 4.8.2
+      // note: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ (seen on version 4.8.2)
       #define GERG_CHILD_LIST_NAMED(...) \
          GERG_CHILD_LIST_GET_MACRO(__VA_ARGS__,GERG_CHILD_LIST_NAMED_3,GERG_CHILD_LIST_NAMED_2,true)(__VA_ARGS__)
 
@@ -423,13 +412,16 @@ namespace ge
          GERG_PARENT_LIST_NAMED_3(,_type_*,std::shared_ptr<_type_>)
 
       #define GERG_PARENT_LIST_GET_MACRO(_1,_2,_3,_macro_name_,...) _macro_name_
+      #define GERG_PARENT_LIST_MSVC_WORKAROUND(x) x
 
-      // note: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ 4.8.2
+      // note1: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ (seen on version 4.8.2)
       // note2: second parameter "true" is just empty argument, offsetting the rest of arguments
+      // note3: GERG_PARENT_LIST_MSVC_WORKAROUND workarounds different expansion behaviour of MSVC (seen on version 2015.0 (no update))
       #define GERG_PARENT_LIST(...) \
-         GERG_PARENT_LIST_GET_MACRO(__VA_ARGS__,true,GERG_PARENT_LIST_2,GERG_PARENT_LIST_1,true)(__VA_ARGS__)
+         GERG_PARENT_LIST_MSVC_WORKAROUND(GERG_PARENT_LIST_GET_MACRO( \
+               __VA_ARGS__,true,GERG_PARENT_LIST_2,GERG_PARENT_LIST_1,true)(__VA_ARGS__))
 
-      // note: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ 4.8.2
+      // note: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ (seen on version 4.8.2)
       #define GERG_PARENT_LIST_NAMED(...) \
          GERG_PARENT_LIST_GET_MACRO(__VA_ARGS__,GERG_PARENT_LIST_NAMED_3,GERG_PARENT_LIST_NAMED_2,true)(__VA_ARGS__)
 
@@ -534,3 +526,4 @@ namespace ge
 }
 
 #endif // GE_RG_PARENT_CHILD_LIST_H
+
