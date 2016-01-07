@@ -54,10 +54,10 @@ SeparateBuffersAttribStorage::SeparateBuffersAttribStorage(const AttribConfigRef
       glEnableVertexAttribArray(index+1);
       glEnableVertexAttribArray(index+2);
       glEnableVertexAttribArray(index+3);
-      glVertexAttribPointer(index+0,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*0));
-      glVertexAttribPointer(index+1,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*4));
-      glVertexAttribPointer(index+2,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*8));
-      glVertexAttribPointer(index+3,4,GL_FLOAT,GL_FALSE,sizeof(float)*16,(void*)(sizeof(float)*12));
+      glVertexAttribPointer(index+0,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*0));
+      glVertexAttribPointer(index+1,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*4));
+      glVertexAttribPointer(index+2,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*8));
+      glVertexAttribPointer(index+3,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*12));
       glVertexAttribDivisor(index+0,1);
       glVertexAttribDivisor(index+1,1);
       glVertexAttribDivisor(index+2,1);

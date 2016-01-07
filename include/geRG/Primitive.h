@@ -10,10 +10,7 @@ namespace ge
    {
 
       /** PrimitiveGpuData represents part of the primitive data that is stored
-       *  in gpu buffers.
-       *
-       *  Arbitrary amount of user defined data may follow the structure.
-       *  Such data might be used for GPU-based frustum culling, automatic LOD, etc.
+       *  in gpu buffers (usually RenderingContext::primitiveStorage()).
        */
       struct PrimitiveGpuData {
          unsigned countAndIndexedFlag; ///< Number of vertices of the primitive and indexing flag on the highest bit indicating whether glDrawArrays or glDrawElements should be used for rendering.

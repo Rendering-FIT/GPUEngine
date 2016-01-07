@@ -83,7 +83,7 @@ ADD_LIBRARY(${LIB_NAME}
 
 set(Internal_deps geCore)
 set(External_deps_Export "GLEW OPENGL")
-set(External_libs OPENGL GLEW)#${GLEW_LIBRARY}
+set(External_libs GLEW OPENGL) # Because of old linkers like ld we need to link GLEW before GL when using static linkage
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)#${GLEW_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR}
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 

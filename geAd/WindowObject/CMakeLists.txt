@@ -3,19 +3,17 @@ set(LIB_NAME WindowObject)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-IF   (GPUENGINE_DYNAMIC)
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-D"${LIB_NAME_UPPER}"_LIBRARY)
-ELSE ()
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
-ENDIF()
-
-SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/geAd/CMakeModules;${CMAKE_MODULE_PATH}")
+if(GPUENGINE_DYNAMIC)
+   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+   add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
+else()
+   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+   add_definitions(-DGE_LIBRARY_STATIC)
+endif()
 
 set(SDL2_BUILDING_LIBRARY ON)
-FIND_PACKAGE(SDL2        QUIET)
-FIND_PACKAGE(AntTweakBar QUIET)
+find_package(SDL2        QUIET)
+find_package(AntTweakBar QUIET)
 
 if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
    return()
@@ -23,20 +21,20 @@ endif()
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
-set (ADD_INCLUDES
-  ${HEADER_PATH}/../Export.h
-  ${HEADER_PATH}/WindowObject.h
-  )
-set (ADD_SOURCES
-  WindowObject.cpp
-  )
+set(ADD_INCLUDES
+   ${HEADER_PATH}/../Export.h
+   ${HEADER_PATH}/WindowObject.h
+   )
+set(ADD_SOURCES
+   WindowObject.cpp
+   )
 
 
-ADD_LIBRARY(${LIB_NAME}
-    ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-    ${ADD_INCLUDES}
-    ${ADD_SOURCES}
-  )
+add_library(${LIB_NAME}
+   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
+   ${ADD_INCLUDES}
+   ${ADD_SOURCES}
+   )
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
@@ -58,15 +56,15 @@ set_target_properties(${LIB_NAME} PROPERTIES
 )
 
 install(FILES
-    ${ADD_INCLUDES}
-    DESTINATION include/geAd/${LIB_NAME}
-  )
+   ${ADD_INCLUDES}
+   DESTINATION include/geAd/${LIB_NAME}
+   )
 
 install(TARGETS ${LIB_NAME}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-  )
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+   )
 
 #########################################
 #Export

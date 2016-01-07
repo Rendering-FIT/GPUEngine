@@ -51,6 +51,13 @@ IF (GLEW_INCLUDE_DIR)
       )
    endif()
   endif()
+  
+  #static
+  set(GLEW_STATIC OFF CACHE BOOL "Link GLEW as static library (single lib) or shared library (lib+dll).")
+  
+  if(GLEW_STATIC)
+   add_definitions(-DGLEW_STATIC)
+  endif()
    
 ELSE (GLEW_INCLUDE_DIR)
 	SET( GLEW_FOUND 0 CACHE STRING "Set to 1 if GLEW is found, 0 otherwise")

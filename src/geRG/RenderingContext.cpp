@@ -454,7 +454,7 @@ ObjectId RenderingContext::createObject(
       unsigned psIndex=primitiveCount==-1 ? i : primitiveIndices[i];
       Primitive pl=mesh.primitiveList()[psIndex];
       dcData.primitiveSetOffset4=_primitiveStorage[mesh.primitivesDataId()].startIndex*
-                                 sizeof(PrimitiveGpuData)/4 + pl.offset4();
+                                 unsigned(sizeof(PrimitiveGpuData)/4) + pl.offset4();
       dcData.matrixListControlOffset4=listControlOffset4;
 
       // update instance's mode and StateSet counter
@@ -563,7 +563,7 @@ static void countMatrices(Transformation *t)
       }
    }
    for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
-      countMatrices(it->get());
+      countMatrices(*it);
 }
 
 
@@ -589,7 +589,7 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV)
 
    // process child transformations
    for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
-      processTransformation(it->get(),mv);
+      processTransformation(*it,mv);
 }
 
 
