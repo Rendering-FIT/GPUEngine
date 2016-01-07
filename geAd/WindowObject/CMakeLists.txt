@@ -47,8 +47,8 @@ ADD_LIBRARY(${LIB_NAME}
 
 set(Internal_deps geUtil)
 set(External_deps_Export SDL2 AntTweakBar )
-set(External_libs ${SDL2_LIBRARY} AntTweakBar) #${ANTTWEAKBAR_LIBRARY}
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR} ${GLEW_INCLUDE_DIR} ${SDL2_INCLUDE_DIR} )#${ANTTWEAKBAR_INCLUDE_DIR}
+set(External_libs SDL2 AntTweakBar)
+set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
 set(includes_to_export)
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )

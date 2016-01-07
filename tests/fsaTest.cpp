@@ -43,7 +43,7 @@ void createPgoBack(ge::core::FSA*fsa,void*data){
 
 void createP(ge::core::FSA*,void*data){
   std::vector<unsigned>*op=(std::vector<unsigned>*)(data);
-  op->push_back(1);
+  op->push_back(0);
 }
 
 void createPP(ge::core::FSA*,void*data){
@@ -100,6 +100,21 @@ SCENARIO("FSA goBack tests","[FSA]"){
         REQUIRE(op[3]==2);
       }
     }
+    WHEN("lexin +-++-+---+"){
+      THEN("then it should pass and parse + - ++ - + -- - +"){
+        REQUIRE(fsa.run("+-++-+---+")==true);
+        REQUIRE(op.size()==8);
+        REQUIRE(op[0]==0);
+        REQUIRE(op[1]==2);
+        REQUIRE(op[2]==1);
+        REQUIRE(op[3]==2);
+        REQUIRE(op[4]==0);
+        REQUIRE(op[5]==3);
+        REQUIRE(op[6]==2);
+        REQUIRE(op[7]==0);
+      }
+    }
+
   }
 }
 
