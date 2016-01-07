@@ -45,10 +45,10 @@ IF(MSVC)
    # so it will not be used by any link operation that consumes this library"
    SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
 
-   OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." OFF)
-   IF(GLEW_STATIC)
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DGLEW_STATIC")
-   ENDIF()
+   #OPTION(GLEW_STATIC "Link GLEW as static library (single lib) or shared library (lib+dll)." OFF)
+   #IF(GLEW_STATIC)
+   #   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DGLEW_STATIC")
+   #ENDIF()
 
    # avoid "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
