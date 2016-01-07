@@ -306,7 +306,9 @@ namespace ge{
       }
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(ARGS... args)const{
-        return this->sharedAccessor<CLASS>(this->getTypeKeyword<CLASS>(),args...);
+        //return this->sharedAccessor<CLASS>(this->getTypeKeyword<CLASS>(),args...);
+        TypeID id=this->getTypeId(this->getTypeKeyword<CLASS>());
+        return this->sharedAccessorTypeID<CLASS>(id,args...);
       }
 
     template<typename CLASS,typename... ARGS>
