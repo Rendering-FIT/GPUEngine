@@ -9,8 +9,6 @@
 namespace ge{
   namespace gl{
     class GEGL_EXPORT Program: public OpenGLObject{
-      protected:
-        std::set<std::shared_ptr<Shader>>_shaders;
       public:
         Program();
         ~Program();
@@ -22,6 +20,8 @@ namespace ge{
         void validate()const;
         GLint getUniformLocation(const char*name)const;
         GLint getAttribLocation (const char*name)const;
+      protected:
+        std::set<std::shared_ptr<Shader>>_shaders;
     };
   }
 }
