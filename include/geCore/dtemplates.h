@@ -44,7 +44,7 @@ namespace ge{
     __VA_ARGS__\
   };\
 friend std::ostream& operator<<(std::ostream& os,const name&val){\
-  static std::map<unsigned,std::string>table = ParseEnumArgs()(VA_ARGS_TO_STRING(__VA_ARGS__));\
+  static std::map<unsigned,std::string>table = ge::core::ParseEnumArgs()(VA_ARGS_TO_STRING(__VA_ARGS__));\
   auto a=table.find(val);\
   if(a!=table.end())os << a->second;\
   return os;\
