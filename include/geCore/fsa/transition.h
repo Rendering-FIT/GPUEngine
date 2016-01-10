@@ -9,9 +9,6 @@ namespace ge{
     class FSA;
     class FSAState;
     class GECORE_EXPORT FSATransition{
-      private:
-        FSAState*        _nextState = nullptr;
-        FSAFusedCallback _callback           ;
       public:
         FSATransition(FSAState*state = nullptr,FSAFusedCallback const& callback = FSAFusedCallback());
         virtual ~FSATransition();
@@ -23,6 +20,9 @@ namespace ge{
         void         callCallback   (FSA*fsa    )const;
         std::string  toStr          (           )const;
         void         setNextState   (FSAState*state = nullptr);
+      private:
+        FSAState*        _nextState = nullptr;
+        FSAFusedCallback _callback           ;
     };
   }
 }

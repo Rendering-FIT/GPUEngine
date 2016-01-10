@@ -10,10 +10,6 @@ namespace ge{
     class GECORE_EXPORT FSACallback{
       public:
         typedef void(*Fce)(FSA*,void*);
-      protected:
-        Fce   _fce ;
-        void* _data;
-      public:
         FSACallback(Fce fce = nullptr,void*data = nullptr);
         virtual ~FSACallback();
         Fce   const& getFce ()const;
@@ -21,11 +17,12 @@ namespace ge{
         bool operator==(FSACallback const&other)const;
         bool operator< (FSACallback const&other)const;
         void operator()(FSA*fsa);
+      protected:
+        Fce   _fce ;
+        void* _data;
     };
 
     class FSAFusedCallback{
-      protected:
-        std::vector<FSACallback>_callbacks;
       public:
         FSAFusedCallback();
         FSAFusedCallback(FSACallback const&callback);
@@ -33,6 +30,8 @@ namespace ge{
         void operator()(FSA*fsa)const;
         bool operator==(FSAFusedCallback const&other)const;
         bool operator!=(FSAFusedCallback const&other)const;
+      protected:
+        std::vector<FSACallback>_callbacks;
     };
   }
 }

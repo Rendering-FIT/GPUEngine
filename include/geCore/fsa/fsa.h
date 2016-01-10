@@ -1,4 +1,5 @@
 #pragma once
+
 #include<iostream>
 #include<vector>
 #include<map>
@@ -12,22 +13,9 @@ namespace ge{
   namespace core{
     class FSAState;
     class GECORE_EXPORT FSA{
-      private:
-        std::string                    _start            = "";
-        std::set<FSAState*>            _endStates            ;
-        std::map<std::string,FSAState*>_name2State           ;
-        std::map<std::string,FSACallback::Fce>_state2MessageFce;
-        std::map<std::string,void*>_state2MessageData;
-        std::string                    _alreadyRead      = "";
-        char                           _currentChar      = 0 ;
-        std::string                    _currentStateName = "";
-        unsigned                       _currentPosition  = 0 ;
       public:
         template<typename...Args>
-          FSA(std::string start,Args... args){
-            this->_start=start;
-            this->_processArgs(args...);
-          }
+          FSA(std::string start,Args... args);
         FSA(std::string start = "");
         virtual ~FSA();
         void minimalize();
@@ -38,11 +26,11 @@ namespace ge{
             FSACallback::Fce callback = nullptr,
             void*            data     = nullptr);
         void addTransition(
-            std::string  stateA                ,
-            std::string  lex                   ,
-            std::string  stateB                ,
+            std::string      stateA            ,
+            std::string      lex               ,
+            std::string      stateB            ,
             FSACallback::Fce callback = nullptr,
-            void*        data         = nullptr);
+            void*            data     = nullptr);
         void addAllTransition(
             std::string      stateA            ,
             std::string      stateB            ,
@@ -101,6 +89,16 @@ namespace ge{
         static const std::string all  ;
         static const std::string space;
       private:
+        std::string                    _start            = "";
+        std::set<FSAState*>            _endStates            ;
+        std::map<std::string,FSAState*>_name2State           ;
+        std::map<std::string,FSACallback::Fce>_state2MessageFce ;
+        std::map<std::string,void*>           _state2MessageData;
+        std::string                    _alreadyRead      = "";
+        char                           _currentChar      = 0 ;
+        std::string                    _currentStateName = "";
+        unsigned                       _currentPosition  = 0 ;
+
         void _initRun();
         FSAState*_addState (std::string name,bool end=false);
         FSAState*_getState (std::string name)const;
@@ -118,7 +116,11 @@ namespace ge{
         void _processArgs(std::string,std::string,std::string,std::string,Args...);
     };
 
-
+    template<typename...Args>
+      FSA::FSA(std::string start,Args... args){
+        this->_start=start;
+        this->_processArgs(args...);
+      }
     template<typename...Args>
       void FSA::_processArgs(
           std::string      stateA  ,
