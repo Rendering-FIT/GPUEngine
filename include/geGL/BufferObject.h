@@ -12,11 +12,6 @@ namespace ge{
           KEEP_ID    = 1u<<0u,
           KEEP_DATA  = 1u<<1u,
         };
-      private:
-        GLint   _getBufferParameter(GLenum pname)const;
-        GLvoid* _getBufferPointer  (GLenum pname)const;
-        void    _bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const;
-      public:
         BufferObject();
         BufferObject(
             GLsizeiptr    size                  ,
@@ -39,12 +34,12 @@ namespace ge{
             GLsizeiptr   size   = 0,
             GLintptr     offset = 0)const;
         void getData(
-            GLvoid*     data      ,
-            GLsizeiptr  size   = 0,
-            GLintptr    offset = 0)const;
+            GLvoid*    data      ,
+            GLsizeiptr size   = 0,
+            GLintptr   offset = 0)const;
         void bind       (GLenum target)const;
         void bindRange  (GLenum target,GLuint index,GLintptr offset,GLsizeiptr size)const;
-        void bindBase   (GLenum Target,GLuint index)const;
+        void bindBase   (GLenum target,GLuint index)const;
         void unbind     (GLenum target)const;
         void unbindRange(GLenum target,GLuint index)const;
         void unbindBase (GLenum target,GLuint index)const;
@@ -82,6 +77,10 @@ namespace ge{
         static GLenum      target2Binding (GLenum     target );
         static GLenum      binding2Target (GLenum     binding);
         static bool        areFlagsMutable(GLbitfield flags  );
+      private:
+        GLint   _getBufferParameter(GLenum pname)const;
+        GLvoid* _getBufferPointer  (GLenum pname)const;
+        void    _bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const;
     };
   }
 }
