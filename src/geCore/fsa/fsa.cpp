@@ -303,6 +303,21 @@ void FSA::addTransition(
     std::string      stateB  ,
     FSACallback::Fce callback,
     void*            data    ){
+  if(stateB==""){
+    this->_state2MessageFce [stateA]=callback;
+    this->_state2MessageData[stateA]=data    ;
+    return;
+  }
+  if(lex==FSA::all){
+    this->addAllTransition (stateA,stateB,callback,data);
+    return;
+  }else if(lex==FSA::els){
+    this->addElseTransition(stateA,stateB,callback,data);
+    return;
+  }else if(lex==FSA::eof){
+    this->addEOFTransition (stateA,stateB,callback,data);
+    return;
+  }
   std::string elex=this->_expandLex(lex);
   for(unsigned i=0;i<elex.size();++i){
     this->addTransition(stateA,elex[i],stateB,callback,data);
@@ -393,12 +408,11 @@ bool FSA::run(std::string text){
   this->_initRun();
   FSAState*curFSAState=this->_name2State[this->_start];
   this->_currentPosition = 0;
+  this->_alreadyRead = "";
   while(this->_currentPosition<text.size()){
     this->_currentChar      = text[this->_currentPosition];
     this->_currentStateName = curFSAState->getName();
-    this->_currentPosition  = this->_currentPosition;
-    this->_alreadyRead      = text.substr(0,this->_currentPosition+1);
-    FSAState*newFSAState=curFSAState->apply(text[this->_currentPosition],this);
+    FSAState*newFSAState=curFSAState->apply(this->_currentChar,this);
     if(!newFSAState){
       auto ii=this->_state2MessageFce.find(this->_currentStateName);
       if(ii!=this->_state2MessageFce.end())
@@ -406,6 +420,7 @@ bool FSA::run(std::string text){
       return false;
     }
     this->_currentPosition++;
+    this->_alreadyRead      = text.substr(0,this->_currentPosition);
     curFSAState=newFSAState;
   }
   if(!curFSAState->getEOFTransition().getNextState()){

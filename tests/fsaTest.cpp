@@ -131,7 +131,7 @@ SCENARIO( "FSA float test", "[FSA]" ) {
     FSA fsa(
 //    std::shared_ptr<FSA>fsa=std::make_shared<FSA>(
 
-        "S",
+      "S",
       "S",sign                ,"A",registerStart,(void*)&startPos,
       "S",delimiter           ,"B",registerStart,(void*)&startPos,
       "S",ge::core::FSA::digit,"C",registerStart,(void*)&startPos,
