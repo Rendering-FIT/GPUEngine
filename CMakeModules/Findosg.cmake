@@ -11,95 +11,105 @@
 #
 # Locate osg
 # This module defines
+# osg_FOUND, if false, do not try to link to osg
 # OSG_LIBRARY
-# OSG_FOUND, if false, do not try to link to osg
 # OSG_INCLUDE_DIR, where to find the headers
+# osg target will be created for cmake 3.0.0 and newer
 #
 # $OSGDIR is an environment variable that would
 # correspond to the ./configure --prefix=$OSGDIR
 # used in building osg.
 #
 # Created by Eric Wing.
+#
+# Modified by PCJohn (Jan Peciva):
+# Look for config file first. Create SDL2 target. Print GPUEngine style message.
+# Updated code formatting to match the one used in GPUEngine.
 
-# Header files are presumed to be included like
-# #include <osg/PositionAttitudeTransform>
-# #include <osgUtil/SceneView>
 
-# Search paths
-IF (!WIN32)
-SET(SEARCH_PATHS
-    ~/Library/Frameworks
-    /Library/Frameworks
-    /usr/local
-    /usr
-    /sw # Fink
-    /opt/local # DarwinPorts
-    /opt/csw # Blastwave
-    /opt)
-ELSE (!WIN32)
-SET(SEARCH_PATHS)
-ENDIF (!WIN32)
+# try config-based find first
+find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 
-# Try the user's environment request before anything else.
-FIND_PATH(OSG_INCLUDE_DIR osg/PositionAttitudeTransform
-  HINTS
-  $ENV{OSG_DIR}
-  $ENV{OSGDIR}
-  PATH_SUFFIXES include
-  PATHS
-    ${SEARCH_PATHS}
-    [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OpenThreads_ROOT]
-    [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]
-)
+# use regular old-style approach
+if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
-FIND_LIBRARY(OSG_LIBRARY_RELEASE
-  NAMES osg
-  HINTS
-  $ENV{OSG_DIR}
-  $ENV{OSGDIR}
-  PATH_SUFFIXES lib64 lib
-  PATHS
-    ${SEARCH_PATHS}
-)
-
-FIND_LIBRARY(OSG_LIBRARY_DEBUG
-  NAMES osgd
-  HINTS
-  $ENV{OSG_DIR}
-  $ENV{OSGDIR}
-  PATH_SUFFIXES lib64 lib
-  PATHS
-    ${SEARCH_PATHS}
-)
-
-# set release to debug (if only debug found)
-IF(NOT OSG_LIBRARY_RELEASE AND OSG_LIBRARY_DEBUG)
-  SET(OSG_LIBRARY_RELEASE ${OSG_LIBRARY_DEBUG})
-ENDIF(NOT OSG_LIBRARY_RELEASE AND OSG_LIBRARY_DEBUG)
-
-# set debug to release (if only release found)
-IF(NOT OSG_LIBRARY_DEBUG AND OSG_LIBRARY_RELEASE)
-  SET(OSG_LIBRARY_DEBUG ${OSG_LIBRARY_RELEASE})
-ENDIF(NOT OSG_LIBRARY_DEBUG AND OSG_LIBRARY_RELEASE)
-
-# OSG_LIBRARY
-SET(OSG_LIBRARY optimized ${OSG_LIBRARY_RELEASE} debug ${OSG_LIBRARY_DEBUG})
-
-# OSG_FOUND
-SET(OSG_FOUND "NO")
-IF(OSG_LIBRARY AND OSG_INCLUDE_DIR)
-  SET(OSG_FOUND "YES")
-  
-  #TARGET
-  if(CMAKE_VERSION VERSION_EQUAL 3.0.0 OR CMAKE_VERSION VERSION_GREATER 3.0.0)
-   if(NOT TARGET osg)
-      add_library(osg INTERFACE IMPORTED)
-      set_target_properties(osg PROPERTIES
-         INTERFACE_INCLUDE_DIRECTORIES "${OSG_INCLUDE_DIR}"
-         INTERFACE_LINK_LIBRARIES "${OSG_LIBRARY}"
-      )
+   # search paths
+   if(!WIN32)
+      set(SEARCH_PATHS
+         ~/Library/Frameworks
+         /Library/Frameworks
+         /usr/local
+         /usr
+         /sw # Fink
+         /opt/local # DarwinPorts
+         /opt/csw # Blastwave
+         /opt)
+   else()
+      set(SEARCH_PATHS)
    endif()
-  endif()
-  
-ENDIF(OSG_LIBRARY AND OSG_INCLUDE_DIR)
 
+   # try the user's environment request before anything else
+   find_path(OSG_INCLUDE_DIR osg/PositionAttitudeTransform
+      HINTS
+      $ENV{OSG_DIR}
+      $ENV{OSGDIR}
+      PATH_SUFFIXES include
+      PATHS
+         ${SEARCH_PATHS}
+         [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OpenThreads_ROOT]
+         [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]
+   )
+
+   find_library(OSG_LIBRARY_RELEASE
+      NAMES osg
+      HINTS
+      $ENV{OSG_DIR}
+      $ENV{OSGDIR}
+      PATH_SUFFIXES lib64 lib
+      PATHS
+         ${SEARCH_PATHS}
+   )
+
+   find_library(OSG_LIBRARY_DEBUG
+      NAMES osgd
+      HINTS
+      $ENV{OSG_DIR}
+      $ENV{OSGDIR}
+      PATH_SUFFIXES lib64 lib
+      PATHS
+         ${SEARCH_PATHS}
+   )
+
+   # set *_FOUND flag
+   if(OSG_INCLUDE_DIR AND (OSG_LIBRARY_RELEASE OR OSG_LIBRARY_DEBUG))
+      set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
+   endif()
+
+   # set OSG_LIBRARY
+   set(OSG_LIBRARY optimized ${OSG_LIBRARY_RELEASE} debug ${OSG_LIBRARY_DEBUG})
+
+   # target for cmake 3.0.0 and newer
+   if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+      if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
+         if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
+            add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+            set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+               INTERFACE_INCLUDE_DIRECTORIES "${OSG_INCLUDE_DIR}"
+               INTERFACE_LINK_LIBRARIES_DEBUG "${OSG_LIBRARY_DEBUG}"
+               INTERFACE_LINK_LIBRARIES_RELEASE "${OSG_LIBRARY_RELEASE}"
+            )
+         endif()
+      endif()
+   endif()
+
+endif()
+
+# message
+include(GEMacros)
+if(OSG_LIBRARY_RELEASE)
+   ge_report_find_status("${OSG_LIBRARY_RELEASE}")
+elseif(OSG_LIBRARY_DEBUG)
+   ge_report_find_status("${OSG_LIBRARY_DEBUG}")
+else()
+   ge_report_find_status("")
+endif()

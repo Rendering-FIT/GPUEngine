@@ -31,26 +31,28 @@ gcc:
 - Ubuntu 14.04: distribution provided version is 4.8.4 (main)
 - CentOS 7.1: distribution provided version is 4.8.3 (repository: ?)
 
-Cmake:
+CMake:
 - Ubuntu 15.04: distribution provided version is 3.0.2 (main)
 - Ubuntu 14.04: distribution provided version is 2.8.12.2 (main)
 - CentOS 7.1: distribution provided version is 2.8.11 (repository: ?)
 
-glm:
-- import targets are supported since version 0.9.7.0 (released 2015-08-02)
+GLM:
+- import targets are supported since version 0.9.7.0 (released 2015-08-02),
+  target name: "glm"
 - GLM_FORCE_RADIANS define was required in version 0.9.5.x (otherwise warning appeared),
   version 0.9.6.0 (released 2014-11-30) use radians by default and ignores the define
 - Ubuntu 15.04: version 0.9.5.4 (main)
 - Ubuntu 14.04: version 0.9.5.1 (main)
 - CentOS: no rpm (seems that no rpm is available for Fedora)
 
-glew:
+GLEW:
 - version 1.9.0 was seen to generate GL_INVALID_ENUM after glewInit()
 - Ubuntu 15.04: version 1.10.0 (main)
 - Ubuntu 14.04: version 1.10.0 (main)
 - CentOS 7.1: version 1.9.0 (base repository)
 
 glfw3:
+- import targets: in version 3.1.2, config file is provided but no targets are created
 - Ubuntu 15.04: version 3.0.4 (universe)
 - Ubuntu 14.04: glfw2 version 2.7.2 (universe)
 - CentOS: no rpm (Fedora: seems yes)
@@ -66,6 +68,7 @@ AntTweakBar:
 - CentOS 7.1: yes (epel repository), version 1.16, Fedora: seems yes
 
 Assimp:
+- import targets: version 3.1.1 has config file but it does not include import target
 - Ubuntu 15.04: version 3.0 (universe)
 - Ubuntu 14.04: version 3.0 (universe)
 - CentOS 7.1: yes (epel repository), version 3.1.1, Fedora: seems yes

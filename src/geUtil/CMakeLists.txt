@@ -3,103 +3,102 @@ set(LIB_NAME geUtil)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-IF   (GPUENGINE_DYNAMIC)
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-D"${LIB_NAME_UPPER}"_LIBRARY)
-ELSE ()
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
-ENDIF()
-
+if(GPUENGINE_DYNAMIC)
+   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+   add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
+else()
+   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+   add_definitions(-DGE_LIBRARY_STATIC)
+endif()
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
 set(ARGUMENTMANAGER_SOURCES
-  ArgumentManager/ArgData.cpp
-  ArgumentManager/BaseData.cpp
-  ArgumentManager/ArrayData.cpp
-  ArgumentManager/StructData.cpp
-  ArgumentManager/ArgumentManager.cpp
-  )
+   ArgumentManager/ArgData.cpp
+   ArgumentManager/BaseData.cpp
+   ArgumentManager/ArrayData.cpp
+   ArgumentManager/StructData.cpp
+   ArgumentManager/ArgumentManager.cpp
+)
 
 set(ARGUMENTMANAGER_INCLUDES
-  ${HEADER_PATH}/ArgumentManager/ArgData.h
-  ${HEADER_PATH}/ArgumentManager/BaseData.h
-  ${HEADER_PATH}/ArgumentManager/ArrayData.h
-  ${HEADER_PATH}/ArgumentManager/StructData.h
-  ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
-  )
+   ${HEADER_PATH}/ArgumentManager/ArgData.h
+   ${HEADER_PATH}/ArgumentManager/BaseData.h
+   ${HEADER_PATH}/ArgumentManager/ArrayData.h
+   ${HEADER_PATH}/ArgumentManager/StructData.h
+   ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
+)
 
 set(LIBRARYLOADER_SOURCES
-  LibraryLoader/LibraryLoader.cpp
-  LibraryLoader/LibraryObjectLoader.cpp
-  LibraryLoader/RuntimeClassMetaData.cpp
-  LibraryLoader/RuntimeClassInterface.cpp
-  )
+   LibraryLoader/LibraryLoader.cpp
+   LibraryLoader/LibraryObjectLoader.cpp
+   LibraryLoader/RuntimeClassMetaData.cpp
+   LibraryLoader/RuntimeClassInterface.cpp
+)
 
 set(LIBRARYLOADER_INCLUDES
-  ${HEADER_PATH}/LibraryLoader/LibraryLoader.h
-  ${HEADER_PATH}/LibraryLoader/LibraryObjectLoader.h
-  ${HEADER_PATH}/LibraryLoader/ClassMetaData.h
-  ${HEADER_PATH}/LibraryLoader/RuntimeClassMetaData.h
-  ${HEADER_PATH}/LibraryLoader/RuntimeClassInterface.h
-  )
+   ${HEADER_PATH}/LibraryLoader/LibraryLoader.h
+   ${HEADER_PATH}/LibraryLoader/LibraryObjectLoader.h
+   ${HEADER_PATH}/LibraryLoader/ClassMetaData.h
+   ${HEADER_PATH}/LibraryLoader/RuntimeClassMetaData.h
+   ${HEADER_PATH}/LibraryLoader/RuntimeClassInterface.h
+)
 
 set(GL_INCLUDES
-  ${HEADER_PATH}/Export.h
-  ${HEADER_PATH}/algorithms.h
-  ${HEADER_PATH}/ArgumentObject.h
-  ${HEADER_PATH}/CameraObject.h
-  ${HEADER_PATH}/CameraPath.h
-  ${HEADER_PATH}/FPSPrinter.h
-  ${HEADER_PATH}/HighResolutionTimer.h
-  ${HEADER_PATH}/Interpolator.h
-  ${HEADER_PATH}/Intersectors.h
-  ${HEADER_PATH}/macros.h
-  ${HEADER_PATH}/MatrixStack.h
-  ${HEADER_PATH}/Progress.h
-  ${HEADER_PATH}/Ray.h
-  ${HEADER_PATH}/geUtil.h
-  ${HEADER_PATH}/Namespace.h
-  ${HEADER_PATH}/NamespaceWithUsers.h
-  ${HEADER_PATH}/User.h
-  ${HEADER_PATH}/copyArgumentManager2Namespace.h
-  )
+   ${HEADER_PATH}/Export.h
+   ${HEADER_PATH}/algorithms.h
+   ${HEADER_PATH}/ArgumentObject.h
+   ${HEADER_PATH}/CameraObject.h
+   ${HEADER_PATH}/CameraPath.h
+   ${HEADER_PATH}/FPSPrinter.h
+   ${HEADER_PATH}/HighResolutionTimer.h
+   ${HEADER_PATH}/Interpolator.h
+   ${HEADER_PATH}/Intersectors.h
+   ${HEADER_PATH}/macros.h
+   ${HEADER_PATH}/MatrixStack.h
+   ${HEADER_PATH}/Progress.h
+   ${HEADER_PATH}/Ray.h
+   ${HEADER_PATH}/geUtil.h
+   ${HEADER_PATH}/Namespace.h
+   ${HEADER_PATH}/NamespaceWithUsers.h
+   ${HEADER_PATH}/User.h
+   ${HEADER_PATH}/copyArgumentManager2Namespace.h
+)
 
 
 set(GL_SOURCES
-  ArgumentObject.cpp  
-  CameraObject.cpp
-  CameraPath.cpp
-  FPSPrinter.cpp
-  HighResolutionTimer.cpp
-  Intersectors.cpp
-  Progress.cpp
-  Namespace.cpp
-  NamespaceWithUsers.cpp
-  copyArgumentManager2Namespace.cpp
-  )
+   ArgumentObject.cpp
+   CameraObject.cpp
+   CameraPath.cpp
+   FPSPrinter.cpp
+   HighResolutionTimer.cpp
+   Intersectors.cpp
+   Progress.cpp
+   Namespace.cpp
+   NamespaceWithUsers.cpp
+   copyArgumentManager2Namespace.cpp
+)
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)
    set(GL_INCLUDES ${GL_INCLUDES} ${HEADER_PATH}/WindowObject.h)
    set(GL_SOURCES ${GL_SOURCES} WindowObject.cpp)
 endif()
 
-ADD_LIBRARY(${LIB_NAME}
-    ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-    ${GL_INCLUDES}
-    ${ARGUMENTMANAGER_INCLUDES}
-    ${LIBRARYLOADER_INCLUDES}
-    ${GL_SOURCES}
-    ${ARGUMENTMANAGER_SOURCES}
-    ${LIBRARYLOADER_SOURCES}
+add_library(${LIB_NAME}
+   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
+   ${GL_INCLUDES}
+   ${ARGUMENTMANAGER_INCLUDES}
+   ${LIBRARYLOADER_INCLUDES}
+   ${GL_SOURCES}
+   ${ARGUMENTMANAGER_SOURCES}
+   ${LIBRARYLOADER_SOURCES}
 )
- 
+
 ################################################
 # PACKAGES
 
 find_package(glm)
-  
+
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
 # External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
@@ -109,37 +108,37 @@ find_package(glm)
 
 set(Internal_deps geGL)
 set(External_deps_Export glm)
-set(External_libs glm )
+set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
 
 target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps} ${External_libs})
 set_target_properties(${LIB_NAME} PROPERTIES
-	INCLUDE_DIRECTORIES "${Internal_inc}"
-	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
+   INCLUDE_DIRECTORIES "${Internal_inc}"
+   INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
 install(FILES
-    ${ARGUMENTMANAGER_INCLUDES}
-    DESTINATION include/${LIB_NAME}/ArgumentManager
-  )
+   ${ARGUMENTMANAGER_INCLUDES}
+   DESTINATION include/${LIB_NAME}/ArgumentManager
+)
 
 install(FILES
-    ${LIBRARYLOADER_INCLUDES}
-    DESTINATION include/${LIB_NAME}/LibraryLoader
-  )
+   ${LIBRARYLOADER_INCLUDES}
+   DESTINATION include/${LIB_NAME}/LibraryLoader
+)
 
 install(FILES
-    ${GL_INCLUDES}
-    DESTINATION include/${LIB_NAME}
-  )
+   ${GL_INCLUDES}
+   DESTINATION include/${LIB_NAME}
+)
 
 install(TARGETS ${LIB_NAME}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-  )
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+)
 
 
 #########################################
