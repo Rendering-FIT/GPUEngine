@@ -288,17 +288,6 @@ bool FSA::_createStates(FSAState**sa,FSAState**sb,std::string nameA,std::string 
 
 void FSA::addTransition(
     std::string      stateA  ,
-    char             lex     ,
-    std::string      stateB  ,
-    FSACallback::Fce callback,
-    void*            data    ){
-  FSAState*sa=nullptr,*sb=nullptr;
-  if(!this->_createStates(&sa,&sb,stateA,stateB))return;
-  sa->addTransition(lex,sb,FSACallback(callback,data));
-}
-
-void FSA::addTransition(
-    std::string      stateA  ,
     std::string      lex     ,
     std::string      stateB  ,
     FSACallback::Fce callback,
@@ -309,22 +298,33 @@ void FSA::addTransition(
     return;
   }
   if(lex==FSA::all){
-    this->addAllTransition (stateA,stateB,callback,data);
+    this->_addAllTransition (stateA,stateB,callback,data);
     return;
   }else if(lex==FSA::els){
-    this->addElseTransition(stateA,stateB,callback,data);
+    this->_addElseTransition(stateA,stateB,callback,data);
     return;
   }else if(lex==FSA::eof){
-    this->addEOFTransition (stateA,stateB,callback,data);
+    this->_addEOFTransition (stateA,stateB,callback,data);
     return;
   }
   std::string elex=this->_expandLex(lex);
   for(unsigned i=0;i<elex.size();++i){
-    this->addTransition(stateA,elex[i],stateB,callback,data);
+    this->_addTransition(stateA,elex[i],stateB,callback,data);
   }
 }
 
-void FSA::addAllTransition(
+void FSA::_addTransition(
+    std::string      stateA  ,
+    char             lex     ,
+    std::string      stateB  ,
+    FSACallback::Fce callback,
+    void*            data    ){
+  FSAState*sa=nullptr,*sb=nullptr;
+  if(!this->_createStates(&sa,&sb,stateA,stateB))return;
+  sa->addTransition(lex,sb,FSACallback(callback,data));
+}
+
+void FSA::_addAllTransition(
     std::string      stateA  ,
     std::string      stateB  ,
     FSACallback::Fce callback,
@@ -335,7 +335,7 @@ void FSA::addAllTransition(
   sa->addElseTransition(sb,FSACallback(callback,data));
 }
 
-void FSA::addElseTransition(
+void FSA::_addElseTransition(
     std::string      stateA      ,
     std::string      stateB      ,
     FSACallback::Fce callback,
@@ -345,7 +345,7 @@ void FSA::addElseTransition(
   sa->addElseTransition(sb,FSACallback(callback,data));
 }
 
-void FSA::addEOFTransition(
+void FSA::_addEOFTransition(
     std::string      stateA  ,
     std::string      stateB  ,
     FSACallback::Fce callback,
@@ -355,7 +355,7 @@ void FSA::addEOFTransition(
   sa->addEOFTransition(sb,FSACallback(callback,data));
 }
 
-void FSA::addTransition(
+void FSA::_addTransition(
     std::string            stateA  ,
     char                   lex     ,
     std::string            stateB  ,
@@ -365,17 +365,19 @@ void FSA::addTransition(
   sa->addTransition(lex,sb,callback);
 }
 
-void FSA::addTransition(
+//TODO when fusing transitions fuse error messages as well
+
+void FSA::_addTransition(
     std::string            stateA  ,
     std::string            lex     ,
     std::string            stateB  ,
     FSAFusedCallback const&callback){
   std::string elex=this->_expandLex(lex);
   for(unsigned i=0;i<elex.size();++i)
-    this->addTransition(stateA,elex[i],stateB,callback);
+    this->_addTransition(stateA,elex[i],stateB,callback);
 }
 
-void FSA::addAllTransition(
+void FSA::_addAllTransition(
     std::string            stateA  ,
     std::string            stateB  ,
     FSAFusedCallback const&callback){
@@ -385,7 +387,7 @@ void FSA::addAllTransition(
   sa->addElseTransition(sb,callback);
 }
 
-void FSA::addElseTransition(
+void FSA::_addElseTransition(
     std::string            stateA  ,
     std::string            stateB  ,
     FSAFusedCallback const&callback){
@@ -394,7 +396,7 @@ void FSA::addElseTransition(
   sa->addElseTransition(sb,callback);
 }
 
-void FSA::addEOFTransition(
+void FSA::_addEOFTransition(
     std::string            stateA  ,
     std::string            stateB  ,
     FSAFusedCallback const&callback){

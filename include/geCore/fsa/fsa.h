@@ -21,53 +21,10 @@ namespace ge{
         void minimalize();
         void addTransition(
             std::string      stateA            ,
-            char             lex               ,
-            std::string      stateB            ,
-            FSACallback::Fce callback = nullptr,
-            void*            data     = nullptr);
-        void addTransition(
-            std::string      stateA            ,
             std::string      lex               ,
             std::string      stateB            ,
             FSACallback::Fce callback = nullptr,
             void*            data     = nullptr);
-        void addAllTransition(
-            std::string      stateA            ,
-            std::string      stateB            ,
-            FSACallback::Fce callback = nullptr,
-            void*            data     = nullptr);
-        void addElseTransition(
-            std::string      stateA            ,
-            std::string      stateB            ,
-            FSACallback::Fce callback = nullptr,
-            void*            data     = nullptr);
-        void addEOFTransition(
-            std::string      stateA            ,
-            std::string      stateB            ,
-            FSACallback::Fce callback = nullptr,
-            void*            data     = nullptr);
-        void addTransition(
-            std::string            stateA  ,
-            char                   lex     ,
-            std::string            stateB  ,
-            FSAFusedCallback const&callback);
-        void addTransition(
-            std::string            stateA  ,
-            std::string            lex     ,
-            std::string            stateB  ,
-            FSAFusedCallback const&callback);
-        void addAllTransition(
-            std::string            stateA  ,
-            std::string            stateB  ,
-            FSAFusedCallback const&callback);
-        void addElseTransition(
-            std::string            stateA  ,
-            std::string            stateB  ,
-            FSAFusedCallback const&callback);
-        void addEOFTransition(
-            std::string            stateA  ,
-            std::string            stateB  ,
-            FSAFusedCallback const&callback);
         bool run(std::string text);
         char        getCurrentChar      ()const;
         std::string getAlreadyReadString()const;
@@ -105,6 +62,50 @@ namespace ge{
         std::string _expandLex(std::string lex )const;
         bool _createStates(FSAState**sa,FSAState**sb,std::string nameA,std::string nameB,bool end = false);
         void _computeEndStates();
+
+        void _addTransition(
+            std::string      stateA            ,
+            char             lex               ,
+            std::string      stateB            ,
+            FSACallback::Fce callback = nullptr,
+            void*            data     = nullptr);
+        void _addAllTransition(
+            std::string      stateA            ,
+            std::string      stateB            ,
+            FSACallback::Fce callback = nullptr,
+            void*            data     = nullptr);
+        void _addElseTransition(
+            std::string      stateA            ,
+            std::string      stateB            ,
+            FSACallback::Fce callback = nullptr,
+            void*            data     = nullptr);
+        void _addEOFTransition(
+            std::string      stateA            ,
+            std::string      stateB            ,
+            FSACallback::Fce callback = nullptr,
+            void*            data     = nullptr);
+        void _addTransition(
+            std::string            stateA  ,
+            char                   lex     ,
+            std::string            stateB  ,
+            FSAFusedCallback const&callback);
+        void _addTransition(
+            std::string            stateA  ,
+            std::string            lex     ,
+            std::string            stateB  ,
+            FSAFusedCallback const&callback);
+        void _addAllTransition(
+            std::string            stateA  ,
+            std::string            stateB  ,
+            FSAFusedCallback const&callback);
+        void _addElseTransition(
+            std::string            stateA  ,
+            std::string            stateB  ,
+            FSAFusedCallback const&callback);
+        void _addEOFTransition(
+            std::string            stateA  ,
+            std::string            stateB  ,
+            FSAFusedCallback const&callback);
 
         template<typename...Args>
         void _processArgs(std::string,std::string,std::string,FSACallback::Fce c=nullptr,void*d=nullptr);
