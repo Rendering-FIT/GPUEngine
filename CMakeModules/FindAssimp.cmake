@@ -62,4 +62,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${ASSIMP_LIBRARY})
+ge_report_find_status("${ASSIMP_LIBRARY}")

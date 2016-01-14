@@ -83,4 +83,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${GLEW_LIBRARY})
+ge_report_find_status("${GLEW_LIBRARY}")

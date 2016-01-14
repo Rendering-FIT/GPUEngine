@@ -89,4 +89,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${GLFW3_LIBRARY})
+ge_report_find_status("${GLFW3_LIBRARY}")

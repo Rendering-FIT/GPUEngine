@@ -5,7 +5,7 @@ project(${APP_NAME})
 find_package(SDL2)
 find_package(AntTweakBar)
 
-if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
    return()
 endif()
 
@@ -24,19 +24,10 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # Internal_inc - additional include directories
 
 set(Internal_deps geGL geUtil WindowObject)
-set(External_libs
-  ${GLEW_LIBRARY}
-  ${OPENGL_LIBRARY}
-  ${SDL2_LIBRARY}
-  ${ANTTWEAKBAR_LIBRARY}
+set(External_libs OpenGL GLEW glm SDL2 AntTweakBar
   ${X11_LIBRARIES}
   )
 set(Internal_inc
-  ${GLEW_INCLUDE_DIR}
-  ${GLM_INCLUDE_DIR}
-  ${OPENGL_INCLUDE_DIR}
-  ${SDL2_INCLUDE_DIR}
-  ${ANTTWEAKBAR_INCLUDE_DIR}
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}
   )

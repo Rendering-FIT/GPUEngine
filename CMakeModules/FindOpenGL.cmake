@@ -110,4 +110,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${OPENGL_LIBRARY})
+ge_report_find_status("${OPENGL_LIBRARY}")

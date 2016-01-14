@@ -44,4 +44,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${GLM_INCLUDE_DIR})
+ge_report_find_status("${GLM_INCLUDE_DIR}")

@@ -197,4 +197,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${SDL2_LIBRARY})
+ge_report_find_status("${SDL2_LIBRARY}")

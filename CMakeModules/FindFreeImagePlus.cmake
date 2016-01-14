@@ -74,4 +74,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status(${FREEIMAGEPLUS_LIBRARY})
+ge_report_find_status("${FREEIMAGEPLUS_LIBRARY}")
