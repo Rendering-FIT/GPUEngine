@@ -11,98 +11,112 @@
 #
 # Locate osgDB
 # This module defines
+# osgDB_FOUND, if false, do not try to link to osgDB
 # OSGDB_LIBRARY
-# OSGDB_FOUND, if false, do not try to link to osgDB
 # OSGDB_INCLUDE_DIR, where to find the headers
+# osgDB target will be created for cmake 3.0.0 and newer
 #
 # $OSGDIR is an environment variable that would
 # correspond to the ./configure --prefix=$OSGDIR
 # used in building osg.
 #
 # Created by Eric Wing.
+#
+# Modified by PCJohn (Jan Peciva):
+# Look for config file first. Create SDL2 target. Print GPUEngine style message.
+# Updated code formatting to match the one used in GPUEngine.
 
 # Header files are presumed to be included like
 # #include <osg/PositionAttitudeTransform>
 # #include <osgDB/DatabasePager>
 
-# Search paths
-IF (!WIN32)
-SET(SEARCH_PATHS
-    ~/Library/Frameworks
-    /Library/Frameworks
-    /usr/local
-    /usr
-    /sw # Fink
-    /opt/local # DarwinPorts
-    /opt/csw # Blastwave
-    /opt)
-ELSE (!WIN32)
-SET(SEARCH_PATHS)
-ENDIF (!WIN32)
 
-# Try the user's environment request before anything else.
-FIND_PATH(OSGDB_INCLUDE_DIR osgDB/DatabasePager
-  HINTS
-  $ENV{OSGDB_DIR}
-  $ENV{OSG_DIR}
-  $ENV{OSGDIR}
-  PATH_SUFFIXES include
-  PATHS
-    ${SEARCH_PATHS}
-    [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OpenThreads_ROOT]
-    [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]
-)
+# try config-based find first
+find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 
-FIND_LIBRARY(OSGDB_LIBRARY_RELEASE
-  NAMES osgDB
-  HINTS
-  $ENV{OSGDB_DIR}
-  $ENV{OSG_DIR}
-  $ENV{OSGDIR}
-  PATH_SUFFIXES lib64 lib
-  PATHS
-    ${SEARCH_PATHS}
-)
+# use regular old-style approach
+if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
-FIND_LIBRARY(OSGDB_LIBRARY_DEBUG
-  NAMES osgDBd
-  HINTS
-  $ENV{OSGDB_DIR}
-  $ENV{OSG_DIR}
-  $ENV{OSGDIR}
-  PATH_SUFFIXES lib64 lib
-  PATHS
-    ${SEARCH_PATHS}
-)
-
-# set release to debug (if only debug found)
-IF(NOT OSGDB_LIBRARY_RELEASE AND OSGDB_LIBRARY_DEBUG)
-  SET(OSGDB_LIBRARY_RELEASE ${OSGDB_LIBRARY_DEBUG})
-ENDIF(NOT OSGDB_LIBRARY_RELEASE AND OSGDB_LIBRARY_DEBUG)
-
-# set debug to release (if only release found)
-IF(NOT OSGDB_LIBRARY_DEBUG AND OSGDB_LIBRARY_RELEASE)
-  SET(OSGDB_LIBRARY_DEBUG ${OSGDB_LIBRARY_RELEASE})
-ENDIF(NOT OSGDB_LIBRARY_DEBUG AND OSGDB_LIBRARY_RELEASE)
-
-# OSGDB_LIBRARY
-SET(OSGDB_LIBRARY optimized ${OSGDB_LIBRARY_RELEASE} debug ${OSGDB_LIBRARY_DEBUG})
-
-# OSGDB_FOUND
-SET(OSGDB_FOUND "NO")
-IF(OSGDB_LIBRARY AND OSGDB_INCLUDE_DIR)
-  SET(OSGDB_FOUND "YES")
-  
-  #TARGET
-  if(CMAKE_VERSION VERSION_EQUAL 3.0.0 OR CMAKE_VERSION VERSION_GREATER 3.0.0)
-   if(NOT TARGET osgDB)
-      add_library(osgDB INTERFACE IMPORTED)
-      set_target_properties(osgDB PROPERTIES
-         INTERFACE_INCLUDE_DIRECTORIES "${OSGDB_INCLUDE_DIR}"
-         INTERFACE_LINK_LIBRARIES "${OSGDB_LIBRARY}"
-      )
+   # search paths
+   if(!WIN32)
+      set(SEARCH_PATHS
+         ~/Library/Frameworks
+         /Library/Frameworks
+         /usr/local
+         /usr
+         /sw # Fink
+         /opt/local # DarwinPorts
+         /opt/csw # Blastwave
+         /opt)
+   else()
+      set(SEARCH_PATHS)
    endif()
-  endif()
-  
-ENDIF(OSGDB_LIBRARY AND OSGDB_INCLUDE_DIR)
 
+   # try the user's environment request before anything else
+   find_path(OSGDB_INCLUDE_DIR osgDB/DatabasePager
+      HINTS
+      $ENV{OSGDB_DIR}
+      $ENV{OSG_DIR}
+      $ENV{OSGDIR}
+      PATH_SUFFIXES include
+      PATHS
+         ${SEARCH_PATHS}
+         [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OpenThreads_ROOT]
+         [HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session\ Manager\\Environment;OSG_ROOT]
+   )
+
+   find_library(OSGDB_LIBRARY_RELEASE
+      NAMES osgDB
+      HINTS
+      $ENV{OSGDB_DIR}
+      $ENV{OSG_DIR}
+      $ENV{OSGDIR}
+      PATH_SUFFIXES lib64 lib
+      PATHS
+         ${SEARCH_PATHS}
+   )
+
+   find_library(OSGDB_LIBRARY_DEBUG
+      NAMES osgDBd
+      HINTS
+      $ENV{OSGDB_DIR}
+      $ENV{OSG_DIR}
+      $ENV{OSGDIR}
+      PATH_SUFFIXES lib64 lib
+      PATHS
+         ${SEARCH_PATHS}
+   )
+
+   # set *_FOUND flag
+   if(OSGDB_INCLUDE_DIR AND (OSGDB_LIBRARY_RELEASE OR OSGDB_LIBRARY_DEBUG))
+      set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
+   endif()
+
+   # set OSGDB_LIBRARY
+   set(OSGDB_LIBRARY optimized ${OSGDB_LIBRARY_RELEASE} debug ${OSGDB_LIBRARY_DEBUG})
+
+   # target for cmake 3.0.0 and newer
+   if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+      if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
+         if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
+            add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+            set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+               INTERFACE_INCLUDE_DIRECTORIES "${OSGDB_INCLUDE_DIR}"
+               INTERFACE_LINK_LIBRARIES_DEBUG "${OSGDB_LIBRARY_DEBUG}"
+               INTERFACE_LINK_LIBRARIES_RELEASE "${OSGDB_LIBRARY_RELEASE}"
+            )
+         endif()
+      endif()
+   endif()
+
+endif()
+
+# message
+include(GEMacros)
+if(OSGDB_LIBRARY_RELEASE)
+   ge_report_find_status("${OSGDB_LIBRARY_RELEASE}")
+elseif(OSGDB_LIBRARY_DEBUG)
+   ge_report_find_status("${OSGDB_LIBRARY_DEBUG}")
+else()
+   ge_report_find_status("")
+endif()

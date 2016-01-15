@@ -15,7 +15,7 @@ set(SDL2_BUILDING_LIBRARY ON)
 find_package(SDL2        QUIET)
 find_package(AntTweakBar QUIET)
 
-if(NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
    return()
 endif()
 

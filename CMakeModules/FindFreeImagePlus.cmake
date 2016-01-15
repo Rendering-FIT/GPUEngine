@@ -1,69 +1,77 @@
 #
-# Try to find the FreeImagePlus library and include path.
-# Once done this will define
+# Module for finding FreeImagePlus
 #
-# FREEIMAGEPLUS_FOUND
-# FREEIMAGEPLUS_INCLUDE_DIR
-# FREEIMAGEPLUS_LIBRARY
+# The module will define:
+# FreeImagePlus_FOUND - True if FreeImagePlus development files were found
+# FREEIMAGEPLUS_INCLUDE_DIR - FreeImagePlus include directories
+# FREEIMAGEPLUS_LIBRARY - FreeImagePlus libraries to link
 #
-# original by castano
-# https://code.google.com/p/nvidia-texture-tools/source/browse/trunk/cmake/FindFreeImage.cmake
+# FreeImagePlus target will be created for cmake 3.0.0 and newer
+#
 
-# try config-based approach first
-# (this was not tested as FreeImage did not provided config-based approach)
-FIND_PACKAGE(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
-IF(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
-   IF(NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
-      MESSAGE(STATUS "Found FreeImagePlus: ${FREEIMAGEPLUS_LIBRARY}")
-   ENDIF()
-   RETURN()
-ENDIF()
+
+# try config-based find first
+find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 
 # use regular old-style approach
-IF (WIN32)
-	FIND_PATH(FREEIMAGEPLUS_INCLUDE_DIR FreeImagePlus.h
-		${FREEIMAGEPLUS_ROOT_DIR}/include
-		${FREEIMAGEPLUS_ROOT_DIR}
-		DOC "The directory where FreeImagePlus.h resides")
-	FIND_LIBRARY(FREEIMAGEPLUS_LIBRARY
-		NAMES FreeImagePlus freeimageplus
-		PATHS
-		${FREEIMAGEPLUS_ROOT_DIR}/lib
-		${FREEIMAGEPLUS_ROOT_DIR}
-		DOC "The FreeImagePlus library")
-ELSE (WIN32)
-	FIND_PATH(FREEIMAGEPLUS_INCLUDE_DIR FreeImagePlus.h
-		/usr/include
-		/usr/local/include
-		/sw/include
-		/opt/local/include
-		DOC "The directory where FreeImagePlus.h resides")
-	FIND_LIBRARY(FREEIMAGEPLUS_LIBRARY
-		NAMES FreeImagePlus freeimageplus
-		PATHS
-		/usr/lib64
-		/usr/lib
-		/usr/local/lib64
-		/usr/local/lib
-		/sw/lib
-		/opt/local/lib
-		DOC "The FreeImagePlus library")
-ENDIF (WIN32)
+if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
-SET(FREEIMAGEPLUS_FOUND OFF  BOOL "Set to TRUE if FreeImagePlus is found, FALSE otherwise")
+   if(WIN32)
 
-IF (FREEIMAGEPLUS_INCLUDE_DIR AND FREEIMAGEPLUS_LIBRARY)
-	SET(FREEIMAGEPLUS_FOUND ON  BOOL "Set to TRUE if FreeImagePlus is found, FALSE otherwise")
-   #TARGET
-  if(CMAKE_VERSION VERSION_EQUAL 3.0.0 OR CMAKE_VERSION VERSION_GREATER 3.0.0)
-   if(NOT TARGET FreeImagePlus)
-      add_library(FreeImagePlus INTERFACE IMPORTED)
-      set_target_properties(FreeImagePlus PROPERTIES
-         INTERFACE_INCLUDE_DIRECTORIES "${GLEW_INCLUDE_DIR}"
-         INTERFACE_LINK_LIBRARIES "${GLEW_LIBRARY}"
-      )
+      find_path(FREEIMAGEPLUS_INCLUDE_DIR FreeImagePlus.h
+         ${FREEIMAGEPLUS_ROOT_DIR}/include
+         ${FREEIMAGEPLUS_ROOT_DIR}
+         DOC "The directory where FreeImagePlus.h resides")
+
+      find_library(FREEIMAGEPLUS_LIBRARY
+         NAMES FreeImagePlus freeimageplus
+         PATHS
+         ${FREEIMAGEPLUS_ROOT_DIR}/lib
+         ${FREEIMAGEPLUS_ROOT_DIR}
+         DOC "The FreeImagePlus library")
+
+   else()
+
+      find_path(FREEIMAGEPLUS_INCLUDE_DIR FreeImagePlus.h
+         /usr/include
+         /usr/local/include
+         /sw/include
+         /opt/local/include
+         DOC "The directory where FreeImagePlus.h resides")
+
+      find_library(FREEIMAGEPLUS_LIBRARY
+         NAMES FreeImagePlus freeimageplus
+         PATHS
+         /usr/lib64
+         /usr/lib
+         /usr/local/lib64
+         /usr/local/lib
+         /sw/lib
+         /opt/local/lib
+         DOC "The FreeImagePlus library")
+
    endif()
-  endif()
-ENDIF ()
 
-MARK_AS_ADVANCED(FREEIMAGEPLUS_FOUND)
+   # set *_FOUND flag
+   if(FREEIMAGEPLUS_INCLUDE_DIR AND FREEIMAGEPLUS_LIBRARY)
+      set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
+   endif()
+
+   # target for cmake 3.0.0 and newer
+   if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+      if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
+         if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
+            add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+            set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+               INTERFACE_INCLUDE_DIRECTORIES "${FREEIMAGEPLUS_INCLUDE_DIR}"
+               INTERFACE_LINK_LIBRARIES "${FREEIMAGEPLUS_LIBRARY}"
+            )
+         endif()
+      endif()
+   endif()
+
+endif()
+
+# message
+include(GEMacros)
+ge_report_find_status("${FREEIMAGEPLUS_LIBRARY}")

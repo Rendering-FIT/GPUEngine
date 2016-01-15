@@ -9,7 +9,7 @@ find_package(FreeImage)
 find_package(FreeImagePlus)
 
 if(NOT glfw3_FOUND OR NOT Assimp_FOUND OR
-   NOT FREEIMAGE_FOUND OR NOT FREEIMAGEPLUS_FOUND)
+   NOT FreeImage_FOUND OR NOT FreeImagePlus_FOUND)
    return()
 endif()
 
@@ -32,13 +32,7 @@ set(APP_INCLUDES
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geGL geRG geSG geUtil geCore)
-set(External_libs
-  ${GLFW3_LIBRARY}
-  ${GLEW_LIBRARY}
-  ${OPENGL_LIBRARY}
-  ${ASSIMP_LIBRARY}
-  ${FREEIMAGE_LIBRARY}
-  ${FREEIMAGEPLUS_LIBRARY}
+set(External_libs OpenGL GLEW glfw3 Assimp FreeImage FreeImagePlus
   )
 if(UNIX)
   # this is a list of libraries that are not properly included
@@ -51,12 +45,6 @@ endif()
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}
-  ${GLFW3_INCLUDE_DIR}
-  ${GLEW_INCLUDE_DIR}
-  ${OPENGL_INCLUDE_DIR}
-  ${ASSIMP_INCLUDE_DIR}
-  ${FREEIMAGE_INCLUDE_DIR}
-  ${FREEIMAGEPLUS_INCLUDE_DIR}
   )
 
 target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})

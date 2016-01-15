@@ -3,13 +3,13 @@ set(LIB_NAME geSG)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-IF   (GPUENGINE_DYNAMIC)
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-    ADD_DEFINITIONS(-D"${LIB_NAME_UPPER}"_LIBRARY)
-ELSE ()
-    SET(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-    ADD_DEFINITIONS(-DGE_LIBRARY_STATIC)
-ENDIF()
+if(GPUENGINE_DYNAMIC)
+   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
+   add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
+else()
+   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
+   add_definitions(-DGE_LIBRARY_STATIC)
+endif()
 
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
@@ -55,7 +55,7 @@ ADD_LIBRARY(${LIB_NAME}
     ${SG_INCLUDES}
     ${SG_SOURCES}
   )
-  
+
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
 # External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
@@ -70,26 +70,26 @@ set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs})
- 
+
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"
-	INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
+   INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
 )
 
 install(FILES
    ${SG_INCLUDES}
-    DESTINATION include/${LIB_NAME}
-  )
-  
+   DESTINATION include/${LIB_NAME}
+)
+
 install(TARGETS ${LIB_NAME}
    LIBRARY DESTINATION lib
    ARCHIVE DESTINATION lib
    RUNTIME DESTINATION bin
 )
-  
+
 #########################################
 #Export
-  
+
 configure_file(
    ../CMake/geConfig.cmake.in
    "${LIB_NAME}Config.cmake"

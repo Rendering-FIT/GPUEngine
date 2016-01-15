@@ -7,8 +7,8 @@ find_package(AntTweakBar)
 find_package(osg)
 find_package(osgDB)
 
-if(NOT OSG_FOUND OR NOT OSGDB_FOUND OR
-   NOT SDL2_FOUND OR NOT ANTTWEAKBAR_FOUND)
+if(NOT osg_FOUND OR NOT osgDB_FOUND OR
+   NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
    return()
 endif()
 
@@ -22,24 +22,12 @@ set(APP_INCLUDES
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geRG geGL geUtil WindowObject)
-set(External_libs
-  ${GLEW_LIBRARY}
-  ${OPENGL_LIBRARY}
-  ${SDL2_LIBRARY}
-  ${ANTTWEAKBAR_LIBRARY}
+set(External_libs OpenGL GLEW SDL2 AntTweakBar osg osgDB
   ${X11_LIBRARIES}
-  ${OSG_LIBRARY}
-  ${OSGDB_LIBRARY}
   )
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}
-  ${GLEW_INCLUDE_DIR}
-  ${OPENGL_INCLUDE_DIR}
-  ${SDL2_INCLUDE_DIR}
-  ${ANTTWEAKBAR_INCLUDE_DIR}
-  ${OSG_INCLUDE_DIR}
-  ${OSGDB_INCLUDE_DIR}
   )
 
 target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})
