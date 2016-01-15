@@ -130,17 +130,6 @@ namespace ge{
           FSACallback::Fce callback,
           void*            data    ){
         this->addTransition(stateA,lex,stateB,callback,data);
-        /*
-        if(stateB==""){
-          this->_state2MessageFce [stateA]=callback;
-          this->_state2MessageData[stateA]=data    ;
-          return;
-        }
-        if(lex==FSA::all)this->addAllTransition (stateA,stateB,callback,data);
-        if(lex==FSA::els)this->addElseTransition(stateA,stateB,callback,data);
-        if(lex==FSA::eof)this->addEOFTransition (stateA,stateB,callback,data);
-        else this->addTransition(stateA,lex,stateB,callback,data);
-        */
       }
     template<typename...Args>
       void FSA::_processArgs(
