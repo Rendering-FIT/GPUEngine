@@ -26,6 +26,9 @@ namespace ge{
             FSACallback::Fce callback = nullptr,
             void*            data     = nullptr);
         bool run(std::string text);
+        bool runWithPause(std::string text);
+        bool unpause(std::string text);
+        bool stop(std::string text);
         char        getCurrentChar      ()const;
         std::string getAlreadyReadString()const;
         std::string getCurrentStateName ()const;

@@ -405,33 +405,56 @@ void FSA::_addEOFTransition(
   sa->addEOFTransition(sb,callback);
 }
 
+#define RUN_BODY()\
+  while(this->_currentPosition<text.size()){\
+    this->_currentChar      = text[this->_currentPosition];\
+    this->_currentStateName = curFSAState->getName();\
+    FSAState*newFSAState=curFSAState->apply(this->_currentChar,this);\
+    if(!newFSAState){\
+      auto ii=this->_state2MessageFce.find(this->_currentStateName);\
+      if(ii!=this->_state2MessageFce.end())\
+        ii->second(this,this->_state2MessageData[this->_currentStateName]);\
+      return false;\
+    }\
+    this->_currentPosition++;\
+    this->_alreadyRead      = text.substr(0,this->_currentPosition);\
+    curFSAState=newFSAState;\
+  }
+
+#define RUN_TAIL()\
+  if(!curFSAState->getEOFTransition().getNextState()){\
+    auto ii=this->_state2MessageFce.find(this->_currentStateName);\
+    if(ii!=this->_state2MessageFce.end())\
+      ii->second(this,this->_state2MessageData[this->_currentStateName]);\
+    return false;\
+  }\
+  curFSAState->getEOFTransition().callCallback(this);
 
 bool FSA::run(std::string text){
   this->_initRun();
   FSAState*curFSAState=this->_name2State[this->_start];
-  this->_currentPosition = 0;
-  this->_alreadyRead = "";
-  while(this->_currentPosition<text.size()){
-    this->_currentChar      = text[this->_currentPosition];
-    this->_currentStateName = curFSAState->getName();
-    FSAState*newFSAState=curFSAState->apply(this->_currentChar,this);
-    if(!newFSAState){
-      auto ii=this->_state2MessageFce.find(this->_currentStateName);
-      if(ii!=this->_state2MessageFce.end())
-        ii->second(this,this->_state2MessageData[this->_currentStateName]);
-      return false;
-    }
-    this->_currentPosition++;
-    this->_alreadyRead      = text.substr(0,this->_currentPosition);
-    curFSAState=newFSAState;
-  }
-  if(!curFSAState->getEOFTransition().getNextState()){
-    auto ii=this->_state2MessageFce.find(this->_currentStateName);
-    if(ii!=this->_state2MessageFce.end())
-      ii->second(this,this->_state2MessageData[this->_currentStateName]);
-    return false;
-  }
-  curFSAState->getEOFTransition().callCallback(this);
+  RUN_BODY();
+  RUN_TAIL();
+  return true;
+}
+
+bool FSA::runWithPause(std::string text){
+  this->_initRun();
+  FSAState*curFSAState=this->_name2State[this->_start];
+  RUN_BODY();
+  return true;
+}
+
+bool FSA::unpause(std::string text){
+  FSAState*curFSAState=this->_name2State[this->_currentStateName];
+  RUN_BODY();
+  return true;
+}
+
+bool FSA::stop(std::string text){
+  FSAState*curFSAState=this->_name2State[this->_currentStateName];
+  RUN_BODY();
+  RUN_TAIL();
   return true;
 }
 
