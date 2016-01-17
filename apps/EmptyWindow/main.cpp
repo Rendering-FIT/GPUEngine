@@ -22,8 +22,8 @@ int main(int argc,char*argv[]){
   ge::util::sim::copyArgumentManager2Namespace(sData,argm,typeRegister);
 
   window = new ge::util::WindowObject(
-      sData->get<unsigned[] >("window.size"      ,{1024u,1024u})[0],
-      sData->get<unsigned[] >("window.size"      ,{1024u,1024u})[1],
+      sData->get<unsigned[2]>("window.size"      ,{1024u,1024u})[0],
+      sData->get<unsigned[2]>("window.size"      ,{1024u,1024u})[1],
       sData->get<bool       >("window.fullscreen",false        )   ,
       idle,
       mouse,
