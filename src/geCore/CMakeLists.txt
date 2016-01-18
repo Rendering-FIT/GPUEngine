@@ -42,6 +42,8 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/disjointSet.h
     ${HEADER_PATH}/interpret.h
     ${HEADER_PATH}/stdFunctions.h
+    ${HEADER_PATH}/token.h
+    ${HEADER_PATH}/lexer.h
   )
 
 set(CORE_SOURCES
@@ -54,6 +56,8 @@ set(CORE_SOURCES
     TypeRegister.cpp
     interpret.cpp
     stdFunctions.cpp
+    token.cpp
+    lexer.cpp
   )
 
 add_library(${LIB_NAME}
