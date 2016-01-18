@@ -18,23 +18,28 @@ namespace ge{
           FSA(std::string start,Args... args);
         FSA(std::string start = "");
         virtual ~FSA();
-        void minimalize();
         void addTransition(
             std::string      stateA            ,
             std::string      lex               ,
             std::string      stateB            ,
             FSACallback::Fce callback = nullptr,
             void*            data     = nullptr);
-        bool run(std::string text);
-        bool runWithPause(std::string text);
-        bool unpause(std::string text);
-        bool stop(std::string text);
+        bool run              (std::string text);
+        bool runWithPause     (std::string text);
+        bool unpause          (std::string text);
+        bool stop             (std::string text);
+        bool runDebug         (std::string text);
+        bool runWithPauseDebug(std::string text);
+        bool unpauseDebug     (std::string text);
+        bool stopDebug        (std::string text);
+
         char        getCurrentChar      ()const;
         std::string getAlreadyReadString()const;
         std::string getCurrentStateName ()const;
         unsigned    getCurrentPosition  ()const;
         void        goBack();
         std::string toStr()const;
+        void minimalize();
         void removeUnreachableStates();
         void removeUndistinguishabeStates();
         FSA operator+(FSA const&other)const;
@@ -56,8 +61,10 @@ namespace ge{
         std::map<std::string,void*>           _state2MessageData;
         std::string                    _alreadyRead      = "";
         char                           _currentChar      = 0 ;
-        std::string                    _currentStateName = "";
+        FSAState*                      _currentState     = nullptr;
         unsigned                       _currentPosition  = 0 ;
+        unsigned                       _previousLength   = 0 ;
+        std::string                    _previousString   = "";
 
         void _initRun();
         FSAState*_addState (std::string name,bool end=false);

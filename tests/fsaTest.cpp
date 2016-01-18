@@ -67,7 +67,7 @@ void createMM(ge::core::FSA*,void*data){
   op->push_back(3);
 }
 
-SCENARIO("FSA goBack tests","[FSA]"){
+SCENARIO("FSA goBack and pause tests","[FSA]"){
   GIVEN("operator FSA"){
     std::vector<unsigned>op;
     FSA fsa(
@@ -82,7 +82,7 @@ SCENARIO("FSA goBack tests","[FSA]"){
         "MINUS","+"               ,"START",createMgoBack,(void*)&op,//create --
         "MINUS",ge::core::FSA::eof,"END"  ,createM      ,(void*)&op //create -
         );
-    WHEN("lexin ++--"){
+    WHEN("lexing ++--"){
       THEN("then it should pass and parse ++ --"){
         REQUIRE(fsa.run("++--")==true);
         REQUIRE(op.size()==2);
@@ -90,7 +90,7 @@ SCENARIO("FSA goBack tests","[FSA]"){
         REQUIRE(op[1]==3);
       }
     }
-    WHEN("lexin +++---"){
+    WHEN("lexing +++---"){
       THEN("then it should pass and parse ++ + -- -"){
         REQUIRE(fsa.run("+++---")==true);
         REQUIRE(op.size()==4);
@@ -100,7 +100,7 @@ SCENARIO("FSA goBack tests","[FSA]"){
         REQUIRE(op[3]==2);
       }
     }
-    WHEN("lexin +-++-+---+"){
+    WHEN("lexing +-++-+---+"){
       THEN("then it should pass and parse + - ++ - + -- - +"){
         REQUIRE(fsa.run("+-++-+---+")==true);
         REQUIRE(op.size()==8);
@@ -112,6 +112,51 @@ SCENARIO("FSA goBack tests","[FSA]"){
         REQUIRE(op[5]==3);
         REQUIRE(op[6]==2);
         REQUIRE(op[7]==0);
+      }
+    }
+
+    WHEN("lexing +-++-+---+ by parts +-+ and +-+- and --+"){
+      THEN("it should pass and parse + - ++ - + -- - +"){
+        REQUIRE(fsa.runWithPause("+-+")==true);
+        REQUIRE(op.size()==2);
+        REQUIRE(op[0]==0);
+        REQUIRE(op[1]==2);
+        REQUIRE(fsa.unpause("+-+-")==true);
+        REQUIRE(op.size()==5);
+        REQUIRE(op[2]==1);
+        REQUIRE(op[3]==2);
+        REQUIRE(op[4]==0);
+        REQUIRE(fsa.stop("--+")==true);
+        REQUIRE(op.size()==8);
+        REQUIRE(op[5]==3);
+        REQUIRE(op[6]==2);
+        REQUIRE(op[7]==0);
+      }
+    }
+
+    WHEN("lexing +-+- using parts empty empty empty + - + -"){
+      THEN("it should pass and parse + - + -"){
+        REQUIRE(fsa.runWithPause("")==true);
+        REQUIRE(fsa.unpause("")==true);
+        REQUIRE(fsa.unpause("")==true);
+        REQUIRE(fsa.unpause("+")==true);
+        REQUIRE(fsa.getAlreadyReadString()=="+");
+        REQUIRE(op.size()==0);
+        REQUIRE(fsa.unpause("-")==true);
+        REQUIRE(fsa.getAlreadyReadString()=="+-");
+        REQUIRE(op.size()==1);
+        REQUIRE(op[0]==0);
+        REQUIRE(fsa.unpause("+")==true);
+        REQUIRE(fsa.getAlreadyReadString()=="+-+");
+        REQUIRE(op.size()==2);
+        REQUIRE(op[1]==2);
+        REQUIRE(fsa.unpause("-")==true);
+        REQUIRE(fsa.getAlreadyReadString()=="+-+-");
+        REQUIRE(op.size()==3);
+        REQUIRE(op[2]==0);
+        REQUIRE(fsa.stop("")==true);
+        REQUIRE(op.size()==4);
+        REQUIRE(op[3]==2);
       }
     }
 

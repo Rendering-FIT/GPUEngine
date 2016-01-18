@@ -9,9 +9,11 @@ using namespace ge::core;
 
 void FSA::_initRun(){
   this->_alreadyRead      = "";
-  this->_currentChar      = 0 ;
-  this->_currentStateName = "";
+  this->_currentChar      = '\0';
+  this->_currentState     = this->_name2State[this->_start];
   this->_currentPosition  = 0 ;
+  this->_previousLength   = 0 ;
+  this->_previousString   = "";
 }
 
 FSAState* FSA::_addState(std::string name,bool end){
@@ -405,34 +407,47 @@ void FSA::_addEOFTransition(
   sa->addEOFTransition(sb,callback);
 }
 
+#ifdef USE_FSA_DEBUG
+  #define FSA_DEBUG()\
+    std::cerr<<this->_currentState->getName()<<"-"<<this->_currentChar<<"->"<<newFSAState->getName()<<std::endl
+#else
+  #define FSA_DEBUG()
+#endif
+
+
+
 #define RUN_BODY()\
-  while(this->_currentPosition<text.size()){\
-    this->_currentChar      = text[this->_currentPosition];\
-    this->_currentStateName = curFSAState->getName();\
-    FSAState*newFSAState=curFSAState->apply(this->_currentChar,this);\
+  while(this->_currentPosition-this->_previousLength<text.size()){\
+    this->_currentChar      = text[this->_currentPosition-this->_previousLength];\
+    FSAState*newFSAState=this->_currentState->apply(this->_currentChar,this);\
+    FSA_DEBUG()\
     if(!newFSAState){\
-      auto ii=this->_state2MessageFce.find(this->_currentStateName);\
+      auto ii=this->_state2MessageFce.find(this->_currentState->getName());\
       if(ii!=this->_state2MessageFce.end())\
-        ii->second(this,this->_state2MessageData[this->_currentStateName]);\
+        ii->second(this,this->_state2MessageData[this->_currentState->getName()]);\
       return false;\
     }\
     this->_currentPosition++;\
-    this->_alreadyRead      = text.substr(0,this->_currentPosition);\
-    curFSAState=newFSAState;\
-  }
+    this->_alreadyRead      = this->_previousString+text.substr(0,this->_currentPosition-this->_previousLength);\
+    this->_currentState     = newFSAState;\
+  }\
+  this->_previousLength += text.size();\
+  this->_previousString += text;
+
+
+  
 
 #define RUN_TAIL()\
-  if(!curFSAState->getEOFTransition().getNextState()){\
-    auto ii=this->_state2MessageFce.find(this->_currentStateName);\
+  if(!this->_currentState->getEOFTransition().getNextState()){\
+    auto ii=this->_state2MessageFce.find(this->_currentState->getName());\
     if(ii!=this->_state2MessageFce.end())\
-      ii->second(this,this->_state2MessageData[this->_currentStateName]);\
+      ii->second(this,this->_state2MessageData[this->_currentState->getName()]);\
     return false;\
   }\
-  curFSAState->getEOFTransition().callCallback(this);
+  this->_currentState->getEOFTransition().callCallback(this);
 
 bool FSA::run(std::string text){
   this->_initRun();
-  FSAState*curFSAState=this->_name2State[this->_start];
   RUN_BODY();
   RUN_TAIL();
   return true;
@@ -440,23 +455,48 @@ bool FSA::run(std::string text){
 
 bool FSA::runWithPause(std::string text){
   this->_initRun();
-  FSAState*curFSAState=this->_name2State[this->_start];
   RUN_BODY();
   return true;
 }
 
 bool FSA::unpause(std::string text){
-  FSAState*curFSAState=this->_name2State[this->_currentStateName];
   RUN_BODY();
   return true;
 }
 
 bool FSA::stop(std::string text){
-  FSAState*curFSAState=this->_name2State[this->_currentStateName];
   RUN_BODY();
   RUN_TAIL();
   return true;
 }
+
+#define USE_FSA_DEBUG
+
+bool FSA::runDebug(std::string text){
+  this->_initRun();
+  RUN_BODY();
+  RUN_TAIL();
+  return true;
+}
+
+bool FSA::runWithPauseDebug(std::string text){
+  this->_initRun();
+  RUN_BODY();
+  return true;
+}
+
+bool FSA::unpauseDebug(std::string text){
+  RUN_BODY();
+  return true;
+}
+
+bool FSA::stopDebug(std::string text){
+  RUN_BODY();
+  RUN_TAIL();
+  return true;
+}
+
+#undef USE_FSA_DEBUG
 
 char FSA::getCurrentChar()const{
   return this->_currentChar;
@@ -467,7 +507,8 @@ std::string FSA::getAlreadyReadString()const{
 }
 
 std::string FSA::getCurrentStateName()const{
-  return this->_currentStateName;
+  if(this->_currentState == nullptr)return "";
+  return this->_currentState->getName();
 }
 
 unsigned FSA::getCurrentPosition()const{
@@ -476,6 +517,7 @@ unsigned FSA::getCurrentPosition()const{
 
 void FSA::goBack(){
   this->_currentPosition--;
+  this->_alreadyRead.substr(0,this->_alreadyRead.size()-1);
 }
 
 std::string FSA::toStr()const{
