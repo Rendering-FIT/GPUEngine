@@ -37,14 +37,13 @@ namespace ge{
             }\
              CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
                    std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(2,CLASS::name()){\
-               this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT1>());\
-               this->_setInput(1,TypeRegister::getTypeTypeId<INPUT2>());\
+               this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());\
+               this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());\
                this->bindOutput(output);\
              }\
       protected:\
-        virtual bool _do(){//}
-//        this->_beginOperator()
+        virtual bool _do(){//}}
 
 #define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2)\
     class CLASS: public Function{\
@@ -57,14 +56,13 @@ namespace ge{
             }\
              CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
                    std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(2,CLASS::name()){\
-               this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT1>());\
-               this->_setInput(1,TypeRegister::getTypeTypeId<INPUT2>());\
+               this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());\
+               this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());\
                this->bindOutput(output);\
              }\
       protected:\
-        virtual bool _do(){//}
-//        this->_beginOperator()
+        virtual bool _do(){//}}
 
 
 #define DEF_CLASS_PROLOGUE1(CLASS,OUTPUT,INPUT1)\
@@ -78,17 +76,15 @@ namespace ge{
              }\
              CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
                  std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1,CLASS::name()){\
-               this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());\
+               this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());\
                this->bindOutput(output);\
              }\
       protected:\
-        virtual bool _do(){
-//        this->_beginOperator()
+        virtual bool _do(){//}}
 
-#define DEF_CLASS_EPILOGUE()\
+#define DEF_CLASS_EPILOGUE()/*{{*/\
           return true;\
-/*        this->_endOperator();*/\
         }\
     }
 
@@ -201,6 +197,12 @@ namespace ge{
             this->_setOutput(TypeRegister::getTypeTypeId<TO>());
             this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
             this->bindOutput(output);
+          }
+          static inline std::string name(){
+            return "Cast_"+ge::core::TypeRegister::getTypeKeyword<FROM>()+"_"+ge::core::TypeRegister::getTypeKeyword<TO>();
+          }
+          static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){
+            return std::make_shared<Cast<FROM,TO>>(tr);
           }
         protected:
           virtual bool _do(){
