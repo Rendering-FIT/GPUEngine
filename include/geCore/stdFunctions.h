@@ -26,27 +26,60 @@ namespace ge{
         }
     };
 
-#define DEF_CLASS_PROLOGUE2(CLASS,NARRY,OUTPUT,INPUT0,INPUT1)\
+#define DEF_CLASS_PROLOGUE2(CLASS,OUTPUT,INPUT1,INPUT2)\
     class CLASS: public Function{\
       public:\
+            static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+              return std::make_shared<CLASS<INPUT1>>(tr);\
+            }\
+            static inline std::string name(){\
+              return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+            }\
              CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
-                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY,#CLASS){\
+                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(2,CLASS::name()){\
                this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
-               this->_setInput(1,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setInput(1,TypeRegister::getTypeTypeId<INPUT2>());\
                this->bindOutput(output);\
              }\
       protected:\
-        virtual bool _do(){
+        virtual bool _do(){//}
 //        this->_beginOperator()
 
-#define DEF_CLASS_PROLOGUE1(CLASS,NARRY,OUTPUT,INPUT0)\
+#define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2)\
     class CLASS: public Function{\
       public:\
+            static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+              return std::make_shared<CLASS>(tr);\
+            }\
+            static inline std::string name(){\
+              return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+            }\
              CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
-                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(NARRY,#CLASS){\
+                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(2,CLASS::name()){\
                this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT0>());\
+               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT1>());\
+               this->_setInput(1,TypeRegister::getTypeTypeId<INPUT2>());\
+               this->bindOutput(output);\
+             }\
+      protected:\
+        virtual bool _do(){//}
+//        this->_beginOperator()
+
+
+#define DEF_CLASS_PROLOGUE1(CLASS,OUTPUT,INPUT1)\
+    class CLASS: public Function{\
+      public:\
+            static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+              return std::make_shared<CLASS<INPUT1>>(tr);\
+            }\
+             static inline std::string name(){\
+               return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+             }\
+             CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
+                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1,CLASS::name()){\
+               this->_setOutput(TypeRegister::getTypeTypeId<OUTPUT>());\
+               this->_setInput(0,TypeRegister::getTypeTypeId<INPUT1>());\
                this->bindOutput(output);\
              }\
       protected:\
@@ -59,29 +92,29 @@ namespace ge{
         }\
     }
 
-#define DEF_SPEC_OPERATOR_2(CLASS,OPERATOR,OUTPUT,INPUT0,INPUT1)\
-    DEF_CLASS_PROLOGUE2(CLASS,2,OUTPUT,INPUT0,INPUT1);\
+#define DEF_SPEC_OPERATOR_2(CLASS,OPERATOR,OUTPUT,INPUT1,INPUT2)\
+    DEF_CLASS_PROLOGUE2(CLASS,OUTPUT,INPUT1,INPUT2);\
     if(this->hasOutput())\
     (OUTPUT&)*(this->_getOutput().data)=\
-    (INPUT0&)(*this->getInputData(0)) OPERATOR\
-    (INPUT1 )(*this->getInputData(1));\
+    (INPUT1&)(*this->getInputData(0)) OPERATOR\
+    (INPUT2 )(*this->getInputData(1));\
     else\
-    (INPUT0&)(*this->getInputData(0)) OPERATOR\
-    (INPUT1 )(*this->getInputData(1));\
+    (INPUT1&)(*this->getInputData(0)) OPERATOR\
+    (INPUT2 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
 
     //OUTPUT means that function requires output to be defined
 
-#define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT0,INPUT1)\
-    DEF_CLASS_PROLOGUE2(CLASS,2,OUTPUT,INPUT0,INPUT1);\
+#define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT1,INPUT2)\
+    DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2);\
     (OUTPUT&)*(this->_getOutput().data)=\
-    (INPUT0&)(*this->getInputData(0)) OPERATOR\
-    (INPUT1 )(*this->getInputData(1));\
+    (INPUT1&)(*this->getInputData(0)) OPERATOR\
+    (INPUT2 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_OPERATOR_2INT(CLASS,OPERATOR)\
     template<typename TYPE>\
-    DEF_CLASS_PROLOGUE2(CLASS,2,TYPE,TYPE,TYPE);\
+    DEF_CLASS_PROLOGUE2(CLASS,TYPE,TYPE,TYPE);\
     if(this->hasOutput())\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
@@ -93,7 +126,7 @@ namespace ge{
 
 #define DEF_OPERATOR_2OUTPUT_INT(CLASS,OPERATOR)\
     template<typename TYPE>\
-    DEF_CLASS_PROLOGUE2(CLASS,2,TYPE,TYPE,TYPE);\
+    DEF_CLASS_PROLOGUE2(CLASS,TYPE,TYPE,TYPE);\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
@@ -101,14 +134,14 @@ namespace ge{
 
 #define DEF_SPEC_OPERATOR_1INTPRE(CLASS,OPERATOR)\
     template<typename TYPE>\
-    DEF_CLASS_PROLOGUE1(CLASS,1,TYPE,TYPE);\
+    DEF_CLASS_PROLOGUE1(CLASS,TYPE,TYPE);\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     OPERATOR ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_SPEC_OPERATOR_1INTPOST(CLASS,OPERATOR)\
     template<typename TYPE>\
-    DEF_CLASS_PROLOGUE1(CLASS,1,TYPE,TYPE);\
+    DEF_CLASS_PROLOGUE1(CLASS,TYPE,TYPE);\
     if(this->hasOutput())\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
