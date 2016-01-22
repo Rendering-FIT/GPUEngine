@@ -21,9 +21,7 @@ set(APP_INCLUDES
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geRG geGL geUtil WindowObject)
-set(External_libs OpenGL GLEW glm SDL2 AntTweakBar
-  ${X11_LIBRARIES}
-  )
+set(External_libs OpenGL GLEW glm SDL2 AntTweakBar)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

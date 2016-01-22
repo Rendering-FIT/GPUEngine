@@ -85,6 +85,14 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
    endif()
 
+   # substitute RELEASE and DEBUG libraries if one is missing
+   if(NOT OSG_LIBRARY_RELEASE AND OSG_LIBRARY_DEBUG)
+      set(OSG_LIBRARY_RELEASE ${OSG_LIBRARY_DEBUG})
+   endif()
+   if(NOT OSG_LIBRARY_DEBUG AND OSG_LIBRARY_RELEASE)
+      set(OSG_LIBRARY_DEBUG ${OSG_LIBRARY_RELEASE})
+   endif()
+
    # set OSG_LIBRARY
    set(OSG_LIBRARY optimized ${OSG_LIBRARY_RELEASE} debug ${OSG_LIBRARY_DEBUG})
 

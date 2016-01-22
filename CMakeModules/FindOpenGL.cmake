@@ -36,15 +36,22 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
          set(OPENGL_INCLUDE_DIR "")  # OpenGL includes are with the system includes
          set(OPENGL_LIBRARY opengl32)
 
+         # explicitly set *_FOUND flag to true
+         # as following routines would fail on OPENGL_INCLUDE_DIR equal to ""
+         set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
+
       endif()
 
    elseif(APPLE)
 
       # On OSX, OpenGL is always there - this will need refining for those
       # using OpenGL with X11
-      set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
       set(OPENGL_INCLUDE_DIR "")
       set(OPENGL_LIBRARY "-framework AGL -framework OpenGL")
+
+      # explicitly set *_FOUND flag to true
+      # as following routines would fail on OPENGL_INCLUDE_DIR equal to ""
+      set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
 
    else()
 

@@ -11,8 +11,11 @@
 
 
 # try config-based find first
+# (version 3.1.1 includes config file, but no import target it created)
 find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+
+   # adjust variable names according to GPUEngine customs
    if(WIN32)
       set(ASSIMP_LIBRARY optimized ${ASSIMP_LIBRARY_DIRS}/assimp.lib
                          debug ${ASSIMP_LIBRARY_DIRS}/assimpd.lib)
@@ -22,6 +25,18 @@ if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
    unset(ASSIMP_LIBRARIES)
    set(ASSIMP_INCLUDE_DIR ${ASSIMP_INCLUDE_DIRS})
    unset(ASSIMP_INCLUDE_DIRS)
+
+   # create target
+   if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
+      if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
+         add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+         set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${ASSIMP_INCLUDE_DIR}"
+            INTERFACE_LINK_LIBRARIES "${ASSIMP_LIBRARY}"
+         )
+      endif()
+   endif()
+
 endif()
 
 # use regular old-style approach

@@ -18,10 +18,10 @@
 # module will automatically add the -framework Cocoa on your behalf.
 #
 #
-# Additional Note: If you see an empty SDL2_LIBRARY_TEMP in your configuration
+# Additional Note: If you see an empty SDL2_LIBRARY_PATH in your configuration
 # and no SDL2_LIBRARY, it means CMake did not find your SDL2 library
 # (SDL2.dll, libsdl2.so, SDL2.framework, etc).
-# Set SDL2_LIBRARY_TEMP to point to your SDL2 library, and configure again.
+# Set SDL2_LIBRARY_PATH to point to your SDL2 library, and configure again.
 # Similarly, if you see an empty SDL2MAIN_LIBRARY, you should set this value
 # as appropriate. These values are used to generate the final SDL2_LIBRARY
 # variable, but when these values are unset, SDL2_LIBRARY does not get created.
@@ -94,7 +94,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       PATHS ${SDL2_SEARCH_PATHS}
    )
 
-   find_library(SDL2_LIBRARY_TEMP
+   find_library(SDL2_LIBRARY_PATH
       NAMES SDL2
       HINTS
       $ENV{SDL2DIR}
@@ -126,24 +126,22 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       find_package(Threads)
    endif()
 
-   # MinGW needs an additional library, mwindows
-   # It's total link flags should look like -lmingw32 -lSDL2main -lSDL2 -lmwindows
-   # (Actually on second look, I think it only needs one of the m* libraries.)
-   if(MINGW)
-      set(MINGW32_LIBRARY mingw32 CACHE STRING "mwindows for MinGW")
-   endif()
-
-   if(SDL2_LIBRARY_TEMP)
+   if(SDL2_LIBRARY_PATH)
 
       # make a copy of the variable before we start to modify it
-      set(SDL2_LIBRARY_TEMP2 ${SDL2_LIBRARY_TEMP})
+      set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_PATH})
 
       # For SDL2main
       if(NOT SDL2_BUILDING_LIBRARY)
          if(SDL2MAIN_LIBRARY)
-            set(SDL2_LIBRARY_TEMP2 ${SDL2MAIN_LIBRARY} ${SDL2_LIBRARY_TEMP2})
+            set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} ${SDL2MAIN_LIBRARY})
          endif(SDL2MAIN_LIBRARY)
       endif(NOT SDL2_BUILDING_LIBRARY)
+
+      # MinGW needs mingw32
+      if(MINGW)
+         set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} mingw32)
+      endif()
 
       # For OS X, SDL2 uses Cocoa as a backend so it must link to Cocoa.
       # CMake doesn't display the -framework Cocoa string in the UI even
@@ -152,26 +150,21 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       # So I use a temporary variable until the end so I can set the
       # "real" variable in one-shot.
       if(APPLE)
-         set(SDL2_LIBRARY_TEMP2 ${SDL2_LIBRARY_TEMP2} "-framework Cocoa")
+         set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} "-framework Cocoa")
       endif()
 
       # For threads, as mentioned Apple doesn't need this.
       # In fact, there seems to be a problem if I used the Threads package
       # and try using this line, so I'm just skipping it entirely for OS X.
       if(NOT APPLE)
-         set(SDL2_LIBRARY_TEMP2 ${SDL2_LIBRARY_TEMP2} ${CMAKE_THREAD_LIBS_INIT})
-      endif()
-
-      # For MinGW library
-      if(MINGW)
-         set(SDL2_LIBRARY_TEMP2 ${MINGW32_LIBRARY} ${SDL2_LIBRARY_TEMP2})
+         set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} ${CMAKE_THREAD_LIBS_INIT})
       endif()
 
       # Set the final string here so the GUI reflects the final state.
-      set(SDL2_LIBRARY ${SDL2_LIBRARY_TEMP2} CACHE STRING "SDL2 Libraries to be linked against")
+      set(SDL2_LIBRARY ${SDL2_LIBRARY_TEMP} CACHE STRING "SDL2 Libraries to be linked against" FORCE)
 
       # Set the temp variable to INTERNAL so it is not seen in the CMake GUI
-      set(SDL2_LIBRARY_TEMP "${SDL2_LIBRARY_TEMP}" CACHE INTERNAL "")
+      set(SDL2_LIBRARY_PATH "${SDL2_LIBRARY_PATH}" CACHE FILEPATH "SDL2 library path")
 
    endif()
 

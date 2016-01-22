@@ -68,7 +68,7 @@ AntTweakBar:
 - CentOS 7.1: yes (epel repository), version 1.16, Fedora: seems yes
 
 Assimp:
-- import targets: version 3.1.1 has config file but it does not include import target
+- import targets: version 3.1.1 has config file but it does not create import target
 - Ubuntu 15.04: version 3.0 (universe)
 - Ubuntu 14.04: version 3.0 (universe)
 - CentOS 7.1: yes (epel repository), version 3.1.1, Fedora: seems yes

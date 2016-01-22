@@ -12,6 +12,7 @@
 
 # try config-based find first
 # (GLFW version 3.1.2: although config is found, target is not created => we will create it ourselves)
+# (even worse: GLFW does not all dependant libraries in GLFW_LIBRARY => should we append it ourselves?)
 find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
    if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
