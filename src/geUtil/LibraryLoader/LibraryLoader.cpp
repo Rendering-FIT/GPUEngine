@@ -9,17 +9,19 @@ using namespace ge::util;
 #include<dlfcn.h>
 
 class LinuxLibraryLoader: public LibraryLoader{
+  public:
+    using OpenLibraries = std::vector<void*>;
   protected:
-    std::map<std::string,unsigned>_openLibraries;
-    std::vector<void*>_vectorOfOpenLibraries;
+    std::map<std::string,OpenLibraries::size_type>_openLibraries;
+    OpenLibraries _vectorOfOpenLibraries;
   public:
     LinuxLibraryLoader(){}
     virtual ~LinuxLibraryLoader(){
-      std::map<std::string,unsigned>::iterator ii=this->_openLibraries.begin();
+      auto ii=this->_openLibraries.begin();
       for(;ii!=this->_openLibraries.end();++ii)
         dlclose(this->_vectorOfOpenLibraries[ii->second]);
     }
-    virtual unsigned load(std::string name){
+    virtual OpenLibraries::size_type load(std::string name){
       if(this->_openLibraries.count(name))return this->_openLibraries[name];
       void*lib=dlopen(name.c_str(),RTLD_LAZY);
       if(!lib){
@@ -30,7 +32,7 @@ class LinuxLibraryLoader: public LibraryLoader{
       this->_openLibraries[name]=this->_vectorOfOpenLibraries.size()-1;
       return this->_vectorOfOpenLibraries.size()-1;
     }
-    void*get(unsigned i,std::string name){
+    void*get(OpenLibraries::size_type i,std::string name){
       if(i>=this->_vectorOfOpenLibraries.size()){
         std::cerr<<"LinuxLibraryLoader::get("<<i<<","<<name<<
           ") is out of range=<0,"<<this->_vectorOfOpenLibraries.size()-1<<">";

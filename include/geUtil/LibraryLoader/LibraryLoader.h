@@ -27,7 +27,7 @@ namespace ge{
          *
          * @return index of loaded library
          */
-        virtual unsigned load(std::string name)=0;
+        virtual std::size_t load(std::string name)=0;
         /**
          * @brief it loads function from library
          *
@@ -36,7 +36,7 @@ namespace ge{
          *
          * @return funtion pointer
          */
-        virtual void* get(unsigned i,std::string name)=0;
+        virtual void* get(std::size_t i,std::string name)=0;
     };
 
     /**

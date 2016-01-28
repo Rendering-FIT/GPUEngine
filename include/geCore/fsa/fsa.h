@@ -63,7 +63,7 @@ namespace ge{
         char                           _currentChar      = 0 ;
         FSAState*                      _currentState     = nullptr;
         unsigned                       _currentPosition  = 0 ;
-        unsigned                       _previousLength   = 0 ;
+        std::string::size_type         _previousLength   = 0 ;
         std::string                    _previousString   = "";
 
         void _initRun();
