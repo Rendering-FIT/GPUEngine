@@ -71,6 +71,7 @@ namespace ge{
             KEY_VOID,
             KEY_STRUCT,
             KEY_TYPEDEF,
+            KEY_RETURN,
             WAITING,
             STOP);
         Token(

@@ -175,6 +175,7 @@ Token::Token(
       if(this->_rawData == "void"   )this->_type = KEY_VOID   ;
       if(this->_rawData == "struct" )this->_type = KEY_STRUCT ;
       if(this->_rawData == "typedef")this->_type = KEY_TYPEDEF;
+      if(this->_rawData == "return" )this->_type = KEY_RETURN ;
       break;
     default:
       break;
