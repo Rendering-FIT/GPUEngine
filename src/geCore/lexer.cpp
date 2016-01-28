@@ -14,7 +14,7 @@ void Lexer::parse(std::string data,bool stop){
   static struct ParserData{
     std::vector<Token>tokens;
     unsigned pos;
-    ge::core::FSACallback::Fce createToken = [](ge::core::FSA*fsa,void*data){
+    static void createToken(ge::core::FSA*fsa,void*data){
       ParserData*pd=(ParserData*)data;
       if     (fsa->getCurrentChar()=='(')pd->tokens.push_back(Token(Token::LEFT_BRACKET       ,"("));
       else if(fsa->getCurrentChar()==')')pd->tokens.push_back(Token(Token::RIGHT_BRACKET      ,")"));
@@ -24,28 +24,29 @@ void Lexer::parse(std::string data,bool stop){
       else if(fsa->getCurrentChar()==']')pd->tokens.push_back(Token(Token::RIGHT_INDEX_BRACKET,"]"));
       else if(fsa->getCurrentChar()=='~')pd->tokens.push_back(Token(Token::NEGATION           ,"~"));
       else if(fsa->getCurrentChar()==';')pd->tokens.push_back(Token(Token::SEMICOLON          ,";"));
+      else if(fsa->getCurrentChar()==',')pd->tokens.push_back(Token(Token::COMMA              ,","));
     };
 
-    ge::core::FSACallback::Fce pushPos = [](ge::core::FSA*fsa,void*data){
+    static void pushPos(ge::core::FSA*fsa,void*data){
       ParserData*pd=(ParserData*)data;
       pd->pos = fsa->getCurrentPosition();
     };
 
 #define LAMBDA(TOKEN)\
-    [](ge::core::FSA*,void*data){\
+    (ge::core::FSA*,void*data){\
       ParserData*pd=(ParserData*)data;\
       pd->tokens.push_back(Token(Token::TOKEN,""));\
     }
 
 #define LAMBDA_GOBACK(callback)\
-    [](ge::core::FSA*fsa,void*data){\
+    (ge::core::FSA*fsa,void*data){\
       ParserData*pd=(ParserData*)data;\
       pd->callback(fsa,data);\
       fsa->goBack();\
     }
 
 #define LAMBDA_IF(TOKEN0,TOKEN1,IFCHAR)\
-    [](ge::core::FSA*fsa,void*data){\
+    (ge::core::FSA*fsa,void*data){\
       ParserData*pd=(ParserData*)data;\
       if(fsa->getCurrentChar()==IFCHAR)\
         pd->tokens.push_back(Token(Token::TOKEN0,""));\
@@ -54,91 +55,92 @@ void Lexer::parse(std::string data,bool stop){
     }
 
 #define LAMBDA_DATA(TOKEN)\
-    [](ge::core::FSA*fsa,void*data){\
+    (ge::core::FSA*fsa,void*data){\
       auto pd = (ParserData*)data;\
       /*std::cerr<<"pd->pos: "<<pd->pos<<std::endl;*/\
       /*std::cerr<<"#"<<fsa->getAlreadyReadString()<<"#"<<std::endl;*/\
       pd->tokens.push_back(Token(Token::TOKEN,fsa->getAlreadyReadString().substr(pd->pos)));\
     }
 
-    using Type=ge::core::FSACallback::Fce;
+#define Type static void
 
-    Type createPlus                    = LAMBDA(PLUS);
-    Type createPlusGoBack              = LAMBDA_GOBACK(createPlus);
-    Type createPlus2                   = LAMBDA_IF(PLUS_ASSIGMENT,INCREMENT,'=');
+    Type createPlus                     LAMBDA(PLUS);
+    Type createPlusGoBack               LAMBDA_GOBACK(createPlus);
+    Type createPlus2                    LAMBDA_IF(PLUS_ASSIGMENT,INCREMENT,'=');
 
-    Type createMinus                   = LAMBDA(MINUS);
-    Type createMinusGoBack             = LAMBDA_GOBACK(createMinus);
-    Type createMinus2                  = LAMBDA_IF(MINUS_ASSIGMENT,DECREMENT,'=');
+    Type createMinus                    LAMBDA(MINUS);
+    Type createMinusGoBack              LAMBDA_GOBACK(createMinus);
+    Type createMinus2                   LAMBDA_IF(MINUS_ASSIGMENT,DECREMENT,'=');
 
-    Type createMultiplication          = LAMBDA(MULTIPLICATION);
-    Type createMultiplicationGoBack    = LAMBDA_GOBACK(createMultiplication);
-    Type createMultiplicationAssigment = LAMBDA(MULTIPLICATION_ASSIGMENT);
+    Type createMultiplication           LAMBDA(MULTIPLICATION);
+    Type createMultiplicationGoBack     LAMBDA_GOBACK(createMultiplication);
+    Type createMultiplicationAssigment  LAMBDA(MULTIPLICATION_ASSIGMENT);
 
-    Type createDivision                = LAMBDA(DIVISION);
-    Type createDivisionGoBack          = LAMBDA_GOBACK(createDivision);
-    Type createDivisionAssigment       = LAMBDA(DIVISION_ASSIGMENT);
+    Type createDivision                 LAMBDA(DIVISION);
+    Type createDivisionGoBack           LAMBDA_GOBACK(createDivision);
+    Type createDivisionAssigment        LAMBDA(DIVISION_ASSIGMENT);
 
-    Type createModulo                  = LAMBDA(MODULO);
-    Type createModuloGoBack            = LAMBDA_GOBACK(createModulo);
-    Type createModuloAssigment         = LAMBDA(MODULO_ASSIGMENT);
+    Type createModulo                   LAMBDA(MODULO);
+    Type createModuloGoBack             LAMBDA_GOBACK(createModulo);
+    Type createModuloAssigment          LAMBDA(MODULO_ASSIGMENT);
 
-    Type createLess                    = LAMBDA(LESS);
-    Type createLessGoBack              = LAMBDA_GOBACK(createLess);
-    Type createLessEqual               = LAMBDA(LESS_EQUAL);
+    Type createLess                     LAMBDA(LESS);
+    Type createLessGoBack               LAMBDA_GOBACK(createLess);
+    Type createLessEqual                LAMBDA(LESS_EQUAL);
 
-    Type createGreater                 = LAMBDA(GREATER);
-    Type createGreaterGoBack           = LAMBDA_GOBACK(createGreater);
-    Type createGreaterEqual            = LAMBDA(GREATER_EQUAL);
+    Type createGreater                  LAMBDA(GREATER);
+    Type createGreaterGoBack            LAMBDA_GOBACK(createGreater);
+    Type createGreaterEqual             LAMBDA(GREATER_EQUAL);
 
-    Type createAssigment               = LAMBDA(ASSIGMENT);
-    Type createAssigmentGoBack         = LAMBDA_GOBACK(createAssigment);
-    Type createEqual                   = LAMBDA(EQUAL);
+    Type createAssigment                LAMBDA(ASSIGMENT);
+    Type createAssigmentGoBack          LAMBDA_GOBACK(createAssigment);
+    Type createEqual                    LAMBDA(EQUAL);
 
-    Type createNot                     = LAMBDA(NOT);
-    Type createNotGoBack               = LAMBDA_GOBACK(createNot);
-    Type createNotEqual                = LAMBDA(NOT_EQAUL);
+    Type createNot                      LAMBDA(NOT);
+    Type createNotGoBack                LAMBDA_GOBACK(createNot);
+    Type createNotEqual                 LAMBDA(NOT_EQAUL);
 
-    Type createBinaryAnd               = LAMBDA(BINARY_AND);
-    Type createBinaryAndGoBack         = LAMBDA_GOBACK(createBinaryAnd);
-    Type createBinaryAndAssigment      = LAMBDA(BINARY_AND_ASSIGMENT);
-    Type createAnd                     = LAMBDA(AND);
+    Type createBinaryAnd                LAMBDA(BINARY_AND);
+    Type createBinaryAndGoBack          LAMBDA_GOBACK(createBinaryAnd);
+    Type createBinaryAndAssigment       LAMBDA(BINARY_AND_ASSIGMENT);
+    Type createAnd                      LAMBDA(AND);
 
-    Type createBinaryOr                = LAMBDA(BINARY_OR);
-    Type createBinaryOrGoBack          = LAMBDA_GOBACK(createBinaryOr);
-    Type createBinaryOrAssigment       = LAMBDA(BINARY_OR_ASSIGMENT);
-    Type createOr                      = LAMBDA(OR);
+    Type createBinaryOr                 LAMBDA(BINARY_OR);
+    Type createBinaryOrGoBack           LAMBDA_GOBACK(createBinaryOr);
+    Type createBinaryOrAssigment        LAMBDA(BINARY_OR_ASSIGMENT);
+    Type createOr                       LAMBDA(OR);
 
-    Type createIdentifier              = LAMBDA_DATA(IDENTIFIER);
-    Type createIdentifierGoBack        = LAMBDA_GOBACK(createIdentifier);
+    Type createIdentifier               LAMBDA_DATA(IDENTIFIER);
+    Type createIdentifierGoBack         LAMBDA_GOBACK(createIdentifier);
 
-    Type createString                  = LAMBDA_DATA(STRING);
-    Type createChar                    = LAMBDA_DATA(CHAR);
+    Type createString                   LAMBDA_DATA(STRING);
+    Type createChar                     LAMBDA_DATA(CHAR);
 
-    Type createDot                     = LAMBDA(DOT);
-    Type createDotGoBack               = LAMBDA_GOBACK(createDot);
+    Type createDot                      LAMBDA(DOT);
+    Type createDotGoBack                LAMBDA_GOBACK(createDot);
 
-    Type createInteger                 = LAMBDA_DATA(INTEGER);
-    Type createIntegerGoBack           = LAMBDA_GOBACK(createInteger);
+    Type createInteger                  LAMBDA_DATA(INTEGER);
+    Type createIntegerGoBack            LAMBDA_GOBACK(createInteger);
 
-    Type createFloat                   = LAMBDA_DATA(FLOAT);
-    Type createFloatGoBack             = LAMBDA_GOBACK(createFloat);
+    Type createFloat                    LAMBDA_DATA(FLOAT);
+    Type createFloatGoBack              LAMBDA_GOBACK(createFloat);
 
-    Type createLeftShift               = LAMBDA(LEFT_SHIFT);
-    Type createLeftShiftGoBack         = LAMBDA_GOBACK(createLeftShift);
-    Type createLeftShiftAssigment      = LAMBDA(LEFT_SHIFT_ASSIGMENT);
+    Type createLeftShift                LAMBDA(LEFT_SHIFT);
+    Type createLeftShiftGoBack          LAMBDA_GOBACK(createLeftShift);
+    Type createLeftShiftAssigment       LAMBDA(LEFT_SHIFT_ASSIGMENT);
 
-    Type createRightShift              = LAMBDA(RIGHT_SHIFT);
-    Type createRightShiftGoBack        = LAMBDA_GOBACK(createRightShift);
-    Type createRightShiftAssigment     = LAMBDA(RIGHT_SHIFT_ASSIGMENT);
+    Type createRightShift               LAMBDA(RIGHT_SHIFT);
+    Type createRightShiftGoBack         LAMBDA_GOBACK(createRightShift);
+    Type createRightShiftAssigment      LAMBDA(RIGHT_SHIFT_ASSIGMENT);
 
-    Type error = [](ge::core::FSA*fsa,void*){
+    Type error (ge::core::FSA*fsa,void*){
       //if(fsa->getCurrentStateName()=="START"){
         std::cerr<<"ERROR: unrecognised symbol "<<fsa->getCurrentStateName()<<" "<<fsa->getCurrentChar()<<std::endl;
       //}
 
     };
 
+#undef Type
 #undef LAMBDA
 #undef LAMBDA_GOBACK
 #undef LAMBDA_IF
@@ -146,7 +148,7 @@ void Lexer::parse(std::string data,bool stop){
   
   std::string identStart = "_a\\-zA\\-Z";
   std::string identBody  = identStart+ge::core::FSA::digit;
-  std::string operatorStop = identStart+ge::core::FSA::digit+".!(){}[]~;\"\'";// /
+  std::string operatorStop = identStart+ge::core::FSA::digit+".,!(){}[]~;\"\'";// /
 
   static auto fsa = ge::core::FSA("START");
   static bool notInitialized=true;
@@ -163,7 +165,7 @@ void Lexer::parse(std::string data,bool stop){
     fsa.addTransition("START"         ,"!"                 ,"EXCLAMATION"                                              );
     fsa.addTransition("START"         ,"&"                 ,"AMPERSAND"                                                );
     fsa.addTransition("START"         ,"|"                 ,"BAR"                                                      );
-    fsa.addTransition("START"         ,"(){}[]~;"          ,"START"         ,pData.createToken                  ,&pData);//create token
+    fsa.addTransition("START"         ,"(){}[]~;,"         ,"START"         ,pData.createToken                  ,&pData);//create token
     fsa.addTransition("START"         ,identStart          ,"IDENTIFIER"    ,pData.pushPos                      ,&pData);//push pos
     fsa.addTransition("START"         ,"\""                ,"DOUBLE_QUOTES" ,pData.pushPos                      ,&pData);//push pos
     fsa.addTransition("START"         ,"'"                 ,"QUOTES"        ,pData.pushPos                      ,&pData);//push pos

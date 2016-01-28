@@ -10,17 +10,17 @@ std::string parseString(std::string data){
     unsigned    pos   ;
     std::string string;
 
-    ge::core::FSACallback::Fce addChar = [](ge::core::FSA*fsa,void*data){
+    static void addChar(ge::core::FSA*fsa,void*data){
       auto d=(ParserData*)data;
       d->string+=fsa->getCurrentChar();
     };
 
-    ge::core::FSACallback::Fce pushPos = [](ge::core::FSA*fsa,void*data){
+    static void pushPos(ge::core::FSA*fsa,void*data){
       auto d=(ParserData*)data;
       d->pos = fsa->getCurrentPosition();
     };
 
-    ge::core::FSACallback::Fce addEscChar = [](ge::core::FSA*fsa,void*data){
+    static void addEscChar(ge::core::FSA*fsa,void*data){
       auto d=(ParserData*)data;
       switch(fsa->getCurrentChar()){
         case '\'':d->string+='\'';break;
@@ -42,7 +42,7 @@ std::string parseString(std::string data){
       }
     };
 
-    ge::core::FSACallback::Fce addHexa = [](ge::core::FSA*fsa,void*data){
+    static void addHexa(ge::core::FSA*fsa,void*data){
       auto d=(ParserData*)data;
       auto toConvert = fsa->getAlreadyReadString().substr(d->pos+1);
       if(toConvert == ""){
@@ -63,21 +63,21 @@ std::string parseString(std::string data){
       d->string+=(char)((unsigned char)val);
     };
 
-    ge::core::FSACallback::Fce addHexaGoBack = [](ge::core::FSA*fsa,void*data){
+    static void addHexaGoBack(ge::core::FSA*fsa,void*data){
       ((ParserData*)data)->addHexa(fsa,data);
       fsa->goBack();
     };
 
-    ge::core::FSACallback::Fce addUnicode = [](ge::core::FSA*,void*){
+    static void addUnicode(ge::core::FSA*,void*){
       std::cerr<<"WARNING: unicode escape sequence not implemented"<<std::endl;
     };
 
-    ge::core::FSACallback::Fce addUnicodeGoBack = [](ge::core::FSA*fsa,void*data){
+    static void addUnicodeGoBack(ge::core::FSA*fsa,void*data){
       ((ParserData*)data)->addUnicode(fsa,data);
       fsa->goBack();
     };
 
-    ge::core::FSACallback::Fce addOctal = [](ge::core::FSA*fsa,void*data){
+    static void addOctal(ge::core::FSA*fsa,void*data){
       auto d=(ParserData*)data;
       auto toConvert = fsa->getAlreadyReadString().substr(d->pos+1);
       unsigned val=0;
@@ -90,12 +90,12 @@ std::string parseString(std::string data){
       d->string+=(char)((unsigned char)val);
     };
 
-    ge::core::FSACallback::Fce addOctalGoBack = [](ge::core::FSA*fsa,void*data){
+    static void addOctalGoBack(ge::core::FSA*fsa,void*data){
       ((ParserData*)data)->addOctal(fsa,data);
       fsa->goBack();
     };
 
-    ge::core::FSACallback::Fce error = [](ge::core::FSA*,void*){
+    static void error(ge::core::FSA*,void*){
       std::cerr<<"ERROR: unexpected end of escape sequence"<<std::endl;
     };
   }pData;
@@ -147,7 +147,7 @@ Token::Token(
       this->_iData = std::atoll(this->_rawData.c_str());
       break;
     case FLOAT:
-      this->_fData = std::atof(this->_rawData.c_str());
+      this->_fData = (float)std::atof(this->_rawData.c_str());
       break;
     case STRING:
       this->_rawData = this->_rawData.substr(1,this->_rawData.size()-1);

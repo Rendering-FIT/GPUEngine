@@ -46,6 +46,7 @@ namespace ge{
             INCREMENT,
             DECREMENT,
             SEMICOLON,
+            COMMA,
             IDENTIFIER,
             STRING,
             CHAR,
