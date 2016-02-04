@@ -82,6 +82,12 @@ namespace ge{
          */
         void setView(float*P,float*Look,float*Y);
         /**
+         * @brief Sets camera's viewport size
+         *
+         * @param size[2] size
+         */
+        void setSize(unsigned const size[2]);
+        /**
          * @brief Sets camera's field of view
          *
          * @param Fovy field of view

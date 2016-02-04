@@ -41,6 +41,12 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/TypeRegister.h
     ${HEADER_PATH}/disjointSet.h
     ${HEADER_PATH}/interpret.h
+    ${HEADER_PATH}/statement.h
+    ${HEADER_PATH}/function.h
+    ${HEADER_PATH}/while.h
+    ${HEADER_PATH}/if.h
+    ${HEADER_PATH}/body.h
+    ${HEADER_PATH}/macroFunction.h
     ${HEADER_PATH}/stdFunctions.h
     ${HEADER_PATH}/token.h
     ${HEADER_PATH}/lexer.h
@@ -54,7 +60,12 @@ set(CORE_SOURCES
     EnumRegister.cpp
     StandardSemanticsNames.cpp
     TypeRegister.cpp
-    interpret.cpp
+    statement.cpp
+    function.cpp
+    while.cpp
+    if.cpp
+    body.cpp
+    macroFunction.cpp
     stdFunctions.cpp
     token.cpp
     lexer.cpp
