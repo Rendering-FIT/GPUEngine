@@ -34,11 +34,15 @@ namespace ge{
     class ResourceFactory{
       protected:
         TypeRegister::TypeID _type = TypeRegister::UNREGISTERED;
-        std::shared_ptr<Accessor>_result = nullptr;
-        unsigned _maxUses = 0;
-        unsigned _uses = 0;
+        std::shared_ptr<Accessor>_result  = nullptr;
+        unsigned                 _maxUses = 0      ;
+        unsigned                 _uses    = 0      ;
+        bool                     _first   = true   ;
       public:
         ResourceFactory(TypeRegister::TypeID type,unsigned maxUses=1);
+        virtual ~ResourceFactory();
+        void reset();
+        bool firstConstruction()const;
         std::shared_ptr<Accessor>operator()(SharedTypeRegister const&tr);
     };
 

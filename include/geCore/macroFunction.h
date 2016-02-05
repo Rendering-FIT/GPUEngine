@@ -30,6 +30,22 @@ namespace ge{
     };
 
 
+    class FunctionNodeFactory: public FunctionFactory{
+      protected:
+        std::shared_ptr<Statement>_result  = nullptr;
+        unsigned                  _maxUses = 0      ;
+        unsigned                  _uses    = 0      ;
+        bool                      _first   = true   ;
+        std::shared_ptr<FunctionFactory>functionFactory = nullptr;
+        std::vector<std::shared_ptr<ResourceFactory>>resourceFactories;
+        std::vector<std::shared_ptr<FunctionFactory>>inputFactories;
+      public:
+        FunctionNodeFactory(std::shared_ptr<FunctionFactory>const&fac,unsigned maxUses = 1);
+        virtual ~FunctionNodeFactory();
+        void reset();
+        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr);
+    };
+
     inline void MacroFunction::operator()(){
       if(!this->_outputFce){
         std::cerr<<"ERROR: MacroFunction::operator()() - ";

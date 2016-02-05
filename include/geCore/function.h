@@ -19,21 +19,29 @@ namespace ge{
             TypeRegister::TypeID     type        = TypeRegister::UNREGISTERED);
     };
 
+
+    // function: Accessor compositor
+    // function: selector of element of Accessor
+    // function should contain type that is type of TypeRegister::FCE
+    //
+    //
+    //
+
     class MacroFunction;
     class GECORE_EXPORT Function: public Statement{
       protected:
         friend class MacroFunction;
-        std::string                        _name      ;
-        std::vector<FunctionInput>         _inputs    ;
-        std::map<unsigned,std::string>     _input2Name;
-        std::map<std::string,unsigned>     _name2Input;
+        std::string                   _name           ;
+        std::vector<FunctionInput>    _inputs         ;
+        std::map<unsigned,std::string>_input2Name     ;
+        std::map<std::string,unsigned>_name2Input     ;
+        unsigned long long            _checkTicks  = 0;
+        unsigned long long            _updateTicks = 1;
         struct Output{
           std::shared_ptr<Accessor>data = nullptr                   ;
           TypeRegister::TypeID     type = TypeRegister::UNREGISTERED;
           std::string              name = "output"                  ;
         }_output;
-        unsigned long long                 _checkTicks  = 0;
-        unsigned long long                 _updateTicks = 1;
         std::string _genDefaultName(unsigned i)const;
         void _defaultNames(unsigned n);
         void _processInputs();
