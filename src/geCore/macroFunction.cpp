@@ -17,6 +17,8 @@ bool MacroFunction::_do(){
   return false;
 }
 
+
+
 FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<FunctionFactory>const&fac,unsigned maxUses){
   this->functionFactory = fac;
   this->_maxUses = maxUses;
@@ -37,7 +39,7 @@ std::shared_ptr<Statement>FunctionNodeFactory::operator()(
   this->_first = this->_uses == 0;
   if(this->resourceFactories.size()!=this->inputFactories.size()){
     std::cerr<<"ERROR: FunctionNodeFactory::operator()() - different ";
-    std::cerr<<"number of input functions nd input resources"<<std::endl;
+    std::cerr<<"number of input functions and input resources"<<std::endl;
     return nullptr;
   }
   if(!this->functionFactory)return nullptr;

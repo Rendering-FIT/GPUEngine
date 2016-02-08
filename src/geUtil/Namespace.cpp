@@ -10,26 +10,24 @@ std::string Namespace::_toUpper(std::string str){
   return str;
 }
 
-Namespace::Namespace(std::string name,Namespace*parent){
+Namespace::Namespace(std::string name,std::shared_ptr<Namespace>const&parent){
   this->_name   = name  ;
   this->_parent = parent;
 }
 
 Namespace::~Namespace(){
-  for(auto x:this->_name2Namespace)
-    delete x.second;
 }
 
 bool Namespace::empty()const{
   return this->_name2Variable.size()==0 && this->_name2Namespace.size()==0;
 }
 
-void Namespace::setParent(Namespace*parent){
+void Namespace::setParent(std::shared_ptr<Namespace>const&parent){
   this->_parent = parent;
 }
 
-void Namespace::insertNamespace(std::string name,Namespace*nmspace){
-  this->_name2Namespace.insert(std::pair<std::string,Namespace*>(name,nmspace));
+void Namespace::insertNamespace(std::string name,std::shared_ptr<Namespace>const&nmspace){
+  this->_name2Namespace.insert(std::pair<std::string,std::shared_ptr<Namespace>>(name,nmspace));
 }
 
 std::string Namespace::toStr(unsigned indentation)const{
@@ -47,7 +45,7 @@ std::string Namespace::toStr(unsigned indentation)const{
   return ss.str();
 }
 
-Namespace*Namespace::getNamespace(std::string name)const{
+std::shared_ptr<Namespace>Namespace::getNamespace(std::string name)const{
   if(this->_name2Namespace.count(name))
     return this->_name2Namespace.find(name)->second;
   return nullptr;
@@ -64,11 +62,11 @@ void Namespace::insert(std::string name,std::shared_ptr<ge::core::Accessor>const
   if(pos==std::string::npos)return;
   std::string rest=name.substr(pos+1);
   std::string namespaceName=name.substr(0,pos);
-  Namespace*nextNamespace=this->getNamespace(namespaceName);
+  auto nextNamespace=this->getNamespace(namespaceName);
   if(nextNamespace==NULL){
-    nextNamespace=new Namespace(namespaceName);
+    nextNamespace=std::make_shared<Namespace>(namespaceName);
     this->insertNamespace(namespaceName,nextNamespace);
-    nextNamespace->setParent(this);
+    nextNamespace->setParent(this->shared_from_this());
   }
   nextNamespace->insert(rest,variable);
 }
@@ -83,7 +81,7 @@ void Namespace::erase(std::string name){
   if(pos==std::string::npos)return;
   std::string rest=name.substr(pos+1);
   std::string namespaceName=name.substr(0,pos);
-  Namespace*nextNamespace=this->getNamespace(namespaceName);
+  auto nextNamespace=this->getNamespace(namespaceName);
   if(!nextNamespace){
     std::cerr<<"ERROR: namespace "+this->_name+" does not sub namepace "+namespaceName<<std::endl;
     return;

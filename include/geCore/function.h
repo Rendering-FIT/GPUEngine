@@ -43,47 +43,6 @@ namespace ge{
           std::string              name = "output"                  ;
         }_output;
         std::string _genDefaultName(unsigned i)const;
-        void _defaultNames(unsigned n);
-        void _processInputs();
-        void _setOutput(           TypeRegister::TypeID type,std::string name = "");
-        void _setInput (unsigned i,TypeRegister::TypeID type,std::string name = "");
-        virtual bool _do();
-        inline bool _inputChanged(unsigned    i    )const;
-        inline bool _inputChanged(std::string input)const;
-        virtual inline FunctionInput      &_getInput(unsigned i);
-        virtual inline FunctionInput const&_getInput(unsigned i)const;
-        virtual inline decltype(_inputs)::size_type _getNofInputs()const;
-        virtual inline Output      &_getOutput();
-        virtual inline Output const&_getOutput()const;
-        template<typename... ARGS>
-          unsigned _computeNumberOfInputs(ARGS...args){
-            return (sizeof...(args)-2)/2;
-          }
-        template<typename... ARGS>
-          void _setTypes(
-              std::shared_ptr<TypeRegister>const&tr,
-              unsigned nofInputs,
-              const char* type,
-              const char* name,
-              ARGS... args){
-            this->_setOutput(tr->getTypeId(type),name);
-            this->_setInputs(tr,nofInputs,args...);
-          }
-        template<typename... ARGS>
-          void _setInputs(
-              std::shared_ptr<TypeRegister>const&tr,
-              unsigned nofInputs,
-              const char* type,
-              const char* name,
-              ARGS... args){
-            this->_setInput(nofInputs-(sizeof...(args))/2-1,tr->getTypeId(type),name);
-            this->_setInputs(tr,nofInputs,args...);
-          }
-        template<typename... ARGS>
-          void _setInputs(
-              std::shared_ptr<TypeRegister>const&,
-              unsigned){
-          }
       public:
         Function(unsigned n,std::string name = "");
         virtual ~Function();
@@ -105,13 +64,80 @@ namespace ge{
         virtual inline std::string getInputName (unsigned    i   )const;
         virtual inline unsigned    getInputIndex(std::string name)const;
         virtual inline std::string doc()const;
+      protected:
+        void _defaultNames(unsigned n);
+        void _processInputs();
+        void _setOutput(           TypeRegister::TypeID type,std::string name = "");
+        void _setInput (unsigned i,TypeRegister::TypeID type,std::string name = "");
+        virtual bool _do();
+        inline bool _inputChanged(unsigned    i    )const;
+        inline bool _inputChanged(std::string input)const;
+        virtual inline FunctionInput      &_getInput(unsigned i);
+        virtual inline FunctionInput const&_getInput(unsigned i)const;
+        virtual inline decltype(_inputs)::size_type _getNofInputs()const;
+        virtual inline Output      &_getOutput();
+        virtual inline Output const&_getOutput()const;
+        template<typename... ARGS>
+          unsigned _computeNumberOfInputs(ARGS...args);
+        template<typename... ARGS>
+          void _setTypes(
+              std::shared_ptr<TypeRegister>const&tr,
+              unsigned nofInputs,
+              const char* type,
+              const char* name,
+              ARGS... args);
+        template<typename... ARGS>
+          void _setInputs(
+              std::shared_ptr<TypeRegister>const&tr,
+              unsigned nofInputs,
+              const char* type,
+              const char* name,
+              ARGS... args);
+        template<typename... ARGS>
+          void _setInputs(
+              std::shared_ptr<TypeRegister>const&,
+              unsigned);
     };
+
+
 
     class FunctionFactory: public StatementFactory{
       public:
         virtual ~FunctionFactory();
         virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
     };
+
+
+
+    template<typename... ARGS>
+      unsigned Function::_computeNumberOfInputs(ARGS...args){
+        return (sizeof...(args)-2)/2;
+      }
+    template<typename... ARGS>
+      void Function::_setTypes(
+          std::shared_ptr<TypeRegister>const&tr,
+          unsigned nofInputs,
+          const char* type,
+          const char* name,
+          ARGS... args){
+        this->_setOutput(tr->getTypeId(type),name);
+        this->_setInputs(tr,nofInputs,args...);
+      }
+    template<typename... ARGS>
+      void Function::_setInputs(
+          std::shared_ptr<TypeRegister>const&tr,
+          unsigned nofInputs,
+          const char* type,
+          const char* name,
+          ARGS... args){
+        this->_setInput(nofInputs-(sizeof...(args))/2-1,tr->getTypeId(type),name);
+        this->_setInputs(tr,nofInputs,args...);
+      }
+    template<typename... ARGS>
+      void Function::_setInputs(
+          std::shared_ptr<TypeRegister>const&,
+          unsigned){
+      }
 
     inline std::shared_ptr<Accessor>const&Function::getOutput()const{
       return this->_getOutput().data;
@@ -209,7 +235,7 @@ namespace ge{
     }
 
 
-    
+
   }
 }
 
