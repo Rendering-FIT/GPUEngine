@@ -14,18 +14,18 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
 set(FSA_SOURCES
-  fsa/fsa.cpp
-  fsa/state.cpp
-  fsa/transition.cpp
-  fsa/fusedCallbackData.cpp
-  )
+    fsa/fsa.cpp
+    fsa/state.cpp
+    fsa/transition.cpp
+    fsa/fusedCallbackData.cpp
+   )
 
 set(FSA_INCLUDES
-  ${HEADER_PATH}/fsa/fsa.h
-  ${HEADER_PATH}/fsa/state.h
-  ${HEADER_PATH}/fsa/transition.h
-  ${HEADER_PATH}/fsa/fusedCallbackData.h
-  )
+    ${HEADER_PATH}/fsa/fsa.h
+    ${HEADER_PATH}/fsa/state.h
+    ${HEADER_PATH}/fsa/transition.h
+    ${HEADER_PATH}/fsa/fusedCallbackData.h
+   )
 
 set(CORE_INCLUDES
     ${HEADER_PATH}/Export.h
@@ -51,7 +51,8 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/stdFunctions.h
     ${HEADER_PATH}/token.h
     ${HEADER_PATH}/lexer.h
-  )
+    ${HEADER_PATH}/idof.h
+   )
 
 set(CORE_SOURCES
     Object.cpp
@@ -71,7 +72,7 @@ set(CORE_SOURCES
     stdFunctions.cpp
     token.cpp
     lexer.cpp
-  )
+   )
 
 add_library(${LIB_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
@@ -79,9 +80,9 @@ add_library(${LIB_NAME}
     ${FSA_INCLUDES}
     ${CORE_SOURCES}
     ${FSA_SOURCES}
-  )
+   )
 
- 
+
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
 # External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
@@ -103,21 +104,21 @@ set_target_properties(${LIB_NAME} PROPERTIES
 )
 
 install(FILES
-    ${FSA_INCLUDES}
-    DESTINATION include/${LIB_NAME}/fsa
-  )
+   ${FSA_INCLUDES}
+   DESTINATION include/${LIB_NAME}/fsa
+)
 
 install(FILES
-  ${CORE_INCLUDES}
-  DESTINATION include/${LIB_NAME}
-  )
+   ${CORE_INCLUDES}
+   DESTINATION include/${LIB_NAME}
+)
 
 
 install(TARGETS ${LIB_NAME}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  )
+   LIBRARY DESTINATION lib
+   ARCHIVE DESTINATION lib
+   RUNTIME DESTINATION bin
+)
 
 #########################################
 #Export
@@ -139,4 +140,4 @@ configure_file(
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
         DESTINATION "${INSTALL_CM_DIR}/${LIB_NAME}"
-        )
+)
