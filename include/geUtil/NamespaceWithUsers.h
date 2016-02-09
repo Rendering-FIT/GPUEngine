@@ -6,14 +6,14 @@
 
 #include<geUtil/Export.h>
 #include<geCore/TypeRegister.h>
-#include<geUtil/Namespace.h>
+#include<geCore/Namespace.h>
 
 namespace ge{
   namespace util{
     namespace sim{
       class User;
 
-      class GEUTIL_EXPORT NamespaceWithUsers: public Namespace{
+      class GEUTIL_EXPORT NamespaceWithUsers: public ge::core::sim::Namespace{
         protected:
           std::set<User*>                      _allUsers      ;
           std::map<std::string,std::set<User*>>_variableUser  ;

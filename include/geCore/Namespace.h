@@ -4,39 +4,42 @@
 #include<vector>
 #include<map>
 
-#include<geUtil/Export.h>
+#include<geCore/Export.h>
 #include<geCore/TypeRegister.h>
 
 namespace ge{
-  namespace util{
+  namespace core{
     namespace sim{
-      class GEUTIL_EXPORT Namespace: public std::enable_shared_from_this<Namespace>{
+      class GECORE_EXPORT Namespace: public std::enable_shared_from_this<Namespace>{
+        public:
+          using SharedNamespace = std::shared_ptr<Namespace>;
+          using SharedAccessor  = std::shared_ptr<Accessor >;
         protected:
-          std::string _name   = ""     ;
-          std::weak_ptr<Namespace>  _parent;
-          std::map<std::string,std::shared_ptr<Namespace>>_name2Namespace   ;
-          std::map<std::string,std::shared_ptr<ge::core::Accessor>> _name2Variable;
+          std::string                          _name   = ""     ;
+          std::weak_ptr<Namespace>             _parent          ;
+          std::map<std::string,SharedNamespace>_name2Namespace  ;
+          std::map<std::string,SharedAccessor >_name2Variable   ;
           std::string _toUpper(std::string str);
         public:
-          Namespace(std::string name,std::shared_ptr<Namespace>const&parent = nullptr);
+          Namespace(std::string name,SharedNamespace const&parent = nullptr);
           virtual ~Namespace();
           bool empty()const;
-          void setParent(std::shared_ptr<Namespace>const&parent = nullptr);
-          void insertNamespace(std::string name,std::shared_ptr<Namespace>const&nmspace);
-          void insert(std::string name,std::shared_ptr<ge::core::Accessor>const&variable);
+          void setParent(SharedNamespace const&parent = nullptr);
+          void insertNamespace(std::string name,SharedNamespace const&nmspace);
+          void insert(std::string name,SharedAccessor const&variable);
           void erase(std::string name);
           std::string toStr(unsigned indentation)const;
-          std::shared_ptr<Namespace>getNamespace(std::string name)const;
-          std::shared_ptr<ge::core::Accessor>getVariable(std::string name)const;
+          SharedNamespace getNamespace(std::string name)const;
+          SharedAccessor  getVariable (std::string name)const;
           bool contain(std::string name)const;
           template<typename TYPE>
             TYPE&get(std::string name)const;
           template<typename TYPE>
             TYPE const&get(std::string name,TYPE const& def)const;
           template<typename TYPE>
-            TYPE& get(std::string name,TYPE &def)const;
-          typedef std::map<std::string,std::shared_ptr<Namespace>>::const_iterator CNSIter;
-          typedef std::map<std::string,std::shared_ptr<ge::core::Accessor>>::const_iterator CVarIter;
+            TYPE&get(std::string name,TYPE &def)const;
+          using CNSIter  = decltype(_name2Namespace)::const_iterator;
+          using CVarIter = decltype(_name2Variable )::const_iterator;
           CNSIter  namespacesBegin()const;
           CNSIter  namespacesEnd  ()const;
           CVarIter varsBegin()const;

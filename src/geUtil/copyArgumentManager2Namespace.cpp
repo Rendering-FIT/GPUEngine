@@ -104,7 +104,7 @@ void ArgData2Accessor(ge::core::Accessor ac,ge::util::ArgData*data){
   }
 }
 
-void ge::util::sim::copyArgumentManager2Namespace(std::shared_ptr<ge::util::sim::Namespace>const&ns,ge::util::ArgumentManager*argm,std::shared_ptr<ge::core::TypeRegister>&typeRegister){
+void ge::util::sim::copyArgumentManager2Namespace(std::shared_ptr<ge::core::sim::Namespace>const&ns,ge::util::ArgumentManager*argm,std::shared_ptr<ge::core::TypeRegister>&typeRegister){
   for(auto x:*argm){
     std::vector<unsigned>typeDescriptor;
     ArgData2TypeDescriptor(typeDescriptor,x.second);

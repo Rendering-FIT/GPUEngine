@@ -59,7 +59,6 @@ set(GL_INCLUDES
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
-   ${HEADER_PATH}/Namespace.h
    ${HEADER_PATH}/NamespaceWithUsers.h
    ${HEADER_PATH}/User.h
    ${HEADER_PATH}/copyArgumentManager2Namespace.h
@@ -74,7 +73,6 @@ set(GL_SOURCES
    HighResolutionTimer.cpp
    Intersectors.cpp
    Progress.cpp
-   Namespace.cpp
    NamespaceWithUsers.cpp
    copyArgumentManager2Namespace.cpp
 )

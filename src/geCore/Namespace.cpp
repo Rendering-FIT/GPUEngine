@@ -1,16 +1,16 @@
-#include<geUtil/Namespace.h>
+#include<geCore/Namespace.h>
 
 #include<algorithm>
 #include<sstream>
 
-using namespace ge::util::sim;
+using namespace ge::core::sim;
 
 std::string Namespace::_toUpper(std::string str){
   std::transform(str.begin(), str.end(),str.begin(), ::toupper);
   return str;
 }
 
-Namespace::Namespace(std::string name,std::shared_ptr<Namespace>const&parent){
+Namespace::Namespace(std::string name,SharedNamespace const&parent){
   this->_name   = name  ;
   this->_parent = parent;
 }
@@ -22,12 +22,12 @@ bool Namespace::empty()const{
   return this->_name2Variable.size()==0 && this->_name2Namespace.size()==0;
 }
 
-void Namespace::setParent(std::shared_ptr<Namespace>const&parent){
+void Namespace::setParent(SharedNamespace const&parent){
   this->_parent = parent;
 }
 
-void Namespace::insertNamespace(std::string name,std::shared_ptr<Namespace>const&nmspace){
-  this->_name2Namespace.insert(std::pair<std::string,std::shared_ptr<Namespace>>(name,nmspace));
+void Namespace::insertNamespace(std::string name,SharedNamespace const&nmspace){
+  this->_name2Namespace.insert(std::pair<std::string,SharedNamespace>(name,nmspace));
 }
 
 std::string Namespace::toStr(unsigned indentation)const{
@@ -45,13 +45,13 @@ std::string Namespace::toStr(unsigned indentation)const{
   return ss.str();
 }
 
-std::shared_ptr<Namespace>Namespace::getNamespace(std::string name)const{
+Namespace::SharedNamespace Namespace::getNamespace(std::string name)const{
   if(this->_name2Namespace.count(name))
     return this->_name2Namespace.find(name)->second;
   return nullptr;
 }
 
-void Namespace::insert(std::string name,std::shared_ptr<ge::core::Accessor>const&variable){
+void Namespace::insert(std::string name,SharedAccessor const&variable){
   std::size_t pos=name.find(".");
   if(pos==0){
     std::cerr<<"ERROR: can't insert variable "+name+" into "+this->_name+" - incorrect variable name, there is no namespace name before \".\""<<std::endl;
@@ -63,7 +63,7 @@ void Namespace::insert(std::string name,std::shared_ptr<ge::core::Accessor>const
   std::string rest=name.substr(pos+1);
   std::string namespaceName=name.substr(0,pos);
   auto nextNamespace=this->getNamespace(namespaceName);
-  if(nextNamespace==NULL){
+  if(!nextNamespace){
     nextNamespace=std::make_shared<Namespace>(namespaceName);
     this->insertNamespace(namespaceName,nextNamespace);
     nextNamespace->setParent(this->shared_from_this());
@@ -74,7 +74,7 @@ void Namespace::insert(std::string name,std::shared_ptr<ge::core::Accessor>const
 void Namespace::erase(std::string name){
   std::size_t pos=name.find(".");
   if(pos==0){
-    std::cerr<<"ERROR: can't erase variable "+name+" from "+this->_name+" - incorrect variable name, there is no namspace name before \".\""<<std::endl;
+    std::cerr<<"ERROR: can't erase variable "+name+" from "+this->_name+" - incorrect variable name, there is no namespace name before \".\""<<std::endl;
     return;
   }
   this->_name2Variable.erase(name);
@@ -91,7 +91,7 @@ void Namespace::erase(std::string name){
     this->_name2Namespace.erase(namespaceName);
 }
 
-std::shared_ptr<ge::core::Accessor>Namespace::getVariable (std::string name)const{
+Namespace::SharedAccessor Namespace::getVariable (std::string name)const{
   auto it=this->_name2Variable.find(name);
   if(it==this->_name2Variable.end()){
     std::cerr<<"Namespace::getVariable Error: there is no variable with name: "<<name<<std::endl;
