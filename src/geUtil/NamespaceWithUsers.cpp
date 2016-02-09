@@ -2,7 +2,7 @@
 
 #include<algorithm>
 #include<sstream>
-#include<geUtil/Namespace.h>
+#include<geCore/Namespace.h>
 #include<geUtil/User.h>
 
 using namespace ge::util::sim;

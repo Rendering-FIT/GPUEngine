@@ -32,6 +32,8 @@ void Body::operator()(){
 }
 
 
+BodyFactory::~BodyFactory(){
+}
 
 std::shared_ptr<Statement>BodyFactory::operator()(SharedTypeRegister const&tr){
   auto result = std::make_shared<Body>();

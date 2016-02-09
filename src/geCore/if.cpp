@@ -49,6 +49,8 @@ void If::operator()(){
 }
 
 
+IfFactory::~IfFactory(){
+}
 
 std::shared_ptr<Statement>IfFactory::operator()(SharedTypeRegister const&tr){
   auto result = std::make_shared<If>();

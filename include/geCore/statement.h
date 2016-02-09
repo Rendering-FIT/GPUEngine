@@ -25,13 +25,13 @@ namespace ge{
 
     using SharedTypeRegister = std::shared_ptr<TypeRegister>;
 
-    class StatementFactory{
+    class GECORE_EXPORT StatementFactory{
       public:
         virtual ~StatementFactory(){}
         virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
     };
 
-    class ResourceFactory{
+    class GECORE_EXPORT ResourceFactory{
       protected:
         TypeRegister::TypeID _type = TypeRegister::UNREGISTERED;
         std::shared_ptr<Accessor>_result  = nullptr;

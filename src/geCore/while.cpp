@@ -38,6 +38,8 @@ void While::operator()(){
 }
 
 
+WhileFactory::~WhileFactory(){
+}
 
 std::shared_ptr<Statement>WhileFactory::operator()(SharedTypeRegister const&tr){
   auto result = std::make_shared<While>();
