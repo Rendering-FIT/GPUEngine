@@ -7,8 +7,9 @@ configure_file(
 )
 
 install(FILES
-    "${GPUEngine_SOURCE_DIR}/geAd/Export.h"
-    DESTINATION include/geAd
-  )
+   "${GPUEngine_SOURCE_DIR}/geAd/Export.h"
+   DESTINATION include/geAd
+)
 
+add_subdirectory(OsgImport)
 add_subdirectory(WindowObject)

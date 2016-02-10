@@ -222,7 +222,7 @@ void Init()
                                            modesAndOffsets4.data(),primitiveData.size());
    shared_ptr<MatrixList> identity=make_shared<MatrixList>(1);
    identity->upload(RenderingContext::identityMatrix,1);
-   attribsRefInstNI.createObject(identity.get(),stateSet.get());
+   attribsRefInstNI.createDrawable(identity.get(),stateSet.get());
 
 
    // unmap drawCommandStorage

@@ -31,8 +31,8 @@ namespace ge
       class GERG_EXPORT Transformation : public std::enable_shared_from_this<Transformation> {
       public:
 
-         GERG_CHILD_LIST(Transformation*,std::shared_ptr<Transformation>)
-         GERG_PARENT_LIST(std::shared_ptr<Transformation>,Transformation*)
+         GERG_CHILD_LIST(std::shared_ptr<Transformation>,Transformation*)
+         GERG_PARENT_LIST(Transformation*,std::shared_ptr<Transformation>)
 
       protected:
 
@@ -57,9 +57,7 @@ namespace ge
          void allocTransformationGpuData();
          void shareTransformationFrom(const Transformation &t);
 
-         inline std::shared_ptr<MatrixList>& getOrCreateMatrixList();
          inline const std::shared_ptr<MatrixList>& getOrCreateMatrixList() const;
-         inline std::shared_ptr<MatrixList>& matrixList();
          inline const std::shared_ptr<MatrixList>& matrixList() const;
          inline void setMatrixList(std::shared_ptr<MatrixList>& ml);
 
@@ -92,11 +90,8 @@ namespace ge
    namespace rg
    {
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
-      inline std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList()
-      { if(_matrixList==nullptr) _matrixList=std::make_shared<MatrixList>(); return _matrixList; }
       inline const std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList() const
       { if(_matrixList==nullptr) const_cast<Transformation*>(this)->_matrixList=std::make_shared<MatrixList>(); return _matrixList; }
-      inline std::shared_ptr<MatrixList>& Transformation::matrixList()  { return _matrixList; }
       inline const std::shared_ptr<MatrixList>& Transformation::matrixList() const  { return _matrixList; }
       inline void Transformation::setMatrixList(std::shared_ptr<MatrixList>& ml)  { _matrixList=ml; }
       inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}

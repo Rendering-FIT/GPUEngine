@@ -33,7 +33,7 @@ namespace ge
          // MSVC 2013 (tested with Update 4 and 5) and MSVC 2015 (original release)
          // fails to embed this class into the std::vector
          // unless there is a copy constructor (this does not meet C++11 standard)
-         // MSVC 2015 (original release) requires assignment operator as well.
+         // MSVC 2015 (original release) requires even assignment operator.
          RenderingCommandData(const RenderingCommandData&); // this must be never called
          RenderingCommandData& operator=(const RenderingCommandData&); // this must be never called
 #else
@@ -67,24 +67,33 @@ namespace ge
             inline AttribStorageData(AttribStorage *storage);
          };
 
-         GERG_CHILD_LIST(StateSet*,std::shared_ptr<StateSet>)
-         GERG_PARENT_LIST(std::shared_ptr<StateSet>,StateSet*)
+         GERG_CHILD_LIST(std::shared_ptr<StateSet>,StateSet*)
+         GERG_PARENT_LIST(StateSet*,std::shared_ptr<StateSet>)
 
       protected:
 
          unsigned _numDrawCommands;
-         std::map<AttribStorage*,AttribStorageData> _attribStorageData;
+         unsigned _drawableCounter;        ///< Number of Drawables referencing this StateSet. As long as the counter is non-zero, StateSet is prevented from being freed from memory. \sa _self
+         std::shared_ptr<StateSet> _self;  ///< Reference to itself. It is used by _drawableCounter to prevent the object from being deleted as long as any drawables still reference it.
 
+         std::map<AttribStorage*,AttribStorageData> _attribStorageData;
          std::vector<std::shared_ptr<ge::core::Command>> _commandList;
 
       public:
 
+         inline StateSet();
+
          inline AttribStorageData* getAttribStorageData(const AttribStorage *storage) const;
          inline std::map<AttribStorage*,AttribStorageData>::iterator getOrCreateAttribStorageData(AttribStorage *storage);
          inline void releaseAttribStorageDataIfEmpty(std::map<AttribStorage*,AttribStorageData>::iterator iterator);
+         inline const std::map<AttribStorage*,AttribStorageData>& getAttribStorageDataMap() const;
 
          inline unsigned getStateSetBufferOffset4(unsigned mode,const AttribStorage *storage) const;
          inline unsigned getStateSetBufferOffset4(unsigned mode,const AttribStorageData &storageData) const;
+
+         inline void incrementDrawableCount();
+         inline void decrementDrawableCount();
+         inline unsigned drawableCount() const;
 
          inline void incrementDrawCommandModeCounter(unsigned incrementAmount,
                                                      unsigned mode,AttribStorage *storage);
@@ -106,6 +115,7 @@ namespace ge
          inline void clearCommands();
          inline const std::vector<std::shared_ptr<ge::core::Command>>& commandList() const;
          inline std::vector<std::shared_ptr<ge::core::Command>>& commandList();
+
 
          class GERG_EXPORT RenderCommand : public ge::core::Command {
          protected:
@@ -141,16 +151,22 @@ namespace ge
             unsigned glMode,unsigned drawCommandCount)
       { this->indirectBufferOffset4=indirectBufferOffset4; this->glMode=glMode; this->drawCommandCount=drawCommandCount; }
       inline StateSet::AttribStorageData::AttribStorageData(AttribStorage *storage) : attribStorage(storage), numDrawCommands(0)  { numDrawCommandsOfKindAndIndex.fill(0); }
+
+      inline StateSet::StateSet() : _numDrawCommands(0), _drawableCounter(0) {}
       inline StateSet::AttribStorageData* StateSet::getAttribStorageData(const AttribStorage *storage) const
       { auto it=_attribStorageData.find(const_cast<AttribStorage*>(storage)); return it!=_attribStorageData.end() ? const_cast<AttribStorageData*>(&it->second) : nullptr; }
       inline std::map<AttribStorage*,StateSet::AttribStorageData>::iterator StateSet::getOrCreateAttribStorageData(AttribStorage *storage)
       { return _attribStorageData.emplace(storage,storage).first; }
       inline void StateSet::releaseAttribStorageDataIfEmpty(std::map<AttribStorage*,AttribStorageData>::iterator iterator)
       { if(iterator->second.numDrawCommands==0) _attribStorageData.erase(iterator); }
+      inline const std::map<AttribStorage*,StateSet::AttribStorageData>& StateSet::getAttribStorageDataMap() const  { return _attribStorageData; }
       inline unsigned StateSet::getStateSetBufferOffset4(unsigned mode,const AttribStorage* storage) const
       { const StateSet::AttribStorageData *storageData=getAttribStorageData(storage); return storageData ? getStateSetBufferOffset4(mode,*storageData) : 0; }
       inline unsigned StateSet::getStateSetBufferOffset4(unsigned mode,const AttribStorageData &storageData) const
       { return storageData.renderingData[storageData.indexToRenderingData(mode&0x0f)].stateSetBufferOffset4; }
+      inline void StateSet::incrementDrawableCount()  { if(++_drawableCounter==1) _self=shared_from_this(); }
+      inline void StateSet::decrementDrawableCount()  { if(--_drawableCounter==0) _self.reset(); }
+      inline unsigned StateSet::drawableCount() const  { return _drawableCounter; }
       inline void StateSet::incrementDrawCommandModeCounter(unsigned incrementAmount,unsigned mode,AttribStorage *storage)
       { if(incrementAmount!=0) incrementDrawCommandModeCounter(incrementAmount,mode,getOrCreateAttribStorageData(storage)->second); }
 

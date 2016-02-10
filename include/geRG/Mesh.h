@@ -3,8 +3,9 @@
 
 #include <vector>
 #include <cstdint>
+#include <geRG/Basics.h>
 #include <geRG/Export.h>
-#include <geRG/Object.h>
+#include <geRG/Drawable.h>
 #include <geRG/Primitive.h>
 
 namespace ge
@@ -25,7 +26,7 @@ namespace ge
          unsigned _indicesDataId;
          unsigned _primitivesDataId;
          std::vector<Primitive> _primitiveList;
-         ObjectList _objects;
+         DrawableList _drawables;
 
       public:
 
@@ -47,8 +48,8 @@ namespace ge
          inline void setPrimitivesDataId(unsigned value);
          inline const PrimitiveList& primitiveList() const;
          inline PrimitiveList& primitiveList();
-         inline const ObjectList& objects() const;
-         inline ObjectList& objects();
+         inline const DrawableList& drawables() const;
+         inline DrawableList& drawables();
          inline bool valid() const;
 
          inline void allocData(const AttribConfigRef& config,int numVertices,
@@ -82,11 +83,11 @@ namespace ge
          inline void clearPrimitives();
          inline void setNumPrimitives(unsigned num);
 
-         inline ObjectId createObject(MatrixList *ml,StateSet *stateSet);
-         inline ObjectId createObject(const unsigned *primitiveIndices,
-                                      const int primitiveCount,
-                                      MatrixList *ml,StateSet *stateSet);
-         inline void deleteObject(ObjectId id);
+         inline DrawableId createDrawable(MatrixList *matrixList,StateSet *stateSet);
+         inline DrawableId createDrawable(const unsigned *primitiveIndices,
+                                          const int primitiveCount,
+                                          MatrixList *matrixList,StateSet *stateSet);
+         inline void deleteDrawable(DrawableId id);
       };
 
    }
@@ -115,7 +116,7 @@ namespace ge
          , _indicesDataId(ref._indicesDataId)
          , _primitivesDataId(ref._primitivesDataId)
          , _primitiveList(std::move(ref._primitiveList))
-         , _objects(std::move(ref._objects))
+         , _drawables(std::move(ref._drawables))
       {
          ref._attribStorage=NULL;
       }
@@ -126,7 +127,7 @@ namespace ge
          _indicesDataId=rhs._indicesDataId;
          _primitivesDataId=rhs._primitivesDataId;
          _primitiveList=std::move(rhs._primitiveList);
-         _objects=std::move(rhs._objects);
+         _drawables=std::move(rhs._drawables);
          rhs._attribStorage=NULL;
          return *this;
       }
@@ -144,8 +145,8 @@ namespace ge
       inline void Mesh::setPrimitivesDataId(unsigned value)  { _primitivesDataId=value; }
       inline const PrimitiveList& Mesh::primitiveList() const  { return _primitiveList; }
       inline PrimitiveList& Mesh::primitiveList()  { return _primitiveList; }
-      inline const ObjectList& Mesh::objects() const  { return _objects; }
-      inline ObjectList& Mesh::objects()  { return _objects; }
+      inline const DrawableList& Mesh::drawables() const  { return _drawables; }
+      inline DrawableList& Mesh::drawables()  { return _drawables; }
       inline bool Mesh::valid() const  { return _attribStorage!=NULL; }
       inline void Mesh::allocData(const AttribConfigRef& config,int numVertices,int numIndices,unsigned numPrimitives)
       { config->allocData(*this,numVertices,numIndices,numPrimitives); }
@@ -189,12 +190,12 @@ namespace ge
       inline void Mesh::clearPrimitives()  { setNumPrimitives(0); }
       inline void Mesh::setNumPrimitives(unsigned num)
       { RenderingContext::current()->setNumPrimitives(*this,num); }
-      inline ObjectId Mesh::createObject(MatrixList *ml,StateSet *stateSet)
-      { return RenderingContext::current()->createObject(*this,ml,stateSet); }
-      inline ObjectId Mesh::createObject(const unsigned *primitiveIndices,const int primitiveCount,MatrixList *ml,StateSet *stateSet)
-      { return RenderingContext::current()->createObject(*this,primitiveIndices,primitiveCount,ml,stateSet); }
-      inline void Mesh::deleteObject(ObjectId id)
-      { RenderingContext::current()->deleteObject(*this,id); }
+      inline DrawableId Mesh::createDrawable(MatrixList *matrixList,StateSet *stateSet)
+      { return RenderingContext::current()->createDrawable(*this,matrixList,stateSet); }
+      inline DrawableId Mesh::createDrawable(const unsigned *primitiveIndices,const int primitiveCount,MatrixList *matrixList,StateSet *stateSet)
+      { return RenderingContext::current()->createDrawable(*this,primitiveIndices,primitiveCount,matrixList,stateSet); }
+      inline void Mesh::deleteDrawable(DrawableId id)
+      { RenderingContext::current()->deleteDrawable(*this,id); }
    }
 }
 

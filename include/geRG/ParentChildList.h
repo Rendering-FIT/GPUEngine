@@ -99,6 +99,7 @@ namespace ge
          const std::list<ListItemT>& getInternalList() const  { return _list; }
 
          typename std::list<ListItemT>::size_type size() const  { return _list.size(); }
+         bool empty() const  { return _list.empty(); }
 
          class AbstractIterator
          {

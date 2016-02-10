@@ -53,7 +53,7 @@ void MatrixList::uploadListControlData()
 
 
 MatrixList::MatrixList()
-   : _numRefs(0)
+   : _drawableCounter(0)
    , _numMatrices(0)
    , _restartFlag(true)
    , _arrayId(0)
@@ -66,7 +66,7 @@ MatrixList::MatrixList()
 
 
 MatrixList::MatrixList(unsigned numMatrices)
-   : _numRefs(0)
+   : _drawableCounter(0)
    , _numMatrices(0)
    , _restartFlag(true)
    , _arrayId(0)
@@ -80,7 +80,7 @@ MatrixList::MatrixList(unsigned numMatrices)
 
 
 MatrixList::MatrixList(unsigned listControlId,unsigned matrixArrayId,unsigned numMatrices)
-   : _numRefs(0)
+   : _drawableCounter(0)
    , _listControlId(listControlId)
    , _numMatrices(numMatrices)
    , _restartFlag(true)

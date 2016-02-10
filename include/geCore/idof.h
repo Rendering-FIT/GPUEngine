@@ -8,7 +8,8 @@ namespace ge {
 namespace core {
 
 
-std::map<std::string,map<std::string,unsigned>>& idof_get_global_register()
+template<typename T=void> // template only avoids the need to put the function to the cpp file
+std::map<std::string,std::map<std::string,unsigned>>& idof_get_global_register()
 {
    static std::map<std::string,std::map<std::string,unsigned>> r;
    return r;
@@ -58,8 +59,12 @@ public:
 };
 
 
+typedef unsigned _idof_t;
+#define idof_t ge::core::_idof_t
+
+
 template<typename id_name,typename register_name>
-unsigned idof_template<id_name,register_name>::id = []()->unsigned {
+unsigned idof_template<id_name,register_name>::id = []()->idof_t {
       auto id_chars=id_name{}.chars;
       auto register_chars=register_name{}.chars;
 #if 0 // debug
@@ -80,15 +85,15 @@ unsigned idof_template<id_name,register_name>::id = []()->unsigned {
 
 
 #define idof_1(_name_) \
-[]() -> unsigned { \
+([]() -> unsigned { \
    struct constexpr_string_type { const char* chars = #_name_; }; \
    return ge::core::idof_template<ge::core::idof_apply_range<sizeof(#_name_)-1,                 \
          ge::core::idof_string_builder<constexpr_string_type>::produce>::result>::id; \
-}()
+}())
 
 
 #define idof_2(_id_name_,_register_name_) \
-[]() -> unsigned { \
+([]() -> unsigned { \
    struct id_name { const char* chars = #_id_name_; }; \
    struct register_name { const char* chars = #_register_name_; }; \
    return ge::core::idof_template< \
@@ -97,7 +102,7 @@ unsigned idof_template<id_name,register_name>::id = []()->unsigned {
       ge::core::idof_apply_range<sizeof(#_register_name_)-1, \
          ge::core::idof_string_builder<register_name>::produce>::result \
       >::id; \
-}()
+}())
 
 
 #define idof_get_macro(_1,_2,_3,_macro_name_,...) _macro_name_

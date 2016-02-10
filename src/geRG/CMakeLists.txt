@@ -13,6 +13,7 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 set(RG_INCLUDES
     ${HEADER_PATH}/Export.h
+    ${HEADER_PATH}/Basics.h
     ${HEADER_PATH}/ParentChildList.h
     ${HEADER_PATH}/AllocationManagers.h
     ${HEADER_PATH}/BufferStorage.h
@@ -23,16 +24,19 @@ set(RG_INCLUDES
     ${HEADER_PATH}/SeparateBuffersAttribStorage.h
     ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Primitive.h
-    ${HEADER_PATH}/Object.h
+    ${HEADER_PATH}/Drawable.h
     ${HEADER_PATH}/DrawCommand.h
     ${HEADER_PATH}/RenderingContext.h
     ${HEADER_PATH}/StateSet.h
+    ${HEADER_PATH}/StateSetManager.h
     ${HEADER_PATH}/Transformation.h
     ${HEADER_PATH}/MatrixList.h
     ${HEADER_PATH}/MatrixGpuData.h
+    ${HEADER_PATH}/Model.h
   )
 
 set(RG_SOURCES
+    Basics.cpp
     AllocationManagers.cpp
     AttribType.cpp
     AttribConfig.cpp
@@ -42,6 +46,7 @@ set(RG_SOURCES
     DrawCommand.cpp
     RenderingContext.cpp
     StateSet.cpp
+    StateSetManager.cpp
     Transformation.cpp
     MatrixList.cpp
     FlexibleUniform.cpp

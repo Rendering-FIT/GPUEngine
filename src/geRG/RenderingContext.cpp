@@ -1,13 +1,17 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream> // for cerr
+#include <sstream>
 #include <geRG/RenderingContext.h>
-#include <geRG/Mesh.h>
 #include <geRG/AttribStorage.h>
-#include <geRG/StateSet.h>
+#include <geRG/FlexibleUniform.h>
 #include <geRG/MatrixList.h>
+#include <geRG/Mesh.h>
+#include <geRG/StateSet.h>
+#include <geRG/StateSetManager.h>
 #include <geRG/Transformation.h>
 #include <geGL/BufferObject.h>
+#include <geGL/ProgramObject.h>
 
 using namespace ge::rg;
 using namespace ge::gl;
@@ -32,7 +36,7 @@ const float RenderingContext::identityMatrix[16] = {
 
 
 
-void RenderingContext::init()
+void RenderingContext::global_init()
 {
    // init _currentContext.data.value
    // (use placement new on shared_ptr, memory is statically preallocated)
@@ -45,7 +49,7 @@ void RenderingContext::init()
 }
 
 
-void RenderingContext::finalize()
+void RenderingContext::global_finalize()
 {
    // call in-place shared_ptr destructor
    // (do not free static memory)
@@ -78,6 +82,7 @@ RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
 
 RenderingContext::RenderingContext()
    : _numAttribStorages(0)
+   , _stateSetManager(make_shared<StateSetDefaultManager>())
    , _useARBShaderDrawParameters(false)
    , _primitiveStorage(initialPrimitiveBufferCapacity,1,GL_DYNAMIC_DRAW) // block-based
    , _drawCommandStorage(intialDrawCommandBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
@@ -421,36 +426,38 @@ void RenderingContext::setNumPrimitives(Mesh &mesh,unsigned num)
 }
 
 
-ObjectId RenderingContext::createObject(
+DrawableId RenderingContext::createDrawable(
       Mesh &mesh,
       const unsigned *primitiveIndices,const int primitiveCount,
-      MatrixList *ml,StateSet *stateSet)
+      MatrixList *matrixList,StateSet *stateSet)
 {
    // numDrawCommands to be created
    unsigned numDrawCommands=primitiveCount!=-1 ? unsigned(primitiveCount)
                                                : unsigned(mesh.primitiveList().size());
 
-   // allocate Object
-   Object *obj=Object::alloc(numDrawCommands);
-   obj->stateSet=stateSet;
-   obj->matrixList=ml;
-   obj->numItems=numDrawCommands;
+   // allocate Drawable
+   Drawable *drawable=Drawable::alloc(numDrawCommands);
+   drawable->stateSet=stateSet;
+   drawable->matrixList=matrixList;
+   drawable->numItems=numDrawCommands;
 
-   // reference MatrixList (to prevent it to be released from memory as long as Object exists)
-   ml->incrementInstanceRefCounter();
+   // reference stateSet and matrixList
+   // (to indicate that they should not be released from memory as long as this drawable exists)
+   stateSet->incrementDrawableCount();
+   matrixList->incrementDrawableCount();
 
    // allocate draw commands
-   _drawCommandStorage.alloc(numDrawCommands,obj->items());
+   _drawCommandStorage.alloc(numDrawCommands,drawable->items());
 
    // iterate through instances
    auto storageDataIterator=stateSet->getOrCreateAttribStorageData(mesh.attribStorage());
    StateSet::AttribStorageData &storageData=storageDataIterator->second;
-   auto listControlOffset4=ml->listControlOffset4();
+   auto listControlOffset4=matrixList->listControlOffset4();
    DrawCommandGpuData* drawCommandBufferPtr=_drawCommandStorage.map(BufferStorageAccess::WRITE);
    for(unsigned i=0; i<numDrawCommands; i++)
    {
       // update DrawCommandGpuData
-      DrawCommandGpuData &dcData=drawCommandBufferPtr[obj->item(i).index()];
+      DrawCommandGpuData &dcData=drawCommandBufferPtr[drawable->item(i).index()];
       unsigned psIndex=primitiveCount==-1 ? i : primitiveIndices[i];
       Primitive pl=mesh.primitiveList()[psIndex];
       dcData.primitiveSetOffset4=_primitiveStorage[mesh.primitivesDataId()].startIndex*
@@ -459,7 +466,7 @@ ObjectId RenderingContext::createObject(
 
       // update instance's mode and StateSet counter
       unsigned mode=pl.mode();
-      obj->item(i).setMode(mode);
+      drawable->item(i).setMode(mode);
       stateSet->incrementDrawCommandModeCounter(1,mode,storageData);
 
       // update DrawCommandGpuData::stateSetOffset4 (must be done after incrementing StateSet counter)
@@ -467,14 +474,14 @@ ObjectId RenderingContext::createObject(
    }
    stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
-   // insert InstanceGroup into the list of instances
+   // insert Drawable into the list of drawables
    // and return iterator to it
-   mesh.objects().push_front(obj);
-   return mesh.objects().begin();
+   mesh.drawables().push_front(drawable);
+   return mesh.drawables().begin();
 }
 
 
-void RenderingContext::deleteObject(Mesh &mesh,ObjectId id)
+void RenderingContext::deleteDrawable(Mesh &mesh,DrawableId id)
 {
    // iterate through instances
    StateSet *stateSet=id->stateSet;
@@ -487,17 +494,18 @@ void RenderingContext::deleteObject(Mesh &mesh,ObjectId id)
    }
    stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
-   // unreference matrix collection
-   id->matrixList->decrementInstanceRefCounter();
+   // unreference matrixList and stateSet
+   id->matrixList->decrementDrawableCount();
+   stateSet->decrementDrawableCount();
 
    // remove from lists, execute destructors and free memory
    _drawCommandStorage.free(id->items(),id->numItems);
    id->free();
-   mesh.objects().erase(id);
+   mesh.drawables().erase(id);
 }
 
 
-void RenderingContext::appendTransformationGraph(shared_ptr<Transformation>& transformation)
+void RenderingContext::addTransformationGraph(shared_ptr<Transformation>& transformation)
 {
    _transformationGraphs.emplace_back(transformation);
 }
@@ -515,16 +523,16 @@ void RenderingContext::cancelAllAllocations()
 {
    // break Mesh references to Primitives
    // (set all Mesh::_attribStorage to nullptr
-   // and zero all Object::items)
+   // and zero all Drawable::items)
    for(auto it=_primitiveStorage.begin(); it!=_primitiveStorage.end(); it++) {
       Mesh *m=it->owner;
       if(m) {
          m->setAttribStorage(nullptr);
-         ObjectList &ol=m->objects();
-         for(auto olit=ol.begin(); olit!=ol.end(); olit++) {
-            unsigned num=olit->numItems;
+         DrawableList &dl=m->drawables();
+         for(auto dlit=dl.begin(); dlit!=dl.end(); dlit++) {
+            unsigned num=dlit->numItems;
             for(unsigned i=0; i<num; i++)
-               olit->item(i).data=0;
+               dlit->item(i).data=0;
          }
       }
    }
@@ -551,6 +559,245 @@ void RenderingContext::handleContextLost()
 }
 
 
+void RenderingContext::init()
+{
+   initDefaultShaders();
+   configureRenderingPipeline();
+}
+
+
+void RenderingContext::initDefaultShaders()
+{
+   if(!getGLProgram(idof(Ambient,geRG_GLPrograms)))
+   {
+      setGLProgram(idof(Ambient,geRG_GLPrograms),
+                   make_shared<ProgramObject>(
+         GL_VERTEX_SHADER,
+         static_cast<std::stringstream&>(stringstream()<<
+         "#version 430\n"
+         <<(_useARBShaderDrawParameters
+         ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+           "\n"
+           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+           "   mat4 instancingMatrixBuffer[];\n"
+           "};\n"
+         : ""
+         )<<
+         "\n"
+         "layout(location=0) in vec4 position;\n"
+         "layout(location=2) in vec4 color;\n"
+         "layout(location=3) in vec2 texCoord;\n"
+         <<(_useARBShaderDrawParameters
+         ? ""
+         : "layout(location=12) in mat4 instancingMatrix;\n"
+         )<<
+         "\n"
+         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+         "   vec4 color;\n"
+         "   vec2 texCoord;\n"
+         "} o;\n"
+         "\n"
+         "uniform vec4 globalAmbientLight; // alpha must be 1\n"
+         "uniform mat4 projection;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   // ambient lighting\n"
+         "   o.color=globalAmbientLight*color;\n"
+         "   o.texCoord=texCoord;\n"
+         "\n"
+         "   // vertex position\n"
+         <<(_useARBShaderDrawParameters
+         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+           "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
+         : "   gl_Position=projection*instancingMatrix*position;\n"
+         )<<
+         "}\n").str(),
+         GL_FRAGMENT_SHADER,
+         "#version 330\n"
+         "\n"
+         "in VertexData {\n"
+         "   vec4 color;\n"
+         "   vec2 texCoord;\n"
+         "};\n"
+         "\n"
+         "layout(location=0) out vec4 fragColor;\n"
+         "\n"
+         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+         "uniform sampler2D colorTexture;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   // texturing and final color\n"
+         "   if(colorTexturingMode==0) // no texturing\n"
+         "      fragColor=color;\n"
+         "   else if(colorTexturingMode==1) // modulate\n"
+         "      fragColor=color*texture(colorTexture,texCoord);\n"
+         "   else // replace\n"
+         "      fragColor=texture(colorTexture,texCoord);\n"
+         "}\n"));
+   }
+
+   if(!getGLProgram(idof(SimplifiedPhong,geRG_GLPrograms)))
+   {
+      setGLProgram(idof(SimplifiedPhong,geRG_GLPrograms),
+                   make_shared<ProgramObject>(
+         GL_VERTEX_SHADER,
+         static_cast<std::stringstream&>(stringstream()
+         <<(_useARBShaderDrawParameters
+         ? "#version 430\n"
+           "#extension GL_ARB_shader_draw_parameters : enable\n"
+           "\n"
+           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+           "   mat4 instancingMatrixBuffer[];\n"
+           "};\n"
+         : "#version 330\n"
+         )<<
+         "\n"
+         "layout(location=0) in vec4 position;\n"
+         "layout(location=1) in vec3 normal;\n"
+         "layout(location=2) in vec4 color;\n"
+         "layout(location=3) in vec2 texCoord;\n"
+         <<(_useARBShaderDrawParameters
+         ? ""
+         : "layout(location=12) in mat4 instancingMatrix;\n"
+         )<<
+         "\n"
+         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+         "   vec3 eyePosition;\n"
+         "   vec3 eyeNormal;\n"
+         "   vec4 color;\n"
+         "   vec2 texCoord;\n"
+         "} o;\n"
+         "\n"
+         "uniform mat4 projection;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   o.color=color;\n"
+         "   o.texCoord=texCoord;\n"
+         <<(_useARBShaderDrawParameters
+         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+           "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
+           "   vec4 v=instancingMatrix*position;\n"
+         : "   vec4 v=instancingMatrix*position;\n"
+         )<<
+         "   o.eyePosition=v.xyz;\n"
+         "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+         "   gl_Position=projection*v;\n"
+         "}\n").str(),
+         GL_FRAGMENT_SHADER,
+         "#version 330\n"
+         "\n"
+         "in VertexData {\n"
+         "   vec3 eyePosition;\n"
+         "   vec3 eyeNormal;\n"
+         "   vec4 color;\n"
+         "   vec2 texCoord;\n"
+         "};\n"
+         "\n"
+         "layout(location=0) out vec4 fragColor;\n"
+         "\n"
+         "uniform vec4 specularAndShininess; // shininess in alpha\n"
+         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+         "uniform sampler2D colorTexture;\n"
+         "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+         "uniform vec3 lightColor;\n"
+         "uniform vec3 lightAttenuation;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   // compute VL - vertex to light vector, in eye coordinates\n"
+         "   vec3 VL=lightPosition.xyz;\n"
+         "   if(lightPosition.w!=0.)\n"
+         "      VL-=eyePosition;\n"
+         "   float VLlen=length(VL);\n"
+         "   vec3 VLdir=VL/VLlen;\n"
+         "\n"
+         "   // invert normals on back facing triangles\n"
+         "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+         "\n"
+         "   // Lambert's diffuse reflection\n"
+         "   float NdotL=dot(N,VLdir);\n"
+         "\n"
+         "   // fragments facing the light get all the lighting\n"
+         "   // while those not facing the light get only ambient lighting\n"
+         "   if(NdotL<=0.)\n"
+         "   {\n"
+         "      // final sum for light-not-facing fragments\n"
+         "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
+         "      // or we can simply drop the fragment.)\n"
+         "      discard;\n"
+         "   }\n"
+         "   else\n"
+         "   {\n"
+         "      // specular effect\n"
+         "      float specularEffect;\n"
+         "      vec3 R=reflect(-VLdir,N);\n"
+         "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+         "      float RdotV=dot(R,-Vdir);\n"
+         "      if(RdotV>0.)\n"
+         "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+         "      else\n"
+         "         specularEffect = 0.;\n"
+         "\n"
+         "      // attenuation\n"
+         "      float attenuation=lightAttenuation[0]+\n"
+         "                        lightAttenuation[1]*VLlen+\n"
+         "                        lightAttenuation[2]*VLlen*VLlen;\n"
+         "\n"
+         "      // texturing\n"
+         "      vec4 c;\n;"
+         "      if(colorTexturingMode==0) // no texturing\n"
+         "         c=color;\n"
+         "      else if(colorTexturingMode==1) // modulate\n"
+         "         c=texture(colorTexture,texCoord)*color;\n"
+         "      else // replace\n"
+         "         c=texture(colorTexture,texCoord);\n"
+         "\n"
+         "      // final sum for light-facing fragments\n"
+         "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
+         "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+         "                      attenuation,\n"
+         "                     c.a);\n"
+         "   }\n"
+         "}\n"));
+   }
+}
+
+
+void RenderingContext::configureRenderingPipeline()
+{
+   shared_ptr<StateSet> rootSs(getSuperStateSet(idof(Root,geRG_SuperStateSets)));
+   if(!rootSs)
+   {
+      rootSs=make_shared<StateSet>();
+      setSuperStateSet(idof(Root,geRG_SuperStateSets),rootSs);
+   }
+   if(!getSuperStateSet(idof(Ambient,geRG_SuperStateSets)))
+   {
+      auto ss=make_shared<StateSet>();
+      ss->addCommand(make_shared<FlexibleUseProgram>(getGLProgram(idof(Ambient,geRG_GLPrograms))));
+      ss->addRenderCommand();
+      ss->addChild(_stateSetManager->root());
+      setSuperStateSet(idof(Ambient,geRG_SuperStateSets),ss);
+      rootSs->addChild(ss);
+   }
+   if(!getSuperStateSet(idof(SimplifiedPhong,geRG_SuperStateSets)))
+   {
+      auto ss=make_shared<StateSet>();
+      ss->addCommand(make_shared<FlexibleUseProgram>(getGLProgram(idof(SimplifiedPhong,geRG_GLPrograms))));
+      ss->addCommand(make_shared<ge::gl::BlendFunc<>>(GL_ONE,GL_ONE));
+      ss->addCommand(make_shared<ge::gl::Enable<>>(GL_BLEND));
+      ss->addRenderCommand();
+      ss->addCommand(make_shared<ge::gl::Disable<>>(GL_BLEND));
+      ss->addChild(_stateSetManager->root());
+      setSuperStateSet(idof(SimplifiedPhong,geRG_SuperStateSets),ss);
+      rootSs->addChild(ss);
+   }
+}
+
+
 static void countMatrices(Transformation *t)
 {
    MatrixList *ml=t->matrixList().get();
@@ -563,7 +810,7 @@ static void countMatrices(Transformation *t)
       }
    }
    for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
-      countMatrices(*it);
+      countMatrices(it->get());
 }
 
 
@@ -589,7 +836,7 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV)
 
    // process child transformations
    for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
-      processTransformation(*it,mv);
+      processTransformation(it->get(),mv);
 }
 
 
@@ -607,11 +854,32 @@ void RenderingContext::evaluateTransformationGraph()
 void RenderingContext::setupRendering()
 {
    _indirectBufferAllocatedSpace4=0;
+
+   // setup rendering on StateSets
+   auto root=getSuperStateSet(idof(Root,geRG_SuperStateSets));
+   if(root)
+      root->setupRendering();
 }
 
 
 void RenderingContext::render()
 {
+   // render all StateSets
+   auto root=getSuperStateSet(idof(Root,geRG_SuperStateSets));
+   if(root)
+      root->render();
+}
+
+
+std::shared_ptr<ge::gl::TextureObject> RenderingContext::cachedTextureObject(const std::string& path) const
+{
+   auto it=_textureCache.find(path);
+   if(it==_textureCache.end())
+      return std::shared_ptr<ge::gl::TextureObject>();
+   auto r=it->second.lock();
+   if(!r)
+      const_cast<RenderingContext*>(this)->_textureCache.erase(it);
+   return r;
 }
 
 
