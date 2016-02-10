@@ -8,10 +8,14 @@ namespace ge {
 namespace core {
 
 
+typedef unsigned _idof_t;
+#define idof_t ge::core::_idof_t
+
+
 template<typename T=void> // template only avoids the need to put the function to the cpp file
 std::map<std::string,std::map<std::string,unsigned>>& idof_get_global_register()
 {
-   static std::map<std::string,std::map<std::string,unsigned>> r;
+   static std::map<std::string,std::map<std::string,idof_t>> r;
    return r;
 }
 
@@ -59,10 +63,6 @@ public:
 };
 
 
-typedef unsigned _idof_t;
-#define idof_t ge::core::_idof_t
-
-
 template<typename id_name,typename register_name>
 unsigned idof_template<id_name,register_name>::id = []()->idof_t {
       auto id_chars=id_name{}.chars;
@@ -75,8 +75,8 @@ unsigned idof_template<id_name,register_name>::id = []()->idof_t {
       auto it=localRegister.find(id_chars);
       if(it!=localRegister.end())
          return it->second;
-      auto& x=localRegister[id_chars];
-      x=localRegister.size();
+      idof_t& x=localRegister[id_chars];
+      x=idof_t(localRegister.size());
 #if 0 // debug
       cout<<"Created entry "<<id_chars<<": "<<x<<endl;
 #endif

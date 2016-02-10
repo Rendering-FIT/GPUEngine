@@ -195,8 +195,6 @@ namespace ge
 
          std::shared_ptr<ge::gl::TextureObject> cachedTextureObject(const std::string& path) const;
          inline void addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture);
-         inline void purgeTextureObjectCache();
-         unsigned purgeTextureObjectCache(size_t &currentPos,size_t numToProcess);
 
          static inline const std::shared_ptr<RenderingContext>& current();
          static void setCurrent(const std::shared_ptr<RenderingContext>& ptr);
@@ -282,7 +280,6 @@ namespace ge
       inline void RenderingContext::setGLProgram(idof_t id,const std::shared_ptr<ge::gl::ProgramObject>& p)  { if(_glPrograms.size()<=id) _glPrograms.resize(id+1); _glPrograms[id]=p; }
 
       inline void RenderingContext::addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture)  { _textureCache[path]=texture; }
-      inline void RenderingContext::purgeTextureObjectCache()  { size_t pos=0; purgeTextureObjectCache(pos,size_max); }
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
       { (uint8_t&)a|=(uint8_t)b; return a; }
