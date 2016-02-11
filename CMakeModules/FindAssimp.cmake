@@ -29,10 +29,17 @@ if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
    # create target
    if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
       if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
-         add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+         add_library(${CMAKE_FIND_PACKAGE_NAME} SHARED IMPORTED)
+         #set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+         #   INTERFACE_INCLUDE_DIRECTORIES "${ASSIMP_INCLUDE_DIR}"
+         #   INTERFACE_LINK_LIBRARIES "${ASSIMP_LIBRARY}"
+         #)
          set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${ASSIMP_INCLUDE_DIR}"
-            INTERFACE_LINK_LIBRARIES "${ASSIMP_LIBRARY}"
+            IMPORTED_LOCATION_DEBUG "${ASSIMP_LIBRARY_DIRS}/assimpd.lib"
+            IMPORTED_LOCATION_RELEASE "${ASSIMP_LIBRARY_DIRS}/assimp.lib"
+            IMPORTED_IMPLIB_DEBUG "${ASSIMP_LIBRARY_DIRS}/assimpd.lib"
+            IMPORTED_IMPLIB_RELEASE "${ASSIMP_LIBRARY_DIRS}/assimp.lib"
          )
       endif()
    endif()
@@ -67,8 +74,11 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
             add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
             set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
                INTERFACE_INCLUDE_DIRECTORIES "${ASSIMP_INCLUDE_DIR}"
-               INTERFACE_LINK_LIBRARIES "${ASSIMP_LIBRARY}"
-            )
+               IMPORTED_LOCATION_DEBUG "${ASSIMP_LIBRARY_DIRS}/assimpd.lib"
+               IMPORTED_LOCATION_RELEASE "${ASSIMP_LIBRARY_DIRS}/assimp.lib"
+               IMPORTED_IMPLIB_DEBUG "${ASSIMP_LIBRARY_DIRS}/assimpd.lib"
+               IMPORTED_IMPLIB_RELEASE "${ASSIMP_LIBRARY_DIRS}/assimp.lib"
+         )
          endif()
       endif()
    endif()
