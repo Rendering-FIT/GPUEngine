@@ -20,44 +20,37 @@ std::map<std::string,std::map<std::string,unsigned>>& idof_get_global_register()
 }
 
 
-#if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 workaround (it does not support constexpr,
-                                       // so we provide alternative (unnoticeably less optimal)
-                                       // solution that allow us to use even this compiler)
+#if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 workaround (it does not support constexpr
+                                       // and passing string as 
+                                       // struct id_name { const char* chars = #_id_name_; };
+                                       // does not seem to work.
+                                       // So, we provide alternative solution (little less optimal)
+                                       // that allow us to use even this compiler)
 
 
-template<typename id_name,typename register_name>
-class idof_template {
-public:
-   static idof_t id;
-};
-
-
-template<typename id_name,typename register_name>
-idof_t idof_template<id_name,register_name>::id=[]()->idof_t {
-      auto id_chars=id_name{}.chars;
-      auto register_chars=register_name{}.chars;
+static idof_t idof_lookup(const char* id_chars,const char* register_chars)
+{
 #if 0 // debug
-      std::cout<<"Init entry \""<<id_chars<<"\" on \""<<register_chars<<'\"'<<std::endl;
+   std::cout<<"Init entry \""<<id_chars<<"\" on \""<<register_chars<<'\"'<<std::endl;
 #endif
-      auto& globalRegister=idof_get_global_register();
-      auto& localRegister=globalRegister[register_chars];
-      auto it=localRegister.find(id_chars);
-      if(it!=localRegister.end())
-         return it->second;
-      idof_t& x=localRegister[id_chars];
-      x=idof_t(localRegister.size());
+   auto& globalRegister=idof_get_global_register();
+   auto& localRegister=globalRegister[register_chars];
+   auto it=localRegister.find(id_chars);
+   if(it!=localRegister.end())
+      return it->second;
+   idof_t& x=localRegister[id_chars];
+   x=idof_t(localRegister.size());
 #if 0 // debug
-      std::cout<<"Created entry \""<<id_chars<<"\": "<<x<<std::endl;
+   std::cout<<"Created entry \""<<id_chars<<"\": "<<x<<std::endl;
 #endif
-      return x;
-   }();
+   return x;
+}
 
 
 #define idof_2(_name_,_register_name_) \
 []() -> unsigned { \
-   struct id_name { const char *chars = #_name_; }; \
-   struct register_name { const char* chars = #_register_name_; }; \
-   return ge::core::idof_template<id_name,register_name>::id; \
+   static idof_t id = ge::core::idof_lookup(#_name_,#_register_name_); \
+   return id; \
 }()
 
 
