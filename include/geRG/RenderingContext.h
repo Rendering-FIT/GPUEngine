@@ -180,7 +180,10 @@ namespace ge
 
          virtual void evaluateTransformationGraph();
          virtual void setupRendering();
+         virtual void processDrawCommands();
+         virtual void fenceSyncGpuComputation();
          virtual void render();
+         virtual void frame();
 
          inline std::shared_ptr<StateSet> getOrCreateStateSet(const StateSetManager::GLState* state);
          inline std::shared_ptr<StateSet> findStateSet(const StateSetManager::GLState* state);

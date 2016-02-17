@@ -1,9 +1,7 @@
 #include <string>
-#include <sstream>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <geGL/BufferObject.h>
 #include <geGL/DebugMessage.h>
 #include <geGL/geGL.h>
 #include <geGL/ProgramObject.h>
@@ -45,7 +43,6 @@ ge::util::ArgumentObject *Args;
 ge::util::WindowObject   *Window;
 
 static bool useARBShaderDrawParameters=false;
-static shared_ptr<ProgramObject> processInstanceProgram;
 static string fileName;
 static shared_ptr<Model> model;
 
@@ -117,78 +114,10 @@ void Wheel(int){
 }
 
 
-#if 0 // uncomment for debugging purposes (it is commented to kill warning of unused function)
-static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
-{
-   cout<<"Buffer contains "<<numInts<<" int values:"<<endl;
-   unsigned *p=(unsigned*)bo->map(GL_MAP_READ_BIT);
-   if(p==nullptr) return;
-   unsigned i;
-   for(i=0; i<numInts; i++)
-   {
-      cout<<*(p+i)<<"  ";
-      if(i%4==3)
-         cout<<endl;
-   }
-   bo->unmap();
-   if(i%4!=0)
-      cout<<endl;
-   cout<<endl;
-}
-#endif
-
-
 void Idle()
 {
-   // clear screen
-   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-   // compute transformation matrices
-   RenderingContext::current()->evaluateTransformationGraph();
-   RenderingContext::current()->matrixStorage()->unmap();
-
-   // prepare for rendering
-   RenderingContext::current()->stateSetStorage()->map(BufferStorageAccess::WRITE);
-   RenderingContext::current()->setupRendering();
-   RenderingContext::current()->stateSetStorage()->unmap();
-
-   // indirect buffer update - setup and start compute shader
-   processInstanceProgram->use();
-   unsigned numInstances=RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd();
-   processInstanceProgram->set("numToProcess",numInstances);
-   RenderingContext::current()->primitiveStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   RenderingContext::current()->drawCommandStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   RenderingContext::current()->matrixListControlStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
-   RenderingContext::current()->drawIndirectBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
-   RenderingContext::current()->stateSetStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
-   glDispatchCompute((numInstances+63)/64,1,1);
-
-   // wait for compute shader
-   GLsync syncObj=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
-#if 0 // glWaitSync does not work on my Quadro K1000M (Keppler architecture), drivers 352.21
-   //glFlush();
-   //glWaitSync(syncObj,0,GL_TIMEOUT_IGNORED);
-#else
-   glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,1e9);
-#endif
-   glDeleteSync(syncObj);
-
-   // bind buffers for rendering
-   RenderingContext::current()->drawIndirectBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
-   if(useARBShaderDrawParameters)
-      RenderingContext::current()->matrixStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-
-#if 0
-   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->bufferObject(),
-                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*3);
-   printIntBufferContent(RenderingContext::current()->primitiveStorage()->bufferObject(),
-                         RenderingContext::current()->primitiveStorage()->firstItemAvailableAtTheEnd()*3);
-   printIntBufferContent(RenderingContext::current()->drawIndirectBuffer(),
-                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*5);
-#endif
-
-   // render ambient scene
-   RenderingContext::current()->render();
+   // render scene
+   RenderingContext::current()->frame();
 
    Window->swap();
 }
@@ -251,67 +180,4 @@ void Init()
    simplifiedPhongProgram->set("lightColor",1.f,1.f,1.f);
    simplifiedPhongProgram->set("lightAttenuation",1.f,0.f,0.f);
    simplifiedPhongProgram->set("colorTexture",int(0));
-
-   processInstanceProgram=make_shared<ProgramObject>(
-      GL_COMPUTE_SHADER,
-      "#version 430\n"
-      "\n"
-      "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
-      "\n"
-      "layout(std430,binding=0) restrict readonly buffer DrawCommandBuffer {\n"
-      "   uint drawCommandBuffer[];\n"
-      "};\n"
-      "layout(std430,binding=1) restrict readonly buffer InstanceBuffer {\n"
-      "   uint instanceBuffer[];\n"
-      "};\n"
-      "layout(std430,binding=2) restrict readonly buffer InstancingMatricesControlBuffer {\n"
-      "   uint instancingMatricesControlBuffer[];\n"
-      "};\n"
-      "layout(std430,binding=3) restrict writeonly buffer IndirectBuffer {\n"
-      "   uint indirectBuffer[];\n"
-      "};\n"
-      "layout(std430,binding=4) restrict buffer StateSetBuffer {\n"
-      "   uint stateSetBuffer[];\n"
-      "};\n"
-      "\n"
-      "uniform uint numToProcess;\n"
-      "\n"
-      "void main()\n"
-      "{\n"
-      "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
-      "      return;\n"
-      "\n"
-      "   // instance buffer data\n"
-      "   uint instanceIndex=gl_GlobalInvocationID.x*3;\n"
-      "   uint drawCommandOffset4=instanceBuffer[instanceIndex+0];\n"
-      "   uint matrixControlOffset4=instanceBuffer[instanceIndex+1];\n"
-      "   uint stateSetDataOffset4=instanceBuffer[instanceIndex+2];\n"
-      "\n"
-      "   // instancing matrices data\n"
-      "   uint matrixCollectionOffset64=instancingMatricesControlBuffer[matrixControlOffset4+0];\n"
-      "   uint numMatrices=instancingMatricesControlBuffer[matrixControlOffset4+1];\n"
-      "\n"
-      "   // compute increment and get indirectBufferOffset\n"
-      "   uint countAndIndexedFlag=drawCommandBuffer[drawCommandOffset4+0];\n"
-      "   uint indirectBufferIncrement=4+bitfieldExtract(countAndIndexedFlag,31,1); // make increment 4 or 5\n"
-      "   uint indirectBufferOffset4=atomicAdd(stateSetBuffer[stateSetDataOffset4],indirectBufferIncrement);\n"
-      "\n"
-      "   // write indirect buffer data\n"
-      "   indirectBuffer[indirectBufferOffset4]=countAndIndexedFlag&0x7fffffff; // indexCount or vertexCount\n"
-      "   indirectBufferOffset4++;\n"
-      "   indirectBuffer[indirectBufferOffset4]=numMatrices; // instanceCount\n"
-      "   indirectBufferOffset4++;\n"
-      "   uint first=drawCommandBuffer[drawCommandOffset4+1]; // firstIndex or firstVertex\n"
-      "   uint vertexOffset=drawCommandBuffer[drawCommandOffset4+2]; // vertexOffset\n"
-      "   if(countAndIndexedFlag>=0x80000000) {\n"
-      "      indirectBuffer[indirectBufferOffset4]=first; // firstIndex\n"
-      "      indirectBufferOffset4++;\n"
-      "      indirectBuffer[indirectBufferOffset4]=vertexOffset; // vertexOffset\n"
-      "      indirectBufferOffset4++;\n"
-      "   } else {\n"
-      "      indirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
-      "      indirectBufferOffset4++;\n"
-      "   }\n"
-      "   indirectBuffer[indirectBufferOffset4]=matrixCollectionOffset64; // base instance\n"
-      "}\n");
 }

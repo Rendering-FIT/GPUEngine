@@ -20,8 +20,15 @@ namespace ge
       };
 
 
-      /** MatrixList class is a group of transformation matrices
-       *  stored inside GPU buffer and used for instanced rendering.
+      /** MatrixList class represents a group of transformation matrices.
+       *  The matrices are stored inside GPU buffer and used for instanced rendering.
+       *
+       *  MatrixList is usually attached to one or more Transformations in transformation graph.
+       *  The transformation graph is traversed before rendering matrices are computed and
+       *  each Transformation with attached MatrixList will append computed transformation
+       *  to the MatrixList. The computed matrix is equal to multiplication of all transformations
+       *  from the root to the current transformation node. Each matrix that is appended to
+       *  the MatrixList "instantiate" Drawables that are referencing MatrixList.
        */
       class GERG_EXPORT MatrixList : public std::enable_shared_from_this<MatrixList> {
       protected:

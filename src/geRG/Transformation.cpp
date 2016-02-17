@@ -44,18 +44,52 @@ float* Transformation::getMatrixPtr()
 }
 
 
+Transformation::Transformation()
+   : _gpuDataOffsetPtr(&_gpuDataOffset64)
+   , _gpuDataOffset64(0)
+{
+   allocTransformationGpuData();
+}
+
+
+Transformation::Transformation(const Transformation &t,unsigned constructionFlags)
+   : enable_shared_from_this<Transformation>()
+   , _gpuDataOffsetPtr(&_gpuDataOffset64)
+   , _gpuDataOffset64(0)
+{
+   if((constructionFlags&SHARE_MATRIX)!=0)
+      shareTransformationFrom(t);
+   if((constructionFlags&SHARE_MATRIX_LIST)!=0)
+      _matrixList=t._matrixList;
+   if((constructionFlags&COPY_CHILDREN)!=0)
+      childList()=t.childList();
+}
+
+
+Transformation::~Transformation()
+{
+   RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
+   if(_gpuDataOffsetPtr!=&_gpuDataOffset64) {
+      if(--_gpuDataOffsetPtr[1]==0)
+         delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr);
+   }
+   removeAllChildren();
+}
+
+
 void Transformation::allocTransformationGpuData()
 {
+   // test gpu data existence
    if(gpuDataOffset64()!=0)
    {
-      // if already allocated, return
+      // if using local _gpuDataOffset64 (not sharing), return
       if(_gpuDataOffsetPtr==&_gpuDataOffset64)
          return;
 
       // remove shared data reference
-      _gpuDataOffsetPtr[1]--;
-      if(_gpuDataOffsetPtr[1]==0)
+      if(--_gpuDataOffsetPtr[1]==0)
       {
+         // destroy SharedDataOffset
          RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
          delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr);
          _gpuDataOffsetPtr=&_gpuDataOffset64;
@@ -69,28 +103,30 @@ void Transformation::allocTransformationGpuData()
 
 void Transformation::shareTransformationFrom(const Transformation &t)
 {
+   // test gpu data existence
    if(gpuDataOffset64()!=0)
    {
-      // if already allocated, return
+      // if already sharing with t, return
       if(_gpuDataOffsetPtr==t._gpuDataOffsetPtr)
          return;
 
       if(_gpuDataOffsetPtr==&_gpuDataOffset64)
-         // free gpu data
+         // free local gpu data
          RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffset64);
       else
       {
          // remove shared data reference
-         _gpuDataOffsetPtr[1]--;
-         if(_gpuDataOffsetPtr[1]==0)
+         if(--_gpuDataOffsetPtr[1]==0)
          {
             RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
+
+            // test if t is using its local _gpuDataOffset64 (not sharing)
             if(t._gpuDataOffsetPtr==&t._gpuDataOffset64)
             {
                // reuse SharedDataOffset struct
-               const_cast<Transformation&>(t)._gpuDataOffsetPtr=_gpuDataOffsetPtr;
-               _gpuDataOffsetPtr[0]=_gpuDataOffset64;
+               _gpuDataOffsetPtr[0]=t._gpuDataOffset64;
                _gpuDataOffsetPtr[1]=2;
+               const_cast<Transformation&>(t)._gpuDataOffsetPtr=_gpuDataOffsetPtr;
                return;
             }
 
@@ -113,19 +149,19 @@ void Transformation::shareTransformationFrom(const Transformation &t)
       }
    }
 
-   // alloc gpu data
-   RenderingContext::current()->transformationAllocationManager().alloc(&_gpuDataOffset64);
-}
-
-
-void Transformation::cancelSharedTransformation()
-{
-   _gpuDataOffsetPtr[1]--;
-   if(_gpuDataOffsetPtr[1]==0)
+   if(t._gpuDataOffsetPtr==&t._gpuDataOffset64)
    {
-      RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
-      delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr);
+      // alloc new SharedDataOffset
+      // and connect t and ourselves to it
+      const_cast<Transformation&>(t)._gpuDataOffsetPtr=reinterpret_cast<unsigned*>(new SharedDataOffset);
+      t._gpuDataOffsetPtr[0]=t._gpuDataOffset64;
+      t._gpuDataOffsetPtr[1]=2;
+      _gpuDataOffsetPtr=t._gpuDataOffsetPtr;
    }
-   _gpuDataOffsetPtr=&_gpuDataOffset64;
-   _gpuDataOffset64=0;
+   else
+   {
+      // connect ourselves to SharedDataOffset of t
+      _gpuDataOffsetPtr=t._gpuDataOffsetPtr;
+      _gpuDataOffsetPtr[1]++;
+   }
 }

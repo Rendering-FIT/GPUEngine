@@ -568,6 +568,73 @@ void RenderingContext::init()
 
 void RenderingContext::initDefaultShaders()
 {
+   if(!getGLProgram(idof(ProcessDrawCommandsProgram,geRG_GLPrograms)))
+   {
+      setGLProgram(idof(ProcessDrawCommandsProgram,geRG_GLPrograms),
+                   make_shared<ProgramObject>(
+         GL_COMPUTE_SHADER,
+         "#version 430\n"
+         "\n"
+         "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
+         "\n"
+         "layout(std430,binding=0) restrict readonly buffer PrimitiveBuffer {\n"
+         "   uint primitiveBuffer[];\n"
+         "};\n"
+         "layout(std430,binding=1) restrict readonly buffer DrawCommandBuffer {\n"
+         "   uint drawCommandBuffer[];\n"
+         "};\n"
+         "layout(std430,binding=2) restrict readonly buffer MatrixListControlBuffer {\n"
+         "   uint matrixListControlBuffer[];\n"
+         "};\n"
+         "layout(std430,binding=3) restrict writeonly buffer DrawIndirectBuffer {\n"
+         "   uint drawIndirectBuffer[];\n"
+         "};\n"
+         "layout(std430,binding=4) restrict buffer StateSetBuffer {\n"
+         "   uint stateSetBuffer[];\n"
+         "};\n"
+         "\n"
+         "uniform uint numToProcess;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
+         "      return;\n"
+         "\n"
+         "   // draw command buffer data\n"
+         "   uint drawCommandOffset4=gl_GlobalInvocationID.x*3;\n"
+         "   uint primitiveOffset4=drawCommandBuffer[drawCommandOffset4+0];\n"
+         "   uint matrixControlOffset4=drawCommandBuffer[drawCommandOffset4+1];\n"
+         "   uint stateSetDataOffset4=drawCommandBuffer[drawCommandOffset4+2];\n"
+         "\n"
+         "   // matrix control data\n"
+         "   uint matrixListOffset64=matrixListControlBuffer[matrixControlOffset4+0];\n"
+         "   uint numMatrices=matrixListControlBuffer[matrixControlOffset4+1];\n"
+         "\n"
+         "   // compute increment and get indirectBufferOffset\n"
+         "   uint countAndIndexedFlag=primitiveBuffer[primitiveOffset4+0];\n"
+         "   uint indirectBufferIncrement=4+bitfieldExtract(countAndIndexedFlag,31,1); // make increment 4 or 5\n"
+         "   uint indirectBufferOffset4=atomicAdd(stateSetBuffer[stateSetDataOffset4],indirectBufferIncrement);\n"
+         "\n"
+         "   // write indirect buffer data\n"
+         "   drawIndirectBuffer[indirectBufferOffset4]=countAndIndexedFlag&0x7fffffff; // indexCount or vertexCount\n"
+         "   indirectBufferOffset4++;\n"
+         "   drawIndirectBuffer[indirectBufferOffset4]=numMatrices; // instanceCount\n"
+         "   indirectBufferOffset4++;\n"
+         "   uint first=primitiveBuffer[primitiveOffset4+1]; // firstIndex or firstVertex\n"
+         "   uint vertexOffset=primitiveBuffer[primitiveOffset4+2]; // vertexOffset\n"
+         "   if(countAndIndexedFlag>=0x80000000) {\n"
+         "      drawIndirectBuffer[indirectBufferOffset4]=first; // firstIndex\n"
+         "      indirectBufferOffset4++;\n"
+         "      drawIndirectBuffer[indirectBufferOffset4]=vertexOffset; // vertexOffset\n"
+         "      indirectBufferOffset4++;\n"
+         "   } else {\n"
+         "      drawIndirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
+         "      indirectBufferOffset4++;\n"
+         "   }\n"
+         "   drawIndirectBuffer[indirectBufferOffset4]=matrixListOffset64; // base instance\n"
+         "}\n"));
+   }
+
    if(!getGLProgram(idof(Ambient,geRG_GLPrograms)))
    {
       setGLProgram(idof(Ambient,geRG_GLPrograms),
@@ -851,6 +918,27 @@ void RenderingContext::evaluateTransformationGraph()
 }
 
 
+#if 0 // uncomment for debugging purposes (it is commented out to kill warning of unused function)
+static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
+{
+   cout<<"Buffer contains "<<numInts<<" int values:"<<endl;
+   unsigned *p=(unsigned*)bo->map(GL_MAP_READ_BIT);
+   if(p==nullptr) return;
+   unsigned i;
+   for(i=0; i<numInts; i++)
+   {
+      cout<<*(p+i)<<"  ";
+      if(i%4==3)
+         cout<<endl;
+   }
+   bo->unmap();
+   if(i%4!=0)
+      cout<<endl;
+   cout<<endl;
+}
+#endif
+
+
 void RenderingContext::setupRendering()
 {
    _indirectBufferAllocatedSpace4=0;
@@ -862,12 +950,81 @@ void RenderingContext::setupRendering()
 }
 
 
+void RenderingContext::processDrawCommands()
+{
+   // process draw commands and generate content of draw indirect buffer using compute shader
+   auto processDrawCommandsProgram=getGLProgram(idof(ProcessDrawCommandsProgram,geRG_Programs));
+   processDrawCommandsProgram->use();
+   unsigned numInstances=drawCommandStorage()->firstItemAvailableAtTheEnd();
+   processDrawCommandsProgram->set("numToProcess",numInstances);
+   primitiveStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   drawCommandStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   matrixListControlStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   drawIndirectBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
+   stateSetStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
+   glDispatchCompute((numInstances+63)/64,1,1);
+}
+
+
+void RenderingContext::fenceSyncGpuComputation()
+{
+   // finish all current commands in GPU queue
+   GLsync syncObj=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
+#if 0 // glWaitSync does not work on my Quadro K1000M (Keppler architecture), drivers 352.21
+      // (this would be faster as it does not involve CPU)
+   //glFlush();
+   //glWaitSync(syncObj,0,GL_TIMEOUT_IGNORED);
+#else
+   // synchronization involving CPU
+   glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,1e9);
+#endif
+   glDeleteSync(syncObj);
+}
+
+
 void RenderingContext::render()
 {
+   // bind buffers for rendering
+   drawIndirectBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
+   if(_useARBShaderDrawParameters)
+      matrixStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+
+#if 0
+   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->bufferObject(),
+                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->primitiveStorage()->bufferObject(),
+                         RenderingContext::current()->primitiveStorage()->firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->drawIndirectBuffer(),
+                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*5);
+#endif
+
    // render all StateSets
    auto root=getSuperStateSet(idof(Root,geRG_SuperStateSets));
    if(root)
       root->render();
+}
+
+
+void RenderingContext::frame()
+{
+   // clear screen
+   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+   // compute transformation matrices
+   evaluateTransformationGraph();
+   matrixStorage()->unmap();
+
+   // prepare internal structures for rendering
+   stateSetStorage()->map(BufferStorageAccess::WRITE);
+   setupRendering();
+   stateSetStorage()->unmap();
+
+   // fill indirect buffer with draw commands
+   processDrawCommands();
+   fenceSyncGpuComputation();
+
+   // render scene
+   render();
 }
 
 
