@@ -9,7 +9,7 @@ namespace ge
    namespace rg
    {
       using size_t=std::size_t;
-      constexpr size_t size_max=-1;
+      constexpr const size_t size_max=-1; // do not remove const - it is required by MSVC 2013
 
       extern const std::shared_ptr<void> _nullSharedPtr;
       template<typename T>
