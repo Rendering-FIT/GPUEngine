@@ -187,24 +187,22 @@ namespace ge
          typedef typename ParentPointerAbstractTemplate<ParentT,ChildT>::ParentParamT ParentParamT;
 
          inline ChildListTemplate()  {}
-         //inline ChildListTemplate(const ChildListTemplate& list) : inherited(list)  {}
-         //inline ChildListTemplate(ChildListTemplate&& list) : inherited(std::move(list))  {}
-         //inline ChildListTemplate(std::initializer_list<ChildT> il) : inherited(il)  {}
-         //template<typename InputIterator>
-         //inline ChildListTemplate(InputIterator first,InputIterator last) : inherited(first,last)  {}
+         ChildListTemplate(const ChildListTemplate& list) = delete;
+         ChildListTemplate(ChildListTemplate&& list) = delete;
+         ChildListTemplate(std::initializer_list<ChildT> il) = delete;
+
+         ChildListTemplate& operator=(const ChildListTemplate& list) = delete;
+         ChildListTemplate& operator=(ChildListTemplate&& list) = delete;
+         ChildListTemplate& operator=(std::initializer_list<ChildT> il) = delete;
 
          inline ChildIterator         begin()   { return ChildIterator(inherited::_list.begin()); }
          inline ChildIterator         end()     { return ChildIterator(inherited::_list.end()); }
          inline ChildReverseIterator  rbegin()  { return ChildReverseIterator(inherited::_list.rbegin()); }
          inline ChildReverseIterator  rend()    { return ChildReverseIterator(inherited::_list.rend()); }
-         inline const ChildIterator         begin() const  { return ChildIterator(inherited::_list.begin()); }
-         inline const ChildIterator         end()   const  { return ChildIterator(inherited::_list.end()); }
-         inline const ChildReverseIterator  rbegin() const  { return ChildReverseIterator(inherited::_list.rbegin()); }
-         inline const ChildReverseIterator  rend()   const  { return ChildReverseIterator(inherited::_list.rend()); }
-
-         //inline ChildListTemplate& operator=(const ChildListTemplate& list)  { return inheritedList::operator=(list); }
-         //inline ChildListTemplate& operator=(ChildListTemplate&& list)  { return inheritedList::operator=(list); }
-         //inline ChildListTemplate& operator=(std::initializer_list<ChildT> il)  { return inheritedList::operator=(il); }
+         inline const ChildIterator         begin() const  { return ChildIterator(const_cast<ChildListTemplate*>(this)->_list.begin()); }
+         inline const ChildIterator         end()   const  { return ChildIterator(const_cast<ChildListTemplate*>(this)->_list.end()); }
+         inline const ChildReverseIterator  rbegin() const  { return ChildReverseIterator(const_cast<ChildListTemplate*>(this)->_list.rbegin()); }
+         inline const ChildReverseIterator  rend()   const  { return ChildReverseIterator(const_cast<ChildListTemplate*>(this)->_list.rend()); }
 
          ChildIterator push_back(ChildParamT child,ParentParamT self,
                                  ParentListTemplate<ParentT,ChildT> &parentList);
@@ -214,13 +212,12 @@ namespace ge
                               ParentListTemplate<ParentT,ChildT> &parentList);
          void insert(ChildIterator posChild,ParentIterator posParent,ChildParamT child,
                      ParentParamT self,ParentListTemplate<ParentT,ChildT> &parentList);
-         void pop_back(ParentListTemplate<ParentT,ChildT> &parentList);
-         void pop_front(ParentListTemplate<ParentT,ChildT> &parentList);
-         void replace(ChildIterator pos,ChildParamT newChild,ParentParamT self,
+         inline void pop_back(ParentListTemplate<ParentT,ChildT> &parentList);
+         inline void pop_front(ParentListTemplate<ParentT,ChildT> &parentList);
+         void replace(ChildIterator pos,ChildParamT newChild,
                       ParentListTemplate<ParentT,ChildT> &oldParentList,
                       ParentListTemplate<ParentT,ChildT> &newParentList);
          void erase(ChildIterator pos,ParentListTemplate<ParentT,ChildT> &parentList);
-         void swap(ChildListTemplate<ChildT,ParentT> &list);
 
       };
 
@@ -228,62 +225,75 @@ namespace ge
       template<typename T> struct ParentChildList_is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
       #define GERG_CHILD_LIST_NAMED_4(_name_suffix_,_plurale_name_,_child_type_,_parent_type_) \
+         public: \
+         \
+            class Child##_name_suffix_##List : public ChildListTemplate<_child_type_,_parent_type_> { \
+            public: \
+               Child##_name_suffix_##List() = default; \
+               Child##_name_suffix_##List(const Child##_name_suffix_##List& other) = delete; \
+               ~Child##_name_suffix_##List() \
+               { \
+                  auto it=begin(); \
+                  while(it!=end()) { \
+                     erase(it,(*it)->_parent##_name_suffix_##List); \
+                     it=begin(); \
+                  } \
+               } \
+            }; \
+         \
          protected: \
-            ChildListTemplate<_child_type_,_parent_type_> _child##_name_suffix_##List; \
+            Child##_name_suffix_##List _child##_name_suffix_##List; \
             template<typename T=void> inline _parent_type_ list##_name_suffix_##_getSelf(std::false_type)  { return this; } \
             template<typename T=void> inline _parent_type_ list##_name_suffix_##_getSelf(std::true_type)  { return shared_from_this(); } \
          public: \
          \
-            typedef ChildListTemplate<_child_type_,_parent_type_> Child##_name_suffix_##List; \
-         \
             /* childList(), child???List() */ \
-            inline ChildListTemplate<_child_type_,_parent_type_>& \
+            inline Child##_name_suffix_##List& \
             child##_name_suffix_##List() \
             { return _child##_name_suffix_##List; } \
          \
             /* childList() const, child???List() const */ \
-            inline const ChildListTemplate<_child_type_,_parent_type_>& \
+            inline const Child##_name_suffix_##List& \
             child##_name_suffix_##List() const \
             { return _child##_name_suffix_##List; } \
          \
             /* addChild(child,self), addChild???(child,self) */ \
-            inline ChildListTemplate<_child_type_,_parent_type_>::iterator \
-            addChild##_name_suffix_(ChildListTemplate<_child_type_,_parent_type_>::ChildParamT child, \
-                                    ChildListTemplate<_child_type_,_parent_type_>::ParentParamT self) \
+            inline Child##_name_suffix_##List::iterator \
+            addChild##_name_suffix_(Child##_name_suffix_##List::ChildParamT child, \
+                                    Child##_name_suffix_##List::ParentParamT self) \
             { return _child##_name_suffix_##List.push_back(child,self,child->_parent##_name_suffix_##List); } \
          \
             /* addChild(child), addChild???(child) */ \
-            inline ChildListTemplate<_child_type_,_parent_type_>::iterator \
-            addChild##_name_suffix_(ChildListTemplate<_child_type_,_parent_type_>::ChildParamT child) \
+            inline Child##_name_suffix_##List::iterator \
+            addChild##_name_suffix_(Child##_name_suffix_##List::ChildParamT child) \
             { return addChild##_name_suffix_(child,list##_name_suffix_##_getSelf(ParentChildList_is_shared_ptr<_parent_type_>())); } \
          \
             /* insertChild(iterator,child,self), insertChild???(iterator,child,self) */ \
-            inline ChildListTemplate<_child_type_,_parent_type_>::iterator \
-            insertChild##_name_suffix_(ChildListTemplate<_child_type_,_parent_type_>::iterator it, \
-                                       ChildListTemplate<_child_type_,_parent_type_>::ChildParamT child, \
-                                       ChildListTemplate<_child_type_,_parent_type_>::ParentParamT self) \
+            inline Child##_name_suffix_##List::iterator \
+            insertChild##_name_suffix_(Child##_name_suffix_##List::iterator it, \
+                                       Child##_name_suffix_##List::ChildParamT child, \
+                                       Child##_name_suffix_##List::ParentParamT self) \
             { \
                return _child##_name_suffix_##List.insert(it, \
                      child,self,child->_parent##_name_suffix_##List); \
             } \
          \
             /* insertChild(iterator,child), insertChild???(iterator,child) */ \
-            inline ChildListTemplate<_child_type_,_parent_type_>::iterator \
-            insertChild##_name_suffix_(ChildListTemplate<_child_type_,_parent_type_>::iterator it, \
-                                       ChildListTemplate<_child_type_,_parent_type_>::ChildParamT child) \
+            inline Child##_name_suffix_##List::iterator \
+            insertChild##_name_suffix_(Child##_name_suffix_##List::iterator it, \
+                                       Child##_name_suffix_##List::ChildParamT child) \
             { return insertChild##_name_suffix_(it,child,list##_name_suffix_##_getSelf(ParentChildList_is_shared_ptr<_parent_type_>())); } \
          \
             /* replaceChild(iterator,newChild,self), replaceChild???(iterator,newChild,self) */ \
-            inline void replaceChild##_name_suffix_(ChildListTemplate<_child_type_,_parent_type_>::iterator it, \
-                  ChildListTemplate<_child_type_,_parent_type_>::ChildParamT newChild, \
-                  ChildListTemplate<_child_type_,_parent_type_>::ParentParamT self) \
+            inline void replaceChild##_name_suffix_(Child##_name_suffix_##List::iterator it, \
+                  Child##_name_suffix_##List::ChildParamT newChild) \
             { \
-               return _child##_name_suffix_##List.replace(it,newChild,self, \
+               return _child##_name_suffix_##List.replace(it,newChild, \
                      (*it)->_parent##_name_suffix_##List,newChild->_parent##_name_suffix_##List); \
             } \
          \
             /* removeChild(iterator), removeChild???(iterator) */ \
-            inline void removeChild##_name_suffix_(ChildListTemplate<_child_type_,_parent_type_>::iterator it) \
+            inline void removeChild##_name_suffix_(Child##_name_suffix_##List::iterator it) \
             { _child##_name_suffix_##List.erase(it,(*it)->_parent##_name_suffix_##List); } \
          \
             /* removeChild(child), removeChild???(child) */ \
@@ -294,11 +304,11 @@ namespace ge
             /* removeAllChildren(), removeAll???() */ \
             void removeAll##_plurale_name_() \
             { \
-               auto it=_child##_name_suffix_##List.begin(); \
-               auto e=_child##_name_suffix_##List.end(); \
-               while(it!=e) { \
-                  _child##_name_suffix_##List.erase(it,(*it)->_parent##_name_suffix_##List); \
-                  it=_child##_name_suffix_##List.begin(); \
+               std::list<ChildPointerAbstractTemplate<_child_type_,_parent_type_>> childList; \
+               childList.swap(_child##_name_suffix_##List.getInternalList()); \
+               for(auto it=childList.begin(),e=childList.end(); it!=e; it++) { \
+                  it->child->_parent##_name_suffix_##List.getInternalList().erase( \
+                        it->parentListDeleteIterator); \
                } \
             } \
          \
@@ -308,14 +318,28 @@ namespace ge
          \
             /* findChild(child), findChild???(child) */ \
             template<typename T> \
-            ChildListTemplate<_child_type_,_parent_type_>::iterator \
+            Child##_name_suffix_##List::iterator \
             findChild##_name_suffix_(const T child) const \
             { \
                for(auto it=_child##_name_suffix_##List.begin(),e=_child##_name_suffix_##List.end(); \
                    it!=e; it++) \
                   if((*it)==child) \
                      return it; \
-            }
+            } \
+         \
+            /* assignChildList(first,last), assignChild???List(first,last) */ \
+            template<typename InputIt> \
+            void assignChild##_name_suffix_##List(InputIt first,InputIt last) \
+            { \
+               removeAll##_plurale_name_(); \
+               for(auto it=first; it!=last; it++) \
+                  addChild##_name_suffix_(*it); \
+            } \
+         \
+            /* assignChildList(list), assignChild???List(list) */ \
+            inline void \
+            assignChild##_name_suffix_##List(const Child##_name_suffix_##List& other) \
+            { assignChild##_name_suffix_##List(other.begin(),other.end()); }
 
       #define GERG_CHILD_LIST_NAMED_3(_name_suffix_,_child_type_,_parent_type_) \
          GERG_CHILD_LIST_NAMED_4(_name_suffix_,Child##_name_suffix_##s,_child_type_,_parent_type_)
@@ -363,10 +387,23 @@ namespace ge
          typedef typename ParentPointerAbstractTemplate<ParentT,ChildT>::ParentParamT ParentParamT;
          typedef typename ChildPointerAbstractTemplate<ChildT,ParentT>::ChildParamT ChildParamT;
 
+         inline ParentListTemplate()  {}
+         ParentListTemplate(const ParentListTemplate& list) = delete;
+         ParentListTemplate(ParentListTemplate&& list) = delete;
+         ParentListTemplate(std::initializer_list<ChildT> il) = delete;
+
+         ParentListTemplate& operator=(const ParentListTemplate& list) = delete;
+         ParentListTemplate& operator=(ParentListTemplate&& list) = delete;
+         ParentListTemplate& operator=(std::initializer_list<ChildT> il) = delete;
+
          inline ParentIterator         begin()   { return ParentIterator(inherited::_list.begin()); }
          inline ParentIterator         end()     { return ParentIterator(inherited::_list.end()); }
          inline ParentReverseIterator  rbegin()  { return ParentReverseIterator(inherited::_list.rbegin()); }
          inline ParentReverseIterator  rend()    { return ParentReverseIterator(inherited::_list.rend()); }
+         inline const ParentIterator         begin() const  { return ParentIterator(const_cast<ParentListTemplate*>(this)->_list.begin()); }
+         inline const ParentIterator         end()   const  { return ParentIterator(const_cast<ParentListTemplate*>(this)->_list.end()); }
+         inline const ParentReverseIterator  rbegin() const  { return ParentReverseIterator(const_cast<ParentListTemplate*>(this)->_list.rbegin()); }
+         inline const ParentReverseIterator  rend()   const  { return ParentReverseIterator(const_cast<ParentListTemplate*>(this)->_list.rend()); }
 
          inline void push_back(ParentParamT parent,ChildParamT self,ChildListTemplate<ChildT,ParentT> &childList)  { childList.push_back(self,parent,*this); }
          inline void push_front(ParentParamT parent,ChildParamT self,ChildListTemplate<ChildT,ParentT> &childList)  { childList.push_front(self,parent,*this); }
@@ -374,33 +411,51 @@ namespace ge
                                ChildListTemplate<ChildT,ParentT> &childList);
          inline void insert(ParentIterator posP,ChildIterator posCh,ParentParamT parent,
                             ChildParamT self,ChildListTemplate<ChildT,ParentT> &childList);
-
+         inline void pop_back(ChildListTemplate<ChildT,ParentT> &childList);
+         inline void pop_front(ChildListTemplate<ChildT,ParentT> &childList);
+         void replace(ParentIterator pos,ParentParamT newParent,
+                      ChildListTemplate<ChildT,ParentT> &oldChildList,
+                      ChildListTemplate<ChildT,ParentT> &newChildList);
          void erase(ParentIterator pos,ChildListTemplate<ChildT,ParentT> &childList);
 
       };
 
       #define GERG_PARENT_LIST_NAMED_3(_name_suffix_,_parent_type_,_child_type_) \
-         protected: \
-            ParentListTemplate<_parent_type_,_child_type_> _parent##_name_suffix_##List; \
          public: \
          \
-            typedef ParentListTemplate<_parent_type_,_child_type_> Parent##_name_suffix_##List; \
+            class Parent##_name_suffix_##List : public ParentListTemplate<_parent_type_,_child_type_> { \
+            public: \
+               Parent##_name_suffix_##List() = default; \
+               Parent##_name_suffix_##List(const Parent##_name_suffix_##List& other) = delete; \
+               ~Parent##_name_suffix_##List() \
+               { \
+                  auto it=begin(); \
+                  while(it!=end()) { \
+                     erase(it,(*it)->_child##_name_suffix_##List); \
+                     it=begin(); \
+                  } \
+               } \
+            }; \
          \
-            ParentListTemplate<_parent_type_,_child_type_>& parent##_name_suffix_##List() \
+         protected: \
+            Parent##_name_suffix_##List _parent##_name_suffix_##List; \
+         public: \
+         \
+            Parent##_name_suffix_##List& parent##_name_suffix_##List() \
             { return _parent##_name_suffix_##List; } \
          \
-            const ParentListTemplate<_parent_type_,_child_type_>& parent##_name_suffix_##List() const \
+            const Parent##_name_suffix_##List& parent##_name_suffix_##List() const \
             { return _parent##_name_suffix_##List; } \
          \
-            ParentListTemplate<_parent_type_,_child_type_>::iterator \
-            addParent##_name_suffix_(ParentListTemplate<_parent_type_,_child_type_>::ParentParamT parent, \
-                  ParentListTemplate<_parent_type_,_child_type_>::ChildParamT self) \
+            Parent##_name_suffix_##List::iterator \
+            addParent##_name_suffix_(Parent##_name_suffix_##List::ParentParamT parent, \
+                  Parent##_name_suffix_##List::ChildParamT self) \
             { \
                return _parent##_name_suffix_##List.insert(_parent##_name_suffix_##List.end(), \
                      parent,self,parent->_child##_name_suffix_##List); \
             } \
          \
-            void removeParent##_name_suffix_(ParentListTemplate<_parent_type_,_child_type_>::iterator it) \
+            void removeParent##_name_suffix_(Parent##_name_suffix_##List::iterator it) \
             { _parent##_name_suffix_##List.erase(it,(*it)->_child##_name_suffix_##List); }
 
       #define GERG_PARENT_LIST_NAMED_2(_name_suffix_,_type_) \
@@ -450,7 +505,8 @@ namespace ge
       }
 
       template<typename ChildT,typename ParentT>
-      typename ChildListTemplate<ChildT,ParentT>::ChildIterator ChildListTemplate<ChildT,ParentT>::insert(
+      typename ChildListTemplate<ChildT,ParentT>::ChildIterator
+      ChildListTemplate<ChildT,ParentT>::insert(
             ChildIterator pos,ChildParamT child,ParentParamT self,
             ParentListTemplate<ParentT,ChildT> &parentList)
       {
@@ -472,37 +528,44 @@ namespace ge
       }
 
       template<typename ChildT,typename ParentT>
-      void ChildListTemplate<ChildT,ParentT>::pop_back(ParentListTemplate<ParentT,ChildT> &parentList)
+      inline void ChildListTemplate<ChildT,ParentT>::pop_back(ParentListTemplate<ParentT,ChildT> &parentList)
       {
          erase(--end(),parentList);
       }
 
       template<typename ChildT,typename ParentT>
-      void ChildListTemplate<ChildT,ParentT>::pop_front(ParentListTemplate<ParentT,ChildT> &parentList)
+      inline void ChildListTemplate<ChildT,ParentT>::pop_front(ParentListTemplate<ParentT,ChildT> &parentList)
       {
          erase(begin(),parentList);
       }
 
       template<typename ChildT,typename ParentT>
-      void ChildListTemplate<ChildT,ParentT>::replace(ChildIterator pos,ChildParamT newChild,ParentParamT self,
+      void ChildListTemplate<ChildT,ParentT>::replace(ChildIterator pos,ChildParamT newChild,
                      ParentListTemplate<ParentT,ChildT> &oldParentList,ParentListTemplate<ParentT,ChildT> &newParentList)
       {
-         oldParentList.getInternalList().erase(pos.getInternalIterator()->parentListDeleteIterator);
-         auto parentIt=newParentList.getInternalList().emplace(newParentList.getInternalList().end(),self,pos.getInternalIterator());
-         pos.getInternalIterator()->parentListDeleteIterator=parentIt;
+         newParentList.getInternalList().splice(newParentList.getInternalList().end(),
+                                                oldParentList.getInternalList(),
+                                                pos.getInternalIterator()->parentListDeleteIterator);
          pos.getInternalIterator()->child=newChild;
       }
 
       template<typename ChildT,typename ParentT>
       void ChildListTemplate<ChildT,ParentT>::erase(ChildIterator pos,ParentListTemplate<ParentT,ChildT> &parentList)
       {
-         parentList.getInternalList().erase(pos.getInternalIterator()->parentListDeleteIterator);
-         this->getInternalList().erase(pos.getInternalIterator());
+         std::list<ParentPointerAbstractTemplate<ParentT,ChildT>> temporaryParentReference;
+         temporaryParentReference.splice(temporaryParentReference.begin(),
+                                         parentList.getInternalList(),
+                                         pos.getInternalIterator()->parentListDeleteIterator);
+         std::list<ChildPointerAbstractTemplate<ChildT,ParentT>> temporaryChildReference;
+         temporaryChildReference.splice(temporaryChildReference.begin(),this->getInternalList(),
+                                        pos.getInternalIterator());
       }
 
       template<typename ParentT,typename ChildT>
-      typename ParentListTemplate<ParentT,ChildT>::ParentIterator ParentListTemplate<ParentT,ChildT>::insert(
-            typename ParentListTemplate<ParentT,ChildT>::ParentIterator pos,ParentParamT parent,ChildParamT self,
+      typename ParentListTemplate<ParentT,ChildT>::ParentIterator
+      ParentListTemplate<ParentT,ChildT>::insert(
+            typename ParentListTemplate<ParentT,ChildT>::ParentIterator pos,
+            ParentParamT parent,ChildParamT self,
             ChildListTemplate<ChildT,ParentT> &childList)
       {
          auto childIt =childList.getInternalList().emplace(childList.getInternalList().end(),self,this->getInternalList().end());
@@ -517,14 +580,41 @@ namespace ge
       { childList.insert(posCh,posP,self,parent,*this); }
 
       template<typename ParentT,typename ChildT>
+      inline void ParentListTemplate<ParentT,ChildT>::pop_back(ChildListTemplate<ChildT,ParentT> &childList)
+      {
+         erase(--end(),childList);
+      }
+
+      template<typename ParentT,typename ChildT>
+      inline void ParentListTemplate<ParentT,ChildT>::pop_front(ChildListTemplate<ChildT,ParentT> &childList)
+      {
+         erase(begin(),childList);
+      }
+
+      template<typename ParentT,typename ChildT>
+      void ParentListTemplate<ParentT,ChildT>::replace(ParentIterator pos,ParentParamT newParent,
+                     ChildListTemplate<ChildT,ParentT> &oldChildList,
+                     ChildListTemplate<ChildT,ParentT> &newChildList)
+      {
+         newChildList.getInternalList().splice(newChildList.getInternalList().end(),
+                                               oldChildList.getInternalList(),
+                                               pos.getInternalIterator()->childListDeleteIterator);
+         pos.getInternalIterator()->parent=newParent;
+      }
+
+      template<typename ParentT,typename ChildT>
       void ParentListTemplate<ParentT,ChildT>::erase(ParentIterator pos,ChildListTemplate<ChildT,ParentT> &childList)
       {
-         childList.getInternalList().erase(pos.getInternalIterator()->childListDeleteIterator);
-         this->getInternalList().erase(pos.getInternalIterator());
+         std::list<ChildPointerAbstractTemplate<ChildT,ParentT>> temporaryChildReference;
+         temporaryChildReference.splice(temporaryChildReference.begin(),
+                                        childList.getInternalList(),
+                                        pos.getInternalIterator()->childListDeleteIterator);
+         std::list<ParentPointerAbstractTemplate<ParentT,ChildT>> temporaryParentReference;
+         temporaryParentReference.splice(temporaryParentReference.begin(),this->getInternalList(),
+                                         pos.getInternalIterator());
       }
 
    }
 }
 
 #endif // GE_RG_PARENT_CHILD_LIST_H
-

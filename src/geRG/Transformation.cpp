@@ -62,7 +62,7 @@ Transformation::Transformation(const Transformation &t,unsigned constructionFlag
    if((constructionFlags&SHARE_MATRIX_LIST)!=0)
       _matrixList=t._matrixList;
    if((constructionFlags&COPY_CHILDREN)!=0)
-      childList()=t.childList();
+      assignChildList(t.childList());
 }
 
 

@@ -67,8 +67,11 @@ namespace ge
             inline AttribStorageData(AttribStorage *storage);
          };
 
-         GERG_CHILD_LIST(std::shared_ptr<StateSet>,StateSet*)
-         GERG_PARENT_LIST(StateSet*,std::shared_ptr<StateSet>)
+         // parent and child list
+         // (child list is list<shared_ptr<StateSet> and
+         // parent list is list<StateSet*>)
+         GERG_CHILD_LIST(StateSet)
+         GERG_PARENT_LIST(StateSet)
 
       protected:
 

@@ -25,11 +25,11 @@ namespace ge
       class GERG_EXPORT Transformation : public std::enable_shared_from_this<Transformation> {
       public:
 
-         // definition of parent and child lists
+         // parent and child list
          // (child list is list<shared_ptr<Transformation> and
          // parent list is list<Transformation*>)
-         GERG_CHILD_LIST(std::shared_ptr<Transformation>,Transformation*)
-         GERG_PARENT_LIST(Transformation*,std::shared_ptr<Transformation>)
+         GERG_CHILD_LIST(Transformation)
+         GERG_PARENT_LIST(Transformation)
 
       protected:
 

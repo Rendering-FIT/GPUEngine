@@ -154,7 +154,6 @@ void Init()
          0.f, 0.f, 1.f, 0.f,
          0.f, 0.f,-10.f, 1.f,
       };
-      t->allocTransformationGpuData();
       t->uploadMatrix(m);
       t->addChild(model->transformationRoot());
       RenderingContext::current()->addTransformationGraph(t);
