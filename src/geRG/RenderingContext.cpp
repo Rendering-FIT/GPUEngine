@@ -976,7 +976,7 @@ void RenderingContext::fenceSyncGpuComputation()
    //glWaitSync(syncObj,0,GL_TIMEOUT_IGNORED);
 #else
    // synchronization involving CPU
-   glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,1e9);
+   glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,(GLuint64)1e9);
 #endif
    glDeleteSync(syncObj);
 }

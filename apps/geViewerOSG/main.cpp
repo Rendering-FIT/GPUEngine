@@ -127,6 +127,9 @@ void Idle()
 
 void Init()
 {
+   ge::gl::initShadersAndPrograms();
+   RenderingContext::current()->init();
+
    // load model
    if(!fileName.empty())
    {
@@ -163,8 +166,6 @@ void Init()
    // (it has to be done before rendering)
    RenderingContext::current()->unmapBuffers();
 
-   ge::gl::initShadersAndPrograms();
-   RenderingContext::current()->init();
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
    auto ambientProgram=RenderingContext::current()->getGLProgram(idof(Ambient,geRG_GLPrograms));
    ambientProgram->use();

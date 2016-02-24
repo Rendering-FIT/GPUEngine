@@ -319,6 +319,8 @@ public:
 
       // create GLState
       StateSetManager::GLState *glState=rc->createGLState();
+      shared_ptr<ge::gl::ProgramObject> glProgram(RenderingContext::current()->getGLProgram(idof(Ambient,geRG_Programs)));
+      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&glProgram);
       glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
 
       // find (or create new) geRG StateSet

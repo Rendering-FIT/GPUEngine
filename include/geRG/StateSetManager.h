@@ -13,6 +13,7 @@ namespace ge
 {
    namespace gl
    {
+      class ProgramObject;
       class TextureObject;
    }
    namespace rg
@@ -40,6 +41,7 @@ namespace ge
          virtual std::shared_ptr<StateSet> findStateSet(const GLState* state) = 0;
          virtual GLState* createGLState() = 0;
          virtual GLState* createGLState(const GLState* s) = 0;
+         virtual GLState* createGLState(const GLState* s,unsigned internalLevel) = 0;
       };
 
 
@@ -47,8 +49,10 @@ namespace ge
       class StateSetManagerTemplate : public StateSetManager {
       public:
          typedef std::map<StateT,std::weak_ptr<ge::rg::StateSet>> StateSetMap;
+         typedef std::map<int,StateSet::ChildList::iterator> BinMap;
       protected:
          StateSetMap _stateSetMap;
+         BinMap _binMap;
       public:
          virtual std::shared_ptr<StateSet> getOrCreateStateSet(const StateSetManager::GLState* state) override;
          inline  std::shared_ptr<StateSet> getOrCreateStateSet(const StateT* state);
@@ -56,19 +60,25 @@ namespace ge
          inline  std::shared_ptr<StateSet> findStateSet(const StateT* state);
          virtual GLState* createGLState() override;
          virtual GLState* createGLState(const GLState* s) override;
+         virtual GLState* createGLState(const GLState* s,unsigned internalLevel) override;
          inline StateSetMap& stateSetMap();
          inline const StateSetMap& stateSetMap() const;
+         inline BinMap& binMap();
+         inline const BinMap& binMap() const;
       };
 
 
       class GERG_EXPORT StateSetDefaultGLState : public StateSetManager::GLState {
       public:
-         bool internal;
+         unsigned internalLevel;
+         int bin;
+         std::weak_ptr<ge::gl::ProgramObject> glProgram;
          std::weak_ptr<ge::gl::TextureObject> colorTexture;
+         std::list<std::weak_ptr<ge::core::Command>> uniformList;
          inline StateSetDefaultGLState();
-         inline StateSetDefaultGLState(const StateSetDefaultGLState& s);
+         StateSetDefaultGLState(const StateSetDefaultGLState& s,unsigned internalLevel);
          virtual void set(const std::string& name,const std::type_index& typeIndex,void* data) override;
-         inline bool operator<(const StateSetDefaultGLState& rhs) const;
+         bool operator<(const StateSetDefaultGLState& rhs) const;
          virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) const override;
       };
 
@@ -124,19 +134,17 @@ namespace ge
       StateSetManager::GLState* StateSetManagerTemplate<StateT>::createGLState()  { return new StateT; }
       template<typename StateT>
       StateSetManager::GLState* StateSetManagerTemplate<StateT>::createGLState(const StateSetManager::GLState* s)  { return new StateT(*dynamic_cast<const StateT*>(s)); }
+      template<typename StateT>
+      StateSetManager::GLState* StateSetManagerTemplate<StateT>::createGLState(const StateSetManager::GLState* s,unsigned internalLevel)  { return new StateT(*dynamic_cast<const StateT*>(s),internalLevel); }
       template<typename StateT> inline typename StateSetManagerTemplate<StateT>::StateSetMap&
       StateSetManagerTemplate<StateT>::stateSetMap()  { return _stateSetMap; }
       template<typename StateT> inline const typename StateSetManagerTemplate<StateT>::StateSetMap&
       StateSetManagerTemplate<StateT>::stateSetMap() const  { return _stateSetMap; }
-      inline StateSetDefaultGLState::StateSetDefaultGLState() : internal(false)  {}
-      inline StateSetDefaultGLState::StateSetDefaultGLState(const StateSetDefaultGLState& s)
-         : internal(s.internal), colorTexture(s.colorTexture)  {}
-      inline bool StateSetDefaultGLState::operator<(const StateSetDefaultGLState& rhs) const
-      {
-         return (colorTexture.owner_before(rhs.colorTexture)) ? true :
-                (rhs.colorTexture.owner_before(colorTexture)) ? false :
-                internal<rhs.internal;
-      }
+      template<typename StateT> inline typename StateSetManagerTemplate<StateT>::BinMap&
+      StateSetManagerTemplate<StateT>::binMap()  { return _binMap; }
+      template<typename StateT> inline const typename StateSetManagerTemplate<StateT>::BinMap&
+      StateSetManagerTemplate<StateT>::binMap() const  { return _binMap; }
+      inline StateSetDefaultGLState::StateSetDefaultGLState() : internalLevel(0), bin(0)  {}
    }
 }
 
