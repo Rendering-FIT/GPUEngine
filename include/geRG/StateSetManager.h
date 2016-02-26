@@ -1,8 +1,10 @@
 #ifndef GE_RG_STATE_SET_MANAGER_H
 #define GE_RG_STATE_SET_MANAGER_H
 
+#include <list>
 #include <map>
 #include <memory>
+#include <vector>
 #include <geRG/Export.h>
 
 namespace std
@@ -26,7 +28,9 @@ namespace ge
          class GERG_EXPORT GLState {
          public:
             virtual void set(const std::string& name,const std::type_index& typeIndex,void* data) = 0;
-            virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) const = 0;
+            virtual void add(const std::string& name,const std::type_index& typeIndex,void* data) = 0;
+            virtual void clear(const std::string& name) = 0;
+            virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) = 0;
             virtual ~GLState()  {}
          };
       protected:
@@ -56,6 +60,7 @@ namespace ge
       public:
          virtual std::shared_ptr<StateSet> getOrCreateStateSet(const StateSetManager::GLState* state) override;
          inline  std::shared_ptr<StateSet> getOrCreateStateSet(const StateT* state);
+         std::shared_ptr<StateSet> getOrCreateStateSet_optimized(StateSetManager::GLState* state);
          virtual std::shared_ptr<StateSet> findStateSet(const GLState* state) override;
          inline  std::shared_ptr<StateSet> findStateSet(const StateT* state);
          virtual GLState* createGLState() override;
@@ -71,15 +76,17 @@ namespace ge
       class GERG_EXPORT StateSetDefaultGLState : public StateSetManager::GLState {
       public:
          unsigned internalLevel;
-         int bin;
-         std::weak_ptr<ge::gl::ProgramObject> glProgram;
-         std::weak_ptr<ge::gl::TextureObject> colorTexture;
-         std::list<std::weak_ptr<ge::core::Command>> uniformList;
+         std::vector<int> binList;
+         std::vector<std::weak_ptr<ge::gl::ProgramObject>> glProgramList;
+         std::vector<std::weak_ptr<ge::gl::TextureObject>> colorTextureList;
+         std::vector<std::list<std::weak_ptr<ge::core::Command>>> uniformSetList;
          inline StateSetDefaultGLState();
          StateSetDefaultGLState(const StateSetDefaultGLState& s,unsigned internalLevel);
          virtual void set(const std::string& name,const std::type_index& typeIndex,void* data) override;
+         virtual void add(const std::string& name,const std::type_index& typeIndex,void* data) override;
+         virtual void clear(const std::string& name) override;
          bool operator<(const StateSetDefaultGLState& rhs) const;
-         virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) const override;
+         virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) override;
       };
 
 
@@ -106,6 +113,12 @@ namespace ge
       { return getOrCreateStateSet(static_cast<StateSetManager::GLState*>(state)); }
       template<typename StateT>
       std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getOrCreateStateSet(const StateSetManager::GLState* state)
+      {
+         StateT tmp(*static_cast<const StateT*>(state));
+         return getOrCreateStateSet_optimized(&tmp);
+      }
+      template<typename StateT>
+      std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getOrCreateStateSet_optimized(StateSetManager::GLState* state)
       {
          std::weak_ptr<StateSet>& w=_stateSetMap[*static_cast<const StateT*>(state)];
          std::shared_ptr<StateSet> r=w.lock();
@@ -144,7 +157,7 @@ namespace ge
       StateSetManagerTemplate<StateT>::binMap()  { return _binMap; }
       template<typename StateT> inline const typename StateSetManagerTemplate<StateT>::BinMap&
       StateSetManagerTemplate<StateT>::binMap() const  { return _binMap; }
-      inline StateSetDefaultGLState::StateSetDefaultGLState() : internalLevel(0), bin(0)  {}
+      inline StateSetDefaultGLState::StateSetDefaultGLState() : internalLevel(0)  {}
    }
 }
 
