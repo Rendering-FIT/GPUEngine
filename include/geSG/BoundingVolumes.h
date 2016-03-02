@@ -28,7 +28,7 @@ namespace ge
       public:
           BoundingSphere()
              : center(glm::vec3())
-             , radius(-1.0f)
+             , radius(0.0f)
           {}
 
           BoundingSphere( const BoundingSphere& other)
