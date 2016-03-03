@@ -33,19 +33,27 @@ namespace ge
             virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) = 0;
             virtual ~GLState()  {}
          };
+         typedef std::list<std::shared_ptr<ge::core::SharedCommandList>> LightList;
       protected:
          std::shared_ptr<StateSet> _root;
+         LightList _lightList;
       public:
          inline StateSetManager();
          inline StateSetManager(const std::shared_ptr<StateSet>& root);
+         virtual void render() = 0;
          inline const std::shared_ptr<StateSet>& root() const;
          inline std::shared_ptr<StateSet>& root();
          inline void setRoot(std::shared_ptr<StateSet>& root);
          virtual std::shared_ptr<StateSet> getOrCreateStateSet(const GLState* state) = 0;
          virtual std::shared_ptr<StateSet> findStateSet(const GLState* state) = 0;
+         virtual std::shared_ptr<StateSet> getBinStateSet(int bin) = 0;
          virtual GLState* createGLState() = 0;
          virtual GLState* createGLState(const GLState* s) = 0;
          virtual GLState* createGLState(const GLState* s,unsigned internalLevel) = 0;
+         inline LightList::iterator addLight(const std::shared_ptr<ge::core::SharedCommandList>& lightCommands);
+         inline void removeLight(LightList::iterator it);
+         inline LightList& lightList();
+         inline const LightList& lightList() const;
       };
 
 
@@ -58,11 +66,13 @@ namespace ge
          StateSetMap _stateSetMap;
          BinMap _binMap;
       public:
+         virtual void render() override;
          virtual std::shared_ptr<StateSet> getOrCreateStateSet(const StateSetManager::GLState* state) override;
          inline  std::shared_ptr<StateSet> getOrCreateStateSet(const StateT* state);
          std::shared_ptr<StateSet> getOrCreateStateSet_optimized(StateSetManager::GLState* state);
          virtual std::shared_ptr<StateSet> findStateSet(const GLState* state) override;
          inline  std::shared_ptr<StateSet> findStateSet(const StateT* state);
+         virtual std::shared_ptr<StateSet> getBinStateSet(int bin) override;
          virtual GLState* createGLState() override;
          virtual GLState* createGLState(const GLState* s) override;
          virtual GLState* createGLState(const GLState* s,unsigned internalLevel) override;
@@ -108,6 +118,11 @@ namespace ge
       inline const std::shared_ptr<StateSet>& StateSetManager::root() const  { return _root; }
       inline std::shared_ptr<StateSet>& StateSetManager::root()  { return _root; }
       inline void StateSetManager::setRoot(std::shared_ptr<StateSet>& root)  { _root=root; }
+      inline StateSetManager::LightList::iterator StateSetManager::addLight(const std::shared_ptr<ge::core::SharedCommandList>& lightCommands)
+      { return _lightList.emplace(_lightList.end(),lightCommands); }
+      inline void StateSetManager::removeLight(LightList::iterator it)  { _lightList.erase(it); }
+      inline StateSetManager::LightList& StateSetManager::lightList()  { return _lightList; }
+      inline const StateSetManager::LightList& StateSetManager::lightList() const  { return _lightList; }
       template<typename StateT>
       inline std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getOrCreateStateSet(const StateT* state)
       { return getOrCreateStateSet(static_cast<StateSetManager::GLState*>(state)); }
@@ -144,6 +159,14 @@ namespace ge
          return r;
       }
       template<typename StateT>
+      std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getBinStateSet(int bin)
+      {
+         auto it=_binMap.find(bin);
+         if(it==_binMap.end())
+            return std::shared_ptr<StateSet>();
+         return *(it->second);
+      }
+      template<typename StateT>
       StateSetManager::GLState* StateSetManagerTemplate<StateT>::createGLState()  { return new StateT; }
       template<typename StateT>
       StateSetManager::GLState* StateSetManagerTemplate<StateT>::createGLState(const StateSetManager::GLState* s)  { return new StateT(*dynamic_cast<const StateT*>(s)); }
@@ -158,6 +181,31 @@ namespace ge
       template<typename StateT> inline const typename StateSetManagerTemplate<StateT>::BinMap&
       StateSetManagerTemplate<StateT>::binMap() const  { return _binMap; }
       inline StateSetDefaultGLState::StateSetDefaultGLState() : internalLevel(0)  {}
+
+      template<typename StateT> void StateSetManagerTemplate<StateT>::render()
+      {
+         auto ambientRoot=getBinStateSet(0);
+         if(ambientRoot)
+            ambientRoot->render();
+         auto lightPassRoot=getBinStateSet(1);
+         if(lightPassRoot) {
+            for(auto it_light=_lightList.begin(),e_light=_lightList.end(); it_light!=e_light; it_light++) {
+               for(auto it_glProgramSs=lightPassRoot->childList().begin(),
+                  e_glProgramSs=lightPassRoot->childList().end();
+                  it_glProgramSs!=e_glProgramSs; it_glProgramSs++)
+               {
+                  // glUseProgram
+                  (*it_glProgramSs)->commandList()[0]->operator()();
+
+                  // set light uniforms
+                  (*it_light)->operator()();
+
+                  // renders scene using StateSet::RenderCommand
+                  (*it_glProgramSs)->commandList()[1]->operator()();
+               }
+            }
+         }
+      }
    }
 }
 

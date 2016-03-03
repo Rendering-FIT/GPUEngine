@@ -559,19 +559,10 @@ void RenderingContext::handleContextLost()
 }
 
 
-void RenderingContext::init()
+const shared_ptr<ProgramObject>& RenderingContext::getProcessDrawCommandsProgram() const
 {
-   initDefaultShaders();
-   configureRenderingPipeline();
-}
-
-
-void RenderingContext::initDefaultShaders()
-{
-   if(!getGLProgram(idof(ProcessDrawCommandsProgram,geRG_GLPrograms)))
-   {
-      setGLProgram(idof(ProcessDrawCommandsProgram,geRG_GLPrograms),
-                   make_shared<ProgramObject>(
+   if(!_processDrawCommandsProgram)
+      const_cast<RenderingContext*>(this)->_processDrawCommandsProgram=make_shared<ProgramObject>(
          GL_COMPUTE_SHADER,
          "#version 430\n"
          "\n"
@@ -632,13 +623,15 @@ void RenderingContext::initDefaultShaders()
          "      indirectBufferOffset4++;\n"
          "   }\n"
          "   drawIndirectBuffer[indirectBufferOffset4]=matrixListOffset64; // base instance\n"
-         "}\n"));
-   }
+         "}\n");
+   return _processDrawCommandsProgram;
+}
 
-   if(!getGLProgram(idof(Ambient,geRG_GLPrograms)))
-   {
-      setGLProgram(idof(Ambient,geRG_GLPrograms),
-                   make_shared<ProgramObject>(
+
+const shared_ptr<ProgramObject>& RenderingContext::getAmbientProgram() const
+{
+   if(!_ambientProgram) {
+      const_cast<RenderingContext*>(this)->_ambientProgram=make_shared<ProgramObject>(
          GL_VERTEX_SHADER,
          static_cast<std::stringstream&>(stringstream()<<
          "#version 430\n"
@@ -702,13 +695,16 @@ void RenderingContext::initDefaultShaders()
          "      fragColor=color*texture(colorTexture,texCoord);\n"
          "   else // replace\n"
          "      fragColor=texture(colorTexture,texCoord);\n"
-         "}\n"));
+         "}\n");
    }
+   return _ambientProgram;
+}
 
-   if(!getGLProgram(idof(SimplifiedPhong,geRG_GLPrograms)))
-   {
-      setGLProgram(idof(SimplifiedPhong,geRG_GLPrograms),
-                   make_shared<ProgramObject>(
+
+const shared_ptr<ProgramObject>& RenderingContext::getPhongProgram() const
+{
+   if(!_phongProgram) {
+      const_cast<RenderingContext*>(this)->_phongProgram=make_shared<ProgramObject>(
          GL_VERTEX_SHADER,
          static_cast<std::stringstream&>(stringstream()
          <<(_useARBShaderDrawParameters
@@ -828,11 +824,13 @@ void RenderingContext::initDefaultShaders()
          "                      attenuation,\n"
          "                     c.a);\n"
          "   }\n"
-         "}\n"));
+         "}\n");
    }
+   return _phongProgram;
 }
 
 
+#if 0 // this is going to be converted to render-pass code later
 void RenderingContext::configureRenderingPipeline()
 {
    shared_ptr<StateSet> rootSs(getSuperStateSet(idof(Root,geRG_SuperStateSets)));
@@ -863,6 +861,7 @@ void RenderingContext::configureRenderingPipeline()
       rootSs->addChild(ss);
    }
 }
+#endif
 
 
 static void countMatrices(Transformation *t)
@@ -944,7 +943,7 @@ void RenderingContext::setupRendering()
    _indirectBufferAllocatedSpace4=0;
 
    // setup rendering on StateSets
-   auto root=getSuperStateSet(idof(Root,geRG_SuperStateSets));
+   auto root=_stateSetManager->root();
    if(root)
       root->setupRendering();
 }
@@ -953,7 +952,7 @@ void RenderingContext::setupRendering()
 void RenderingContext::processDrawCommands()
 {
    // process draw commands and generate content of draw indirect buffer using compute shader
-   auto processDrawCommandsProgram=getGLProgram(idof(ProcessDrawCommandsProgram,geRG_Programs));
+   auto processDrawCommandsProgram=getProcessDrawCommandsProgram();
    processDrawCommandsProgram->use();
    unsigned numInstances=drawCommandStorage()->firstItemAvailableAtTheEnd();
    processDrawCommandsProgram->set("numToProcess",numInstances);
@@ -999,9 +998,7 @@ void RenderingContext::render()
 #endif
 
    // render all StateSets
-   auto root=getSuperStateSet(idof(Root,geRG_SuperStateSets));
-   if(root)
-      root->render();
+   _stateSetManager->render();
 }
 
 

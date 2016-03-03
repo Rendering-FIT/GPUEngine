@@ -319,8 +319,12 @@ public:
 
       // create GLState
       StateSetManager::GLState *glState=rc->createGLState();
-      shared_ptr<ge::gl::ProgramObject> glProgram(RenderingContext::current()->getGLProgram(idof(Ambient,geRG_Programs)));
-      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&glProgram);
+      shared_ptr<ge::gl::ProgramObject> ambientProgram(RenderingContext::current()->getAmbientProgram());
+      shared_ptr<ge::gl::ProgramObject> phongProgram(RenderingContext::current()->getPhongProgram());
+      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
+      glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&phongProgram);
+      glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
+      glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
       glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
 
       // find (or create new) geRG StateSet

@@ -86,8 +86,9 @@ namespace ge
 
          unsigned _indirectBufferAllocatedSpace4;
 
-         std::vector<std::shared_ptr<StateSet>> _superStateSets;
-         std::vector<std::shared_ptr<ge::gl::ProgramObject>> _glPrograms;
+         std::shared_ptr<ge::gl::ProgramObject> _processDrawCommandsProgram;
+         std::shared_ptr<ge::gl::ProgramObject> _ambientProgram;
+         std::shared_ptr<ge::gl::ProgramObject> _phongProgram;
 
          static void* mapBuffer(ge::gl::BufferObject *buffer,
                                 MappedBufferAccess requestedAccess,
@@ -117,7 +118,7 @@ namespace ge
          inline unsigned numAttribStorages() const;
          void onAttribStorageInit(AttribStorage *a);
          void onAttribStorageRelease(AttribStorage *a);
-	 
+
          inline PrimitiveStorage* primitiveStorage() const;          ///< Returns BufferStorage that contains primitive set data of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline DrawCommandStorage* drawCommandStorage() const;            ///< Returns BufferStorage that contains draw commands. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline MatrixStorage* matrixStorage() const;
@@ -174,10 +175,6 @@ namespace ge
          inline unsigned positionInIndirectBuffer4() const;
          inline void setPositionInIndirectBuffer4(unsigned pos);
 
-         virtual void init();
-         virtual void initDefaultShaders();
-         virtual void configureRenderingPipeline();
-
          virtual void evaluateTransformationGraph();
          virtual void setupRendering();
          virtual void processDrawCommands();
@@ -191,10 +188,9 @@ namespace ge
          inline const std::shared_ptr<StateSetManager>& stateSetManager();
          void setStateSetManager(const std::shared_ptr<StateSetManager>& stateSetManager);
 
-         inline const std::shared_ptr<StateSet>& getSuperStateSet(idof_t id) const;
-         inline void setSuperStateSet(idof_t id,const std::shared_ptr<StateSet>& ss);
-         inline const std::shared_ptr<ge::gl::ProgramObject>& getGLProgram(idof_t id) const;
-         inline void setGLProgram(idof_t id,const std::shared_ptr<ge::gl::ProgramObject>& p);
+         const std::shared_ptr<ge::gl::ProgramObject>& getProcessDrawCommandsProgram() const;
+         const std::shared_ptr<ge::gl::ProgramObject>& getAmbientProgram() const;
+         const std::shared_ptr<ge::gl::ProgramObject>& getPhongProgram() const;
 
          std::shared_ptr<ge::gl::TextureObject> cachedTextureObject(const std::string& path) const;
          inline void addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture);
@@ -276,11 +272,6 @@ namespace ge
       { return _stateSetManager->findStateSet(state); }
       inline StateSetManager::GLState* RenderingContext::createGLState()  { return _stateSetManager->createGLState(); }
       inline const std::shared_ptr<StateSetManager>& RenderingContext::stateSetManager()  { return _stateSetManager; }
-
-      inline const std::shared_ptr<StateSet>& RenderingContext::getSuperStateSet(idof_t id) const  { return (id<_superStateSets.size())?_superStateSets[id]:nullSharedPtr<ge::rg::StateSet>(); }
-      inline void RenderingContext::setSuperStateSet(idof_t id,const std::shared_ptr<StateSet>& ss)  { if(_superStateSets.size()<=id) _superStateSets.resize(id+1); _superStateSets[id]=ss; }
-      inline const std::shared_ptr<ge::gl::ProgramObject>& RenderingContext::getGLProgram(idof_t id) const  { return (id<_glPrograms.size())?_glPrograms[id]:nullSharedPtr<ge::gl::ProgramObject>(); }
-      inline void RenderingContext::setGLProgram(idof_t id,const std::shared_ptr<ge::gl::ProgramObject>& p)  { if(_glPrograms.size()<=id) _glPrograms.resize(id+1); _glPrograms[id]=p; }
 
       inline void RenderingContext::addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture)  { _textureCache[path]=texture; }
 

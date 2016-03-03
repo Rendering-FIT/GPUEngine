@@ -128,7 +128,6 @@ void Idle()
 void Init()
 {
    ge::gl::initShadersAndPrograms();
-   RenderingContext::current()->init();
 
    // load model
    if(!fileName.empty())
@@ -167,17 +166,17 @@ void Init()
    RenderingContext::current()->unmapBuffers();
 
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
-   auto ambientProgram=RenderingContext::current()->getGLProgram(idof(Ambient,geRG_GLPrograms));
+   auto ambientProgram=RenderingContext::current()->getAmbientProgram();
    ambientProgram->use();
    ambientProgram->set("globalAmbientLight",0.2f,0.2f,0.2f,1.f);
    ambientProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    ambientProgram->set("colorTexture",int(0));
-   auto simplifiedPhongProgram=RenderingContext::current()->getGLProgram(idof(Ambient,geRG_GLPrograms));
-   simplifiedPhongProgram->use();
-   simplifiedPhongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
-   simplifiedPhongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
-   simplifiedPhongProgram->set("lightPosition",0.f,0.f,0.f,1.f); // in eye coordinates, w must be 0 or 1
-   simplifiedPhongProgram->set("lightColor",1.f,1.f,1.f);
-   simplifiedPhongProgram->set("lightAttenuation",1.f,0.f,0.f);
-   simplifiedPhongProgram->set("colorTexture",int(0));
+   auto phongProgram=RenderingContext::current()->getPhongProgram();
+   phongProgram->use();
+   phongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   phongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
+   phongProgram->set("lightPosition",0.f,0.f,0.f,1.f); // in eye coordinates, w must be 0 or 1
+   phongProgram->set("lightColor",1.f,1.f,1.f);
+   phongProgram->set("lightAttenuation",1.f,0.f,0.f);
+   phongProgram->set("colorTexture",int(0));
 }

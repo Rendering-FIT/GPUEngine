@@ -150,10 +150,9 @@ void Init()
    glm::mat4 mvp=modelView*projection;
    glProgram->use();
    glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
-   RenderingContext::current()->setGLProgram(idof(Ambient,geRG_GLPrograms),glProgram);
-   RenderingContext::current()->init();
 
    StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+   glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
    glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&glProgram);
    shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
    delete glState;

@@ -67,6 +67,8 @@ namespace ge
             inline AttribStorageData(AttribStorage *storage);
          };
 
+         typedef ge::core::SharedCommandList CommandList;
+
          // parent and child list
          // (child list is list<shared_ptr<StateSet> and
          // parent list is list<StateSet*>)
@@ -80,7 +82,7 @@ namespace ge
          std::shared_ptr<StateSet> _self;  ///< Reference to itself. It is used by _drawableCounter to prevent the object from being deleted as long as any drawables still reference it.
 
          std::map<AttribStorage*,AttribStorageData> _attribStorageData;
-         std::vector<std::shared_ptr<ge::core::Command>> _commandList;
+         CommandList _commandList;
 
       public:
 
@@ -116,8 +118,8 @@ namespace ge
          inline void removeCommand(unsigned index);
          void removeCommand(const std::shared_ptr<ge::core::Command>& command);
          inline void clearCommands();
-         inline const std::vector<std::shared_ptr<ge::core::Command>>& commandList() const;
-         inline std::vector<std::shared_ptr<ge::core::Command>>& commandList();
+         inline const CommandList& commandList() const;
+         inline CommandList& commandList();
 
 
          class GERG_EXPORT RenderCommand : public ge::core::Command {
@@ -178,8 +180,8 @@ namespace ge
       inline unsigned StateSet::insertCommand(unsigned index,const std::shared_ptr<ge::core::Command>& command)  { return unsigned(std::distance(_commandList.emplace(_commandList.begin()+index,command),_commandList.begin())); }
       inline void StateSet::removeCommand(unsigned index)  { _commandList.erase(_commandList.begin()+index); }
       inline void StateSet::clearCommands()  { _commandList.clear(); }
-      inline const std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList() const  { return _commandList; }
-      inline std::vector<std::shared_ptr<ge::core::Command>>& StateSet::commandList()  { return _commandList; }
+      inline const StateSet::CommandList& StateSet::commandList() const  { return _commandList; }
+      inline StateSet::CommandList& StateSet::commandList()  { return _commandList; }
 
       inline std::shared_ptr<StateSet::RenderCommand> StateSet::RenderCommand::create(StateSet *owner)  { return std::make_shared<StateSet::RenderCommand>(owner); }
       inline StateSet::RenderCommand::RenderCommand() : _stateSet(nullptr)  {}
