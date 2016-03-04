@@ -97,6 +97,8 @@ namespace ge
          virtual void clear(const std::string& name) override;
          bool operator<(const StateSetDefaultGLState& rhs) const;
          virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) override;
+         static void render(StateSet *ambientSs,StateSet *lightPassSs,
+                            StateSetManager::LightList &lightList);
       };
 
 
@@ -113,7 +115,7 @@ namespace ge
 {
    namespace rg
    {
-      inline StateSetManager::StateSetManager() : _root(std::make_shared<StateSet>())  {}
+      inline StateSetManager::StateSetManager() : _root(std::make_shared<StateSet>())  { _root->addChild(std::make_shared<StateSet>()); _root->addChild(std::make_shared<StateSet>()); }
       inline StateSetManager::StateSetManager(const std::shared_ptr<StateSet>& root) : _root(root)  {}
       inline const std::shared_ptr<StateSet>& StateSetManager::root() const  { return _root; }
       inline std::shared_ptr<StateSet>& StateSetManager::root()  { return _root; }
@@ -161,10 +163,14 @@ namespace ge
       template<typename StateT>
       std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getBinStateSet(int bin)
       {
+#if 1
+         return (bin<=0)?_root->childList().front():_root->childList().back();
+#else
          auto it=_binMap.find(bin);
          if(it==_binMap.end())
             return std::shared_ptr<StateSet>();
          return *(it->second);
+#endif
       }
       template<typename StateT>
       StateSetManager::GLState* StateSetManagerTemplate<StateT>::createGLState()  { return new StateT; }
@@ -184,27 +190,7 @@ namespace ge
 
       template<typename StateT> void StateSetManagerTemplate<StateT>::render()
       {
-         auto ambientRoot=getBinStateSet(0);
-         if(ambientRoot)
-            ambientRoot->render();
-         auto lightPassRoot=getBinStateSet(1);
-         if(lightPassRoot) {
-            for(auto it_light=_lightList.begin(),e_light=_lightList.end(); it_light!=e_light; it_light++) {
-               for(auto it_glProgramSs=lightPassRoot->childList().begin(),
-                  e_glProgramSs=lightPassRoot->childList().end();
-                  it_glProgramSs!=e_glProgramSs; it_glProgramSs++)
-               {
-                  // glUseProgram
-                  (*it_glProgramSs)->commandList()[0]->operator()();
-
-                  // set light uniforms
-                  (*it_light)->operator()();
-
-                  // renders scene using StateSet::RenderCommand
-                  (*it_glProgramSs)->commandList()[1]->operator()();
-               }
-            }
-         }
+         StateT::render(getBinStateSet(0).get(),getBinStateSet(1).get(),_lightList);
       }
    }
 }

@@ -23,46 +23,52 @@ void StateSetDefaultGLState::add(const string& name,const type_index& typeIndex,
 {
    if(name=="internalLevel") {
       if(typeIndex==type_index(typeid(unsigned)))
-         internalLevel=reinterpret_cast<uintptr_t>(data);
+         internalLevel=unsigned(reinterpret_cast<uintptr_t>(data));
       else
          cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
                "   \"internal\" name."<<endl;
    }
    else if(name=="bin") {
       if(typeIndex==type_index(typeid(int)))
-         binList.push_back(reinterpret_cast<intptr_t>(data));
+         binList.push_back(int(reinterpret_cast<intptr_t>(data)));
       else
          cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
                "   \"bin\" name."<<endl;
    }
    else if(name=="glProgram") {
-      if(typeIndex==type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)))
-         glProgramList.push_back(*static_cast<shared_ptr<ge::gl::ProgramObject>*>(data));
-      else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::ProgramObject>*)))
-         glProgramList.push_back(*static_cast<weak_ptr<ge::gl::ProgramObject>*>(data));
-      else
-         cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
-               "   \"glProgram\" name."<<endl;
+      if(*static_cast<shared_ptr<ge::gl::ProgramObject>*>(data)) { // proceed with non-nullptr only
+         if(typeIndex==type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)))
+            glProgramList.push_back(*static_cast<shared_ptr<ge::gl::ProgramObject>*>(data));
+         else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::ProgramObject>*)))
+            glProgramList.push_back(*static_cast<weak_ptr<ge::gl::ProgramObject>*>(data));
+         else
+            cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
+                  "   \"glProgram\" name."<<endl;
+      }
    }
    else if(name=="colorTexture") {
-      if(typeIndex==type_index(typeid(shared_ptr<ge::gl::TextureObject>*)))
-         colorTextureList.push_back(*static_cast<shared_ptr<ge::gl::TextureObject>*>(data));
-      else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::TextureObject>*)))
-         colorTextureList.push_back(*static_cast<weak_ptr<ge::gl::TextureObject>*>(data));
-      else
-         cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
-               "   \"colorTexture\" name."<<endl;
+      if(*static_cast<shared_ptr<ge::gl::TextureObject>*>(data)) { // proceed with non-nullptr only
+         if(typeIndex==type_index(typeid(shared_ptr<ge::gl::TextureObject>*)))
+            colorTextureList.push_back(*static_cast<shared_ptr<ge::gl::TextureObject>*>(data));
+         else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::TextureObject>*)))
+            colorTextureList.push_back(*static_cast<weak_ptr<ge::gl::TextureObject>*>(data));
+         else
+            cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
+                  "   \"colorTexture\" name."<<endl;
+      }
    }
    else if(name=="uniformList") {
-      if(typeIndex==type_index(typeid(list<weak_ptr<ge::core::Command>>*))) {
-         uniformSetList.emplace_back();
-         uniformSetList.back().swap(*static_cast<list<weak_ptr<ge::core::Command>>*>(data));
-      } else if(typeIndex==type_index(typeid(weak_ptr<ge::core::Command>*))) {
-         uniformSetList.emplace_back();
-         uniformSetList.back().push_back(*static_cast<weak_ptr<ge::core::Command>*>(data));
-      } else
-         cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
-               "   \"uniformList\" name."<<endl;
+      if(static_cast<list<weak_ptr<ge::core::Command>>*>(data)->size()!=0) { // proceed with non-empty lists only
+         if(typeIndex==type_index(typeid(list<weak_ptr<ge::core::Command>>*))) {
+            uniformSetList.emplace_back();
+            uniformSetList.back().swap(*static_cast<list<weak_ptr<ge::core::Command>>*>(data));
+         } else if(typeIndex==type_index(typeid(weak_ptr<ge::core::Command>*))) {
+            uniformSetList.emplace_back();
+            uniformSetList.back().push_back(*static_cast<weak_ptr<ge::core::Command>*>(data));
+         } else
+            cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
+                  "   \"uniformList\" name."<<endl;
+      }
    }
    else
       cout<<"StateSetDefaultGLState::set() error: Unknown parameter name \""<<name<<"\"."<<endl;
@@ -103,26 +109,22 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
 {
    if(internalLevel==0)
    {
-      if(uniformSetList.size()==0) {
-         // jump to internalLevel 2 (texture assignment)
-         internalLevel=2;
-         init(ss,m);
-      }
-      else if(uniformSetList.size()==1) {
+      if(uniformSetList.size()<=1) {
          // skip to internalLevel 1 (uniform assignment)
          internalLevel=1;
          init(ss,m);
       }
       else
       {
-         // append to the appropriate uniform state sets
-         internalLevel=1;
+         // leave this StateSet empty
+         // and append it to the multiple parents
          decltype(uniformSetList) tmp;
          uniformSetList.swap(tmp);
          uniformSetList.emplace_back();
          for(size_t i=0,c=tmp.size(); i<c; i++)
          {
             // find parent state set
+            internalLevel=1; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
             uniformSetList.front().swap(tmp[i]);
             auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
                   getOrCreateStateSet_optimized(this);
@@ -136,11 +138,10 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
    }
    else if(internalLevel==1)
    {
-      if(uniformSetList.size()==0) {
-         internalLevel=2;
-         init(ss,m);
-      }
-      else
+      assert(uniformSetList.size()<=1 && "StateSetManager::init(): internalLevel 1 "
+             "requires size of uniformSetList to be 1 or 0.");
+
+      if(uniformSetList.size()==1)
       {
          // append uniforms
          ss->clearCommands();
@@ -150,57 +151,57 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
             ss->addCommand(uniformCommand);
          }
          ss->addRenderCommand();
+      }
 
-         // store uniformSetList in temporary variable and leave it empty
-         // as it should not influence further lookups for parents
-         decltype(uniformSetList) savedUniformSetList;
-         uniformSetList.swap(savedUniformSetList);
+      // store uniformSetList in temporary variable and leave it empty
+      // as it should not influence further lookups for parents
+      decltype(uniformSetList) savedUniformSetList;
+      uniformSetList.swap(savedUniformSetList);
 
-         // get parent state set
+      // get parent state set
+      if(colorTextureList.size()<=1)
+      {
          internalLevel=2;
-         if(colorTextureList.size()==0) {
+         if(uniformSetList.size()==0) {
             // jump to internalLevel 2
             init(ss,m);
-         }
-         else if(colorTextureList.size()==1) {
+         } else {
             // append to the parent state set
             auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
                   getOrCreateStateSet_optimized(this);
             parent->addChild(ss);
          }
-         else
-         {
-            // append to the appropriate texture state sets
-            decltype(colorTextureList) tmp;
-            colorTextureList.swap(tmp);
-            colorTextureList.emplace_back();
-            for(size_t i=0,c=tmp.size(); i<c; i++)
-            {
-               // find parent state set
-               colorTextureList.front().swap(tmp[i]);
-               auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
-                     getOrCreateStateSet_optimized(this);
-               colorTextureList.front().swap(tmp[i]);
-
-               // append the state set as a child of the internal state set
-               parent->addChild(ss);
-            }
-            colorTextureList.swap(tmp);
-         }
-
-         // restore uniformSetList
-         uniformSetList.swap(savedUniformSetList);
       }
+      else
+      {
+         // append to the appropriate texture state sets
+         decltype(colorTextureList) tmp;
+         colorTextureList.swap(tmp);
+         colorTextureList.emplace_back();
+         for(size_t i=0,c=tmp.size(); i<c; i++)
+         {
+            // find parent state set
+            internalLevel=2; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
+            colorTextureList.front().swap(tmp[i]);
+            auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
+                  getOrCreateStateSet_optimized(this);
+            colorTextureList.front().swap(tmp[i]);
+
+            // append the state set as a child of the internal state set
+            parent->addChild(ss);
+         }
+         colorTextureList.swap(tmp);
+      }
+
+      // restore uniformSetList
+      uniformSetList.swap(savedUniformSetList);
    }
    else if(internalLevel==2)
    {
-      // (colorTextureList.front().expired() is not really testing for expiring here,
-      // it tests just for null value)
-      if(colorTextureList.size()==0 || colorTextureList.front().expired()) {
-         internalLevel=3;
-         init(ss,m);
-      }
-      else
+      assert(colorTextureList.size()<=1 && "StateSetManager::init(): internalLevel 2 "
+             "requires size of colorTextureList to be 1 or 0.");
+
+      if(colorTextureList.size()==1)
       {
          // create BindTexture command
          ss->clearCommands();
@@ -208,57 +209,63 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          assert(t && "StateSetDefaultGLState error: colorTexture was destroyed.");
          ss->addCommand(ge::gl::sharedBindTexture(GL_TEXTURE_2D,t));
          ss->addRenderCommand();
+      }
 
-         // store colorTextureList in temporary variable and leave it empty
-         // as it should not influence further lookups for parents
-         decltype(colorTextureList) savedColorTextureList;
-         colorTextureList.swap(savedColorTextureList);
+      // store colorTextureList in temporary variable and leave it empty
+      // as it should not influence further lookups for parents
+      decltype(colorTextureList) savedColorTextureList;
+      colorTextureList.swap(savedColorTextureList);
 
-         // get parent state set
+      // get parent state set
+      if(glProgramList.size()<=1)
+      {
          internalLevel=3;
-         if(glProgramList.size()==0) {
+         if(colorTextureList.size()==0) {
             // jump to internalLevel 3
             init(ss,m);
-         }
-         else if(glProgramList.size()==1) {
+         } else {
             // append to the parent state set
             auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
                   getOrCreateStateSet_optimized(this);
             parent->addChild(ss);
          }
-         else
-         {
-            // append to the appropriate glProgram state sets
-            decltype(glProgramList) tmp;
-            glProgramList.swap(tmp);
-            glProgramList.emplace_back();
-            for(size_t i=0,c=tmp.size(); i<c; i++)
-            {
-               // find parent state set
-               glProgramList.front().swap(tmp[i]);
-               auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
-                     getOrCreateStateSet_optimized(this);
-               glProgramList.front().swap(tmp[i]);
-
-               // append the state set as a child of the internal state set
-               parent->addChild(ss);
-            }
-            glProgramList.swap(tmp);
-         }
-
-         // restore colorTextureList
-         colorTextureList.swap(savedColorTextureList);
       }
+      else
+      {
+         // append to the appropriate glProgram state sets
+         decltype(glProgramList) tmp;
+         decltype(binList) tmp2;
+         glProgramList.swap(tmp);
+         binList.swap(tmp2);
+         glProgramList.emplace_back();
+         binList.push_back(tmp2.empty()?0:tmp2[0]);
+         for(size_t i=0,c=tmp.size(); i<c; i++)
+         {
+            // find parent state set
+            internalLevel=3; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
+            glProgramList.front().swap(tmp[i]);
+            if(tmp2.size()>=tmp.size())
+               binList[0]=tmp2[i];
+            auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
+                  getOrCreateStateSet_optimized(this);
+            glProgramList.front().swap(tmp[i]);
+
+            // append the state set as a child of the internal state set
+            parent->addChild(ss);
+         }
+         glProgramList.swap(tmp);
+         binList.swap(tmp2);
+      }
+
+      // restore colorTextureList
+      colorTextureList.swap(savedColorTextureList);
    }
    else if(internalLevel==3)
    {
-      // (glProgramList.front().expired() is not really testing for expiring here,
-      // it tests just for null value)
-      if(glProgramList.size()==0 || glProgramList.front().expired()) {
-         internalLevel=4;
-         init(ss,m);
-      }
-      else
+      assert(glProgramList.size()<=1 && "StateSetManager::init(): internalLevel 3 "
+             "requires size of glProgramList to be 1 or 0.");
+
+      if(glProgramList.size()==1)
       {
          // create FlexibleUseProgram command
          ss->clearCommands();
@@ -266,49 +273,66 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          assert(p && "StateSetDefaultGLState error: glProgram was destroyed.");
          ss->addCommand(make_shared<FlexibleUseProgram>(p));
          ss->addRenderCommand();
+      }
 
-         // store glProgramList in temporary variable and leave it empty
-         // as it should not influence further lookups for parents
-         decltype(glProgramList) savedGLProgramList;
-         glProgramList.swap(savedGLProgramList);
+      // store glProgramList in temporary variable and leave it empty
+      // as it should not influence further lookups for parents
+      decltype(glProgramList) savedGLProgramList;
+      glProgramList.swap(savedGLProgramList);
 
-         // get parent state set
+      // get parent state set
+#if 1 // this temporary solution provides two bins: one for ambient pass and one for light pass
+      // (later, we will design full-blown render-pass solution)
+      if(binList.size()==0)
+         m->root()->childList().front()->addChild(ss);
+      else
+         if(binList[0]<=0)
+            m->root()->childList().front()->addChild(ss);
+         else
+            m->root()->childList().back()->addChild(ss);
+#else
+      if(binList.size()<=1)
+      {
          internalLevel=4;
-         if(binList.size()==0) {
+         if(glProgramList.size()==0) {
             // jump to internalLevel 4
             init(ss,m);
-         }
-         else if(binList.size()==1) {
+         } else {
             // append to the parent state set
             auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
                   getOrCreateStateSet_optimized(this);
             parent->addChild(ss);
          }
-         else
-         {
-            // append to the appropriate bin state sets
-            decltype(binList) tmp;
-            binList.swap(tmp);
-            binList.emplace_back();
-            for(size_t i=0,c=tmp.size(); i<c; i++)
-            {
-               // find parent state set
-               binList.front()=tmp[i];
-               auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
-                     getOrCreateStateSet_optimized(this);
-
-               // append the state set as a child of the internal state set
-               parent->addChild(ss);
-            }
-            binList.swap(tmp);
-         }
-
-         // restore glProgramList
-         glProgramList.swap(savedGLProgramList);
       }
+      else
+      {
+         // append to the appropriate bin state sets
+         decltype(binList) tmp;
+         binList.swap(tmp);
+         binList.emplace_back();
+         for(size_t i=0,c=tmp.size(); i<c; i++)
+         {
+            // find parent state set
+            internalLevel=4; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
+            binList.front()=tmp[i];
+            auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
+                  getOrCreateStateSet_optimized(this);
+
+            // append the state set as a child of the internal state set
+            parent->addChild(ss);
+         }
+         binList.swap(tmp);
+      }
+#endif
+
+      // restore glProgramList
+      glProgramList.swap(savedGLProgramList);
    }
    else if(internalLevel==4)
    {
+      assert(binList.size()<=1 && "StateSetManager::init(): internalLevel 4 "
+             "requires size of binList to be 1 or 0.");
+
       if(binList.size()==0) {
          binList.emplace_back(0);
          init(ss,m);
@@ -341,6 +365,34 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          }
          binList.swap(tmp);
       }
+   }
+}
+
+
+void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
+                                    StateSetManager::LightList &lightList)
+{
+   if(ambientSs)
+      ambientSs->render();
+   if(lightPassSs) {
+      glBlendFunc(GL_ONE,GL_ONE);
+      glEnable(GL_BLEND);
+      for(auto it_light=lightList.begin(),e_light=lightList.end(); it_light!=e_light; it_light++) {
+         for(auto it_glProgramSs=lightPassSs->childList().begin(),
+            e_glProgramSs=lightPassSs->childList().end();
+            it_glProgramSs!=e_glProgramSs; it_glProgramSs++)
+         {
+            // glUseProgram
+            (*it_glProgramSs)->commandList()[0]->operator()();
+
+            // set light uniforms
+            (*it_light)->operator()();
+
+            // renders scene using StateSet::RenderCommand
+            (*it_glProgramSs)->commandList()[1]->operator()();
+         }
+      }
+      glDisable(GL_BLEND);
    }
 }
 

@@ -219,6 +219,9 @@ namespace ge
                       ParentListTemplate<ParentT,ChildT> &newParentList);
          void erase(ChildIterator pos,ParentListTemplate<ParentT,ChildT> &parentList);
 
+         inline const ChildT& front()  { return inherited::_list.front().child; }
+         inline const ChildT& back()  { return inherited::_list.back().child; }
+
       };
 
       template<typename T> struct ParentChildList_is_shared_ptr : std::false_type {};
@@ -417,6 +420,9 @@ namespace ge
                       ChildListTemplate<ChildT,ParentT> &oldChildList,
                       ChildListTemplate<ChildT,ParentT> &newChildList);
          void erase(ParentIterator pos,ChildListTemplate<ChildT,ParentT> &childList);
+
+         inline const ParentT& front()  { return inherited::_list.front().parent; }
+         inline const ParentT& back()  { return inherited::_list.back().parent; }
 
       };
 

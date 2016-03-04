@@ -830,40 +830,6 @@ const shared_ptr<ProgramObject>& RenderingContext::getPhongProgram() const
 }
 
 
-#if 0 // this is going to be converted to render-pass code later
-void RenderingContext::configureRenderingPipeline()
-{
-   shared_ptr<StateSet> rootSs(getSuperStateSet(idof(Root,geRG_SuperStateSets)));
-   if(!rootSs)
-   {
-      rootSs=make_shared<StateSet>();
-      setSuperStateSet(idof(Root,geRG_SuperStateSets),rootSs);
-   }
-   if(!getSuperStateSet(idof(Ambient,geRG_SuperStateSets)))
-   {
-      auto ss=make_shared<StateSet>();
-      ss->addCommand(make_shared<FlexibleUseProgram>(getGLProgram(idof(Ambient,geRG_GLPrograms))));
-      ss->addRenderCommand();
-      ss->addChild(_stateSetManager->root());
-      setSuperStateSet(idof(Ambient,geRG_SuperStateSets),ss);
-      rootSs->addChild(ss);
-   }
-   if(!getSuperStateSet(idof(SimplifiedPhong,geRG_SuperStateSets)))
-   {
-      auto ss=make_shared<StateSet>();
-      ss->addCommand(make_shared<FlexibleUseProgram>(getGLProgram(idof(SimplifiedPhong,geRG_GLPrograms))));
-      ss->addCommand(make_shared<ge::gl::BlendFunc<>>(GL_ONE,GL_ONE));
-      ss->addCommand(make_shared<ge::gl::Enable<>>(GL_BLEND));
-      ss->addRenderCommand();
-      ss->addCommand(make_shared<ge::gl::Disable<>>(GL_BLEND));
-      ss->addChild(_stateSetManager->root());
-      setSuperStateSet(idof(SimplifiedPhong,geRG_SuperStateSets),ss);
-      rootSs->addChild(ss);
-   }
-}
-#endif
-
-
 static void countMatrices(Transformation *t)
 {
    MatrixList *ml=t->matrixList().get();

@@ -5,6 +5,7 @@
 #include <geGL/DebugMessage.h>
 #include <geGL/geGL.h>
 #include <geGL/ProgramObject.h>
+#include <geRG/FlexibleUniform.h>
 #include <geRG/Model.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
@@ -175,8 +176,12 @@ void Init()
    phongProgram->use();
    phongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    phongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
-   phongProgram->set("lightPosition",0.f,0.f,0.f,1.f); // in eye coordinates, w must be 0 or 1
-   phongProgram->set("lightColor",1.f,1.f,1.f);
-   phongProgram->set("lightAttenuation",1.f,0.f,0.f);
    phongProgram->set("colorTexture",int(0));
+
+   // append light
+   auto lightCommands=make_shared<ge::core::SharedCommandList>();
+   lightCommands->emplace_back(make_shared<FlexibleUniform4f>("lightPosition",0.f,0.f,0.f,1.f)); // in eye coordinates, w must be 0 or 1
+   lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightColor",1.f,1.f,1.f));
+   lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightAttenuation",1.f,0.f,0.f));
+   RenderingContext::current()->stateSetManager()->addLight(lightCommands);
 }
