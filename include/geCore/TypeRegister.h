@@ -104,6 +104,7 @@ namespace ge{
           return std::function<OBJDestructor>([](unsigned char*ptr){((TYPE*)ptr)->~TYPE();});
         }
 
+
         TypeRegister();
         ~TypeRegister();
         unsigned   getNofTypes()const;
@@ -128,6 +129,10 @@ namespace ge{
         bool                  hasSynonyms      (TypeID id)const;
         bool                  areSynonyms      (const char*name0,const char*name1)const;
         unsigned   computeTypeIdSize       (TypeID id)const;
+
+        bool integerType(TypeID type)const;
+        bool floatType  (TypeID type)const;
+        bool stringType (TypeID type)const;
 
         void*alloc(TypeID id)const;
         Accessor allocAccessor(TypeID id)const;
@@ -205,7 +210,7 @@ namespace ge{
     template<>inline const char* TypeRegister::getTypeKeyword<char              >(){return"i8"    ;}
     template<>inline const char* TypeRegister::getTypeKeyword<short             >(){return"i16"   ;}
     template<>inline const char* TypeRegister::getTypeKeyword<int               >(){return"i32"   ;}
-    template<>inline const char* TypeRegister::getTypeKeyword<long long int     >(){return"void"  ;}
+    template<>inline const char* TypeRegister::getTypeKeyword<long long int     >(){return"i64"   ;}
     template<>inline const char* TypeRegister::getTypeKeyword<unsigned char     >(){return"u8"    ;}
     template<>inline const char* TypeRegister::getTypeKeyword<unsigned short    >(){return"u16"   ;}
     template<>inline const char* TypeRegister::getTypeKeyword<unsigned          >(){return"u32"   ;}

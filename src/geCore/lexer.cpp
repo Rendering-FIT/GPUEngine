@@ -66,23 +66,23 @@ void Lexer::parse(std::string data,bool stop){
 
     Type createPlus                     LAMBDA(PLUS);
     Type createPlusGoBack               LAMBDA_GOBACK(createPlus);
-    Type createPlus2                    LAMBDA_IF(PLUS_ASSIGMENT,INCREMENT,'=');
+    Type createPlus2                    LAMBDA_IF(PLUS_ASSIGNMENT,INCREMENT,'=');
 
     Type createMinus                    LAMBDA(MINUS);
     Type createMinusGoBack              LAMBDA_GOBACK(createMinus);
-    Type createMinus2                   LAMBDA_IF(MINUS_ASSIGMENT,DECREMENT,'=');
+    Type createMinus2                   LAMBDA_IF(MINUS_ASSIGNMENT,DECREMENT,'=');
 
     Type createMultiplication           LAMBDA(MULTIPLICATION);
     Type createMultiplicationGoBack     LAMBDA_GOBACK(createMultiplication);
-    Type createMultiplicationAssigment  LAMBDA(MULTIPLICATION_ASSIGMENT);
+    Type createMultiplicationAssigment  LAMBDA(MULTIPLICATION_ASSIGNMENT);
 
     Type createDivision                 LAMBDA(DIVISION);
     Type createDivisionGoBack           LAMBDA_GOBACK(createDivision);
-    Type createDivisionAssigment        LAMBDA(DIVISION_ASSIGMENT);
+    Type createDivisionAssigment        LAMBDA(DIVISION_ASSIGNMENT);
 
     Type createModulo                   LAMBDA(MODULO);
     Type createModuloGoBack             LAMBDA_GOBACK(createModulo);
-    Type createModuloAssigment          LAMBDA(MODULO_ASSIGMENT);
+    Type createModuloAssigment          LAMBDA(MODULO_ASSIGNMENT);
 
     Type createLess                     LAMBDA(LESS);
     Type createLessGoBack               LAMBDA_GOBACK(createLess);
@@ -92,7 +92,7 @@ void Lexer::parse(std::string data,bool stop){
     Type createGreaterGoBack            LAMBDA_GOBACK(createGreater);
     Type createGreaterEqual             LAMBDA(GREATER_EQUAL);
 
-    Type createAssigment                LAMBDA(ASSIGMENT);
+    Type createAssigment                LAMBDA(ASSIGNMENT);
     Type createAssigmentGoBack          LAMBDA_GOBACK(createAssigment);
     Type createEqual                    LAMBDA(EQUAL);
 
@@ -102,12 +102,12 @@ void Lexer::parse(std::string data,bool stop){
 
     Type createBinaryAnd                LAMBDA(BINARY_AND);
     Type createBinaryAndGoBack          LAMBDA_GOBACK(createBinaryAnd);
-    Type createBinaryAndAssigment       LAMBDA(BINARY_AND_ASSIGMENT);
+    Type createBinaryAndAssigment       LAMBDA(BINARY_AND_ASSIGNMENT);
     Type createAnd                      LAMBDA(AND);
 
     Type createBinaryOr                 LAMBDA(BINARY_OR);
     Type createBinaryOrGoBack           LAMBDA_GOBACK(createBinaryOr);
-    Type createBinaryOrAssigment        LAMBDA(BINARY_OR_ASSIGMENT);
+    Type createBinaryOrAssigment        LAMBDA(BINARY_OR_ASSIGNMENT);
     Type createOr                       LAMBDA(OR);
 
     Type createIdentifier               LAMBDA_DATA(IDENTIFIER);
@@ -127,11 +127,11 @@ void Lexer::parse(std::string data,bool stop){
 
     Type createLeftShift                LAMBDA(LEFT_SHIFT);
     Type createLeftShiftGoBack          LAMBDA_GOBACK(createLeftShift);
-    Type createLeftShiftAssigment       LAMBDA(LEFT_SHIFT_ASSIGMENT);
+    Type createLeftShiftAssigment       LAMBDA(LEFT_SHIFT_ASSIGNMENT);
 
     Type createRightShift               LAMBDA(RIGHT_SHIFT);
     Type createRightShiftGoBack         LAMBDA_GOBACK(createRightShift);
-    Type createRightShiftAssigment      LAMBDA(RIGHT_SHIFT_ASSIGMENT);
+    Type createRightShiftAssigment      LAMBDA(RIGHT_SHIFT_ASSIGNMENT);
 
     Type error (ge::core::FSA*fsa,void*){
       //if(fsa->getCurrentStateName()=="START"){
@@ -161,7 +161,7 @@ void Lexer::parse(std::string data,bool stop){
     fsa.addTransition("START"         ,"%"                 ,"MODULO"                                                   );
     fsa.addTransition("START"         ,"<"                 ,"LESSER"                                                   );
     fsa.addTransition("START"         ,">"                 ,"GREATER"                                                  );
-    fsa.addTransition("START"         ,"="                 ,"ASSIGMENT"                                                );
+    fsa.addTransition("START"         ,"="                 ,"ASSIGNMENT"                                               );
     fsa.addTransition("START"         ,"!"                 ,"EXCLAMATION"                                              );
     fsa.addTransition("START"         ,"&"                 ,"AMPERSAND"                                                );
     fsa.addTransition("START"         ,"|"                 ,"BAR"                                                      );
@@ -226,12 +226,12 @@ void Lexer::parse(std::string data,bool stop){
     fsa.addTransition("GREATER"       ,ge::core::FSA::eof  ,"END"           ,pData.createGreater                ,&pData);//create token >
     fsa.addTransition("GREATER"       ,""                  ,""              ,pData.error                               );//ERROR
 
-    fsa.addTransition("ASSIGMENT"     ,operatorStop        ,"START"         ,pData.createAssigmentGoBack        ,&pData);//create token =, goBack
-    fsa.addTransition("ASSIGMENT"     ,ge::core::FSA::space,"START"         ,pData.createAssigment              ,&pData);//create token =
-    fsa.addTransition("ASSIGMENT"     ,"="                 ,"START"         ,pData.createEqual                  ,&pData);//create token ==
-    fsa.addTransition("ASSIGMENT"     ,"/"                 ,"SLASH"         ,pData.createAssigment              ,&pData);//create token =
-    fsa.addTransition("ASSIGMENT"     ,ge::core::FSA::eof  ,"END"           ,pData.createAssigment              ,&pData);//create token =
-    fsa.addTransition("ASSIGMENT"     ,""                  ,""              ,pData.error                               );//ERROR
+    fsa.addTransition("ASSIGNMENT"    ,operatorStop        ,"START"         ,pData.createAssigmentGoBack        ,&pData);//create token =, goBack
+    fsa.addTransition("ASSIGNMENT"    ,ge::core::FSA::space,"START"         ,pData.createAssigment              ,&pData);//create token =
+    fsa.addTransition("ASSIGNMENT"    ,"="                 ,"START"         ,pData.createEqual                  ,&pData);//create token ==
+    fsa.addTransition("ASSIGNMENT"    ,"/"                 ,"SLASH"         ,pData.createAssigment              ,&pData);//create token =
+    fsa.addTransition("ASSIGNMENT"    ,ge::core::FSA::eof  ,"END"           ,pData.createAssigment              ,&pData);//create token =
+    fsa.addTransition("ASSIGNMENT"    ,""                  ,""              ,pData.error                               );//ERROR
 
     fsa.addTransition("EXCLAMATION"   ,operatorStop        ,"START"         ,pData.createNotGoBack              ,&pData);//create token !, goBack
     fsa.addTransition("EXCLAMATION"   ,ge::core::FSA::space,"START"         ,pData.createNot                    ,&pData);//create token !
@@ -280,6 +280,7 @@ void Lexer::parse(std::string data,bool stop){
     fsa.addTransition("DOT"           ,ge::core::FSA::els  ,"START"         ,pData.createDotGoBack              ,&pData);//create token ., goBack
 
     fsa.addTransition("DIGIT"         ,ge::core::FSA::digit,"DIGIT"                                                    );
+    fsa.addTransition("DIGIT"         ,"eE"                ,"EXPONENT"                                                 );
     fsa.addTransition("DIGIT"         ,"."                 ,"FRACTION"                                                 );
     fsa.addTransition("DIGIT"         ,ge::core::FSA::eof  ,"END"           ,pData.createInteger                ,&pData);//create token integer
     fsa.addTransition("DIGIT"         ,ge::core::FSA::els  ,"START"         ,pData.createIntegerGoBack          ,&pData);//create token integer, goBack

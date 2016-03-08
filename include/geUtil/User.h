@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geCore/Namespace.h>
+#include<geUtil/Export.h>
 
 namespace ge{
   namespace util{

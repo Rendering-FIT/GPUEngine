@@ -50,8 +50,8 @@ TypeRegister::TypeRegister(){
 
 TypeRegister::TypeID TypeRegister::getTypeId(const char*name)const{
   if(!this->_name2Id.count(name)){
-    std::cerr<<"ERROR: name: \""<<name<<"\" does not have TypeId"<<std::endl;
-    return -1;
+    std::cerr<<"ERROR: TypeRegister::getTypeId("<<name<<") - type \""<<name<<"\" does not exist."<<std::endl;
+    return TypeRegister::UNREGISTERED;
   }
   return this->_name2Id.find(name)->second;
   //  return this->_name2Id[name];
@@ -542,6 +542,38 @@ void   TypeRegister::_callConstructors(char*ptr,TypeID id)const{
   }
 }
 
+bool TypeRegister::integerType(TypeID type)const{
+  switch(this->getTypeDescriptionElem(type,0)){
+    case I8 :
+    case I16:
+    case I32:
+    case I64:
+    case U8 :
+    case U16:
+    case U32:
+    case U64:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool TypeRegister::floatType  (TypeID type)const{
+  switch(this->getTypeDescriptionElem(type,0)){
+    case F32:
+    case F64:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool TypeRegister::stringType (TypeID type)const{
+  return this->getTypeDescriptionElem(type,0)==STRING;
+}
+
+
+
 void* TypeRegister::alloc(TypeID id)const{
   unsigned size=this->computeTypeIdSize(id);
   void*ptr=(void*)(new char[size]);
@@ -748,7 +780,7 @@ std::string Accessor::data2Str()const{
       ss<<((bool)(*this)?"true":"false");
       break;
     case TypeRegister::I8    :
-      ss<<(char)(*this);
+      ss<<(int)(char)(*this);
       break;
     case TypeRegister::I16   :
       ss<<(short)(*this);
@@ -760,7 +792,7 @@ std::string Accessor::data2Str()const{
       ss<<(long long int)(*this);
       break;
     case TypeRegister::U8    :
-      ss<<(unsigned char)(*this);
+      ss<<(unsigned)(unsigned char)(*this);
       break;
     case TypeRegister::U16   :
       ss<<(unsigned short)(*this);
