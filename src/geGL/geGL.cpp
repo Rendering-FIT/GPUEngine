@@ -507,6 +507,111 @@ void geGL_glBindTextureUnit(GLuint unit,GLuint texture){
   POP_ACTIVE_TEXTURE();
 }
 
+void geGL_glTextureStorage1D(GLuint texture,GLsizei levels,GLenum internalFormat,GLsizei width){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexStorage1D(target,levels,internalFormat,width);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureStorage2D(GLuint texture,GLsizei levels,GLenum internalFormat,GLsizei width,GLsizei height){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexStorage2D(target,levels,internalFormat,width,height);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureStorage3D(GLuint texture,GLsizei levels,GLenum internalFormat,GLsizei width,GLsizei height,GLsizei depth){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexStorage3D(target,levels,internalFormat,width,height,depth);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureParameteri(GLuint texture,GLenum pname,GLint params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexParameteri(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureParameterf(GLuint texture,GLenum pname,GLfloat params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexParameterf(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureParameteriv(GLuint texture,GLenum pname,const GLint*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexParameteriv(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glTextureParameterfv(GLuint texture,GLenum pname,const GLfloat*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glTexParameterfv(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glGetTextureLevelParameteriv(GLuint texture,GLint level,GLenum pname,GLint*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glGetTexLevelParameteriv(target,level,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glGetTextureLevelParameterfv(GLuint texture,GLint level,GLenum pname,GLfloat*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glGetTexLevelParameterfv(target,level,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glGetTextureParameteriv(GLuint texture,GLenum pname,GLint*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glGetTexParameteriv(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glGetTextureParameterfv(GLuint texture,GLenum pname,GLfloat*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glGetTexParameterfv(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glGetTextureParameterIiv(GLuint texture,GLenum pname,GLint*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glGetTexParameterIiv(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+void geGL_glGetTextureParameterIuiv(GLuint texture,GLenum pname,GLuint*params){
+  GLenum target=_texture2Target[texture];
+  PUSH_TEXTURE(target);
+  glBindTexture(target,texture);
+  glGetTexParameterIuiv(target,pname,params);
+  POP_TEXTURE(target);
+}
+
+
 #define IMPLEMENT_VENDOR(name,ven)\
   if(name##ven)name=name##ven;
 
@@ -630,6 +735,19 @@ void implementTextureDSA(){
   IMPLEMENT(glTextureSubImage2D          );
   IMPLEMENT(glTextureSubImage3D          );
   IMPLEMENT(glBindTextureUnit            );
+  IMPLEMENT(glTextureStorage1D           );
+  IMPLEMENT(glTextureStorage2D           );
+  IMPLEMENT(glTextureStorage3D           );
+  IMPLEMENT(glTextureParameteri          );
+  IMPLEMENT(glTextureParameterf          );
+  IMPLEMENT(glTextureParameteriv         );
+  IMPLEMENT(glTextureParameterfv         );
+  IMPLEMENT(glGetTextureLevelParameteriv );
+  IMPLEMENT(glGetTextureLevelParameterfv );
+  IMPLEMENT(glGetTextureParameteriv      );
+  IMPLEMENT(glGetTextureParameterfv      );
+  IMPLEMENT(glGetTextureParameterIiv     );
+  IMPLEMENT(glGetTextureParameterIuiv    );
 }
 
 /**

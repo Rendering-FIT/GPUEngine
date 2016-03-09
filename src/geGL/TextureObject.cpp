@@ -452,12 +452,7 @@ void TextureObject::setData3D(
  * @param params value of parameter
  */
 void TextureObject::texParameteri(GLenum pname,GLint params)const{
-#ifndef USE_DSA
-  glBindTexture  (this->getTarget(),this->_id);
-  glTexParameteri(this->getTarget(),pname,params);
-#else //USE_DSA
   glTextureParameteri(this->_id,pname,params);
-#endif//USE_DSA
 }
 
 /**
