@@ -12,75 +12,68 @@ namespace ge
       class MatrixList;
 
 
-      struct TransformationThreadGpuData {
-         unsigned transformationIndicesOffset4;
-         unsigned computedMatrixOffset64;
-      };
-
-
       /** Transformation class maintains 4x4 matrix transformation.
        *
-       *  Matrix data are usually placed in the GPU buffer.
-       *  Each Transformation may point to its own matrix or
-       *  number of Transformation objects may point to the same matrix
-       *  if sharing of the value is required.
+       *  Matrix data are generally placed in the GPU buffer.
+       *  Each Transformation usually has its own matrix, but
+       *  number of Transformation objects may be configured to share
+       *  the same matrix if desired.
        *
-       *  Transformation objects are organized in graph structure,
+       *  Transformation objects are organized in a graph structure,
        *  allowing for hierarchical transformations.
        */
       class GERG_EXPORT Transformation : public std::enable_shared_from_this<Transformation> {
       public:
 
-         GERG_CHILD_LIST(Transformation*,std::shared_ptr<Transformation>)
-         GERG_PARENT_LIST(std::shared_ptr<Transformation>,Transformation*)
+         // parent and child list
+         // (child list is list<shared_ptr<Transformation> and
+         // parent list is list<Transformation*>)
+         GERG_CHILD_LIST(Transformation)
+         GERG_PARENT_LIST(Transformation)
 
       protected:
 
+         /** SharedDataOffset is used whenever two or more Transformation objects
+          *  share the same transformation matrix.
+          *
+          *  The matrix is usually stored in RenderingContext::matrixStorage() buffer.
+          *  Transformation::_gpuDataOffset64 is used as the index (or offset multiplied by 64)
+          *  to the matrix of particular Transformation. If two or more Transformations share
+          *  the matrix, they need to share _gpuDataOffset64 variable as well.
+          *  SharedDataOffset structure is allocated in such case
+          *  and all Transformation objects use the SharedDataOffset::_gpuDataOffset64
+          *  variable instead.
+          */
          struct SharedDataOffset {
-            unsigned _gpuDataOffset64;
-            unsigned _refCounter;
+            unsigned _gpuDataOffset64;  ///< Index (or offset multiplied by 64) to the matrix buffer.
+            unsigned _refCounter;       ///< Reference counter. It contains number of attached Transformation objects.
          };
 
-         unsigned *_gpuDataOffsetPtr;  ///< It points either to _gpuDataOffset64 member or to externally allocated SharedDataOffset::_gpuDataOffset64.
-         unsigned _gpuDataOffset64;
-         std::shared_ptr<MatrixList> _matrixList;
-
-         void cancelSharedTransformation();
+         unsigned *_gpuDataOffsetPtr;  ///< Points either to _gpuDataOffset64 member or to externally allocated SharedDataOffset::_gpuDataOffset64.
+         unsigned _gpuDataOffset64;    ///< Index (or offset multiplied by 64) to the matrix buffer where the transformation matrix is stored.
+         std::shared_ptr<MatrixList> _matrixList;  ///< MatrixList, if attached, will receive the transformation computed by multiplication of all parent Transformations.
 
       public:
 
-         void uploadMatrix(const float *matrix);
-         void downloadMatrix(float *matrix);
-         float* getMatrixPtr();
+         void uploadMatrix(const float *matrix);  ///< Uploads transformation matrix. The parameter matrix must point to array of 16 floats. The matrix is generally stored in GPU buffers, but it depends on implementation.
+         void downloadMatrix(float *matrix);      ///< Downloads transformation matrix. The memory pointed by parameter matrix will receive 16 floats. The matrix is generally stored in GPU buffers, but it depends on implementation.
+         float* getMatrixPtr();                   ///< Returns pointer on transformation matrix composed of 16 floats. Use the method with caution as there can be various requirements for the method to work correctly, like that certain buffers must be mapped, etc..
 
-         inline unsigned gpuDataOffset64() const;
-         void allocTransformationGpuData();
-         void shareTransformationFrom(const Transformation &t);
+         inline unsigned gpuDataOffset64() const;  ///< Returns index (or offset multiplied by 64) to the matrix buffer where the transformation matrix is stored.
+         void allocTransformationGpuData();        ///< Reallocates internal data in a way that there is no transformation matrix sharing. The method does not preserve transformation matrix. It is usually not necessary to call the method as it is called from the default constructor automatically.
+         void shareTransformationFrom(const Transformation &shareFrom);  ///< Reallocates internal data in a way that the transformation matrix is shared from shareFrom. It is usually not necessary to call the method as it is called from shareFrom() and copy constructor.
 
-         inline std::shared_ptr<MatrixList>& getOrCreateMatrixList();
-         inline const std::shared_ptr<MatrixList>& getOrCreateMatrixList() const;
-         inline std::shared_ptr<MatrixList>& matrixList();
-         inline const std::shared_ptr<MatrixList>& matrixList() const;
-         inline void setMatrixList(std::shared_ptr<MatrixList>& ml);
+         inline const std::shared_ptr<MatrixList>& getOrCreateMatrixList() const;  ///< Returns MatrixList. If no MatrixList is attached, one is created and before return.
+         inline const std::shared_ptr<MatrixList>& matrixList() const;             ///< Returns MatrixList. It returns empty shared_ptr if no MatrixList was created or assigned yet.
+         inline void setMatrixList(std::shared_ptr<MatrixList>& matrixList);       ///< Sets MatrixList.
 
-         enum ConstructionFlags { SHARE_MATRIX=0x1, SHARE_INSTANCING_MATRIX_COLLECTION=0x2,
+         enum ConstructionFlags { SHARE_MATRIX=0x1, SHARE_MATRIX_LIST=0x2,
                                   COPY_CHILDREN=0x4, SHARE_AND_COPY_ALL=0x7 };
-         inline Transformation();
-         //inline Transformation(const Transformation &t,unsigned constructionFlags=SHARE_AND_COPY_ALL);
-         inline ~Transformation();
-
-         /*ChildList::iterator addChild(std::shared_ptr<Transformation> &m);
-         void removeChild(ChildList::iterator it);
-         void removeChild(std::shared_ptr<Transformation> m);*/
-         inline ChildList& getChildren();
-         inline const ChildList& getChildren() const;
-         inline ParentList& getParents();
-         inline const ParentList& getParents() const;
-
-         inline void instanceRef();
-         inline void instanceUnref();
+         Transformation();  ///< Default constructor.
+         Transformation(const Transformation &shareFrom,unsigned constructionFlags=SHARE_AND_COPY_ALL);  ///< Copy constructor. The parameter constructionFlags allows to copy only certain parts of object state.
+         ~Transformation();  ///< Destructor.
+         static inline std::shared_ptr<Transformation> shareFrom(const Transformation& t);  ///< Constructs Transformation object that shares the transformation matrix with object given by t parameter.
       };
-
    }
 }
 
@@ -92,20 +85,12 @@ namespace ge
    namespace rg
    {
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
-      inline std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList()
-      { if(_matrixList==nullptr) _matrixList=std::make_shared<MatrixList>(); return _matrixList; }
       inline const std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList() const
       { if(_matrixList==nullptr) const_cast<Transformation*>(this)->_matrixList=std::make_shared<MatrixList>(); return _matrixList; }
-      inline std::shared_ptr<MatrixList>& Transformation::matrixList()  { return _matrixList; }
       inline const std::shared_ptr<MatrixList>& Transformation::matrixList() const  { return _matrixList; }
-      inline void Transformation::setMatrixList(std::shared_ptr<MatrixList>& ml)  { _matrixList=ml; }
-      inline Transformation::Transformation() : _gpuDataOffsetPtr(&_gpuDataOffset64), _gpuDataOffset64(0)  {}
-      inline Transformation::~Transformation()  { RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
-         if(_gpuDataOffsetPtr!=&_gpuDataOffset64) { _gpuDataOffsetPtr[1]--; if((--_gpuDataOffsetPtr[1])==0) delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr); } removeAllChildren(); }
-      inline Transformation::ChildList& Transformation::getChildren()  { return _childList; }
-      inline const Transformation::ChildList& Transformation::getChildren() const  { return _childList; }
-      inline Transformation::ParentList& Transformation::getParents()  { return _parentList; }
-      inline const Transformation::ParentList& Transformation::getParents() const  { return _parentList; }
+      inline void Transformation::setMatrixList(std::shared_ptr<MatrixList>& matrixList)  { _matrixList=matrixList; }
+      inline std::shared_ptr<Transformation> Transformation::shareFrom(const Transformation& t)
+      { return std::make_shared<Transformation>(t,Transformation::SHARE_MATRIX); }
    }
 }
 

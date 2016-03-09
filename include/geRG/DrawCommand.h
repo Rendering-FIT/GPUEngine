@@ -25,10 +25,12 @@ namespace ge
 
       /** DrawCommand structure holds the information of a single
        *  draw command managed by ge::rg::Object.
+       *  It holds information about the index to the buffer of DrawCommandGpuData
+       *  and primitive mode (GL_TRIANGLES,GL_LINE_STRIP,...).
        */
       struct GERG_EXPORT DrawCommand {
       public:
-         unsigned data; // 32-bits, verified by assert in DrawCommand.cpp
+         unsigned data; // 32-bits exactly, verified by assert in DrawCommand.cpp
 
          inline unsigned index() const  { return data&0x07ffffff; } // return lowest 27 bits
          inline unsigned mode() const     { return data>>27; } // return upmost 5 bits

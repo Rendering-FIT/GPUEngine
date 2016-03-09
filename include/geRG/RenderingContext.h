@@ -10,18 +10,23 @@
 #include <memory>
 #include <geRG/Export.h>
 #include <geRG/AllocationManagers.h>
+#include <geRG/Basics.h>
 #include <geRG/BufferStorage.h>
+#include <geRG/Drawable.h>
 #include <geRG/DrawCommand.h>
-#include <geRG/Object.h>
 #include <geRG/Primitive.h>
 #include <geRG/StateSet.h>
+#include <geRG/StateSetManager.h>
 #include <geCore/InitAndFinalize.h>
+#include <geCore/idof.h>
 
 namespace ge
 {
    namespace gl
    {
       class BufferObject;
+      class ProgramObject;
+      class TextureObject;
    }
    namespace rg
    {
@@ -56,14 +61,15 @@ namespace ge
       public:
 
          typedef AttribConfig::AttribConfigList AttribConfigList;
+         typedef std::vector<std::shared_ptr<Transformation>> TransformationGraphList;
          enum class MappedBufferAccess : uint8_t { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
 
       protected:
 
          AttribConfigList _attribConfigList;
          unsigned _numAttribStorages;
-         //StateSetList
-         typedef std::vector<std::shared_ptr<ge::rg::Transformation>> TransformationGraphList;
+         std::shared_ptr<StateSetManager> _stateSetManager;
+         std::map<std::string,std::weak_ptr<ge::gl::TextureObject>> _textureCache;
          TransformationGraphList _transformationGraphs;
          std::shared_ptr<MatrixList> _emptyMatrixList;
          bool _useARBShaderDrawParameters;
@@ -79,6 +85,10 @@ namespace ge
          ItemAllocationManager _transformationAllocationManager;
 
          unsigned _indirectBufferAllocatedSpace4;
+
+         std::shared_ptr<ge::gl::ProgramObject> _processDrawCommandsProgram;
+         std::shared_ptr<ge::gl::ProgramObject> _ambientProgram;
+         std::shared_ptr<ge::gl::ProgramObject> _phongProgram;
 
          static void* mapBuffer(ge::gl::BufferObject *buffer,
                                 MappedBufferAccess requestedAccess,
@@ -108,7 +118,7 @@ namespace ge
          inline unsigned numAttribStorages() const;
          void onAttribStorageInit(AttribStorage *a);
          void onAttribStorageRelease(AttribStorage *a);
-	 
+
          inline PrimitiveStorage* primitiveStorage() const;          ///< Returns BufferStorage that contains primitive set data of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline DrawCommandStorage* drawCommandStorage() const;            ///< Returns BufferStorage that contains draw commands. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline MatrixStorage* matrixStorage() const;
@@ -146,16 +156,17 @@ namespace ge
          inline  void clearPrimitives(Mesh &mesh);
          virtual void setNumPrimitives(Mesh &mesh,unsigned num);
 
-         inline ObjectId createObject(Mesh &mesh,MatrixList *ml,StateSet *stateSet);
-         virtual ObjectId createObject(Mesh &mesh,
-                                       const unsigned *primitiveIndices,
-                                       const int primtiveCount,
-                                       MatrixList *ml,StateSet *stateSet);
-         virtual void deleteObject(Mesh &mesh,ObjectId id);
+         inline DrawableId createDrawable(Mesh &mesh,
+                                          MatrixList *matrixList,StateSet *stateSet);
+         virtual DrawableId createDrawable(Mesh &mesh,
+                                           const unsigned *primitiveIndices,
+                                           const int primtiveCount,
+                                           MatrixList *matrixList,StateSet *stateSet);
+         virtual void deleteDrawable(Mesh &mesh,DrawableId id);
 
          inline TransformationGraphList& transformationGraphs();
          inline const TransformationGraphList& transformationGraphs() const;
-         virtual void appendTransformationGraph(std::shared_ptr<Transformation>& transformation);
+         virtual void addTransformationGraph(std::shared_ptr<Transformation>& transformation);
          virtual void removeTransformationGraph(std::shared_ptr<Transformation>& transformation);
 
          virtual void cancelAllAllocations();
@@ -166,13 +177,29 @@ namespace ge
 
          virtual void evaluateTransformationGraph();
          virtual void setupRendering();
+         virtual void processDrawCommands();
+         virtual void fenceSyncGpuComputation();
          virtual void render();
+         virtual void frame();
 
-         static inline std::shared_ptr<RenderingContext>& current();
+         inline std::shared_ptr<StateSet> getOrCreateStateSet(const StateSetManager::GLState* state);
+         inline std::shared_ptr<StateSet> findStateSet(const StateSetManager::GLState* state);
+         inline StateSetManager::GLState* createGLState();
+         inline const std::shared_ptr<StateSetManager>& stateSetManager();
+         void setStateSetManager(const std::shared_ptr<StateSetManager>& stateSetManager);
+
+         const std::shared_ptr<ge::gl::ProgramObject>& getProcessDrawCommandsProgram() const;
+         const std::shared_ptr<ge::gl::ProgramObject>& getAmbientProgram() const;
+         const std::shared_ptr<ge::gl::ProgramObject>& getPhongProgram() const;
+
+         std::shared_ptr<ge::gl::TextureObject> cachedTextureObject(const std::string& path) const;
+         inline void addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture);
+
+         static inline const std::shared_ptr<RenderingContext>& current();
          static void setCurrent(const std::shared_ptr<RenderingContext>& ptr);
 
-         static void init();
-         static void finalize();
+         static void global_init();
+         static void global_finalize();
 
       protected:
          struct AutoInitRenderingContext {
@@ -230,14 +257,23 @@ namespace ge
       inline void RenderingContext::setAndUploadPrimitives(ge::rg::Mesh& mesh,PrimitiveGpuData* nonConstBufferData,const unsigned int* modesAndOffsets4,int numPrimitives)
       { setAndUploadPrimitives(mesh,nonConstBufferData,generatePrimitiveList(modesAndOffsets4,numPrimitives).data(),numPrimitives); }
       inline void RenderingContext::clearPrimitives(Mesh &mesh)  { setNumPrimitives(mesh,0); }
-      inline ObjectId RenderingContext::createObject(Mesh &mesh,MatrixList *ml,StateSet *stateSet)
-      { return createObject(mesh,nullptr,-1,ml,stateSet); }
+      inline DrawableId RenderingContext::createDrawable(Mesh &mesh,MatrixList *matrixList,StateSet *stateSet)
+      { return createDrawable(mesh,nullptr,-1,matrixList,stateSet); }
       inline RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs()  { return _transformationGraphs; }
       inline const RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs() const  { return _transformationGraphs; }
       inline unsigned RenderingContext::positionInIndirectBuffer4() const  { return _indirectBufferAllocatedSpace4; }
       inline void RenderingContext::setPositionInIndirectBuffer4(unsigned pos)  { _indirectBufferAllocatedSpace4=pos; }
-      inline std::shared_ptr<RenderingContext>& RenderingContext::current()
+      inline const std::shared_ptr<RenderingContext>& RenderingContext::current()
       { return NoExport::_currentContext.get(); }
+
+      inline std::shared_ptr<StateSet> RenderingContext::getOrCreateStateSet(const StateSetManager::GLState* state)
+      { return _stateSetManager->getOrCreateStateSet(state); }
+      inline std::shared_ptr<StateSet> RenderingContext::findStateSet(const StateSetManager::GLState* state)
+      { return _stateSetManager->findStateSet(state); }
+      inline StateSetManager::GLState* RenderingContext::createGLState()  { return _stateSetManager->createGLState(); }
+      inline const std::shared_ptr<StateSetManager>& RenderingContext::stateSetManager()  { return _stateSetManager; }
+
+      inline void RenderingContext::addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture)  { _textureCache[path]=texture; }
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
       { (uint8_t&)a|=(uint8_t)b; return a; }

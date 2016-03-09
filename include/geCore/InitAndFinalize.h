@@ -14,13 +14,13 @@ namespace ge
          inline InitAndFinalize()
          {
             if(++niftyCounter==1)
-               T::init();
+               T::global_init();
          }
 
          ~InitAndFinalize()
          {
             if(--niftyCounter==0)
-               T::finalize();
+               T::global_finalize();
          }
 
       };

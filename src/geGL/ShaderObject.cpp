@@ -48,7 +48,7 @@ int ge::gl::fileTypeSwitch(std::string fileName,unsigned numType,...){
 }
 
 std::string ShaderObject::_readShader(std::string const& file){
-  std::ifstream f(file.c_str());
+  std::ifstream f(file.c_str(), std::ios_base::in | std::ios_base::binary);
   if(!f.good()){
     std::cerr<<"ERROR: cannot open: "<<file<<std::endl;
     return "";

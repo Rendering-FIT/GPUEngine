@@ -176,6 +176,7 @@ void StateSet::render()
 {
    if(_commandList.empty())
    {
+      // if command list is empty, execute default render command
       StateSet::RenderCommand::execute(this);
    }
    else
