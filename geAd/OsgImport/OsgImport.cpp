@@ -5,11 +5,13 @@
 #include <typeindex>
 #include <geGL/TextureObject.h>
 #include <geRG/AttribType.h>
+#include <geRG/FlexibleUniform.h>
 #include <geRG/Model.h>
 #include <geRG/Transformation.h>
 #include <geRG/StateSet.h>
 #include <osg/Geode>
 #include <osg/Geometry>
+#include <osg/LightSource>
 #include <osg/NodeVisitor>
 #include <osg/StateSet>
 #include <osg/Transform>
@@ -226,7 +228,6 @@ public:
       // set matrix
       osg::Matrix m;
       transform.computeLocalToWorldMatrix(m,this);
-      t->allocTransformationGpuData();
       t->uploadMatrix(osg::Matrixf(m).ptr());
 
       // traverse subgraph
@@ -239,6 +240,50 @@ public:
          transformationStack.back()->removeChild(childIt);
 
       if(transform.getStateSet())
+         popState();
+   }
+
+   virtual void apply(osg::LightSource& node)
+   {
+      if(node.getStateSet())
+         pushState(*node.getStateSet());
+
+      osg::Light *light=node.getLight();
+      auto lightCommands=make_shared<ge::core::SharedCommandList>();
+
+      // light position
+      // (note: during rendering, uniform must be set to contain position is eye coordinates)
+      osg::Vec4 osgPos=light->getPosition();
+      glm::vec4 pos(osgPos[0],osgPos[1],osgPos[2],osgPos[3]);
+      shared_ptr<FlexibleUniform4f> posUniform(make_shared<FlexibleUniform4f>("lightPosition",0.f,0.f,0.f,1.f));
+      lightCommands->emplace_back(posUniform);
+
+      // light color
+      osg::Vec4 color=light->getDiffuse();
+      lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightColor",
+                                                                 color.r(),color.g(),color.b()));
+
+      // light attenuation
+      lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightAttenuation",
+                                                                 light->getConstantAttenuation(),
+                                                                 light->getLinearAttenuation(),
+                                                                 light->getQuadraticAttenuation()));
+
+      // light transformation matrix
+#if 0 // FIXME: if ABSOLUTE_RF, we need to place the light under view matrix
+      MatrixList *matrixList=(node.getReferenceFrame()==osg::LightSource::ABSOLUTE_RF)?
+            nullptr:transformationStack.back()->getOrCreateMatrixList().get();
+#else
+      MatrixList *matrixList=transformationStack.back()->getOrCreateMatrixList().get();
+#endif
+
+      // add light
+      RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,matrixList);
+
+      // traverse subgraph
+      traverse(node);
+
+      if(node.getStateSet())
          popState();
    }
 

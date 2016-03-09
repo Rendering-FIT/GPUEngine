@@ -32,6 +32,7 @@ set(RG_INCLUDES
     ${HEADER_PATH}/Transformation.h
     ${HEADER_PATH}/MatrixList.h
     ${HEADER_PATH}/MatrixGpuData.h
+    ${HEADER_PATH}/FlexibleUniform.h
     ${HEADER_PATH}/Model.h
   )
 

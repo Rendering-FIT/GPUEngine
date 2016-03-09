@@ -369,27 +369,66 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
 }
 
 
+#if 0 // debug
+void printStateSet(StateSet *ss,const string& indent)
+{
+   cout<<indent<<ss<<", drawables: "<<ss->drawableCount()<<", children: "<<ss->childList().size()<<endl;
+   string childIndent(indent+"  ");
+   for(auto& x : ss->childList())
+      printStateSet(x.get(),childIndent);
+}
+#endif
+
+
 void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
                                     StateSetManager::LightList &lightList)
 {
+   // render ambient pass first
    if(ambientSs)
       ambientSs->render();
+
    if(lightPassSs) {
+
+      // enable blending for light passes
       glBlendFunc(GL_ONE,GL_ONE);
       glEnable(GL_BLEND);
+
+      // iterate through all lights
       for(auto it_light=lightList.begin(),e_light=lightList.end(); it_light!=e_light; it_light++) {
-         for(auto it_glProgramSs=lightPassSs->childList().begin(),
-            e_glProgramSs=lightPassSs->childList().end();
-            it_glProgramSs!=e_glProgramSs; it_glProgramSs++)
+
+         // get light instancing matrices
+         unsigned offset64,num;
+         it_light->matrixList()->downloadListControlData(offset64,num);
+         unique_ptr<glm::mat4x4[]> matrices(new glm::mat4x4[num]);
+         MatrixList::downloadFromOffset(matrices.get(),offset64,num);
+         RenderingContext::current()->matrixListControlStorage()->unmap();
+         RenderingContext::current()->matrixStorage()->unmap();
+
+         // iterate through all light instances
+         for(unsigned i=0; i<num; i++)
          {
-            // glUseProgram
-            (*it_glProgramSs)->commandList()[0]->operator()();
+            // light position in view space
+            glm::vec4 pos=matrices[i]*it_light->position();
+            FlexibleUniform4f *u=it_light->positionUniform().get();
+            u->v0=pos[0];
+            u->v1=pos[1];
+            u->v2=pos[2];
+            u->v3=pos[3];
 
-            // set light uniforms
-            (*it_light)->operator()();
+            // iterate through the whole scene
+            for(auto it_glProgramSs=lightPassSs->childList().begin(),
+               e_glProgramSs=lightPassSs->childList().end();
+               it_glProgramSs!=e_glProgramSs; it_glProgramSs++)
+            {
+               // glUseProgram
+               (*it_glProgramSs)->commandList()[0]->operator()();
 
-            // renders scene using StateSet::RenderCommand
-            (*it_glProgramSs)->commandList()[1]->operator()();
+               // set light uniforms
+               it_light->uniformList()->operator()();
+
+               // renders scene using StateSet::RenderCommand
+               (*it_glProgramSs)->commandList()[1]->operator()();
+            }
          }
       }
       glDisable(GL_BLEND);

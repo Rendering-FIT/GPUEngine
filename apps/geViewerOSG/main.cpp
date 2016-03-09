@@ -172,16 +172,22 @@ void Init()
    ambientProgram->set("globalAmbientLight",0.2f,0.2f,0.2f,1.f);
    ambientProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    ambientProgram->set("colorTexture",int(0));
+   ambientProgram->set("colorTexturingMode",0); // FIXME: this shall be moved to OsgImport code soon
    auto phongProgram=RenderingContext::current()->getPhongProgram();
    phongProgram->use();
    phongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    phongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
    phongProgram->set("colorTexture",int(0));
+   phongProgram->set("colorTexturingMode",0); // FIXME: this shall be moved to OsgImport code soon
 
    // append light
+#if 0 // FIXME: addLight must be given transformation matrix of the light (here probably view matrix)
    auto lightCommands=make_shared<ge::core::SharedCommandList>();
-   lightCommands->emplace_back(make_shared<FlexibleUniform4f>("lightPosition",0.f,0.f,0.f,1.f)); // in eye coordinates, w must be 0 or 1
+   glm::vec4 pos(0.f,0.f,0.f,1.f); // in eye coordinates, w must be 0 or 1
+   auto posUniform=make_shared<FlexibleUniform4f>("lightPosition",pos[0],pos[1],pos[2],pos[3]);
+   lightCommands->emplace_back(posUniform);
    lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightColor",1.f,1.f,1.f));
    lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightAttenuation",1.f,0.f,0.f));
-   RenderingContext::current()->stateSetManager()->addLight(lightCommands);
+   //RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,nullptr);
+#endif
 }

@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <glm/vec4.hpp>
 #include <geRG/Export.h>
 
 namespace std
@@ -17,9 +18,15 @@ namespace ge
    {
       class ProgramObject;
       class TextureObject;
+      template<typename LOCATION,typename V0,typename V1,typename V2,typename V3> class Uniform4f;
    }
    namespace rg
    {
+      class FlexibleLocation;
+      template<typename UNIFORM,class ...ARGS> class FlexibleUniform;
+      typedef FlexibleUniform<ge::gl::Uniform4f<FlexibleLocation,float,float,float,float>,
+            float,float,float,float> FlexibleUniform4f;
+      class MatrixList;
       class StateSet;
 
 
@@ -33,7 +40,28 @@ namespace ge
             virtual void init(const std::shared_ptr<StateSet>& ss,StateSetManager *m) = 0;
             virtual ~GLState()  {}
          };
-         typedef std::list<std::shared_ptr<ge::core::SharedCommandList>> LightList;
+         class Light {
+         protected:
+            glm::vec4 _position;
+            std::shared_ptr<ge::core::SharedCommandList> _uniformList;
+            std::shared_ptr<FlexibleUniform4f> _positionUniform;
+            MatrixList *_matrixList;
+         public:
+            inline const glm::vec4& position() const;
+            inline const std::shared_ptr<ge::core::SharedCommandList>& uniformList() const;
+            inline const std::shared_ptr<FlexibleUniform4f>& positionUniform() const;
+            inline MatrixList* matrixList() const;
+            inline Light(const glm::vec4& position,
+                         const std::shared_ptr<FlexibleUniform4f>& positionUniform,
+                         const std::shared_ptr<ge::core::SharedCommandList>& uniformList,
+                         MatrixList *matrixList);
+            inline ~Light();
+
+            Light() = delete;
+            Light(const Light&) = delete;
+            Light& operator=(const Light&) = delete;
+         };
+         typedef std::list<Light> LightList;
       protected:
          std::shared_ptr<StateSet> _root;
          LightList _lightList;
@@ -50,7 +78,10 @@ namespace ge
          virtual GLState* createGLState() = 0;
          virtual GLState* createGLState(const GLState* s) = 0;
          virtual GLState* createGLState(const GLState* s,unsigned internalLevel) = 0;
-         inline LightList::iterator addLight(const std::shared_ptr<ge::core::SharedCommandList>& lightCommands);
+         inline LightList::iterator addLight(const glm::vec4& position,
+                                             const std::shared_ptr<FlexibleUniform4f>& positionUniform,
+                                             const std::shared_ptr<ge::core::SharedCommandList>& uniformList,
+                                             MatrixList *matrixList);
          inline void removeLight(LightList::iterator it);
          inline LightList& lightList();
          inline const LightList& lightList() const;
@@ -111,20 +142,35 @@ namespace ge
 
 // inline and template methods
 
+#include <geRG/MatrixList.h>
+
 namespace ge
 {
    namespace rg
    {
+      inline const glm::vec4& StateSetManager::Light::position() const  { return _position; }
+      inline const std::shared_ptr<ge::core::SharedCommandList>& StateSetManager::Light::uniformList() const  { return _uniformList; }
+      inline const std::shared_ptr<FlexibleUniform4f>& StateSetManager::Light::positionUniform() const  { return _positionUniform; }
+      inline MatrixList* StateSetManager::Light::matrixList() const  { return _matrixList; }
+      inline StateSetManager::Light::Light(const glm::vec4& position,
+            const std::shared_ptr<FlexibleUniform4f>& positionUniform,
+            const std::shared_ptr<ge::core::SharedCommandList>& uniformList,MatrixList *matrixList)
+         : _position(position), _uniformList(uniformList), _positionUniform(positionUniform), _matrixList(matrixList)
+      { if(_matrixList) _matrixList->incrementReferenceCounter(); }
+      inline StateSetManager::Light::~Light()  { if(_matrixList) _matrixList->decrementReferenceCounter(); }
+
       inline StateSetManager::StateSetManager() : _root(std::make_shared<StateSet>())  { _root->addChild(std::make_shared<StateSet>()); _root->addChild(std::make_shared<StateSet>()); }
       inline StateSetManager::StateSetManager(const std::shared_ptr<StateSet>& root) : _root(root)  {}
       inline const std::shared_ptr<StateSet>& StateSetManager::root() const  { return _root; }
       inline std::shared_ptr<StateSet>& StateSetManager::root()  { return _root; }
       inline void StateSetManager::setRoot(std::shared_ptr<StateSet>& root)  { _root=root; }
-      inline StateSetManager::LightList::iterator StateSetManager::addLight(const std::shared_ptr<ge::core::SharedCommandList>& lightCommands)
-      { return _lightList.emplace(_lightList.end(),lightCommands); }
+      inline StateSetManager::LightList::iterator StateSetManager::addLight(const glm::vec4& position,
+            const std::shared_ptr<FlexibleUniform4f>& positionUniform,const std::shared_ptr<ge::core::SharedCommandList>& uniformList,MatrixList *matrixList)
+      { return _lightList.emplace(_lightList.end(),position,positionUniform,uniformList,matrixList); }
       inline void StateSetManager::removeLight(LightList::iterator it)  { _lightList.erase(it); }
       inline StateSetManager::LightList& StateSetManager::lightList()  { return _lightList; }
       inline const StateSetManager::LightList& StateSetManager::lightList() const  { return _lightList; }
+
       template<typename StateT>
       inline std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getOrCreateStateSet(const StateT* state)
       { return getOrCreateStateSet(static_cast<StateSetManager::GLState*>(state)); }
@@ -186,12 +232,9 @@ namespace ge
       StateSetManagerTemplate<StateT>::binMap()  { return _binMap; }
       template<typename StateT> inline const typename StateSetManagerTemplate<StateT>::BinMap&
       StateSetManagerTemplate<StateT>::binMap() const  { return _binMap; }
-      inline StateSetDefaultGLState::StateSetDefaultGLState() : internalLevel(0)  {}
-
       template<typename StateT> void StateSetManagerTemplate<StateT>::render()
-      {
-         StateT::render(getBinStateSet(0).get(),getBinStateSet(1).get(),_lightList);
-      }
+      { StateT::render(getBinStateSet(0).get(),getBinStateSet(1).get(),_lightList); }
+      inline StateSetDefaultGLState::StateSetDefaultGLState() : internalLevel(0)  {}
    }
 }
 

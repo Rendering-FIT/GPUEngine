@@ -122,7 +122,7 @@ unsigned idof_template<id_name,register_name>::id = []()->idof_t {
 
 
 #define idof_2(_id_name_,_register_name_) \
-([]() -> unsigned { \
+([]() -> idof_t { \
    struct id_name { const char* chars = #_id_name_; }; \
    struct register_name { const char* chars = #_register_name_; }; \
    return ge::core::idof_template< \

@@ -444,7 +444,7 @@ DrawableId RenderingContext::createDrawable(
    // reference stateSet and matrixList
    // (to indicate that they should not be released from memory as long as this drawable exists)
    stateSet->incrementDrawableCount();
-   matrixList->incrementDrawableCount();
+   matrixList->incrementReferenceCounter();
 
    // allocate draw commands
    _drawCommandStorage.alloc(numDrawCommands,drawable->items());
@@ -495,7 +495,7 @@ void RenderingContext::deleteDrawable(Mesh &mesh,DrawableId id)
    stateSet->releaseAttribStorageDataIfEmpty(storageDataIterator);
 
    // unreference matrixList and stateSet
-   id->matrixList->decrementDrawableCount();
+   id->matrixList->decrementReferenceCounter();
    stateSet->decrementDrawableCount();
 
    // remove from lists, execute destructors and free memory
