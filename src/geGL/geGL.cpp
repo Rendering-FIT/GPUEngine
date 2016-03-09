@@ -89,7 +89,7 @@ void geGL_glNamedBufferData(GLuint buffer,GLsizeiptr size,const void*data,GLenum
 void geGL_glCreateBuffers(GLsizei n,GLuint*buffers){
   PUSH_WRITE_BUFFER();
   glGenBuffers(n,buffers);
-  for(GLsizei i=0;i<n;++n)
+  for(GLsizei i=0;i<n;++i)
     glBindBuffer(GL_COPY_WRITE_BUFFER,buffers[i]);
   POP_WRITE_BUFFER();
 }
