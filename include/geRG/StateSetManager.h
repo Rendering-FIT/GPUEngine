@@ -55,10 +55,10 @@ namespace ge
                          const std::shared_ptr<FlexibleUniform4f>& positionUniform,
                          const std::shared_ptr<ge::core::SharedCommandList>& uniformList,
                          MatrixList *matrixList);
+            inline Light(const Light& other); ///< Copy constructor. Provides shallow object copy, e.g. objects referenced by shared_ptr are not duplicated but shared.
             inline ~Light();
 
             Light() = delete;
-            Light(const Light&) = delete;
             Light& operator=(const Light&) = delete;
          };
          typedef std::list<Light> LightList;
@@ -156,6 +156,9 @@ namespace ge
             const std::shared_ptr<FlexibleUniform4f>& positionUniform,
             const std::shared_ptr<ge::core::SharedCommandList>& uniformList,MatrixList *matrixList)
          : _position(position), _uniformList(uniformList), _positionUniform(positionUniform), _matrixList(matrixList)
+      { if(_matrixList) _matrixList->incrementReferenceCounter(); }
+      inline StateSetManager::Light::Light(const Light& other)
+         : _position(other._position), _uniformList(other._uniformList), _positionUniform(other._positionUniform), _matrixList(other._matrixList)
       { if(_matrixList) _matrixList->incrementReferenceCounter(); }
       inline StateSetManager::Light::~Light()  { if(_matrixList) _matrixList->decrementReferenceCounter(); }
 
