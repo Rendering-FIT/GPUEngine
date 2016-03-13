@@ -98,7 +98,7 @@ void Lexer::parse(std::string data,bool stop){
 
     Type createNot                      LAMBDA(NOT);
     Type createNotGoBack                LAMBDA_GOBACK(createNot);
-    Type createNotEqual                 LAMBDA(NOT_EQAUL);
+    Type createNotEqual                 LAMBDA(NOT_EQUAL);
 
     Type createBinaryAnd                LAMBDA(BINARY_AND);
     Type createBinaryAndGoBack          LAMBDA_GOBACK(createBinaryAnd);

@@ -34,7 +34,7 @@ namespace ge{
             LESS_EQUAL,
             GREATER_EQUAL,
             EQUAL,
-            NOT_EQAUL,
+            NOT_EQUAL,
             LEFT_SHIFT,
             RIGHT_SHIFT,
             AND,
