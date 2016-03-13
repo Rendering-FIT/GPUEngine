@@ -82,6 +82,11 @@ namespace ge{
             this->_argsToVector(typeConfig,args...);
           }
         template<typename... Args>
+          void _argsToVector(std::vector<unsigned>&typeConfig,const char*t,Args... args){
+            typeConfig.push_back(this->getTypeId(std::string(t)));
+            this->_argsToVector(typeConfig,args...);
+          }
+        template<typename... Args>
           void _argsToVector(std::vector<unsigned>&typeConfig,std::function<OBJConstructor>,Args... args){
             this->_argsToVector(typeConfig,args...);
           }
