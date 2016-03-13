@@ -48,7 +48,7 @@ TypeRegister::TypeRegister(){
   this->addType("vec4"  ,TypeRegister::ARRAY,4,"f32");
 }
 
-TypeRegister::TypeID TypeRegister::getTypeId(const char*name)const{
+TypeRegister::TypeID TypeRegister::getTypeId(std::string name)const{
   if(!this->_name2Id.count(name)){
     std::cerr<<"ERROR: TypeRegister::getTypeId("<<name<<") - type \""<<name<<"\" does not exist."<<std::endl;
     return TypeRegister::UNREGISTERED;
@@ -290,7 +290,7 @@ bool TypeRegister::hasSynonyms(TypeID id)const{
   return this->_id2Synonyms.find(id)->second.size()>1;
 }
 
-bool TypeRegister::areSynonyms(const char*name0,const char*name1)const{
+bool TypeRegister::areSynonyms(std::string name0,std::string name1)const{
   return this->getTypeId(name0)==this->getTypeId(name1);
 }
 
@@ -402,7 +402,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(std::vector<unsigned>const&type,std:
   }
 }
 
-void TypeRegister::_bindTypeIdName(TypeID id,const char*name){
+void TypeRegister::_bindTypeIdName(TypeID id,std::string name){
   //std::cout<<"TypeRegister::_bindTypeIdName("<<id<<","<<name<<")"<<std::endl;
   this->_name2Id[name] = id  ;
   if(!this->_id2name.count(id)){
@@ -412,21 +412,21 @@ void TypeRegister::_bindTypeIdName(TypeID id,const char*name){
   this->_id2Synonyms[id].insert(name);
 }
 
-TypeRegister::TypeID TypeRegister::addType(const char*name,std::vector<unsigned>const&type,std::function<OBJConstructor> constructor,std::function<OBJDestructor> destructor){
+TypeRegister::TypeID TypeRegister::addType(std::string name,std::vector<unsigned>const&type,std::function<OBJConstructor> constructor,std::function<OBJDestructor> destructor){
   //std::cerr<<"TypeRegister::addType(\""<<name<<"\","<<vec2str(type)<<");"<<std::endl;
   std::vector<unsigned>::size_type start=0;
   TypeRegister::TypeID id;
   if(this->_typeExists(&id,type,start)){
     if(this->_name2Id.count(name)&&this->_name2Id[name]!=id)
       std::cerr<<"ERROR: typeName: "<<name<<" clashes with TypeIds: "<<this->_name2Id[name]<<" and "<<id<<std::endl;
-    else if(std::strcmp(name,""))this->_bindTypeIdName(id,name);
+    else if(name!="")this->_bindTypeIdName(id,name);
     this->addConstructor(id,constructor);
     this->addDestructor(id,destructor);
     return id;
   }
   start=0;
   TypeID newTypeId=this->_typeAdd(type,start);
-  if(std::strcmp(name,"")){
+  if(name!=""){
     this->_bindTypeIdName(newTypeId,name);
     this->addConstructor(newTypeId,constructor);
     this->addDestructor(newTypeId,destructor);
@@ -585,7 +585,7 @@ Accessor TypeRegister::allocAccessor(TypeID id)const{
   return Accessor(this->shared_from_this(),this->alloc(id),id);
 }
 
-Accessor TypeRegister::allocAccessor(const char*name)const{
+Accessor TypeRegister::allocAccessor(std::string name)const{
   return this->allocAccessor(this->getTypeId(name));
 }
 
@@ -593,7 +593,7 @@ std::shared_ptr<Accessor>TypeRegister::sharedAccessor(TypeID id)const{
   return std::make_shared<Accessor>(this->shared_from_this(),this->alloc(id),id);
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedAccessor(const char*name)const{
+std::shared_ptr<Accessor>TypeRegister::sharedAccessor(std::string name)const{
   return this->sharedAccessor(this->getTypeId(name));
 }
 
@@ -601,7 +601,7 @@ Accessor TypeRegister::emptyAccessor(TypeID id)const{
   return Accessor(this->shared_from_this(),id);
 }
 
-Accessor TypeRegister::emptyAccessor(const char*name)const{
+Accessor TypeRegister::emptyAccessor(std::string name)const{
   return this->emptyAccessor(this->getTypeId(name));
 }
 
@@ -612,7 +612,7 @@ std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(TypeID id,std::functi
   return std::make_shared<Accessor>(this->shared_from_this(),id);
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(const char*name,std::function<OBJDestructor>destructor)const{
+std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(std::string name,std::function<OBJDestructor>destructor)const{
   return this->sharedEmptyAccessor(this->getTypeId(name),destructor);
 }
 
