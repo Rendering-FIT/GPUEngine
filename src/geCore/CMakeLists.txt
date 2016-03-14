@@ -52,6 +52,17 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/token.h
     ${HEADER_PATH}/lexer.h
     ${HEADER_PATH}/idof.h
+    ${HEADER_PATH}/NodeContext.h
+    ${HEADER_PATH}/grammar.h
+    ${HEADER_PATH}/nonterm.h
+    ${HEADER_PATH}/nontermNode.h
+    ${HEADER_PATH}/symbol.h
+    ${HEADER_PATH}/syntax.h
+    ${HEADER_PATH}/syntaxNode.h
+    ${HEADER_PATH}/syntaxTree.h
+    ${HEADER_PATH}/term.h
+    ${HEADER_PATH}/termNode.h
+    ${HEADER_PATH}/tokenization.h
    )
 
 set(CORE_SOURCES
@@ -72,6 +83,11 @@ set(CORE_SOURCES
     stdFunctions.cpp
     token.cpp
     lexer.cpp
+    grammar.cpp
+    nonterm.cpp
+    nontermNode.cpp
+    syntax.cpp
+    termNode.cpp
    )
 
 add_library(${LIB_NAME}

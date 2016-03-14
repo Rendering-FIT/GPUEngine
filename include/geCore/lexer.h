@@ -1,7 +1,7 @@
 #pragma once
 
 #include<vector>
-#include"token.h"
+#include<geCore/token.h>
 
 namespace ge{
   namespace core{
