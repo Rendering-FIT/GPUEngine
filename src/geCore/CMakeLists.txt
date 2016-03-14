@@ -88,6 +88,7 @@ set(CORE_SOURCES
     nontermNode.cpp
     syntax.cpp
     termNode.cpp
+    tokenization.cpp
    )
 
 add_library(${LIB_NAME}
