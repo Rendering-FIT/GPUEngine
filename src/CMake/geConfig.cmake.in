@@ -19,7 +19,7 @@
 
 message(STATUS "@LIB_NAME@ greets downstreamer")
 get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
-include(${_@LIB_NAME@_install_prefix}/cmake/GEMacros.cmake)
+include(${_@LIB_NAME@_install_prefix}/cmake/CMakeModules/GEMacros.cmake)
 
 if(NOT TARGET @LIB_NAME@)
 
@@ -32,9 +32,9 @@ if(NOT TARGET @LIB_NAME@)
    
    foreach(_dep @External_deps_Export@)
       Find_Package(${_dep})
-      message("neco ${${_dep}_INCLUDE_DIR}")
+      #message("neco ${${_dep}_INCLUDE_DIR}")
       if(TARGET ${_dep})
-         message("target ${_dep}")
+         #message("target ${_dep}")
          set_property(TARGET @LIB_NAME@ APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${_dep})
       else()
          message("NOT target ${_dep}")

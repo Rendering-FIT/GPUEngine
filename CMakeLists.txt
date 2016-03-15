@@ -100,11 +100,14 @@ configure_file(
 )
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
-              "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
+ #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
               "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
         DESTINATION ${INSTALL_CM_DIR}
         )
 
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
+        DESTINATION "${INSTALL_CM_DIR}/CMakeModules"
+       )
 
 
 add_subdirectory(src)
