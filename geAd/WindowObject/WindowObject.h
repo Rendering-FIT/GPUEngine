@@ -50,15 +50,15 @@ namespace ge{
       protected:
         unsigned _windowSize[2];//size of window
         bool     _isFullScreen;//true if fullscreen is on
-        int      _keyDown [WINDOWOBJECT_KEYS];//1 if key is down
-        int      _keyOffOn[WINDOWOBJECT_KEYS];//1 if key was pressed odd times
-        int      _keyHit  [WINDOWOBJECT_KEYS];
-        int      _mouseLeftDown;   //1 if left button of mouse is down
-        int      _mouseLeftOffOn;  //1 if left button of mouse was pressed odd times
-        int      _mouseRightDown;  //1 if right button of mouse is down
-        int      _mouseRightOffOn; //1 if right button of mouse was pressed odd times
-        int      _mouseMiddleDown; //1 if middle button of mouse is down
-        int      _mouseMiddleOffOn;//1 if middle button of mouse was pressd odd times
+        bool     _keyDown [WINDOWOBJECT_KEYS];//1 if key is down
+        bool     _keyOffOn[WINDOWOBJECT_KEYS];//1 if key was pressed odd times
+        bool     _keyHit  [WINDOWOBJECT_KEYS];
+        bool     _mouseLeftDown;   //1 if left button of mouse is down
+        bool     _mouseLeftOffOn;  //1 if left button of mouse was pressed odd times
+        bool     _mouseRightDown;  //1 if right button of mouse is down
+        bool     _mouseRightOffOn; //1 if right button of mouse was pressed odd times
+        bool     _mouseMiddleDown; //1 if middle button of mouse is down
+        bool     _mouseMiddleOffOn;//1 if middle button of mouse was pressd odd times
         int      _mousePosition     [2];//position of mouse cursor
         int      _mouseLastPosition [2];//prev. position of mouse
         int      _mouseDeltaPosition[2];//curr. position - prev. position of mouse
@@ -70,9 +70,9 @@ namespace ge{
         Uint32   _lastIdleTime;//last idle time
         Uint32   _currentMouseTime;//current mouse time
         Uint32   _currentIdleTime;//current idle time
-        std::map<SDL_Keycode,int>_mapKeyDown;
-        std::map<SDL_Keycode,int>_mapKeyOffOn;
-        std::map<SDL_Keycode,int>_mapKeyHit;
+        std::map<SDL_Keycode,bool>_mapKeyDown;
+        std::map<SDL_Keycode,bool>_mapKeyOffOn;
+        std::map<SDL_Keycode,bool>_mapKeyHit;
         SDL_Window    *_mainWindow;
         SDL_GLContext  _mainContext;
 
@@ -121,15 +121,15 @@ namespace ge{
         void      setMouseWarp(bool wrapMouse);
         unsigned const* getWindowSize()const;
 
-        int wasKeyHit(int  key);
-        int isKeyDown(int  key);
-        int isKeyOn  (int  key);
-        int isLeftDown  ()const;
-        int isLeftOn    ()const;
-        int isRightDown ()const;
-        int isRightOn   ()const;
-        int isMiddleDown()const;
-        int isMiddleOn  ()const;
+        bool wasKeyHit(int  key);
+        bool isKeyDown(int  key);
+        bool isKeyOn  (int  key);
+        bool isLeftDown  ()const;
+        bool isLeftOn    ()const;
+        bool isRightDown ()const;
+        bool isRightOn   ()const;
+        bool isMiddleDown()const;
+        bool isMiddleOn  ()const;
         void setKeyOn(int k);
     };
   }//util

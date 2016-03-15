@@ -203,26 +203,28 @@ void WindowObject::mainLoop(){
             this->_mouseLastPosition[1]=this->_mousePosition[1];//copy y position
             break;//break mouse motion case
           case SDL_MOUSEBUTTONDOWN://mouse button down
-            if(E.motion.state&SDL_BUTTON_LMASK){
+            if(E.button.button==SDL_BUTTON_LMASK){
               this->_mouseLeftDown=1;//left mouse button is down
               this->_mouseLeftOffOn^=1;//switch left mouse button state
             }
-            if(E.motion.state&SDL_BUTTON_RMASK){
+            if(E.button.button==SDL_BUTTON_RMASK){
               this->_mouseRightDown=1;//right mouse button is down
               this->_mouseRightOffOn^=1;//switch right mouse button state
             }
-            if(E.motion.state&SDL_BUTTON_MMASK){
+            if(E.button.button==SDL_BUTTON_MMASK){
               this->_mouseMiddleDown=1;//middle mouse button is down
               this->_mouseMiddleOffOn^=1;//switch middle mouse button state
             }
+            if(this->_mouse)this->_mouse();
             break;//break mouse button down case
           case SDL_MOUSEBUTTONUP:
-            if(E.motion.state&SDL_BUTTON_LMASK)
+            if(E.button.button==SDL_BUTTON_LMASK)
               this->_mouseLeftDown=0;//left mouse button is not down
-            if(E.motion.state&SDL_BUTTON_RMASK)
+            if(E.button.button==SDL_BUTTON_RMASK)
               this->_mouseRightDown=0;//right mouse button is not down
-            if(E.motion.state&SDL_BUTTON_MMASK)
+            if(E.button.button==SDL_BUTTON_MMASK)
               this->_mouseMiddleDown=0;//middle mouse button is not down
+            if(this->_mouse)this->_mouse();
             break;//break mouse button up case
           default://other events
             break;//break other events case
@@ -283,39 +285,39 @@ unsigned const*WindowObject::getWindowSize()const{
   return this->_windowSize;
 }
 
-int WindowObject::isKeyDown(int Key){
+bool WindowObject::isKeyDown(int Key){
   if(!this->_mapKeyDown.count((SDL_Keycode)Key))
     this->_mapKeyDown.insert(std::pair<SDL_Keycode,int>((SDL_Keycode)Key,0));
   return this->_mapKeyDown[(SDL_Keycode)Key];
 }
 
-int WindowObject::isKeyOn(int Key){
+bool WindowObject::isKeyOn(int Key){
   if(!this->_mapKeyOffOn.count((SDL_Keycode)Key))
     this->_mapKeyOffOn.insert(std::pair<SDL_Keycode,int>((SDL_Keycode)Key,0));
   return this->_mapKeyOffOn[(SDL_Keycode)Key];
 }
 
-int WindowObject::isLeftDown()const{
+bool WindowObject::isLeftDown()const{
   return this->_mouseLeftDown;
 }
 
-int WindowObject::isLeftOn()const{
+bool WindowObject::isLeftOn()const{
   return this->_mouseLeftOffOn;
 }
 
-int WindowObject::isRightDown()const{
+bool WindowObject::isRightDown()const{
   return this->_mouseRightDown;
 }
 
-int WindowObject::isRightOn()const{
+bool WindowObject::isRightOn()const{
   return this->_mouseRightOffOn;
 }
 
-int WindowObject::isMiddleDown()const{
+bool WindowObject::isMiddleDown()const{
   return this->_mouseMiddleDown;
 }
 
-int WindowObject::isMiddleOn()const{
+bool WindowObject::isMiddleOn()const{
   return this->_mouseMiddleOffOn;
 }
 
