@@ -16,15 +16,43 @@ find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSIO
 if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
    # adjust variable names according to GPUEngine customs
-   if(WIN32)
-      set(ASSIMP_LIBRARY optimized ${ASSIMP_LIBRARY_DIRS}/assimp.lib
-                         debug ${ASSIMP_LIBRARY_DIRS}/assimpd.lib)
-   else()
-      set(ASSIMP_LIBRARY ${ASSIMP_LIBRARIES})
-   endif()
-   unset(ASSIMP_LIBRARIES)
-   set(ASSIMP_INCLUDE_DIR ${ASSIMP_INCLUDE_DIRS})
-   unset(ASSIMP_INCLUDE_DIRS)
+   #if(WIN32)
+   #   set(ASSIMP_LIBRARY optimized ${ASSIMP_LIBRARY_DIRS}/assimp.lib
+   #                      debug ${ASSIMP_LIBRARY_DIRS}/assimpd.lib)
+   #else()
+   #   set(ASSIMP_LIBRARY ${ASSIMP_LIBRARIES})
+   #endif()
+   #unset(ASSIMP_LIBRARIES)
+   #set(ASSIMP_INCLUDE_DIR ${ASSIMP_INCLUDE_DIRS})
+   #unset(ASSIMP_INCLUDE_DIRS)
+   
+   find_library(ASSIMP_LIBRARY_RELEASE assimp
+      PATHS ${ASSIMP_ROOT_DIR}
+	  PATH_SUFFIXES lib
+	  DOC "pokus assimp"
+	  NO_DEFAULT_PATH
+   )
+   
+   find_library(ASSIMP_LIBRARY_DEBUG assimpd NAMES assimp
+      PATHS ${ASSIMP_ROOT_DIR}
+	  PATH_SUFFIXES lib
+	  DOC "pokus assimp debug"
+	  NO_DEFAULT_PATH
+   )
+   
+   find_file(ASSIMP_DLL_RELEASE assimp.dll
+      PATHS ${ASSIMP_ROOT_DIR}
+	  PATH_SUFFIXES bin
+	  DOC "pokus assimp dll"
+	  NO_DEFAULT_PATH
+   )
+   
+   find_file(ASSIMP_DLL_DEBUG assimpd.dll NAMES assimp.dll
+      PATHS ${ASSIMP_ROOT_DIR}
+	  PATH_SUFFIXES bin
+	  DOC "pokus assimp dll debug"
+	  NO_DEFAULT_PATH
+   )
 
    # create target
    if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
@@ -35,11 +63,11 @@ if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
          #   INTERFACE_LINK_LIBRARIES "${ASSIMP_LIBRARY}"
          #)
          set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${ASSIMP_INCLUDE_DIR}"
-            IMPORTED_LOCATION_DEBUG "${ASSIMP_LIBRARY_DIRS}/assimpd.lib"
-            IMPORTED_LOCATION_RELEASE "${ASSIMP_LIBRARY_DIRS}/assimp.lib"
-            IMPORTED_IMPLIB_DEBUG "${ASSIMP_LIBRARY_DIRS}/assimpd.lib"
-            IMPORTED_IMPLIB_RELEASE "${ASSIMP_LIBRARY_DIRS}/assimp.lib"
+            INTERFACE_INCLUDE_DIRECTORIES "${ASSIMP_INCLUDE_DIRS}"
+            IMPORTED_LOCATION_DEBUG "${ASSIMP_DLL_DEBUG}"
+            IMPORTED_LOCATION_RELEASE "${ASSIMP_DLL_RELEASE}"
+            IMPORTED_IMPLIB_DEBUG "${ASSIMP_LIBRARY_DEBUG}"
+            IMPORTED_IMPLIB_RELEASE "${ASSIMP_LIBRARY_RELEASE}"
          )
       endif()
    endif()
