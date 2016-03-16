@@ -41,32 +41,28 @@ endif()
 
 # find Assimp libraries
 find_library(ASSIMP_LIBRARY_RELEASE assimp
-   PATHS ${ASSIMP_ROOT_DIR}
+   HINTS ${ASSIMP_ROOT_DIR}
    PATH_SUFFIXES lib
    DOC "Assimp release library"
-   NO_DEFAULT_PATH
 )
 find_library(ASSIMP_LIBRARY_DEBUG assimpd NAMES assimp
-   PATHS ${ASSIMP_ROOT_DIR}
+   HINTS ${ASSIMP_ROOT_DIR}
    PATH_SUFFIXES lib
    DOC "Assimp debug library (optional)"
-   NO_DEFAULT_PATH
 )
 
 if(WIN32)
 
    # find Assimp DLLs
    find_file(ASSIMP_DLL_RELEASE assimp.dll
-      PATHS ${ASSIMP_ROOT_DIR}
+      HINTS ${ASSIMP_ROOT_DIR}
       PATH_SUFFIXES bin
       DOC "Assimp release DLL"
-      NO_DEFAULT_PATH
    )
    find_file(ASSIMP_DLL_DEBUG assimpd.dll NAMES assimp.dll
-      PATHS ${ASSIMP_ROOT_DIR}
+      HINTS ${ASSIMP_ROOT_DIR}
       PATH_SUFFIXES bin
       DOC "Assimp debug DLL (optional)"
-      NO_DEFAULT_PATH
    )
 
 endif()
