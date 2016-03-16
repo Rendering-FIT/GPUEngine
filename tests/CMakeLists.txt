@@ -10,6 +10,12 @@ set(FSA_SOURCES fsaTest.cpp)
 add_executable(${FSA_NAME} ${FSA_SOURCES})
 target_link_libraries(${FSA_NAME} geCore)
 
+set(FSA_NAME tokenizationTest)
+project(${FSA_NAME})
+set(FSA_SOURCES tokenizationTest.cpp)
+add_executable(${FSA_NAME} ${FSA_SOURCES})
+target_link_libraries(${FSA_NAME} geCore)
+
 set(FSA_NAME interpretTest)
 project(${FSA_NAME})
 set(FSA_SOURCES interpretTest.cpp)
