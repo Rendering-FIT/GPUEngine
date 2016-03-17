@@ -1,10 +1,11 @@
 #pragma once
 
+#include<geCore/Export.h>
 #include<geCore/NodeContext.h>
 
 namespace ge{
   namespace core{
-    class SyntaxNode: public std::enable_shared_from_this<SyntaxNode>{
+    class GECORE_EXPORT SyntaxNode: public std::enable_shared_from_this<SyntaxNode>{
       public:
         using Parent       = std::weak_ptr<SyntaxNode>;
         using SharedSymbol = std::shared_ptr<Symbol>;

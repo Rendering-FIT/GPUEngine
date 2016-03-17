@@ -6,6 +6,7 @@
 #include<memory>
 #include<vector>
 #include<tuple>
+#include<geCore/Export.h>
 
 namespace ge{
   namespace core{
@@ -58,7 +59,7 @@ namespace ge{
 
     class Term;
 
-    class Symbol: public std::enable_shared_from_this<Symbol>{
+    class GECORE_EXPORT Symbol: public std::enable_shared_from_this<Symbol>{
       public:
         std::string name = "";
         Range<TermIndex>range;

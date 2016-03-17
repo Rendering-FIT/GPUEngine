@@ -9,7 +9,7 @@ namespace ge
 {
    namespace util
    {
-      struct Intersector
+      struct GEUTIL_EXPORT Intersector
       {
          virtual bool intersects() = 0;
 

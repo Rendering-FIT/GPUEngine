@@ -16,7 +16,7 @@ bool ge::util::RaySphereIntersector::intersects(const Ray & ray, const ge::sg::B
    b *= 2;
    float D = b * b - 4 * c;
    if(D < 0.0f) return false;
-   D = sqrt(D);
+   D = (float)sqrt(D);
    if(-0.5 * (b + D) > 0) return true;
    if(-0.5 * (b - D) > 0) return true;
    return false;
