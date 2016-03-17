@@ -8,13 +8,13 @@
 #include<sstream>
 #include<cstring>
 #include<geCore/dtemplates.h>
-
+#include<geCore/Export.h>
 #include<geCore/syntaxTree.h>
 
 namespace ge{
   namespace core{
 
-    class Syntax{
+    class GECORE_EXPORT Syntax{
       public:
         NodeContext ctx;
         SyntaxNode::Node st_root=nullptr;

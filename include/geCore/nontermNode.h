@@ -1,11 +1,12 @@
 #pragma once
 
+#include<geCore/Export.h>
 #include<geCore/NodeContext.h>
 #include<geCore/syntaxNode.h>
 
 namespace ge{
   namespace core{
-    class NontermNode: public SyntaxNode{
+    class GECORE_EXPORT NontermNode: public SyntaxNode{
       public:
         using SideIndex = Nonterm::SideIndex;
         using SymbolIndex = Nonterm::SymbolIndex;

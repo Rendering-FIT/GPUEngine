@@ -1,11 +1,12 @@
 #pragma once
 
+#include<geCore/Export.h>
 #include<geCore/NodeContext.h>
 #include<geCore/syntaxNode.h>
 
 namespace ge{
   namespace core{
-    class TermNode: public SyntaxNode{
+    class GECORE_EXPORT TermNode: public SyntaxNode{
       public:
         TermNode(
             Parent          const& parent       ,

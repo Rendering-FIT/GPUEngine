@@ -3,10 +3,11 @@
 #include<algorithm>
 #include<set>
 #include<geCore/symbol.h>
+#include<geCore/Export.h>
 
 namespace ge{
   namespace core{
-    class Nonterm: public Symbol{
+    class GECORE_EXPORT Nonterm: public Symbol{
       public:
         using SymbolList  = std::vector<std::weak_ptr<Symbol>>;
         using SymbolIndex = SymbolList::size_type;

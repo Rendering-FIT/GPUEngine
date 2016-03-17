@@ -1,5 +1,6 @@
 #pragma once
 
+#include<geCore/Export.h>
 #include<iostream>
 #include<memory>
 #include<map>
@@ -8,7 +9,7 @@
 
 namespace ge{
   namespace core{
-    class Tokenization{
+    class GECORE_EXPORT Tokenization{
       public:
         class Token{
           public:
