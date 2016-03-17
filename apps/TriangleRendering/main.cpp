@@ -146,7 +146,7 @@ void Init()
       "   fragColor=vec4(1.f,1.f,0.,1.);\n"
       "}\n");
    glm::mat4 modelView(1.f); // identity
-   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
+   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/(float)WindowParam.Size[1],1.f,100.f);
    glm::mat4 mvp=modelView*projection;
    glProgram->use();
    glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
