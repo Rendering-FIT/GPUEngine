@@ -63,6 +63,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/term.h
     ${HEADER_PATH}/termNode.h
     ${HEADER_PATH}/tokenization.h
+    ${HEADER_PATH}/text.h
    )
 
 set(CORE_SOURCES
@@ -89,6 +90,7 @@ set(CORE_SOURCES
     syntax.cpp
     termNode.cpp
     tokenization.cpp
+    text.cpp
    )
 
 add_library(${LIB_NAME}
