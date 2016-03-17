@@ -11,7 +11,7 @@ namespace ge{
   namespace core{
     class GECORE_EXPORT Tokenization{
       public:
-        class Token{
+        class GECORE_EXPORT Token{
           public:
             Token(TermType term,std::string rawData = "");
             std::string rawData;
