@@ -78,10 +78,5 @@ namespace ge{
         static void _callback(ge::core::FSA*fsa,void*data);
         static void _errorCallback(ge::core::FSA*fsa,void*data);
     };
-    const std::string Tokenization::config_bit_begin  = "b";
-    const std::string Tokenization::config_bit_end    = "e";
-    const std::string Tokenization::config_bit_goback = "g";
-    const std::string Tokenization::config_bit_empty  = "" ;
-
   }
 }

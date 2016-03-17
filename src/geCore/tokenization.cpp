@@ -233,3 +233,10 @@ Tokenization::Data::Data(){
   this->currentToken = 0;
   this->charPosition = 0;
 }
+
+const std::string Tokenization::config_bit_begin  = "b";
+const std::string Tokenization::config_bit_end    = "e";
+const std::string Tokenization::config_bit_goback = "g";
+const std::string Tokenization::config_bit_empty  = "" ;
+
+
