@@ -1,5 +1,6 @@
 #include<geCore/text.h>
 #include<fstream>
+#include<iostream>
 
 using namespace ge::core;
 
