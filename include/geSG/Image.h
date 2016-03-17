@@ -14,7 +14,7 @@ namespace ge{
        * Simple abstract class representing 2D image. Do NOT inherit.
        * Subclass TemplateImage.
        */
-      class /*GESG_EXPORT*/ Image
+      class GESG_EXPORT Image
       {
       public:
 
