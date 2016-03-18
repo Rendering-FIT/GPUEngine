@@ -330,7 +330,7 @@ SCENARIO("Syntax basic tests"){
       syn.begin();
       THEN("it should pass"){
         auto res=syn.parse("i32 a;");
-        REQUIRE(res.first==ge::core::NodeContext::TRUE);
+        REQUIRE(res.first==ge::core::NodeContext::Status::TRUE);
       }
       syn.end();
     }
