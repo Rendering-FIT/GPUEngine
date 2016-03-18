@@ -119,14 +119,14 @@ std::pair<NodeContext::Status,SyntaxNode::Node>Syntax::parse(std::string data){
   std::pair<NodeContext::Status,SyntaxNode::Node>result;
   result.first = status;
   result.second = nullptr;
-  if(status==NodeContext::TRUE){
+  if(status==NodeContext::TRUE_STATUS){
     result.second = this->st_root;
   }
-  if(status!=NodeContext::WAITING){
+  if(status!=NodeContext::WAITING_STATUS){
     this->ctx.matches.clear();
     this->ctx.failedMatches.clear();
     this->runStart();
-    if(status==NodeContext::FALSE)
+    if(status==NodeContext::FALSE_STATUS)
       std::cerr<<"syntax error"<<std::endl;
   }
   return result;
@@ -147,7 +147,7 @@ void Syntax::runStart(){
   std::shared_ptr<SyntaxNode>emptyNode=nullptr;
   this->st_root = std::make_shared<NontermNode>(emptyNode,0,this->_range,this->name2Nonterm[this->start],true);
   this->ctx.setNode(this->st_root);
-  this->ctx.setStatus(NodeContext::WAITING);
+  this->ctx.setStatus(NodeContext::WAITING_STATUS);
   this->ctx.calledFromChildOrRecheck = false;
   this->ctx.tokenIndex = 0;
   this->ctx.virtualEnd = this->_range.max();
@@ -156,7 +156,7 @@ void Syntax::runStart(){
 
 NodeContext::Status Syntax::runContinue(){
   if(this->ctx.tokens.size()<this->name2Nonterm[this->start]->range.min())
-    return NodeContext::WAITING;
+    return NodeContext::WAITING_STATUS;
 
   TokenIndex newEnd;
   if(this->_range.max()<this->name2Nonterm[this->start]->range.min())
@@ -165,7 +165,7 @@ NodeContext::Status Syntax::runContinue(){
     newEnd = this->_range.max()+1;
 
   if(newEnd>this->ctx.tokens.size())
-    return NodeContext::WAITING;
+    return NodeContext::WAITING_STATUS;
 
 
   do{
@@ -178,12 +178,12 @@ NodeContext::Status Syntax::runContinue(){
     }
     this->_range.max() = newEnd;
     this->ctx.getNode()->match(this->ctx);
-    if(this->ctx.getStatus()==NodeContext::WAITING){
+    if(this->ctx.getStatus()==NodeContext::WAITING_STATUS){
       if(this->_range.max()>=this->ctx.tokens.size())
-        return NodeContext::WAITING;
+        return NodeContext::WAITING_STATUS;
       newEnd = this->_range.max()+1;
       if(newEnd>=this->name2Nonterm[this->start]->range.max())
-        return NodeContext::FALSE;
+        return NodeContext::FALSE_STATUS;
     }else return this->ctx.getStatus();
   }while(true);
 }

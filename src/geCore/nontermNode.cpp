@@ -5,7 +5,7 @@ using namespace ge::core;
 
 void NontermNode::match(NodeContext&ctx){
   if(this->symbol->range.min()>this->range.length()&&!this->canWait){
-    ctx.setStatus(NodeContext::FALSE);
+    ctx.setStatus(NodeContext::FALSE_STATUS);
     if(ctx.calledFromChildOrRecheck)
       this->parentMatch(ctx);
     return;
@@ -15,7 +15,7 @@ void NontermNode::match(NodeContext&ctx){
     auto c=this->parent.lock();
     while(c){
       if(c->getNonterm()==this->getNonterm()&&c->range==this->range){
-        ctx.setStatus(NodeContext::FALSE);
+        ctx.setStatus(NodeContext::FALSE_STATUS);
         if(ctx.calledFromChildOrRecheck)
           this->parentMatch(ctx);
         return;
@@ -25,14 +25,14 @@ void NontermNode::match(NodeContext&ctx){
   }
 
   if(this->symbol->range.max()<this->range.length()){
-    ctx.setStatus(NodeContext::FALSE);
+    ctx.setStatus(NodeContext::FALSE_STATUS);
     if(ctx.calledFromChildOrRecheck)
       this->parentMatch(ctx);
     return;
   }
 
   if(this->range.empty()){
-    ctx.setStatus(NodeContext::WAITING);
+    ctx.setStatus(NodeContext::WAITING_STATUS);
     ctx.setNode(this->shared_from_this());
     return;
   }
@@ -40,7 +40,7 @@ void NontermNode::match(NodeContext&ctx){
   if(
       !ctx.calledFromChildOrRecheck&&
       !this->symbol->prefixMatch(ctx.getToken().type)){
-    ctx.setStatus(NodeContext::FALSE);
+    ctx.setStatus(NodeContext::FALSE_STATUS);
     if(ctx.calledFromChildOrRecheck)
       this->parentMatch(ctx);
     return;
@@ -121,7 +121,7 @@ void NontermNode::match(NodeContext&ctx){
           else c=nullptr;
         }
         //TODO set canWait correctly 
-        ctx.setStatus(NodeContext::TRUE);
+        ctx.setStatus(NodeContext::TRUE_STATUS);
         ctx.tokenIndex = ii->second->range.max();
       }else{
 #endif
@@ -130,7 +130,7 @@ void NontermNode::match(NodeContext&ctx){
         if(jj!=ctx.failedMatches.end()){
           this->childs.push_back(nullptr);
           //TODO set canWait correctly 
-          ctx.setStatus(NodeContext::FALSE);
+          ctx.setStatus(NodeContext::FALSE_STATUS);
           ctx.tokenIndex = jj->second.min();
         }else{
 #endif
@@ -161,7 +161,7 @@ void NontermNode::match(NodeContext&ctx){
     }
     cfc2 = false;
     switch(ctx.getStatus()){
-      case NodeContext::TRUE:
+      case NodeContext::TRUE_STATUS:
 #ifdef USE_DATABASE
         ctx.matches[NodeContext::DatabaseKey(this->lastChild()->symbol,this->divisions.back())]=this->lastChild();
 #endif
@@ -172,7 +172,7 @@ void NontermNode::match(NodeContext&ctx){
         }
         this->item++;
         break;
-      case NodeContext::FALSE:
+      case NodeContext::FALSE_STATUS:
 #ifdef USE_FAILEDDATABASE
         if(this->lastChild())
           ctx.failedMatches.insert(NodeContext::DatabaseKey(this->lastChild()->symbol,this->divisions.back()));
@@ -208,7 +208,7 @@ void NontermNode::match(NodeContext&ctx){
           this->item=0;
         }else ctx.tokenIndex = this->divisions.back().min();
         break;
-      case NodeContext::WAITING:
+      case NodeContext::WAITING_STATUS:
         printStatus(ctx.getStatus(),ctx.currentLevel);
         return;
     }

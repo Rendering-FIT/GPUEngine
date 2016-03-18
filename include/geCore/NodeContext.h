@@ -12,7 +12,7 @@ namespace ge{
     class NodeContext{
       public:
         using Node      = std::shared_ptr<SyntaxNode>;
-        enum Status{TRUE=0,WAITING=1,FALSE=2};
+        enum Status{TRUE_STATUS=0,WAITING_STATUS=1,FALSE_STATUS=2};
         //DEF_ENUM(Status,TRUE,WAITING,FALSE);
 
         Status     status                  ;

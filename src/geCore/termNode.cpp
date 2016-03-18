@@ -25,14 +25,14 @@ void TermNode::match(NodeContext&ctx){
   if(this->range.empty()){
     if(this->canWait){
       ctx.setNode(this->shared_from_this());
-      ctx.setStatus(NodeContext::WAITING);
-    }else ctx.setStatus(NodeContext::FALSE);
+      ctx.setStatus(NodeContext::WAITING_STATUS);
+    }else ctx.setStatus(NodeContext::FALSE_STATUS);
     printStatus(ctx.getStatus(),ctx.currentLevel);
     return;
   }
 
   if(this->range.length()>this->getTerm()->range.max()){
-    ctx.setStatus(NodeContext::FALSE);
+    ctx.setStatus(NodeContext::FALSE_STATUS);
     ctx.tokenIndex = this->range.min();
     if(this->areWeCurrent(ctx))this->parentMatch(ctx);
     printStatus(ctx.getStatus(),ctx.currentLevel);
@@ -40,7 +40,7 @@ void TermNode::match(NodeContext&ctx){
   }
 
   if(ctx.calledFromChildOrRecheck){
-    ctx.setStatus(NodeContext::FALSE);
+    ctx.setStatus(NodeContext::FALSE_STATUS);
     ctx.tokenIndex = this->range.min();
     this->parentMatch(ctx);
     printStatus(ctx.getStatus(),ctx.currentLevel);
@@ -49,11 +49,11 @@ void TermNode::match(NodeContext&ctx){
 
   ctx.tokenIndex = this->range.min();
   if(ctx.getToken().type!=this->getTerm()->type){
-    ctx.setStatus(NodeContext::FALSE);
+    ctx.setStatus(NodeContext::FALSE_STATUS);
   }else{
     this->token = ctx.getToken();
     ctx.next();
-    ctx.setStatus(NodeContext::TRUE);
+    ctx.setStatus(NodeContext::TRUE_STATUS);
   }
 
   if(this->areWeCurrent(ctx))
