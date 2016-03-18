@@ -51,7 +51,6 @@ Syntax::Syntax(std::string lexSource,std::string synSource){
       if(params.size()>=3){
         if(firstRule){
           this->start = params[1];
-          std::cout<<"#########################"<<this->start<<std::endl;
           firstRule = false;
         }
         this->addRule(params);

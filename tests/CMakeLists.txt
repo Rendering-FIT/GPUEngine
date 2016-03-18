@@ -16,6 +16,12 @@ set(TOKENIZATION_SOURCES tokenizationTest.cpp)
 add_executable(${TOKENIZATION_NAME} ${TOKENIZATION_SOURCES})
 target_link_libraries(${TOKENIZATION_NAME} geCore)
 
+set(SYNTAX_NAME syntaxTest)
+project(${SYNTAX_NAME})
+set(SYNTAX_SOURCES syntaxTest.cpp)
+add_executable(${SYNTAX_NAME} ${SYNTAX_SOURCES})
+target_link_libraries(${SYNTAX_NAME} geCore)
+
 set(INTERPRET_NAME interpretTest)
 project(${INTERPRET_NAME})
 set(INTERPRET_SOURCES interpretTest.cpp)
