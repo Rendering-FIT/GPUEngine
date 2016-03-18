@@ -12,27 +12,27 @@ namespace ge{
         using SymbolList  = std::vector<std::weak_ptr<Symbol>>;
         using SymbolIndex = SymbolList::size_type;
         using Side        = std::tuple<
-          Range<TermIndex>,
+          Range<TokenIndex>,
           SymbolList,
-          std::vector<Range<TermIndex>>,
-          std::size_t>;
+          std::vector<Range<TokenIndex>>,
+          std::string>;
         using SideIndex   = std::vector<Side>::size_type;
         enum SideElements{
           RANGE   = 0,
           SYMBOLS = 1,
           TAILS   = 2,
-          ORIGID  = 3,
+          NAME    = 3,
         };
         std::vector<Side>rightSides;
         bool fresh = false;
         std::set<Token::Type>prefixes;
       protected:
-        Range<TermIndex>_computeTailLength(
+        Range<TokenIndex>_computeTailLength(
             SideIndex side,SymbolIndex symbol)const;
       public:
         inline Nonterm(std::string name);
         virtual~Nonterm();
-        SideIndex addSide(SymbolList const& side);
+        SideIndex addSide(SymbolList const& side,std::string name);
         virtual std::string str()const;
         void computeSideSizes();
         void sortSides();
@@ -41,10 +41,10 @@ namespace ge{
         inline std::shared_ptr<Symbol>getSymbol(
             SideIndex   side  ,
             SymbolIndex symbol)const;
-        inline Range<TermIndex>getTail(
+        inline Range<TokenIndex>getTail(
             SideIndex side,
             SideIndex symbol)const;
-        inline SideIndex getOriginalIndex(SideIndex side)const;
+        inline std::string getRuleName(SideIndex side)const;
         virtual bool prefixMatch(Token::Type const&term)const;
     };
 
@@ -70,14 +70,14 @@ namespace ge{
       return std::get<SYMBOLS>(this->rightSides[side])[symbol].lock();
     }
 
-    inline Range<TermIndex>Nonterm::getTail(
+    inline Range<TokenIndex>Nonterm::getTail(
         SideIndex side  ,
         SideIndex symbol)const{
       return std::get<TAILS>(this->rightSides[side])[symbol];
     }
 
-    inline Nonterm::SideIndex Nonterm::getOriginalIndex(SideIndex side)const{
-      return std::get<ORIGID>(this->rightSides[side]);
+    inline std::string Nonterm::getRuleName(SideIndex side)const{
+      return std::get<NAME>(this->rightSides[side]);
     }
   }
 }

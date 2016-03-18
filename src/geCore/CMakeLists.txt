@@ -60,6 +60,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/syntax.h
     ${HEADER_PATH}/syntaxNode.h
     ${HEADER_PATH}/syntaxTree.h
+    ${HEADER_PATH}/syntaxTreeProcessor.h
     ${HEADER_PATH}/term.h
     ${HEADER_PATH}/termNode.h
     ${HEADER_PATH}/tokenization.h
@@ -88,6 +89,7 @@ set(CORE_SOURCES
     nonterm.cpp
     nontermNode.cpp
     syntax.cpp
+    syntaxTreeProcessor.cpp
     termNode.cpp
     tokenization.cpp
     text.cpp

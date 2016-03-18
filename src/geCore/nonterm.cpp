@@ -2,12 +2,12 @@
 
 using namespace ge::core;
 
-Nonterm::SideIndex Nonterm::addSide(SymbolList const& side){
+Nonterm::SideIndex Nonterm::addSide(SymbolList const& side,std::string name){
   this->rightSides.push_back(Side(
-        Range<TermIndex>(),
+        Range<TokenIndex>(),
         side,
-        std::vector<Range<TermIndex>>(),
-        this->rightSides.size()));
+        std::vector<Range<TokenIndex>>(),
+        name));
   return this->rightSides.size()-1;
 }
 
@@ -27,10 +27,10 @@ std::string Nonterm::str()const{
   return ss.str();
 }
 
-Range<TermIndex>Nonterm::_computeTailLength(
+Range<TokenIndex>Nonterm::_computeTailLength(
     SideIndex   side,
     SymbolIndex symbol)const{
-  Range<TermIndex>result;
+  Range<TokenIndex>result;
   for(SymbolIndex i=symbol+1;i<this->nofSymbols(side);++i){
     result.min()+=this->getSymbol(side,i)->range.min();
     result.max()=saturatedAdd(

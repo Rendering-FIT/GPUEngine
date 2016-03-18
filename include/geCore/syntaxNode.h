@@ -12,17 +12,17 @@ namespace ge{
         using Node         = std::shared_ptr<SyntaxNode>;
         using ChildList    = std::vector<Node>;
         using ChildIndex   = ChildList::size_type;
-        Parent          parent       ;
-        ChildIndex      childInParent;
-        SharedSymbol    symbol       ;
-        Range<TermIndex>range        ;
-        bool            canWait      ;
+        Parent           parent       ;
+        ChildIndex       childInParent;
+        SharedSymbol     symbol       ;
+        Range<TokenIndex>range        ;
+        bool             canWait      ;
         inline SyntaxNode(
-            Parent          const& parent       ,
-            ChildIndex      const& childInParent,
-            Range<TermIndex>const& range        ,
-            SharedSymbol    const& symbol       ,
-            bool            const& canWait      );
+            Parent           const& parent       ,
+            ChildIndex       const& childInParent,
+            Range<TokenIndex>const& range        ,
+            SharedSymbol     const& symbol       ,
+            bool             const& canWait      );
         virtual ~SyntaxNode();
         virtual void match(NodeContext&ctx)=0;
         inline void parentMatch(NodeContext&ctx);
@@ -36,7 +36,7 @@ namespace ge{
     inline SyntaxNode::SyntaxNode(
         Parent          const& parent       ,
         ChildIndex      const& childInParent,
-        Range<TermIndex>const& range        ,
+        Range<TokenIndex>const& range        ,
         SharedSymbol    const& symbol       ,
         bool            const& canWait      ){
       this->parent        = parent       ;

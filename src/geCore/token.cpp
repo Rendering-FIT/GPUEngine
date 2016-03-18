@@ -6,12 +6,12 @@
 using namespace ge::core;
 
 Token::Token(){
-  this->term = 0;
+  this->type = 0;
   this->rawData = "";
 }
 
-Token::Token(Type const& term,Data const& rawData){
-  this->term = term;
+Token::Token(Type const& type,Data const& rawData){
+  this->type = type;
   this->rawData = rawData;
 }
 

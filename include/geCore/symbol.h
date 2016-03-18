@@ -54,16 +54,15 @@ namespace ge{
         }
     };
 
-    using TermType = size_t;
-    using TermList = std::vector<TermType>;
-    using TermIndex = TermList::size_type;
+    using TokenList = std::vector<Token>;
+    using TokenIndex = TokenList::size_type;
 
     class Term;
 
     class GECORE_EXPORT Symbol: public std::enable_shared_from_this<Symbol>{
       public:
         std::string name = "";
-        Range<TermIndex>range;
+        Range<TokenIndex>range;
         virtual std::string str()const = 0;
         virtual bool prefixMatch(Token::Type const&term)const = 0;
     };

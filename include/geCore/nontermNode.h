@@ -13,13 +13,13 @@ namespace ge{
         SideIndex   side;
         SymbolIndex item;
         ChildList childs;
-        std::vector<Range<TermIndex>>divisions;
+        std::vector<Range<TokenIndex>>divisions;
         inline NontermNode(
-            Parent          const& parent       ,
-            ChildIndex      const& childInParent,
-            Range<TermIndex>const& range        ,
-            SharedSymbol    const& symbol       ,
-            bool            const& canWait      );
+            Parent           const& parent       ,
+            ChildIndex       const& childInParent,
+            Range<TokenIndex>const& range        ,
+            SharedSymbol     const& symbol       ,
+            bool             const& canWait      );
         inline virtual ~NontermNode();
         inline Node const&lastChild()const;
         virtual void match(NodeContext&ctx);
@@ -27,11 +27,11 @@ namespace ge{
     };
 
     inline NontermNode::NontermNode(
-        Parent          const& parent       ,
-        ChildIndex      const& childInParent,
-        Range<TermIndex>const& range        ,
-        SharedSymbol    const& symbol       ,
-        bool            const& canWait      ):
+        Parent           const& parent       ,
+        ChildIndex       const& childInParent,
+        Range<TokenIndex>const& range        ,
+        SharedSymbol     const& symbol       ,
+        bool             const& canWait      ):
       SyntaxNode(
           parent       ,
           childInParent,

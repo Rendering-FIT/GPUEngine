@@ -39,7 +39,7 @@ void NontermNode::match(NodeContext&ctx){
 
   if(
       !ctx.calledFromChildOrRecheck&&
-      !this->symbol->prefixMatch(ctx.getTerm())){
+      !this->symbol->prefixMatch(ctx.getToken().type)){
     ctx.setStatus(NodeContext::FALSE);
     if(ctx.calledFromChildOrRecheck)
       this->parentMatch(ctx);
@@ -89,9 +89,9 @@ void NontermNode::match(NodeContext&ctx){
       std::shared_ptr<SyntaxNode>newNode;
       if(this->divisions.size()!=this->item+1){
         if(this->item+1==n->nofSymbols(this->side))
-          this->divisions.push_back(Range<TermIndex>(ctx.termIndex,this->range.max()));
+          this->divisions.push_back(Range<TokenIndex>(ctx.tokenIndex,this->range.max()));
         else
-          this->divisions.push_back(Range<TermIndex>(ctx.termIndex,ctx.termIndex+subsym->range.min()));
+          this->divisions.push_back(Range<TokenIndex>(ctx.tokenIndex,ctx.tokenIndex+subsym->range.min()));
       }
       bool cWait=false;
       if(!this->canWait){
@@ -122,7 +122,7 @@ void NontermNode::match(NodeContext&ctx){
         }
         //TODO set canWait correctly 
         ctx.setStatus(NodeContext::TRUE);
-        ctx.termIndex = ii->second->range.max();
+        ctx.tokenIndex = ii->second->range.max();
       }else{
 #endif
 #ifdef USE_FAILEDDATABASE
@@ -131,7 +131,7 @@ void NontermNode::match(NodeContext&ctx){
           this->childs.push_back(nullptr);
           //TODO set canWait correctly 
           ctx.setStatus(NodeContext::FALSE);
-          ctx.termIndex = jj->second.min();
+          ctx.tokenIndex = jj->second.min();
         }else{
 #endif
           if(std::dynamic_pointer_cast<Nonterm>(subsym))
@@ -198,7 +198,7 @@ void NontermNode::match(NodeContext&ctx){
         }while(true);
 
         if(this->divisions.empty()){
-          ctx.termIndex = this->range.min();
+          ctx.tokenIndex = this->range.min();
           if(this->side+1==this->getNonterm()->rightSides.size()){
             if(cfc)this->parentMatch(ctx);
             printStatus(ctx.getStatus(),ctx.currentLevel);
@@ -206,7 +206,7 @@ void NontermNode::match(NodeContext&ctx){
           }
           this->side++;
           this->item=0;
-        }else ctx.termIndex = this->divisions.back().min();
+        }else ctx.tokenIndex = this->divisions.back().min();
         break;
       case NodeContext::WAITING:
         printStatus(ctx.getStatus(),ctx.currentLevel);

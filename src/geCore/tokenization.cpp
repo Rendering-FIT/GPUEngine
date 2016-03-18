@@ -46,7 +46,7 @@ void Tokenization::load(std::string source){
   std::vector<std::string>params;
   while(!csv->empty()){
     auto t=csv->getToken();
-    if(csv->tokenName(t.term)=="value"   ){
+    if(csv->tokenName(t.type)=="value"   ){
       std::string data="";
       bool escape=false;
       //std::cout<<"#######################################################: "<<t.rawData<<":"<<std::endl;
@@ -71,12 +71,12 @@ void Tokenization::load(std::string source){
       lastWasComma=false;
       continue;
     }
-    if(csv->tokenName(t.term)==","){
+    if(csv->tokenName(t.type)==","){
       if(lastWasComma)params.push_back("");
       lastWasComma = true;
       continue;
     }
-    if(csv->tokenName(t.term)=="line-end"){
+    if(csv->tokenName(t.type)=="line-end"){
       if(lastWasComma)params.push_back("");
       lastWasComma=false;
       if(params.size()>=3&&params.size()<=5){

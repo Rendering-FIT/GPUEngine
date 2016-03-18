@@ -8,9 +8,9 @@ namespace ge{
       public:
         using Type = size_t;
         using Data = std::string;
-        Token(Type const& term,Data const& rawData = "");
+        Token(Type const& type,Data const& rawData = "");
         Data rawData;
-        Type term;
+        Type type;
         Token();
     };
   }

@@ -33,7 +33,7 @@ void TermNode::match(NodeContext&ctx){
 
   if(this->range.length()>this->getTerm()->range.max()){
     ctx.setStatus(NodeContext::FALSE);
-    ctx.termIndex = this->range.min();
+    ctx.tokenIndex = this->range.min();
     if(this->areWeCurrent(ctx))this->parentMatch(ctx);
     printStatus(ctx.getStatus(),ctx.currentLevel);
     return;
@@ -41,16 +41,17 @@ void TermNode::match(NodeContext&ctx){
 
   if(ctx.calledFromChildOrRecheck){
     ctx.setStatus(NodeContext::FALSE);
-    ctx.termIndex = this->range.min();
+    ctx.tokenIndex = this->range.min();
     this->parentMatch(ctx);
     printStatus(ctx.getStatus(),ctx.currentLevel);
     return;
   }
 
-  ctx.termIndex = this->range.min();
-  if(ctx.getTerm()!=this->getTerm()->type){
+  ctx.tokenIndex = this->range.min();
+  if(ctx.getToken().type!=this->getTerm()->type){
     ctx.setStatus(NodeContext::FALSE);
   }else{
+    this->token = ctx.getToken();
     ctx.next();
     ctx.setStatus(NodeContext::TRUE);
   }

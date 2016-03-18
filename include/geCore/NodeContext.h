@@ -17,17 +17,17 @@ namespace ge{
 
         Status     status                  ;
         bool       calledFromChildOrRecheck;
-        TermList   terms                   ;
-        TermIndex  termIndex               ;
-        TermIndex  virtualEnd              ;
+        TokenList  tokens                  ;
+        TokenIndex tokenIndex              ;
+        TokenIndex virtualEnd              ;
         Node       currentNode             ;
         unsigned   currentLevel            ;
         unsigned   maxLevel                ;
 
-        class DatabaseKey: public std::pair<std::shared_ptr<Symbol>,Range<TermIndex>>{
+        class DatabaseKey: public std::pair<std::shared_ptr<Symbol>,Range<TokenIndex>>{
           public:
-            DatabaseKey():std::pair<std::shared_ptr<Symbol>,Range<TermIndex>>(){}
-            DatabaseKey(std::shared_ptr<Symbol>const&sym,Range<TermIndex>const&range):std::pair<std::shared_ptr<Symbol>,Range<TermIndex>>(sym,range){}
+            DatabaseKey():std::pair<std::shared_ptr<Symbol>,Range<TokenIndex>>(){}
+            DatabaseKey(std::shared_ptr<Symbol>const&sym,Range<TokenIndex>const&range):std::pair<std::shared_ptr<Symbol>,Range<TokenIndex>>(sym,range){}
 
             bool operator<(const DatabaseKey&other)const{
               if(this->first<other.first)return true;
@@ -35,15 +35,15 @@ namespace ge{
               return this->second<other.second;
             }
         };
-        //using DatabaseKey = std::pair<std::shared_ptr<Symbol>,Range<TermIndex>>;
+        //using DatabaseKey = std::pair<std::shared_ptr<Symbol>,Range<TokenIndex>>;
         std::map<DatabaseKey,std::shared_ptr<SyntaxNode>>matches;
         std::set<DatabaseKey>failedMatches;
         inline NodeContext(Node const&currentNode = nullptr);
         inline void setNode(Node const&currentNode = nullptr);
         inline Node const&getNode()const;
-        inline void addTerm(TermType const&term);
+        inline void addToken(Token const&term);
         inline bool end()const;
-        inline TermType const&getTerm()const;
+        inline Token const&getToken()const;
         inline void next();
         inline void setStatus(Status status);
         inline Status getStatus()const;
@@ -51,7 +51,7 @@ namespace ge{
 
     NodeContext::NodeContext(NodeContext::Node const&currentNode){
       this->currentNode              = currentNode;
-      this->termIndex                = 0          ;
+      this->tokenIndex               = 0          ;
       this->virtualEnd               = 0          ;
       this->calledFromChildOrRecheck = false      ;
     }
@@ -64,20 +64,20 @@ namespace ge{
       return this->currentNode;
     }
 
-    void NodeContext::addTerm(TermType const&term){
-      this->terms.push_back(term);
+    void NodeContext::addToken(Token const&token){
+      this->tokens.push_back(token);
     }
 
     bool NodeContext::end()const{
-      return this->termIndex>=this->terms.size();
+      return this->tokenIndex>=this->tokens.size();
     }
 
-    TermType const&NodeContext::getTerm()const{
-      return this->terms[this->termIndex];
+    Token const&NodeContext::getToken()const{
+      return this->tokens[this->tokenIndex];
     }
 
     void NodeContext::next(){
-      this->termIndex++;
+      this->tokenIndex++;
     }
 
     void NodeContext::setStatus(Status status){

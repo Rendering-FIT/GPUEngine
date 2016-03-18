@@ -4,8 +4,8 @@ using namespace ge::core;
 
 bool computeMinLength(std::set<std::shared_ptr<Nonterm>>const&allNonterms){
   for(auto x:allNonterms){
-    x->range.min()=std::numeric_limits<TermIndex>::max();
-    x->range.max()=std::numeric_limits<TermIndex>::min();
+    x->range.min()=std::numeric_limits<TokenIndex>::max();
+    x->range.max()=std::numeric_limits<TokenIndex>::min();
   }
   std::set<std::shared_ptr<Nonterm>>terminating;
   std::set<std::shared_ptr<Nonterm>>newTerminating;
@@ -25,7 +25,7 @@ bool computeMinLength(std::set<std::shared_ptr<Nonterm>>const&allNonterms){
         }
         if(ignoreSide)continue;
         ignoreNonterm = false;
-        TermIndex len=0;
+        TokenIndex len=0;
         for(auto z:std::get<Nonterm::SYMBOLS>(y)){
           auto sz = z.lock();
           if(std::dynamic_pointer_cast<Term>(sz)){
@@ -82,12 +82,12 @@ void computePrefixes(std::set<std::shared_ptr<Nonterm>>const&allNonterms){
   }while(hasPrefix!=newPrefix);
 }
 
-TermIndex computeMaxLength(std::shared_ptr<Nonterm>const&n,std::set<std::string>&visited){
-  if(visited.find(n->name)!=visited.end())return std::numeric_limits<TermIndex>::max();
+TokenIndex computeMaxLength(std::shared_ptr<Nonterm>const&n,std::set<std::string>&visited){
+  if(visited.find(n->name)!=visited.end())return std::numeric_limits<TokenIndex>::max();
   visited.insert(n->name);
-  TermIndex longest=0;
+  TokenIndex longest=0;
   for(auto x:n->rightSides){
-    TermIndex currentLen = 0;
+    TokenIndex currentLen = 0;
     for(auto y:std::get<Nonterm::SYMBOLS>(x)){
       auto sy=y.lock();
       if(std::dynamic_pointer_cast<Term>(sy)){
@@ -95,10 +95,10 @@ TermIndex computeMaxLength(std::shared_ptr<Nonterm>const&n,std::set<std::string>
         continue;
       }
       currentLen = saturatedAdd(currentLen,computeMaxLength(std::dynamic_pointer_cast<Nonterm>(sy),visited));
-      if(currentLen == std::numeric_limits<TermIndex>::max())break;
+      if(currentLen == std::numeric_limits<TokenIndex>::max())break;
     }
     longest = std::max(longest,currentLen);
-    if(longest == std::numeric_limits<TermIndex>::max())break;
+    if(longest == std::numeric_limits<TokenIndex>::max())break;
   }
   return longest;
 }
