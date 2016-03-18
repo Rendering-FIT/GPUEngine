@@ -10,6 +10,7 @@
 #include<geCore/dtemplates.h>
 #include<geCore/Export.h>
 #include<geCore/syntaxTree.h>
+#include<geCore/tokenization.h>
 
 namespace ge{
   namespace core{
@@ -35,8 +36,11 @@ namespace ge{
         using Value    = std::tuple<Callback,Callback,void*>;
         std::map<Key,Value>_callbacks;
         Range<TermIndex> _range;
+        std::shared_ptr<Tokenization>_tokenization;
       public:
         Syntax(std::string start);
+        Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization);
+        void addRule(std::vector<std::string>params);
         ~Syntax();
         void processTree(std::shared_ptr<SyntaxNode>const&root);
         void runStart();

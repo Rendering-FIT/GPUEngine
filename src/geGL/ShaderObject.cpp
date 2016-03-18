@@ -1,5 +1,6 @@
 #include<geGL/ShaderObject.h>
 
+#include<geCore/text.h>
 #include<iostream>
 #include<stdarg.h>
 #include<string>
@@ -47,7 +48,7 @@ int ge::gl::fileTypeSwitch(std::string fileName,unsigned numType,...){
   return-1;//ani jeden
 }
 
-std::string ShaderObject::_readShader(std::string const& file){
+/*std::string ShaderObject::_readShader(std::string const& file){
   std::ifstream f(file.c_str(), std::ios_base::in | std::ios_base::binary);
   if(!f.good()){
     std::cerr<<"ERROR: cannot open: "<<file<<std::endl;
@@ -63,7 +64,7 @@ std::string ShaderObject::_readShader(std::string const& file){
   delete[]buffer;
   f.close();
   return result;
-}
+}*/
 
 std::string ShaderObject::_appendAfterVersion(
     std::string source,
@@ -96,7 +97,7 @@ ShaderObject::ShaderObject(GLenum type,std::string source):Shader(){
 }
 
 ShaderObject::ShaderObject(std::string file){
-  std::string source = this->_readShader(file);
+  std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   GLenum type = file2ShaderType(file);
   this->create(type,source);
   if(!this->getCompileStatus())
@@ -106,7 +107,7 @@ ShaderObject::ShaderObject(std::string file){
 ShaderObject::ShaderObject(
     std::string file,
     GLenum      type){
-  std::string source = this->_readShader(file);
+  std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   this->create(type,source);
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
@@ -115,7 +116,7 @@ ShaderObject::ShaderObject(
 ShaderObject::ShaderObject(
     std::string file,
     std::string defs){
-  std::string source = this->_readShader(file);
+  std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_appendAfterVersion(source,defs);
   GLenum type = file2ShaderType(file);
   this->create(type,source);
@@ -128,7 +129,7 @@ ShaderObject::ShaderObject(
     std::string defs   ,
     unsigned    version,
     std::string profile){
-  std::string source = this->_readShader(file);
+  std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_appendAfterVersion(source,defs);
   source = this->_setVersion(source,version,profile);
   GLenum type = file2ShaderType(file);
@@ -141,7 +142,7 @@ ShaderObject::ShaderObject(
     std::string file   ,
     unsigned    version,
     std::string profile){
-  std::string source = this->_readShader(file);
+  std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_setVersion(source,version,profile);
   GLenum type = file2ShaderType(file);
   this->create(type,source);
@@ -285,7 +286,7 @@ std::string ShaderObject::define(std::string Name,std::string Value){
 }
 
 std::string ShaderObject::include(std::string file){
-  return ShaderObject::_readShader(file);
+  return ge::core::loadTextFile(file);//ShaderObject::_readShader(file);
 }
 
 

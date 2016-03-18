@@ -345,6 +345,7 @@ SCENARIO("Tokenization basic tests"){
       "START,!,EXCLAMATION\n"
       "START,&,AMPERSAND\n"
       "START,|,BAR\n"
+      "START,^,XOR\n"
       "START,(,START,(\n"
       "START,),START,)\n"
       "START,{,START,{\n"
@@ -447,12 +448,19 @@ SCENARIO("Tokenization basic tests"){
       "BAR,\\\\e,END,|\n"
       "BAR,,,expected = or |\n"
       "\n"
+      "XOR,_a\\\\-zA\\\\-Z0\\\\-9.\\,!(){}[]~;\"\',START,^,g\n"
+      "XOR, \\t\\r\\n,START,^\n"
+      "XOR,=,START,^=\n"
+      "XOR,/,SLASH,^\n"
+      "XOR,\\\\e,END,^\n"
+      "XOR,,,expected =\n"
+      "\n"
       "IDENTIFIER,_a\\\\-zA\\\\-Z0\\\\-9,IDENTIFIER\n"
-      "IDENTIFIER, \\t\\r\\n,START,identifier for while if else bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 void struct typedef return,e\n"
-      "IDENTIFIER,,START,identifier for while if else bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 void struct typedef return,eg\n"
+      "IDENTIFIER, \\t\\r\\n,START,identifier for while if else bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 void string struct typedef return,e\n"
+      "IDENTIFIER,,START,identifier for while if else bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 void string struct typedef return,eg\n"
       "\n"
       "DOUBLE_QUOTES,\\\\\\\\,DQ_BACKSLASH\n"
-      "DOUBLE_QUOTES,\",START,string,e\n"
+      "DOUBLE_QUOTES,\",START,string-value,e\n"
       "DOUBLE_QUOTES,,DOUBLE_QUOTES\n"
       "DOUBLE_QUOTES,\\\\e,,unexpected end of file in string\n"
       "\n"
@@ -473,13 +481,13 @@ SCENARIO("Tokenization basic tests"){
       "DIGIT,0\\\\-9,DIGIT\n"
       "DIGIT,eE,EXPONENT\n"
       "DIGIT,.,FRACTION\n"
-      "DIGIT,\\\\e,END,integer\n"
-      "DIGIT,,START,integer,eg\n"
+      "DIGIT,\\\\e,END,integer-value\n"
+      "DIGIT,,START,integer-value,eg\n"
       "\n"
       "FRACTION,0\\\\-9,FRACTION\n"
       "FRACTION,eE,EXPONENT\n"
-      "FRACTION,\\\\e,END,float\n"
-      "FRACTION,,START,float,eg\n"
+      "FRACTION,\\\\e,END,float-value\n"
+      "FRACTION,,START,float-value,eg\n"
       "\n"
       "EXPONENT,+-,EXP_SIGN\n"
       "EXPONENT,0\\\\-9,EXP_DIGIT\n"
@@ -491,8 +499,8 @@ SCENARIO("Tokenization basic tests"){
       "EXP_SIGN,,,expected digit in float exponent\n"
       "\n"
       "EXP_DIGIT,0\\\\-9,EXP_DIGIT\n"
-      "EXP_DIGIT,\\\\e,END,float\n"
-      "EXP_DIGIT,,START,float,eg\n"
+      "EXP_DIGIT,\\\\e,END,float-value\n"
+      "EXP_DIGIT,,START,float-value,eg\n"
       "\n"
       "COMMENT0,\\r\\n,START\n"
       "COMMENT0,\\\\e,END\n"
@@ -548,7 +556,7 @@ SCENARIO("Tokenization basic tests"){
         REQUIRE(t.empty()==false);
         REQUIRE(t.getToken().term==t.tokenType("="));
         REQUIRE(t.empty()==false);
-        REQUIRE(t.getToken().term==t.tokenType("integer"));
+        REQUIRE(t.getToken().term==t.tokenType("integer-value"));
         REQUIRE(t.empty()==false);
         REQUIRE(t.getToken().term==t.tokenType(";"));
         REQUIRE(t.empty()==false);
@@ -556,7 +564,7 @@ SCENARIO("Tokenization basic tests"){
         REQUIRE(t.empty()==false);
         REQUIRE(t.getToken().term==t.tokenType("<"));
         REQUIRE(t.empty()==false);
-        REQUIRE(t.getToken().term==t.tokenType("integer"));
+        REQUIRE(t.getToken().term==t.tokenType("integer-value"));
         REQUIRE(t.empty()==false);
         REQUIRE(t.getToken().term==t.tokenType(";"));
         REQUIRE(t.empty()==false);

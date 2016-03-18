@@ -1,9 +1,44 @@
 #include<geCore/syntax.h>
+#include<cctype>
 
 using namespace ge::core;
 
 Syntax::Syntax(std::string start){
   this->start = start;
+}
+
+Syntax::Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization){
+  this->start = start;
+  this->_tokenization = tokenization;
+  for(Tokenization::TokenIndex i=0;i<this->_tokenization->nofTokens();++i)
+    this->registerTermName(i,this->_tokenization->tokenName(i));
+}
+
+void Syntax::addRule(std::vector<std::string>params){
+
+  std::vector<std::weak_ptr<Symbol>>side;
+  bool first=true;
+  for(auto x:params){
+    if(first)first=false;
+    else{
+      if(std::isupper(x[0]))side.push_back(this->_addNonterm(x));
+      else side.push_back(this->_addTerm(this->_tokenization->tokenType(x)));
+    }
+  }
+  auto n=this->_addNonterm(params[0]);
+  auto ptr=std::dynamic_pointer_cast<Nonterm>(n);
+  ptr->addSide(side);
+
+  /*
+  this->addSymbol2Side(side,args...);
+  auto n=this->_addNonterm(nonterm);
+  auto ptr=std::dynamic_pointer_cast<Nonterm>(n);
+  auto sideIndex = ptr->addSide(side);
+  Value v;
+  this->getCallback(v,args...);
+  //if(std::get<2>(v))std::cout<<"insert callback to: "<<nonterm<<" side: "<<sideIndex<<std::endl;
+  this->addCallback(nonterm,sideIndex,std::get<0>(v),std::get<1>(v),std::get<2>(v));
+  */
 }
 
 Syntax::~Syntax(){

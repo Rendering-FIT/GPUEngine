@@ -162,6 +162,10 @@ TermType    Tokenization::tokenType(std::string token)const{
   return std::numeric_limits<TermType>::max();
 }
 
+Tokenization::TokenIndex Tokenization::nofTokens()const{
+  return this->_data.name2term.size();
+}
+
 Tokenization::Token::Token(TermType term,std::string rawData){
   this->term = term;
   this->rawData = rawData;

@@ -6,7 +6,7 @@ namespace ge{
   namespace gl{
     class GEGL_EXPORT ShaderObject: public Shader{
       protected:
-        static std::string _readShader(std::string const& file);
+        //static std::string _readShader(std::string const& file);
         static std::string _appendAfterVersion(std::string source,std::string defs);
         static std::string _setVersion(std::string source,unsigned version,std::string profile);
       public:

@@ -19,6 +19,8 @@ namespace ge{
             Token();
         };
       public:
+        using Name2Term  = std::map<std::string,TermType>;
+        using TokenIndex = Name2Term::size_type;
         static const std::string config_bit_begin ;
         static const std::string config_bit_end   ;
         static const std::string config_bit_goback;
@@ -35,6 +37,7 @@ namespace ge{
             std::string conf  = "");
         std::string tokenName(TermType    term )const;
         TermType    tokenType(std::string token)const;
+        TokenIndex  nofTokens()const;
         void begin();
         void parse(std::string data);
         void end();
@@ -63,7 +66,7 @@ namespace ge{
         };
         class Data{
           public:
-            std::map<std::string,TermType>             name2term    ;
+            Name2Term                                  name2term    ;
             std::map<TermType,std::string>             term2name    ;
             std::shared_ptr<FSA>                       fsa          ;
             std::vector<Token>                         tokens       ;
@@ -71,7 +74,7 @@ namespace ge{
             std::set<TermType>                         hasKeywords  ;
             std::vector<std::shared_ptr<CallbackData>> callbackData ;
             std::vector<std::string>                   errorMessages;
-            unsigned                                   charPosition = 0;
+            unsigned                                   charPosition ;
             Data();
         }_data;
         TermType _registerToken(std::string token);
