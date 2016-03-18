@@ -1,4 +1,5 @@
 #include<geCore/syntax.h>
+#include<geCore/NodeContext.h>
 #include<geCore/text.h>
 
 #define CATCH_CONFIG_MAIN
@@ -329,7 +330,7 @@ SCENARIO("Syntax basic tests"){
       syn.begin();
       THEN("it should pass"){
         auto res=syn.parse("i32 a;");
-        REQUIRE(res.first==NodeContext::TRUE);
+        REQUIRE(res.first==ge::core::NodeContext::TRUE);
       }
       syn.end();
     }
