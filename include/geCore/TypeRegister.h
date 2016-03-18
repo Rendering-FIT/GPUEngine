@@ -240,12 +240,29 @@ namespace ge{
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<double            >(){return TypeRegister::TYPEID+TypeRegister::F64   -1;}
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<std::string       >(){return TypeRegister::TYPEID+TypeRegister::STRING-1;}
 
-    class GECORE_EXPORT Accessor{
+    class GECORE_EXPORT Base{
       protected:
-        std::shared_ptr<const TypeRegister>_manager       = nullptr                   ;
+        std::shared_ptr<const TypeRegister>_manager = nullptr;
+        TypeRegister::TypeID _id = TypeRegister::UNREGISTERED;
+      public:
+        inline Base(
+            std::shared_ptr<const TypeRegister>const&manager = nullptr                   ,
+            TypeRegister::TypeID                    id       = TypeRegister::UNREGISTERED){
+          this->_manager = manager;
+          this->_id = id;
+        }
+        inline virtual ~Base(){}
+        inline std::shared_ptr<const TypeRegister>getManager()const{return this->_manager;}
+        inline TypeRegister::TypeID getId()const{return this->_id;}
+        virtual Accessor operator[](unsigned elem)const=0;
+        virtual unsigned getNofElements()const=0;
+        virtual std::string data2Str()const=0;
+    };
+
+    class GECORE_EXPORT Accessor: public Base{
+      protected:
         std::shared_ptr<char>              _data          = nullptr                   ;
         unsigned                           _offset        = 0u                        ;
-        TypeRegister::TypeID               _id            = TypeRegister::UNREGISTERED;
         static void _callDestructors(char*ptr,TypeRegister::TypeID id,std::shared_ptr<const TypeRegister>const&manager);
       public:
         Accessor(Accessor const& ac);

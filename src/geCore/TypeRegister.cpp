@@ -642,20 +642,16 @@ unsigned TypeRegister::getDescription(unsigned i)const{
 }
 
 
-Accessor::Accessor(Accessor const& ac){
-  this->_manager = ac._manager;
-  this->_data    = ac._data   ;
-  this->_id      = ac._id     ;
-  this->_offset  = ac._offset ;
+Accessor::Accessor(Accessor const& ac):Base(ac._manager,ac._id){
+  this->_data   = ac._data  ;
+  this->_offset = ac._offset;
 }
 
 Accessor::Accessor(
     std::shared_ptr<const TypeRegister>const&manager,
     const void*                              data   ,
     TypeRegister::TypeID                     id     ,
-    unsigned                                 offset ){
-  this->_manager =        manager;
-  this->_id      =        id     ;
+    unsigned                                 offset ):Base(manager,id){
   this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){Accessor::_callDestructors(ptr,id,manager);delete[]ptr;});
   this->_offset  =        offset ;
 }
@@ -664,19 +660,15 @@ Accessor::Accessor(
     std::shared_ptr<const TypeRegister>const&manager,
     std::shared_ptr<char>const&              data   ,
     TypeRegister::TypeID                     id     ,
-    unsigned                                 offset ){
-  this->_manager = manager;
+    unsigned                                 offset ):Base(manager,id){
   this->_data    = data   ;
-  this->_id      = id     ;
   this->_offset  = offset ;
 }
 
 Accessor::Accessor(
     std::shared_ptr<const TypeRegister>const&manager,
-    TypeRegister::TypeID               id           ){
-  this->_manager = manager;
+    TypeRegister::TypeID                    id      ):Base(manager,id){
   this->_data    = nullptr;
-  this->_id      = id     ;
   this->_offset  = 0      ;
 }
 
