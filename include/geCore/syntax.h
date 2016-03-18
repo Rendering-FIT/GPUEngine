@@ -34,12 +34,16 @@ namespace ge{
       public:
         Syntax(std::string start);
         Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization);
-        Syntax(std::shared_ptr<Tokenization>const&tokenization,std::string synSource);
+        Syntax(std::string lexSource,std::string synSource);
         void addRule(std::vector<std::string>params);
         ~Syntax();
+        void begin();
+        std::pair<NodeContext::Status,SyntaxNode::Node>parse(std::string data);
+        void end();
+
+        SyntaxNode::Node getSyntaxTree()const;
         void runStart();
         NodeContext::Status runContinue();
-        SyntaxNode::Node getSyntaxTree()const;
 
         template<typename...>
           void addToken();

@@ -12,9 +12,9 @@ Syntax::Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization
   this->_tokenization = tokenization;
 }
 
-
-Syntax::Syntax(std::shared_ptr<Tokenization>const&tokenization,std::string synSource){
-  this->_tokenization = tokenization;
+Syntax::Syntax(std::string lexSource,std::string synSource){
+  this->_tokenization = std::make_shared<Tokenization>();
+  this->_tokenization->load(lexSource);
   auto syn=std::make_shared<Tokenization>("START");
   syn->addTransition("START"   ," \t"   ,"SPACE"                   );
   syn->addTransition("START"   ,"\r\n"  ,"LINE-END"                );
@@ -69,6 +69,7 @@ Syntax::Syntax(std::shared_ptr<Tokenization>const&tokenization,std::string synSo
   params.clear();
 
   this->computeLengths();
+
 }
 
 void Syntax::addRule(std::vector<std::string>params){
@@ -102,6 +103,38 @@ void Syntax::addRule(std::vector<std::string>params){
 
 Syntax::~Syntax(){
   this->st_root=nullptr;
+}
+
+void Syntax::begin(){
+  this->runStart();
+  this->_tokenization->begin();
+}
+
+std::pair<NodeContext::Status,SyntaxNode::Node>Syntax::parse(std::string data){
+  this->_tokenization->parse(data);
+  do{
+    if(this->_tokenization->empty())break;
+    this->addToken(this->_tokenization->getToken());
+  }while(true);
+  auto status = this->runContinue();
+  std::pair<NodeContext::Status,SyntaxNode::Node>result;
+  result.first = status;
+  result.second = nullptr;
+  if(status==NodeContext::TRUE){
+    result.second = this->st_root;
+  }
+  if(status!=NodeContext::WAITING){
+    this->ctx.matches.clear();
+    this->ctx.failedMatches.clear();
+    this->runStart();
+    if(status==NodeContext::FALSE)
+      std::cerr<<"syntax error"<<std::endl;
+  }
+  return result;
+}
+
+void Syntax::end(){
+  this->_tokenization->end();
 }
 
 SyntaxNode::Node Syntax::getSyntaxTree()const{
