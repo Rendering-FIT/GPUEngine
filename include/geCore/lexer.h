@@ -6,6 +6,7 @@
 namespace ge{
   namespace core{
 
+    /*
     class Lexer{
       public:
         Lexer();
@@ -18,5 +19,6 @@ namespace ge{
         std::vector<Token>_tokens;
         decltype(_tokens)::size_type _currentToken = 0;
     };
+    */
   }
 }

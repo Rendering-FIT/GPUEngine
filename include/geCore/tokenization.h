@@ -4,22 +4,14 @@
 #include<iostream>
 #include<memory>
 #include<map>
-#include<geCore/symbol.h>
+#include<geCore/token.h>
 #include<geCore/fsa/fsa.h>
 
 namespace ge{
   namespace core{
     class GECORE_EXPORT Tokenization{
       public:
-        class GECORE_EXPORT Token{
-          public:
-            Token(TermType term,std::string rawData = "");
-            std::string rawData;
-            TermType    term;
-            Token();
-        };
-      public:
-        using Name2Term  = std::map<std::string,TermType>;
+        using Name2Term  = std::map<std::string,Token::Type>;
         using TokenIndex = Name2Term::size_type;
         static const std::string config_bit_begin ;
         static const std::string config_bit_end   ;
@@ -35,8 +27,8 @@ namespace ge{
             std::string end       ,
             std::string token = "",
             std::string conf  = "");
-        std::string tokenName(TermType    term )const;
-        TermType    tokenType(std::string token)const;
+        std::string tokenName(Token::Type term )const;
+        Token::Type tokenType(std::string token)const;
         TokenIndex  nofTokens()const;
         void begin();
         void parse(std::string data);
@@ -56,9 +48,9 @@ namespace ge{
         class CallbackData{
           public:
             Config conf;
-            TermType term;
+            Token::Type term;
             Data*data;
-            CallbackData(Config conf,TermType term,Data*data){
+            CallbackData(Config conf,Token::Type term,Data*data){
               this->conf = conf;
               this->term = term;
               this->data = data;
@@ -67,17 +59,17 @@ namespace ge{
         class Data{
           public:
             Name2Term                                  name2term    ;
-            std::map<TermType,std::string>             term2name    ;
+            std::map<Token::Type,std::string>          term2name    ;
             std::shared_ptr<FSA>                       fsa          ;
             std::vector<Token>                         tokens       ;
             std::vector<Token>::size_type              currentToken ;
-            std::set<TermType>                         hasKeywords  ;
+            std::set<Token::Type>                      hasKeywords  ;
             std::vector<std::shared_ptr<CallbackData>> callbackData ;
             std::vector<std::string>                   errorMessages;
             unsigned                                   charPosition ;
             Data();
         }_data;
-        TermType _registerToken(std::string token);
+        Token::Type _registerToken(std::string token);
         static void _callback(ge::core::FSA*fsa,void*data);
         static void _errorCallback(ge::core::FSA*fsa,void*data);
     };

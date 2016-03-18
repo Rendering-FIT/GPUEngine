@@ -25,7 +25,7 @@ namespace ge{
         };
         std::vector<Side>rightSides;
         bool fresh = false;
-        std::set<TermType>prefixes;
+        std::set<Token::Type>prefixes;
       protected:
         Range<TermIndex>_computeTailLength(
             SideIndex side,SymbolIndex symbol)const;
@@ -45,7 +45,7 @@ namespace ge{
             SideIndex side,
             SideIndex symbol)const;
         inline SideIndex getOriginalIndex(SideIndex side)const;
-        virtual bool prefixMatch(TermType const&term)const;
+        virtual bool prefixMatch(Token::Type const&term)const;
     };
 
     inline Nonterm::Nonterm(std::string name){
@@ -56,7 +56,7 @@ namespace ge{
     inline Nonterm::~Nonterm(){
     }
 
-    inline bool Nonterm::prefixMatch(TermType const&term)const{
+    inline bool Nonterm::prefixMatch(Token::Type const&term)const{
       return this->prefixes.find(term)!=this->prefixes.end();
     }
 

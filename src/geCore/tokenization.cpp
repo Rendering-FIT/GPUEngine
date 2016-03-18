@@ -2,13 +2,9 @@
 #include<sstream>
 #include<iterator>
 #include<fstream>
+#include<limits>
 
 using namespace ge::core;
-
-Tokenization::Token::Token(){
-  this->term = 0;
-  this->rawData = "";
-}
 
 Tokenization::Tokenization(std::string start){
   this->_data.fsa = std::make_shared<FSA>(start);
@@ -135,7 +131,7 @@ void Tokenization::addTransition(
     return;
   }
 
-  TermType term = 0;
+  Token::Type term = 0;
   if(token.find(" ")!=std::string::npos){
     std::stringstream ss(token);
     std::istream_iterator<std::string> begin(ss);
@@ -150,31 +146,26 @@ void Tokenization::addTransition(
       this->_callback,&*this->_data.callbackData.back());
 }
 
-std::string Tokenization::tokenName(TermType    term )const{
+std::string Tokenization::tokenName(Token::Type    term )const{
   auto ii=this->_data.term2name.find(term);
   if(ii!=this->_data.term2name.end())return ii->second;
   return "";
 }
 
-TermType    Tokenization::tokenType(std::string token)const{
+Token::Type    Tokenization::tokenType(std::string token)const{
   auto ii=this->_data.name2term.find(token);
   if(ii!=this->_data.name2term.end())return ii->second;
-  return std::numeric_limits<TermType>::max();
+  return std::numeric_limits<Token::Type>::max();
 }
 
 Tokenization::TokenIndex Tokenization::nofTokens()const{
   return this->_data.name2term.size();
 }
 
-Tokenization::Token::Token(TermType term,std::string rawData){
-  this->term = term;
-  this->rawData = rawData;
-}
-
-TermType Tokenization::_registerToken(std::string token){
+Token::Type Tokenization::_registerToken(std::string token){
   auto ii=this->_data.name2term.find(token);
   if(ii!=this->_data.name2term.end())return ii->second;
-  TermType result = this->_data.name2term.size();
+  Token::Type result = this->_data.name2term.size();
   this->_data.name2term[token]=result;
   this->_data.term2name[result]=token;
   return result;
@@ -188,7 +179,7 @@ void Tokenization::_callback(ge::core::FSA*fsa,void*data){
   }
   if(cd->conf&Tokenization::END){
     auto word = fsa->getAlreadyReadString().substr(cd->data->charPosition);
-    TermType term = cd->term;
+    Token::Type term = cd->term;
     if(cd->data->hasKeywords.count(term)){
       auto ii=cd->data->name2term.find(word);
       if(ii!=cd->data->name2term.end())
@@ -208,7 +199,7 @@ void Tokenization::_errorCallback(ge::core::FSA*fsa,void*data){
 }
 
 
-Tokenization::Token Tokenization::getToken(){
+Token Tokenization::getToken(){
   return this->_data.tokens[this->_data.currentToken++];
 }
 

@@ -5,14 +5,14 @@ namespace ge{
   namespace core{
     class Term: public Symbol{
       public:
-        TermType type;
-        inline Term(TermType const&type,std::string name="");
+        Token::Type type;
+        inline Term(Token::Type const&type,std::string name="");
         inline virtual~Term();
         virtual std::string str()const;
-        virtual bool prefixMatch(TermType const&term)const;
+        virtual bool prefixMatch(Token::Type const&term)const;
     };
 
-    inline Term::Term(TermType const&type,std::string name){
+    inline Term::Term(Token::Type const&type,std::string name){
       this->range.min()=1;
       this->range.max()=1;
       this->name = name;
@@ -31,7 +31,7 @@ namespace ge{
       return ss.str();
     }
 
-    inline bool Term::prefixMatch(TermType const&term)const{
+    inline bool Term::prefixMatch(Token::Type const&term)const{
       return this->type == term;
     }
   }

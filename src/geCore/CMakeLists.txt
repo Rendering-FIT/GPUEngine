@@ -50,7 +50,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/macroFunction.h
     ${HEADER_PATH}/stdFunctions.h
     ${HEADER_PATH}/token.h
-    ${HEADER_PATH}/lexer.h
+    #    ${HEADER_PATH}/lexer.h
     ${HEADER_PATH}/idof.h
     ${HEADER_PATH}/NodeContext.h
     ${HEADER_PATH}/grammar.h
@@ -83,7 +83,7 @@ set(CORE_SOURCES
     macroFunction.cpp
     stdFunctions.cpp
     token.cpp
-    lexer.cpp
+    #    lexer.cpp
     grammar.cpp
     nonterm.cpp
     nontermNode.cpp

@@ -7,6 +7,7 @@
 #include<vector>
 #include<tuple>
 #include<geCore/Export.h>
+#include<geCore/token.h>
 
 namespace ge{
   namespace core{
@@ -64,7 +65,7 @@ namespace ge{
         std::string name = "";
         Range<TermIndex>range;
         virtual std::string str()const = 0;
-        virtual bool prefixMatch(TermType const&term)const = 0;
+        virtual bool prefixMatch(Token::Type const&term)const = 0;
     };
   }
 }

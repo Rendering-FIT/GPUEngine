@@ -3,6 +3,7 @@
 
 using namespace ge::core;
 
+#if 0
 Lexer::Lexer(){
   this->_firstRun = true;
 }
@@ -356,3 +357,4 @@ Token Lexer::get(){
   return this->_tokens[this->_currentToken++];
 }
 
+#endif

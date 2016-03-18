@@ -307,7 +307,7 @@ SCENARIO("Tokenization basic tests"){
       csv->parse("A,a,B");
       csv->end();
       THEN("it sould pass"){
-        Tokenization::Token tok;
+        Token tok;
         REQUIRE(csv->empty()==false);
         tok = csv->getToken();
         REQUIRE(tok.term==csv->tokenType("value"));
