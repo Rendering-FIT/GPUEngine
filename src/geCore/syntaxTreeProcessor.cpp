@@ -16,10 +16,10 @@ void SyntaxTreeProcessor::operator()(SyntaxNode::Node root)const{
   auto n = std::dynamic_pointer_cast<NontermNode>(root);
   auto key = Key(n->getNonterm()->name,n->getNonterm()->getRuleName(n->side));
   auto ii = this->_callbacks.find(key);
-  if(ii==this->_callbacks.end())return;
-  if(std::get<PRE>(ii->second))std::get<PRE>(ii->second)(root,std::get<DATA>(ii->second));
+  bool hasCallback = ii!=this->_callbacks.end();
+  if(hasCallback&&std::get<PRE>(ii->second))std::get<PRE>(ii->second)(root,std::get<DATA>(ii->second));
   for(auto x:n->childs)
     this->operator()(x);
-  if(std::get<POST>(ii->second))std::get<POST>(ii->second)(root,std::get<DATA>(ii->second));
+  if(hasCallback&&std::get<POST>(ii->second))std::get<POST>(ii->second)(root,std::get<DATA>(ii->second));
 }
 
