@@ -12,6 +12,65 @@ Syntax::Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization
   this->_tokenization = tokenization;
 }
 
+
+Syntax::Syntax(std::shared_ptr<Tokenization>const&tokenization,std::string synSource){
+  this->_tokenization = tokenization;
+  auto syn=std::make_shared<Tokenization>("START");
+  syn->addTransition("START"   ," \t"   ,"SPACE"                   );
+  syn->addTransition("START"   ,"\r\n"  ,"LINE-END"                );
+  syn->addTransition("START"   ,FSA::els,"STRING"  ,""        ,"b" );
+  syn->addTransition("START"   ,FSA::eof,"END"                     );
+
+  syn->addTransition("SPACE"   ," \t"   ,"SPACE"                   );
+  syn->addTransition("SPACE"   ,"\r\n"  ,"LINE-END"                );
+  syn->addTransition("SPACE"   ,FSA::els,"STRING"  ,""        ,"b" );
+  syn->addTransition("SPACE"   ,FSA::eof,"END"                     );
+
+  syn->addTransition("LINE-END"," \t"   ,"SPACE"   ,"line-end"     );
+  syn->addTransition("LINE-END","\r\n"  ,"LINE-END"                );
+  syn->addTransition("LINE-END",FSA::els,"STRING"  ,"line-end","b" );
+  syn->addTransition("LINE-END",FSA::eof,"END"                     );
+
+  syn->addTransition("STRING"  ," \t"   ,"SPACE"   ,"value"   ,"e" );
+  syn->addTransition("STRING"  ,"\r\n"  ,"LINE-END","value"   ,"eg");
+  syn->addTransition("STRING"  ,FSA::els,"STRING"                  );
+  syn->addTransition("STRING"  ,FSA::eof,"END"     ,"value"   ,"e" );
+  syn->begin();
+  syn->parse(synSource);
+  syn->end();
+  
+  bool firstRule = true;
+  std::vector<std::string>params;
+  while(!syn->empty()){
+    auto t=syn->getToken();
+    if(syn->tokenName(t.type)=="value"){
+      params.push_back(t.rawData);
+      continue;
+    }
+    if(syn->tokenName(t.type)=="line-end"){
+      if(params.size()>=3){
+        if(firstRule){
+          this->start = params[1];
+          std::cout<<"#########################"<<this->start<<std::endl;
+          firstRule = false;
+        }
+        this->addRule(params);
+      }
+      params.clear();
+    }
+  }
+  if(params.size()>=3){
+    if(firstRule){
+      this->start = params[1];
+      firstRule = false;
+    }
+    this->addRule(params);
+  }
+  params.clear();
+
+  this->computeLengths();
+}
+
 void Syntax::addRule(std::vector<std::string>params){
   if(params.size()<3){
     std::cerr<<"ERROR: Syntax::addRule(";

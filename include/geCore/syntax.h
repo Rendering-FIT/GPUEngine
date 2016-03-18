@@ -34,6 +34,7 @@ namespace ge{
       public:
         Syntax(std::string start);
         Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization);
+        Syntax(std::shared_ptr<Tokenization>const&tokenization,std::string synSource);
         void addRule(std::vector<std::string>params);
         ~Syntax();
         void runStart();

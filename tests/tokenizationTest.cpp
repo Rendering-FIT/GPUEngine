@@ -26,114 +26,114 @@ SCENARIO("Tokenization basic tests"){
     t.addTransition("START"         ,"!"         ,"EXCLAMATION"                                              );
     t.addTransition("START"         ,"&"         ,"AMPERSAND"                                                );
     t.addTransition("START"         ,"|"         ,"BAR"                                                      );
-    t.addTransition("START"         ,"("         ,"START"         ,"("                                       );//create token
-    t.addTransition("START"         ,")"         ,"START"         ,")"                                       );//create token
-    t.addTransition("START"         ,"{"         ,"START"         ,"{"                                       );//create token
-    t.addTransition("START"         ,"}"         ,"START"         ,"}"                                       );//create token
-    t.addTransition("START"         ,"["         ,"START"         ,"["                                       );//create token
-    t.addTransition("START"         ,"]"         ,"START"         ,"]"                                       );//create token
-    t.addTransition("START"         ,"~"         ,"START"         ,"~"                                       );//create token
-    t.addTransition("START"         ,";"         ,"START"         ,";"                                       );//create token
-    t.addTransition("START"         ,","         ,"START"         ,","                                       );//create token
-    t.addTransition("START"         ,identStart  ,"IDENTIFIER"    ,""                                   , "b");//push pos
-    t.addTransition("START"         ,"\""        ,"DOUBLE_QUOTES" ,""                                   , "b");//push pos
-    t.addTransition("START"         ,"'"         ,"QUOTES"        ,""                                   , "b");//push pos
-    t.addTransition("START"         ,"."         ,"DOT"           ,""                                   , "b");//push pos
-    t.addTransition("START"         ,FSA::digit  ,"DIGIT"         ,""                                   , "b");//push pos
+    t.addTransition("START"         ,"("         ,"START"         ,"("                                  ,"c" );//create token
+    t.addTransition("START"         ,")"         ,"START"         ,")"                                  ,"c" );//create token
+    t.addTransition("START"         ,"{"         ,"START"         ,"{"                                  ,"c" );//create token
+    t.addTransition("START"         ,"}"         ,"START"         ,"}"                                  ,"c" );//create token
+    t.addTransition("START"         ,"["         ,"START"         ,"["                                  ,"c" );//create token
+    t.addTransition("START"         ,"]"         ,"START"         ,"]"                                  ,"c" );//create token
+    t.addTransition("START"         ,"~"         ,"START"         ,"~"                                  ,"c" );//create token
+    t.addTransition("START"         ,";"         ,"START"         ,";"                                  ,"c" );//create token
+    t.addTransition("START"         ,","         ,"START"         ,","                                  ,"c" );//create token
+    t.addTransition("START"         ,identStart  ,"IDENTIFIER"    ,""                                   ,"b" );//push pos
+    t.addTransition("START"         ,"\""        ,"DOUBLE_QUOTES" ,""                                   ,"b" );//push pos
+    t.addTransition("START"         ,"'"         ,"QUOTES"        ,""                                   ,"b" );//push pos
+    t.addTransition("START"         ,"."         ,"DOT"           ,""                                   ,"b" );//push pos
+    t.addTransition("START"         ,FSA::digit  ,"DIGIT"         ,""                                   ,"b" );//push pos
     t.addTransition("START"         ,FSA::eof    ,"END"                                                      );
     t.addTransition("START"         ,""          ,""              ,"unexpected symbol"                       );//ERROR
 
-    t.addTransition("PLUS"          ,operatorStop,"START"         ,"+"                                  , "g");//create token +, goBack
-    t.addTransition("PLUS"          ,FSA::space  ,"START"         ,"+"                                       );//create token +
-    t.addTransition("PLUS"          ,"="         ,"START"         ,"+="                                      );//create token += ++
-    t.addTransition("PLUS"          ,"+"         ,"START"         ,"++"                                      );//create token += ++
-    t.addTransition("PLUS"          ,"/"         ,"SLASH"         ,"+"                                       );//create token +
-    t.addTransition("PLUS"          ,FSA::eof    ,"END"           ,"+"                                       );//create token +
+    t.addTransition("PLUS"          ,operatorStop,"START"         ,"+"                                  ,"cg");//create token +, goBack
+    t.addTransition("PLUS"          ,FSA::space  ,"START"         ,"+"                                  ,"c" );//create token +
+    t.addTransition("PLUS"          ,"="         ,"START"         ,"+="                                 ,"c" );//create token += ++
+    t.addTransition("PLUS"          ,"+"         ,"START"         ,"++"                                 ,"c" );//create token += ++
+    t.addTransition("PLUS"          ,"/"         ,"SLASH"         ,"+"                                  ,"c" );//create token +
+    t.addTransition("PLUS"          ,FSA::eof    ,"END"           ,"+"                                  ,"c" );//create token +
     t.addTransition("PLUS"          ,""          ,""              ,"expected + or ="                         );
 
-    t.addTransition("MINUS"         ,operatorStop,"START"         ,"-"                                  , "g");//create token -, goBack
-    t.addTransition("MINUS"         ,FSA::space  ,"START"         ,"-"                                       );//create token -
-    t.addTransition("MINUS"         ,"="         ,"START"         ,"-="                                      );//create token -= --
-    t.addTransition("MINUS"         ,"-"         ,"START"         ,"--"                                      );//create token -= --
-    t.addTransition("MINUS"         ,"/"         ,"SLASH"         ,"-"                                       );//create token -
-    t.addTransition("MINUS"         ,FSA::eof    ,"END"           ,"-"                                       );//create token -
+    t.addTransition("MINUS"         ,operatorStop,"START"         ,"-"                                  ,"cg");//create token -, goBack
+    t.addTransition("MINUS"         ,FSA::space  ,"START"         ,"-"                                  ,"c" );//create token -
+    t.addTransition("MINUS"         ,"="         ,"START"         ,"-="                                 ,"c" );//create token -= --
+    t.addTransition("MINUS"         ,"-"         ,"START"         ,"--"                                 ,"c" );//create token -= --
+    t.addTransition("MINUS"         ,"/"         ,"SLASH"         ,"-"                                  ,"c" );//create token -
+    t.addTransition("MINUS"         ,FSA::eof    ,"END"           ,"-"                                  ,"c" );//create token -
     t.addTransition("MINUS"         ,""          ,""              ,"expected - or ="                         );//ERROR
 
-    t.addTransition("MULTIPLICATION",operatorStop,"START"         ,"*"                                  , "g");//create token *, goBack
-    t.addTransition("MULTIPLICATION",FSA::space  ,"START"         ,"*"                                       );//create token *
-    t.addTransition("MULTIPLICATION","="         ,"START"         ,"*="                                      );//create token *=
-    t.addTransition("MULTIPLICATION","/"         ,"SLASH"         ,"*"                                       );//create token *
-    t.addTransition("MULTIPLICATION",FSA::eof    ,"END"           ,"*"                                       );//create token *
-    t.addTransition("MULTIPLICATION",""          ,""              ,"expected ="                              );//ERRO);
+    t.addTransition("MULTIPLICATION",operatorStop,"START"         ,"*"                                  ,"cg");//create token *, goBack
+    t.addTransition("MULTIPLICATION",FSA::space  ,"START"         ,"*"                                  ,"c" );//create token *
+    t.addTransition("MULTIPLICATION","="         ,"START"         ,"*="                                 ,"c" );//create token *=
+    t.addTransition("MULTIPLICATION","/"         ,"SLASH"         ,"*"                                  ,"c" );//create token *
+    t.addTransition("MULTIPLICATION",FSA::eof    ,"END"           ,"*"                                  ,"c" );//create token *
+    t.addTransition("MULTIPLICATION",""          ,""              ,"expected ="                         ,"c" );//ERRO);
 
-    t.addTransition("SLASH"         ,operatorStop,"START"         ,"/"                                  , "g");//create token /, goBack
-    t.addTransition("SLASH"         ,FSA::space  ,"START"         ,"/"                                       );//create token /
-    t.addTransition("STASH"         ,"="         ,"START"         ,"/="                                      );//create token /=
+    t.addTransition("SLASH"         ,operatorStop,"START"         ,"/"                                  ,"cg");//create token /, goBack
+    t.addTransition("SLASH"         ,FSA::space  ,"START"         ,"/"                                  ,"c" );//create token /
+    t.addTransition("STASH"         ,"="         ,"START"         ,"/="                                 ,"c" );//create token /=
     t.addTransition("SLASH"         ,"/"         ,"COMMENT0"                                                 );
     t.addTransition("SLASH"         ,"*"         ,"COMMENT1"                                                 );
-    t.addTransition("SLASH"         ,FSA::eof    ,"END"           ,"/"                                       );//create token /
+    t.addTransition("SLASH"         ,FSA::eof    ,"END"           ,"/"                                  ,"c" );//create token /
     t.addTransition("SLASH"         ,""          ,""              ,"expected = or *"                         );//ERROR
 
-    t.addTransition("MODULO"        ,operatorStop,"START"         ,"%"                                  , "g");//create token %, goBack
-    t.addTransition("MODULO"        ,FSA::space  ,"START"         ,"%"                                       );//create token %
-    t.addTransition("MODULO"        ,"="         ,"START"         ,"%="                                      );//create token %=
-    t.addTransition("MODULO"        ,"/"         ,"SLASH"         ,"%"                                       );//create token %
-    t.addTransition("MODULO"        ,FSA::eof    ,"END"           ,"%"                                       );//create token %
+    t.addTransition("MODULO"        ,operatorStop,"START"         ,"%"                                  ,"cg");//create token %, goBack
+    t.addTransition("MODULO"        ,FSA::space  ,"START"         ,"%"                                  ,"c" );//create token %
+    t.addTransition("MODULO"        ,"="         ,"START"         ,"%="                                 ,"c" );//create token %=
+    t.addTransition("MODULO"        ,"/"         ,"SLASH"         ,"%"                                  ,"c" );//create token %
+    t.addTransition("MODULO"        ,FSA::eof    ,"END"           ,"%"                                  ,"c" );//create token %
     t.addTransition("MODULO"        ,""          ,""              ,"expected ="                              );//ERROR
 
-    t.addTransition("LESSER"        ,operatorStop,"START"         ,"<"                                  , "g");//create token <, goBack
-    t.addTransition("LESSER"        ,FSA::space  ,"START"         ,"<"                                       );//create token <
-    t.addTransition("LESSER"        ,"="         ,"START"         ,"<="                                      );//create token <=
+    t.addTransition("LESSER"        ,operatorStop,"START"         ,"<"                                  ,"cg");//create token <, goBack
+    t.addTransition("LESSER"        ,FSA::space  ,"START"         ,"<"                                  ,"c" );//create token <
+    t.addTransition("LESSER"        ,"="         ,"START"         ,"<="                                 ,"c" );//create token <=
     t.addTransition("LESSER"        ,"<"         ,"LSHIFT"                                                   );
-    t.addTransition("LESSER"        ,"/"         ,"SLASH"         ,"<"                                       );//create token <
-    t.addTransition("LESSER"        ,FSA::eof    ,"END"           ,"<"                                       );//create token <
+    t.addTransition("LESSER"        ,"/"         ,"SLASH"         ,"<"                                  ,"c" );//create token <
+    t.addTransition("LESSER"        ,FSA::eof    ,"END"           ,"<"                                  ,"c" );//create token <
     t.addTransition("LESSER"        ,""          ,""              ,"expected ="                              );//ERROR
 
-    t.addTransition("GREATER"       ,operatorStop,"START"         ,">"                                  , "g");//create token >, goBack
-    t.addTransition("GREATER"       ,FSA::space  ,"START"         ,">"                                       );//create token >
-    t.addTransition("GREATER"       ,"="         ,"START"         ,">="                                      );//create token >=
+    t.addTransition("GREATER"       ,operatorStop,"START"         ,">"                                  ,"cg");//create token >, goBack
+    t.addTransition("GREATER"       ,FSA::space  ,"START"         ,">"                                  ,"c" );//create token >
+    t.addTransition("GREATER"       ,"="         ,"START"         ,">="                                 ,"c" );//create token >=
     t.addTransition("GREATER"       ,">"         ,"RSHIFT"                                                   );
-    t.addTransition("GREATER"       ,"/"         ,"SLASH"         ,">"                                       );//create token >
-    t.addTransition("GREATER"       ,FSA::eof    ,"END"           ,">"                                       );//create token >
+    t.addTransition("GREATER"       ,"/"         ,"SLASH"         ,">"                                  ,"c" );//create token >
+    t.addTransition("GREATER"       ,FSA::eof    ,"END"           ,">"                                  ,"c" );//create token >
     t.addTransition("GREATER"       ,""          ,""              ,"expected ="                              );//ERROR
 
-    t.addTransition("ASSIGNMENT"    ,operatorStop,"START"         ,"="                                  , "g");//create token =, goBack
-    t.addTransition("ASSIGNMENT"    ,FSA::space  ,"START"         ,"="                                       );//create token =
-    t.addTransition("ASSIGNMENT"    ,"="         ,"START"         ,"=="                                      );//create token ==
-    t.addTransition("ASSIGNMENT"    ,"/"         ,"SLASH"         ,"="                                       );//create token =
-    t.addTransition("ASSIGNMENT"    ,FSA::eof    ,"END"           ,"="                                       );//create token =
+    t.addTransition("ASSIGNMENT"    ,operatorStop,"START"         ,"="                                  ,"cg");//create token =, goBack
+    t.addTransition("ASSIGNMENT"    ,FSA::space  ,"START"         ,"="                                  ,"c" );//create token =
+    t.addTransition("ASSIGNMENT"    ,"="         ,"START"         ,"=="                                 ,"c" );//create token ==
+    t.addTransition("ASSIGNMENT"    ,"/"         ,"SLASH"         ,"="                                  ,"c" );//create token =
+    t.addTransition("ASSIGNMENT"    ,FSA::eof    ,"END"           ,"="                                  ,"c" );//create token =
     t.addTransition("ASSIGNMENT"    ,""          ,""              ,"expected ="                              );//ERROR
 
-    t.addTransition("EXCLAMATION"   ,operatorStop,"START"         ,"!"                                  , "g");//create token !, goBack
-    t.addTransition("EXCLAMATION"   ,FSA::space  ,"START"         ,"!"                                       );//create token !
-    t.addTransition("EXCLAMATION"   ,"="         ,"START"         ,"!="                                      );//create token !=
-    t.addTransition("EXCLAMATION"   ,"!"         ,"START"         ,"!!"                                      );//create token !!
-    t.addTransition("EXCLAMATION"   ,"/"         ,"SLASH"         ,"!"                                       );//create token !
-    t.addTransition("EXCLAMATION"   ,FSA::eof    ,"END"           ,"!"                                       );//create token !
+    t.addTransition("EXCLAMATION"   ,operatorStop,"START"         ,"!"                                  ,"cg");//create token !, goBack
+    t.addTransition("EXCLAMATION"   ,FSA::space  ,"START"         ,"!"                                  ,"c" );//create token !
+    t.addTransition("EXCLAMATION"   ,"="         ,"START"         ,"!="                                 ,"c" );//create token !=
+    t.addTransition("EXCLAMATION"   ,"!"         ,"START"         ,"!!"                                 ,"c" );//create token !!
+    t.addTransition("EXCLAMATION"   ,"/"         ,"SLASH"         ,"!"                                  ,"c" );//create token !
+    t.addTransition("EXCLAMATION"   ,FSA::eof    ,"END"           ,"!"                                  ,"c" );//create token !
     t.addTransition("EXCLAMATION"   ,""          ,""              ,"expected = or !"                         );//ERROR
 
-    t.addTransition("AMPERSAND"     ,operatorStop,"START"         ,"&"                                  , "g");//create token &, goBack
-    t.addTransition("AMPERSAND"     ,FSA::space  ,"START"         ,"&"                                       );//create token &
-    t.addTransition("AMPERSAND"     ,"="         ,"START"         ,"&="                                      );//create token &=
-    t.addTransition("AMPERSAND"     ,"&"         ,"START"         ,"&&"                                      );//create token &&
-    t.addTransition("AMPERSAND"     ,"/"         ,"SLASH"         ,"&"                                       );//create token &
-    t.addTransition("AMPERSAND"     ,FSA::eof    ,"END"           ,"&"                                       );//create token &
+    t.addTransition("AMPERSAND"     ,operatorStop,"START"         ,"&"                                  ,"cg");//create token &, goBack
+    t.addTransition("AMPERSAND"     ,FSA::space  ,"START"         ,"&"                                  ,"c" );//create token &
+    t.addTransition("AMPERSAND"     ,"="         ,"START"         ,"&="                                 ,"c" );//create token &=
+    t.addTransition("AMPERSAND"     ,"&"         ,"START"         ,"&&"                                 ,"c" );//create token &&
+    t.addTransition("AMPERSAND"     ,"/"         ,"SLASH"         ,"&"                                  ,"c" );//create token &
+    t.addTransition("AMPERSAND"     ,FSA::eof    ,"END"           ,"&"                                  ,"c" );//create token &
     t.addTransition("AMPERSAND"     ,""          ,""              ,"expected = or &"                         );//ERROR
 
-    t.addTransition("BAR"           ,operatorStop,"START"         ,"|"                                  , "g");//create token |, goBack
-    t.addTransition("BAR"           ,FSA::space  ,"START"         ,"|"                                       );//create token |
-    t.addTransition("BAR"           ,"="         ,"START"         ,"|="                                      );//create token |=
-    t.addTransition("BAR"           ,"|"         ,"START"         ,"||"                                      );//create token ||
-    t.addTransition("BAR"           ,"/"         ,"SLASH"         ,"|"                                       );//create token |
-    t.addTransition("BAR"           ,FSA::eof    ,"END"           ,"|"                                       );//create token |
+    t.addTransition("BAR"           ,operatorStop,"START"         ,"|"                                  ,"cg");//create token |, goBack
+    t.addTransition("BAR"           ,FSA::space  ,"START"         ,"|"                                  ,"c" );//create token |
+    t.addTransition("BAR"           ,"="         ,"START"         ,"|="                                 ,"c" );//create token |=
+    t.addTransition("BAR"           ,"|"         ,"START"         ,"||"                                 ,"c" );//create token ||
+    t.addTransition("BAR"           ,"/"         ,"SLASH"         ,"|"                                  ,"c" );//create token |
+    t.addTransition("BAR"           ,FSA::eof    ,"END"           ,"|"                                  ,"c" );//create token |
     t.addTransition("BAR"           ,""          ,""              ,"expected = or |"                         );//ERROR
 
     t.addTransition("IDENTIFIER"    ,identBody   ,"IDENTIFIER"                                               );
-    t.addTransition("IDENTIFIER"    ,FSA::space  ,"START"         ,keywords                             , "e");//create token identifier
+    t.addTransition("IDENTIFIER"    ,FSA::space  ,"START"         ,keywords                             ,"e" );//create token identifier
     t.addTransition("IDENTIFIER"    ,FSA::els    ,"START"         ,keywords                             ,"eg");//create token identifier, goBack
 
     t.addTransition("DOUBLE_QUOTES" ,"\\\\"      ,"DQ_BACKSLASH"                                             );
-    t.addTransition("DOUBLE_QUOTES" ,"\""        ,"START"         ,"string"                             , "e");//create token string
+    t.addTransition("DOUBLE_QUOTES" ,"\""        ,"START"         ,"string"                             ,"e" );//create token string
     t.addTransition("DOUBLE_QUOTES" ,FSA::els    ,"DOUBLE_QUOTES"                                            );
     t.addTransition("DOUBLE_QUOTES" ,FSA::eof    ,""              ,"unexpected end of file for string"       );//ERROR
 
@@ -141,25 +141,25 @@ SCENARIO("Tokenization basic tests"){
     t.addTransition("DQ_BACKSLASH"  ,FSA::eof    ,""              ,"unexpected end of file for backslash"    );//ERROR
 
     t.addTransition("QUOTES"        ,"\\\\"      ,"Q_BACKSLASH"                                              );
-    t.addTransition("QUOTES"        ,"\'"        ,"START"         ,"char"                               , "e");//create token char
+    t.addTransition("QUOTES"        ,"\'"        ,"START"         ,"char"                               ,"e" );//create token char
     t.addTransition("QUOTES"        ,FSA::els    ,"QUOTES"                                                   );
     t.addTransition("QUOTES"        ,FSA::eof    ,""              ,"unexpected end of file for char"         );//ERROR
     t.addTransition("Q_BACKSLASH"   ,FSA::all    ,"QUOTES"                                                   );
     t.addTransition("Q_BACKSLASH"   ,FSA::eof    ,""              ,"unexpected end of file for backslash"    );//ERROR
 
     t.addTransition("DOT"           ,FSA::digit  ,"FRACTION"                                                 );
-    t.addTransition("DOT"           ,FSA::eof    ,"END"           ,"."                                       );//create token .
-    t.addTransition("DOT"           ,FSA::els    ,"START"         ,"."                                  , "g");//create token ., goBack
+    t.addTransition("DOT"           ,FSA::eof    ,"END"           ,"."                                  ,"c" );//create token .
+    t.addTransition("DOT"           ,FSA::els    ,"START"         ,"."                                  ,"cg");//create token ., goBack
 
     t.addTransition("DIGIT"         ,FSA::digit  ,"DIGIT"                                                    );
     t.addTransition("DIGIT"         ,"eE"        ,"EXPONENT"                                                 );
     t.addTransition("DIGIT"         ,"."         ,"FRACTION"                                                 );
-    t.addTransition("DIGIT"         ,FSA::eof    ,"END"           ,"integer"                                 );//create token integer
+    t.addTransition("DIGIT"         ,FSA::eof    ,"END"           ,"integer"                            ,"e" );//create token integer
     t.addTransition("DIGIT"         ,FSA::els    ,"START"         ,"integer"                            ,"eg");//create token integer, goBack
 
     t.addTransition("FRACTION"      ,FSA::digit  ,"FRACTION"                                                 );
     t.addTransition("FRACTION"      ,"eE"        ,"EXPONENT"                                                 );
-    t.addTransition("FRACTION"      ,FSA::eof    ,"END"           ,"float"                                   );//create token float
+    t.addTransition("FRACTION"      ,FSA::eof    ,"END"           ,"float"                              ,"e" );//create token float
     t.addTransition("FRACTION"      ,FSA::els    ,"START"         ,"float"                              ,"eg");//create token float, goBack
 
     t.addTransition("EXPONENT"      ,"+-"        ,"EXP_SIGN"                                                 );
@@ -172,7 +172,7 @@ SCENARIO("Tokenization basic tests"){
     t.addTransition("EXP_SIGN"      ,FSA::els    ,""              ,"expected digit in float expoenent"       );//ERROR
 
     t.addTransition("EXP_DIGIT"     ,FSA::digit  ,"EXP_DIGIT"                                                );
-    t.addTransition("EXP_DIGIT"     ,FSA::eof    ,"END"           ,"float"                                   );//create token float
+    t.addTransition("EXP_DIGIT"     ,FSA::eof    ,"END"           ,"float"                              ,"e" );//create token float
     t.addTransition("EXP_DIGIT"     ,FSA::els    ,"START"         ,"float"                              ,"eg");//create token float, goBack
 
     t.addTransition("COMMENT0"      ,"\r\n"      ,"START"                                                    );
@@ -188,18 +188,18 @@ SCENARIO("Tokenization basic tests"){
     t.addTransition("COMMENT1_STAR" ,FSA::eof    ,"END"                                                      );
     t.addTransition("COMMENT1_STAR" ,FSA::els    ,"COMMENT1"                                                 );
 
-    t.addTransition("LSHIFT"        ,operatorStop,"START"         ,"<<"                                 , "g");//create token <<, goBack
-    t.addTransition("LSHIFT"        ,FSA::space  ,"START"         ,"<<"                                      );//create token <<
-    t.addTransition("LSHIFT"        ,"="         ,"START"         ,"<<="                                     );//create token <<=
-    t.addTransition("LSHIFT"        ,"/"         ,"SLASH"         ,"<<"                                      );//create token <<
-    t.addTransition("LSHIFT"        ,FSA::eof    ,"END"           ,"<<"                                      );//create token <<
+    t.addTransition("LSHIFT"        ,operatorStop,"START"         ,"<<"                                 ,"cg");//create token <<, goBack
+    t.addTransition("LSHIFT"        ,FSA::space  ,"START"         ,"<<"                                 ,"c" );//create token <<
+    t.addTransition("LSHIFT"        ,"="         ,"START"         ,"<<="                                ,"c" );//create token <<=
+    t.addTransition("LSHIFT"        ,"/"         ,"SLASH"         ,"<<"                                 ,"c" );//create token <<
+    t.addTransition("LSHIFT"        ,FSA::eof    ,"END"           ,"<<"                                 ,"c" );//create token <<
     t.addTransition("LSHIFT"        ,""          ,""              ,"expected ="                              );//ERROR
 
-    t.addTransition("RSHIFT"        ,operatorStop,"START"         ,">>"                                 , "g");//create token >>, goBack
-    t.addTransition("RSHIFT"        ,FSA::space  ,"START"         ,">>"                                      );//create token >>
-    t.addTransition("RSHIFT"        ,"="         ,"START"         ,">>="                                     );//create token >>=
-    t.addTransition("RSHIFT"        ,"/"         ,"SLASH"         ,">>"                                      );//create token >>
-    t.addTransition("RSHIFT"        ,FSA::eof    ,"END"           ,">>"                                      );//create token >>
+    t.addTransition("RSHIFT"        ,operatorStop,"START"         ,">>"                                 ,"cg");//create token >>, goBack
+    t.addTransition("RSHIFT"        ,FSA::space  ,"START"         ,">>"                                 ,"c" );//create token >>
+    t.addTransition("RSHIFT"        ,"="         ,"START"         ,">>="                                ,"c" );//create token >>=
+    t.addTransition("RSHIFT"        ,"/"         ,"SLASH"         ,">>"                                 ,"c" );//create token >>
+    t.addTransition("RSHIFT"        ,FSA::eof    ,"END"           ,">>"                                 ,"c" );//create token >>
     t.addTransition("RSHIFT"        ,""          ,""              ,"expected ="                              );//ERROR
 
 
@@ -250,10 +250,10 @@ SCENARIO("Tokenization basic tests"){
       }
     }
   }
-  
+   
   GIVEN("simple tokenization"){
     auto csv=std::make_shared<Tokenization>("START");
-    csv->addTransition("START" ,","     ,"START" ,","         );
+    csv->addTransition("START" ,","     ,"START" ,","    ,"c" );
     csv->addTransition("START" ,FSA::els,"STRING",""     ,"b" );
     csv->addTransition("START" ,FSA::eof,"END"                );
 
@@ -281,16 +281,17 @@ SCENARIO("Tokenization basic tests"){
     }
   }
 
+  
   GIVEN("tokenization for csv"){
     auto csv=std::make_shared<Tokenization>("START");
-    csv->addTransition("START"    ,","     ,"START"    ,","                              );
+    csv->addTransition("START"    ,","     ,"START"    ,","       ,"c"                   );
     csv->addTransition("START"    ,"\r\n"  ,"LINE-END"                                   );
     csv->addTransition("START"    ,"\\\\"  ,"BACKSLASH",""        ,"b"                   );
     csv->addTransition("START"    ,FSA::els,"STRING"   ,""        ,"b"                   );
     csv->addTransition("START"    ,FSA::eof,"END"                                        );
 
     csv->addTransition("LINE-END" ,"\r\n"  ,"LINE-END"                                   );
-    csv->addTransition("LINE-END" ,FSA::els,"START"    ,"line-end","g"                   );
+    csv->addTransition("LINE-END" ,FSA::els,"START"    ,"line-end","cg"                  );
     csv->addTransition("LINE-END" ,FSA::eof,"END"                                        );
 
     csv->addTransition("BACKSLASH",FSA::all,"STRING"                                     );
@@ -306,7 +307,7 @@ SCENARIO("Tokenization basic tests"){
       csv->begin();
       csv->parse("A,a,B");
       csv->end();
-      THEN("it sould pass"){
+      THEN("it should pass"){
         Token tok;
         REQUIRE(csv->empty()==false);
         tok = csv->getToken();
@@ -574,6 +575,72 @@ SCENARIO("Tokenization basic tests"){
         REQUIRE(t.empty()==false);
         REQUIRE(t.getToken().type==t.tokenType(")"));
         REQUIRE(t.empty()==true);
+      }
+    }
+  }
+  GIVEN("tokenization for syntax"){
+    auto syn=std::make_shared<Tokenization>("START");
+    syn->addTransition("START"   ," \t"   ,"SPACE"                   );
+    syn->addTransition("START"   ,"\r\n"  ,"LINE-END"                );
+    syn->addTransition("START"   ,FSA::els,"STRING"  ,""        ,"b" );
+    syn->addTransition("START"   ,FSA::eof,"END"                     );
+
+    syn->addTransition("SPACE"   ," \t"   ,"SPACE"                   );
+    syn->addTransition("SPACE"   ,"\r\n"  ,"LINE-END"                );
+    syn->addTransition("SPACE"   ,FSA::els,"STRING"  ,""        ,"b" );
+    syn->addTransition("SPACE"   ,FSA::eof,"END"                     );
+
+    syn->addTransition("LINE-END"," \t"   ,"SPACE"   ,"line-end"     );
+    syn->addTransition("LINE-END","\r\n"  ,"LINE-END"                );
+    syn->addTransition("LINE-END",FSA::els,"STRING"  ,"line-end","b" );
+    syn->addTransition("LINE-END",FSA::eof,"END"                     );
+
+    syn->addTransition("STRING"  ," \t"   ,"SPACE"   ,"value"   ,"e" );
+    syn->addTransition("STRING"  ,"\r\n"  ,"LINE-END","value"   ,"eg");
+    syn->addTransition("STRING"  ,FSA::els,"STRING"                  );
+    syn->addTransition("STRING"  ,FSA::eof,"END"     ,"value"   ,"e" );
+
+    WHEN("parsing A a B\\nC c D"){
+      syn->begin();
+      syn->parse("A a B\nC c D");
+      syn->end();
+      THEN("it should pass"){
+        Token tok;
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("value"));
+        REQUIRE(tok.rawData == "A");
+
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("value"));
+        REQUIRE(tok.rawData == "a");
+
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("value"));
+        REQUIRE(tok.rawData == "B");
+
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("line-end"));
+
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("value"));
+        REQUIRE(tok.rawData == "C");
+
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("value"));
+        REQUIRE(tok.rawData == "c");
+
+        REQUIRE(syn->empty()==false);
+        tok = syn->getToken();
+        REQUIRE(tok.type==syn->tokenType("value"));
+        REQUIRE(tok.rawData == "D");
+
+        REQUIRE(syn->empty()==true);
       }
     }
   }

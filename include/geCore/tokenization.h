@@ -16,6 +16,7 @@ namespace ge{
         static const std::string config_bit_begin ;
         static const std::string config_bit_end   ;
         static const std::string config_bit_goback;
+        static const std::string config_bit_create;
         static const std::string config_bit_empty ;
         Tokenization(std::string start);
         Tokenization();
@@ -42,6 +43,7 @@ namespace ge{
           GOBACK          = 1u<<0,
           BEGIN           = 1u<<1,
           END             = 1u<<2,
+          CREATE          = 1u<<3,
         };
         using Config = int;
         class Data;

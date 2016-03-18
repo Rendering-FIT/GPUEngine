@@ -113,6 +113,8 @@ void Tokenization::addTransition(
   if(config.find(Tokenization::config_bit_begin )!=std::string::npos)conf|=BEGIN ;
   if(config.find(Tokenization::config_bit_end   )!=std::string::npos)conf|=END   ;
   if(config.find(Tokenization::config_bit_goback)!=std::string::npos)conf|=GOBACK;
+  if(config.find(Tokenization::config_bit_create)!=std::string::npos)conf|=CREATE;
+  if(end!=""&&token!="")conf|=CREATE;
   if(token==""){
     if(conf==EMPTY){
       this->_data.fsa->addTransition(start,lex,end);
@@ -173,10 +175,6 @@ Token::Type Tokenization::_registerToken(std::string token){
 
 void Tokenization::_callback(ge::core::FSA*fsa,void*data){
   auto cd=(CallbackData*)data;
-  if(cd->conf&BEGIN){
-    cd->data->charPosition = fsa->getCurrentPosition();
-    return;
-  }
   if(cd->conf&Tokenization::END){
     auto word = fsa->getAlreadyReadString().substr(cd->data->charPosition);
     Token::Type term = cd->term;
@@ -186,8 +184,12 @@ void Tokenization::_callback(ge::core::FSA*fsa,void*data){
         term=ii->second;
     }
     cd->data->tokens.push_back(Token(term,word));
-  }else
+  }else if(cd->conf&Tokenization::CREATE){
     cd->data->tokens.push_back(Token(cd->term));
+  }
+  if(cd->conf&BEGIN){
+    cd->data->charPosition = fsa->getCurrentPosition();
+  }
   if(cd->conf&GOBACK)fsa->goBack();
 }
 
@@ -232,6 +234,6 @@ Tokenization::Data::Data(){
 const std::string Tokenization::config_bit_begin  = "b";
 const std::string Tokenization::config_bit_end    = "e";
 const std::string Tokenization::config_bit_goback = "g";
+const std::string Tokenization::config_bit_create = "c";
 const std::string Tokenization::config_bit_empty  = "" ;
-
 
