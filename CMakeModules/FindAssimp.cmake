@@ -22,7 +22,7 @@ if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
    # adjust variable names according to GPUEngine customs
    # and clean cache from non-sense stuff (config file is poorly written as of version 3.1.1)
-   set(ASSIMP_INCLUDE_DIR ${ASSIMP_INCLUDE_DIRS})
+   set(ASSIMP_INCLUDE_DIR ${ASSIMP_INCLUDE_DIRS} CACHE PATH "Assimp include directory")
    unset(ASSIMP_INCLUDE_DIRS)
    unset(ASSIMP_LIBRARIES)
    unset(ASSIMP_LIBRARY_SUFFIX CACHE)
@@ -31,9 +31,9 @@ else()
 
    # find Assimp includes
    find_path(ASSIMP_INCLUDE_DIR assimp/mesh.h
-      /usr/include
-      /usr/local/include
-      /opt/local/include
+      HINTS ${ASSIMP_ROOT_DIR}
+      PATH_SUFFIXES include
+      DOC "Assimp include directory"
    )
 
 endif()
