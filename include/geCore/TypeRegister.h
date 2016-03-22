@@ -8,92 +8,82 @@
 #include<set>
 #include<typeinfo>
 #include<functional>
+#include<memory>
 
 namespace ge{
   namespace core{
     class Accessor;
+    class AtomicAccessor;
     class GECORE_EXPORT TypeRegister: public std::enable_shared_from_this<TypeRegister>{
       public:
         DEF_ENUM(Type,UNREGISTERED,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID);
-        typedef unsigned TypeID;
+        //enum Type{UNREGISTERED,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID};
+        using TypeID                = size_t;
+        using DescriptionElement    = TypeID;
+        using DescriptionList       = std::vector<DescriptionElement>;
+        using DescriptionIndex      = DescriptionList::size_type;
+        using DescriptionStarts     = std::vector<DescriptionIndex>;
+        using DescriptionStartIndex = DescriptionStarts::size_type;
         typedef void(OBJConstructor)(signed   char*);
         typedef void(OBJDestructor )(unsigned char*);
       protected:
         struct POSITION{
-          static const unsigned TYPE = 0u;
+          static const DescriptionIndex TYPE = 0u;
           struct ARRAY{
-            static const unsigned SIZE       = 1u;
-            static const unsigned INNER_TYPE = 2u;
+            static const DescriptionIndex SIZE       = 1u;
+            static const DescriptionIndex INNER_TYPE = 2u;
           };
           struct STRUCT{
-            static const unsigned NOF_ELEMENTS      = 1u;
-            static const unsigned INNER_TYPES_START = 2u;
+            static const DescriptionIndex NOF_ELEMENTS      = 1u;
+            static const DescriptionIndex INNER_TYPES_START = 2u;
           };
           struct PTR{
-            static const unsigned INNER_TYPE = 1u;
+            static const DescriptionIndex INNER_TYPE = 1u;
           };
           struct FCE{
-            static const unsigned RETURN_TYPE     = 1u;
-            static const unsigned NOF_ARGUMENTS   = 2u;
-            static const unsigned ARGUMENTS_START = 3u;
+            static const DescriptionIndex RETURN_TYPE     = 1u;
+            static const DescriptionIndex NOF_ARGUMENTS   = 2u;
+            static const DescriptionIndex ARGUMENTS_START = 3u;
           };
           struct OBJ{
-            static const unsigned SIZE = 1u;
+            static const DescriptionIndex SIZE = 1u;
           };
         };
 
-        std::vector<unsigned>       _typeStart;
-        std::vector<unsigned>       _types    ;
-        std::map<std::string,TypeID>_name2Id  ;
-        std::map<TypeID,std::string>_id2name  ;
+        DescriptionStarts            _typeStart;
+        DescriptionList              _types    ;
+        std::map<std::string,TypeID> _name2Id  ;
+        std::map<TypeID,std::string> _id2name  ;
         std::map<TypeID,std::set<std::string>>_id2Synonyms;
         std::map<TypeID,std::function<OBJConstructor>>_id2Constructor;
-        std::map<TypeID,std::function<OBJDestructor>>_id2Destructor;
-        bool   _isNewTypeEqualTo(TypeID et,std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start);
-        bool   _typeExists      (TypeID*et,std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start);
-        TypeID _typeAdd         (          std::vector<unsigned>const&type,std::vector<unsigned>::size_type&start);
-        bool   _incrCheck(std::vector<unsigned>::size_type size,std::vector<unsigned>::size_type&start);
+        std::map<TypeID,std::function<OBJDestructor >>_id2Destructor;
+        bool   _isNewTypeEqualTo(TypeID et,DescriptionList const&type,DescriptionIndex&start);
+        bool   _typeExists      (TypeID*et,DescriptionList const&type,DescriptionIndex&start);
+        TypeID _typeAdd         (          DescriptionList const&type,DescriptionIndex&start);
+        bool   _incrCheck(DescriptionIndex size,DescriptionIndex&start);
         void   _bindTypeIdName(TypeID id,std::string name);
         void   _callConstructors(char*ptr,TypeID id)const;
 
         template<typename TO>
-        TO _argsTo()const{
-          return nullptr;
-        }
+        TO _argsTo()const;
         template<typename TO,typename... ARGS>
-        TO _argsTo(TO to,ARGS... args)const{
-          return to;
-        }
+        TO _argsTo(TO to,ARGS... args)const;
         template<typename TO,typename NOTTO,typename... ARGS>
-        typename std::enable_if<!std::is_same<TO,NOTTO>::value,TO>::type _argsTo(NOTTO,ARGS... args)const{
-          return this->_argsTo<TO>(args...);
-        }
+        typename std::enable_if<!std::is_same<TO,NOTTO>::value,TO>::type _argsTo(NOTTO,ARGS... args)const;
 
 
-        void _argsToVector(std::vector<unsigned>&){}
+        template<typename...>
+          inline void _argsToVector(DescriptionList&);
         template<typename... Args>
-          void _argsToVector(std::vector<unsigned>&typeConfig,unsigned t,Args... args){
-            typeConfig.push_back(t);
-            this->_argsToVector(typeConfig,args...);
-          }
+          inline void _argsToVector(DescriptionList&typeConfig,DescriptionElement t,Args... args);
         template<typename... Args>
-          void _argsToVector(std::vector<unsigned>&typeConfig,std::string t,Args... args){
-            typeConfig.push_back(this->getTypeId(t));
-            this->_argsToVector(typeConfig,args...);
-          }
+          inline void _argsToVector(DescriptionList&typeConfig,std::string t,Args... args);
         template<typename... Args>
-          void _argsToVector(std::vector<unsigned>&typeConfig,const char*t,Args... args){
-            typeConfig.push_back(this->getTypeId(std::string(t)));
-            this->_argsToVector(typeConfig,args...);
-          }
+          inline void _argsToVector(DescriptionList&typeConfig,const char*t,Args... args);
         template<typename... Args>
-          void _argsToVector(std::vector<unsigned>&typeConfig,std::function<OBJConstructor>,Args... args){
-            this->_argsToVector(typeConfig,args...);
-          }
+          inline void _argsToVector(DescriptionList&typeConfig,std::function<OBJConstructor>,Args... args);
         template<typename... Args>
-          void _argsToVector(std::vector<unsigned>&typeConfig,std::function<OBJDestructor>,Args... args){
-            this->_argsToVector(typeConfig,args...);
-          }
+          inline void _argsToVector(DescriptionList&typeConfig,std::function<OBJDestructor>,Args... args);
 
       public:
         template<typename TYPE>
@@ -101,53 +91,44 @@ namespace ge{
         template<typename TYPE>
         static TypeID getTypeTypeId();
         template<typename TYPE>
-        static std::function<OBJConstructor> getConstructor(){
-          return std::function<OBJConstructor>([](signed char*ptr){new(ptr)TYPE();});
-        }
+        std::function<OBJConstructor> getConstructor();
         template<typename TYPE>
-        static std::function<OBJDestructor> getDestructor(){
-          return std::function<OBJDestructor>([](unsigned char*ptr){((TYPE*)ptr)->~TYPE();});
-        }
-
+        std::function<OBJDestructor> getDestructor();
 
         TypeRegister();
         ~TypeRegister();
-        unsigned   getNofTypes()const;
-        TypeID     getTypeId               (unsigned index)const;
-        unsigned   getIndex                (TypeID id)const;
-        unsigned   getTypeDescriptionLength(TypeID id)const;
-        unsigned   getTypeDescriptionElem  (TypeID id,unsigned i)const;
-        Type       getTypeIdType           (TypeID id)const;
-        Type       getElementType          (unsigned element)const;
-        unsigned   getNofStructElements    (TypeID id)const;
-        TypeID     getStructElementTypeId  (TypeID id,unsigned element)const;
-        unsigned   getArraySize            (TypeID id)const;
-        TypeID     getArrayInnerTypeId     (TypeID id)const;
-        TypeID     getPtrInnerTypeId       (TypeID id)const;
-        TypeID     getFceReturnTypeId      (TypeID id)const;
-        unsigned   getNofFceArgs           (TypeID id)const;
-        TypeID     getFceArgTypeId         (TypeID id,unsigned element)const;
-        unsigned   getObjSize              (TypeID id)const;
-        TypeID     getTypeId               (std::string name)const;
-        std::string getTypeIdName          (TypeID id)const;
-        std::set<std::string>const &getTypeIdSynonyms(TypeID id)const;
-        bool                  hasSynonyms      (TypeID id)const;
-        bool                  areSynonyms      (std::string name0,std::string name1)const;
-        unsigned   computeTypeIdSize       (TypeID id)const;
+        DescriptionStartIndex       getNofTypes             ()const;
+        TypeID                      getTypeId               (DescriptionStartIndex index)const;
+        DescriptionStartIndex       getIndex                (TypeID id)const;
+        DescriptionIndex            getTypeDescriptionLength(TypeID id)const;
+        DescriptionElement          getTypeDescriptionElem  (TypeID id,DescriptionIndex i)const;
+        Type                        getTypeIdType           (TypeID id)const;
+        Type                        getElementType          (DescriptionElement element)const;
+        DescriptionElement          getNofStructElements    (TypeID id)const;
+        TypeID                      getStructElementTypeId  (TypeID id,DescriptionIndex index)const;
+        DescriptionElement          getArraySize            (TypeID id)const;
+        TypeID                      getArrayInnerTypeId     (TypeID id)const;
+        TypeID                      getPtrInnerTypeId       (TypeID id)const;
+        TypeID                      getFceReturnTypeId      (TypeID id)const;
+        DescriptionElement          getNofFceArgs           (TypeID id)const;
+        TypeID                      getFceArgTypeId         (TypeID id,DescriptionIndex index)const;
+        DescriptionElement          getObjSize              (TypeID id)const;
+        TypeID                      getTypeId               (std::string name)const;
+        std::string                 getTypeIdName           (TypeID id)const;
+        std::set<std::string>const& getTypeIdSynonyms       (TypeID id)const;
+        bool                        hasSynonyms             (TypeID id)const;
+        bool                        areSynonyms             (std::string name0,std::string name1)const;
+        size_t                      computeTypeIdSize       (TypeID id)const;
 
         bool integerType(TypeID type)const;
         bool floatType  (TypeID type)const;
         bool stringType (TypeID type)const;
 
         void*alloc(TypeID id)const;
-        Accessor allocAccessor(TypeID id)const;
-        Accessor allocAccessor(std::string name)const;
         std::shared_ptr<Accessor>sharedAccessor(TypeID id)const;
         std::shared_ptr<Accessor>sharedAccessor(std::string name)const;
 
-        Accessor emptyAccessor(TypeID id)const;
-        Accessor emptyAccessor(std::string name)const;
-        std::shared_ptr<Accessor>sharedEmptyAccessor(TypeID id      ,std::function<OBJDestructor> destructor  = nullptr)const;
+        std::shared_ptr<Accessor>sharedEmptyAccessor(TypeID id       ,std::function<OBJDestructor> destructor  = nullptr)const;
         std::shared_ptr<Accessor>sharedEmptyAccessor(std::string name,std::function<OBJDestructor> destructor  = nullptr)const;
 
         template<typename CLASS,typename... ARGS>
@@ -172,35 +153,23 @@ namespace ge{
         void constructUsingCustomConstructor(  signed char*ptr,TypeID id)const;
 
         template<typename... Args>
-          unsigned addType(std::string name,Args... args){
-            std::vector<unsigned>typeConfig;
-            this->_argsToVector(typeConfig,args...);
-            return this->addType(name, typeConfig,this->_argsTo<std::function<OBJConstructor>>(args...),this->_argsTo<std::function<OBJDestructor>>(args...));
-          }
+          TypeID addType(std::string name,Args... args);
 
         TypeID addType(
             std::string                   name                 ,
-            std::vector<unsigned>const&   type                 ,
+            DescriptionList const&        type                 ,
             std::function<OBJConstructor> constructor = nullptr,
             std::function<OBJDestructor > destructor  = nullptr);
 
 
         template<typename CLASS>
-        TypeID addClassCD(std::string name){
-          return this->addType(name,TypeRegister::OBJ,sizeof(CLASS),TypeRegister::getConstructor<CLASS>(),TypeRegister::getDestructor<CLASS>());
-        }
+        TypeID addClassCD(std::string name);
         template<typename CLASS>
-        TypeID addClassD(std::string name){
-          return this->addType(name,TypeRegister::OBJ,sizeof(CLASS),TypeRegister::getDestructor<CLASS>());
-        }
+        TypeID addClassD(std::string name);
         template<typename CLASS>
-        TypeID addClassC(std::string name){
-          return this->addType(name,TypeRegister::OBJ,sizeof(CLASS),TypeRegister::getConstructor<CLASS>());
-        }
+        TypeID addClassC(std::string name);
         template<typename CLASS>
-        TypeID addClass(std::string name){
-          return this->addType(name,TypeRegister::OBJ,sizeof(CLASS));
-        }
+        TypeID addClass(std::string name);
 
         void addConstructor(TypeID id,std::function<OBJConstructor> constructor = nullptr);
         void addDestructor (TypeID id,std::function<OBJDestructor > destructor  = nullptr);
@@ -208,9 +177,50 @@ namespace ge{
         std::string toStr(TypeID id)const;
         std::string toStr()const;
 
-        std::vector<unsigned>::size_type getNofDescriptionUints()const;
-        unsigned getDescription(unsigned i)const;
+        DescriptionIndex   getNofDescriptionUints()const;
+        DescriptionElement getDescription(DescriptionIndex i)const;
     };
+
+    template<typename TO>
+      TO TypeRegister::_argsTo()const{
+        return nullptr;
+      }
+    template<typename TO,typename... ARGS>
+      TO TypeRegister::_argsTo(TO to,ARGS...)const{
+        return to;
+      }
+    template<typename TO,typename NOTTO,typename... ARGS>
+      typename std::enable_if<!std::is_same<TO,NOTTO>::value,TO>::type TypeRegister::_argsTo(NOTTO,ARGS... args)const{
+        return this->_argsTo<TO>(args...);
+      }
+
+
+    template<typename...>
+      void TypeRegister::_argsToVector(DescriptionList&){}
+    template<typename... Args>
+      void TypeRegister::_argsToVector(DescriptionList&typeConfig,DescriptionElement t,Args... args){
+        typeConfig.push_back(t);
+        this->_argsToVector(typeConfig,args...);
+      }
+    template<typename... Args>
+      void TypeRegister::_argsToVector(DescriptionList&typeConfig,std::string t,Args... args){
+        typeConfig.push_back(this->getTypeId(t));
+        this->_argsToVector(typeConfig,args...);
+      }
+    template<typename... Args>
+      void TypeRegister::_argsToVector(DescriptionList&typeConfig,const char*t,Args... args){
+        typeConfig.push_back(this->getTypeId(std::string(t)));
+        this->_argsToVector(typeConfig,args...);
+      }
+    template<typename... Args>
+      void TypeRegister::_argsToVector(DescriptionList&typeConfig,std::function<OBJConstructor>,Args... args){
+        this->_argsToVector(typeConfig,args...);
+      }
+    template<typename... Args>
+      void TypeRegister::_argsToVector(DescriptionList&typeConfig,std::function<OBJDestructor>,Args... args){
+        this->_argsToVector(typeConfig,args...);
+      }
+
 
     template<>inline std::string TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
     template<>inline std::string TypeRegister::getTypeKeyword<bool              >(){return"bool"  ;}
@@ -240,131 +250,37 @@ namespace ge{
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<double            >(){return TypeRegister::TYPEID+TypeRegister::F64   -1;}
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<std::string       >(){return TypeRegister::TYPEID+TypeRegister::STRING-1;}
 
-    class GECORE_EXPORT Base{
-      protected:
-        std::shared_ptr<const TypeRegister>_manager = nullptr;
-        TypeRegister::TypeID _id = TypeRegister::UNREGISTERED;
-      public:
-        inline Base(
-            std::shared_ptr<const TypeRegister>const&manager = nullptr                   ,
-            TypeRegister::TypeID                    id       = TypeRegister::UNREGISTERED){
-          this->_manager = manager;
-          this->_id = id;
-        }
-        inline virtual ~Base(){}
-        inline std::shared_ptr<const TypeRegister>getManager()const{return this->_manager;}
-        inline TypeRegister::TypeID getId()const{return this->_id;}
-        virtual Accessor operator[](unsigned elem)const=0;
-        virtual unsigned getNofElements()const=0;
-        virtual std::string data2Str()const=0;
-    };
-
-    class GECORE_EXPORT Accessor: public Base{
-      protected:
-        std::shared_ptr<char>              _data          = nullptr                   ;
-        unsigned                           _offset        = 0u                        ;
-        static void _callDestructors(char*ptr,TypeRegister::TypeID id,std::shared_ptr<const TypeRegister>const&manager);
-      public:
-        Accessor(Accessor const& ac);
-        Accessor(
-            std::shared_ptr<const TypeRegister>const&manager = nullptr                   ,
-            const void*                              data    = nullptr                   ,
-            TypeRegister::TypeID                     id      = TypeRegister::UNREGISTERED,
-            unsigned                                 offset  = 0                         );
-        Accessor(
-            std::shared_ptr<const TypeRegister>const&manager                             ,
-            std::shared_ptr<char>const&              data                                ,
-            TypeRegister::TypeID                     id      = TypeRegister::UNREGISTERED,
-            unsigned                                 offset  = 0                         );
-        Accessor(
-            std::shared_ptr<const TypeRegister>const&manager,
-            TypeRegister::TypeID                     id     );
-        template<typename TYPE>
-          Accessor(TYPE val,std::shared_ptr<const TypeRegister>const&manager){
-            this->_id      = manager->getTypeId(TypeRegister::getTypeKeyword<TYPE>());
-            this->_manager = manager;
-            ge::core::TypeRegister::TypeID id=this->_id;
-            this->_data    = std::shared_ptr<char>((char*)manager->alloc(this->_id),[id,manager](char*ptr){Accessor::_callDestructors(ptr,id,manager);delete[]ptr;});
-            this->_offset  = 0;
-            (*this)=val;
-          }
-        ~Accessor();
-        std::shared_ptr<const TypeRegister>getManager()const;
-        void*getData()const;
-        TypeRegister::TypeID getId()const;
-        Accessor operator[](unsigned elem)const;
-        unsigned getNofElements()const;
-        const void*getPointer()const;
-        std::string data2Str()const;
-        template<typename T>
-          Accessor& operator=(const T&data){
-            *((T*)this->getData()) = data;
-            return *this;
-          }
-        template<typename T>
-          operator T&()const{
-            return *((T*)this->getData());
-          }
-        template<typename T>
-          operator T*()const{
-            return (T*)this->getData();
-          }
-        template<typename T>
-          operator T**()const{
-            return (T**)&this->_data;
-          }
-        template<typename CLASS,typename... ARGS>
-          void callConstructor(ARGS... args){
-            new(this->getData())CLASS(args...);
-          }
-        void callDestructor();
-    };
-
-
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorTypeID(TypeID id,ARGS... args)const{
-        //std::shared_ptr<ge::core::Accessor>ptr=std::shared_ptr<Accessor>(new Accessor(this->shared_from_this(),this->alloc(id),id),[](Accessor*ac){ac->free();delete ac;});
-        std::shared_ptr<ge::core::Accessor>ptr=std::make_shared<Accessor>(this->shared_from_this(),this->alloc(id),id);
-        ptr->callConstructor<CLASS>(args...);
-        return ptr;
+    template<typename TYPE>
+      std::function<TypeRegister::OBJConstructor> TypeRegister::getConstructor(){
+        return std::function<OBJConstructor>([](signed char*ptr){new(ptr)TYPE();});
       }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(std::string name,ARGS... args)const{
-        TypeID id=this->getTypeId(name);
-        return this->sharedAccessorTypeID<CLASS>(id,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(const char* name,ARGS... args)const{
-        TypeID id=this->getTypeId(std::string(name));
-        return this->sharedAccessorTypeID<CLASS>(id,args...);
+    template<typename TYPE>
+      std::function<TypeRegister::OBJDestructor> TypeRegister::getDestructor(){
+        return std::function<OBJDestructor>([](unsigned char*ptr){((TYPE*)ptr)->~TYPE();});
       }
 
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessor(ARGS... args)const{
-        //return this->sharedAccessor<CLASS>(this->getTypeKeyword<CLASS>(),args...);
-        TypeID id=this->getTypeId(this->getTypeKeyword<CLASS>());
-        return this->sharedAccessorTypeID<CLASS>(id,args...);
+    template<typename... Args>
+      TypeRegister::TypeID TypeRegister::addType(std::string name,Args... args){
+        DescriptionList typeConfig;
+        this->_argsToVector(typeConfig,args...);
+        return this->addType(name, typeConfig,this->_argsTo<std::function<OBJConstructor>>(args...),this->_argsTo<std::function<OBJDestructor>>(args...));
       }
 
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorAddCD(std::string name,ARGS... args){
-        this->addClassCD<CLASS>(name);
-        return this->sharedAccessor<CLASS>(name,args...);
+    template<typename CLASS>
+      TypeRegister::TypeID TypeRegister::addClassCD(std::string name){
+        return this->addType(name,TypeRegister::OBJ,sizeof(CLASS),TypeRegister::getConstructor<CLASS>(),TypeRegister::getDestructor<CLASS>());
       }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorAddC(std::string name,ARGS... args){
-        this->addClassC<CLASS>(name);
-        return this->sharedAccessor<CLASS>(name,args...);
+    template<typename CLASS>
+      TypeRegister::TypeID TypeRegister::addClassD(std::string name){
+        return this->addType(name,TypeRegister::OBJ,sizeof(CLASS),TypeRegister::getDestructor<CLASS>());
       }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorAddD(std::string name,ARGS... args){
-        this->addClassD<CLASS>(name);
-        return this->sharedAccessor<CLASS>(name,args...);
+    template<typename CLASS>
+      TypeRegister::TypeID TypeRegister::addClassC(std::string name){
+        return this->addType(name,TypeRegister::OBJ,sizeof(CLASS),TypeRegister::getConstructor<CLASS>());
       }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorAdd(std::string name,ARGS... args){
-        this->addClass<CLASS>(name);
-        return this->sharedAccessor<CLASS>(name,args...);
+    template<typename CLASS>
+      TypeRegister::TypeID TypeRegister::addClass(std::string name){
+        return this->addType(name,TypeRegister::OBJ,sizeof(CLASS));
       }
 
   }

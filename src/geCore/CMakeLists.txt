@@ -39,6 +39,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/Object.h
     ${HEADER_PATH}/StandardSemanticsNames.h
     ${HEADER_PATH}/TypeRegister.h
+    ${HEADER_PATH}/Accessor.h
     ${HEADER_PATH}/disjointSet.h
     ${HEADER_PATH}/interpret.h
     ${HEADER_PATH}/statement.h
@@ -75,6 +76,7 @@ set(CORE_SOURCES
     EnumRegister.cpp
     StandardSemanticsNames.cpp
     TypeRegister.cpp
+    Accessor.cpp
     statement.cpp
     function.cpp
     while.cpp

@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geCore/interpret.h>
+#include<geCore/Accessor.h>
 
 namespace ge{
   namespace core{

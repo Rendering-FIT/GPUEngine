@@ -2,17 +2,18 @@
 
 #include<iostream>
 #include<vector>
+#include<geCore/TypeRegister.h>
 
 namespace ge{
   namespace util{
 
     struct ArgMetaData{
-      std::vector<unsigned>description;
+      ge::core::TypeRegister::DescriptionList description;
       std::string name;
     };
 
     struct FceMetaData{
-      std::vector<unsigned>returnType;
+      ge::core::TypeRegister::DescriptionList returnType;
       std::string name;
       std::vector<ArgMetaData>args;
     };

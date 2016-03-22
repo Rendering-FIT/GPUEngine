@@ -1,4 +1,5 @@
 #include<geCore/while.h>
+#include<geCore/Accessor.h>
 
 using namespace ge::core;
 
@@ -32,7 +33,7 @@ std::shared_ptr<Statement>const&While::getBody()const{
 void While::operator()(){
   for(;;){
     (*this->_condition)();
-    if(!(bool)*(this->_condition->getOutput()))return;
+    if(!(bool)*this->_condition->getOutput())return;
     (*this->_body)();
   }
 }
