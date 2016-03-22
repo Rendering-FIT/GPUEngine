@@ -14,7 +14,7 @@
 namespace ge{
   namespace core{
     class FSA;
-    class ParseEnumArgs{
+    class GECORE_EXPORT ParseEnumArgs{
       protected:
         struct ParserData{
           unsigned      start;
