@@ -3,9 +3,8 @@
 using namespace ge::core;
 
 MacroFunction::MacroFunction(
-    unsigned inputs,
-    std::shared_ptr<TypeRegister>const&):
-  Function(inputs,"MacroFunction"){
+    std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id):
+  Function(tr,id,"MacroFunction"){
   }
 
 MacroFunction::~MacroFunction(){

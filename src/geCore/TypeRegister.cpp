@@ -25,19 +25,20 @@ std::string vec2str(std::vector<T>const&data,typename std::vector<T>::size_type 
 }
 
 TypeRegister::TypeRegister(){
-  this->addType(TypeRegister::getTypeKeyword<void              >(),TypeRegister::VOID  );
-  this->addType(TypeRegister::getTypeKeyword<bool              >(),TypeRegister::BOOL  );
-  this->addType(TypeRegister::getTypeKeyword<char              >(),TypeRegister::I8    );
-  this->addType(TypeRegister::getTypeKeyword<short             >(),TypeRegister::I16   );
-  this->addType(TypeRegister::getTypeKeyword<int               >(),TypeRegister::I32   );
-  this->addType(TypeRegister::getTypeKeyword<long long int     >(),TypeRegister::I64   );
-  this->addType(TypeRegister::getTypeKeyword<unsigned char     >(),TypeRegister::U8    );
-  this->addType(TypeRegister::getTypeKeyword<unsigned short    >(),TypeRegister::U16   );
-  this->addType(TypeRegister::getTypeKeyword<unsigned          >(),TypeRegister::U32   );
-  this->addType(TypeRegister::getTypeKeyword<unsigned long long>(),TypeRegister::U64   );
-  this->addType(TypeRegister::getTypeKeyword<float             >(),TypeRegister::F32   );
-  this->addType(TypeRegister::getTypeKeyword<double            >(),TypeRegister::F64   );
-  this->addType(TypeRegister::getTypeKeyword<std::string       >(),TypeRegister::STRING);
+  this->addType("unregistered"                             ,TypeRegister::UNREGISTERED);
+  this->addType(TypeRegister::getTypeKeyword<void       >(),TypeRegister::VOID        );
+  this->addType(TypeRegister::getTypeKeyword<bool       >(),TypeRegister::BOOL        );
+  this->addType(TypeRegister::getTypeKeyword<int8_t     >(),TypeRegister::I8          );
+  this->addType(TypeRegister::getTypeKeyword<int16_t    >(),TypeRegister::I16         );
+  this->addType(TypeRegister::getTypeKeyword<int32_t    >(),TypeRegister::I32         );
+  this->addType(TypeRegister::getTypeKeyword<int64_t    >(),TypeRegister::I64         );
+  this->addType(TypeRegister::getTypeKeyword<uint8_t    >(),TypeRegister::U8          );
+  this->addType(TypeRegister::getTypeKeyword<uint16_t   >(),TypeRegister::U16         );
+  this->addType(TypeRegister::getTypeKeyword<uint32_t   >(),TypeRegister::U32         );
+  this->addType(TypeRegister::getTypeKeyword<uint64_t   >(),TypeRegister::U64         );
+  this->addType(TypeRegister::getTypeKeyword<float      >(),TypeRegister::F32         );
+  this->addType(TypeRegister::getTypeKeyword<double     >(),TypeRegister::F64         );
+  this->addType(TypeRegister::getTypeKeyword<std::string>(),TypeRegister::STRING      );
   this->addType("ivec2" ,TypeRegister::ARRAY,2,"i32");
   this->addType("ivec3" ,TypeRegister::ARRAY,3,"i32");
   this->addType("ivec4" ,TypeRegister::ARRAY,4,"i32");
@@ -61,19 +62,20 @@ std::string TypeRegister::toStr(TypeID id)const{
   TypeRegister::Type type=this->getTypeIdType(id);
   std::stringstream ss;
   switch(type){
-    case TypeRegister::VOID  :
-    case TypeRegister::BOOL  :
-    case TypeRegister::I8    :
-    case TypeRegister::I16   :
-    case TypeRegister::I32   :
-    case TypeRegister::I64   :
-    case TypeRegister::U8    :
-    case TypeRegister::U16   :
-    case TypeRegister::U32   :
-    case TypeRegister::U64   :
-    case TypeRegister::F32   :
-    case TypeRegister::F64   :
-    case TypeRegister::STRING:
+    case TypeRegister::UNREGISTERED:
+    case TypeRegister::VOID        :
+    case TypeRegister::BOOL        :
+    case TypeRegister::I8          :
+    case TypeRegister::I16         :
+    case TypeRegister::I32         :
+    case TypeRegister::I64         :
+    case TypeRegister::U8          :
+    case TypeRegister::U16         :
+    case TypeRegister::U32         :
+    case TypeRegister::U64         :
+    case TypeRegister::F32         :
+    case TypeRegister::F64         :
+    case TypeRegister::STRING      :
       return this->getTypeIdName(id);
     case TypeRegister::ARRAY:
       ss<<"array[";
@@ -218,20 +220,21 @@ bool TypeRegister::_isNewTypeEqualTo(TypeID et,DescriptionList const&type,Descri
   }
   if(this->getTypeIdType(et)!=this->getElementType(type[start]))return falseBranch();
   switch(this->getTypeIdType(et)){
-    case TypeRegister::VOID  :
-    case TypeRegister::BOOL  :
-    case TypeRegister::I8    :
-    case TypeRegister::I16   :
-    case TypeRegister::I32   :
-    case TypeRegister::I64   :
-    case TypeRegister::U8    :
-    case TypeRegister::U16   :
-    case TypeRegister::U32   :
-    case TypeRegister::U64   :
-    case TypeRegister::F32   :
-    case TypeRegister::F64   :
-    case TypeRegister::STRING:
-    case TypeRegister::TYPEID:
+    case TypeRegister::UNREGISTERED:
+    case TypeRegister::VOID        :
+    case TypeRegister::BOOL        :
+    case TypeRegister::I8          :
+    case TypeRegister::I16         :
+    case TypeRegister::I32         :
+    case TypeRegister::I64         :
+    case TypeRegister::U8          :
+    case TypeRegister::U16         :
+    case TypeRegister::U32         :
+    case TypeRegister::U64         :
+    case TypeRegister::F32         :
+    case TypeRegister::F64         :
+    case TypeRegister::STRING      :
+    case TypeRegister::TYPEID      :
       ++start;
       return true;
     case TypeRegister::ARRAY:
@@ -312,19 +315,20 @@ TypeRegister::TypeID TypeRegister::_typeAdd(DescriptionList const&type,Descripti
   std::vector<TypeRegister::TypeID>innerTypes;
 
   switch(newType){
-    case TypeRegister::VOID  :
-    case TypeRegister::BOOL  :
-    case TypeRegister::I8    :
-    case TypeRegister::I16   :
-    case TypeRegister::I32   :
-    case TypeRegister::I64   :
-    case TypeRegister::U8    :
-    case TypeRegister::U16   :
-    case TypeRegister::U32   :
-    case TypeRegister::U64   :
-    case TypeRegister::F32   :
-    case TypeRegister::F64   :
-    case TypeRegister::STRING:
+    case TypeRegister::UNREGISTERED:
+    case TypeRegister::VOID        :
+    case TypeRegister::BOOL        :
+    case TypeRegister::I8          :
+    case TypeRegister::I16         :
+    case TypeRegister::I32         :
+    case TypeRegister::I64         :
+    case TypeRegister::U8          :
+    case TypeRegister::U16         :
+    case TypeRegister::U32         :
+    case TypeRegister::U64         :
+    case TypeRegister::F32         :
+    case TypeRegister::F64         :
+    case TypeRegister::STRING      :
       this->_typeStart.push_back(this->_types.size());
       this->_types.push_back(newType);//write type
       start++;
@@ -458,27 +462,28 @@ size_t TypeRegister::computeTypeIdSize(TypeID id)const{
   TypeRegister::Type type=this->getTypeIdType(id);
   size_t size=0;
   switch(type){
-    case TypeRegister::VOID  :return 0                         ;
-    case TypeRegister::BOOL  :return sizeof(bool              );
-    case TypeRegister::I8    :return sizeof(char              );
-    case TypeRegister::I16   :return sizeof(short             );
-    case TypeRegister::I32   :return sizeof(int               );
-    case TypeRegister::I64   :return sizeof(long long int     );
-    case TypeRegister::U8    :return sizeof(unsigned char     );
-    case TypeRegister::U16   :return sizeof(unsigned short    );
-    case TypeRegister::U32   :return sizeof(unsigned          );
-    case TypeRegister::U64   :return sizeof(unsigned long long);
-    case TypeRegister::F32   :return sizeof(float             );
-    case TypeRegister::F64   :return sizeof(double            );
-    case TypeRegister::STRING:return sizeof(std::string       );
-    case TypeRegister::PTR   :return sizeof(void*             );
-    case TypeRegister::ARRAY:
+    case TypeRegister::UNREGISTERED:return 0                         ;
+    case TypeRegister::VOID        :return 0                         ;
+    case TypeRegister::BOOL        :return sizeof(bool              );
+    case TypeRegister::I8          :return sizeof(char              );
+    case TypeRegister::I16         :return sizeof(short             );
+    case TypeRegister::I32         :return sizeof(int               );
+    case TypeRegister::I64         :return sizeof(long long int     );
+    case TypeRegister::U8          :return sizeof(unsigned char     );
+    case TypeRegister::U16         :return sizeof(unsigned short    );
+    case TypeRegister::U32         :return sizeof(unsigned          );
+    case TypeRegister::U64         :return sizeof(unsigned long long);
+    case TypeRegister::F32         :return sizeof(float             );
+    case TypeRegister::F64         :return sizeof(double            );
+    case TypeRegister::STRING      :return sizeof(std::string       );
+    case TypeRegister::PTR         :return sizeof(void*             );
+    case TypeRegister::ARRAY       :
                               return this->getArraySize(id)*this->computeTypeIdSize(this->getArrayInnerTypeId(id));
-    case TypeRegister::STRUCT:
+    case TypeRegister::STRUCT      :
                               for(DescriptionIndex e=0;e<this->getNofStructElements(id);++e)
                                 size+=this->computeTypeIdSize(this->getStructElementTypeId(id,e));
                               return size;
-    case TypeRegister::FCE:
+    case TypeRegister::FCE         :
                               return sizeof(std::shared_ptr<ge::core::Function>);
                               /*
                                  size+=this->computeTypeIdSize(this->getFceReturnTypeId(id));
@@ -486,9 +491,9 @@ size_t TypeRegister::computeTypeIdSize(TypeID id)const{
                                  size+=this->computeTypeIdSize(this->getFceArgTypeId(id,e));
                                  return size;
                                  */
-    case TypeRegister::OBJ:
+    case TypeRegister::OBJ         :
                               return this->getObjSize(id);
-    default:
+    default                        :
                               std::cerr<<"ERROR: uta aus aus gerichtic himla!"<<std::endl;
                               return 0;
   }
@@ -497,40 +502,41 @@ size_t TypeRegister::computeTypeIdSize(TypeID id)const{
 void   TypeRegister::_callConstructors(char*ptr,TypeID id)const{
   TypeRegister::Type type=this->getTypeIdType(id);
   switch(type){
-    case TypeRegister::VOID  :
-    case TypeRegister::BOOL  :
-    case TypeRegister::I8    :
-    case TypeRegister::I16   :
-    case TypeRegister::I32   :
-    case TypeRegister::I64   :
-    case TypeRegister::U8    :
-    case TypeRegister::U16   :
-    case TypeRegister::U32   :
-    case TypeRegister::U64   :
-    case TypeRegister::F32   :
-    case TypeRegister::F64   :
-    case TypeRegister::PTR   :break;
-    case TypeRegister::STRING:
+    case TypeRegister::UNREGISTERED:
+    case TypeRegister::VOID        :
+    case TypeRegister::BOOL        :
+    case TypeRegister::I8          :
+    case TypeRegister::I16         :
+    case TypeRegister::I32         :
+    case TypeRegister::I64         :
+    case TypeRegister::U8          :
+    case TypeRegister::U16         :
+    case TypeRegister::U32         :
+    case TypeRegister::U64         :
+    case TypeRegister::F32         :
+    case TypeRegister::F64         :
+    case TypeRegister::PTR         :break;
+    case TypeRegister::STRING      :
                               new(ptr)std::string();
                               break;
-    case TypeRegister::ARRAY:
+    case TypeRegister::ARRAY       :
                               for(DescriptionIndex i=0;i<this->getArraySize(id);++i)
                                 this->_callConstructors(ptr+this->computeTypeIdSize(this->getArrayInnerTypeId(id))*i,this->getArrayInnerTypeId(id));
                               break;
-    case TypeRegister::STRUCT:
+    case TypeRegister::STRUCT      :
                               for(DescriptionIndex e=0;e<this->getNofStructElements(id);++e){
                                 this->_callConstructors(ptr,this->getStructElementTypeId(id,e));
                                 ptr+=this->computeTypeIdSize(this->getStructElementTypeId(id,e));
                               }
                               break;
-    case TypeRegister::FCE:
+    case TypeRegister::FCE         :
                               new(ptr)std::shared_ptr<ge::core::Function>();
                               //TODO CO S FUNKCI
                               break;
-    case TypeRegister::OBJ:
+    case TypeRegister::OBJ         :
                               this->constructUsingCustomConstructor((signed char*)ptr,id);
                               break;
-    default:
+    default                        :
                               break;
   }
 }

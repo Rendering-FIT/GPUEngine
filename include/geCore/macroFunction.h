@@ -16,7 +16,7 @@ namespace ge{
         virtual inline Output      &_getOutput();
         virtual inline Output const&_getOutput()const;
       public:
-        MacroFunction(unsigned inputs,std::shared_ptr<TypeRegister>const&tr);
+        MacroFunction(std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id);
         virtual ~MacroFunction();
         inline virtual void operator()();
         inline void setFunctionInput(

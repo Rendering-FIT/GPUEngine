@@ -8,29 +8,25 @@ namespace ge{
     class GECORE_EXPORT Function;
     class GECORE_EXPORT FunctionInput{
       public:
-        std::shared_ptr<Function>function    = nullptr                   ;
-        bool                     changed     = false                     ;
-        TypeRegister::TypeID     type        = TypeRegister::UNREGISTERED;
-        unsigned long long       updateTicks = 0                         ;
+        std::shared_ptr<Function>function    = nullptr;
+        bool                     changed     = false  ;
+        unsigned long long       updateTicks = 0      ;
         FunctionInput(
-            std::shared_ptr<Function>fce         = nullptr                   ,
-            unsigned long long       updateTicks = 0                         ,
-            bool                     changed     = false                     ,
-            TypeRegister::TypeID     type        = TypeRegister::UNREGISTERED);
+            std::shared_ptr<Function>fce         = nullptr,
+            unsigned long long       updateTicks = 0      ,
+            bool                     changed     = false  );
     };
 
 
     // function: Accessor compositor
     // function: selector of element of Accessor
-    // function should contain type that is type of TypeRegister::FCE
-    //
-    //
     //
 
     class MacroFunction;
     class GECORE_EXPORT Function: public Statement{
       protected:
         friend class MacroFunction;
+        std::shared_ptr<TypeRegister> _typeRegister   ;
         std::string                   _name           ;
         std::vector<FunctionInput>    _inputs         ;
         std::map<unsigned,std::string>_input2Name     ;
@@ -38,13 +34,14 @@ namespace ge{
         unsigned long long            _checkTicks  = 0;
         unsigned long long            _updateTicks = 1;
         struct Output{
-          std::shared_ptr<Accessor>data = nullptr                   ;
-          TypeRegister::TypeID     type = TypeRegister::UNREGISTERED;
-          std::string              name = "output"                  ;
+          std::shared_ptr<Accessor>data = nullptr ;
+          std::string              name = "output";
         }_output;
         std::string _genDefaultName(unsigned i)const;
+        TypeRegister::TypeID _fceType;
       public:
-        Function(unsigned n,std::string name = "");
+        Function(std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID type,std::string name = "");
+        Function(std::shared_ptr<TypeRegister>const&tr,TypeRegister::DescriptionList const&typeDescription,std::string name = "");
         virtual ~Function();
         virtual void operator()();
         inline std::shared_ptr<Accessor>const&getOutput()const;
@@ -67,8 +64,8 @@ namespace ge{
       protected:
         void _defaultNames(unsigned n);
         void _processInputs();
-        void _setOutput(           TypeRegister::TypeID type,std::string name = "");
-        void _setInput (unsigned i,TypeRegister::TypeID type,std::string name = "");
+        void _setOutput(std::string name = "");
+        void _setInput (unsigned i,std::string name = "");
         virtual bool _do();
         inline bool _inputChanged(unsigned    i    )const;
         inline bool _inputChanged(std::string input)const;
@@ -77,26 +74,6 @@ namespace ge{
         virtual inline decltype(_inputs)::size_type _getNofInputs()const;
         virtual inline Output      &_getOutput();
         virtual inline Output const&_getOutput()const;
-        template<typename... ARGS>
-          unsigned _computeNumberOfInputs(ARGS...args);
-        template<typename... ARGS>
-          void _setTypes(
-              std::shared_ptr<TypeRegister>const&tr,
-              unsigned nofInputs,
-              const char* type,
-              const char* name,
-              ARGS... args);
-        template<typename... ARGS>
-          void _setInputs(
-              std::shared_ptr<TypeRegister>const&tr,
-              unsigned nofInputs,
-              const char* type,
-              const char* name,
-              ARGS... args);
-        template<typename... ARGS>
-          void _setInputs(
-              std::shared_ptr<TypeRegister>const&,
-              unsigned);
     };
 
 
@@ -107,44 +84,12 @@ namespace ge{
         virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
     };
 
-
-
-    template<typename... ARGS>
-      unsigned Function::_computeNumberOfInputs(ARGS...args){
-        return (sizeof...(args)-2)/2;
-      }
-    template<typename... ARGS>
-      void Function::_setTypes(
-          std::shared_ptr<TypeRegister>const&tr,
-          unsigned nofInputs,
-          const char* type,
-          const char* name,
-          ARGS... args){
-        this->_setOutput(tr->getTypeId(type),name);
-        this->_setInputs(tr,nofInputs,args...);
-      }
-    template<typename... ARGS>
-      void Function::_setInputs(
-          std::shared_ptr<TypeRegister>const&tr,
-          unsigned nofInputs,
-          const char* type,
-          const char* name,
-          ARGS... args){
-        this->_setInput(nofInputs-(sizeof...(args))/2-1,tr->getTypeId(type),name);
-        this->_setInputs(tr,nofInputs,args...);
-      }
-    template<typename... ARGS>
-      void Function::_setInputs(
-          std::shared_ptr<TypeRegister>const&,
-          unsigned){
-      }
-
     inline std::shared_ptr<Accessor>const&Function::getOutput()const{
       return this->_getOutput().data;
     }
 
     inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
-      return this->_getOutput().type;
+      return this->_typeRegister->getFceReturnTypeId(this->_fceType);
     }
 
     inline std::string Function::getOutputName()const{
@@ -176,11 +121,11 @@ namespace ge{
     }
 
     inline TypeRegister::TypeID Function::getInputType(unsigned    i   )const{
-      return this->_getInput(i).type;
+      return this->_typeRegister->getFceArgTypeId(this->_fceType,i);
     }
 
     inline TypeRegister::TypeID Function::getInputType(std::string name)const{
-      return this->_getInput(this->getInputIndex(name)).type;
+      return this->_typeRegister->getFceArgTypeId(this->_fceType,this->getInputIndex(name));
     }
 
     inline decltype(Function::_inputs)::size_type Function::getNofInputs()const{
@@ -256,9 +201,8 @@ namespace ge{
   BEGIN_INTERPRET_FUNCTION_HPP(NAME);\
 END_INTERPRET_FUNCTION_HPP()
 
-#define BEGIN_INTERPRET_FUNCTION_CPP(NAME,...)\
-  NAME::NAME(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(this->_computeNumberOfInputs(__VA_ARGS__),NAME::name()){\
-    this->_setTypes(tr,this->_computeNumberOfInputs(__VA_ARGS__),__VA_ARGS__)
+#define BEGIN_INTERPRET_FUNCTION_CPP(NAME,TYPE)\
+  NAME::NAME(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(tr,TYPE,NAME::name()){\
 
 #define MID_INTERPRET_FUNCTION_CPP(NAME)\
   }\

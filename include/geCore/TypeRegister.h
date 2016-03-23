@@ -91,6 +91,8 @@ namespace ge{
         template<typename TYPE>
         static TypeID getTypeTypeId();
         template<typename TYPE>
+        static DescriptionElement getTypeDescription();
+        template<typename TYPE>
         std::function<OBJConstructor> getConstructor();
         template<typename TYPE>
         std::function<OBJDestructor> getDestructor();
@@ -222,20 +224,39 @@ namespace ge{
       }
 
 
-    template<>inline std::string TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<bool              >(){return"bool"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<char              >(){return"i8"    ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<short             >(){return"i16"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int               >(){return"i32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<long long int     >(){return"i64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<unsigned char     >(){return"u8"    ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<unsigned short    >(){return"u16"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<unsigned          >(){return"u32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<unsigned long long>(){return"u64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<float             >(){return"f32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<double            >(){return"f64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<std::string       >(){return"string";}
+    template<>inline std::string TypeRegister::getTypeKeyword<void       >(){return"void"  ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<bool       >(){return"bool"  ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int8_t     >(){return"i8"    ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int16_t    >(){return"i16"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int32_t    >(){return"i32"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int64_t    >(){return"i64"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint8_t    >(){return"u8"    ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint16_t   >(){return"u16"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint32_t   >(){return"u32"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint64_t   >(){return"u64"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<float      >(){return"f32"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<double     >(){return"f64"   ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<std::string>(){return"string";}
 
+
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<void       >(){return TypeRegister::VOID  ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<bool       >(){return TypeRegister::BOOL  ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int8_t     >(){return TypeRegister::I8    ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int16_t    >(){return TypeRegister::I16   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int32_t    >(){return TypeRegister::I32   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int64_t    >(){return TypeRegister::I64   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint8_t    >(){return TypeRegister::U8    ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint16_t   >(){return TypeRegister::U16   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint32_t   >(){return TypeRegister::U32   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint64_t   >(){return TypeRegister::U64   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<float      >(){return TypeRegister::F32   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<double     >(){return TypeRegister::F64   ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<std::string>(){return TypeRegister::STRING;}
+
+    template<typename TYPE>
+    inline TypeRegister::TypeID TypeRegister::getTypeTypeId(){return TypeRegister::TYPEID+TypeRegister::getTypeDescription<TYPE>()-1;}
+
+    /*
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<void              >(){return TypeRegister::TYPEID+TypeRegister::VOID  -1;}
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<bool              >(){return TypeRegister::TYPEID+TypeRegister::BOOL  -1;}
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<char              >(){return TypeRegister::TYPEID+TypeRegister::I8    -1;}
@@ -249,6 +270,7 @@ namespace ge{
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<float             >(){return TypeRegister::TYPEID+TypeRegister::F32   -1;}
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<double            >(){return TypeRegister::TYPEID+TypeRegister::F64   -1;}
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<std::string       >(){return TypeRegister::TYPEID+TypeRegister::STRING-1;}
+    */
 
     template<typename TYPE>
       std::function<TypeRegister::OBJConstructor> TypeRegister::getConstructor(){

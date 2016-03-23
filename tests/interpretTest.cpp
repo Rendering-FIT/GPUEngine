@@ -25,7 +25,6 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     f2->bindInput(1,fd);
     auto f3=std::make_shared<ge::core::Cast<float,int>>(typeRegister,typeRegister->sharedAccessor("i32"));
     f3->bindInput(0,f2);
-
     WHEN("running f1"){
       (*f1)();
       THEN( "output of f1 should be computed correctly" ) {
@@ -124,9 +123,9 @@ SCENARIO( "ticks tests", "[Function]" ) {
   class AddTen: public ge::core::Function{
     public:
       unsigned counter=0;
-      AddTen(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(1,"AddTen"){
-        this->_setInput(0,tr->getTypeId("f32"));
-        this->_setOutput(tr->getTypeId("f32"));
+      AddTen(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(tr,{TypeRegister::FCE,TypeRegister::F32,1,TypeRegister::F32},"AddTen"){
+        //this->_setInput(0,tr->getTypeId("f32"));
+        //this->_setOutput(tr->getTypeId("f32"));
       }
     protected:
       virtual bool _do(){
@@ -141,10 +140,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
   class Add: public ge::core::Function{
     public:
       unsigned counter=0;
-      Add(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(2,"Add"){
-        this->_setInput(0,tr->getTypeId("f32"));
-        this->_setInput(1,tr->getTypeId("f32"));
-        this->_setOutput(tr->getTypeId("f32"));
+      Add(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(tr,{TypeRegister::FCE,TypeRegister::F32,2,TypeRegister::F32,TypeRegister::F32},"Add"){
+        //this->_setInput(0,tr->getTypeId("f32"));
+        //this->_setInput(1,tr->getTypeId("f32"));
+        //this->_setOutput(tr->getTypeId("f32"));
       }
     protected:
       virtual bool _do(){

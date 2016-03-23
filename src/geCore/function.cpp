@@ -6,24 +6,43 @@ using namespace ge::core;
 FunctionInput::FunctionInput(
     std::shared_ptr<Function>fce        ,
     unsigned long long       updateTicks,
-    bool                     changed    ,
-    TypeRegister::TypeID     type       ){
+    bool                     changed    ){//,
+//    TypeRegister::TypeID     type       ){
   this->function    = fce        ;
   this->updateTicks = updateTicks;
   this->changed     = changed    ;
-  this->type        = type       ;
+//  this->type        = type       ;
 }
 
 
-Function::Function(unsigned n,std::string name):Statement(FUNCTION){
-  for(unsigned i=0;i<n;++i)
+
+//Function::Function(unsigned n,std::string name):Statement(FUNCTION){
+//  for(unsigned i=0;i<n;++i)
+//    this->_inputs.push_back(FunctionInput());
+//  this->_defaultNames(n);
+//  this->_name = name;
+//}
+
+Function::Function(
+    std::shared_ptr<TypeRegister>const&tr,
+    TypeRegister::TypeID type,
+    std::string name):Statement(FUNCTION){
+  this->_typeRegister = tr;
+  this->_fceType = type;
+  auto nofInputs = this->_typeRegister->getNofFceArgs(this->_fceType);
+  for(decltype(nofInputs)i=0;i<nofInputs;++i)
     this->_inputs.push_back(FunctionInput());
-  this->_defaultNames(n);
+  this->_defaultNames((unsigned)nofInputs);
   this->_name = name;
 }
 
-Function::~Function(){
+Function::Function(
+    std::shared_ptr<TypeRegister>const&tr,
+    TypeRegister::DescriptionList const&typeDescription,
+    std::string name):Function(tr,tr->addType("",typeDescription),name){
+}
 
+Function::~Function(){
 }
 
 bool Function::bindInput(unsigned i,std::shared_ptr<Function>function){
@@ -36,10 +55,10 @@ bool Function::bindInput(unsigned i,std::shared_ptr<Function>function){
   }
   if(
       function                       != nullptr                   &&
-      function->getOutput()->getId() != this->_getInput(i).type   &&
-      this->_getInput(i).type        != TypeRegister::UNREGISTERED){
+      function->getOutput()->getId() != this->getInputType(i)     &&
+      this->getInputType(i)          != TypeRegister::UNREGISTERED){
     std::cerr<<"ERROR: "<<this->_name<<".input["<<this->getInputName(i)<<"] has different type - ";
-    std::cerr<<function->getOutput()->getManager()->getTypeIdName(this->_getInput(i).type);
+    std::cerr<<function->getOutput()->getManager()->getTypeIdName(this->getInputType(i));
     std::cerr<<" != ";
     std::cerr<<function->getOutput()->getManager()->getTypeIdName(function->getOutput()->getId());
     std::cerr<<std::endl;
@@ -54,10 +73,10 @@ bool Function::bindInput(unsigned i,std::shared_ptr<Function>function){
 bool Function::bindOutput(std::shared_ptr<Accessor>data){
   if(
       data                    != nullptr                   &&
-      data->getId()           != this->_getOutput().type   &&
-      this->_getOutput().type != TypeRegister::UNREGISTERED){
+      data->getId()           != this->getOutputType()     &&
+      this->getOutputType()   != TypeRegister::UNREGISTERED){
     std::cerr<<"ERROR: "<<this->_name<<".output has different type - ";
-    std::cerr<<data->getManager()->getTypeIdName(this->_getOutput().type);
+    std::cerr<<data->getManager()->getTypeIdName(this->getOutputType());
     std::cerr<<" != ";
     std::cerr<<data->getManager()->getTypeIdName(data->getId()    );
     std::cerr<<std::endl;
@@ -71,11 +90,13 @@ bool Function::bindInput(std::string name,std::shared_ptr<Function>function){
   return this->bindInput(this->getInputIndex(name),function);
 }
 
-void Function::_setInput(unsigned i,TypeRegister::TypeID type,std::string name){
+void Function::_setInput(unsigned i,//TypeRegister::TypeID type,
+    std::string name){
   if(name=="")name=this->_genDefaultName(i);
   auto jj=this->_name2Input.find(name);
   if(jj!=this->_name2Input.end()&&jj->second!=i){
-    std::cerr<<"ERROR: "<<this->_name<<"::setInput("<<i<<","<<type<<","<<name<<")";
+    std::cerr<<"ERROR: "<<this->_name<<"::setInput("<<i<<","//<<type<<","
+      <<name<<")";
     std::cerr<<" - name "<<name<<" is already used for input number: ";
     std::cerr<<jj->second<<std::endl;
     return;
@@ -88,13 +109,14 @@ void Function::_setInput(unsigned i,TypeRegister::TypeID type,std::string name){
   }
   this->_name2Input[name] = i   ;
   this->_input2Name[i   ] = name;
-  this->_inputs[i].type=type;
+  //this->_inputs[i].type=type;
 }
 
-void Function::_setOutput(TypeRegister::TypeID type,std::string name){
+void Function::_setOutput(//TypeRegister::TypeID type,
+    std::string name){
   if(name=="")name="output";
   this->_getOutput().name = name;
-  this->_getOutput().type = type;
+  //this->_getOutput().type = type;
 }
 
 void Function::operator()(){

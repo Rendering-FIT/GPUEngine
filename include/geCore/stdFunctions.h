@@ -11,7 +11,7 @@ namespace ge{
         Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,
             std::shared_ptr<ge::core::Accessor>data = nullptr);
         template<typename TYPE>
-          Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,TYPE const&data):Function(0,"Nullary"){
+          Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,TYPE const&data):Function(tr,{TypeRegister::FCE,TypeRegister::UNREGISTERED,0},"Nullary"){
             this->_getOutput().data=tr->sharedAccessor<TYPE>(data);//data);
           }
         template<typename TYPE>
@@ -36,11 +36,17 @@ namespace ge{
             static inline std::string name(){\
               return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
             }\
-             CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
-                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(2,CLASS::name()){\
-               this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());\
-               this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());\
+             CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
+                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+                     ge::core::TypeRegister::FCE,\
+                     ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
+                     2,\
+                     ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
+                     ge::core::TypeRegister::getTypeDescription<INPUT2>()\
+                     },CLASS::name()){\
+               /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
+               /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
+               /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
                this->bindOutput(output);\
              }\
       protected:\
@@ -55,11 +61,17 @@ namespace ge{
             static inline std::string name(){\
               return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
             }\
-             CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
-                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(2,CLASS::name()){\
-               this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());\
-               this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());\
+             CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
+                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+                     ge::core::TypeRegister::FCE,\
+                     ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
+                     2,\
+                     ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
+                     ge::core::TypeRegister::getTypeDescription<INPUT2>()\
+                     },CLASS::name()){\
+               /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
+               /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
+               /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
                this->bindOutput(output);\
              }\
       protected:\
@@ -75,10 +87,15 @@ namespace ge{
              static inline std::string name(){\
                return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
              }\
-             CLASS(std::shared_ptr<ge::core::TypeRegister>const&,\
-                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1,CLASS::name()){\
-               this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());\
-               this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());\
+             CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
+                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+                   ge::core::TypeRegister::FCE,\
+                   ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
+                   1,\
+                   ge::core::TypeRegister::getTypeDescription<INPUT1>()\
+                   },CLASS::name()){\
+               /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
+               /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
                this->bindOutput(output);\
              }\
       protected:\
@@ -193,10 +210,10 @@ namespace ge{
     template<typename FROM,typename TO>
       class Cast: public Function{
         public:
-          Cast(std::shared_ptr<ge::core::TypeRegister>const&,
-              std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(1,"Cast"){
-            this->_setOutput(TypeRegister::getTypeTypeId<TO>());
-            this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
+          Cast(std::shared_ptr<ge::core::TypeRegister>const&tr,
+              std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()},"Cast"){
+            //this->_setOutput(TypeRegister::getTypeTypeId<TO>());
+            //this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
             this->bindOutput(output);
           }
           static inline std::string name(){

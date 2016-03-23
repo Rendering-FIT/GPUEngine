@@ -196,6 +196,22 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
 
     }
 
+    WHEN("adding nullary function"){
+      auto a=r->addType("nul",ge::core::TypeRegister::FCE,ge::core::TypeRegister::F32,0);
+      THEN("it should be registered"){
+        REQUIRE(a!=ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(r->getNofFceArgs(a)==0);
+      }
+    }
+
+    WHEN("adding unspecified nullary function"){
+      auto a=r->addType("nul0",ge::core::TypeRegister::FCE,ge::core::TypeRegister::UNREGISTERED,0);
+      THEN("it should be registered"){
+        REQUIRE(a!=ge::core::TypeRegister::UNREGISTERED);
+      }
+    }
+
+
 
 #ifndef SHOWCERR
     std::cerr.rdbuf(old);
