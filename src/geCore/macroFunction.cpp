@@ -2,6 +2,7 @@
 
 using namespace ge::core;
 
+/*
 MacroFunction::MacroFunction(
     std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id):
   Function(tr,id,"MacroFunction"){
@@ -15,7 +16,7 @@ bool MacroFunction::_do(){
   std::cerr<<"this should not be called at all"<<std::endl;
   return false;
 }
-
+*/
 
 
 FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses){

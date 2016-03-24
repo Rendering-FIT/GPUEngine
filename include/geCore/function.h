@@ -22,13 +22,42 @@ namespace ge{
     // function: selector of element of Accessor
     //
 
-    class MacroFunction;
+    class GECORE_EXPORT Box: public Statement{
+      public:
+        using InputIndex = size_t;
+      protected:
+        std::map<InputIndex,std::string>_input2Name;
+        std::map<std::string,InputIndex>_name2Input;
+        std::string _outputName                    ;
+      public:
+        inline Box():Statement(FUNCTION){}
+        virtual inline ~Box(){}
+        virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function = nullptr)=0;
+        virtual bool bindInput (std::string name,std::shared_ptr<Function>function = nullptr)=0;
+        virtual bool bindOutput(                 std::shared_ptr<Accessor>data     = nullptr)=0;
+        virtual bool hasInput (InputIndex  i   )const=0;
+        virtual bool hasInput (std::string name)const=0;
+        virtual bool hasOutput(                )const=0;
+        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const;
+        virtual std::shared_ptr<Accessor>const&getInputData (std::string input)const;
+        virtual std::shared_ptr<Accessor>const&getOutputData(                 )const;
+        virtual TypeRegister::TypeID getInputType (InputIndex  i   )const;
+        virtual TypeRegister::TypeID getInputType (std::string name)const;
+        virtual TypeRegister::TypeID getOutputType(                )const;
+        virtual std::string doc()const;
+        inline InputIndex  getNofInputs()const;
+        inline std::string getInputName (InputIndex  i   )const;
+        inline InputIndex  getInputIndex(std::string name)const;
+        inline std::string getOutputName()const;
+    };
+
+    //class MacroFunction;
     class GECORE_EXPORT Function: public Statement{
       public:
         using InputList = std::vector<FunctionInput>;
         using InputIndex = InputList::size_type;
       protected:
-        friend class MacroFunction;
+//        friend class MacroFunction;
         std::shared_ptr<TypeRegister>   _typeRegister   ;
         std::string                     _name           ;
         InputList                       _inputs         ;
@@ -47,7 +76,7 @@ namespace ge{
         Function(std::shared_ptr<TypeRegister>const&tr,TypeRegister::DescriptionList const&typeDescription,std::string name = "");
         virtual ~Function();
         virtual void operator()();
-        inline std::shared_ptr<Accessor>const&getOutput()const;
+        inline std::shared_ptr<Accessor>const&getOutputData()const;
         inline TypeRegister::TypeID getOutputType()const;
         inline std::string getOutputName()const;
         inline bool hasInput(InputIndex  i   )const;
@@ -72,11 +101,11 @@ namespace ge{
         virtual bool _do();
         inline bool _inputChanged(InputIndex  i    )const;
         inline bool _inputChanged(std::string input)const;
-        virtual inline FunctionInput      &_getInput(InputIndex i);
-        virtual inline FunctionInput const&_getInput(InputIndex i)const;
-        virtual inline InputIndex _getNofInputs()const;
-        virtual inline Output      &_getOutput();
-        virtual inline Output const&_getOutput()const;
+        inline FunctionInput      &_getInput(InputIndex i);
+        inline FunctionInput const&_getInput(InputIndex i)const;
+        inline InputIndex _getNofInputs()const;
+        inline Output      &_getOutput();
+        inline Output const&_getOutput()const;
     };
 
 
@@ -87,7 +116,7 @@ namespace ge{
         virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
     };
 
-    inline std::shared_ptr<Accessor>const&Function::getOutput()const{
+    inline std::shared_ptr<Accessor>const&Function::getOutputData()const{
       /*
       ___;
       std::cerr<<this<<std::endl;
@@ -124,7 +153,7 @@ namespace ge{
     }
 
     inline std::shared_ptr<Accessor>const&Function::getInputData(InputIndex i)const{
-      return this->_getInput(i).function->getOutput();
+      return this->_getInput(i).function->getOutputData();
     }
 
     inline std::shared_ptr<Accessor>const&Function::getInputData(std::string input)const{

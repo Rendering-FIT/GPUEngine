@@ -22,7 +22,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     WHEN("running constructed statement"){
       (*statement)();
       THEN("output should be computed correctly"){
-        REQUIRE((int32_t)(*function->getOutput())==21);
+        REQUIRE((int32_t)(*function->getOutputData())==21);
       }
     }
   }
@@ -40,7 +40,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     WHEN("running constructed statement"){
       (*statement)();
       THEN("output should be computed correctly"){
-        REQUIRE((int32_t)(*function->getOutput())==21);
+        REQUIRE((int32_t)(*function->getOutputData())==21);
       }
     }
   }
@@ -69,8 +69,8 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
       (*statement0)();
       (*statement1)();
       THEN("output should be computed correctly"){
-        REQUIRE((int32_t)(*function0->getOutput())==22);
-        REQUIRE((int32_t)(*function1->getOutput())==62);
+        REQUIRE((int32_t)(*function0->getOutputData())==22);
+        REQUIRE((int32_t)(*function1->getOutputData())==62);
       }
     }
   }
@@ -126,10 +126,10 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
       (*statement0)();
       (*statement1)();
       THEN("output of two function should be computed correctly"){
-        REQUIRE((int32_t)(*f00->getOutput())==24);
-        REQUIRE((int32_t)(*f01->getOutput())==92);
-        REQUIRE((int32_t)(*f10->getOutput())==6);
-        REQUIRE((int32_t)(*f11->getOutput())==13);
+        REQUIRE((int32_t)(*f00->getOutputData())==24);
+        REQUIRE((int32_t)(*f01->getOutputData())==92);
+        REQUIRE((int32_t)(*f10->getOutputData())==6);
+        REQUIRE((int32_t)(*f11->getOutputData())==13);
 
       }
     }

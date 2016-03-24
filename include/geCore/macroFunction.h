@@ -4,6 +4,7 @@
 
 namespace ge{
   namespace core{
+    /*
     class GECORE_EXPORT MacroFunction: public Function{
       protected:
         std::vector<FunctionInput*>_in;
@@ -28,6 +29,7 @@ namespace ge{
             std::shared_ptr<Function>const&fce            ,
             std::string                    name = "output");
     };
+    */
 
 
     class GECORE_EXPORT FunctionNodeFactory: public FunctionFactory{
@@ -48,6 +50,7 @@ namespace ge{
         virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr);
     };
 
+    /*
     inline void MacroFunction::operator()(){
       if(!this->_outputFce){
         std::cerr<<"ERROR: MacroFunction::operator()() - ";
@@ -95,7 +98,7 @@ namespace ge{
     inline Function::Output const&MacroFunction::_getOutput()const{
       return *this->_out;
     }
-
+    */
 
 
   }

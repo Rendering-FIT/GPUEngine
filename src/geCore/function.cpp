@@ -44,13 +44,13 @@ bool Function::bindInput(InputIndex i,std::shared_ptr<Function>function){
     return false;
   }
   if(
-      function                       != nullptr                                                  &&
-      this->getInputType(i)          != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
-      function->getOutput()->getId() != this->getInputType(i)                                    ){
+      function                           != nullptr                                                  &&
+      this->getInputType(i)              != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
+      function->getOutputData()->getId() != this->getInputType(i)                                    ){
     std::cerr<<"ERROR: "<<this->_name<<".input["<<this->getInputName(i)<<"] has different type - ";
-    std::cerr<<function->getOutput()->getManager()->getTypeIdName(this->getInputType(i));
+    std::cerr<<function->getOutputData()->getManager()->getTypeIdName(this->getInputType(i));
     std::cerr<<" != ";
-    std::cerr<<function->getOutput()->getManager()->getTypeIdName(function->getOutput()->getId());
+    std::cerr<<function->getOutputData()->getManager()->getTypeIdName(function->getOutputData()->getId());
     std::cerr<<std::endl;
     return false;
   }

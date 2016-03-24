@@ -33,7 +33,7 @@ std::shared_ptr<Statement>const&While::getBody()const{
 void While::operator()(){
   for(;;){
     (*this->_condition)();
-    if(!(bool)*this->_condition->getOutput())return;
+    if(!(bool)*this->_condition->getOutputData())return;
     (*this->_body)();
   }
 }

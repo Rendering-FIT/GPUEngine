@@ -42,7 +42,7 @@ std::shared_ptr<Statement>const&If::getFalseBody()const{
 
 void If::operator()(){
   (*this->_condition)();
-  if((bool)*this->_condition->getOutput())
+  if((bool)*this->_condition->getOutputData())
     (*this->_trueBody)();
   else{
     if(this->_falseBody)(*this->_falseBody)();

@@ -28,19 +28,19 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     WHEN("running f1"){
       (*f1)();
       THEN( "output of f1 should be computed correctly" ) {
-        REQUIRE((float)(*f1->getOutput())==((101.f+1.1f)+2.2f));
+        REQUIRE((float)(*f1->getOutputData())==((101.f+1.1f)+2.2f));
       }
     }
     WHEN("running f2"){
       (*f2)();
       THEN( "output of f2 should be computed correctly"){
-        REQUIRE((float)(*f2->getOutput())==((101.f+1.1f)-1000.f));
+        REQUIRE((float)(*f2->getOutputData())==((101.f+1.1f)-1000.f));
       }
     }
     WHEN("running f3"){
       (*f3)();
       THEN("output of f3 should be computed correctly"){
-        REQUIRE((int)(*f3->getOutput())==(int)((101.f+1.1f)-1000.f));
+        REQUIRE((int)(*f3->getOutputData())==(int)((101.f+1.1f)-1000.f));
       }
     }
   }
@@ -75,7 +75,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     WHEN("running iff"){
       (*iff)();
       THEN("it should correctly choose lesser value"){
-        REQUIRE((unsigned)(*fc->getOutput())==10);
+        REQUIRE((unsigned)(*fc->getOutputData())==10);
       }
     }
   }
@@ -111,7 +111,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     WHEN("running wh"){
       (*wh)();
       THEN("it should compute factorial of 9"){
-        REQUIRE((unsigned)(*fk->getOutput())==362880);
+        REQUIRE((unsigned)(*fk->getOutputData())==362880);
       }
     }
 
@@ -171,7 +171,7 @@ SCENARIO( "ticks tests", "[Function]" ) {
     WHEN("running fadd"){
       (*fadd)();
       THEN( "output of fadd should be 40.f" ) {
-        REQUIRE((float&)*fadd->getOutput() == 40.f);
+        REQUIRE((float&)*fadd->getOutputData() == 40.f);
       }
       THEN( "faddten should be called only once"){
         REQUIRE(faddten->counter == 1);

@@ -166,7 +166,7 @@ namespace ge{
     DEF_CLASS_PROLOGUE2(CLASS,OUTPUT,INPUT1,INPUT2);\
     INPUT_CHECK();\
     if(this->hasOutput())\
-    (OUTPUT&)*this->getOutput()=\
+    (OUTPUT&)*this->getOutputData()=\
     (INPUT1&)(*this->getInputData(0)) OPERATOR\
     (INPUT2 )(*this->getInputData(1));\
     else\
@@ -179,7 +179,7 @@ namespace ge{
 #define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT1,INPUT2)\
     DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2);\
     INPUT_CHECK();\
-    (OUTPUT&)*this->getOutput()=\
+    (OUTPUT&)*this->getOutputData()=\
     (INPUT1&)(*this->getInputData(0)) OPERATOR\
     (INPUT2 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
@@ -189,7 +189,7 @@ namespace ge{
     DEF_CLASS_PROLOGUE2(CLASS,TYPE,TYPE,TYPE);\
     INPUT_CHECK();\
     if(this->hasOutput())\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutputData())=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     else\
@@ -201,7 +201,7 @@ namespace ge{
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,TYPE,TYPE,TYPE);\
     INPUT_CHECK();\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutputData())=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
@@ -210,7 +210,7 @@ namespace ge{
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,TYPE,TYPE);\
     INPUT_CHECK();\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutputData())=\
     OPERATOR ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)));\
     DEF_CLASS_EPILOGUE()
 
@@ -219,7 +219,7 @@ namespace ge{
     DEF_CLASS_PROLOGUE1(CLASS,TYPE,TYPE);\
     INPUT_CHECK();\
     if(this->hasOutput())\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutputData())=\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
     else\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
