@@ -4,6 +4,7 @@
 using namespace ge::core;
 
 AtomicAccessor::AtomicAccessor(AtomicAccessor const& ac):Accessor(ac._manager,ac._id){
+  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
   this->_data   = ac._data  ;
   this->_offset = ac._offset;
 }
@@ -13,6 +14,7 @@ AtomicAccessor::AtomicAccessor(
     const void*                              data   ,
     TypeRegister::TypeID                     id     ,
     size_t                                   offset ):Accessor(manager,id){
+  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
   this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){AtomicAccessor::_callDestructors(ptr,id,manager);delete[]ptr;});
   this->_offset  =        offset ;
 }
@@ -22,6 +24,7 @@ AtomicAccessor::AtomicAccessor(
     std::shared_ptr<char>const&              data   ,
     TypeRegister::TypeID                     id     ,
     size_t                                   offset ):Accessor(manager,id){
+  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
   this->_data    = data   ;
   this->_offset  = offset ;
 }
@@ -29,11 +32,13 @@ AtomicAccessor::AtomicAccessor(
 AtomicAccessor::AtomicAccessor(
     std::shared_ptr<const TypeRegister>const&manager,
     TypeRegister::TypeID                    id      ):Accessor(manager,id){
+  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
   this->_data    = nullptr;
   this->_offset  = 0      ;
 }
 
 AtomicAccessor::~AtomicAccessor(){
+  //std::cerr<<"AtomicAccessor::~AtomicAccessor() - "<<this<<std::endl;
 }
 
 void*AtomicAccessor::getData()const{

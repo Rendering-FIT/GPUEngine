@@ -18,10 +18,17 @@ bool MacroFunction::_do(){
 
 
 
-FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<FunctionFactory>const&fac,unsigned maxUses){
-  this->functionFactory = fac;
+FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses){
+  this->functionFactory = std::dynamic_pointer_cast<FunctionFactory>(fac);
   this->_maxUses = maxUses;
   this->reset();
+}
+
+void FunctionNodeFactory::addResourceFactory(std::shared_ptr<ResourceFactory>const&factory){
+  this->resourceFactories.push_back(factory);
+}
+void FunctionNodeFactory::addInputFactory(std::shared_ptr<StatementFactory>const&factory){
+  this->inputFactories.push_back(std::dynamic_pointer_cast<FunctionFactory>(factory));
 }
 
 FunctionNodeFactory::~FunctionNodeFactory(){

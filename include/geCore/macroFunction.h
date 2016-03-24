@@ -4,7 +4,7 @@
 
 namespace ge{
   namespace core{
-    class MacroFunction: public Function{
+    class GECORE_EXPORT MacroFunction: public Function{
       protected:
         std::vector<FunctionInput*>_in;
         Function::Output*_out = nullptr;
@@ -30,7 +30,7 @@ namespace ge{
     };
 
 
-    class FunctionNodeFactory: public FunctionFactory{
+    class GECORE_EXPORT FunctionNodeFactory: public FunctionFactory{
       protected:
         std::shared_ptr<Statement>_result  = nullptr;
         unsigned                  _maxUses = 0      ;
@@ -40,7 +40,9 @@ namespace ge{
         std::vector<std::shared_ptr<ResourceFactory>>resourceFactories;
         std::vector<std::shared_ptr<FunctionFactory>>inputFactories;
       public:
-        FunctionNodeFactory(std::shared_ptr<FunctionFactory>const&fac,unsigned maxUses = 1);
+        FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses = 1);
+        void addResourceFactory(std::shared_ptr<ResourceFactory>const&factory);
+        void addInputFactory(std::shared_ptr<StatementFactory>const&factory);
         virtual ~FunctionNodeFactory();
         void reset();
         virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr);

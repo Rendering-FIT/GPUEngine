@@ -16,6 +16,7 @@ namespace ge{
     class AtomicAccessor;
     class GECORE_EXPORT TypeRegister: public std::enable_shared_from_this<TypeRegister>{
       public:
+        struct Unregistered;
         DEF_ENUM(Type,UNREGISTERED,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID);
         //enum Type{UNREGISTERED,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID};
         using TypeID                = size_t;
@@ -224,37 +225,39 @@ namespace ge{
       }
 
 
-    template<>inline std::string TypeRegister::getTypeKeyword<void       >(){return"void"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<bool       >(){return"bool"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int8_t     >(){return"i8"    ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int16_t    >(){return"i16"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int32_t    >(){return"i32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int64_t    >(){return"i64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint8_t    >(){return"u8"    ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint16_t   >(){return"u16"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint32_t   >(){return"u32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint64_t   >(){return"u64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<float      >(){return"f32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<double     >(){return"f64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<std::string>(){return"string";}
+    template<>inline std::string TypeRegister::getTypeKeyword<TypeRegister::Unregistered>(){return"unregistered";}
+    template<>inline std::string TypeRegister::getTypeKeyword<void                      >(){return"void"        ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<bool                      >(){return"bool"        ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int8_t                    >(){return"i8"          ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int16_t                   >(){return"i16"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int32_t                   >(){return"i32"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int64_t                   >(){return"i64"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint8_t                   >(){return"u8"          ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint16_t                  >(){return"u16"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint32_t                  >(){return"u32"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint64_t                  >(){return"u64"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<float                     >(){return"f32"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<double                    >(){return"f64"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<std::string               >(){return"string"      ;}
 
 
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<void       >(){return TypeRegister::VOID  ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<bool       >(){return TypeRegister::BOOL  ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int8_t     >(){return TypeRegister::I8    ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int16_t    >(){return TypeRegister::I16   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int32_t    >(){return TypeRegister::I32   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int64_t    >(){return TypeRegister::I64   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint8_t    >(){return TypeRegister::U8    ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint16_t   >(){return TypeRegister::U16   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint32_t   >(){return TypeRegister::U32   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint64_t   >(){return TypeRegister::U64   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<float      >(){return TypeRegister::F32   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<double     >(){return TypeRegister::F64   ;}
-    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<std::string>(){return TypeRegister::STRING;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<TypeRegister::Unregistered>(){return TypeRegister::UNREGISTERED;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<void                      >(){return TypeRegister::VOID        ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<bool                      >(){return TypeRegister::BOOL        ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int8_t                    >(){return TypeRegister::I8          ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int16_t                   >(){return TypeRegister::I16         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int32_t                   >(){return TypeRegister::I32         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<int64_t                   >(){return TypeRegister::I64         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint8_t                   >(){return TypeRegister::U8          ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint16_t                  >(){return TypeRegister::U16         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint32_t                  >(){return TypeRegister::U32         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<uint64_t                  >(){return TypeRegister::U64         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<float                     >(){return TypeRegister::F32         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<double                    >(){return TypeRegister::F64         ;}
+    template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<std::string               >(){return TypeRegister::STRING      ;}
 
     template<typename TYPE>
-    inline TypeRegister::TypeID TypeRegister::getTypeTypeId(){return TypeRegister::TYPEID+TypeRegister::getTypeDescription<TYPE>()-1;}
+    inline TypeRegister::TypeID TypeRegister::getTypeTypeId(){return TypeRegister::TYPEID+TypeRegister::getTypeDescription<TYPE>();}//-1;}
 
     /*
     template<>inline TypeRegister::TypeID TypeRegister::getTypeTypeId<void              >(){return TypeRegister::TYPEID+TypeRegister::VOID  -1;}

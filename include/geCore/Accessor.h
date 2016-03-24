@@ -24,10 +24,11 @@ namespace ge{
         inline Accessor(
             std::shared_ptr<const TypeRegister>const&manager = nullptr                   ,
             TypeRegister::TypeID                    id       = TypeRegister::UNREGISTERED){
+          //std::cerr<<"Accessor::Accessor() - "<<this<<std::endl;
           this->_manager = manager;
           this->_id = id;
         }
-        inline virtual ~Accessor(){}
+        inline virtual ~Accessor(){}//std::cerr<<"Accessor::~Accessor() - "<<this<<std::endl;}
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
         inline std::shared_ptr<const TypeRegister>getManager()const{return this->_manager;}

@@ -22,6 +22,16 @@ namespace ge{
         static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){
           return std::make_shared<Nullary>(tr);
         }
+        static inline std::shared_ptr<StatementFactory>factory(){
+          class Factory: public FunctionFactory{
+            public:
+              virtual ~Factory(){}
+              virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr){
+                return std::make_shared<Nullary>(tr);
+              }
+          };
+          return std::make_shared<Factory>();
+        }
         static inline std::string name(){
           return "Nullary";
         }
@@ -30,86 +40,133 @@ namespace ge{
 #define DEF_CLASS_PROLOGUE2(CLASS,OUTPUT,INPUT1,INPUT2)\
     class CLASS: public Function{\
       public:\
-            static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
-              return std::make_shared<CLASS<INPUT1>>(tr);\
-            }\
-            static inline std::string name(){\
-              return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
-            }\
-             CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
-                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
-                     ge::core::TypeRegister::FCE,\
-                     ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
-                     2,\
-                     ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
-                     ge::core::TypeRegister::getTypeDescription<INPUT2>()\
-                     },CLASS::name()){\
-               /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
-               /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
-               /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
-               this->bindOutput(output);\
+             static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+               return std::make_shared<CLASS<INPUT1>>(tr);\
              }\
+      static inline std::shared_ptr<StatementFactory>factory(){\
+        std::cerr<<"DCP2::factory()"<<std::endl;\
+        class Factory: public FunctionFactory{\
+          public:\
+                 virtual ~Factory(){}\
+          virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr){\
+            std::cerr<<"DCP2::factory()()"<<std::endl;\
+            return std::make_shared<CLASS<INPUT1>>(tr);\
+          }\
+        };\
+        return std::make_shared<Factory>();\
+      }\
+      static inline std::string name(){\
+        return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+      }\
+      CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
+          std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+            ge::core::TypeRegister::FCE,\
+            ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
+            2,\
+            ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
+            ge::core::TypeRegister::getTypeDescription<INPUT2>()\
+            },CLASS::name()){\
+            /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
+            /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
+            /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
+            this->bindOutput(output);\
+          }\
       protected:\
-        virtual bool _do(){//}}
+                virtual bool _do(){//}}
 
 #define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2)\
     class CLASS: public Function{\
       public:\
-            static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
-              return std::make_shared<CLASS>(tr);\
-            }\
-            static inline std::string name(){\
-              return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
-            }\
-             CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
-                   std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
-                     ge::core::TypeRegister::FCE,\
-                     ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
-                     2,\
-                     ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
-                     ge::core::TypeRegister::getTypeDescription<INPUT2>()\
-                     },CLASS::name()){\
-               /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
-               /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
-               /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
-               this->bindOutput(output);\
+             static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+               return std::make_shared<CLASS>(tr);\
              }\
+      static inline std::shared_ptr<StatementFactory>factory(){\
+        class Factory: public FunctionFactory{\
+          public:\
+                 virtual ~Factory(){}\
+          virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr){\
+            return std::make_shared<CLASS>(tr);\
+          }\
+        };\
+        return std::make_shared<Factory>();\
+      }\
+      static inline std::string name(){\
+        return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+      }\
+      CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
+          std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+            ge::core::TypeRegister::FCE,\
+            ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
+            2,\
+            ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
+            ge::core::TypeRegister::getTypeDescription<INPUT2>()\
+            },CLASS::name()){\
+            /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
+            /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
+            /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
+            this->bindOutput(output);\
+          }\
       protected:\
-        virtual bool _do(){//}}
+                virtual bool _do(){//}}
 
 
 #define DEF_CLASS_PROLOGUE1(CLASS,OUTPUT,INPUT1)\
     class CLASS: public Function{\
       public:\
-            static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
-              return std::make_shared<CLASS<INPUT1>>(tr);\
-            }\
-             static inline std::string name(){\
-               return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+             static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+               return std::make_shared<CLASS<INPUT1>>(tr);\
              }\
-             CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
-                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
-                   ge::core::TypeRegister::FCE,\
-                   ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
-                   1,\
-                   ge::core::TypeRegister::getTypeDescription<INPUT1>()\
-                   },CLASS::name()){\
-               /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
-               /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
-               this->bindOutput(output);\
-             }\
+      static inline std::shared_ptr<StatementFactory>factory(){\
+        class Factory: public FunctionFactory{\
+          public:\
+                 virtual ~Factory(){}\
+          virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr){\
+            return std::make_shared<CLASS<INPUT1>>(tr);\
+          }\
+        };\
+        return std::make_shared<Factory>();\
+      }\
+      static inline std::string name(){\
+        return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
+      }\
+      CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
+          std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+            ge::core::TypeRegister::FCE,\
+            ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
+            1,\
+            ge::core::TypeRegister::getTypeDescription<INPUT1>()\
+            },CLASS::name()){\
+            /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
+            /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
+            this->bindOutput(output);\
+          }\
       protected:\
-        virtual bool _do(){//}}
+                virtual bool _do(){//}}
 
 #define DEF_CLASS_EPILOGUE()/*{{*/\
-          return true;\
-        }\
+    return true;\
+  }\
+  }
+
+#define INPUT_CHECK()\
+    bool missingInput=false;\
+    for(InputIndex i=0;i<this->_getNofInputs();++i)\
+      if(!this->hasInput(i)){\
+        if(!missingInput)std::cerr<<"ERROR: function "<<this->_name<<" has unbinded inputs: ";\
+        else std::cerr<<" ,";\
+        missingInput=true;\
+        std::cerr<<this->getInputName(i);\
+      }\
+    if(missingInput){\
+      std::cerr<<std::endl;\
+      return true;\
     }
 
 #define DEF_SPEC_OPERATOR_2(CLASS,OPERATOR,OUTPUT,INPUT1,INPUT2)\
     DEF_CLASS_PROLOGUE2(CLASS,OUTPUT,INPUT1,INPUT2);\
+    INPUT_CHECK();\
     if(this->hasOutput())\
-    (OUTPUT&)*(this->_getOutput().data)=\
+    (OUTPUT&)*this->getOutput()=\
     (INPUT1&)(*this->getInputData(0)) OPERATOR\
     (INPUT2 )(*this->getInputData(1));\
     else\
@@ -121,7 +178,8 @@ namespace ge{
 
 #define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT1,INPUT2)\
     DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2);\
-    (OUTPUT&)*(this->_getOutput().data)=\
+    INPUT_CHECK();\
+    (OUTPUT&)*this->getOutput()=\
     (INPUT1&)(*this->getInputData(0)) OPERATOR\
     (INPUT2 )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
@@ -129,8 +187,9 @@ namespace ge{
 #define DEF_OPERATOR_2INT(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,TYPE,TYPE,TYPE);\
+    INPUT_CHECK();\
     if(this->hasOutput())\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     else\
@@ -141,7 +200,8 @@ namespace ge{
 #define DEF_OPERATOR_2OUTPUT_INT(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE2(CLASS,TYPE,TYPE,TYPE);\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
+    INPUT_CHECK();\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)) OPERATOR\
     (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type )(*this->getInputData(1));\
     DEF_CLASS_EPILOGUE()
@@ -149,15 +209,17 @@ namespace ge{
 #define DEF_SPEC_OPERATOR_1INTPRE(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,TYPE,TYPE);\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
+    INPUT_CHECK();\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
     OPERATOR ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0)));\
     DEF_CLASS_EPILOGUE()
 
 #define DEF_SPEC_OPERATOR_1INTPOST(CLASS,OPERATOR)\
     template<typename TYPE>\
     DEF_CLASS_PROLOGUE1(CLASS,TYPE,TYPE);\
+    INPUT_CHECK();\
     if(this->hasOutput())\
-    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->_getOutput().data)=\
+    (typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getOutput())=\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
     else\
     ((typename std::enable_if<std::is_integral<TYPE>::value,TYPE>::type&)(*this->getInputData(0))) OPERATOR;\
@@ -241,5 +303,5 @@ namespace ge{
       };
 
     //}}
-  }
+}
 }
