@@ -14,15 +14,19 @@ void Body::addStatement(std::shared_ptr<Statement>const&statement){
   this->_statements.push_back(statement);
 }
 
-std::vector<std::shared_ptr<Statement>>::size_type Body::size()const{
+Body::StatementIndex Body::size()const{
   return this->_statements.size();
 }
 
-Body::Iterator Body::begin()const{
+std::shared_ptr<Statement>const&Body::operator[](StatementIndex index)const{
+  return this->_statements[index];
+}
+
+Body::StatementIterator Body::begin()const{
   return this->_statements.begin();
 }
 
-Body::Iterator Body::end()const{
+Body::StatementIterator Body::end()const{
   return this->_statements.end();
 }
 
