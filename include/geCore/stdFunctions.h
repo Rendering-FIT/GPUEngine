@@ -6,22 +6,19 @@
 namespace ge{
   namespace core{
 
-    class GECORE_EXPORT Nullary: public Function{
+    class GECORE_EXPORT Nullary: public AtomicFunction{
       public:
         Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,
             std::shared_ptr<ge::core::Accessor>data = nullptr);
         template<typename TYPE>
-          Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,TYPE const&data):Function(tr,{TypeRegister::FCE,TypeRegister::UNREGISTERED,0},"Nullary"){
-            this->_getOutput().data=tr->sharedAccessor<TYPE>(data);//data);
+          Nullary(std::shared_ptr<ge::core::TypeRegister>const&tr,TYPE const&data):AtomicFunction(tr,{TypeRegister::FCE,TypeRegister::UNREGISTERED,0},"Nullary"){
+            this->_outputData=tr->sharedAccessor<TYPE>(data);//data);
           }
         template<typename TYPE>
           void update(TYPE const&data){
-            (TYPE&)*this->_getOutput().data=data;
+            (TYPE&)*this->_outputData=data;
             this->_updateTicks++;
           }
-        static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){
-          return std::make_shared<Nullary>(tr);
-        }
         static inline std::shared_ptr<StatementFactory>factory(){
           class Factory: public FunctionFactory{
             public:
@@ -38,18 +35,16 @@ namespace ge{
     };
 
 #define DEF_CLASS_PROLOGUE2(CLASS,OUTPUT,INPUT1,INPUT2)\
-    class CLASS: public Function{\
+    class CLASS: public AtomicFunction{\
       public:\
              static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
                return std::make_shared<CLASS<INPUT1>>(tr);\
              }\
       static inline std::shared_ptr<StatementFactory>factory(){\
-        std::cerr<<"DCP2::factory()"<<std::endl;\
         class Factory: public FunctionFactory{\
           public:\
                  virtual ~Factory(){}\
           virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr){\
-            std::cerr<<"DCP2::factory()()"<<std::endl;\
             return std::make_shared<CLASS<INPUT1>>(tr);\
           }\
         };\
@@ -59,23 +54,20 @@ namespace ge{
         return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
       }\
       CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
-          std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+          std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(tr,{\
             ge::core::TypeRegister::FCE,\
             ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
             2,\
             ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
             ge::core::TypeRegister::getTypeDescription<INPUT2>()\
             },CLASS::name()){\
-            /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
-            /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
-            /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
             this->bindOutput(output);\
           }\
       protected:\
                 virtual bool _do(){//}}
 
 #define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,OUTPUT,INPUT1,INPUT2)\
-    class CLASS: public Function{\
+    class CLASS: public AtomicFunction{\
       public:\
              static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
                return std::make_shared<CLASS>(tr);\
@@ -94,16 +86,13 @@ namespace ge{
         return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
       }\
       CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
-          std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+          std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(tr,{\
             ge::core::TypeRegister::FCE,\
             ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
             2,\
             ge::core::TypeRegister::getTypeDescription<INPUT1>(),\
             ge::core::TypeRegister::getTypeDescription<INPUT2>()\
             },CLASS::name()){\
-            /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
-            /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
-            /*this->_setInput (1,TypeRegister::getTypeTypeId<INPUT2>());*/\
             this->bindOutput(output);\
           }\
       protected:\
@@ -111,7 +100,7 @@ namespace ge{
 
 
 #define DEF_CLASS_PROLOGUE1(CLASS,OUTPUT,INPUT1)\
-    class CLASS: public Function{\
+    class CLASS: public AtomicFunction{\
       public:\
              static inline std::shared_ptr<Function>sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
                return std::make_shared<CLASS<INPUT1>>(tr);\
@@ -130,14 +119,12 @@ namespace ge{
         return #CLASS+std::string("_")+std::string(ge::core::TypeRegister::getTypeKeyword<INPUT1>());\
       }\
       CLASS(std::shared_ptr<ge::core::TypeRegister>const&tr,\
-          std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{\
+          std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(tr,{\
             ge::core::TypeRegister::FCE,\
             ge::core::TypeRegister::getTypeDescription<OUTPUT>(),\
             1,\
             ge::core::TypeRegister::getTypeDescription<INPUT1>()\
             },CLASS::name()){\
-            /*this->_setOutput(  TypeRegister::getTypeTypeId<OUTPUT>());*/\
-            /*this->_setInput (0,TypeRegister::getTypeTypeId<INPUT1>());*/\
             this->bindOutput(output);\
           }\
       protected:\
@@ -270,12 +257,10 @@ namespace ge{
     DEF_SPEC_OPERATOR_1INTPOST(DecrPost,--);
 
     template<typename FROM,typename TO>
-      class Cast: public Function{
+      class Cast: public AtomicFunction{
         public:
           Cast(std::shared_ptr<ge::core::TypeRegister>const&tr,
-              std::shared_ptr<ge::core::Accessor>const&output=nullptr):Function(tr,{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()},"Cast"){
-            //this->_setOutput(TypeRegister::getTypeTypeId<TO>());
-            //this->_setInput(0,TypeRegister::getTypeTypeId<FROM>());
+              std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(tr,{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()},"Cast"){
             this->bindOutput(output);
           }
           static inline std::string name(){
@@ -297,7 +282,7 @@ namespace ge{
         protected:
           virtual bool _do(){
             if(!this->_inputChanged(0))return false;
-            (TO&)(*this->_getOutput().data)=(TO)((FROM)(*this->getInputData(0)));
+            (TO&)(*this->_outputData)=(TO)((FROM)(*this->getInputData(0)));
             return true;
           }
       };

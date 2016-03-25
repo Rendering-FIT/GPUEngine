@@ -120,10 +120,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
 SCENARIO( "ticks tests", "[Function]" ) {
   std::shared_ptr<ge::core::TypeRegister>typeRegister = std::make_shared<ge::core::TypeRegister>();
-  class AddTen: public ge::core::Function{
+  class AddTen: public ge::core::AtomicFunction{
     public:
       unsigned counter=0;
-      AddTen(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(tr,{TypeRegister::FCE,TypeRegister::F32,1,TypeRegister::F32},"AddTen"){
+      AddTen(std::shared_ptr<ge::core::TypeRegister>const&tr):AtomicFunction(tr,{TypeRegister::FCE,TypeRegister::F32,1,TypeRegister::F32},"AddTen"){
         //this->_setInput(0,tr->getTypeId("f32"));
         //this->_setOutput(tr->getTypeId("f32"));
       }
@@ -132,15 +132,15 @@ SCENARIO( "ticks tests", "[Function]" ) {
         if(!this->hasInput(0)||!this->hasOutput())return false;
         if(!this->_inputChanged(0))return false;
         counter++;
-        (float&)(*this->_getOutput().data)=
+        (float&)(*this->_outputData)=
           (float&)(*this->getInputData(0))+10.f;
         return true;
       }
   };
-  class Add: public ge::core::Function{
+  class Add: public ge::core::AtomicFunction{
     public:
       unsigned counter=0;
-      Add(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(tr,{TypeRegister::FCE,TypeRegister::F32,2,TypeRegister::F32,TypeRegister::F32},"Add"){
+      Add(std::shared_ptr<ge::core::TypeRegister>const&tr):AtomicFunction(tr,{TypeRegister::FCE,TypeRegister::F32,2,TypeRegister::F32,TypeRegister::F32},"Add"){
         //this->_setInput(0,tr->getTypeId("f32"));
         //this->_setInput(1,tr->getTypeId("f32"));
         //this->_setOutput(tr->getTypeId("f32"));
@@ -150,7 +150,7 @@ SCENARIO( "ticks tests", "[Function]" ) {
         if(!this->hasInput(0)||!this->hasInput(1)||!this->hasOutput())return false;
         if(!this->_inputChanged(0)&&!this->_inputChanged(1))return false;
         counter++;
-        (float&)(*this->_getOutput().data)=
+        (float&)(*this->_outputData)=
           (float&)(*this->getInputData(0))+(float&)(*this->getInputData(1));
         return true;
       }

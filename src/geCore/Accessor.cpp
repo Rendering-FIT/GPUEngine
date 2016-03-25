@@ -108,7 +108,7 @@ void AtomicAccessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shar
                               }
                               break;
     case TypeRegister::FCE:
-                              ((std::shared_ptr<ge::core::Function>*)ptr)->~shared_ptr();
+                              ((std::shared_ptr<ge::core::AtomicFunction>*)ptr)->~shared_ptr();
                               //TODO CO S FUNKCI
                               break;
     case TypeRegister::OBJ:
