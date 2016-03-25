@@ -4,6 +4,13 @@ set(TYPEREGISTERTEST_SOURCES typeRegisterTest.cpp)
 add_executable(${TYPEREGISTERTEST_NAME} ${TYPEREGISTERTEST_SOURCES})
 target_link_libraries(${TYPEREGISTERTEST_NAME} geCore)
 
+set(FUNCTIONREGISTERTEST_NAME functionRegisterTest)
+project(${FUNCTIONREGISTERTEST_NAME})
+set(FUNCTIONREGISTERTEST_SOURCES functionRegisterTest.cpp)
+add_executable(${FUNCTIONREGISTERTEST_NAME} ${FUNCTIONREGISTERTEST_SOURCES})
+target_link_libraries(${FUNCTIONREGISTERTEST_NAME} geCore)
+
+
 set(FSA_NAME fsaTest)
 project(${FSA_NAME})
 set(FSA_SOURCES fsaTest.cpp)
