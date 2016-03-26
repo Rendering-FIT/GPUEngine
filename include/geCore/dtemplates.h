@@ -2,6 +2,10 @@
 
 #include<geCore/Export.h>
 
+#ifdef MSVC
+  #pragma warning(disable : 4503)
+#endif
+
 #include<iostream>
 #include<cstring>
 #include<sstream>
