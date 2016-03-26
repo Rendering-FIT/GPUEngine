@@ -3,37 +3,6 @@
 
 using namespace ge::core;
 
-std::string Function::_genDefaultName(InputIndex i)const{
-  std::stringstream ss;
-  ss<<"input"<<i;
-  return ss.str();
-}
-
-void Function::setInput(InputIndex i,std::string name){
-  if(name=="")name=this->_genDefaultName(i);
-  auto jj=this->_name2Input.find(name);
-  if(jj!=this->_name2Input.end()&&jj->second!=i){
-    std::cerr<<"ERROR: "<<this->_name<<"::setInput("<<i<<","
-      <<name<<")";
-    std::cerr<<" - name "<<name<<" is already used for input number: ";
-    std::cerr<<jj->second<<std::endl;
-    return;
-  }
-  auto ii=this->_input2Name.find(i);
-  if(ii!=this->_input2Name.end()){
-    if(this->_name2Input.find(ii->second)!=this->_name2Input.end())
-      this->_name2Input.erase(ii->second);
-    this->_input2Name.erase(i);
-  }
-  this->_name2Input[name] = i   ;
-  this->_input2Name[i   ] = name;
-}
-
-void Function::setOutput(std::string name){
-  if(name=="")name="output";
-  this->_outputName = name;
-}
-
 
 
 AtomicFunctionInput::AtomicFunctionInput(
@@ -46,22 +15,18 @@ AtomicFunctionInput::AtomicFunctionInput(
 }
 
 AtomicFunction::AtomicFunction(
-    std::shared_ptr<TypeRegister>const&tr,
-    TypeRegister::TypeID type,
-    std::string name):Function(tr,type,name){
-  this->_typeRegister = tr;
-  this->_fceType = type;
-  auto nofInputs = this->_typeRegister->getNofFceArgs(this->_fceType);
+    std::shared_ptr<FunctionRegister>const&fr,
+    FunctionRegister::FunctionID id):Function(fr,id){
+  auto nofInputs = this->getNofInputs();
   for(decltype(nofInputs)i=0;i<nofInputs;++i)
     this->_inputs.push_back(AtomicFunctionInput());
-  this->_defaultNames(nofInputs);
-  this->_name = name;
 }
 
 AtomicFunction::AtomicFunction(
-    std::shared_ptr<TypeRegister>const&tr,
+    std::shared_ptr<FunctionRegister>const&fr,
     TypeRegister::DescriptionList const&typeDescription,
-    std::string name):AtomicFunction(tr,tr->addType("",typeDescription),name){
+    std::string name,
+    std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addType("",typeDescription),name,factory)){
 }
 
 AtomicFunction::~AtomicFunction(){
@@ -70,7 +35,7 @@ AtomicFunction::~AtomicFunction(){
 
 bool AtomicFunction::bindInput(InputIndex i,std::shared_ptr<Function>function){
   if(i>=this->_getNofInputs()){
-    std::cerr<<"ERROR: "<<this->_name<<"::bindInput("<<i<<",";
+    std::cerr<<"ERROR: "<<this->getName()<<"::bindInput("<<i<<",";
     if(function==nullptr)std::cerr<<"nullptr";
     else std::cerr<<function->getName();
     std::cerr<<") - out of range"<<std::endl;
@@ -80,7 +45,7 @@ bool AtomicFunction::bindInput(InputIndex i,std::shared_ptr<Function>function){
       function                           != nullptr                                                  &&
       this->getInputType(i)              != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
       function->getOutputData()->getId() != this->getInputType(i)                                    ){
-    std::cerr<<"ERROR: "<<this->_name<<".input["<<this->getInputName(i)<<"] has different type - ";
+    std::cerr<<"ERROR: "<<this->getName()<<".input["<<this->getInputName(i)<<"] has different type - ";
     std::cerr<<function->getOutputData()->getManager()->getTypeIdName(this->getInputType(i));
     std::cerr<<" != ";
     std::cerr<<function->getOutputData()->getManager()->getTypeIdName(function->getOutputData()->getId());
@@ -99,7 +64,7 @@ bool AtomicFunction::bindOutput(std::shared_ptr<Accessor>data){
       data                    != nullptr                                                  &&
       this->getOutputType()   != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
       data->getId()           != this->getOutputType()                                    ){
-    std::cerr<<"ERROR: "<<this->_name<<".output has different type - ";
+    std::cerr<<"ERROR: "<<this->getName()<<".output has different type - ";
     std::cerr<<data->getManager()->getTypeIdName(this->getOutputType());
     std::cerr<<" != ";
     std::cerr<<data->getManager()->getTypeIdName(data->getId()    );
@@ -138,14 +103,6 @@ void AtomicFunction::_processInputs(){
 
 bool AtomicFunction::_do(){
   return true;
-}
-
-void AtomicFunction::_defaultNames(InputIndex n){
-  for(InputIndex i=0;i<n;++i){
-    std::string name=this->_genDefaultName(i);
-    this->_name2Input[name]=i;
-    this->_input2Name[i]=name;
-  }
 }
 
 FunctionFactory::~FunctionFactory(){}

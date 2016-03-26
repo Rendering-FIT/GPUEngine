@@ -42,10 +42,10 @@ void While::operator()(){
 WhileFactory::~WhileFactory(){
 }
 
-std::shared_ptr<Statement>WhileFactory::operator()(SharedTypeRegister const&tr){
+std::shared_ptr<Statement>WhileFactory::operator()(std::shared_ptr<FunctionRegister> const&fr){
   auto result = std::make_shared<While>();
-  result->setCondition(std::dynamic_pointer_cast<AtomicFunction>((*this->conditionFactory)(tr)));
-  result->setBody     ((*this->bodyFactory     )(tr));
+  result->setCondition(std::dynamic_pointer_cast<AtomicFunction>((*this->conditionFactory)(fr)));
+  result->setBody     ((*this->bodyFactory     )(fr));
   return result;
 }
 

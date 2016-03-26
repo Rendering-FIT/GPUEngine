@@ -2,6 +2,7 @@
 
 #include<geCore/TypeRegister.h>
 #include<geCore/statement.h>
+#include<geCore/functionRegister.h>
 
 namespace ge{
   namespace core{
@@ -16,15 +17,17 @@ namespace ge{
         using InputIndex = size_t;
         using Ticks      = uint64_t;
       protected:
-        std::map<InputIndex,std::string>_input2Name  ;
-        std::map<std::string,InputIndex>_name2Input  ;
-        std::string                     _outputName  ;
-        std::string                     _name        ;
-        TypeRegister::TypeID            _fceType     ;
-        std::shared_ptr<TypeRegister>   _typeRegister;
-        std::string _genDefaultName(InputIndex i)const;
+        //std::map<InputIndex,std::string>_input2Name  ;
+        //std::map<std::string,InputIndex>_name2Input  ;
+        //std::string                     _outputName  ;
+        //std::string                     _name        ;
+        //TypeRegister::TypeID            _fceType     ;
+        //std::shared_ptr<TypeRegister>   _typeRegister;
+        //std::string _genDefaultName(InputIndex i)const;
+        std::shared_ptr<FunctionRegister>_functionRegister;
+        FunctionRegister::FunctionID     _id;
       public:
-        inline Function(std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID type,std::string name);
+        inline Function(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
         virtual inline ~Function();
         virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function  = nullptr) = 0;
         virtual bool bindInput (std::string name,std::shared_ptr<Function>function  = nullptr) = 0;
@@ -48,17 +51,15 @@ namespace ge{
         inline InputIndex  getInputIndex(std::string name)const;
         inline std::string getOutputName()const;
         inline std::string getName()const;
-        void setOutput(std::string name = "");
-        void setInput (InputIndex i,std::string name = "");
+        inline void setOutputName(std::string name = "");
+        inline void setInputName (InputIndex i,std::string name = "");
     };
 
     inline Function::Function(
-        std::shared_ptr<TypeRegister>const&tr,
-        TypeRegister::TypeID type,
-        std::string name):Statement(FUNCTION){
-      this->_typeRegister = tr;
-      this->_fceType = type;
-      this->_name = name;
+        std::shared_ptr<FunctionRegister>const&fr,
+        FunctionRegister::FunctionID id):Statement(FUNCTION){
+      this->_functionRegister = fr;
+      this->_id = id;
     }
 
     inline Function::~Function(){
@@ -69,47 +70,45 @@ namespace ge{
     }
 
     inline TypeRegister::TypeID Function::getInputType(InputIndex i)const{
-      return this->_typeRegister->getFceArgTypeId(this->_fceType,i);
+      return this->_functionRegister->getInputType(this->_id,i);
     }
 
     inline TypeRegister::TypeID Function::getInputType(std::string name)const{
-      return this->_typeRegister->getFceArgTypeId(this->_fceType,this->getInputIndex(name));
+      return this->getInputType(this->_functionRegister->getInputIndex(this->_id,name));
     }
 
     inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
-      return this->_typeRegister->getFceReturnTypeId(this->_fceType);
+      return this->_functionRegister->getOutputType(this->_id);
     }
 
     inline Function::InputIndex Function::getNofInputs()const{
-      return this->_name2Input.size();
+      return this->_functionRegister->getNofInputs(this->_id);
     }
 
     inline std::string Function::getInputName(InputIndex i)const{
-      if(i>=this->getNofInputs()){
-        std::cerr<<"ERROR: "<<this->_name<<"::getInputName("<<i<<") - ";
-        std::cerr<<"input out of range"<<std::endl;
-        return "";
-      }
-      return this->_input2Name.find(i)->second;
+      return this->_functionRegister->getInputName(this->_id,i);
     }
 
     inline Function::InputIndex Function::getInputIndex(std::string name)const{
-      auto ii=this->_name2Input.find(name);
-      if(ii==this->_name2Input.end()){
-        std::cerr<<"ERROR: "<<this->_name<<"::getInputIndex(\""<<name<<"\") - ";
-        std::cerr<<"there is no input with that name"<<std::endl;
-        return -1;
-      }
-      return ii->second;
+      return this->_functionRegister->getInputIndex(this->_id,name);
     }
 
     inline std::string Function::getOutputName()const{
-      return this->_outputName;
+      return this->_functionRegister->getOutputName(this->_id);
     }
 
     inline std::string Function::getName()const{
-      return this->_name;
+      return this->_functionRegister->getName(this->_id);
     }
+
+    inline void Function::setInputName(InputIndex i,std::string name){
+      this->_functionRegister->setInputName(this->_id,i,name);
+    }
+
+    inline void Function::setOutputName(std::string name){
+      this->_functionRegister->setOutputName(this->_id,name);
+    }
+
 
     class GECORE_EXPORT AtomicFunctionInput{
       public:
@@ -122,6 +121,8 @@ namespace ge{
             bool                           changed     = false  );
     };
 
+    class StatementFactory;
+
     class GECORE_EXPORT AtomicFunction: public Function{
       public:
         using InputList = std::vector<AtomicFunctionInput>;
@@ -132,8 +133,12 @@ namespace ge{
         unsigned long long       _updateTicks = 1;
         std::shared_ptr<Accessor>_outputData = nullptr ;
       public:
-        AtomicFunction(std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID type,std::string name = "");
-        AtomicFunction(std::shared_ptr<TypeRegister>const&tr,TypeRegister::DescriptionList const&typeDescription,std::string name = "");
+        AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
+        AtomicFunction(
+            std::shared_ptr<FunctionRegister>const&fr,
+            TypeRegister::DescriptionList const&typeDescription,
+            std::string name = "",
+            std::shared_ptr<StatementFactory>const&factory = nullptr);
         virtual ~AtomicFunction();
         virtual void operator()();
         virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function = nullptr);
@@ -166,7 +171,7 @@ namespace ge{
     class GECORE_EXPORT FunctionFactory: public StatementFactory{
       public:
         virtual ~FunctionFactory();
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
     };
 
     inline std::shared_ptr<Accessor>const&AtomicFunction::getOutputData()const{
@@ -188,7 +193,7 @@ namespace ge{
     inline Function::Ticks AtomicFunction::getCheckTicks ()const{
       return this->_checkTicks;
     }
-    
+
     inline void AtomicFunction::setUpdateTicks(Function::Ticks ticks){
       this->_checkTicks = ticks;
     }
@@ -210,7 +215,7 @@ namespace ge{
     }
 
     inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(std::string input)const{
-      return this->getInputData(this->_name2Input.find(input)->second);
+      return this->getInputData(this->_functionRegister->getInputIndex(this->_id,input));
     }
 
     inline bool AtomicFunction::_inputChanged(InputIndex i)const{
@@ -218,7 +223,7 @@ namespace ge{
     }
 
     inline bool AtomicFunction::_inputChanged(std::string input)const{
-      return this->_inputChanged(this->_name2Input.find(input)->second);
+      return this->_inputChanged(this->_functionRegister->getInputIndex(this->_id,input));
     }
 
     inline AtomicFunctionInput&AtomicFunction::_getInput(InputIndex i){

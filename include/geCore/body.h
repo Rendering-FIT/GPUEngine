@@ -26,7 +26,7 @@ namespace ge{
       public:
         virtual ~BodyFactory();
         std::vector<std::shared_ptr<StatementFactory>>factories;
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&);
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&);
     };
   }
 }

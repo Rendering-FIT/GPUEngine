@@ -39,10 +39,10 @@ void Body::operator()(){
 BodyFactory::~BodyFactory(){
 }
 
-std::shared_ptr<Statement>BodyFactory::operator()(SharedTypeRegister const&tr){
+std::shared_ptr<Statement>BodyFactory::operator()(std::shared_ptr<FunctionRegister>const&fr){
   auto result = std::make_shared<Body>();
   for(auto x:this->factories)
-    result->addStatement((*x)(tr));
+    result->addStatement((*x)(fr));
   return result;
 }
 

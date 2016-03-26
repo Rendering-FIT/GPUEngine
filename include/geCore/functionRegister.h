@@ -50,8 +50,10 @@ namespace ge{
         inline std::string getInputName(FunctionID id,InputIndex input)const;
         inline TypeRegister::TypeID getInputType(FunctionID id,InputIndex input)const;
         inline TypeRegister::TypeID getOutputType(FunctionID id)const;
+        inline InputIndex getInputIndex(FunctionID id,std::string name)const;
         inline void setInputName(FunctionID id,InputIndex input,std::string name);
         inline void setOutputName(FunctionID id,std::string name);
+        inline std::shared_ptr<TypeRegister>const&getTypeRegister()const;
     };
 
     inline FunctionRegister::FunctionRegister(std::shared_ptr<TypeRegister>const&typeRegister){
@@ -145,6 +147,23 @@ namespace ge{
       return this->_typeRegister->getFceReturnTypeId(type);
     }
 
+
+    inline FunctionRegister::InputIndex FunctionRegister::getInputIndex(FunctionID id,std::string name)const{
+      auto def = this->_getDefinition(id);
+      if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
+        std::cerr<<"ERROR - FunctionRegister::getInputIndex("<<id<<","<<name<<") - ";
+        std::cerr<<"there is no such function"<<std::endl;
+        return 0;
+      }
+      auto ii=std::get<NAME2INDEX>(this->_getDefinition(id)).find(name);
+      if(ii==std::get<NAME2INDEX>(this->_getDefinition(id)).end()){
+        std::cerr<<"ERROR - FunctionRegister::getInputIndex("<<id<<","<<name<<") - ";
+        std::cerr<<"there is no such input"<<std::endl;
+        return 0;
+      }
+      return ii->second;
+    }
+
     inline void FunctionRegister::setInputName(FunctionID id,InputIndex input,std::string name){
       auto def = this->_getDefinition(id);
       if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
@@ -183,5 +202,8 @@ namespace ge{
       std::get<OUTPUTNAME>(this->_getDefinition(id))=name;
     }
 
+    inline std::shared_ptr<TypeRegister>const&FunctionRegister::getTypeRegister()const{
+      return this->_typeRegister;
+    }
   }
 }

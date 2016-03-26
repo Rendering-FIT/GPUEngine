@@ -53,11 +53,11 @@ void If::operator()(){
 IfFactory::~IfFactory(){
 }
 
-std::shared_ptr<Statement>IfFactory::operator()(SharedTypeRegister const&tr){
+std::shared_ptr<Statement>IfFactory::operator()(std::shared_ptr<FunctionRegister> const&fr){
   auto result = std::make_shared<If>();
-  result->setTrueBody ((*this->trueFactory     )(tr));
-  result->setFalseBody((*this->falseFactory    )(tr));
-  result->setCondition(std::dynamic_pointer_cast<AtomicFunction>((*this->conditionFactory)(tr)));
+  result->setTrueBody ((*this->trueFactory     )(fr));
+  result->setFalseBody((*this->falseFactory    )(fr));
+  result->setCondition(std::dynamic_pointer_cast<AtomicFunction>((*this->conditionFactory)(fr)));
   return result;
 }
 

@@ -2,6 +2,7 @@
 
 #include<geCore/Command.h>
 #include<geCore/TypeRegister.h>
+#include<geCore/functionRegister.h>
 
 using namespace ge::core;
 
@@ -28,7 +29,7 @@ namespace ge{
     class GECORE_EXPORT StatementFactory{
       public:
         virtual ~StatementFactory(){}
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
     };
 
     class GECORE_EXPORT ResourceFactory{
@@ -43,7 +44,7 @@ namespace ge{
         virtual ~ResourceFactory();
         void reset();
         bool firstConstruction()const;
-        std::shared_ptr<Accessor>operator()(SharedTypeRegister const&tr);
+        std::shared_ptr<Accessor>operator()(std::shared_ptr<FunctionRegister> const&tr);
     };
 
   }

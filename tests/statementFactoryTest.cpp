@@ -10,11 +10,12 @@ using namespace ge::core;
 
 SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
   auto r = std::make_shared<ge::core::TypeRegister>();
+  auto fr = std::make_shared<ge::core::FunctionRegister>(r);
   GIVEN( "basic function factory" ) {
     auto factory = ge::core::Add<int32_t>::factory();
-    auto statement = (*factory)(r);
-    auto fa=std::make_shared<ge::core::Nullary>(r,(int32_t)10);
-    auto fb=std::make_shared<ge::core::Nullary>(r,(int32_t)11);
+    auto statement = (*factory)(fr);
+    auto fa=std::make_shared<ge::core::Nullary>(fr,(int32_t)10);
+    auto fb=std::make_shared<ge::core::Nullary>(fr,(int32_t)11);
     auto function = std::dynamic_pointer_cast<Function>(statement);
     function->bindInput(0,fa);
     function->bindInput(1,fb);
@@ -32,7 +33,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     factory->addResourceFactory(std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32")));
     factory->addInputFactory(ge::core::Nullary::factory());
     factory->addInputFactory(ge::core::Nullary::factory());
-    auto statement = (*factory)(r);
+    auto statement = (*factory)(fr);
     auto function = std::dynamic_pointer_cast<Function>(statement);
     function->bindOutput(r->sharedAccessor("i32"));
     *function->getInputData(0)=(int32_t)10;
@@ -53,13 +54,13 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     factory->addInputFactory(inputFactory);
     factory->addInputFactory(inputFactory);
 
-    auto statement0 = (*factory)(r);
+    auto statement0 = (*factory)(fr);
     auto function0 = std::dynamic_pointer_cast<Function>(statement0);
     function0->bindOutput(r->sharedAccessor("i32"));
     *function0->getInputData(0)=(int32_t)10;
     *function0->getInputData(1)=(int32_t)11;
 
-    auto statement1 = (*factory)(r);
+    auto statement1 = (*factory)(fr);
     auto function1 = std::dynamic_pointer_cast<Function>(statement1);
     function1->bindOutput(r->sharedAccessor("i32"));
     *function1->getInputData(0)=(int32_t)30;
@@ -99,7 +100,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     add1->addInputFactory(bnFactory);
 
 
-    auto statement0 = (*factory)(r);
+    auto statement0 = (*factory)(fr);
     auto body0 = std::dynamic_pointer_cast<Body>(statement0);
     auto f00 = std::dynamic_pointer_cast<Function>((*body0)[0]);
     auto f01 = std::dynamic_pointer_cast<Function>((*body0)[1]);
@@ -110,7 +111,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     f00->bindOutput(r->sharedAccessor("i32"));
     f01->bindOutput(r->sharedAccessor("i32"));
 
-    auto statement1 = (*factory)(r);
+    auto statement1 = (*factory)(fr);
     auto body1 = std::dynamic_pointer_cast<Body>(statement1);
     auto f10 = std::dynamic_pointer_cast<Function>((*body1)[0]);
     auto f11 = std::dynamic_pointer_cast<Function>((*body1)[1]);

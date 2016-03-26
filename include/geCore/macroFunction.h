@@ -47,7 +47,7 @@ namespace ge{
         void addInputFactory(std::shared_ptr<StatementFactory>const&factory);
         virtual ~FunctionNodeFactory();
         void reset();
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&tr);
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister>const&fr);
     };
 
     /*

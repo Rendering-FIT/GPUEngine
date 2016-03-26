@@ -24,7 +24,7 @@ namespace ge{
         virtual ~WhileFactory();
         std::shared_ptr<StatementFactory>bodyFactory      = nullptr;
         std::shared_ptr<FunctionFactory >conditionFactory = nullptr;
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&);
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&);
     };
   }
 }

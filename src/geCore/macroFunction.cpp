@@ -42,7 +42,7 @@ void FunctionNodeFactory::reset(){
 }
 
 std::shared_ptr<Statement>FunctionNodeFactory::operator()(
-    SharedTypeRegister const&tr){
+    std::shared_ptr<FunctionRegister> const&tr){
   this->_first = this->_uses == 0;
   if(this->resourceFactories.size()!=this->inputFactories.size()){
     std::cerr<<"ERROR: FunctionNodeFactory::operator()() - different ";
