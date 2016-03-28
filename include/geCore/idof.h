@@ -104,6 +104,24 @@ idof_register_data<T>::idof_register_data(const char* s)
    }
 
 
+#if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 workaround (it does not support constexpr
+                                       // and passing string as
+                                       // struct id_name { const char* chars = #_id_name_; };
+                                       // does not seem to work.
+                                       // So, we provide alternative solution (little less optimal)
+                                       // that allow us to use even this compiler)
+
+
+#define idof(_enum_type_,_id_name_) \
+([]() -> _enum_type_ { \
+   static _enum_type_ id = _enum_type_##_register::str2id(#_id_name_); \
+   return id; \
+}())
+
+
+#else // full blown optimal solution using all template features
+
+
 template<unsigned count,template<unsigned...> class meta_functor,unsigned... indices>
 struct idof_apply_range
 {
@@ -172,6 +190,9 @@ typename enum_register::EnumType idof_template<enum_register,id_name>::id =
          ge::core::idof_string_builder<id_name      >::produce>::result \
       >::id; \
 }())
+
+
+#endif // MSVC 2013 workaround and optimal template solution
 
 
 /** idofstring returns id (enum item) given by the second parameter
