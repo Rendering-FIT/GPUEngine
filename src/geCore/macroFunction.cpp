@@ -2,10 +2,10 @@
 
 using namespace ge::core;
 
+/*
 MacroFunction::MacroFunction(
-    unsigned inputs,
-    std::shared_ptr<TypeRegister>const&):
-  Function(inputs,"MacroFunction"){
+    std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id):
+  Function(tr,id,"MacroFunction"){
   }
 
 MacroFunction::~MacroFunction(){
@@ -16,13 +16,20 @@ bool MacroFunction::_do(){
   std::cerr<<"this should not be called at all"<<std::endl;
   return false;
 }
+*/
 
 
-
-FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<FunctionFactory>const&fac,unsigned maxUses){
-  this->functionFactory = fac;
+FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses){
+  this->functionFactory = std::dynamic_pointer_cast<FunctionFactory>(fac);
   this->_maxUses = maxUses;
   this->reset();
+}
+
+void FunctionNodeFactory::addResourceFactory(std::shared_ptr<ResourceFactory>const&factory){
+  this->resourceFactories.push_back(factory);
+}
+void FunctionNodeFactory::addInputFactory(std::shared_ptr<StatementFactory>const&factory){
+  this->inputFactories.push_back(std::dynamic_pointer_cast<FunctionFactory>(factory));
 }
 
 FunctionNodeFactory::~FunctionNodeFactory(){
@@ -35,7 +42,7 @@ void FunctionNodeFactory::reset(){
 }
 
 std::shared_ptr<Statement>FunctionNodeFactory::operator()(
-    SharedTypeRegister const&tr){
+    std::shared_ptr<FunctionRegister> const&tr){
   this->_first = this->_uses == 0;
   if(this->resourceFactories.size()!=this->inputFactories.size()){
     std::cerr<<"ERROR: FunctionNodeFactory::operator()() - different ";

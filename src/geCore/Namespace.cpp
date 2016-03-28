@@ -2,6 +2,7 @@
 
 #include<algorithm>
 #include<sstream>
+#include<geCore/Accessor.h>
 
 using namespace ge::core::sim;
 

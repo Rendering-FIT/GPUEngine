@@ -39,6 +39,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/Object.h
     ${HEADER_PATH}/StandardSemanticsNames.h
     ${HEADER_PATH}/TypeRegister.h
+    ${HEADER_PATH}/Accessor.h
     ${HEADER_PATH}/disjointSet.h
     ${HEADER_PATH}/interpret.h
     ${HEADER_PATH}/statement.h
@@ -65,6 +66,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/termNode.h
     ${HEADER_PATH}/tokenization.h
     ${HEADER_PATH}/text.h
+    ${HEADER_PATH}/functionRegister.h
    )
 
 set(CORE_SOURCES
@@ -75,6 +77,7 @@ set(CORE_SOURCES
     EnumRegister.cpp
     StandardSemanticsNames.cpp
     TypeRegister.cpp
+    Accessor.cpp
     statement.cpp
     function.cpp
     while.cpp
@@ -93,6 +96,7 @@ set(CORE_SOURCES
     termNode.cpp
     tokenization.cpp
     text.cpp
+    functionRegister.cpp
    )
 
 add_library(${LIB_NAME}

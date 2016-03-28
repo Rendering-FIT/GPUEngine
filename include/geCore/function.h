@@ -2,250 +2,251 @@
 
 #include<geCore/TypeRegister.h>
 #include<geCore/statement.h>
+#include<geCore/functionRegister.h>
 
 namespace ge{
   namespace core{
-    class GECORE_EXPORT Function;
-    class GECORE_EXPORT FunctionInput{
-      public:
-        std::shared_ptr<Function>function    = nullptr                   ;
-        bool                     changed     = false                     ;
-        TypeRegister::TypeID     type        = TypeRegister::UNREGISTERED;
-        unsigned long long       updateTicks = 0                         ;
-        FunctionInput(
-            std::shared_ptr<Function>fce         = nullptr                   ,
-            unsigned long long       updateTicks = 0                         ,
-            bool                     changed     = false                     ,
-            TypeRegister::TypeID     type        = TypeRegister::UNREGISTERED);
-    };
 
 
     // function: Accessor compositor
     // function: selector of element of Accessor
-    // function should contain type that is type of TypeRegister::FCE
-    //
-    //
     //
 
-    class MacroFunction;
     class GECORE_EXPORT Function: public Statement{
-      protected:
-        friend class MacroFunction;
-        std::string                   _name           ;
-        std::vector<FunctionInput>    _inputs         ;
-        std::map<unsigned,std::string>_input2Name     ;
-        std::map<std::string,unsigned>_name2Input     ;
-        unsigned long long            _checkTicks  = 0;
-        unsigned long long            _updateTicks = 1;
-        struct Output{
-          std::shared_ptr<Accessor>data = nullptr                   ;
-          TypeRegister::TypeID     type = TypeRegister::UNREGISTERED;
-          std::string              name = "output"                  ;
-        }_output;
-        std::string _genDefaultName(unsigned i)const;
       public:
-        Function(unsigned n,std::string name = "");
-        virtual ~Function();
-        virtual void operator()();
-        inline std::shared_ptr<Accessor>const&getOutput()const;
-        inline TypeRegister::TypeID getOutputType()const;
-        inline std::string getOutputName()const;
-        inline bool hasInput(unsigned    i   )const;
-        inline bool hasInput(std::string name)const;
-        inline bool hasOutput()const;
-        bool bindInput (unsigned    i   ,std::shared_ptr<Function>function=nullptr);
-        bool bindInput (std::string name,std::shared_ptr<Function>function=nullptr);
-        bool bindOutput(std::shared_ptr<ge::core::Accessor>data = nullptr);
-        inline std::shared_ptr<Accessor>const&getInputData(unsigned i       )const;
-        inline std::shared_ptr<Accessor>const&getInputData(std::string input)const;
-        inline TypeRegister::TypeID getInputType(unsigned    i   )const;
-        inline TypeRegister::TypeID getInputType(std::string name)const;
-        inline decltype(_inputs)::size_type getNofInputs()const;
-        virtual inline std::string getInputName (unsigned    i   )const;
-        virtual inline unsigned    getInputIndex(std::string name)const;
+        using InputIndex = size_t;
+        using Ticks      = uint64_t;
+      protected:
+        //std::map<InputIndex,std::string>_input2Name  ;
+        //std::map<std::string,InputIndex>_name2Input  ;
+        //std::string                     _outputName  ;
+        //std::string                     _name        ;
+        //TypeRegister::TypeID            _fceType     ;
+        //std::shared_ptr<TypeRegister>   _typeRegister;
+        //std::string _genDefaultName(InputIndex i)const;
+        std::shared_ptr<FunctionRegister>_functionRegister;
+        FunctionRegister::FunctionID     _id;
+      public:
+        inline Function(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
+        virtual inline ~Function();
+        virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function  = nullptr) = 0;
+        virtual bool bindInput (std::string name,std::shared_ptr<Function>function  = nullptr) = 0;
+        virtual bool bindOutput(                 std::shared_ptr<Accessor>data      = nullptr) = 0;
+        virtual bool hasInput (InputIndex  i   )const = 0;
+        virtual bool hasInput (std::string name)const = 0;
+        virtual bool hasOutput(                )const = 0;
+        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const = 0;
+        virtual std::shared_ptr<Accessor>const&getInputData (std::string input)const = 0;
+        virtual std::shared_ptr<Accessor>const&getOutputData(                 )const = 0;
+        virtual Ticks getUpdateTicks()const = 0;
+        virtual Ticks getCheckTicks ()const = 0;
+        virtual void  setUpdateTicks(Ticks ticks) = 0;
+        virtual void  setCheckTicks (Ticks ticks) = 0;
         virtual inline std::string doc()const;
-      protected:
-        void _defaultNames(unsigned n);
-        void _processInputs();
-        void _setOutput(           TypeRegister::TypeID type,std::string name = "");
-        void _setInput (unsigned i,TypeRegister::TypeID type,std::string name = "");
-        virtual bool _do();
-        inline bool _inputChanged(unsigned    i    )const;
-        inline bool _inputChanged(std::string input)const;
-        virtual inline FunctionInput      &_getInput(unsigned i);
-        virtual inline FunctionInput const&_getInput(unsigned i)const;
-        virtual inline decltype(_inputs)::size_type _getNofInputs()const;
-        virtual inline Output      &_getOutput();
-        virtual inline Output const&_getOutput()const;
-        template<typename... ARGS>
-          unsigned _computeNumberOfInputs(ARGS...args);
-        template<typename... ARGS>
-          void _setTypes(
-              std::shared_ptr<TypeRegister>const&tr,
-              unsigned nofInputs,
-              const char* type,
-              const char* name,
-              ARGS... args);
-        template<typename... ARGS>
-          void _setInputs(
-              std::shared_ptr<TypeRegister>const&tr,
-              unsigned nofInputs,
-              const char* type,
-              const char* name,
-              ARGS... args);
-        template<typename... ARGS>
-          void _setInputs(
-              std::shared_ptr<TypeRegister>const&,
-              unsigned);
+        inline TypeRegister::TypeID getInputType (InputIndex  i   )const;
+        inline TypeRegister::TypeID getInputType (std::string name)const;
+        inline TypeRegister::TypeID getOutputType(                )const;
+        inline InputIndex  getNofInputs()const;
+        inline std::string getInputName (InputIndex  i   )const;
+        inline InputIndex  getInputIndex(std::string name)const;
+        inline std::string getOutputName()const;
+        inline std::string getName()const;
+        inline void setOutputName(std::string name = "");
+        inline void setInputName (InputIndex i,std::string name = "");
     };
 
-
-
-    class FunctionFactory: public StatementFactory{
-      public:
-        virtual ~FunctionFactory();
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&)=0;
-    };
-
-
-
-    template<typename... ARGS>
-      unsigned Function::_computeNumberOfInputs(ARGS...args){
-        return (sizeof...(args)-2)/2;
-      }
-    template<typename... ARGS>
-      void Function::_setTypes(
-          std::shared_ptr<TypeRegister>const&tr,
-          unsigned nofInputs,
-          const char* type,
-          const char* name,
-          ARGS... args){
-        this->_setOutput(tr->getTypeId(type),name);
-        this->_setInputs(tr,nofInputs,args...);
-      }
-    template<typename... ARGS>
-      void Function::_setInputs(
-          std::shared_ptr<TypeRegister>const&tr,
-          unsigned nofInputs,
-          const char* type,
-          const char* name,
-          ARGS... args){
-        this->_setInput(nofInputs-(sizeof...(args))/2-1,tr->getTypeId(type),name);
-        this->_setInputs(tr,nofInputs,args...);
-      }
-    template<typename... ARGS>
-      void Function::_setInputs(
-          std::shared_ptr<TypeRegister>const&,
-          unsigned){
-      }
-
-    inline std::shared_ptr<Accessor>const&Function::getOutput()const{
-      return this->_getOutput().data;
+    inline Function::Function(
+        std::shared_ptr<FunctionRegister>const&fr,
+        FunctionRegister::FunctionID id):Statement(FUNCTION){
+      this->_functionRegister = fr;
+      this->_id = id;
     }
 
-    inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
-      return this->_getOutput().type;
-    }
-
-    inline std::string Function::getOutputName()const{
-      return this->_getOutput().name;
-    }
-
-    inline bool Function::hasInput(unsigned i)const{
-      return this->_getInput(i).function!=nullptr;
-    }
-
-    inline bool Function::hasInput(std::string name)const{
-      return this->hasInput(this->getInputIndex(name));
+    inline Function::~Function(){
     }
 
     inline std::string Function::doc()const{
       return"";
     }
 
-    inline bool Function::hasOutput()const{
-      return this->_getOutput().data!=nullptr;
-    }
-
-    inline std::shared_ptr<Accessor>const&Function::getInputData(unsigned i       )const{
-      return this->_getInput(i).function->getOutput();
-    }
-
-    inline std::shared_ptr<Accessor>const&Function::getInputData(std::string input)const{
-      return this->getInputData(this->_name2Input.find(input)->second);
-    }
-
-    inline TypeRegister::TypeID Function::getInputType(unsigned    i   )const{
-      return this->_getInput(i).type;
+    inline TypeRegister::TypeID Function::getInputType(InputIndex i)const{
+      return this->_functionRegister->getInputType(this->_id,i);
     }
 
     inline TypeRegister::TypeID Function::getInputType(std::string name)const{
-      return this->_getInput(this->getInputIndex(name)).type;
+      return this->getInputType(this->_functionRegister->getInputIndex(this->_id,name));
     }
 
-    inline decltype(Function::_inputs)::size_type Function::getNofInputs()const{
-      return this->_inputs.size();
+    inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
+      return this->_functionRegister->getOutputType(this->_id);
     }
 
-    inline bool Function::_inputChanged(unsigned i)const{
+    inline Function::InputIndex Function::getNofInputs()const{
+      return this->_functionRegister->getNofInputs(this->_id);
+    }
+
+    inline std::string Function::getInputName(InputIndex i)const{
+      return this->_functionRegister->getInputName(this->_id,i);
+    }
+
+    inline Function::InputIndex Function::getInputIndex(std::string name)const{
+      return this->_functionRegister->getInputIndex(this->_id,name);
+    }
+
+    inline std::string Function::getOutputName()const{
+      return this->_functionRegister->getOutputName(this->_id);
+    }
+
+    inline std::string Function::getName()const{
+      return this->_functionRegister->getName(this->_id);
+    }
+
+    inline void Function::setInputName(InputIndex i,std::string name){
+      this->_functionRegister->setInputName(this->_id,i,name);
+    }
+
+    inline void Function::setOutputName(std::string name){
+      this->_functionRegister->setOutputName(this->_id,name);
+    }
+
+
+    class GECORE_EXPORT AtomicFunctionInput{
+      public:
+        std::shared_ptr<Function>function    = nullptr;
+        bool                     changed     = false  ;
+        Function::Ticks          updateTicks = 0      ;
+        AtomicFunctionInput(
+            std::shared_ptr<Function>const&fce         = nullptr,
+            Function::Ticks                updateTicks = 0      ,
+            bool                           changed     = false  );
+    };
+
+    class StatementFactory;
+
+    class GECORE_EXPORT AtomicFunction: public Function{
+      public:
+        using InputList = std::vector<AtomicFunctionInput>;
+        using InputIndex = InputList::size_type;
+      protected:
+        InputList                _inputs         ;
+        unsigned long long       _checkTicks  = 0;
+        unsigned long long       _updateTicks = 1;
+        std::shared_ptr<Accessor>_outputData = nullptr ;
+      public:
+        AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
+        AtomicFunction(
+            std::shared_ptr<FunctionRegister>const&fr,
+            TypeRegister::DescriptionList const&typeDescription,
+            std::string name = "",
+            std::shared_ptr<StatementFactory>const&factory = nullptr);
+        virtual ~AtomicFunction();
+        virtual void operator()();
+        virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function = nullptr);
+        virtual bool bindInput (std::string name,std::shared_ptr<Function>function = nullptr);
+        virtual bool bindOutput(                 std::shared_ptr<Accessor>data     = nullptr);
+        virtual inline bool hasInput (InputIndex  i   )const;
+        virtual inline bool hasInput (std::string name)const;
+        virtual inline bool hasOutput(                )const;
+        virtual inline std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const;
+        virtual inline std::shared_ptr<Accessor>const&getInputData (std::string input)const;
+        virtual inline std::shared_ptr<Accessor>const&getOutputData(                 )const;
+        virtual inline Ticks getUpdateTicks()const;
+        virtual inline Ticks getCheckTicks ()const;
+        virtual inline void  setUpdateTicks(Ticks ticks);
+        virtual inline void  setCheckTicks (Ticks ticks);
+        virtual inline std::string doc()const;
+      protected:
+        void _defaultNames(InputIndex n);
+        void _processInputs();
+        virtual bool _do();
+        inline bool _inputChanged(InputIndex  i    )const;
+        inline bool _inputChanged(std::string input)const;
+        inline AtomicFunctionInput      &_getInput(InputIndex i);
+        inline AtomicFunctionInput const&_getInput(InputIndex i)const;
+        inline InputIndex _getNofInputs()const;
+    };
+
+
+
+    class GECORE_EXPORT FunctionFactory: public StatementFactory{
+      public:
+        virtual ~FunctionFactory();
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
+    };
+
+    inline std::shared_ptr<Accessor>const&AtomicFunction::getOutputData()const{
+      return this->_outputData;
+    }
+
+    inline bool AtomicFunction::hasInput(InputIndex i)const{
+      return this->_getInput(i).function!=nullptr;
+    }
+
+    inline bool AtomicFunction::hasInput(std::string name)const{
+      return this->hasInput(this->getInputIndex(name));
+    }
+
+    inline Function::Ticks AtomicFunction::getUpdateTicks()const{
+      return this->_updateTicks;
+    }
+
+    inline Function::Ticks AtomicFunction::getCheckTicks ()const{
+      return this->_checkTicks;
+    }
+
+    inline void AtomicFunction::setUpdateTicks(Function::Ticks ticks){
+      this->_checkTicks = ticks;
+    }
+
+    inline void AtomicFunction::setCheckTicks(Ticks ticks){
+      this->_updateTicks = ticks;
+    }
+
+    inline std::string AtomicFunction::doc()const{
+      return"";
+    }
+
+    inline bool AtomicFunction::hasOutput()const{
+      return this->_outputData!=nullptr;
+    }
+
+    inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(InputIndex i)const{
+      return this->_getInput(i).function->getOutputData();
+    }
+
+    inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(std::string input)const{
+      return this->getInputData(this->_functionRegister->getInputIndex(this->_id,input));
+    }
+
+    inline bool AtomicFunction::_inputChanged(InputIndex i)const{
       return this->_getInput(i).changed;
     }
 
-    inline bool Function::_inputChanged(std::string input)const{
-      return this->_inputChanged(this->_name2Input.find(input)->second);
+    inline bool AtomicFunction::_inputChanged(std::string input)const{
+      return this->_inputChanged(this->_functionRegister->getInputIndex(this->_id,input));
     }
 
-    inline FunctionInput&Function::_getInput(unsigned i){
+    inline AtomicFunctionInput&AtomicFunction::_getInput(InputIndex i){
       return this->_inputs[i];
     }
 
-    inline FunctionInput const&Function::_getInput(unsigned i)const{
+    inline AtomicFunctionInput const&AtomicFunction::_getInput(InputIndex i)const{
       return this->_inputs[i];
     }
 
-    inline decltype(Function::_inputs)::size_type Function::_getNofInputs()const{
+    inline AtomicFunction::InputIndex AtomicFunction::_getNofInputs()const{
       return this->_inputs.size();
     }
-
-    inline Function::Output      &Function::_getOutput(){
-      return this->_output;
-    }
-
-    inline Function::Output const&Function::_getOutput()const{
-      return this->_output;
-    }
-
-    inline std::string Function::getInputName(unsigned i)const{
-      if(i>=this->_getNofInputs()){
-        std::cerr<<"ERROR: "<<this->_name<<"::getInputName("<<i<<") - ";
-        std::cerr<<"input out of range"<<std::endl;
-        return "";
-      }
-      return this->_input2Name.find(i)->second;
-    }
-
-    inline unsigned Function::getInputIndex(std::string name)const{
-      auto ii=this->_name2Input.find(name);
-      if(ii==this->_name2Input.end()){
-        std::cerr<<"ERROR: "<<this->_name<<"::getInputIndex(\""<<name<<"\") - ";
-        std::cerr<<"there is no input with that name"<<std::endl;
-        return -1;
-      }
-      return ii->second;
-    }
-
-
-
   }
 }
 
 #define BEGIN_INTERPRET_FUNCTION_HPP(NAME)\
-  class GECORE_EXPORT NAME: public ge::core::Function{\
+  class GECORE_EXPORT NAME: public ge::core::AtomicFunction{\
     protected:\
               bool _do();\
     public:\
            static inline std::string name(){return #NAME;}\
-    static inline std::shared_ptr<ge::core::Function> sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
+    static inline std::shared_ptr<ge::core::AtomicFunction> sharedInstance(std::shared_ptr<ge::core::TypeRegister>const&tr){\
       return std::make_shared<NAME>(tr);\
     }\
     NAME(std::shared_ptr<ge::core::TypeRegister>const&typeRegister)
@@ -256,9 +257,8 @@ namespace ge{
   BEGIN_INTERPRET_FUNCTION_HPP(NAME);\
 END_INTERPRET_FUNCTION_HPP()
 
-#define BEGIN_INTERPRET_FUNCTION_CPP(NAME,...)\
-  NAME::NAME(std::shared_ptr<ge::core::TypeRegister>const&tr):Function(this->_computeNumberOfInputs(__VA_ARGS__),NAME::name()){\
-    this->_setTypes(tr,this->_computeNumberOfInputs(__VA_ARGS__),__VA_ARGS__)
+#define BEGIN_INTERPRET_FUNCTION_CPP(NAME,TYPE)\
+  NAME::NAME(std::shared_ptr<ge::core::TypeRegister>const&tr):AtomicFunction(tr,TYPE,NAME::name()){\
 
 #define MID_INTERPRET_FUNCTION_CPP(NAME)\
   }\

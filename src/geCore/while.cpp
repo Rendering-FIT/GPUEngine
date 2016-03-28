@@ -1,9 +1,10 @@
 #include<geCore/while.h>
+#include<geCore/Accessor.h>
 
 using namespace ge::core;
 
 While::While(
-    std::shared_ptr<Function >const&condition,
+    std::shared_ptr<AtomicFunction >const&condition,
     std::shared_ptr<Statement>const&body     ):Statement(WHILE){
   this->_condition = condition;
   this->_body      = body;
@@ -17,11 +18,11 @@ void While::setBody(std::shared_ptr<Statement>const&body){
   this->_body = body;
 }
 
-void While::setCondition(std::shared_ptr<Function>const&condition){
+void While::setCondition(std::shared_ptr<AtomicFunction>const&condition){
   this->_condition = condition;
 }
 
-std::shared_ptr<Function>const&While::getCondition()const{
+std::shared_ptr<AtomicFunction>const&While::getCondition()const{
   return this->_condition;
 }
 
@@ -32,7 +33,7 @@ std::shared_ptr<Statement>const&While::getBody()const{
 void While::operator()(){
   for(;;){
     (*this->_condition)();
-    if(!(bool)*(this->_condition->getOutput()))return;
+    if(!(bool)*this->_condition->getOutputData())return;
     (*this->_body)();
   }
 }
@@ -41,10 +42,10 @@ void While::operator()(){
 WhileFactory::~WhileFactory(){
 }
 
-std::shared_ptr<Statement>WhileFactory::operator()(SharedTypeRegister const&tr){
+std::shared_ptr<Statement>WhileFactory::operator()(std::shared_ptr<FunctionRegister> const&fr){
   auto result = std::make_shared<While>();
-  result->setCondition(std::dynamic_pointer_cast<Function>((*this->conditionFactory)(tr)));
-  result->setBody     ((*this->bodyFactory     )(tr));
+  result->setCondition(std::dynamic_pointer_cast<AtomicFunction>((*this->conditionFactory)(fr)));
+  result->setBody     ((*this->bodyFactory     )(fr));
   return result;
 }
 

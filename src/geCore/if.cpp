@@ -1,9 +1,10 @@
 #include<geCore/if.h>
+#include<geCore/Accessor.h>
 
 using namespace ge::core;
 
 If::If(
-    std::shared_ptr<Function> const&condition,
+    std::shared_ptr<AtomicFunction> const&condition,
     std::shared_ptr<Statement>const&trueBody ,
     std::shared_ptr<Statement>const&falseBody):Statement(IF){
   this->_condition = condition;
@@ -15,7 +16,7 @@ If::~If(){
 
 }
 
-void If::setCondition(std::shared_ptr<Function> const&condition){
+void If::setCondition(std::shared_ptr<AtomicFunction> const&condition){
   this->_condition = condition;
 }
 
@@ -27,7 +28,7 @@ void If::setFalseBody(std::shared_ptr<Statement>const&falseBody){
   this->_falseBody = falseBody;
 }
 
-std::shared_ptr<Function> const&If::getCondition()const{
+std::shared_ptr<AtomicFunction> const&If::getCondition()const{
   return this->_condition;
 }
 
@@ -41,7 +42,7 @@ std::shared_ptr<Statement>const&If::getFalseBody()const{
 
 void If::operator()(){
   (*this->_condition)();
-  if((bool)*(this->_condition->getOutput()))
+  if((bool)*this->_condition->getOutputData())
     (*this->_trueBody)();
   else{
     if(this->_falseBody)(*this->_falseBody)();
@@ -52,11 +53,11 @@ void If::operator()(){
 IfFactory::~IfFactory(){
 }
 
-std::shared_ptr<Statement>IfFactory::operator()(SharedTypeRegister const&tr){
+std::shared_ptr<Statement>IfFactory::operator()(std::shared_ptr<FunctionRegister> const&fr){
   auto result = std::make_shared<If>();
-  result->setTrueBody ((*this->trueFactory     )(tr));
-  result->setFalseBody((*this->falseFactory    )(tr));
-  result->setCondition(std::dynamic_pointer_cast<Function>((*this->conditionFactory)(tr)));
+  result->setTrueBody ((*this->trueFactory     )(fr));
+  result->setFalseBody((*this->falseFactory    )(fr));
+  result->setCondition(std::dynamic_pointer_cast<AtomicFunction>((*this->conditionFactory)(fr)));
   return result;
 }
 

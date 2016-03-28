@@ -6,6 +6,7 @@
 
 #include<geCore/Export.h>
 #include<geCore/TypeRegister.h>
+#include<geCore/Accessor.h>
 
 namespace ge{
   namespace core{

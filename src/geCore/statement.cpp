@@ -24,10 +24,10 @@ void ResourceFactory::reset(){
   this->_first   = true   ;
 }
 
-std::shared_ptr<Accessor>ResourceFactory::operator()(SharedTypeRegister const&tr){
+std::shared_ptr<Accessor>ResourceFactory::operator()(std::shared_ptr<FunctionRegister> const&fr){
   this->_first=this->_uses==0;
   std::shared_ptr<Accessor>res;
-  if(!this->_result)this->_result = tr->sharedAccessor(this->_type);
+  if(!this->_result)this->_result = fr->getTypeRegister()->sharedAccessor(this->_type);
   res=this->_result;
   this->_uses++;
   if(this->_uses==this->_maxUses){

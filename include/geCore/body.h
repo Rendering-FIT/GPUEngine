@@ -5,16 +5,20 @@
 namespace ge{
   namespace core{
     class GECORE_EXPORT Body: public Statement{
+      public:
+        using StatementList = std::vector<std::shared_ptr<Statement>>;
+        using StatementIndex = StatementList::size_type;
+        using StatementIterator = StatementList::const_iterator;
       protected:
-        std::vector<std::shared_ptr<Statement>>_statements;
+        StatementList _statements;
       public:
         Body();
         virtual ~Body();
         void addStatement(std::shared_ptr<Statement>const&statement);
-        std::vector<std::shared_ptr<Statement>>::size_type size()const;
-        typedef std::vector<std::shared_ptr<Statement>>::const_iterator Iterator;
-        Iterator begin()const;
-        Iterator end  ()const;
+        StatementIndex size()const;
+        std::shared_ptr<Statement>const&operator[](StatementIndex index)const;
+        StatementIterator begin()const;
+        StatementIterator end  ()const;
         virtual void operator()();
     };
 
@@ -22,7 +26,7 @@ namespace ge{
       public:
         virtual ~BodyFactory();
         std::vector<std::shared_ptr<StatementFactory>>factories;
-        virtual std::shared_ptr<Statement>operator()(SharedTypeRegister const&);
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&);
     };
   }
 }
