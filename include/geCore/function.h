@@ -17,26 +17,17 @@ namespace ge{
         using InputIndex = size_t;
         using Ticks      = uint64_t;
       protected:
-        //std::map<InputIndex,std::string>_input2Name  ;
-        //std::map<std::string,InputIndex>_name2Input  ;
-        //std::string                     _outputName  ;
-        //std::string                     _name        ;
-        //TypeRegister::TypeID            _fceType     ;
-        //std::shared_ptr<TypeRegister>   _typeRegister;
-        //std::string _genDefaultName(InputIndex i)const;
         std::shared_ptr<FunctionRegister>_functionRegister;
         FunctionRegister::FunctionID     _id;
+        bool _inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const;
       public:
         inline Function(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
         virtual inline ~Function();
         virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function  = nullptr) = 0;
-        virtual bool bindInput (std::string name,std::shared_ptr<Function>function  = nullptr) = 0;
         virtual bool bindOutput(                 std::shared_ptr<Accessor>data      = nullptr) = 0;
         virtual bool hasInput (InputIndex  i   )const = 0;
-        virtual bool hasInput (std::string name)const = 0;
         virtual bool hasOutput(                )const = 0;
         virtual std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const = 0;
-        virtual std::shared_ptr<Accessor>const&getInputData (std::string input)const = 0;
         virtual std::shared_ptr<Accessor>const&getOutputData(                 )const = 0;
         virtual Ticks getUpdateTicks()const = 0;
         virtual Ticks getCheckTicks ()const = 0;
@@ -44,7 +35,6 @@ namespace ge{
         virtual void  setCheckTicks (Ticks ticks) = 0;
         virtual inline std::string doc()const;
         inline TypeRegister::TypeID getInputType (InputIndex  i   )const;
-        inline TypeRegister::TypeID getInputType (std::string name)const;
         inline TypeRegister::TypeID getOutputType(                )const;
         inline InputIndex  getNofInputs()const;
         inline std::string getInputName (InputIndex  i   )const;
@@ -53,6 +43,10 @@ namespace ge{
         inline std::string getName()const;
         inline void setOutputName(std::string name = "");
         inline void setInputName (InputIndex i,std::string name = "");
+        inline bool bindInput (std::string name,std::shared_ptr<Function>function  = nullptr);
+        inline bool hasInput (std::string name)const;
+        inline std::shared_ptr<Accessor>const&getInputData (std::string input)const ;
+        inline TypeRegister::TypeID getInputType (std::string name)const;
     };
 
     inline Function::Function(
@@ -71,10 +65,6 @@ namespace ge{
 
     inline TypeRegister::TypeID Function::getInputType(InputIndex i)const{
       return this->_functionRegister->getInputType(this->_id,i);
-    }
-
-    inline TypeRegister::TypeID Function::getInputType(std::string name)const{
-      return this->getInputType(this->_functionRegister->getInputIndex(this->_id,name));
     }
 
     inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
@@ -109,16 +99,44 @@ namespace ge{
       this->_functionRegister->setOutputName(this->_id,name);
     }
 
+    inline bool Function::bindInput (std::string name,std::shared_ptr<Function>function){
+      return this->bindInput(this->getInputIndex(name),function);
+    }
 
-    class GECORE_EXPORT AtomicFunctionInput{
+    inline bool Function::hasInput (std::string name)const{
+      return this->hasInput(this->getInputIndex(name));
+    }
+
+    inline std::shared_ptr<Accessor>const&Function::getInputData (std::string input)const{
+      return this->getInputData(this->getInputIndex(input));
+    }
+
+    inline TypeRegister::TypeID Function::getInputType (std::string name)const{
+      return this->getInputType(this->getInputIndex(name));
+    }
+
+
+    class GECORE_EXPORT FunctionInput{
+      public:
+        bool changed                = false;
+        Function::Ticks updateTicks = 0    ;
+        inline FunctionInput(
+            Function::Ticks updateTicks = 0    ,
+            bool            changed     = false){
+          this->changed     = changed    ;
+          this->updateTicks = updateTicks;
+        }
+        virtual inline ~FunctionInput(){}
+    };
+
+    class GECORE_EXPORT AtomicFunctionInput: public FunctionInput{
       public:
         std::shared_ptr<Function>function    = nullptr;
-        bool                     changed     = false  ;
-        Function::Ticks          updateTicks = 0      ;
         AtomicFunctionInput(
             std::shared_ptr<Function>const&fce         = nullptr,
             Function::Ticks                updateTicks = 0      ,
             bool                           changed     = false  );
+        virtual ~AtomicFunctionInput();
     };
 
     class StatementFactory;
@@ -142,13 +160,10 @@ namespace ge{
         virtual ~AtomicFunction();
         virtual void operator()();
         virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function = nullptr);
-        virtual bool bindInput (std::string name,std::shared_ptr<Function>function = nullptr);
         virtual bool bindOutput(                 std::shared_ptr<Accessor>data     = nullptr);
         virtual inline bool hasInput (InputIndex  i   )const;
-        virtual inline bool hasInput (std::string name)const;
         virtual inline bool hasOutput(                )const;
         virtual inline std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const;
-        virtual inline std::shared_ptr<Accessor>const&getInputData (std::string input)const;
         virtual inline std::shared_ptr<Accessor>const&getOutputData(                 )const;
         virtual inline Ticks getUpdateTicks()const;
         virtual inline Ticks getCheckTicks ()const;
@@ -156,14 +171,10 @@ namespace ge{
         virtual inline void  setCheckTicks (Ticks ticks);
         virtual inline std::string doc()const;
       protected:
-        void _defaultNames(InputIndex n);
         void _processInputs();
         virtual bool _do();
         inline bool _inputChanged(InputIndex  i    )const;
         inline bool _inputChanged(std::string input)const;
-        inline AtomicFunctionInput      &_getInput(InputIndex i);
-        inline AtomicFunctionInput const&_getInput(InputIndex i)const;
-        inline InputIndex _getNofInputs()const;
     };
 
 
@@ -179,11 +190,7 @@ namespace ge{
     }
 
     inline bool AtomicFunction::hasInput(InputIndex i)const{
-      return this->_getInput(i).function!=nullptr;
-    }
-
-    inline bool AtomicFunction::hasInput(std::string name)const{
-      return this->hasInput(this->getInputIndex(name));
+      return this->_inputs[i].function!=nullptr;
     }
 
     inline Function::Ticks AtomicFunction::getUpdateTicks()const{
@@ -211,31 +218,15 @@ namespace ge{
     }
 
     inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(InputIndex i)const{
-      return this->_getInput(i).function->getOutputData();
-    }
-
-    inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(std::string input)const{
-      return this->getInputData(this->_functionRegister->getInputIndex(this->_id,input));
+      return this->_inputs[i].function->getOutputData();
     }
 
     inline bool AtomicFunction::_inputChanged(InputIndex i)const{
-      return this->_getInput(i).changed;
+      return this->_inputs[i].changed;
     }
 
     inline bool AtomicFunction::_inputChanged(std::string input)const{
       return this->_inputChanged(this->_functionRegister->getInputIndex(this->_id,input));
-    }
-
-    inline AtomicFunctionInput&AtomicFunction::_getInput(InputIndex i){
-      return this->_inputs[i];
-    }
-
-    inline AtomicFunctionInput const&AtomicFunction::_getInput(InputIndex i)const{
-      return this->_inputs[i];
-    }
-
-    inline AtomicFunction::InputIndex AtomicFunction::_getNofInputs()const{
-      return this->_inputs.size();
     }
   }
 }

@@ -22,16 +22,13 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
         2,
         TypeRegister::getTypeTypeId<int32_t>(),
         TypeRegister::getTypeTypeId<int32_t>()});
-  ___;
   auto id = fr->addFunction(
       ft,
       ge::core::Add<int32_t>::name(),
       ge::core::Add<int32_t>::factory());
-  ___;
   fr->setOutputName(id,"vysledek");
   fr->setInputName(id,0,"a");
   fr->setInputName(id,1,"b");
-  ___;
   REQUIRE(fr->getName(id)=="Add_i32");
   REQUIRE(fr->getType(id)==ft);
   REQUIRE(fr->getNofInputs(id)==tr->getNofFceArgs(ft));

@@ -3,15 +3,36 @@
 
 using namespace ge::core;
 
-
+bool Function::_inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const{
+  if(i>=this->getNofInputs()){
+    std::cerr<<"ERROR: "<<this->getName()<<"::bindInput("<<i<<",";
+    if(function==nullptr)std::cerr<<"nullptr";
+    else std::cerr<<function->getName();
+    std::cerr<<") - out of range"<<std::endl;
+    return false;
+  }
+  if(
+      function                           != nullptr                                                  &&
+      this->getInputType(i)              != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
+      function->getOutputData()->getId() != this->getInputType(i)                                    ){
+    std::cerr<<"ERROR: "<<this->getName()<<".input["<<this->getInputName(i)<<"] has different type - ";
+    std::cerr<<function->getOutputData()->getManager()->getTypeIdName(this->getInputType(i));
+    std::cerr<<" != ";
+    std::cerr<<function->getOutputData()->getManager()->getTypeIdName(function->getOutputData()->getId());
+    std::cerr<<std::endl;
+    return false;
+  }
+  return true;
+}
 
 AtomicFunctionInput::AtomicFunctionInput(
     std::shared_ptr<Function>const&fce        ,
     Function::Ticks                updateTicks,
-    bool                           changed    ){
-  this->function    = fce        ;
-  this->updateTicks = updateTicks;
-  this->changed     = changed    ;
+    bool                           changed    ):FunctionInput(updateTicks,changed){
+  this->function = fce;
+}
+
+AtomicFunctionInput::~AtomicFunctionInput(){
 }
 
 AtomicFunction::AtomicFunction(
@@ -34,28 +55,12 @@ AtomicFunction::~AtomicFunction(){
 }
 
 bool AtomicFunction::bindInput(InputIndex i,std::shared_ptr<Function>function){
-  if(i>=this->_getNofInputs()){
-    std::cerr<<"ERROR: "<<this->getName()<<"::bindInput("<<i<<",";
-    if(function==nullptr)std::cerr<<"nullptr";
-    else std::cerr<<function->getName();
-    std::cerr<<") - out of range"<<std::endl;
+  if(!this->_inputBindingCheck(i,function))
     return false;
-  }
-  if(
-      function                           != nullptr                                                  &&
-      this->getInputType(i)              != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
-      function->getOutputData()->getId() != this->getInputType(i)                                    ){
-    std::cerr<<"ERROR: "<<this->getName()<<".input["<<this->getInputName(i)<<"] has different type - ";
-    std::cerr<<function->getOutputData()->getManager()->getTypeIdName(this->getInputType(i));
-    std::cerr<<" != ";
-    std::cerr<<function->getOutputData()->getManager()->getTypeIdName(function->getOutputData()->getId());
-    std::cerr<<std::endl;
-    return false;
-  }
   //std::cerr<<this->_name<<".bindInput("<<i<<","<<function<<")"<<std::endl;
-  this->_getInput(i).function = function;
-  if(function)this->_getInput(i).updateTicks = function->getUpdateTicks() - 1;
-  this->_getInput(i).changed  = true;
+  this->_inputs[i].function = function;
+  if(function)this->_inputs[i].updateTicks = function->getUpdateTicks() - 1;
+  this->_inputs[i].changed  = true;
   return true;
 }
 
@@ -75,10 +80,6 @@ bool AtomicFunction::bindOutput(std::shared_ptr<Accessor>data){
   return true;
 }
 
-bool AtomicFunction::bindInput(std::string name,std::shared_ptr<Function>function){
-  return this->bindInput(this->getInputIndex(name),function);
-}
-
 void AtomicFunction::operator()(){
   this->_checkTicks++;
   this->_processInputs();
@@ -87,17 +88,17 @@ void AtomicFunction::operator()(){
 }
 
 void AtomicFunction::_processInputs(){
-  for(InputIndex i=0;i<this->_getNofInputs();++i){
-    if(!this->hasInput(i)||this->_getInput(i).function->getCheckTicks()>=this->_checkTicks){
-      this->_getInput(i).changed = false;
+  for(InputIndex i=0;i<this->getNofInputs();++i){
+    if(!this->hasInput(i)||this->_inputs[i].function->getCheckTicks()>=this->_checkTicks){
+      this->_inputs[i].changed = false;
       continue;
     }
-    (*this->_getInput(i).function)();
-    this->_getInput(i).function->setCheckTicks(this->_checkTicks);
-    this->_getInput(i).changed=
-      this->_getInput(i).updateTicks<this->_getInput(i).function->getUpdateTicks();
-    if(this->_getInput(i).changed)
-      this->_getInput(i).updateTicks=this->_getInput(i).function->getUpdateTicks();
+    (*this->_inputs[i].function)();
+    this->_inputs[i].function->setCheckTicks(this->_checkTicks);
+    this->_inputs[i].changed=
+      this->_inputs[i].updateTicks<this->_inputs[i].function->getUpdateTicks();
+    if(this->_inputs[i].changed)
+      this->_inputs[i].updateTicks=this->_inputs[i].function->getUpdateTicks();
   }
 }
 

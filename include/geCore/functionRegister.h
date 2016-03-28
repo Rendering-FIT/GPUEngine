@@ -165,7 +165,7 @@ namespace ge{
     }
 
     inline void FunctionRegister::setInputName(FunctionID id,InputIndex input,std::string name){
-      auto def = this->_getDefinition(id);
+      FunctionDefinition& def = this->_getDefinition(id);
       if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
         std::cerr<<"ERROR - FunctionRegister::setInputName("<<id<<","<<input<<","<<name<<") - ";
         std::cerr<<"there is no such function"<<std::endl;
@@ -182,24 +182,24 @@ namespace ge{
         std::cerr<<jj->second<<std::endl;
         return;
       }
-      auto ii=std::get<INDEX2NAME>(this->_getDefinition(id)).find(input);
-      if(ii!=std::get<INDEX2NAME>(this->_getDefinition(id)).end()){
-        if(std::get<NAME2INDEX>(this->_getDefinition(id)).find(ii->second)!=std::get<NAME2INDEX>(def).end())
-          std::get<NAME2INDEX>(this->_getDefinition(id)).erase(ii->second);
-        std::get<INDEX2NAME>(this->_getDefinition(id)).erase(input);
+      auto ii=std::get<INDEX2NAME>(def).find(input);
+      if(ii!=std::get<INDEX2NAME>(def).end()){
+        if(std::get<NAME2INDEX>(def).find(ii->second)!=std::get<NAME2INDEX>(def).end())
+          std::get<NAME2INDEX>(def).erase(ii->second);
+        std::get<INDEX2NAME>(def).erase(input);
       }
-      std::get<NAME2INDEX>(this->_getDefinition(id))[name ] = input;
-      std::get<INDEX2NAME>(this->_getDefinition(id))[input] = name ;
+      std::get<NAME2INDEX>(def)[name ] = input;
+      std::get<INDEX2NAME>(def)[input] = name ;
     }
 
     inline void FunctionRegister::setOutputName(FunctionID id,std::string name){
-      auto def = this->_getDefinition(id);
+      FunctionDefinition &def = this->_getDefinition(id);
       if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
         std::cerr<<"ERROR - FunctionRegister::setOutputName("<<id<<","<<name<<") - ";
         std::cerr<<"there is no such function"<<std::endl;
         return;
       }
-      std::get<OUTPUTNAME>(this->_getDefinition(id))=name;
+      std::get<OUTPUTNAME>(def)=name;
     }
 
     inline std::shared_ptr<TypeRegister>const&FunctionRegister::getTypeRegister()const{

@@ -128,7 +128,7 @@ namespace ge{
 
 #define INPUT_CHECK()\
     bool missingInput=false;\
-    for(InputIndex i=0;i<this->_getNofInputs();++i)\
+    for(InputIndex i=0;i<this->getNofInputs();++i)\
       if(!this->hasInput(i)){\
         if(!missingInput)std::cerr<<"ERROR: function "<<this->getName()<<" has unbinded inputs: ";\
         else std::cerr<<" ,";\

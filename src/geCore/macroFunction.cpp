@@ -2,21 +2,82 @@
 
 using namespace ge::core;
 
-/*
 MacroFunction::MacroFunction(
-    std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id):
-  Function(tr,id,"MacroFunction"){
-  }
+    std::shared_ptr<FunctionRegister>const&fr,
+    FunctionRegister::FunctionID id,
+    std::shared_ptr<Function>const&output,
+    std::vector<FceInputList>const&inputs):Function(fr,id){
+  this->_outputMapping = output;
+  this->_inputMapping  = inputs;
+}
 
 MacroFunction::~MacroFunction(){
 }
 
-bool MacroFunction::_do(){
-  std::cerr<<"ERROR: MacroFunction::_do() - ";
-  std::cerr<<"this should not be called at all"<<std::endl;
-  return false;
+bool MacroFunction::bindInput(InputIndex i,std::shared_ptr<Function>function){
+  if(!this->_inputBindingCheck(i,function))
+    return false;
+  for(auto x:this->_inputMapping[i])
+    std::get<FUNCTION>(x)->bindInput(std::get<INPUT>(x),function);
+  return true;
 }
-*/
+
+
+bool MacroFunction::bindOutput(std::shared_ptr<Accessor>data){
+  return this->_outputMapping->bindOutput(data);
+}
+
+
+bool MacroFunction::hasInput(InputIndex i)const{
+  for(auto x:this->_inputMapping[i])
+    if(!std::get<FUNCTION>(x)->hasInput(std::get<INPUT>(x)))return false;
+  return true;
+}
+
+bool MacroFunction::hasOutput()const{
+  return this->_outputMapping->hasOutput();
+}
+
+std::shared_ptr<Accessor>const&MacroFunction::getInputData(InputIndex i)const{
+  FceInput const&mapping = this->_inputMapping[i][0];
+  return std::get<FUNCTION>(mapping)->getInputData(std::get<INPUT>(mapping));
+}
+
+std::shared_ptr<Accessor>const&MacroFunction::getOutputData()const{
+  return this->_outputMapping->getOutputData();
+}
+
+Function::Ticks MacroFunction::getUpdateTicks()const{
+  return this->_outputMapping->getUpdateTicks();
+}
+
+Function::Ticks MacroFunction::getCheckTicks ()const{
+  return this->_outputMapping->getCheckTicks();
+}
+
+void  MacroFunction::setUpdateTicks(Ticks ticks){
+  this->_outputMapping->setUpdateTicks(ticks);
+}
+
+void  MacroFunction::setCheckTicks(Ticks ticks){
+  this->_outputMapping->setUpdateTicks(ticks);
+}
+
+/*
+   MacroFunction::MacroFunction(
+   std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id):
+   Function(tr,id,"MacroFunction"){
+   }
+
+   MacroFunction::~MacroFunction(){
+   }
+
+   bool MacroFunction::_do(){
+   std::cerr<<"ERROR: MacroFunction::_do() - ";
+   std::cerr<<"this should not be called at all"<<std::endl;
+   return false;
+   }
+   */
 
 
 FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses){
