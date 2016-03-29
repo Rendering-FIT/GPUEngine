@@ -23,12 +23,12 @@ namespace ge{
             std::vector<FceInputList>const&inputs);
         ~MacroFunction();
         virtual inline void operator()();
-        virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function  = nullptr);
-        virtual bool bindOutput(                 std::shared_ptr<Accessor>data      = nullptr);
-        virtual bool hasInput (InputIndex  i   )const;
-        virtual bool hasOutput(                )const;
-        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const;
-        virtual std::shared_ptr<Accessor>const&getOutputData(                 )const;
+        virtual bool bindInput (InputIndex i,std::shared_ptr<Function>function = nullptr);
+        virtual bool bindOutput(             std::shared_ptr<Accessor>data     = nullptr);
+        virtual bool hasInput (InputIndex i)const;
+        virtual bool hasOutput(            )const;
+        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex i)const;
+        virtual std::shared_ptr<Accessor>const&getOutputData(            )const;
         virtual Ticks getUpdateTicks()const;
         virtual Ticks getCheckTicks ()const;
         virtual void  setUpdateTicks(Ticks ticks);

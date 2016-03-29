@@ -2,7 +2,7 @@
 
 #include<geCore/Export.h>
 
-#ifdef MSVC
+#if defined(_MSC_VER) && _MSC_VER<1900
   #pragma warning(disable : 4503)
 #endif
 
