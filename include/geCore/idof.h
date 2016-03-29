@@ -2,56 +2,121 @@
 #define GE_CORE_IDOF_H
 
 #include <map>
+#include <ostream>
 #include <string>
 
 namespace ge {
 namespace core {
 
 
-typedef unsigned _idof_t;
-#define idof_t ge::core::_idof_t
+/** idof_register_data keeps run-time data for particular idlist.
+ *  It is designed as template struct as enum underlying type might
+ *  vary (int, unsigned, long long int, etc.). */
+template<typename T>
+struct idof_register_data {
+   std::map<std::string,T> str2id;  ///< Map from string to enumeration item (id).
+   std::map<T,std::string> id2str;  ///< Map from enumeration item (id) to string.
+   T next_available_id;             ///< Id that will be assigned upon next allocation request.
+   idof_register_data(const char* s);  ///< Constructor. The parameter s must be non-null,
+                                       ///< pointing to idlist initialization string
+                                       ///< (possibly empty) that will be used to fill
+                                       ///< idof_register_data with initial content.
+};
 
 
-template<typename T=void> // template only avoids the need to put the function to the cpp file
-std::map<std::string,std::map<std::string,unsigned>>& idof_get_global_register()
+template<typename T>
+idof_register_data<T>::idof_register_data(const char* s)
+   : next_available_id(0)
 {
-   static std::map<std::string,std::map<std::string,idof_t>> r;
-   return r;
+#if 0 // debug
+   std::cout<<"idof_register_data construction string: \""<<s<<'\"'<<std::endl;
+#endif
+   const char *p=s;
+   do {
+      while(*p==',' || *p==' ')  p++;
+      if(*p==0) break;
+      const char *start=p;
+      while((*p>='A'&&*p<='Z')||(*p>='a'&&*p<='z')||(*p=='_'))  p++;
+      std::string name(start,p-start);
+      T value=0;
+      bool hasValue=false;
+      while(*p==' ')  p++;
+      if(*p=='=') {
+         while(*(++p)==' ');
+         while(*p>='0'&&*p<='9') {
+            value*=10;
+            value+=(*p)-'0';
+            p++;
+         }
+         hasValue=true;
+         next_available_id=value+1;
+      }
+      T id=hasValue?value:next_available_id++;
+#if 0 // debug
+      std::cout<<"idof_register_data processed token: \""<<name<<"\", value: "<<id<<std::endl;
+#endif
+      str2id.insert(std::pair<std::string,T>(name,id));
+      id2str.insert(std::pair<T,std::string>(id,name));
+      if(*p==0) break;
+      p++;
+   } while(true);
 }
 
 
+/** Declares idlist. The first parameter is the name of the list
+ *  and the underlying enum. Following parameters can be omitted
+ *  or they can be used to declare the list members in the same way
+ *  as when using standard enum declaration. */
+#define idlist(_name_,...) \
+   enum class _name_ {__VA_ARGS__}; \
+   \
+   struct _name_##_register { \
+      typedef _name_ EnumType; \
+      typedef std::underlying_type<_name_>::type UnderlyingType; \
+      const char* chars = #_name_; \
+      static ge::core::idof_register_data<UnderlyingType>& get() \
+      { \
+         static ge::core::idof_register_data<UnderlyingType> r(#__VA_ARGS__); \
+         return r; \
+      } \
+      static EnumType str2id(const std::string& s) \
+      { \
+         auto& reg=get(); \
+         auto it=reg.str2id.find(s); \
+         if(it!=reg.str2id.end()) \
+            return static_cast<EnumType>(it->second); \
+         auto id=reg.next_available_id; \
+         reg.next_available_id++; \
+         reg.str2id.insert(std::pair<std::string,UnderlyingType>(s,id)); \
+         reg.id2str.insert(std::pair<UnderlyingType,std::string>(id,s)); \
+         /* debug line bellow */ \
+         /* std::cout<<"idof: Created entry \""<<s<<"\": "<<id<<std::endl; */ \
+         return static_cast<EnumType>(id); \
+      } \
+   }; \
+   \
+   friend std::ostream& operator<<(std::ostream& os,_name_ value) \
+   { \
+      auto& m=_name_##_register::get().id2str; \
+      auto it=m.find(static_cast<_name_##_register::UnderlyingType>(value)); \
+      os<<(it!=m.end()?it->second:"?"); \
+      return os; \
+   }
+
+
 #if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 workaround (it does not support constexpr
-                                       // and passing string as 
+                                       // and passing string as
                                        // struct id_name { const char* chars = #_id_name_; };
                                        // does not seem to work.
                                        // So, we provide alternative solution (little less optimal)
                                        // that allow us to use even this compiler)
 
 
-static idof_t idof_lookup(const char* id_chars,const char* register_chars)
-{
-#if 0 // debug
-   std::cout<<"Init entry \""<<id_chars<<"\" on \""<<register_chars<<'\"'<<std::endl;
-#endif
-   auto& globalRegister=idof_get_global_register();
-   auto& localRegister=globalRegister[register_chars];
-   auto it=localRegister.find(id_chars);
-   if(it!=localRegister.end())
-      return it->second;
-   idof_t& x=localRegister[id_chars];
-   x=idof_t(localRegister.size());
-#if 0 // debug
-   std::cout<<"Created entry \""<<id_chars<<"\": "<<x<<std::endl;
-#endif
-   return x;
-}
-
-
-#define idof_2(_name_,_register_name_) \
-[]() -> unsigned { \
-   static idof_t id = ge::core::idof_lookup(#_name_,#_register_name_); \
+#define idof(_enum_type_,_id_name_) \
+([]() -> _enum_type_ { \
+   static _enum_type_ id = _enum_type_##_register::str2id(#_id_name_); \
    return id; \
-}()
+}())
 
 
 #else // full blown optimal solution using all template features
@@ -93,43 +158,36 @@ struct idof_string_builder
 };
 
 
-template<typename id_name,typename register_name>
+template<typename enum_register,typename id_name>
 class idof_template {
 public:
-   static unsigned id;
+   typedef typename enum_register::EnumType EnumType;
+   typedef typename enum_register::UnderlyingType UnderlyingType;
+   static EnumType id;
 };
 
 
-template<typename id_name,typename register_name>
-unsigned idof_template<id_name,register_name>::id = []()->idof_t {
-      auto id_chars=id_name{}.chars;
-      auto register_chars=register_name{}.chars;
+template<typename enum_register,typename id_name>
+typename enum_register::EnumType idof_template<enum_register,id_name>::id =
+   []() {
 #if 0 // debug
-      std::cout<<"Init \""<<id_chars<<"\" on \""<<register_chars<<'\"'<<std::endl;
+      std::cout<<"Init \""<<id_name{}.chars<<"\" on \""<<enum_register{}.chars<<'\"'<<std::endl;
 #endif
-      auto& globalRegister=idof_get_global_register();
-      auto& localRegister=globalRegister[register_chars];
-      auto it=localRegister.find(id_chars);
-      if(it!=localRegister.end())
-         return it->second;
-      idof_t& x=localRegister[id_chars];
-      x=idof_t(localRegister.size());
-#if 0 // debug
-      std::cout<<"Created entry \""<<id_chars<<"\": "<<x<<std::endl;
-#endif
-      return x;
+      return enum_register::str2id(id_name{}.chars);
    }();
 
 
-#define idof_2(_id_name_,_register_name_) \
-([]() -> idof_t { \
+/** idof returns id (enum item) given by the second parameter.
+ *  The first parameter is the name of idlist created by idlist macro.
+ *  idof is very effective as it evaluates in compile time to a variable
+ *  holding id value in run-time. */
+#define idof(_enum_type_,_id_name_) \
+([]() -> _enum_type_ { \
    struct id_name { const char* chars = #_id_name_; }; \
-   struct register_name { const char* chars = #_register_name_; }; \
    return ge::core::idof_template< \
+      _enum_type_##_register, \
       ge::core::idof_apply_range<sizeof(#_id_name_)-1, \
-         ge::core::idof_string_builder<id_name      >::produce>::result, \
-      ge::core::idof_apply_range<sizeof(#_register_name_)-1, \
-         ge::core::idof_string_builder<register_name>::produce>::result \
+         ge::core::idof_string_builder<id_name      >::produce>::result \
       >::id; \
 }())
 
@@ -137,20 +195,18 @@ unsigned idof_template<id_name,register_name>::id = []()->idof_t {
 #endif // MSVC 2013 workaround and optimal template solution
 
 
-#define idof_1(_name_) \
-   idof_2(_name_,)
+/** idofstring returns id (enum item) given by the second parameter
+ *  that must be std::string.
+ *  The first parameter is the name of idlist created by idlist macro.
+ *  ifofstring is less effective than idof as it evaluates in run-time
+ *  using map lookup. Thus, use of idof is preferred whenever enum item
+ *  is not dynamically generated. */
+#define idofstring(_enum_type_,id_string) \
+(_enum_type_##_register::str2id(id_string))
 
-#define idof_get_macro(_1,_2,_3,_macro_name_,...) _macro_name_
-#define idof_msvc_workaround(x) x
 
-// note1: last parameter "true" kills warning about "ISO C99 requires rest arguments to be used" on g++ (seen on version 4.8.2)
-// note2: second parameter "true" is just empty argument, offsetting the rest of arguments
-// note3: idof_msvc_workaround workarounds different expansion behaviour of MSVC (seen on version 2015.0 (no update))
-#define idof(...) \
-   idof_msvc_workaround(idof_get_macro( \
-         __VA_ARGS__,true,idof_2,idof_1,true)(__VA_ARGS__))
+} /* namespace core */
+} /* namespace ge */
 
-} // namespace core
-} // namespace ge
 
 #endif /* GE_CORE_IDOF_H */
