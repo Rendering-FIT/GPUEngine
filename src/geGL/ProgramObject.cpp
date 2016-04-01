@@ -783,10 +783,10 @@ void err(std::string error){
  *
  * @return meta data (location,type,name,size)
  */
-ProgramObjectParameter const&ProgramObject::getUniform  (std::string name)const{
+ProgramObjectParameter const&ProgramObject::getUniform  (std::string name,bool printErrors)const{
   auto i=this->_uniformList.find(name);
   if(i==this->_uniformList.end()){
-    err("ProgramObject::getUniform("+name+") - there is no such uniform");
+    if(printErrors)err("ProgramObject::getUniform("+name+") - there is no such uniform");
     static const ProgramObjectParameter er;
     return er;
   }
@@ -800,10 +800,10 @@ ProgramObjectParameter const&ProgramObject::getUniform  (std::string name)const{
  *
  * @return meta data (location,type,name,size)
  */
-ProgramObjectParameter const&ProgramObject::getAttribute(std::string name)const{
+ProgramObjectParameter const&ProgramObject::getAttribute(std::string name,bool printErrors)const{
   auto i=this->_attributeList.find(name);
   if(i==this->_attributeList.end()){
-    err("ProgramObject::getAttribute("+name+") - there is no such attribute");
+    if(printErrors)err("ProgramObject::getAttribute("+name+") - there is no such attribute");
     static const ProgramObjectParameter er;
     return er;
   }
@@ -817,10 +817,10 @@ ProgramObjectParameter const&ProgramObject::getAttribute(std::string name)const{
  *
  * @return meta data (binding,name,params)
  */
-ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name)const{
+ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name,bool printErrors)const{
   auto i=this->_bufferList.find(name);
   if(i==this->_bufferList.end()){
-    err("ProgramObject::getBuffer("+name+") - there is no such buffer");
+    if(printErrors)err("ProgramObject::getBuffer("+name+") - there is no such buffer");
     static const ProgramObjectBufferParams er;
     return er;
   }

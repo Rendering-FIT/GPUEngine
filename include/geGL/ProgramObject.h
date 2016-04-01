@@ -98,9 +98,9 @@ namespace ge{
         void setVersion(GLenum type,unsigned version,std::string profile);
         void appendAfterVersion(std::string defs);
         void appendAfterVersion(GLenum type,std::string defs);
-        ProgramObjectParameter    const&getUniform  (std::string name)const;
-        ProgramObjectParameter    const&getAttribute(std::string name)const;
-        ProgramObjectBufferParams const&getBuffer   (std::string name)const;
+        ProgramObjectParameter    const&getUniform  (std::string name,bool printErrors = false)const;
+        ProgramObjectParameter    const&getAttribute(std::string name,bool printErrors = false)const;
+        ProgramObjectBufferParams const&getBuffer   (std::string name,bool printErrors = false)const;
         decltype(_uniformList  )::size_type getNofUniforms  ()const;
         decltype(_attributeList)::size_type getNofAttributes()const;
         decltype(_bufferNames  )::size_type getNofBuffers   ()const;
