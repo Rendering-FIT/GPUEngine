@@ -9,6 +9,8 @@ using namespace ge::core;
 SCENARIO( "basic interpret tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();
   auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister);
+  ge::core::registerStdFunctions(functionRegister);
+  //std::cerr<<functionRegister->str();
   GIVEN( "basic expression" ) {
     auto fa=std::make_shared<ge::core::Nullary>(functionRegister,101.f );
     auto fb=std::make_shared<ge::core::Nullary>(functionRegister,1.1f  );
@@ -59,17 +61,17 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fb=std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)12);
     auto fc=std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)0 );
 
-    auto cond=std::make_shared<ge::core::Less<unsigned>>(functionRegister,typeRegister->sharedAccessor("bool"));
+    auto cond=std::make_shared<ge::core::Less<uint32_t>>(functionRegister,typeRegister->sharedAccessor("bool"));
     cond->bindInput(0,fa);
     cond->bindInput(1,fb);
 
-    auto trueBody = std::make_shared<ge::core::Ass<unsigned>>(functionRegister);
-    trueBody->bindInput(0,fc);
-    trueBody->bindInput(1,fa);
+    auto trueBody = std::make_shared<ge::core::Assignment<uint32_t>>(functionRegister);
+    trueBody->bindOutput(fc->getOutputData());
+    trueBody->bindInput(0,fa);
 
-    auto falseBody = std::make_shared<ge::core::Ass<unsigned>>(functionRegister);
-    falseBody->bindInput(0,fc);
-    falseBody->bindInput(1,fb);
+    auto falseBody = std::make_shared<ge::core::Assignment<uint32_t>>(functionRegister);
+    falseBody->bindOutput(fc->getOutputData());
+    falseBody->bindInput(0,fb);
 
     auto iff=std::make_shared<ge::core::If>(cond,trueBody,falseBody);
 
@@ -84,29 +86,49 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     /*
      * unsigned i=1;
      * unsigned k=1;
+     * unsigned ki;
+     * unsigned i1;
      * while(i<10){
-     *  k*=i;
-     *  i++;
+     *  ki=k*i;
+     *  k=ki;
+     *  i1=i+1;
+     *  i=i1;
      * }
      */
     auto fi    = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)1u );
     auto fk    = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)1u );
+    auto fki   = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)0u );
+    auto fi1   = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)1u );
     auto fiend = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)10u);
+    auto f1    = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)1u );
 
-    auto cond=std::make_shared<ge::core::Less<unsigned>>(functionRegister,typeRegister->sharedAccessor("bool"));
+    auto cond=std::make_shared<ge::core::Less<uint32_t>>(functionRegister,typeRegister->sharedAccessor("bool"));
     cond->bindInput(0,fi   );
     cond->bindInput(1,fiend);
 
-    auto mult=std::make_shared<ge::core::Muls<unsigned>>(functionRegister);
+    auto mult=std::make_shared<ge::core::Mul<uint32_t>>(functionRegister);
     mult->bindInput(0,fk);
     mult->bindInput(1,fi);
+    mult->bindOutput(fki->getOutputData());
 
-    auto inc=std::make_shared<ge::core::IncrPost<unsigned>>(functionRegister);
-    inc->bindInput(0,fi);
+    auto ass0 = std::make_shared<ge::core::Assignment<uint32_t>>(functionRegister);
+    ass0->bindInput(0,fki);
+    ass0->bindOutput(fk->getOutputData());
+
+    auto add=std::make_shared<ge::core::Add<uint32_t>>(functionRegister);
+    add->bindInput(0,fi);
+    add->bindInput(1,f1);
+    add->bindOutput(fi1->getOutputData());
+
+    auto ass1 = std::make_shared<ge::core::Assignment<uint32_t>>(functionRegister);
+    ass1->bindInput(0,fi1);
+    ass1->bindOutput(fi->getOutputData());
 
     auto body=std::make_shared<ge::core::Body>();
     body->addStatement(mult);
-    body->addStatement(inc );
+    body->addStatement(ass0);
+    body->addStatement(add );
+    body->addStatement(ass1);
 
     auto wh=std::make_shared<ge::core::While>(cond,body);
     WHEN("running wh"){
@@ -122,6 +144,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 SCENARIO( "ticks tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();
   auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister);
+  ge::core::registerStdFunctions(functionRegister);
   class AddTen: public ge::core::AtomicFunction{
     public:
       unsigned counter=0;
@@ -157,7 +180,6 @@ SCENARIO( "ticks tests", "[Function]" ) {
         return true;
       }
   };
-
   GIVEN( "basic expression" ) {
     auto fa      = std::make_shared<ge::core::Nullary>(functionRegister,10.f);
     auto faddten = std::make_shared<AddTen>(functionRegister);
@@ -168,7 +190,6 @@ SCENARIO( "ticks tests", "[Function]" ) {
     fadd->bindInput(0,faddten);
     fadd->bindInput(1,faddten);
     fadd->bindOutput(typeRegister->sharedAccessor("f32"));
-
 
     WHEN("running fadd"){
       (*fadd)();

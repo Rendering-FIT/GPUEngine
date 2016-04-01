@@ -11,6 +11,11 @@ namespace ge{
     // function: Accessor compositor
     // function: selector of element of Accessor
     //
+    class GECORE_EXPORT FunctionFactory: public StatementFactory{
+      public:
+        virtual ~FunctionFactory();
+        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
+    };
 
     class GECORE_EXPORT Function: public Statement{
       public:
@@ -21,6 +26,17 @@ namespace ge{
         FunctionRegister::FunctionID     _id;
         bool _inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const;
       public:
+        template<typename TYPE>
+          static inline std::shared_ptr<StatementFactory>factory(){
+            class Factory: public FunctionFactory{
+              public:
+                virtual ~Factory(){}
+                virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&fr){
+                  return std::make_shared<TYPE>(fr);
+                }
+            };
+            return std::make_shared<Factory>();
+          }
         inline Function(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
         virtual inline ~Function();
         virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function  = nullptr) = 0;
@@ -41,8 +57,8 @@ namespace ge{
         inline InputIndex  getInputIndex(std::string name)const;
         inline std::string getOutputName()const;
         inline std::string getName()const;
-        inline void setOutputName(std::string name = "");
-        inline void setInputName (InputIndex i,std::string name = "");
+        //inline void setOutputName(std::string name = "");
+        //inline void setInputName (InputIndex i,std::string name = "");
         inline bool bindInput (std::string name,std::shared_ptr<Function>function  = nullptr);
         inline bool hasInput (std::string name)const;
         inline std::shared_ptr<Accessor>const&getInputData (std::string input)const ;
@@ -91,6 +107,7 @@ namespace ge{
       return this->_functionRegister->getName(this->_id);
     }
 
+    /*
     inline void Function::setInputName(InputIndex i,std::string name){
       this->_functionRegister->setInputName(this->_id,i,name);
     }
@@ -98,6 +115,7 @@ namespace ge{
     inline void Function::setOutputName(std::string name){
       this->_functionRegister->setOutputName(this->_id,name);
     }
+    */
 
     inline bool Function::bindInput (std::string name,std::shared_ptr<Function>function){
       return this->bindInput(this->getInputIndex(name),function);
@@ -178,12 +196,6 @@ namespace ge{
     };
 
 
-
-    class GECORE_EXPORT FunctionFactory: public StatementFactory{
-      public:
-        virtual ~FunctionFactory();
-        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
-    };
 
     inline std::shared_ptr<Accessor>const&AtomicFunction::getOutputData()const{
       return this->_outputData;

@@ -7,6 +7,7 @@
 namespace ge{
   namespace core{
     class StatementFactory;
+    class Function;
 
     class GECORE_EXPORT FunctionRegister: public std::enable_shared_from_this<FunctionRegister>{
       public:
@@ -31,7 +32,7 @@ namespace ge{
         std::shared_ptr<TypeRegister>_typeRegister;
         std::map<FunctionID,FunctionDefinition>_functions;
         std::map<std::string,FunctionID>_name2Function;
-        inline FunctionDefinition & _getDefinition(FunctionID id);
+        inline FunctionDefinition      & _getDefinition(FunctionID id);
         inline FunctionDefinition const& _getDefinition(FunctionID id)const;
         std::string _genDefaultName(InputIndex i)const;
       public:
@@ -54,6 +55,9 @@ namespace ge{
         inline void setInputName(FunctionID id,InputIndex input,std::string name);
         inline void setOutputName(FunctionID id,std::string name);
         inline std::shared_ptr<TypeRegister>const&getTypeRegister()const;
+        std::shared_ptr<Function>sharedFunction(FunctionID id)const;
+        std::shared_ptr<Function>sharedFunction(std::string name)const;
+        std::string str()const;
     };
 
     inline FunctionRegister::FunctionRegister(std::shared_ptr<TypeRegister>const&typeRegister){
@@ -81,6 +85,7 @@ namespace ge{
       return ii->second;
     }
 
+    
     inline FunctionRegister::FunctionDefinition const&FunctionRegister::_getDefinition(FunctionID id)const{
       auto ii=this->_functions.find(id);
       if(ii==this->_functions.end()){
@@ -205,5 +210,7 @@ namespace ge{
     inline std::shared_ptr<TypeRegister>const&FunctionRegister::getTypeRegister()const{
       return this->_typeRegister;
     }
+
+
   }
 }

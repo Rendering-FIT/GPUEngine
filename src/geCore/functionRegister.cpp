@@ -1,3 +1,5 @@
+#include<geCore/statement.h>
+#include<geCore/function.h>
 #include<geCore/functionRegister.h>
 
 using namespace ge::core;
@@ -17,6 +19,23 @@ FunctionRegister::FunctionID FunctionRegister::addFunction(
   for(TypeRegister::DescriptionElement i=0;i<this->_typeRegister->getNofFceArgs(type);++i)
     this->setInputName(id,i,this->_genDefaultName(i));
   this->setOutputName(id,"output");
+  this->_name2Function[name]=id;
   return id;
 }
 
+std::shared_ptr<Function>FunctionRegister::sharedFunction(FunctionID id)const{
+  id=id;
+  return nullptr;
+  //return (*std::get<FACTORY>(this->_getDefinition(id)))(this->shared_from_this());
+}
+
+std::shared_ptr<Function>FunctionRegister::sharedFunction(std::string name)const{
+  return this->sharedFunction(this->getFunctionId(name));
+}
+
+std::string FunctionRegister::str()const{
+  std::stringstream ss;
+  for(auto x:this->_name2Function)
+    ss<<x.first<<std::endl;
+  return ss.str();
+}
