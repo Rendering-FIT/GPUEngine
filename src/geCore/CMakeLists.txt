@@ -50,6 +50,9 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/Namespace.h
     ${HEADER_PATH}/macroFunction.h
     ${HEADER_PATH}/stdFunctions.h
+    ${HEADER_PATH}/stdNumericFunctions.h
+    ${HEADER_PATH}/stdRelationalFunctions.h
+    ${HEADER_PATH}/stdIntegerFunctions.h
     ${HEADER_PATH}/token.h
     #    ${HEADER_PATH}/lexer.h
     ${HEADER_PATH}/idof.h
@@ -86,6 +89,9 @@ set(CORE_SOURCES
     Namespace.cpp
     macroFunction.cpp
     stdFunctions.cpp
+    stdNumericFunctions.cpp
+    stdRelationalFunctions.cpp
+    stdIntegerFunctions.cpp
     token.cpp
     #    lexer.cpp
     grammar.cpp

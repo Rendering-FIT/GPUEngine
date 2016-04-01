@@ -231,12 +231,38 @@ namespace ge{
   FCE(__VA_ARGS__,BOr   )\
   FCE(__VA_ARGS__,BXor  )
 
-
-
 #define DEFINE_GETTYPEKEYWORD(NAME,TYPE)\
     template<>inline std::string TypeRegister::getTypeKeyword<NAME<TYPE>>(){\
       return std::string(#NAME)+std::string("<")+TypeRegister::getTypeKeyword<TYPE>()+std::string(">");\
     }
+
+#define BINARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1,INPUT2){\
+  TypeRegister::FCE,\
+  TypeRegister::getTypeDescription<OUTPUT>(),\
+  2,\
+  TypeRegister::getTypeDescription<INPUT1>(),\
+  TypeRegister::getTypeDescription<INPUT2>()}
+
+#define UNARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1){\
+  TypeRegister::FCE,\
+  TypeRegister::getTypeDescription<OUTPUT>(),\
+  1,\
+  TypeRegister::getTypeDescription<INPUT1>()}
+
+#define ADD_BINARY_FUNCTION(OUTPUT,INPUT1,INPUT2,NAME,FACTORY)\
+  fr->addFunction(tr->addType("",BINARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1,INPUT2)),NAME,FACTORY);
+
+#define ADD_UNARY_FUNCTION(OUTPUT,INPUT1,NAME,FACTORY)\
+  fr->addFunction(tr->addType("",UNARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1)),NAME,FACTORY);
+
+#define ADD_BINARY_FUNCTION_SIMPLE(CLASS,TYPE)\
+    ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>())
+
+#define ADD_BINARY_FUNCTION_COMPLEX(CLASS,TYPE)\
+    ADD_BINARY_FUNCTION(bool,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>())
+
+#define ADD_UNARY_FUNCTION_SIMPLE(CLASS,TYPE)\
+    ADD_UNARY_FUNCTION(TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>())
 
     NUMERIC_FCE_LOOP(NUMERIC_LOOP,DEFINE_GETTYPEKEYWORD)
     RELATIONAL_FCE_LOOP(ALL_LOOP,DEFINE_GETTYPEKEYWORD)
@@ -246,8 +272,7 @@ namespace ge{
     ALL_LOOP(DEFINE_GETTYPEKEYWORD,Assignment)
     SIGNED_NUMERIC_LOOP(DEFINE_GETTYPEKEYWORD,UnaryMinus)
     template<>inline std::string TypeRegister::getTypeKeyword<Nullary>(){return "Nullary";}
-    void registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr);
-
+    GECORE_EXPORT void registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr);
   }
 }
 
