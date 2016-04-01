@@ -81,15 +81,15 @@ RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
 
 
 RenderingContext::RenderingContext()
-   : _numAttribStorages(0)
-   , _stateSetManager(make_shared<StateSetDefaultManager>())
-   , _useARBShaderDrawParameters(false)
-   , _primitiveStorage(initialPrimitiveBufferCapacity,1,GL_DYNAMIC_DRAW) // block-based
+   : _primitiveStorage(initialPrimitiveBufferCapacity,1,GL_DYNAMIC_DRAW) // block-based
    , _drawCommandStorage(intialDrawCommandBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
    , _matrixStorage(initialMatrixListBufferCapacity,1,GL_DYNAMIC_COPY) // block-based, 1 null item (one identity matrix)
    , _matrixListControlStorage(initialMatrixAllocationBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based, 1 null item (one identity matrix)
    , _stateSetStorage(initialStateSetBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
    , _transformationAllocationManager(initialTransformationBufferCapacity,1) // item-based
+   , _numAttribStorages(0)
+   , _stateSetManager(make_shared<StateSetDefaultManager>())
+   , _useARBShaderDrawParameters(false)
 {
    // create draw commands buffer
    _drawIndirectBuffer=new BufferObject(initialDrawIndirectBufferSize,nullptr,GL_DYNAMIC_COPY);

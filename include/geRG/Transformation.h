@@ -2,6 +2,8 @@
 #define GE_RG_TRANSFORMATION_H
 
 #include <memory>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <geRG/Export.h>
 #include <geRG/ParentChildList.h>
 
@@ -55,8 +57,10 @@ namespace ge
 
       public:
 
-         void uploadMatrix(const float *matrix);  ///< Uploads transformation matrix. The parameter matrix must point to array of 16 floats. The matrix is generally stored in GPU buffers, but it depends on implementation.
+         void uploadMatrix(const float *matrix);  ///< Uploads transformation matrix. The parameter matrix must point to array of 16 floats. The uploaded matrix is generally stored in GPU buffers, but it depends on implementation.
+         inline void uploadMatrix(const glm::mat4& matrix);    ///< Uploads transformation matrix. The matrix is generally stored in GPU buffers, but it depends on implementation.
          void downloadMatrix(float *matrix);      ///< Downloads transformation matrix. The memory pointed by parameter matrix will receive 16 floats. The matrix is generally stored in GPU buffers, but it depends on implementation.
+         inline void downloadMatrix(glm::mat4& matrix);  ///< Downloads transformation matrix. The source matrix is generally stored in GPU buffers, but it depends on implementation.
          float* getMatrixPtr();                   ///< Returns pointer on transformation matrix composed of 16 floats. Use the method with caution as there can be various requirements for the method to work correctly, like that certain buffers must be mapped, etc..
 
          inline unsigned gpuDataOffset64() const;  ///< Returns index (or offset multiplied by 64) to the matrix buffer where the transformation matrix is stored.
@@ -84,6 +88,8 @@ namespace ge
 {
    namespace rg
    {
+      inline void Transformation::uploadMatrix(const glm::mat4& matrix)  { uploadMatrix(glm::value_ptr(matrix)); }
+      inline void Transformation::downloadMatrix(glm::mat4& matrix)  { downloadMatrix(glm::value_ptr(matrix)); }
       inline unsigned Transformation::gpuDataOffset64() const  { return *_gpuDataOffsetPtr; }
       inline const std::shared_ptr<MatrixList>& Transformation::getOrCreateMatrixList() const
       { if(_matrixList==nullptr) const_cast<Transformation*>(this)->_matrixList=std::make_shared<MatrixList>(); return _matrixList; }

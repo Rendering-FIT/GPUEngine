@@ -18,7 +18,6 @@
 #include <geRG/StateSet.h>
 #include <geRG/StateSetManager.h>
 #include <geCore/InitAndFinalize.h>
-#include <geCore/idof.h>
 
 namespace ge
 {
@@ -66,6 +65,15 @@ namespace ge
 
       protected:
 
+         mutable PrimitiveStorage _primitiveStorage;
+         mutable DrawCommandStorage _drawCommandStorage;
+         mutable MatrixStorage _matrixStorage;
+         mutable ListControlStorage _matrixListControlStorage;
+         mutable StateSetStorage _stateSetStorage;
+         ItemAllocationManager _transformationAllocationManager;
+         ge::gl::BufferObject *_drawIndirectBuffer;
+         float *_cpuTransformationBuffer;
+
          AttribConfigList _attribConfigList;
          unsigned _numAttribStorages;
          std::shared_ptr<StateSetManager> _stateSetManager;
@@ -73,16 +81,6 @@ namespace ge
          TransformationGraphList _transformationGraphs;
          std::shared_ptr<MatrixList> _emptyMatrixList;
          bool _useARBShaderDrawParameters;
-
-         mutable PrimitiveStorage _primitiveStorage;
-         mutable DrawCommandStorage _drawCommandStorage;
-         mutable MatrixStorage _matrixStorage;
-         mutable ListControlStorage _matrixListControlStorage;
-         mutable StateSetStorage _stateSetStorage;
-
-         ge::gl::BufferObject *_drawIndirectBuffer;
-         float *_cpuTransformationBuffer;
-         ItemAllocationManager _transformationAllocationManager;
 
          unsigned _indirectBufferAllocatedSpace4;
 
