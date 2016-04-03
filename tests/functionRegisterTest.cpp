@@ -41,4 +41,25 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   }
 }
 
+int blb(int a,int b){
+  return a+b;
+}
+
+SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
+  auto tr=std::make_shared<TypeRegister>();
+  auto fr=std::make_shared<FunctionRegister>(tr);
+  registerStdFunctions(fr);
+  registerBasicFunction(fr,"blb",blb);
+
+  auto f=fr->sharedFunction("blb");
+  auto ff=std::dynamic_pointer_cast<Function>(f);
+  ff->bindOutput(tr->sharedAccessor("i32"));
+  auto a=std::make_shared<ge::core::Nullary>(fr,(int32_t)10);
+  auto b=std::make_shared<ge::core::Nullary>(fr,(int32_t)12);
+  ff->bindInput(0,a);
+  ff->bindInput(1,b);
+  (*f)();
+  REQUIRE((int32_t)(*ff->getOutputData())==10+12);
+
+}
 

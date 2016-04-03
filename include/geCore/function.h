@@ -245,7 +245,7 @@ namespace ge{
     template<typename OUTPUT,typename...ARGS>
       inline std::vector<ge::core::TypeRegister::DescriptionElement>getDescription(
           std::shared_ptr<ge::core::TypeRegister>const&tr,
-          OUTPUT(*FCE)(ARGS...)){
+          OUTPUT(*)(ARGS...)){
         std::vector<ge::core::TypeRegister::DescriptionElement>result;
         result.push_back(ge::core::TypeRegister::FCE);
         result.push_back(tr->getTypeId(ge::core::TypeRegister::getTypeKeyword<OUTPUT>()));
@@ -282,7 +282,7 @@ namespace ge{
             }
         };
         auto f=fr->addFunction(tid,name,ge::core::Function::factory<BasicFunction>(name));
-        fr->addImplementation(f,reinterpret_cast<void*>(FCE));
+        fr->addImplementation(f,reinterpret_cast<void(*)()>(FCE));
       }
 
 #define DEFINE_FUNCTION_TYPE_KEYWORD(fce,name)\
