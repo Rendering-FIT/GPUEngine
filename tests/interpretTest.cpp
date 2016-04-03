@@ -1,5 +1,6 @@
 #include<geCore/interpret.h>
 #include<geCore/stdFunctions.h>
+#include<geCore/macroFunction.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
@@ -206,4 +207,12 @@ SCENARIO( "ticks tests", "[Function]" ) {
 
 }
 
+/*
+SCENARIO( "macro function tests", "[MacroFunction]" ) {
+  auto tr = std::make_shared<ge::core::TypeRegister>();
+  auto fr = std::make_shared<ge::core::FunctionRegister>(tr);
+  ge::core::registerStdFunctions(fr);
+  auto ftype = tr->addType("",{TypeRegister::FCE,TypeRegister::I32,3,TypeRegister::I32,TypeRegister::I32,TypeRegister::I32});
 
+  auto add3 = std::shared_ptr<ge::core::MacroFunction>(fr,)
+}*/

@@ -161,33 +161,38 @@ namespace ge{
 
     class GECORE_EXPORT AtomicFunction: public Function{
       public:
-        using InputList = std::vector<AtomicFunctionInput>;
+        using InputList  = std::vector<AtomicFunctionInput>;
         using InputIndex = InputList::size_type;
       protected:
-        InputList                _inputs         ;
-        unsigned long long       _checkTicks  = 0;
-        unsigned long long       _updateTicks = 1;
-        std::shared_ptr<Accessor>_outputData = nullptr ;
+        InputList                _inputs               ;
+        unsigned long long       _checkTicks  = 0      ;
+        unsigned long long       _updateTicks = 1      ;
+        std::shared_ptr<Accessor>_outputData  = nullptr;
       public:
-        AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr,
-            TypeRegister::DescriptionList const&typeDescription,
-            std::string name = "",
-            std::shared_ptr<StatementFactory>const&factory = nullptr);
-        AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Accessor>const&output);
+            FunctionRegister::FunctionID           id);
+        AtomicFunction(
+            std::shared_ptr<FunctionRegister>const&fr                       ,
+            TypeRegister::DescriptionList const&   typeDescription          ,
+            std::string                            name            = ""     ,
+            std::shared_ptr<StatementFactory>const&factory         = nullptr);
+        AtomicFunction(
+            std::shared_ptr<FunctionRegister>const&fr    ,
+            FunctionRegister::FunctionID           id    ,
+            std::shared_ptr<Accessor>const&        output);
         virtual ~AtomicFunction();
         virtual void operator()();
-        virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function = nullptr);
-        virtual bool bindOutput(                 std::shared_ptr<Accessor>data     = nullptr);
+        virtual bool bindInput (InputIndex i,std::shared_ptr<Function>function = nullptr);
+        virtual bool bindOutput(             std::shared_ptr<Accessor>data     = nullptr);
         virtual inline bool hasInput (InputIndex  i   )const;
         virtual inline bool hasOutput(                )const;
-        virtual inline std::shared_ptr<Accessor>const&getInputData (InputIndex  i    )const;
-        virtual inline std::shared_ptr<Accessor>const&getOutputData(                 )const;
+        virtual inline std::shared_ptr<Accessor>const&getInputData (InputIndex i)const;
+        virtual inline std::shared_ptr<Accessor>const&getOutputData(            )const;
         virtual inline Ticks getUpdateTicks()const;
         virtual inline Ticks getCheckTicks ()const;
-        virtual inline void  setUpdateTicks(Ticks ticks);
-        virtual inline void  setCheckTicks (Ticks ticks);
+        virtual inline void setUpdateTicks(Ticks ticks);
+        virtual inline void setCheckTicks (Ticks ticks);
         virtual inline std::string doc()const;
       protected:
         void _processInputs();
@@ -271,7 +276,9 @@ namespace ge{
 
         class BasicFunction: public ge::core::AtomicFunction{
           public:
-            BasicFunction(std::shared_ptr<ge::core::FunctionRegister>const&f,FunctionRegister::FunctionID id):AtomicFunction(f,id){}
+            BasicFunction(
+                std::shared_ptr<ge::core::FunctionRegister>const&f ,
+                FunctionRegister::FunctionID                     id):AtomicFunction(f,id){}
             virtual ~BasicFunction(){}
           protected:
             virtual bool _do(){
