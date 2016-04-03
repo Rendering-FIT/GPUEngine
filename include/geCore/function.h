@@ -277,7 +277,7 @@ namespace ge{
             virtual bool _do(){
               typedef OUTPUT(*FF)(ARGS...);
               FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
-              (OUTPUT&)(*this->getOutputData()) = uber_call<OUTPUT>(this,f,ge::core::make_index_sequence<sizeof...(ARGS)>());
+              (OUTPUT&)(*this->getOutputData()) = uber_call<OUTPUT,ARGS...>(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };

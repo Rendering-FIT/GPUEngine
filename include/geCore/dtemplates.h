@@ -42,6 +42,7 @@ namespace ge{
 
 namespace ge{
   namespace core{
+    /*
     template<size_t... _Indexes>
       struct _Index_tuple
       {
@@ -65,7 +66,8 @@ namespace ge{
       struct integer_sequence
       {
         typedef _Tp value_type;
-        static /*constexpr*/ size_t size() { return sizeof...(_Idx); }
+        static //constexpr
+        size_t size() { return sizeof...(_Idx); }
       };
 
     template<typename _Tp, _Tp _Num,
@@ -83,8 +85,7 @@ namespace ge{
 
     /// Alias template make_integer_sequence
     template<typename _Tp, _Tp _Num>
-      using make_integer_sequence
-      = typename _Make_integer_sequence<_Tp, _Num>::__type;
+      using make_integer_sequence = typename _Make_integer_sequence<_Tp, _Num>::__type;
 
     /// Alias template index_sequence
     template<size_t... _Idx>
@@ -93,16 +94,50 @@ namespace ge{
     /// Alias template make_index_sequence
     template<size_t _Num>
       using make_index_sequence = make_integer_sequence<size_t, _Num>;
-
+      
     /// Alias template index_sequence_for
     template<typename... _Types>
       using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
+      */
+
+  template <class T, T... I> struct integer_sequence
+  {
+    template <T N> using append = integer_sequence<T, I..., N>;
+    static std::size_t size() { return sizeof...(I); }
+    using next = append<sizeof...(I)>;
+    using type = T;
+  };
+
+  template <class T, T Index, std::size_t N>
+    struct sequence_generator
+    {
+      using type = typename sequence_generator<T, Index - 1, N - 1>::type::next;
+    };
+
+  template <class T, T Index>
+    struct sequence_generator<T, Index, 0ul> { using type = integer_sequence<T>; };
+
+  template <std::size_t... I>
+    using index_sequence = integer_sequence<std::size_t, I...>;
+
+  template <class T, T N>
+    struct make_integer_sequence
+    {
+           typedef typename sequence_generator<T, N, N>::type type;
+    };
+    //using make_integer_sequence = typename sequence_generator<T, N, N>::type;
+
+  template <std::size_t N>
+    using make_index_sequence = make_integer_sequence<std::size_t, N>;
+
+  template<class... T>
+    using index_sequence_for = make_index_sequence<sizeof...(T)>;
   }
 }
 
 
 #define VA_ARGS_TO_STRING(...)\
-  #__VA_ARGS__
+#__VA_ARGS__
 
 #define DEF_ENUM(name,...)\
   enum name{\
