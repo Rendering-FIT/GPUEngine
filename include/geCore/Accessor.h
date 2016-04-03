@@ -18,20 +18,22 @@ namespace ge{
 
     class GECORE_EXPORT Accessor{
       protected:
-        std::shared_ptr<const TypeRegister>_manager = nullptr;
+        std::shared_ptr<TypeRegister>_manager = nullptr;
         TypeRegister::TypeID _id = TypeRegister::UNREGISTERED;
       public:
         inline Accessor(
-            std::shared_ptr<const TypeRegister>const&manager = nullptr                   ,
-            TypeRegister::TypeID                    id       = TypeRegister::UNREGISTERED){
+            std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
+            TypeRegister::TypeID               id      = TypeRegister::UNREGISTERED){
           //std::cerr<<"Accessor::Accessor() - "<<this<<std::endl;
+          //std::cout<<"Accessor::Accessor()-tr: "<<manager<<std::endl;
           this->_manager = manager;
+          //std::cout<<"this: "<<this<<" Accessor::Accessor()->_manager: "<<this->_manager<<std::endl;
           this->_id = id;
         }
         inline virtual ~Accessor(){}//std::cerr<<"Accessor::~Accessor() - "<<this<<std::endl;}
+        inline std::shared_ptr<TypeRegister>const&getManager()const{return this->_manager;}
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
-        inline std::shared_ptr<const TypeRegister>getManager()const{return this->_manager;}
         inline TypeRegister::TypeID getId()const{return this->_id;}
         virtual std::shared_ptr<Accessor> operator[](TypeRegister::DescriptionIndex elem)const=0;
         virtual TypeRegister::DescriptionElement getNofElements()const=0;
@@ -75,20 +77,20 @@ namespace ge{
       public:
         AtomicAccessor(AtomicAccessor const& ac);
         AtomicAccessor(
-            std::shared_ptr<const TypeRegister>const&manager = nullptr                   ,
-            const void*                              data    = nullptr                   ,
-            TypeRegister::TypeID                     id      = TypeRegister::UNREGISTERED,
-            size_t                                   offset  = 0                         );
+            std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
+            const void*                        data    = nullptr                   ,
+            TypeRegister::TypeID               id      = TypeRegister::UNREGISTERED,
+            size_t                             offset  = 0                         );
         AtomicAccessor(
-            std::shared_ptr<const TypeRegister>const&manager                             ,
-            std::shared_ptr<char>const&              data                                ,
-            TypeRegister::TypeID                     id      = TypeRegister::UNREGISTERED,
-            size_t                                   offset  = 0                         );
+            std::shared_ptr<TypeRegister>const&manager                             ,
+            std::shared_ptr<char>const&        data                                ,
+            TypeRegister::TypeID               id      = TypeRegister::UNREGISTERED,
+            size_t                             offset  = 0                         );
         AtomicAccessor(
-            std::shared_ptr<const TypeRegister>const&manager,
-            TypeRegister::TypeID                     id     );
+            std::shared_ptr<TypeRegister>const&manager,
+            TypeRegister::TypeID               id     );
         template<typename TYPE>
-          AtomicAccessor(TYPE val,std::shared_ptr<const TypeRegister>const&manager);
+          AtomicAccessor(TYPE val,std::shared_ptr<TypeRegister>const&manager);
         virtual ~AtomicAccessor();
         virtual void*getData()const;
         virtual void const*getDataAddress()const;
@@ -115,7 +117,7 @@ namespace ge{
         TypeRegister::DescriptionElement _nofElements;
       public:
         CompositeAccessor(
-            std::shared_ptr<const TypeRegister>const&   manager   = nullptr                   ,
+            std::shared_ptr<TypeRegister>const&         manager   = nullptr                   ,
             TypeRegister::TypeID                        id        = TypeRegister::UNREGISTERED,
             std::vector<std::shared_ptr<Accessor>>const&accessors = {}                        );
         virtual void*getData()const = 0;
@@ -128,7 +130,7 @@ namespace ge{
 
 
     template<typename TYPE>
-      AtomicAccessor::AtomicAccessor(TYPE val,std::shared_ptr<const TypeRegister>const&manager){
+      AtomicAccessor::AtomicAccessor(TYPE val,std::shared_ptr<TypeRegister>const&manager){
         this->_id      = manager->getTypeId(TypeRegister::getTypeKeyword<TYPE>());
         this->_manager = manager;
         ge::core::TypeRegister::TypeID id=this->_id;
@@ -166,7 +168,7 @@ namespace ge{
 
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Accessor>TypeRegister::sharedAccessorTypeID(TypeID id,ARGS... args)const{
-        auto ptr=std::make_shared<AtomicAccessor>(this->shared_from_this(),this->alloc(id),id);
+        auto ptr=std::make_shared<AtomicAccessor>(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),this->alloc(id),id);
         ptr->callConstructor<CLASS>(args...);
         return ptr;
       }

@@ -53,6 +53,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/stdNumericFunctions.h
     ${HEADER_PATH}/stdRelationalFunctions.h
     ${HEADER_PATH}/stdIntegerFunctions.h
+    ${HEADER_PATH}/stdCastFunctions.h
     ${HEADER_PATH}/token.h
     #    ${HEADER_PATH}/lexer.h
     ${HEADER_PATH}/idof.h
@@ -92,6 +93,7 @@ set(CORE_SOURCES
     stdNumericFunctions.cpp
     stdRelationalFunctions.cpp
     stdIntegerFunctions.cpp
+    stdCastFunctions.cpp
     token.cpp
     #    lexer.cpp
     grammar.cpp

@@ -78,12 +78,11 @@ void  MacroFunction::setCheckTicks(Ticks ticks){
    return false;
    }
    */
+FunctionNodeFactory::FunctionNodeFactory(std::string name,Uses maxUses):FunctionFactory(name,maxUses){
+}
 
-
-FunctionNodeFactory::FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses){
+void FunctionNodeFactory::setFactory(std::shared_ptr<StatementFactory>const&fac){
   this->functionFactory = std::dynamic_pointer_cast<FunctionFactory>(fac);
-  this->_maxUses = maxUses;
-  this->reset();
 }
 
 void FunctionNodeFactory::addResourceFactory(std::shared_ptr<ResourceFactory>const&factory){

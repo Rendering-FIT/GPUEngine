@@ -24,6 +24,7 @@ namespace ge{
 
     class GECORE_EXPORT BodyFactory: public StatementFactory{
       public:
+        BodyFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~BodyFactory();
         std::vector<std::shared_ptr<StatementFactory>>factories;
         virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&);

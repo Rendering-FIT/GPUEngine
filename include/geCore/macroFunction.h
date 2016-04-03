@@ -71,15 +71,12 @@ namespace ge{
 
     class GECORE_EXPORT FunctionNodeFactory: public FunctionFactory{
       protected:
-        std::shared_ptr<Statement>_result  = nullptr;
-        unsigned                  _maxUses = 0      ;
-        unsigned                  _uses    = 0      ;
-        bool                      _first   = true   ;
         std::shared_ptr<FunctionFactory>functionFactory = nullptr;
         std::vector<std::shared_ptr<ResourceFactory>>resourceFactories;
         std::vector<std::shared_ptr<FunctionFactory>>inputFactories;
       public:
-        FunctionNodeFactory(std::shared_ptr<StatementFactory>const&fac,unsigned maxUses = 1);
+        FunctionNodeFactory(std::string name = "",Uses maxUses = 1);
+        void setFactory(std::shared_ptr<StatementFactory>const&fac);
         void addResourceFactory(std::shared_ptr<ResourceFactory>const&factory);
         void addInputFactory(std::shared_ptr<StatementFactory>const&factory);
         virtual ~FunctionNodeFactory();

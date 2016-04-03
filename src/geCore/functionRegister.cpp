@@ -23,15 +23,32 @@ FunctionRegister::FunctionID FunctionRegister::addFunction(
   return id;
 }
 
-std::shared_ptr<Function>FunctionRegister::sharedFunction(FunctionID id)const{
-  id=id;
-  return nullptr;
-  //return (*std::get<FACTORY>(this->_getDefinition(id)))(this->shared_from_this());
+std::shared_ptr<Statement>FunctionRegister::sharedFunction(FunctionID id)const{
+  return (*std::get<FACTORY>(this->_getDefinition(id)))(std::const_pointer_cast<FunctionRegister>(this->shared_from_this()));
 }
 
-std::shared_ptr<Function>FunctionRegister::sharedFunction(std::string name)const{
+std::shared_ptr<Statement>FunctionRegister::sharedFunction(std::string name)const{
   return this->sharedFunction(this->getFunctionId(name));
 }
+
+std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,StatementFactory::Uses maxUses)const{
+  class Factory: public FunctionFactory{
+    public:
+      Factory(std::string name,Uses maxUses = 1):FunctionFactory(name,maxUses){}
+      virtual ~Factory(){}
+      virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&fr){
+        return fr->sharedFunction(this->_name);
+      }
+  };
+  return std::make_shared<Factory>(this->getName(id),maxUses);
+
+//  return std::get<FACTORY>(this->_getDefinition(id));
+}
+
+std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(std::string name,StatementFactory::Uses maxUses)const{
+  return this->sharedFactory(this->getFunctionId(name),maxUses);
+}
+
 
 std::string FunctionRegister::str()const{
   std::stringstream ss;

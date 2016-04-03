@@ -3,6 +3,10 @@
 
 using namespace ge::core;
 
+
+FunctionFactory::FunctionFactory(std::string name,unsigned maxUses):StatementFactory(name,maxUses){
+}
+
 bool Function::_inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const{
   if(i>=this->getNofInputs()){
     std::cerr<<"ERROR: "<<this->getName()<<"::bindInput("<<i<<",";
@@ -50,6 +54,11 @@ AtomicFunction::AtomicFunction(
     std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addType("",typeDescription),name,factory)){
 }
 
+AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Accessor>const&output):AtomicFunction(fr,id){
+  this->bindOutput(output);
+}
+
+
 AtomicFunction::~AtomicFunction(){
   //std::cerr<<"AtomicFunction::~AtomicFunction() - "<<this->_name<<" "<<this<<std::endl;
 }
@@ -70,7 +79,7 @@ bool AtomicFunction::bindOutput(std::shared_ptr<Accessor>data){
       this->getOutputType()   != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
       data->getId()           != this->getOutputType()                                    ){
     std::cerr<<"ERROR: "<<this->getName()<<".output has different type - ";
-    std::cerr<<data->getManager()->getTypeIdName(this->getOutputType());
+    std::cerr<<this->getOutputType();
     std::cerr<<" != ";
     std::cerr<<data->getManager()->getTypeIdName(data->getId()    );
     std::cerr<<std::endl;

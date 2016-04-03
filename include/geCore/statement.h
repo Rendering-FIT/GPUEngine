@@ -2,7 +2,6 @@
 
 #include<geCore/Command.h>
 #include<geCore/TypeRegister.h>
-#include<geCore/functionRegister.h>
 
 using namespace ge::core;
 
@@ -26,21 +25,39 @@ namespace ge{
 
     using SharedTypeRegister = std::shared_ptr<TypeRegister>;
 
-    class GECORE_EXPORT StatementFactory{
+    class GECORE_EXPORT ObjectFactory{
       public:
-        virtual ~StatementFactory(){}
-        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
+        using Uses = uint32_t;
+      protected:
+        Uses _maxUses = 1   ;
+        Uses _uses    = 0   ;
+        bool _first   = true;
+      public:
+        ObjectFactory(Uses maxUses = 1);
+        virtual ~ObjectFactory();
     };
 
-    class GECORE_EXPORT ResourceFactory{
+    class FunctionRegister;
+    class GECORE_EXPORT StatementFactory: public ObjectFactory{
       protected:
-        TypeRegister::TypeID _type = TypeRegister::UNREGISTERED;
-        std::shared_ptr<Accessor>_result  = nullptr;
-        unsigned                 _maxUses = 0      ;
-        unsigned                 _uses    = 0      ;
-        bool                     _first   = true   ;
+        std::string               _name   = ""     ;
+        std::shared_ptr<Statement>_result = nullptr;
       public:
-        ResourceFactory(TypeRegister::TypeID type,unsigned maxUses=1);
+        StatementFactory(std::string name = "",Uses maxUses = 1): ObjectFactory(maxUses){
+          this->_name = name;
+        }
+        virtual ~StatementFactory(){}
+        void reset();
+        virtual std::shared_ptr<Statement>operator()(
+            std::shared_ptr<FunctionRegister> const&)=0;
+    };
+
+    class GECORE_EXPORT ResourceFactory: public ObjectFactory{
+      protected:
+        TypeRegister::TypeID     _type   = TypeRegister::UNREGISTERED;
+        std::shared_ptr<Accessor>_result = nullptr                   ;
+      public:
+        ResourceFactory(TypeRegister::TypeID type,Uses maxUses=1);
         virtual ~ResourceFactory();
         void reset();
         bool firstConstruction()const;

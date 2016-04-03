@@ -8,12 +8,13 @@
 
 using namespace ge::core;
 
+
 SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
   auto r = std::make_shared<ge::core::TypeRegister>();
   auto fr = std::make_shared<ge::core::FunctionRegister>(r);
   ge::core::registerStdFunctions(fr);
   GIVEN( "basic function factory" ) {
-    auto factory = ge::core::Function::factory<ge::core::Add<int32_t>>();
+    auto factory = fr->sharedFactory("Add<i32>");
     auto statement = (*factory)(fr);
     auto fa=std::make_shared<ge::core::Nullary>(fr,(int32_t)10);
     auto fb=std::make_shared<ge::core::Nullary>(fr,(int32_t)11);
@@ -29,11 +30,12 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     }
   }
   GIVEN("basic function node factory add(a,b)"){
-    auto factory = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<Add<int32_t>>());
+    auto factory = std::make_shared<ge::core::FunctionNodeFactory>();
+    factory->setFactory(fr->sharedFactory("Add<i32>"));
     factory->addResourceFactory(std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32")));
     factory->addResourceFactory(std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32")));
-    factory->addInputFactory(ge::core::Function::factory<ge::core::Nullary>());
-    factory->addInputFactory(ge::core::Function::factory<ge::core::Nullary>());
+    factory->addInputFactory(fr->sharedFactory("Nullary"));
+    factory->addInputFactory(fr->sharedFactory("Nullary"));
     auto statement = (*factory)(fr);
     auto function = std::dynamic_pointer_cast<Function>(statement);
     function->bindOutput(r->sharedAccessor("i32"));
@@ -47,9 +49,11 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     }
   }
   GIVEN("basic function node factory add(a,a)"){
-    auto factory = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<ge::core::Add<int32_t>>());
-    auto inputFactory = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<ge::core::Nullary>(),2);
+    auto factory = std::make_shared<ge::core::FunctionNodeFactory>();
+    factory->setFactory(fr->sharedFactory("Add<i32>"));
     auto resourceFactory = std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32"),2);
+    auto inputFactory = std::make_shared<ge::core::FunctionNodeFactory>();
+    inputFactory->setFactory(fr->sharedFactory("Nullary",2));
     factory->addResourceFactory(resourceFactory);
     factory->addResourceFactory(resourceFactory);
     factory->addInputFactory(inputFactory);
@@ -76,18 +80,21 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
       }
     }
   }
-
   GIVEN("basic body factory add(a,a) add(a,b)"){
     //{
     //  a+a;
     //  a+b;
     //}
     auto factory = std::make_shared<ge::core::BodyFactory>();
-    auto add0 = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<ge::core::Add<int32_t>>());
-    auto add1 = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<ge::core::Add<int32_t>>());
-    auto anFactory = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<ge::core::Nullary>(),3);
+    auto add0 = std::make_shared<ge::core::FunctionNodeFactory>();
+    add0->setFactory(fr->sharedFactory("Add<i32>"));
+    auto add1 = std::make_shared<ge::core::FunctionNodeFactory>();
+    add1->setFactory(fr->sharedFactory("Add<i32>"));
+    auto anFactory = std::make_shared<ge::core::FunctionNodeFactory>();
+    anFactory->setFactory(fr->sharedFactory("Nullary",3));
     auto aFactory = std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32"),3);
-    auto bnFactory = std::make_shared<ge::core::FunctionNodeFactory>(ge::core::Function::factory<ge::core::Nullary>(),1);
+    auto bnFactory = std::make_shared<ge::core::FunctionNodeFactory>();
+    bnFactory->setFactory(fr->sharedFactory("Nullary"));
     auto bFactory = std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32"),1);
     factory->factories.push_back(add0);
     factory->factories.push_back(add1);
@@ -136,7 +143,6 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
       }
     }
   }
-
+  // */
 }
-
 

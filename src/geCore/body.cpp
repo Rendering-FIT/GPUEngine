@@ -35,6 +35,8 @@ void Body::operator()(){
     (*x)();
 }
 
+BodyFactory::BodyFactory(std::string name,unsigned maxUses):StatementFactory(name,maxUses){
+}
 
 BodyFactory::~BodyFactory(){
 }

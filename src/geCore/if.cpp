@@ -49,6 +49,8 @@ void If::operator()(){
   }
 }
 
+IfFactory::IfFactory(std::string name,unsigned maxUses):StatementFactory(name,maxUses){
+}
 
 IfFactory::~IfFactory(){
 }

@@ -38,6 +38,8 @@ void While::operator()(){
   }
 }
 
+WhileFactory::WhileFactory(std::string name,unsigned maxUses):StatementFactory(name,maxUses){
+}
 
 WhileFactory::~WhileFactory(){
 }

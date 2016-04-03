@@ -579,7 +579,7 @@ void* TypeRegister::alloc(TypeID id)const{
 }
 
 std::shared_ptr<Accessor>TypeRegister::sharedAccessor(TypeID id)const{
-  return std::make_shared<AtomicAccessor>(this->shared_from_this(),this->alloc(id),id);
+  return std::make_shared<AtomicAccessor>(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),this->alloc(id),id);
 }
 
 std::shared_ptr<Accessor>TypeRegister::sharedAccessor(std::string name)const{
@@ -588,7 +588,7 @@ std::shared_ptr<Accessor>TypeRegister::sharedAccessor(std::string name)const{
 
 std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(TypeID id,std::function<OBJDestructor>destructor)const{
   if(destructor)
-    return std::shared_ptr<Accessor>(new AtomicAccessor(this->shared_from_this(),id),[destructor](AtomicAccessor*ac){destructor((unsigned char*)ac->getData());delete ac;});
+    return std::shared_ptr<Accessor>(new AtomicAccessor(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),id),[destructor](AtomicAccessor*ac){destructor((unsigned char*)ac->getData());delete ac;});
 
   return this->sharedEmptyAccessor(id,this->_id2Destructor.find(id)->second);
   //return std::shared_ptr<Accessor>(new AtomicAccessor(this->shared_from_this(),id),[destructor](AtomicAccessor*ac){destructor((unsigned char*)ac->getData());delete ac;});

@@ -8,13 +8,25 @@ namespace ge{
 
     class GECORE_EXPORT Nullary: public AtomicFunction{
       public:
-        Nullary(std::shared_ptr<ge::core::FunctionRegister>const&fr,
-            std::shared_ptr<ge::core::Accessor>data = nullptr);
+        Nullary(
+            std::shared_ptr<FunctionRegister>const&fr            ,
+            FunctionRegister::FunctionID           id            ,
+            std::shared_ptr<Accessor>const&        data = nullptr);
         template<typename TYPE>
-          Nullary(std::shared_ptr<ge::core::FunctionRegister>const&fr,TYPE const&data):AtomicFunction(
-              fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Nullary>())){
-            this->_outputData=fr->getTypeRegister()->sharedAccessor<TYPE>(data);//data);
+          Nullary(
+              std::shared_ptr<FunctionRegister>const&fr  ,
+              FunctionRegister::FunctionID           id  ,
+              TYPE const&                            data):AtomicFunction(
+              fr,id){
+           auto ss=fr->getTypeRegister()->sharedAccessor(TypeRegister::getTypeKeyword<TYPE>());
+           (TYPE&)(*ss) = data;
+           this->bindOutput(ss);//fr->getTypeRegister()->sharedAccessor<TYPE>(data));
           }
+        template<typename TYPE>
+          Nullary(
+              std::shared_ptr<FunctionRegister>const&fr  ,
+              TYPE const&                            data):Nullary(
+                fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Nullary>()),data){}
         template<typename TYPE>
           void update(TYPE const&data){
             (TYPE&)*this->_outputData=data;
@@ -25,8 +37,12 @@ namespace ge{
     template<typename TYPE>
     class GECORE_EXPORT Assignment: public AtomicFunction{
       public:
-        Assignment(std::shared_ptr<ge::core::FunctionRegister>const&fr):AtomicFunction(
-              fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Assignment<TYPE>>())){}
+        Assignment(
+            std::shared_ptr<FunctionRegister>const&fr,
+            FunctionRegister::FunctionID           id):AtomicFunction(fr,id){}
+        Assignment(
+            std::shared_ptr<FunctionRegister>const&fr):Assignment(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Assignment<TYPE>>())){}
+
         ~Assignment(){}
         virtual void operator()(){
           (TYPE&)(*this->getOutputData()) = (TYPE&)(*this->getInputData(0));
@@ -36,8 +52,9 @@ namespace ge{
     template<typename TYPE>
     class GECORE_EXPORT UnaryMinus: public AtomicFunction{
       public:
-        UnaryMinus(std::shared_ptr<ge::core::FunctionRegister>const&fr):AtomicFunction(
-              fr,fr->getFunctionId(TypeRegister::getTypeKeyword<UnaryMinus<TYPE>>())){}
+        UnaryMinus(
+            std::shared_ptr<FunctionRegister>const&fr,
+            FunctionRegister::FunctionID           id):AtomicFunction(fr,id){}
         ~UnaryMinus(){}
         virtual void operator()(){
           (TYPE&)(*this->getOutputData()) = (TYPE) (- (TYPE&)(*this->getInputData(0)));
@@ -48,22 +65,30 @@ namespace ge{
 #define DEF_CLASS_PROLOGUE2(CLASS,INPUT1)\
     class CLASS: public AtomicFunction{\
       public:\
-             CLASS(std::shared_ptr<ge::core::FunctionRegister>const&fr,\
-                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(\
-                   fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT1>>())){\
+             CLASS(\
+                 std::shared_ptr<FunctionRegister>const&fr              ,\
+                 FunctionRegister::FunctionID           id              ,\
+                 std::shared_ptr<Accessor>const&        output = nullptr):AtomicFunction(fr,id){\
                    this->bindOutput(output);\
                  }\
+              CLASS(\
+                 std::shared_ptr<FunctionRegister>const&fr              ,\
+                 std::shared_ptr<Accessor>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT1>>()),output){}\
       protected:\
                 virtual bool _do(){//}}
 
-#define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS)\
+#define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,INPUT)\
     class CLASS: public AtomicFunction{\
       public:\
-             CLASS(std::shared_ptr<ge::core::FunctionRegister>const&fr,\
-                 std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(\
-                   fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS>())){\
+             CLASS(\
+                 std::shared_ptr<FunctionRegister>const&fr              ,\
+                 FunctionRegister::FunctionID           id              ,\
+                 std::shared_ptr<Accessor>const&        output = nullptr):AtomicFunction(fr,id){\
                    this->bindOutput(output);\
                  }\
+              CLASS(\
+                 std::shared_ptr<FunctionRegister>const&fr              ,\
+                 std::shared_ptr<Accessor>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT>>()),output){}\
       protected:\
                 virtual bool _do(){//}}
 
@@ -107,7 +132,7 @@ namespace ge{
     //OUTPUT means that function requires output to be defined
 
 #define DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,INPUT)\
-    DEF_CLASS_PROLOGUE2_NONTEMP(CLASS);\
+    DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,INPUT);\
     INPUT_CHECK();\
     LEFT_RIGHT_SIDE(STD_CAST,OUTPUT,INPUT,OPERATOR,RIGHT_SIDE);\
     DEF_CLASS_EPILOGUE()
@@ -125,7 +150,24 @@ namespace ge{
     DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,OUTPUT,TYPE)
 
 #define DEF_AND_OR_OPERATOR(CLASS,OPERATOR)\
-    DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,bool,bool)
+    class CLASS: public AtomicFunction{\
+      public:\
+             CLASS(\
+                 std::shared_ptr<FunctionRegister>const&fr              ,\
+                 FunctionRegister::FunctionID           id              ,\
+                 std::shared_ptr<Accessor>const&        output = nullptr):AtomicFunction(fr,id){\
+                   this->bindOutput(output);\
+                 }\
+              CLASS(\
+                 std::shared_ptr<FunctionRegister>const&fr              ,\
+                 std::shared_ptr<Accessor>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS>()),output){}\
+      protected:\
+                virtual bool _do(){\
+    INPUT_CHECK();\
+    LEFT_RIGHT_SIDE(STD_CAST,bool,bool,OPERATOR,RIGHT_SIDE);\
+    DEF_CLASS_EPILOGUE()//}}
+
+//    DEF_SPEC_OPERATOR_2OUTPUT(CLASS,OPERATOR,bool,bool)
 
 #define DEF_RELATIONAL_OPERATOR(CLASS,OPERATOR)\
     DEF_OPERATOR_2OUTPUT(CLASS,OPERATOR,bool)
@@ -161,17 +203,13 @@ namespace ge{
     template<typename FROM,typename TO>
       class Cast: public AtomicFunction{
         public:
+          Cast(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id):AtomicFunction(fr,id){}
           Cast(std::shared_ptr<ge::core::FunctionRegister>const&fr,
-              std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()},Cast::name(),Function::factory<Cast<FROM,TO>>()){
-            this->bindOutput(output);
-          }
-          static inline std::string name(){
-            return "Cast_"+std::string(ge::core::TypeRegister::getTypeKeyword<FROM>())+"_"+std::string(ge::core::TypeRegister::getTypeKeyword<TO>());
-          }
+              std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()),output){}
         protected:
           virtual bool _do(){
             if(!this->_inputChanged(0))return false;
-            (TO&)(*this->_outputData)=(TO)((FROM)(*this->getInputData(0)));
+            (TO&)(*this->_outputData)=(TO)((FROM&)(*this->getInputData(0)));
             return true;
           }
       };
@@ -182,32 +220,76 @@ namespace ge{
   FCE(__VA_ARGS__,int32_t )\
   FCE(__VA_ARGS__,int64_t )
 
+#define SIGNED_INTEGER_LOOP2(FCE,...)\
+    SIGNED_INTEGER_LOOP(FCE,__VA_ARGS__)
+
 #define UNSIGNED_INTEGER_LOOP(FCE,...)\
   FCE(__VA_ARGS__,uint8_t )\
   FCE(__VA_ARGS__,uint16_t)\
   FCE(__VA_ARGS__,uint32_t)\
   FCE(__VA_ARGS__,uint64_t)
 
+#define UNSIGNED_INTEGER_LOOP2(FCE,...)\
+  UNSIGNED_INTEGER_LOOP(FCE,__VA_ARGS__)
+
 #define INTEGER_LOOP(FCE,...)\
   SIGNED_INTEGER_LOOP  (FCE,__VA_ARGS__)\
   UNSIGNED_INTEGER_LOOP(FCE,__VA_ARGS__)
+
+#define INTEGER_LOOP2(FCE,...)\
+  INTEGER_LOOP(FCE,__VA_ARGS__)
 
 #define FLOATING_LOOP(FCE,...)\
   FCE(__VA_ARGS__,float )\
   FCE(__VA_ARGS__,double)
 
+#define FLOATING_LOOP2(FCE,...)\
+  FLOATING_LOOP(FCE,__VA_ARGS__)
+
 #define NUMERIC_LOOP(FCE,...)\
   INTEGER_LOOP (FCE,__VA_ARGS__)\
   FLOATING_LOOP(FCE,__VA_ARGS__)
+
+#define NUMERIC_LOOP2(FCE,...)\
+  NUMERIC_LOOP(FCE,__VA_ARGS__)
 
 #define SIGNED_NUMERIC_LOOP(FCE,...)\
   SIGNED_INTEGER_LOOP(FCE,__VA_ARGS__)\
   FLOATING_LOOP      (FCE,__VA_ARGS__)
 
+#define SIGNED_NUMERIC_LOOP2(FCE,...)\
+  SIGNED_NUMERIC_LOOP(FCE,__VA_ARGS__)
+
 #define ALL_LOOP(FCE,...)\
   NUMERIC_LOOP(FCE,__VA_ARGS__)\
   FCE(__VA_ARGS__,bool)\
   FCE(__VA_ARGS__,std::string)
+
+#define ALL_LOOP2(FCE,...)\
+  FCE(__VA_ARGS__,int8_t  )\
+  FCE(__VA_ARGS__,int16_t )\
+  FCE(__VA_ARGS__,int32_t )\
+  FCE(__VA_ARGS__,int64_t )\
+  FCE(__VA_ARGS__,uint8_t )\
+  FCE(__VA_ARGS__,uint16_t)\
+  FCE(__VA_ARGS__,uint32_t)\
+  FCE(__VA_ARGS__,uint64_t)\
+  FCE(__VA_ARGS__,float )\
+  FCE(__VA_ARGS__,double)\
+  FCE(__VA_ARGS__,bool)
+
+#define ALL_LOOP3(FCE,...)\
+  FCE(__VA_ARGS__,int8_t  )\
+  FCE(__VA_ARGS__,int16_t )\
+  FCE(__VA_ARGS__,int32_t )\
+  FCE(__VA_ARGS__,int64_t )\
+  FCE(__VA_ARGS__,uint8_t )\
+  FCE(__VA_ARGS__,uint16_t)\
+  FCE(__VA_ARGS__,uint32_t)\
+  FCE(__VA_ARGS__,uint64_t)\
+  FCE(__VA_ARGS__,float )\
+  FCE(__VA_ARGS__,double)\
+  FCE(__VA_ARGS__,bool)
 
 #define NUMERIC_FCE_LOOP(FCE,...)\
   FCE(__VA_ARGS__,Add )\
@@ -236,6 +318,12 @@ namespace ge{
       return std::string(#NAME)+std::string("<")+TypeRegister::getTypeKeyword<TYPE>()+std::string(">");\
     }
 
+#define DEFINE_CASTKEYWORD(FROM,TO)\
+    template<>inline std::string TypeRegister::getTypeKeyword<Cast<FROM,TO>>(){\
+      return std::string("Cast")+std::string("<")+TypeRegister::getTypeKeyword<FROM>()+std::string(",")+TypeRegister::getTypeKeyword<TO>()+std::string(">");\
+    }
+
+
 #define BINARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1,INPUT2){\
   TypeRegister::FCE,\
   TypeRegister::getTypeDescription<OUTPUT>(),\
@@ -249,6 +337,12 @@ namespace ge{
   1,\
   TypeRegister::getTypeDescription<INPUT1>()}
 
+#define CAST_FUNCTION_DESCRIPTION(FROM,TO){\
+  TypeRegister::FCE,\
+  TypeRegister::getTypeDescription<TO>(),\
+  1,\
+  TypeRegister::getTypeDescription<FROM>()}
+
 #define ADD_BINARY_FUNCTION(OUTPUT,INPUT1,INPUT2,NAME,FACTORY)\
   fr->addFunction(tr->addType("",BINARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1,INPUT2)),NAME,FACTORY);
 
@@ -256,13 +350,18 @@ namespace ge{
   fr->addFunction(tr->addType("",UNARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1)),NAME,FACTORY);
 
 #define ADD_BINARY_FUNCTION_SIMPLE(CLASS,TYPE)\
-    ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>())
+    ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
 
 #define ADD_BINARY_FUNCTION_COMPLEX(CLASS,TYPE)\
-    ADD_BINARY_FUNCTION(bool,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>())
+    ADD_BINARY_FUNCTION(bool,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
 
 #define ADD_UNARY_FUNCTION_SIMPLE(CLASS,TYPE)\
-    ADD_UNARY_FUNCTION(TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>())
+    ADD_UNARY_FUNCTION(TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
+
+    //{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}
+
+#define ADD_CAST_FUNCTION(FROM,TO)\
+  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}),TypeRegister::getTypeKeyword<Cast<FROM,TO>>(),Function::factory<Cast<FROM,TO>>(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()));
 
     NUMERIC_FCE_LOOP(NUMERIC_LOOP,DEFINE_GETTYPEKEYWORD)
     RELATIONAL_FCE_LOOP(ALL_LOOP,DEFINE_GETTYPEKEYWORD)
@@ -271,6 +370,8 @@ namespace ge{
 
     ALL_LOOP(DEFINE_GETTYPEKEYWORD,Assignment)
     SIGNED_NUMERIC_LOOP(DEFINE_GETTYPEKEYWORD,UnaryMinus)
+
+    ALL_LOOP2(ALL_LOOP3,DEFINE_CASTKEYWORD)
     template<>inline std::string TypeRegister::getTypeKeyword<Nullary>(){return "Nullary";}
     GECORE_EXPORT void registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr);
   }

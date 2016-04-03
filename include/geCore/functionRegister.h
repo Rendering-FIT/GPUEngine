@@ -1,12 +1,15 @@
 #pragma once
 
+#include<utility>
 #include<tuple>
 #include<geCore/Export.h>
 #include<geCore/TypeRegister.h>
+#include<geCore/statement.h>
 
 namespace ge{
   namespace core{
     class StatementFactory;
+    class Statement;
     class Function;
 
     class GECORE_EXPORT FunctionRegister: public std::enable_shared_from_this<FunctionRegister>{
@@ -31,6 +34,7 @@ namespace ge{
       protected:
         std::shared_ptr<TypeRegister>_typeRegister;
         std::map<FunctionID,FunctionDefinition>_functions;
+        std::map<FunctionID,void*>_implementations;
         std::map<std::string,FunctionID>_name2Function;
         inline FunctionDefinition      & _getDefinition(FunctionID id);
         inline FunctionDefinition const& _getDefinition(FunctionID id)const;
@@ -55,8 +59,14 @@ namespace ge{
         inline void setInputName(FunctionID id,InputIndex input,std::string name);
         inline void setOutputName(FunctionID id,std::string name);
         inline std::shared_ptr<TypeRegister>const&getTypeRegister()const;
-        std::shared_ptr<Function>sharedFunction(FunctionID id)const;
-        std::shared_ptr<Function>sharedFunction(std::string name)const;
+        inline void addImplementation(FunctionID id,void*impl);
+        inline void addImplementation(std::string name,void*impl);
+        inline void*getImplementation(FunctionID id)const;
+        inline void*getImplementation(std::string name)const;
+        std::shared_ptr<Statement>sharedFunction(FunctionID id)const;
+        std::shared_ptr<Statement>sharedFunction(std::string name)const;
+        std::shared_ptr<StatementFactory>sharedFactory(FunctionID id,StatementFactory::Uses maxUses = 1)const;
+        std::shared_ptr<StatementFactory>sharedFactory(std::string name,StatementFactory::Uses maxUses = 1)const;
         std::string str()const;
     };
 
@@ -210,6 +220,23 @@ namespace ge{
     inline std::shared_ptr<TypeRegister>const&FunctionRegister::getTypeRegister()const{
       return this->_typeRegister;
     }
+
+    inline void FunctionRegister::addImplementation(FunctionID id,void*impl){
+      this->_implementations[id]=impl;
+    }
+    
+    inline void FunctionRegister::addImplementation(std::string name,void*impl){
+      this->addImplementation(this->getFunctionId(name),impl);
+    }
+
+    inline void*FunctionRegister::getImplementation(FunctionID id)const{
+      return this->_implementations.find(id)->second;
+    }
+
+    inline void*FunctionRegister::getImplementation(std::string name)const{
+      return this->getImplementation(this->getFunctionId(name));
+    }
+
 
 
   }

@@ -13,6 +13,7 @@ namespace ge{
     //
     class GECORE_EXPORT FunctionFactory: public StatementFactory{
       public:
+        FunctionFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~FunctionFactory();
         virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
     };
@@ -27,15 +28,16 @@ namespace ge{
         bool _inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const;
       public:
         template<typename TYPE>
-          static inline std::shared_ptr<StatementFactory>factory(){
+          static inline std::shared_ptr<StatementFactory>factory(std::string name){
             class Factory: public FunctionFactory{
               public:
+                Factory(std::string name,Uses maxUses = 1):FunctionFactory(name,maxUses){}
                 virtual ~Factory(){}
                 virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&fr){
-                  return std::make_shared<TYPE>(fr);
+                  return std::make_shared<TYPE>(fr,fr->getFunctionId(this->_name));
                 }
             };
-            return std::make_shared<Factory>();
+            return std::make_shared<Factory>(name);
           }
         inline Function(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
         virtual inline ~Function();
@@ -57,8 +59,8 @@ namespace ge{
         inline InputIndex  getInputIndex(std::string name)const;
         inline std::string getOutputName()const;
         inline std::string getName()const;
-        //inline void setOutputName(std::string name = "");
-        //inline void setInputName (InputIndex i,std::string name = "");
+        inline void setOutputName(std::string name = "");
+        inline void setInputName (InputIndex i,std::string name = "");
         inline bool bindInput (std::string name,std::shared_ptr<Function>function  = nullptr);
         inline bool hasInput (std::string name)const;
         inline std::shared_ptr<Accessor>const&getInputData (std::string input)const ;
@@ -107,7 +109,6 @@ namespace ge{
       return this->_functionRegister->getName(this->_id);
     }
 
-    /*
     inline void Function::setInputName(InputIndex i,std::string name){
       this->_functionRegister->setInputName(this->_id,i,name);
     }
@@ -115,7 +116,6 @@ namespace ge{
     inline void Function::setOutputName(std::string name){
       this->_functionRegister->setOutputName(this->_id,name);
     }
-    */
 
     inline bool Function::bindInput (std::string name,std::shared_ptr<Function>function){
       return this->bindInput(this->getInputIndex(name),function);
@@ -175,6 +175,7 @@ namespace ge{
             TypeRegister::DescriptionList const&typeDescription,
             std::string name = "",
             std::shared_ptr<StatementFactory>const&factory = nullptr);
+        AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Accessor>const&output);
         virtual ~AtomicFunction();
         virtual void operator()();
         virtual bool bindInput (InputIndex  i   ,std::shared_ptr<Function>function = nullptr);
@@ -240,6 +241,59 @@ namespace ge{
     inline bool AtomicFunction::_inputChanged(std::string input)const{
       return this->_inputChanged(this->_functionRegister->getInputIndex(this->_id,input));
     }
+
+    template<typename OUTPUT,typename...ARGS>
+      inline std::vector<ge::core::TypeRegister::DescriptionElement>getDescription(
+          std::shared_ptr<ge::core::TypeRegister>const&tr,
+          OUTPUT(*FCE)(ARGS...)){
+        std::vector<ge::core::TypeRegister::DescriptionElement>result;
+        result.push_back(ge::core::TypeRegister::FCE);
+        result.push_back(tr->getTypeId(ge::core::TypeRegister::getTypeKeyword<OUTPUT>()));
+        result.push_back(sizeof...(ARGS));
+        std::vector<ge::core::TypeRegister::DescriptionElement> ar(tr->getTypeId(ge::core::TypeRegister::getTypeKeyword<ARGS>())...);
+        for(auto x:ar)result.push_back(x);
+        return result;
+      }
+
+    template<typename OUTPUT,typename...ARGS,std::size_t...I>
+      OUTPUT uber_call(Function*mf,OUTPUT(*FCE)(ARGS...),ge::core::index_sequence<I...>){
+        return FCE((ARGS&)(*mf->getInputData(I))...);
+      }
+
+    template<typename OUTPUT,typename...ARGS>
+      void registerBasicFunction(
+          std::shared_ptr<ge::core::FunctionRegister>const&fr,
+          const std::string name,
+          OUTPUT(*FCE)(ARGS...)){
+        static const std::string ss=name;
+        auto tr = fr->getTypeRegister();
+        auto tid = tr->addType("",getDescription(tr,FCE));
+
+        class BasicFunction: public ge::core::AtomicFunction{
+          public:
+            BasicFunction(std::shared_ptr<ge::core::FunctionRegister>const&f,FunctionRegister::FunctionID id):AtomicFunction(f,id){}
+            virtual ~BasicFunction(){}
+          protected:
+            virtual bool _do(){
+              typedef OUTPUT(*FF)(ARGS...);
+              FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
+              (OUTPUT&)(*this->getOutputData()) = uber_call<OUTPUT>(this,f,ge::core::make_index_sequence<sizeof...(ARGS)>());
+              return true;
+            }
+        };
+        auto f=fr->addFunction(tid,name,ge::core::Function::factory<BasicFunction>(name));
+        fr->addImplementation(f,reinterpret_cast<void*>(FCE));
+      }
+
+#define DEFINE_FUNCTION_TYPE_KEYWORD(fce,name)\
+    namespace ge{\
+      namespace core{\
+        template<>std::string TypeRegister::getTypeKeyword<decltype(&fce)>(){return name;}\
+      }\
+    }
+
+
+
   }
 }
 

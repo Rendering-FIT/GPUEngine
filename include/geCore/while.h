@@ -21,6 +21,7 @@ namespace ge{
 
     class GECORE_EXPORT WhileFactory: public StatementFactory{
       public:
+        WhileFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~WhileFactory();
         std::shared_ptr<StatementFactory>bodyFactory      = nullptr;
         std::shared_ptr<FunctionFactory >conditionFactory = nullptr;

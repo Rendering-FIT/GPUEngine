@@ -47,6 +47,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
       }
     }
   }
+
   GIVEN("if statement"){
     /*
      * unsigned a=10;
@@ -140,6 +141,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
   }
 }
+
 
 SCENARIO( "ticks tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();

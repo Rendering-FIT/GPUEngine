@@ -1,6 +1,17 @@
 #include<geCore/statement.h>
+#include<geCore/functionRegister.h>
 
 using namespace ge::core;
+
+ObjectFactory::ObjectFactory(Uses maxUses){
+  this->_maxUses = maxUses;
+  this->_uses    = 0      ;
+  this->_first   = true   ;
+}
+
+ObjectFactory::~ObjectFactory(){
+}
+
 
 Statement::Statement(Type type){
   this->_type = type;

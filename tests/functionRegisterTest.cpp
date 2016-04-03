@@ -25,7 +25,7 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto id = fr->addFunction(
       ft,
       ge::core::TypeRegister::getTypeKeyword<ge::core::Add<int32_t>>(),//::name(),
-      ge::core::Function::factory<ge::core::Add<int32_t>>());
+      ge::core::Function::factory<ge::core::Add<int32_t>>(ge::core::TypeRegister::getTypeKeyword<ge::core::Add<int32_t>>()));
   fr->setOutputName(id,"vysledek");
   fr->setInputName(id,0,"a");
   fr->setInputName(id,1,"b");

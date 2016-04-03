@@ -26,6 +26,7 @@ namespace ge{
 
     class GECORE_EXPORT IfFactory: public StatementFactory{
       public:
+        IfFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~IfFactory();
         std::shared_ptr<StatementFactory>trueFactory      = nullptr;
         std::shared_ptr<StatementFactory>falseFactory     = nullptr;
