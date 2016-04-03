@@ -42,96 +42,37 @@ namespace ge{
 
 namespace ge{
   namespace core{
-    /*
-    template<size_t... _Indexes>
-      struct _Index_tuple
-      {
-        typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
-      };
-
-    template<size_t _Num>
-      struct _Build_index_tuple
-      {
-        typedef typename _Build_index_tuple<_Num - 1>::__type::__next __type;
-      };
-
-    template<>
-      struct _Build_index_tuple<0>
-      {
-        typedef _Index_tuple<> __type;
-      };
-
-    /// Class template integer_sequence
-    template<typename _Tp, _Tp... _Idx>
-      struct integer_sequence
-      {
-        typedef _Tp value_type;
-        static //constexpr
-        size_t size() { return sizeof...(_Idx); }
-      };
-
-    template<typename _Tp, _Tp _Num,
-      typename _ISeq = typename _Build_index_tuple<_Num>::__type>
-        struct _Make_integer_sequence;
-
-    template<typename _Tp, _Tp _Num,  size_t... _Idx>
-      struct _Make_integer_sequence<_Tp, _Num, _Index_tuple<_Idx...>>
-      {
-        static_assert( _Num >= 0,
-            "Cannot make integer sequence of negative length" );
-
-        typedef integer_sequence<_Tp, static_cast<_Tp>(_Idx)...> __type;
-      };
-
-    /// Alias template make_integer_sequence
-    template<typename _Tp, _Tp _Num>
-      using make_integer_sequence = typename _Make_integer_sequence<_Tp, _Num>::__type;
-
-    /// Alias template index_sequence
-    template<size_t... _Idx>
-      using index_sequence = integer_sequence<size_t, _Idx...>;
-
-    /// Alias template make_index_sequence
-    template<size_t _Num>
-      using make_index_sequence = make_integer_sequence<size_t, _Num>;
-      
-    /// Alias template index_sequence_for
-    template<typename... _Types>
-      using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
-      */
-
-  template <class T, T... I> struct integer_sequence
-  {
-    template <T N> using append = integer_sequence<T, I..., N>;
-    static std::size_t size() { return sizeof...(I); }
-    using next = append<sizeof...(I)>;
-    using type = T;
-  };
-
-  template <class T, T Index, std::size_t N>
-    struct sequence_generator
+    template <class T, T... I> struct integer_sequence
     {
-      using type = typename sequence_generator<T, Index - 1, N - 1>::type::next;
+      template <T N> using append = integer_sequence<T, I..., N>;
+      static std::size_t size() { return sizeof...(I); }
+      using next = append<sizeof...(I)>;
+      using type = T;
     };
 
-  template <class T, T Index>
-    struct sequence_generator<T, Index, 0ul> { using type = integer_sequence<T>; };
+    template <class T, T Index, std::size_t N>
+      struct sequence_generator
+      {
+        using type = typename sequence_generator<T, Index - 1, N - 1>::type::next;
+      };
 
-  template <std::size_t... I>
-    using index_sequence = integer_sequence<std::size_t, I...>;
+    template <class T, T Index>
+      struct sequence_generator<T, Index, 0ul> { using type = integer_sequence<T>; };
 
-  template <class T, T N>
-    struct make_integer_sequence
-    {
-           typedef typename sequence_generator<T, N, N>::type type;
-    };
-    //using make_integer_sequence = typename sequence_generator<T, N, N>::type;
+    template <std::size_t... I>
+      using index_sequence = integer_sequence<std::size_t, I...>;
 
-  template <std::size_t N>
-    using make_index_sequence = make_integer_sequence<std::size_t, N>;
+    template <class T, T N>
+      struct make_integer_sequence
+      {
+        typedef typename sequence_generator<T, N, N>::type type;
+      };
 
-  template<class... T>
-    using index_sequence_for = make_index_sequence<sizeof...(T)>;
+    template <std::size_t N>
+      using make_index_sequence = make_integer_sequence<std::size_t, N>;
+
+    template<class... T>
+      using index_sequence_for = make_index_sequence<sizeof...(T)>;
   }
 }
 

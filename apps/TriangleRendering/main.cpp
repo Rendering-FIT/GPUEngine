@@ -183,7 +183,7 @@ void Init()
    attribList.reserve(1);
    attribList.emplace_back(twoTrianglesNI.data());
    meshDirectNI.allocData(config,6,0,0);
-   meshDirectNI.uploadVertices(attribList.data(),attribList.size(),twoTrianglesNI.size());
+   meshDirectNI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesNI.size());
 
    // top-right geometry - the same as above but using indexing
    config.ebo=true;
@@ -202,8 +202,8 @@ void Init()
 
    attribList[0]=twoTrianglesI.data();
    meshDirectI.allocData(config,6,6,0);
-   meshDirectI.uploadVertices(attribList.data(),attribList.size(),twoTrianglesI.size());
-   meshDirectI.uploadIndices(indices.data(),indices.size());
+   meshDirectI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesI.size());
+   meshDirectI.uploadIndices(indices.data(),(uint32_t)indices.size());
 
    // bottom-left geometry - high level, using indirect rendering optimization
    // (non-indexed, using optimized rendering, using identity transformation matrix)
@@ -228,10 +228,10 @@ void Init()
    config.ebo=false;
    config.updateId();
    attribList[0]=twoTrianglesIndirectNI.data();
-   meshIndirectNI.allocData(config,6,0,primitiveDataNI.size());
-   meshIndirectNI.uploadVertices(attribList.data(),attribList.size(),twoTrianglesIndirectNI.size());
+   meshIndirectNI.allocData(config,6,0,(uint32_t)primitiveDataNI.size());
+   meshIndirectNI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesIndirectNI.size());
    meshIndirectNI.setAndUploadPrimitives(primitiveDataNI.data(),
-                                         modesAndOffsets4.data(),primitiveDataNI.size());
+                                         modesAndOffsets4.data(),(uint32_t)primitiveDataNI.size());
    shared_ptr<MatrixList> identity=make_shared<MatrixList>(1);
    identity->upload(RenderingContext::identityMatrix,1);
    meshIndirectNI.createDrawable(identity.get(),stateSet.get());
@@ -254,11 +254,11 @@ void Init()
    config.ebo=true;
    config.updateId();
    attribList[0]=twoTrianglesIndirectI.data();
-   meshIndirectI.allocData(config,6,6,primitiveDataI.size());
-   meshIndirectI.uploadVertices(attribList.data(),attribList.size(),twoTrianglesIndirectI.size());
-   meshIndirectI.uploadIndices(indices.data(),indices.size());
+   meshIndirectI.allocData(config,6,6,(uint32_t)primitiveDataI.size());
+   meshIndirectI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesIndirectI.size());
+   meshIndirectI.uploadIndices(indices.data(),(uint32_t)indices.size());
    meshIndirectI.setAndUploadPrimitives(primitiveDataI.data(),
-                                        modesAndOffsets4.data(),primitiveDataI.size());
+                                        modesAndOffsets4.data(),(uint32_t)primitiveDataI.size());
    meshIndirectI.createDrawable(identity.get(),stateSet.get());
 
 
