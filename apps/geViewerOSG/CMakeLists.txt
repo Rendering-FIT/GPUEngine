@@ -15,6 +15,7 @@ endif()
 
 set(APP_SOURCES
   main.cpp
+  OrbitCameraManipulator.h OrbitCameraManipulator.cpp
   )
 
 set(APP_INCLUDES

@@ -58,17 +58,20 @@ void StateSetDefaultGLState::add(const string& name,const type_index& typeIndex,
       }
    }
    else if(name=="uniformList") {
-      if(static_cast<list<weak_ptr<ge::core::Command>>*>(data)->size()!=0) { // proceed with non-empty lists only
-         if(typeIndex==type_index(typeid(list<weak_ptr<ge::core::Command>>*))) {
+      if(typeIndex==type_index(typeid(list<weak_ptr<ge::core::Command>>*))) {
+         if(static_cast<list<weak_ptr<ge::core::Command>>*>(data)->size()!=0) { // proceed with non-empty lists only
             uniformSetList.emplace_back();
             uniformSetList.back().swap(*static_cast<list<weak_ptr<ge::core::Command>>*>(data));
-         } else if(typeIndex==type_index(typeid(weak_ptr<ge::core::Command>*))) {
-            uniformSetList.emplace_back();
-            uniformSetList.back().push_back(*static_cast<weak_ptr<ge::core::Command>*>(data));
-         } else
-            cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
-                  "   \"uniformList\" name."<<endl;
-      }
+         }
+      } else if(typeIndex==type_index(typeid(weak_ptr<ge::core::Command>*))) {
+         uniformSetList.emplace_back();
+         uniformSetList.back().push_back(*static_cast<weak_ptr<ge::core::Command>*>(data));
+      } else if(typeIndex==type_index(typeid(shared_ptr<ge::core::Command>*))) {
+         uniformSetList.emplace_back();
+         uniformSetList.back().push_back(*static_cast<shared_ptr<ge::core::Command>*>(data));
+      } else
+         cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
+               "   \"uniformList\" name."<<endl;
    }
    else
       cout<<"StateSetDefaultGLState::set() error: Unknown parameter name \""<<name<<"\"."<<endl;
@@ -162,7 +165,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
       if(colorTextureList.size()<=1)
       {
          internalLevel=2;
-         if(uniformSetList.size()==0) {
+         if(savedUniformSetList.size()==0) {
             // jump to internalLevel 2
             init(ss,m);
          } else {
@@ -220,7 +223,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
       if(glProgramList.size()<=1)
       {
          internalLevel=3;
-         if(colorTextureList.size()==0) {
+         if(savedColorTextureList.size()==0) {
             // jump to internalLevel 3
             init(ss,m);
          } else {
@@ -294,7 +297,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
       if(binList.size()<=1)
       {
          internalLevel=4;
-         if(glProgramList.size()==0) {
+         if(savedGLProgramList.size()==0) {
             // jump to internalLevel 4
             init(ss,m);
          } else {
@@ -399,7 +402,7 @@ void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
          // get light instancing matrices
          unsigned offset64,num;
          it_light->matrixList()->downloadListControlData(offset64,num);
-         unique_ptr<glm::mat4x4[]> matrices(new glm::mat4x4[num]);
+         unique_ptr<glm::mat4[]> matrices(new glm::mat4[num]);
          MatrixList::downloadFromOffset(matrices.get(),offset64,num);
          RenderingContext::current()->matrixListControlStorage()->unmap();
          RenderingContext::current()->matrixStorage()->unmap();

@@ -1,7 +1,7 @@
 #include <string>
 #include <GL/glew.h>
+#include <glm/vec2.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <geGL/DebugMessage.h>
 #include <geGL/geGL.h>
 #include <geGL/ProgramObject.h>
@@ -14,6 +14,7 @@
 #include <geUtil/ArgumentObject.h>
 #include <osg/ref_ptr>
 #include <osgDB/ReadFile>
+#include "OrbitCameraManipulator.h"
 
 using namespace std;
 using namespace ge::gl;
@@ -39,75 +40,102 @@ struct SWindowParam{
 }WindowParam;
 
 
-bool DisableAnttweakbar=true;
-ge::util::ArgumentObject *Args;
-ge::util::WindowObject   *Window;
+bool disableAnttweakbar=true;
+ge::util::ArgumentObject *args;
+ge::util::WindowObject   *window;
 
 static bool useARBShaderDrawParameters=false;
+static fsg::OrbitObjectManipulator cameraManipulator;
+static shared_ptr<Transformation> cameraTransformation;
 static string fileName;
 static shared_ptr<Model> model;
 
+static bool mouseRightDown=false;
+static glm::ivec2 lastMousePos;
 
-int main(int Argc,char*Argv[])
+
+int main(int argc,char*argv[])
 {
-  Args=new ge::util::ArgumentObject(Argc,Argv);
+   args=new ge::util::ArgumentObject(argc,argv);
 
-  DisableAnttweakbar=true;
+   disableAnttweakbar=true;
 
-  //window args
-  WindowParam.Size[0]    = atoi(Args->getArg("-w","800").c_str());
-  WindowParam.Size[1]    = atoi(Args->getArg("-h","600").c_str());
-  WindowParam.Fullscreen = Args->isPresent("-f");
+   //window args
+   WindowParam.Size[0]    = atoi(args->getArg("-w","800").c_str());
+   WindowParam.Size[1]    = atoi(args->getArg("-h","600").c_str());
+   WindowParam.Fullscreen = args->isPresent("-f");
 
-  //context args
-  ContextParam.Version = atoi(Args->getArg("--context-version","430").c_str());
-  ContextParam.Profile = Args->getArg("--context-profile","core");
-  ContextParam.Flag    = Args->getArg("--context-flag","debug");
+   //context args
+   ContextParam.Version = atoi(args->getArg("--context-version","430").c_str());
+   ContextParam.Profile = args->getArg("--context-profile","core");
+   ContextParam.Flag    = args->getArg("--context-flag","debug");
 
-  // file name
-  if(Argc>1)
-  {
-     int i=Argc-1;
-     if(Argv[i][0]!='-')
-        if(Argc==2 || Argv[i-1][0]!='-')  fileName=Argv[1];
-  }
+   // file name
+   if(argc>1)
+   {
+      int i=argc-1;
+      if(argv[i][0]!='-')
+         if(argc==2 || argv[i-1][0]!='-')  fileName=argv[1];
+   }
 
-  Window=new ge::util::WindowObject(
-      WindowParam.Size[0],
-      WindowParam.Size[1],
-      WindowParam.Fullscreen,
-      Idle,
-      Mouse,
-      !DisableAnttweakbar,
-      ContextParam.Version,
-      ContextParam.Profile,
-      ContextParam.Flag);
+   window=new ge::util::WindowObject(
+         WindowParam.Size[0],
+         WindowParam.Size[1],
+         WindowParam.Fullscreen,
+         Idle,
+         Mouse,
+         !disableAnttweakbar,
+         ContextParam.Version,
+         ContextParam.Profile,
+         ContextParam.Flag);
 
-  glewExperimental=GL_TRUE;
-  glewInit();
-  glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
-                // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
-                // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
-  ge::gl::init();
-  RenderingContext::setCurrent(make_shared<RenderingContext>());
-  RenderingContext::current()->setUseARBShaderDrawParameters(useARBShaderDrawParameters);
+   glewExperimental=GL_TRUE;
+   glewInit();
+   glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
+                  // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                  // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
+   ge::gl::init();
+   RenderingContext::setCurrent(make_shared<RenderingContext>());
+   RenderingContext::current()->setUseARBShaderDrawParameters(useARBShaderDrawParameters);
+   cameraTransformation=make_shared<Transformation>();
+   RenderingContext::current()->addTransformationGraph(cameraTransformation);
 
-  // OpenGL debugging messages
-  //ge::gl::setDefaultDebugMessage();
+   // OpenGL debugging messages
+   //ge::gl::setDefaultDebugMessage();
 
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
-  glDisable(GL_CULL_FACE);
+   glEnable(GL_DEPTH_TEST);
+   glDepthFunc(GL_LEQUAL);
+   glDisable(GL_CULL_FACE);
 
-  Init();
-  Window->mainLoop();
-  delete Window;
-  delete Args;
-  return 0;
+   Init();
+   window->mainLoop();
+   delete window;
+   delete args;
+   return 0;
 }
 
 
-void Mouse(){
+void Mouse()
+{
+   if(!mouseRightDown && window->isLeftDown()!=0) {
+      mouseRightDown=true;
+      lastMousePos=glm::make_vec2(window->getMousePosition());
+      cout<<"Start"<<endl;
+   }
+   else if(mouseRightDown && window->isLeftDown()) {
+      glm::ivec2 currentMousePos=glm::make_vec2(window->getMousePosition());
+      glm::vec2 size=glm::make_vec2(window->getWindowSize());
+      glm::vec2 delta=glm::vec2(currentMousePos-lastMousePos)/size;
+      lastMousePos=currentMousePos;
+      cameraManipulator.rotate(delta.x,delta.y);
+   }
+   else if(mouseRightDown && !window->isLeftDown()) {
+      mouseRightDown=false;
+      glm::vec2 size=glm::make_vec2(window->getWindowSize());
+      glm::vec2 delta=glm::vec2(glm::make_vec2(window->getMousePosition())-lastMousePos)/size;
+      cameraManipulator.rotate(delta.x,delta.y);
+      cout<<"Stop"<<endl;
+   }
 }
 
 
@@ -117,10 +145,13 @@ void Wheel(int){
 
 void Idle()
 {
+   cameraManipulator.updateViewMatrix();
+   cameraTransformation->uploadMatrix(cameraManipulator.getMatrix());
+
    // render scene
    RenderingContext::current()->frame();
 
-   Window->swap();
+   window->swap();
 }
 
 
@@ -149,6 +180,7 @@ void Init()
 
    if(model)
    {
+#if 0
       // instantiate model with given transformation matrix
       shared_ptr<Transformation> t=make_shared<Transformation>();
       const float m[16] = {
@@ -160,6 +192,10 @@ void Init()
       t->uploadMatrix(m);
       t->addChild(model->transformationRoot());
       RenderingContext::current()->addTransformationGraph(t);
+#else
+      // add model bellow camera transformation
+      cameraTransformation->addChild(model->transformationRoot());
+#endif
    }
 
    // unmap buffers
@@ -176,7 +212,6 @@ void Init()
    auto phongProgram=RenderingContext::current()->getPhongProgram();
    phongProgram->use();
    phongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
-   phongProgram->set("specularAndShininess",0.33f,0.33f,0.33f,0.f); // shininess in alpha
    phongProgram->set("colorTexture",int(0));
    phongProgram->set("colorTexturingMode",0); // FIXME: this shall be moved to OsgImport code soon
 

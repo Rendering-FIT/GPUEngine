@@ -30,7 +30,7 @@ namespace ge
        *  each Transformation with attached MatrixList will append computed transformation
        *  to the MatrixList. The computed matrix is equal to multiplication of all transformations
        *  from the root to the current transformation node. Each matrix that is appended to
-       *  the MatrixList "instantiate" Drawables that are referencing MatrixList.
+       *  the MatrixList "instantiate" Drawables that are referencing the MatrixList.
        */
       class GERG_EXPORT MatrixList : public std::enable_shared_from_this<MatrixList> {
       protected:
@@ -47,14 +47,14 @@ namespace ge
 
       public:
 
-         inline void download(float *matrix,      unsigned numMatrices,unsigned startIndex=0);
-         inline void download(glm::mat4x4 *matrix,unsigned numMatrices,unsigned startIndex=0);
-         inline void upload(const float *matrix,      unsigned numMatrices,unsigned startIndex=0);
-         inline void upload(const glm::mat4x4 *matrix,unsigned numMatrices,unsigned startIndex=0);
+         inline void download(float *matrix,    unsigned numMatrices,unsigned startIndex=0);
+         inline void download(glm::mat4 *matrix,unsigned numMatrices,unsigned startIndex=0);
+         inline void upload(const float *matrix,    unsigned numMatrices,unsigned startIndex=0);
+         inline void upload(const glm::mat4 *matrix,unsigned numMatrices,unsigned startIndex=0);
          static void downloadFromOffset(float *matrix,             unsigned offset64,unsigned numMatrices);
-         static inline void downloadFromOffset(glm::mat4x4 *matrix,unsigned offset64,unsigned numMatrices);
+         static inline void downloadFromOffset(glm::mat4 *matrix,unsigned offset64,unsigned numMatrices);
          static void uploadToOffset(const float *matrix,             unsigned offset64,unsigned numMatrices);
-         static inline void uploadToOffset(const glm::mat4x4 *matrix,unsigned offset64,unsigned numMatrices);
+         static inline void uploadToOffset(const glm::mat4 *matrix,unsigned offset64,unsigned numMatrices);
          void downloadListControlData(unsigned &matrixOffset64,unsigned &numMatrices);
          void uploadListControlData(unsigned matrixOffset64,unsigned numMatrices);
          void uploadListControlData();
@@ -99,15 +99,15 @@ namespace ge
    {
       inline void MatrixList::download(float *matrix,unsigned numMatrices,unsigned startIndex)
       { downloadFromOffset(matrix,matrixOffset64()+startIndex,numMatrices); }
-      inline void MatrixList::download(glm::mat4x4 *matrix,unsigned numMatrices,unsigned startIndex)
+      inline void MatrixList::download(glm::mat4 *matrix,unsigned numMatrices,unsigned startIndex)
       { downloadFromOffset(glm::value_ptr(*matrix),matrixOffset64()+startIndex,numMatrices); }
       inline void MatrixList::upload(const float *matrix,unsigned numMatrices,unsigned startIndex)
       { uploadToOffset(matrix,matrixOffset64()+startIndex,numMatrices); }
-      inline void MatrixList::upload(const glm::mat4x4 *matrix,unsigned numMatrices,unsigned startIndex)
+      inline void MatrixList::upload(const glm::mat4 *matrix,unsigned numMatrices,unsigned startIndex)
       { uploadToOffset(glm::value_ptr(*matrix),matrixOffset64()+startIndex,numMatrices); }
-      inline void MatrixList::downloadFromOffset(glm::mat4x4 *matrix,unsigned offset64,unsigned numMatrices)
+      inline void MatrixList::downloadFromOffset(glm::mat4 *matrix,unsigned offset64,unsigned numMatrices)
       { downloadFromOffset(glm::value_ptr(*matrix),offset64,numMatrices); }
-      inline void MatrixList::uploadToOffset(const glm::mat4x4 *matrix,unsigned offset64,unsigned numMatrices)
+      inline void MatrixList::uploadToOffset(const glm::mat4 *matrix,unsigned offset64,unsigned numMatrices)
       { uploadToOffset(glm::value_ptr(*matrix),offset64,numMatrices); }
 
       inline unsigned MatrixList::listControlId() const  { return _listControlId; }

@@ -12,6 +12,7 @@
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/LightSource>
+#include <osg/Material>
 #include <osg/NodeVisitor>
 #include <osg/StateSet>
 #include <osg/Transform>
@@ -160,24 +161,6 @@ protected:
 
 public:
 
-   struct OsgState {
-
-      osg::Texture* colorTexture;
-
-      inline bool operator<(const OsgState& rhs) const
-      {
-         return colorTexture<rhs.colorTexture;
-      }
-
-      OsgState(osg::StateSet *ss)
-      {
-         colorTexture=static_cast<osg::Texture*>(ss->getNumTextureAttributeLists()>=1?
-               ss->getTextureAttribute(0,osg::Texture::TEXTURE):nullptr);
-      }
-
-   };
-
-
    inline shared_ptr<Model> model()  { return _model; }
 
 
@@ -309,16 +292,17 @@ public:
 
       // get colorTexture
       std::shared_ptr<ge::gl::TextureObject> colorTexture;
-      OsgState osgState(osgStateSetStack.back());
-      if(osgState.colorTexture!=nullptr)
+      osg::StateSet* ss=osgStateSetStack.back();
+      osg::Texture* osgColorTexture=static_cast<osg::Texture*>(
+            ss->getTextureAttribute(0,osg::StateAttribute::TEXTURE));
+      if(osgColorTexture!=nullptr)
       {
 
          // get color texture name
          // FIXME: currentPath should be considered here
          string colorTexturePath;
-         osg::Texture *osgTexture=osgState.colorTexture;
-         if(osgTexture->getNumImages()>=1)
-            colorTexturePath=osgTexture->getImage(0)->getFileName();
+         if(osgColorTexture->getNumImages()>=1)
+            colorTexturePath=osgColorTexture->getImage(0)->getFileName();
 
          // lookup texture cache
          // FIXME: path should be made canonical for cache lookup
@@ -328,13 +312,13 @@ public:
          if(!colorTexture) {
 
             // create texture object
-            GLenum target=osgTexture->getTextureTarget();
-            osg::Image *osgImage=osgTexture->getNumImages()>0?osgTexture->getImage(0):nullptr;
-            int w=osgImage?osgImage->s():osgTexture->getTextureWidth();
-            int h=osgImage?osgImage->t():osgTexture->getTextureHeight();
-            int d=osgImage?osgImage->r():osgTexture->getTextureDepth();
-            GLenum format=osgImage?osgImage->getPixelFormat():osgTexture->getSourceFormat();
-            GLenum type=osgImage?osgImage->getDataType():osgTexture->getSourceType();
+            GLenum target=osgColorTexture->getTextureTarget();
+            osg::Image *osgImage=osgColorTexture->getNumImages()>0?osgColorTexture->getImage(0):nullptr;
+            int w=osgImage?osgImage->s():osgColorTexture->getTextureWidth();
+            int h=osgImage?osgImage->t():osgColorTexture->getTextureHeight();
+            int d=osgImage?osgImage->r():osgColorTexture->getTextureDepth();
+            GLenum format=osgImage?osgImage->getPixelFormat():osgColorTexture->getSourceFormat();
+            GLenum type=osgImage?osgImage->getDataType():osgColorTexture->getSourceType();
             auto data=osgImage?osgImage->data():nullptr;
 
             // compute internalFormat;
@@ -362,6 +346,23 @@ public:
 
       }
 
+      // get material
+      osg::Material* osgMaterial=static_cast<osg::Material*>(
+            ss->getAttribute(osg::StateAttribute::MATERIAL));
+      shared_ptr<FlexibleUniform4f> specularAndShininessUniform;
+      if(osgMaterial)
+      {
+         const osg::Vec4& specular=osgMaterial->getSpecular(osg::Material::FRONT);
+         float shininess=osgMaterial->getShininess(osg::Material::FRONT);
+         specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+               specular.r(),specular.g(),specular.b(),shininess);
+      }
+      else
+      {
+         specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+               0.f,0.f,0.f,0.f);
+      }
+
       // create GLState
       StateSetManager::GLState *glState=rc->createGLState();
       shared_ptr<ge::gl::ProgramObject> ambientProgram(RenderingContext::current()->getAmbientProgram());
@@ -371,6 +372,7 @@ public:
       glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
       glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
       glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
+      glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&specularAndShininessUniform);
 
       // find (or create new) geRG StateSet
       // (StateSet is fully initialized during creation with all the rendering commands, etc.)
@@ -520,7 +522,7 @@ public:
 
          // register transformation in the model
          if(_model->transformationRootList().size()==0)
-            _model->addTransformationRoot(idof(scene,TransformationRoot),transformationStack.front());
+            _model->addTransformationRoot(idof(Model::TransformationRootId,SCENE),transformationStack.front());
 
          // upload vertices
          vector<void*> geArrays;
