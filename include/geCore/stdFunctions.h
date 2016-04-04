@@ -35,7 +35,7 @@ namespace ge{
     };
 
     template<typename TYPE>
-    class GECORE_EXPORT Assignment: public AtomicFunction{
+    class /*GECORE_EXPORT*/ Assignment: public AtomicFunction{
       public:
         Assignment(
             std::shared_ptr<FunctionRegister>const&fr,
@@ -50,7 +50,7 @@ namespace ge{
     };
 
     template<typename TYPE>
-    class GECORE_EXPORT UnaryMinus: public AtomicFunction{
+    class /*GECORE_EXPORT*/ UnaryMinus: public AtomicFunction{
       public:
         UnaryMinus(
             std::shared_ptr<FunctionRegister>const&fr,
