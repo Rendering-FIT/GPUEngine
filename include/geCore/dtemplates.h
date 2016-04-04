@@ -2,10 +2,6 @@
 
 #include<geCore/Export.h>
 
-#if defined(_MSC_VER) && _MSC_VER<1900
-  #pragma warning(disable : 4503)
-#endif
-
 #include<iostream>
 #include<cstring>
 #include<sstream>

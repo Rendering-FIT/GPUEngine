@@ -38,8 +38,12 @@ FOREACH(CONF ${CMAKE_CONFIGURATION_TYPES})        # For each configuration (Debu
 ENDFOREACH()
 
 IF(MSVC)
+   # 4800 - forcing value to bool
+   # 4503 - 'identifier' : decorated name length exceeded, name was truncated, due to a template hell
+   # 4996 - This function or variable may be unsafe. Due to using pointer instead of iterators (MatrixTransformBase)
+   set(ignored_wrn "/wd4800 /wd4503 /wd4996")
    # enable multithreaded compilation
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ${ignored_wrn}")
 
    # disable MSVC warning "LNK4221: This object file does not define any previously undefined public symbols,
    # so it will not be used by any link operation that consumes this library"
