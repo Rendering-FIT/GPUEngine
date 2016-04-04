@@ -262,7 +262,11 @@ namespace ge{
 
     template<typename OUTPUT,typename...ARGS,std::size_t...I>
       OUTPUT uber_call(Function*mf,OUTPUT(*FCE)(ARGS...),ge::core::index_sequence<I...>){
+#if defined(_MSC_VER) && _MSC_VER<1900
+        return FCE((ARGS&...)(*mf->getInputData(I))...);
+#else
         return FCE((ARGS&)(*mf->getInputData(I))...);
+#endif
       }
 
     template<typename OUTPUT,typename...ARGS>
@@ -284,7 +288,7 @@ namespace ge{
             virtual bool _do(){
               typedef OUTPUT(*FF)(ARGS...);
               FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
-              (OUTPUT&)(*this->getOutputData()) = uber_call<OUTPUT,ARGS...>(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              (OUTPUT&)(*this->getOutputData()) = uber_call(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };
