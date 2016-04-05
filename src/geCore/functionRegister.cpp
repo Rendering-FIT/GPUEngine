@@ -36,7 +36,7 @@ std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,S
     public:
       Factory(std::string name,Uses maxUses = 1):FunctionFactory(name,maxUses){}
       virtual ~Factory(){}
-      virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&fr){
+      virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister> const&fr){
         return fr->sharedFunction(this->_name);
       }
   };

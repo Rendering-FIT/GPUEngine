@@ -4,7 +4,9 @@
 
 namespace ge{
   namespace core{
+    class MacroFunctionFactory;
     class GECORE_EXPORT MacroFunction: public Function{
+      friend class MacroFunctionFactory;
       public:
         using FceInput = std::tuple<std::shared_ptr<Function>,FunctionRegister::InputIndex>;
         enum FceInputParts{
@@ -33,6 +35,7 @@ namespace ge{
         virtual Ticks getCheckTicks ()const;
         virtual void  setUpdateTicks(Ticks ticks);
         virtual void  setCheckTicks (Ticks ticks);
+        virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const;
         virtual inline std::string doc()const{return "";}
     };
 
@@ -40,33 +43,6 @@ namespace ge{
       (*this->_outputMapping)();
     }
 
-
-    /*
-       class GECORE_EXPORT MacroFunction: public Function{
-       protected:
-       std::vector<FunctionInput*>_in;
-       Function::Output*_out = nullptr;
-       virtual bool _do();
-       std::shared_ptr<Function>_outputFce = nullptr;
-       virtual inline FunctionInput      &_getInput(unsigned i);
-       virtual inline FunctionInput const&_getInput(unsigned i)const;
-       virtual inline decltype(_inputs)::size_type _getNofInputs()const;
-       virtual inline Output      &_getOutput();
-       virtual inline Output const&_getOutput()const;
-       public:
-       MacroFunction(std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id);
-       virtual ~MacroFunction();
-       inline virtual void operator()();
-       inline void setFunctionInput(
-       unsigned                       i            ,
-       std::shared_ptr<Function>const&fce          ,
-       unsigned                       fceInput     ,
-       std::string                    name     = "");
-       inline void setFunctionOutput(
-       std::shared_ptr<Function>const&fce            ,
-       std::string                    name = "output");
-       };
-       */
 
 
     class GECORE_EXPORT FunctionNodeFactory: public FunctionFactory{
@@ -81,58 +57,27 @@ namespace ge{
         void addInputFactory(std::shared_ptr<StatementFactory>const&factory);
         virtual ~FunctionNodeFactory();
         void reset();
-        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister>const&fr);
+        virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&fr);
     };
 
-    /*
-       inline void MacroFunction::operator()(){
-       if(!this->_outputFce){
-       std::cerr<<"ERROR: MacroFunction::operator()() - ";
-       std::cerr<<"there is no output function"<<std::endl;
-       return;
-       }
-       (*this->_outputFce)();
-       }
-
-       inline void MacroFunction::setFunctionInput(
-       unsigned                       i       ,
-       std::shared_ptr<Function>const&fce     ,
-       unsigned                       fceInput,
-       std::string                    name    ){
-       if(name=="")name=this->_genDefaultName(i);
-       this->_in[i]=&fce->_getInput(fceInput);
-       this->_name2Input[name]=i   ;
-       this->_input2Name[i   ]=name;
-       }
-
-       inline void MacroFunction::setFunctionOutput(
-       std::shared_ptr<Function>const&fce ,
-       std::string                    name){
-       this->_output.name = name;
-       this->_out         = &fce->_output;
-       this->_outputFce   = fce;
-       }
-
-
-       inline FunctionInput      &MacroFunction::_getInput(unsigned i){
-       return *this->_in[i];
-       }
-
-       inline FunctionInput const&MacroFunction::_getInput(unsigned i)const{
-       return *this->_in[i];
-       }
-
-       inline decltype(MacroFunction::_inputs)::size_type MacroFunction::_getNofInputs()const{
-       return this->_in.size();
-       }
-
-       inline Function::Output      &MacroFunction::_getOutput(){
-       return *this->_out;
-       }
-       inline Function::Output const&MacroFunction::_getOutput()const{
-       return *this->_out;
-       }
-       */
+    class GECORE_EXPORT MacroFunctionFactory: public FunctionFactory{
+      protected:
+        std::shared_ptr<FunctionFactory>_factory = nullptr;
+        using FactoryInput = std::tuple<std::shared_ptr<FunctionFactory>,FunctionRegister::InputIndex>;
+        enum FceInputParts{
+          FUNCTION = 0,
+          INPUT    = 1,
+        };
+        using FactoryInputList = std::vector<FactoryInput>;
+        std::vector<FactoryInputList> _inputs;
+        //void _recBuildInput(MacroFunction::FactoryInputList const&factoryInputList)
+      public:
+        MacroFunctionFactory(std::string name = "",Uses maxUses = 1);
+        virtual ~MacroFunctionFactory();
+        void setFactory(std::shared_ptr<StatementFactory>const&fac);
+        void setInputFactories(std::vector<FactoryInputList> const&inputs);
+        virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&fr);
+    };
 
 
   }

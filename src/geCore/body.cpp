@@ -41,7 +41,7 @@ BodyFactory::BodyFactory(std::string name,unsigned maxUses):StatementFactory(nam
 BodyFactory::~BodyFactory(){
 }
 
-std::shared_ptr<Statement>BodyFactory::operator()(std::shared_ptr<FunctionRegister>const&fr){
+std::shared_ptr<Statement>BodyFactory::_do(std::shared_ptr<FunctionRegister>const&fr){
   auto result = std::make_shared<Body>();
   for(auto x:this->factories)
     result->addStatement((*x)(fr));

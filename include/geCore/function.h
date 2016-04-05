@@ -15,7 +15,7 @@ namespace ge{
       public:
         FunctionFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~FunctionFactory();
-        virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&)=0;
+        virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister> const&)=0;
     };
 
     class GECORE_EXPORT Function: public Statement{
@@ -33,7 +33,7 @@ namespace ge{
               public:
                 Factory(std::string name,Uses maxUses = 1):FunctionFactory(name,maxUses){}
                 virtual ~Factory(){}
-                virtual std::shared_ptr<Statement>operator()(std::shared_ptr<FunctionRegister> const&fr){
+                virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister> const&fr){
                   return std::make_shared<TYPE>(fr,fr->getFunctionId(this->_name));
                 }
             };
@@ -51,6 +51,7 @@ namespace ge{
         virtual Ticks getCheckTicks ()const = 0;
         virtual void  setUpdateTicks(Ticks ticks) = 0;
         virtual void  setCheckTicks (Ticks ticks) = 0;
+        virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const = 0;
         virtual inline std::string doc()const;
         inline TypeRegister::TypeID getInputType (InputIndex  i   )const;
         inline TypeRegister::TypeID getOutputType(                )const;
@@ -65,6 +66,7 @@ namespace ge{
         inline bool hasInput (std::string name)const;
         inline std::shared_ptr<Accessor>const&getInputData (std::string input)const ;
         inline TypeRegister::TypeID getInputType (std::string name)const;
+        inline std::shared_ptr<Function>const&getInputFunction(std::string name)const;
     };
 
     inline Function::Function(
@@ -133,6 +135,10 @@ namespace ge{
       return this->getInputType(this->getInputIndex(name));
     }
 
+    inline std::shared_ptr<Function>const&Function::getInputFunction(std::string name)const{
+      return this->getInputFunction(this->getInputIndex(name));
+    }
+
 
     class GECORE_EXPORT FunctionInput{
       public:
@@ -193,6 +199,7 @@ namespace ge{
         virtual inline Ticks getCheckTicks ()const;
         virtual inline void setUpdateTicks(Ticks ticks);
         virtual inline void setCheckTicks (Ticks ticks);
+        virtual inline std::shared_ptr<Function>const&getInputFunction(InputIndex i)const;
         virtual inline std::string doc()const;
       protected:
         void _processInputs();
@@ -225,6 +232,10 @@ namespace ge{
 
     inline void AtomicFunction::setCheckTicks(Ticks ticks){
       this->_updateTicks = ticks;
+    }
+
+    inline std::shared_ptr<Function>const&AtomicFunction::getInputFunction(InputIndex i)const{
+      return this->_inputs[i].function;
     }
 
     inline std::string AtomicFunction::doc()const{

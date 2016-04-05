@@ -63,6 +63,10 @@ void  MacroFunction::setCheckTicks(Ticks ticks){
   this->_outputMapping->setUpdateTicks(ticks);
 }
 
+std::shared_ptr<Function>const&MacroFunction::getInputFunction(InputIndex i)const{
+  FceInput const&mapping = this->_inputMapping[i][0];
+  return std::get<FUNCTION>(mapping)->getInputFunction(std::get<INPUT>(mapping));
+}
 /*
    MacroFunction::MacroFunction(
    std::shared_ptr<TypeRegister>const&tr,TypeRegister::TypeID id):
@@ -101,7 +105,7 @@ void FunctionNodeFactory::reset(){
   this->_result  = nullptr;
 }
 
-std::shared_ptr<Statement>FunctionNodeFactory::operator()(
+std::shared_ptr<Statement>FunctionNodeFactory::_do(
     std::shared_ptr<FunctionRegister> const&tr){
   this->_first = this->_uses == 0;
   if(this->resourceFactories.size()!=this->inputFactories.size()){
@@ -111,14 +115,8 @@ std::shared_ptr<Statement>FunctionNodeFactory::operator()(
   }
   if(!this->functionFactory)return nullptr;
 
-  std::shared_ptr<Statement>res;
-  if(!this->_result)this->_result = (*this->functionFactory)(tr);
-  res = this->_result;
-  this->_uses++;
-  if(this->_uses==this->_maxUses){
-    this->_uses = 0;
-    this->_result = nullptr;
-  }
+  auto res = (*this->functionFactory)(tr);
+
   auto fce=std::dynamic_pointer_cast<Function>(res);
   using Iter=decltype(this->resourceFactories)::size_type;
   for(Iter i=0;i<this->resourceFactories.size();++i){
@@ -135,3 +133,27 @@ std::shared_ptr<Statement>FunctionNodeFactory::operator()(
   }
   return res;
 }
+
+
+MacroFunctionFactory::MacroFunctionFactory(std::string name,Uses maxUses):FunctionFactory(name,maxUses){
+}
+
+MacroFunctionFactory::~MacroFunctionFactory(){
+}
+
+void MacroFunctionFactory::setFactory(std::shared_ptr<StatementFactory>const&fac){
+  this->_factory = std::dynamic_pointer_cast<FunctionFactory>(fac);
+}
+
+void MacroFunctionFactory::setInputFactories(std::vector<FactoryInputList> const&inputs){
+  this->_inputs = inputs;
+}
+
+std::shared_ptr<Statement>MacroFunctionFactory::_do(std::shared_ptr<FunctionRegister>const&fr){
+  auto res = (*this->_factory)(fr);
+  auto mf = std::dynamic_pointer_cast<MacroFunction>(res);
+  std::vector<MacroFunction::FceInputList> inputs;
+  auto ff=std::dynamic_pointer_cast<Function>(res);
+  return std::dynamic_pointer_cast<Statement>(std::make_shared<MacroFunction>(fr,fr->getType(fr->getFunctionId(this->_name)),std::dynamic_pointer_cast<Function>(res),inputs));
+}
+

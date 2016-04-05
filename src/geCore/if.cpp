@@ -55,7 +55,7 @@ IfFactory::IfFactory(std::string name,unsigned maxUses):StatementFactory(name,ma
 IfFactory::~IfFactory(){
 }
 
-std::shared_ptr<Statement>IfFactory::operator()(std::shared_ptr<FunctionRegister> const&fr){
+std::shared_ptr<Statement>IfFactory::_do(std::shared_ptr<FunctionRegister> const&fr){
   auto result = std::make_shared<If>();
   result->setTrueBody ((*this->trueFactory     )(fr));
   result->setFalseBody((*this->falseFactory    )(fr));

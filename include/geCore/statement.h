@@ -49,7 +49,20 @@ namespace ge{
         virtual ~StatementFactory(){}
         void reset();
         virtual std::shared_ptr<Statement>operator()(
-            std::shared_ptr<FunctionRegister> const&)=0;
+            std::shared_ptr<FunctionRegister>const&tr){
+          this->_first = this->_uses == 0;
+          std::shared_ptr<Statement>res;
+          if(!this->_result)this->_result = this->_do(tr);
+          res = this->_result;
+          this->_uses++;
+          if(this->_uses==this->_maxUses){
+            this->_uses = 0;
+            this->_result = nullptr;
+          }
+          return res;
+        }
+        virtual std::shared_ptr<Statement>_do(
+            std::shared_ptr<FunctionRegister>const&fr)=0;
     };
 
     class GECORE_EXPORT ResourceFactory: public ObjectFactory{

@@ -194,7 +194,7 @@ void WindowObject::mainLoop(){
               this->_mousePosition[1]-this->_mouseLastPosition[1];//curr.y-prev.y
             if(this->_mouse)this->_mouse();//call mouse function
             this->_lastMouseTime=this->_currentMouseTime;//current is now last
-            if(	this->_mousePosition[0]-this->_windowSize[0]/2!=0||//change x
+            if( this->_mousePosition[0]-this->_windowSize[0]/2!=0||//change x
                 this->_mousePosition[1]-this->_windowSize[1]/2!=0){//change y
               if(this->_warpMouse)//can we warp mouse position
                 SDL_WarpMouseInWindow(this->_mainWindow,this->_windowSize[0]/2,this->_windowSize[1]/2);//warp
@@ -203,26 +203,26 @@ void WindowObject::mainLoop(){
             this->_mouseLastPosition[1]=this->_mousePosition[1];//copy y position
             break;//break mouse motion case
           case SDL_MOUSEBUTTONDOWN://mouse button down
-            if(E.button.button==SDL_BUTTON_LMASK){
+            if(E.button.button==SDL_BUTTON_LEFT){
               this->_mouseLeftDown=1;//left mouse button is down
               this->_mouseLeftOffOn^=1;//switch left mouse button state
             }
-            if(E.button.button==SDL_BUTTON_RMASK){
+            if(E.button.button==SDL_BUTTON_RIGHT){
               this->_mouseRightDown=1;//right mouse button is down
               this->_mouseRightOffOn^=1;//switch right mouse button state
             }
-            if(E.button.button==SDL_BUTTON_MMASK){
+            if(E.button.button==SDL_BUTTON_MIDDLE){
               this->_mouseMiddleDown=1;//middle mouse button is down
               this->_mouseMiddleOffOn^=1;//switch middle mouse button state
             }
             if(this->_mouse)this->_mouse();
             break;//break mouse button down case
           case SDL_MOUSEBUTTONUP:
-            if(E.button.button==SDL_BUTTON_LMASK)
+            if(E.button.button==SDL_BUTTON_LEFT)
               this->_mouseLeftDown=0;//left mouse button is not down
-            if(E.button.button==SDL_BUTTON_RMASK)
+            if(E.button.button==SDL_BUTTON_RIGHT)
               this->_mouseRightDown=0;//right mouse button is not down
-            if(E.button.button==SDL_BUTTON_MMASK)
+            if(E.button.button==SDL_BUTTON_MIDDLE)
               this->_mouseMiddleDown=0;//middle mouse button is not down
             if(this->_mouse)this->_mouse();
             break;//break mouse button up case
