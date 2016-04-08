@@ -3,6 +3,7 @@
 #include<geCore/functionRegister.h>
 #include<geCore/function.h>
 #include<geCore/stdFunctions.h>
+#include<geCore/macroFunction.h>
 #include<iostream>
 #include<sstream>
 
@@ -41,6 +42,78 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   }
 }
 
+SCENARIO("registration of stdFunction","[FunctionRegister]"){
+  auto tr=std::make_shared<TypeRegister>();
+  auto fr=std::make_shared<FunctionRegister>(tr);
+  registerStdFunctions(fr);
+
+  REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getName() == "Add<i32>");
+  REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getNofInputs() == 2);
+  REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getInputType(0) == TypeRegister::getTypeTypeId<int32_t>());
+  REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getInputType(1) == TypeRegister::getTypeTypeId<int32_t>());
+  REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getOutputType() == TypeRegister::getTypeTypeId<int32_t>());
+}
+
+SCENARIO("registration of functionNode factories","[FunctionRegister]"){
+  auto tr=std::make_shared<TypeRegister>();
+  auto fr=std::make_shared<FunctionRegister>(tr);
+  registerStdFunctions(fr);
+
+  auto ra = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),1);
+  auto rb = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),1);
+  auto rc = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),2);
+
+  auto d = std::make_shared<ge::core::FunctionNodeFactory>("newFce_d",2);
+  d->setFactory(fr->sharedFactory("Add<i32>"));
+  d->addResourceFactory(nullptr);
+  d->addResourceFactory(nullptr);
+  d->addInputFactory(nullptr);
+  d->addInputFactory(nullptr);
+
+  auto c = std::make_shared<ge::core::FunctionNodeFactory>("newFce_c",1);
+  c->setFactory(fr->sharedFactory("Mul<i32>"));
+  c->addResourceFactory(rc);
+  c->addResourceFactory(nullptr);
+  c->addInputFactory(d);
+  c->addInputFactory(nullptr);
+
+  auto b = std::make_shared<ge::core::FunctionNodeFactory>("newFce_b",1);
+  b->setFactory(fr->sharedFactory("Mul<i32>"));
+  b->addResourceFactory(nullptr);
+  b->addResourceFactory(rc);
+  b->addInputFactory(nullptr);
+  b->addInputFactory(d);
+
+  auto a = std::make_shared<ge::core::FunctionNodeFactory>("newFce_a",1);
+  a->setFactory(fr->sharedFactory("Add<i32>"));
+  a->addResourceFactory(ra);
+  a->addResourceFactory(rb);
+  a->addInputFactory(b);
+  a->addInputFactory(c);
+
+
+  //newFce ::= (va+vb)va + (va+vb)vb
+  auto fac = std::make_shared<ge::core::MacroFunctionFactory>("newFce");
+  fac->setFactory(a);
+  fac->setInputFactories({
+      {MacroFunctionFactory::FactoryInput(b,0),MacroFunctionFactory::FactoryInput(d,0)},
+      {MacroFunctionFactory::FactoryInput(c,1),MacroFunctionFactory::FactoryInput(d,1)}});
+
+  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::I32,2,TypeRegister::I32,TypeRegister::I32}),"newFce",fac);
+
+
+  auto f=fr->sharedFunction("newFce");
+  auto ff=std::dynamic_pointer_cast<Function>(f);
+  REQUIRE(ff->getName()=="newFce");
+  REQUIRE(ff->getInputType(0) == tr->getTypeId("i32"));
+  REQUIRE(ff->getInputType(1) == tr->getTypeId("i32"));
+  REQUIRE(ff->getOutputType() == tr->getTypeId("i32"));
+  ff->bindInput(0,std::make_shared<Nullary>(fr,(int32_t)4));
+  ff->bindInput(1,std::make_shared<Nullary>(fr,(int32_t)2));
+  ff->bindOutput(tr->sharedAccessor("i32"));
+  (*f)();
+}
+
 int blb(int a,int b){
   return a+b;
 }
@@ -62,4 +135,3 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   REQUIRE((int32_t)(*ff->getOutputData())==10+12);
 
 }
-

@@ -8,6 +8,7 @@
 #include<vector>
 #include<map>
 #include<memory>
+#include<cassert>
 
 #define ___ std::cerr<<__FILE__<<": "<<__LINE__<<std::endl
 

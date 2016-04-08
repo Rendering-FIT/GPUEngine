@@ -63,6 +63,7 @@ namespace ge{
         }
         virtual std::shared_ptr<Statement>_do(
             std::shared_ptr<FunctionRegister>const&fr)=0;
+        inline std::string getName()const{return this->_name;}
     };
 
     class GECORE_EXPORT ResourceFactory: public ObjectFactory{
