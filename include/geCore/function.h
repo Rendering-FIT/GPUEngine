@@ -16,6 +16,7 @@ namespace ge{
         FunctionFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~FunctionFactory();
         virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister> const&)=0;
+        virtual std::shared_ptr<FunctionFactory>getInputFactory(size_t input);
     };
 
     class GECORE_EXPORT Function: public Statement{
@@ -80,62 +81,86 @@ namespace ge{
     }
 
     inline std::string Function::doc()const{
+      assert(this!=nullptr);
       return"";
     }
 
     inline TypeRegister::TypeID Function::getInputType(InputIndex i)const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getInputType(this->_id,i);
     }
 
     inline ge::core::TypeRegister::TypeID Function::getOutputType()const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getOutputType(this->_id);
     }
 
     inline Function::InputIndex Function::getNofInputs()const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getNofInputs(this->_id);
     }
 
     inline std::string Function::getInputName(InputIndex i)const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getInputName(this->_id,i);
     }
 
     inline Function::InputIndex Function::getInputIndex(std::string name)const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getInputIndex(this->_id,name);
     }
 
     inline std::string Function::getOutputName()const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getOutputName(this->_id);
     }
 
     inline std::string Function::getName()const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_functionRegister->getName(this->_id);
     }
 
     inline void Function::setInputName(InputIndex i,std::string name){
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       this->_functionRegister->setInputName(this->_id,i,name);
     }
 
     inline void Function::setOutputName(std::string name){
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       this->_functionRegister->setOutputName(this->_id,name);
     }
 
     inline bool Function::bindInput (std::string name,std::shared_ptr<Function>function){
+      assert(this!=nullptr);
       return this->bindInput(this->getInputIndex(name),function);
     }
 
     inline bool Function::hasInput (std::string name)const{
+      assert(this!=nullptr);
       return this->hasInput(this->getInputIndex(name));
     }
 
     inline std::shared_ptr<Accessor>const&Function::getInputData (std::string input)const{
+      assert(this!=nullptr);
       return this->getInputData(this->getInputIndex(input));
     }
 
     inline TypeRegister::TypeID Function::getInputType (std::string name)const{
+      assert(this!=nullptr);
       return this->getInputType(this->getInputIndex(name));
     }
 
     inline std::shared_ptr<Function>const&Function::getInputFunction(std::string name)const{
+      assert(this!=nullptr);
       return this->getInputFunction(this->getInputIndex(name));
     }
 
@@ -211,30 +236,38 @@ namespace ge{
 
 
     inline std::shared_ptr<Accessor>const&AtomicFunction::getOutputData()const{
+      assert(this!=nullptr);
       return this->_outputData;
     }
 
     inline bool AtomicFunction::hasInput(InputIndex i)const{
+      assert(this!=nullptr);
       return this->_inputs[i].function!=nullptr;
     }
 
     inline Function::Ticks AtomicFunction::getUpdateTicks()const{
+      assert(this!=nullptr);
       return this->_updateTicks;
     }
 
     inline Function::Ticks AtomicFunction::getCheckTicks ()const{
+      assert(this!=nullptr);
       return this->_checkTicks;
     }
 
     inline void AtomicFunction::setUpdateTicks(Function::Ticks ticks){
+      assert(this!=nullptr);
       this->_checkTicks = ticks;
     }
 
     inline void AtomicFunction::setCheckTicks(Ticks ticks){
+      assert(this!=nullptr);
       this->_updateTicks = ticks;
     }
 
     inline std::shared_ptr<Function>const&AtomicFunction::getInputFunction(InputIndex i)const{
+      assert(this!=nullptr);
+      assert(i<this->_inputs.size());
       return this->_inputs[i].function;
     }
 
@@ -243,18 +276,26 @@ namespace ge{
     }
 
     inline bool AtomicFunction::hasOutput()const{
+      assert(this!=nullptr);
       return this->_outputData!=nullptr;
     }
 
     inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(InputIndex i)const{
+      assert(this!=nullptr);
+      assert(i<this->_inputs.size());
+      assert(this->_inputs[i].function!=nullptr);
       return this->_inputs[i].function->getOutputData();
     }
 
     inline bool AtomicFunction::_inputChanged(InputIndex i)const{
+      assert(this!=nullptr);
+      assert(i<this->_inputs.size());
       return this->_inputs[i].changed;
     }
 
     inline bool AtomicFunction::_inputChanged(std::string input)const{
+      assert(this!=nullptr);
+      assert(this->_functionRegister!=nullptr);
       return this->_inputChanged(this->_functionRegister->getInputIndex(this->_id,input));
     }
 
@@ -262,6 +303,7 @@ namespace ge{
       inline std::vector<ge::core::TypeRegister::DescriptionElement>getDescription(
           std::shared_ptr<ge::core::TypeRegister>const&tr,
           OUTPUT(*)(ARGS...)){
+        assert(tr!=nullptr);
         std::vector<ge::core::TypeRegister::DescriptionElement>result;
         result.push_back(ge::core::TypeRegister::FCE);
         result.push_back(tr->getTypeId(ge::core::TypeRegister::getTypeKeyword<OUTPUT>()));
@@ -273,6 +315,8 @@ namespace ge{
 
     template<typename OUTPUT,typename...ARGS,std::size_t...I>
       OUTPUT uber_call(Function*mf,OUTPUT(*FCE)(ARGS...),ge::core::index_sequence<I...>){
+        assert(mf!=nullptr);
+        assert(FCE!=nullptr);
 #if defined(_MSC_VER) && _MSC_VER<1900
         return FCE((ARGS&...)(*mf->getInputData(I))...);
 #else
@@ -285,6 +329,8 @@ namespace ge{
           std::shared_ptr<ge::core::FunctionRegister>const&fr,
           const std::string name,
           OUTPUT(*FCE)(ARGS...)){
+        assert(fr!=nullptr);
+        assert(fr->getTypeRegister()!=nullptr);
         static const std::string ss=name;
         auto tr = fr->getTypeRegister();
         auto tid = tr->addType("",getDescription(tr,FCE));
@@ -297,6 +343,8 @@ namespace ge{
             virtual ~BasicFunction(){}
           protected:
             virtual bool _do(){
+              assert(this!=nullptr);
+              assert(this->_functionRegister!=nullptr);
               typedef OUTPUT(*FF)(ARGS...);
               FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
               (OUTPUT&)(*this->getOutputData()) = uber_call(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});

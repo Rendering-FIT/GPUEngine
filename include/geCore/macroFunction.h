@@ -24,26 +24,29 @@ namespace ge{
             std::shared_ptr<Function>const&output,
             std::vector<FceInputList>const&inputs);
         ~MacroFunction();
-        virtual inline void operator()();
-        virtual bool bindInput (InputIndex i,std::shared_ptr<Function>function = nullptr);
-        virtual bool bindOutput(             std::shared_ptr<Accessor>data     = nullptr);
-        virtual bool hasInput (InputIndex i)const;
-        virtual bool hasOutput(            )const;
-        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex i)const;
-        virtual std::shared_ptr<Accessor>const&getOutputData(            )const;
-        virtual Ticks getUpdateTicks()const;
-        virtual Ticks getCheckTicks ()const;
-        virtual void  setUpdateTicks(Ticks ticks);
-        virtual void  setCheckTicks (Ticks ticks);
-        virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const;
-        virtual inline std::string doc()const{return "";}
+        virtual inline void operator()()override;
+        virtual bool bindInput (InputIndex i,std::shared_ptr<Function>function = nullptr)override;
+        virtual bool bindOutput(             std::shared_ptr<Accessor>data     = nullptr)override;
+        virtual bool hasInput (InputIndex i)const override;
+        virtual bool hasOutput(            )const override;
+        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex i)const override;
+        virtual std::shared_ptr<Accessor>const&getOutputData(            )const override;
+        virtual Ticks getUpdateTicks()const override;
+        virtual Ticks getCheckTicks ()const override;
+        virtual void  setUpdateTicks(Ticks ticks)override;
+        virtual void  setCheckTicks (Ticks ticks)override;
+        virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const override;
+        virtual inline std::string doc()const override;
     };
 
     inline void MacroFunction::operator()(){
+      assert(this!=nullptr);
       (*this->_outputMapping)();
     }
 
-
+    inline std::string MacroFunction::doc()const{
+      return "";
+    }
 
     class GECORE_EXPORT FunctionNodeFactory: public FunctionFactory{
       protected:
@@ -56,24 +59,31 @@ namespace ge{
         void addResourceFactory(std::shared_ptr<ResourceFactory>const&factory);
         void addInputFactory(std::shared_ptr<StatementFactory>const&factory);
         virtual ~FunctionNodeFactory();
+        std::shared_ptr<FunctionFactory>getInputFactory(size_t input);
         void reset();
         virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&fr);
     };
 
     class GECORE_EXPORT MacroFunctionFactory: public FunctionFactory{
-      protected:
-        std::shared_ptr<FunctionFactory>_factory = nullptr;
+      public:
         using FactoryInput = std::tuple<std::shared_ptr<FunctionFactory>,FunctionRegister::InputIndex>;
         enum FceInputParts{
-          FUNCTION = 0,
-          INPUT    = 1,
+          FACTORY = 0,
+          INPUT   = 1,
         };
         using FactoryInputList = std::vector<FactoryInput>;
+      protected:
+        std::shared_ptr<FunctionFactory>_factory = nullptr;
         std::vector<FactoryInputList> _inputs;
-        //void _recBuildInput(MacroFunction::FactoryInputList const&factoryInputList)
+        void _recBuildInput(
+            MacroFunction::FceInputList&output,
+            std::shared_ptr<Function>const&fce,
+            std::shared_ptr<FunctionFactory>const&fac,
+            MacroFunctionFactory::FactoryInputList const&factoryInputList);
       public:
         MacroFunctionFactory(std::string name = "",Uses maxUses = 1);
         virtual ~MacroFunctionFactory();
+        std::shared_ptr<FunctionFactory>getInputFactory(size_t input);
         void setFactory(std::shared_ptr<StatementFactory>const&fac);
         void setInputFactories(std::vector<FactoryInputList> const&inputs);
         virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&fr);
