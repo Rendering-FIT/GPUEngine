@@ -268,7 +268,7 @@ namespace ge
            _firstItemAvailableAtTheEnd(0), _numNullObjects(0)  {}
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity,unsigned numNullObjects)
          : std::vector<unsigned*>(capacity), // sets the capacity and resizes the vector, default-inserting elements
-           _numItemsTotal(capacity-numNullObjects), _numItemsAvailable(capacity-numNullObjects),
+           _numItemsTotal(capacity), _numItemsAvailable(capacity-numNullObjects),
            _numItemsAvailableAtTheEnd(capacity-numNullObjects),
            _firstItemAvailableAtTheEnd(numNullObjects), _numNullObjects(numNullObjects)
       {

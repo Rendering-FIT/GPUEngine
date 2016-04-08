@@ -51,9 +51,9 @@ namespace ge
          inline void download(glm::mat4 *matrix,unsigned numMatrices,unsigned startIndex=0);
          inline void upload(const float *matrix,    unsigned numMatrices,unsigned startIndex=0);
          inline void upload(const glm::mat4 *matrix,unsigned numMatrices,unsigned startIndex=0);
-         static void downloadFromOffset(float *matrix,             unsigned offset64,unsigned numMatrices);
+         static        void downloadFromOffset(float     *matrix,unsigned offset64,unsigned numMatrices);
          static inline void downloadFromOffset(glm::mat4 *matrix,unsigned offset64,unsigned numMatrices);
-         static void uploadToOffset(const float *matrix,             unsigned offset64,unsigned numMatrices);
+         static        void uploadToOffset(const float     *matrix,unsigned offset64,unsigned numMatrices);
          static inline void uploadToOffset(const glm::mat4 *matrix,unsigned offset64,unsigned numMatrices);
          void downloadListControlData(unsigned &matrixOffset64,unsigned &numMatrices);
          void uploadListControlData(unsigned matrixOffset64,unsigned numMatrices);

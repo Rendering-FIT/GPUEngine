@@ -94,7 +94,7 @@ RenderingContext::RenderingContext()
    // create draw commands buffer
    _drawIndirectBuffer=new BufferObject(initialDrawIndirectBufferSize,nullptr,GL_DYNAMIC_COPY);
    //_transformationBuffer=new BufferObject(_initialTransformationBufferSize,nullptr,GL_DYNAMIC_DRAW);
-   _cpuTransformationBuffer=new float[initialTransformationBufferCapacity*64/sizeof(float)];
+   _cpuTransformationBuffer=new float[initialTransformationBufferCapacity*16];
 
    // create Null objects (Null object design pattern)
 
@@ -253,6 +253,22 @@ void RenderingContext::unmapBuffers()
    _matrixStorage.unmap();
    _matrixListControlStorage.unmap();
    _stateSetStorage.unmap();
+}
+
+
+void RenderingContext::setCpuTransformationBufferCapacity(unsigned numMatrices)
+{
+   // set new capacity
+   unsigned capacity=_transformationAllocationManager.capacity();
+   if(capacity==numMatrices)
+      return;
+   _transformationAllocationManager.setCapacity(numMatrices);
+
+   // realloc buffer
+   float *newBuffer=new float[numMatrices*16];
+   memcpy(newBuffer,_cpuTransformationBuffer,capacity*16*sizeof(float));
+   delete[] _cpuTransformationBuffer;
+   _cpuTransformationBuffer=newBuffer;
 }
 
 
@@ -862,7 +878,7 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV)
          ml->setRestartFlag(true);
          ml->setNumMatrices(0);
       }
-      ml->upload(reinterpret_cast<float*>(&mv),1,ml->numMatrices());
+      ml->upload(&mv,1,ml->numMatrices());
       ml->setNumMatrices(ml->numMatrices()+1);
    }
 

@@ -131,6 +131,7 @@ namespace ge
          inline unsigned* transformationAllocation(unsigned id) const;
          inline ItemAllocationManager& transformationAllocationManager();
          inline const ItemAllocationManager& transformationAllocationManager() const;
+         void setCpuTransformationBufferCapacity(unsigned numMatrices);
 
          virtual bool allocPrimitives(Mesh &mesh,unsigned numPrimitives);
          virtual bool reallocPrimitives(Mesh &mesh,unsigned numPrimitives,
