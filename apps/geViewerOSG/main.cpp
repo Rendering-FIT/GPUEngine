@@ -117,24 +117,22 @@ int main(int argc,char*argv[])
 
 void Mouse()
 {
-   if(!mouseRightDown && window->isLeftDown()!=0) {
+   if(!mouseRightDown && window->isRightDown()!=0) {
       mouseRightDown=true;
       lastMousePos=glm::make_vec2(window->getMousePosition());
-      cout<<"Start"<<endl;
    }
-   else if(mouseRightDown && window->isLeftDown()) {
+   else if(mouseRightDown && window->isRightDown()) {
       glm::ivec2 currentMousePos=glm::make_vec2(window->getMousePosition());
       glm::vec2 size=glm::make_vec2(window->getWindowSize());
       glm::vec2 delta=glm::vec2(currentMousePos-lastMousePos)/size;
       lastMousePos=currentMousePos;
       cameraManipulator.rotate(delta.x,delta.y);
    }
-   else if(mouseRightDown && !window->isLeftDown()) {
+   else if(mouseRightDown && !window->isRightDown()) {
       mouseRightDown=false;
       glm::vec2 size=glm::make_vec2(window->getWindowSize());
       glm::vec2 delta=glm::vec2(glm::make_vec2(window->getMousePosition())-lastMousePos)/size;
       cameraManipulator.rotate(delta.x,delta.y);
-      cout<<"Stop"<<endl;
    }
 }
 
@@ -153,8 +151,6 @@ void Idle()
 
    window->swap();
 }
-
-
 
 
 void Init()

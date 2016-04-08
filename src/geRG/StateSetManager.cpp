@@ -214,6 +214,23 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          ss->addRenderCommand();
       }
 
+      // append to the parent state set
+      internalLevel=3;
+      auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
+            getOrCreateStateSet_optimized(this);
+      parent->addChild(ss);
+   }
+   else if(internalLevel==3)
+   {
+      assert(colorTextureList.size()<=1 && "StateSetManager::init(): internalLevel 3 "
+             "requires size of colorTextureList to be 1 or 0.");
+
+      // create colorTexturingMode uniform
+      ss->clearCommands();
+      ss->addCommand(make_shared<FlexibleUniform1i>("colorTexturingMode",
+                                                    colorTextureList.size()==0?0:1));
+      ss->addRenderCommand();
+
       // store colorTextureList in temporary variable and leave it empty
       // as it should not influence further lookups for parents
       decltype(colorTextureList) savedColorTextureList;
@@ -222,9 +239,9 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
       // get parent state set
       if(glProgramList.size()<=1)
       {
-         internalLevel=3;
+         internalLevel=4;
          if(savedColorTextureList.size()==0) {
-            // jump to internalLevel 3
+            // jump to internalLevel 4
             init(ss,m);
          } else {
             // append to the parent state set
@@ -245,7 +262,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          for(size_t i=0,c=tmp.size(); i<c; i++)
          {
             // find parent state set
-            internalLevel=3; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
+            internalLevel=4; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
             glProgramList.front().swap(tmp[i]);
             if(tmp2.size()>=tmp.size())
                binList[0]=tmp2[i];
@@ -263,7 +280,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
       // restore colorTextureList
       colorTextureList.swap(savedColorTextureList);
    }
-   else if(internalLevel==3)
+   else if(internalLevel==4)
    {
       assert(glProgramList.size()<=1 && "StateSetManager::init(): internalLevel 3 "
              "requires size of glProgramList to be 1 or 0.");
@@ -296,9 +313,9 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
 #else
       if(binList.size()<=1)
       {
-         internalLevel=4;
+         internalLevel=5;
          if(savedGLProgramList.size()==0) {
-            // jump to internalLevel 4
+            // jump to internalLevel 5
             init(ss,m);
          } else {
             // append to the parent state set
@@ -316,7 +333,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          for(size_t i=0,c=tmp.size(); i<c; i++)
          {
             // find parent state set
-            internalLevel=4; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
+            internalLevel=5; // keep this in the loop as the value might be destroyed inside getOrCreateStateSet_optimized()
             binList.front()=tmp[i];
             auto parent=static_cast<StateSetManagerTemplate<StateSetDefaultGLState>*>(m)->
                   getOrCreateStateSet_optimized(this);
@@ -331,7 +348,7 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
       // restore glProgramList
       glProgramList.swap(savedGLProgramList);
    }
-   else if(internalLevel==4)
+   else if(internalLevel==5)
    {
       assert(binList.size()<=1 && "StateSetManager::init(): internalLevel 4 "
              "requires size of binList to be 1 or 0.");
