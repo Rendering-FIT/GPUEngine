@@ -158,6 +158,8 @@ void Init()
    ge::gl::initShadersAndPrograms();
 
    // load model
+   glm::vec3 center;
+   float radius;
    if(!fileName.empty())
    {
       osg::ref_ptr<osg::Node> root=osgDB::readNodeFile(fileName);
@@ -165,7 +167,13 @@ void Init()
          cout<<"Failed to load file "<<fileName<<endl;
       else
       {
+         // convert model
          model=ge::osgImport::import(root);
+
+         // get bounding sphere
+         osg::BoundingSphere bs=root->getBound();
+         center=glm::make_vec3(bs.center().ptr());
+         radius=bs.radius();
       }
 
       // release OSG memory
@@ -191,6 +199,10 @@ void Init()
 #else
       // add model bellow camera transformation
       cameraTransformation->addChild(model->transformationRoot());
+
+      // setup orbit manipulator
+      cameraManipulator.setCenter(center);
+      cameraManipulator.setDistance(radius*2.f);
 #endif
    }
 
