@@ -125,17 +125,17 @@ namespace ge
             return !operator==(rhs);
          }
 
-         virtual self_type& operator+(int shift)
+         virtual self_type& operator+(int )
          {
             return *this;
          }
 
-         virtual const reference operator*()
+         virtual reference operator*()
          {
             return _triangle;
          }
 
-         virtual const pointer operator->()
+         virtual pointer operator->()
          {
             return &(operator*());
          }
@@ -291,7 +291,7 @@ namespace ge
        * array is found by querying the semantic. It assumes the standard semantic names
        * from geCore StandardSemanticsNames.
        */
-      static MeshIndexedTriangleIterator MeshPositionIteratorBegin(Mesh *mesh)
+      inline MeshIndexedTriangleIterator MeshPositionIteratorBegin(Mesh *mesh)
       {
          auto indices = mesh->getAttribute(ge::core::StandardSemanticNames::indices);
          auto positions = mesh->getAttribute(ge::core::StandardSemanticNames::position);
@@ -318,7 +318,7 @@ namespace ge
        * iterator via MeshPositionIteratorBegin() and then uses mesh->count to updates
        * its position.
        */
-      static MeshIndexedTriangleIterator MeshPositionIteratorEnd(Mesh *mesh)
+      inline MeshIndexedTriangleIterator MeshPositionIteratorEnd(Mesh *mesh)
       {
          MeshIndexedTriangleIterator ret = MeshPositionIteratorBegin(mesh);
          if(ret.getN() == 0)
