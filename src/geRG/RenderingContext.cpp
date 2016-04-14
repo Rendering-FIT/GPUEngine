@@ -284,10 +284,10 @@ void RenderingContext::setCpuTransformationBufferCapacity(unsigned numMatrices)
  */
 bool RenderingContext::allocPrimitives(Mesh &mesh,unsigned numPrimitives)
 {
-   // Warn if attribStorage is not already assigned
+   // Warn if attribStorage is not assigned
    if(mesh.attribStorage()==nullptr)
    {
-      cerr<<"Error: calling RenderingContext::allocPrimitiveSets() on Mesh\n"
+      cerr<<"Error: calling RenderingContext::allocPrimitives() on Mesh\n"
             "   that is empty (no vertices and indices allocated)." << endl;
       return false;
    }
@@ -540,8 +540,11 @@ void RenderingContext::cancelAllAllocations()
    // break Mesh references to Primitives
    // (set all Mesh::_attribStorage to nullptr
    // and zero all Drawable::items)
-   for(auto it=_primitiveStorage.begin(); it!=_primitiveStorage.end(); it++) {
-      Mesh *m=it->owner;
+   for(unsigned i=1, // id starts at 1
+       e=_primitiveStorage.firstItemAvailableAtTheEnd()-i;
+       i!=e; i++)
+   {
+      Mesh *m=_primitiveStorage[i].owner;
       if(m) {
          m->setAttribStorage(nullptr);
          DrawableList &dl=m->drawables();
@@ -928,6 +931,12 @@ void RenderingContext::setupRendering()
    auto root=_stateSetManager->root();
    if(root)
       root->setupRendering();
+
+   // resize drawIndirectBuffer if necessary
+   if(_drawIndirectBuffer->getSize()<_indirectBufferAllocatedSpace4)
+      _drawIndirectBuffer->realloc(static_cast<decltype(_indirectBufferAllocatedSpace4)>(
+            _indirectBufferAllocatedSpace4*4*1.2f), // multiply by 1.2 to avoid possibly many reallocations by very small amount
+            BufferObject::NEW_BUFFER);
 }
 
 
@@ -1004,6 +1013,11 @@ void RenderingContext::frame()
 
    // render scene
    render();
+
+   // check for OpenGL errors
+   int e=glGetError();
+   if(e!=GL_NO_ERROR)
+      cout<<"OpenGL error "<<e<<" detected after the frame rendering"<<endl;
 }
 
 

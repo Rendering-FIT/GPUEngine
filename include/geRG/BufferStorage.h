@@ -223,8 +223,13 @@ namespace ge
          // realloc BufferObject
          unsigned bufferSize=unsigned(_bufferObject->getSize());
          unsigned newBufferSize=newCapacity*AllocationItemSize;
-         if(newBufferSize>bufferSize)
+         if(newBufferSize>bufferSize) {
+            if(_mappedBufferAccess!=BufferStorageAccess::NO_ACCESS)
+               _bufferObject->unmap();
             _bufferObject->realloc(newBufferSize,ge::gl::BufferObject::KEEP_DATA);
+            if(_mappedBufferAccess!=BufferStorageAccess::NO_ACCESS)
+               _mappedBufferPtr=static_cast<Type*>(_bufferObject->map(static_cast<GLbitfield>(_mappedBufferAccess)));
+         }
       }
 
    }
