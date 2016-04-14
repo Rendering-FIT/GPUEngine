@@ -5,15 +5,17 @@
 #include <geSG/Export.h>
 //#include <Drawable.h>
 #include <geSG/Model.h>
+#include <geSG/AttributeDescriptor.h>
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 
 namespace ge{
    namespace sg
    {
-      struct AttributeDescriptor;
+      //struct AttributeDescriptor;
       class Material;
 
       /**
@@ -24,6 +26,51 @@ namespace ge{
       class /*GESG_EXPORT*/ Mesh// : public Drawable
       {
       public:
+
+         /**
+          * Helper comparator to be used with std algorithms such as find_if.
+          *
+          * @see getAttribute
+          */
+         struct IsSemantic
+         {
+
+            IsSemantic(unsigned sem) : semantic(sem){}
+            IsSemantic(const std::string& sem) : semantic(AttributeDescriptor::semanticRegister.getValue(sem)){}
+
+            inline bool operator()(unsigned semantic, std::shared_ptr<AttributeDescriptor> desc)
+            {
+               return desc->semantic == semantic;
+            }
+
+            inline bool operator()(const std::string& semantic, std::shared_ptr<AttributeDescriptor> desc)
+            {
+               return desc->semantic == AttributeDescriptor::semanticRegister.getValue(semantic);
+            }
+
+            inline bool operator()(std::shared_ptr<AttributeDescriptor> desc)
+            {
+               return desc->semantic == this->semantic;
+            }
+
+            unsigned semantic;
+         };
+
+         inline std::shared_ptr<AttributeDescriptor> getAttribute(unsigned semantic)
+         {
+            auto it = std::find_if(this->attributes.begin(), this->attributes.end(), Mesh::IsSemantic(semantic));
+            if(it != this->attributes.end())
+               return *it;
+            return std::shared_ptr<AttributeDescriptor>(nullptr);
+         }
+
+         inline std::shared_ptr<AttributeDescriptor> getAttribute(const std::string& semantic)
+         {
+            auto it = std::find_if(this->attributes.begin(), this->attributes.end(), Mesh::IsSemantic(semantic));
+            if(it != this->attributes.end())
+               return *it;
+            return std::shared_ptr<AttributeDescriptor>(nullptr);
+         }
 
          /*enum class PrimitiveType
          {
@@ -49,5 +96,7 @@ namespace ge{
       protected:
       private:
       };
+
+      
    }
 }

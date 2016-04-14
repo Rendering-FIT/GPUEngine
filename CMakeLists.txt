@@ -41,7 +41,8 @@ IF(MSVC)
    # 4800 - forcing value to bool
    # 4503 - 'identifier' : decorated name length exceeded, name was truncated, due to a template hell
    # 4996 - This function or variable may be unsafe. Due to using pointer instead of iterators (MatrixTransformBase)
-   set(ignored_wrn "/wd4800 /wd4503 /wd4996")
+   # 4275 - on – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier' - Due to Intersector class which is defined only in header file.
+   set(ignored_wrn "/wd4800 /wd4503 /wd4996 /wd4275")
    # enable multithreaded compilation
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ${ignored_wrn}")
 

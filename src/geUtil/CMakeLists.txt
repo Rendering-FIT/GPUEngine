@@ -44,7 +44,7 @@ set(LIBRARYLOADER_INCLUDES
    ${HEADER_PATH}/LibraryLoader/RuntimeClassInterface.h
 )
 
-set(GL_INCLUDES
+set(UTIL_INCLUDES
    ${HEADER_PATH}/Export.h
    ${HEADER_PATH}/algorithms.h
    ${HEADER_PATH}/ArgumentObject.h
@@ -53,7 +53,7 @@ set(GL_INCLUDES
    ${HEADER_PATH}/FPSPrinter.h
    ${HEADER_PATH}/HighResolutionTimer.h
    ${HEADER_PATH}/Interpolator.h
-   ${HEADER_PATH}/Intersectors.h
+   ${HEADER_PATH}/Intersector.h
    ${HEADER_PATH}/macros.h
    ${HEADER_PATH}/MatrixStack.h
    ${HEADER_PATH}/Progress.h
@@ -71,20 +71,19 @@ set(GL_SOURCES
    CameraPath.cpp
    FPSPrinter.cpp
    HighResolutionTimer.cpp
-   Intersectors.cpp
    Progress.cpp
    NamespaceWithUsers.cpp
    copyArgumentManager2Namespace.cpp
 )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)
-   set(GL_INCLUDES ${GL_INCLUDES} ${HEADER_PATH}/WindowObject.h)
+   set(UTIL_INCLUDES ${UTIL_INCLUDES} ${HEADER_PATH}/WindowObject.h)
    set(GL_SOURCES ${GL_SOURCES} WindowObject.cpp)
 endif()
 
 add_library(${LIB_NAME}
    ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-   ${GL_INCLUDES}
+   ${UTIL_INCLUDES}
    ${ARGUMENTMANAGER_INCLUDES}
    ${LIBRARYLOADER_INCLUDES}
    ${GL_SOURCES}
@@ -128,7 +127,7 @@ install(FILES
 )
 
 install(FILES
-   ${GL_INCLUDES}
+   ${UTIL_INCLUDES}
    DESTINATION include/${LIB_NAME}
 )
 

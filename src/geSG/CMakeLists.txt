@@ -28,8 +28,12 @@ set(SG_INCLUDES
    ${HEADER_PATH}/Material.h
    ${HEADER_PATH}/MatrixTransform.h
    ${HEADER_PATH}/Mesh.h
+   ${HEADER_PATH}/MeshPrimitiveIterator.h
    ${HEADER_PATH}/Model.h
    ${HEADER_PATH}/Node.h
+   ${HEADER_PATH}/RayMeshIntersector.h
+   ${HEADER_PATH}/RaySphereIntersector.h
+   ${HEADER_PATH}/RayTriangleIntersector.h
    ${HEADER_PATH}/Scene.h
    ${HEADER_PATH}/Transform.h
 )
@@ -42,6 +46,9 @@ set(SG_SOURCES
    DefaultImage.cpp
    Material.cpp
    MatrixTransform.cpp
+   RayMeshIntersector.cpp
+   RaySphereIntersector.cpp
+   RayTriangleIntersector.cpp
 )
 
 ################################################
