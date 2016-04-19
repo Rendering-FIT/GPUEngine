@@ -82,18 +82,18 @@ SCENARIO("Basic Mealy Machine tests"){
   auto M = mm.addState(std::make_shared<MapTransitionChooser<1>>());
   auto E = mm.addState(std::make_shared<MapTransitionChooser<1>>());
 
-  mm.addTransition(S,std::vector<MealyMachine::BasicUnit>({'+'}).data(),P);
-  mm.addTransition(S,std::vector<MealyMachine::BasicUnit>({'-'}).data(),M);
+  mm.addTransition(S,std::vector<MealyMachine::BasicUnit>{'+'}.data(),P);
+  mm.addTransition(S,std::vector<MealyMachine::BasicUnit>{'-'}.data(),M);
   mm.addElseTransitions(S,E,startNonPM,&data);
   mm.addEOFTransition(S);
 
-  mm.addTransition(P,std::vector<MealyMachine::BasicUnit>({'+'}).data(),S,addPP,&data);
-  mm.addTransition(P,std::vector<MealyMachine::BasicUnit>({'-'}).data(),M,addP ,&data);
+  mm.addTransition(P,std::vector<MealyMachine::BasicUnit>{'+'}.data(),S,addPP,&data);
+  mm.addTransition(P,std::vector<MealyMachine::BasicUnit>{'-'}.data(),M,addP ,&data);
   mm.addElseTransitions(P,S,addPDontMove,&data);
   mm.addEOFTransition(P,addP,&data);
 
-  mm.addTransition(M,std::vector<MealyMachine::BasicUnit>({'-'}).data(),S,addMM,&data);
-  mm.addTransition(M,std::vector<MealyMachine::BasicUnit>({'+'}).data(),P,addM ,&data);
+  mm.addTransition(M,std::vector<MealyMachine::BasicUnit>{'-'}.data(),S,addMM,&data);
+  mm.addTransition(M,std::vector<MealyMachine::BasicUnit>{'+'}.data(),P,addM ,&data);
   mm.addElseTransitions(M,S,addMDontMove,&data);
   mm.addEOFTransition(M,addM,&data);
 
