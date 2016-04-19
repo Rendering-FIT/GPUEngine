@@ -6,6 +6,7 @@
 #include<cstring>
 #include<sstream>
 #include<iomanip>
+#include<algorithm>
 
 #include<geCore/dtemplates.h>
 #include<geCore/fsa/TransitionChooser.h>
