@@ -183,7 +183,32 @@ namespace ge{
         return nonof_rec(t0,t0+1,t1,args...);
       }
 
+    template<typename...ARGS,typename = std::enable_if<sizeof...(ARGS)==0>>
+      void printArgs2(ARGS...){
+      }
 
+    template<typename HEAD,typename...TAIL>
+      void printArgs2(HEAD head,TAIL...tail){
+        std::cerr<<","<<head;
+        printArgs2(tail...);
+      }
+
+    template<typename...ARGS,typename = std::enable_if<sizeof...(ARGS)==0>>
+      void printArgs(){
+      }
+
+    template<typename HEAD,typename...TAIL>
+      void printArgs(HEAD head,TAIL...tail){
+        std::cerr<<head;
+        printArgs2(tail...);
+      }
+
+    template<typename...ARGS,typename = std::enable_if<sizeof...(ARGS)!=0>>
+      void printError(std::string fceName,std::string message,ARGS...args){
+        std::cerr<<"ERROR: "<<fceName<<"(";
+        printArgs(args...);
+        std::cerr<<") - "<<message<<std::endl;
+      }
 
     GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);
     GECORE_EXPORT unsigned bitCount(unsigned value);

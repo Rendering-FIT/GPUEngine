@@ -53,7 +53,7 @@ TypeRegister::TypeRegister(){
 TypeRegister::TypeID TypeRegister::getTypeId(std::string name)const{
   if(!this->_name2Id.count(name)){
     std::cerr<<"ERROR: TypeRegister::getTypeId("<<name<<") - type \""<<name<<"\" does not exist."<<std::endl;
-    return TypeRegister::UNREGISTERED;
+    return TypeRegister::getTypeTypeId<TypeRegister::Unregistered>();
   }
   return this->_name2Id.find(name)->second;
 }
@@ -439,7 +439,6 @@ TypeRegister::TypeID TypeRegister::addType(std::string name,DescriptionList cons
     this->addDestructor(newTypeId,destructor);
     return newTypeId;
   }
-  return 0;
 }
 
 void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor> constructor){
@@ -574,6 +573,7 @@ bool TypeRegister::stringType (TypeID type)const{
 void* TypeRegister::alloc(TypeID id)const{
   auto size=this->computeTypeIdSize(id);
   void*ptr=(void*)(new char[size]);
+  std::memset(ptr,0,size);
   this->_callConstructors((char*)ptr,id);
   return ptr;
 }

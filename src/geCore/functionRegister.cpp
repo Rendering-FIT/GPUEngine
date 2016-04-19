@@ -16,24 +16,31 @@ FunctionRegister::FunctionID FunctionRegister::addFunction(
     std::shared_ptr<StatementFactory>const&factory){
   assert(this!=nullptr);
   assert(this->_typeRegister!=nullptr);
+  assert(this->_namer!=nullptr);
   FunctionID id = this->_functions.size();
-  this->_functions[id]=FunctionDefinition(type,name,factory,std::map<InputIndex,std::string>(),std::map<std::string,InputIndex>(),"");
-  for(TypeRegister::DescriptionElement i=0;i<this->_typeRegister->getNofFceArgs(type);++i)
-    this->setInputName(id,i,this->_genDefaultName(i));
-  this->setOutputName(id,"output");
+  this->_functions[id]=FunctionDefinition(type,name,factory);
+  this->_namer->addFceNaming(id,this->_typeRegister->getNofFceArgs(type));
   this->_name2Function[name]=id;
   return id;
 }
 
-std::shared_ptr<Statement>FunctionRegister::sharedFunction(FunctionID id)const{
+std::shared_ptr<Statement>FunctionRegister::sharedStatement(FunctionID id)const{
   assert(this!=nullptr);
   assert(std::get<FACTORY>(this->_getDefinition(id))!=nullptr);
   return (*std::get<FACTORY>(this->_getDefinition(id)))(std::const_pointer_cast<FunctionRegister>(this->shared_from_this()));
 }
 
-std::shared_ptr<Statement>FunctionRegister::sharedFunction(std::string name)const{
+std::shared_ptr<Statement>FunctionRegister::sharedStatement(std::string name)const{
   assert(this!=nullptr);
-  return this->sharedFunction(this->getFunctionId(name));
+  return this->sharedStatement(this->getFunctionId(name));
+}
+
+std::shared_ptr<Function>FunctionRegister::sharedFunction(FunctionID id)const{
+  return std::dynamic_pointer_cast<Function>(this->sharedStatement(id));
+}
+
+std::shared_ptr<Function>FunctionRegister::sharedFunction(std::string name)const{
+  return std::dynamic_pointer_cast<Function>(this->sharedStatement(name));
 }
 
 std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,StatementFactory::Uses maxUses)const{
@@ -45,7 +52,7 @@ std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,S
       virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister> const&fr){
         assert(this!=nullptr);
         assert(fr!=nullptr);
-        return fr->sharedFunction(this->_name);
+        return fr->sharedStatement(this->_name);
       }
   };
   return std::make_shared<Factory>(this->getName(id),maxUses);
@@ -66,3 +73,5 @@ std::string FunctionRegister::str()const{
     ss<<x.first<<std::endl;
   return ss.str();
 }
+
+

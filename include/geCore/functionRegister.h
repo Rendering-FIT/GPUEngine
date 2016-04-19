@@ -5,6 +5,7 @@
 #include<geCore/Export.h>
 #include<geCore/TypeRegister.h>
 #include<geCore/statement.h>
+#include<geCore/Namer.h>
 
 namespace ge{
   namespace core{
@@ -17,22 +18,17 @@ namespace ge{
         typedef void(*Implementation)();
         using InputIndex = size_t;
         using FunctionID = size_t;
+      protected:
         using FunctionDefinition = std::tuple<
           TypeRegister::TypeID,
           std::string,
-          std::shared_ptr<StatementFactory>,
-          std::map<InputIndex,std::string>,
-          std::map<std::string,InputIndex>,
-          std::string>;
+          std::shared_ptr<StatementFactory>>;
         enum FunctionDefinitionParts{
           TYPE       = 0,
           NAME       = 1,
           FACTORY    = 2,
-          INDEX2NAME = 3,
-          NAME2INDEX = 4,
-          OUTPUTNAME = 5,
         };
-      protected:
+        std::shared_ptr<Namer>       _namer;
         std::shared_ptr<TypeRegister>_typeRegister;
         std::map<FunctionID,FunctionDefinition>_functions;
         std::map<FunctionID,Implementation>_implementations;
@@ -41,7 +37,9 @@ namespace ge{
         inline FunctionDefinition const& _getDefinition(FunctionID id)const;
         std::string _genDefaultName(InputIndex i)const;
       public:
-        inline FunctionRegister(std::shared_ptr<TypeRegister>const&typeRegister);
+        inline FunctionRegister(
+            std::shared_ptr<TypeRegister>const&typeRegister,
+            std::shared_ptr<Namer>const&namer);
         inline ~FunctionRegister();
         FunctionID addFunction(
             TypeRegister::TypeID type,
@@ -64,23 +62,25 @@ namespace ge{
         inline void addImplementation(std::string name,Implementation impl);
         inline Implementation getImplementation(FunctionID id)const;
         inline Implementation getImplementation(std::string name)const;
-        std::shared_ptr<Statement>sharedFunction(FunctionID id)const;
-        std::shared_ptr<Statement>sharedFunction(std::string name)const;
+        std::shared_ptr<Function>sharedFunction(FunctionID id)const;
+        std::shared_ptr<Function>sharedFunction(std::string name)const;
+        std::shared_ptr<Statement>sharedStatement(FunctionID id)const;
+        std::shared_ptr<Statement>sharedStatement(std::string name)const;
         std::shared_ptr<StatementFactory>sharedFactory(FunctionID id,StatementFactory::Uses maxUses = 1)const;
         std::shared_ptr<StatementFactory>sharedFactory(std::string name,StatementFactory::Uses maxUses = 1)const;
         std::string str()const;
     };
 
-    inline FunctionRegister::FunctionRegister(std::shared_ptr<TypeRegister>const&typeRegister){
+    inline FunctionRegister::FunctionRegister(
+        std::shared_ptr<TypeRegister>const&typeRegister,
+        std::shared_ptr<Namer>const&namer){
       assert(typeRegister!=nullptr);
       this->_typeRegister = typeRegister;
       this->_functions[0]=FunctionDefinition(
           TypeRegister::getTypeTypeId<TypeRegister::Unregistered>(),
           "unregistered",
-          nullptr,
-          std::map<InputIndex,std::string>(),
-          std::map<std::string,InputIndex>(),
-          "");
+          nullptr);
+      this->_namer = namer;
     }
 
 
@@ -91,8 +91,7 @@ namespace ge{
       assert(this!=nullptr);
       auto ii=this->_functions.find(id);
       if(ii==this->_functions.end()){
-        std::cerr<<"ERROR - FunctionRegister::_getDefinition("<<id<<") - ";
-        std::cerr<<"there is no such function id"<<std::endl;
+        ge::core::printError("FunctionRegister::_getDefinition","there is no such function id",id);
         return this->_functions.find(0)->second;
       }
       return ii->second;
@@ -103,8 +102,7 @@ namespace ge{
       assert(this!=nullptr);
       auto ii=this->_functions.find(id);
       if(ii==this->_functions.end()){
-        std::cerr<<"ERROR - FunctionRegister::_getDefinition("<<id<<") - ";
-        std::cerr<<"there is no such function id"<<std::endl;
+        ge::core::printError("FunctionRegister::_getDefinition","there is no such function id",id);
         return this->_functions.find(0)->second;
       }
       return ii->second;
@@ -129,8 +127,7 @@ namespace ge{
       assert(this!=nullptr);
       auto ii=this->_name2Function.find(name);
       if(ii==this->_name2Function.end()){
-        std::cerr<<"ERROR - FunctionRegister::getFunctionId("<<name<<") - ";
-        std::cerr<<"there is no such function name"<<std::endl;
+        ge::core::printError("FunctionRegister::getFunctionId","there is no such function name",name);
         return 0;
       }
       return ii->second;
@@ -141,8 +138,7 @@ namespace ge{
       assert(this->_typeRegister!=nullptr);
       auto t=this->getType(id);
       if(t==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
-        std::cerr<<"ERROR - FunctionRegister::getNofInputs("<<id<<") - ";
-        std::cerr<<"there is no such function"<<std::endl;
+        ge::core::printError("FunctionRegister::getNofInputs","there is no such function",id);
         return 0;
       }
       return this->_typeRegister->getNofFceArgs(t);
@@ -150,18 +146,14 @@ namespace ge{
 
     inline std::string FunctionRegister::getOutputName(FunctionID id)const{
       assert(this!=nullptr);
-      return std::get<OUTPUTNAME>(this->_getDefinition(id));
+      assert(this->_namer!=nullptr);
+      return this->_namer->getFceOutputName(id);
     }
 
     inline std::string FunctionRegister::getInputName(FunctionID id,InputIndex input)const{
       assert(this!=nullptr);
-      auto ii=std::get<INDEX2NAME>(this->_getDefinition(id)).find(input);
-      if(ii==std::get<INDEX2NAME>(this->_getDefinition(id)).end()){
-        std::cerr<<"ERROR - FunctionRegister::getInputName("<<id<<","<<input<<") - ";
-        std::cerr<<"there is no such input"<<std::endl;
-        return "";
-      }
-      return ii->second;
+      assert(this->_namer!=nullptr);
+      return this->_namer->getFceInputName(id,input);
     }
 
     inline TypeRegister::TypeID FunctionRegister::getInputType(FunctionID id,InputIndex input)const{
@@ -181,59 +173,20 @@ namespace ge{
 
     inline FunctionRegister::InputIndex FunctionRegister::getInputIndex(FunctionID id,std::string name)const{
       assert(this!=nullptr);
-      auto def = this->_getDefinition(id);
-      if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
-        std::cerr<<"ERROR - FunctionRegister::getInputIndex("<<id<<","<<name<<") - ";
-        std::cerr<<"there is no such function"<<std::endl;
-        return 0;
-      }
-      auto ii=std::get<NAME2INDEX>(this->_getDefinition(id)).find(name);
-      if(ii==std::get<NAME2INDEX>(this->_getDefinition(id)).end()){
-        std::cerr<<"ERROR - FunctionRegister::getInputIndex("<<id<<","<<name<<") - ";
-        std::cerr<<"there is no such input"<<std::endl;
-        return 0;
-      }
-      return ii->second;
+      assert(this->_namer!=nullptr);
+      return this->_namer->getFceInput(id,name);
     }
 
     inline void FunctionRegister::setInputName(FunctionID id,InputIndex input,std::string name){
       assert(this!=nullptr);
-      FunctionDefinition& def = this->_getDefinition(id);
-      if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
-        std::cerr<<"ERROR - FunctionRegister::setInputName("<<id<<","<<input<<","<<name<<") - ";
-        std::cerr<<"there is no such function"<<std::endl;
-        return;
-      }
-
-      if(name=="")name=this->_genDefaultName(input);
-
-      auto jj=std::get<NAME2INDEX>(def).find(name);
-      if(jj!=std::get<NAME2INDEX>(def).end()&&jj->second!=input){
-        std::cerr<<"ERROR: "<<std::get<NAME>(def)<<"::setInputName("<<input<<","
-          <<name<<")";
-        std::cerr<<" - name "<<name<<" is already used for input number: ";
-        std::cerr<<jj->second<<std::endl;
-        return;
-      }
-      auto ii=std::get<INDEX2NAME>(def).find(input);
-      if(ii!=std::get<INDEX2NAME>(def).end()){
-        if(std::get<NAME2INDEX>(def).find(ii->second)!=std::get<NAME2INDEX>(def).end())
-          std::get<NAME2INDEX>(def).erase(ii->second);
-        std::get<INDEX2NAME>(def).erase(input);
-      }
-      std::get<NAME2INDEX>(def)[name ] = input;
-      std::get<INDEX2NAME>(def)[input] = name ;
+      assert(this->_namer!=nullptr);
+      this->_namer->setFceInputName(id,input,name);
     }
 
     inline void FunctionRegister::setOutputName(FunctionID id,std::string name){
       assert(this!=nullptr);
-      FunctionDefinition &def = this->_getDefinition(id);
-      if(std::get<TYPE>(def)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
-        std::cerr<<"ERROR - FunctionRegister::setOutputName("<<id<<","<<name<<") - ";
-        std::cerr<<"there is no such function"<<std::endl;
-        return;
-      }
-      std::get<OUTPUTNAME>(def)=name;
+      assert(this->_namer!=nullptr);
+      this->_namer->setFceOutputName(id,name);
     }
 
     inline std::shared_ptr<TypeRegister>const&FunctionRegister::getTypeRegister()const{
@@ -261,7 +214,6 @@ namespace ge{
       assert(this!=nullptr);
       return this->getImplementation(this->getFunctionId(name));
     }
-
 
 
   }

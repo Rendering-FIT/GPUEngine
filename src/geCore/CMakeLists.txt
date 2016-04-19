@@ -18,6 +18,7 @@ set(FSA_SOURCES
     fsa/state.cpp
     fsa/transition.cpp
     fsa/fusedCallbackData.cpp
+    fsa/MealyMachine.cpp
    )
 
 set(FSA_INCLUDES
@@ -25,6 +26,9 @@ set(FSA_INCLUDES
     ${HEADER_PATH}/fsa/state.h
     ${HEADER_PATH}/fsa/transition.h
     ${HEADER_PATH}/fsa/fusedCallbackData.h
+    ${HEADER_PATH}/fsa/MealyMachine.h
+    ${HEADER_PATH}/fsa/TransitionChooser.h
+    ${HEADER_PATH}/fsa/MapTransitionChooser.h
    )
 
 set(CORE_INCLUDES
@@ -71,6 +75,7 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/tokenization.h
     ${HEADER_PATH}/text.h
     ${HEADER_PATH}/functionRegister.h
+    ${HEADER_PATH}/Namer.h
    )
 
 set(CORE_SOURCES
@@ -105,6 +110,7 @@ set(CORE_SOURCES
     tokenization.cpp
     text.cpp
     functionRegister.cpp
+    Namer.cpp
    )
 
 add_library(${LIB_NAME}

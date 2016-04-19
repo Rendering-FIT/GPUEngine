@@ -17,6 +17,13 @@ void SyntaxTreeProcessor::operator()(SyntaxNode::Node root)const{
   auto key = Key(n->getNonterm()->name,n->getNonterm()->getRuleName(n->side));
   auto ii = this->_callbacks.find(key);
   bool hasCallback = ii!=this->_callbacks.end();
+
+  if(!hasCallback){
+    key = Key(n->getNonterm()->name,"");
+    ii = this->_callbacks.find(key);
+    hasCallback = ii!=this->_callbacks.end();
+  }
+
   if(hasCallback&&std::get<PRE>(ii->second))std::get<PRE>(ii->second)(root,std::get<DATA>(ii->second));
   for(auto x:n->childs)
     this->operator()(x);

@@ -14,7 +14,8 @@ using namespace ge::core;
 
 SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
-  auto fr=std::make_shared<FunctionRegister>(tr);
+  auto nr=std::make_shared<Namer>();
+  auto fr=std::make_shared<FunctionRegister>(tr,nr);
   REQUIRE(fr->getName(0)=="unregistered");
   REQUIRE(fr->getType(0)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>());
   auto ft =       tr->addType("",{
@@ -44,7 +45,8 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
 
 SCENARIO("registration of stdFunction","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
-  auto fr=std::make_shared<FunctionRegister>(tr);
+  auto nr=std::make_shared<Namer>();
+  auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);
 
   REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getName() == "Add<i32>");
@@ -56,7 +58,8 @@ SCENARIO("registration of stdFunction","[FunctionRegister]"){
 
 SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
-  auto fr=std::make_shared<FunctionRegister>(tr);
+  auto nr=std::make_shared<Namer>();
+  auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);
 
   auto ra = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),1);
@@ -120,7 +123,8 @@ int blb(int a,int b){
 
 SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
-  auto fr=std::make_shared<FunctionRegister>(tr);
+  auto nr=std::make_shared<Namer>();
+  auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);
   registerBasicFunction(fr,"blb",blb);
 

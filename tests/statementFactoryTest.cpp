@@ -11,7 +11,8 @@ using namespace ge::core;
 
 SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
   auto r = std::make_shared<ge::core::TypeRegister>();
-  auto fr = std::make_shared<ge::core::FunctionRegister>(r);
+  auto nr=std::make_shared<Namer>();
+  auto fr = std::make_shared<ge::core::FunctionRegister>(r,nr);
   ge::core::registerStdFunctions(fr);
   GIVEN( "basic function factory" ) {
     auto factory = fr->sharedFactory("Add<i32>");

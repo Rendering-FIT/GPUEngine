@@ -9,7 +9,8 @@ using namespace ge::core;
 
 SCENARIO( "basic interpret tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();
-  auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister);
+  auto nr=std::make_shared<Namer>();
+  auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister,nr);
   ge::core::registerStdFunctions(functionRegister);
   //std::cerr<<functionRegister->str();
   GIVEN( "basic expression" ) {
@@ -146,7 +147,8 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
 SCENARIO( "ticks tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();
-  auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister);
+  auto nr=std::make_shared<Namer>();
+  auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister,nr);
   ge::core::registerStdFunctions(functionRegister);
   class AddTen: public ge::core::AtomicFunction{
     public:
