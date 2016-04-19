@@ -117,24 +117,22 @@ int main(int argc,char*argv[])
 
 void Mouse()
 {
-   if(!mouseRightDown && window->isLeftDown()!=0) {
+   if(!mouseRightDown && window->isRightDown()!=0) {
       mouseRightDown=true;
       lastMousePos=glm::make_vec2(window->getMousePosition());
-      cout<<"Start"<<endl;
    }
-   else if(mouseRightDown && window->isLeftDown()) {
+   else if(mouseRightDown && window->isRightDown()) {
       glm::ivec2 currentMousePos=glm::make_vec2(window->getMousePosition());
       glm::vec2 size=glm::make_vec2(window->getWindowSize());
       glm::vec2 delta=glm::vec2(currentMousePos-lastMousePos)/size;
       lastMousePos=currentMousePos;
       cameraManipulator.rotate(delta.x,delta.y);
    }
-   else if(mouseRightDown && !window->isLeftDown()) {
+   else if(mouseRightDown && !window->isRightDown()) {
       mouseRightDown=false;
       glm::vec2 size=glm::make_vec2(window->getWindowSize());
       glm::vec2 delta=glm::vec2(glm::make_vec2(window->getMousePosition())-lastMousePos)/size;
       cameraManipulator.rotate(delta.x,delta.y);
-      cout<<"Stop"<<endl;
    }
 }
 
@@ -155,13 +153,13 @@ void Idle()
 }
 
 
-
-
 void Init()
 {
    ge::gl::initShadersAndPrograms();
 
    // load model
+   glm::vec3 center;
+   float radius;
    if(!fileName.empty())
    {
       osg::ref_ptr<osg::Node> root=osgDB::readNodeFile(fileName);
@@ -169,7 +167,13 @@ void Init()
          cout<<"Failed to load file "<<fileName<<endl;
       else
       {
+         // convert model
          model=ge::osgImport::import(root);
+
+         // get bounding sphere
+         osg::BoundingSphere bs=root->getBound();
+         center=glm::make_vec3(bs.center().ptr());
+         radius=bs.radius();
       }
 
       // release OSG memory
@@ -195,6 +199,10 @@ void Init()
 #else
       // add model bellow camera transformation
       cameraTransformation->addChild(model->transformationRoot());
+
+      // setup orbit manipulator
+      cameraManipulator.setCenter(center);
+      cameraManipulator.setDistance(radius*2.f);
 #endif
    }
 

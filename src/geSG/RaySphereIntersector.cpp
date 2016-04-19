@@ -1,12 +1,14 @@
-#include <geUtil/Intersectors.h>
+#include <geSG/RaySphereIntersector.h>
+
+using namespace ge::sg;
 
 /**
- * Tests ray-sphere intersection. Note that the ray.direction
- * needs to be normalized!
- * 
- * @return True if ray intersects the sphere.
- */
-bool ge::util::RaySphereIntersector::intersects(const Ray & ray, const ge::sg::BoundingSphere & bs)
+* Tests ray-sphere intersection. Note that the ray.direction
+* needs to be normalized!
+*
+* @return True if ray intersects the sphere.
+*/
+bool RaySphereIntersector::intersects(const ge::util::Ray & ray, const ge::sg::BoundingSphere & bs)
 {
    float r2 = bs.radius * bs.radius;
    glm::vec3 oc = (ray.origin - bs.center);
@@ -22,7 +24,7 @@ bool ge::util::RaySphereIntersector::intersects(const Ray & ray, const ge::sg::B
    return false;
 }
 
-float ge::util::RaySphereIntersector::computeIntersection(Ray ray, ge::sg::BoundingSphere bs)
+float RaySphereIntersector::computeIntersection(ge::util::Ray ray, ge::sg::BoundingSphere bs)
 {
    float r2 = bs.radius * bs.radius;
    float a = glm::dot(ray.direction, ray.direction);
@@ -46,7 +48,7 @@ float ge::util::RaySphereIntersector::computeIntersection(Ray ray, ge::sg::Bound
    return t1;
 }
 
-bool ge::util::RaySphereIntersector::intersects()
+bool RaySphereIntersector::intersects()
 {
    return intersects(ray, *bs);
 }

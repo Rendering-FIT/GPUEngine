@@ -24,7 +24,7 @@ namespace ge
          unsigned size;             ///< Number of bytes in the block.
          unsigned nextRec;          ///< \brief Index of ChunkAllocation whose allocated memory follows the current block's memory.
          OwnerType *owner;          ///< Object that owns the allocated block. Null indicates free block.
-         inline ChunkAllocation();  ///< Default constructor does nothing.
+         inline ChunkAllocation()  {}  ///< Default constructor. It does nothing.
          inline ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,OwnerType *owner);  ///< Constructs structure by given values.
       };
 
@@ -44,7 +44,7 @@ namespace ge
          unsigned numItems;         ///< Number of items in the block. The real size is numItems multiplied by the size of the item.
          unsigned nextRec;          ///< \brief Index of BlockAllocation whose allocated memory follows the current block's memory.
          OwnerType *owner;          ///< Object that owns the allocated block. Null indicates free block.
-         inline BlockAllocation();  ///< Default constructor does nothing.
+         inline BlockAllocation()  {}  ///< Default constructor. It does nothing.
          inline BlockAllocation(unsigned startIndex,unsigned numItems,unsigned nextRec,OwnerType *owner);  ///< Constructs structure by the given values.
       };
 
@@ -203,10 +203,8 @@ namespace ge
    namespace rg
    {
 
-      template<typename OwnerType> inline ChunkAllocation<OwnerType>::ChunkAllocation()  {}
       template<typename OwnerType> inline ChunkAllocation<OwnerType>::ChunkAllocation(unsigned offset,unsigned size,unsigned nextRec,OwnerType *owner)
       { this->offset=offset; this->size=size; this->nextRec=nextRec; this->owner=owner; }
-      template<typename OwnerType> inline BlockAllocation<OwnerType>::BlockAllocation()  {}
       template<typename OwnerType> inline BlockAllocation<OwnerType>::BlockAllocation(unsigned startIndex,unsigned numItems,unsigned nextRec,OwnerType *owner)
       { this->startIndex=startIndex; this->numItems=numItems; this->nextRec=nextRec; this->owner=owner; }
       template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::numBytesTotal() const  { return _numBytesTotal; }
@@ -243,6 +241,13 @@ namespace ge
          // and it serves as Null object (Null object design pattern)
          std::vector<ChunkAllocation<OwnerType>>::emplace_back(0,nullObjectSize,0,nullptr);
       }
+      template<typename OwnerType> void ChunkAllocationManager<OwnerType>::setCapacity(unsigned value)
+      {
+         unsigned delta=value-_numBytesTotal;
+         _numBytesTotal=value;
+         _numBytesAvailable+=delta;
+         _numBytesAvailableAtTheEnd+=delta;
+      }
       template<typename OwnerType>
       inline BlockAllocationManager<OwnerType>::BlockAllocationManager(unsigned capacity)
          : _numItemsTotal(capacity), _numItemsAvailable(capacity), _numItemsAvailableAtTheEnd(capacity),
@@ -262,33 +267,24 @@ namespace ge
          // and it serves as Null object (Null object design pattern)
          std::vector<BlockAllocation<OwnerType>>::emplace_back(0,nullObjectNumElements,0,nullptr);
       }
+      template<typename OwnerType> void BlockAllocationManager<OwnerType>::setCapacity(unsigned value)
+      {
+         unsigned delta=value-_numItemsTotal;
+         _numItemsTotal=value;
+         _numItemsAvailable+=delta;
+         _numItemsAvailableAtTheEnd+=delta;
+      }
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity)
          : std::vector<unsigned*>(capacity), // sets the capacity and resizes the vector, default-inserting elements
            _numItemsTotal(capacity), _numItemsAvailable(capacity), _numItemsAvailableAtTheEnd(capacity),
            _firstItemAvailableAtTheEnd(0), _numNullObjects(0)  {}
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity,unsigned numNullObjects)
          : std::vector<unsigned*>(capacity), // sets the capacity and resizes the vector, default-inserting elements
-           _numItemsTotal(capacity-numNullObjects), _numItemsAvailable(capacity-numNullObjects),
+           _numItemsTotal(capacity), _numItemsAvailable(capacity-numNullObjects),
            _numItemsAvailableAtTheEnd(capacity-numNullObjects),
            _firstItemAvailableAtTheEnd(numNullObjects), _numNullObjects(numNullObjects)
       {
          std::memset(this->data(),0,numNullObjects*sizeof(unsigned*));
-      }
-      template<typename OwnerType> void ChunkAllocationManager<OwnerType>::setCapacity(unsigned value)
-      {
-         unsigned delta=value-_numBytesTotal;
-         std::vector<ChunkAllocation<OwnerType>>::resize(value);
-         _numBytesTotal=value;
-         _numBytesAvailable+=delta;
-         _numBytesAvailableAtTheEnd+=delta;
-      }
-      template<typename OwnerType> void BlockAllocationManager<OwnerType>::setCapacity(unsigned value)
-      {
-         unsigned delta=value-_numItemsTotal;
-         std::vector<BlockAllocation<OwnerType>>::resize(value);
-         _numItemsTotal=value;
-         _numItemsAvailable+=delta;
-         _numItemsAvailableAtTheEnd+=delta;
       }
       template<typename OwnerType> inline unsigned ChunkAllocationManager<OwnerType>::capacity() const  { return unsigned(std::vector<ChunkAllocation<OwnerType>>::size()); }
       template<typename OwnerType> inline unsigned BlockAllocationManager<OwnerType>::capacity() const  { return unsigned(std::vector<BlockAllocation<OwnerType>>::size()); }

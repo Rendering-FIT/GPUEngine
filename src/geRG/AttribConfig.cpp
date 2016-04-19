@@ -67,19 +67,30 @@ bool AttribConfig::allocData(Mesh& mesh,int numVertices,int numIndices,unsigned 
    if(storageIt==_attribStorages.end())
    {
       // create a new AttribStorage
-      _attribStorages.push_front(
-            AttribStorage::factory()->create(this->createReference(),_defaultStorageNumVertices,
-                                             this->_configData.ebo?_defaultStorageNumIndices:0));
+      auto v=numVertices>_defaultStorageNumVertices?numVertices:_defaultStorageNumVertices;
+      auto i=this->_configData.ebo?
+            numIndices>_defaultStorageNumIndices?numIndices:_defaultStorageNumIndices:
+            0;
+      _attribStorages.push_front(AttribStorage::factory()->create(this->createReference(),v,i));
       storageIt=_attribStorages.begin();
    }
 
    // perform allocation in the choosen AttribStorage
-   (*storageIt)->allocData(mesh,numVertices,numIndices);
+   bool r=(*storageIt)->allocData(mesh,numVertices,numIndices);
+   if(!r) {
+      cerr<<"Error: AttribConfig::allocData() failed to allocate space for mesh\n"
+            "   in AttribStorage ("<<numVertices<<" vertices and "<<numIndices
+          <<" indices requested)." << endl;
+      return false;
+   }
 
    // perform allocation of draw commands
-   _renderingContext->allocPrimitives(mesh,numPrimitives);
+   r=_renderingContext->allocPrimitives(mesh,numPrimitives);
+   if(!r)
+      cerr<<"Error: AttribConfig::allocData() failed to allocate space for Mesh\n"
+            "   in PrimitiveStorage ("<<numPrimitives<<" primitives requested)." << endl;
 
-   return true;
+   return r;
 }
 
 

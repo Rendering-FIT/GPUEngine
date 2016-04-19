@@ -14,7 +14,7 @@ static_assert(sizeof(StateSetGpuData)==4,
 
 
 
-#if _MSC_VER<=1900
+#if defined(_MSC_VER) && _MSC_VER<=1900
 // MSVC 2013 (tested with Update 4 and 5) and MSVC 2015 (original release)
 // fails to embed this class into the std::vector
 // unless there is a copy constructor (this does not meet C++11 standard)

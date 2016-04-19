@@ -38,7 +38,8 @@ namespace ge
          /** SharedDataOffset is used whenever two or more Transformation objects
           *  share the same transformation matrix.
           *
-          *  The matrix is usually stored in RenderingContext::matrixStorage() buffer.
+          *  The matrix is usually stored in RenderingContext::cpuTransformationBuffer() buffer
+          *  (cpu buffer is used temporarily until gpu transformation processing is implemented).
           *  Transformation::_gpuDataOffset64 is used as the index (or offset multiplied by 64)
           *  to the matrix of particular Transformation. If two or more Transformations share
           *  the matrix, they need to share _gpuDataOffset64 variable as well.

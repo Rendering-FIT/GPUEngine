@@ -20,7 +20,7 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
 set(ADD_INCLUDES
-   ${HEADER_PATH}/Export.h
+   ${HEADER_PATH}/../Export.h
    ${HEADER_PATH}/OsgImport.h
 )
 
@@ -76,13 +76,6 @@ install(TARGETS ${LIB_NAME}
 configure_file(
    ../../src/CMake/geConfig.cmake.in
    "${LIB_NAME}Config.cmake"
-   @ONLY
-)
-
-
-configure_file(
-   ../../src/CMake/geExport.h.in
-   "${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/Export.h"
    @ONLY
 )
 

@@ -97,7 +97,20 @@ void Transformation::allocTransformationGpuData()
    }
 
    // alloc gpu data
-   RenderingContext::current()->transformationAllocationManager().alloc(&_gpuDataOffset64);
+   auto& transformationAllocationManager=RenderingContext::current()->transformationAllocationManager();
+   bool success=transformationAllocationManager.alloc(&_gpuDataOffset64);
+
+   // realloc buffer if full
+   if(!success)
+   {
+      // resize buffer
+      unsigned capacity=transformationAllocationManager.capacity();
+      unsigned delta=(capacity==0)?4:capacity; // double the capacity, only if empty set initial size to 4
+      RenderingContext::current()->setCpuTransformationBufferCapacity(capacity+delta);
+
+      // alloc gpu data
+      transformationAllocationManager.alloc(&_gpuDataOffset64);
+   }
 }
 
 
