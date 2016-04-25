@@ -46,9 +46,9 @@ namespace ge
          inline void alloc(DrawCommand* id)  { BufferStorage<DrawCommandAllocationManager,DrawCommandGpuData>::alloc(&id->data); }  ///< \brief Allocates one draw command and stores its index in the DrawCommand pointed by id parameter.
          inline void alloc(unsigned num,DrawCommand *ids)  { BufferStorage<DrawCommandAllocationManager,DrawCommandGpuData>::alloc(num,&ids->data); }  ///< \brief Allocates number of draw commands. Array pointed by ids must be at least num DrawCommands long.
       };
-      typedef BufferStorage<BlockAllocationManager<Mesh>,
+      typedef BufferStorage<ArrayAllocationManager<Mesh>,
             PrimitiveGpuData> PrimitiveStorage;
-      typedef BufferStorage<BlockAllocationManager<MatrixList>,
+      typedef BufferStorage<ArrayAllocationManager<MatrixList>,
             MatrixGpuData> MatrixStorage;
       typedef BufferStorage<ItemAllocationManager,
             ListControlGpuData> ListControlStorage;

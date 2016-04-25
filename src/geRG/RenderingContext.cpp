@@ -81,12 +81,12 @@ RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
 
 
 RenderingContext::RenderingContext()
-   : _primitiveStorage(initialPrimitiveBufferCapacity,1,GL_DYNAMIC_DRAW) // block-based
-   , _drawCommandStorage(intialDrawCommandBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
-   , _matrixStorage(initialMatrixListBufferCapacity,1,GL_DYNAMIC_COPY) // block-based, 1 null item (one identity matrix)
+   : _primitiveStorage(initialPrimitiveBufferCapacity,GL_DYNAMIC_DRAW) // array-based
+   , _drawCommandStorage(intialDrawCommandBufferCapacity,GL_DYNAMIC_DRAW) // item-based
+   , _matrixStorage(initialMatrixListBufferCapacity,1,GL_DYNAMIC_COPY) // array-based, 1 null item (one identity matrix)
    , _matrixListControlStorage(initialMatrixAllocationBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based, 1 null item (one identity matrix)
-   , _stateSetStorage(initialStateSetBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
-   , _transformationAllocationManager(initialTransformationBufferCapacity,1) // item-based
+   , _stateSetStorage(initialStateSetBufferCapacity,GL_DYNAMIC_DRAW) // item-based
+   , _transformationAllocationManager(initialTransformationBufferCapacity) // item-based
    , _numAttribStorages(0)
    , _stateSetManager(make_shared<StateSetDefaultManager>())
    , _useARBShaderDrawParameters(false)
@@ -406,9 +406,9 @@ void RenderingContext::updateVertexOffsets(Mesh &mesh,void *primitiveBuffer,
    // get index of allocated block
    unsigned vertexOffset;
    if(mesh.indicesDataId()==0)
-      vertexOffset=mesh.attribStorage()->vertexAllocationBlock(mesh.verticesDataId()).startIndex;
+      vertexOffset=mesh.attribStorage()->vertexArrayAllocation(mesh.verticesDataId()).startIndex;
    else
-      vertexOffset=mesh.attribStorage()->indexAllocationBlock(mesh.indicesDataId()).startIndex;
+      vertexOffset=mesh.attribStorage()->indexArrayAllocation(mesh.indicesDataId()).startIndex;
 
    // update vertexOffset of all primitive sets
    for(int i=0; i<numPrimitives; i++)
@@ -540,11 +540,11 @@ void RenderingContext::cancelAllAllocations()
    // break Mesh references to Primitives
    // (set all Mesh::_attribStorage to nullptr
    // and zero all Drawable::items)
-   for(unsigned i=1, // id starts at 1
-       e=_primitiveStorage.firstItemAvailableAtTheEnd()-i;
-       i!=e; i++)
+   for(auto it=_primitiveStorage.begin(), // begin() skips all null items
+       e=_primitiveStorage.end(); // end() points just after the last allocated item
+       it!=e; it++)
    {
-      Mesh *m=_primitiveStorage[i].owner;
+      Mesh *m=it->owner;
       if(m) {
          m->setAttribStorage(nullptr);
          DrawableList &dl=m->drawables();
@@ -928,7 +928,7 @@ void RenderingContext::setupRendering()
    _indirectBufferAllocatedSpace4=0;
 
    // setup rendering on StateSets
-   auto root=_stateSetManager->root();
+   StateSet* root=_stateSetManager->root().get();
    if(root)
       root->setupRendering();
 

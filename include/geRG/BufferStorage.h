@@ -54,9 +54,9 @@ namespace ge
 
          BufferStorage(unsigned capacity=0,
                        unsigned flags=0x88E8/*GL_DYNAMIC_DRAW*/,void *data=nullptr);
-         BufferStorage(unsigned capacity,unsigned numNullItems,
+         BufferStorage(unsigned capacity,unsigned nullObjectElements,
                        unsigned flags,void *data=nullptr);
-         BufferStorage(unsigned bufferSize,unsigned allocManagerCapacity,unsigned numNullItems,
+         BufferStorage(unsigned bufferSize,unsigned allocManagerCapacity,unsigned nullObjectElements,
                        unsigned flags,void *data=nullptr);
          virtual ~BufferStorage();
 
@@ -110,8 +110,8 @@ namespace ge
       {}
 
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
-      BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(unsigned capacity,unsigned numNullItems,unsigned flags,void *data)
-         : AllocationManagerT(capacity,numNullItems)
+      BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(unsigned capacity,unsigned nullObjectElements,unsigned flags,void *data)
+         : AllocationManagerT(capacity,nullObjectElements)
          , _bufferObject(new ge::gl::BufferObject(capacity*AllocationItemSize,data,flags))
          , _mappedBufferPtr(nullptr)
          , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
@@ -119,8 +119,8 @@ namespace ge
 
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(
-            unsigned bufferSize,unsigned allocManagerCapacity,unsigned numNullItems,unsigned flags,void *data)
-         : AllocationManagerT(allocManagerCapacity,numNullItems)
+            unsigned bufferSize,unsigned allocManagerCapacity,unsigned nullObjectElements,unsigned flags,void *data)
+         : AllocationManagerT(allocManagerCapacity,nullObjectElements)
          , _bufferObject(new ge::gl::BufferObject(bufferSize,data,flags))
          , _mappedBufferPtr(nullptr)
          , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
@@ -208,15 +208,15 @@ namespace ge
       void BufferStorage<AllocationManagerT,Type,AllocationItemSize>::grow(unsigned freeBlockSizeRequest)
       {
          // do we have enough space?
-         unsigned largest=AllocationManagerT::largestAvailableBlock();
+         unsigned largest=AllocationManagerT::largestAvailable();
          if(largest>=freeBlockSizeRequest)
             return;
 
          // set new capacity
          unsigned capacity=AllocationManagerT::capacity();
          unsigned delta=(capacity==0)?4:capacity; // double the capacity, only if empty set initial size to 4
-         if(delta+AllocationManagerT::availableSpaceAtTheEnd() < freeBlockSizeRequest)
-            delta=freeBlockSizeRequest-AllocationManagerT::availableSpaceAtTheEnd();
+         if(delta+AllocationManagerT::numItemsAvailableAtTheEnd() < freeBlockSizeRequest)
+            delta=freeBlockSizeRequest-AllocationManagerT::numItemsAvailableAtTheEnd();
          unsigned newCapacity=capacity+delta;
          AllocationManagerT::setCapacity(newCapacity);
 

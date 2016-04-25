@@ -49,7 +49,7 @@ namespace ge
          inline DrawCommand*& operator[](unsigned pos);
          inline DrawCommand* operator[](unsigned pos) const;
          inline DrawCommandAllocationManager(unsigned capacity);
-         inline DrawCommandAllocationManager(unsigned capacity,unsigned numNullObjects);
+         inline DrawCommandAllocationManager(unsigned capacity,unsigned numNullItems);
          bool alloc(DrawCommand* id);  ///< \brief Allocates one draw command and stores its index to the DrawCommand pointed by id parameter.
          bool alloc(unsigned num,DrawCommand *ids);  ///< \brief Allocates number of draw commands. Array pointed by ids must be at least num DrawCommands long.
          inline void free(DrawCommand id);  ///< Frees allocated draw commands. Id must be valid.
@@ -65,10 +65,10 @@ namespace ge
 
 
       // inline and template methods
-      inline DrawCommand*& DrawCommandAllocationManager::operator[](unsigned pos)  { return reinterpret_cast<DrawCommand**>(ItemAllocationManager::data())[pos]; }
-      inline DrawCommand* DrawCommandAllocationManager::operator[](unsigned pos) const  { return reinterpret_cast<DrawCommand*const*>(ItemAllocationManager::data())[pos]; }
+      inline DrawCommand*& DrawCommandAllocationManager::operator[](unsigned pos)  { return *reinterpret_cast<DrawCommand**>(&ItemAllocationManager::operator[](pos)); }
+      inline DrawCommand* DrawCommandAllocationManager::operator[](unsigned pos) const  { return *reinterpret_cast<DrawCommand*const*>(&ItemAllocationManager::operator[](pos)); }
       inline DrawCommandAllocationManager::DrawCommandAllocationManager(unsigned capacity) : ItemAllocationManager(capacity) {}
-      inline DrawCommandAllocationManager::DrawCommandAllocationManager(unsigned capacity,unsigned numNullObjects) : ItemAllocationManager(capacity,numNullObjects) {}
+      inline DrawCommandAllocationManager::DrawCommandAllocationManager(unsigned int capacity, unsigned int numNullItems) : ItemAllocationManager(capacity,numNullItems) {}
       inline void DrawCommandAllocationManager::free(DrawCommand id)  { ItemAllocationManager::free(id.index()); }
 
    }

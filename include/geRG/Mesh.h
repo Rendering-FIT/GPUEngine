@@ -162,8 +162,8 @@ namespace ge
             _attribStorage->freeData(*this);
          }
       }
-      inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexAllocationBlock(_verticesDataId).numItems : 0; }
-      inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexAllocationBlock(_indicesDataId).numItems : 0; }
+      inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexArrayAllocation(_verticesDataId).numItems : 0; }
+      inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexArrayAllocation(_indicesDataId).numItems : 0; }
       inline int Mesh::numPrimitives() const  { return RenderingContext::current()->primitiveStorage()->operator[](_primitivesDataId).numItems; }
       inline void Mesh::uploadVertices(const void*const *attribList,unsigned attribListSize,int numVertices,int fromIndex)
       {
