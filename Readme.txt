@@ -48,6 +48,8 @@ GLM:
 GLEW:
 - version 1.9.0 was seen to generate GL_INVALID_ENUM after glewInit()
 - it is recommended to update to the latest version otherwise you may encounter compilation problems
+- Windows: publicly available precompiled libs works fine since version 1.11.0,
+  previous versions do not contain the latest OpenGL functions
 - Ubuntu 15.04: version 1.10.0 (main)
 - Ubuntu 14.04: version 1.10.0 (main)
 - CentOS 7.1: version 1.9.0 (base repository)

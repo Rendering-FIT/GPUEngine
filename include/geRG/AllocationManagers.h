@@ -107,8 +107,8 @@ namespace ge
 
       public:
 
-         typedef typename std::vector<unsigned*>::iterator iterator;
-         typedef typename std::vector<unsigned*>::const_iterator const_iterator;
+         typedef std::vector<unsigned*>::iterator iterator;
+         typedef std::vector<unsigned*>::const_iterator const_iterator;
 
          inline ItemAllocationManager(unsigned capacity=0);
          inline ItemAllocationManager(unsigned capacity,unsigned numNullItems);
