@@ -3,6 +3,8 @@
 #include<geCore/macroFunction.h>
 #include<geCore/FunctionNodeFactory.h>
 #include<geCore/body.h>
+#include<geCore/ResourceFactory.h>
+#include<geCore/BodyFactory.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"

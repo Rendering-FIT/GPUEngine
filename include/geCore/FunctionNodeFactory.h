@@ -1,10 +1,12 @@
 #pragma once
 
 #include<geCore/FunctionFactory.h>
+#include<vector>
+#include<cassert>
 
 namespace ge{
   namespace core{
-
+    class ResourceFactory;
     class GECORE_EXPORT FunctionNodeFactory: public FunctionFactory{
       protected:
         std::shared_ptr<FunctionFactory>functionFactory = nullptr;

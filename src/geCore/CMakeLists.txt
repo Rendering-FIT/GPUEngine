@@ -53,7 +53,12 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/while.h
     ${HEADER_PATH}/if.h
     ${HEADER_PATH}/body.h
+    ${HEADER_PATH}/BodyFactory.h
     ${HEADER_PATH}/Namespace.h
+    ${HEADER_PATH}/ObjectFactory.h
+    ${HEADER_PATH}/ResourceFactory.h
+    ${HEADER_PATH}/StatementFactory.h
+    ${HEADER_PATH}/BodyFactory.h
     ${HEADER_PATH}/macroFunction.h
     ${HEADER_PATH}/FunctionFactory.h
     ${HEADER_PATH}/FactoryOfFunctionFactory.h
@@ -98,8 +103,10 @@ set(CORE_SOURCES
     AtomicFunction.cpp
     while.cpp
     if.cpp
-    body.cpp
+    #body.cpp
     Namespace.cpp
+    ResourceFactory.cpp
+    StatementFactory.cpp
     macroFunction.cpp
     FunctionFactory.cpp
     MacroFunctionFactory.cpp

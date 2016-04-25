@@ -6,9 +6,11 @@ using namespace ge::core;
 AtomicFunctionInput::AtomicFunctionInput(
     std::shared_ptr<Function>const&fce        ,
     Function::Ticks                updateTicks,
-    bool                           changed    ):FunctionInput(updateTicks,changed){
+    bool                           changed    ){
   assert(this!=nullptr);
-  this->function = fce;
+  this->updateTicks = updateTicks;
+  this->changed     = changed;
+  this->function    = fce;
 }
 
 AtomicFunctionInput::~AtomicFunctionInput(){

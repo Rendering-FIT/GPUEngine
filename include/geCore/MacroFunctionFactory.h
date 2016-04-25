@@ -1,5 +1,6 @@
 #pragma once
 
+#include<vector>
 #include<geCore/FunctionFactory.h>
 
 namespace ge{

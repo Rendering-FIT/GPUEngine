@@ -1,9 +1,10 @@
 #pragma once
 
-#include<geCore/statement.h>
+#include<geCore/StatementFactory.h>
 
 namespace ge{
   namespace core{
+    class Statement;
     class FunctionRegister;
     class GECORE_EXPORT FunctionFactory: public StatementFactory{
       public:

@@ -4,21 +4,10 @@
 
 namespace ge{
   namespace core{
-    class GECORE_EXPORT FunctionInput{
+    class GECORE_EXPORT AtomicFunctionInput{
       public:
         bool changed                = false;
         Function::Ticks updateTicks = 0    ;
-        inline FunctionInput(
-            Function::Ticks updateTicks = 0    ,
-            bool            changed     = false){
-          this->changed     = changed    ;
-          this->updateTicks = updateTicks;
-        }
-        virtual inline ~FunctionInput(){}
-    };
-
-    class GECORE_EXPORT AtomicFunctionInput: public FunctionInput{
-      public:
         std::shared_ptr<Function>function = nullptr;
         AtomicFunctionInput(
             std::shared_ptr<Function>const&fce         = nullptr,

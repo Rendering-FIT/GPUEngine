@@ -1,5 +1,6 @@
 #include<geCore/TypeRegister.h>
 #include<geCore/Accessor.h>
+#include<geCore/ResourceFactory.h>
 #include<geCore/functionRegister.h>
 #include<geCore/function.h>
 #include<geCore/RegisterBasicFunction.h>

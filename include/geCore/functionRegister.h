@@ -4,12 +4,12 @@
 #include<tuple>
 #include<geCore/Export.h>
 #include<geCore/TypeRegister.h>
+#include<geCore/StatementFactory.h>
 #include<geCore/statement.h>
 #include<geCore/Namer.h>
 
 namespace ge{
   namespace core{
-    class StatementFactory;
     class Statement;
     class Function;
 
