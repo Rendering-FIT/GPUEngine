@@ -1,6 +1,6 @@
 #include<geGL/ShaderObject.h>
 
-#include<geCore/text.h>
+#include<geCore/Text.h>
 #include<iostream>
 #include<stdarg.h>
 #include<string>

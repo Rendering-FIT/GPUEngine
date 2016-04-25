@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geCore/dtemplates.h>
+#include<geCore/Dtemplates.h>
 #include<geGL/ProgramObject.h>
 #include<geGL/BufferObject.h>
 #include<geGL/VertexArrayObject.h>

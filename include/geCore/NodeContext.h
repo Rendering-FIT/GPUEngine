@@ -4,7 +4,7 @@
 #include<memory>
 #include<map>
 #include<set>
-#include<geCore/grammar.h>
+#include<geCore/Grammar.h>
 
 namespace ge{
   namespace core{

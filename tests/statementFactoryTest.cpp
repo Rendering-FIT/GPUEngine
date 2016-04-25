@@ -1,8 +1,8 @@
-#include<geCore/interpret.h>
-#include<geCore/stdFunctions.h>
-#include<geCore/macroFunction.h>
+#include<geCore/Interpret.h>
+#include<geCore/StdFunctions.h>
+#include<geCore/MacroFunction.h>
 #include<geCore/FunctionNodeFactory.h>
-#include<geCore/body.h>
+#include<geCore/Body.h>
 #include<geCore/ResourceFactory.h>
 #include<geCore/BodyFactory.h>
 
@@ -14,7 +14,7 @@ using namespace ge::core;
 
 SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
   auto r = std::make_shared<ge::core::TypeRegister>();
-  auto nr=std::make_shared<Namer>();
+  auto nr=std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::core::FunctionRegister>(r,nr);
   ge::core::registerStdFunctions(fr);
   GIVEN( "basic function factory" ) {

@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <iostream>
-#include <geCore/dtemplates.h>
+#include <geCore/Dtemplates.h>
 
 /*
 #define ENUM_CLASS(name,...) \

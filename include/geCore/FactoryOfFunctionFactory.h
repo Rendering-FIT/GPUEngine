@@ -1,7 +1,7 @@
 #pragma once
 
 #include<geCore/FunctionFactory.h>
-#include<geCore/functionRegister.h>
+#include<geCore/FunctionRegister.h>
 
 namespace ge{
   namespace core{

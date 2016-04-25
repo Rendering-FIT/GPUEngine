@@ -1,3 +1,3 @@
 #pragma once
 
-#include<geCore/dtemplates.h>
+#include<geCore/Dtemplates.h>

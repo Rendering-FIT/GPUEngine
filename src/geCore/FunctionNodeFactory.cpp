@@ -1,5 +1,5 @@
 #include<geCore/FunctionNodeFactory.h>
-#include<geCore/function.h>
+#include<geCore/Function.h>
 #include<geCore/ResourceFactory.h>
 
 using namespace ge::core;

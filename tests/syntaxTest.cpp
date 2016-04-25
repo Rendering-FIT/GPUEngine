@@ -1,6 +1,6 @@
-#include<geCore/syntax.h>
+#include<geCore/Syntax.h>
 #include<geCore/NodeContext.h>
-#include<geCore/text.h>
+#include<geCore/Text.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"

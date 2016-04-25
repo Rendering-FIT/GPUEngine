@@ -1,4 +1,4 @@
-#include<geCore/dtemplates.h>
+#include<geCore/Dtemplates.h>
 #include<geCore/fsa/MealyMachine.h>
 #include<geCore/fsa/TransitionChooser.h>
 #include<geCore/fsa/MapTransitionChooser.h>

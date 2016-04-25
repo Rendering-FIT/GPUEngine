@@ -1,7 +1,7 @@
 #include<geCore/TypeRegister.h>
 
 #include<sstream>
-#include<geCore/interpret.h>
+#include<geCore/Interpret.h>
 #include<geCore/Accessor.h>
 
 using namespace ge::core;

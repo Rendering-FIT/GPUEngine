@@ -1,7 +1,7 @@
 #pragma once
 
 #include<geCore/Export.h>
-#include<geCore/dtemplates.h>
+#include<geCore/Dtemplates.h>
 #include<iostream>
 #include<vector>
 #include<map>

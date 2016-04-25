@@ -1,5 +1,5 @@
-#include<geCore/tokenization.h>
-#include<geCore/text.h>
+#include<geCore/Tokenization.h>
+#include<geCore/Text.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"

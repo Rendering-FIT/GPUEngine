@@ -1,4 +1,4 @@
-#include<geCore/fsa/fsa.h>
+#include<geCore/fsa/Fsa.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"

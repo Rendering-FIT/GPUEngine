@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geCore/function.h>
+#include<geCore/Function.h>
 
 namespace ge{
   namespace core{

@@ -1,5 +1,5 @@
 #include<geCore/ResourceFactory.h>
-#include<geCore/functionRegister.h>
+#include<geCore/FunctionRegister.h>
 
 using namespace ge::core;
 

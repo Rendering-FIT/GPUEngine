@@ -1,7 +1,7 @@
 #include<geCore/MacroFunctionFactory.h>
-#include<geCore/functionRegister.h>
+#include<geCore/FunctionRegister.h>
 #include<geCore/FunctionNodeFactory.h>
-#include<geCore/macroFunction.h>
+#include<geCore/MacroFunction.h>
 
 using namespace ge::core;
 

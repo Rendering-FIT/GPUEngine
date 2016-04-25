@@ -12,7 +12,7 @@
 #include<geGL/ProgramObjectMacro.h>
 #include<geGL/BufferObject.h>
 #include<geGL/TextureObject.h>
-#include<geCore/dtemplates.h>
+#include<geCore/Dtemplates.h>
 
 namespace ge{
   namespace gl{

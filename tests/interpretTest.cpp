@@ -1,6 +1,8 @@
-#include<geCore/interpret.h>
-#include<geCore/stdFunctions.h>
-#include<geCore/macroFunction.h>
+#include<geCore/Interpret.h>
+#include<geCore/AtomicFunction.h>
+#include<geCore/StdFunctions.h>
+#include<geCore/MacroFunction.h>
+#include<geCore/If.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
@@ -9,7 +11,7 @@ using namespace ge::core;
 
 SCENARIO( "basic interpret tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();
-  auto nr=std::make_shared<Namer>();
+  auto nr=std::make_shared<NameRegister>();
   auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister,nr);
   ge::core::registerStdFunctions(functionRegister);
   //std::cerr<<functionRegister->str();
@@ -147,7 +149,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
 SCENARIO( "ticks tests", "[Function]" ) {
   auto typeRegister = std::make_shared<ge::core::TypeRegister>();
-  auto nr=std::make_shared<Namer>();
+  auto nr=std::make_shared<NameRegister>();
   auto functionRegister = std::make_shared<ge::core::FunctionRegister>(typeRegister,nr);
   ge::core::registerStdFunctions(functionRegister);
   class AddTen: public ge::core::AtomicFunction{
