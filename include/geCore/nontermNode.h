@@ -46,7 +46,7 @@ namespace ge{
     }
 
     inline NontermNode::Node const&NontermNode::lastChild()const{
-      return this->childs[this->childs.size()-1];
+      return this->childs.back();
     }
   }
 }

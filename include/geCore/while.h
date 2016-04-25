@@ -4,6 +4,7 @@
 
 namespace ge{
   namespace core{
+    class AtomicFunction;
     class GECORE_EXPORT While: public Statement{
       protected:
         std::shared_ptr<AtomicFunction >_condition = nullptr;

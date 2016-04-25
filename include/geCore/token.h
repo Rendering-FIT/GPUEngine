@@ -8,10 +8,21 @@ namespace ge{
       public:
         using Type = size_t;
         using Data = std::string;
-        Token(Type const& type,Data const& rawData = "");
+        inline Token(Type const& type,Data const& rawData = "");
+        inline Token();
         Data rawData;
         Type type;
-        Token();
     };
+
+    inline Token::Token(){
+      this->type = 0;
+      this->rawData = "";
+    }
+
+    inline Token::Token(Type const& type,Data const& rawData){
+      this->type = type;
+      this->rawData = rawData;
+    }
+
   }
 }

@@ -6,13 +6,13 @@ namespace ge{
     class Term: public Symbol{
       public:
         Token::Type type;
-        inline Term(Token::Type const&type,std::string name="");
+        inline Term(Token::Type const&type,std::string const&name="");
         inline virtual~Term();
         virtual std::string str()const;
         virtual bool prefixMatch(Token::Type const&term)const;
     };
 
-    inline Term::Term(Token::Type const&type,std::string name){
+    inline Term::Term(Token::Type const&type,std::string const& name){
       this->range.min()=1;
       this->range.max()=1;
       this->name = name;

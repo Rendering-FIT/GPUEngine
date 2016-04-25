@@ -1,6 +1,7 @@
 #include<geCore/interpret.h>
 #include<geCore/stdFunctions.h>
 #include<geCore/macroFunction.h>
+#include<geCore/FunctionNodeFactory.h>
 #include<geCore/body.h>
 
 #define CATCH_CONFIG_MAIN

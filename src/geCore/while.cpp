@@ -1,5 +1,6 @@
 #include<geCore/while.h>
 #include<geCore/Accessor.h>
+#include<geCore/AtomicFunction.h>
 
 using namespace ge::core;
 

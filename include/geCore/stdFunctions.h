@@ -2,6 +2,8 @@
 
 #include<geCore/interpret.h>
 #include<geCore/Accessor.h>
+#include<geCore/AtomicFunction.h>
+#include<geCore/FactoryOfFunctionFactory.h>
 
 namespace ge{
   namespace core{
@@ -101,10 +103,10 @@ namespace ge{
     bool missingInput=false;\
     for(InputIndex i=0;i<this->getNofInputs();++i)\
     if(!this->hasInput(i)){\
-      if(!missingInput)std::cerr<<"ERROR: function "<<this->getName()<<" has unbinded inputs: ";\
+      if(!missingInput)std::cerr<<"ERROR: function "<<this->_functionRegister->getName(this->_id)<<" has unbinded inputs: ";\
       else std::cerr<<" ,";\
       missingInput=true;\
-      std::cerr<<this->getInputName(i);\
+      std::cerr<<this->_functionRegister->getNamer()->getFceInputName(this->_id,i);\
     }\
     if(missingInput){\
       std::cerr<<std::endl;\
@@ -350,18 +352,18 @@ namespace ge{
   fr->addFunction(tr->addType("",UNARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1)),NAME,FACTORY);
 
 #define ADD_BINARY_FUNCTION_SIMPLE(CLASS,TYPE)\
-    ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
+    ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),factoryOfFunctionFactory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
 
 #define ADD_BINARY_FUNCTION_COMPLEX(CLASS,TYPE)\
-    ADD_BINARY_FUNCTION(bool,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
+    ADD_BINARY_FUNCTION(bool,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),factoryOfFunctionFactory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
 
 #define ADD_UNARY_FUNCTION_SIMPLE(CLASS,TYPE)\
-    ADD_UNARY_FUNCTION(TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),Function::factory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
+    ADD_UNARY_FUNCTION(TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),factoryOfFunctionFactory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
 
     //{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}
 
 #define ADD_CAST_FUNCTION(FROM,TO)\
-  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}),TypeRegister::getTypeKeyword<Cast<FROM,TO>>(),Function::factory<Cast<FROM,TO>>(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()));
+  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}),TypeRegister::getTypeKeyword<Cast<FROM,TO>>(),factoryOfFunctionFactory<Cast<FROM,TO>>(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()));
 
     NUMERIC_FCE_LOOP(NUMERIC_LOOP,DEFINE_GETTYPEKEYWORD)
     RELATIONAL_FCE_LOOP(ALL_LOOP,DEFINE_GETTYPEKEYWORD)

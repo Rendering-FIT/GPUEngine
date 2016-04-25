@@ -18,7 +18,6 @@ namespace ge{
       public:
         struct Unregistered;
         DEF_ENUM(Type,UNREGISTERED,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID);
-        //enum Type{UNREGISTERED,VOID,BOOL,I8,I16,I32,I64,U8,U16,U32,U64,F32,F64,STRING,ARRAY,STRUCT,PTR,FCE,OBJ,TYPEID};
         using TypeID                = size_t;
         using DescriptionElement    = TypeID;
         using DescriptionList       = std::vector<DescriptionElement>;

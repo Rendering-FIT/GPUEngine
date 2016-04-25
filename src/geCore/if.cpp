@@ -1,5 +1,6 @@
 #include<geCore/if.h>
 #include<geCore/Accessor.h>
+#include<geCore/AtomicFunction.h>
 
 using namespace ge::core;
 

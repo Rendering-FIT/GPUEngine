@@ -40,7 +40,7 @@ namespace ge{
         virtual bool parse(BasicUnit const*data,size_t size);
         virtual bool end();
         inline size_t     const&getReadingPosition()const;
-        inline BasicUnit  const*getCurrentSymbol()const;
+        inline TransitionSymbol getCurrentSymbol()const;
         inline StateIndex const&getCurrentState()const;
         inline void dontMove();
         virtual std::string str()const;
@@ -77,7 +77,7 @@ namespace ge{
         inline bool _nextState(State const&state);
         bool                   _dontMove          = false  ;
         size_t                 _readingPosition   = 0      ;
-        BasicUnit const*       _currentSymbol     = nullptr;
+        TransitionSymbol       _currentSymbol     = nullptr;
         size_t                 _currentSymbolSize = 0      ;
         std::vector<State>     _states                     ;
         StateIndex             _currentState      = 0      ;
@@ -89,7 +89,7 @@ namespace ge{
       return this->_readingPosition;
     }
 
-    inline MealyMachine::BasicUnit const*MealyMachine::getCurrentSymbol()const{
+    inline MealyMachine::TransitionSymbol MealyMachine::getCurrentSymbol()const{
       return this->_currentSymbol;
     }
 

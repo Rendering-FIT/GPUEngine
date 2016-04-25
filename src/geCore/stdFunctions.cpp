@@ -18,7 +18,7 @@ void ge::core::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
   auto tr=fr->getTypeRegister();
   fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::UNREGISTERED,0}),
               TypeRegister::getTypeKeyword<Nullary>(),
-              Function::factory<Nullary>(TypeRegister::getTypeKeyword<Nullary>()));
+              factoryOfFunctionFactory<Nullary>(TypeRegister::getTypeKeyword<Nullary>()));
 
   registerStdNumericFunctions(fr);
   registerStdRelationalFunctions(fr);

@@ -2,7 +2,9 @@
 
 using namespace ge::core;
 
-Nonterm::SideIndex Nonterm::addSide(SymbolList const& side,std::string name){
+Nonterm::SideIndex Nonterm::addSide(
+    SymbolList  const&side,
+    std::string const&name){
   this->rightSides.push_back(Side(
         Range<TokenIndex>(),
         side,
@@ -28,8 +30,8 @@ std::string Nonterm::str()const{
 }
 
 Range<TokenIndex>Nonterm::_computeTailLength(
-    SideIndex   side,
-    SymbolIndex symbol)const{
+    SideIndex   const&side,
+    SymbolIndex const&symbol)const{
   Range<TokenIndex>result;
   for(SymbolIndex i=symbol+1;i<this->nofSymbols(side);++i){
     result.min()+=this->getSymbol(side,i)->range.min();

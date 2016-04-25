@@ -2,8 +2,13 @@
 #include<geCore/Accessor.h>
 #include<geCore/functionRegister.h>
 #include<geCore/function.h>
+#include<geCore/RegisterBasicFunction.h>
 #include<geCore/stdFunctions.h>
 #include<geCore/macroFunction.h>
+#include<geCore/FactoryOfFunctionFactory.h>
+#include<geCore/FunctionNodeFactory.h>
+#include<geCore/MacroFunctionFactory.h>
+#include<geCore/text.h>
 #include<iostream>
 #include<sstream>
 
@@ -27,10 +32,11 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto id = fr->addFunction(
       ft,
       ge::core::TypeRegister::getTypeKeyword<ge::core::Add<int32_t>>(),//::name(),
-      ge::core::Function::factory<ge::core::Add<int32_t>>(ge::core::TypeRegister::getTypeKeyword<ge::core::Add<int32_t>>()));
-  fr->setOutputName(id,"vysledek");
-  fr->setInputName(id,0,"a");
-  fr->setInputName(id,1,"b");
+      ge::core::factoryOfFunctionFactory<ge::core::Add<int32_t>>(ge::core::TypeRegister::getTypeKeyword<ge::core::Add<int32_t>>()));
+  fr->getNamer()->setFceOutputName(id,"vysledek");
+  fr->getNamer()->setFceInputName(id,0,"a");
+  fr->getNamer()->setFceInputName(id,1,"b");
+
   REQUIRE(fr->getName(id)=="Add<i32>");
   REQUIRE(fr->getType(id)==ft);
   REQUIRE(fr->getNofInputs(id)==tr->getNofFceArgs(ft));
@@ -48,8 +54,8 @@ SCENARIO("registration of stdFunction","[FunctionRegister]"){
   auto nr=std::make_shared<Namer>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);
-
-  REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getName() == "Add<i32>");
+  auto a0 = std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr));
+  REQUIRE(a0->getFunctionRegister()->getName(a0->getId()) == "Add<i32>");
   REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getNofInputs() == 2);
   REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getInputType(0) == TypeRegister::getTypeTypeId<int32_t>());
   REQUIRE(std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr))->getInputType(1) == TypeRegister::getTypeTypeId<int32_t>());
@@ -107,7 +113,7 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
 
   auto f=fr->sharedFunction("newFce");
   auto ff=std::dynamic_pointer_cast<Function>(f);
-  REQUIRE(ff->getName()=="newFce");
+  REQUIRE(ff->getFunctionRegister()->getName(ff->getId())=="newFce");
   REQUIRE(ff->getInputType(0) == tr->getTypeId("i32"));
   REQUIRE(ff->getInputType(1) == tr->getTypeId("i32"));
   REQUIRE(ff->getOutputType() == tr->getTypeId("i32"));
@@ -138,4 +144,5 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   (*f)();
   REQUIRE((int32_t)(*ff->getOutputData())==10+12);
 
+  ge::core::registerBasicFunction(fr,"loadTextFile",ge::core::loadTextFile);
 }

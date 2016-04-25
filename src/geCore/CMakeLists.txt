@@ -48,11 +48,17 @@ set(CORE_INCLUDES
     ${HEADER_PATH}/interpret.h
     ${HEADER_PATH}/statement.h
     ${HEADER_PATH}/function.h
+    ${HEADER_PATH}/AtomicFunction.h
+    ${HEADER_PATH}/RegisterBasicFunction.h
     ${HEADER_PATH}/while.h
     ${HEADER_PATH}/if.h
     ${HEADER_PATH}/body.h
     ${HEADER_PATH}/Namespace.h
     ${HEADER_PATH}/macroFunction.h
+    ${HEADER_PATH}/FunctionFactory.h
+    ${HEADER_PATH}/FactoryOfFunctionFactory.h
+    ${HEADER_PATH}/MacroFunctionFactory.h
+    ${HEADER_PATH}/FunctionNodeFactory.h
     ${HEADER_PATH}/stdFunctions.h
     ${HEADER_PATH}/stdNumericFunctions.h
     ${HEADER_PATH}/stdRelationalFunctions.h
@@ -89,17 +95,21 @@ set(CORE_SOURCES
     Accessor.cpp
     statement.cpp
     function.cpp
+    AtomicFunction.cpp
     while.cpp
     if.cpp
     body.cpp
     Namespace.cpp
     macroFunction.cpp
+    FunctionFactory.cpp
+    MacroFunctionFactory.cpp
+    FunctionNodeFactory.cpp
     stdFunctions.cpp
     stdNumericFunctions.cpp
     stdRelationalFunctions.cpp
     stdIntegerFunctions.cpp
     stdCastFunctions.cpp
-    token.cpp
+    #token.cpp
     #    lexer.cpp
     grammar.cpp
     nonterm.cpp

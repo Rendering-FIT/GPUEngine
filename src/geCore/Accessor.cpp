@@ -1,7 +1,12 @@
 #include<geCore/Accessor.h>
-#include<geCore/function.h>
 
 using namespace ge::core;
+
+namespace ge{
+  namespace core{
+    class AtomicFunction;
+  }
+}
 
 AtomicAccessor::AtomicAccessor(AtomicAccessor const& ac):Accessor(ac._manager,ac._id){
   //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
@@ -109,7 +114,6 @@ void AtomicAccessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shar
                               break;
     case TypeRegister::FCE:
                               ((std::shared_ptr<ge::core::AtomicFunction>*)ptr)->~shared_ptr();
-                              //TODO CO S FUNKCI
                               break;
     case TypeRegister::OBJ:
                               manager->destroyUsingCustomDestroyer((unsigned char*)ptr,id);
