@@ -37,16 +37,16 @@ namespace ge
 
          virtual void bind() const = 0;
 
-         virtual bool allocData(Mesh &mesh,int numVertices,int numIndices);
-         virtual bool reallocData(Mesh &mesh,int numVertices,int numIndices,
+         virtual bool allocData(Mesh &mesh,unsigned numVertices,unsigned numIndices);
+         virtual bool reallocData(Mesh &mesh,unsigned numVertices,unsigned numIndices,
                                   bool preserveContent=true);
          virtual void freeData(Mesh &mesh);
 
          virtual void uploadVertices(Mesh &mesh,const void*const *attribList,
                                      unsigned attribListSize,
-                                     int numVertices,int fromIndex=0) = 0;
+                                     unsigned numVertices,unsigned fromIndex=0) = 0;
          virtual void uploadIndices(Mesh &mesh,const void *indices,
-                                    int numIndices,int fromIndex=0) = 0;
+                                    unsigned numIndices,unsigned fromIndex=0) = 0;
 
          inline const ArrayAllocation<Mesh>& vertexArrayAllocation(unsigned id) const; ///< Returns vertex array allocation for particular id.
          inline const ArrayAllocation<Mesh>& indexArrayAllocation(unsigned id) const;  ///< Returns index array allocation for particular id.

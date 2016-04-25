@@ -275,7 +275,7 @@ public:
       if(node.getStateSet())
          pushState(*node.getStateSet());
 
-      for(int i=0,c=node.getNumDrawables(); i<c; i++)
+      for(unsigned i=0,c=node.getNumDrawables(); i<c; i++)
          apply(*node.getDrawable(i));
 
       if(node.getStateSet())
