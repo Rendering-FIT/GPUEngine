@@ -22,11 +22,11 @@ namespace ge{
         ~MacroFunction();
         virtual inline void operator()()override;
         virtual bool bindInput (InputIndex i,std::shared_ptr<Function>const&function = nullptr)override;
-        virtual bool bindOutput(             std::shared_ptr<Accessor>const&data     = nullptr)override;
+        virtual bool bindOutput(             std::shared_ptr<Resource>const&data     = nullptr)override;
         virtual bool hasInput (InputIndex i)const override;
         virtual bool hasOutput(            )const override;
-        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex i)const override;
-        virtual std::shared_ptr<Accessor>const&getOutputData(            )const override;
+        virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;
+        virtual std::shared_ptr<Resource>const&getOutputData(            )const override;
         virtual Ticks getUpdateTicks()const override;
         virtual Ticks getCheckTicks ()const override;
         virtual void  setUpdateTicks(Ticks ticks)override;

@@ -1,5 +1,5 @@
 #include<geCore/AtomicFunction.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 
 using namespace ge::core;
 
@@ -32,7 +32,7 @@ AtomicFunction::AtomicFunction(
     std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addType("",typeDescription),name,factory)){
 }
 
-AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Accessor>const&output):AtomicFunction(fr,id){
+AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Resource>const&output):AtomicFunction(fr,id){
   assert(this!=nullptr);
   this->bindOutput(output);
 }
@@ -53,7 +53,7 @@ bool AtomicFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&funct
   return true;
 }
 
-bool AtomicFunction::bindOutput(std::shared_ptr<Accessor>const&data){
+bool AtomicFunction::bindOutput(std::shared_ptr<Resource>const&data){
   assert(this!=nullptr);
   if(
       data                    != nullptr                                                  &&

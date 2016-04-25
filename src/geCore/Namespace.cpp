@@ -2,7 +2,7 @@
 
 #include<algorithm>
 #include<sstream>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 
 using namespace ge::core::sim;
 
@@ -52,7 +52,7 @@ Namespace::SharedNamespace Namespace::getNamespace(std::string name)const{
   return nullptr;
 }
 
-void Namespace::insert(std::string name,SharedAccessor const&variable){
+void Namespace::insert(std::string name,SharedResource const&variable){
   std::size_t pos=name.find(".");
   if(pos==0){
     std::cerr<<"ERROR: can't insert variable "+name+" into "+this->_name+" - incorrect variable name, there is no namespace name before \".\""<<std::endl;
@@ -92,7 +92,7 @@ void Namespace::erase(std::string name){
     this->_name2Namespace.erase(namespaceName);
 }
 
-Namespace::SharedAccessor Namespace::getVariable (std::string name)const{
+Namespace::SharedResource Namespace::getVariable (std::string name)const{
   auto it=this->_name2Variable.find(name);
   if(it==this->_name2Variable.end()){
     std::cerr<<"Namespace::getVariable Error: there is no variable with name: "<<name<<std::endl;

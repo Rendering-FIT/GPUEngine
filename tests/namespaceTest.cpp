@@ -12,11 +12,11 @@ SCENARIO( "namespace tests", "[Namespace]" ) {
   auto n=std::make_shared<ge::core::sim::Namespace>("*");
   WHEN("adding variable a of type i32"){
     THEN("namespace should contain it"){
-      n->insert("a",r->sharedAccessor("i32"));
+      n->insert("a",r->sharedResource("i32"));
       REQUIRE(n->contain("a")==true);
     }
     THEN("setting value of variable a should be doable"){
-      n->insert("a",r->sharedAccessor("i32"));
+      n->insert("a",r->sharedResource("i32"));
       n->get<int32_t&>("a")=32;
       REQUIRE(n->get<int32_t>("a")==32);
     }

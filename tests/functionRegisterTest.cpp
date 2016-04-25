@@ -1,5 +1,5 @@
 #include<geCore/TypeRegister.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 #include<geCore/ResourceFactory.h>
 #include<geCore/FunctionRegister.h>
 #include<geCore/Function.h>
@@ -120,7 +120,7 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   REQUIRE(ff->getOutputType() == tr->getTypeId("i32"));
   ff->bindInput(0,std::make_shared<Nullary>(fr,(int32_t)4));
   ff->bindInput(1,std::make_shared<Nullary>(fr,(int32_t)2));
-  ff->bindOutput(tr->sharedAccessor("i32"));
+  ff->bindOutput(tr->sharedResource("i32"));
   (*f)();
 }
 
@@ -137,7 +137,7 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
 
   auto f=fr->sharedFunction("blb");
   auto ff=std::dynamic_pointer_cast<Function>(f);
-  ff->bindOutput(tr->sharedAccessor("i32"));
+  ff->bindOutput(tr->sharedResource("i32"));
   auto a=std::make_shared<ge::core::Nullary>(fr,(int32_t)10);
   auto b=std::make_shared<ge::core::Nullary>(fr,(int32_t)12);
   ff->bindInput(0,a);

@@ -43,7 +43,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/Object.h
   ${HEADER_PATH}/StandardSemanticsNames.h
   ${HEADER_PATH}/TypeRegister.h
-  ${HEADER_PATH}/Accessor.h
+  ${HEADER_PATH}/Resource.h
   ${HEADER_PATH}/DisjointSet.h
   ${HEADER_PATH}/Interpret.h
   ${HEADER_PATH}/Statement.h
@@ -98,7 +98,7 @@ set(CORE_SOURCES
   EnumRegister.cpp
   StandardSemanticsNames.cpp
   TypeRegister.cpp
-  Accessor.cpp
+  Resource.cpp
   #statement.cpp
   Function.cpp
   AtomicFunction.cpp

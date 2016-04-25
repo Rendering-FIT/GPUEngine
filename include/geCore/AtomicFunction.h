@@ -26,7 +26,7 @@ namespace ge{
         InputList                _inputs               ;
         unsigned long long       _checkTicks  = 0      ;
         unsigned long long       _updateTicks = 1      ;
-        std::shared_ptr<Accessor>_outputData  = nullptr;
+        std::shared_ptr<Resource>_outputData  = nullptr;
       public:
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr,
@@ -39,15 +39,15 @@ namespace ge{
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr    ,
             FunctionRegister::FunctionID           id    ,
-            std::shared_ptr<Accessor>const&        output);
+            std::shared_ptr<Resource>const&        output);
         virtual ~AtomicFunction();
         virtual void operator()();
         virtual bool bindInput (InputIndex i,std::shared_ptr<Function>const&function = nullptr);
-        virtual bool bindOutput(             std::shared_ptr<Accessor>const&data     = nullptr);
+        virtual bool bindOutput(             std::shared_ptr<Resource>const&data     = nullptr);
         virtual inline bool hasInput (InputIndex  i   )const;
         virtual inline bool hasOutput(                )const;
-        virtual inline std::shared_ptr<Accessor>const&getInputData (InputIndex i)const;
-        virtual inline std::shared_ptr<Accessor>const&getOutputData(            )const;
+        virtual inline std::shared_ptr<Resource>const&getInputData (InputIndex i)const;
+        virtual inline std::shared_ptr<Resource>const&getOutputData(            )const;
         virtual inline Ticks getUpdateTicks()const;
         virtual inline Ticks getCheckTicks ()const;
         virtual inline void setUpdateTicks(Ticks ticks);
@@ -63,7 +63,7 @@ namespace ge{
 
 
 
-    inline std::shared_ptr<Accessor>const&AtomicFunction::getOutputData()const{
+    inline std::shared_ptr<Resource>const&AtomicFunction::getOutputData()const{
       assert(this!=nullptr);
       return this->_outputData;
     }
@@ -108,7 +108,7 @@ namespace ge{
       return this->_outputData!=nullptr;
     }
 
-    inline std::shared_ptr<Accessor>const&AtomicFunction::getInputData(InputIndex i)const{
+    inline std::shared_ptr<Resource>const&AtomicFunction::getInputData(InputIndex i)const{
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
       assert(this->_inputs[i].function!=nullptr);

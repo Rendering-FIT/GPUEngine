@@ -1,5 +1,5 @@
 #include<geCore/Function.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 
 using namespace ge::core;
 

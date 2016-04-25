@@ -28,7 +28,7 @@ bool MacroFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&functi
 }
 
 
-bool MacroFunction::bindOutput(std::shared_ptr<Accessor>const&data){
+bool MacroFunction::bindOutput(std::shared_ptr<Resource>const&data){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->bindOutput(data);
@@ -50,7 +50,7 @@ bool MacroFunction::hasOutput()const{
   return this->_outputMapping->hasOutput();
 }
 
-std::shared_ptr<Accessor>const&MacroFunction::getInputData(InputIndex i)const{
+std::shared_ptr<Resource>const&MacroFunction::getInputData(InputIndex i)const{
   assert(this!=nullptr);
   assert(i<this->_inputMapping.size());
   assert(this->_inputMapping[i].size()>0);
@@ -59,7 +59,7 @@ std::shared_ptr<Accessor>const&MacroFunction::getInputData(InputIndex i)const{
   return std::get<FUNCTION>(mapping)->getInputData(std::get<INPUT>(mapping));
 }
 
-std::shared_ptr<Accessor>const&MacroFunction::getOutputData()const{
+std::shared_ptr<Resource>const&MacroFunction::getOutputData()const{
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->getOutputData();

@@ -12,8 +12,8 @@
 
 namespace ge{
   namespace core{
-    class Accessor;
-    class AtomicAccessor;
+    class Resource;
+    class AtomicResource;
     class GECORE_EXPORT TypeRegister: public std::enable_shared_from_this<TypeRegister>{
       public:
         struct Unregistered;
@@ -127,29 +127,29 @@ namespace ge{
         bool stringType (TypeID type)const;
 
         void*alloc(TypeID id)const;
-        std::shared_ptr<Accessor>sharedAccessor(TypeID id)const;
-        std::shared_ptr<Accessor>sharedAccessor(std::string name)const;
+        std::shared_ptr<Resource>sharedResource(TypeID id)const;
+        std::shared_ptr<Resource>sharedResource(std::string name)const;
 
-        std::shared_ptr<Accessor>sharedEmptyAccessor(TypeID id       ,std::function<OBJDestructor> destructor  = nullptr)const;
-        std::shared_ptr<Accessor>sharedEmptyAccessor(std::string name,std::function<OBJDestructor> destructor  = nullptr)const;
-
-        template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessorTypeID(TypeID id,ARGS... args)const;
-        template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessor(std::string name,ARGS... args)const;
-        template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessor(const char* name,ARGS... args)const;
-        template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessor(ARGS... args)const;
+        std::shared_ptr<Resource>sharedEmptyResource(TypeID id       ,std::function<OBJDestructor> destructor  = nullptr)const;
+        std::shared_ptr<Resource>sharedEmptyResource(std::string name,std::function<OBJDestructor> destructor  = nullptr)const;
 
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessorAddCD(std::string name,ARGS... args);
+        inline std::shared_ptr<Resource>sharedResourceTypeID(TypeID id,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessorAddC(std::string name,ARGS... args);
+        inline std::shared_ptr<Resource>sharedResource(std::string name,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessorAddD(std::string name,ARGS... args);
+        inline std::shared_ptr<Resource>sharedResource(const char* name,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Accessor>sharedAccessorAdd(std::string name,ARGS... args);
+        inline std::shared_ptr<Resource>sharedResource(ARGS... args)const;
+
+        template<typename CLASS,typename... ARGS>
+        inline std::shared_ptr<Resource>sharedResourceAddCD(std::string name,ARGS... args);
+        template<typename CLASS,typename... ARGS>
+        inline std::shared_ptr<Resource>sharedResourceAddC(std::string name,ARGS... args);
+        template<typename CLASS,typename... ARGS>
+        inline std::shared_ptr<Resource>sharedResourceAddD(std::string name,ARGS... args);
+        template<typename CLASS,typename... ARGS>
+        inline std::shared_ptr<Resource>sharedResourceAdd(std::string name,ARGS... args);
 
         void destroyUsingCustomDestroyer    (unsigned char*ptr,TypeID id)const;
         void constructUsingCustomConstructor(  signed char*ptr,TypeID id)const;
@@ -313,31 +313,31 @@ namespace ge{
 namespace ge{
   namespace core{
     template<typename TYPE>
-      inline TYPE convertTo(std::shared_ptr<ge::core::Accessor> const&sharedAccessor){
-        return (TYPE)*sharedAccessor;
+      inline TYPE convertTo(std::shared_ptr<ge::core::Resource> const&sharedResource){
+        return (TYPE)*sharedResource;
       }
 
     template<typename TYPE>
-      inline TYPE convertTo(ge::core::Accessor const&accessor){
+      inline TYPE convertTo(ge::core::Resource const&accessor){
         return (TYPE)accessor;
       }
     template<typename TYPE>
-      inline TYPE convertTo(ge::core::Accessor* const&ptrAccessor){
-        return (TYPE)*ptrAccessor;
+      inline TYPE convertTo(ge::core::Resource* const&ptrResource){
+        return (TYPE)*ptrResource;
       }
 
     template<typename TYPE>
-      inline void convertFrom(std::shared_ptr<ge::core::Accessor>&output,TYPE const&input){
+      inline void convertFrom(std::shared_ptr<ge::core::Resource>&output,TYPE const&input){
         *output=input;
       }
 
     template<typename TYPE>
-      inline void convertFrom(ge::core::Accessor*&output,TYPE const&input){
+      inline void convertFrom(ge::core::Resource*&output,TYPE const&input){
         (TYPE&)(*output)=input;
       }
 
     template<typename TYPE>
-      inline void convertFrom(ge::core::Accessor &output,TYPE const&input){
+      inline void convertFrom(ge::core::Resource &output,TYPE const&input){
         ((TYPE&)output) = input;
       }
 

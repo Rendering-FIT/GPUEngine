@@ -2,7 +2,7 @@
 
 #include<sstream>
 #include<geCore/Interpret.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 
 using namespace ge::core;
 
@@ -578,25 +578,25 @@ void* TypeRegister::alloc(TypeID id)const{
   return ptr;
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedAccessor(TypeID id)const{
-  return std::make_shared<AtomicAccessor>(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),this->alloc(id),id);
+std::shared_ptr<Resource>TypeRegister::sharedResource(TypeID id)const{
+  return std::make_shared<AtomicResource>(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),this->alloc(id),id);
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedAccessor(std::string name)const{
-  return this->sharedAccessor(this->getTypeId(name));
+std::shared_ptr<Resource>TypeRegister::sharedResource(std::string name)const{
+  return this->sharedResource(this->getTypeId(name));
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(TypeID id,std::function<OBJDestructor>destructor)const{
+std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(TypeID id,std::function<OBJDestructor>destructor)const{
   if(destructor)
-    return std::shared_ptr<Accessor>(new AtomicAccessor(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),id),[destructor](AtomicAccessor*ac){destructor((unsigned char*)ac->getData());delete ac;});
+    return std::shared_ptr<Resource>(new AtomicResource(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),id),[destructor](AtomicResource*ac){destructor((unsigned char*)ac->getData());delete ac;});
 
-  return this->sharedEmptyAccessor(id,this->_id2Destructor.find(id)->second);
-  //return std::shared_ptr<Accessor>(new AtomicAccessor(this->shared_from_this(),id),[destructor](AtomicAccessor*ac){destructor((unsigned char*)ac->getData());delete ac;});
-//  return std::make_shared<AtomicAccessor>(this->shared_from_this(),id);
+  return this->sharedEmptyResource(id,this->_id2Destructor.find(id)->second);
+  //return std::shared_ptr<Resource>(new AtomicResource(this->shared_from_this(),id),[destructor](AtomicResource*ac){destructor((unsigned char*)ac->getData());delete ac;});
+//  return std::make_shared<AtomicResource>(this->shared_from_this(),id);
 }
 
-std::shared_ptr<Accessor>TypeRegister::sharedEmptyAccessor(std::string name,std::function<OBJDestructor>destructor)const{
-  return this->sharedEmptyAccessor(this->getTypeId(name),destructor);
+std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(std::string name,std::function<OBJDestructor>destructor)const{
+  return this->sharedEmptyResource(this->getTypeId(name),destructor);
 }
 
 

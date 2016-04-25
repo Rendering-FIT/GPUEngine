@@ -1,7 +1,7 @@
 #pragma once
 
 #include<geCore/Interpret.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 #include<geCore/AtomicFunction.h>
 #include<geCore/FactoryOfFunctionFactory.h>
 
@@ -13,16 +13,16 @@ namespace ge{
         Nullary(
             std::shared_ptr<FunctionRegister>const&fr            ,
             FunctionRegister::FunctionID           id            ,
-            std::shared_ptr<Accessor>const&        data = nullptr);
+            std::shared_ptr<Resource>const&        data = nullptr);
         template<typename TYPE>
           Nullary(
               std::shared_ptr<FunctionRegister>const&fr  ,
               FunctionRegister::FunctionID           id  ,
               TYPE const&                            data):AtomicFunction(
               fr,id){
-           auto ss=fr->getTypeRegister()->sharedAccessor(TypeRegister::getTypeKeyword<TYPE>());
+           auto ss=fr->getTypeRegister()->sharedResource(TypeRegister::getTypeKeyword<TYPE>());
            (TYPE&)(*ss) = data;
-           this->bindOutput(ss);//fr->getTypeRegister()->sharedAccessor<TYPE>(data));
+           this->bindOutput(ss);//fr->getTypeRegister()->sharedResource<TYPE>(data));
           }
         template<typename TYPE>
           Nullary(
@@ -70,12 +70,12 @@ namespace ge{
              CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionRegister::FunctionID           id              ,\
-                 std::shared_ptr<Accessor>const&        output = nullptr):AtomicFunction(fr,id){\
+                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
                    this->bindOutput(output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Accessor>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT1>>()),output){}\
+                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT1>>()),output){}\
       protected:\
                 virtual bool _do(){//}}
 
@@ -85,12 +85,12 @@ namespace ge{
              CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionRegister::FunctionID           id              ,\
-                 std::shared_ptr<Accessor>const&        output = nullptr):AtomicFunction(fr,id){\
+                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
                    this->bindOutput(output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Accessor>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT>>()),output){}\
+                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS<INPUT>>()),output){}\
       protected:\
                 virtual bool _do(){//}}
 
@@ -157,12 +157,12 @@ namespace ge{
              CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionRegister::FunctionID           id              ,\
-                 std::shared_ptr<Accessor>const&        output = nullptr):AtomicFunction(fr,id){\
+                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
                    this->bindOutput(output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Accessor>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS>()),output){}\
+                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<CLASS>()),output){}\
       protected:\
                 virtual bool _do(){\
     INPUT_CHECK();\
@@ -207,7 +207,7 @@ namespace ge{
         public:
           Cast(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id):AtomicFunction(fr,id){}
           Cast(std::shared_ptr<ge::core::FunctionRegister>const&fr,
-              std::shared_ptr<ge::core::Accessor>const&output=nullptr):AtomicFunction(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()),output){}
+              std::shared_ptr<ge::core::Resource>const&output=nullptr):AtomicFunction(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()),output){}
         protected:
           virtual bool _do(){
             if(!this->_inputChanged(0))return false;

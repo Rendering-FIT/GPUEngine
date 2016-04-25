@@ -1,5 +1,5 @@
 #include<geCore/TypeRegister.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 #include<iostream>
 #include<sstream>
 
@@ -25,7 +25,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       }
     }
     WHEN( "creating string accessor"){
-      auto s=r->sharedAccessor("string");
+      auto s=r->sharedResource("string");
       *s=std::string("ahoj svete");
       THEN("it should contain string"){
         REQUIRE(((std::string&)*s)=="ahoj svete");
@@ -103,10 +103,10 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
 
     WHEN("adding mujTyp = ARRAY 2 I32"){
       r->addType("mujTyp",ge::core::TypeRegister::ARRAY,2,ge::core::TypeRegister::I32);
-      auto dat=r->sharedAccessor("mujTyp");
+      auto dat=r->sharedResource("mujTyp");
       *(*dat)[0]=12;
       *(*dat)[1]=32;
-      THEN("TypeRegister should be able to create shared Accessor of it"){
+      THEN("TypeRegister should be able to create shared Resource of it"){
         REQUIRE(dat->getNofElements()==2);
         REQUIRE((int32_t)*(*dat)[0]==12);
         REQUIRE((int32_t)*(*dat)[1]==32);
@@ -116,11 +116,11 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     WHEN("adding mujTyp2 = STRUCT ARRAY 2 I32 F32"){
       r->addType("mujTyp",ge::core::TypeRegister::ARRAY,2,ge::core::TypeRegister::I32);
       r->addType("mujTyp2",ge::core::TypeRegister::STRUCT,2,"mujTyp","f32");
-      auto dat2=r->sharedAccessor("mujTyp2");
+      auto dat2=r->sharedResource("mujTyp2");
       *(*(*dat2)[0])[0]=32;
       *(*(*dat2)[0])[1]=10;
       *(*dat2)[1]=13.3f;
-      THEN("TypeRegister should be able to create shared Accessor of it"){
+      THEN("TypeRegister should be able to create shared Resource of it"){
         REQUIRE(dat2->getNofElements()==2);
         REQUIRE((*dat2)[0]->getNofElements()==2);
         REQUIRE((int32_t)*(*(*dat2)[0])[0]==32);
@@ -143,41 +143,41 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       r->addClassC <Class0>("Class1");
       r->addClassD <Class0>("Class2");
       r->addClass  <Class0>("Class3");
-      THEN("creating Accessor with addClassCD should correctly incr and decr counter"){
+      THEN("creating Resource with addClassCD should correctly incr and decr counter"){
         counter=0;
-        auto a0=r->sharedAccessor("Class0");
+        auto a0=r->sharedResource("Class0");
         REQUIRE(counter==1);
         a0=nullptr;
         REQUIRE(counter==0);
       }
 
-      THEN("creating Accessor with addClassC should correctly incr and decr counter"){
+      THEN("creating Resource with addClassC should correctly incr and decr counter"){
         counter=0;
-        auto a1=r->sharedAccessor("Class1");
+        auto a1=r->sharedResource("Class1");
         REQUIRE(counter==1);
         a1=nullptr;
         REQUIRE(counter==1);
       }
 
-      THEN("creating Accessor with addClassD should correctly incr and decr counter"){
+      THEN("creating Resource with addClassD should correctly incr and decr counter"){
         counter=1;
-        auto a2=r->sharedAccessor("Class2");
+        auto a2=r->sharedResource("Class2");
         REQUIRE(counter==1);
         a2=nullptr;
         REQUIRE(counter==0);
       }
 
-      THEN("creating Accessor with addClass should correctly incr and decr counter"){
+      THEN("creating Resource with addClass should correctly incr and decr counter"){
         counter=0;
-        auto a3=r->sharedAccessor("Class3");
+        auto a3=r->sharedResource("Class3");
         REQUIRE(counter==0);
         a3=nullptr;
         REQUIRE(counter==0);
       }
 
-      THEN("create empty Accessor and filling it later should be doable"){
+      THEN("create empty Resource and filling it later should be doable"){
         counter=0;
-        auto a0=r->sharedEmptyAccessor("Class0");
+        auto a0=r->sharedEmptyResource("Class0");
         auto alloc=[](Class0**d){*d=new Class0;};
         alloc(*a0);
         REQUIRE(counter==1);

@@ -1,10 +1,10 @@
 #include<geUtil/LibraryLoader/RuntimeClassInterface.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 #include<sstream>
 
 using namespace ge::util;
 
-bool RuntimeClassInterface::_functionArgsMatch(std::vector<ge::core::Accessor>&args,unsigned fce)const{
+bool RuntimeClassInterface::_functionArgsMatch(std::vector<ge::core::Resource>&args,unsigned fce)const{
   if(args.size()!=this->getNofFunctionArguments(fce)+int(this->getFunctionReturnTypeID(fce)!=0))
     return false;
   if(this->getFunctionReturnTypeID(fce)!=0){
@@ -21,7 +21,7 @@ bool RuntimeClassInterface::_functionArgsMatch(std::vector<ge::core::Accessor>&a
   return true;
 }
 
-bool RuntimeClassInterface::_constructorArgsMatch(std::vector<ge::core::Accessor>&args,unsigned id)const{
+bool RuntimeClassInterface::_constructorArgsMatch(std::vector<ge::core::Resource>&args,unsigned id)const{
   if(args.size()!=this->getNofConstructorArguments(id))
     return false;
   for(unsigned i=0;i<args.size();++i)
@@ -93,7 +93,7 @@ std::string RuntimeClassInterface::getFunctionArgumentName(unsigned fce,unsigned
   return this->_classMetaData->getFce(fce).getArg(arg).getName();
 }
 
-void RuntimeClassInterface::call(void*,std::string,std::vector<ge::core::Accessor>&){
+void RuntimeClassInterface::call(void*,std::string,std::vector<ge::core::Resource>&){
 }
 
 std::vector<ge::util::RuntimeConstructorMetaData>::size_type RuntimeClassInterface::getNofConstructors()const{
@@ -112,7 +112,7 @@ std::string RuntimeClassInterface::getConstructorArgumentName(unsigned id,unsign
   return this->_classMetaData->getConstructor(id).getArg(arg).getName();
 }
 
-void*RuntimeClassInterface::construct(std::vector<ge::core::Accessor>&)const{
+void*RuntimeClassInterface::construct(std::vector<ge::core::Resource>&)const{
   return nullptr;
 }
 

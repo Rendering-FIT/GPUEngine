@@ -5,18 +5,18 @@
 
 namespace ge{
   namespace core{
-    class Accessor;
+    class Resource;
     class FunctionRegister;
     class GECORE_EXPORT ResourceFactory: public ObjectFactory{
       protected:
         TypeRegister::TypeID     _type   = TypeRegister::UNREGISTERED;
-        std::shared_ptr<Accessor>_result = nullptr                   ;
+        std::shared_ptr<Resource>_result = nullptr                   ;
       public:
         inline ResourceFactory(TypeRegister::TypeID const&type,Uses const&maxUses=1);
         inline virtual ~ResourceFactory();
         inline void reset();
         inline bool firstConstruction()const;
-        std::shared_ptr<Accessor>operator()(std::shared_ptr<FunctionRegister>const&tr);
+        std::shared_ptr<Resource>operator()(std::shared_ptr<FunctionRegister>const&tr);
     };
 
     inline ResourceFactory::ResourceFactory(

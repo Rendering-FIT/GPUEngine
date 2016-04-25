@@ -21,16 +21,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fc=std::make_shared<ge::core::Nullary>(functionRegister,2.2f  );
     auto fd=std::make_shared<ge::core::Nullary>(functionRegister,1000.f);
 
-    auto f0=std::make_shared<ge::core::Add<float>>(functionRegister,typeRegister->sharedAccessor("f32"));
+    auto f0=std::make_shared<ge::core::Add<float>>(functionRegister,typeRegister->sharedResource("f32"));
     f0->bindInput(0,fa);
     f0->bindInput(1,fb);
-    auto f1=std::make_shared<ge::core::Add<float>>(functionRegister,typeRegister->sharedAccessor("f32"));
+    auto f1=std::make_shared<ge::core::Add<float>>(functionRegister,typeRegister->sharedResource("f32"));
     f1->bindInput(0,f0);
     f1->bindInput(1,fc);
-    auto f2=std::make_shared<ge::core::Sub<float>>(functionRegister,typeRegister->sharedAccessor("f32"));
+    auto f2=std::make_shared<ge::core::Sub<float>>(functionRegister,typeRegister->sharedResource("f32"));
     f2->bindInput(0,f0);
     f2->bindInput(1,fd);
-    auto f3=std::make_shared<ge::core::Cast<float,int>>(functionRegister,typeRegister->sharedAccessor("i32"));
+    auto f3=std::make_shared<ge::core::Cast<float,int>>(functionRegister,typeRegister->sharedResource("i32"));
     f3->bindInput(0,f2);
     WHEN("running f1"){
       (*f1)();
@@ -66,7 +66,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fb=std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)12);
     auto fc=std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)0 );
 
-    auto cond=std::make_shared<ge::core::Less<uint32_t>>(functionRegister,typeRegister->sharedAccessor("bool"));
+    auto cond=std::make_shared<ge::core::Less<uint32_t>>(functionRegister,typeRegister->sharedResource("bool"));
     cond->bindInput(0,fa);
     cond->bindInput(1,fb);
 
@@ -107,7 +107,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fiend = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)10u);
     auto f1    = std::make_shared<ge::core::Nullary>(functionRegister,(unsigned)1u );
 
-    auto cond=std::make_shared<ge::core::Less<uint32_t>>(functionRegister,typeRegister->sharedAccessor("bool"));
+    auto cond=std::make_shared<ge::core::Less<uint32_t>>(functionRegister,typeRegister->sharedResource("bool"));
     cond->bindInput(0,fi   );
     cond->bindInput(1,fiend);
 
@@ -193,10 +193,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
     auto fadd    = std::make_shared<Add>(functionRegister);
 
     faddten->bindInput(0,fa);
-    faddten->bindOutput(typeRegister->sharedAccessor("f32"));
+    faddten->bindOutput(typeRegister->sharedResource("f32"));
     fadd->bindInput(0,faddten);
     fadd->bindInput(1,faddten);
-    fadd->bindOutput(typeRegister->sharedAccessor("f32"));
+    fadd->bindOutput(typeRegister->sharedResource("f32"));
 
     WHEN("running fadd"){
       (*fadd)();

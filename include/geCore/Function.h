@@ -9,8 +9,8 @@ namespace ge{
   namespace core{
 
 
-    // function: Accessor compositor
-    // function: selector of element of Accessor
+    // function: Resource compositor
+    // function: selector of element of Resource
 
     class GECORE_EXPORT Function: public Statement{
       public:
@@ -26,11 +26,11 @@ namespace ge{
         inline std::shared_ptr<FunctionRegister>const&getFunctionRegister()const;
         inline FunctionRegister::FunctionID getId()const;
         virtual bool bindInput (InputIndex i,std::shared_ptr<Function>const&function = nullptr) = 0;
-        virtual bool bindOutput(             std::shared_ptr<Accessor>const&data     = nullptr) = 0;
+        virtual bool bindOutput(             std::shared_ptr<Resource>const&data     = nullptr) = 0;
         virtual bool hasInput (InputIndex i)const = 0;
         virtual bool hasOutput(            )const = 0;
-        virtual std::shared_ptr<Accessor>const&getInputData (InputIndex i)const = 0;
-        virtual std::shared_ptr<Accessor>const&getOutputData(            )const = 0;
+        virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const = 0;
+        virtual std::shared_ptr<Resource>const&getOutputData(            )const = 0;
         virtual Ticks getUpdateTicks()const = 0;
         virtual Ticks getCheckTicks ()const = 0;
         virtual void  setUpdateTicks(Ticks ticks) = 0;
@@ -43,7 +43,7 @@ namespace ge{
         inline InputIndex  getInputIndex(std::string const&name)const;
         inline bool bindInput(std::string const&name,std::shared_ptr<Function>const&function = nullptr);
         inline bool hasInput (std::string const&name)const;
-        inline std::shared_ptr<Accessor>const&getInputData (std::string const&input)const ;
+        inline std::shared_ptr<Resource>const&getInputData (std::string const&input)const ;
         inline TypeRegister::TypeID getInputType (std::string const&name)const;
         inline std::shared_ptr<Function>const&getInputFunction(std::string const&name)const;
     };
@@ -105,7 +105,7 @@ namespace ge{
       return this->hasInput(this->getInputIndex(name));
     }
 
-    inline std::shared_ptr<Accessor>const&Function::getInputData (std::string const&input)const{
+    inline std::shared_ptr<Resource>const&Function::getInputData (std::string const&input)const{
       assert(this!=nullptr);
       return this->getInputData(this->getInputIndex(input));
     }

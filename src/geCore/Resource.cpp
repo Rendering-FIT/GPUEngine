@@ -1,4 +1,4 @@
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 
 using namespace ge::core;
 
@@ -8,71 +8,71 @@ namespace ge{
   }
 }
 
-AtomicAccessor::AtomicAccessor(AtomicAccessor const& ac):Accessor(ac._manager,ac._id){
-  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
+AtomicResource::AtomicResource(AtomicResource const& ac):Resource(ac._manager,ac._id){
+  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
   this->_data   = ac._data  ;
   this->_offset = ac._offset;
 }
 
-AtomicAccessor::AtomicAccessor(
+AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
     const void*                        data   ,
     TypeRegister::TypeID               id     ,
-    size_t                             offset ):Accessor(manager,id){
-  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
-  this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){AtomicAccessor::_callDestructors(ptr,id,manager);delete[]ptr;});
+    size_t                             offset ):Resource(manager,id){
+  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
+  this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){AtomicResource::_callDestructors(ptr,id,manager);delete[]ptr;});
   this->_offset  =        offset ;
 }
 
-AtomicAccessor::AtomicAccessor(
+AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
     std::shared_ptr<char>const&        data   ,
     TypeRegister::TypeID               id     ,
-    size_t                             offset ):Accessor(manager,id){
-  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
+    size_t                             offset ):Resource(manager,id){
+  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
   this->_data    = data   ;
   this->_offset  = offset ;
 }
 
-AtomicAccessor::AtomicAccessor(
+AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
-    TypeRegister::TypeID               id     ):Accessor(manager,id){
-  //std::cerr<<"AtomicAccessor::AtomicAccessor() - "<<this<<std::endl;
+    TypeRegister::TypeID               id     ):Resource(manager,id){
+  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
   this->_data    = nullptr;
   this->_offset  = 0      ;
 }
 
-AtomicAccessor::~AtomicAccessor(){
-  //std::cerr<<"AtomicAccessor::~AtomicAccessor() - "<<this<<std::endl;
+AtomicResource::~AtomicResource(){
+  //std::cerr<<"AtomicResource::~AtomicResource() - "<<this<<std::endl;
 }
 
-void*AtomicAccessor::getData()const{
+void*AtomicResource::getData()const{
   return (char*)&(*this->_data)+this->_offset;
 }
 
-void const*AtomicAccessor::getDataAddress()const{
+void const*AtomicResource::getDataAddress()const{
   return &this->_data;
 }
 
-std::shared_ptr<Accessor> AtomicAccessor::operator[](TypeRegister::DescriptionIndex elem)const{
+std::shared_ptr<Resource> AtomicResource::operator[](TypeRegister::DescriptionIndex elem)const{
   TypeRegister::TypeID innerType = 0;
   size_t               offset    = 0;
   switch(this->getManager()->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
       innerType = this->getManager()->getArrayInnerTypeId(this->getId());
       offset    = this->getManager()->computeTypeIdSize(innerType)*elem;
-      return std::make_shared<AtomicAccessor>(this->getManager(),this->_data,innerType,offset);
+      return std::make_shared<AtomicResource>(this->getManager(),this->_data,innerType,offset);
     case TypeRegister::STRUCT:
       innerType = this->getManager()->getStructElementTypeId(this->getId(),elem);
       for(TypeRegister::DescriptionIndex i=0;i<elem;++i)
         offset += this->getManager()->computeTypeIdSize(this->getManager()->getStructElementTypeId(this->getId(),i));
-      return std::make_shared<AtomicAccessor>(this->getManager(),this->_data,innerType,offset);
+      return std::make_shared<AtomicResource>(this->getManager(),this->_data,innerType,offset);
     default:
-      return std::make_shared<AtomicAccessor>(this->getManager(),this->_data,this->getId());
+      return std::make_shared<AtomicResource>(this->getManager(),this->_data,this->getId());
   }
 }
 
-TypeRegister::DescriptionElement AtomicAccessor::getNofElements()const{
+TypeRegister::DescriptionElement AtomicResource::getNofElements()const{
   switch(this->_manager->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
       return this->getManager()->getArraySize(this->getId());
@@ -83,7 +83,7 @@ TypeRegister::DescriptionElement AtomicAccessor::getNofElements()const{
   }
 }
 
-void AtomicAccessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shared_ptr<const TypeRegister>const&manager){
+void AtomicResource::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shared_ptr<const TypeRegister>const&manager){
   TypeRegister::Type type=manager->getTypeIdType(id);
   switch(type){
     case TypeRegister::VOID  :
@@ -104,11 +104,11 @@ void AtomicAccessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shar
                               break;
     case TypeRegister::ARRAY:
                               for(TypeRegister::DescriptionElement i=0;i<manager->getArraySize(id);++i)
-                                AtomicAccessor::_callDestructors(ptr+manager->computeTypeIdSize(manager->getArrayInnerTypeId(id))*i,manager->getArrayInnerTypeId(id),manager);
+                                AtomicResource::_callDestructors(ptr+manager->computeTypeIdSize(manager->getArrayInnerTypeId(id))*i,manager->getArrayInnerTypeId(id),manager);
                               break;
     case TypeRegister::STRUCT:
                               for(TypeRegister::DescriptionElement e=0;e<manager->getNofStructElements(id);++e){
-                                AtomicAccessor::_callDestructors(ptr,manager->getStructElementTypeId(id,e),manager);
+                                AtomicResource::_callDestructors(ptr,manager->getStructElementTypeId(id,e),manager);
                                 ptr+=manager->computeTypeIdSize(manager->getStructElementTypeId(id,e));
                               }
                               break;
@@ -123,11 +123,11 @@ void AtomicAccessor::_callDestructors(char*ptr,TypeRegister::TypeID id,std::shar
   }
 }
 
-const void*AtomicAccessor::getPointer()const{
+const void*AtomicResource::getPointer()const{
   return (void*)this->getData();
 }
 
-std::string AtomicAccessor::data2Str()const{
+std::string AtomicResource::data2Str()const{
   TypeRegister::Type type=this->_manager->getTypeIdType(this->_id);
   std::stringstream ss;
   bool first;
@@ -203,27 +203,27 @@ std::string AtomicAccessor::data2Str()const{
   return ss.str();
 }
 
-void AtomicAccessor::callDestructor(){
+void AtomicResource::callDestructor(){
   this->_callDestructors(&*this->_data,this->_id,this->_manager);
 }
 
 
-CompositeAccessor::CompositeAccessor(
+CompositeResource::CompositeResource(
     std::shared_ptr<TypeRegister>const&         manager  ,
     TypeRegister::TypeID                        id       ,
-    std::vector<std::shared_ptr<Accessor>>const&accessors):Accessor(manager,id){
+    std::vector<std::shared_ptr<Resource>>const&accessors):Resource(manager,id){
   this->_nofElements = 0;
   switch(manager->getTypeIdType(id)){
     case TypeRegister::ARRAY:
       if(manager->getArraySize(id)!=accessors.size()){
-        std::cerr<<"ERROR - CompositeAccessor::CompositeAccessor - number of components does not match array size - ";
+        std::cerr<<"ERROR - CompositeResource::CompositeResource - number of components does not match array size - ";
         std::cerr<<manager->getArraySize(id)<<" != "<<accessors.size();
         std::cerr<<std::endl;
         return;
       }
       for(auto x:accessors){
         if(manager->getArrayInnerTypeId(id)!=x->getId()){
-          std::cerr<<"ERROR - CompositeAccessor::CompositeAccessor - one of components differs from arrays inner type - ";
+          std::cerr<<"ERROR - CompositeResource::CompositeResource - one of components differs from arrays inner type - ";
           std::cerr<<manager->getTypeIdName(manager->getArrayInnerTypeId(id))<<" != ";
           std::cerr<<manager->getTypeIdName(x->getId());
           std::cerr<<std::endl;
@@ -233,14 +233,14 @@ CompositeAccessor::CompositeAccessor(
       break;
     case TypeRegister::STRUCT:
       if(manager->getNofStructElements(id)!=accessors.size()){
-        std::cerr<<"ERROR - CompositeAccessor::CompositeAccessor() - number of components differs from structs number of components - ";
+        std::cerr<<"ERROR - CompositeResource::CompositeResource() - number of components differs from structs number of components - ";
         std::cerr<<manager->getNofStructElements(id)<<" != "<<accessors.size();
         std::cerr<<std::endl;
         return;
       }
-      for(std::vector<std::shared_ptr<Accessor>>::size_type i=0;i<accessors.size();++i){
+      for(std::vector<std::shared_ptr<Resource>>::size_type i=0;i<accessors.size();++i){
         if(manager->getStructElementTypeId(id,i)!=accessors[i]->getId()){
-          std::cerr<<"ERROR - CompositeAccessor::CompositeAccessor() - one of components differs from structs element type - ";
+          std::cerr<<"ERROR - CompositeResource::CompositeResource() - one of components differs from structs element type - ";
           std::cerr<<manager->getTypeIdName(manager->getStructElementTypeId(id,i))<<" != ";
           std::cerr<<manager->getTypeIdName(accessors[i]->getId());
           std::cerr<<std::endl;
@@ -249,7 +249,7 @@ CompositeAccessor::CompositeAccessor(
       }
       break;
     default                  :
-      std::cerr<<"ERROR - CompositeAccessor::CompositeAccessor() - cannot composite Accessors into non composable type - ";
+      std::cerr<<"ERROR - CompositeResource::CompositeResource() - cannot composite Resources into non composable type - ";
       std::cerr<<manager->getTypeIdName(id)<<std::endl;;
       return;
   }
@@ -258,15 +258,15 @@ CompositeAccessor::CompositeAccessor(
     this->_nofElements += x->getNofElements();
 }
 
-void*CompositeAccessor::getData()const{
+void*CompositeResource::getData()const{
   return this->_components[0]->getData();
 }
 
-void const*CompositeAccessor::getDataAddress()const{
+void const*CompositeResource::getDataAddress()const{
   return this->_components[0]->getDataAddress();
 }
 
-std::shared_ptr<Accessor> CompositeAccessor::operator[](TypeRegister::DescriptionIndex elem)const{
+std::shared_ptr<Resource> CompositeResource::operator[](TypeRegister::DescriptionIndex elem)const{
   TypeRegister::DescriptionElement offset=0;
   decltype(this->_components)::size_type i=0;
   while(elem>offset+this->_components[i]->getNofElements()){
@@ -277,11 +277,11 @@ std::shared_ptr<Accessor> CompositeAccessor::operator[](TypeRegister::Descriptio
 
 }
 
-TypeRegister::DescriptionElement CompositeAccessor::getNofElements()const{
+TypeRegister::DescriptionElement CompositeResource::getNofElements()const{
   return this->_nofElements;
 }
 
-std::string CompositeAccessor::data2Str()const{
+std::string CompositeResource::data2Str()const{
   std::stringstream ss;
   bool first;
   switch(this->_manager->getTypeIdType(this->_id)){

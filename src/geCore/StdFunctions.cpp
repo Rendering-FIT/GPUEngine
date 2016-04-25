@@ -9,7 +9,7 @@ using namespace ge::core;
 Nullary::Nullary(
     std::shared_ptr<FunctionRegister>const&fr  ,
     FunctionRegister::FunctionID           id  ,
-    std::shared_ptr<Accessor>const&        data):AtomicFunction(fr,id){
+    std::shared_ptr<Resource>const&        data):AtomicFunction(fr,id){
   this->_outputData = data;
 }
 

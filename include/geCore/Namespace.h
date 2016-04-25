@@ -6,7 +6,7 @@
 
 #include<geCore/Export.h>
 #include<geCore/TypeRegister.h>
-#include<geCore/Accessor.h>
+#include<geCore/Resource.h>
 
 namespace ge{
   namespace core{
@@ -14,12 +14,12 @@ namespace ge{
       class GECORE_EXPORT Namespace: public std::enable_shared_from_this<Namespace>{
         public:
           using SharedNamespace = std::shared_ptr<Namespace>;
-          using SharedAccessor  = std::shared_ptr<Accessor >;
+          using SharedResource  = std::shared_ptr<Resource >;
         protected:
           std::string                          _name   = ""     ;
           std::weak_ptr<Namespace>             _parent          ;
           std::map<std::string,SharedNamespace>_name2Namespace  ;
-          std::map<std::string,SharedAccessor >_name2Variable   ;
+          std::map<std::string,SharedResource >_name2Variable   ;
           std::string _toUpper(std::string str);
         public:
           Namespace(std::string name,SharedNamespace const&parent = nullptr);
@@ -27,11 +27,11 @@ namespace ge{
           bool empty()const;
           void setParent(SharedNamespace const&parent = nullptr);
           void insertNamespace(std::string name,SharedNamespace const&nmspace);
-          void insert(std::string name,SharedAccessor const&variable);
+          void insert(std::string name,SharedResource const&variable);
           void erase(std::string name);
           std::string toStr(unsigned indentation)const;
           SharedNamespace getNamespace(std::string name)const;
-          SharedAccessor  getVariable (std::string name)const;
+          SharedResource  getVariable (std::string name)const;
           bool contain(std::string name)const;
           template<typename TYPE>
             TYPE&get(std::string name)const;

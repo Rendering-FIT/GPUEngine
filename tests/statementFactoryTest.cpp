@@ -25,7 +25,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     auto function = std::dynamic_pointer_cast<Function>(statement);
     function->bindInput(0,fa);
     function->bindInput(1,fb);
-    function->bindOutput(r->sharedAccessor("i32"));
+    function->bindOutput(r->sharedResource("i32"));
     WHEN("running constructed statement"){
       (*statement)();
       THEN("output should be computed correctly"){
@@ -42,7 +42,7 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     factory->addInputFactory(fr->sharedFactory("Nullary"));
     auto statement = (*factory)(fr);
     auto function = std::dynamic_pointer_cast<Function>(statement);
-    function->bindOutput(r->sharedAccessor("i32"));
+    function->bindOutput(r->sharedResource("i32"));
     *function->getInputData(0)=(int32_t)10;
     *function->getInputData(1)=(int32_t)11;
     WHEN("running constructed statement"){
@@ -65,13 +65,13 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
 
     auto statement0 = (*factory)(fr);
     auto function0 = std::dynamic_pointer_cast<Function>(statement0);
-    function0->bindOutput(r->sharedAccessor("i32"));
+    function0->bindOutput(r->sharedResource("i32"));
     *function0->getInputData(0)=(int32_t)10;
     *function0->getInputData(1)=(int32_t)11;
 
     auto statement1 = (*factory)(fr);
     auto function1 = std::dynamic_pointer_cast<Function>(statement1);
-    function1->bindOutput(r->sharedAccessor("i32"));
+    function1->bindOutput(r->sharedResource("i32"));
     *function1->getInputData(0)=(int32_t)30;
     *function1->getInputData(1)=(int32_t)31;
 
@@ -120,8 +120,8 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     *f00->getInputData(1)=(int32_t)11;
     *f01->getInputData(0)=(int32_t)12;
     *f01->getInputData(1)=(int32_t)80;
-    f00->bindOutput(r->sharedAccessor("i32"));
-    f01->bindOutput(r->sharedAccessor("i32"));
+    f00->bindOutput(r->sharedResource("i32"));
+    f01->bindOutput(r->sharedResource("i32"));
 
     auto statement1 = (*factory)(fr);
     auto body1 = std::dynamic_pointer_cast<Body>(statement1);
@@ -131,8 +131,8 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     *f10->getInputData(1)=(int32_t)2;
     *f11->getInputData(0)=(int32_t)3;
     *f11->getInputData(1)=(int32_t)10;
-    f10->bindOutput(r->sharedAccessor("i32"));
-    f11->bindOutput(r->sharedAccessor("i32"));
+    f10->bindOutput(r->sharedResource("i32"));
+    f11->bindOutput(r->sharedResource("i32"));
 
 
     WHEN("running constructed body containing two function"){
