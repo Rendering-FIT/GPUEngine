@@ -3,6 +3,7 @@
 #include<sstream>
 #include<geCore/Interpret.h>
 #include<geCore/Resource.h>
+#include<geCore/AtomicResource.h>
 
 using namespace ge::core;
 

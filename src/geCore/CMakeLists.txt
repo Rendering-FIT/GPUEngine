@@ -44,6 +44,8 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/StandardSemanticsNames.h
   ${HEADER_PATH}/TypeRegister.h
   ${HEADER_PATH}/Resource.h
+  ${HEADER_PATH}/AtomicResource.h
+  ${HEADER_PATH}/CompositeResource.h
   ${HEADER_PATH}/DisjointSet.h
   ${HEADER_PATH}/Interpret.h
   ${HEADER_PATH}/Statement.h
@@ -55,6 +57,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/Body.h
   ${HEADER_PATH}/BodyFactory.h
   ${HEADER_PATH}/IfFactory.h
+  ${HEADER_PATH}/WhileFactory.h
   ${HEADER_PATH}/Namespace.h
   ${HEADER_PATH}/ObjectFactory.h
   ${HEADER_PATH}/ResourceFactory.h
@@ -98,12 +101,15 @@ set(CORE_SOURCES
   EnumRegister.cpp
   StandardSemanticsNames.cpp
   TypeRegister.cpp
-  Resource.cpp
+  #Resource.cpp
+  AtomicResource.cpp
+  CompositeResource.cpp
   #statement.cpp
   Function.cpp
   AtomicFunction.cpp
   While.cpp
   If.cpp
+  WhileFactory.cpp
   #body.cpp
   Namespace.cpp
   ResourceFactory.cpp

@@ -1,6 +1,7 @@
 #include<geUtil/copyArgumentManager2Namespace.h>
 #include<geCore/TypeRegister.h>
 #include<geCore/Resource.h>
+#include<geCore/AtomicResource.h>
 
 using namespace ge::core;
 
