@@ -1,7 +1,7 @@
 #include<geCore/Interpret.h>
 #include<geCore/AtomicFunction.h>
 #include<geCore/StdFunctions.h>
-#include<geCore/MacroFunction.h>
+#include<geCore/CompositeFunction.h>
 #include<geCore/If.h>
 
 #define CATCH_CONFIG_MAIN
@@ -212,11 +212,11 @@ SCENARIO( "ticks tests", "[Function]" ) {
 }
 
 /*
-SCENARIO( "macro function tests", "[MacroFunction]" ) {
+SCENARIO( "macro function tests", "[CompositeFunction]" ) {
   auto tr = std::make_shared<ge::core::TypeRegister>();
   auto fr = std::make_shared<ge::core::FunctionRegister>(tr);
   ge::core::registerStdFunctions(fr);
   auto ftype = tr->addType("",{TypeRegister::FCE,TypeRegister::I32,3,TypeRegister::I32,TypeRegister::I32,TypeRegister::I32});
 
-  auto add3 = std::shared_ptr<ge::core::MacroFunction>(fr,)
+  auto add3 = std::shared_ptr<ge::core::CompositeFunction>(fr,)
 }*/

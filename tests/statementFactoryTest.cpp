@@ -1,6 +1,6 @@
 #include<geCore/Interpret.h>
 #include<geCore/StdFunctions.h>
-#include<geCore/MacroFunction.h>
+#include<geCore/CompositeFunction.h>
 #include<geCore/FunctionNodeFactory.h>
 #include<geCore/Body.h>
 #include<geCore/ResourceFactory.h>
