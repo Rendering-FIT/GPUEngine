@@ -2,6 +2,7 @@
 
 #include<geCore/ObjectFactory.h>
 #include<memory>
+#include<iostream>
 
 namespace ge{
   namespace core{
