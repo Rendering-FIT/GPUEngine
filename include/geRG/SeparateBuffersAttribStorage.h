@@ -31,13 +31,13 @@ namespace ge
 
          virtual void bind() const override;
 
-         virtual bool reallocData(Mesh &mesh,int numVertices,int numIndices,
+         virtual bool reallocData(Mesh &mesh,unsigned numVertices,unsigned numIndices,
                                   bool preserveContent=true) override;
          virtual void uploadVertices(Mesh &mesh,const void*const *attribList,
                                      unsigned attribListSize,
-                                     int numVertices,int fromIndex=0) override;
+                                     unsigned numVertices,unsigned fromIndex=0) override;
          virtual void uploadIndices(Mesh &mesh,const void *indices,
-                                    int numIndices,int fromIndex=0) override;
+                                    unsigned numIndices,unsigned fromIndex=0) override;
 
       };
 

@@ -48,7 +48,7 @@ AttribStorage::~AttribStorage()
  *  @param numIndices number of indices to be allocated inside associated
  *                    Element Buffer Object
  */
-bool AttribStorage::allocData(Mesh &mesh,int numVertices,int numIndices)
+bool AttribStorage::allocData(Mesh &mesh,unsigned numVertices,unsigned numIndices)
 {
    // do we have enough space?
    if(!_vertexAllocationManager.canAllocate(numVertices) ||
@@ -91,7 +91,7 @@ bool AttribStorage::allocData(Mesh &mesh,int numVertices,int numIndices)
  *  If preserveContent is false, content of element and index data are undefined
  *  after reallocation.
  */
-bool AttribStorage::reallocData(Mesh &/*mesh*/,int /*numVertices*/,int /*numIndices*/,
+bool AttribStorage::reallocData(Mesh &/*mesh*/,unsigned /*numVertices*/,unsigned /*numIndices*/,
                                 bool /*preserveContent*/)
 {
    // Used strategy:
@@ -155,14 +155,14 @@ void AttribStorage::render(const std::vector<RenderingCommandData>& renderingDat
       {
          // call MultiDrawElementsIndirect
          GLintptr offset=it2->indirectBufferOffset4*4;
-         glMultiDrawElementsIndirect(it2->glMode,GL_UNSIGNED_INT,(const void*)offset,it2->drawCommandCount,0);
+         glMultiDrawElementsIndirect(it2->glMode,GL_UNSIGNED_INT,(const void*)offset,GLsizei(it2->drawCommandCount),0);
       }
    else
       for(auto it2=renderingDataList.begin(),e=renderingDataList.end(); it2!=e; it2++)
       {
          // call MultiDrawArraysIndirect
          GLintptr offset=it2->indirectBufferOffset4*4;
-         glMultiDrawArraysIndirect(it2->glMode,(const void*)offset,it2->drawCommandCount,0);
+         glMultiDrawArraysIndirect(it2->glMode,(const void*)offset,GLsizei(it2->drawCommandCount),0);
       }
 }
 

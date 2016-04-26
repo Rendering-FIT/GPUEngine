@@ -8,10 +8,10 @@ using namespace ge::rg;
 
 void ItemAllocationManager::setCapacity(unsigned value)
 {
-   unsigned delta=value-_numItemsTotal;
-   resize(value);
-   _numItemsTotal=value;
-   _numItemsAvailable+=delta;
+   int delta=value-_capacity;
+   _allocations.resize(value);
+   _capacity=value;
+   _available+=delta;
    _numItemsAvailableAtTheEnd+=delta;
 }
 
@@ -32,7 +32,7 @@ bool ItemAllocationManager::alloc(unsigned *id)
    // alloc item
    (*this)[_firstItemAvailableAtTheEnd]=id;
    (*id)=_firstItemAvailableAtTheEnd;
-   _numItemsAvailable--;
+   _available--;
    _numItemsAvailableAtTheEnd--;
    _firstItemAvailableAtTheEnd++;
    return true;
@@ -61,7 +61,7 @@ bool ItemAllocationManager::alloc(unsigned numItems,unsigned* ids)
       (*this)[_firstItemAvailableAtTheEnd+i]=&ids[i];
       ids[i]=_firstItemAvailableAtTheEnd+i;
    }
-   _numItemsAvailable-=numItems;
+   _available-=numItems;
    _numItemsAvailableAtTheEnd-=numItems;
    _firstItemAvailableAtTheEnd+=numItems;
    return true;
@@ -72,11 +72,11 @@ void ItemAllocationManager::free(unsigned id)
 {
    unsigned* &item=(*this)[id];
    if(item==nullptr) {
-      assert(id<_numNullObjects && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
+      assert(id<_numNullItems && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
       return;
    }
    item=nullptr;
-   _numItemsAvailable++;
+   _available++;
 }
 
 
@@ -87,26 +87,26 @@ void ItemAllocationManager::free(unsigned* ids,unsigned numItems)
    {
       unsigned* &item=(*this)[ids[i]];
       if(item==nullptr) {
-         assert(ids[i]<_numNullObjects && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
+         assert(ids[i]<_numNullItems && "ItemAllocationManager::free(): Freeing non-allocated or already freed item");
          numRemoved--;
          continue;
       }
       item=nullptr;
    }
-   _numItemsAvailable+=numRemoved;
+   _available+=numRemoved;
 }
 
 
 void ItemAllocationManager::clear()
 {
-   _numItemsAvailable=_numItemsTotal-_numNullObjects;
-   _numItemsAvailableAtTheEnd=_numItemsTotal-_numNullObjects;
-   _firstItemAvailableAtTheEnd=_numNullObjects;
+   _available=_capacity-_numNullItems;
+   _numItemsAvailableAtTheEnd=_capacity-_numNullItems;
+   _firstItemAvailableAtTheEnd=_numNullItems;
 }
 
 
 void ItemAllocationManager::assertEmpty()
 {
-   assert(_numItemsAvailable+_numNullObjects==_numItemsTotal &&
-          "ItemAllocationManager::_numItemsAvailable does not contain valid value.");
+   assert(_available+_numNullItems==_capacity &&
+          "ItemAllocationManager::_available does not contain valid value.");
 }

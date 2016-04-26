@@ -123,12 +123,12 @@ namespace ge
          inline GLType glType() const;                     ///< Returns the type of attribute data.
          inline uint16_t glTypeAsInt() const;              ///< Returns type of attribute data as integer value.
          inline void setGLType(GLType value);              ///< Sets the type of attribute data.
-         inline int numComponents() const;                 ///< Returns the number of components of attribute.
-         inline void setNumComponents(int value);          ///< Sets the number of components of attribute.
+         inline unsigned numComponents() const;            ///< Returns the number of components of attribute.
+         inline void setNumComponents(unsigned value);     ///< Sets the number of components of attribute.
          inline bool bgra() const;                         ///< Returns BGRA flag used by some special OpenGL attribute formats.
          inline void setBGRA(bool value);                  ///< Sets BGRA flag used by some special OpenGL attribute formats.
-         inline int elementSize() const;                   ///< \brief Returns the size (in bytes) of single attribute item.
-         inline void setElementSize(int value);            ///< \brief Sets the size (in bytes) of single attribute item.
+         inline unsigned elementSize() const;              ///< \brief Returns the size (in bytes) of single attribute item.
+         inline void setElementSize(unsigned value);       ///< \brief Sets the size (in bytes) of single attribute item.
          inline TypeHandling typeHandling() const;         ///< \brief Returns how the attribute is handled to OpenGL.
          inline void setTypeHandling(TypeHandling value);  ///< \brief Sets how the attribute is handled to OpenGL.
          inline uint32_t divisor() const;                  ///< \brief Returns attribute divisor.
@@ -261,12 +261,12 @@ namespace ge
       inline GLType AttribType::glType() const  { return GLType(_data16[1]); }
       inline uint16_t AttribType::glTypeAsInt() const  { return _data16[1]; }
       inline void AttribType::setGLType(GLType value)  { _data16[1]=uint16_t(value); }
-      inline int AttribType::numComponents() const  { return (_data16[0]&0xf800)>>11; }
-      inline void AttribType::setNumComponents(int value)  { auto v=_data16[0]&0x07ff; _data16[0]=uint16_t(v|(value<<11)); }
+      inline unsigned AttribType::numComponents() const  { return (_data16[0]&0xf800)>>11; }
+      inline void AttribType::setNumComponents(unsigned value)  { unsigned v=_data16[0]&0x07ff; _data16[0]=uint16_t(v|(value<<11)); }
       inline bool AttribType::bgra() const  { return (_data16[0]&0x0400)!=0; }
       inline void AttribType::setBGRA(bool value)  { if(value) _data16[0]|=0x0400; else _data16[0]&=0xfbff; }
-      inline int AttribType::elementSize() const  { return _data16[0]&0x00ff; }
-      inline void AttribType::setElementSize(int value)  { auto v=_data16[0]&0xff00; _data16[0]=uint16_t(v|(value&0xff)); }
+      inline unsigned AttribType::elementSize() const  { return _data16[0]&0x00ff; }
+      inline void AttribType::setElementSize(unsigned value)  { unsigned v=_data16[0]&0xff00; _data16[0]=uint16_t(v|(value&0xff)); }
       inline AttribType::TypeHandling AttribType::typeHandling() const  { return TypeHandling((_data16[0]&0x0300)>>8); }
       inline void AttribType::setTypeHandling(AttribType::TypeHandling value)  { auto v=_data16[0]&0xfc00; _data16[0]=uint16_t(v|value); }
       inline uint32_t AttribType::divisor() const  { return _data32[1]; }

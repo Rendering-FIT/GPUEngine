@@ -95,6 +95,7 @@ add_library(${LIB_NAME}
 # PACKAGES
 
 find_package(glm)
+find_package(GLEW)
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
@@ -104,8 +105,8 @@ find_package(glm)
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps geGL)
-set(External_deps_Export glm)
-set(External_libs glm)
+set(External_deps_Export glm GLEW)
+set(External_libs glm GLEW)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 

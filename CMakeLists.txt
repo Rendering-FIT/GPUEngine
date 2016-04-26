@@ -13,9 +13,10 @@ SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
-SET(GPUENGINE_BUILD_geAd OFF CACHE BOOL "Add geAd subdirectory. This is for addons.")
-SET(GPUENGINE_BUILD_APPS OFF CACHE BOOL "Add apps subdirectory. This is for building applications.")
-SET(GPUENGINE_BUILD_TESTS OFF CACHE BOOL "Add tests subdirectory. This is for building unit tests.")
+SET(GPUENGINE_BUILD_geAd ON CACHE BOOL "Build addons (geAd directory).")
+SET(GPUENGINE_BUILD_APPS OFF CACHE BOOL "Build applications (apps directory).")
+SET(GPUENGINE_BUILD_EXAMPLES OFF CACHE BOOL "Build examples (examples directory).")
+SET(GPUENGINE_BUILD_TESTS OFF CACHE BOOL "Build and run tests (tests directory).")
 
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
@@ -121,12 +122,15 @@ if(GPUENGINE_BUILD_geAd)
   add_subdirectory(geAd)
 endif()
 
-
 if(GPUENGINE_BUILD_APPS)
    if(NOT GPUENGINE_BUILD_geAd)
       message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
-   endif() 
+   endif()
    add_subdirectory(apps)
+endif()
+
+if(GPUENGINE_BUILD_EXAMPLES)
+  add_subdirectory(examples)
 endif()
 
 if(GPUENGINE_BUILD_TESTS)

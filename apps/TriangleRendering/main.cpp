@@ -79,6 +79,9 @@ int main(int Argc,char*Argv[])
 
   glewExperimental=GL_TRUE;
   glewInit();
+  glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
+                // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
   RenderingContext::setCurrent(make_shared<RenderingContext>());
 
   // OpenGL debugging messages
@@ -111,13 +114,13 @@ void Idle()
    // draw meshDirectNI
    glProgram->use();
    meshDirectNI.attribStorage()->bind();
-   unsigned baseIndex=meshDirectNI.attribStorage()->vertexAllocationBlock(meshDirectNI.verticesDataId()).startIndex;
+   unsigned baseIndex=meshDirectNI.attribStorage()->vertexArrayAllocation(meshDirectNI.verticesDataId()).startIndex;
    glDrawArrays(GL_TRIANGLES,baseIndex+0,3);
    glDrawArrays(GL_TRIANGLES,baseIndex+3,3);
 
    // draw meshDirectI
    meshDirectI.attribStorage()->bind();
-   baseIndex=meshDirectI.attribStorage()->indexAllocationBlock(meshDirectI.indicesDataId()).startIndex;
+   baseIndex=meshDirectI.attribStorage()->indexArrayAllocation(meshDirectI.indicesDataId()).startIndex;
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+0));
    glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_INT,(void*)(intptr_t(baseIndex)*4+12));
 

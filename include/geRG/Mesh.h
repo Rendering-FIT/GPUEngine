@@ -52,40 +52,40 @@ namespace ge
          inline DrawableList& drawables();
          inline bool valid() const;
 
-         inline void allocData(const AttribConfigRef& config,int numVertices,
-                               int numIndices,unsigned numPrimitives);
-         inline void reallocData(int numVertices,int numIndices,
+         inline void allocData(const AttribConfigRef& config,unsigned numVertices,
+                               unsigned numIndices,unsigned numPrimitives);
+         inline void reallocData(unsigned numVertices,unsigned numIndices,
                                  unsigned numPrimitives,bool preserveContent=true);
          inline void freeData();
 
-         inline int numVertices() const;
-         inline int numIndices() const;
-         inline int numPrimitives() const;
+         inline unsigned numVertices() const;
+         inline unsigned numIndices() const;
+         inline unsigned numPrimitives() const;
 
          inline void uploadVertices(const void*const *attribList,unsigned attribListSize,
-                                    int numVertices,int fromIndex=0);
-         inline void uploadIndices(const void *indices,int numIndices,int fromIndex=0);
+                                    unsigned numVertices,unsigned fromIndex=0);
+         inline void uploadIndices(const void *indices,unsigned numIndices,unsigned fromIndex=0);
 
          inline void uploadPrimitives(const PrimitiveGpuData *bufferData,
                                       unsigned numPrimitives,unsigned dstIndex=0);
          inline void setPrimitives(const Primitive *primitiveList,
-                                   int numPrimitives,unsigned startIndex=0,
+                                   unsigned numPrimitives,unsigned startIndex=0,
                                    bool truncate=true);
          inline void setAndUploadPrimitives(PrimitiveGpuData *nonConstBufferData,
-                                            const Primitive *primitiveList,int numPrimitives);
+                                            const Primitive *primitiveList,unsigned numPrimitives);
          inline void setAndUploadPrimitives(PrimitiveGpuData *nonConstBufferData,
-                                            const unsigned *modesAndOffsets4,int numPrimitives);
+                                            const unsigned *modesAndOffsets4,unsigned numPrimitives);
          inline void updateVertexOffsets(void *primitiveBuffer,
-                                         const Primitive *primitiveList,int numPrimitives);
+                                         const Primitive *primitiveList,unsigned numPrimitives);
          inline static std::vector<Primitive> generatePrimitiveList(
-                                         const unsigned *modesAndOffsets4,int numPrimitives);
+                                         const unsigned *modesAndOffsets4,unsigned numPrimitives);
 
          inline void clearPrimitives();
          inline void setNumPrimitives(unsigned num);
 
          inline DrawableId createDrawable(MatrixList *matrixList,StateSet *stateSet);
          inline DrawableId createDrawable(const unsigned *primitiveIndices,
-                                          const int primitiveCount,
+                                          const unsigned primitiveCount,
                                           MatrixList *matrixList,StateSet *stateSet);
          inline void deleteDrawable(DrawableId id);
       };
@@ -148,9 +148,9 @@ namespace ge
       inline const DrawableList& Mesh::drawables() const  { return _drawables; }
       inline DrawableList& Mesh::drawables()  { return _drawables; }
       inline bool Mesh::valid() const  { return _attribStorage!=NULL; }
-      inline void Mesh::allocData(const AttribConfigRef& config,int numVertices,int numIndices,unsigned numPrimitives)
+      inline void Mesh::allocData(const ge::rg::AttribConfigRef& config,unsigned numVertices,unsigned numIndices,unsigned numPrimitives)
       { config->allocData(*this,numVertices,numIndices,numPrimitives); }
-      inline void Mesh::reallocData(int numVertices,int numIndices,unsigned numPrimitives,bool preserveContent)
+      inline void Mesh::reallocData(unsigned numVertices,unsigned numIndices,unsigned numPrimitives,bool preserveContent)
       {
          _attribStorage->reallocData(*this,numVertices,numIndices,preserveContent);
          RenderingContext::current()->reallocPrimitives(*this,numPrimitives,preserveContent);
@@ -162,37 +162,37 @@ namespace ge
             _attribStorage->freeData(*this);
          }
       }
-      inline int Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexAllocationBlock(_verticesDataId).numItems : 0; }
-      inline int Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexAllocationBlock(_indicesDataId).numItems : 0; }
-      inline int Mesh::numPrimitives() const  { return RenderingContext::current()->primitiveStorage()->operator[](_primitivesDataId).numItems; }
-      inline void Mesh::uploadVertices(const void*const *attribList,unsigned attribListSize,int numVertices,int fromIndex)
+      inline unsigned Mesh::numVertices() const  { return _attribStorage ? _attribStorage->vertexArrayAllocation(_verticesDataId).numItems : 0; }
+      inline unsigned Mesh::numIndices() const  { return _attribStorage ? _attribStorage->indexArrayAllocation(_indicesDataId).numItems : 0; }
+      inline unsigned Mesh::numPrimitives() const  { return RenderingContext::current()->primitiveStorage()->operator[](_primitivesDataId).numItems; }
+      inline void Mesh::uploadVertices(const void*const* attribList,unsigned attribListSize,unsigned numVertices,unsigned fromIndex)
       {
          if(_attribStorage)
             _attribStorage->uploadVertices(*this,attribList,attribListSize,numVertices,fromIndex);
       }
-      inline void Mesh::uploadIndices(const void *indices,int numIndices,int fromIndex)
+      inline void Mesh::uploadIndices(const void *indices,unsigned numIndices,unsigned fromIndex)
       {
          if(_attribStorage)
             _attribStorage->uploadIndices(*this,indices,numIndices,fromIndex);
       }
-      inline void Mesh::uploadPrimitives(const PrimitiveGpuData* bufferData,unsigned int numPrimitives,unsigned int dstIndex)
+      inline void Mesh::uploadPrimitives(const PrimitiveGpuData* bufferData,unsigned numPrimitives,unsigned dstIndex)
       { RenderingContext::current()->uploadPrimitives(*this,bufferData,numPrimitives,dstIndex); }
-      inline void Mesh::setPrimitives(const Primitive *primitiveList,int numPrimitives,unsigned startIndex,bool truncate)
+      inline void Mesh::setPrimitives(const ge::rg::Primitive* primitiveList,unsigned numPrimitives,unsigned startIndex,bool truncate)
       { RenderingContext::current()->setPrimitives(*this,primitiveList,numPrimitives,startIndex,truncate); }
-      inline void Mesh::setAndUploadPrimitives(PrimitiveGpuData* nonConstBufferData,const Primitive* primitiveList,int numPrimitives)
+      inline void Mesh::setAndUploadPrimitives(ge::rg::PrimitiveGpuData* nonConstBufferData,const ge::rg::Primitive* primitiveList,unsigned numPrimitives)
       { RenderingContext::current()->setAndUploadPrimitives(*this,nonConstBufferData,primitiveList,numPrimitives); }
-      inline void Mesh::setAndUploadPrimitives(PrimitiveGpuData* nonConstBufferData,const unsigned int* modesAndOffsets4,int numPrimitives)
+      inline void Mesh::setAndUploadPrimitives(PrimitiveGpuData* nonConstBufferData,const unsigned* modesAndOffsets4,unsigned numPrimitives)
       { RenderingContext::current()->setAndUploadPrimitives(*this,nonConstBufferData,modesAndOffsets4,numPrimitives); }
-      inline void Mesh::updateVertexOffsets(void *primitiveBuffer,const Primitive *primitiveList,int numPrimitives)
+      inline void Mesh::updateVertexOffsets(void* primitiveBuffer,const ge::rg::Primitive* primitiveList,unsigned numPrimitives)
       { RenderingContext::current()->updateVertexOffsets(*this,primitiveBuffer,primitiveList,numPrimitives); }
-      inline std::vector<Primitive> Mesh::generatePrimitiveList(const unsigned *modesAndOffsets4,int numPrimitives)
+      inline std::vector<Primitive> Mesh::generatePrimitiveList(const unsigned* modesAndOffsets4,unsigned numPrimitives)
       { return RenderingContext::generatePrimitiveList(modesAndOffsets4,numPrimitives); }
       inline void Mesh::clearPrimitives()  { setNumPrimitives(0); }
       inline void Mesh::setNumPrimitives(unsigned num)
       { RenderingContext::current()->setNumPrimitives(*this,num); }
       inline DrawableId Mesh::createDrawable(MatrixList *matrixList,StateSet *stateSet)
       { return RenderingContext::current()->createDrawable(*this,matrixList,stateSet); }
-      inline DrawableId Mesh::createDrawable(const unsigned *primitiveIndices,const int primitiveCount,MatrixList *matrixList,StateSet *stateSet)
+      inline DrawableId Mesh::createDrawable(const unsigned *primitiveIndices,const unsigned primitiveCount,MatrixList *matrixList,StateSet *stateSet)
       { return RenderingContext::current()->createDrawable(*this,primitiveIndices,primitiveCount,matrixList,stateSet); }
       inline void Mesh::deleteDrawable(DrawableId id)
       { RenderingContext::current()->deleteDrawable(*this,id); }

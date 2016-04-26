@@ -85,7 +85,7 @@ add_library(${LIB_NAME}
 
 set(Internal_deps geCore)
 set(External_deps_Export "GLEW OpenGL")
-set(External_libs OpenGL GLEW)
+set(External_libs GLEW OpenGL)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 

@@ -46,9 +46,9 @@ namespace ge
          inline void alloc(DrawCommand* id)  { BufferStorage<DrawCommandAllocationManager,DrawCommandGpuData>::alloc(&id->data); }  ///< \brief Allocates one draw command and stores its index in the DrawCommand pointed by id parameter.
          inline void alloc(unsigned num,DrawCommand *ids)  { BufferStorage<DrawCommandAllocationManager,DrawCommandGpuData>::alloc(num,&ids->data); }  ///< \brief Allocates number of draw commands. Array pointed by ids must be at least num DrawCommands long.
       };
-      typedef BufferStorage<BlockAllocationManager<Mesh>,
+      typedef BufferStorage<ArrayAllocationManager<Mesh>,
             PrimitiveGpuData> PrimitiveStorage;
-      typedef BufferStorage<BlockAllocationManager<MatrixList>,
+      typedef BufferStorage<ArrayAllocationManager<MatrixList>,
             MatrixGpuData> MatrixStorage;
       typedef BufferStorage<ItemAllocationManager,
             ListControlGpuData> ListControlStorage;
@@ -141,16 +141,16 @@ namespace ge
          virtual void uploadPrimitives(Mesh &mesh,const PrimitiveGpuData *bufferData,
                                        unsigned numPrimitives,unsigned dstIndex=0);
          virtual void setPrimitives(Mesh &mesh,const Primitive *primitiveList,
-                                    int numPrimitives,unsigned startIndex=0,
+                                    unsigned numPrimitives,unsigned startIndex=0,
                                     bool truncate=true);
          virtual void setAndUploadPrimitives(Mesh &mesh,PrimitiveGpuData *nonConstBufferData,
-                                             const Primitive *primitiveList,int numPrimitives);
+                                             const Primitive *primitiveList,unsigned numPrimitives);
          inline void setAndUploadPrimitives(Mesh &mesh,PrimitiveGpuData *nonConstBufferData,
-                                            const unsigned *modesAndOffsets4,int numPrimitives);
+                                            const unsigned *modesAndOffsets4,unsigned numPrimitives);
          static void updateVertexOffsets(Mesh &mesh,void *primitiveBuffer,
-                                         const Primitive *primitiveList,int numPrimitives);
+                                         const Primitive *primitiveList,unsigned numPrimitives);
          static std::vector<Primitive> generatePrimitiveList(
-                                         const unsigned *modesAndOffsets4,int numPrimitives);
+                                         const unsigned *modesAndOffsets4,unsigned numPrimitives);
 
          inline  void clearPrimitives(Mesh &mesh);
          virtual void setNumPrimitives(Mesh &mesh,unsigned num);
@@ -159,7 +159,7 @@ namespace ge
                                           MatrixList *matrixList,StateSet *stateSet);
          virtual DrawableId createDrawable(Mesh &mesh,
                                            const unsigned *primitiveIndices,
-                                           const int primtiveCount,
+                                           const unsigned primtiveCount,
                                            MatrixList *matrixList,StateSet *stateSet);
          virtual void deleteDrawable(Mesh &mesh,DrawableId id);
 
@@ -253,11 +253,11 @@ namespace ge
       inline unsigned* RenderingContext::transformationAllocation(unsigned id) const  { return _transformationAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::transformationAllocationManager()  { return _transformationAllocationManager; }
       inline const ItemAllocationManager& RenderingContext::transformationAllocationManager() const  { return _transformationAllocationManager; }
-      inline void RenderingContext::setAndUploadPrimitives(ge::rg::Mesh& mesh,PrimitiveGpuData* nonConstBufferData,const unsigned int* modesAndOffsets4,int numPrimitives)
+      inline void RenderingContext::setAndUploadPrimitives(ge::rg::Mesh& mesh,ge::rg::PrimitiveGpuData* nonConstBufferData,const unsigned* modesAndOffsets4,unsigned numPrimitives)
       { setAndUploadPrimitives(mesh,nonConstBufferData,generatePrimitiveList(modesAndOffsets4,numPrimitives).data(),numPrimitives); }
       inline void RenderingContext::clearPrimitives(Mesh &mesh)  { setNumPrimitives(mesh,0); }
       inline DrawableId RenderingContext::createDrawable(Mesh &mesh,MatrixList *matrixList,StateSet *stateSet)
-      { return createDrawable(mesh,nullptr,-1,matrixList,stateSet); }
+      { return createDrawable(mesh,nullptr,0,matrixList,stateSet); }
       inline RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs()  { return _transformationGraphs; }
       inline const RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs() const  { return _transformationGraphs; }
       inline unsigned RenderingContext::positionInIndirectBuffer4() const  { return _indirectBufferAllocatedSpace4; }

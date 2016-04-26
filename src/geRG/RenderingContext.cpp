@@ -20,7 +20,7 @@ using namespace std;
 thread_local RenderingContext::AutoInitRenderingContext RenderingContext::NoExport::_currentContext;
 
 const unsigned initialPrimitiveBufferCapacity = 512; // 512*12 = 6 KiB
-const unsigned intialDrawCommandBufferCapacity = 1024; // 1024*12 = 12 KiB
+const unsigned initialDrawCommandBufferCapacity = 1024; // 1024*12 = 12 KiB
 const unsigned initialMatrixListBufferCapacity = 32; // 32 matrices, 32*64=2'048 bytes
 const unsigned initialMatrixAllocationBufferCapacity = 16; // 16*8=128 bytes
 const unsigned initialStateSetBufferCapacity = 32; // 32*8=256 bytes
@@ -81,12 +81,12 @@ RenderingContext::AutoInitRenderingContext::~AutoInitRenderingContext()
 
 
 RenderingContext::RenderingContext()
-   : _primitiveStorage(initialPrimitiveBufferCapacity,1,GL_DYNAMIC_DRAW) // block-based
-   , _drawCommandStorage(intialDrawCommandBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
-   , _matrixStorage(initialMatrixListBufferCapacity,1,GL_DYNAMIC_COPY) // block-based, 1 null item (one identity matrix)
+   : _primitiveStorage(initialPrimitiveBufferCapacity,GL_DYNAMIC_DRAW) // array-based
+   , _drawCommandStorage(initialDrawCommandBufferCapacity,GL_DYNAMIC_DRAW) // item-based
+   , _matrixStorage(initialMatrixListBufferCapacity,1,GL_DYNAMIC_COPY) // array-based, 1 null item (one identity matrix)
    , _matrixListControlStorage(initialMatrixAllocationBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based, 1 null item (one identity matrix)
-   , _stateSetStorage(initialStateSetBufferCapacity,1,GL_DYNAMIC_DRAW) // item-based
-   , _transformationAllocationManager(initialTransformationBufferCapacity,1) // item-based
+   , _stateSetStorage(initialStateSetBufferCapacity,GL_DYNAMIC_DRAW) // item-based
+   , _transformationAllocationManager(initialTransformationBufferCapacity) // item-based
    , _numAttribStorages(0)
    , _stateSetManager(make_shared<StateSetDefaultManager>())
    , _useARBShaderDrawParameters(false)
@@ -352,15 +352,15 @@ void RenderingContext::uploadPrimitives(Mesh &r,const PrimitiveGpuData *bufferDa
 
 /* Sets draw command control data (the data that are kept on CPU memory). */
 void RenderingContext::setPrimitives(Mesh &mesh,const Primitive *primitiveList,
-                                     int numPrimitives,unsigned startIndex,
+                                     unsigned numPrimitives,unsigned startIndex,
                                      bool truncate)
 {
    if(mesh.attribStorage()==nullptr)
       return;
 
    // resize if needed
-   int minSizeRequired=numPrimitives+startIndex;
-   int currentSize=int(mesh.primitiveList().size());
+   unsigned minSizeRequired=numPrimitives+startIndex;
+   unsigned currentSize=unsigned(mesh.primitiveList().size());
    if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
       mesh.primitiveList().resize(minSizeRequired);
 
@@ -391,7 +391,7 @@ void RenderingContext::setPrimitives(Mesh &mesh,const Primitive *primitiveList,
  * The mode tells OpenGL rendering mode (GL_TRIANGLES, GL_LINE_STRIP, etc.)
  * and whether indexing is in use (glDrawArrays vs. glDrawElements).
  */
-void RenderingContext::setAndUploadPrimitives(Mesh& mesh,PrimitiveGpuData* nonConstBufferData,const Primitive *primitiveList,int numPrimitives)
+void RenderingContext::setAndUploadPrimitives(Mesh& mesh,PrimitiveGpuData* nonConstBufferData,const Primitive* primitiveList,unsigned numPrimitives)
 {
    clearPrimitives(mesh);
    updateVertexOffsets(mesh,nonConstBufferData,primitiveList,numPrimitives);
@@ -401,17 +401,17 @@ void RenderingContext::setAndUploadPrimitives(Mesh& mesh,PrimitiveGpuData* nonCo
 
 
 void RenderingContext::updateVertexOffsets(Mesh &mesh,void *primitiveBuffer,
-                                           const Primitive *primitiveList,int numPrimitives)
+                                           const Primitive *primitiveList,unsigned numPrimitives)
 {
    // get index of allocated block
    unsigned vertexOffset;
    if(mesh.indicesDataId()==0)
-      vertexOffset=mesh.attribStorage()->vertexAllocationBlock(mesh.verticesDataId()).startIndex;
+      vertexOffset=mesh.attribStorage()->vertexArrayAllocation(mesh.verticesDataId()).startIndex;
    else
-      vertexOffset=mesh.attribStorage()->indexAllocationBlock(mesh.indicesDataId()).startIndex;
+      vertexOffset=mesh.attribStorage()->indexArrayAllocation(mesh.indicesDataId()).startIndex;
 
    // update vertexOffset of all primitive sets
-   for(int i=0; i<numPrimitives; i++)
+   for(unsigned i=0; i<numPrimitives; i++)
    {
       // set PrimitiveSetGpuData::vertexOffset
       unsigned index=primitiveList[i].offset4();
@@ -421,11 +421,11 @@ void RenderingContext::updateVertexOffsets(Mesh &mesh,void *primitiveBuffer,
 
 
 vector<Primitive>
-RenderingContext::generatePrimitiveList(const unsigned *modesAndOffsets4,int numPrimitives)
+RenderingContext::generatePrimitiveList(const unsigned *modesAndOffsets4,unsigned numPrimitives)
 {
    vector<Primitive> r;
    r.reserve(numPrimitives);
-   for(int i=0,c=numPrimitives*2; i<c; i+=2)
+   for(unsigned i=0,c=numPrimitives*2; i<c; i+=2)
    {
       r.emplace_back(modesAndOffsets4[i+1],modesAndOffsets4[i+0]);
    }
@@ -444,12 +444,12 @@ void RenderingContext::setNumPrimitives(Mesh &mesh,unsigned num)
 
 DrawableId RenderingContext::createDrawable(
       Mesh &mesh,
-      const unsigned *primitiveIndices,const int primitiveCount,
+      const unsigned *primitiveIndices,const unsigned primitiveCount,
       MatrixList *matrixList,StateSet *stateSet)
 {
    // numDrawCommands to be created
-   unsigned numDrawCommands=primitiveCount!=-1 ? unsigned(primitiveCount)
-                                               : unsigned(mesh.primitiveList().size());
+   unsigned numDrawCommands=primitiveCount!=0 ? primitiveCount
+                                              : unsigned(mesh.primitiveList().size());
 
    // allocate Drawable
    Drawable *drawable=Drawable::alloc(numDrawCommands);
@@ -474,7 +474,7 @@ DrawableId RenderingContext::createDrawable(
    {
       // update DrawCommandGpuData
       DrawCommandGpuData &dcData=drawCommandBufferPtr[drawable->item(i).index()];
-      unsigned psIndex=primitiveCount==-1 ? i : primitiveIndices[i];
+      unsigned psIndex=primitiveCount==0 ? i : primitiveIndices[i];
       Primitive pl=mesh.primitiveList()[psIndex];
       dcData.primitiveSetOffset4=_primitiveStorage[mesh.primitivesDataId()].startIndex*
                                  unsigned(sizeof(PrimitiveGpuData)/4) + pl.offset4();
@@ -540,11 +540,11 @@ void RenderingContext::cancelAllAllocations()
    // break Mesh references to Primitives
    // (set all Mesh::_attribStorage to nullptr
    // and zero all Drawable::items)
-   for(unsigned i=1, // id starts at 1
-       e=_primitiveStorage.firstItemAvailableAtTheEnd()-i;
-       i!=e; i++)
+   for(auto it=_primitiveStorage.begin(), // begin() skips all null items
+       e=_primitiveStorage.end(); // end() points just after the last allocated item
+       it!=e; it++)
    {
-      Mesh *m=_primitiveStorage[i].owner;
+      Mesh *m=it->owner;
       if(m) {
          m->setAttribStorage(nullptr);
          DrawableList &dl=m->drawables();
@@ -928,7 +928,7 @@ void RenderingContext::setupRendering()
    _indirectBufferAllocatedSpace4=0;
 
    // setup rendering on StateSets
-   auto root=_stateSetManager->root();
+   StateSet* root=_stateSetManager->root().get();
    if(root)
       root->setupRendering();
 
@@ -1015,7 +1015,7 @@ void RenderingContext::frame()
    render();
 
    // check for OpenGL errors
-   int e=glGetError();
+   unsigned e=glGetError();
    if(e!=GL_NO_ERROR)
       cout<<"OpenGL error "<<e<<" detected after the frame rendering"<<endl;
 }

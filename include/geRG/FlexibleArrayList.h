@@ -23,12 +23,12 @@ namespace ge
 
          inline T* items();
          inline const T* items() const;
-         inline T& item(int index);
-         inline const T& item(int index) const;
-         inline T& operator[](int index);
-         inline const T& operator[](int index) const;
+         inline T& item(unsigned index);
+         inline const T& item(unsigned index) const;
+         inline T& operator[](unsigned index);
+         inline const T& operator[](unsigned index) const;
 
-         static FlexibleArray<T,BASE>* alloc(int numItems);
+         static FlexibleArray<T,BASE>* alloc(unsigned numItems);
          inline void free();
 
       protected:
@@ -120,15 +120,15 @@ namespace ge
       template<typename T,typename BASE>
       inline const T* FlexibleArray<T,BASE>::items() const  { return itemStorage; }
       template<typename T,typename BASE>
-      inline T& FlexibleArray<T,BASE>::item(int index)  { return itemStorage[index]; }
+      inline T& FlexibleArray<T,BASE>::item(unsigned index)  { return itemStorage[index]; }
       template<typename T,typename BASE>
-      inline const T& FlexibleArray<T,BASE>::item(int index) const  { return itemStorage[index]; }
+      inline const T& FlexibleArray<T,BASE>::item(unsigned index) const  { return itemStorage[index]; }
       template<typename T,typename BASE>
-      inline T& FlexibleArray<T,BASE>::operator[](int index)  { return items[index]; }
+      inline T& FlexibleArray<T,BASE>::operator[](unsigned index)  { return items[index]; }
       template<typename T,typename BASE>
-      inline const T& FlexibleArray<T,BASE>::operator[](int index) const  { return items[index]; }
+      inline const T& FlexibleArray<T,BASE>::operator[](unsigned index) const  { return items[index]; }
       template<typename T,typename BASE>
-      FlexibleArray<T,BASE>* FlexibleArray<T,BASE>::alloc(int numItems)
+      FlexibleArray<T,BASE>* FlexibleArray<T,BASE>::alloc(unsigned numItems)
       {
          void *p=std::malloc(sizeof(FlexibleArray<T,BASE>)-sizeof(unsigned)+numItems*sizeof(unsigned));
          return new(p) FlexibleArray<T,BASE>();

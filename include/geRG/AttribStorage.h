@@ -17,15 +17,15 @@ namespace ge
       struct RenderingCommandData;
 
 
-      /** \brief AttribStorage class maintains vertex attributes,
-       *  indices and draw commands data of scene objects.
+      /** \brief AttribStorage class maintains vertex attributes
+       *  and indices of scene geometry.
        */
       class GERG_EXPORT AttribStorage {
       protected:
 
          bool _privateFlag;
-         BlockAllocationManager<Mesh> _vertexAllocationManager;  ///< Allocation manager of blocks of vertices.
-         BlockAllocationManager<Mesh> _indexAllocationManager;   ///< Allocation manager of blocks of indices.
+         ArrayAllocationManager<Mesh> _vertexAllocationManager;  ///< Allocation manager for arrays of vertices.
+         ArrayAllocationManager<Mesh> _indexAllocationManager;   ///< Allocation manager for arrays of indices.
          AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
          RenderingContext* _renderingContext;
 
@@ -37,26 +37,26 @@ namespace ge
 
          virtual void bind() const = 0;
 
-         virtual bool allocData(Mesh &mesh,int numVertices,int numIndices);
-         virtual bool reallocData(Mesh &mesh,int numVertices,int numIndices,
+         virtual bool allocData(Mesh &mesh,unsigned numVertices,unsigned numIndices);
+         virtual bool reallocData(Mesh &mesh,unsigned numVertices,unsigned numIndices,
                                   bool preserveContent=true);
          virtual void freeData(Mesh &mesh);
 
          virtual void uploadVertices(Mesh &mesh,const void*const *attribList,
                                      unsigned attribListSize,
-                                     int numVertices,int fromIndex=0) = 0;
+                                     unsigned numVertices,unsigned fromIndex=0) = 0;
          virtual void uploadIndices(Mesh &mesh,const void *indices,
-                                    int numIndices,int fromIndex=0) = 0;
+                                    unsigned numIndices,unsigned fromIndex=0) = 0;
 
-         inline const BlockAllocation<Mesh>& vertexAllocationBlock(unsigned id) const; ///< Returns vertex data allocation block at index id.
-         inline const BlockAllocation<Mesh>& indexAllocationBlock(unsigned id) const;  ///< Returns index data allocation block at index id.
-         inline BlockAllocation<Mesh>& vertexAllocationBlock(unsigned id);  ///< Returns vertex data allocation block at index id. If modifying returned data, the care must be taken to not break internal data consistency.
-         inline BlockAllocation<Mesh>& indexAllocationBlock(unsigned id);   ///< Returns index data allocation block at index id. If modifying returned data, the care must be taken to not break internal data consistency.
+         inline const ArrayAllocation<Mesh>& vertexArrayAllocation(unsigned id) const; ///< Returns vertex array allocation for particular id.
+         inline const ArrayAllocation<Mesh>& indexArrayAllocation(unsigned id) const;  ///< Returns index array allocation for particular id.
+         inline ArrayAllocation<Mesh>& vertexArrayAllocation(unsigned id);  ///< Returns vertex array allocation for particular id. When modifying returned data, the care must be taken to not break internal data consistency.
+         inline ArrayAllocation<Mesh>& indexArrayAllocation(unsigned id);   ///< Returns index array allocation for particular id. When modifying returned data, the care must be taken to not break internal data consistency.
 
-         inline BlockAllocationManager<Mesh>& vertexAllocationManager();
-         inline BlockAllocationManager<Mesh>& indexAllocationManager();
-         inline const BlockAllocationManager<Mesh>& vertexAllocationManager() const;
-         inline const BlockAllocationManager<Mesh>& indexAllocationManager() const;
+         inline ArrayAllocationManager<Mesh>& vertexAllocationManager();
+         inline ArrayAllocationManager<Mesh>& indexAllocationManager();
+         inline const ArrayAllocationManager<Mesh>& vertexAllocationManager() const;
+         inline const ArrayAllocationManager<Mesh>& indexAllocationManager() const;
 
          inline const AttribConfigRef& attribConfig() const;
          inline RenderingContext* renderingContext() const;
@@ -92,14 +92,14 @@ namespace ge
 {
    namespace rg
    {
-      inline const BlockAllocation<Mesh>& AttribStorage::vertexAllocationBlock(unsigned id) const  { return _vertexAllocationManager[id]; }
-      inline const BlockAllocation<Mesh>& AttribStorage::indexAllocationBlock(unsigned id) const  { return _indexAllocationManager[id]; }
-      inline BlockAllocation<Mesh>& AttribStorage::vertexAllocationBlock(unsigned id)  { return _vertexAllocationManager[id]; }
-      inline BlockAllocation<Mesh>& AttribStorage::indexAllocationBlock(unsigned id)  { return _indexAllocationManager[id]; }
-      inline BlockAllocationManager<Mesh>& AttribStorage::vertexAllocationManager()  { return _vertexAllocationManager; }
-      inline BlockAllocationManager<Mesh>& AttribStorage::indexAllocationManager()  { return _indexAllocationManager; }
-      inline const BlockAllocationManager<Mesh>& AttribStorage::vertexAllocationManager() const  { return _vertexAllocationManager; }
-      inline const BlockAllocationManager<Mesh>& AttribStorage::indexAllocationManager() const  { return _indexAllocationManager; }
+      inline const ArrayAllocation<Mesh>& AttribStorage::vertexArrayAllocation(unsigned id) const  { return _vertexAllocationManager[id]; }
+      inline const ArrayAllocation<Mesh>& AttribStorage::indexArrayAllocation(unsigned id) const  { return _indexAllocationManager[id]; }
+      inline ArrayAllocation<Mesh>& AttribStorage::vertexArrayAllocation(unsigned id)  { return _vertexAllocationManager[id]; }
+      inline ArrayAllocation<Mesh>& AttribStorage::indexArrayAllocation(unsigned id)  { return _indexAllocationManager[id]; }
+      inline ArrayAllocationManager<Mesh>& AttribStorage::vertexAllocationManager()  { return _vertexAllocationManager; }
+      inline ArrayAllocationManager<Mesh>& AttribStorage::indexAllocationManager()  { return _indexAllocationManager; }
+      inline const ArrayAllocationManager<Mesh>& AttribStorage::vertexAllocationManager() const  { return _vertexAllocationManager; }
+      inline const ArrayAllocationManager<Mesh>& AttribStorage::indexAllocationManager() const  { return _indexAllocationManager; }
       inline const AttribConfigRef& AttribStorage::attribConfig() const  { return _attribConfig; }
       inline RenderingContext* AttribStorage::renderingContext() const  { return _renderingContext; }
       inline bool AttribStorage::isPrivate() const  { return _privateFlag; }

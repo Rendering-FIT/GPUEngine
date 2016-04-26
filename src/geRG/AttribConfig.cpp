@@ -48,15 +48,15 @@ void AttribConfig::deleteAllAttribStorages()
 }
 
 
-bool AttribConfig::allocData(Mesh& mesh,int numVertices,int numIndices,unsigned numPrimitives)
+bool AttribConfig::allocData(Mesh& mesh,unsigned numVertices,unsigned numIndices,unsigned numPrimitives)
 {
    // iterate AttribStorage list
    // and look if there is one with enough empty space
    AttribStorageList::iterator storageIt=_attribStorages.end();
    for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
    {
-      if((*it)->vertexAllocationManager().numItemsAvailableAtTheEnd()>=unsigned(numVertices) &&
-         (*it)->indexAllocationManager().numItemsAvailableAtTheEnd()>=unsigned(numIndices))
+      if((*it)->vertexAllocationManager().numItemsAvailableAtTheEnd()>=numVertices &&
+         (*it)->indexAllocationManager().numItemsAvailableAtTheEnd()>=numIndices)
       {
          storageIt=it;
          break;
@@ -94,7 +94,7 @@ bool AttribConfig::allocData(Mesh& mesh,int numVertices,int numIndices,unsigned 
 }
 
 
-bool AttribConfig::reallocData(Mesh& /*mesh*/,int /*numVertices*/,int /*numIndices*/,unsigned /*numPrimitives*/,bool /*preserveContent*/)
+bool AttribConfig::reallocData(Mesh& /*mesh*/,unsigned /*numVertices*/,unsigned /*numIndices*/,unsigned /*numPrimitives*/,bool /*preserveContent*/)
 {
    // Used strategy:
    // - if new arrays are smaller, we keep data in place and free the remaning space
@@ -156,7 +156,7 @@ AttribConfigId AttribConfig::getId(const std::vector<AttribType>& attribTypes,bo
    else texCoordPossibleIndex=0;
    if(configSize==2&&texCoordPossibleIndex!=0)
       return r;
-   int numToParse=texCoordPossibleIndex!=0?configSize-2:configSize-1;
+   int numToParse=texCoordPossibleIndex!=0?int(configSize)-2:int(configSize)-1;
 
    // normals
    //

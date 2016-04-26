@@ -1,4 +1,4 @@
-set(APP_NAME EmptyWindow)
+set(APP_NAME HelloTriangle)
 
 project(${APP_NAME})
 
@@ -21,22 +21,12 @@ set(APP_INCLUDES
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 
-################################################
-# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
-# External_libs - external libs or targets to link with
-# Internal_inc - additional include directories
-
-set(Internal_deps geGL geUtil WindowObject)
+set(Internal_deps geRG geGL geUtil WindowObject)
 set(External_libs OpenGL GLEW glm SDL2 AntTweakBar)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}
   )
-
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#      message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
 
 target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})
 set_target_properties(${APP_NAME} PROPERTIES
