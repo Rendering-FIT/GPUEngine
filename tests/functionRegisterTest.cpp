@@ -5,10 +5,10 @@
 #include<geCore/Function.h>
 #include<geCore/RegisterBasicFunction.h>
 #include<geCore/StdFunctions.h>
-#include<geCore/MacroFunction.h>
+#include<geCore/CompositeFunction.h>
 #include<geCore/FactoryOfFunctionFactory.h>
 #include<geCore/FunctionNodeFactory.h>
-#include<geCore/MacroFunctionFactory.h>
+#include<geCore/CompositeFunctionFactory.h>
 #include<geCore/Text.h>
 #include<iostream>
 #include<sstream>
@@ -103,11 +103,11 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
 
 
   //newFce ::= (va+vb)va + (va+vb)vb
-  auto fac = std::make_shared<ge::core::MacroFunctionFactory>("newFce");
+  auto fac = std::make_shared<ge::core::CompositeFunctionFactory>("newFce");
   fac->setFactory(a);
   fac->setInputFactories({
-      {MacroFunctionFactory::FactoryInput(b,0),MacroFunctionFactory::FactoryInput(d,0)},
-      {MacroFunctionFactory::FactoryInput(c,1),MacroFunctionFactory::FactoryInput(d,1)}});
+      {CompositeFunctionFactory::FactoryInput(b,0),CompositeFunctionFactory::FactoryInput(d,0)},
+      {CompositeFunctionFactory::FactoryInput(c,1),CompositeFunctionFactory::FactoryInput(d,1)}});
 
   fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::I32,2,TypeRegister::I32,TypeRegister::I32}),"newFce",fac);
 

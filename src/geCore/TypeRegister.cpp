@@ -462,21 +462,21 @@ size_t TypeRegister::computeTypeIdSize(TypeID id)const{
   TypeRegister::Type type=this->getTypeIdType(id);
   size_t size=0;
   switch(type){
-    case TypeRegister::UNREGISTERED:return 0                         ;
-    case TypeRegister::VOID        :return 0                         ;
-    case TypeRegister::BOOL        :return sizeof(bool              );
-    case TypeRegister::I8          :return sizeof(char              );
-    case TypeRegister::I16         :return sizeof(short             );
-    case TypeRegister::I32         :return sizeof(int               );
-    case TypeRegister::I64         :return sizeof(long long int     );
-    case TypeRegister::U8          :return sizeof(unsigned char     );
-    case TypeRegister::U16         :return sizeof(unsigned short    );
-    case TypeRegister::U32         :return sizeof(unsigned          );
-    case TypeRegister::U64         :return sizeof(unsigned long long);
-    case TypeRegister::F32         :return sizeof(float             );
-    case TypeRegister::F64         :return sizeof(double            );
-    case TypeRegister::STRING      :return sizeof(std::string       );
-    case TypeRegister::PTR         :return sizeof(void*             );
+    case TypeRegister::UNREGISTERED:return 0                  ;
+    case TypeRegister::VOID        :return 0                  ;
+    case TypeRegister::BOOL        :return sizeof(bool       );
+    case TypeRegister::I8          :return sizeof(int8_t     );
+    case TypeRegister::I16         :return sizeof(int16_t    );
+    case TypeRegister::I32         :return sizeof(int32_t    );
+    case TypeRegister::I64         :return sizeof(int64_t    );
+    case TypeRegister::U8          :return sizeof(uint8_t    );
+    case TypeRegister::U16         :return sizeof(uint16_t   );
+    case TypeRegister::U32         :return sizeof(uint32_t   );
+    case TypeRegister::U64         :return sizeof(uint64_t   );
+    case TypeRegister::F32         :return sizeof(float      );
+    case TypeRegister::F64         :return sizeof(double     );
+    case TypeRegister::STRING      :return sizeof(std::string);
+    case TypeRegister::PTR         :return sizeof(void*      );
     case TypeRegister::ARRAY       :
                               return this->getArraySize(id)*this->computeTypeIdSize(this->getArrayInnerTypeId(id));
     case TypeRegister::STRUCT      :

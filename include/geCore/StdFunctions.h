@@ -217,8 +217,8 @@ namespace ge{
       };
 
 #define SIGNED_INTEGER_LOOP(FCE,...)\
-  FCE(__VA_ARGS__,int8_t  )\
-  FCE(__VA_ARGS__,int16_t )\
+  /*FCE(__VA_ARGS__,int8_t  )*/\
+  /*FCE(__VA_ARGS__,int16_t )*/\
   FCE(__VA_ARGS__,int32_t )\
   FCE(__VA_ARGS__,int64_t )
 
@@ -226,8 +226,8 @@ namespace ge{
     SIGNED_INTEGER_LOOP(FCE,__VA_ARGS__)
 
 #define UNSIGNED_INTEGER_LOOP(FCE,...)\
-  FCE(__VA_ARGS__,uint8_t )\
-  FCE(__VA_ARGS__,uint16_t)\
+  /*FCE(__VA_ARGS__,uint8_t )*/\
+  /*FCE(__VA_ARGS__,uint16_t)*/\
   FCE(__VA_ARGS__,uint32_t)\
   FCE(__VA_ARGS__,uint64_t)
 
@@ -268,12 +268,12 @@ namespace ge{
   FCE(__VA_ARGS__,std::string)
 
 #define ALL_LOOP2(FCE,...)\
-  FCE(__VA_ARGS__,int8_t  )\
-  FCE(__VA_ARGS__,int16_t )\
+  /*FCE(__VA_ARGS__,int8_t  )*/\
+  /*FCE(__VA_ARGS__,int16_t )*/\
   FCE(__VA_ARGS__,int32_t )\
   FCE(__VA_ARGS__,int64_t )\
-  FCE(__VA_ARGS__,uint8_t )\
-  FCE(__VA_ARGS__,uint16_t)\
+  /*FCE(__VA_ARGS__,uint8_t )*/\
+  /*FCE(__VA_ARGS__,uint16_t)*/\
   FCE(__VA_ARGS__,uint32_t)\
   FCE(__VA_ARGS__,uint64_t)\
   FCE(__VA_ARGS__,float )\
@@ -281,12 +281,12 @@ namespace ge{
   FCE(__VA_ARGS__,bool)
 
 #define ALL_LOOP3(FCE,...)\
-  FCE(__VA_ARGS__,int8_t  )\
-  FCE(__VA_ARGS__,int16_t )\
+  /*FCE(__VA_ARGS__,int8_t  )*/\
+  /*FCE(__VA_ARGS__,int16_t )*/\
   FCE(__VA_ARGS__,int32_t )\
   FCE(__VA_ARGS__,int64_t )\
-  FCE(__VA_ARGS__,uint8_t )\
-  FCE(__VA_ARGS__,uint16_t)\
+  /*FCE(__VA_ARGS__,uint8_t )*/\
+  /*FCE(__VA_ARGS__,uint16_t)*/\
   FCE(__VA_ARGS__,uint32_t)\
   FCE(__VA_ARGS__,uint64_t)\
   FCE(__VA_ARGS__,float )\

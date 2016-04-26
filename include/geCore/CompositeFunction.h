@@ -4,9 +4,9 @@
 
 namespace ge{
   namespace core{
-    class MacroFunctionFactory;
-    class GECORE_EXPORT MacroFunction: public Function{
-      friend class MacroFunctionFactory;
+    class CompositeFunctionFactory;
+    class GECORE_EXPORT CompositeFunction: public Function{
+      friend class CompositeFunctionFactory;
       public:
         using FceInput = std::tuple<std::shared_ptr<Function>,FunctionRegister::InputIndex>;
         enum FceInputParts{
@@ -14,12 +14,12 @@ namespace ge{
           INPUT    = 1,
         };
         using FceInputList = std::vector<FceInput>;
-        MacroFunction(
+        CompositeFunction(
             std::shared_ptr<FunctionRegister>const&fr    ,
             FunctionRegister::FunctionID           id    ,
             std::shared_ptr<Function>        const&output,
             std::vector<FceInputList>        const&inputs);
-        ~MacroFunction();
+        ~CompositeFunction();
         virtual inline void operator()()override;
         virtual bool bindInput (InputIndex i,std::shared_ptr<Function>const&function = nullptr)override;
         virtual bool bindOutput(             std::shared_ptr<Resource>const&data     = nullptr)override;
@@ -38,12 +38,12 @@ namespace ge{
         std::shared_ptr<Function>_outputMapping;
     };
 
-    inline void MacroFunction::operator()(){
+    inline void CompositeFunction::operator()(){
       assert(this!=nullptr);
       (*this->_outputMapping)();
     }
 
-    inline std::string MacroFunction::doc()const{
+    inline std::string CompositeFunction::doc()const{
       return "";
     }
   }

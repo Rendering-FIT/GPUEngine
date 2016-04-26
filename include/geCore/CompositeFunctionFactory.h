@@ -8,7 +8,7 @@ namespace ge{
     class FunctionNodeFactory;
     class FunctionRegister;
 
-    class GECORE_EXPORT MacroFunctionFactory: public FunctionFactory{
+    class GECORE_EXPORT CompositeFunctionFactory: public FunctionFactory{
       public:
         using FactoryInput = std::tuple<
           std::shared_ptr<FunctionFactory>,
@@ -18,8 +18,8 @@ namespace ge{
           INPUT   = 1,
         };
         using FactoryInputList = std::vector<FactoryInput>;
-        MacroFunctionFactory(std::string const&name = "",Uses maxUses = 1);
-        virtual ~MacroFunctionFactory();
+        CompositeFunctionFactory(std::string const&name = "",Uses maxUses = 1);
+        virtual ~CompositeFunctionFactory();
         inline std::shared_ptr<FunctionFactory>const&getInputFactory(size_t input)const;
         void setFactory(std::shared_ptr<StatementFactory>const&fac);
         void setInputFactories(std::vector<FactoryInputList>const&inputs);

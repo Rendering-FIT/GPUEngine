@@ -1,10 +1,10 @@
-#include<geCore/MacroFunction.h>
+#include<geCore/CompositeFunction.h>
 #include<geCore/FunctionNodeFactory.h>
 #include<algorithm>
 
 using namespace ge::core;
 
-MacroFunction::MacroFunction(
+CompositeFunction::CompositeFunction(
     std::shared_ptr<FunctionRegister>const&fr,
     FunctionRegister::FunctionID id,
     std::shared_ptr<Function>const&output,
@@ -13,10 +13,10 @@ MacroFunction::MacroFunction(
   this->_inputMapping  = inputs;
 }
 
-MacroFunction::~MacroFunction(){
+CompositeFunction::~CompositeFunction(){
 }
 
-bool MacroFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&function){
+bool CompositeFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&function){
   assert(this!=nullptr);
   if(!this->_inputBindingCheck(i,function))
     return false;
@@ -28,14 +28,14 @@ bool MacroFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&functi
 }
 
 
-bool MacroFunction::bindOutput(std::shared_ptr<Resource>const&data){
+bool CompositeFunction::bindOutput(std::shared_ptr<Resource>const&data){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->bindOutput(data);
 }
 
 
-bool MacroFunction::hasInput(InputIndex i)const{
+bool CompositeFunction::hasInput(InputIndex i)const{
   assert(this!=nullptr);
   for(auto x:this->_inputMapping[i]){
     assert(std::get<FUNCTION>(x)!=nullptr);
@@ -44,13 +44,13 @@ bool MacroFunction::hasInput(InputIndex i)const{
   return true;
 }
 
-bool MacroFunction::hasOutput()const{
+bool CompositeFunction::hasOutput()const{
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->hasOutput();
 }
 
-std::shared_ptr<Resource>const&MacroFunction::getInputData(InputIndex i)const{
+std::shared_ptr<Resource>const&CompositeFunction::getInputData(InputIndex i)const{
   assert(this!=nullptr);
   assert(i<this->_inputMapping.size());
   assert(this->_inputMapping[i].size()>0);
@@ -59,37 +59,37 @@ std::shared_ptr<Resource>const&MacroFunction::getInputData(InputIndex i)const{
   return std::get<FUNCTION>(mapping)->getInputData(std::get<INPUT>(mapping));
 }
 
-std::shared_ptr<Resource>const&MacroFunction::getOutputData()const{
+std::shared_ptr<Resource>const&CompositeFunction::getOutputData()const{
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->getOutputData();
 }
 
-Function::Ticks MacroFunction::getUpdateTicks()const{
+Function::Ticks CompositeFunction::getUpdateTicks()const{
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->getUpdateTicks();
 }
 
-Function::Ticks MacroFunction::getCheckTicks ()const{
+Function::Ticks CompositeFunction::getCheckTicks ()const{
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->getCheckTicks();
 }
 
-void  MacroFunction::setUpdateTicks(Ticks ticks){
+void  CompositeFunction::setUpdateTicks(Ticks ticks){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   this->_outputMapping->setUpdateTicks(ticks);
 }
 
-void  MacroFunction::setCheckTicks(Ticks ticks){
+void  CompositeFunction::setCheckTicks(Ticks ticks){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   this->_outputMapping->setUpdateTicks(ticks);
 }
 
-std::shared_ptr<Function>const&MacroFunction::getInputFunction(InputIndex i)const{
+std::shared_ptr<Function>const&CompositeFunction::getInputFunction(InputIndex i)const{
   assert(this!=nullptr);
   assert(i<this->_inputMapping.size());
   assert(this->_inputMapping[i].size()>0);

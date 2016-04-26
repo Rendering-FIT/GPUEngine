@@ -63,10 +63,10 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/ResourceFactory.h
   ${HEADER_PATH}/StatementFactory.h
   ${HEADER_PATH}/BodyFactory.h
-  ${HEADER_PATH}/MacroFunction.h
+  ${HEADER_PATH}/CompositeFunction.h
   ${HEADER_PATH}/FunctionFactory.h
   ${HEADER_PATH}/FactoryOfFunctionFactory.h
-  ${HEADER_PATH}/MacroFunctionFactory.h
+  ${HEADER_PATH}/CompositeFunctionFactory.h
   ${HEADER_PATH}/FunctionNodeFactory.h
   ${HEADER_PATH}/StdFunctions.h
   ${HEADER_PATH}/StdNumericFunctions.h
@@ -114,9 +114,9 @@ set(CORE_SOURCES
   Namespace.cpp
   ResourceFactory.cpp
   StatementFactory.cpp
-  MacroFunction.cpp
+  CompositeFunction.cpp
   FunctionFactory.cpp
-  MacroFunctionFactory.cpp
+  CompositeFunctionFactory.cpp
   FunctionNodeFactory.cpp
   StdFunctions.cpp
   StdNumericFunctions.cpp
