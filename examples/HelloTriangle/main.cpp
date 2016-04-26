@@ -1,5 +1,3 @@
-#include <typeinfo>
-#include <typeindex>
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
@@ -8,6 +6,9 @@
 #include <geRG/Transformation.h>
 #include <geUtil/ArgumentObject.h>
 #include <geAd/WindowObject/WindowObject.h>
+#include <typeinfo> // MSVC 2013 requires this rather at the end of headers to compile successfully
+#include <typeindex>
+
 
 using namespace std;
 using namespace ge::rg;
@@ -141,12 +142,12 @@ void Init()
    vector<const void*> attribList;
    attribList.emplace_back(vertices.data());
 
-   mesh.allocData(config,3,3,primitives.size());
-   mesh.uploadVertices(attribList.data(),attribList.size(),
-                       vertices.size());
-   mesh.uploadIndices(indices.data(),(uint32_t)indices.size());
+   mesh.allocData(config,3,3,unsigned(primitives.size()));
+   mesh.uploadVertices(attribList.data(),unsigned(attribList.size()),
+                       unsigned(vertices.size()));
+   mesh.uploadIndices(indices.data(),unsigned(indices.size()));
    mesh.setAndUploadPrimitives(primitives.data(),
-                               modesAndOffsets4.data(),(uint32_t)primitives.size());
+                               modesAndOffsets4.data(),unsigned(primitives.size()));
    mesh.createDrawable(transformation->getOrCreateMatrixList().get(),stateSet.get());
 
    // unmap buffers

@@ -19,7 +19,7 @@ set(APP_SOURCES
 set(APP_INCLUDES
   )
 
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
+add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

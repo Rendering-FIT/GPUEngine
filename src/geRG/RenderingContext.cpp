@@ -360,7 +360,7 @@ void RenderingContext::setPrimitives(Mesh &mesh,const Primitive *primitiveList,
 
    // resize if needed
    unsigned minSizeRequired=numPrimitives+startIndex;
-   unsigned currentSize=mesh.primitiveList().size();
+   unsigned currentSize=unsigned(mesh.primitiveList().size());
    if((truncate && currentSize!=minSizeRequired) || minSizeRequired>currentSize)
       mesh.primitiveList().resize(minSizeRequired);
 

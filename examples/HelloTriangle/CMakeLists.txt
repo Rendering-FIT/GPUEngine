@@ -19,7 +19,7 @@ set(APP_SOURCES
 set(APP_INCLUDES
   )
 
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
+add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geRG geGL geUtil WindowObject)
 set(External_libs OpenGL GLEW glm SDL2 AntTweakBar)
