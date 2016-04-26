@@ -4,7 +4,7 @@
 
 namespace ge{
   namespace core{
-    class GECORE_EXPORT BodyFactory: public StatementFactory{
+    class /*GECORE_EXPORT*/ BodyFactory: public StatementFactory{
       public:
         inline BodyFactory(std::string name = "",unsigned maxUses = 1);
         inline virtual ~BodyFactory();
