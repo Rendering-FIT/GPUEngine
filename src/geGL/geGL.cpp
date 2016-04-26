@@ -1,4 +1,5 @@
 #include<geGL/geGL.h>
+#include<geGL/CheckGLFunctions.h>
 
 using namespace ge::gl;
 
@@ -761,6 +762,7 @@ void ge::gl::init(){
   implementRenderbufferDSA();
   implementPipelineDSA    ();
   implementTextureDSA     ();
+  checkGLFunctions();
 }
 
 /*

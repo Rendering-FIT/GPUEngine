@@ -55,17 +55,8 @@ bool AtomicFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&funct
 
 bool AtomicFunction::bindOutput(std::shared_ptr<Resource>const&data){
   assert(this!=nullptr);
-  if(
-      data                    != nullptr                                                  &&
-      this->getOutputType()   != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
-      data->getId()           != this->getOutputType()                                    ){
-    std::cerr<<"ERROR: "<<this->_functionRegister->getName(this->_id)<<".output has different type - ";
-    std::cerr<<this->getOutputType();
-    std::cerr<<" != ";
-    std::cerr<<data->getManager()->getTypeIdName(data->getId()    );
-    std::cerr<<std::endl;
+  if(!this->_outputBindingCheck(data))
     return false;
-  }
   this->_outputData = data;
   return true;
 }

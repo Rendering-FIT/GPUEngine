@@ -19,7 +19,8 @@ namespace ge{
       protected:
         std::shared_ptr<FunctionRegister>_functionRegister;
         FunctionRegister::FunctionID     _id;
-        bool _inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const;
+        bool _inputBindingCheck (InputIndex i,std::shared_ptr<Function>function)const;
+        bool _outputBindingCheck(std::shared_ptr<Resource>resource)const;
       public:
         inline Function(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id);
         virtual inline ~Function();
@@ -40,12 +41,12 @@ namespace ge{
         inline TypeRegister::TypeID getInputType (InputIndex i)const;
         inline TypeRegister::TypeID getOutputType(            )const;
         inline InputIndex  getNofInputs()const;
-        inline InputIndex  getInputIndex(std::string const&name)const;
-        inline bool bindInput(std::string const&name,std::shared_ptr<Function>const&function = nullptr);
-        inline bool hasInput (std::string const&name)const;
-        inline std::shared_ptr<Resource>const&getInputData (std::string const&input)const ;
-        inline TypeRegister::TypeID getInputType (std::string const&name)const;
-        inline std::shared_ptr<Function>const&getInputFunction(std::string const&name)const;
+        //inline InputIndex  getInputIndex(std::string const&name)const;
+        //inline bool bindInput(std::string const&name,std::shared_ptr<Function>const&function = nullptr);
+        //inline bool hasInput (std::string const&name)const;
+        //inline std::shared_ptr<Resource>const&getInputData (std::string const&input)const ;
+        //inline TypeRegister::TypeID getInputType (std::string const&name)const;
+        //inline std::shared_ptr<Function>const&getInputFunction(std::string const&name)const;
     };
 
     inline Function::Function(
@@ -89,6 +90,7 @@ namespace ge{
       return this->_functionRegister->getNofInputs(this->_id);
     }
 
+    /*
     inline Function::InputIndex Function::getInputIndex(std::string const&name)const{
       assert(this!=nullptr);
       assert(this->_functionRegister!=nullptr);
@@ -119,6 +121,7 @@ namespace ge{
       assert(this!=nullptr);
       return this->getInputFunction(this->getInputIndex(name));
     }
+    */
 
 
 

@@ -36,6 +36,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/DebugMessage.h
     ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
+    ${HEADER_PATH}/CheckGLFunctions.h
     ${HEADER_PATH}/AllAttribs.h
     ${HEADER_PATH}/OpenGLCommands.h
   )
@@ -60,6 +61,7 @@ set(GL_SOURCES
     DebugMessage.cpp
     OpenGLObject.cpp
     geGL.cpp
+    CheckGLFunctions.cpp
   )
 
 ################################################
