@@ -33,17 +33,22 @@ namespace ge{
             FunctionRegister::FunctionID           id);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr                       ,
-            TypeRegister::DescriptionList const&   typeDescription          ,
+            TypeRegister::DescriptionList    const&typeDescription          ,
             std::string                            name            = ""     ,
             std::shared_ptr<StatementFactory>const&factory         = nullptr);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr    ,
             FunctionRegister::FunctionID           id    ,
-            std::shared_ptr<Resource>const&        output);
+            std::shared_ptr<Resource>        const&output);
         virtual ~AtomicFunction();
         virtual void operator()();
-        virtual bool bindInput (InputIndex i,std::shared_ptr<Function>const&function = nullptr);
-        virtual bool bindOutput(             std::shared_ptr<Resource>const&data     = nullptr);
+        virtual bool bindInput (
+            std::shared_ptr<FunctionRegister>const&fr                ,
+            InputIndex                             i                 ,
+            std::shared_ptr<Function>        const&function = nullptr);
+        virtual bool bindOutput(
+            std::shared_ptr<FunctionRegister>const&fr            ,
+            std::shared_ptr<Resource>        const&data = nullptr);
         virtual inline bool hasInput (InputIndex  i   )const;
         virtual inline bool hasOutput(                )const;
         virtual inline std::shared_ptr<Resource>const&getInputData (InputIndex i)const;
@@ -58,7 +63,6 @@ namespace ge{
         void _processInputs();
         virtual bool _do();
         inline bool _inputChanged(InputIndex  i    )const;
-        inline bool _inputChanged(std::string input)const;
     };
 
 
@@ -121,12 +125,5 @@ namespace ge{
       return this->_inputs[i].changed;
     }
 
-    inline bool AtomicFunction::_inputChanged(std::string input)const{
-      assert(this!=nullptr);
-      assert(this->_functionRegister!=nullptr);
-      return this->_inputChanged(this->_functionRegister->getInputIndex(this->_id,input));
-    }
-
- 
   }
 }

@@ -22,7 +22,7 @@ namespace ge{
               fr,id){
            auto ss=fr->getTypeRegister()->sharedResource(TypeRegister::getTypeKeyword<TYPE>());
            (TYPE&)(*ss) = data;
-           this->bindOutput(ss);//fr->getTypeRegister()->sharedResource<TYPE>(data));
+           this->bindOutput(fr,ss);//fr->getTypeRegister()->sharedResource<TYPE>(data));
           }
         template<typename TYPE>
           Nullary(
@@ -71,7 +71,7 @@ namespace ge{
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionRegister::FunctionID           id              ,\
                  std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
-                   this->bindOutput(output);\
+                   this->bindOutput(fr,output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
@@ -86,7 +86,7 @@ namespace ge{
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionRegister::FunctionID           id              ,\
                  std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
-                   this->bindOutput(output);\
+                   this->bindOutput(fr,output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
@@ -101,12 +101,12 @@ namespace ge{
 
 #define INPUT_CHECK()\
     bool missingInput=false;\
-    for(InputIndex i=0;i<this->getNofInputs();++i)\
+    for(InputIndex i=0;i<this->_inputs.size();++i)\
     if(!this->hasInput(i)){\
-      if(!missingInput)std::cerr<<"ERROR: function "<<this->_functionRegister->getName(this->_id)<<" has unbinded inputs: ";\
+      if(!missingInput)std::cerr<<"ERROR: function "<</*this->_functionRegister->getName(this->_id)*/this->_id<<" has unbinded inputs: ";\
       else std::cerr<<" ,";\
       missingInput=true;\
-      std::cerr<<this->_functionRegister->getNameRegister()->getFceInputName(this->_id,i);\
+      std::cerr<</*this->_functionRegister->getNameRegister()->getFceInputName(this->_id,i)*/i;\
     }\
     if(missingInput){\
       std::cerr<<std::endl;\
@@ -158,7 +158,7 @@ namespace ge{
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionRegister::FunctionID           id              ,\
                  std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
-                   this->bindOutput(output);\
+                   this->bindOutput(fr,output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\

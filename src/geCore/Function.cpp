@@ -4,11 +4,13 @@
 using namespace ge::core;
 
 
-bool Function::_inputBindingCheck(InputIndex i,std::shared_ptr<Function>function)const{
+bool Function::_inputBindingCheck(
+    std::shared_ptr<FunctionRegister>const&fr      ,
+    InputIndex                             i       ,
+    std::shared_ptr<Function>        const&function)const{
   assert(this!=nullptr);
-  auto fr = this->_functionRegister;
-  auto tr = this->_functionRegister->getTypeRegister();
-  auto nr = this->_functionRegister->getNameRegister();
+  auto tr = fr->getTypeRegister();
+  auto nr = fr->getNameRegister();
 
   if(i>=fr->getNofInputs(this->_id)){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<"::bindInput("<<i<<",";
@@ -35,14 +37,15 @@ bool Function::_inputBindingCheck(InputIndex i,std::shared_ptr<Function>function
   return true;
 }
 
-bool Function::_outputBindingCheck(std::shared_ptr<Resource>data)const{
+bool Function::_outputBindingCheck(
+    std::shared_ptr<FunctionRegister>const&fr  ,
+    std::shared_ptr<Resource>        const&data)const{
   assert(this!=nullptr);
-  auto fr = this->_functionRegister;
-  auto tr = this->_functionRegister->getTypeRegister();
+  auto tr = fr->getTypeRegister();
   if(
-      data                    != nullptr                                                  &&
-      this->getOutputType()   != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
-      data->getId()           != tr->getFceReturnTypeId(fr->getType(this->_id))){
+      data                                           != nullptr                                                  &&
+      tr->getFceReturnTypeId(fr->getType(this->_id)) != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
+      data->getId()                                  != tr->getFceReturnTypeId(fr->getType(this->_id))){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".output has different type - ";
     std::cerr<<tr->getTypeIdName(fr->getType(this->_id));
     std::cerr<<" != ";

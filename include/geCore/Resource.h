@@ -16,9 +16,6 @@ namespace ge{
     class TypeRegister;
 
     class GECORE_EXPORT Resource{
-      protected:
-        std::shared_ptr<TypeRegister>_manager = nullptr;
-        TypeRegister::TypeID _id = TypeRegister::UNREGISTERED;
       public:
         inline Resource(
             std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
@@ -39,6 +36,9 @@ namespace ge{
           operator T*()const;
         template<typename T>
           operator T**()const;
+      protected:
+        std::shared_ptr<TypeRegister>_manager = nullptr;
+        TypeRegister::TypeID _id = TypeRegister::UNREGISTERED;
     };
 
     inline Resource::Resource(

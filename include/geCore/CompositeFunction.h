@@ -21,8 +21,13 @@ namespace ge{
             std::vector<FceInputList>        const&inputs);
         ~CompositeFunction();
         virtual inline void operator()()override;
-        virtual bool bindInput (InputIndex i,std::shared_ptr<Function>const&function = nullptr)override;
-        virtual bool bindOutput(             std::shared_ptr<Resource>const&data     = nullptr)override;
+        virtual bool bindInput (
+            std::shared_ptr<FunctionRegister>const&fr                ,
+            InputIndex                             i                 ,
+            std::shared_ptr<Function>        const&function = nullptr)override;
+        virtual bool bindOutput(
+            std::shared_ptr<FunctionRegister>const&fr            ,
+            std::shared_ptr<Resource>        const&data = nullptr)override;
         virtual bool hasInput (InputIndex i)const override;
         virtual bool hasOutput(            )const override;
         virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;

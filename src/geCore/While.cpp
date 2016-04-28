@@ -1,6 +1,6 @@
 #include<geCore/While.h>
 #include<geCore/Resource.h>
-#include<geCore/AtomicFunction.h>
+#include<geCore/Function.h>
 
 using namespace ge::core;
 

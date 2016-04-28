@@ -1,7 +1,6 @@
 #pragma once
 
 #include<geCore/Command.h>
-#include<geCore/TypeRegister.h>
 
 using namespace ge::core;
 

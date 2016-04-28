@@ -37,9 +37,9 @@ void FunctionNodeFactory::reset(){
 }
 
 std::shared_ptr<Statement>FunctionNodeFactory::_do(
-    std::shared_ptr<FunctionRegister> const&tr){
+    std::shared_ptr<FunctionRegister> const&fr){
   assert(this!=nullptr);
-  assert(tr!=nullptr);
+  assert(fr!=nullptr);
   this->_first = this->_uses == 0;
   if(this->resourceFactories.size()!=this->inputFactories.size()){
     std::cerr<<"ERROR: FunctionNodeFactory::operator()() - different ";
@@ -48,7 +48,7 @@ std::shared_ptr<Statement>FunctionNodeFactory::_do(
   }
   if(!this->functionFactory)return nullptr;
 
-  auto res = (*this->functionFactory)(tr);
+  auto res = (*this->functionFactory)(fr);
 
   auto fce=std::dynamic_pointer_cast<Function>(res);
   using Iter=decltype(this->resourceFactories)::size_type;
@@ -59,12 +59,12 @@ std::shared_ptr<Statement>FunctionNodeFactory::_do(
       return nullptr;
     }
     if(!this->resourceFactories[i])continue;
-    auto in=(*this->inputFactories[i])(tr);
+    auto in=(*this->inputFactories[i])(fr);
     auto inFce = std::dynamic_pointer_cast<Function>(in);
     assert(inFce!=nullptr);
-    inFce->bindOutput((*this->resourceFactories[i])(tr));
+    inFce->bindOutput(fr,(*this->resourceFactories[i])(fr));
     assert(fce!=nullptr);
-    fce->bindInput(i,inFce);
+    fce->bindInput(fr,i,inFce);
   }
   return res;
 }

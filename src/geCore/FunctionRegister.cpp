@@ -1,6 +1,7 @@
 #include<geCore/Statement.h>
 #include<geCore/Function.h>
 #include<geCore/FunctionRegister.h>
+#include<geCore/FunctionFactory.h>
 
 using namespace ge::core;
 

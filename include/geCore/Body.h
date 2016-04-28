@@ -6,11 +6,11 @@ namespace ge{
   namespace core{
     class GECORE_EXPORT Body: public Statement{
       public:
-        using StatementList = std::vector<std::shared_ptr<Statement>>;
-        using StatementIndex = StatementList::size_type;
-        using StatementIterator = StatementList::const_iterator;
+        using StatementVector   = std::vector<std::shared_ptr<Statement>>;
+        using StatementIndex    = StatementVector::size_type;
+        using StatementIterator = StatementVector::const_iterator;
       protected:
-        StatementList _statements;
+        StatementVector _statements;
       public:
         inline Body();
         inline virtual ~Body();

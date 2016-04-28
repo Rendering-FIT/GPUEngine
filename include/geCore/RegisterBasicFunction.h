@@ -42,18 +42,24 @@ namespace ge{
         auto tid = tr->addType("",getDescription(tr,FCE));
 
         class BasicFunction: public ge::core::AtomicFunction{
+          protected:
+            using FF = OUTPUT(*)(ARGS...);
+            FF _fceImpl;
           public:
             BasicFunction(
-                std::shared_ptr<ge::core::FunctionRegister>const&f ,
-                FunctionRegister::FunctionID                     id):AtomicFunction(f,id){}
+                std::shared_ptr<ge::core::FunctionRegister>const&fr,
+                FunctionRegister::FunctionID                     id):AtomicFunction(fr,id){
+              this->_fceImpl=reinterpret_cast<FF>(fr->getImplementation(this->_id));
+            }
             virtual ~BasicFunction(){}
           protected:
             virtual bool _do(){
               assert(this!=nullptr);
-              assert(this->_functionRegister!=nullptr);
-              typedef OUTPUT(*FF)(ARGS...);
-              FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
-              (OUTPUT&)(*this->getOutputData()) = uber_call(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //assert(this->_functionRegister!=nullptr);
+              //typedef OUTPUT(*FF)(ARGS...);
+              //FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
+              //(OUTPUT&)(*this->getOutputData()) = uber_call(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              (OUTPUT&)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };

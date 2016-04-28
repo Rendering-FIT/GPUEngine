@@ -1,3 +1,4 @@
+#include<geCore/FunctionFactory.h>
 #include<geCore/WhileFactory.h>
 #include<geCore/While.h>
 #include<geCore/AtomicFunction.h>

@@ -16,22 +16,27 @@ CompositeFunction::CompositeFunction(
 CompositeFunction::~CompositeFunction(){
 }
 
-bool CompositeFunction::bindInput(InputIndex i,std::shared_ptr<Function>const&function){
+bool CompositeFunction::bindInput(
+    std::shared_ptr<FunctionRegister>const&fr      ,
+    InputIndex                             i       ,
+    std::shared_ptr<Function>        const&function){
   assert(this!=nullptr);
-  if(!this->_inputBindingCheck(i,function))
+  if(!this->_inputBindingCheck(fr,i,function))
     return false;
   for(auto x:this->_inputMapping[i]){
     assert(std::get<FUNCTION>(x)!=nullptr);
-    std::get<FUNCTION>(x)->bindInput(std::get<INPUT>(x),function);
+    std::get<FUNCTION>(x)->bindInput(fr,std::get<INPUT>(x),function);
   }
   return true;
 }
 
 
-bool CompositeFunction::bindOutput(std::shared_ptr<Resource>const&data){
+bool CompositeFunction::bindOutput(
+    std::shared_ptr<FunctionRegister>const&fr  ,
+    std::shared_ptr<Resource>        const&data){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
-  return this->_outputMapping->bindOutput(data);
+  return this->_outputMapping->bindOutput(fr,data);
 }
 
 
