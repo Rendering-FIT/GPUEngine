@@ -11,6 +11,9 @@ namespace ge{
     class GEGL_EXPORT Program: public OpenGLObject{
       public:
         Program();
+#if defined(REPLACE_GLEW)
+        Program(std::shared_ptr<OpenGLFunctionTable>const&table);
+#endif
         ~Program();
         GLboolean isProgram()const;
         void attachShader(std::shared_ptr<Shader>const&shader);

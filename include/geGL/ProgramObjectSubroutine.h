@@ -3,10 +3,15 @@
 #include<iostream>
 #include<map>
 #include<geGL/ProgramObjectSubroutineUniform.h>
+#include<geGL/OpenGLFunctionProvider.h>
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT ShaderObjectSubroutine{
+    class GEGL_EXPORT ShaderObjectSubroutine
+#if defined(REPLACE_GLEW)
+      :protected OpenGLFunctionProvider
+#endif
+    {
       protected:
         std::map<std::string,ShaderObjectSubroutineUniform>_subroutineUniformList;
         std::map<std::string,GLuint>                       _subroutineList;
@@ -14,7 +19,11 @@ namespace ge{
         GLsizei _numIndices = 0      ;
       public:
         ~ShaderObjectSubroutine();
-        ShaderObjectSubroutine();
+        ShaderObjectSubroutine(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table
+#endif
+            );
         void addUniform(std::string name,ShaderObjectSubroutineUniform const&uniform);
         void addSubroutine(std::string name,GLuint location);
         void allocInidices(unsigned num);

@@ -2,21 +2,8 @@
 
 #include<iostream>
 #include<AntTweakBar.h>
-#include<GL/glew.h>
 
 using namespace ge::util;
-
-void ge::util::loadContextParam(ContextParam*p,ArgumentObject*args){
-  p->version = args->getArgi("--context-version","430"  );
-  p->profile = args->getArg ("--context-profile","core" );
-  p->flag    = args->getArg ("--context-flag"   ,"debug");
-}
-
-void ge::util::loadWindowParam(WindowParam *p,ArgumentObject*args){
-  p->size[0]    = args->getArgi  ("-w","1024");
-  p->size[1]    = args->getArgi  ("-h","1024");
-  p->fullscreen = args->isPresent("-f");
-}
 
 void WindowObject::_constructor(
     unsigned Width,

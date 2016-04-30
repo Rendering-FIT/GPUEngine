@@ -12,10 +12,17 @@ using namespace ge::gl;
  * @param size parameter Size
  */
 ProgramObjectParameter::ProgramObjectParameter(
+#if defined(REPLACE_GLEW)
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
     GLint       location,
     GLenum      type    ,
     std::string name    ,
-    GLint       size    ){
+    GLint       size    )
+#if defined(REPLACE_GLEW)
+  :OpenGLFunctionProvider(table)
+#endif
+{
   this->_location = location;//parameter id
   this->_type     = type;//parameter type
   this->_name     = name;//parameter name
@@ -215,7 +222,16 @@ const long unsigned nofBufferProperties = sizeof(bufferProperties)/sizeof(GLenum
 
 
 
-ProgramObjectBufferParams::ProgramObjectBufferParams(GLuint program,GLuint index){
+ProgramObjectBufferParams::ProgramObjectBufferParams(
+#if defined(REPLACE_GLEW)
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
+    GLuint program,
+    GLuint index)
+#if defined(REPLACE_GLEW)
+  :OpenGLFunctionProvider(table)
+#endif
+{
   //std::cerr<<"ProgramObjectBufferParams\n";
   GLint lenght;
   glGetProgramResourceiv(
@@ -278,10 +294,17 @@ GLint ProgramObjectBufferParams::getBinding()const{
 
 
 SamplerParam::SamplerParam(
+#if defined(REPLACE_GLEW)
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
     std::string name    ,
     GLint       location,
     GLenum      type    ,
-    GLint       binding ){
+    GLint       binding )
+#if defined(REPLACE_GLEW)
+  :OpenGLFunctionProvider(table)
+#endif
+{
   this->_name     = name    ;
   this->_location = location;
   this->_type     = type    ;

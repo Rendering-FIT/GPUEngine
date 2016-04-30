@@ -1,4 +1,11 @@
 #include<geGL/geGL.h>
+
+#if defined(REPLACE_GLEW)
+void ge::gl::init(){
+}
+#else// defined(REPLACE_GLEW)
+
+
 #include<geGL/CheckGLFunctions.h>
 
 using namespace ge::gl;
@@ -798,4 +805,4 @@ void (*glTextureImage3DMultisample) (GLuint texture, GLsizei samples, GLenum int
 void (*glTextureImage2DMultisample) (GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations) = nullptr;
 #endif
 
-
+#endif// !defined(REPLACE_GLEW)

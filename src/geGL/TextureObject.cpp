@@ -263,10 +263,17 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
  * @param levels number of mipmap levels, 0 - mutable texture
  */
 TextureObject::TextureObject(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
-    GLsizei width){
+    GLsizei width)
+#if defined(REPLACE_GLEW)
+  :OpenGLObject(table)
+#endif
+{
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(this->_target,1,&this->_id);
@@ -291,11 +298,18 @@ glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,p
  * @param levels number of mipmap levels
  */
 TextureObject::TextureObject(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
     GLsizei width,
-    GLsizei height){
+    GLsizei height)
+#if defined(REPLACE_GLEW)
+  :OpenGLObject(table)
+#endif
+{
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -315,12 +329,19 @@ TextureObject::TextureObject(
  * @param depth z size of texture
  */
 TextureObject::TextureObject(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
     GLsizei width,
     GLsizei height,
-    GLsizei depth){
+    GLsizei depth)
+#if defined(REPLACE_GLEW)
+  :OpenGLObject(table)
+#endif
+{
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -333,7 +354,11 @@ TextureObject::TextureObject(
  * @brief destroys texture
  */
 TextureObject::~TextureObject(){
+#if defined(REPLACE_GLEW)
+  glDeleteTextures(1,&this->_id);
+#else
   glDeleteTexturesGEGL(1,&this->_id);
+#endif
 //  glDeleteTextures(1,&this->_id);
 }
 

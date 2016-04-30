@@ -1,7 +1,6 @@
-#ifndef _SHADEROBJECTSUBROUTINEUNIFORM_H_
-#define _SHADEROBJECTSUBROUTINEUNIFORM_H_
+#pragma once
 
-#include <geGL/OpenGL.h>
+#include<geGL/OpenGL.h>
 #include<iostream>
 
 namespace ge{
@@ -32,5 +31,3 @@ namespace ge{
   }
 }
 
-
-#endif//_SHADEROBJECTSUBROUTINEUNIFORM_H_

@@ -1,10 +1,35 @@
-FOREACH(mylibfolder
-        geGL
-        geCore
-        geRG
-        geSG
-        geUtil
+SET(PACKAGES 
+  geCore
+  #geGL
+  #geRG
+  #geSG
+  #geUtil
   )
+
+if(GPUENGINE_BUILD_GEGL)
+  set(PACKAGES ${PACKAGES} geGL)
+endif()
+
+if(GPUENGINE_BUILD_GESG)
+  set(PACKAGES ${PACKAGES} geSG)
+endif()
+
+if(GPUENGINE_BUILD_GERG)
+  set(PACKAGES ${PACKAGES} geRG)
+endif()
+
+if(GPUENGINE_BUILD_GEUTIL)
+  set(PACKAGES ${PACKAGES} geUtil)
+endif()
+
+
+FOREACH(mylibfolder ${PACKAGES}
+    #geGL
+    #geCore
+    #geRG
+    #geSG
+    #geUtil
+    )
 
   ADD_SUBDIRECTORY(${mylibfolder})
 

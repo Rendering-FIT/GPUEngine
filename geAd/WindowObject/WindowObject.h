@@ -28,8 +28,6 @@
 
 #include<SDL2/SDL.h>
 
-#include<geUtil/ArgumentObject.h>
-
 namespace ge{
   namespace util{
     struct GEAD_EXPORT ContextParam{
@@ -41,9 +39,6 @@ namespace ge{
       unsigned size[2];
       bool     fullscreen;
     };
-
-    GEAD_EXPORT void loadContextParam(ContextParam*p,ArgumentObject*args);
-    GEAD_EXPORT void loadWindowParam (WindowParam *p,ArgumentObject*args);
 
     class GEAD_EXPORT WindowObject
     {

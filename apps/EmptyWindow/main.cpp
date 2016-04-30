@@ -1,6 +1,6 @@
 #include<limits>
 #include<string>
-#include<GL/glew.h>
+//#include<GL/glew.h>
 #include<geGL/geGL.h>
 #include<geUtil/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
@@ -48,10 +48,10 @@ void idle(){
 }
 
 void init(){
-  glewExperimental=GL_TRUE;
-  glewInit();
+  //glewExperimental=GL_TRUE;
+  //glewInit();
 
-  ge::gl::setDefaultDebugMessage();
+  //ge::gl::setDefaultDebugMessage();
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);

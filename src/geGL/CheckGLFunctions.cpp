@@ -1,3 +1,5 @@
+#if !defined(REPLACE_GLEW)
+
 #include<geGL/CheckGLFunctions.h>
 #include<geGL/OpenGL.h>
 #include<geGL/Export.h>
@@ -1317,3 +1319,5 @@ void ge::gl::checkGLFunctions(){
   if(glDrawArraysInstancedBaseInstance == nullptr)glDrawArraysInstancedBaseInstance = geglTrapglDrawArraysInstancedBaseInstance;
   if(glDeleteProgramPipelines == nullptr)glDeleteProgramPipelines = geglTrapglDeleteProgramPipelines;
 }
+
+#endif// !defined(REPLACE_GLEW)

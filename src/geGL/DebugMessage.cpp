@@ -105,33 +105,69 @@ void highDebugMessage(
 /**
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_LOW/MEDIUM/HIGH
  */
-void ge::gl::setLowAndGreaterDebugMessage(){
+void ge::gl::setLowAndGreaterDebugMessage(
+#if defined(REPLACE_GLEW)
+    OpenGLFunctionProvider const&gl
+#endif
+    ){
+#if defined(REPLACE_GLEW)
+  gl.glEnable(GL_DEBUG_OUTPUT);
+  gl.glDebugMessageCallback((GLDEBUGPROC)lowDebugMessage,NULL);
+#else
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback((GLDEBUGPROC)lowDebugMessage,NULL);
+#endif
 }
 
 /**
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_MEDIUM/HIGH
  */
-void ge::gl::setMediumAndGreaterDebugMessage(){
+void ge::gl::setMediumAndGreaterDebugMessage(
+#if defined(REPLACE_GLEW)
+    OpenGLFunctionProvider const&gl
+#endif
+    ){
+#if defined(REPLACE_GLEW)
+  gl.glEnable(GL_DEBUG_OUTPUT);
+  gl.glDebugMessageCallback((GLDEBUGPROC)mediumDebugMessage,NULL);
+#else
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback((GLDEBUGPROC)mediumDebugMessage,NULL);
+#endif
 }
 
 /**
  * @brief sets debug function - it will report only GL_DEBUG_SEVERITY_HIGH errors
  */
-void ge::gl::setHighDebugMessage(){
+void ge::gl::setHighDebugMessage(
+#if defined(REPLACE_GLEW)
+    OpenGLFunctionProvider const&gl
+#endif
+    ){
+#if defined(REPLACE_GLEW)
+  gl.glEnable(GL_DEBUG_OUTPUT);
+  gl.glDebugMessageCallback((GLDEBUGPROC)highDebugMessage,NULL);
+#else
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback((GLDEBUGPROC)highDebugMessage,NULL);
+#endif
 }
 
 /**
  * @brief sets default debug function - it will report everything
  */
-void ge::gl::setDefaultDebugMessage(){
+void ge::gl::setDefaultDebugMessage(
+#if defined(REPLACE_GLEW)
+    OpenGLFunctionProvider const&gl
+#endif
+    ){
+#if defined(REPLACE_GLEW)
+  gl.glEnable(GL_DEBUG_OUTPUT);
+  gl.glDebugMessageCallback((GLDEBUGPROC)defaultDebugMessage,NULL);
+#else
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback((GLDEBUGPROC)defaultDebugMessage,NULL);
+#endif
 }
 
 /**
@@ -140,7 +176,17 @@ void ge::gl::setDefaultDebugMessage(){
  * @param fce callback function
  * @param data callback user data
  */
-void ge::gl::setDebugMessage(GLDEBUGPROC fce,void*data){
+void ge::gl::setDebugMessage(
+#if defined(REPLACE_GLEW)
+    OpenGLFunctionProvider const&gl,
+#endif
+    GLDEBUGPROC fce,
+    void*data){
+#if defined(REPLACE_GLEW)
+  gl.glEnable(GL_DEBUG_OUTPUT);
+  gl.glDebugMessageCallback(fce,data);
+#else
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(fce,data);
+#endif
 }

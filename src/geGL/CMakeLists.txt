@@ -39,6 +39,16 @@ set(GL_INCLUDES
     ${HEADER_PATH}/CheckGLFunctions.h
     ${HEADER_PATH}/AllAttribs.h
     ${HEADER_PATH}/OpenGLCommands.h
+    ${HEADER_PATH}/GeneratedCheckOpenGLFunctions.h
+    ${HEADER_PATH}/GeneratedLoadOpenGLFunctions.h
+    ${HEADER_PATH}/GeneratedOpenGLFunctionCalls.h
+    ${HEADER_PATH}/GeneratedOpenGLFunctions.h
+    ${HEADER_PATH}/GeneratedOpenGLPFN.h
+    ${HEADER_PATH}/GeneratedOpenGLTrapFunctions.h
+    ${HEADER_PATH}/CheckOpenGLFunctions.h
+    ${HEADER_PATH}/LoadOpenGLFunctions.h
+    ${HEADER_PATH}/OpenGLFunctionTable.h
+    ${HEADER_PATH}/OpenGLFunctionProvider.h
   )
 
 set(GL_SOURCES
@@ -62,12 +72,18 @@ set(GL_SOURCES
     OpenGLObject.cpp
     geGL.cpp
     CheckGLFunctions.cpp
+    LoadOpenGLFunctions.cpp
+    CheckOpenGLFunctions.cpp
   )
 
 ################################################
 # PACKAGES
 
-find_package(GLEW   REQUIRED)
+if(GPUENGINE_REPLACE_GLEW)
+else()
+  find_package(GLEW   REQUIRED)
+endif()
+
 find_package(OpenGL REQUIRED)
 
 add_library(${LIB_NAME}

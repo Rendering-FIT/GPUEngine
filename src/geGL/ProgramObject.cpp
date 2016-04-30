@@ -4,10 +4,12 @@
 
 using namespace ge::gl;
 
+/*
 bool OpenGL320=false;
 bool OpenGL400=false;
 bool OpenGL410=false;
-
+*/
+/*
 void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
   glUniformMatrix2fv  ,
   glUniformMatrix3fv  ,
@@ -19,6 +21,7 @@ void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
   glUniformMatrix3x4fv,
   glUniformMatrix4x3fv
 };
+
 void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
   glUniformMatrix2dv  ,
   glUniformMatrix3dv  ,
@@ -52,10 +55,11 @@ void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
   glProgramUniformMatrix3x4dv,
   glProgramUniformMatrix4x3dv
 };
-
+*/
 /**
  * @brief Initialise shader manager
  */
+/*
 void ge::gl::initShadersAndPrograms(){
   OpenGL320=true;
   OpenGL400=true;
@@ -205,6 +209,7 @@ void ge::gl::initShadersAndPrograms(){
   matrixdFceDsa[7]=glProgramUniformMatrix3x4dv;
   matrixdFceDsa[8]=glProgramUniformMatrix4x3dv;
 }
+*/
 
 /**
  * @brief Function converts complex type (GL_FLOAT_VEC3 to GL_FLOAT)
@@ -272,9 +277,23 @@ GLint ge::gl::complexType2Size(GLenum type){
   }
 }
 
-ProgramObject::ProgramObject(std::vector<std::string>const&data,unsigned version,std::string profile){
+ProgramObject::ProgramObject(std::vector<std::string>const&data,unsigned version,std::string profile)
+#if defined(REPLACE_GLEW)
+  :OpenGLObject(nullptr)
+#endif
+{
   this->_sortAndCompileShaders(data,version,profile);
 }
+
+#if defined(REPLACE_GLEW)
+ProgramObject::ProgramObject(
+    std::shared_ptr<OpenGLFunctionTable>const&table  ,
+    std::vector<std::string>            const&data   ,
+    unsigned                                  version,
+    std::string                               profile):OpenGLObject(table){
+  this->_sortAndCompileShaders(data,version,profile);
+}
+#endif
 
 std::string ProgramObject::uniformsToStr(){
   std::stringstream ss;
@@ -301,10 +320,12 @@ void ProgramObject::resetRetrievable(){
 }
 
 void ProgramObject::_createShaderProgram_Prologue(){
+  /*
   if(!OpenGL320){
     std::cerr<<std::string("OpenGL 3.2 not available")<<std::endl;
     return;
   }
+  */
   this->_id=glCreateProgram();//creates a shader program
   if(!this->_id){//something is wrong
     std::cerr<< std::string("glCreateProgram failed")<<std::endl;
@@ -323,11 +344,13 @@ void ProgramObject::_createShaderProgram_Epilogue(){
   }
   this->_getParameterList();//get list of shader program parameter
 
+  /*
   if(OpenGL400)
     this->_getSubroutineUniformList();
 
   if(OpenGL400)
     this->_getBufferList();
+  */
 
   bool hasComputeShader=false;
   for(auto x:this->_shaders)
@@ -343,12 +366,21 @@ void ProgramObject::_createShaderProgram_Epilogue(){
 typedef void (*GETACTIVEFCE  )(GLuint,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLchar*);
 typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
 void ProgramObject::_getParameterList(){
+#if defined(REPLACE_GLEW)
+  decltype(&OpenGLFunctionProvider::glGetActiveAttrib) getActive [] = {
+    &OpenGLFunctionProvider::glGetActiveAttrib ,
+    &OpenGLFunctionProvider::glGetActiveUniform};
+  decltype(&OpenGLFunctionProvider::glGetAttribLocation) getLocation [] = {
+    &OpenGLFunctionProvider::glGetAttribLocation ,
+    &OpenGLFunctionProvider::glGetUniformLocation};
+#else
   const GETACTIVEFCE   getActive[]   = {
     (GETACTIVEFCE)glGetActiveAttrib ,
     (GETACTIVEFCE)glGetActiveUniform};
   const GETLOCATIONFCE getLocation[] = {
     (GETLOCATIONFCE)glGetAttribLocation ,
     (GETLOCATIONFCE)glGetUniformLocation};
+#endif
   const GLenum Active[]={
     GL_ACTIVE_ATTRIBUTES,
     GL_ACTIVE_UNIFORMS  };
@@ -368,15 +400,31 @@ void ProgramObject::_getParameterList(){
       std::string name;//name of parameter
       GLint       location;//location of parameter
       GLsizei     length;
+#if defined(REPLACE_GLEW)
+      ((*this).*(getActive[t]))(this->_id,i,bufLen,&length,&size,&type,Buffer);
+#else
       getActive[t](this->_id,i,bufLen,&length,&size,&type,Buffer);
+#endif
       name = chopIndexingInPropertyName(std::string(Buffer));
+#if defined(REPLACE_GLEW)
+      location = ((*this).*(getLocation[t]))(this->_id,name.c_str());//location
+#else
       location = getLocation[t](this->_id,name.c_str());//location
+#endif
       if(ge::gl::SamplerParam::isSampler(type)){
         GLint binding;
         glGetUniformiv(this->getId(),location,&binding);
-        this->_samplerList[name]=SamplerParam(name,location,type,binding);
+        this->_samplerList[name]=std::make_shared<SamplerParam>(
+#if defined(REPLACE_GLEW)
+            this->getOpenGLFunctionTable(),
+#endif
+            name,location,type,binding);
       }
-      ProgramObjectParameter Param = ProgramObjectParameter(location,type,name,size);//param
+      auto Param = std::make_shared<ProgramObjectParameter>(
+#if defined(REPLACE_GLEW)
+          this->getOpenGLFunctionTable(),
+#endif
+          location,type,name,size);//param
       if(Active[t]==GL_ACTIVE_ATTRIBUTES)this->_attributeList[name]=Param;
       else                               this->_uniformList  [name]=Param;
     }
@@ -408,7 +456,7 @@ void ProgramObject::_getSubroutineUniformList(){
         GLuint Location=glGetSubroutineIndex(this->_id,
             ShaderType[i],BufferName);//obtain index of subroutine
         std::string Name=std::string(BufferName);//convert buffer to string
-        this->_subroutines[i].addSubroutine(Name,Location);
+        this->_subroutines[i]->addSubroutine(Name,Location);
       }
       delete[]BufferName;//free buffer
     }
@@ -442,10 +490,10 @@ void ProgramObject::_getSubroutineUniformList(){
         ShaderObjectSubroutineUniform ShaderSubroutineUniform=
           ShaderObjectSubroutineUniform(Location,Size,NumCompatible,Name,ActIndex);
         ActIndex+=Size;
-        this->_subroutines[i].addUniform(Name,ShaderSubroutineUniform);
+        this->_subroutines[i]->addUniform(Name,ShaderSubroutineUniform);
       }
       delete[]BufferName;//free buffer
-      this->_subroutines[i].allocInidices(ActIndex);
+      this->_subroutines[i]->allocInidices(ActIndex);
     }
   }
 }
@@ -458,9 +506,13 @@ void ProgramObject::_getBufferList(){
       GL_ACTIVE_RESOURCES,
       &nofBuffers);
   for(GLint i=0;i<nofBuffers;++i){
-    ProgramObjectBufferParams params(this->getId(),i);
-    this->_bufferList[params.getName()]=params;
-    this->_bufferNames.push_back(params.getName());
+    auto params = std::make_shared<ProgramObjectBufferParams>(
+#if defined(REPLACE_GLEW)
+        this->getOpenGLFunctionTable(),
+#endif
+        this->getId(),i);
+    this->_bufferList[params->getName()]=params;
+    this->_bufferNames.push_back(params->getName());
   }
 }
 
@@ -485,7 +537,7 @@ void ProgramObject::setSubroutine(
     case GL_FRAGMENT_SHADER       :WH=4;break;
     case GL_COMPUTE_SHADER        :WH=5;break;
   }
-  this->_subroutines[WH].set(ShaderType,Uniform,OffSet,SubroutineName);
+  this->_subroutines[WH]->set(ShaderType,Uniform,OffSet,SubroutineName);
 }
 
 
@@ -787,10 +839,16 @@ ProgramObjectParameter const&ProgramObject::getUniform  (std::string name,bool p
   auto i=this->_uniformList.find(name);
   if(i==this->_uniformList.end()){
     if(printErrors)err("ProgramObject::getUniform("+name+") - there is no such uniform");
+#if defined(REPLACE_GLEW)
+    //TODO there should be zeroth element n this->_uniformList that represents
+    //non existing uniform in order to prevent multi threading to fail
+    static const ProgramObjectParameter er(this->getOpenGLFunctionTable());
+#else
     static const ProgramObjectParameter er;
+#endif
     return er;
   }
-  return i->second;
+  return *i->second;
 }
 
 /**
@@ -804,10 +862,16 @@ ProgramObjectParameter const&ProgramObject::getAttribute(std::string name,bool p
   auto i=this->_attributeList.find(name);
   if(i==this->_attributeList.end()){
     if(printErrors)err("ProgramObject::getAttribute("+name+") - there is no such attribute");
+#if defined(REPLACE_GLEW)
+    //TODO there should be zeroth element n this->_attributeList that represents
+    //non existing uniform in order to prevent multi threading to fail
+    static const ProgramObjectParameter er(this->getOpenGLFunctionTable());
+#else
     static const ProgramObjectParameter er;
+#endif
     return er;
   }
-  return i->second;
+  return *i->second;
 }
 
 /**
@@ -821,10 +885,14 @@ ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name,bool p
   auto i=this->_bufferList.find(name);
   if(i==this->_bufferList.end()){
     if(printErrors)err("ProgramObject::getBuffer("+name+") - there is no such buffer");
+#if defined(REPLACE_GLEW)
+    static const ProgramObjectBufferParams er(this->getOpenGLFunctionTable());
+#else
     static const ProgramObjectBufferParams er;
+#endif
     return er;
   }
-  return i->second;
+  return *i->second;
 }
 
 /**
@@ -862,11 +930,11 @@ void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintp
 }
 
 GLenum ProgramObject::getSamplerBinding(std::string uniform){
-  return GL_TEXTURE0+this->_samplerList[uniform].getBinding();
+  return GL_TEXTURE0+this->_samplerList[uniform]->getBinding();
 }
 
 void ProgramObject::bindTexture(std::string uniform,ge::gl::TextureObject*texture){
-  texture->bind(GL_TEXTURE0+this->_samplerList[uniform].getBinding());
+  texture->bind(GL_TEXTURE0+this->_samplerList[uniform]->getBinding());
 }
 void ProgramObject::bindImage(
     std::string           uniform,
@@ -876,7 +944,7 @@ void ProgramObject::bindImage(
     GLenum                access ,
     GLboolean             layered,
     GLint                 layer  ){
-  texture->bindImage(this->_samplerList[uniform].getBinding(),level,format,access,layered,layer);
+  texture->bindImage(this->_samplerList[uniform]->getBinding(),level,format,access,layered,layer);
 }
 
 /**
@@ -901,17 +969,17 @@ int ProgramObject::_doubleMatrixType2Index(GLenum type){
 
 #define MATRIXBODYA(TYPE)\
   if(!this->_uniformList.count(name))return;\
-ProgramObjectParameter param=this->_uniformList[name];\
-int index=this->_##TYPE##MatrixType2Index(param.getType());\
+auto param=this->_uniformList[name];\
+int index=this->_##TYPE##MatrixType2Index(param->getType());\
 if(index<0)return;\
 
 #define MATRIXBODY(FCE,TYPE)\
   MATRIXBODYA(TYPE)\
-FCE[index](param.getLocation(),count,transpose,value)
+FCE[index](param->getLocation(),count,transpose,value)
 
 #define MATRIXBODYDSA(FCE,TYPE)\
   MATRIXBODYA(TYPE)\
-FCE[index](this->_id,param.getLocation(),count,transpose,value)
+FCE[index](this->_id,param->getLocation(),count,transpose,value)
 
 
 void ProgramObject::set(
@@ -919,6 +987,29 @@ void ProgramObject::set(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
+void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
+#if defined(REPLACE_GLEW)
+  this->getOpenGLFunctionTable()->glUniformMatrix2fv  ,
+  this->getOpenGLFunctionTable()->glUniformMatrix3fv  ,
+  this->getOpenGLFunctionTable()->glUniformMatrix4fv  ,
+  this->getOpenGLFunctionTable()->glUniformMatrix2x3fv,
+  this->getOpenGLFunctionTable()->glUniformMatrix3x2fv,
+  this->getOpenGLFunctionTable()->glUniformMatrix2x4fv,
+  this->getOpenGLFunctionTable()->glUniformMatrix4x2fv,
+  this->getOpenGLFunctionTable()->glUniformMatrix3x4fv,
+  this->getOpenGLFunctionTable()->glUniformMatrix4x3fv
+#else//REPLACE_GLEW
+glUniformMatrix2fv  ,
+glUniformMatrix3fv  ,
+glUniformMatrix4fv  ,
+glUniformMatrix2x3fv,
+glUniformMatrix3x2fv,
+glUniformMatrix2x4fv,
+glUniformMatrix4x2fv,
+glUniformMatrix3x4fv,
+glUniformMatrix4x3fv
+#endif//REPLACE_GLEW
+};
   MATRIXBODY(matrixfFce,float);
 }
 
@@ -927,6 +1018,29 @@ void ProgramObject::set(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
+void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
+#if defined(REPLACE_GLEW)
+  this->getOpenGLFunctionTable()->glUniformMatrix2dv  ,
+  this->getOpenGLFunctionTable()->glUniformMatrix3dv  ,
+  this->getOpenGLFunctionTable()->glUniformMatrix4dv  ,
+  this->getOpenGLFunctionTable()->glUniformMatrix2x3dv,
+  this->getOpenGLFunctionTable()->glUniformMatrix3x2dv,
+  this->getOpenGLFunctionTable()->glUniformMatrix2x4dv,
+  this->getOpenGLFunctionTable()->glUniformMatrix4x2dv,
+  this->getOpenGLFunctionTable()->glUniformMatrix3x4dv,
+  this->getOpenGLFunctionTable()->glUniformMatrix4x3dv
+#else//REPLACE_GLEW
+glUniformMatrix2dv  ,
+glUniformMatrix3dv  ,
+glUniformMatrix4dv  ,
+glUniformMatrix2x3dv,
+glUniformMatrix3x2dv,
+glUniformMatrix2x4dv,
+glUniformMatrix4x2dv,
+glUniformMatrix3x4dv,
+glUniformMatrix4x3dv
+#endif//REPLACE_GLEW
+};
   MATRIXBODY(matrixdFce,double);
 }
 
@@ -935,6 +1049,29 @@ void ProgramObject::setdsa(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
+void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
+#if defined(REPLACE_GLEW)
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix2fv  ,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix3fv  ,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix4fv  ,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3fv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2fv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4fv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2fv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4fv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3fv
+#else//REPLACE_GLEW
+glProgramUniformMatrix2fv  ,
+glProgramUniformMatrix3fv  ,
+glProgramUniformMatrix4fv  ,
+glProgramUniformMatrix2x3fv,
+glProgramUniformMatrix3x2fv,
+glProgramUniformMatrix2x4fv,
+glProgramUniformMatrix4x2fv,
+glProgramUniformMatrix3x4fv,
+glProgramUniformMatrix4x3fv
+#endif//REPLACE_GLEW
+};
   MATRIXBODYDSA(matrixfFceDsa,float);
 }
 
@@ -943,6 +1080,29 @@ void ProgramObject::setdsa(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
+void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
+#if defined(REPLACE_GLEW)
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix2dv  ,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix3dv  ,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix4dv  ,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3dv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2dv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4dv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2dv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4dv,
+  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3dv
+#else//REPLACE_GLEW
+glProgramUniformMatrix2dv  ,
+glProgramUniformMatrix3dv  ,
+glProgramUniformMatrix4dv  ,
+glProgramUniformMatrix2x3dv,
+glProgramUniformMatrix3x2dv,
+glProgramUniformMatrix2x4dv,
+glProgramUniformMatrix4x2dv,
+glProgramUniformMatrix3x4dv,
+glProgramUniformMatrix4x3dv
+#endif//REPLACE_GLEW
+};
   MATRIXBODYDSA(matrixdFceDsa,double);
 }
 

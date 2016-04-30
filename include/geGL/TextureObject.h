@@ -29,17 +29,26 @@ namespace ge{
         GLenum  _format;
       public:
         TextureObject(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         );
         TextureObject(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         ,
             GLsizei height        );
         TextureObject(
+#if defined(REPLACE_GLEW)
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+#endif
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,

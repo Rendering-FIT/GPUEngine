@@ -57,6 +57,16 @@ namespace ge{
          */
         AsynchronousQueryObject(
             AsynchronousQueryObject*existingQuery);
+#if defined(REPLACE_GLEW)
+        AsynchronousQueryObject(
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+            GLenum     target,
+            GLenum     waitingType,
+            ResultSize resultSize);
+        AsynchronousQueryObject(
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+            AsynchronousQueryObject*existingQuery);
+#endif
         /**
          * @brief Destructor
          */

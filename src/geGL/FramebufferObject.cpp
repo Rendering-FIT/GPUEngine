@@ -149,9 +149,15 @@ void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint
   glClearNamedFramebufferuiv(this->_id,buffer,drawBuffer,value);
 }
 
+#if defined(REPLACE_GLEW)
+void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const{
+  glClearNamedFramebufferfi(this->_id,buffer,drawBuffer,depth,stencil);
+}
+#else//REPLACE_GLEW
 void FramebufferObject::clearBuffer (GLenum buffer,GLfloat depth,GLint stencil)const{
   glClearNamedFramebufferfi(this->_id,buffer,depth,stencil);
 }
+#endif//REPLACE_GLEW
 
 void FramebufferObject::invalidateFramebuffer(
     GLsizei       numAttachments,

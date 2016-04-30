@@ -7,7 +7,15 @@ ShaderObjectSubroutine::~ShaderObjectSubroutine(){
     delete[]this->_indices;
 }
 
-ShaderObjectSubroutine::ShaderObjectSubroutine(){
+ShaderObjectSubroutine::ShaderObjectSubroutine(
+#if defined(REPLACE_GLEW)
+    std::shared_ptr<OpenGLFunctionTable>const&table
+#endif
+    )
+#if defined(REPLACE_GLEW)
+  :OpenGLFunctionProvider(table)
+#endif
+{
   this->_indices=nullptr;
 }
 

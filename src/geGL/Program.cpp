@@ -2,9 +2,20 @@
 
 using namespace ge::gl;
 
-Program::Program(){
+Program::Program()
+#if defined(REPLACE_GLEW)
+  :OpenGLObject(nullptr)
+#endif
+{
   this->_id = glCreateProgram();
 }
+
+#if defined(REPLACE_GLEW)
+Program::Program(std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+  this->_id = glCreateProgram();
+}
+#endif
+
 
 Program::~Program(){
   glDeleteProgram(this->_id);

@@ -16,7 +16,7 @@
 
 namespace ge{
   namespace gl{
-    GEGL_EXPORT void   initShadersAndPrograms();
+    //GEGL_EXPORT void   initShadersAndPrograms();
     GEGL_EXPORT GLenum complexType2SimpleType(GLenum Type);
     GEGL_EXPORT GLint  complexType2Size(GLenum Type);
     class GEGL_EXPORT ProgramObject: public OpenGLObject{
@@ -44,13 +44,13 @@ namespace ge{
         template<typename...ARGS>void _resolveConstructorArgs(std::shared_ptr<ShaderObject>const&shader,ARGS...args);
         template<typename...ARGS>void _resolveConstructorArgs(std::string shader,ARGS...args);
       protected:
-        std::set<std::shared_ptr<ShaderObject>>        _shaders       ;///<list of shaders
-        std::map<std::string,ProgramObjectParameter>   _attributeList ;///<list of attributes
-        std::map<std::string,ProgramObjectParameter>   _uniformList   ;///<list of uniforms
-        std::map<std::string,ProgramObjectBufferParams>_bufferList    ;///<list of buffers
+        std::set<std::shared_ptr<ShaderObject>>                         _shaders       ;///<list of shaders
+        std::map<std::string,std::shared_ptr<ProgramObjectParameter>>   _attributeList ;///<list of attributes
+        std::map<std::string,std::shared_ptr<ProgramObjectParameter>>   _uniformList   ;///<list of uniforms
+        std::map<std::string,std::shared_ptr<ProgramObjectBufferParams>>_bufferList    ;///<list of buffers
         std::vector<std::string>                   _bufferNames   ;///<list of buffer names
-        ShaderObjectSubroutine                     _subroutines[6];///<subroutines in shaders
-        std::map<std::string,SamplerParam>         _samplerList   ;///<sampler parameters
+        std::shared_ptr<ShaderObjectSubroutine>    _subroutines[6];///<subroutines in shaders
+        std::map<std::string,std::shared_ptr<SamplerParam>>_samplerList   ;///<sampler parameters
         void _createShaderProgram_Prologue();  ///<prologue of creating of shader prg.
         void _createShaderProgram_Epilogue();  ///<epilogue of creating of shader prg.
         void _getParameterList();              ///<obtain shader parameters
@@ -80,10 +80,27 @@ namespace ge{
            */
       public:
         template<typename...ARGS>
-          ProgramObject(ARGS...args){
+          ProgramObject(ARGS...args)
+#if defined(REPLACE_GLEW)
+          :OpenGLObject(nullptr)
+#endif
+          {
             this->_resolveConstructorArgs(args...);
           }
         ProgramObject(std::vector<std::string>const&data,unsigned version = 450,std::string profile = "core");
+#if defined(REPLACE_GLEW)
+        template<typename...ARGS>
+          ProgramObject(
+              std::shared_ptr<OpenGLFunctionTable>const&table,
+              ARGS...args):OpenGLObject(table){
+            this->_resolveConstructorArgs(args...);
+          }
+        ProgramObject(
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+            std::vector<std::string>const&data,
+            unsigned version = 450,
+            std::string profile = "core");
+#endif
         ~ProgramObject();
         void attachShader(std::shared_ptr<ShaderObject>const&shader);
         void detachShader(std::shared_ptr<ShaderObject>const&shader);

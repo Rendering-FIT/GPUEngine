@@ -1,8 +1,15 @@
 #pragma once
 
 #include <geGL/Export.h>
+
+#if defined(REPLACE_GLEW)
+#include<GL/gl.h>
+#include<GL/glext.h>
+#else//REPLACE_GLEW
 #include <GL/glew.h>
-#include <vector>
+#endif//REPLACE_GLEW
+
+//#include <vector>
 
 namespace ge
 {

@@ -12,7 +12,6 @@ else()
 endif()
 
 set(SDL2_BUILDING_LIBRARY ON)
-find_package(GLEW        REQUIRED)
 find_package(SDL2        QUIET)
 find_package(AntTweakBar QUIET)
 
@@ -44,9 +43,9 @@ add_library(${LIB_NAME}
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps geUtil)
-set(External_deps_Export GLEW SDL2 AntTweakBar )
-set(External_libs GLEW SDL2 AntTweakBar)
+#set(Internal_deps geUtil)
+set(External_deps_Export SDL2 AntTweakBar )
+set(External_libs SDL2 AntTweakBar)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
 set(includes_to_export)
 
