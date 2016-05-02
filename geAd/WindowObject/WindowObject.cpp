@@ -1,316 +1,188 @@
 #include<geAd/WindowObject/WindowObject.h>
 
 #include<iostream>
-#include<AntTweakBar.h>
+#include<cassert>
 
 using namespace ge::util;
 
-void WindowObject::_constructor(
-    unsigned Width,
-    unsigned Height,
-    bool FullScreen,
-    void(*Idle)(),
-    void(*Mouse)(),
-    bool UseAntTweakBar,
-    unsigned Version,
-    SDL_GLprofile Profile,
-    SDL_GLcontextFlag ContextFlag){
-  this->_mapKeyDown.clear();
-  this->_mapKeyOffOn.clear();
-  this->_idle=Idle;//set idle function
-  this->_mouse=Mouse;//set mouse function
-  this->_windowSize[0]=Width;//width of window
-  this->_windowSize[1]=Height;//height of window
-  this->_isFullScreen=FullScreen;//set fullscreen flag
-  this->_useAntTweakBar=UseAntTweakBar;
-
-
-  SDL_Init(SDL_INIT_VIDEO);//initialise video
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, Version/100    );
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(Version%100)/10);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,Profile         );
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,ContextFlag     );
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE,8);
-
-  /*
-     const unsigned ver[]={
-     110,120,130,140,150,200,210,300,310,320,330,400,410,420,430,440};
-     SDL_Window*w=SDL_CreateWindow("w",0,0,1,1,SDL_WINDOW_OPENGL);
-
-     for(unsigned i=0;i<sizeof(ver)/sizeof(unsigned);++i){
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, ver[i]/100    );
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(ver[i]%100)/10);
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,SDL_GL_CONTEXT_PROFILE_CORE);
-     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,SDL_GL_CONTEXT_DEBUG_FLAG*1);
-     SDL_GLContext cont=SDL_GL_CreateContext(w);
-     if(cont){
-     std::cerr<<"Version: "<<ver[i]<<std::endl;
-     std::cerr<<glGetString(GL_VERSION )<<std::endl;
-     std::cerr<<glGetString(GL_VENDOR  )<<std::endl;
-     std::cerr<<glGetString(GL_RENDERER)<<std::endl;
-     }
-     if(cont)SDL_GL_DeleteContext(cont);
-     }
-     if(w)SDL_DestroyWindow(w);
-
-     std::cerr<<"version end\n";
-     */
-
-  if(this->_isFullScreen)
-    this->_mainWindow=SDL_CreateWindow(
-        "SDL2",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        this->_windowSize[0],
-        this->_windowSize[1],
-        SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_FULLSCREEN);
-  else
-    this->_mainWindow=SDL_CreateWindow(
-        "SDL2",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        this->_windowSize[0],
-        this->_windowSize[1],
-        SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN);
-  this->_mainContext=SDL_GL_CreateContext(this->_mainWindow);
-
-  for(int i=0;i<256;++i){//loop over keys
-    this->_keyDown[i]=0;//key is not down
-    this->_keyOffOn[i]=0;//key is off
-  }
-  if(this->_useAntTweakBar){
-    TwInit(TW_OPENGL_CORE,NULL);
-    TwWindowSize(this->_windowSize[0],this->_windowSize[1]);
-  }
-
-  this->_mouseLeftDown=0;//left mouse button is not down
-  this->_mouseLeftOffOn=0;//left mouse button is off
-  this->_mouseRightDown=0;//right mouse button is not down
-  this->_mouseRightOffOn=0;//right mouse button is off
-  this->_mouseMiddleDown=0;//middle mouse button is not down
-  this->_mouseMiddleOffOn=0;//middle mouse button is off
-  for(int i=0;i<2;++i){
-    this->_mousePosition[i]=this->_windowSize[i]/2;
-    this->_mouseDeltaPosition[i]=0;
-  }
-  this->_warpMouse=false;
-  this->_running=true;
+SDLEventProc::SDLEventProc(bool pooling){
+  assert(this!=nullptr);
+  SDL_Init(SDL_INIT_VIDEO);
+  this->m_pooling = pooling;
 }
 
-WindowObject::WindowObject(
-    unsigned Width,
-    unsigned Height,
-    bool FullScreen,
-    void(*Idle)(),
-    void(*Mouse)(),
-    bool UseAntTweakBar,
-    unsigned Version,
-    std::string Profile,
-    std::string ContextFlag){
-  SDL_GLprofile P=SDL_GL_CONTEXT_PROFILE_CORE;
-  if(Profile=="core")P=SDL_GL_CONTEXT_PROFILE_CORE;
-  if(Profile=="es")P=SDL_GL_CONTEXT_PROFILE_ES;
-  if(Profile=="compatibility")P=SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-  SDL_GLcontextFlag C=SDL_GL_CONTEXT_DEBUG_FLAG;
-  if(ContextFlag=="debug")C=SDL_GL_CONTEXT_DEBUG_FLAG;
-  this->_constructor(Width,Height,FullScreen,Idle,Mouse,UseAntTweakBar,Version,P,C);
+void SDLEventProc::addWindow(
+    std::string               const&name  ,
+    std::shared_ptr<SDLWindow>const&window){
+  assert(this!=nullptr);
+  assert(window!=nullptr);
+  this->m_windows[name] = window;
+  this->m_id2Name[window->getId()] = name;
 }
 
-WindowObject::~WindowObject(){
-  if(this->_useAntTweakBar){
-    TwTerminate();
-  }
-  SDL_GL_DeleteContext(this->_mainContext);
+bool SDLEventProc::hasWindow(std::string const&name)const{
+  assert(this!=nullptr);
+  return this->m_windows.count(name)!=0;
 }
 
-SDL_GLContext WindowObject::getContext()const{
-  return this->_mainContext;
-}
-SDL_Window*WindowObject::getWindow()const{
-  return this->_mainWindow;
-}
-void WindowObject::messageBox(
-    std::string Message,
-    std::string Title,
-    Uint32 flags){
-  SDL_ShowSimpleMessageBox(flags,Title.c_str(),Message.c_str(),this->_mainWindow);
+void SDLEventProc::removeWindow(std::string const&name){
+  assert(this!=nullptr);
+  this->m_id2Name.erase(this->getWindow(name)->getId());
+  this->m_windows.erase(name);
 }
 
+std::shared_ptr<SDLWindow>const&SDLEventProc::getWindow(
+    std::string const&name)const{
+  assert(this!=nullptr);
+  assert(this->m_windows.count(name)!=0);
+  return this->m_windows.find(name)->second;
+}
 
-void WindowObject::mainLoop(){
-  SDL_Event E;//event
-  int HandledByAntTweakBar=0;
-  while(this->_running){//endless loop
-    while(SDL_PollEvent(&E)){//loop over events
-      if(this->_useAntTweakBar)
-        HandledByAntTweakBar=TwEventSDL(&E,
-            SDL_MAJOR_VERSION,SDL_MINOR_VERSION);
-      if(!HandledByAntTweakBar){//is event handled by AntTweakBar
-        switch(E.type){//switch over event types
-          case SDL_QUIT://quit main loop
-            this->_running=false;//stop running
-            break;//break quit case
-          case SDL_KEYDOWN://key down
-            if(!this->_mapKeyDown.count(E.key.keysym.sym))
-              this->_mapKeyDown.insert(std::pair<SDL_Keycode,int>(E.key.keysym.sym,0));
-            if(!this->_mapKeyOffOn.count(E.key.keysym.sym))
-              this->_mapKeyOffOn.insert(std::pair<SDL_Keycode,int>(E.key.keysym.sym,0));
-            this->_mapKeyDown[E.key.keysym.sym]=1;
-            this->_mapKeyOffOn[E.key.keysym.sym]^=1;
-            if(E.key.keysym.sym==SDLK_1)exit(0);
-            if(E.key.keysym.sym>=WINDOWOBJECT_KEYS)break;
-
-            this->_keyDown [E.key.keysym.sym%WINDOWOBJECT_KEYS]=1;//key is down
-            this->_keyOffOn[E.key.keysym.sym%WINDOWOBJECT_KEYS]^=1;//switch key state
-            break;//break key down case
-          case SDL_KEYUP://key up
-            if(!this->_mapKeyDown.count(E.key.keysym.sym))
-              this->_mapKeyDown.insert(std::pair<SDL_Keycode,int>(E.key.keysym.sym,0));
-            if(!this->_mapKeyOffOn.count(E.key.keysym.sym))
-              this->_mapKeyOffOn.insert(std::pair<SDL_Keycode,int>(E.key.keysym.sym,0));
-            this->_mapKeyDown[E.key.keysym.sym]=0;
-            this->_keyDown[E.key.keysym.sym%WINDOWOBJECT_KEYS]=0;//key is not down
-            break;//break key up case
-          case SDL_MOUSEMOTION://mouse motion
-            this->_currentMouseTime=SDL_GetTicks();//current mouse time
-            this->_mousePosition[0]=E.motion.x;//x position of mouse
-            this->_mousePosition[1]=E.motion.y;//y position of mouse
-            this->_mouseDeltaPosition[0]=//delta x position
-              this->_mousePosition[0]-this->_mouseLastPosition[0];//curr.x-prev.x
-            this->_mouseDeltaPosition[1]=//delta y position
-              this->_mousePosition[1]-this->_mouseLastPosition[1];//curr.y-prev.y
-            if(this->_mouse)this->_mouse();//call mouse function
-            this->_lastMouseTime=this->_currentMouseTime;//current is now last
-            if( this->_mousePosition[0]-this->_windowSize[0]/2!=0||//change x
-                this->_mousePosition[1]-this->_windowSize[1]/2!=0){//change y
-              if(this->_warpMouse)//can we warp mouse position
-                SDL_WarpMouseInWindow(this->_mainWindow,this->_windowSize[0]/2,this->_windowSize[1]/2);//warp
-            }
-            this->_mouseLastPosition[0]=this->_mousePosition[0];//copy x position
-            this->_mouseLastPosition[1]=this->_mousePosition[1];//copy y position
-            break;//break mouse motion case
-          case SDL_MOUSEBUTTONDOWN://mouse button down
-            if(E.button.button==SDL_BUTTON_LEFT){
-              this->_mouseLeftDown=1;//left mouse button is down
-              this->_mouseLeftOffOn^=1;//switch left mouse button state
-            }
-            if(E.button.button==SDL_BUTTON_RIGHT){
-              this->_mouseRightDown=1;//right mouse button is down
-              this->_mouseRightOffOn^=1;//switch right mouse button state
-            }
-            if(E.button.button==SDL_BUTTON_MIDDLE){
-              this->_mouseMiddleDown=1;//middle mouse button is down
-              this->_mouseMiddleOffOn^=1;//switch middle mouse button state
-            }
-            if(this->_mouse)this->_mouse();
-            break;//break mouse button down case
-          case SDL_MOUSEBUTTONUP:
-            if(E.button.button==SDL_BUTTON_LEFT)
-              this->_mouseLeftDown=0;//left mouse button is not down
-            if(E.button.button==SDL_BUTTON_RIGHT)
-              this->_mouseRightDown=0;//right mouse button is not down
-            if(E.button.button==SDL_BUTTON_MIDDLE)
-              this->_mouseMiddleDown=0;//middle mouse button is not down
-            if(this->_mouse)this->_mouse();
-            break;//break mouse button up case
-          default://other events
-            break;//break other events case
-        }
-      }
+void SDLEventProc::operator()(){
+  assert(this!=nullptr);
+  this->m_running = true;
+  SDL_Event event;
+  while(this->m_running){
+    if(this->m_windows.size() == 0){
+      this->m_running = false;
+      break;
     }
-    this->_currentIdleTime=SDL_GetTicks();//get current idle time
-    if(this->_idle)//is there idle function?
-      this->_idle();//call idel function
-    this->_lastIdleTime=this->_currentIdleTime;//current is now last
+    if(!this->m_pooling)
+      SDL_WaitEvent(&event);
+    while(true){
+      if(this->m_pooling)
+        if(!SDL_PollEvent(&event))break;
+      auto windowIter = this->m_id2Name.find(event.window.windowID);
+      if(windowIter == this->m_id2Name.end())continue;
+      auto window = this->m_windows[windowIter->second];
+      if(window->hasEventCallback(event.type))
+        window->callEventCallback(event.type,event);
+      if(!this->m_pooling)
+        if(!SDL_PollEvent(&event))break;
+    }
+    for(auto const&x:this->m_windows)
+      if(x.second->hasIdleCallback())
+        x.second->callIdleCallback();
   }
-
-  if(this->_useAntTweakBar)
-    TwTerminate();
-
-  SDL_Quit();
 }
 
-void WindowObject::stopMainLoop(){
-  this->_running=false;
+SDLWindow::SDLWindow(uint32_t width,uint32_t height){
+  assert(this!=nullptr);
+  Uint32 flags = SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN;
+  this->m_window  = SDL_CreateWindow("",0,0,width,height,flags);
 }
 
-void WindowObject::swap()const{
-  if(this->_useAntTweakBar)
-    TwDraw();//draw tweak bar
-  SDL_GL_SwapWindow(this->_mainWindow);
+SDLWindow::~SDLWindow(){
+  assert(this!=nullptr);
+  SDL_DestroyWindow(this->m_window);
 }
 
-void WindowObject::setIdle(void(*Idle)()){
-  this->_idle=Idle;
+bool SDLWindow::createContext(
+    std::string const&name   ,
+    uint32_t          version,
+    Profile           profile,
+    Flag              flags  ){
+  assert(this!=nullptr);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version/100    );
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(version%100)/10);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,profile         );
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,flags           );
+  SharedSDLContext ctx = std::shared_ptr<SDL_GLContext>(
+      new SDL_GLContext,
+      [&](SDL_GLContext*ctx){if(*ctx)SDL_GL_DeleteContext(*ctx);delete ctx;});
+  *ctx = SDL_GL_CreateContext(this->m_window);
+  if(*ctx == nullptr)
+    return false;
+  this->m_contexts[name] = ctx;
+  return true;
 }
 
-void WindowObject::setMouse(void(*Mouse)()){
-  this->_mouse=Mouse;
+
+void SDLWindow::setContext(
+    std::string const&name     ,
+    SDLWindow   const&other    ,
+    std::string const&otherName){
+  assert(this!=nullptr);
+  assert(other.m_contexts.count(otherName)!=0);
+  this->m_contexts[name] = other.m_contexts.find(otherName)->second;
 }
 
-float WindowObject::getDeltaIdleTime()const{
-  return(float)(this->_currentIdleTime-this->_lastIdleTime)*1e-3f;
+void SDLWindow::makeCurrent(std::string const&name)const{
+  assert(this!=nullptr);
+  assert(this->m_contexts.count(name)!=0);
+  SDL_GL_MakeCurrent(this->m_window,*this->m_contexts.find(name)->second);
 }
 
-float WindowObject::getDeltaMouseTime()const{
-  return(float)(this->_currentMouseTime-this->_lastMouseTime)*1e-3f;
+void SDLWindow::swap()const{
+  assert(this!=nullptr);
+  SDL_GL_SwapWindow(this->m_window);
 }
 
-const int*WindowObject::getMousePosition()const{
-  return this->_mousePosition;
+unsigned SDLWindow::getId()const{
+  assert(this!=nullptr);
+  return SDL_GetWindowID(this->m_window);
 }
 
-const int*WindowObject::getDeltaMousePosition()const{
-  return this->_mouseDeltaPosition;
+void SDLWindow::setEventCallback(
+    EventType        const&eventType,
+    EventCallback    const&callback ,
+    CallbackUserData const&userData ){
+  assert(this!=nullptr);
+  this->m_eventCallbacks[eventType] = EventCallbackWithData(callback,userData);
 }
 
-void WindowObject::setMouseWarp(bool WarpMouse){
-  this->_warpMouse=WarpMouse;
+void SDLWindow::setIdleCallback(
+    Callback         const&callback,
+    CallbackUserData const&userData){
+  assert(this!=nullptr);
+  this->m_idleCallback = CallbackWithData(callback,userData);
 }
 
-unsigned const*WindowObject::getWindowSize()const{
-  return this->_windowSize;
+bool SDLWindow::hasEventCallback(
+    EventType const&eventType)const{
+  assert(this!=nullptr);
+  auto ii = this->m_eventCallbacks.find(eventType);
+  return ii!=this->m_eventCallbacks.end() && std::get<CALLBACK>(ii->second)!=nullptr;
 }
 
-bool WindowObject::isKeyDown(int Key){
-  if(!this->_mapKeyDown.count((SDL_Keycode)Key))
-    this->_mapKeyDown.insert(std::pair<SDL_Keycode,int>((SDL_Keycode)Key,0));
-  return this->_mapKeyDown[(SDL_Keycode)Key];
+bool SDLWindow::hasIdleCallback()const{
+  assert(this!=nullptr);
+  return std::get<CALLBACK>(this->m_idleCallback)!=nullptr;
 }
 
-bool WindowObject::isKeyOn(int Key){
-  if(!this->_mapKeyOffOn.count((SDL_Keycode)Key))
-    this->_mapKeyOffOn.insert(std::pair<SDL_Keycode,int>((SDL_Keycode)Key,0));
-  return this->_mapKeyOffOn[(SDL_Keycode)Key];
+void SDLWindow::callEventCallback(
+    EventType const&eventType,
+    SDL_Event const&event    ){
+  assert(this!=nullptr);
+  assert(this->m_eventCallbacks.count(eventType)!=0);
+  assert(std::get<CALLBACK>(this->m_eventCallbacks[eventType])!=nullptr);
+  auto const&cwd = this->m_eventCallbacks[eventType];
+  std::get<CALLBACK>(cwd)(std::get<USERDATA>(cwd),event);
 }
 
-bool WindowObject::isLeftDown()const{
-  return this->_mouseLeftDown;
+void SDLWindow::callIdleCallback(){
+  assert(this!=nullptr);
+  assert(std::get<CALLBACK>(this->m_idleCallback)!=nullptr);
+  std::get<CALLBACK>(this->m_idleCallback)(std::get<USERDATA>(this->m_idleCallback));
 }
 
-bool WindowObject::isLeftOn()const{
-  return this->_mouseLeftOffOn;
+
+void SDLWindow::setSize(uint32_t width,uint32_t heght){
+  assert(this!=nullptr);
+  SDL_SetWindowSize(this->m_window,width,heght);
 }
 
-bool WindowObject::isRightDown()const{
-  return this->_mouseRightDown;
+uint32_t SDLWindow::getWidth()const{
+  assert(this!=nullptr);
+  int size[2];
+  SDL_GetWindowSize(this->m_window,size+0,size+1);
+  return size[0];
 }
 
-bool WindowObject::isRightOn()const{
-  return this->_mouseRightOffOn;
+uint32_t SDLWindow::getHeight()const{
+  assert(this!=nullptr);
+  int size[2];
+  SDL_GetWindowSize(this->m_window,size+0,size+1);
+  return size[1];
 }
 
-bool WindowObject::isMiddleDown()const{
-  return this->_mouseMiddleDown;
-}
-
-bool WindowObject::isMiddleOn()const{
-  return this->_mouseMiddleOffOn;
-}
-
-void WindowObject::setKeyOn(int k){
-  this->_keyOffOn[k]=1;
-  if(!this->_mapKeyOffOn.count((SDL_Keycode)k))
-    this->_mapKeyOffOn.insert(std::pair<SDL_Keycode,int>((SDL_Keycode)k,0));
-  this->_mapKeyOffOn[(SDL_Keycode)k]=1;
-}

@@ -4,20 +4,9 @@
 
 #if defined(REPLACE_GLEW)
 #include<GL/gl.h>
-#include<GL/glext.h>
 #else//REPLACE_GLEW
-#include <GL/glew.h>
-#endif//REPLACE_GLEW
 
-//#include <vector>
-
-namespace ge
-{
-  namespace gl
-  {
-
-  }
-}
+#include<GL/glew.h>
 
 //TODO remove after glew fix
 #ifndef GL_COPY_READ_BUFFER_BINDING
@@ -66,3 +55,5 @@ extern void (*glTextureImage2DMultisample) (GLuint texture, GLsizei samples, GLe
 #endif
 
 extern decltype(glDeleteTextures)*glDeleteTexturesGEGL;
+
+#endif//defined(REPLACE_GLEW)

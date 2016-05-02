@@ -1,17 +1,21 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<iostream>
 
 namespace ge{
   namespace gl{
     class GEGL_EXPORT Shader: public OpenGLObject{
-      protected:
-        GLint _getParam(GLenum pname)const;
       public:
         Shader();
         Shader(GLenum type,std::string source="");
+#if defined(REPLACE_GLEW)
+        Shader(std::shared_ptr<OpenGLFunctionTable>const&table);
+        Shader(
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+            GLenum type,
+            std::string source="");
+#endif
         virtual ~Shader();
         void        create(GLenum type,std::string source="");
         void        setSource(std::string source   );
@@ -24,6 +28,8 @@ namespace ge{
         GLuint      getSourceLength ()const;
         std::string getInfoLog      ()const;
         std::string getSource       ()const;
+      protected:
+        GLint _getParam(GLenum pname)const;
     };
   }
 }

@@ -5,11 +5,7 @@ using namespace ge::gl;
 AsynchronousQueryObject::AsynchronousQueryObject(
     GLenum     target,
     GLenum     waitingType,
-    ResultSize resultSize)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(nullptr)
-#endif
-{
+    ResultSize resultSize){
   glGenQueries(1,&this->_id);
   this->_target      = target;
   this->_waitingType = waitingType;
@@ -17,11 +13,7 @@ AsynchronousQueryObject::AsynchronousQueryObject(
 }
 
 AsynchronousQueryObject::AsynchronousQueryObject(
-    AsynchronousQueryObject*existingQuery)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(nullptr)
-#endif
-{
+    AsynchronousQueryObject*existingQuery){
   glGenQueries(1,&this->_id);
   this->_target      = existingQuery->_target;
   this->_waitingType = existingQuery->_waitingType;

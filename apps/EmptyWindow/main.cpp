@@ -1,59 +1,62 @@
 #include<limits>
 #include<string>
-//#include<GL/glew.h>
 #include<geGL/geGL.h>
 #include<geUtil/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
 #include<geUtil/ArgumentManager/ArgumentManager.h>
 #include<geAd/WindowObject/WindowObject.h>
 
-void init();
-void idle();
+struct Data{
+  std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
+  std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
+  std::shared_ptr<ge::gl::OpenGLFunctionProvider>   gl           = nullptr;
+  std::shared_ptr<ge::util::SDLEventProc>           mainLoop     = nullptr;
+  std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
+};
+
+void init(Data*data);
+void windowEvent(Data*data,SDL_Event event);
+void idle(Data*data);
 void mouse();
 
-ge::util::WindowObject*                           window       = nullptr;
-std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
-std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
 
 int main(int argc,char*argv[]){
-  typeRegister = std::make_shared<ge::core::TypeRegister>();
-  sData        = std::make_shared<ge::util::sim::NamespaceWithUsers>("*");
-  ge::util::ArgumentManager*argm = new ge::util::ArgumentManager(argc-1,argv+1);
-  ge::util::sim::copyArgumentManager2Namespace(sData,argm,typeRegister);
+  Data data;
+  data.typeRegister = std::make_shared<ge::core::TypeRegister>();
+  data.sData        = std::make_shared<ge::util::sim::NamespaceWithUsers>("*");
+  auto argm = std::make_shared<ge::util::ArgumentManager>(argc-1,argv+1);
+  ge::util::sim::copyArgumentManager2Namespace(data.sData,&*argm,data.typeRegister);
 
-  window = new ge::util::WindowObject(
-      sData->get<unsigned[2]>("window.size"      ,{1024u,1024u})[0],
-      sData->get<unsigned[2]>("window.size"      ,{1024u,1024u})[1],
-      sData->get<bool       >("window.fullscreen",false        )   ,
-      idle,
-      mouse,
-      sData->get<bool       >("enableAntTweakBar",true         )   ,
-      sData->get<unsigned   >("context.version"  ,450          )   ,
-      sData->get<std::string>("context.profile"  ,"core"       )   ,
-      sData->get<std::string>("context.debug"    ,"debug"      )   );
+  data.mainLoop = std::make_shared<ge::util::SDLEventProc>();
+  data.window   = std::make_shared<ge::util::SDLWindow>();
+  data.window->createContext("rendering");
+  data.window->setIdleCallback((ge::util::SDLWindow::Callback)idle,&data);
+  data.window->setEventCallback(SDL_WINDOWEVENT,(ge::util::SDLWindow::EventCallback)windowEvent,&data);
+  data.mainLoop->addWindow("primaryWindow",data.window);
+  init(&data);
+  (*data.mainLoop)();
 
-  init();
-  window->mainLoop();
-  delete window;
-  delete argm;
-  return 0;
+  return EXIT_SUCCESS;
 }
 
-void mouse(){
+void idle(Data*data){
+  data->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  data->window->swap();
 }
 
-void idle(){
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  window->swap();
+void windowEvent(Data*data,SDL_Event event){
+  if(event.window.event==SDL_WINDOWEVENT_CLOSE){
+    data->mainLoop->removeWindow("primaryWindow");
+  }
 }
 
-void init(){
-  //glewExperimental=GL_TRUE;
-  //glewInit();
+void init(Data*data){
+  data->window->makeCurrent("rendering");
+  ge::gl::init();
+  data->gl = std::make_shared<ge::gl::OpenGLFunctionProvider>(ge::gl::prepareOpenGLFunctionTable((ge::gl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
 
-  //ge::gl::setDefaultDebugMessage();
-
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
-  glDisable(GL_CULL_FACE);
+  data->gl->glEnable(GL_DEPTH_TEST);
+  data->gl->glDepthFunc(GL_LEQUAL);
+  data->gl->glDisable(GL_CULL_FACE);
+  data->gl->glClearColor(0,1,0,1);
 }

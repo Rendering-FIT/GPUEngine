@@ -1,9 +1,9 @@
 #pragma once
 
+#include<geGL/OpenGL.h>
+
 #if  defined(REPLACE_GLEW)
 #include<geGL/OpenGLFunctionProvider.h>
-#else //defined(REPLACE_GLEW)
-#include<geGL/OpenGL.h>
 #endif//defined(REPLACE_GLEW)
 
 namespace ge{

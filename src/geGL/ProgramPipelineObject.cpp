@@ -8,6 +8,14 @@ ProgramPipelineObject::ProgramPipelineObject(){
   glCreateProgramPipelines(1,&this->_id);
 }
 
+#if defined(REPLACE_GLEW)
+ProgramPipelineObject::ProgramPipelineObject(
+    std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+  glCreateProgramPipelines(1,&this->_id);
+}
+#endif
+
+
 ProgramPipelineObject::~ProgramPipelineObject(){
   glDeleteProgramPipelines(1,&this->_id);
 }

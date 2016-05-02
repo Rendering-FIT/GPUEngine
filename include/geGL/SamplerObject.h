@@ -1,8 +1,6 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
-
 
 namespace ge{
   namespace gl{
@@ -13,6 +11,12 @@ namespace ge{
       public:
         SamplerObject ();
         SamplerObject (SamplerObject*sampler);
+#if defined(REPLACE_GLEW)
+        SamplerObject (std::shared_ptr<OpenGLFunctionTable>const&table);
+        SamplerObject (
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+            SamplerObject*sampler);
+#endif
         ~SamplerObject();
         void setBorderColor(GLfloat*color    )const;
         void setCompareFunc(GLenum  func     )const;

@@ -2,11 +2,7 @@
 
 using namespace ge::gl;
 
-Program::Program()
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(nullptr)
-#endif
-{
+Program::Program(){
   this->_id = glCreateProgram();
 }
 

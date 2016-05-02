@@ -133,11 +133,7 @@ bool BufferObject::areFlagsMutable(GLbitfield flags){
 /**
  * @brief Empty constructor, it sets ID=0
  */
-BufferObject::BufferObject()
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(nullptr)
-#endif
-{
+BufferObject::BufferObject(){
   this->_id = 0;
 }
 
@@ -151,11 +147,7 @@ BufferObject::BufferObject()
 BufferObject::BufferObject(
     GLsizeiptr    size,
     const GLvoid *data,
-    GLbitfield    flags)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(nullptr)
-#endif
-{
+    GLbitfield    flags){
   this->alloc(size,data,flags);
 }
 

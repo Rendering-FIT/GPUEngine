@@ -1,8 +1,36 @@
 #include<geGL/geGL.h>
 
 #if defined(REPLACE_GLEW)
-void ge::gl::init(){
+
+#include<geGL/OpenGLFunctionTable.h>
+#include<geGL/CheckOpenGLFunctions.h>
+#include<geGL/OpenGLCapabilities.h>
+
+GEGL_EXPORT std::shared_ptr<ge::gl::OpenGLFunctionTable>_defaultOpenGLFunctionTable = nullptr;
+
+void ge::gl::init(
+    GET_PROC_ADDRESS getProcAddress){
+  if(getProcAddress)
+    _defaultOpenGLFunctionTable = prepareOpenGLFunctionTable(getProcAddress);
+  else
+    _defaultOpenGLFunctionTable = nullptr;
 }
+
+GEGL_EXPORT std::shared_ptr<ge::gl::OpenGLFunctionTable>ge::gl::prepareOpenGLFunctionTable(
+    GET_PROC_ADDRESS getProcAddress){
+  auto table = std::make_shared<OpenGLFunctionTable>();
+  loadOpenGLFunctions(table,getProcAddress);
+  //TODO DSA
+  fillOpenGLCapabilities(table->capabilities,table);
+  checkOpenGLFunctions(table);
+  return table;
+}
+
+
+GEGL_EXPORT std::shared_ptr<ge::gl::OpenGLFunctionTable>ge::gl::getDefaultOpenGLFunctionTable(){
+  return _defaultOpenGLFunctionTable;
+}
+
 #else// defined(REPLACE_GLEW)
 
 
@@ -14,70 +42,70 @@ using namespace ge::gl;
 #define SAVE_PREVIOUS_BINDING
 
 #ifdef  SAVE_PREVIOUS_BINDING
-  #define PUSH_WRITE_BUFFER()\
-    GLuint oldWriteId;\
-    glGetIntegerv(GL_COPY_WRITE_BUFFER_BINDING,(GLint*)&oldWriteId)
-  #define POP_WRITE_BUFFER()\
-    glBindBuffer(GL_COPY_WRITE_BUFFER,oldWriteId)
-  #define PUSH_READ_BUFFER()\
-    GLuint oldReadId;\
-    glGetIntegerv(GL_COPY_WRITE_BUFFER_BINDING,(GLint*)&oldReadId)
-  #define POP_READ_BUFFER()\
-    glBindBuffer(GL_COPY_WRITE_BUFFER,oldReadId)
-  #define PUSH_VAO()\
-    GLuint oldId;\
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId)
-  #define  POP_VAO()\
-    glBindVertexArray(oldId)
-  #define PUSH_SAMPLER()\
-    GLuint oldId;\
-    glGetIntegeri_v(GL_SAMPLER_BINDING,0,(GLint*)&oldId)
-  #define POP_SAMPLER()\
-    glBindSampler(0,oldId)
-  #define PUSH_FRAMEBUFFER()\
-    GLuint oldId;\
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,(GLint*)&oldId)
-  #define POP_FRAMEBUFFER()\
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER,oldId)
-  #define PUSH_RENDERBUFFER()\
-    GLuint oldId;\
-    glGetIntegerv(GL_RENDERBUFFER_BINDING,(GLint*)&oldId)
-  #define POP_RENDERBUFFER()\
-    glBindRenderbuffer(GL_RENDERBUFFER,oldId)
-  #define PUSH_PIPELINE()\
-    GLuint oldId;\
-    glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING,(GLint*)&oldId)
-  #define POP_PIPELINE()\
-    glBindProgramPipeline(oldId)
-  #define PUSH_TEXTURE(x)\
-    GLuint oldId;\
-    glGetIntegerv(ge::gl::textureTarget2Binding(x),(GLint*)&oldId)
-  #define POP_TEXTURE(x)\
-    glBindTexture(x,oldId)
-  #define PUSH_ACTIVE_TEXTURE()\
-    GLenum oldTex;\
-    glGetIntegerv(GL_ACTIVE_TEXTURE,(GLint*)&oldTex)
-  #define POP_ACTIVE_TEXTURE()\
-    glActiveTexture(oldTex)
+#define PUSH_WRITE_BUFFER()\
+  GLuint oldWriteId;\
+glGetIntegerv(GL_COPY_WRITE_BUFFER_BINDING,(GLint*)&oldWriteId)
+#define POP_WRITE_BUFFER()\
+  glBindBuffer(GL_COPY_WRITE_BUFFER,oldWriteId)
+#define PUSH_READ_BUFFER()\
+  GLuint oldReadId;\
+glGetIntegerv(GL_COPY_WRITE_BUFFER_BINDING,(GLint*)&oldReadId)
+#define POP_READ_BUFFER()\
+  glBindBuffer(GL_COPY_WRITE_BUFFER,oldReadId)
+#define PUSH_VAO()\
+  GLuint oldId;\
+glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId)
+#define  POP_VAO()\
+  glBindVertexArray(oldId)
+#define PUSH_SAMPLER()\
+  GLuint oldId;\
+glGetIntegeri_v(GL_SAMPLER_BINDING,0,(GLint*)&oldId)
+#define POP_SAMPLER()\
+  glBindSampler(0,oldId)
+#define PUSH_FRAMEBUFFER()\
+  GLuint oldId;\
+glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,(GLint*)&oldId)
+#define POP_FRAMEBUFFER()\
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER,oldId)
+#define PUSH_RENDERBUFFER()\
+  GLuint oldId;\
+glGetIntegerv(GL_RENDERBUFFER_BINDING,(GLint*)&oldId)
+#define POP_RENDERBUFFER()\
+  glBindRenderbuffer(GL_RENDERBUFFER,oldId)
+#define PUSH_PIPELINE()\
+  GLuint oldId;\
+glGetIntegerv(GL_PROGRAM_PIPELINE_BINDING,(GLint*)&oldId)
+#define POP_PIPELINE()\
+  glBindProgramPipeline(oldId)
+#define PUSH_TEXTURE(x)\
+  GLuint oldId;\
+glGetIntegerv(ge::gl::textureTarget2Binding(x),(GLint*)&oldId)
+#define POP_TEXTURE(x)\
+  glBindTexture(x,oldId)
+#define PUSH_ACTIVE_TEXTURE()\
+  GLenum oldTex;\
+glGetIntegerv(GL_ACTIVE_TEXTURE,(GLint*)&oldTex)
+#define POP_ACTIVE_TEXTURE()\
+  glActiveTexture(oldTex)
 #else //SAVE_PREVIOUS_BINDING
-  #define PUSH_WRITE_BUFFER()
-  #define POP_WRITE_BUFFER()
-  #define PUSH_READ_BUFFER()
-  #define POP_READ_BUFFER()
-  #define PUSH_VAO()
-  #define  POP_VAO()
-  #define PUSH_SAMPLER()
-  #define POP_SAMPLER()
-  #define PUSH_FRAMEBUFFER()
-  #define POP_FRAMEBUFFER()
-  #define PUSH_RENDERBUFFER()
-  #define POP_RENDERBUFFER()
-  #define PUSH_PIPELINE()
-  #define POP_PIPELINE()
-  #define PUSH_TEXTURE(x)
-  #define POP_TEXTURE(x)
-  #define PUSH_ACTIVE_TEXTURE()
-  #define POP_ACTIVE_TEXTURE()
+#define PUSH_WRITE_BUFFER()
+#define POP_WRITE_BUFFER()
+#define PUSH_READ_BUFFER()
+#define POP_READ_BUFFER()
+#define PUSH_VAO()
+#define  POP_VAO()
+#define PUSH_SAMPLER()
+#define POP_SAMPLER()
+#define PUSH_FRAMEBUFFER()
+#define POP_FRAMEBUFFER()
+#define PUSH_RENDERBUFFER()
+#define POP_RENDERBUFFER()
+#define PUSH_PIPELINE()
+#define POP_PIPELINE()
+#define PUSH_TEXTURE(x)
+#define POP_TEXTURE(x)
+#define PUSH_ACTIVE_TEXTURE()
+#define POP_ACTIVE_TEXTURE()
 #endif//SAVE_PREVIOUS_BINDING
 
 void geGL_glNamedBufferStorage(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -466,7 +494,7 @@ void geGL_glCompressedTextureImage1DEXT(GLuint texture,GLenum target,GLint level
   glCompressedTexImage1D(target,level,internalFormat,width,border,imageSize,data);
   POP_TEXTURE(target);
 }
- 
+
 void geGL_glCompressedTextureImage2DEXT(GLuint texture,GLenum target,GLint level,GLenum internalFormat,GLsizei width,GLsizei height,GLint border, GLsizei imageSize,const GLvoid *data){
   PUSH_TEXTURE(target);
   glBindTexture(target,texture);

@@ -13,9 +13,8 @@ endif()
 
 set(SDL2_BUILDING_LIBRARY ON)
 find_package(SDL2        QUIET)
-find_package(AntTweakBar QUIET)
 
-if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
+if(NOT SDL2_FOUND)
    return()
 endif()
 
@@ -44,8 +43,8 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 #set(Internal_deps geUtil)
-set(External_deps_Export SDL2 AntTweakBar )
-set(External_libs SDL2 AntTweakBar)
+set(External_deps_Export SDL2 )
+set(External_libs SDL2 )
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
 set(includes_to_export)
 

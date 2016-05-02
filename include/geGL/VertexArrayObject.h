@@ -1,6 +1,5 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<geGL/BufferObject.h>
 #include<iostream>
@@ -24,6 +23,9 @@ namespace ge{
           L
         };
         VertexArrayObject ();
+#if defined(REPLACE_GLEW)
+        VertexArrayObject (std::shared_ptr<OpenGLFunctionTable>const&table);
+#endif
         ~VertexArrayObject();
         void addAttrib(
             GLuint                  buffer                      ,

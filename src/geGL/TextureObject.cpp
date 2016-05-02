@@ -263,17 +263,10 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
  * @param levels number of mipmap levels, 0 - mutable texture
  */
 TextureObject::TextureObject(
-#if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table,
-#endif
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
-    GLsizei width)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(table)
-#endif
-{
+    GLsizei width){
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(this->_target,1,&this->_id);
@@ -298,18 +291,11 @@ glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,p
  * @param levels number of mipmap levels
  */
 TextureObject::TextureObject(
-#if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table,
-#endif
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
     GLsizei width,
-    GLsizei height)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(table)
-#endif
-{
+    GLsizei height){
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -329,19 +315,12 @@ TextureObject::TextureObject(
  * @param depth z size of texture
  */
 TextureObject::TextureObject(
-#if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table,
-#endif
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
     GLsizei width,
     GLsizei height,
-    GLsizei depth)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(table)
-#endif
-{
+    GLsizei depth){
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -349,6 +328,56 @@ TextureObject::TextureObject(
   else glTextureImage3DEXT(this->_id,this->_target,0,this->_format,
       width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
 }
+
+
+
+#if defined(REPLACE_GLEW)
+TextureObject::TextureObject(
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width):OpenGLObject(table){
+  this->_target = target;
+  this->_format = internalFormat;
+  glCreateTextures(this->_target,1,&this->_id);
+  if(levels>0)glTextureStorage1D(this->_id,levels,this->_format,width);
+  else glTextureImage1DEXT(this->_id,this->_target,0,this->_format,
+      width,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+}
+
+TextureObject::TextureObject(
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height):OpenGLObject(table){
+  this->_target = target;
+  this->_format = internalFormat;
+  glCreateTextures(target,1,&this->_id);
+  if(levels>0)glTextureStorage2D(this->_id,levels,this->_format,width,height);
+  else glTextureImage2DEXT(this->_id,this->_target,0,this->_format,
+      width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+}
+
+TextureObject::TextureObject(
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth):OpenGLObject(table){
+  this->_target = target;
+  this->_format = internalFormat;
+  glCreateTextures(target,1,&this->_id);
+  if(levels>0)glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
+  else glTextureImage3DEXT(this->_id,this->_target,0,this->_format,
+      width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+}
+#endif
+
 
 /**
  * @brief destroys texture

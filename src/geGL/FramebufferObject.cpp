@@ -91,6 +91,16 @@ FramebufferObject::FramebufferObject (bool defaultFramebuffer){
   else glCreateFramebuffers(1,&this->_id);
 }
 
+#if defined(REPLACE_GLEW)
+FramebufferObject::FramebufferObject (
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+    bool defaultFramebuffer):OpenGLObject(table){
+  if(defaultFramebuffer)this->_id=0;
+  else glCreateFramebuffers(1,&this->_id);
+}
+#endif
+
+
 FramebufferObject::~FramebufferObject(){
   glDeleteFramebuffers(1,&this->_id);
 }

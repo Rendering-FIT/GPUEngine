@@ -32,6 +32,20 @@ Shader::Shader(GLenum type,std::string source){
   this->create(type,source);
 }
 
+#if defined(REPLACE_GLEW)
+Shader::Shader(std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+  this->_id = 0;
+}
+
+Shader::Shader(
+    std::shared_ptr<OpenGLFunctionTable>const&table,
+    GLenum type,
+    std::string source):OpenGLObject(table){
+  this->create(type,source);
+}
+#endif
+
+
 /**
  * @brief destructor that invalidates id
  */

@@ -49,6 +49,7 @@ set(GL_INCLUDES
     ${HEADER_PATH}/LoadOpenGLFunctions.h
     ${HEADER_PATH}/OpenGLFunctionTable.h
     ${HEADER_PATH}/OpenGLFunctionProvider.h
+    ${HEADER_PATH}/OpenGLCapabilities.h
   )
 
 set(GL_SOURCES
@@ -66,7 +67,7 @@ set(GL_SOURCES
     ProgramObjectSubroutine.cpp
     ProgramObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
-    OpenGL.cpp
+    #OpenGL.cpp
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
     OpenGLObject.cpp
@@ -74,6 +75,8 @@ set(GL_SOURCES
     CheckGLFunctions.cpp
     LoadOpenGLFunctions.cpp
     CheckOpenGLFunctions.cpp
+    OpenGLFunctionProvider.cpp
+    OpenGLCapabilities.cpp
   )
 
 ################################################
@@ -82,9 +85,9 @@ set(GL_SOURCES
 if(GPUENGINE_REPLACE_GLEW)
 else()
   find_package(GLEW   REQUIRED)
+  find_package(OpenGL REQUIRED)
 endif()
 
-find_package(OpenGL REQUIRED)
 
 add_library(${LIB_NAME}
    ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
@@ -100,8 +103,11 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps geCore)
-set(External_deps_Export "GLEW OpenGL")
-set(External_libs GLEW OpenGL)
+if(GPUENGINE_REPLACE_GLEW)
+else()
+  set(External_deps_Export "GLEW OpenGL")
+  set(External_libs GLEW OpenGL)
+endif()
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 

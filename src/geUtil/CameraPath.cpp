@@ -272,6 +272,7 @@ namespace ge{
       return this->_keyPoints.size();
     }
 
+#if defined(ENABLE_DRAWING)
     void CameraPath::draw(float*mvp){
       this->_emptyVAO->bind();
       if(this->_keyPoints.size()>1){
@@ -320,5 +321,6 @@ namespace ge{
       }
       this->_emptyVAO->unbind();
     }
+#endif//ENABLE_DRAWING
   }//util
 }//ge

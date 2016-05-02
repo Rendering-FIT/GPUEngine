@@ -1,7 +1,5 @@
-#ifndef _ASYNCHRONOUSQUERYOBJECT_H_
-#define _ASYNCHRONOUSQUERYOBJECT_H_
+#pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 
 namespace ge{
@@ -132,4 +130,3 @@ namespace ge{
   }//gl
 }//ge
 
-#endif//_ASYNCHRONOUSQUERYOBJECT_H_

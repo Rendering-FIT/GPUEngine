@@ -5,209 +5,103 @@
 using namespace ge::gl;
 
 /*
-bool OpenGL320=false;
-bool OpenGL400=false;
-bool OpenGL410=false;
-*/
-/*
-void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
-  glUniformMatrix2fv  ,
-  glUniformMatrix3fv  ,
-  glUniformMatrix4fv  ,
-  glUniformMatrix2x3fv,
-  glUniformMatrix3x2fv,
-  glUniformMatrix2x4fv,
-  glUniformMatrix4x2fv,
-  glUniformMatrix3x4fv,
-  glUniformMatrix4x3fv
-};
+   void ge::gl::initShadersAndPrograms(){
+   if(!glCreateShader                  ){Result32+="glCreateShader "                  ;OpenGL320=false;}
+   if(!glShaderSource                  ){Result32+="glShaderSource "                  ;OpenGL320=false;}
+   if(!glCompileShader                 ){Result32+="glCompileShader "                 ;OpenGL320=false;}
+   if(!glDeleteShader                  ){Result32+="glDeleteShader "                  ;OpenGL320=false;}
+   if(!glGetShaderiv                   ){Result32+="glGetShaderiv "                   ;OpenGL320=false;}
+   if(!glGetShaderInfoLog              ){Result32+="glGetShaderInfoLog "              ;OpenGL320=false;}
+   if(!glCreateProgram                 ){Result32+="glCreateProgram "                 ;OpenGL320=false;}
+   if(!glAttachShader                  ){Result32+="glAttachShader "                  ;OpenGL320=false;}
+   if(!glDetachShader                  ){Result32+="glDetachShader "                  ;OpenGL320=false;}
+   if(!glLinkProgram                   ){Result32+="glLinkProgram "                   ;OpenGL320=false;}
+   if(!glUseProgram                    ){Result32+="glUseProgram "                    ;OpenGL320=false;}
+   if(!glDeleteProgram                 ){Result32+="glDeleteProgram "                 ;OpenGL320=false;}
+   if(!glGetProgramiv                  ){Result32+="glGetProgramiv "                  ;OpenGL320=false;}
+   if(!glGetProgramInfoLog             ){Result32+="glGetProgramInfoLog "             ;OpenGL320=false;}
+   if(!glGetActiveAttrib               ){Result32+="glGetActiveAttrib "               ;OpenGL320=false;}
+   if(!glGetAttribLocation             ){Result32+="glGetAttribLocation "             ;OpenGL320=false;}
+   if(!glGetActiveUniform              ){Result32+="glGetActiveUniform "              ;OpenGL320=false;}
+   if(!glGetUniformLocation            ){Result32+="glGetUniformLocation "            ;OpenGL320=false;}
+   if(!glUniform1f                     ){Result32+="glUniform1f "                     ;OpenGL320=false;}
+   if(!glUniform2f                     ){Result32+="glUniform2f "                     ;OpenGL320=false;}
+   if(!glUniform3f                     ){Result32+="glUniform3f "                     ;OpenGL320=false;}
+   if(!glUniform4f                     ){Result32+="glUniform4f "                     ;OpenGL320=false;}
+   if(!glUniform1i                     ){Result32+="glUniform1i "                     ;OpenGL320=false;}
+   if(!glUniform2i                     ){Result32+="glUniform2i "                     ;OpenGL320=false;}
+   if(!glUniform3i                     ){Result32+="glUniform3i "                     ;OpenGL320=false;}
+   if(!glUniform4i                     ){Result32+="glUniform4i "                     ;OpenGL320=false;}
+   if(!glUniform1ui                    ){Result32+="glUniform1ui "                    ;OpenGL320=false;}
+   if(!glUniform2ui                    ){Result32+="glUniform2ui "                    ;OpenGL320=false;}
+   if(!glUniform3ui                    ){Result32+="glUniform3ui "                    ;OpenGL320=false;}
+   if(!glUniform4ui                    ){Result32+="glUniform4ui "                    ;OpenGL320=false;}
+   if(!glUniform1fv                    ){Result32+="glUniform1fv "                    ;OpenGL320=false;}
+   if(!glUniform2fv                    ){Result32+="glUniform2fv "                    ;OpenGL320=false;}
+   if(!glUniform3fv                    ){Result32+="glUniform3fv "                    ;OpenGL320=false;}
+   if(!glUniform4fv                    ){Result32+="glUniform4fv "                    ;OpenGL320=false;}
+   if(!glUniform1iv                    ){Result32+="glUniform1iv "                    ;OpenGL320=false;}
+   if(!glUniform2iv                    ){Result32+="glUniform2iv "                    ;OpenGL320=false;}
+   if(!glUniform3iv                    ){Result32+="glUniform3iv "                    ;OpenGL320=false;}
+   if(!glUniform4iv                    ){Result32+="glUniform4iv "                    ;OpenGL320=false;}
+   if(!glUniform1uiv                   ){Result32+="glUniform1uiv "                   ;OpenGL320=false;}
+   if(!glUniform2uiv                   ){Result32+="glUniform2uiv "                   ;OpenGL320=false;}
+   if(!glUniform3uiv                   ){Result32+="glUniform3uiv "                   ;OpenGL320=false;}
+   if(!glUniform4uiv                   ){Result32+="glUniform4uiv "                   ;OpenGL320=false;}
+   if(!glUniformMatrix2fv              ){Result32+="glUniformMatrix2fv "              ;OpenGL320=false;}
+   if(!glUniformMatrix2x3fv            ){Result32+="glUniformMatrix2x3fv "            ;OpenGL320=false;}
+   if(!glUniformMatrix2x4fv            ){Result32+="glUniformMatrix2x4fv "            ;OpenGL320=false;}
+   if(!glUniformMatrix3fv              ){Result32+="glUniformMatrix3fv "              ;OpenGL320=false;}
+   if(!glUniformMatrix3x2fv            ){Result32+="glUniformMatrix3x2fv "            ;OpenGL320=false;}
+   if(!glUniformMatrix3x4fv            ){Result32+="glUniformMatrix3x4fv "            ;OpenGL320=false;}
+   if(!glUniformMatrix4fv              ){Result32+="glUniformMatrix4fv "              ;OpenGL320=false;}
+   if(!glUniformMatrix4x2fv            ){Result32+="glUniformMatrix4x2fv "            ;OpenGL320=false;}
+   if(!glUniformMatrix4x3fv            ){Result32+="glUniformMatrix4x3fv "            ;OpenGL320=false;}
 
-void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
-  glUniformMatrix2dv  ,
-  glUniformMatrix3dv  ,
-  glUniformMatrix4dv  ,
-  glUniformMatrix2x3dv,
-  glUniformMatrix3x2dv,
-  glUniformMatrix2x4dv,
-  glUniformMatrix4x2dv,
-  glUniformMatrix3x4dv,
-  glUniformMatrix4x3dv
-};
-void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
-  glProgramUniformMatrix2fv  ,
-  glProgramUniformMatrix3fv  ,
-  glProgramUniformMatrix4fv  ,
-  glProgramUniformMatrix2x3fv,
-  glProgramUniformMatrix3x2fv,
-  glProgramUniformMatrix2x4fv,
-  glProgramUniformMatrix4x2fv,
-  glProgramUniformMatrix3x4fv,
-  glProgramUniformMatrix4x3fv
-};
-void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
-  glProgramUniformMatrix2dv  ,
-  glProgramUniformMatrix3dv  ,
-  glProgramUniformMatrix4dv  ,
-  glProgramUniformMatrix2x3dv,
-  glProgramUniformMatrix3x2dv,
-  glProgramUniformMatrix2x4dv,
-  glProgramUniformMatrix4x2dv,
-  glProgramUniformMatrix3x4dv,
-  glProgramUniformMatrix4x3dv
-};
-*/
-/**
- * @brief Initialise shader manager
- */
-/*
-void ge::gl::initShadersAndPrograms(){
-  OpenGL320=true;
-  OpenGL400=true;
-  OpenGL410=true;
-  std::string Result32="";
-  std::string Result40="";
-  std::string Result41="";
+   if(!glGetActiveSubroutineName       ){Result40+="glGetActiveSubroutineName "       ;OpenGL400=false;}
+   if(!glGetActiveSubroutineUniformiv  ){Result40+="glGetActiveSubroutineUniformiv "  ;OpenGL400=false;}
+   if(!glGetActiveSubroutineUniformName){Result40+="glGetActiveSubroutineUniformName ";OpenGL400=false;}
+   if(!glGetProgramStageiv             ){Result40+="glGetProgramStageiv "             ;OpenGL400=false;}
+   if(!glGetSubroutineIndex            ){Result40+="glGetSubroutineIndex "            ;OpenGL400=false;}
+   if(!glGetSubroutineUniformLocation  ){Result40+="glGetSubroutineUniformLocation "  ;OpenGL400=false;}
+   if(!glUniformSubroutinesuiv         ){Result40+="glUniformSubroutinesuiv "         ;OpenGL400=false;}
+   if(!glUniform1d                     ){Result40+="glUniform1d "                     ;OpenGL400=false;}
+   if(!glUniform2d                     ){Result40+="glUniform2d "                     ;OpenGL400=false;}
+   if(!glUniform3d                     ){Result40+="glUniform3d "                     ;OpenGL400=false;}
+   if(!glUniform4d                     ){Result40+="glUniform4d "                     ;OpenGL400=false;}
+   if(!glUniform1dv                    ){Result40+="glUniform1dv "                    ;OpenGL400=false;}
+   if(!glUniform2dv                    ){Result40+="glUniform2dv "                    ;OpenGL400=false;}
+   if(!glUniform3dv                    ){Result40+="glUniform3dv "                    ;OpenGL400=false;}
+   if(!glUniform4dv                    ){Result40+="glUniform4dv "                    ;OpenGL400=false;}
+   if(!glUniformMatrix2dv              ){Result40+="glUniformMatrix2dv "              ;OpenGL400=false;}
+   if(!glUniformMatrix2x3dv            ){Result40+="glUniformMatrix2x3dv "            ;OpenGL400=false;}
+if(!glUniformMatrix2x4dv            ){Result40+="glUniformMatrix2x4dv "            ;OpenGL400=false;}
+if(!glUniformMatrix3dv              ){Result40+="glUniformMatrix3dv "              ;OpenGL400=false;}
+if(!glUniformMatrix3x2dv            ){Result40+="glUniformMatrix3x2dv "            ;OpenGL400=false;}
+if(!glUniformMatrix3x4dv            ){Result40+="glUniformMatrix3x4dv "            ;OpenGL400=false;}
+if(!glUniformMatrix4dv              ){Result40+="glUniformMatrix4dv "              ;OpenGL400=false;}
+if(!glUniformMatrix4x2dv            ){Result40+="glUniformMatrix4x2dv "            ;OpenGL400=false;}
+if(!glUniformMatrix4x3dv            ){Result40+="glUniformMatrix4x3dv "            ;OpenGL400=false;}
 
-  if(!glCreateShader                  ){Result32+="glCreateShader "                  ;OpenGL320=false;}
-  if(!glShaderSource                  ){Result32+="glShaderSource "                  ;OpenGL320=false;}
-  if(!glCompileShader                 ){Result32+="glCompileShader "                 ;OpenGL320=false;}
-  if(!glDeleteShader                  ){Result32+="glDeleteShader "                  ;OpenGL320=false;}
-  if(!glGetShaderiv                   ){Result32+="glGetShaderiv "                   ;OpenGL320=false;}
-  if(!glGetShaderInfoLog              ){Result32+="glGetShaderInfoLog "              ;OpenGL320=false;}
-  if(!glCreateProgram                 ){Result32+="glCreateProgram "                 ;OpenGL320=false;}
-  if(!glAttachShader                  ){Result32+="glAttachShader "                  ;OpenGL320=false;}
-  if(!glDetachShader                  ){Result32+="glDetachShader "                  ;OpenGL320=false;}
-  if(!glLinkProgram                   ){Result32+="glLinkProgram "                   ;OpenGL320=false;}
-  if(!glUseProgram                    ){Result32+="glUseProgram "                    ;OpenGL320=false;}
-  if(!glDeleteProgram                 ){Result32+="glDeleteProgram "                 ;OpenGL320=false;}
-  if(!glGetProgramiv                  ){Result32+="glGetProgramiv "                  ;OpenGL320=false;}
-  if(!glGetProgramInfoLog             ){Result32+="glGetProgramInfoLog "             ;OpenGL320=false;}
-  if(!glGetActiveAttrib               ){Result32+="glGetActiveAttrib "               ;OpenGL320=false;}
-  if(!glGetAttribLocation             ){Result32+="glGetAttribLocation "             ;OpenGL320=false;}
-  if(!glGetActiveUniform              ){Result32+="glGetActiveUniform "              ;OpenGL320=false;}
-  if(!glGetUniformLocation            ){Result32+="glGetUniformLocation "            ;OpenGL320=false;}
-  if(!glUniform1f                     ){Result32+="glUniform1f "                     ;OpenGL320=false;}
-  if(!glUniform2f                     ){Result32+="glUniform2f "                     ;OpenGL320=false;}
-  if(!glUniform3f                     ){Result32+="glUniform3f "                     ;OpenGL320=false;}
-  if(!glUniform4f                     ){Result32+="glUniform4f "                     ;OpenGL320=false;}
-  if(!glUniform1i                     ){Result32+="glUniform1i "                     ;OpenGL320=false;}
-  if(!glUniform2i                     ){Result32+="glUniform2i "                     ;OpenGL320=false;}
-  if(!glUniform3i                     ){Result32+="glUniform3i "                     ;OpenGL320=false;}
-  if(!glUniform4i                     ){Result32+="glUniform4i "                     ;OpenGL320=false;}
-  if(!glUniform1ui                    ){Result32+="glUniform1ui "                    ;OpenGL320=false;}
-  if(!glUniform2ui                    ){Result32+="glUniform2ui "                    ;OpenGL320=false;}
-  if(!glUniform3ui                    ){Result32+="glUniform3ui "                    ;OpenGL320=false;}
-  if(!glUniform4ui                    ){Result32+="glUniform4ui "                    ;OpenGL320=false;}
-  if(!glUniform1fv                    ){Result32+="glUniform1fv "                    ;OpenGL320=false;}
-  if(!glUniform2fv                    ){Result32+="glUniform2fv "                    ;OpenGL320=false;}
-  if(!glUniform3fv                    ){Result32+="glUniform3fv "                    ;OpenGL320=false;}
-  if(!glUniform4fv                    ){Result32+="glUniform4fv "                    ;OpenGL320=false;}
-  if(!glUniform1iv                    ){Result32+="glUniform1iv "                    ;OpenGL320=false;}
-  if(!glUniform2iv                    ){Result32+="glUniform2iv "                    ;OpenGL320=false;}
-  if(!glUniform3iv                    ){Result32+="glUniform3iv "                    ;OpenGL320=false;}
-  if(!glUniform4iv                    ){Result32+="glUniform4iv "                    ;OpenGL320=false;}
-  if(!glUniform1uiv                   ){Result32+="glUniform1uiv "                   ;OpenGL320=false;}
-  if(!glUniform2uiv                   ){Result32+="glUniform2uiv "                   ;OpenGL320=false;}
-  if(!glUniform3uiv                   ){Result32+="glUniform3uiv "                   ;OpenGL320=false;}
-  if(!glUniform4uiv                   ){Result32+="glUniform4uiv "                   ;OpenGL320=false;}
-  if(!glUniformMatrix2fv              ){Result32+="glUniformMatrix2fv "              ;OpenGL320=false;}
-  if(!glUniformMatrix2x3fv            ){Result32+="glUniformMatrix2x3fv "            ;OpenGL320=false;}
-  if(!glUniformMatrix2x4fv            ){Result32+="glUniformMatrix2x4fv "            ;OpenGL320=false;}
-  if(!glUniformMatrix3fv              ){Result32+="glUniformMatrix3fv "              ;OpenGL320=false;}
-  if(!glUniformMatrix3x2fv            ){Result32+="glUniformMatrix3x2fv "            ;OpenGL320=false;}
-  if(!glUniformMatrix3x4fv            ){Result32+="glUniformMatrix3x4fv "            ;OpenGL320=false;}
-  if(!glUniformMatrix4fv              ){Result32+="glUniformMatrix4fv "              ;OpenGL320=false;}
-  if(!glUniformMatrix4x2fv            ){Result32+="glUniformMatrix4x2fv "            ;OpenGL320=false;}
-  if(!glUniformMatrix4x3fv            ){Result32+="glUniformMatrix4x3fv "            ;OpenGL320=false;}
-
-  if(!glGetActiveSubroutineName       ){Result40+="glGetActiveSubroutineName "       ;OpenGL400=false;}
-  if(!glGetActiveSubroutineUniformiv  ){Result40+="glGetActiveSubroutineUniformiv "  ;OpenGL400=false;}
-  if(!glGetActiveSubroutineUniformName){Result40+="glGetActiveSubroutineUniformName ";OpenGL400=false;}
-  if(!glGetProgramStageiv             ){Result40+="glGetProgramStageiv "             ;OpenGL400=false;}
-  if(!glGetSubroutineIndex            ){Result40+="glGetSubroutineIndex "            ;OpenGL400=false;}
-  if(!glGetSubroutineUniformLocation  ){Result40+="glGetSubroutineUniformLocation "  ;OpenGL400=false;}
-  if(!glUniformSubroutinesuiv         ){Result40+="glUniformSubroutinesuiv "         ;OpenGL400=false;}
-  if(!glUniform1d                     ){Result40+="glUniform1d "                     ;OpenGL400=false;}
-  if(!glUniform2d                     ){Result40+="glUniform2d "                     ;OpenGL400=false;}
-  if(!glUniform3d                     ){Result40+="glUniform3d "                     ;OpenGL400=false;}
-  if(!glUniform4d                     ){Result40+="glUniform4d "                     ;OpenGL400=false;}
-  if(!glUniform1dv                    ){Result40+="glUniform1dv "                    ;OpenGL400=false;}
-  if(!glUniform2dv                    ){Result40+="glUniform2dv "                    ;OpenGL400=false;}
-  if(!glUniform3dv                    ){Result40+="glUniform3dv "                    ;OpenGL400=false;}
-  if(!glUniform4dv                    ){Result40+="glUniform4dv "                    ;OpenGL400=false;}
-  if(!glUniformMatrix2dv              ){Result40+="glUniformMatrix2dv "              ;OpenGL400=false;}
-  if(!glUniformMatrix2x3dv            ){Result40+="glUniformMatrix2x3dv "            ;OpenGL400=false;}
-  if(!glUniformMatrix2x4dv            ){Result40+="glUniformMatrix2x4dv "            ;OpenGL400=false;}
-  if(!glUniformMatrix3dv              ){Result40+="glUniformMatrix3dv "              ;OpenGL400=false;}
-  if(!glUniformMatrix3x2dv            ){Result40+="glUniformMatrix3x2dv "            ;OpenGL400=false;}
-  if(!glUniformMatrix3x4dv            ){Result40+="glUniformMatrix3x4dv "            ;OpenGL400=false;}
-  if(!glUniformMatrix4dv              ){Result40+="glUniformMatrix4dv "              ;OpenGL400=false;}
-  if(!glUniformMatrix4x2dv            ){Result40+="glUniformMatrix4x2dv "            ;OpenGL400=false;}
-  if(!glUniformMatrix4x3dv            ){Result40+="glUniformMatrix4x3dv "            ;OpenGL400=false;}
-
-  if(!glProgramUniformMatrix2fv       ){Result41+="glProgramUniformMatrix2fv "       ;OpenGL410=false;}
-  if(!glProgramUniformMatrix3fv       ){Result41+="glProgramUniformMatrix3fv "       ;OpenGL410=false;}
-  if(!glProgramUniformMatrix4fv       ){Result41+="glProgramUniformMatrix4fv "       ;OpenGL410=false;}
-  if(!glProgramUniformMatrix2x3fv     ){Result41+="glProgramUniformMatrix2x3fv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix3x2fv     ){Result41+="glProgramUniformMatrix3x2fv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix2x4fv     ){Result41+="glProgramUniformMatrix2x4fv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix4x2fv     ){Result41+="glProgramUniformMatrix4x2fv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix3x4fv     ){Result41+="glProgramUniformMatrix3x4fv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix4x3fv     ){Result41+="glProgramUniformMatrix4x3fv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix2dv       ){Result41+="glProgramUniformMatrix2dv "       ;OpenGL410=false;}
-  if(!glProgramUniformMatrix3dv       ){Result41+="glProgramUniformMatrix3dv "       ;OpenGL410=false;}
-  if(!glProgramUniformMatrix4dv       ){Result41+="glProgramUniformMatrix4dv "       ;OpenGL410=false;}
-  if(!glProgramUniformMatrix2x3dv     ){Result41+="glProgramUniformMatrix2x3dv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix3x2dv     ){Result41+="glProgramUniformMatrix3x2dv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix2x4dv     ){Result41+="glProgramUniformMatrix2x4dv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix4x2dv     ){Result41+="glProgramUniformMatrix4x2dv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix3x4dv     ){Result41+="glProgramUniformMatrix3x4dv "     ;OpenGL410=false;}
-  if(!glProgramUniformMatrix4x3dv     ){Result41+="glProgramUniformMatrix4x3dv "     ;OpenGL410=false;}
-  if(!glProgramParameteri             ){Result41+="glProgramParameteri "             ;OpenGL410=false;}
-
-  if(!OpenGL320)std::cerr<<"OpenGL 3.2 is not available, missing: "+Result32<<std::endl;
-  if(!OpenGL400)std::cerr<<"OpenGL 4.0 is not available, missing: "+Result40<<std::endl;
-  if(!OpenGL410)std::cerr<<"OpenGL 4.1 is not available, missing: "+Result41<<std::endl;
-
-  matrixfFce[0]=glUniformMatrix2fv  ;
-  matrixfFce[1]=glUniformMatrix3fv  ;
-  matrixfFce[2]=glUniformMatrix4fv  ;
-  matrixfFce[3]=glUniformMatrix2x3fv;
-  matrixfFce[4]=glUniformMatrix3x2fv;
-  matrixfFce[5]=glUniformMatrix2x4fv;
-  matrixfFce[6]=glUniformMatrix4x2fv;
-  matrixfFce[7]=glUniformMatrix3x4fv;
-  matrixfFce[8]=glUniformMatrix4x3fv;
-
-  matrixdFce[0]=glUniformMatrix2dv  ;
-  matrixdFce[1]=glUniformMatrix3dv  ;
-  matrixdFce[2]=glUniformMatrix4dv  ;
-  matrixdFce[3]=glUniformMatrix2x3dv;
-  matrixdFce[4]=glUniformMatrix3x2dv;
-  matrixdFce[5]=glUniformMatrix2x4dv;
-  matrixdFce[6]=glUniformMatrix4x2dv;
-  matrixdFce[7]=glUniformMatrix3x4dv;
-  matrixdFce[8]=glUniformMatrix4x3dv;
-
-  matrixfFceDsa[0]=glProgramUniformMatrix2fv  ;
-  matrixfFceDsa[1]=glProgramUniformMatrix3fv  ;
-  matrixfFceDsa[2]=glProgramUniformMatrix4fv  ;
-  matrixfFceDsa[3]=glProgramUniformMatrix2x3fv;
-  matrixfFceDsa[4]=glProgramUniformMatrix3x2fv;
-  matrixfFceDsa[5]=glProgramUniformMatrix2x4fv;
-  matrixfFceDsa[6]=glProgramUniformMatrix4x2fv;
-  matrixfFceDsa[7]=glProgramUniformMatrix3x4fv;
-  matrixfFceDsa[8]=glProgramUniformMatrix4x3fv;
-
-  matrixdFceDsa[0]=glProgramUniformMatrix2dv  ;
-  matrixdFceDsa[1]=glProgramUniformMatrix3dv  ;
-  matrixdFceDsa[2]=glProgramUniformMatrix4dv  ;
-  matrixdFceDsa[3]=glProgramUniformMatrix2x3dv;
-  matrixdFceDsa[4]=glProgramUniformMatrix3x2dv;
-  matrixdFceDsa[5]=glProgramUniformMatrix2x4dv;
-  matrixdFceDsa[6]=glProgramUniformMatrix4x2dv;
-  matrixdFceDsa[7]=glProgramUniformMatrix3x4dv;
-  matrixdFceDsa[8]=glProgramUniformMatrix4x3dv;
+if(!glProgramUniformMatrix2fv       ){Result41+="glProgramUniformMatrix2fv "       ;OpenGL410=false;}
+if(!glProgramUniformMatrix3fv       ){Result41+="glProgramUniformMatrix3fv "       ;OpenGL410=false;}
+if(!glProgramUniformMatrix4fv       ){Result41+="glProgramUniformMatrix4fv "       ;OpenGL410=false;}
+if(!glProgramUniformMatrix2x3fv     ){Result41+="glProgramUniformMatrix2x3fv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix3x2fv     ){Result41+="glProgramUniformMatrix3x2fv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix2x4fv     ){Result41+="glProgramUniformMatrix2x4fv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix4x2fv     ){Result41+="glProgramUniformMatrix4x2fv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix3x4fv     ){Result41+="glProgramUniformMatrix3x4fv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix4x3fv     ){Result41+="glProgramUniformMatrix4x3fv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix2dv       ){Result41+="glProgramUniformMatrix2dv "       ;OpenGL410=false;}
+if(!glProgramUniformMatrix3dv       ){Result41+="glProgramUniformMatrix3dv "       ;OpenGL410=false;}
+if(!glProgramUniformMatrix4dv       ){Result41+="glProgramUniformMatrix4dv "       ;OpenGL410=false;}
+if(!glProgramUniformMatrix2x3dv     ){Result41+="glProgramUniformMatrix2x3dv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix3x2dv     ){Result41+="glProgramUniformMatrix3x2dv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix2x4dv     ){Result41+="glProgramUniformMatrix2x4dv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix4x2dv     ){Result41+="glProgramUniformMatrix4x2dv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix3x4dv     ){Result41+="glProgramUniformMatrix3x4dv "     ;OpenGL410=false;}
+if(!glProgramUniformMatrix4x3dv     ){Result41+="glProgramUniformMatrix4x3dv "     ;OpenGL410=false;}
+if(!glProgramParameteri             ){Result41+="glProgramParameteri "             ;OpenGL410=false;}
 }
 */
 
@@ -277,11 +171,7 @@ GLint ge::gl::complexType2Size(GLenum type){
   }
 }
 
-ProgramObject::ProgramObject(std::vector<std::string>const&data,unsigned version,std::string profile)
-#if defined(REPLACE_GLEW)
-  :OpenGLObject(nullptr)
-#endif
-{
+ProgramObject::ProgramObject(std::vector<std::string>const&data,unsigned version,std::string profile){
   this->_sortAndCompileShaders(data,version,profile);
 }
 
@@ -321,11 +211,11 @@ void ProgramObject::resetRetrievable(){
 
 void ProgramObject::_createShaderProgram_Prologue(){
   /*
-  if(!OpenGL320){
-    std::cerr<<std::string("OpenGL 3.2 not available")<<std::endl;
-    return;
-  }
-  */
+     if(!OpenGL320){
+     std::cerr<<std::string("OpenGL 3.2 not available")<<std::endl;
+     return;
+     }
+     */
   this->_id=glCreateProgram();//creates a shader program
   if(!this->_id){//something is wrong
     std::cerr<< std::string("glCreateProgram failed")<<std::endl;
@@ -345,12 +235,12 @@ void ProgramObject::_createShaderProgram_Epilogue(){
   this->_getParameterList();//get list of shader program parameter
 
   /*
-  if(OpenGL400)
-    this->_getSubroutineUniformList();
+     if(OpenGL400)
+     this->_getSubroutineUniformList();
 
-  if(OpenGL400)
-    this->_getBufferList();
-  */
+     if(OpenGL400)
+     this->_getBufferList();
+     */
 
   bool hasComputeShader=false;
   for(auto x:this->_shaders)
@@ -367,12 +257,14 @@ typedef void (*GETACTIVEFCE  )(GLuint,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLc
 typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
 void ProgramObject::_getParameterList(){
 #if defined(REPLACE_GLEW)
-  decltype(&OpenGLFunctionProvider::glGetActiveAttrib) getActive [] = {
-    &OpenGLFunctionProvider::glGetActiveAttrib ,
-    &OpenGLFunctionProvider::glGetActiveUniform};
-  decltype(&OpenGLFunctionProvider::glGetAttribLocation) getLocation [] = {
-    &OpenGLFunctionProvider::glGetAttribLocation ,
-    &OpenGLFunctionProvider::glGetUniformLocation};
+  const GETACTIVEFCE getActive [] = {
+    this->getOpenGLFunctionTable()->glGetActiveAttrib ,
+    this->getOpenGLFunctionTable()->glGetActiveUniform,
+  };
+  const GETLOCATIONFCE getLocation [] = {
+    this->getOpenGLFunctionTable()->glGetAttribLocation ,
+    this->getOpenGLFunctionTable()->glGetUniformLocation,
+  };
 #else
   const GETACTIVEFCE   getActive[]   = {
     (GETACTIVEFCE)glGetActiveAttrib ,
@@ -400,17 +292,9 @@ void ProgramObject::_getParameterList(){
       std::string name;//name of parameter
       GLint       location;//location of parameter
       GLsizei     length;
-#if defined(REPLACE_GLEW)
-      ((*this).*(getActive[t]))(this->_id,i,bufLen,&length,&size,&type,Buffer);
-#else
       getActive[t](this->_id,i,bufLen,&length,&size,&type,Buffer);
-#endif
       name = chopIndexingInPropertyName(std::string(Buffer));
-#if defined(REPLACE_GLEW)
-      location = ((*this).*(getLocation[t]))(this->_id,name.c_str());//location
-#else
       location = getLocation[t](this->_id,name.c_str());//location
-#endif
       if(ge::gl::SamplerParam::isSampler(type)){
         GLint binding;
         glGetUniformiv(this->getId(),location,&binding);
@@ -987,29 +871,29 @@ void ProgramObject::set(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
+  void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
 #if defined(REPLACE_GLEW)
-  this->getOpenGLFunctionTable()->glUniformMatrix2fv  ,
-  this->getOpenGLFunctionTable()->glUniformMatrix3fv  ,
-  this->getOpenGLFunctionTable()->glUniformMatrix4fv  ,
-  this->getOpenGLFunctionTable()->glUniformMatrix2x3fv,
-  this->getOpenGLFunctionTable()->glUniformMatrix3x2fv,
-  this->getOpenGLFunctionTable()->glUniformMatrix2x4fv,
-  this->getOpenGLFunctionTable()->glUniformMatrix4x2fv,
-  this->getOpenGLFunctionTable()->glUniformMatrix3x4fv,
-  this->getOpenGLFunctionTable()->glUniformMatrix4x3fv
+    this->getOpenGLFunctionTable()->glUniformMatrix2fv  ,
+    this->getOpenGLFunctionTable()->glUniformMatrix3fv  ,
+    this->getOpenGLFunctionTable()->glUniformMatrix4fv  ,
+    this->getOpenGLFunctionTable()->glUniformMatrix2x3fv,
+    this->getOpenGLFunctionTable()->glUniformMatrix3x2fv,
+    this->getOpenGLFunctionTable()->glUniformMatrix2x4fv,
+    this->getOpenGLFunctionTable()->glUniformMatrix4x2fv,
+    this->getOpenGLFunctionTable()->glUniformMatrix3x4fv,
+    this->getOpenGLFunctionTable()->glUniformMatrix4x3fv,
 #else//REPLACE_GLEW
-glUniformMatrix2fv  ,
-glUniformMatrix3fv  ,
-glUniformMatrix4fv  ,
-glUniformMatrix2x3fv,
-glUniformMatrix3x2fv,
-glUniformMatrix2x4fv,
-glUniformMatrix4x2fv,
-glUniformMatrix3x4fv,
-glUniformMatrix4x3fv
+    glUniformMatrix2fv  ,
+    glUniformMatrix3fv  ,
+    glUniformMatrix4fv  ,
+    glUniformMatrix2x3fv,
+    glUniformMatrix3x2fv,
+    glUniformMatrix2x4fv,
+    glUniformMatrix4x2fv,
+    glUniformMatrix3x4fv,
+    glUniformMatrix4x3fv,
 #endif//REPLACE_GLEW
-};
+  };
   MATRIXBODY(matrixfFce,float);
 }
 
@@ -1018,29 +902,29 @@ void ProgramObject::set(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
+  void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
 #if defined(REPLACE_GLEW)
-  this->getOpenGLFunctionTable()->glUniformMatrix2dv  ,
-  this->getOpenGLFunctionTable()->glUniformMatrix3dv  ,
-  this->getOpenGLFunctionTable()->glUniformMatrix4dv  ,
-  this->getOpenGLFunctionTable()->glUniformMatrix2x3dv,
-  this->getOpenGLFunctionTable()->glUniformMatrix3x2dv,
-  this->getOpenGLFunctionTable()->glUniformMatrix2x4dv,
-  this->getOpenGLFunctionTable()->glUniformMatrix4x2dv,
-  this->getOpenGLFunctionTable()->glUniformMatrix3x4dv,
-  this->getOpenGLFunctionTable()->glUniformMatrix4x3dv
+    this->getOpenGLFunctionTable()->glUniformMatrix2dv  ,
+    this->getOpenGLFunctionTable()->glUniformMatrix3dv  ,
+    this->getOpenGLFunctionTable()->glUniformMatrix4dv  ,
+    this->getOpenGLFunctionTable()->glUniformMatrix2x3dv,
+    this->getOpenGLFunctionTable()->glUniformMatrix3x2dv,
+    this->getOpenGLFunctionTable()->glUniformMatrix2x4dv,
+    this->getOpenGLFunctionTable()->glUniformMatrix4x2dv,
+    this->getOpenGLFunctionTable()->glUniformMatrix3x4dv,
+    this->getOpenGLFunctionTable()->glUniformMatrix4x3dv,
 #else//REPLACE_GLEW
-glUniformMatrix2dv  ,
-glUniformMatrix3dv  ,
-glUniformMatrix4dv  ,
-glUniformMatrix2x3dv,
-glUniformMatrix3x2dv,
-glUniformMatrix2x4dv,
-glUniformMatrix4x2dv,
-glUniformMatrix3x4dv,
-glUniformMatrix4x3dv
+    glUniformMatrix2dv  ,
+    glUniformMatrix3dv  ,
+    glUniformMatrix4dv  ,
+    glUniformMatrix2x3dv,
+    glUniformMatrix3x2dv,
+    glUniformMatrix2x4dv,
+    glUniformMatrix4x2dv,
+    glUniformMatrix3x4dv,
+    glUniformMatrix4x3dv,
 #endif//REPLACE_GLEW
-};
+  };
   MATRIXBODY(matrixdFce,double);
 }
 
@@ -1049,29 +933,29 @@ void ProgramObject::setdsa(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
+  void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
 #if defined(REPLACE_GLEW)
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix2fv  ,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix3fv  ,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix4fv  ,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3fv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2fv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4fv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2fv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4fv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3fv
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix2fv  ,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix3fv  ,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix4fv  ,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3fv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2fv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4fv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2fv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4fv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3fv,
 #else//REPLACE_GLEW
-glProgramUniformMatrix2fv  ,
-glProgramUniformMatrix3fv  ,
-glProgramUniformMatrix4fv  ,
-glProgramUniformMatrix2x3fv,
-glProgramUniformMatrix3x2fv,
-glProgramUniformMatrix2x4fv,
-glProgramUniformMatrix4x2fv,
-glProgramUniformMatrix3x4fv,
-glProgramUniformMatrix4x3fv
+    glProgramUniformMatrix2fv  ,
+    glProgramUniformMatrix3fv  ,
+    glProgramUniformMatrix4fv  ,
+    glProgramUniformMatrix2x3fv,
+    glProgramUniformMatrix3x2fv,
+    glProgramUniformMatrix2x4fv,
+    glProgramUniformMatrix4x2fv,
+    glProgramUniformMatrix3x4fv,
+    glProgramUniformMatrix4x3fv,
 #endif//REPLACE_GLEW
-};
+  };
   MATRIXBODYDSA(matrixfFceDsa,float);
 }
 
@@ -1080,29 +964,29 @@ void ProgramObject::setdsa(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
+  void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
 #if defined(REPLACE_GLEW)
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix2dv  ,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix3dv  ,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix4dv  ,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3dv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2dv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4dv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2dv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4dv,
-  this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3dv
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix2dv  ,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix3dv  ,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix4dv  ,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3dv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2dv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4dv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2dv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4dv,
+    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3dv,
 #else//REPLACE_GLEW
-glProgramUniformMatrix2dv  ,
-glProgramUniformMatrix3dv  ,
-glProgramUniformMatrix4dv  ,
-glProgramUniformMatrix2x3dv,
-glProgramUniformMatrix3x2dv,
-glProgramUniformMatrix2x4dv,
-glProgramUniformMatrix4x2dv,
-glProgramUniformMatrix3x4dv,
-glProgramUniformMatrix4x3dv
+    glProgramUniformMatrix2dv  ,
+    glProgramUniformMatrix3dv  ,
+    glProgramUniformMatrix4dv  ,
+    glProgramUniformMatrix2x3dv,
+    glProgramUniformMatrix3x2dv,
+    glProgramUniformMatrix2x4dv,
+    glProgramUniformMatrix4x2dv,
+    glProgramUniformMatrix3x4dv,
+    glProgramUniformMatrix4x3dv,
 #endif//REPLACE_GLEW
-};
+  };
   MATRIXBODYDSA(matrixdFceDsa,double);
 }
 

@@ -11,11 +11,21 @@
 #include<geGL/SamplerObject.h>
 #include<geGL/RenderbufferObject.h>
 #include<geGL/DebugMessage.h>
-#include <geGL/Export.h>
+#include<geGL/LoadOpenGLFunctions.h>
+#include<geGL/OpenGLFunctionTable.h>
 
 namespace ge{
   namespace gl{
+
+#if defined(REPLACE_GLEW)
+    GEGL_EXPORT void init(
+        GET_PROC_ADDRESS getProcAddress = nullptr);
+    GEGL_EXPORT std::shared_ptr<OpenGLFunctionTable>prepareOpenGLFunctionTable(
+        GET_PROC_ADDRESS getProcAddress);
+    GEGL_EXPORT std::shared_ptr<OpenGLFunctionTable>getDefaultOpenGLFunctionTable();
+#else
     GEGL_EXPORT void init();
+#endif
   }
 }
 

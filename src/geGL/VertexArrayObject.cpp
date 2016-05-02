@@ -52,6 +52,13 @@ VertexArrayObject::VertexArrayObject (){
   glCreateVertexArrays(1,&this->_id);
 }
 
+#if defined(REPLACE_GLEW)
+VertexArrayObject::VertexArrayObject (
+    std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+  glCreateVertexArrays(1,&this->_id);
+}
+#endif
+
 /**
  * @brief Destroyes vertex array object
  */

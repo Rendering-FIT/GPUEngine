@@ -95,7 +95,9 @@ add_library(${LIB_NAME}
 # PACKAGES
 
 find_package(glm)
-find_package(GLEW)
+if(!GPUENGINE_REPLACE_GLEW)
+  find_package(GLEW)
+endif()
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
@@ -105,13 +107,17 @@ find_package(GLEW)
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps geGL)
-set(External_deps_Export glm GLEW)
-set(External_libs glm GLEW)
+set(External_deps_Export glm)
+set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
+if(UNIX)
+  set(External_libs ${External_libs} dl)
+endif()
 
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps} ${External_libs})
+
+target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs})
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"
    INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"

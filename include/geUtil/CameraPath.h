@@ -4,8 +4,6 @@
 #include<iostream>
 #include<vector>
 
-#define ENABLE_DRAWING
-
 #ifdef ENABLE_DRAWING
   #include<geGL/geGL.h>
 #endif//ENABLE_DRAWING

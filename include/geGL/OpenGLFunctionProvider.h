@@ -14,9 +14,7 @@ namespace ge{
           return this->_table;
         }
       public:
-        OpenGLFunctionProvider(std::shared_ptr<OpenGLFunctionTable>const&table){
-          this->_table = table;
-        }
+        OpenGLFunctionProvider(std::shared_ptr<OpenGLFunctionTable>const&table);
         inline void setOpenGLFunctionTable(std::shared_ptr<OpenGLFunctionTable>const&table){
           this->_table = table;
         }

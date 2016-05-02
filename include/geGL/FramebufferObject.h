@@ -1,6 +1,5 @@
 #pragma once
 
-//#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<stdarg.h>
 #include<iostream>
@@ -22,6 +21,11 @@ namespace ge{
         inline GLint getAttachmentParam(GLenum attachment,GLenum pname);
       public:
         FramebufferObject (bool defaultFramebuffer=false);
+#if defined(REPLACE_GLEW)
+        FramebufferObject (
+            std::shared_ptr<OpenGLFunctionTable>const&table,
+            bool defaultFramebuffer = false);
+#endif
         ~FramebufferObject();
         void   bind  (GLenum target = GL_DRAW_FRAMEBUFFER)const;
         void   unbind(GLenum target = GL_DRAW_FRAMEBUFFER)const;

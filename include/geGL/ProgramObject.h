@@ -1,6 +1,5 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<stdarg.h>
 #include<vector>
@@ -16,75 +15,19 @@
 
 namespace ge{
   namespace gl{
-    //GEGL_EXPORT void   initShadersAndPrograms();
     GEGL_EXPORT GLenum complexType2SimpleType(GLenum Type);
     GEGL_EXPORT GLint  complexType2Size(GLenum Type);
     class GEGL_EXPORT ProgramObject: public OpenGLObject{
-      private:
-        int _floatMatrixType2Index(GLenum type);
-        int _doubleMatrixType2Index(GLenum type);
-
-        template<typename...     >void _typeStringConstructor();
-        template<typename... ARGS>void _typeStringConstructor(GLenum type,std::string shader,ARGS...args);
-
-        template<typename...     >void _sharedShaderConstructor();
-        template<typename... ARGS>void _sharedShaderConstructor(std::shared_ptr<ShaderObject>const&shader,ARGS...args);
-
-        template<typename...    >void _copyStringList2Vector(std::vector<std::string>&);
-        template<typename TYPE  >void _copyStringList2Vector(std::vector<std::string>&,unsigned);
-        template<typename...ARGS>void _copyStringList2Vector(std::vector<std::string>&vec,std::string shader,ARGS...args);
-
-        template<typename...    >void _copyVersionProfile(unsigned&versionOut,std::string&profileOut,unsigned version = 0,std::string profile="");
-        template<typename...ARGS>void _copyVersionProfile(unsigned&versionOut,std::string&profileOut,std::string,ARGS...args);
-
-        template<typename...    >void _stringListConstructor();
-        template<typename...ARGS>void _stringListConstructor(std::string shader,ARGS...args);
-
-        template<typename...ARGS>void _resolveConstructorArgs(GLenum type,std::string shader,ARGS...args);
-        template<typename...ARGS>void _resolveConstructorArgs(std::shared_ptr<ShaderObject>const&shader,ARGS...args);
-        template<typename...ARGS>void _resolveConstructorArgs(std::string shader,ARGS...args);
-      protected:
-        std::set<std::shared_ptr<ShaderObject>>                         _shaders       ;///<list of shaders
-        std::map<std::string,std::shared_ptr<ProgramObjectParameter>>   _attributeList ;///<list of attributes
-        std::map<std::string,std::shared_ptr<ProgramObjectParameter>>   _uniformList   ;///<list of uniforms
-        std::map<std::string,std::shared_ptr<ProgramObjectBufferParams>>_bufferList    ;///<list of buffers
-        std::vector<std::string>                   _bufferNames   ;///<list of buffer names
-        std::shared_ptr<ShaderObjectSubroutine>    _subroutines[6];///<subroutines in shaders
-        std::map<std::string,std::shared_ptr<SamplerParam>>_samplerList   ;///<sampler parameters
-        void _createShaderProgram_Prologue();  ///<prologue of creating of shader prg.
-        void _createShaderProgram_Epilogue();  ///<epilogue of creating of shader prg.
-        void _getParameterList();              ///<obtain shader parameters
-        void _getSubroutineUniformList();      ///<obtain shader subroutines
-        void _getBufferList();                 ///<obtain shader buffers
-        std::string _getProgramInfo(GLuint ID);///<obtain program info log
-        void _deleteProgram();                 ///<delete shader program
-        void _compileShaders(
-            std::vector<std::string>shaders,
-            std::vector<std::string>defs,
-            unsigned     version,
-            std::string  profile);
-        void _sortAndCompileShaders(
-            std::vector<std::string>strings,
-            unsigned     version,
-            std::string  profile);
-        /*
-           void _createProgram(
-           std::vector<std::string>& data         ,
-           unsigned                  version = 0  ,
-           std::string               profile = "" );
-           bool        _isShader       (std::string data);///<has to contain void main() in some form
-           bool        _isFile         (std::string data);///<has to exist
-           std::string _composeShaderSource(std::vector<std::string>&data,unsigned version=0,std::string profile="");
-           std::string _getShaderSource(std::string data);///<if its file open it and return its content
-           unsigned    _getShaderSourceTypeMask(std::string data);///if it can be vs gp or fs it returns 0x1|0x8|0x10
-           */
       public:
+        using AttributeMap = std::map<std::string,std::shared_ptr<ProgramObjectParameter>>;
+        using UniformMap = std::map<std::string,std::shared_ptr<ProgramObjectParameter>>;
+        using BufferMap = std::map<std::string,std::shared_ptr<ProgramObjectBufferParams>>;
+        using AttributeIndex = AttributeMap::size_type;
+        using UniformIndex = UniformMap::size_type;
+        using BufferIndex = BufferMap::size_type;
+
         template<typename...ARGS>
-          ProgramObject(ARGS...args)
-#if defined(REPLACE_GLEW)
-          :OpenGLObject(nullptr)
-#endif
-          {
+          ProgramObject(ARGS...args){
             this->_resolveConstructorArgs(args...);
           }
         ProgramObject(std::vector<std::string>const&data,unsigned version = 450,std::string profile = "core");
@@ -118,9 +61,9 @@ namespace ge{
         ProgramObjectParameter    const&getUniform  (std::string name,bool printErrors = false)const;
         ProgramObjectParameter    const&getAttribute(std::string name,bool printErrors = false)const;
         ProgramObjectBufferParams const&getBuffer   (std::string name,bool printErrors = false)const;
-        decltype(_uniformList  )::size_type getNofUniforms  ()const;
-        decltype(_attributeList)::size_type getNofAttributes()const;
-        decltype(_bufferNames  )::size_type getNofBuffers   ()const;
+        UniformIndex   getNofUniforms  ()const;
+        AttributeIndex getNofAttributes()const;
+        BufferIndex    getNofBuffers   ()const;
         void use()const;
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
         void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
@@ -190,6 +133,64 @@ namespace ge{
         void setdsa(std::string name,GLsizei count,const GLint*    v);
         void setdsa(std::string name,GLsizei count,const GLuint*   v);
         void setdsa(std::string name,GLsizei count,const GLboolean*v);
+      private:
+        int _floatMatrixType2Index(GLenum type);
+        int _doubleMatrixType2Index(GLenum type);
+
+        template<typename...     >void _typeStringConstructor();
+        template<typename... ARGS>void _typeStringConstructor(GLenum type,std::string shader,ARGS...args);
+
+        template<typename...     >void _sharedShaderConstructor();
+        template<typename... ARGS>void _sharedShaderConstructor(std::shared_ptr<ShaderObject>const&shader,ARGS...args);
+
+        template<typename...    >void _copyStringList2Vector(std::vector<std::string>&);
+        template<typename TYPE  >void _copyStringList2Vector(std::vector<std::string>&,unsigned);
+        template<typename...ARGS>void _copyStringList2Vector(std::vector<std::string>&vec,std::string shader,ARGS...args);
+
+        template<typename...    >void _copyVersionProfile(unsigned&versionOut,std::string&profileOut,unsigned version = 0,std::string profile="");
+        template<typename...ARGS>void _copyVersionProfile(unsigned&versionOut,std::string&profileOut,std::string,ARGS...args);
+
+        template<typename...    >void _stringListConstructor();
+        template<typename...ARGS>void _stringListConstructor(std::string shader,ARGS...args);
+
+        template<typename...ARGS>void _resolveConstructorArgs(GLenum type,std::string shader,ARGS...args);
+        template<typename...ARGS>void _resolveConstructorArgs(std::shared_ptr<ShaderObject>const&shader,ARGS...args);
+        template<typename...ARGS>void _resolveConstructorArgs(std::string shader,ARGS...args);
+      protected:
+        std::set<std::shared_ptr<ShaderObject>>                         _shaders       ;///<list of shaders
+        AttributeMap _attributeList ;///<list of attributes
+        UniformMap   _uniformList   ;///<list of uniforms
+        BufferMap    _bufferList    ;///<list of buffers
+        std::vector<std::string>                   _bufferNames   ;///<list of buffer names
+        std::shared_ptr<ShaderObjectSubroutine>    _subroutines[6];///<subroutines in shaders
+        std::map<std::string,std::shared_ptr<SamplerParam>>_samplerList   ;///<sampler parameters
+        void _createShaderProgram_Prologue();  ///<prologue of creating of shader prg.
+        void _createShaderProgram_Epilogue();  ///<epilogue of creating of shader prg.
+        void _getParameterList();              ///<obtain shader parameters
+        void _getSubroutineUniformList();      ///<obtain shader subroutines
+        void _getBufferList();                 ///<obtain shader buffers
+        std::string _getProgramInfo(GLuint ID);///<obtain program info log
+        void _deleteProgram();                 ///<delete shader program
+        void _compileShaders(
+            std::vector<std::string>shaders,
+            std::vector<std::string>defs,
+            unsigned     version,
+            std::string  profile);
+        void _sortAndCompileShaders(
+            std::vector<std::string>strings,
+            unsigned     version,
+            std::string  profile);
+        /*
+           void _createProgram(
+           std::vector<std::string>& data         ,
+           unsigned                  version = 0  ,
+           std::string               profile = "" );
+           bool        _isShader       (std::string data);///<has to contain void main() in some form
+           bool        _isFile         (std::string data);///<has to exist
+           std::string _composeShaderSource(std::vector<std::string>&data,unsigned version=0,std::string profile="");
+           std::string _getShaderSource(std::string data);///<if its file open it and return its content
+           unsigned    _getShaderSourceTypeMask(std::string data);///if it can be vs gp or fs it returns 0x1|0x8|0x10
+           */
     };
 
 

@@ -1,12 +1,15 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
+
 namespace ge{
   namespace gl{
     class GEGL_EXPORT ProgramPipelineObject: public OpenGLObject{
       public:
         ProgramPipelineObject();
+#if defined(REPLACE_GLEW)
+        ProgramPipelineObject(std::shared_ptr<OpenGLFunctionTable>const&table);
+#endif
         ~ProgramPipelineObject();
         void bind()const;
         void unbind()const;
