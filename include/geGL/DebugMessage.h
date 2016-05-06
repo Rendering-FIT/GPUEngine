@@ -14,27 +14,27 @@ namespace ge{
     GEGL_EXPORT std::string translateDebugSeverity(GLenum severity);
     GEGL_EXPORT void setDefaultDebugMessage(
 #if defined(REPLACE_GLEW)
-        OpenGLFunctionProvider const&gl
+        opengl::FunctionProvider const&gl
 #endif
         );
     GEGL_EXPORT void setLowAndGreaterDebugMessage(
 #if defined(REPLACE_GLEW)
-        OpenGLFunctionProvider const&gl
+        opengl::FunctionProvider const&gl
 #endif       
         );
     GEGL_EXPORT void setMediumAndGreaterDebugMessage(
 #if defined(REPLACE_GLEW)
-        OpenGLFunctionProvider const&gl
+        opengl::FunctionProvider const&gl
 #endif       
         );
     GEGL_EXPORT void setHighDebugMessage(
 #if defined(REPLACE_GLEW)
-        OpenGLFunctionProvider const&gl
+        opengl::FunctionProvider const&gl
 #endif       
         );
     GEGL_EXPORT void setDebugMessage(
 #if defined(REPLACE_GLEW)
-        OpenGLFunctionProvider const&gl,
+        opengl::FunctionProvider const&gl,
 #endif       
         GLDEBUGPROC fce,
         void*data);

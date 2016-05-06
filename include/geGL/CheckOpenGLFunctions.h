@@ -2,10 +2,12 @@
 
 #include<memory>
 #include<geGL/Export.h>
+#include<geGL/OpenGLFunctionTable.h>
 
 namespace ge{
   namespace gl{
-    class OpenGLFunctionTable;
-    GEGL_EXPORT void checkOpenGLFunctions(std::shared_ptr<OpenGLFunctionTable>const&);
+    namespace opengl{
+      GEGL_EXPORT void checkFunctions(FunctionTablePointer const&);
+    }
   }
 }

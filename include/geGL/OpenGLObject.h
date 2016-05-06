@@ -10,7 +10,7 @@ namespace ge{
   namespace gl{
     class GEGL_EXPORT OpenGLObject
 #if defined(REPLACE_GLEW)
-    : protected OpenGLFunctionProvider
+    : protected opengl::FunctionProvider
 #endif//defined(REPLACE_GLEW)
       {
       protected:
@@ -18,7 +18,7 @@ namespace ge{
       public:
         OpenGLObject(GLuint id = 0u);
 #if defined(REPLACE_GLEW)
-        OpenGLObject(std::shared_ptr<OpenGLFunctionTable>const&table,GLuint id = 0u);
+        OpenGLObject(opengl::FunctionTablePointer const&table,GLuint id = 0u);
 #endif//REPLACE_GLEW
         virtual ~OpenGLObject();
         GLuint getId()const;

@@ -12,9 +12,9 @@ namespace ge{
         SamplerObject ();
         SamplerObject (SamplerObject*sampler);
 #if defined(REPLACE_GLEW)
-        SamplerObject (std::shared_ptr<OpenGLFunctionTable>const&table);
+        SamplerObject (opengl::FunctionTablePointer const&table);
         SamplerObject (
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             SamplerObject*sampler);
 #endif
         ~SamplerObject();

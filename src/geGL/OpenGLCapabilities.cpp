@@ -1,11 +1,13 @@
 #include<geGL/OpenGLCapabilities.h>
 #include<geGL/OpenGLFunctionTable.h>
 
-using namespace ge::gl;
+using namespace ge::gl::opengl;
 
-void ge::gl::fillOpenGLCapabilities(
-    OpenGLCapabilities&capabilities,
-    std::shared_ptr<OpenGLFunctionTable>const&table){
+#include<iostream>
+
+void ge::gl::opengl::fillCapabilities(
+    Capabilities&capabilities,
+    FunctionTablePointer const&table){
   capabilities.opengl200 = false;
   capabilities.opengl210 = false;
   capabilities.opengl330 = false;

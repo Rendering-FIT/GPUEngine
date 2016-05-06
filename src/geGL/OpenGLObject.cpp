@@ -1,10 +1,11 @@
 #include <geGL/OpenGLObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 OpenGLObject::OpenGLObject(GLuint id)
 #if defined(REPLACE_GLEW)
-  :OpenGLFunctionProvider(nullptr)
+  :FunctionProvider(nullptr)
 #endif//REPLACE_GLEW
 {
   this->_id = id;
@@ -12,8 +13,8 @@ OpenGLObject::OpenGLObject(GLuint id)
 
 #if defined(REPLACE_GLEW)
 OpenGLObject::OpenGLObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
-    GLuint id):OpenGLFunctionProvider(table){
+    FunctionTablePointer const&table,
+    GLuint id):FunctionProvider(table){
   this->_id = id;
 }
 #endif//REPLACE_GLEW

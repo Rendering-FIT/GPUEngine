@@ -1,6 +1,7 @@
 #include<geGL/SamplerObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 SamplerObject::SamplerObject(){
   glCreateSamplers(1,&this->_id);
@@ -45,11 +46,11 @@ SamplerObject::SamplerObject(SamplerObject*sampler){
 
 #if defined(REPLACE_GLEW)
 SamplerObject::SamplerObject (
-    std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+    FunctionTablePointer const&table):OpenGLObject(table){
   glCreateSamplers(1,&this->_id);
 }
 SamplerObject::SamplerObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     SamplerObject*sampler):OpenGLObject(table){
   glCreateSamplers(1,&this->_id);
   GLfloat borderColor[4];

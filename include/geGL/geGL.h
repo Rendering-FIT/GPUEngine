@@ -19,10 +19,12 @@ namespace ge{
 
 #if defined(REPLACE_GLEW)
     GEGL_EXPORT void init(
-        GET_PROC_ADDRESS getProcAddress = nullptr);
-    GEGL_EXPORT std::shared_ptr<OpenGLFunctionTable>prepareOpenGLFunctionTable(
-        GET_PROC_ADDRESS getProcAddress);
-    GEGL_EXPORT std::shared_ptr<OpenGLFunctionTable>getDefaultOpenGLFunctionTable();
+        opengl::GET_PROC_ADDRESS getProcAddress = nullptr);
+    namespace opengl{
+      GEGL_EXPORT FunctionTablePointer prepareFunctionTable(
+          GET_PROC_ADDRESS getProcAddress);
+      GEGL_EXPORT FunctionTablePointer const& getDefaultFunctionTable();
+    }
 #else
     GEGL_EXPORT void init();
 #endif

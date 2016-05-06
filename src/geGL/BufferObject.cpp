@@ -1,6 +1,7 @@
 #include<geGL/BufferObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 /**
  * @brief Function translates buffer targets to strings
@@ -152,12 +153,12 @@ BufferObject::BufferObject(
 }
 
 #if defined(REPLACE_GLEW)
-BufferObject::BufferObject(std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+BufferObject::BufferObject(FunctionTablePointer const&table):OpenGLObject(table){
   this->_id = 0;
 }
 
 BufferObject::BufferObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLsizeiptr    size ,
     const GLvoid* data ,
     GLbitfield    flags):OpenGLObject(table){

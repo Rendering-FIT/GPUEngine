@@ -23,7 +23,7 @@ namespace ge{
         FramebufferObject (bool defaultFramebuffer=false);
 #if defined(REPLACE_GLEW)
         FramebufferObject (
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             bool defaultFramebuffer = false);
 #endif
         ~FramebufferObject();

@@ -3,7 +3,12 @@
 #include <geGL/Export.h>
 
 #if defined(REPLACE_GLEW)
-#include<GL/gl.h>
+//#include<GL/gl.h>
+#include<stdint.h>
+#include<stddef.h>
+#include<geGL/GeneratedOpenGLTypes.h>
+#include<geGL/GeneratedOpenGLConstants.h>
+#include<geGL/GeneratedOpenGLPFN.h>
 #else//REPLACE_GLEW
 
 #include<GL/glew.h>

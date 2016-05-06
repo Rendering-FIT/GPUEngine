@@ -8,7 +8,7 @@ namespace ge{
       public:
         ProgramPipelineObject();
 #if defined(REPLACE_GLEW)
-        ProgramPipelineObject(std::shared_ptr<OpenGLFunctionTable>const&table);
+        ProgramPipelineObject(opengl::FunctionTablePointer const&table);
 #endif
         ~ProgramPipelineObject();
         void bind()const;

@@ -12,7 +12,7 @@ namespace ge{
       public:
         Program();
 #if defined(REPLACE_GLEW)
-        Program(std::shared_ptr<OpenGLFunctionTable>const&table);
+        Program(opengl::FunctionTablePointer const&table);
 #endif
         ~Program();
         GLboolean isProgram()const;

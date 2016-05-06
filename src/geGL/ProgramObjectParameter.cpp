@@ -2,6 +2,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 /**
  * @brief Constructor
@@ -13,14 +14,14 @@ using namespace ge::gl;
  */
 ProgramObjectParameter::ProgramObjectParameter(
 #if defined(REPLACE_GLEW)
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
 #endif
     GLint       location,
     GLenum      type    ,
     std::string name    ,
     GLint       size    )
 #if defined(REPLACE_GLEW)
-  :OpenGLFunctionProvider(table)
+  :FunctionProvider(table)
 #endif
 {
   this->_location = location;//parameter id
@@ -224,12 +225,12 @@ const long unsigned nofBufferProperties = sizeof(bufferProperties)/sizeof(GLenum
 
 ProgramObjectBufferParams::ProgramObjectBufferParams(
 #if defined(REPLACE_GLEW)
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
 #endif
     GLuint program,
     GLuint index)
 #if defined(REPLACE_GLEW)
-  :OpenGLFunctionProvider(table)
+  :FunctionProvider(table)
 #endif
 {
   //std::cerr<<"ProgramObjectBufferParams\n";
@@ -295,14 +296,14 @@ GLint ProgramObjectBufferParams::getBinding()const{
 
 SamplerParam::SamplerParam(
 #if defined(REPLACE_GLEW)
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
 #endif
     std::string name    ,
     GLint       location,
     GLenum      type    ,
     GLint       binding )
 #if defined(REPLACE_GLEW)
-  :OpenGLFunctionProvider(table)
+  :FunctionProvider(table)
 #endif
 {
   this->_name     = name    ;

@@ -1,6 +1,7 @@
 #include<geGL/RenderbufferObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 RenderbufferObject::RenderbufferObject(
     GLenum  internalFormat,
@@ -21,7 +22,7 @@ RenderbufferObject::RenderbufferObject(
 
 #if defined(REPLACE_GLEW)
 RenderbufferObject::RenderbufferObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLenum  internalFormat,
     GLsizei samples,
     GLsizei width,
@@ -30,7 +31,7 @@ RenderbufferObject::RenderbufferObject(
   glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
 }
 RenderbufferObject::RenderbufferObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLenum  internalFormat,
     GLsizei width,
     GLsizei height):OpenGLObject(table){

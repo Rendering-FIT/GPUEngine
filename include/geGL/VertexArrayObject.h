@@ -24,7 +24,7 @@ namespace ge{
         };
         VertexArrayObject ();
 #if defined(REPLACE_GLEW)
-        VertexArrayObject (std::shared_ptr<OpenGLFunctionTable>const&table);
+        VertexArrayObject (opengl::FunctionTablePointer const&table);
 #endif
         ~VertexArrayObject();
         void addAttrib(
@@ -33,7 +33,7 @@ namespace ge{
             GLint                   nofComponents               ,
             GLenum                  type                        ,
             GLsizei                 stride            = 0       ,
-            const GLvoid           *pointer           = NULL    ,
+            const GLvoid*           pointer           = NULL    ,
             GLboolean               normalized        = GL_FALSE,  
             GLuint                  divisor           = 0       ,
             enum AttribPointerType  attribPointerType = NONE    )const;

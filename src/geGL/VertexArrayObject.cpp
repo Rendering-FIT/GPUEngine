@@ -2,6 +2,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 std::string ge::gl::translateAttribType(GLenum type){
   switch(type){
@@ -54,7 +55,7 @@ VertexArrayObject::VertexArrayObject (){
 
 #if defined(REPLACE_GLEW)
 VertexArrayObject::VertexArrayObject (
-    std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+    FunctionTablePointer const&table):OpenGLObject(table){
   glCreateVertexArrays(1,&this->_id);
 }
 #endif

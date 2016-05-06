@@ -43,6 +43,8 @@ set(GL_INCLUDES
     ${HEADER_PATH}/GeneratedLoadOpenGLFunctions.h
     ${HEADER_PATH}/GeneratedOpenGLFunctionCalls.h
     ${HEADER_PATH}/GeneratedOpenGLFunctions.h
+    ${HEADER_PATH}/GeneratedOpenGLConstants.h
+    ${HEADER_PATH}/GeneratedOpenGLTypes.h
     ${HEADER_PATH}/GeneratedOpenGLPFN.h
     ${HEADER_PATH}/GeneratedOpenGLTrapFunctions.h
     ${HEADER_PATH}/CheckOpenGLFunctions.h

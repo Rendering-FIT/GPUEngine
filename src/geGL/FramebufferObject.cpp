@@ -3,6 +3,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 std::string ge::gl::translateFramebufferComponentType(GLenum type){
   switch(type){
@@ -93,7 +94,7 @@ FramebufferObject::FramebufferObject (bool defaultFramebuffer){
 
 #if defined(REPLACE_GLEW)
 FramebufferObject::FramebufferObject (
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     bool defaultFramebuffer):OpenGLObject(table){
   if(defaultFramebuffer)this->_id=0;
   else glCreateFramebuffers(1,&this->_id);

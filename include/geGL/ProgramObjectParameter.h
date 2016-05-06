@@ -14,7 +14,7 @@ namespace ge{
      */
     class GEGL_EXPORT ProgramObjectParameter
 #if defined(REPLACE_GLEW)
-      :protected OpenGLFunctionProvider
+      :protected opengl::FunctionProvider
 #endif
     {
       protected:
@@ -25,7 +25,7 @@ namespace ge{
       public:
         ProgramObjectParameter(
 #if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
 #endif
             GLint       location = -1      ,
             GLenum      type     = GL_FLOAT,
@@ -44,7 +44,7 @@ namespace ge{
 
     class GEGL_EXPORT ProgramObjectBufferParams
 #if defined(REPLACE_GLEW)
-      :protected OpenGLFunctionProvider
+      :protected opengl::FunctionProvider
 #endif
     {
       public:
@@ -73,17 +73,17 @@ namespace ge{
       public:
         ProgramObjectBufferParams(
 #if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
 #endif
             GLuint program,
             GLuint index);
         ProgramObjectBufferParams(
 #if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table
+            opengl::FunctionTablePointer const&table
 #endif
             )
 #if defined(REPLACE_GLEW)
-  :OpenGLFunctionProvider(table)
+  :opengl::FunctionProvider(table)
 #endif
         {
         };
@@ -95,7 +95,7 @@ namespace ge{
 
     class GEGL_EXPORT SamplerParam
 #if defined(REPLACE_GLEW)
-      :protected OpenGLFunctionProvider
+      :protected opengl::FunctionProvider
 #endif
    
     {
@@ -107,7 +107,7 @@ namespace ge{
       public:
         SamplerParam(
 #if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&,
+            opengl::FunctionTablePointer const&,
 #endif
             std::string name = ""           ,
             GLint location   = -1           ,

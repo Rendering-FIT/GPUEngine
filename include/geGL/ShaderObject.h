@@ -17,12 +17,12 @@ namespace ge{
         ShaderObject(std::string file,std::string defs,unsigned version,std::string profile);
         ShaderObject(std::string file,unsigned version,std::string profile);
 #if defined(REPLACE_GLEW)
-        ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,GLenum type,std::string source);
-        ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file);
-        ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,GLenum type);
-        ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,std::string defs);
-        ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,std::string defs,unsigned version,std::string profile);
-        ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,unsigned version,std::string profile);
+        ShaderObject(opengl::FunctionTablePointer const&table,GLenum type,std::string source);
+        ShaderObject(opengl::FunctionTablePointer const&table,std::string file);
+        ShaderObject(opengl::FunctionTablePointer const&table,std::string file,GLenum type);
+        ShaderObject(opengl::FunctionTablePointer const&table,std::string file,std::string defs);
+        ShaderObject(opengl::FunctionTablePointer const&table,std::string file,std::string defs,unsigned version,std::string profile);
+        ShaderObject(opengl::FunctionTablePointer const&table,std::string file,unsigned version,std::string profile);
 #endif
         virtual ~ShaderObject();
         void setVersion(unsigned version,std::string profile);

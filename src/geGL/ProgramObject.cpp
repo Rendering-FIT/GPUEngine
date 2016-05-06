@@ -3,6 +3,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 /*
    void ge::gl::initShadersAndPrograms(){
@@ -177,7 +178,7 @@ ProgramObject::ProgramObject(std::vector<std::string>const&data,unsigned version
 
 #if defined(REPLACE_GLEW)
 ProgramObject::ProgramObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table  ,
+    FunctionTablePointer const&table  ,
     std::vector<std::string>            const&data   ,
     unsigned                                  version,
     std::string                               profile):OpenGLObject(table){
@@ -258,12 +259,12 @@ typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
 void ProgramObject::_getParameterList(){
 #if defined(REPLACE_GLEW)
   const GETACTIVEFCE getActive [] = {
-    this->getOpenGLFunctionTable()->glGetActiveAttrib ,
-    this->getOpenGLFunctionTable()->glGetActiveUniform,
+    this->getFunctionTable()->glGetActiveAttrib ,
+    this->getFunctionTable()->glGetActiveUniform,
   };
   const GETLOCATIONFCE getLocation [] = {
-    this->getOpenGLFunctionTable()->glGetAttribLocation ,
-    this->getOpenGLFunctionTable()->glGetUniformLocation,
+    this->getFunctionTable()->glGetAttribLocation ,
+    this->getFunctionTable()->glGetUniformLocation,
   };
 #else
   const GETACTIVEFCE   getActive[]   = {
@@ -300,13 +301,13 @@ void ProgramObject::_getParameterList(){
         glGetUniformiv(this->getId(),location,&binding);
         this->_samplerList[name]=std::make_shared<SamplerParam>(
 #if defined(REPLACE_GLEW)
-            this->getOpenGLFunctionTable(),
+            this->getFunctionTable(),
 #endif
             name,location,type,binding);
       }
       auto Param = std::make_shared<ProgramObjectParameter>(
 #if defined(REPLACE_GLEW)
-          this->getOpenGLFunctionTable(),
+          this->getFunctionTable(),
 #endif
           location,type,name,size);//param
       if(Active[t]==GL_ACTIVE_ATTRIBUTES)this->_attributeList[name]=Param;
@@ -392,7 +393,7 @@ void ProgramObject::_getBufferList(){
   for(GLint i=0;i<nofBuffers;++i){
     auto params = std::make_shared<ProgramObjectBufferParams>(
 #if defined(REPLACE_GLEW)
-        this->getOpenGLFunctionTable(),
+        this->getFunctionTable(),
 #endif
         this->getId(),i);
     this->_bufferList[params->getName()]=params;
@@ -726,7 +727,7 @@ ProgramObjectParameter const&ProgramObject::getUniform  (std::string name,bool p
 #if defined(REPLACE_GLEW)
     //TODO there should be zeroth element n this->_uniformList that represents
     //non existing uniform in order to prevent multi threading to fail
-    static const ProgramObjectParameter er(this->getOpenGLFunctionTable());
+    static const ProgramObjectParameter er(this->getFunctionTable());
 #else
     static const ProgramObjectParameter er;
 #endif
@@ -749,7 +750,7 @@ ProgramObjectParameter const&ProgramObject::getAttribute(std::string name,bool p
 #if defined(REPLACE_GLEW)
     //TODO there should be zeroth element n this->_attributeList that represents
     //non existing uniform in order to prevent multi threading to fail
-    static const ProgramObjectParameter er(this->getOpenGLFunctionTable());
+    static const ProgramObjectParameter er(this->getFunctionTable());
 #else
     static const ProgramObjectParameter er;
 #endif
@@ -770,7 +771,7 @@ ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name,bool p
   if(i==this->_bufferList.end()){
     if(printErrors)err("ProgramObject::getBuffer("+name+") - there is no such buffer");
 #if defined(REPLACE_GLEW)
-    static const ProgramObjectBufferParams er(this->getOpenGLFunctionTable());
+    static const ProgramObjectBufferParams er(this->getFunctionTable());
 #else
     static const ProgramObjectBufferParams er;
 #endif
@@ -873,15 +874,15 @@ void ProgramObject::set(
     const GLfloat*value){
   void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
 #if defined(REPLACE_GLEW)
-    this->getOpenGLFunctionTable()->glUniformMatrix2fv  ,
-    this->getOpenGLFunctionTable()->glUniformMatrix3fv  ,
-    this->getOpenGLFunctionTable()->glUniformMatrix4fv  ,
-    this->getOpenGLFunctionTable()->glUniformMatrix2x3fv,
-    this->getOpenGLFunctionTable()->glUniformMatrix3x2fv,
-    this->getOpenGLFunctionTable()->glUniformMatrix2x4fv,
-    this->getOpenGLFunctionTable()->glUniformMatrix4x2fv,
-    this->getOpenGLFunctionTable()->glUniformMatrix3x4fv,
-    this->getOpenGLFunctionTable()->glUniformMatrix4x3fv,
+    this->getFunctionTable()->glUniformMatrix2fv  ,
+    this->getFunctionTable()->glUniformMatrix3fv  ,
+    this->getFunctionTable()->glUniformMatrix4fv  ,
+    this->getFunctionTable()->glUniformMatrix2x3fv,
+    this->getFunctionTable()->glUniformMatrix3x2fv,
+    this->getFunctionTable()->glUniformMatrix2x4fv,
+    this->getFunctionTable()->glUniformMatrix4x2fv,
+    this->getFunctionTable()->glUniformMatrix3x4fv,
+    this->getFunctionTable()->glUniformMatrix4x3fv,
 #else//REPLACE_GLEW
     glUniformMatrix2fv  ,
     glUniformMatrix3fv  ,
@@ -904,15 +905,15 @@ void ProgramObject::set(
     const GLdouble*value){
   void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
 #if defined(REPLACE_GLEW)
-    this->getOpenGLFunctionTable()->glUniformMatrix2dv  ,
-    this->getOpenGLFunctionTable()->glUniformMatrix3dv  ,
-    this->getOpenGLFunctionTable()->glUniformMatrix4dv  ,
-    this->getOpenGLFunctionTable()->glUniformMatrix2x3dv,
-    this->getOpenGLFunctionTable()->glUniformMatrix3x2dv,
-    this->getOpenGLFunctionTable()->glUniformMatrix2x4dv,
-    this->getOpenGLFunctionTable()->glUniformMatrix4x2dv,
-    this->getOpenGLFunctionTable()->glUniformMatrix3x4dv,
-    this->getOpenGLFunctionTable()->glUniformMatrix4x3dv,
+    this->getFunctionTable()->glUniformMatrix2dv  ,
+    this->getFunctionTable()->glUniformMatrix3dv  ,
+    this->getFunctionTable()->glUniformMatrix4dv  ,
+    this->getFunctionTable()->glUniformMatrix2x3dv,
+    this->getFunctionTable()->glUniformMatrix3x2dv,
+    this->getFunctionTable()->glUniformMatrix2x4dv,
+    this->getFunctionTable()->glUniformMatrix4x2dv,
+    this->getFunctionTable()->glUniformMatrix3x4dv,
+    this->getFunctionTable()->glUniformMatrix4x3dv,
 #else//REPLACE_GLEW
     glUniformMatrix2dv  ,
     glUniformMatrix3dv  ,
@@ -935,15 +936,15 @@ void ProgramObject::setdsa(
     const GLfloat*value){
   void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
 #if defined(REPLACE_GLEW)
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix2fv  ,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix3fv  ,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix4fv  ,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3fv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2fv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4fv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2fv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4fv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3fv,
+    this->getFunctionTable()->glProgramUniformMatrix2fv  ,
+    this->getFunctionTable()->glProgramUniformMatrix3fv  ,
+    this->getFunctionTable()->glProgramUniformMatrix4fv  ,
+    this->getFunctionTable()->glProgramUniformMatrix2x3fv,
+    this->getFunctionTable()->glProgramUniformMatrix3x2fv,
+    this->getFunctionTable()->glProgramUniformMatrix2x4fv,
+    this->getFunctionTable()->glProgramUniformMatrix4x2fv,
+    this->getFunctionTable()->glProgramUniformMatrix3x4fv,
+    this->getFunctionTable()->glProgramUniformMatrix4x3fv,
 #else//REPLACE_GLEW
     glProgramUniformMatrix2fv  ,
     glProgramUniformMatrix3fv  ,
@@ -966,15 +967,15 @@ void ProgramObject::setdsa(
     const GLdouble*value){
   void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
 #if defined(REPLACE_GLEW)
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix2dv  ,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix3dv  ,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix4dv  ,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x3dv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x2dv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix2x4dv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x2dv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix3x4dv,
-    this->getOpenGLFunctionTable()->glProgramUniformMatrix4x3dv,
+    this->getFunctionTable()->glProgramUniformMatrix2dv  ,
+    this->getFunctionTable()->glProgramUniformMatrix3dv  ,
+    this->getFunctionTable()->glProgramUniformMatrix4dv  ,
+    this->getFunctionTable()->glProgramUniformMatrix2x3dv,
+    this->getFunctionTable()->glProgramUniformMatrix3x2dv,
+    this->getFunctionTable()->glProgramUniformMatrix2x4dv,
+    this->getFunctionTable()->glProgramUniformMatrix4x2dv,
+    this->getFunctionTable()->glProgramUniformMatrix3x4dv,
+    this->getFunctionTable()->glProgramUniformMatrix4x3dv,
 #else//REPLACE_GLEW
     glProgramUniformMatrix2dv  ,
     glProgramUniformMatrix3dv  ,

@@ -2,24 +2,27 @@
 
 #include<geGL/OpenGLObject.h>
 #include<iostream>
+#include<vector>
 
 namespace ge{
   namespace gl{
     class GEGL_EXPORT Shader: public OpenGLObject{
       public:
+        using Source  = std::string;
+        using Sources = std::vector<Source>;
         Shader();
-        Shader(GLenum type,std::string source="");
+        Shader(GLenum type,Sources const& sources = {});
 #if defined(REPLACE_GLEW)
-        Shader(std::shared_ptr<OpenGLFunctionTable>const&table);
+        Shader(opengl::FunctionTablePointer const&table);
         Shader(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             GLenum type,
-            std::string source="");
+            Sources const& sources = {});
 #endif
         virtual ~Shader();
-        void        create(GLenum type,std::string source="");
-        void        setSource(std::string source   );
-        void        compile  (std::string source="");
+        void        create(GLenum type,Sources const& sources = {});
+        void        setSource(Sources const& sources = {});
+        void        compile  (Sources const& sources = {});
         GLboolean   isShader        ()const;
         GLenum      getType         ()const;
         GLboolean   getDeleteStatus ()const;
@@ -27,7 +30,7 @@ namespace ge{
         GLuint      getInfoLogLength()const;
         GLuint      getSourceLength ()const;
         std::string getInfoLog      ()const;
-        std::string getSource       ()const;
+        Source      getSource       ()const;
       protected:
         GLint _getParam(GLenum pname)const;
     };

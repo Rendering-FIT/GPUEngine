@@ -1,6 +1,7 @@
 #include <geGL/AsynchronousQueryObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 AsynchronousQueryObject::AsynchronousQueryObject(
     GLenum     target,
@@ -22,7 +23,7 @@ AsynchronousQueryObject::AsynchronousQueryObject(
 
 #if defined(REPLACE_GLEW)
 AsynchronousQueryObject::AsynchronousQueryObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLenum     target,
     GLenum     waitingType,
     ResultSize resultSize):OpenGLObject(table){
@@ -33,7 +34,7 @@ AsynchronousQueryObject::AsynchronousQueryObject(
 }
 
 AsynchronousQueryObject::AsynchronousQueryObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     AsynchronousQueryObject*existingQuery):OpenGLObject(table){
   glGenQueries(1,&this->_id);
   this->_target      = existingQuery->_target;

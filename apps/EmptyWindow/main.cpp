@@ -4,20 +4,36 @@
 #include<geUtil/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
 #include<geUtil/ArgumentManager/ArgumentManager.h>
-#include<geAd/WindowObject/WindowObject.h>
+#include<geAd/SDLWindow/SDLWindow.h>
+#include<geAd/SDLWindow/SDLEventProc.h>
+#include<geAd/SDLWindow/EventHandlerInterface.h>
+#include<geAd/SDLWindow/EventCallbackInterface.h>
+#include<geAd/SDLWindow/CallbackInterface.h>
+#include<geAd/SDLWindow/SDLEventData.h>
 
 struct Data{
   std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
   std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
-  std::shared_ptr<ge::gl::OpenGLFunctionProvider>   gl           = nullptr;
+  std::shared_ptr<ge::gl::opengl::FunctionProvider> gl           = nullptr;
   std::shared_ptr<ge::util::SDLEventProc>           mainLoop     = nullptr;
   std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
+  static void init(Data*data);
+  class IdleCallback: public ge::util::CallbackInterface{
+    public:
+      Data*data;
+      IdleCallback(Data*data){this->data = data;}
+      virtual void operator()()override;
+      virtual ~IdleCallback(){}
+  };
+  class WindowEventCallback: public ge::util::EventCallbackInterface{
+    public:
+      Data*data;
+      WindowEventCallback(Data*data){this->data = data;}
+      virtual void operator()(ge::util::EventDataPointer const&)override;
+      virtual ~WindowEventCallback(){}
+  };
 };
 
-void init(Data*data);
-void windowEvent(Data*data,SDL_Event event);
-void idle(Data*data);
-void mouse();
 
 
 int main(int argc,char*argv[]){
@@ -28,32 +44,34 @@ int main(int argc,char*argv[]){
   ge::util::sim::copyArgumentManager2Namespace(data.sData,&*argm,data.typeRegister);
 
   data.mainLoop = std::make_shared<ge::util::SDLEventProc>();
+  data.mainLoop->setIdleCallback(std::make_shared<Data::IdleCallback>(&data));
+
   data.window   = std::make_shared<ge::util::SDLWindow>();
-  data.window->createContext("rendering");
-  data.window->setIdleCallback((ge::util::SDLWindow::Callback)idle,&data);
-  data.window->setEventCallback(SDL_WINDOWEVENT,(ge::util::SDLWindow::EventCallback)windowEvent,&data);
+  data.window->createContext("rendering",330,ge::util::SDLWindow::COMPATIBILITY);
+  data.window->setEventCallback(SDL_WINDOWEVENT,std::make_shared<Data::WindowEventCallback>(&data));
   data.mainLoop->addWindow("primaryWindow",data.window);
-  init(&data);
+  data.init(&data);
   (*data.mainLoop)();
 
   return EXIT_SUCCESS;
 }
 
-void idle(Data*data){
-  data->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  data->window->swap();
+void Data::IdleCallback::operator()(){
+  this->data->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  this->data->window->swap();
 }
 
-void windowEvent(Data*data,SDL_Event event){
-  if(event.window.event==SDL_WINDOWEVENT_CLOSE){
-    data->mainLoop->removeWindow("primaryWindow");
+void Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&event){
+  auto sdlEventData = (ge::util::SDLEventData const*)(event);
+  if(sdlEventData->event.window.event==SDL_WINDOWEVENT_CLOSE){
+    this->data->mainLoop->removeWindow("primaryWindow");
   }
 }
 
-void init(Data*data){
+void Data::init(Data*data){
   data->window->makeCurrent("rendering");
   ge::gl::init();
-  data->gl = std::make_shared<ge::gl::OpenGLFunctionProvider>(ge::gl::prepareOpenGLFunctionTable((ge::gl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
+  data->gl = std::make_shared<ge::gl::opengl::FunctionProvider>(ge::gl::opengl::prepareFunctionTable((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
 
   data->gl->glEnable(GL_DEPTH_TEST);
   data->gl->glDepthFunc(GL_LEQUAL);

@@ -23,7 +23,7 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps geGL geUtil WindowObject)
+set(Internal_deps geGL geUtil SDLWindow)
 set(External_libs SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include

@@ -34,12 +34,12 @@ namespace ge{
 #if defined(REPLACE_GLEW)
         template<typename...ARGS>
           ProgramObject(
-              std::shared_ptr<OpenGLFunctionTable>const&table,
+              opengl::FunctionTablePointer const&table,
               ARGS...args):OpenGLObject(table){
             this->_resolveConstructorArgs(args...);
           }
         ProgramObject(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             std::vector<std::string>const&data,
             unsigned version = 450,
             std::string profile = "core");

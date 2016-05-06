@@ -47,20 +47,20 @@ namespace ge{
             GLsizei depth         );
 #if defined(REPLACE_GLEW)
         TextureObject(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         );
         TextureObject(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         ,
             GLsizei height        );
         TextureObject(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,

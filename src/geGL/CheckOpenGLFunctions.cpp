@@ -6,9 +6,9 @@
 #include<geGL/Export.h>
 #include<geGL/GeneratedOpenGLTrapFunctions.h>
 
-using namespace ge::gl;
+using namespace ge::gl::opengl;
 
-void ge::gl::checkOpenGLFunctions(std::shared_ptr<OpenGLFunctionTable>const&table){
+void ge::gl::opengl::checkFunctions(FunctionTablePointer const&table){
 #include<geGL/GeneratedCheckOpenGLFunctions.h>
 }
 

@@ -1,13 +1,14 @@
 #include<geGL/Program.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 Program::Program(){
   this->_id = glCreateProgram();
 }
 
 #if defined(REPLACE_GLEW)
-Program::Program(std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+Program::Program(FunctionTablePointer const&table):OpenGLObject(table){
   this->_id = glCreateProgram();
 }
 #endif

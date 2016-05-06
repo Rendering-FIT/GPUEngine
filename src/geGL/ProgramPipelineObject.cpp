@@ -3,6 +3,7 @@
 //#define USE_DSA
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 ProgramPipelineObject::ProgramPipelineObject(){
   glCreateProgramPipelines(1,&this->_id);
@@ -10,7 +11,7 @@ ProgramPipelineObject::ProgramPipelineObject(){
 
 #if defined(REPLACE_GLEW)
 ProgramPipelineObject::ProgramPipelineObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table):OpenGLObject(table){
+    FunctionTablePointer const&table):OpenGLObject(table){
   glCreateProgramPipelines(1,&this->_id);
 }
 #endif

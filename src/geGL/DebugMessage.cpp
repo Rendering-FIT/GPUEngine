@@ -2,6 +2,7 @@
 #include<string>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 std::string ge::gl::translateDebugSource(GLenum source){
   switch(source){//swich over debug sources
@@ -107,7 +108,7 @@ void highDebugMessage(
  */
 void ge::gl::setLowAndGreaterDebugMessage(
 #if defined(REPLACE_GLEW)
-    OpenGLFunctionProvider const&gl
+    FunctionProvider const&gl
 #endif
     ){
 #if defined(REPLACE_GLEW)
@@ -124,7 +125,7 @@ void ge::gl::setLowAndGreaterDebugMessage(
  */
 void ge::gl::setMediumAndGreaterDebugMessage(
 #if defined(REPLACE_GLEW)
-    OpenGLFunctionProvider const&gl
+    FunctionProvider const&gl
 #endif
     ){
 #if defined(REPLACE_GLEW)
@@ -141,7 +142,7 @@ void ge::gl::setMediumAndGreaterDebugMessage(
  */
 void ge::gl::setHighDebugMessage(
 #if defined(REPLACE_GLEW)
-    OpenGLFunctionProvider const&gl
+    FunctionProvider const&gl
 #endif
     ){
 #if defined(REPLACE_GLEW)
@@ -158,7 +159,7 @@ void ge::gl::setHighDebugMessage(
  */
 void ge::gl::setDefaultDebugMessage(
 #if defined(REPLACE_GLEW)
-    OpenGLFunctionProvider const&gl
+    FunctionProvider const&gl
 #endif
     ){
 #if defined(REPLACE_GLEW)
@@ -178,7 +179,7 @@ void ge::gl::setDefaultDebugMessage(
  */
 void ge::gl::setDebugMessage(
 #if defined(REPLACE_GLEW)
-    OpenGLFunctionProvider const&gl,
+    FunctionProvider const&gl,
 #endif
     GLDEBUGPROC fce,
     void*data){

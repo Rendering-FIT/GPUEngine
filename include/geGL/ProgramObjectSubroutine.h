@@ -9,7 +9,7 @@ namespace ge{
   namespace gl{
     class GEGL_EXPORT ShaderObjectSubroutine
 #if defined(REPLACE_GLEW)
-      :protected OpenGLFunctionProvider
+      :protected opengl::FunctionProvider
 #endif
     {
       protected:
@@ -21,7 +21,7 @@ namespace ge{
         ~ShaderObjectSubroutine();
         ShaderObjectSubroutine(
 #if defined(REPLACE_GLEW)
-            std::shared_ptr<OpenGLFunctionTable>const&table
+            opengl::FunctionTablePointer const&table
 #endif
             );
         void addUniform(std::string name,ShaderObjectSubroutineUniform const&uniform);

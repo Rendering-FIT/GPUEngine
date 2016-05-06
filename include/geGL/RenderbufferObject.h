@@ -17,13 +17,13 @@ namespace ge{
             GLsizei height);
 #if defined(REPLACE_GLEW)
         RenderbufferObject(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             GLenum  internalFormat,
             GLsizei samples,
             GLsizei width,
             GLsizei height);
         RenderbufferObject(
-            std::shared_ptr<OpenGLFunctionTable>const&table,
+            opengl::FunctionTablePointer const&table,
             GLenum  internalFormat,
             GLsizei width,
             GLsizei height);

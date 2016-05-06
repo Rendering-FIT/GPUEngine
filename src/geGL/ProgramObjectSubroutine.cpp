@@ -1,6 +1,7 @@
 #include<geGL/ProgramObjectSubroutine.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 ShaderObjectSubroutine::~ShaderObjectSubroutine(){
   if(this->_indices)
@@ -9,11 +10,11 @@ ShaderObjectSubroutine::~ShaderObjectSubroutine(){
 
 ShaderObjectSubroutine::ShaderObjectSubroutine(
 #if defined(REPLACE_GLEW)
-    std::shared_ptr<OpenGLFunctionTable>const&table
+    FunctionTablePointer const&table
 #endif
     )
 #if defined(REPLACE_GLEW)
-  :OpenGLFunctionProvider(table)
+  :FunctionProvider(table)
 #endif
 {
   this->_indices=nullptr;

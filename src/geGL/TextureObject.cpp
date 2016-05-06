@@ -3,6 +3,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 GLenum ge::gl::textureTarget2Binding(GLenum target){
   switch(target){
@@ -333,7 +334,7 @@ TextureObject::TextureObject(
 
 #if defined(REPLACE_GLEW)
 TextureObject::TextureObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
@@ -347,7 +348,7 @@ TextureObject::TextureObject(
 }
 
 TextureObject::TextureObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
@@ -362,7 +363,7 @@ TextureObject::TextureObject(
 }
 
 TextureObject::TextureObject(
-    std::shared_ptr<OpenGLFunctionTable>const&table,
+    FunctionTablePointer const&table,
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,

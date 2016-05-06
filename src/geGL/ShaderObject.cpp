@@ -9,6 +9,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 GLenum ge::gl::file2ShaderType(std::string fileName){
   switch(fileTypeSwitch(fileName,12,//number of extensions
@@ -93,13 +94,13 @@ std::string ShaderObject::_setVersion(
 }
 
 ShaderObject::ShaderObject(GLenum type,std::string source):Shader(){
-  this->create(type,source);
+  this->create(type,{source});
 }
 
 ShaderObject::ShaderObject(std::string file){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
@@ -108,7 +109,7 @@ ShaderObject::ShaderObject(
     std::string file,
     GLenum      type){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
@@ -119,7 +120,7 @@ ShaderObject::ShaderObject(
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_appendAfterVersion(source,defs);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
@@ -133,7 +134,7 @@ ShaderObject::ShaderObject(
   source = this->_appendAfterVersion(source,defs);
   source = this->_setVersion(source,version,profile);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
@@ -145,50 +146,50 @@ ShaderObject::ShaderObject(
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_setVersion(source,version,profile);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
 
 #if defined(REPLACE_GLEW)
-ShaderObject::ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,GLenum type,std::string source):Shader(table){
-  this->create(type,source);
+ShaderObject::ShaderObject(FunctionTablePointer const&table,GLenum type,std::string source):Shader(table){
+  this->create(type,{source});
 }
-ShaderObject::ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file):Shader(table){
+ShaderObject::ShaderObject(FunctionTablePointer const&table,std::string file):Shader(table){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
-ShaderObject::ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,GLenum type):Shader(table){
+ShaderObject::ShaderObject(FunctionTablePointer const&table,std::string file,GLenum type):Shader(table){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
-ShaderObject::ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,std::string defs):Shader(table){
+ShaderObject::ShaderObject(FunctionTablePointer const&table,std::string file,std::string defs):Shader(table){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_appendAfterVersion(source,defs);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
-ShaderObject::ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,std::string defs,unsigned version,std::string profile):Shader(table){
+ShaderObject::ShaderObject(FunctionTablePointer const&table,std::string file,std::string defs,unsigned version,std::string profile):Shader(table){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_appendAfterVersion(source,defs);
   source = this->_setVersion(source,version,profile);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
-ShaderObject::ShaderObject(std::shared_ptr<OpenGLFunctionTable>const&table,std::string file,unsigned version,std::string profile):Shader(table){
+ShaderObject::ShaderObject(FunctionTablePointer const&table,std::string file,unsigned version,std::string profile):Shader(table){
   std::string source = ge::core::loadTextFile(file);//this->_readShader(file);
   source = this->_setVersion(source,version,profile);
   GLenum type = file2ShaderType(file);
-  this->create(type,source);
+  this->create(type,{source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
@@ -201,7 +202,7 @@ ShaderObject::~ShaderObject(){
 void ShaderObject::setVersion(unsigned version,std::string profile){
   std::string source=this->getSource();
   source = this->_setVersion(source,version,profile);
-  this->compile(source);
+  this->compile({source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
@@ -209,7 +210,7 @@ void ShaderObject::setVersion(unsigned version,std::string profile){
 void ShaderObject::appendAfterVersion(std::string defs){
   std::string source=this->getSource();
   source = this->_appendAfterVersion(source,defs);
-  this->compile(source);
+  this->compile({source});
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
