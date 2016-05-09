@@ -257,11 +257,11 @@ public:
       MatrixList *matrixList=(node.getReferenceFrame()==osg::LightSource::ABSOLUTE_RF)?
             nullptr:transformationStack.back()->getOrCreateMatrixList().get();
 #else
-      MatrixList *matrixList=transformationStack.back()->getOrCreateMatrixList().get();
+      shared_ptr<MatrixList> matrixList=transformationStack.back()->getOrCreateMatrixList();
 #endif
 
       // add light
-      RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,matrixList);
+      RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,matrixList.get());
 
       // traverse subgraph
       traverse(node);
@@ -362,22 +362,6 @@ public:
          specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
                0.f,0.f,0.f,0.f);
       }
-
-      // create GLState
-      StateSetManager::GLState *glState=rc->createGLState();
-      shared_ptr<ge::gl::ProgramObject> ambientProgram(RenderingContext::current()->getAmbientProgram());
-      shared_ptr<ge::gl::ProgramObject> phongProgram(RenderingContext::current()->getPhongProgram());
-      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
-      glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&phongProgram);
-      glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
-      glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
-      glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
-      glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&specularAndShininessUniform);
-
-      // find (or create new) geRG StateSet
-      // (StateSet is fully initialized during creation with all the rendering commands, etc.)
-      shared_ptr<ge::rg::StateSet> stateSet(rc->getOrCreateStateSet(glState));
-      delete glState;
 
       // process geometry
       osg::Geometry *g=drawable.asGeometry();
@@ -506,6 +490,35 @@ public:
 
          // create AttribConfigRef
          AttribConfigRef config(configData);
+
+         // create GLState
+         StateSetManager::GLState *glState=rc->createGLState();
+         bool usePerVertexColor=g->getColorArray()!=nullptr;
+         shared_ptr<ge::gl::ProgramObject> ambientProgram(usePerVertexColor?RenderingContext::current()->getAmbientProgram():RenderingContext::current()->getAmbientUniformColorProgram());
+         shared_ptr<ge::gl::ProgramObject> phongProgram(usePerVertexColor?RenderingContext::current()->getPhongProgram():RenderingContext::current()->getPhongUniformColorProgram());
+         glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
+         glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&phongProgram);
+         glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
+         glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
+         glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
+         shared_ptr<ge::core::SharedCommandList> commandList;
+         if(usePerVertexColor)
+            glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&specularAndShininessUniform);
+         else {
+            // FIXME: avoid multiple stateSets if they are using the same diffuse and specular color
+            commandList=make_shared<ge::core::SharedCommandList>();
+            const osg::Vec4& diffuse=osgMaterial?osgMaterial->getDiffuse(osg::Material::FRONT)
+                                                :osg::Vec4(0.8f,0.8f,0.8f,1.f);
+            commandList->emplace_back(make_shared<FlexibleUniform4f>("color",
+                  diffuse.r(),diffuse.g(),diffuse.b(),diffuse.a()));
+            commandList->emplace_back(specularAndShininessUniform);
+            glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&commandList);
+         }
+
+         // find (or create new) geRG StateSet
+         // (StateSet is fully initialized during creation with all the rendering commands, etc.)
+         shared_ptr<ge::rg::StateSet> stateSet(rc->getOrCreateStateSet(glState));
+         delete glState;
 
          // create Mesh
          _model->meshList().emplace_back(make_shared<Mesh>());

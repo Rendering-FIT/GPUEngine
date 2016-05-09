@@ -91,22 +91,22 @@ RenderingContext::RenderingContext()
    , _stateSetManager(make_shared<StateSetDefaultManager>())
    , _useARBShaderDrawParameters(false)
 {
-   // create draw commands buffer
-   _drawIndirectBuffer=new BufferObject(initialDrawIndirectBufferSize,nullptr,GL_DYNAMIC_COPY);
-   //_transformationBuffer=new BufferObject(_initialTransformationBufferSize,nullptr,GL_DYNAMIC_DRAW);
-   _cpuTransformationBuffer=new float[initialTransformationBufferCapacity*16];
-
-   // create Null objects (Null object design pattern)
-
-   // primitiveStorage: null object has count set to zero
+   // primitiveStorage - array-based
+   // null objects:
+   // - id 0 - numItems set to zero (no buffer space)
+#if 1
+   // - id 1 - numItems set to 1, index to 0 (single allocation on the beginning of buffer)
+   _primitiveStorage.alloc(1,*static_cast<Mesh*>(nullptr));
    PrimitiveGpuData *psData=static_cast<PrimitiveGpuData*>(
          _primitiveStorage.bufferObject()->map(0,sizeof(PrimitiveGpuData),GL_MAP_WRITE_BIT));
    psData->countAndIndexedFlag=0;
    psData->first=0;
    psData->vertexOffset=0;
    _primitiveStorage.bufferObject()->unmap();
+#endif
 
-   // drawCommandStorage: null object has assigned empty matrix list
+   // drawCommandStorage - item-based
+   // null object on id 0: all members points to zero objects
    DrawCommandGpuData *dcData=static_cast<DrawCommandGpuData*>(
          _drawCommandStorage.bufferObject()->map(0,sizeof(DrawCommandGpuData),GL_MAP_WRITE_BIT));
    dcData->primitiveSetOffset4=0;
@@ -114,25 +114,41 @@ RenderingContext::RenderingContext()
    dcData->stateSetOffset4=0;
    _drawCommandStorage.bufferObject()->unmap();
 
-   // matrixListStorage: null object is identity matrix
+   // matrixStorage - array-based
+   // null objects:
+   // - id 0 - numItems set to zero (no buffer space)
+#if 0
+   // - id 1 - numItems set to 1, index to 0 pointing to identity matrix
+   _matrixStorage.alloc(1,*static_cast<MatrixList*>(nullptr));
    float *p1=static_cast<float*>(_matrixStorage.bufferObject()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
    memcpy(p1,identityMatrix,sizeof(float)*16);
    _matrixStorage.bufferObject()->unmap();
+#endif
 
-   // _matrixListControlStorage: null object points to the null identity matrix in _matrixStorage
-   // and its number of matrices is set to zero
-   ListControlGpuData *maData=static_cast<ListControlGpuData*>(_matrixListControlStorage.bufferObject()->map(0,sizeof(ListControlGpuData),GL_MAP_WRITE_BIT));
+   // matrixListControlStorage - item-based
+   // null object on id 0: startIndex set to 0 (points to identity matrix),
+   // numItems to zero (e.g. empty list)
+   ListControlGpuData *maData=static_cast<ListControlGpuData*>(
+         _matrixListControlStorage.bufferObject()->map(0,sizeof(ListControlGpuData),GL_MAP_WRITE_BIT));
    maData->startIndex=0;
    maData->numItems=0;
    _matrixListControlStorage.bufferObject()->unmap();
 
-   // stateSetStorage: null object points to the zero index in _drawIndirectBuffer
-   StateSetGpuData *ssData=static_cast<StateSetGpuData*>(_stateSetStorage.bufferObject()->map(0,sizeof(StateSetGpuData),GL_MAP_WRITE_BIT));
+   // stateSetStorage - item-based
+   // null object, id 0: points to the zero index in _drawIndirectBuffer
+   StateSetGpuData *ssData=static_cast<StateSetGpuData*>(
+         _stateSetStorage.bufferObject()->map(0,sizeof(StateSetGpuData),GL_MAP_WRITE_BIT));
    ssData->drawIndirectBufferOffset=0;
    _stateSetStorage.bufferObject()->unmap();
 
-   // _cpuTransformationBuffer: null object is identity matrix
+   // cpuTransformationBuffer + transformationAllocationManager - item-based
+   // null object, id 0: points to identity matrix
+   _cpuTransformationBuffer=new float[initialTransformationBufferCapacity*16];
    memcpy(&_cpuTransformationBuffer[0],identityMatrix,sizeof(float)*16);
+
+   // drawIndirectBuffer
+   // written by compute shader by processing drawCommandBuffer
+   _drawIndirectBuffer=new BufferObject(initialDrawIndirectBufferSize,nullptr,GL_DYNAMIC_COPY);
 }
 
 
@@ -720,6 +736,79 @@ const shared_ptr<ProgramObject>& RenderingContext::getAmbientProgram() const
 }
 
 
+const shared_ptr<ProgramObject>& RenderingContext::getAmbientUniformColorProgram() const
+{
+   if(!_ambientUniformColorProgram) {
+      const_cast<RenderingContext*>(this)->_ambientUniformColorProgram=make_shared<ProgramObject>(
+         GL_VERTEX_SHADER,
+         static_cast<std::stringstream&>(stringstream()<<
+         "#version 430\n"
+         <<(_useARBShaderDrawParameters
+         ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+           "\n"
+           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+           "   mat4 instancingMatrixBuffer[];\n"
+           "};\n"
+         : ""
+         )<<
+         "\n"
+         "layout(location=0) in vec4 position;\n"
+         "layout(location=3) in vec2 texCoord;\n"
+         <<(_useARBShaderDrawParameters
+         ? ""
+         : "layout(location=12) in mat4 instancingMatrix;\n"
+         )<<
+         "\n"
+         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+         "   flat vec4 color;\n"
+         "   vec2 texCoord;\n"
+         "} o;\n"
+         "\n"
+         "uniform vec4 color;\n"
+         "uniform vec4 globalAmbientLight; // alpha must be 1\n"
+         "uniform mat4 projection;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   // ambient lighting\n"
+         "   o.color=globalAmbientLight*color;\n"
+         "   o.texCoord=texCoord;\n"
+         "\n"
+         "   // vertex position\n"
+         <<(_useARBShaderDrawParameters
+         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+           "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
+         : "   gl_Position=projection*instancingMatrix*position;\n"
+         )<<
+         "}\n").str(),
+         GL_FRAGMENT_SHADER,
+         "#version 330\n"
+         "\n"
+         "in VertexData {\n"
+         "   flat vec4 color;\n"
+         "   vec2 texCoord;\n"
+         "};\n"
+         "\n"
+         "layout(location=0) out vec4 fragColor;\n"
+         "\n"
+         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+         "uniform sampler2D colorTexture;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   // texturing and final color\n"
+         "   if(colorTexturingMode==0) // no texturing\n"
+         "      fragColor=color;\n"
+         "   else if(colorTexturingMode==1) // modulate\n"
+         "      fragColor=color*texture(colorTexture,texCoord);\n"
+         "   else // replace\n"
+         "      fragColor=texture(colorTexture,texCoord);\n"
+         "}\n");
+   }
+   return _ambientUniformColorProgram;
+}
+
+
 const shared_ptr<ProgramObject>& RenderingContext::getPhongProgram() const
 {
    if(!_phongProgram) {
@@ -849,56 +938,129 @@ const shared_ptr<ProgramObject>& RenderingContext::getPhongProgram() const
 }
 
 
-static void countMatrices(Transformation *t)
+const shared_ptr<ProgramObject>& RenderingContext::getPhongUniformColorProgram() const
 {
-   MatrixList *ml=t->matrixList().get();
-   if(ml) {
-      if(ml->restartFlag()) {
-         ml->setNumMatrices(1);
-         ml->setRestartFlag(false);
-      } else {
-         ml->setNumMatrices(ml->numMatrices()+1);
-      }
+   if(!_phongUniformColorProgram) {
+      const_cast<RenderingContext*>(this)->_phongUniformColorProgram=make_shared<ProgramObject>(
+         GL_VERTEX_SHADER,
+         static_cast<std::stringstream&>(stringstream()
+         <<(_useARBShaderDrawParameters
+         ? "#version 430\n"
+           "#extension GL_ARB_shader_draw_parameters : enable\n"
+           "\n"
+           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+           "   mat4 instancingMatrixBuffer[];\n"
+           "};\n"
+         : "#version 330\n"
+         )<<
+         "\n"
+         "layout(location=0) in vec4 position;\n"
+         "layout(location=1) in vec3 normal;\n"
+         "layout(location=3) in vec2 texCoord;\n"
+         <<(_useARBShaderDrawParameters
+         ? ""
+         : "layout(location=12) in mat4 instancingMatrix;\n"
+         )<<
+         "\n"
+         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+         "   vec3 eyePosition;\n"
+         "   vec3 eyeNormal;\n"
+         "   vec2 texCoord;\n"
+         "} o;\n"
+         "\n"
+         "uniform mat4 projection;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   o.texCoord=texCoord;\n"
+         <<(_useARBShaderDrawParameters
+         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+           "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
+           "   vec4 v=instancingMatrix*position;\n"
+         : "   vec4 v=instancingMatrix*position;\n"
+         )<<
+         "   o.eyePosition=v.xyz;\n"
+         "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+         "   gl_Position=projection*v;\n"
+         "}\n").str(),
+         GL_FRAGMENT_SHADER,
+         "#version 330\n"
+         "\n"
+         "in VertexData {\n"
+         "   vec3 eyePosition;\n"
+         "   vec3 eyeNormal;\n"
+         "   vec2 texCoord;\n"
+         "};\n"
+         "\n"
+         "layout(location=0) out vec4 fragColor;\n"
+         "\n"
+         "uniform vec4 color;\n"
+         "uniform vec4 specularAndShininess; // shininess in alpha\n"
+         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+         "uniform sampler2D colorTexture;\n"
+         "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+         "uniform vec3 lightColor;\n"
+         "uniform vec3 lightAttenuation;\n"
+         "\n"
+         "void main()\n"
+         "{\n"
+         "   // compute VL - vertex to light vector, in eye coordinates\n"
+         "   vec3 VL=lightPosition.xyz;\n"
+         "   if(lightPosition.w!=0.)\n"
+         "      VL-=eyePosition;\n"
+         "   float VLlen=length(VL);\n"
+         "   vec3 VLdir=VL/VLlen;\n"
+         "\n"
+         "   // invert normals on back facing triangles\n"
+         "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+         "\n"
+         "   // Lambert's diffuse reflection\n"
+         "   float NdotL=dot(N,VLdir);\n"
+         "\n"
+         "   // fragments facing the light get all the lighting\n"
+         "   // while those not facing the light get only ambient lighting\n"
+         "   if(NdotL<=0.)\n"
+         "   {\n"
+         "      // final sum for light-not-facing fragments\n"
+         "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
+         "      // or we can simply drop the fragment.)\n"
+         "      discard;\n"
+         "   }\n"
+         "   else\n"
+         "   {\n"
+         "      // specular effect\n"
+         "      float specularEffect;\n"
+         "      vec3 R=reflect(-VLdir,N);\n"
+         "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+         "      float RdotV=dot(R,-Vdir);\n"
+         "      if(RdotV>0.)\n"
+         "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+         "      else\n"
+         "         specularEffect = 0.;\n"
+         "\n"
+         "      // attenuation\n"
+         "      float attenuation=lightAttenuation[0]+\n"
+         "                        lightAttenuation[1]*VLlen+\n"
+         "                        lightAttenuation[2]*VLlen*VLlen;\n"
+         "\n"
+         "      // texturing\n"
+         "      vec4 c;\n;"
+         "      if(colorTexturingMode==0) // no texturing\n"
+         "         c=color;\n"
+         "      else if(colorTexturingMode==1) // modulate\n"
+         "         c=texture(colorTexture,texCoord)*color;\n"
+         "      else // replace\n"
+         "         c=texture(colorTexture,texCoord);\n"
+         "\n"
+         "      // final sum for light-facing fragments\n"
+         "      fragColor=vec4(1.f,0.f,0.f,1.f);/*(c.rgb*lightColor*NdotL+\n"
+         "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+         "                      attenuation,\n"
+         "                     c.a)*/;\n"
+         "   }\n"
+         "}\n");
    }
-   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
-      countMatrices(it->get());
-}
-
-
-static void processTransformation(Transformation *t,const glm::mat4& parentMV)
-{
-   // compute new matrix
-   glm::mat4 mv=parentMV*(*reinterpret_cast<glm::mat4*>(t->getMatrixPtr()));
-
-   // update number of matrices and allocated space for them
-   MatrixList *ml=t->matrixList().get();
-   if(ml)
-   {
-      if(ml->restartFlag()==false)
-      {
-         if(ml->numMatrices()!=ml->capacity())
-            ml->setCapacity(ml->numMatrices());
-         ml->setRestartFlag(true);
-         ml->setNumMatrices(0);
-      }
-      ml->upload(&mv,1,ml->numMatrices());
-      ml->setNumMatrices(ml->numMatrices()+1);
-   }
-
-   // process child transformations
-   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
-      processTransformation(it->get(),mv);
-}
-
-
-void RenderingContext::evaluateTransformationGraph()
-{
-   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
-      countMatrices(it->get());
-
-   glm::mat4 mv{}; // identity matrix
-   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
-      processTransformation(it->get(),mv);
+   return _phongUniformColorProgram;
 }
 
 
@@ -920,12 +1082,112 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
       cout<<endl;
    cout<<endl;
 }
+
+
+static void printFloatBufferContent(ge::gl::BufferObject *bo,unsigned numFloats)
+{
+   cout<<"Buffer contains "<<numFloats<<" float values:"<<endl;
+   float *p=(float*)bo->map(GL_MAP_READ_BIT);
+   if(p==nullptr) return;
+   unsigned i;
+   for(i=0; i<numFloats; i++)
+   {
+      cout<<*(p+i)<<"  ";
+      if(i%4==3)
+         cout<<endl;
+   }
+   bo->unmap();
+   if(i%4!=0)
+      cout<<endl;
+   cout<<endl;
+}
 #endif
+
+
+static void countMatrices(Transformation *t,unsigned &totalMatrices)
+{
+   MatrixList *ml=t->matrixList().get();
+   if(ml) {
+      if(ml->restartFlag()) {
+         ml->setNumMatrices(1);
+         ml->setRestartFlag(false);
+      } else {
+         ml->setNumMatrices(ml->numMatrices()+1);
+      }
+      totalMatrices++;
+   }
+   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
+      countMatrices(it->get(),totalMatrices);
+}
+
+
+static void processTransformation(Transformation *t,const glm::mat4& parentMV,RenderingContext *rc)
+{
+   // compute new matrix
+   glm::mat4 mv=parentMV*(*reinterpret_cast<glm::mat4*>(t->getMatrixPtr()));
+
+   // update number of matrices and allocated space for them
+   MatrixList *ml=t->matrixList().get();
+   if(ml)
+   {
+      if(ml->restartFlag()==false)
+      {
+         ml->setRestartFlag(true);
+         unsigned matrixOffset64=rc->bufferPosition();
+         ml->setStartIndex(matrixOffset64);
+         rc->setBufferPosition(matrixOffset64+ml->numMatrices());
+         ml->uploadListControlData(); // upload startIndex and numMatrices
+         ml->setNumMatrices(0);
+      }
+      ml->uploadMatrixData(&mv,ml->numMatrices(),1);
+      ml->setNumMatrices(ml->numMatrices()+1);
+   }
+
+   // process child transformations
+   for(auto it=t->childList().begin(); it!=t->childList().end(); it++)
+      processTransformation(it->get(),mv,rc);
+}
+
+
+void RenderingContext::evaluateTransformationGraph()
+{
+   unsigned totalMatrices=0;
+   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
+      countMatrices(it->get(),totalMatrices);
+
+   // resize matrix buffer
+   if(_matrixStorage.capacity()<totalMatrices) {
+      unsigned newSize=totalMatrices*1.2f;
+      _matrixStorage.setCapacity(newSize);
+      _matrixStorage.bufferObject()->realloc(newSize,ge::gl::BufferObject::NEW_BUFFER);
+   }
+
+   // reset buffer position
+   // here, we use it as index to matrix4 buffer that is stored in MatrixStorage
+   setBufferPosition(1); // start at index 1 as index zero is reserved for identity matrix
+
+   glm::mat4 mv{}; // identity matrix
+   matrixStorage()->map(BufferStorageAccess::WRITE);
+   memcpy(matrixStorage()->ptr(),identityMatrix,sizeof(float)*16);
+   matrixListControlStorage()->map(BufferStorageAccess::WRITE);
+   for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
+      processTransformation(it->get(),mv,this);
+   matrixStorage()->unmap();
+   matrixListControlStorage()->unmap();
+}
 
 
 void RenderingContext::setupRendering()
 {
-   _indirectBufferAllocatedSpace4=0;
+   // reset buffer position
+   // here, we use buffer position as index to uint array that is stored in indirect buffer
+   setBufferPosition(4); // 4xuint is reserved for null item, it will be never drawn,
+                         // but it will be written on the beginning of the buffer
+
+   // set null StateSet position to zero
+   // (other StateSets will use non-zero values)
+   unsigned *stateSetBufferPtr=reinterpret_cast<unsigned*>(_stateSetStorage.ptr());
+   stateSetBufferPtr[0]=0;
 
    // setup rendering on StateSets
    StateSet* root=_stateSetManager->root().get();
@@ -933,9 +1195,9 @@ void RenderingContext::setupRendering()
       root->setupRendering();
 
    // resize drawIndirectBuffer if necessary
-   if(_drawIndirectBuffer->getSize()<_indirectBufferAllocatedSpace4)
-      _drawIndirectBuffer->realloc(static_cast<decltype(_indirectBufferAllocatedSpace4)>(
-            _indirectBufferAllocatedSpace4*4*1.2f), // multiply by 1.2 to avoid possibly many reallocations by very small amount
+   if(_drawIndirectBuffer->getSize()<bufferPosition()*4)
+      _drawIndirectBuffer->realloc(static_cast<decltype(_bufferPosition)>(
+            bufferPosition()*4*1.2f), // multiply by 1.2 to avoid possibly many reallocations by very small amount
             BufferObject::NEW_BUFFER);
 }
 
@@ -980,10 +1242,21 @@ void RenderingContext::render()
       matrixStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
 
 #if 0
-   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->bufferObject(),
-                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*3);
+   cout<<_primitiveStorage.bufferObject()->getSize()<<endl;
+   cout<<_drawCommandStorage.bufferObject()->getSize()<<endl;
+   cout<<_matrixStorage.bufferObject()->getSize()<<endl;
+   cout<<_matrixListControlStorage.bufferObject()->getSize()<<endl;
+   cout<<_stateSetStorage.bufferObject()->getSize()<<endl;
+   cout<<_transformationAllocationManager.capacity()<<endl;
+   cout<<_drawIndirectBuffer->getSize()<<endl;
+#endif
+#if 0
    printIntBufferContent(RenderingContext::current()->primitiveStorage()->bufferObject(),
                          RenderingContext::current()->primitiveStorage()->firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->bufferObject(),
+                         RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*3);
+   printIntBufferContent(RenderingContext::current()->stateSetStorage()->bufferObject(),
+                         RenderingContext::current()->stateSetStorage()->firstItemAvailableAtTheEnd());
    printIntBufferContent(RenderingContext::current()->drawIndirectBuffer(),
                          RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*5);
 #endif
@@ -995,12 +1268,14 @@ void RenderingContext::render()
 
 void RenderingContext::frame()
 {
+   // update progressStamp (monotonically increasing number wrapping on overflow)
+   incrementProgressStamp();
+
    // clear screen
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
    // compute transformation matrices
    evaluateTransformationGraph();
-   matrixStorage()->unmap();
 
    // prepare internal structures for rendering
    stateSetStorage()->map(BufferStorageAccess::WRITE);

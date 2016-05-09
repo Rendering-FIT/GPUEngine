@@ -78,8 +78,19 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
 ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
-# Dynamic vs Static Linking
-OPTION(GPUENGINE_DYNAMIC "Set to ON to build GPUEngine for dynamic linking.  Use OFF for static." ON)
+
+# Dynamic vs Static Linkage
+OPTION(GPUENGINE_DYNAMIC_LINKAGE "Build GPUEngine as libs for dynamic linkage. Use OFF for static libs." ON)
+FIND_PACKAGE(GLEW REQUIRED)
+IF(WIN32)
+   IF(GPUENGINE_DYNAMIC_LINKAGE)
+      IF(NOT GLEW_DYNAMIC_LINKAGE)
+         MESSAGE(WARNING "GLEW_DYNAMIC_LINKAGE set to OFF (static linkage) while "
+                         "GPUENGINE_DYNAMIC_LINKAGE set to ON may cause multiple GLEW "
+                         "instances inside final application, resulting in mysterious crashes.")
+      ENDIF()
+   ENDIF()
+ENDIF()
 
 
 ##################################################

@@ -15,6 +15,7 @@
 #include <geRG/Drawable.h>
 #include <geRG/DrawCommand.h>
 #include <geRG/Primitive.h>
+#include <geRG/ProgressStamp.h>
 #include <geRG/StateSet.h>
 #include <geRG/StateSetManager.h>
 #include <geCore/InitAndFinalize.h>
@@ -32,7 +33,7 @@ namespace ge
       class Transformation;
 
 
-      class DrawCommandStorage : public BufferStorage<DrawCommandAllocationManager,
+      class DrawCommandStorage : public BufferStorage<DrawCommandAllocationManager, // derived from ItemAllocationManager
             DrawCommandGpuData> {
       public:
 #if _MSC_VER<1900
@@ -71,8 +72,8 @@ namespace ge
          mutable ListControlStorage _matrixListControlStorage;
          mutable StateSetStorage _stateSetStorage;
          ItemAllocationManager _transformationAllocationManager;
-         ge::gl::BufferObject *_drawIndirectBuffer;
          float *_cpuTransformationBuffer;
+         ge::gl::BufferObject *_drawIndirectBuffer;
 
          AttribConfigList _attribConfigList;
          unsigned _numAttribStorages;
@@ -82,11 +83,14 @@ namespace ge
          std::shared_ptr<MatrixList> _emptyMatrixList;
          bool _useARBShaderDrawParameters;
 
-         unsigned _indirectBufferAllocatedSpace4;
+         unsigned _bufferPosition;
+         ProgressStamp _progressStamp; ///< Monotonically increasing number wrapping on overflow.
 
          std::shared_ptr<ge::gl::ProgramObject> _processDrawCommandsProgram;
          std::shared_ptr<ge::gl::ProgramObject> _ambientProgram;
          std::shared_ptr<ge::gl::ProgramObject> _phongProgram;
+         std::shared_ptr<ge::gl::ProgramObject> _ambientUniformColorProgram;
+         std::shared_ptr<ge::gl::ProgramObject> _phongUniformColorProgram;
 
          static void* mapBuffer(ge::gl::BufferObject *buffer,
                                 MappedBufferAccess requestedAccess,
@@ -171,8 +175,11 @@ namespace ge
          virtual void cancelAllAllocations();
          virtual void handleContextLost();
 
-         inline unsigned positionInIndirectBuffer4() const;
-         inline void setPositionInIndirectBuffer4(unsigned pos);
+         inline unsigned bufferPosition() const;
+         inline void setBufferPosition(unsigned pos);
+
+         inline ProgressStamp progressStamp() const;
+         inline void incrementProgressStamp();
 
          virtual void evaluateTransformationGraph();
          virtual void setupRendering();
@@ -190,6 +197,8 @@ namespace ge
          const std::shared_ptr<ge::gl::ProgramObject>& getProcessDrawCommandsProgram() const;
          const std::shared_ptr<ge::gl::ProgramObject>& getAmbientProgram() const;
          const std::shared_ptr<ge::gl::ProgramObject>& getPhongProgram() const;
+         const std::shared_ptr<ge::gl::ProgramObject>& getAmbientUniformColorProgram() const;
+         const std::shared_ptr<ge::gl::ProgramObject>& getPhongUniformColorProgram() const;
 
          std::shared_ptr<ge::gl::TextureObject> cachedTextureObject(const std::string& path) const;
          inline void addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture);
@@ -260,8 +269,10 @@ namespace ge
       { return createDrawable(mesh,nullptr,0,matrixList,stateSet); }
       inline RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs()  { return _transformationGraphs; }
       inline const RenderingContext::TransformationGraphList& RenderingContext::transformationGraphs() const  { return _transformationGraphs; }
-      inline unsigned RenderingContext::positionInIndirectBuffer4() const  { return _indirectBufferAllocatedSpace4; }
-      inline void RenderingContext::setPositionInIndirectBuffer4(unsigned pos)  { _indirectBufferAllocatedSpace4=pos; }
+      inline unsigned RenderingContext::bufferPosition() const  { return _bufferPosition; }
+      inline void RenderingContext::setBufferPosition(unsigned pos)  { _bufferPosition=pos; }
+      inline ProgressStamp RenderingContext::progressStamp() const  { return _progressStamp; }
+      inline void RenderingContext::incrementProgressStamp()  { ++_progressStamp; }
       inline const std::shared_ptr<RenderingContext>& RenderingContext::current()
       { return NoExport::_currentContext.get(); }
 

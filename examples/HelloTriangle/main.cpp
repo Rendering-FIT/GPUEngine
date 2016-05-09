@@ -119,35 +119,52 @@ void Init()
    RenderingContext::current()->addTransformationGraph(transformation);
 
 
-   // attrib config
-   AttribConfig::ConfigData config;
-   config.attribTypes.push_back(AttribType::Vec3);
-
+   // triangle vertices
    const vector<glm::vec3> vertices = {
       glm::vec3( 0,2,0),
       glm::vec3( 1,0,0),
       glm::vec3(-1,0,0),
    };
+
+   // triangle indices
    const vector<unsigned> indices = { 0, 1, 2 };
+
+   // primitive data (count,first,vertexOffset)
    vector<PrimitiveGpuData> primitives = {
       { 0x80000003,0,0 },
    };
+
+   // GL primitive mode and offset to primitives
    const vector<unsigned> modesAndOffsets4 = {
       GL_TRIANGLES,0,
    };
 
+
+   // attribute configuration
+   AttribConfig::ConfigData config;
+   config.attribTypes.push_back(AttribType::Vec3);
    config.ebo=true;
    config.updateId();
 
+   // temporary list of attributes
    vector<const void*> attribList;
    attribList.emplace_back(vertices.data());
 
-   mesh.allocData(config,3,3,unsigned(primitives.size()));
-   mesh.uploadVertices(attribList.data(),unsigned(attribList.size()),
-                       unsigned(vertices.size()));
-   mesh.uploadIndices(indices.data(),unsigned(indices.size()));
+   // alloc space for vertices and indices in AttribStorage
+   // and for primitives in RenderingContext::PrimitiveStorage
+   mesh.allocData(config,3,3,1); // numVertices,numIndices,numPrimitives
+
+   // upload vertices to AttribStorage
+   mesh.uploadVertices(attribList.data(),1,3); // attribListSize,numVertices
+
+   // upload indices to AttribStorage
+   mesh.uploadIndices(indices.data(),3); // numIndices
+
+   // upload primitives to RenderingContext::PrimitiveStorage
    mesh.setAndUploadPrimitives(primitives.data(),
-                               modesAndOffsets4.data(),unsigned(primitives.size()));
+                               modesAndOffsets4.data(),1); // numPrimitives
+
+   // create drawable
    mesh.createDrawable(transformation->getOrCreateMatrixList().get(),stateSet.get());
 
    // unmap buffers

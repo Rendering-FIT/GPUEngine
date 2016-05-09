@@ -92,8 +92,8 @@ int main(int argc,char*argv[])
    glewExperimental=GL_TRUE;
    glewInit();
    glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
-                  // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
-                  // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
+                 // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                 // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
    ge::gl::init();
    RenderingContext::setCurrent(make_shared<RenderingContext>());
    RenderingContext::current()->setUseARBShaderDrawParameters(useARBShaderDrawParameters);
@@ -160,6 +160,8 @@ void Init()
    // load model
    glm::vec3 center;
    float radius;
+   float zNear=1.f;
+   float zFar=100.f;
    if(!fileName.empty())
    {
       osg::ref_ptr<osg::Node> root=osgDB::readNodeFile(fileName);
@@ -172,7 +174,7 @@ void Init()
 
          // get bounding sphere
          osg::BoundingSphere bs=root->getBound();
-         center=glm::make_vec3(bs.center().ptr());
+         center=glm::vec3(bs.center().x(),bs.center().z(),-bs.center().y());
          radius=bs.radius();
       }
 
@@ -184,44 +186,40 @@ void Init()
 
    if(model)
    {
-#if 0
-      // instantiate model with given transformation matrix
-      shared_ptr<Transformation> t=make_shared<Transformation>();
-      const float m[16] = {
-         1.f, 0.f, 0.f, 0.f,
-         0.f, 1.f, 0.f, 0.f,
-         0.f, 0.f, 1.f, 0.f,
-         0.f, 0.f,-10.f, 1.f,
-      };
-      t->uploadMatrix(m);
-      t->addChild(model->transformationRoot());
-      RenderingContext::current()->addTransformationGraph(t);
-#else
       // add model bellow camera transformation
       cameraTransformation->addChild(model->transformationRoot());
 
-      // setup orbit manipulator
+      // setup orbit manipulator and clipping planes
       cameraManipulator.setCenter(center);
-      cameraManipulator.setDistance(radius*2.f);
-#endif
+      cameraManipulator.setEye(center+glm::vec3(0.f,0.f,radius*2.f));
+      zNear=radius*0.99f;
+      zFar=radius*3.01f;
    }
 
    // unmap buffers
    // (it has to be done before rendering)
    RenderingContext::current()->unmapBuffers();
 
-   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],1.f,100.f);
+   const glm::vec4 ambientLight(0.2f,0.2f,0.2f,1.f);
+   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],zNear,zFar);
    auto ambientProgram=RenderingContext::current()->getAmbientProgram();
    ambientProgram->use();
-   ambientProgram->set("globalAmbientLight",0.2f,0.2f,0.2f,1.f);
+   ambientProgram->set("globalAmbientLight",ambientLight.r,ambientLight.g,ambientLight.b,ambientLight.a);
    ambientProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    ambientProgram->set("colorTexture",int(0));
-   ambientProgram->set("colorTexturingMode",0); // FIXME: this shall be moved to OsgImport code soon
    auto phongProgram=RenderingContext::current()->getPhongProgram();
    phongProgram->use();
    phongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    phongProgram->set("colorTexture",int(0));
-   phongProgram->set("colorTexturingMode",0); // FIXME: this shall be moved to OsgImport code soon
+   auto ambientUniformColorProgram=RenderingContext::current()->getAmbientUniformColorProgram();
+   ambientUniformColorProgram->use();
+   ambientUniformColorProgram->set("globalAmbientLight",ambientLight.r,ambientLight.g,ambientLight.b,ambientLight.a);
+   ambientUniformColorProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   ambientUniformColorProgram->set("colorTexture",int(0));
+   auto phongUniformColorProgram=RenderingContext::current()->getPhongUniformColorProgram();
+   phongUniformColorProgram->use();
+   phongUniformColorProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   phongUniformColorProgram->set("colorTexture",int(0));
 
    // append light
 #if 0 // FIXME: addLight must be given transformation matrix of the light (here probably view matrix)
@@ -233,4 +231,9 @@ void Init()
    lightCommands->emplace_back(make_shared<FlexibleUniform3f>("lightAttenuation",1.f,0.f,0.f));
    //RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,nullptr);
 #endif
+
+   // check for OpenGL errors
+   int e=glGetError();
+   if(e!=GL_NO_ERROR)
+      cout<<"OpenGL errror after Init(): "<<e<<endl;
 }

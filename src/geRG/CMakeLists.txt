@@ -34,6 +34,7 @@ set(RG_INCLUDES
     ${HEADER_PATH}/MatrixGpuData.h
     ${HEADER_PATH}/FlexibleUniform.h
     ${HEADER_PATH}/Model.h
+    ${HEADER_PATH}/ProgressStamp.h
   )
 
 set(RG_SOURCES
@@ -51,6 +52,7 @@ set(RG_SOURCES
     Transformation.cpp
     MatrixList.cpp
     FlexibleUniform.cpp
+    ProgressStamp.cpp
   )
 
 ################################################

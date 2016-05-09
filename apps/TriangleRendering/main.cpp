@@ -235,8 +235,11 @@ void Init()
    meshIndirectNI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesIndirectNI.size());
    meshIndirectNI.setAndUploadPrimitives(primitiveDataNI.data(),
                                          modesAndOffsets4.data(),(uint32_t)primitiveDataNI.size());
-   shared_ptr<MatrixList> identity=make_shared<MatrixList>(1);
-   identity->upload(RenderingContext::identityMatrix,1);
+   shared_ptr<MatrixList> identity=make_shared<MatrixList>();
+   identity->setNumMatrices(1);
+   identity->setStartIndex(0);
+   identity->uploadListControlData();
+   identity->uploadMatrixData(RenderingContext::identityMatrix,0,1);
    meshIndirectNI.createDrawable(identity.get(),stateSet.get());
 
    // bottom-right geometry - high level, using indirect rendering optimization

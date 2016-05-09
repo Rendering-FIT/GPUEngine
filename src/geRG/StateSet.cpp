@@ -41,8 +41,9 @@ RenderingCommandData& RenderingCommandData::operator=(RenderingCommandData&& rhs
    drawCommandCount=rhs.drawCommandCount;
 
    auto sss=RenderingContext::current()->stateSetStorage();
+   stateSetBufferOffset4=rhs.stateSetBufferOffset4;
    sss->operator[](rhs.stateSetBufferOffset4)=&stateSetBufferOffset4;
-   const_cast<RenderingCommandData&>(rhs).stateSetBufferOffset4=0;
+   rhs.stateSetBufferOffset4=0;
 
    return *this;
 }
@@ -136,9 +137,15 @@ void StateSet::removeCommand(const std::shared_ptr<ge::core::Command>& command)
  */
 void StateSet::setupRendering()
 {
+   // process StateSet once per frame (even if it is visited by multiple paths)
+   RenderingContext *rc=RenderingContext::current().get();
+   if(rc->progressStamp()==_progressStamp)
+      return;
+   _progressStamp=rc->progressStamp();
+
    // initialize variables
-   unsigned indirectBufferOffset4=RenderingContext::current()->positionInIndirectBuffer4();
-   unsigned *stateSetBufferPtr=reinterpret_cast<unsigned*>(RenderingContext::current()->stateSetStorage()->ptr());
+   unsigned indirectBufferOffset4=rc->bufferPosition();
+   unsigned *stateSetBufferPtr=reinterpret_cast<unsigned*>(rc->stateSetStorage()->ptr());
 
    // iterate through all AttribStorageData
    for(auto it1=_attribStorageData.begin(); it1!=_attribStorageData.end(); it1++)
@@ -163,8 +170,8 @@ void StateSet::setupRendering()
       }
    }
 
-   // update positionInIndirectBuffer4 variable
-   RenderingContext::current()->setPositionInIndirectBuffer4(indirectBufferOffset4);
+   // update bufferPosition variable
+   rc->setBufferPosition(indirectBufferOffset4);
 
    // process child StateSets
    for(auto& child : _childList)
