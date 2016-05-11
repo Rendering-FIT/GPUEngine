@@ -1,4 +1,5 @@
 #include<geGL/Shader.h>
+#include<geGL/Program.h>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
@@ -27,25 +28,36 @@ Shader::Shader(){
  * @brief constructor that creates shader of certain type
  *
  * @param type type of shader
- * @param source optional source code of shader
+ * @param sources optional source code of shader
  */
 Shader::Shader(GLenum type,Sources const&sources){
-  this->create(type,sources);
+  this->create(type);
+  this->compile(sources);
 }
 
-#if defined(REPLACE_GLEW)
+/**
+ * @brief enpty consturctor
+ *
+ * @param table OpenGLFunctionTable
+ */
 Shader::Shader(FunctionTablePointer const&table):OpenGLObject(table){
   this->_id = 0;
 }
 
+/**
+ * @brief constructor that creates shader of certain type
+ *
+ * @param table OpenGLFunctionTable
+ * @param type type of shader
+ * @param sources optional shader sources 
+ */
 Shader::Shader(
-    FunctionTablePointer const&table,
-    GLenum type,
-    Sources const& sources):OpenGLObject(table){
-  this->create(type,sources);
+    FunctionTablePointer const&table  ,
+    GLenum               const&type   ,
+    Sources              const&sources):OpenGLObject(table){
+  this->create(type);
+  this->compile(sources);
 }
-#endif
-
 
 /**
  * @brief destructor that invalidates id
@@ -61,9 +73,9 @@ Shader::~Shader(){
  * @param type type of shader
  * @param sources optional source codes of shader
  */
-void Shader::create(GLenum type,Sources const& sources){
+void Shader::create(GLenum type){
+  if(this->_id != 0)return;
   this->_id = glCreateShader(type);
-  if(sources.size()>0)this->compile(sources);
 }
 
 /**
@@ -81,12 +93,17 @@ void Shader::setSource(Sources const& sources){
 
 /**
  * @brief this function can set shader source code and compile shader
+ * it also call link in programs that are using this shader
  *
  * @param source optional source codes
  */
 void Shader::compile(Sources const& sources){
   if(sources.size()>0)this->setSource(sources);
   glCompileShader(this->getId());
+  if(!this->getCompileStatus())return;
+  for(auto const&x:this->_programs){
+    x->link();
+  }
 }
 
 /**

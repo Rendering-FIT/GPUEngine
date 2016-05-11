@@ -7,6 +7,7 @@ if(APPS_BUILD_EMPTYWINDOW)
   add_subdirectory(EmptyWindow)
 endif()
 
+add_subdirectory(ShaderTest)
 
 if(APPS_BUILD_TRIANGLERENDERING)
   add_subdirectory(TriangleRendering)

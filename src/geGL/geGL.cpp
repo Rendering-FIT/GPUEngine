@@ -5,8 +5,10 @@
 #include<geGL/OpenGLFunctionTable.h>
 #include<geGL/CheckOpenGLFunctions.h>
 #include<geGL/OpenGLCapabilities.h>
+#include<geGL/OpenGLFunctionProvider.h>
 
 GEGL_EXPORT thread_local ge::gl::opengl::FunctionTablePointer _defaultOpenGLFunctionTable = nullptr;
+GEGL_EXPORT thread_local ge::gl::opengl::FunctionProvider _defaulOpenGLFunctionProvider(nullptr);
 
 void ge::gl::init(
     opengl::GET_PROC_ADDRESS getProcAddress){
@@ -14,11 +16,12 @@ void ge::gl::init(
     _defaultOpenGLFunctionTable = opengl::prepareFunctionTable(getProcAddress);
   else
     _defaultOpenGLFunctionTable = nullptr;
+  _defaulOpenGLFunctionProvider.setFunctionTable(_defaultOpenGLFunctionTable);
 }
 
 GEGL_EXPORT ge::gl::opengl::FunctionTablePointer ge::gl::opengl::prepareFunctionTable(
     GET_PROC_ADDRESS getProcAddress){
-  auto table = new FunctionTable();//std::make_shared<FunctionTable>();
+  auto table = std::make_shared<FunctionTable>();
   loadFunctions(table,getProcAddress);
   //TODO DSA
   fillCapabilities(table->capabilities,table);

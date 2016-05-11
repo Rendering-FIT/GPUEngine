@@ -1,110 +1,11 @@
 #include<geGL/ProgramObject.h>
 #include<string>
 #include<sstream>
+#include<tuple>
+#include<array>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
-
-/*
-   void ge::gl::initShadersAndPrograms(){
-   if(!glCreateShader                  ){Result32+="glCreateShader "                  ;OpenGL320=false;}
-   if(!glShaderSource                  ){Result32+="glShaderSource "                  ;OpenGL320=false;}
-   if(!glCompileShader                 ){Result32+="glCompileShader "                 ;OpenGL320=false;}
-   if(!glDeleteShader                  ){Result32+="glDeleteShader "                  ;OpenGL320=false;}
-   if(!glGetShaderiv                   ){Result32+="glGetShaderiv "                   ;OpenGL320=false;}
-   if(!glGetShaderInfoLog              ){Result32+="glGetShaderInfoLog "              ;OpenGL320=false;}
-   if(!glCreateProgram                 ){Result32+="glCreateProgram "                 ;OpenGL320=false;}
-   if(!glAttachShader                  ){Result32+="glAttachShader "                  ;OpenGL320=false;}
-   if(!glDetachShader                  ){Result32+="glDetachShader "                  ;OpenGL320=false;}
-   if(!glLinkProgram                   ){Result32+="glLinkProgram "                   ;OpenGL320=false;}
-   if(!glUseProgram                    ){Result32+="glUseProgram "                    ;OpenGL320=false;}
-   if(!glDeleteProgram                 ){Result32+="glDeleteProgram "                 ;OpenGL320=false;}
-   if(!glGetProgramiv                  ){Result32+="glGetProgramiv "                  ;OpenGL320=false;}
-   if(!glGetProgramInfoLog             ){Result32+="glGetProgramInfoLog "             ;OpenGL320=false;}
-   if(!glGetActiveAttrib               ){Result32+="glGetActiveAttrib "               ;OpenGL320=false;}
-   if(!glGetAttribLocation             ){Result32+="glGetAttribLocation "             ;OpenGL320=false;}
-   if(!glGetActiveUniform              ){Result32+="glGetActiveUniform "              ;OpenGL320=false;}
-   if(!glGetUniformLocation            ){Result32+="glGetUniformLocation "            ;OpenGL320=false;}
-   if(!glUniform1f                     ){Result32+="glUniform1f "                     ;OpenGL320=false;}
-   if(!glUniform2f                     ){Result32+="glUniform2f "                     ;OpenGL320=false;}
-   if(!glUniform3f                     ){Result32+="glUniform3f "                     ;OpenGL320=false;}
-   if(!glUniform4f                     ){Result32+="glUniform4f "                     ;OpenGL320=false;}
-   if(!glUniform1i                     ){Result32+="glUniform1i "                     ;OpenGL320=false;}
-   if(!glUniform2i                     ){Result32+="glUniform2i "                     ;OpenGL320=false;}
-   if(!glUniform3i                     ){Result32+="glUniform3i "                     ;OpenGL320=false;}
-   if(!glUniform4i                     ){Result32+="glUniform4i "                     ;OpenGL320=false;}
-   if(!glUniform1ui                    ){Result32+="glUniform1ui "                    ;OpenGL320=false;}
-   if(!glUniform2ui                    ){Result32+="glUniform2ui "                    ;OpenGL320=false;}
-   if(!glUniform3ui                    ){Result32+="glUniform3ui "                    ;OpenGL320=false;}
-   if(!glUniform4ui                    ){Result32+="glUniform4ui "                    ;OpenGL320=false;}
-   if(!glUniform1fv                    ){Result32+="glUniform1fv "                    ;OpenGL320=false;}
-   if(!glUniform2fv                    ){Result32+="glUniform2fv "                    ;OpenGL320=false;}
-   if(!glUniform3fv                    ){Result32+="glUniform3fv "                    ;OpenGL320=false;}
-   if(!glUniform4fv                    ){Result32+="glUniform4fv "                    ;OpenGL320=false;}
-   if(!glUniform1iv                    ){Result32+="glUniform1iv "                    ;OpenGL320=false;}
-   if(!glUniform2iv                    ){Result32+="glUniform2iv "                    ;OpenGL320=false;}
-   if(!glUniform3iv                    ){Result32+="glUniform3iv "                    ;OpenGL320=false;}
-   if(!glUniform4iv                    ){Result32+="glUniform4iv "                    ;OpenGL320=false;}
-   if(!glUniform1uiv                   ){Result32+="glUniform1uiv "                   ;OpenGL320=false;}
-   if(!glUniform2uiv                   ){Result32+="glUniform2uiv "                   ;OpenGL320=false;}
-   if(!glUniform3uiv                   ){Result32+="glUniform3uiv "                   ;OpenGL320=false;}
-   if(!glUniform4uiv                   ){Result32+="glUniform4uiv "                   ;OpenGL320=false;}
-   if(!glUniformMatrix2fv              ){Result32+="glUniformMatrix2fv "              ;OpenGL320=false;}
-   if(!glUniformMatrix2x3fv            ){Result32+="glUniformMatrix2x3fv "            ;OpenGL320=false;}
-   if(!glUniformMatrix2x4fv            ){Result32+="glUniformMatrix2x4fv "            ;OpenGL320=false;}
-   if(!glUniformMatrix3fv              ){Result32+="glUniformMatrix3fv "              ;OpenGL320=false;}
-   if(!glUniformMatrix3x2fv            ){Result32+="glUniformMatrix3x2fv "            ;OpenGL320=false;}
-   if(!glUniformMatrix3x4fv            ){Result32+="glUniformMatrix3x4fv "            ;OpenGL320=false;}
-   if(!glUniformMatrix4fv              ){Result32+="glUniformMatrix4fv "              ;OpenGL320=false;}
-   if(!glUniformMatrix4x2fv            ){Result32+="glUniformMatrix4x2fv "            ;OpenGL320=false;}
-   if(!glUniformMatrix4x3fv            ){Result32+="glUniformMatrix4x3fv "            ;OpenGL320=false;}
-
-   if(!glGetActiveSubroutineName       ){Result40+="glGetActiveSubroutineName "       ;OpenGL400=false;}
-   if(!glGetActiveSubroutineUniformiv  ){Result40+="glGetActiveSubroutineUniformiv "  ;OpenGL400=false;}
-   if(!glGetActiveSubroutineUniformName){Result40+="glGetActiveSubroutineUniformName ";OpenGL400=false;}
-   if(!glGetProgramStageiv             ){Result40+="glGetProgramStageiv "             ;OpenGL400=false;}
-   if(!glGetSubroutineIndex            ){Result40+="glGetSubroutineIndex "            ;OpenGL400=false;}
-   if(!glGetSubroutineUniformLocation  ){Result40+="glGetSubroutineUniformLocation "  ;OpenGL400=false;}
-   if(!glUniformSubroutinesuiv         ){Result40+="glUniformSubroutinesuiv "         ;OpenGL400=false;}
-   if(!glUniform1d                     ){Result40+="glUniform1d "                     ;OpenGL400=false;}
-   if(!glUniform2d                     ){Result40+="glUniform2d "                     ;OpenGL400=false;}
-   if(!glUniform3d                     ){Result40+="glUniform3d "                     ;OpenGL400=false;}
-   if(!glUniform4d                     ){Result40+="glUniform4d "                     ;OpenGL400=false;}
-   if(!glUniform1dv                    ){Result40+="glUniform1dv "                    ;OpenGL400=false;}
-   if(!glUniform2dv                    ){Result40+="glUniform2dv "                    ;OpenGL400=false;}
-   if(!glUniform3dv                    ){Result40+="glUniform3dv "                    ;OpenGL400=false;}
-   if(!glUniform4dv                    ){Result40+="glUniform4dv "                    ;OpenGL400=false;}
-   if(!glUniformMatrix2dv              ){Result40+="glUniformMatrix2dv "              ;OpenGL400=false;}
-   if(!glUniformMatrix2x3dv            ){Result40+="glUniformMatrix2x3dv "            ;OpenGL400=false;}
-if(!glUniformMatrix2x4dv            ){Result40+="glUniformMatrix2x4dv "            ;OpenGL400=false;}
-if(!glUniformMatrix3dv              ){Result40+="glUniformMatrix3dv "              ;OpenGL400=false;}
-if(!glUniformMatrix3x2dv            ){Result40+="glUniformMatrix3x2dv "            ;OpenGL400=false;}
-if(!glUniformMatrix3x4dv            ){Result40+="glUniformMatrix3x4dv "            ;OpenGL400=false;}
-if(!glUniformMatrix4dv              ){Result40+="glUniformMatrix4dv "              ;OpenGL400=false;}
-if(!glUniformMatrix4x2dv            ){Result40+="glUniformMatrix4x2dv "            ;OpenGL400=false;}
-if(!glUniformMatrix4x3dv            ){Result40+="glUniformMatrix4x3dv "            ;OpenGL400=false;}
-
-if(!glProgramUniformMatrix2fv       ){Result41+="glProgramUniformMatrix2fv "       ;OpenGL410=false;}
-if(!glProgramUniformMatrix3fv       ){Result41+="glProgramUniformMatrix3fv "       ;OpenGL410=false;}
-if(!glProgramUniformMatrix4fv       ){Result41+="glProgramUniformMatrix4fv "       ;OpenGL410=false;}
-if(!glProgramUniformMatrix2x3fv     ){Result41+="glProgramUniformMatrix2x3fv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix3x2fv     ){Result41+="glProgramUniformMatrix3x2fv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix2x4fv     ){Result41+="glProgramUniformMatrix2x4fv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix4x2fv     ){Result41+="glProgramUniformMatrix4x2fv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix3x4fv     ){Result41+="glProgramUniformMatrix3x4fv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix4x3fv     ){Result41+="glProgramUniformMatrix4x3fv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix2dv       ){Result41+="glProgramUniformMatrix2dv "       ;OpenGL410=false;}
-if(!glProgramUniformMatrix3dv       ){Result41+="glProgramUniformMatrix3dv "       ;OpenGL410=false;}
-if(!glProgramUniformMatrix4dv       ){Result41+="glProgramUniformMatrix4dv "       ;OpenGL410=false;}
-if(!glProgramUniformMatrix2x3dv     ){Result41+="glProgramUniformMatrix2x3dv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix3x2dv     ){Result41+="glProgramUniformMatrix3x2dv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix2x4dv     ){Result41+="glProgramUniformMatrix2x4dv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix4x2dv     ){Result41+="glProgramUniformMatrix4x2dv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix3x4dv     ){Result41+="glProgramUniformMatrix3x4dv "     ;OpenGL410=false;}
-if(!glProgramUniformMatrix4x3dv     ){Result41+="glProgramUniformMatrix4x3dv "     ;OpenGL410=false;}
-if(!glProgramParameteri             ){Result41+="glProgramParameteri "             ;OpenGL410=false;}
-}
-*/
 
 /**
  * @brief Function converts complex type (GL_FLOAT_VEC3 to GL_FLOAT)
@@ -137,6 +38,36 @@ GLenum ge::gl::complexType2SimpleType(GLenum type){
     case GL_BOOL_VEC4        :return GL_BOOL        ;
     default                  :return GL_FLOAT       ;//GL_FALSE glbinding...
   }
+}
+
+template<size_t TO,size_t FROM = 0>
+size_t translateComplexShaderType(size_t what){
+  using Element = std::tuple<GLenum,GLenum,GLint>;
+  const std::array<Element,20>elements = {
+    Element(GL_FLOAT            ,GL_FLOAT       ,1),
+    Element(GL_FLOAT_VEC2       ,GL_FLOAT       ,2),
+    Element(GL_FLOAT_VEC3       ,GL_FLOAT       ,3),
+    Element(GL_FLOAT_VEC4       ,GL_FLOAT       ,4),
+    Element(GL_DOUBLE           ,GL_DOUBLE      ,1),
+    Element(GL_DOUBLE_VEC2      ,GL_DOUBLE      ,2),
+    Element(GL_DOUBLE_VEC3      ,GL_DOUBLE      ,3),
+    Element(GL_DOUBLE_VEC4      ,GL_DOUBLE      ,4),
+    Element(GL_INT              ,GL_INT         ,1),
+    Element(GL_INT_VEC2         ,GL_INT         ,2),
+    Element(GL_INT_VEC3         ,GL_INT         ,3),
+    Element(GL_INT_VEC4         ,GL_INT         ,4),
+    Element(GL_UNSIGNED_INT     ,GL_UNSIGNED_INT,1),
+    Element(GL_UNSIGNED_INT_VEC2,GL_UNSIGNED_INT,2),
+    Element(GL_UNSIGNED_INT_VEC3,GL_UNSIGNED_INT,3),
+    Element(GL_UNSIGNED_INT_VEC4,GL_UNSIGNED_INT,4),
+    Element(GL_BOOL             ,GL_BOOL        ,1),
+    Element(GL_BOOL_VEC2        ,GL_BOOL        ,2),
+    Element(GL_BOOL_VEC3        ,GL_BOOL        ,3),
+    Element(GL_BOOL_VEC4        ,GL_BOOL        ,4),
+  };
+  for(auto const&x:elements)
+    if(std::get<FROM>(x)==what)return std::get<TO>(x);
+  return -1;
 }
 
 /**
@@ -453,148 +384,6 @@ void ProgramObject::_compileShaders(
   this->_createShaderProgram_Epilogue();//gets attributes and uniforms
 }
 
-/*
-   bool ProgramObject::_isShader(std::string data){
-   enum State{
-   START      ,
-   V          ,
-   O          ,
-   I          ,
-   D          ,
-   M          ,
-   A          ,
-   I          ,
-   N          ,
-   LEFT       ,
-   RIGHT      ,
-   SLASH      ,
-   COMMENT    ,
-   BACKSLASH  ,
-   CR         ,
-   LF         ,
-   LONGCOMMENT,
-   STAR       ,
-   }state=START;
-   unsigned pos=0;
-   while(pos<data.size()){
-   switch(state){
-   case START:
-   if(pos=='')
-   break;
-   }
-   }
-   }
-   void ProgramObject::_createProgram(
-   std::vector<std::string>& data,
-   unsigned                  version,
-   std::string               profile){
-   const std::string functionName="ProgramObject::_createProgram";
-   if(data.size()==0){
-   std::cerr<<functionName<<" - there are no data"<<std::endl;
-   return;
-   }
-
-   std::vector<std::string>sources;
-   for(unsigned i=0;i<data.size();++i)
-   sources.push_back(this->_getShaderSource(data[i]));
-
-   unsigned i=0;
-   while(!this->_isShader(sources[i])){
-   std::cerr<<functionName<<" - there has to be a shader before: "<<sources[i]<<std::endl;
-   ++i;
-   }
-   if(i>=sources.size()){
-   std::cerr<<functionName<<" - there are no shaders"<<std::endl;
-   return;
-   }
-
-   std::vector<std::string>shaders;
-   while(i<sources.size()){
-   std::vector<std::string>component;
-   component.push_back(sources[i++]);//push shader
-   while(i<sources.size()&&!this->_isShader(sources[i]))//push definitions ...
-   component.push_back(sources[i++]);
-   shaders.push_back(this->_composeShaderSource(component,version,profile));
-   if(i>=sources.size())break;
-   }
-   std::vector<unsigned>shaderMasks;
-   for(unsigned i=0;i<shaders.size();++i)
-   shaderMasks.push_back(this->_getShaderSourceTypeMask(shaders[i]));
-//resolved
-//unsigned resolved=0;
-unsigned presentShaders=0;
-for(unsigned i=0;i<shaderMasks.size();++i)
-presentShaders|=shaderMasks[i];
-enum ShaderTypeId{
-  VERTEX     = 0u,
-  CONTROL    = 1u,
-  EVALUATION = 2u,
-  GEOMETRY   = 3u,
-  FRAGMENT   = 4u,
-  COMPUTE    = 5u,
-};
-const char*shaderNames[]={
-  "vertex"                 ,
-  "tessellation control"   ,
-  "tessellation evaluation",
-  "geometry"               ,
-  "fragment"               ,
-  "compute"                ,
-};
-const unsigned nofShaderTypes=sizeof(shaderNames)/sizeof(const char*);
-enum ShaderTypeMask{
-  MASK_VERTEX     = 1u << VERTEX    ,
-  MASK_CONTROL    = 1u << CONTROL   ,
-  MASK_EVALUATION = 1u << EVALUATION,
-  MASK_GEOMETRY   = 1u << GEOMETRY  ,
-  MASK_FRAGMENT   = 1u << FRAGMENT  ,
-  MASK_COMPUTE    = 1u << COMPUTE   ,
-};
-const unsigned allowedCombinations[]={
-  MASK_VERTEX  ,
-  MASK_FRAGMENT,
-  MASK_COMPUTE ,
-  MASK_VERTEX  |MASK_FRAGMENT,
-  MASK_VERTEX  |MASK_GEOMETRY,
-  MASK_VERTEX  |MASK_GEOMETRY|MASK_FRAGMENT  ,
-  MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION,
-  MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION|MASK_GEOMETRY,
-  MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION|MASK_FRAGMENT,
-  MASK_VERTEX  |MASK_CONTROL |MASK_EVALUATION|MASK_GEOMETRY|MASK_FRAGMENT
-};
-const unsigned nofAllowedCombinations=sizeof(allowedCombinations)/sizeof(unsigned);
-auto combination2Str=[&shaderNames](unsigned mask){
-  std::stringstream ss;
-  for(unsigned s=0;s<nofShaderTypes;++s)
-    if(mask&(MASK_VERTEX+s)){
-      ss<<shaderNames[s];
-      if(s<nofShaderTypes-1)
-        ss<<"+";
-    }
-  return ss.str();
-};
-auto nofShadersInCombination=[](unsigned mask){
-  return ge::core::bitCount(mask);
-};
-auto shaderSubset=[](unsigned inner,unsigned outer){
-  return ge::core::bitCount(inner&outer)==ge::core::bitCount(inner);
-}
-if(nofShadersInCombination(presentShaders)<shaders.size()){
-  std::cerr<<functionName<<" - there are duplicate shaders"<<std::endl;
-  return;
-}
-std::vector<unsigned>allowedIncides;
-  for(unsigned i=0;i<nofAllowedCombinations;++i)
-if(shaderSubset(presentShaders,allowedCombinations[i]))
-  allowedIncides.push_back(i);
-
-  if(!allowedIncides.size()){
-    std::cerr<<functionName<<" - disallowed shader combination: "<<combination2Str(presentShaders)<<std::endl;
-    return;
-  }
-
-}
-*/
 void ProgramObject::_sortAndCompileShaders(
     std::vector<std::string>strings,
     unsigned version,
