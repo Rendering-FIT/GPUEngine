@@ -704,8 +704,8 @@ const shared_ptr<ProgramObject>& RenderingContext::getAmbientProgram() const
          "   // vertex position\n"
          <<(_useARBShaderDrawParameters
          ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-           "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
-         : "   gl_Position=projection*instancingMatrix*position;\n"
+           "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
+         : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
          )<<
          "}\n").str(),
          GL_FRAGMENT_SHADER,
@@ -777,8 +777,8 @@ const shared_ptr<ProgramObject>& RenderingContext::getAmbientUniformColorProgram
          "   // vertex position\n"
          <<(_useARBShaderDrawParameters
          ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-           "   gl_Position=projection*instancingMatrixBuffer[matrixOffset64]*position;\n"
-         : "   gl_Position=projection*instancingMatrix*position;\n"
+           "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
+         : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
          )<<
          "}\n").str(),
          GL_FRAGMENT_SHADER,
@@ -1157,7 +1157,7 @@ void RenderingContext::evaluateTransformationGraph()
 
    // resize matrix buffer
    if(_matrixStorage.capacity()<totalMatrices) {
-      unsigned newSize=totalMatrices*1.2f;
+      unsigned newSize=unsigned(totalMatrices*1.2f);
       _matrixStorage.setCapacity(newSize);
       _matrixStorage.bufferObject()->realloc(newSize,ge::gl::BufferObject::NEW_BUFFER);
    }
