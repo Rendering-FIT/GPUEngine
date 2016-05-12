@@ -7,19 +7,25 @@
 #include <glm/gtc/quaternion.hpp>
 #include <geUtil/Interpolator.h>
 #include <geSG/AnimationKeyFrame.h>
+#include <geCore/Updatable.h>
 
 
 namespace ge
 { 
    namespace sg{
 
-      class GESG_EXPORT AnimationChannel
+      /**
+       * The part of an animation. Channel is responsible for updating one value
+       * or group of values that makes sense together e.g. movement (position, orientation),
+       * color.
+       */
+      class GESG_EXPORT AnimationChannel //: public ge::core::Updatable
       {
       public:
          AnimationChannel();
 
 
-         virtual void update(double t) = 0;
+         virtual void update(core::time_unit t) = 0;
 
          virtual ~AnimationChannel();
       protected:
@@ -33,6 +39,11 @@ namespace ge
          return glm::slerp(a, b, static_cast<float>(t));
       }
 
+      /**
+       * Channel for animating model matrix via translation, oriantation and scale keyframes.
+       * There is currently no interpolation between keyframes (due to assimp animation not working
+       * properly).
+       */
       class GESG_EXPORT MovementAnimationChannel : public AnimationChannel
       {
       public:
@@ -42,7 +53,7 @@ namespace ge
 
          MovementAnimationChannel();
 
-         virtual void update(double t);
+         virtual void update(core::time_unit t);
 
          inline void setTarget(std::shared_ptr<glm::mat4>& target){ _target = target; }
          inline std::shared_ptr<glm::mat4>& getTarget(){ return _target; }
@@ -60,7 +71,7 @@ namespace ge
 
       protected:
          std::shared_ptr<glm::mat4> _target;
-         std::unique_ptr<ge::util::Interpolator> _interpolator;
+         std::unique_ptr<ge::util::Interpolator> _interpolator; ///<not used;
 
       };
    }

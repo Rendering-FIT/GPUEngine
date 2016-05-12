@@ -3,6 +3,7 @@
 #include <iostream>
 
 using namespace ge::sg;
+using namespace ge::core;
 
 AnimationChannel::AnimationChannel()
 {}
@@ -18,7 +19,7 @@ MovementAnimationChannel::MovementAnimationChannel()
    
 }
 
-void MovementAnimationChannel::update(double t)
+void MovementAnimationChannel::update(time_unit t)
 {
    glm::vec3 position;
    glm::vec3 scale(1,1,1);
@@ -83,11 +84,11 @@ void MovementAnimationChannel::update(double t)
             oriantation = orientationKF.front().val;
          }
          else{
-            QuatKeyFrame& a = *(it - 1);
+            /*QuatKeyFrame& a = *(it - 1);
             QuatKeyFrame& b = *it;
-            //double dn_t = (t - a.t) / (b.t - a.t); //TODO unused?
-            oriantation = interpolateSLerp(a.val, b.val, t);
-            //oriantation = it->val;
+            double dn_t = (double)(t - a.t) / (b.t - a.t); //TODO unused?
+            oriantation = interpolateSLerp(a.val, b.val, dn_t);*/
+            oriantation = it->val;
          }
       }
       else

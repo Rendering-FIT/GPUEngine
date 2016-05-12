@@ -89,6 +89,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/TermNode.h
   ${HEADER_PATH}/Tokenization.h
   ${HEADER_PATH}/Text.h
+  ${HEADER_PATH}/Updatable.h
   ${HEADER_PATH}/FunctionRegister.h
   ${HEADER_PATH}/NameRegister.h
   )

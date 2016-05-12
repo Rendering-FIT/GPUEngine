@@ -11,15 +11,18 @@ namespace ge
 {
    namespace sg{
 
-      class GESG_EXPORT AnimationManager
+      /**
+       * Class responsible for playing (updating) animations.
+       */
+      class GESG_EXPORT AnimationManager: public core::Updatable
       {
       public:
 
-         void addAnimation(std::shared_ptr<Animation>& animation);
-         void removeAnimation(std::shared_ptr<Animation>animation);
+         //void addAnimation(std::shared_ptr<Animation>& animation);
+         //void removeAnimation(std::shared_ptr<Animation>animation);
 
 
-         virtual void update(double t);
+         virtual void update(core::time_point t) override;
          void pauseAnimation(std::shared_ptr<Animation>animation);
          void playAnimation(std::shared_ptr<Animation>animation);
 
@@ -27,7 +30,7 @@ namespace ge
 
       protected:
 
-         std::vector<std::shared_ptr<Animation>> animations;
+         //std::vector<std::shared_ptr<Animation>> animations;
          std::list<std::shared_ptr<Animation>> playlist;
 
       private:
