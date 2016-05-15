@@ -3,37 +3,48 @@
 #if defined(REPLACE_GLEW)
 
 #include<geGL/OpenGLFunctionTable.h>
-#include<geGL/CheckOpenGLFunctions.h>
+#include<geGL/LoaderTableDecorator.h>
+#include<geGL/DSATableDecorator.h>
+#include<geGL/TrapTableDecorator.h>
 #include<geGL/OpenGLCapabilities.h>
 #include<geGL/OpenGLFunctionProvider.h>
 
-GEGL_EXPORT thread_local ge::gl::opengl::FunctionTablePointer _defaultOpenGLFunctionTable = nullptr;
-GEGL_EXPORT thread_local ge::gl::opengl::FunctionProvider _defaulOpenGLFunctionProvider(nullptr);
+GEGL_EXPORT thread_local ge::gl::opengl::FunctionTablePointer    _defaultOpenGLFunctionTable    = nullptr;
+GEGL_EXPORT thread_local ge::gl::opengl::FunctionProviderPointer _defaultOpenGLFunctionProvider = nullptr;
+
+using namespace ge::gl;
+using namespace ge::gl::opengl;
+
+class DefaultLoader: public ge::gl::opengl::FunctionLoaderInterface{
+  public:
+    DefaultLoader(ge::gl::opengl::GET_PROC_ADDRESS getProcAddress){
+      this->m_getProcAddress = getProcAddress;
+    }
+    ~DefaultLoader(){}
+    virtual FUNCTION_POINTER load(char const*fceName)const{
+      return this->m_getProcAddress(fceName);
+    }
+  protected:
+    ge::gl::opengl::GET_PROC_ADDRESS m_getProcAddress = nullptr;
+};
 
 void ge::gl::init(
     opengl::GET_PROC_ADDRESS getProcAddress){
-  if(getProcAddress)
-    _defaultOpenGLFunctionTable = opengl::prepareFunctionTable(getProcAddress);
-  else
+  if(getProcAddress){
+    _defaultOpenGLFunctionTable = std::make_shared<TrapTableDecorator<DSATableDecorator<LoaderTableDecorator<FunctionTable>>>>(std::make_shared<DefaultLoader>(getProcAddress));
+    _defaultOpenGLFunctionTable->construct();
+  }else
     _defaultOpenGLFunctionTable = nullptr;
-  _defaulOpenGLFunctionProvider.setFunctionTable(_defaultOpenGLFunctionTable);
+  _defaultOpenGLFunctionProvider = std::make_shared<ge::gl::opengl::FunctionProvider>(_defaultOpenGLFunctionTable);
 }
 
-GEGL_EXPORT ge::gl::opengl::FunctionTablePointer ge::gl::opengl::prepareFunctionTable(
-    GET_PROC_ADDRESS getProcAddress){
-  auto table = std::make_shared<FunctionTable>();
-  loadFunctions(table,getProcAddress);
-  //TODO DSA
-  fillCapabilities(table->capabilities,table);
-  checkFunctions(table);
-  return table;
-}
-
-
-GEGL_EXPORT ge::gl::opengl::FunctionTablePointer const&ge::gl::opengl::getDefaultFunctionTable(){
+ge::gl::opengl::FunctionTablePointer const&ge::gl::opengl::getDefaultFunctionTable(){
   return _defaultOpenGLFunctionTable;
 }
 
+ge::gl::opengl::FunctionProviderPointer const& ge::gl::opengl::getDefaultFunctionProvider(){
+  return _defaultOpenGLFunctionProvider;
+}
 #else// defined(REPLACE_GLEW)
 
 

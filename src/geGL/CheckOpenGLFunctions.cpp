@@ -4,12 +4,12 @@
 
 #include<geGL/OpenGLFunctionTable.h>
 #include<geGL/Export.h>
-#include<geGL/GeneratedOpenGLTrapFunctions.h>
+#include<geGL/Generated/OpenGLTrapFunctions.h>
 
 using namespace ge::gl::opengl;
 
 void ge::gl::opengl::checkFunctions(FunctionTablePointer const&table){
-#include<geGL/GeneratedCheckOpenGLFunctions.h>
+#include<geGL/Generated/CheckOpenGLFunctions.h>
 }
 
 

@@ -189,6 +189,16 @@ typedef void (*GETACTIVEFCE  )(GLuint,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLc
 typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
 void ProgramObject::_getParameterList(){
 #if defined(REPLACE_GLEW)
+  const decltype(&FunctionProvider::glGetActiveAttrib) getActive [] = {
+    &FunctionProvider::glGetActiveAttrib,
+    &FunctionProvider::glGetActiveUniform,
+  };
+  const decltype(&FunctionProvider::glGetAttribLocation) getLocation [] = {
+    &FunctionProvider::glGetAttribLocation,
+    &FunctionProvider::glGetUniformLocation,
+  };
+
+  /*
   const GETACTIVEFCE getActive [] = {
     this->getFunctionTable()->glGetActiveAttrib ,
     this->getFunctionTable()->glGetActiveUniform,
@@ -196,7 +206,7 @@ void ProgramObject::_getParameterList(){
   const GETLOCATIONFCE getLocation [] = {
     this->getFunctionTable()->glGetAttribLocation ,
     this->getFunctionTable()->glGetUniformLocation,
-  };
+  };*/
 #else
   const GETACTIVEFCE   getActive[]   = {
     (GETACTIVEFCE)glGetActiveAttrib ,
@@ -224,9 +234,9 @@ void ProgramObject::_getParameterList(){
       std::string name;//name of parameter
       GLint       location;//location of parameter
       GLsizei     length;
-      getActive[t](this->_id,i,bufLen,&length,&size,&type,Buffer);
+      (this->*getActive[t])(this->_id,i,bufLen,&length,&size,&type,Buffer);
       name = chopIndexingInPropertyName(std::string(Buffer));
-      location = getLocation[t](this->_id,name.c_str());//location
+      location = (this->*getLocation[t])(this->_id,name.c_str());//location
       if(ge::gl::SamplerParam::isSampler(type)){
         GLint binding;
         glGetUniformiv(this->getId(),location,&binding);
@@ -649,11 +659,11 @@ if(index<0)return;\
 
 #define MATRIXBODY(FCE,TYPE)\
   MATRIXBODYA(TYPE)\
-FCE[index](param->getLocation(),count,transpose,value)
+(this->*FCE[index])(param->getLocation(),count,transpose,value)
 
 #define MATRIXBODYDSA(FCE,TYPE)\
   MATRIXBODYA(TYPE)\
-FCE[index](this->_id,param->getLocation(),count,transpose,value)
+(this->*FCE[index])(this->_id,param->getLocation(),count,transpose,value)
 
 
 void ProgramObject::set(
@@ -661,17 +671,18 @@ void ProgramObject::set(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-  void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
+  const decltype(&FunctionProvider::glUniformMatrix4fv) matrixfFce[] = {
+//  void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
 #if defined(REPLACE_GLEW)
-    this->getFunctionTable()->glUniformMatrix2fv  ,
-    this->getFunctionTable()->glUniformMatrix3fv  ,
-    this->getFunctionTable()->glUniformMatrix4fv  ,
-    this->getFunctionTable()->glUniformMatrix2x3fv,
-    this->getFunctionTable()->glUniformMatrix3x2fv,
-    this->getFunctionTable()->glUniformMatrix2x4fv,
-    this->getFunctionTable()->glUniformMatrix4x2fv,
-    this->getFunctionTable()->glUniformMatrix3x4fv,
-    this->getFunctionTable()->glUniformMatrix4x3fv,
+    &FunctionProvider::glUniformMatrix2fv  ,
+    &FunctionProvider::glUniformMatrix3fv  ,
+    &FunctionProvider::glUniformMatrix4fv  ,
+    &FunctionProvider::glUniformMatrix2x3fv,
+    &FunctionProvider::glUniformMatrix3x2fv,
+    &FunctionProvider::glUniformMatrix2x4fv,
+    &FunctionProvider::glUniformMatrix4x2fv,
+    &FunctionProvider::glUniformMatrix3x4fv,
+    &FunctionProvider::glUniformMatrix4x3fv,
 #else//REPLACE_GLEW
     glUniformMatrix2fv  ,
     glUniformMatrix3fv  ,
@@ -692,17 +703,18 @@ void ProgramObject::set(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-  void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
+//  void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
+  const decltype(&FunctionProvider::glUniformMatrix4dv) matrixdFce[] = {
 #if defined(REPLACE_GLEW)
-    this->getFunctionTable()->glUniformMatrix2dv  ,
-    this->getFunctionTable()->glUniformMatrix3dv  ,
-    this->getFunctionTable()->glUniformMatrix4dv  ,
-    this->getFunctionTable()->glUniformMatrix2x3dv,
-    this->getFunctionTable()->glUniformMatrix3x2dv,
-    this->getFunctionTable()->glUniformMatrix2x4dv,
-    this->getFunctionTable()->glUniformMatrix4x2dv,
-    this->getFunctionTable()->glUniformMatrix3x4dv,
-    this->getFunctionTable()->glUniformMatrix4x3dv,
+    &FunctionProvider::glUniformMatrix2dv  ,
+    &FunctionProvider::glUniformMatrix3dv  ,
+    &FunctionProvider::glUniformMatrix4dv  ,
+    &FunctionProvider::glUniformMatrix2x3dv,
+    &FunctionProvider::glUniformMatrix3x2dv,
+    &FunctionProvider::glUniformMatrix2x4dv,
+    &FunctionProvider::glUniformMatrix4x2dv,
+    &FunctionProvider::glUniformMatrix3x4dv,
+    &FunctionProvider::glUniformMatrix4x3dv,
 #else//REPLACE_GLEW
     glUniformMatrix2dv  ,
     glUniformMatrix3dv  ,
@@ -723,17 +735,18 @@ void ProgramObject::setdsa(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-  void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
+  //void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
+  const decltype(&FunctionProvider::glProgramUniformMatrix4fv) matrixfFceDsa[] = {
 #if defined(REPLACE_GLEW)
-    this->getFunctionTable()->glProgramUniformMatrix2fv  ,
-    this->getFunctionTable()->glProgramUniformMatrix3fv  ,
-    this->getFunctionTable()->glProgramUniformMatrix4fv  ,
-    this->getFunctionTable()->glProgramUniformMatrix2x3fv,
-    this->getFunctionTable()->glProgramUniformMatrix3x2fv,
-    this->getFunctionTable()->glProgramUniformMatrix2x4fv,
-    this->getFunctionTable()->glProgramUniformMatrix4x2fv,
-    this->getFunctionTable()->glProgramUniformMatrix3x4fv,
-    this->getFunctionTable()->glProgramUniformMatrix4x3fv,
+    &FunctionProvider::glProgramUniformMatrix2fv  ,
+    &FunctionProvider::glProgramUniformMatrix3fv  ,
+    &FunctionProvider::glProgramUniformMatrix4fv  ,
+    &FunctionProvider::glProgramUniformMatrix2x3fv,
+    &FunctionProvider::glProgramUniformMatrix3x2fv,
+    &FunctionProvider::glProgramUniformMatrix2x4fv,
+    &FunctionProvider::glProgramUniformMatrix4x2fv,
+    &FunctionProvider::glProgramUniformMatrix3x4fv,
+    &FunctionProvider::glProgramUniformMatrix4x3fv,
 #else//REPLACE_GLEW
     glProgramUniformMatrix2fv  ,
     glProgramUniformMatrix3fv  ,
@@ -754,17 +767,18 @@ void ProgramObject::setdsa(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-  void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
+  //void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
+  const decltype(&FunctionProvider::glProgramUniformMatrix4dv) matrixdFceDsa[] = {
 #if defined(REPLACE_GLEW)
-    this->getFunctionTable()->glProgramUniformMatrix2dv  ,
-    this->getFunctionTable()->glProgramUniformMatrix3dv  ,
-    this->getFunctionTable()->glProgramUniformMatrix4dv  ,
-    this->getFunctionTable()->glProgramUniformMatrix2x3dv,
-    this->getFunctionTable()->glProgramUniformMatrix3x2dv,
-    this->getFunctionTable()->glProgramUniformMatrix2x4dv,
-    this->getFunctionTable()->glProgramUniformMatrix4x2dv,
-    this->getFunctionTable()->glProgramUniformMatrix3x4dv,
-    this->getFunctionTable()->glProgramUniformMatrix4x3dv,
+    &FunctionProvider::glProgramUniformMatrix2dv  ,
+    &FunctionProvider::glProgramUniformMatrix3dv  ,
+    &FunctionProvider::glProgramUniformMatrix4dv  ,
+    &FunctionProvider::glProgramUniformMatrix2x3dv,
+    &FunctionProvider::glProgramUniformMatrix3x2dv,
+    &FunctionProvider::glProgramUniformMatrix2x4dv,
+    &FunctionProvider::glProgramUniformMatrix4x2dv,
+    &FunctionProvider::glProgramUniformMatrix3x4dv,
+    &FunctionProvider::glProgramUniformMatrix4x3dv,
 #else//REPLACE_GLEW
     glProgramUniformMatrix2dv  ,
     glProgramUniformMatrix3dv  ,

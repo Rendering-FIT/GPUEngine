@@ -13,15 +13,13 @@ for line in fileinput.input():
 
 data0=data0.split("\n")[:-1]
 
-def printPFN(data):
+def printFunction(data):
     params = data.split(",")
     pfn = ("pfn"+params[1]+"proc").upper()
-    print "#if !defined("+pfn+")"
-    print "typedef "+params[0]+"(*"+pfn+")("+",".join(params[2::2])+");"
-    print "#endif"
+    #print "#if !defined("+pfn+")"
+    print pfn+" "+"m_"+params[1]+" = nullptr;"
+    #print "#endif"
 
 for x in data0:
-    printPFN(x)
-
-
+    printFunction(x)
 

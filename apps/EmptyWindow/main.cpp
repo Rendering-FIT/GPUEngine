@@ -70,8 +70,8 @@ void Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&even
 
 void Data::init(Data*data){
   data->window->makeCurrent("rendering");
-  ge::gl::init();
-  data->gl = std::make_shared<ge::gl::opengl::FunctionProvider>(ge::gl::opengl::prepareFunctionTable((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
+  ge::gl::init((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress);
+  data->gl = ge::gl::opengl::getDefaultFunctionProvider();
 
   data->gl->glEnable(GL_DEPTH_TEST);
   data->gl->glDepthFunc(GL_LEQUAL);

@@ -4,7 +4,8 @@
 using namespace ge::gl::opengl;
 
 FunctionProvider::FunctionProvider(FunctionTablePointer const&table){
-  if(table == nullptr)this->_table = ge::gl::opengl::getDefaultFunctionTable();
-  else this->_table = table;
+  if(table == nullptr)this->m_table = ge::gl::opengl::getDefaultFunctionTable();
+  else this->m_table = table;
 }
 
+#include<geGL/Generated/FunctionProviderCalls.h>

@@ -8,11 +8,27 @@
 namespace ge{
   namespace gl{
     namespace opengl{
+      class FunctionTable{
+        public:
+          FunctionTable(){}
+          virtual ~FunctionTable(){}
+          bool construct(){return this->m_init();}
+          Capabilities capabilities;
+          virtual bool m_init(){return true;}
+#include<geGL/Generated/FunctionTableCalls.h>
+#include<geGL/Generated/OpenGLPFN.h>
+#include<geGL/Generated/OpenGLFunctions.h>
+#include<geGL/Generated/MemberOpenGLPFN.h>
+#include<geGL/Generated/MemberOpenGLFunctions.h>
+      };
+
+      /*
       class GEGL_EXPORT FunctionTable{
         public:
           Capabilities capabilities;
-#include<geGL/GeneratedOpenGLFunctions.h>
+#include<geGL/Generated/OpenGLFunctions.h>
       };
+      */
     }
 
     /*

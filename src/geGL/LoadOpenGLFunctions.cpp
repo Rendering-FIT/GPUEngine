@@ -7,7 +7,7 @@ using namespace ge::gl::opengl;
 void ge::gl::opengl::loadFunctions(
     FunctionTablePointer const&table,
     GET_PROC_ADDRESS getProcAddress){
-#include<geGL/GeneratedLoadOpenGLFunctions.h>
+#include<geGL/Generated/LoadOpenGLFunctions.h>
 }
 
 

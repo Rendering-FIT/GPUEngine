@@ -6,9 +6,9 @@
 //#include<GL/gl.h>
 #include<stdint.h>
 #include<stddef.h>
-#include<geGL/GeneratedOpenGLTypes.h>
-#include<geGL/GeneratedOpenGLConstants.h>
-#include<geGL/GeneratedOpenGLPFN.h>
+#include<geGL/Generated/OpenGLTypes.h>
+#include<geGL/Generated/OpenGLConstants.h>
+//#include<geGL/Generated/OpenGLPFN.h>
 #else//REPLACE_GLEW
 
 #include<GL/glew.h>

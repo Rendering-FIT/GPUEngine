@@ -21,9 +21,8 @@ namespace ge{
     GEGL_EXPORT void init(
         opengl::GET_PROC_ADDRESS getProcAddress = nullptr);
     namespace opengl{
-      GEGL_EXPORT FunctionTablePointer prepareFunctionTable(
-          GET_PROC_ADDRESS getProcAddress);
-      GEGL_EXPORT FunctionTablePointer const& getDefaultFunctionTable();
+      GEGL_EXPORT FunctionTablePointer    const& getDefaultFunctionTable();
+      GEGL_EXPORT FunctionProviderPointer const& getDefaultFunctionProvider();
     }
 #else
     GEGL_EXPORT void init();
