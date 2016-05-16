@@ -1,16 +1,17 @@
 #pragma once
 
 #include <geGL/Export.h>
-#include <GL/glew.h>
-#include <vector>
 
-namespace ge
-{
-  namespace gl
-  {
+#if defined(REPLACE_GLEW)
+//#include<GL/gl.h>
+#include<stdint.h>
+#include<stddef.h>
+#include<geGL/Generated/OpenGLTypes.h>
+#include<geGL/Generated/OpenGLConstants.h>
+//#include<geGL/Generated/OpenGLPFN.h>
+#else//REPLACE_GLEW
 
-  }
-}
+#include<GL/glew.h>
 
 //TODO remove after glew fix
 #ifndef GL_COPY_READ_BUFFER_BINDING
@@ -59,3 +60,5 @@ extern void (*glTextureImage2DMultisample) (GLuint texture, GLsizei samples, GLe
 #endif
 
 extern decltype(glDeleteTextures)*glDeleteTexturesGEGL;
+
+#endif//defined(REPLACE_GLEW)

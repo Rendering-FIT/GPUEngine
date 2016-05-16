@@ -95,7 +95,7 @@
 #define DEF_PROGRAMOBJECT_SET(a,b)\
 	void ProgramObject::set(std::string uniformName,DEF_GLTYPEPAR(a,b)){\
     if(!this->_uniformList.count(uniformName))return;\
-		DEF_GLUNIFORM(a,b)(this->_uniformList[uniformName].getLocation(),DEF_GLTYPEPARCONV(a,b));\
+		DEF_GLUNIFORM(a,b)(this->_uniformList[uniformName]->getLocation(),DEF_GLTYPEPARCONV(a,b));\
 	}
 
 #define DEFDEFFCEV(type)\
@@ -108,19 +108,19 @@
 			GLsizei count,\
 			const DEF_GLTYPE(type_name) *value){\
     if(!this->_uniformList.count(uniformName))return;\
-		ProgramObjectParameter param=this->_uniformList[uniformName];\
-		switch(param.getType()){\
+		auto param=this->_uniformList[uniformName];\
+		switch(param->getType()){\
 			case DEF_GLTYPECONST(1,type_name):\
-				DEF_GLUNIFORMV(1,type_name)(param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLUNIFORMV(1,type_name)(param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			case DEF_GLTYPECONST(2,type_name):\
-				DEF_GLUNIFORMV(2,type_name)(param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLUNIFORMV(2,type_name)(param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			case DEF_GLTYPECONST(3,type_name):\
-				DEF_GLUNIFORMV(3,type_name)(param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLUNIFORMV(3,type_name)(param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			case DEF_GLTYPECONST(4,type_name):\
-				DEF_GLUNIFORMV(4,type_name)(param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLUNIFORMV(4,type_name)(param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			default:\
 				break;\
@@ -133,7 +133,7 @@
 #define DEF_PROGRAMOBJECT_SETDSA(a,b)\
 	void ProgramObject::setdsa(std::string uniformName,DEF_GLTYPEPAR(a,b)){\
     if(!this->_uniformList.count(uniformName))return;\
-		DEF_GLPROGRAMUNIFORM(a,b)(this->_id,this->_uniformList[uniformName].getLocation(),DEF_GLTYPEPARCONV(a,b));\
+		DEF_GLPROGRAMUNIFORM(a,b)(this->_id,this->_uniformList[uniformName]->getLocation(),DEF_GLTYPEPARCONV(a,b));\
 	}
 
 #define DEFDEFDSAFCEV(type)\
@@ -146,19 +146,19 @@
 			GLsizei count,\
 			const DEF_GLTYPE(type_name) *value){\
     if(!this->_uniformList.count(uniformName))return;\
-		ProgramObjectParameter param=this->_uniformList[uniformName];\
-		switch(param.getType()){\
+		auto param=this->_uniformList[uniformName];\
+		switch(param->getType()){\
 			case DEF_GLTYPECONST(1,type_name):\
-				DEF_GLPROGRAMUNIFORMV(1,type_name)(this->_id,param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLPROGRAMUNIFORMV(1,type_name)(this->_id,param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			case DEF_GLTYPECONST(2,type_name):\
-				DEF_GLPROGRAMUNIFORMV(2,type_name)(this->_id,param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLPROGRAMUNIFORMV(2,type_name)(this->_id,param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			case DEF_GLTYPECONST(3,type_name):\
-				DEF_GLPROGRAMUNIFORMV(3,type_name)(this->_id,param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLPROGRAMUNIFORMV(3,type_name)(this->_id,param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			case DEF_GLTYPECONST(4,type_name):\
-				DEF_GLPROGRAMUNIFORMV(4,type_name)(this->_id,param.getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
+				DEF_GLPROGRAMUNIFORMV(4,type_name)(this->_id,param->getLocation(),count,(const DEF_GLTYPETRANS(type_name)*)value);\
 				break;\
 			default:\
 				break;\

@@ -51,7 +51,7 @@ TypeRegister::TypeRegister(){
   this->addType("vec4"  ,TypeRegister::ARRAY,4,"f32");
 }
 
-TypeRegister::TypeID TypeRegister::getTypeId(std::string name)const{
+TypeRegister::TypeID TypeRegister::getTypeId(std::string const&name)const{
   if(!this->_name2Id.count(name)){
     std::cerr<<"ERROR: TypeRegister::getTypeId("<<name<<") - type \""<<name<<"\" does not exist."<<std::endl;
     return TypeRegister::getTypeTypeId<TypeRegister::Unregistered>();
@@ -280,8 +280,9 @@ bool TypeRegister::_typeExists(TypeRegister::TypeID*id,DescriptionList const&typ
   return false;
 }
 
-std::string TypeRegister::getTypeIdName(TypeID id)const{
-  if(!this->_id2name.count(id))return"";
+std::string const&TypeRegister::getTypeIdName(TypeID id)const{
+  static std::string empty = "";
+  if(!this->_id2name.count(id))return empty;
   return this->_id2name.find(id)->second;
 }
 
@@ -293,7 +294,7 @@ bool TypeRegister::hasSynonyms(TypeID id)const{
   return this->_id2Synonyms.find(id)->second.size()>1;
 }
 
-bool TypeRegister::areSynonyms(std::string name0,std::string name1)const{
+bool TypeRegister::areSynonyms(std::string const&name0,std::string const&name1)const{
   return this->getTypeId(name0)==this->getTypeId(name1);
 }
 
@@ -405,7 +406,7 @@ TypeRegister::TypeID TypeRegister::_typeAdd(DescriptionList const&type,Descripti
   }
 }
 
-void TypeRegister::_bindTypeIdName(TypeID id,std::string name){
+void TypeRegister::_bindTypeIdName(TypeID id,std::string const&name){
   this->_name2Id[name] = id  ;
   if(!this->_id2name.count(id)){
     this->_id2name[id  ] = name;
@@ -414,7 +415,11 @@ void TypeRegister::_bindTypeIdName(TypeID id,std::string name){
   this->_id2Synonyms[id].insert(name);
 }
 
-TypeRegister::TypeID TypeRegister::addType(std::string name,DescriptionList const&type,std::function<OBJConstructor> constructor,std::function<OBJDestructor> destructor){
+TypeRegister::TypeID TypeRegister::addType(
+    std::string                  const&name       ,
+    DescriptionList              const&type       ,
+    std::function<OBJConstructor>const&constructor,
+    std::function<OBJDestructor >const&destructor ){
   DescriptionIndex start=0;
   TypeRegister::TypeID id;
   if(this->_typeExists(&id,type,start)){
@@ -442,7 +447,7 @@ TypeRegister::TypeID TypeRegister::addType(std::string name,DescriptionList cons
   }
 }
 
-void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor> constructor){
+void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor>const&constructor){
   if(!constructor){
     this->_id2Constructor.erase(id);
     return;
@@ -450,7 +455,7 @@ void TypeRegister::addConstructor(TypeID id,std::function<OBJConstructor> constr
   this->_id2Constructor[id]=constructor;
 }
 
-void TypeRegister::addDestructor(TypeID id,std::function<OBJDestructor> destructor){
+void TypeRegister::addDestructor(TypeID id,std::function<OBJDestructor>const&destructor){
   if(!destructor){
     this->_id2Destructor[id]=nullptr;//.erase(id);
     return;
@@ -583,7 +588,7 @@ std::shared_ptr<Resource>TypeRegister::sharedResource(TypeID id)const{
   return std::make_shared<AtomicResource>(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),this->alloc(id),id);
 }
 
-std::shared_ptr<Resource>TypeRegister::sharedResource(std::string name)const{
+std::shared_ptr<Resource>TypeRegister::sharedResource(std::string const&name)const{
   return this->sharedResource(this->getTypeId(name));
 }
 
@@ -596,7 +601,7 @@ std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(TypeID id,std::functi
 //  return std::make_shared<AtomicResource>(this->shared_from_this(),id);
 }
 
-std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(std::string name,std::function<OBJDestructor>destructor)const{
+std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(std::string const&name,std::function<OBJDestructor>destructor)const{
   return this->sharedEmptyResource(this->getTypeId(name),destructor);
 }
 

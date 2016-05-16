@@ -1,6 +1,5 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 
 namespace ge{
@@ -16,6 +15,19 @@ namespace ge{
             GLenum  internalFormat,
             GLsizei width,
             GLsizei height);
+#if defined(REPLACE_GLEW)
+        RenderbufferObject(
+            opengl::FunctionTablePointer const&table,
+            GLenum  internalFormat,
+            GLsizei samples,
+            GLsizei width,
+            GLsizei height);
+        RenderbufferObject(
+            opengl::FunctionTablePointer const&table,
+            GLenum  internalFormat,
+            GLsizei width,
+            GLsizei height);
+#endif
         ~RenderbufferObject();
         void   bind             ()const;
         void   unbind           ()const;

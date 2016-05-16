@@ -84,7 +84,7 @@ namespace ge{
 
 
     template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResource(std::string name,ARGS... args)const{
+      inline std::shared_ptr<Resource>TypeRegister::sharedResource(std::string const&name,ARGS... args)const{
         TypeID id=this->getTypeId(name);
         return this->sharedResourceTypeID<CLASS>(id,args...);
       }
@@ -99,22 +99,22 @@ namespace ge{
         return this->sharedResourceTypeID<CLASS>(id,args...);
       }
     template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddCD(std::string name,ARGS... args){
+      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddCD(std::string const&name,ARGS... args){
         this->addClassCD<CLASS>(name);
         return this->sharedResource<CLASS>(name,args...);
       }
     template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddC(std::string name,ARGS... args){
+      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddC(std::string const&name,ARGS... args){
         this->addClassC<CLASS>(name);
         return this->sharedResource<CLASS>(name,args...);
       }
     template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddD(std::string name,ARGS... args){
+      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddD(std::string const&name,ARGS... args){
         this->addClassD<CLASS>(name);
         return this->sharedResource<CLASS>(name,args...);
       }
     template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAdd(std::string name,ARGS... args){
+      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAdd(std::string const&name,ARGS... args){
         this->addClass<CLASS>(name);
         return this->sharedResource<CLASS>(name,args...);
       }

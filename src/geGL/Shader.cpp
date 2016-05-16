@@ -1,6 +1,8 @@
 #include<geGL/Shader.h>
+#include<geGL/Program.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 /**
  * @brief gets shader parameter
@@ -26,10 +28,35 @@ Shader::Shader(){
  * @brief constructor that creates shader of certain type
  *
  * @param type type of shader
- * @param source optional source code of shader
+ * @param sources optional source code of shader
  */
-Shader::Shader(GLenum type,std::string source){
-  this->create(type,source);
+Shader::Shader(GLenum type,Sources const&sources){
+  this->create(type);
+  this->compile(sources);
+}
+
+/**
+ * @brief enpty consturctor
+ *
+ * @param table OpenGLFunctionTable
+ */
+Shader::Shader(FunctionTablePointer const&table):OpenGLObject(table){
+  this->_id = 0;
+}
+
+/**
+ * @brief constructor that creates shader of certain type
+ *
+ * @param table OpenGLFunctionTable
+ * @param type type of shader
+ * @param sources optional shader sources 
+ */
+Shader::Shader(
+    FunctionTablePointer const&table  ,
+    GLenum               const&type   ,
+    Sources              const&sources):OpenGLObject(table){
+  this->create(type);
+  this->compile(sources);
 }
 
 /**
@@ -44,32 +71,39 @@ Shader::~Shader(){
  * created using empty constructor
  *
  * @param type type of shader
- * @param source optional source code of shader
+ * @param sources optional source codes of shader
  */
-void Shader::create(GLenum type,std::string source){
+void Shader::create(GLenum type){
+  if(this->_id != 0)return;
   this->_id = glCreateShader(type);
-  if(source!="")this->compile(source);
 }
 
 /**
  * @brief this function sets shader source to shader
  * it does not compile shader
  *
- * @param source source code of shader
+ * @param source source codes of shader
  */
-void Shader::setSource(std::string source){
-  const char*string=source.c_str();
-  glShaderSource(this->getId(),1,&string,NULL);
+void Shader::setSource(Sources const& sources){
+  std::vector<const GLchar*>ptr;
+  for(auto const&x:sources)ptr.push_back(x.c_str());
+
+  glShaderSource(this->getId(),(GLsizei)ptr.size(),ptr.data(),nullptr);
 }
 
 /**
  * @brief this function can set shader source code and compile shader
+ * it also call link in programs that are using this shader
  *
- * @param source optional source code
+ * @param source optional source codes
  */
-void Shader::compile(std::string source){
-  if(source!="")this->setSource(source);
+void Shader::compile(Sources const& sources){
+  if(sources.size()>0)this->setSource(sources);
   glCompileShader(this->getId());
+  if(!this->getCompileStatus())return;
+  for(auto const&x:this->_programs){
+    x->link();
+  }
 }
 
 /**
@@ -144,7 +178,7 @@ std::string Shader::getInfoLog()const{
  *
  * @return shader source or empty string if there is no source
  */
-std::string Shader::getSource()const{
+Shader::Source Shader::getSource()const{
   GLuint length=this->getSourceLength();
   if(!length)return"";
   std::string source(length,' ');

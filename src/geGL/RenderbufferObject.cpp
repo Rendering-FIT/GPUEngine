@@ -1,6 +1,7 @@
 #include<geGL/RenderbufferObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 RenderbufferObject::RenderbufferObject(
     GLenum  internalFormat,
@@ -18,6 +19,27 @@ RenderbufferObject::RenderbufferObject(
   glCreateRenderbuffers(1,&this->_id);
   glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
 }
+
+#if defined(REPLACE_GLEW)
+RenderbufferObject::RenderbufferObject(
+    FunctionTablePointer const&table,
+    GLenum  internalFormat,
+    GLsizei samples,
+    GLsizei width,
+    GLsizei height):OpenGLObject(table){
+  glCreateRenderbuffers(1,&this->_id);
+  glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
+}
+RenderbufferObject::RenderbufferObject(
+    FunctionTablePointer const&table,
+    GLenum  internalFormat,
+    GLsizei width,
+    GLsizei height):OpenGLObject(table){
+  glCreateRenderbuffers(1,&this->_id);
+  glNamedRenderbufferStorage(this->_id,internalFormat,width,height);
+}
+#endif
+
 
 RenderbufferObject::~RenderbufferObject(){
   glDeleteRenderbuffers(1,&this->_id);

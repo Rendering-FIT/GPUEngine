@@ -1,7 +1,5 @@
-#ifndef _ASYNCHRONOUSQUERYOBJECT_H_
-#define _ASYNCHRONOUSQUERYOBJECT_H_
+#pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 
 namespace ge{
@@ -57,6 +55,16 @@ namespace ge{
          */
         AsynchronousQueryObject(
             AsynchronousQueryObject*existingQuery);
+#if defined(REPLACE_GLEW)
+        AsynchronousQueryObject(
+            opengl::FunctionTablePointer const&table,
+            GLenum     target,
+            GLenum     waitingType,
+            ResultSize resultSize);
+        AsynchronousQueryObject(
+            opengl::FunctionTablePointer const&table,
+            AsynchronousQueryObject*existingQuery);
+#endif
         /**
          * @brief Destructor
          */
@@ -122,4 +130,3 @@ namespace ge{
   }//gl
 }//ge
 
-#endif//_ASYNCHRONOUSQUERYOBJECT_H_

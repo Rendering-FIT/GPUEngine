@@ -12,4 +12,4 @@ install(FILES
 )
 
 add_subdirectory(OsgImport)
-add_subdirectory(WindowObject)
+add_subdirectory(SDLWindow)

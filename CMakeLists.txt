@@ -13,10 +13,15 @@ SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
-SET(GPUENGINE_BUILD_geAd ON CACHE BOOL "Build addons (geAd directory).")
+SET(GPUENGINE_BUILD_geAd OFF CACHE BOOL "Build addons (geAd directory).")
 SET(GPUENGINE_BUILD_APPS OFF CACHE BOOL "Build applications (apps directory).")
 SET(GPUENGINE_BUILD_EXAMPLES OFF CACHE BOOL "Build examples (examples directory).")
 SET(GPUENGINE_BUILD_TESTS OFF CACHE BOOL "Build and run tests (tests directory).")
+SET(GPUENGINE_BUILD_GEGL OFF CACHE BOOL "Build geGL package.")
+SET(GPUENGINE_BUILD_GESG OFF CACHE BOOL "Build geSG package.")
+SET(GPUENGINE_BUILD_GERG OFF CACHE BOOL "Build geRG package.")
+SET(GPUENGINE_BUILD_GEUTIL OFF CACHE BOOL "Build geUtil package.")
+SET(GPUENGINE_REPLACE_GLEW ON CACHE BOOL "Remove glew from geGL")
 
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
@@ -71,10 +76,16 @@ IF(MSVC)
    ELSE()
       # MSVC 2015 workarounds to be placed here (currently none)
    ENDIF()
+   IF(GPUENGINE_REPLACE_GLEW)
+     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DREPLACE_GLEW")
+   ENDIF()
 ENDIF()
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -W -Wall -pedantic")
+  IF(GPUENGINE_REPLACE_GLEW)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DREPLACE_GLEW")
+  ENDIF()
 ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
@@ -101,30 +112,30 @@ SET(INSTALL_CM_DIR cmake)
 
 configure_file(version.h.in "include/version.h" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
-        DESTINATION include
-        )
+  DESTINATION include
+  )
 
 configure_file(
-   GPUEngineConfig.cmake.in
-   GPUEngineConfig.cmake
-   @ONLY
-)
+  GPUEngineConfig.cmake.in
+  GPUEngineConfig.cmake
+  @ONLY
+  )
 
 configure_file(
-   GPUEngineConfigVersion.cmake.in
-   GPUEngineConfigVersion.cmake
-   @ONLY
-)
+  GPUEngineConfigVersion.cmake.in
+  GPUEngineConfigVersion.cmake
+  @ONLY
+  )
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
- #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
-              "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
-        DESTINATION ${INSTALL_CM_DIR}
-        )
+  #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+  DESTINATION ${INSTALL_CM_DIR}
+  )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
-        DESTINATION "${INSTALL_CM_DIR}/CMakeModules"
-       )
+  DESTINATION "${INSTALL_CM_DIR}/CMakeModules"
+  )
 
 
 add_subdirectory(src)
@@ -134,10 +145,10 @@ if(GPUENGINE_BUILD_geAd)
 endif()
 
 if(GPUENGINE_BUILD_APPS)
-   if(NOT GPUENGINE_BUILD_geAd)
-      message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
-   endif()
-   add_subdirectory(apps)
+  if(NOT GPUENGINE_BUILD_geAd)
+    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
+  endif()
+  add_subdirectory(apps)
 endif()
 
 if(GPUENGINE_BUILD_EXAMPLES)

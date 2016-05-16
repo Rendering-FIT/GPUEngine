@@ -1,6 +1,7 @@
 #include<geGL/BufferObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 /**
  * @brief Function translates buffer targets to strings
@@ -150,6 +151,21 @@ BufferObject::BufferObject(
     GLbitfield    flags){
   this->alloc(size,data,flags);
 }
+
+#if defined(REPLACE_GLEW)
+BufferObject::BufferObject(FunctionTablePointer const&table):OpenGLObject(table){
+  this->_id = 0;
+}
+
+BufferObject::BufferObject(
+    FunctionTablePointer const&table,
+    GLsizeiptr    size ,
+    const GLvoid* data ,
+    GLbitfield    flags):OpenGLObject(table){
+  this->alloc(size,data,flags);
+}
+#endif
+
 
 BufferObject::~BufferObject(){
   glDeleteBuffers(1,&this->_id);

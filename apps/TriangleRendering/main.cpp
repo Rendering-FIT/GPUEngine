@@ -131,7 +131,7 @@ void Idle()
 void Init()
 {
    // setup shaders, etc.
-   ge::gl::initShadersAndPrograms();
+   //ge::gl::initShadersAndPrograms();
    glProgram=make_shared<ProgramObject>(
       GL_VERTEX_SHADER,
       "#version 330\n"

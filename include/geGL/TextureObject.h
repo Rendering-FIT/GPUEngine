@@ -1,6 +1,5 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<iostream>
 
@@ -46,6 +45,29 @@ namespace ge{
             GLsizei width         ,
             GLsizei height        ,
             GLsizei depth         );
+#if defined(REPLACE_GLEW)
+        TextureObject(
+            opengl::FunctionTablePointer const&table,
+            GLenum  target        ,
+            GLenum  internalFormat,
+            GLsizei levels        ,
+            GLsizei width         );
+        TextureObject(
+            opengl::FunctionTablePointer const&table,
+            GLenum  target        ,
+            GLenum  internalFormat,
+            GLsizei levels        ,
+            GLsizei width         ,
+            GLsizei height        );
+        TextureObject(
+            opengl::FunctionTablePointer const&table,
+            GLenum  target        ,
+            GLenum  internalFormat,
+            GLsizei levels        ,
+            GLsizei width         ,
+            GLsizei height        ,
+            GLsizei depth         );
+#endif
         ~TextureObject();
         void bind     (GLuint unit)const;
         void unbind   (GLuint unit)const;

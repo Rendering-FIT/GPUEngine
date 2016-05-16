@@ -11,11 +11,18 @@
 #include<geGL/SamplerObject.h>
 #include<geGL/RenderbufferObject.h>
 #include<geGL/DebugMessage.h>
-#include <geGL/Export.h>
+#include<geGL/OpenGLFunctionTable.h>
+#include<geGL/FunctionLoaderInterface.h>
+#include<geGL/DefaultLoader.h>
 
 namespace ge{
   namespace gl{
-    GEGL_EXPORT void init();
+    GEGL_EXPORT void init(
+        std::shared_ptr<opengl::FunctionLoaderInterface>const&loader = nullptr);
+    namespace opengl{
+      GEGL_EXPORT FunctionTablePointer    const& getDefaultFunctionTable();
+      GEGL_EXPORT FunctionProviderPointer const& getDefaultFunctionProvider();
+    }
   }
 }
 

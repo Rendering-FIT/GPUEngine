@@ -1,6 +1,7 @@
 #include <geGL/AsynchronousQueryObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 AsynchronousQueryObject::AsynchronousQueryObject(
     GLenum     target,
@@ -11,6 +12,7 @@ AsynchronousQueryObject::AsynchronousQueryObject(
   this->_waitingType = waitingType;
   this->_resultSize  = resultSize;
 }
+
 AsynchronousQueryObject::AsynchronousQueryObject(
     AsynchronousQueryObject*existingQuery){
   glGenQueries(1,&this->_id);
@@ -18,6 +20,30 @@ AsynchronousQueryObject::AsynchronousQueryObject(
   this->_waitingType = existingQuery->_waitingType;
   this->_resultSize  = existingQuery->_resultSize;
 }
+
+#if defined(REPLACE_GLEW)
+AsynchronousQueryObject::AsynchronousQueryObject(
+    FunctionTablePointer const&table,
+    GLenum     target,
+    GLenum     waitingType,
+    ResultSize resultSize):OpenGLObject(table){
+  glGenQueries(1,&this->_id);
+  this->_target      = target;
+  this->_waitingType = waitingType;
+  this->_resultSize  = resultSize;
+}
+
+AsynchronousQueryObject::AsynchronousQueryObject(
+    FunctionTablePointer const&table,
+    AsynchronousQueryObject*existingQuery):OpenGLObject(table){
+  glGenQueries(1,&this->_id);
+  this->_target      = existingQuery->_target;
+  this->_waitingType = existingQuery->_waitingType;
+  this->_resultSize  = existingQuery->_resultSize;
+}
+#endif
+
+
 AsynchronousQueryObject::~AsynchronousQueryObject(){
   glDeleteQueries(1,&this->_id);
 }

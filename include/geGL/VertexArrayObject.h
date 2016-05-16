@@ -1,6 +1,5 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<geGL/BufferObject.h>
 #include<iostream>
@@ -24,6 +23,9 @@ namespace ge{
           L
         };
         VertexArrayObject ();
+#if defined(REPLACE_GLEW)
+        VertexArrayObject (opengl::FunctionTablePointer const&table);
+#endif
         ~VertexArrayObject();
         void addAttrib(
             GLuint                  buffer                      ,
@@ -31,7 +33,7 @@ namespace ge{
             GLint                   nofComponents               ,
             GLenum                  type                        ,
             GLsizei                 stride            = 0       ,
-            const GLvoid           *pointer           = NULL    ,
+            const GLvoid*           pointer           = NULL    ,
             GLboolean               normalized        = GL_FALSE,  
             GLuint                  divisor           = 0       ,
             enum AttribPointerType  attribPointerType = NONE    )const;

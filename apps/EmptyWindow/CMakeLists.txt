@@ -3,12 +3,9 @@ set(APP_NAME EmptyWindow)
 project(${APP_NAME})
 
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(glm REQUIRED)
 find_package(SDL2)
-find_package(AntTweakBar)
 
-if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
+if(NOT SDL2_FOUND)
    return()
 endif()
 
@@ -26,8 +23,8 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps geGL geUtil WindowObject)
-set(External_libs OpenGL GLEW glm SDL2 AntTweakBar)
+set(Internal_deps geGL geUtil SDLWindow)
+set(External_libs SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

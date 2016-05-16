@@ -1,13 +1,22 @@
 #include<geGL/ProgramObjectSubroutine.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 ShaderObjectSubroutine::~ShaderObjectSubroutine(){
   if(this->_indices)
     delete[]this->_indices;
 }
 
-ShaderObjectSubroutine::ShaderObjectSubroutine(){
+ShaderObjectSubroutine::ShaderObjectSubroutine(
+#if defined(REPLACE_GLEW)
+    FunctionTablePointer const&table
+#endif
+    )
+#if defined(REPLACE_GLEW)
+  :FunctionProvider(table)
+#endif
+{
   this->_indices=nullptr;
 }
 

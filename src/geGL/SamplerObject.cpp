@@ -1,6 +1,7 @@
 #include<geGL/SamplerObject.h>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 SamplerObject::SamplerObject(){
   glCreateSamplers(1,&this->_id);
@@ -42,6 +43,54 @@ SamplerObject::SamplerObject(SamplerObject*sampler){
   GLenum wrapR = sampler->getWrapR();
   this->setWrapS(wrapR);
 }
+
+#if defined(REPLACE_GLEW)
+SamplerObject::SamplerObject (
+    FunctionTablePointer const&table):OpenGLObject(table){
+  glCreateSamplers(1,&this->_id);
+}
+SamplerObject::SamplerObject(
+    FunctionTablePointer const&table,
+    SamplerObject*sampler):OpenGLObject(table){
+  glCreateSamplers(1,&this->_id);
+  GLfloat borderColor[4];
+  sampler->getBorderColor(borderColor);
+  this->setBorderColor(borderColor);
+
+  GLenum compareFunc = sampler->getCompareFunc();
+  this->setCompareFunc(compareFunc);
+
+  GLenum compareMode = sampler->getCompareMode();
+  this->setCompareMode(compareMode);
+
+  GLfloat lodBias = sampler->getLodBias();
+  this->setLodBias(lodBias);
+
+  GLfloat minLod = sampler->getMinLod();
+  this->setMinLod(minLod);
+
+  GLfloat maxLod = sampler->getMaxLod();
+  this->setMinLod(maxLod);
+
+  GLenum minFilter =  sampler->getMinFilter();
+  this->setMinFilter(minFilter);
+
+  GLenum magFilter = sampler->getMagFilter();
+  this->setMagFilter(magFilter);
+
+  GLenum wrapS = sampler->getWrapS();
+  this->setWrapS(wrapS);
+
+  GLenum wrapT = sampler->getWrapT();
+  this->setWrapS(wrapT);
+
+  GLenum wrapR = sampler->getWrapR();
+  this->setWrapS(wrapR);
+
+}
+
+#endif
+
 
 SamplerObject::~SamplerObject(){
   glDeleteSamplers(1,&this->_id);

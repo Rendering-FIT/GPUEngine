@@ -2,6 +2,7 @@
 #include<string>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 std::string ge::gl::translateDebugSource(GLenum source){
   switch(source){//swich over debug sources
@@ -105,33 +106,37 @@ void highDebugMessage(
 /**
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_LOW/MEDIUM/HIGH
  */
-void ge::gl::setLowAndGreaterDebugMessage(){
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback((GLDEBUGPROC)lowDebugMessage,NULL);
+void ge::gl::setLowAndGreaterDebugMessage(
+    opengl::FunctionProviderPointer const&gl){
+  gl->glEnable(GL_DEBUG_OUTPUT);
+  gl->glDebugMessageCallback((GLDEBUGPROC)lowDebugMessage,NULL);
 }
 
 /**
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_MEDIUM/HIGH
  */
-void ge::gl::setMediumAndGreaterDebugMessage(){
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback((GLDEBUGPROC)mediumDebugMessage,NULL);
+void ge::gl::setMediumAndGreaterDebugMessage(
+    opengl::FunctionProviderPointer const&gl){
+  gl->glEnable(GL_DEBUG_OUTPUT);
+  gl->glDebugMessageCallback((GLDEBUGPROC)mediumDebugMessage,NULL);
 }
 
 /**
  * @brief sets debug function - it will report only GL_DEBUG_SEVERITY_HIGH errors
  */
-void ge::gl::setHighDebugMessage(){
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback((GLDEBUGPROC)highDebugMessage,NULL);
+void ge::gl::setHighDebugMessage(
+    opengl::FunctionProviderPointer const&gl){
+  gl->glEnable(GL_DEBUG_OUTPUT);
+  gl->glDebugMessageCallback((GLDEBUGPROC)highDebugMessage,NULL);
 }
 
 /**
  * @brief sets default debug function - it will report everything
  */
-void ge::gl::setDefaultDebugMessage(){
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback((GLDEBUGPROC)defaultDebugMessage,NULL);
+void ge::gl::setDefaultDebugMessage(
+    opengl::FunctionProviderPointer const&gl){
+  gl->glEnable(GL_DEBUG_OUTPUT);
+  gl->glDebugMessageCallback((GLDEBUGPROC)defaultDebugMessage,NULL);
 }
 
 /**
@@ -140,7 +145,10 @@ void ge::gl::setDefaultDebugMessage(){
  * @param fce callback function
  * @param data callback user data
  */
-void ge::gl::setDebugMessage(GLDEBUGPROC fce,void*data){
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(fce,data);
+void ge::gl::setDebugMessage(
+    GLDEBUGPROC fce,
+    void*data,
+    opengl::FunctionProviderPointer const&gl){
+  gl->glEnable(GL_DEBUG_OUTPUT);
+  gl->glDebugMessageCallback(fce,data);
 }

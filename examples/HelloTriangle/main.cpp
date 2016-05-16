@@ -82,7 +82,7 @@ void Idle()
 void Init()
 {
    // setup shaders and prepare GLSL program
-   ge::gl::initShadersAndPrograms();
+   //ge::gl::initShadersAndPrograms();
    glProgram=make_shared<ge::gl::ProgramObject>(
       GL_VERTEX_SHADER,
       "#version 330\n"

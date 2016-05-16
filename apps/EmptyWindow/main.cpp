@@ -1,59 +1,80 @@
 #include<limits>
 #include<string>
-#include<GL/glew.h>
 #include<geGL/geGL.h>
 #include<geUtil/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
 #include<geUtil/ArgumentManager/ArgumentManager.h>
-#include<geAd/WindowObject/WindowObject.h>
+#include<geAd/SDLWindow/SDLWindow.h>
+#include<geAd/SDLWindow/SDLEventProc.h>
+#include<geAd/SDLWindow/EventHandlerInterface.h>
+#include<geAd/SDLWindow/EventCallbackInterface.h>
+#include<geAd/SDLWindow/CallbackInterface.h>
+#include<geAd/SDLWindow/SDLEventData.h>
 
-void init();
-void idle();
-void mouse();
+struct Data{
+  std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
+  std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
+  std::shared_ptr<ge::gl::opengl::FunctionProvider> gl           = nullptr;
+  std::shared_ptr<ge::util::SDLEventProc>           mainLoop     = nullptr;
+  std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
+  static void init(Data*data);
+  class IdleCallback: public ge::util::CallbackInterface{
+    public:
+      Data*data;
+      IdleCallback(Data*data){this->data = data;}
+      virtual void operator()()override;
+      virtual ~IdleCallback(){}
+  };
+  class WindowEventCallback: public ge::util::EventCallbackInterface{
+    public:
+      Data*data;
+      WindowEventCallback(Data*data){this->data = data;}
+      virtual void operator()(ge::util::EventDataPointer const&)override;
+      virtual ~WindowEventCallback(){}
+  };
+};
 
-ge::util::WindowObject*                           window       = nullptr;
-std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
-std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
+
 
 int main(int argc,char*argv[]){
-  typeRegister = std::make_shared<ge::core::TypeRegister>();
-  sData        = std::make_shared<ge::util::sim::NamespaceWithUsers>("*");
-  ge::util::ArgumentManager*argm = new ge::util::ArgumentManager(argc-1,argv+1);
-  ge::util::sim::copyArgumentManager2Namespace(sData,argm,typeRegister);
+  Data data;
+  data.typeRegister = std::make_shared<ge::core::TypeRegister>();
+  data.sData        = std::make_shared<ge::util::sim::NamespaceWithUsers>("*");
+  auto argm = std::make_shared<ge::util::ArgumentManager>(argc-1,argv+1);
+  ge::util::sim::copyArgumentManager2Namespace(data.sData,&*argm,data.typeRegister);
 
-  window = new ge::util::WindowObject(
-      sData->get<unsigned[2]>("window.size"      ,{1024u,1024u})[0],
-      sData->get<unsigned[2]>("window.size"      ,{1024u,1024u})[1],
-      sData->get<bool       >("window.fullscreen",false        )   ,
-      idle,
-      mouse,
-      sData->get<bool       >("enableAntTweakBar",true         )   ,
-      sData->get<unsigned   >("context.version"  ,450          )   ,
-      sData->get<std::string>("context.profile"  ,"core"       )   ,
-      sData->get<std::string>("context.debug"    ,"debug"      )   );
+  data.mainLoop = std::make_shared<ge::util::SDLEventProc>();
+  data.mainLoop->setIdleCallback(std::make_shared<Data::IdleCallback>(&data));
 
-  init();
-  window->mainLoop();
-  delete window;
-  delete argm;
-  return 0;
+  data.window   = std::make_shared<ge::util::SDLWindow>();
+  data.window->createContext("rendering",330,ge::util::SDLWindow::COMPATIBILITY);
+  data.window->setEventCallback(SDL_WINDOWEVENT,std::make_shared<Data::WindowEventCallback>(&data));
+  data.mainLoop->addWindow("primaryWindow",data.window);
+  data.init(&data);
+  (*data.mainLoop)();
+
+  return EXIT_SUCCESS;
 }
 
-void mouse(){
+void Data::IdleCallback::operator()(){
+  this->data->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  this->data->window->swap();
 }
 
-void idle(){
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  window->swap();
+void Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&event){
+  auto sdlEventData = (ge::util::SDLEventData const*)(event);
+  if(sdlEventData->event.window.event==SDL_WINDOWEVENT_CLOSE){
+    this->data->mainLoop->removeWindow("primaryWindow");
+  }
 }
 
-void init(){
-  glewExperimental=GL_TRUE;
-  glewInit();
+void Data::init(Data*data){
+  data->window->makeCurrent("rendering");
+  ge::gl::init(std::make_shared<ge::gl::opengl::DefaultLoader>((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
+  data->gl = ge::gl::opengl::getDefaultFunctionProvider();
 
-  ge::gl::setDefaultDebugMessage();
-
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LEQUAL);
-  glDisable(GL_CULL_FACE);
+  data->gl->glEnable(GL_DEPTH_TEST);
+  data->gl->glDepthFunc(GL_LEQUAL);
+  data->gl->glDisable(GL_CULL_FACE);
+  data->gl->glClearColor(0,1,0,1);
 }

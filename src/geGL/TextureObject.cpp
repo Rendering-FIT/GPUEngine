@@ -3,6 +3,7 @@
 #include<sstream>
 
 using namespace ge::gl;
+using namespace ge::gl::opengl;
 
 GLenum ge::gl::textureTarget2Binding(GLenum target){
   switch(target){
@@ -329,11 +330,65 @@ TextureObject::TextureObject(
       width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
 }
 
+
+
+#if defined(REPLACE_GLEW)
+TextureObject::TextureObject(
+    FunctionTablePointer const&table,
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width):OpenGLObject(table){
+  this->_target = target;
+  this->_format = internalFormat;
+  glCreateTextures(this->_target,1,&this->_id);
+  if(levels>0)glTextureStorage1D(this->_id,levels,this->_format,width);
+  else glTextureImage1DEXT(this->_id,this->_target,0,this->_format,
+      width,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+}
+
+TextureObject::TextureObject(
+    FunctionTablePointer const&table,
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height):OpenGLObject(table){
+  this->_target = target;
+  this->_format = internalFormat;
+  glCreateTextures(target,1,&this->_id);
+  if(levels>0)glTextureStorage2D(this->_id,levels,this->_format,width,height);
+  else glTextureImage2DEXT(this->_id,this->_target,0,this->_format,
+      width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+}
+
+TextureObject::TextureObject(
+    FunctionTablePointer const&table,
+    GLenum  target,
+    GLenum  internalFormat,
+    GLsizei levels,
+    GLsizei width,
+    GLsizei height,
+    GLsizei depth):OpenGLObject(table){
+  this->_target = target;
+  this->_format = internalFormat;
+  glCreateTextures(target,1,&this->_id);
+  if(levels>0)glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
+  else glTextureImage3DEXT(this->_id,this->_target,0,this->_format,
+      width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+}
+#endif
+
+
 /**
  * @brief destroys texture
  */
 TextureObject::~TextureObject(){
+#if defined(REPLACE_GLEW)
+  glDeleteTextures(1,&this->_id);
+#else
   glDeleteTexturesGEGL(1,&this->_id);
+#endif
 //  glDeleteTextures(1,&this->_id);
 }
 
