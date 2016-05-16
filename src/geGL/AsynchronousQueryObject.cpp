@@ -21,7 +21,6 @@ AsynchronousQueryObject::AsynchronousQueryObject(
   this->_resultSize  = existingQuery->_resultSize;
 }
 
-#if defined(REPLACE_GLEW)
 AsynchronousQueryObject::AsynchronousQueryObject(
     FunctionTablePointer const&table,
     GLenum     target,
@@ -41,8 +40,6 @@ AsynchronousQueryObject::AsynchronousQueryObject(
   this->_waitingType = existingQuery->_waitingType;
   this->_resultSize  = existingQuery->_resultSize;
 }
-#endif
-
 
 AsynchronousQueryObject::~AsynchronousQueryObject(){
   glDeleteQueries(1,&this->_id);

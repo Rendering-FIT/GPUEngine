@@ -55,7 +55,6 @@ namespace ge{
          */
         AsynchronousQueryObject(
             AsynchronousQueryObject*existingQuery);
-#if defined(REPLACE_GLEW)
         AsynchronousQueryObject(
             opengl::FunctionTablePointer const&table,
             GLenum     target,
@@ -64,7 +63,6 @@ namespace ge{
         AsynchronousQueryObject(
             opengl::FunctionTablePointer const&table,
             AsynchronousQueryObject*existingQuery);
-#endif
         /**
          * @brief Destructor
          */

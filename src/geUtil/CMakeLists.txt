@@ -95,9 +95,6 @@ add_library(${LIB_NAME}
 # PACKAGES
 
 find_package(glm)
-if(!GPUENGINE_REPLACE_GLEW)
-  find_package(GLEW)
-endif()
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

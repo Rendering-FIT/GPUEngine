@@ -9,14 +9,7 @@ ShaderObjectSubroutine::~ShaderObjectSubroutine(){
 }
 
 ShaderObjectSubroutine::ShaderObjectSubroutine(
-#if defined(REPLACE_GLEW)
-    FunctionTablePointer const&table
-#endif
-    )
-#if defined(REPLACE_GLEW)
-  :FunctionProvider(table)
-#endif
-{
+    FunctionTablePointer const&table):FunctionProvider(table){
   this->_indices=nullptr;
 }
 

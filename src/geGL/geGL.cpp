@@ -3,6 +3,7 @@
 #include<geGL/OpenGLFunctionTable.h>
 #include<geGL/LoaderTableDecorator.h>
 #include<geGL/DSATableDecorator.h>
+#include<geGL/CapabilitiesTableDecorator.h>
 #include<geGL/TrapTableDecorator.h>
 #include<geGL/OpenGLCapabilities.h>
 #include<geGL/OpenGLFunctionProvider.h>
@@ -17,9 +18,10 @@ void ge::gl::init(std::shared_ptr<opengl::FunctionLoaderInterface>const&loader){
   if(loader){
     _defaultOpenGLFunctionTable = std::make_shared<
       TrapTableDecorator<
-        DSATableDecorator<
-          LoaderTableDecorator<
-            FunctionTable>>>>(loader);
+        CapabilitiesTableDecorator<
+          DSATableDecorator<
+            LoaderTableDecorator<
+              FunctionTable>>>>>(loader);
     _defaultOpenGLFunctionTable->construct();
   }else
     _defaultOpenGLFunctionTable = nullptr;

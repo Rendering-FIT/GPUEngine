@@ -790,7 +790,7 @@
 #define GL_ATI_blend_equation_separate 1
 #define GL_ALPHA_BLEND_EQUATION_ATI 0x883D
 #define GL_OES_EGL_image 1
-#define GL_GLEXT_VERSION 20160419
+#define GL_GLEXT_VERSION 20160428
 #define GL_VERSION_1_2 1
 #define GL_UNSIGNED_BYTE_3_3_2 0x8032
 #define GL_UNSIGNED_SHORT_4_4_4_4 0x8033

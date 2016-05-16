@@ -58,7 +58,8 @@ set(GL_INCLUDES
     ${HEADER_PATH}/DefaultLoader.h
     ${HEADER_PATH}/LoaderTableDecorator.h
     ${HEADER_PATH}/DSATableDecorator.h
-    ${HEADER_PATH}/TrapTableDecorator
+    ${HEADER_PATH}/TrapTableDecorator.h
+    ${HEADER_PATH}/CapabilitiesTableDecorator.h
   )
 
 set(GL_SOURCES
@@ -76,13 +77,11 @@ set(GL_SOURCES
     ProgramObjectSubroutine.cpp
     ProgramObjectSubroutineUniform.cpp
     RenderbufferObject.cpp
-    #OpenGL.cpp
     AsynchronousQueryObject.cpp
     DebugMessage.cpp
     OpenGLObject.cpp
     geGL.cpp
     OpenGLFunctionProvider.cpp
-    OpenGLCapabilities.cpp
   )
 
 ################################################

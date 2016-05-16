@@ -1,7 +1,5 @@
 #include<geGL/ProgramPipelineObject.h>
 
-//#define USE_DSA
-
 using namespace ge::gl;
 using namespace ge::gl::opengl;
 
@@ -9,13 +7,10 @@ ProgramPipelineObject::ProgramPipelineObject(){
   glCreateProgramPipelines(1,&this->_id);
 }
 
-#if defined(REPLACE_GLEW)
 ProgramPipelineObject::ProgramPipelineObject(
     FunctionTablePointer const&table):OpenGLObject(table){
   glCreateProgramPipelines(1,&this->_id);
 }
-#endif
-
 
 ProgramPipelineObject::~ProgramPipelineObject(){
   glDeleteProgramPipelines(1,&this->_id);

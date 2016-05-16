@@ -17,14 +17,12 @@ namespace ge{
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
-#if defined(REPLACE_GLEW)
         BufferObject(opengl::FunctionTablePointer const&table);
         BufferObject(
             opengl::FunctionTablePointer const&table,
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
-#endif
         virtual ~BufferObject();
         void alloc(
             GLsizeiptr    size                  ,

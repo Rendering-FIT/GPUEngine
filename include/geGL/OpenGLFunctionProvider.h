@@ -1,9 +1,6 @@
 #pragma once
 
-#include<memory>
-#include<cassert>
 #include<geGL/OpenGL.h>
-#include<geGL/OpenGLCapabilities.h>
 
 namespace ge{
   namespace gl{
@@ -18,8 +15,6 @@ namespace ge{
         protected:
           FunctionTablePointer m_table = nullptr;
       };
-      using FunctionProviderPointer = std::shared_ptr<FunctionProvider>;
-
     }
   }
 }

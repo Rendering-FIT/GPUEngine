@@ -107,7 +107,6 @@ ProgramObject::ProgramObject(std::vector<std::string>const&data,unsigned version
   this->_sortAndCompileShaders(data,version,profile);
 }
 
-#if defined(REPLACE_GLEW)
 ProgramObject::ProgramObject(
     FunctionTablePointer const&table  ,
     std::vector<std::string>            const&data   ,
@@ -115,7 +114,6 @@ ProgramObject::ProgramObject(
     std::string                               profile):OpenGLObject(table){
   this->_sortAndCompileShaders(data,version,profile);
 }
-#endif
 
 std::string ProgramObject::uniformsToStr(){
   std::stringstream ss;
@@ -188,7 +186,6 @@ void ProgramObject::_createShaderProgram_Epilogue(){
 typedef void (*GETACTIVEFCE  )(GLuint,GLuint,GLsizei,GLsizei*,GLint*,GLenum*,GLchar*);
 typedef GLint(*GETLOCATIONFCE)(GLuint,const GLchar*);
 void ProgramObject::_getParameterList(){
-#if defined(REPLACE_GLEW)
   const decltype(&FunctionProvider::glGetActiveAttrib) getActive [] = {
     &FunctionProvider::glGetActiveAttrib,
     &FunctionProvider::glGetActiveUniform,
@@ -197,24 +194,6 @@ void ProgramObject::_getParameterList(){
     &FunctionProvider::glGetAttribLocation,
     &FunctionProvider::glGetUniformLocation,
   };
-
-  /*
-  const GETACTIVEFCE getActive [] = {
-    this->getFunctionTable()->glGetActiveAttrib ,
-    this->getFunctionTable()->glGetActiveUniform,
-  };
-  const GETLOCATIONFCE getLocation [] = {
-    this->getFunctionTable()->glGetAttribLocation ,
-    this->getFunctionTable()->glGetUniformLocation,
-  };*/
-#else
-  const GETACTIVEFCE   getActive[]   = {
-    (GETACTIVEFCE)glGetActiveAttrib ,
-    (GETACTIVEFCE)glGetActiveUniform};
-  const GETLOCATIONFCE getLocation[] = {
-    (GETLOCATIONFCE)glGetAttribLocation ,
-    (GETLOCATIONFCE)glGetUniformLocation};
-#endif
   const GLenum Active[]={
     GL_ACTIVE_ATTRIBUTES,
     GL_ACTIVE_UNIFORMS  };
@@ -241,15 +220,11 @@ void ProgramObject::_getParameterList(){
         GLint binding;
         glGetUniformiv(this->getId(),location,&binding);
         this->_samplerList[name]=std::make_shared<SamplerParam>(
-#if defined(REPLACE_GLEW)
             this->getFunctionTable(),
-#endif
             name,location,type,binding);
       }
       auto Param = std::make_shared<ProgramObjectParameter>(
-#if defined(REPLACE_GLEW)
           this->getFunctionTable(),
-#endif
           location,type,name,size);//param
       if(Active[t]==GL_ACTIVE_ATTRIBUTES)this->_attributeList[name]=Param;
       else                               this->_uniformList  [name]=Param;
@@ -333,9 +308,7 @@ void ProgramObject::_getBufferList(){
       &nofBuffers);
   for(GLint i=0;i<nofBuffers;++i){
     auto params = std::make_shared<ProgramObjectBufferParams>(
-#if defined(REPLACE_GLEW)
         this->getFunctionTable(),
-#endif
         this->getId(),i);
     this->_bufferList[params->getName()]=params;
     this->_bufferNames.push_back(params->getName());
@@ -523,13 +496,9 @@ ProgramObjectParameter const&ProgramObject::getUniform  (std::string name,bool p
   auto i=this->_uniformList.find(name);
   if(i==this->_uniformList.end()){
     if(printErrors)err("ProgramObject::getUniform("+name+") - there is no such uniform");
-#if defined(REPLACE_GLEW)
     //TODO there should be zeroth element n this->_uniformList that represents
     //non existing uniform in order to prevent multi threading to fail
     static const ProgramObjectParameter er(this->getFunctionTable());
-#else
-    static const ProgramObjectParameter er;
-#endif
     return er;
   }
   return *i->second;
@@ -546,13 +515,9 @@ ProgramObjectParameter const&ProgramObject::getAttribute(std::string name,bool p
   auto i=this->_attributeList.find(name);
   if(i==this->_attributeList.end()){
     if(printErrors)err("ProgramObject::getAttribute("+name+") - there is no such attribute");
-#if defined(REPLACE_GLEW)
     //TODO there should be zeroth element n this->_attributeList that represents
     //non existing uniform in order to prevent multi threading to fail
     static const ProgramObjectParameter er(this->getFunctionTable());
-#else
-    static const ProgramObjectParameter er;
-#endif
     return er;
   }
   return *i->second;
@@ -569,11 +534,7 @@ ProgramObjectBufferParams const&ProgramObject::getBuffer(std::string name,bool p
   auto i=this->_bufferList.find(name);
   if(i==this->_bufferList.end()){
     if(printErrors)err("ProgramObject::getBuffer("+name+") - there is no such buffer");
-#if defined(REPLACE_GLEW)
     static const ProgramObjectBufferParams er(this->getFunctionTable());
-#else
-    static const ProgramObjectBufferParams er;
-#endif
     return er;
   }
   return *i->second;
@@ -672,8 +633,6 @@ void ProgramObject::set(
     GLboolean     transpose,
     const GLfloat*value){
   const decltype(&FunctionProvider::glUniformMatrix4fv) matrixfFce[] = {
-//  void(*matrixfFce[])(GLint,GLsizei,GLboolean,const GLfloat*)={
-#if defined(REPLACE_GLEW)
     &FunctionProvider::glUniformMatrix2fv  ,
     &FunctionProvider::glUniformMatrix3fv  ,
     &FunctionProvider::glUniformMatrix4fv  ,
@@ -683,17 +642,6 @@ void ProgramObject::set(
     &FunctionProvider::glUniformMatrix4x2fv,
     &FunctionProvider::glUniformMatrix3x4fv,
     &FunctionProvider::glUniformMatrix4x3fv,
-#else//REPLACE_GLEW
-    glUniformMatrix2fv  ,
-    glUniformMatrix3fv  ,
-    glUniformMatrix4fv  ,
-    glUniformMatrix2x3fv,
-    glUniformMatrix3x2fv,
-    glUniformMatrix2x4fv,
-    glUniformMatrix4x2fv,
-    glUniformMatrix3x4fv,
-    glUniformMatrix4x3fv,
-#endif//REPLACE_GLEW
   };
   MATRIXBODY(matrixfFce,float);
 }
@@ -703,9 +651,7 @@ void ProgramObject::set(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-//  void(*matrixdFce[])(GLint,GLsizei,GLboolean,const GLdouble*)={
   const decltype(&FunctionProvider::glUniformMatrix4dv) matrixdFce[] = {
-#if defined(REPLACE_GLEW)
     &FunctionProvider::glUniformMatrix2dv  ,
     &FunctionProvider::glUniformMatrix3dv  ,
     &FunctionProvider::glUniformMatrix4dv  ,
@@ -715,17 +661,6 @@ void ProgramObject::set(
     &FunctionProvider::glUniformMatrix4x2dv,
     &FunctionProvider::glUniformMatrix3x4dv,
     &FunctionProvider::glUniformMatrix4x3dv,
-#else//REPLACE_GLEW
-    glUniformMatrix2dv  ,
-    glUniformMatrix3dv  ,
-    glUniformMatrix4dv  ,
-    glUniformMatrix2x3dv,
-    glUniformMatrix3x2dv,
-    glUniformMatrix2x4dv,
-    glUniformMatrix4x2dv,
-    glUniformMatrix3x4dv,
-    glUniformMatrix4x3dv,
-#endif//REPLACE_GLEW
   };
   MATRIXBODY(matrixdFce,double);
 }
@@ -735,9 +670,7 @@ void ProgramObject::setdsa(
     GLsizei       count,
     GLboolean     transpose,
     const GLfloat*value){
-  //void(*matrixfFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLfloat*)={
   const decltype(&FunctionProvider::glProgramUniformMatrix4fv) matrixfFceDsa[] = {
-#if defined(REPLACE_GLEW)
     &FunctionProvider::glProgramUniformMatrix2fv  ,
     &FunctionProvider::glProgramUniformMatrix3fv  ,
     &FunctionProvider::glProgramUniformMatrix4fv  ,
@@ -747,17 +680,6 @@ void ProgramObject::setdsa(
     &FunctionProvider::glProgramUniformMatrix4x2fv,
     &FunctionProvider::glProgramUniformMatrix3x4fv,
     &FunctionProvider::glProgramUniformMatrix4x3fv,
-#else//REPLACE_GLEW
-    glProgramUniformMatrix2fv  ,
-    glProgramUniformMatrix3fv  ,
-    glProgramUniformMatrix4fv  ,
-    glProgramUniformMatrix2x3fv,
-    glProgramUniformMatrix3x2fv,
-    glProgramUniformMatrix2x4fv,
-    glProgramUniformMatrix4x2fv,
-    glProgramUniformMatrix3x4fv,
-    glProgramUniformMatrix4x3fv,
-#endif//REPLACE_GLEW
   };
   MATRIXBODYDSA(matrixfFceDsa,float);
 }
@@ -767,9 +689,7 @@ void ProgramObject::setdsa(
     GLsizei        count,
     GLboolean      transpose,
     const GLdouble*value){
-  //void(*matrixdFceDsa[])(GLuint,GLint,GLsizei,GLboolean,const GLdouble*)={
   const decltype(&FunctionProvider::glProgramUniformMatrix4dv) matrixdFceDsa[] = {
-#if defined(REPLACE_GLEW)
     &FunctionProvider::glProgramUniformMatrix2dv  ,
     &FunctionProvider::glProgramUniformMatrix3dv  ,
     &FunctionProvider::glProgramUniformMatrix4dv  ,
@@ -779,17 +699,6 @@ void ProgramObject::setdsa(
     &FunctionProvider::glProgramUniformMatrix4x2dv,
     &FunctionProvider::glProgramUniformMatrix3x4dv,
     &FunctionProvider::glProgramUniformMatrix4x3dv,
-#else//REPLACE_GLEW
-    glProgramUniformMatrix2dv  ,
-    glProgramUniformMatrix3dv  ,
-    glProgramUniformMatrix4dv  ,
-    glProgramUniformMatrix2x3dv,
-    glProgramUniformMatrix3x2dv,
-    glProgramUniformMatrix2x4dv,
-    glProgramUniformMatrix4x2dv,
-    glProgramUniformMatrix3x4dv,
-    glProgramUniformMatrix4x3dv,
-#endif//REPLACE_GLEW
   };
   MATRIXBODYDSA(matrixdFceDsa,double);
 }

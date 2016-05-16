@@ -152,7 +152,6 @@ BufferObject::BufferObject(
   this->alloc(size,data,flags);
 }
 
-#if defined(REPLACE_GLEW)
 BufferObject::BufferObject(FunctionTablePointer const&table):OpenGLObject(table){
   this->_id = 0;
 }
@@ -164,8 +163,6 @@ BufferObject::BufferObject(
     GLbitfield    flags):OpenGLObject(table){
   this->alloc(size,data,flags);
 }
-#endif
-
 
 BufferObject::~BufferObject(){
   glDeleteBuffers(1,&this->_id);

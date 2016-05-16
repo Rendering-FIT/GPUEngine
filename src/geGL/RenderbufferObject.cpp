@@ -20,7 +20,6 @@ RenderbufferObject::RenderbufferObject(
   glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
 }
 
-#if defined(REPLACE_GLEW)
 RenderbufferObject::RenderbufferObject(
     FunctionTablePointer const&table,
     GLenum  internalFormat,
@@ -38,8 +37,6 @@ RenderbufferObject::RenderbufferObject(
   glCreateRenderbuffers(1,&this->_id);
   glNamedRenderbufferStorage(this->_id,internalFormat,width,height);
 }
-#endif
-
 
 RenderbufferObject::~RenderbufferObject(){
   glDeleteRenderbuffers(1,&this->_id);

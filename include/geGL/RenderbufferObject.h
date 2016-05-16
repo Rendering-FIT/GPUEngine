@@ -15,7 +15,6 @@ namespace ge{
             GLenum  internalFormat,
             GLsizei width,
             GLsizei height);
-#if defined(REPLACE_GLEW)
         RenderbufferObject(
             opengl::FunctionTablePointer const&table,
             GLenum  internalFormat,
@@ -27,7 +26,6 @@ namespace ge{
             GLenum  internalFormat,
             GLsizei width,
             GLsizei height);
-#endif
         ~RenderbufferObject();
         void   bind             ()const;
         void   unbind           ()const;

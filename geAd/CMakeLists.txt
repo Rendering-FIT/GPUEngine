@@ -11,5 +11,5 @@ install(FILES
    DESTINATION include/geAd
 )
 
-add_subdirectory(OsgImport)
+#add_subdirectory(OsgImport)
 add_subdirectory(SDLWindow)

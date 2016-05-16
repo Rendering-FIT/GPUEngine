@@ -6,8 +6,6 @@
 namespace ge{
   namespace gl{
     namespace opengl{
-      class FunctionTable;
-      using FunctionTablePointer = std::shared_ptr<FunctionTable>;
       class GEGL_EXPORT Capabilities{
         public:
           bool opengl200 = false;
@@ -23,10 +21,6 @@ namespace ge{
           bool opengl440 = false;
           bool opengl450 = false;
       };
-
-      GEGL_EXPORT void fillCapabilities(
-          Capabilities&capabilities,
-          FunctionTablePointer const&table);
     }
   }
 }

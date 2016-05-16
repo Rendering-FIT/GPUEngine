@@ -1,10 +1,6 @@
 #pragma once
 
-#if defined(REPLACE_GLEW)
 #include<geGL/OpenGLFunctionProvider.h>
-#else
-#include<geGL/OpenGL.h>
-#endif
 #include<iostream>
 
 namespace ge{
@@ -12,11 +8,7 @@ namespace ge{
     /**
      * @brief This class represents shader parameter
      */
-    class GEGL_EXPORT ProgramObjectParameter
-#if defined(REPLACE_GLEW)
-      :protected opengl::FunctionProvider
-#endif
-    {
+    class GEGL_EXPORT ProgramObjectParameter:protected opengl::FunctionProvider{
       protected:
         GLint       _location = -1      ;///< parameter location
         GLenum      _type     = GL_FLOAT;///< parameter type
@@ -24,9 +16,7 @@ namespace ge{
         GLint       _size     = 1       ;///< sizeof parameter
       public:
         ProgramObjectParameter(
-#if defined(REPLACE_GLEW)
             opengl::FunctionTablePointer const&table,
-#endif
             GLint       location = -1      ,
             GLenum      type     = GL_FLOAT,
             std::string name     = ""      ,
@@ -42,11 +32,7 @@ namespace ge{
     GEGL_EXPORT std::string translateBufferProperty   (GLenum      property);
     GEGL_EXPORT std::string chopIndexingInPropertyName(std::string name    );
 
-    class GEGL_EXPORT ProgramObjectBufferParams
-#if defined(REPLACE_GLEW)
-      :protected opengl::FunctionProvider
-#endif
-    {
+    class GEGL_EXPORT ProgramObjectBufferParams:protected opengl::FunctionProvider{
       public:
         enum Properties{
           TYPE                                ,
@@ -72,20 +58,12 @@ namespace ge{
         std::string _name = "";
       public:
         ProgramObjectBufferParams(
-#if defined(REPLACE_GLEW)
             opengl::FunctionTablePointer const&table,
-#endif
             GLuint program,
             GLuint index);
         ProgramObjectBufferParams(
-#if defined(REPLACE_GLEW)
             opengl::FunctionTablePointer const&table
-#endif
-            )
-#if defined(REPLACE_GLEW)
-  :opengl::FunctionProvider(table)
-#endif
-        {
+            ):opengl::FunctionProvider(table){
         };
         GLint getProperty(enum Properties property)const;
         GLint getBinding()const;
@@ -93,12 +71,7 @@ namespace ge{
         std::string toStr()const;
     };
 
-    class GEGL_EXPORT SamplerParam
-#if defined(REPLACE_GLEW)
-      :protected opengl::FunctionProvider
-#endif
-   
-    {
+    class GEGL_EXPORT SamplerParam:protected opengl::FunctionProvider{
       protected:
         GLint       _location = -1           ;
         GLenum      _type     = GL_SAMPLER_2D;
@@ -106,9 +79,7 @@ namespace ge{
         std::string _name     = ""           ;
       public:
         SamplerParam(
-#if defined(REPLACE_GLEW)
             opengl::FunctionTablePointer const&,
-#endif
             std::string name = ""           ,
             GLint location   = -1           ,
             GLenum type      = GL_SAMPLER_2D,
@@ -119,15 +90,6 @@ namespace ge{
         void        setBinding(GLint binding);
         static bool isSampler(GLenum type);
     };
-
-
-
-
-
-
-
-
-
   }
 }
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#if defined(REPLACE_GLEW)
+#else
+
 #include<geCore/Command.h>
 #include<geGL/Export.h>
 #include<GL/glew.h>
@@ -54424,3 +54427,5 @@ namespace ge{
 
   }
 }
+
+#endif

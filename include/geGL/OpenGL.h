@@ -1,64 +1,22 @@
 #pragma once
 
-#include <geGL/Export.h>
+#include<geGL/Export.h>
 
-#if defined(REPLACE_GLEW)
-//#include<GL/gl.h>
 #include<stdint.h>
 #include<stddef.h>
 #include<geGL/Generated/OpenGLTypes.h>
 #include<geGL/Generated/OpenGLConstants.h>
-//#include<geGL/Generated/OpenGLPFN.h>
-#else//REPLACE_GLEW
+#include<memory>
 
-#include<GL/glew.h>
+namespace ge{
+  namespace gl{
+    namespace opengl{
+      class FunctionTable;
+      using FunctionTablePointer = std::shared_ptr<FunctionTable>;
+      class FunctionProvider;
+      using FunctionProviderPointer = std::shared_ptr<FunctionProvider>;
+    }
+  }
+}
 
-//TODO remove after glew fix
-#ifndef GL_COPY_READ_BUFFER_BINDING
-#define GL_COPY_READ_BUFFER_BINDING 0x8F36
-#endif//GL_COPY_READ_BUFFER_BINDING
 
-#ifndef GL_COPY_WRITE_BUFFER_BINDING
-#define GL_COPY_WRITE_BUFFER_BINDING 0x8F37
-#endif//GL_COPY_WRITE_BUFFER_BINDING
-
-#ifndef GL_TEXTURE_BUFFER_BINDING // since glew 1.11, missing on 1.10 and before
-#define GL_TEXTURE_BUFFER_BINDING 0x8C2A
-#endif//GL_TEXTURE_BUFFER_BINDING
-
-/*
-#ifndef glTextureImage3D
-extern decltype(glTextureImage3DEXT) glTextureImage3D;
-#endif
-
-#ifndef glTextureImage2D
-extern decltype(glTextureImage2DEXT) glTextureImage2D;
-#endif
-
-#ifndef glTextureImage1D
-extern decltype(glTextureImage1DEXT) glTextureImage1D;
-#endif
-
-#ifndef glCompressedTextureImage3D
-extern decltype(glCompressedTextureImage3DEXT) glCompressedTextureImage3D;
-#endif
-
-#ifndef glCompressedTextureImage2D
-extern decltype(glCompressedTextureImage2DEXT) glCompressedTextureImage2D;
-#endif
-
-#ifndef glCompressedTextureImage1D
-extern decltype(glCompressedTextureImage1DEXT) glCompressedTextureImage1D;
-#endif
-*/
-#ifndef glTextureImage3DMultisample
-extern void (*glTextureImage3DMultisample) (GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth, GLboolean fixedsamplelocations);
-#endif
-
-#ifndef glTextureImage2DMultisample
-extern void (*glTextureImage2DMultisample) (GLuint texture, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, GLboolean fixedsamplelocations);
-#endif
-
-extern decltype(glDeleteTextures)*glDeleteTexturesGEGL;
-
-#endif//defined(REPLACE_GLEW)

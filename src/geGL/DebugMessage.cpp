@@ -1,4 +1,5 @@
 #include<geGL/DebugMessage.h>
+#include<geGL/geGL.h>
 #include<string>
 
 using namespace ge::gl;
@@ -103,11 +104,17 @@ void highDebugMessage(
     " : "        <<message                         <<std::endl;
 }
 
+ge::gl::opengl::FunctionProviderPointer const&getProvider(ge::gl::opengl::FunctionProviderPointer const&gl){
+  if(gl!=nullptr)return gl;
+  return ge::gl::opengl::getDefaultFunctionProvider();
+}
+
 /**
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_LOW/MEDIUM/HIGH
  */
 void ge::gl::setLowAndGreaterDebugMessage(
-    opengl::FunctionProviderPointer const&gl){
+    opengl::FunctionProviderPointer const&ogl){
+  auto gl = getProvider(ogl);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)lowDebugMessage,NULL);
 }
@@ -116,7 +123,8 @@ void ge::gl::setLowAndGreaterDebugMessage(
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_MEDIUM/HIGH
  */
 void ge::gl::setMediumAndGreaterDebugMessage(
-    opengl::FunctionProviderPointer const&gl){
+    opengl::FunctionProviderPointer const&ogl){
+  auto gl = getProvider(ogl);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)mediumDebugMessage,NULL);
 }
@@ -125,7 +133,8 @@ void ge::gl::setMediumAndGreaterDebugMessage(
  * @brief sets debug function - it will report only GL_DEBUG_SEVERITY_HIGH errors
  */
 void ge::gl::setHighDebugMessage(
-    opengl::FunctionProviderPointer const&gl){
+    opengl::FunctionProviderPointer const&ogl){
+  auto gl = getProvider(ogl);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)highDebugMessage,NULL);
 }
@@ -134,7 +143,8 @@ void ge::gl::setHighDebugMessage(
  * @brief sets default debug function - it will report everything
  */
 void ge::gl::setDefaultDebugMessage(
-    opengl::FunctionProviderPointer const&gl){
+    opengl::FunctionProviderPointer const&ogl){
+  auto gl = getProvider(ogl);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)defaultDebugMessage,NULL);
 }
@@ -148,7 +158,8 @@ void ge::gl::setDefaultDebugMessage(
 void ge::gl::setDebugMessage(
     GLDEBUGPROC fce,
     void*data,
-    opengl::FunctionProviderPointer const&gl){
+    opengl::FunctionProviderPointer const&ogl){
+  auto gl = getProvider(ogl);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback(fce,data);
 }

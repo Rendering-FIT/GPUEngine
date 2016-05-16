@@ -31,7 +31,6 @@ namespace ge{
             this->_resolveConstructorArgs(args...);
           }
         ProgramObject(std::vector<std::string>const&data,unsigned version = 450,std::string profile = "core");
-#if defined(REPLACE_GLEW)
         template<typename...ARGS>
           ProgramObject(
               opengl::FunctionTablePointer const&table,
@@ -43,7 +42,6 @@ namespace ge{
             std::vector<std::string>const&data,
             unsigned version = 450,
             std::string profile = "core");
-#endif
         ~ProgramObject();
         void attachShader(std::shared_ptr<ShaderObject>const&shader);
         void detachShader(std::shared_ptr<ShaderObject>const&shader);
@@ -180,17 +178,6 @@ namespace ge{
             std::vector<std::string>strings,
             unsigned     version,
             std::string  profile);
-        /*
-           void _createProgram(
-           std::vector<std::string>& data         ,
-           unsigned                  version = 0  ,
-           std::string               profile = "" );
-           bool        _isShader       (std::string data);///<has to contain void main() in some form
-           bool        _isFile         (std::string data);///<has to exist
-           std::string _composeShaderSource(std::vector<std::string>&data,unsigned version=0,std::string profile="");
-           std::string _getShaderSource(std::string data);///<if its file open it and return its content
-           unsigned    _getShaderSourceTypeMask(std::string data);///if it can be vs gp or fs it returns 0x1|0x8|0x10
-           */
     };
 
 

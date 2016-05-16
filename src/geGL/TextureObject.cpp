@@ -332,7 +332,6 @@ TextureObject::TextureObject(
 
 
 
-#if defined(REPLACE_GLEW)
 TextureObject::TextureObject(
     FunctionTablePointer const&table,
     GLenum  target,
@@ -377,19 +376,13 @@ TextureObject::TextureObject(
   else glTextureImage3DEXT(this->_id,this->_target,0,this->_format,
       width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
 }
-#endif
 
 
 /**
  * @brief destroys texture
  */
 TextureObject::~TextureObject(){
-#if defined(REPLACE_GLEW)
   glDeleteTextures(1,&this->_id);
-#else
-  glDeleteTexturesGEGL(1,&this->_id);
-#endif
-//  glDeleteTextures(1,&this->_id);
 }
 
 /**

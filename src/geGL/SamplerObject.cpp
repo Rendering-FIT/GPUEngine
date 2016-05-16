@@ -44,11 +44,11 @@ SamplerObject::SamplerObject(SamplerObject*sampler){
   this->setWrapS(wrapR);
 }
 
-#if defined(REPLACE_GLEW)
 SamplerObject::SamplerObject (
     FunctionTablePointer const&table):OpenGLObject(table){
   glCreateSamplers(1,&this->_id);
 }
+
 SamplerObject::SamplerObject(
     FunctionTablePointer const&table,
     SamplerObject*sampler):OpenGLObject(table){
@@ -88,9 +88,6 @@ SamplerObject::SamplerObject(
   this->setWrapS(wrapR);
 
 }
-
-#endif
-
 
 SamplerObject::~SamplerObject(){
   glDeleteSamplers(1,&this->_id);

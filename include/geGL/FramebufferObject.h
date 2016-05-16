@@ -21,11 +21,9 @@ namespace ge{
         inline GLint getAttachmentParam(GLenum attachment,GLenum pname);
       public:
         FramebufferObject (bool defaultFramebuffer=false);
-#if defined(REPLACE_GLEW)
         FramebufferObject (
             opengl::FunctionTablePointer const&table,
             bool defaultFramebuffer = false);
-#endif
         ~FramebufferObject();
         void   bind  (GLenum target = GL_DRAW_FRAMEBUFFER)const;
         void   unbind(GLenum target = GL_DRAW_FRAMEBUFFER)const;
@@ -44,11 +42,7 @@ namespace ge{
         void clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*   value)const;
         void clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat* value)const;
         void clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*  value)const;
-#if defined(REPLACE_GLEW)
         void clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const;
-#else
-        void clearBuffer (GLenum buffer,GLfloat depth,GLint stencil)const;
-#endif//REPLACE_GLEW
         void invalidateFramebuffer(
             GLsizei       numAttachments     ,
             const GLenum* attachments        ,

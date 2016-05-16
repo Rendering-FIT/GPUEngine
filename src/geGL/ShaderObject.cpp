@@ -157,7 +157,6 @@ ShaderObject::ShaderObject(
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
 
-#if defined(REPLACE_GLEW)
 ShaderObject::ShaderObject(FunctionTablePointer const&table,GLenum type,std::string source):Shader(table){
   this->create(type);
   this->compile({source});
@@ -205,8 +204,6 @@ ShaderObject::ShaderObject(FunctionTablePointer const&table,std::string file,uns
   if(!this->getCompileStatus())
     std::cerr<<"ERROR: "<<this->getInfoLog()<<std::endl;
 }
-#endif
-
 
 ShaderObject::~ShaderObject(){
 }

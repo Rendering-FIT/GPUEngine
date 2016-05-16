@@ -45,7 +45,6 @@ namespace ge{
             GLsizei width         ,
             GLsizei height        ,
             GLsizei depth         );
-#if defined(REPLACE_GLEW)
         TextureObject(
             opengl::FunctionTablePointer const&table,
             GLenum  target        ,
@@ -67,7 +66,6 @@ namespace ge{
             GLsizei width         ,
             GLsizei height        ,
             GLsizei depth         );
-#endif
         ~TextureObject();
         void bind     (GLuint unit)const;
         void unbind   (GLuint unit)const;

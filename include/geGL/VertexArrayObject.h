@@ -23,9 +23,7 @@ namespace ge{
           L
         };
         VertexArrayObject ();
-#if defined(REPLACE_GLEW)
         VertexArrayObject (opengl::FunctionTablePointer const&table);
-#endif
         ~VertexArrayObject();
         void addAttrib(
             GLuint                  buffer                      ,
