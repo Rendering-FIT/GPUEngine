@@ -96,3 +96,13 @@ os.system(
 "./"+subscriptsDir+"decorateHeader.py >"+
 outputDir+"OpenGLConstants.h")
 
+os.system(
+"./"+subscriptsDir+"printHEADER.py "+glHeader+" "+glextHeader+" |"+
+"./"+subscriptsDir+"decomment.py |"+
+"./"+subscriptsDir+"depreprocess.py |"+
+"./"+subscriptsDir+"extractTypes.py |"+
+"./"+subscriptsDir+"decorateHeader.py >"+
+outputDir+"OpenGLTypes.h")
+
+
+#./printHEADER.py /usr/include/GL/gl.h /usr/include/GL/glext.h | ./decomment.py | ./depreprocess.py | grep "typedef" | grep -v "PFN" | sort | grep "GL" > ~/Desktop/exttypes.txt
