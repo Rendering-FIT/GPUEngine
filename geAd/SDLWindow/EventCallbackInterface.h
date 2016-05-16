@@ -7,7 +7,7 @@ namespace ge{
     class EventCallbackInterface{
       public:
         virtual ~EventCallbackInterface(){}
-        virtual void operator()(EventDataPointer const&) = 0;
+        virtual bool operator()(EventDataPointer const&) = 0;
     };
   }
 }

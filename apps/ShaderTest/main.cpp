@@ -34,7 +34,7 @@ struct Data{
     public:
       Data*data;
       WindowEventCallback(Data*data){this->data = data;}
-      virtual void operator()(ge::util::EventDataPointer const&)override;
+      virtual bool operator()(ge::util::EventDataPointer const&)override;
       virtual ~WindowEventCallback(){}
   };
 };
@@ -74,11 +74,13 @@ void Data::IdleCallback::operator()(){
   this->data->window->swap();
 }
 
-void Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&event){
+bool Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&event){
   auto sdlEventData = (ge::util::SDLEventData const*)(event);
   if(sdlEventData->event.window.event==SDL_WINDOWEVENT_CLOSE){
     this->data->mainLoop->removeWindow("primaryWindow");
+    return true;
   }
+  return false;
 }
 
 void Data::init(Data*data){

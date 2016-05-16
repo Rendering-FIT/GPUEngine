@@ -60,14 +60,19 @@ void SDLEventProc::operator()(){
         if(!SDL_PollEvent(&event))break;
 
       eventData.event = event;
-      if(this->hasEventHandler())
-        this->callEventHandler(&eventData);
+      bool handledByEventHandler = false;
 
-      auto windowIter = this->m_id2Name.find(event.window.windowID);
-      if(windowIter == this->m_id2Name.end())continue;
-      auto window = this->m_name2Window[windowIter->second];
-      if(window->hasEventCallback(event.type))
-        window->callEventCallback(event.type,&eventData);
+      if(this->hasEventHandler())
+        handledByEventHandler = this->callEventHandler(&eventData);
+
+      if(!handledByEventHandler){
+        auto windowIter = this->m_id2Name.find(event.window.windowID);
+        if(windowIter == this->m_id2Name.end())continue;
+        auto window = this->m_name2Window[windowIter->second];
+        if(window->hasEventCallback(event.type))
+          window->callEventCallback(event.type,&eventData);
+      }
+
       if(!this->m_pooling)
         if(!SDL_PollEvent(&event))break;
     }
@@ -105,10 +110,10 @@ bool SDLEventProc::hasEventHandler()const{
   return this->m_eventHandler != nullptr;
 }
 
-void SDLEventProc::callEventHandler(EventDataPointer const&event){
+bool SDLEventProc::callEventHandler(EventDataPointer const&event){
   assert(this!=nullptr);
   assert(this->m_eventHandler != nullptr);
-  (*this->m_eventHandler)(event);
+  return (*this->m_eventHandler)(event);
 }
 
 

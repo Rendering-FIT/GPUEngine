@@ -41,7 +41,7 @@ namespace ge{
         void setEventHandler(
             EventHandlerPointer const&handler = nullptr);
         bool hasEventHandler()const;
-        void callEventHandler(EventDataPointer const&eventData);
+        bool callEventHandler(EventDataPointer const&eventData);
         ConstNameIterator nameBegin()const;
         ConstNameIterator nameEnd  ()const;
         ConstIdIterator idBegin()const;
