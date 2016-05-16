@@ -88,7 +88,7 @@ void Data::init(Data*data){
 
   ge::gl::init(std::make_shared<ge::gl::opengl::DefaultLoader>((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
   data->gl = ge::gl::opengl::getDefaultFunctionProvider();
-  ge::gl::setHighDebugMessage(data->gl);
+  ge::gl::setHighDebugMessage();
 
   data->gl->glEnable(GL_DEPTH_TEST);
   data->gl->glDepthFunc(GL_LEQUAL);
@@ -107,6 +107,7 @@ void Data::init(Data*data){
   data->program0 = std::make_shared<ge::gl::Program>(vp0,fp0);
   data->program1 = std::make_shared<ge::gl::Program>(vp1,fp0);
 
+  //change fragment shader, both programs should be affected
   fp0->compile("#version 450\n",
       "out vec4 fColor;\n"
       "void main(){fColor = vec4(0,0,1,0);}");
