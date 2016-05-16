@@ -24,10 +24,12 @@ set(ADD_INCLUDES
   ${HEADER_PATH}/../Export.h
   ${HEADER_PATH}/SDLWindow.h
   ${HEADER_PATH}/SDLEventProc.h
+  ${HEADER_PATH}/SDLEventData.h
   ${HEADER_PATH}/EventDataInterface.h
   ${HEADER_PATH}/EventHandlerInterface.h
   ${HEADER_PATH}/EventCallbackInterface.h
   ${HEADER_PATH}/CallbackInterface.h
+  ${HEADER_PATH}/Window.h
   )
 set(ADD_SOURCES
   SDLWindow.cpp
