@@ -90,3 +90,9 @@ os.system(
 "./"+subscriptsDir+"generateTrapImplementation.py >"+
 outputDir+"TrapImplementation.h")
 
+os.system(
+"./"+subscriptsDir+"printHEADER.py "+glHeader+" "+glextHeader+" |"+
+"./"+subscriptsDir+"extractConstants.py |"+
+"./"+subscriptsDir+"decorateHeader.py >"+
+outputDir+"OpenGLConstants.h")
+

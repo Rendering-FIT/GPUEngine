@@ -36,27 +36,26 @@ set(GL_INCLUDES
     ${HEADER_PATH}/DebugMessage.h
     ${HEADER_PATH}/OpenGLObject.h
     ${HEADER_PATH}/geGL.h
-    #${HEADER_PATH}/CheckGLFunctions.h
     ${HEADER_PATH}/AllAttribs.h
     ${HEADER_PATH}/OpenGLCommands.h
-    ${HEADER_PATH}/Generated/CheckOpenGLFunctions.h
-    ${HEADER_PATH}/Generated/LoadOpenGLFunctions.h
-    ${HEADER_PATH}/Generated/OpenGLFunctionCalls.h
-    ${HEADER_PATH}/Generated/OpenGLFunctions.h
-    ${HEADER_PATH}/Generated/OpenGLConstants.h
-    ${HEADER_PATH}/Generated/OpenGLTypes.h
-    ${HEADER_PATH}/Generated/OpenGLPFN.h
-    ${HEADER_PATH}/Generated/OpenGLTrapFunctions.h
-    ${HEADER_PATH}/Generated/LoaderLoadingCalls.h
+    ${HEADER_PATH}/Generated/FunctionProviderCalls.h
+    ${HEADER_PATH}/Generated/FunctionProviderDeclarations.h
+    ${HEADER_PATH}/Generated/FunctionTableCalls.h
     ${HEADER_PATH}/Generated/LoaderImplementation.h
+    ${HEADER_PATH}/Generated/LoaderLoadingCalls.h
+    ${HEADER_PATH}/Generated/MemberOpenGLFunctions.h
+    ${HEADER_PATH}/Generated/MemberOpenGLPFN.h
+    ${HEADER_PATH}/Generated/OpenGLConstants.h
+    ${HEADER_PATH}/Generated/OpenGLFunctions.h
+    ${HEADER_PATH}/Generated/OpenGLPFN.h
+    ${HEADER_PATH}/Generated/OpenGLTypes.h
     ${HEADER_PATH}/Generated/TrapCalls.h
     ${HEADER_PATH}/Generated/TrapImplementation.h
-    ${HEADER_PATH}/CheckOpenGLFunctions.h
-    #${HEADER_PATH}/LoadOpenGLFunctions.h
     ${HEADER_PATH}/OpenGLFunctionTable.h
     ${HEADER_PATH}/OpenGLFunctionProvider.h
     ${HEADER_PATH}/OpenGLCapabilities.h
     ${HEADER_PATH}/FunctionLoaderInterface.h
+    ${HEADER_PATH}/DefaultLoader.h
     ${HEADER_PATH}/LoaderTableDecorator.h
     ${HEADER_PATH}/DSATableDecorator.h
     ${HEADER_PATH}/TrapTableDecorator
@@ -82,9 +81,6 @@ set(GL_SOURCES
     DebugMessage.cpp
     OpenGLObject.cpp
     geGL.cpp
-    #CheckGLFunctions.cpp
-    #LoadOpenGLFunctions.cpp
-    #CheckOpenGLFunctions.cpp
     OpenGLFunctionProvider.cpp
     OpenGLCapabilities.cpp
   )
