@@ -9,6 +9,7 @@ namespace ge{
   namespace gl{
     class Buffer;
     class GEGL_EXPORT VertexArray: public OpenGLObject{
+      friend class Buffer;
       public:
         enum AttribPointerType{
           NONE,
@@ -51,7 +52,6 @@ namespace ge{
         std::map<GLuint,std::shared_ptr<Buffer>>_buffers;
         std::shared_ptr<Buffer>_elementBuffer = nullptr;
         inline GLint _getAttrib(GLuint index,GLenum pname)const;
-
     };
   }//gl
 }//ge

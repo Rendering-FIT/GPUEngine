@@ -24,6 +24,9 @@ VertexArray::VertexArray (
  */
 VertexArray::~VertexArray(){
   glDeleteVertexArrays(1,&this->_id);
+  for(auto const&x:this->_buffers)
+    x.second->_vertexArrays.erase(this);
+  if(this->_elementBuffer)this->_elementBuffer->_vertexArrays.erase(this);
 }
 
 /**
@@ -65,6 +68,7 @@ void VertexArray::addAttrib(
   glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),(GLintptr)pointer,stride);
   glVertexArrayBindingDivisor(this->_id,index,divisor);
   this->_buffers[index]=buffer;
+  buffer->_vertexArrays.insert(this);
 }
 
 void VertexArray::addElementBuffer(
@@ -72,8 +76,8 @@ void VertexArray::addElementBuffer(
   assert(this!=nullptr);
   this->_elementBuffer = buffer;
   glVertexArrayElementBuffer(this->_id,buffer->getId());
+  buffer->_vertexArrays.insert(this);
 }
-
 
 void VertexArray::bind()const{
   assert(this!=nullptr);

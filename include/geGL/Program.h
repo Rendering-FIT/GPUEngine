@@ -8,7 +8,9 @@
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT Program: public OpenGLObject,public std::enable_shared_from_this<Program>{
+    class GEGL_EXPORT Program: 
+      public OpenGLObject,
+      public std::enable_shared_from_this<Program>{
       friend class Shader;
       public:
         using ShaderPointer  = std::shared_ptr<Shader>;
@@ -27,7 +29,7 @@ namespace ge{
         void validate()const;
         GLint getUniformLocation(std::string const&name)const;
         GLint getAttribLocation (std::string const&name)const;
-
+      public:
         template<typename...ARGS>
           Program(ARGS...shaders);
         template<typename...ARGS>

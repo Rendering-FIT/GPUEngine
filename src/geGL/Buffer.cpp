@@ -1,6 +1,8 @@
 #include<geGL/Buffer.h>
+#include<geGL/VertexArray.h>
 #include<geGL/OpenGLUtil.h>
 #include<cassert>
+#include<vector>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
@@ -157,9 +159,11 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
     this->~Buffer();
     this->_id = newBuffer->_id;
     delete(char*)newBuffer;
+    this->_updateVertexArrays();
   }else if(flags==NEW_BUFFER         ){
     this->~Buffer();
     new(this)Buffer(newSize,nullptr,bufferFlags);
+    this->_updateVertexArrays();
   }else{
     std::cerr<<"ERROR: invalid buffer reallocation flags: "<<flags<<std::endl;
     return false;
@@ -167,6 +171,30 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
   return true;
 }
 
+void Buffer::_updateVertexArrays(){
+  auto me = this->shared_from_this();
+  for(auto const&x:this->_vertexArrays){
+    if(x->_elementBuffer == me){
+      x->addElementBuffer(me);
+    }
+    std::vector<decltype(x->_buffers)::key_type>attribs;
+    for(auto const&y:x->_buffers)
+      if(y.second == me)
+        attribs.push_back(y.first);
+
+    for(auto const&y:attribs)
+      x->addAttrib(
+          me,
+          y,
+          x->getAttribSize(y),
+          x->getAttribType(y),
+          x->getAttribStride(y),
+          (const GLvoid*)(size_t)x->getAttribRelativeOffset(y),
+          x->isAttribNormalized(y),
+          x->getAttribDivisor(y),
+          x->isAttribInteger(y)?VertexArray::I:(x->isAttribLong(y)?VertexArray::L:VertexArray::NONE));
+  }
+}
 
 /**
  * @brief Copies data from another buffer into this buffer

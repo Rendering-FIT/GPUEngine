@@ -2,10 +2,15 @@
 
 #include<geGL/OpenGLObject.h>
 #include<iostream>
+#include<set>
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT Buffer:public OpenGLObject{
+    class VertexArray;
+    class GEGL_EXPORT Buffer:
+      public OpenGLObject,
+      public std::enable_shared_from_this<Buffer>{
+      friend class VertexArray;
       public:
         enum ReallocFlags{
           NEW_BUFFER = 0u    ,
@@ -82,6 +87,8 @@ namespace ge{
         GLint   _getBufferParameter(GLenum pname)const;
         GLvoid* _getBufferPointer  (GLenum pname)const;
         void    _bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const;
+        std::set<VertexArray*>_vertexArrays;
+        void _updateVertexArrays();
     };
   }
 }
