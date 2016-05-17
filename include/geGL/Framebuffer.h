@@ -6,25 +6,20 @@
 
 namespace ge{
   namespace gl{
-    GEGL_EXPORT std::string translateFramebufferComponentType(GLenum type);
-    GEGL_EXPORT std::string translateFramebufferObjectType   (GLenum type);
-    GEGL_EXPORT std::string translateFramebufferAttachment   (GLenum attachment);
-    GEGL_EXPORT std::string translateFramebufferColorEncoding(GLenum type);
-    GEGL_EXPORT std::string translateCubeMapFace(GLenum face);
     /**
      * @brief 
      */
-    class GEGL_EXPORT FramebufferObject: public OpenGLObject{
+    class GEGL_EXPORT Framebuffer: public OpenGLObject{
       private:
         inline GLint getParam(GLenum pname);
         inline void  setParam(GLenum pname,GLint);
         inline GLint getAttachmentParam(GLenum attachment,GLenum pname);
       public:
-        FramebufferObject (bool defaultFramebuffer=false);
-        FramebufferObject (
+        Framebuffer (bool defaultFramebuffer=false);
+        Framebuffer (
             opengl::FunctionTablePointer const&table,
             bool defaultFramebuffer = false);
-        ~FramebufferObject();
+        ~Framebuffer();
         void   bind  (GLenum target = GL_DRAW_FRAMEBUFFER)const;
         void   unbind(GLenum target = GL_DRAW_FRAMEBUFFER)const;
         void attachTexture(

@@ -1,139 +1,75 @@
-#include<geGL/FramebufferObject.h>
+#include<geGL/Framebuffer.h>
+#include<geGL/OpenGLUtil.h>
 #include<iostream>
 #include<sstream>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
 
-std::string ge::gl::translateFramebufferComponentType(GLenum type){
-  switch(type){
-    case GL_FLOAT              :return"GL_FLOAT"              ;
-    case GL_INT                :return"GL_INT"                ;
-    case GL_UNSIGNED_INT       :return"GL_UNSIGNED_INT"       ;
-    case GL_SIGNED_NORMALIZED  :return"GL_SIGNED_NORMALIZED"  ;
-    case GL_UNSIGNED_NORMALIZED:return"GL_UNSIGNED_NORMALIZED";
-    default                    :return"unknown"               ;
-  }
-}
 
-std::string ge::gl::translateFramebufferObjectType(GLenum type){
-  switch(type){
-    case GL_NONE               :return"GL_NONE"               ;
-    case GL_FRAMEBUFFER_DEFAULT:return"GL_FRAMEBUFFER_DEFAULT";
-    case GL_TEXTURE            :return"GL_TEXTURE"            ;
-    case GL_RENDERBUFFER       :return"GL_RENDERBUFFER"       ;
-    default                    :return"unknown"               ;
-  }
-}
-
-std::string ge::gl::translateFramebufferAttachment(GLenum attachment){
-  switch(attachment){
-    case GL_DEPTH_ATTACHMENT  :return"GL_DEPTH_ATTACHMENT"  ;
-    case GL_STENCIL_ATTACHMENT:return"GL_STENCIL_ATTACHMENT";
-    case GL_COLOR_ATTACHMENT0 :return"GL_COLOR_ATTACHMENT0" ;
-    case GL_COLOR_ATTACHMENT1 :return"GL_COLOR_ATTACHMENT1" ;
-    case GL_COLOR_ATTACHMENT2 :return"GL_COLOR_ATTACHMENT2" ;
-    case GL_COLOR_ATTACHMENT3 :return"GL_COLOR_ATTACHMENT3" ;
-    case GL_COLOR_ATTACHMENT4 :return"GL_COLOR_ATTACHMENT4" ;
-    case GL_COLOR_ATTACHMENT5 :return"GL_COLOR_ATTACHMENT5" ;
-    case GL_COLOR_ATTACHMENT6 :return"GL_COLOR_ATTACHMENT6" ;
-    case GL_COLOR_ATTACHMENT7 :return"GL_COLOR_ATTACHMENT7" ;
-    case GL_COLOR_ATTACHMENT8 :return"GL_COLOR_ATTACHMENT8" ;
-    case GL_COLOR_ATTACHMENT9 :return"GL_COLOR_ATTACHMENT8" ;
-    case GL_COLOR_ATTACHMENT10:return"GL_COLOR_ATTACHMENT10";
-    case GL_COLOR_ATTACHMENT11:return"GL_COLOR_ATTACHMENT11";
-    case GL_COLOR_ATTACHMENT12:return"GL_COLOR_ATTACHMENT12";
-    case GL_COLOR_ATTACHMENT13:return"GL_COLOR_ATTACHMENT13";
-    case GL_COLOR_ATTACHMENT14:return"GL_COLOR_ATTACHMENT14";
-    case GL_COLOR_ATTACHMENT15:return"GL_COLOR_ATTACHMENT15";
-    default:                   return"unknown"              ;
-  }
-}
-
-std::string ge::gl::translateFramebufferColorEncoding(GLenum type){
-  switch(type){
-    case GL_LINEAR:return"GL_LINEAR";
-    case GL_SRGB  :return"GL_SRGB"  ;
-    default       :return"unknown"  ;
-  }
-}
-
-std::string ge::gl::translateCubeMapFace(GLenum face){
-  switch(face){
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:return"GL_TEXTURE_CUBE_MAP_NEGATIVE_X";
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:return"GL_TEXTURE_CUBE_MAP_POSITIVE_X";
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:return"GL_TEXTURE_CUBE_MAP_NEGATIVE_Y";
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:return"GL_TEXTURE_CUBE_MAP_POSITIVE_Y";
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:return"GL_TEXTURE_CUBE_MAP_NEGATIVE_Z";
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:return"GL_TEXTURE_CUBE_MAP_POSITIVE_Z";
-    default                            :return"unknown";
-  }
-}
-
-
-GLint FramebufferObject::getParam(GLenum pname){
+GLint Framebuffer::getParam(GLenum pname){
   GLint param;
   glGetNamedFramebufferParameteriv(this->_id,pname,&param);
   return param;
 }
 
-void FramebufferObject::setParam(GLenum pname,GLint param){
+void Framebuffer::setParam(GLenum pname,GLint param){
   glNamedFramebufferParameteri(this->_id,pname,param);
 }
 
-GLint FramebufferObject::getAttachmentParam(GLenum attachment,GLenum pname){
+GLint Framebuffer::getAttachmentParam(GLenum attachment,GLenum pname){
   GLint param;
   glGetNamedFramebufferAttachmentParameteriv(this->_id,attachment,pname,&param);
   return param;
 }
 
-FramebufferObject::FramebufferObject (bool defaultFramebuffer){
+Framebuffer::Framebuffer (bool defaultFramebuffer){
   if(defaultFramebuffer)this->_id=0;
   else glCreateFramebuffers(1,&this->_id);
 }
 
-FramebufferObject::FramebufferObject (
+Framebuffer::Framebuffer (
     FunctionTablePointer const&table,
     bool defaultFramebuffer):OpenGLObject(table){
   if(defaultFramebuffer)this->_id=0;
   else glCreateFramebuffers(1,&this->_id);
 }
 
-FramebufferObject::~FramebufferObject(){
+Framebuffer::~Framebuffer(){
   glDeleteFramebuffers(1,&this->_id);
 }
 
-void FramebufferObject::attachRenderbuffer(GLenum attachment,GLuint renderbuffer)const{
+void Framebuffer::attachRenderbuffer(GLenum attachment,GLuint renderbuffer)const{
   glNamedFramebufferRenderbuffer(this->_id,attachment,GL_RENDERBUFFER,renderbuffer);
 }
 
-void FramebufferObject::attachTexture(GLenum attachment,GLuint texture,GLint level,GLint layer)const{
+void Framebuffer::attachTexture(GLenum attachment,GLuint texture,GLint level,GLint layer)const{
   if(layer==-1)
     glNamedFramebufferTexture(this->_id,attachment,texture,level);
   else
     glNamedFramebufferTextureLayer(this->_id,attachment,texture,level,layer);
 }
 
-void FramebufferObject::bind  (GLenum target)const{
+void Framebuffer::bind  (GLenum target)const{
   glBindFramebuffer(target,this->_id);
 }
-void FramebufferObject::unbind(GLenum target)const{
+void Framebuffer::unbind(GLenum target)const{
   glBindFramebuffer(target,0);
 }
 
-bool FramebufferObject::check()const{
+bool Framebuffer::check()const{
   return glCheckNamedFramebufferStatus(this->_id,GL_DRAW_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE;
 }
 
-void FramebufferObject::drawBuffer(GLenum buffer)const{
+void Framebuffer::drawBuffer(GLenum buffer)const{
   glNamedFramebufferDrawBuffer(this->_id,buffer);
 }
 
-void FramebufferObject::drawBuffers(GLsizei n,const GLenum *buffers)const{
+void Framebuffer::drawBuffers(GLsizei n,const GLenum *buffers)const{
   glNamedFramebufferDrawBuffers(this->_id,n,buffers);
 }
 
-void FramebufferObject::drawBuffers(GLsizei n,...)const{
+void Framebuffer::drawBuffers(GLsizei n,...)const{
   GLenum*drawBuffers=new GLenum[n];
   va_list args;
   va_start(args,n);
@@ -145,23 +81,23 @@ void FramebufferObject::drawBuffers(GLsizei n,...)const{
   delete[]drawBuffers;
 }
 
-void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*value)const{
+void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*value)const{
   glClearNamedFramebufferiv(this->_id,buffer,drawBuffer,value);
 }
 
-void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat*value)const{
+void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat*value)const{
   glClearNamedFramebufferfv(this->_id,buffer,drawBuffer,value);
 }
 
-void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*value)const{
+void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*value)const{
   glClearNamedFramebufferuiv(this->_id,buffer,drawBuffer,value);
 }
 
-void FramebufferObject::clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const{
+void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const{
   glClearNamedFramebufferfi(this->_id,buffer,drawBuffer,depth,stencil);
 }
 
-void FramebufferObject::invalidateFramebuffer(
+void Framebuffer::invalidateFramebuffer(
     GLsizei       numAttachments,
     const GLenum* attachments   ,
     GLint         x             ,
@@ -174,106 +110,106 @@ void FramebufferObject::invalidateFramebuffer(
     glInvalidateNamedFramebufferSubData(this->_id,numAttachments,attachments,x,y,width,height);
 }
 
-GLboolean FramebufferObject::isFramebuffer()const{
+GLboolean Framebuffer::isFramebuffer()const{
   return glIsFramebuffer(this->_id);
 }
 
-void FramebufferObject::setDefaultWidth(GLint width){
+void Framebuffer::setDefaultWidth(GLint width){
   this->setParam(GL_FRAMEBUFFER_DEFAULT_WIDTH,width);
 }
-void FramebufferObject::setDefaultHeight(GLint height){
+void Framebuffer::setDefaultHeight(GLint height){
   this->setParam(GL_FRAMEBUFFER_DEFAULT_HEIGHT,height);
 }
-void FramebufferObject::setDefaultFixedSampleLocations(GLint location){
+void Framebuffer::setDefaultFixedSampleLocations(GLint location){
   this->setParam(GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS,location);
 }
-void FramebufferObject::setDefaultSamples(GLint samples){
+void Framebuffer::setDefaultSamples(GLint samples){
   this->setParam(GL_FRAMEBUFFER_DEFAULT_SAMPLES,samples);
 }
-void FramebufferObject::setDefaultLayers(GLint layers){
+void Framebuffer::setDefaultLayers(GLint layers){
   this->setParam(GL_FRAMEBUFFER_DEFAULT_LAYERS,layers);
 }
 
-GLint FramebufferObject::getDefaultWidth(){
+GLint Framebuffer::getDefaultWidth(){
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_WIDTH );
 }
-GLint FramebufferObject::getDefaultHeight(){
+GLint Framebuffer::getDefaultHeight(){
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_HEIGHT);
 }
-GLint FramebufferObject::getDefaultLayers(){
+GLint Framebuffer::getDefaultLayers(){
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_LAYERS);
 }
-GLint FramebufferObject::getDefaultSamples(){
+GLint Framebuffer::getDefaultSamples(){
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_SAMPLES);
 }
-GLint FramebufferObject::getDefaultFixedSampleLocations(){
+GLint Framebuffer::getDefaultFixedSampleLocations(){
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS);
 }
-GLint FramebufferObject::getSamples(){
+GLint Framebuffer::getSamples(){
   return this->getParam(GL_SAMPLES);
 }
-GLint FramebufferObject::getSampleBuffers(){
+GLint Framebuffer::getSampleBuffers(){
   return this->getParam(GL_SAMPLE_BUFFERS);
 }
 
-GLenum FramebufferObject::getAttachmentObjectType   (GLenum attachment){
+GLenum Framebuffer::getAttachmentObjectType   (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE);
 }
-GLint  FramebufferObject::getAttachmentRedSize      (GLenum attachment){
+GLint  Framebuffer::getAttachmentRedSize      (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE);
 }
-GLint  FramebufferObject::getAttachmentGreenSize    (GLenum attachment){
+GLint  Framebuffer::getAttachmentGreenSize    (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE);
 }
-GLint  FramebufferObject::getAttachmentBlueSize     (GLenum attachment){
+GLint  Framebuffer::getAttachmentBlueSize     (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE);
 }
-GLint  FramebufferObject::getAttachmentAlphaSize    (GLenum attachment){
+GLint  Framebuffer::getAttachmentAlphaSize    (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE);
 }
-GLint  FramebufferObject::getAttachmentDepthSize    (){
+GLint  Framebuffer::getAttachmentDepthSize    (){
   return this->getAttachmentParam(GL_DEPTH_ATTACHMENT,GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE);
 }
-GLint  FramebufferObject::getAttachmentStencilSize  (){
+GLint  Framebuffer::getAttachmentStencilSize  (){
   return this->getAttachmentParam(GL_STENCIL_ATTACHMENT,GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE);
 }
-GLenum FramebufferObject::getAttachmentComponentType(GLenum attachment){
+GLenum Framebuffer::getAttachmentComponentType(GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE);
 }
-GLenum    FramebufferObject::getAttachmentColorEncoding     (GLenum attachment){
+GLenum    Framebuffer::getAttachmentColorEncoding     (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING);
 }
-GLuint    FramebufferObject::getAttachmentObjectName        (GLenum attachment){
+GLuint    Framebuffer::getAttachmentObjectName        (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME);
 }
-GLint     FramebufferObject::getAttachmentTextureLevel      (GLenum attachment){
+GLint     Framebuffer::getAttachmentTextureLevel      (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL);
 }
-GLenum    FramebufferObject::getAttachmentTextureCubeMapFace(GLenum attachment){
+GLenum    Framebuffer::getAttachmentTextureCubeMapFace(GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE);
 }
-GLboolean FramebufferObject::isAttachmentLayered            (GLenum attachment){
+GLboolean Framebuffer::isAttachmentLayered            (GLenum attachment){
   return (GLboolean)this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_LAYERED);
 }
-GLint     FramebufferObject::getAttachmentTextureLayer      (GLenum attachment){
+GLint     Framebuffer::getAttachmentTextureLayer      (GLenum attachment){
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER);
 }
 
 
-GLint FramebufferObject::getDoubleBuffer(){
+GLint Framebuffer::getDoubleBuffer(){
   return this->getParam(GL_DOUBLEBUFFER);
 }
-GLint FramebufferObject::getImplementationColorReadFormat(){
+GLint Framebuffer::getImplementationColorReadFormat(){
   return this->getParam(GL_IMPLEMENTATION_COLOR_READ_FORMAT);
 }
-GLint FramebufferObject::getImplementationColorReadType  (){
+GLint Framebuffer::getImplementationColorReadType  (){
   return this->getParam(GL_IMPLEMENTATION_COLOR_READ_TYPE);
 }
-GLint FramebufferObject::getStereo(){
+GLint Framebuffer::getStereo(){
   return this->getParam(GL_STEREO);
 }
 
-std::string FramebufferObject::getInfo(){
+std::string Framebuffer::getInfo(){
   std::stringstream ss;
   ss<<"Default Width:               "<<this->getDefaultWidth               ()<<std::endl;
   ss<<"Default Height:              "<<this->getDefaultHeight              ()<<std::endl;
@@ -285,7 +221,7 @@ std::string FramebufferObject::getInfo(){
 
   ss<<ge::gl::translateFramebufferAttachment(GL_DEPTH_ATTACHMENT)<<":"<<std::endl;
   if(this->getAttachmentObjectType(GL_DEPTH_ATTACHMENT)!=GL_NONE){
-    ss<<"  object type:    "<<ge::gl::translateFramebufferObjectType(
+    ss<<"  object type:    "<<ge::gl::translateFramebufferType(
         /*                  */this->getAttachmentObjectType         (GL_DEPTH_ATTACHMENT))<<std::endl;
     ss<<"  depth size:     "<<this->getAttachmentDepthSize()                              <<std::endl;
     ss<<"  component type: "<<ge::gl::translateFramebufferComponentType(
@@ -299,7 +235,7 @@ std::string FramebufferObject::getInfo(){
 
   ss<<ge::gl::translateFramebufferAttachment(GL_STENCIL_ATTACHMENT)<<":"<<std::endl;
   if(this->getAttachmentObjectType(GL_STENCIL_ATTACHMENT)!=GL_NONE){
-    ss<<"  object type:    "<<ge::gl::translateFramebufferObjectType(
+    ss<<"  object type:    "<<ge::gl::translateFramebufferType(
         /*                  */this->getAttachmentObjectType         (GL_STENCIL_ATTACHMENT))<<std::endl;
     ss<<"  stencil size:   "<<this->getAttachmentStencilSize()                              <<std::endl;
     ss<<"  component type: "<<ge::gl::translateFramebufferComponentType(
@@ -317,7 +253,7 @@ std::string FramebufferObject::getInfo(){
   for(GLint a=0;a<maxColorAttachments;++a){
     ss<<ge::gl::translateFramebufferAttachment(GL_COLOR_ATTACHMENT0+a)<<":"<<std::endl;
     if(this->getAttachmentObjectType(GL_COLOR_ATTACHMENT0+a)==GL_NONE)continue;
-    ss<<"  object type:    "<<ge::gl::translateFramebufferObjectType(
+    ss<<"  object type:    "<<ge::gl::translateFramebufferType(
         /*                  */this->getAttachmentObjectType        (GL_COLOR_ATTACHMENT0+a))<<std::endl;
     ss<<"  red size:       "<<this->getAttachmentRedSize           (GL_COLOR_ATTACHMENT0+a) <<std::endl;
     ss<<"  green size:     "<<this->getAttachmentGreenSize         (GL_COLOR_ATTACHMENT0+a) <<std::endl;

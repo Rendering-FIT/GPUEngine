@@ -9,8 +9,8 @@
 #include<geGL/ProgramObjectParameter.h>
 #include<geGL/ProgramObjectSubroutine.h>
 #include<geGL/ProgramObjectMacro.h>
-#include<geGL/BufferObject.h>
-#include<geGL/TextureObject.h>
+#include<geGL/Buffer.h>
+#include<geGL/Texture.h>
 #include<geCore/Dtemplates.h>
 
 namespace ge{
@@ -63,13 +63,13 @@ namespace ge{
         AttributeIndex getNofAttributes()const;
         BufferIndex    getNofBuffers   ()const;
         void use()const;
-        void bindSSBO(std::string name,ge::gl::BufferObject*buffer);
-        void bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size);
+        void bindSSBO(std::string name,ge::gl::Buffer*buffer);
+        void bindSSBO(std::string name,ge::gl::Buffer*buffer,GLintptr offset,GLsizeiptr size);
         GLenum getSamplerBinding(std::string uniform);
-        void bindTexture(std::string uniform,ge::gl::TextureObject*texture);
+        void bindTexture(std::string uniform,ge::gl::Texture*texture);
         void bindImage(
             std::string           uniform                ,
-            ge::gl::TextureObject*texture                ,
+            ge::gl::Texture*texture                ,
             GLint                 level   = 0            ,
             GLenum                format  = 0            ,
             GLenum                access  = GL_READ_WRITE,

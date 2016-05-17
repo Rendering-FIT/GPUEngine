@@ -5,20 +5,7 @@
 
 namespace ge{
   namespace gl{
-    GEGL_EXPORT GLenum textureTarget2Binding(GLenum target );
-    GEGL_EXPORT GLenum textureBinding2Target(GLenum binding);
-    GEGL_EXPORT std::string translateTextureTarget     (GLenum target );
-    GEGL_EXPORT std::string translateTextureBinding    (GLenum binding);
-    GEGL_EXPORT std::string translateTextureCompareMode(GLint mode    );
-    GEGL_EXPORT std::string translateTextureCompareFunc(GLint func    );
-    GEGL_EXPORT std::string translateTextureFilter     (GLint filter  );
-    GEGL_EXPORT std::string translateTextureWrap       (GLint wrap    );
-    GEGL_EXPORT std::string translateTextureSwizzle    (GLint swizzle );
-    GEGL_EXPORT std::string translateTextureChannelType(GLenum type   );
-    GEGL_EXPORT unsigned internalFormatSize(GLenum internalFormat);
-    GEGL_EXPORT std::string translateInternalFormat(GLenum internalFormat);
-
-    class GEGL_EXPORT TextureObject: public OpenGLObject{
+    class GEGL_EXPORT Texture: public OpenGLObject{
       private:
         inline GLint _getTexLevelParameter(GLint level,GLenum pname)const;
         inline GLint _getTexParameter (GLenum pname)const;
@@ -27,38 +14,38 @@ namespace ge{
         GLenum  _target;
         GLenum  _format;
       public:
-        TextureObject(
+        Texture(
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         );
-        TextureObject(
+        Texture(
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         ,
             GLsizei height        );
-        TextureObject(
+        Texture(
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         ,
             GLsizei height        ,
             GLsizei depth         );
-        TextureObject(
+        Texture(
             opengl::FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         );
-        TextureObject(
+        Texture(
             opengl::FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         ,
             GLsizei height        );
-        TextureObject(
+        Texture(
             opengl::FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
@@ -66,7 +53,7 @@ namespace ge{
             GLsizei width         ,
             GLsizei height        ,
             GLsizei depth         );
-        ~TextureObject();
+        ~Texture();
         void bind     (GLuint unit)const;
         void unbind   (GLuint unit)const;
         void bindImage(

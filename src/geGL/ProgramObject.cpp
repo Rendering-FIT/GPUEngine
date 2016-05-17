@@ -567,10 +567,10 @@ decltype(ProgramObject::_bufferNames)::size_type ProgramObject::getNofBuffers()c
   return this->_bufferNames.size();
 }
 
-void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer){
+void ProgramObject::bindSSBO(std::string name,ge::gl::Buffer*buffer){
   buffer->bindBase(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name).getBinding());
 }
-void ProgramObject::bindSSBO(std::string name,ge::gl::BufferObject*buffer,GLintptr offset,GLsizeiptr size){
+void ProgramObject::bindSSBO(std::string name,ge::gl::Buffer*buffer,GLintptr offset,GLsizeiptr size){
   buffer->bindRange(GL_SHADER_STORAGE_BUFFER,this->getBuffer(name).getBinding(),offset,size);
 }
 
@@ -578,12 +578,12 @@ GLenum ProgramObject::getSamplerBinding(std::string uniform){
   return GL_TEXTURE0+this->_samplerList[uniform]->getBinding();
 }
 
-void ProgramObject::bindTexture(std::string uniform,ge::gl::TextureObject*texture){
+void ProgramObject::bindTexture(std::string uniform,ge::gl::Texture*texture){
   texture->bind(GL_TEXTURE0+this->_samplerList[uniform]->getBinding());
 }
 void ProgramObject::bindImage(
     std::string           uniform,
-    ge::gl::TextureObject*texture,
+    ge::gl::Texture*texture,
     GLint                 level  ,
     GLenum                format ,
     GLenum                access ,

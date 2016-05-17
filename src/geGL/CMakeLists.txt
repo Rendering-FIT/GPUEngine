@@ -32,12 +32,12 @@ set(GENERATED_INCLUDES
 set(GL_INCLUDES
   ${HEADER_PATH}/Export.h
   ${HEADER_PATH}/Definitions.h
-  ${HEADER_PATH}/BufferObject.h
-  ${HEADER_PATH}/VertexArrayObject.h
-  ${HEADER_PATH}/FramebufferObject.h
-  ${HEADER_PATH}/TextureObject.h
-  ${HEADER_PATH}/SamplerObject.h
-  ${HEADER_PATH}/ProgramPipelineObject.h
+  ${HEADER_PATH}/Buffer.h
+  ${HEADER_PATH}/VertexArray.h
+  ${HEADER_PATH}/Framebuffer.h
+  ${HEADER_PATH}/Texture.h
+  ${HEADER_PATH}/Sampler.h
+  ${HEADER_PATH}/ProgramPipeline.h
   ${HEADER_PATH}/Shader.h
   ${HEADER_PATH}/ShaderObject.h
   ${HEADER_PATH}/Program.h
@@ -47,9 +47,10 @@ set(GL_INCLUDES
   ${HEADER_PATH}/ProgramObjectSubroutine.h
   ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
   ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
-  ${HEADER_PATH}/RenderbufferObject.h
+  ${HEADER_PATH}/Renderbuffer.h
   ${HEADER_PATH}/OpenGL.h
-  ${HEADER_PATH}/AsynchronousQueryObject.h
+  ${HEADER_PATH}/OpenGLUtil.h
+  ${HEADER_PATH}/AsynchronousQuery.h
   ${HEADER_PATH}/DebugMessage.h
   ${HEADER_PATH}/OpenGLObject.h
   ${HEADER_PATH}/geGL.h
@@ -67,12 +68,12 @@ set(GL_INCLUDES
   )
 
 set(GL_SOURCES
-  BufferObject.cpp
-  VertexArrayObject.cpp
-  FramebufferObject.cpp
-  TextureObject.cpp
-  SamplerObject.cpp
-  ProgramPipelineObject.cpp
+  Buffer.cpp
+  VertexArray.cpp
+  Framebuffer.cpp
+  Texture.cpp
+  Sampler.cpp
+  ProgramPipeline.cpp
   Shader.cpp
   ShaderObject.cpp
   Program.cpp
@@ -80,12 +81,14 @@ set(GL_SOURCES
   ProgramObjectParameter.cpp
   ProgramObjectSubroutine.cpp
   ProgramObjectSubroutineUniform.cpp
-  RenderbufferObject.cpp
-  AsynchronousQueryObject.cpp
+  Renderbuffer.cpp
+  AsynchronousQuery.cpp
   DebugMessage.cpp
   OpenGLObject.cpp
   geGL.cpp
   OpenGLFunctionProvider.cpp
+  OpenGL.cpp
+  OpenGLUtil.cpp
   )
 
 ################################################

@@ -1,47 +1,47 @@
-#include<geGL/ProgramPipelineObject.h>
+#include<geGL/ProgramPipeline.h>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
 
-ProgramPipelineObject::ProgramPipelineObject(){
+ProgramPipeline::ProgramPipeline(){
   glCreateProgramPipelines(1,&this->_id);
 }
 
-ProgramPipelineObject::ProgramPipelineObject(
+ProgramPipeline::ProgramPipeline(
     FunctionTablePointer const&table):OpenGLObject(table){
   glCreateProgramPipelines(1,&this->_id);
 }
 
-ProgramPipelineObject::~ProgramPipelineObject(){
+ProgramPipeline::~ProgramPipeline(){
   glDeleteProgramPipelines(1,&this->_id);
 }
 
-void ProgramPipelineObject::bind()const{
+void ProgramPipeline::bind()const{
   glBindProgramPipeline(this->_id);
 }
 
-void ProgramPipelineObject::unbind()const{
+void ProgramPipeline::unbind()const{
   glBindProgramPipeline(0);
 }
-void ProgramPipelineObject::useProgramStages(GLbitfield stages,GLuint program)const{
+void ProgramPipeline::useProgramStages(GLbitfield stages,GLuint program)const{
   glUseProgramStages(this->_id,stages,program);
 }
-void ProgramPipelineObject::useVertexStage    (GLuint program)const{
+void ProgramPipeline::useVertexStage    (GLuint program)const{
   glUseProgramStages(this->_id,GL_VERTEX_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useControlStage   (GLuint program)const{
+void ProgramPipeline::useControlStage   (GLuint program)const{
   glUseProgramStages(this->_id,GL_TESS_CONTROL_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useEvaluationStage(GLuint program)const{
+void ProgramPipeline::useEvaluationStage(GLuint program)const{
   glUseProgramStages(this->_id,GL_TESS_EVALUATION_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useGeometryStage  (GLuint program)const{
+void ProgramPipeline::useGeometryStage  (GLuint program)const{
   glUseProgramStages(this->_id,GL_GEOMETRY_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useFragmentStage  (GLuint program)const{
+void ProgramPipeline::useFragmentStage  (GLuint program)const{
   glUseProgramStages(this->_id,GL_FRAGMENT_SHADER_BIT,program);
 }
-void ProgramPipelineObject::useComputeStage   (GLuint program)const{
+void ProgramPipeline::useComputeStage   (GLuint program)const{
   glUseProgramStages(this->_id,GL_COMPUTE_SHADER_BIT,program);
 }
 

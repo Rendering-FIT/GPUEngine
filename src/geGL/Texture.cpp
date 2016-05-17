@@ -1,258 +1,9 @@
-#include<geGL/TextureObject.h>
-
+#include<geGL/Texture.h>
+#include<geGL/OpenGLUtil.h>
 #include<sstream>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
-
-GLenum ge::gl::textureTarget2Binding(GLenum target){
-  switch(target){
-    case GL_TEXTURE_1D                  :return GL_TEXTURE_BINDING_1D                  ;
-    case GL_TEXTURE_1D_ARRAY            :return GL_TEXTURE_BINDING_1D_ARRAY            ;
-    case GL_TEXTURE_2D                  :return GL_TEXTURE_BINDING_2D                  ;
-    case GL_TEXTURE_2D_ARRAY            :return GL_TEXTURE_BINDING_2D_ARRAY            ;
-    case GL_TEXTURE_2D_MULTISAMPLE      :return GL_TEXTURE_BINDING_2D_MULTISAMPLE      ;
-    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:return GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY;
-    case GL_TEXTURE_3D                  :return GL_TEXTURE_BINDING_3D                  ;
-    case GL_TEXTURE_BUFFER              :return GL_TEXTURE_BINDING_BUFFER              ;
-    case GL_TEXTURE_CUBE_MAP            :return GL_TEXTURE_BINDING_CUBE_MAP            ;
-    case GL_TEXTURE_RECTANGLE           :return GL_TEXTURE_BINDING_RECTANGLE           ;
-    default                             :return 0                                      ;
-  }
-}
-
-GLenum ge::gl::textureBinding2Target(GLenum binding){
-  switch(binding){
-    case GL_TEXTURE_BINDING_1D                  :return GL_TEXTURE_1D                  ;
-    case GL_TEXTURE_BINDING_1D_ARRAY            :return GL_TEXTURE_1D_ARRAY            ;
-    case GL_TEXTURE_BINDING_2D                  :return GL_TEXTURE_2D                  ;
-    case GL_TEXTURE_BINDING_2D_ARRAY            :return GL_TEXTURE_2D_ARRAY            ;
-    case GL_TEXTURE_BINDING_2D_MULTISAMPLE      :return GL_TEXTURE_2D_MULTISAMPLE      ;
-    case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-    case GL_TEXTURE_BINDING_3D                  :return GL_TEXTURE_3D                  ;
-    case GL_TEXTURE_BINDING_BUFFER              :return GL_TEXTURE_BUFFER              ;
-    case GL_TEXTURE_BINDING_CUBE_MAP            :return GL_TEXTURE_CUBE_MAP            ;
-    case GL_TEXTURE_BINDING_RECTANGLE           :return GL_TEXTURE_RECTANGLE           ;
-    default                                     :return 0                              ;
-  }
-}
-
-std::string ge::gl::translateTextureTarget(GLenum target){
-  switch(target){
-    case GL_TEXTURE_1D                  :return "GL_TEXTURE_1D"                  ;
-    case GL_TEXTURE_1D_ARRAY            :return "GL_TEXTURE_1D_ARRAY"            ;
-    case GL_TEXTURE_2D                  :return "GL_TEXTURE_2D"                  ;
-    case GL_TEXTURE_2D_ARRAY            :return "GL_TEXTURE_2D_ARRAY"            ;
-    case GL_TEXTURE_2D_MULTISAMPLE      :return "GL_TEXTURE_2D_MULTISAMPLE"      ;
-    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:return "GL_TEXTURE_2D_MULTISAMPLE_ARRAY";
-    case GL_TEXTURE_3D                  :return "GL_TEXTURE_3D"                  ;
-    case GL_TEXTURE_BUFFER              :return "GL_TEXTURE_BUFFER"              ;
-    case GL_TEXTURE_CUBE_MAP            :return "GL_TEXTURE_CUBE_MAP"            ;
-    case GL_TEXTURE_RECTANGLE           :return "GL_TEXTURE_RECTANGLE"           ;
-    default                             :return "unknown"                        ;
-  }
-}
-
-std::string ge::gl::translateTextureBinding(GLenum binding){
-  switch(binding){
-    case GL_TEXTURE_BINDING_1D                  :return "GL_TEXTURE_BINDING_1D"                  ;
-    case GL_TEXTURE_BINDING_1D_ARRAY            :return "GL_TEXTURE_BINDING_1D_ARRAY"            ;
-    case GL_TEXTURE_BINDING_2D                  :return "GL_TEXTURE_BINDING_2D"                  ;
-    case GL_TEXTURE_BINDING_2D_ARRAY            :return "GL_TEXTURE_BINDING_2D_ARRAY"            ;
-    case GL_TEXTURE_BINDING_2D_MULTISAMPLE      :return "GL_TEXTURE_BINDING_2D_MULTISAMPLE"      ;
-    case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:return "GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY";
-    case GL_TEXTURE_BINDING_3D                  :return "GL_TEXTURE_BINDING_3D"                  ;
-    case GL_TEXTURE_BINDING_BUFFER              :return "GL_TEXTURE_BINDING_BUFFER"              ;
-    case GL_TEXTURE_BINDING_CUBE_MAP            :return "GL_TEXTURE_BINDING_CUBE_MAP"            ;
-    case GL_TEXTURE_BINDING_RECTANGLE           :return "GL_TEXTURE_BINDING_RECTANGLE"           ;
-    default                                     :return "unknown"                                ;
-  }
-}
-std::string ge::gl::translateTextureSwizzle(GLint swizzle){
-  switch(swizzle){
-    case GL_RED  :return"GL_RED"  ;
-    case GL_GREEN:return"GL_GREEN";
-    case GL_BLUE :return"GL_BLUE" ;
-    case GL_ALPHA:return"GL_ALPHA";
-    default      :return"unknown" ;
-  }
-}
-
-std::string ge::gl::translateTextureWrap(GLint wrap){
-  switch(wrap){
-    case GL_CLAMP_TO_EDGE       :return"GL_CLAMP_TO_EDGE"       ;
-    case GL_CLAMP_TO_BORDER     :return"GL_CLAMP_TO_BORDER"     ;
-    case GL_MIRRORED_REPEAT     :return"GL_MIRRORED_REPEAT"     ;
-    case GL_REPEAT              :return"GL_REPEAT"              ;
-    case GL_MIRROR_CLAMP_TO_EDGE:return"GL_MIRROR_CLAMP_TO_EDGE";
-    default                     :return"unknown"                ;
-  }
-}
-
-std::string ge::gl::translateTextureFilter(GLint filter){
-  switch(filter){
-    case GL_NEAREST               :return"GL_NEAREST"               ;
-    case GL_LINEAR                :return"GL_LINEAR"                ;
-    case GL_NEAREST_MIPMAP_NEAREST:return"GL_NEAREST_MIPMAP_NEAREST";
-    case GL_LINEAR_MIPMAP_NEAREST :return"GL_LINEAR_MIPMAP_NEAREST" ;
-    case GL_NEAREST_MIPMAP_LINEAR :return"GL_NEAREST_MIPMAP_LINEAR" ;
-    case GL_LINEAR_MIPMAP_LINEAR  :return"GL_LINEAR_MIPMAP_LINEAR"  ;
-    default                       :return"unknown"                  ;
-  }
-}
-std::string ge::gl::translateTextureCompareFunc(GLint func){
-  switch(func){
-    case GL_LEQUAL  :return"GL_LEQUAL"  ;
-    case GL_GEQUAL  :return"GL_GEQUAL"  ;
-    case GL_LESS    :return"GL_LESS"    ;
-    case GL_GREATER :return"GL_GREATER" ;
-    case GL_EQUAL   :return"GL_EQUAL"   ;
-    case GL_NOTEQUAL:return"GL_NOTEQUAL";
-    case GL_ALWAYS  :return"GL_ALWAYS"  ;
-    case GL_NEVER   :return"GL_NEVER"   ;
-    default         :return"unknown"    ;
-  }
-}
-std::string ge::gl::translateTextureCompareMode(GLint mode){
-  switch(mode){
-    case GL_COMPARE_REF_TO_TEXTURE:return"GL_COMPARE_REF_TO_TEXTURE";
-    case GL_NONE                  :return"GL_NONE"                  ;
-    default                       :return"unknown"                  ;
-  }
-}
-
-std::string ge::gl::translateTextureChannelType(GLenum type){
-  switch(type){
-    case GL_NONE               :return"GL_NONE"               ;
-    case GL_SIGNED_NORMALIZED  :return"GL_SIGNED_NORMALIZED"  ;
-    case GL_UNSIGNED_NORMALIZED:return"GL_UNSIGNED_NORMALIZED";
-    case GL_FLOAT              :return"GL_FLOAT"              ;
-    case GL_INT                :return"GL_INT"                ;
-    case GL_UNSIGNED_INT       :return"GL_UNSIGNED_INT"       ;
-    default                    :return"unknown"               ;
-  }
-}
-
-std::string ge::gl::translateInternalFormat(GLenum internalFormat){
-  switch(internalFormat){
-    case GL_STENCIL_INDEX1    :return"GL_STENCIL_INDEX1"    ;
-    case GL_STENCIL_INDEX4    :return"GL_STENCIL_INDEX4"    ;
-    case GL_R8                :return"GL_R8"                ;
-    case GL_R8UI              :return"GL_R8UI"              ;
-    case GL_R8I               :return"GL_R8I"               ;
-    case GL_R8_SNORM          :return"GL_R8_SNORM"          ;
-    case GL_R3_G3_B2          :return"GL_R3_G3_B2"          ;
-    case GL_RGBA2             :return"GL_RGBA2"             ;
-    case GL_STENCIL_INDEX8    :return"GL_STENCIL_INDEX8"    ;
-    case GL_RGB4              :return"GL_RGB4"              ;
-    case GL_RGB5              :return"GL_RGB5"              ;
-    case GL_R16               :return"GL_R16"               ;
-    case GL_R16F              :return"GL_R16F"              ;
-    case GL_R16UI             :return"GL_R16UI"             ;
-    case GL_R16I              :return"GL_R16I"              ;
-    case GL_R16_SNORM         :return"GL_R16_SNORM"         ;
-    case GL_RG8               :return"GL_RG8"               ;
-    case GL_RG8UI             :return"GL_RG8UI"             ;
-    case GL_RG8I              :return"GL_RG8I"              ;
-    case GL_RGB565            :return"GL_RGB565"            ;
-    case GL_RGB5_A1           :return"GL_RGB5_A1"           ;
-    case GL_RGBA4             :return"GL_RGBA4"             ;
-    case GL_DEPTH_COMPONENT16 :return"GL_DEPTH_COMPONENT16" ;
-    case GL_STENCIL_INDEX16   :return"GL_STENCIL_INDEX16"   ;
-    case GL_RGB8              :return"GL_RGB8"              ;
-    case GL_RGB8_SNORM        :return"GL_RGB8_SNORM"        ;
-    case GL_RGB8UI            :return"GL_RGB8UI"            ;
-    case GL_RGB8I             :return"GL_RGB8I"             ;
-    case GL_DEPTH_COMPONENT24 :return"GL_DEPTH_COMPONENT24" ;
-    case GL_SRGB8             :return"GL_SRGB8"             ;
-    case GL_SRGB8_ALPHA8      :return"GL_SRGB8_ALPHA8"      ;
-    case GL_RG16              :return"GL_RG16"              ;
-    case GL_RG16_SNORM        :return"GL_RG16_SNORM"        ;
-    case GL_DEPTH24_STENCIL8  :return"GL_DEPTH24_STENCIL8"  ;
-    case GL_DEPTH_COMPONENT32F:return"GL_DEPTH_COMPONENT32F";
-    case GL_DEPTH_COMPONENT32 :return"GL_DEPTH_COMPONENT32" ;
-    case GL_DEPTH32F_STENCIL8 :return"GL_DEPTH32F_STENCIL8" ;
-    case GL_RGB16F            :return"GL_RGB16F"            ;
-    case GL_RGB16I            :return"GL_RGB16I"            ;
-    case GL_RGB16UI           :return"GL_RGB16UI"           ;
-    case GL_RGBA16F           :return"GL_RGBA16F"           ;
-    case GL_RGBA16I           :return"GL_RGBA16I"           ;
-    case GL_RGBA16UI          :return"GL_RGBA16UI"          ;
-    case GL_RGBA32F           :return"GL_RGBA32F"           ;
-    case GL_RGBA32UI          :return"GL_RGBA32UI"          ;
-    case GL_RGBA32I           :return"GL_RGBA32I"           ;
-    default                   :return"unknown"              ;
-  };
-}
-
-
-unsigned ge::gl::internalFormatSize(GLenum internalFormat){
-  switch(internalFormat){
-    case GL_STENCIL_INDEX1:
-      return 1;
-    case GL_STENCIL_INDEX4:
-      return 4;
-    case GL_R8            :
-    case GL_R8UI          :
-    case GL_R8I           :
-    case GL_R8_SNORM      :
-    case GL_R3_G3_B2      :
-    case GL_RGBA2         :
-    case GL_STENCIL_INDEX8:
-      return 8;
-
-    case GL_RGB4:
-      return 12;
-    case GL_RGB5:
-      return 16;//TODO CHECK
-
-    case GL_R16              :
-    case GL_R16F             :
-    case GL_R16UI            :
-    case GL_R16I             :
-    case GL_R16_SNORM        :
-    case GL_RG8              :
-    case GL_RG8UI            :
-    case GL_RG8I             :
-    case GL_RGB565           :
-    case GL_RGB5_A1          :
-    case GL_RGBA4            :
-    case GL_DEPTH_COMPONENT16:
-    case GL_STENCIL_INDEX16  :
-      return 16;
-
-    case GL_RGB8             :
-    case GL_RGB8_SNORM       :
-    case GL_RGB8UI           :
-    case GL_RGB8I            :
-    case GL_DEPTH_COMPONENT24:
-    case GL_SRGB8            :
-      return 24;
-
-    case GL_SRGB8_ALPHA8      :
-    case GL_RG16              :
-    case GL_RG16_SNORM        :
-    case GL_DEPTH24_STENCIL8  :
-    case GL_DEPTH_COMPONENT32F:
-    case GL_DEPTH_COMPONENT32 :
-      return 32;
-    case GL_DEPTH32F_STENCIL8:
-      return 32+8;
-    case GL_RGB16F:
-    case GL_RGB16I:
-    case GL_RGB16UI:
-      return 3*16;
-    case GL_RGBA16F:
-    case GL_RGBA16I:
-    case GL_RGBA16UI:
-      return 4*16;
-    case GL_RGBA32F :
-    case GL_RGBA32UI:
-    case GL_RGBA32I :
-      return 4*32;
-  }
-  return 32;//TODO
-}
 
 
 /**
@@ -263,7 +14,7 @@ unsigned ge::gl::internalFormatSize(GLenum internalFormat){
  * @param internalFormat internal format of data of texture
  * @param levels number of mipmap levels, 0 - mutable texture
  */
-TextureObject::TextureObject(
+Texture::Texture(
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
@@ -291,7 +42,7 @@ glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,p
  * @param internalFormat internal format of data of texture
  * @param levels number of mipmap levels
  */
-TextureObject::TextureObject(
+Texture::Texture(
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
@@ -315,7 +66,7 @@ TextureObject::TextureObject(
  * @param height y size of texture
  * @param depth z size of texture
  */
-TextureObject::TextureObject(
+Texture::Texture(
     GLenum  target,
     GLenum  internalFormat,
     GLsizei levels,
@@ -332,7 +83,7 @@ TextureObject::TextureObject(
 
 
 
-TextureObject::TextureObject(
+Texture::Texture(
     FunctionTablePointer const&table,
     GLenum  target,
     GLenum  internalFormat,
@@ -346,7 +97,7 @@ TextureObject::TextureObject(
       width,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
 }
 
-TextureObject::TextureObject(
+Texture::Texture(
     FunctionTablePointer const&table,
     GLenum  target,
     GLenum  internalFormat,
@@ -361,7 +112,7 @@ TextureObject::TextureObject(
       width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
 }
 
-TextureObject::TextureObject(
+Texture::Texture(
     FunctionTablePointer const&table,
     GLenum  target,
     GLenum  internalFormat,
@@ -381,7 +132,7 @@ TextureObject::TextureObject(
 /**
  * @brief destroys texture
  */
-TextureObject::~TextureObject(){
+Texture::~Texture(){
   glDeleteTextures(1,&this->_id);
 }
 
@@ -390,7 +141,7 @@ TextureObject::~TextureObject(){
  *
  * @param unit texture unit
  */
-void   TextureObject::bind(GLuint unit)const{
+void   Texture::bind(GLuint unit)const{
   glBindTextureUnit(unit,this->_id);
 }
 
@@ -399,7 +150,7 @@ void   TextureObject::bind(GLuint unit)const{
  *
  * @param unit texture unit
  */
-void TextureObject::unbind(GLuint unit)const{
+void Texture::unbind(GLuint unit)const{
   glBindTextureUnit(unit,0);
 }
 
@@ -413,7 +164,7 @@ void TextureObject::unbind(GLuint unit)const{
  * @param layered use layered 
  * @param layer index of layer
  */
-void TextureObject::bindImage(
+void Texture::bindImage(
     GLuint    unit,
     GLint     level,
     GLenum    format,
@@ -425,7 +176,7 @@ void TextureObject::bindImage(
       layer,access,format);
 }
 
-void TextureObject::setData1D(
+void Texture::setData1D(
     const GLvoid*data   ,
     GLenum       format ,
     GLenum       type   ,
@@ -437,7 +188,7 @@ void TextureObject::setData1D(
   glTextureSubImage1D(this->_id,level,xoffset,width,format,type,data);
 }
 
-void TextureObject::setData2D(
+void Texture::setData2D(
     const GLvoid*data     ,
     GLenum       format   ,
     GLenum       type     ,
@@ -461,7 +212,7 @@ void TextureObject::setData2D(
   glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
 }
 
-void TextureObject::setData3D(
+void Texture::setData3D(
     const GLvoid*data     ,
     GLenum       format   ,
     GLenum       type     ,
@@ -499,7 +250,7 @@ void TextureObject::setData3D(
  * @param pname name of parameter
  * @param params value of parameter
  */
-void TextureObject::texParameteri(GLenum pname,GLint params)const{
+void Texture::texParameteri(GLenum pname,GLint params)const{
   glTextureParameteri(this->_id,pname,params);
 }
 
@@ -509,7 +260,7 @@ void TextureObject::texParameteri(GLenum pname,GLint params)const{
  * @param pname name of parameter
  * @param params values of parameter
  */
-void TextureObject::texParameterfv(GLenum pname,GLfloat *params)const{
+void Texture::texParameterfv(GLenum pname,GLfloat *params)const{
 #ifndef USE_DSA
   glBindTexture   (this->getTarget(),this->_id);
   glTexParameterfv(this->getTarget(),pname,params);
@@ -524,12 +275,12 @@ void TextureObject::texParameterfv(GLenum pname,GLfloat *params)const{
  *
  * @return format
  */
-GLenum TextureObject::getFormat()const{
+GLenum Texture::getFormat()const{
   return this->_format;
   //glGetTextureParameteriv(this->_id,GL_TEXTURE_INTERNAL_FORMAT,(GLint*)format);
 }
 
-GLuint TextureObject::_bindSafe()const{
+GLuint Texture::_bindSafe()const{
   GLuint oldId;
   GLenum target=this->getTarget();
   glGetIntegerv(ge::gl::textureTarget2Binding(target),(GLint*)&oldId);
@@ -537,7 +288,7 @@ GLuint TextureObject::_bindSafe()const{
   return oldId;
 }
 
-GLint TextureObject::_getTexLevelParameter(GLint level,GLenum pname)const{
+GLint Texture::_getTexLevelParameter(GLint level,GLenum pname)const{
   GLint param;
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
@@ -549,7 +300,7 @@ GLint TextureObject::_getTexLevelParameter(GLint level,GLenum pname)const{
   return param;
 }
 
-GLint TextureObject::_getTexParameter(GLenum pname)const{
+GLint Texture::_getTexParameter(GLenum pname)const{
   GLint param;
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
@@ -561,7 +312,7 @@ GLint TextureObject::_getTexParameter(GLenum pname)const{
   return param;
 }
 
-void TextureObject::_getTexParameterf(GLfloat*data,GLenum pname)const{
+void Texture::_getTexParameterf(GLfloat*data,GLenum pname)const{
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
   glGetTexParameterfv(this->getTarget(),pname,data);
@@ -578,7 +329,7 @@ void TextureObject::_getTexParameterf(GLfloat*data,GLenum pname)const{
  *
  * @return width of mipmap
  */
-GLuint TextureObject::getWidth(GLint level)const{
+GLuint Texture::getWidth(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_WIDTH);
 }
 
@@ -589,7 +340,7 @@ GLuint TextureObject::getWidth(GLint level)const{
  *
  * @return height of mipmap
  */
-GLuint TextureObject::getHeight(GLint level)const{
+GLuint Texture::getHeight(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_HEIGHT);
 }
 
@@ -600,7 +351,7 @@ GLuint TextureObject::getHeight(GLint level)const{
  *
  * @return depth of mipmap
  */
-GLuint TextureObject::getDepth(GLint level)const{
+GLuint Texture::getDepth(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH);
 }
 
@@ -611,7 +362,7 @@ GLuint TextureObject::getDepth(GLint level)const{
  *
  * @return number of samples
  */
-GLuint TextureObject::getSamples(GLint level)const{
+GLuint Texture::getSamples(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_SAMPLES);
 }
 
@@ -622,7 +373,7 @@ GLuint TextureObject::getSamples(GLint level)const{
  *
  * @return fixed sample location
  */
-GLboolean TextureObject::getFixedSampleLocation(GLint level)const{
+GLboolean Texture::getFixedSampleLocation(GLint level)const{
   return (GLboolean)this->_getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
 }
 
@@ -633,7 +384,7 @@ GLboolean TextureObject::getFixedSampleLocation(GLint level)const{
  *
  * @return internal format
  */
-GLenum TextureObject::getInternalFormat(GLint level)const{
+GLenum Texture::getInternalFormat(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_INTERNAL_FORMAT);
 }
 
@@ -644,7 +395,7 @@ GLenum TextureObject::getInternalFormat(GLint level)const{
  *
  * @return red size
  */
-GLuint TextureObject::getRedSize(GLint level)const{
+GLuint Texture::getRedSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_RED_SIZE);
 }
 
@@ -655,7 +406,7 @@ GLuint TextureObject::getRedSize(GLint level)const{
  *
  * @return green size
  */
-GLuint TextureObject::getGreenSize(GLint level)const{
+GLuint Texture::getGreenSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_GREEN_SIZE);
 }
 
@@ -666,7 +417,7 @@ GLuint TextureObject::getGreenSize(GLint level)const{
  *
  * @return blue size
  */
-GLuint TextureObject::getBlueSize(GLint level)const{
+GLuint Texture::getBlueSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_BLUE_SIZE);
 }
 
@@ -677,7 +428,7 @@ GLuint TextureObject::getBlueSize(GLint level)const{
  *
  * @return alpha size
  */
-GLuint TextureObject::getAlphaSize(GLint level)const{
+GLuint Texture::getAlphaSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_ALPHA_SIZE);
 }
 
@@ -688,7 +439,7 @@ GLuint TextureObject::getAlphaSize(GLint level)const{
  *
  * @return depth size
  */
-GLuint TextureObject::getDepthSize(GLint level)const{
+GLuint Texture::getDepthSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH_SIZE);
 }
 
@@ -699,7 +450,7 @@ GLuint TextureObject::getDepthSize(GLint level)const{
  *
  * @return stencil size
  */
-GLuint TextureObject::getStencilSize(GLint level)const{
+GLuint Texture::getStencilSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_STENCIL_SIZE);
 }
 
@@ -710,7 +461,7 @@ GLuint TextureObject::getStencilSize(GLint level)const{
  *
  * @return shared size
  */
-GLuint TextureObject::getSharedSize(GLint level)const{
+GLuint Texture::getSharedSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_SHARED_SIZE);
 }
 
@@ -721,7 +472,7 @@ GLuint TextureObject::getSharedSize(GLint level)const{
  *
  * @return red type
  */
-GLenum TextureObject::getRedType(GLint level)const{
+GLenum Texture::getRedType(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_RED_TYPE);
 }
 
@@ -732,7 +483,7 @@ GLenum TextureObject::getRedType(GLint level)const{
  *
  * @return blue type
  */
-GLenum TextureObject::getBlueType(GLint level)const{
+GLenum Texture::getBlueType(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_BLUE_TYPE);
 }
 
@@ -743,7 +494,7 @@ GLenum TextureObject::getBlueType(GLint level)const{
  *
  * @return green type
  */
-GLenum TextureObject::getGreenType(GLint level)const{
+GLenum Texture::getGreenType(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_GREEN_TYPE);
 }
 
@@ -754,7 +505,7 @@ GLenum TextureObject::getGreenType(GLint level)const{
  *
  * @return alpha type
  */
-GLenum TextureObject::getAlphaType(GLint level)const{
+GLenum Texture::getAlphaType(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_ALPHA_TYPE);
 }
 
@@ -765,7 +516,7 @@ GLenum TextureObject::getAlphaType(GLint level)const{
  *
  * @return depth type
  */
-GLenum TextureObject::getDepthType(GLint level)const{
+GLenum Texture::getDepthType(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH_TYPE);
 }
 
@@ -776,7 +527,7 @@ GLenum TextureObject::getDepthType(GLint level)const{
  *
  * @return compressed flag
  */
-GLboolean TextureObject::getCompressed(GLint level)const{
+GLboolean Texture::getCompressed(GLint level)const{
   return (GLboolean)this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
 }
 
@@ -787,7 +538,7 @@ GLboolean TextureObject::getCompressed(GLint level)const{
  *
  * @return compressed image size
  */
-GLuint TextureObject::getCompressedImageSize(GLint level)const{
+GLuint Texture::getCompressedImageSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED_IMAGE_SIZE);
 }
 
@@ -798,7 +549,7 @@ GLuint TextureObject::getCompressedImageSize(GLint level)const{
  *
  * @return texture buffer binding
  */
-GLuint TextureObject::getBufferDataStoreBinding(GLint level)const{
+GLuint Texture::getBufferDataStoreBinding(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_BUFFER_DATA_STORE_BINDING);
 }
 
@@ -809,7 +560,7 @@ GLuint TextureObject::getBufferDataStoreBinding(GLint level)const{
  *
  * @return texture buffer offset
  */
-GLint TextureObject::getBufferOffset(GLint level)const{
+GLint Texture::getBufferOffset(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_BUFFER_OFFSET);
 }
 
@@ -820,7 +571,7 @@ GLint TextureObject::getBufferOffset(GLint level)const{
  *
  * @return texture buffer size
  */
-GLint TextureObject::getBufferSize(GLint level)const{
+GLint Texture::getBufferSize(GLint level)const{
   return this->_getTexLevelParameter(level,GL_TEXTURE_BUFFER_SIZE);
 }
 
@@ -829,7 +580,7 @@ GLint TextureObject::getBufferSize(GLint level)const{
  *
  * @return red swizzle
  */
-GLenum TextureObject::getSwizzleR()const{
+GLenum Texture::getSwizzleR()const{
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_R);
 }
 
@@ -838,7 +589,7 @@ GLenum TextureObject::getSwizzleR()const{
  *
  * @return green swizzle
  */
-GLenum TextureObject::getSwizzleG()const{
+GLenum Texture::getSwizzleG()const{
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_G);
 }
 
@@ -847,7 +598,7 @@ GLenum TextureObject::getSwizzleG()const{
  *
  * @return blue swizzle
  */
-GLenum TextureObject::getSwizzleB()const{
+GLenum Texture::getSwizzleB()const{
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_B);
 }
 
@@ -856,7 +607,7 @@ GLenum TextureObject::getSwizzleB()const{
  *
  * @return alpha swizzle
  */
-GLenum TextureObject::getSwizzleA()const{
+GLenum Texture::getSwizzleA()const{
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_A);
 }
 
@@ -865,7 +616,7 @@ GLenum TextureObject::getSwizzleA()const{
  *
  * @param color border color
  */
-void TextureObject::getBorderColor(GLfloat*color)const{
+void Texture::getBorderColor(GLfloat*color)const{
   this->_getTexParameterf(color,GL_TEXTURE_BORDER_COLOR);
 }
 
@@ -874,7 +625,7 @@ void TextureObject::getBorderColor(GLfloat*color)const{
  *
  * @return min filter
  */
-GLenum TextureObject::getMinFilter()const{
+GLenum Texture::getMinFilter()const{
   return this->_getTexParameter(GL_TEXTURE_MIN_FILTER);
 }
 
@@ -883,7 +634,7 @@ GLenum TextureObject::getMinFilter()const{
  *
  * @return mag filter
  */
-GLenum TextureObject::getMagFilter()const{
+GLenum Texture::getMagFilter()const{
   return this->_getTexParameter(GL_TEXTURE_MAG_FILTER);
 }
 
@@ -892,7 +643,7 @@ GLenum TextureObject::getMagFilter()const{
  *
  * @return wrapS
  */
-GLenum TextureObject::getWrapS()const{
+GLenum Texture::getWrapS()const{
   return this->_getTexParameter(GL_TEXTURE_WRAP_S);
 }
 
@@ -901,7 +652,7 @@ GLenum TextureObject::getWrapS()const{
  *
  * @return wrapT
  */
-GLenum TextureObject::getWrapT()const{
+GLenum Texture::getWrapT()const{
   return this->_getTexParameter(GL_TEXTURE_WRAP_T);
 }
 
@@ -910,7 +661,7 @@ GLenum TextureObject::getWrapT()const{
  *
  * @return wrapR
  */
-GLenum TextureObject::getWrapR()const{
+GLenum Texture::getWrapR()const{
   return this->_getTexParameter(GL_TEXTURE_WRAP_R);
 }
 
@@ -919,7 +670,7 @@ GLenum TextureObject::getWrapR()const{
  *
  * @return target
  */
-GLenum TextureObject::getTarget()const{
+GLenum Texture::getTarget()const{
 #ifndef USE_DSA
   return this->_target;
 #else //USE_DSA
@@ -932,7 +683,7 @@ GLenum TextureObject::getTarget()const{
  *
  * @return texture minlod
  */
-GLfloat TextureObject::getMinLod()const{
+GLfloat Texture::getMinLod()const{
   GLfloat lod;
   this->_getTexParameterf(&lod,GL_TEXTURE_MIN_LOD);
   return lod;
@@ -943,7 +694,7 @@ GLfloat TextureObject::getMinLod()const{
  *
  * @return texture maxlod
  */
-GLfloat TextureObject::getMaxLod()const{
+GLfloat Texture::getMaxLod()const{
   GLfloat lod;
   this->_getTexParameterf(&lod,GL_TEXTURE_MAX_LOD);
   return lod;
@@ -954,7 +705,7 @@ GLfloat TextureObject::getMaxLod()const{
  *
  * @return texture base level
  */
-GLuint TextureObject::getBaseLevel()const{
+GLuint Texture::getBaseLevel()const{
   return this->_getTexParameter(GL_TEXTURE_BASE_LEVEL);
 }
 
@@ -963,7 +714,7 @@ GLuint TextureObject::getBaseLevel()const{
  *
  * @return texture max level
  */
-GLuint TextureObject::getMaxLevel()const{
+GLuint Texture::getMaxLevel()const{
   return this->_getTexParameter(GL_TEXTURE_MAX_LEVEL);
 }
 
@@ -972,7 +723,7 @@ GLuint TextureObject::getMaxLevel()const{
  *
  * @return texture lod bias
  */
-GLfloat TextureObject::getLodBias()const{
+GLfloat Texture::getLodBias()const{
   GLfloat bias;
   this->_getTexParameterf(&bias,GL_TEXTURE_LOD_BIAS);
   return bias;
@@ -983,7 +734,7 @@ GLfloat TextureObject::getLodBias()const{
  *
  * @return depth stencil texture mode
  */
-GLenum TextureObject::getDepthStencilTextureMode()const{
+GLenum Texture::getDepthStencilTextureMode()const{
   return this->_getTexParameter(GL_DEPTH_STENCIL_TEXTURE_MODE);
 }
 
@@ -992,7 +743,7 @@ GLenum TextureObject::getDepthStencilTextureMode()const{
  *
  * @return texture compare mode
  */
-GLenum TextureObject::getCompareMode()const{
+GLenum Texture::getCompareMode()const{
   return this->_getTexParameter(GL_TEXTURE_COMPARE_MODE);
 }
 
@@ -1001,7 +752,7 @@ GLenum TextureObject::getCompareMode()const{
  *
  * @return texture compare func
  */
-GLenum TextureObject::getCompareFunc()const{
+GLenum Texture::getCompareFunc()const{
   return this->_getTexParameter(GL_TEXTURE_COMPARE_FUNC);
 }
 
@@ -1010,7 +761,7 @@ GLenum TextureObject::getCompareFunc()const{
  *
  * @return texture image format compatibility type
  */
-GLenum TextureObject::getImageFormatCompatibilityType()const{
+GLenum Texture::getImageFormatCompatibilityType()const{
   return this->_getTexParameter(GL_IMAGE_FORMAT_COMPATIBILITY_TYPE);
 }
 
@@ -1019,7 +770,7 @@ GLenum TextureObject::getImageFormatCompatibilityType()const{
  *
  * @return texture immutable format
  */
-GLboolean TextureObject::getImmutableFormat()const{
+GLboolean Texture::getImmutableFormat()const{
   return (GLboolean)this->_getTexParameter(GL_TEXTURE_IMMUTABLE_FORMAT);
 }
 
@@ -1028,7 +779,7 @@ GLboolean TextureObject::getImmutableFormat()const{
  *
  * @return texture immutable levels
  */
-GLuint TextureObject::getImmutableLevels()const{
+GLuint Texture::getImmutableLevels()const{
   return this->_getTexParameter(GL_TEXTURE_IMMUTABLE_LEVELS);
 }
 
@@ -1037,7 +788,7 @@ GLuint TextureObject::getImmutableLevels()const{
  *
  * @return texture view min level
  */
-GLuint TextureObject::getViewMinLevel()const{
+GLuint Texture::getViewMinLevel()const{
   return this->_getTexParameter(GL_TEXTURE_VIEW_MIN_LEVEL);
 }
 
@@ -1046,7 +797,7 @@ GLuint TextureObject::getViewMinLevel()const{
  *
  * @return texture view num levels
  */
-GLuint TextureObject::getViewNumLevels()const{
+GLuint Texture::getViewNumLevels()const{
   return this->_getTexParameter(GL_TEXTURE_VIEW_NUM_LEVELS);
 }
 
@@ -1055,7 +806,7 @@ GLuint TextureObject::getViewNumLevels()const{
  *
  * @return texture view min layer
  */
-GLuint TextureObject::getViewMinLayer()const{
+GLuint Texture::getViewMinLayer()const{
   return this->_getTexParameter(GL_TEXTURE_VIEW_MIN_LAYER);
 }
 
@@ -1064,12 +815,12 @@ GLuint TextureObject::getViewMinLayer()const{
  *
  * @return texture view num layers
  */
-GLuint TextureObject::getViewNumLayers()const{
+GLuint Texture::getViewNumLayers()const{
   return this->_getTexParameter(GL_TEXTURE_VIEW_NUM_LAYERS);
 }
 
 
-std::string TextureObject::getInfo()const{
+std::string Texture::getInfo()const{
   std::stringstream ss;
   ss<<"GL_TEXTURE_WIDTH: " <<this->getWidth (0)<<std::endl;
   ss<<"GL_TEXTURE_HEIGHT: "<<this->getHeight(0)<<std::endl;
@@ -1130,7 +881,7 @@ std::string TextureObject::getInfo()const{
   return ss.str();
 }
 
-bool TextureObject::hasHeight()const{
+bool Texture::hasHeight()const{
   switch(this->_target){
     case GL_TEXTURE_1D_ARRAY            :
     case GL_TEXTURE_2D                  :
@@ -1146,7 +897,7 @@ bool TextureObject::hasHeight()const{
   }
 }
 
-bool TextureObject::hasDepth ()const{
+bool Texture::hasDepth ()const{
   switch(this->_target){
     case GL_TEXTURE_2D_ARRAY            :
     case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
@@ -1162,14 +913,14 @@ bool TextureObject::hasDepth ()const{
   }
 }
 
-unsigned long long TextureObject::getLevelSize(GLint level)const{
+unsigned long long Texture::getLevelSize(GLint level)const{
   unsigned long long size=internalFormatSize(this->getInternalFormat(level))*this->getWidth(level);
   if(this->hasHeight())size*=this->getHeight(level);
   if(this->hasDepth())size*=this->getDepth(level);
   return size/8;
 }
 
-unsigned long long TextureObject::getSize()const{
+unsigned long long Texture::getSize()const{
   GLint nofLevels=this->getViewNumLayers();//TODO neco lepsiho?
   unsigned long long size=0;
   for(GLint l=0;l<nofLevels;++l)

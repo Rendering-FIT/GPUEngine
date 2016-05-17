@@ -21,7 +21,7 @@ struct Data{
   std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
   std::shared_ptr<ge::gl::Program>program0 = nullptr;
   std::shared_ptr<ge::gl::Program>program1 = nullptr;
-  std::shared_ptr<ge::gl::VertexArrayObject>emptyVAO = nullptr;
+  std::shared_ptr<ge::gl::VertexArray>emptyVAO = nullptr;
   static void init(Data*data);
   class IdleCallback: public ge::util::CallbackInterface{
     public:
@@ -112,5 +112,5 @@ void Data::init(Data*data){
       "out vec4 fColor;\n"
       "void main(){fColor = vec4(0,0,1,0);}");
 
-  data->emptyVAO = std::make_shared<ge::gl::VertexArrayObject>();
+  data->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 }

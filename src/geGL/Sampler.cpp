@@ -1,13 +1,13 @@
-#include<geGL/SamplerObject.h>
+#include<geGL/Sampler.h>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
 
-SamplerObject::SamplerObject(){
+Sampler::Sampler(){
   glCreateSamplers(1,&this->_id);
 }
 
-SamplerObject::SamplerObject(SamplerObject*sampler){
+Sampler::Sampler(Sampler*sampler){
   glCreateSamplers(1,&this->_id);
   GLfloat borderColor[4];
   sampler->getBorderColor(borderColor);
@@ -44,14 +44,14 @@ SamplerObject::SamplerObject(SamplerObject*sampler){
   this->setWrapS(wrapR);
 }
 
-SamplerObject::SamplerObject (
+Sampler::Sampler (
     FunctionTablePointer const&table):OpenGLObject(table){
   glCreateSamplers(1,&this->_id);
 }
 
-SamplerObject::SamplerObject(
+Sampler::Sampler(
     FunctionTablePointer const&table,
-    SamplerObject*sampler):OpenGLObject(table){
+    Sampler*sampler):OpenGLObject(table){
   glCreateSamplers(1,&this->_id);
   GLfloat borderColor[4];
   sampler->getBorderColor(borderColor);
@@ -89,122 +89,122 @@ SamplerObject::SamplerObject(
 
 }
 
-SamplerObject::~SamplerObject(){
+Sampler::~Sampler(){
   glDeleteSamplers(1,&this->_id);
 }
 
-void SamplerObject::setBorderColor(GLfloat*color    )const{
+void Sampler::setBorderColor(GLfloat*color    )const{
   glSamplerParameterfv(this->_id,GL_TEXTURE_BORDER_COLOR,color);
 }
 
-void SamplerObject::setCompareFunc(GLenum  func     )const{
+void Sampler::setCompareFunc(GLenum  func     )const{
   glSamplerParameteri(this->_id,GL_TEXTURE_COMPARE_FUNC,func);
 }
 
-void SamplerObject::setCompareMode(GLenum  mode     )const{
+void Sampler::setCompareMode(GLenum  mode     )const{
   glSamplerParameteri(this->_id,GL_TEXTURE_COMPARE_MODE,mode);
 }
 
-void SamplerObject::setLodBias    (GLfloat lodBias  )const{
+void Sampler::setLodBias    (GLfloat lodBias  )const{
   glSamplerParameterf(this->_id,GL_TEXTURE_LOD_BIAS,lodBias);
 }
 
-void SamplerObject::setMinLod     (GLfloat minLod   )const{
+void Sampler::setMinLod     (GLfloat minLod   )const{
   glSamplerParameterf(this->_id,GL_TEXTURE_MIN_LOD,minLod);
 }
 
-void SamplerObject::setMaxLod     (GLfloat maxLod   )const{
+void Sampler::setMaxLod     (GLfloat maxLod   )const{
   glSamplerParameterf(this->_id,GL_TEXTURE_MAX_LOD,maxLod);
 }
 
-void SamplerObject::setMinFilter  (GLenum  minFilter)const{
+void Sampler::setMinFilter  (GLenum  minFilter)const{
   glSamplerParameteri(this->_id,GL_TEXTURE_MIN_FILTER,minFilter);
 }
 
-void SamplerObject::setMagFilter  (GLenum  magFilter)const{
+void Sampler::setMagFilter  (GLenum  magFilter)const{
   glSamplerParameteri(this->_id,GL_TEXTURE_MAG_FILTER,magFilter);
 }
 
-void SamplerObject::setWrapS      (GLenum  wrapS    )const{
+void Sampler::setWrapS      (GLenum  wrapS    )const{
   glSamplerParameteri(this->_id,GL_TEXTURE_WRAP_S,wrapS);
 }
 
-void SamplerObject::setWrapT      (GLenum  wrapT    )const{
+void Sampler::setWrapT      (GLenum  wrapT    )const{
   glSamplerParameteri(this->_id,GL_TEXTURE_WRAP_T,wrapT);
 }
 
-void SamplerObject::setWrapR      (GLenum  wrapR    )const{
+void Sampler::setWrapR      (GLenum  wrapR    )const{
   glSamplerParameteri(this->_id,GL_TEXTURE_WRAP_R,wrapR);
 }
 
-void SamplerObject::getBorderColor(GLfloat*color    )const{
+void Sampler::getBorderColor(GLfloat*color    )const{
   glGetSamplerParameterfv(this->_id,GL_TEXTURE_BORDER_COLOR,color);
 }
 
-GLenum SamplerObject::getCompareFunc()const{
+GLenum Sampler::getCompareFunc()const{
   GLenum func;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_COMPARE_FUNC,(GLint*)&func);
   return func;
 }
 
-GLenum SamplerObject::getCompareMode()const{
+GLenum Sampler::getCompareMode()const{
   GLenum mode;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_COMPARE_MODE,(GLint*)&mode);
   return mode;
 }
 
-GLfloat SamplerObject::getLodBias()const{
+GLfloat Sampler::getLodBias()const{
   GLfloat lodBias;
   glGetSamplerParameterfv(this->_id,GL_TEXTURE_LOD_BIAS,&lodBias);
   return lodBias;
 }
 
-GLfloat SamplerObject::getMinLod()const{
+GLfloat Sampler::getMinLod()const{
   GLfloat minLod;
   glGetSamplerParameterfv(this->_id,GL_TEXTURE_MIN_LOD,&minLod);
   return minLod;
 }
 
-GLfloat SamplerObject::getMaxLod()const{
+GLfloat Sampler::getMaxLod()const{
   GLfloat maxLod;
   glGetSamplerParameterfv(this->_id,GL_TEXTURE_MAX_LOD,&maxLod);
   return maxLod;
 }
 
-GLenum SamplerObject::getMinFilter()const{
+GLenum Sampler::getMinFilter()const{
   GLenum minFilter;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_MIN_FILTER,(GLint*)&minFilter);
   return minFilter;
 }
 
-GLenum SamplerObject::getMagFilter()const{
+GLenum Sampler::getMagFilter()const{
   GLenum magFilter;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_MAG_FILTER,(GLint*)&magFilter);
   return magFilter;
 }
 
-GLenum SamplerObject::getWrapS()const{
+GLenum Sampler::getWrapS()const{
   GLenum wrapS;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_WRAP_S,(GLint*)&wrapS);
   return wrapS;
 }
 
-GLenum SamplerObject::getWrapT()const{
+GLenum Sampler::getWrapT()const{
   GLenum wrapT;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_WRAP_T,(GLint*)&wrapT);
   return wrapT;
 }
 
-GLenum SamplerObject::getWrapR()const{
+GLenum Sampler::getWrapR()const{
   GLenum wrapR;
   glGetSamplerParameteriv(this->_id,GL_TEXTURE_WRAP_R,(GLint*)&wrapR);
   return wrapR;
 }
 
-void SamplerObject::bind(GLuint unit)const{
+void Sampler::bind(GLuint unit)const{
   glBindSampler(unit,this->_id);
 }
 
-void SamplerObject::unbind(GLuint unit)const{
+void Sampler::unbind(GLuint unit)const{
   glBindSampler(unit,0);
 }

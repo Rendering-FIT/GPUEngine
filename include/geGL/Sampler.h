@@ -7,15 +7,15 @@ namespace ge{
     /**
      * @brief table 23.18
      */
-    class GEGL_EXPORT SamplerObject: public OpenGLObject{
+    class GEGL_EXPORT Sampler: public OpenGLObject{
       public:
-        SamplerObject ();
-        SamplerObject (SamplerObject*sampler);
-        SamplerObject (opengl::FunctionTablePointer const&table);
-        SamplerObject (
+        Sampler ();
+        Sampler (Sampler*sampler);
+        Sampler (opengl::FunctionTablePointer const&table);
+        Sampler (
             opengl::FunctionTablePointer const&table,
-            SamplerObject*sampler);
-        ~SamplerObject();
+            Sampler*sampler);
+        ~Sampler();
         void setBorderColor(GLfloat*color    )const;
         void setCompareFunc(GLenum  func     )const;
         void setCompareMode(GLenum  mode     )const;

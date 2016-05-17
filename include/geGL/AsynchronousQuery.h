@@ -4,7 +4,7 @@
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT AsynchronousQueryObject: public OpenGLObject
+    class GEGL_EXPORT AsynchronousQuery: public OpenGLObject
     {
       public:
         enum ResultSize{
@@ -44,7 +44,7 @@ namespace ge{
          * @param waitingType type of waiting for results
          * @param resultSize size and type of result
          */
-        AsynchronousQueryObject(
+        AsynchronousQuery(
             GLenum     target,
             GLenum     waitingType,
             ResultSize resultSize);
@@ -53,20 +53,20 @@ namespace ge{
          *
          * @param existingQuery This query has already been created
          */
-        AsynchronousQueryObject(
-            AsynchronousQueryObject*existingQuery);
-        AsynchronousQueryObject(
+        AsynchronousQuery(
+            AsynchronousQuery*existingQuery);
+        AsynchronousQuery(
             opengl::FunctionTablePointer const&table,
             GLenum     target,
             GLenum     waitingType,
             ResultSize resultSize);
-        AsynchronousQueryObject(
+        AsynchronousQuery(
             opengl::FunctionTablePointer const&table,
-            AsynchronousQueryObject*existingQuery);
+            AsynchronousQuery*existingQuery);
         /**
          * @brief Destructor
          */
-        ~AsynchronousQueryObject();
+        ~AsynchronousQuery();
         /**
          * @brief Begins query
          */

@@ -1,6 +1,8 @@
 #pragma once
 
 #include<geGL/OpenGLFunctionTable.h>
+#include<map>
+#include<geGL/OpenGLUtil.h>
 
 #define ASSIGN_DSA(name)\
   this->m_ptr_##name =\

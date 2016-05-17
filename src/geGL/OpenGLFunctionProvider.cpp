@@ -1,5 +1,5 @@
 #include<geGL/OpenGLFunctionProvider.h>
-#include<geGL/geGL.h>
+#include<geGL/OpenGLFunctionTable.h>
 
 using namespace ge::gl::opengl;
 

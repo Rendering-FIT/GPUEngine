@@ -4,29 +4,29 @@
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT RenderbufferObject: public OpenGLObject{
+    class GEGL_EXPORT Renderbuffer: public OpenGLObject{
       public:
-        RenderbufferObject(
+        Renderbuffer(
             GLenum  internalFormat,
             GLsizei samples,
             GLsizei width,
             GLsizei height);
-        RenderbufferObject(
+        Renderbuffer(
             GLenum  internalFormat,
             GLsizei width,
             GLsizei height);
-        RenderbufferObject(
+        Renderbuffer(
             opengl::FunctionTablePointer const&table,
             GLenum  internalFormat,
             GLsizei samples,
             GLsizei width,
             GLsizei height);
-        RenderbufferObject(
+        Renderbuffer(
             opengl::FunctionTablePointer const&table,
             GLenum  internalFormat,
             GLsizei width,
             GLsizei height);
-        ~RenderbufferObject();
+        ~Renderbuffer();
         void   bind             ()const;
         void   unbind           ()const;
         GLint  getWidth         ()const;

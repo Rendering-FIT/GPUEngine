@@ -5,25 +5,25 @@
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT BufferObject:public OpenGLObject{
+    class GEGL_EXPORT Buffer:public OpenGLObject{
       public:
         enum ReallocFlags{
           NEW_BUFFER = 0u    ,
           KEEP_ID    = 1u<<0u,
           KEEP_DATA  = 1u<<1u,
         };
-        BufferObject();
-        BufferObject(
+        Buffer();
+        Buffer(
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
-        BufferObject(opengl::FunctionTablePointer const&table);
-        BufferObject(
+        Buffer(opengl::FunctionTablePointer const&table);
+        Buffer(
             opengl::FunctionTablePointer const&table,
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
-        virtual ~BufferObject();
+        virtual ~Buffer();
         void alloc(
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
@@ -49,8 +49,8 @@ namespace ge{
         void unbind     (GLenum target)const;
         void unbindRange(GLenum target,GLuint index)const;
         void unbindBase (GLenum target,GLuint index)const;
-        void realloc(GLsizeiptr newSize,ReallocFlags flags = NEW_BUFFER);
-        void copy(BufferObject*buffer)const;
+        bool realloc(GLsizeiptr newSize,ReallocFlags flags = NEW_BUFFER);
+        void copy(Buffer const&buffer)const;
         void flushMapped(
             GLsizeiptr size   = 0,
             GLintptr   offset = 0)const;
@@ -78,11 +78,6 @@ namespace ge{
         GLsizeiptr getMapSize    ()const;
         GLvoid*    getMapPointer ()const;
         GLboolean  isImmutable   ()const;
-        static std::string target2Str     (GLenum     target );
-        static std::string binding2Str    (GLenum     binding);
-        static GLenum      target2Binding (GLenum     target );
-        static GLenum      binding2Target (GLenum     binding);
-        static bool        areFlagsMutable(GLbitfield flags  );
       private:
         GLint   _getBufferParameter(GLenum pname)const;
         GLvoid* _getBufferPointer  (GLenum pname)const;

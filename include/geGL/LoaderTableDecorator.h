@@ -2,6 +2,7 @@
 
 #include<geGL/FunctionLoaderInterface.h>
 #include<geGL/OpenGLFunctionTable.h>
+#include<cassert>
 
 namespace ge{
   namespace gl{

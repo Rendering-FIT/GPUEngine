@@ -4,11 +4,11 @@
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT ProgramPipelineObject: public OpenGLObject{
+    class GEGL_EXPORT ProgramPipeline: public OpenGLObject{
       public:
-        ProgramPipelineObject();
-        ProgramPipelineObject(opengl::FunctionTablePointer const&table);
-        ~ProgramPipelineObject();
+        ProgramPipeline();
+        ProgramPipeline(opengl::FunctionTablePointer const&table);
+        ~ProgramPipeline();
         void bind()const;
         void unbind()const;
         void useProgramStages(GLbitfield stages,GLuint program)const;
