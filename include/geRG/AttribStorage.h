@@ -11,14 +11,23 @@
 
 namespace ge
 {
+   namespace gl
+   {
+      class VertexArrayObject;
+      class BufferObject;
+   }
    namespace rg
    {
       class Mesh;
       struct RenderingCommandData;
 
 
-      /** \brief AttribStorage class maintains vertex attributes
-       *  and indices of scene geometry.
+      /** \brief AttribStorage class provides GPU storage for vertex attributes
+       *  and vertex indices of the scene geometry. All the data are stored in
+       *  BufferObjects and VertexArrayObject. Many Mesh objects can be stored
+       *  in a single AttribStorage as long as they have the same attribute
+       *  configuration (see AttribConfig) and as long as there is space in the
+       *  preallocated buffers.
        */
       class GERG_EXPORT AttribStorage {
       protected:
@@ -27,7 +36,11 @@ namespace ge
          ArrayAllocationManager<Mesh> _vertexAllocationManager;  ///< Allocation manager for arrays of vertices.
          ArrayAllocationManager<Mesh> _indexAllocationManager;   ///< Allocation manager for arrays of indices.
          AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
-         RenderingContext* _renderingContext;
+         RenderingContext* _renderingContext;  ///< Rendering context that the AttribStorage lives in. Rendering context is required particularly from object destructor.
+
+         ge::gl::VertexArrayObject* _vao;
+         std::vector<ge::gl::BufferObject*> _bufferObjectList;
+         ge::gl::BufferObject* _ebo;
 
       public:
 
@@ -35,7 +48,7 @@ namespace ge
          AttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices);
          virtual ~AttribStorage();
 
-         virtual void bind() const = 0;
+         virtual void bind() const;
 
          virtual bool allocData(Mesh &mesh,unsigned numVertices,unsigned numIndices);
          virtual bool reallocData(Mesh &mesh,unsigned numVertices,unsigned numIndices,
@@ -44,9 +57,9 @@ namespace ge
 
          virtual void uploadVertices(Mesh &mesh,const void*const *attribList,
                                      unsigned attribListSize,
-                                     unsigned numVertices,unsigned fromIndex=0) = 0;
+                                     unsigned numVertices,unsigned fromIndex=0);
          virtual void uploadIndices(Mesh &mesh,const void *indices,
-                                    unsigned numIndices,unsigned fromIndex=0) = 0;
+                                    unsigned numIndices,unsigned fromIndex=0);
 
          inline const ArrayAllocation<Mesh>& vertexArrayAllocation(unsigned id) const; ///< Returns vertex array allocation for particular id.
          inline const ArrayAllocation<Mesh>& indexArrayAllocation(unsigned id) const;  ///< Returns index array allocation for particular id.
@@ -61,6 +74,12 @@ namespace ge
          inline const AttribConfigRef& attribConfig() const;
          inline RenderingContext* renderingContext() const;
          inline bool isPrivate() const;
+
+         inline ge::gl::VertexArrayObject* vertexArrayObject() const;
+         inline const std::vector<ge::gl::BufferObject*>& bufferObjectList() const;
+         inline ge::gl::BufferObject* bufferObject(unsigned index) const;
+         inline unsigned numBufferObjects() const;
+         inline ge::gl::BufferObject* elementBufferObject() const;
 
          virtual void render(const std::vector<RenderingCommandData>& renderingDataList);
          virtual void cancelAllAllocations();
@@ -103,6 +122,11 @@ namespace ge
       inline const AttribConfigRef& AttribStorage::attribConfig() const  { return _attribConfig; }
       inline RenderingContext* AttribStorage::renderingContext() const  { return _renderingContext; }
       inline bool AttribStorage::isPrivate() const  { return _privateFlag; }
+      inline ge::gl::VertexArrayObject* AttribStorage::vertexArrayObject() const  { return _vao; }
+      inline const std::vector<ge::gl::BufferObject*>& AttribStorage::bufferObjectList() const  { return _bufferObjectList; }
+      inline ge::gl::BufferObject* AttribStorage::bufferObject(unsigned index) const  { return _bufferObjectList[index]; }
+      inline unsigned AttribStorage::numBufferObjects() const  { return _bufferObjectList.size(); }
+      inline ge::gl::BufferObject* AttribStorage::elementBufferObject() const  { return _ebo; }
       inline std::shared_ptr<AttribStorage::Factory>& AttribStorage::factory() { return _factory; }
       inline void AttribStorage::setFactory(std::shared_ptr<AttribStorage::Factory>& f) { _factory = f; }
 

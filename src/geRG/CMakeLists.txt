@@ -21,7 +21,6 @@ set(RG_INCLUDES
     ${HEADER_PATH}/AttribType.h
     ${HEADER_PATH}/AttribConfig.h
     ${HEADER_PATH}/AttribStorage.h
-    ${HEADER_PATH}/SeparateBuffersAttribStorage.h
     ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Primitive.h
     ${HEADER_PATH}/Drawable.h
@@ -43,7 +42,6 @@ set(RG_SOURCES
     AttribType.cpp
     AttribConfig.cpp
     AttribStorage.cpp
-    SeparateBuffersAttribStorage.cpp
     Primitive.cpp
     DrawCommand.cpp
     RenderingContext.cpp

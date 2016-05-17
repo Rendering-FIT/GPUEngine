@@ -17,9 +17,13 @@ namespace ge
          unsigned first;               ///< Index of the first vertex or first index of the primitive.
          unsigned vertexOffset;        ///< Offset of the start of the allocated block of vertices or indices within AttribStorage. Thus, the real start index is first+vertexOffset.
 
-         inline PrimitiveGpuData() = default;
-         inline PrimitiveGpuData(unsigned countAndIndexedFlag,unsigned first,
-                                 unsigned vertexOffset);
+         inline PrimitiveGpuData()  {}
+         constexpr inline PrimitiveGpuData(unsigned countAndIndexedFlag,unsigned first,
+                                           unsigned vertexOffset);
+         constexpr inline PrimitiveGpuData(unsigned count,bool indexing,
+                                           unsigned first,unsigned vertexOffset);
+         constexpr inline unsigned count() const  { return countAndIndexedFlag&0x7fffffff; }
+         constexpr inline bool indexing() const  { return (countAndIndexedFlag&0x80000000)!=0; }
       };
 
 
@@ -44,14 +48,14 @@ namespace ge
       protected:
          unsigned data; // 32-bits, verified by assert in Primitive.cpp
       public:
-         inline unsigned offset4() const  { return data&0x07ffffff; } // return the lowest 27 bits
-         inline unsigned mode() const     { return data>>27; } // return upmost 5 bits
+         constexpr inline unsigned offset4() const  { return data&0x07ffffff; } // return the lowest 27 bits
+         constexpr inline unsigned mode() const     { return data>>27; } // return upmost 5 bits
          inline void setOffset4(unsigned value)  { data=(data&0xf8000000)|value; } // set lowest 27 bits, value must fit to 27 bits
          inline void setMode(unsigned value)     { data=(data&0x07ffffff)|(value<<27); } // set upmost 5 bits
          inline void set(unsigned offset4,unsigned mode)  { data=offset4|(mode<<27); } // set data, offset4 must fit to 27 bits
 
-         inline Primitive() {}
-         inline Primitive(unsigned offset4,unsigned mode)  { set(offset4,mode); }
+         inline Primitive()  {}
+         constexpr inline Primitive(unsigned offset4,unsigned mode) : data(offset4|(mode<<27))  {}
       };
 
 
@@ -60,8 +64,10 @@ namespace ge
 
 
       // inline methods
-      inline PrimitiveGpuData::PrimitiveGpuData(unsigned countAndIndexedFlag,unsigned first,unsigned vertexOffset)
-      { this->countAndIndexedFlag=countAndIndexedFlag; this->first=first; this->vertexOffset=vertexOffset; }
+      constexpr inline PrimitiveGpuData::PrimitiveGpuData(unsigned countAndIndexedFlag_,unsigned first_,unsigned vertexOffset_)
+         : countAndIndexedFlag(countAndIndexedFlag_), first(first_), vertexOffset(vertexOffset_)  {}
+      constexpr inline PrimitiveGpuData::PrimitiveGpuData(unsigned count,bool indexing,unsigned first_,unsigned vertexOffset_)
+         : countAndIndexedFlag(count|(indexing?0x80000000:0)), first(first_), vertexOffset(vertexOffset_)  {}
 
    }
 }
