@@ -3,8 +3,8 @@
 #include<geGL/AsynchronousQuery.h>
 #include<geGL/Buffer.h>
 #include<geGL/Framebuffer.h>
-#include<geGL/ShaderObject.h>
-#include<geGL/ProgramObject.h>
+#include<geGL/Shader.h>
+#include<geGL/Program.h>
 #include<geGL/VertexArray.h>
 #include<geGL/ProgramPipeline.h>
 #include<geGL/Texture.h>
