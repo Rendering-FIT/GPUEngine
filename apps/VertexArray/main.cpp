@@ -3,8 +3,11 @@
 #include<geGL/geGL.h>
 #include<geGL/Shader.h>
 #include<geGL/Program.h>
-#include<geDE/NamespaceWithUsers.h>
-#include<geUtil/copyArgumentManager2Namespace.h>
+#include<geDE/TypeRegister.h>
+#include<geDE/VariableRegister.h>
+#include<geDE/FunctionRegister.h>
+#include<geDE/StdFunctions.h>
+#include<geUtil/CopyArgumentManager2VariableRegister.h>
 #include<geUtil/ArgumentManager/ArgumentManager.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geAd/SDLWindow/SDLEventProc.h>
@@ -14,8 +17,10 @@
 #include<geAd/SDLWindow/SDLEventData.h>
 
 struct Data{
-  std::shared_ptr<ge::de::TypeRegister>             typeRegister = nullptr;
-  std::shared_ptr<ge::de::NamespaceWithUsers>       sData        = nullptr;
+  std::shared_ptr<ge::de::TypeRegister>             typeRegister     = nullptr;
+  std::shared_ptr<ge::de::FunctionRegister>         functionRegister = nullptr;
+  std::shared_ptr<ge::de::NameRegister>             nameRegister     = nullptr;
+  std::shared_ptr<ge::de::VariableRegister>         variableRegister = nullptr;
   std::shared_ptr<ge::gl::opengl::FunctionProvider> gl           = nullptr;
   std::shared_ptr<ge::util::SDLEventProc>           mainLoop     = nullptr;
   std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
@@ -43,10 +48,14 @@ struct Data{
 
 int main(int argc,char*argv[]){
   Data data;
-  data.typeRegister = std::make_shared<ge::de::TypeRegister>();
-  data.sData        = std::make_shared<ge::de::NamespaceWithUsers>("*");
+  data.typeRegister     = std::make_shared<ge::de::TypeRegister>();
+  data.nameRegister     = std::make_shared<ge::de::NameRegister>();
+  data.functionRegister = std::make_shared<ge::de::FunctionRegister>(data.typeRegister,data.nameRegister);
+  ge::de::registerStdFunctions(data.functionRegister);
+  data.variableRegister = std::make_shared<ge::de::VariableRegister>("*");
   auto argm = std::make_shared<ge::util::ArgumentManager>(argc-1,argv+1);
-  ge::util::sim::copyArgumentManager2Namespace(data.sData,&*argm,data.typeRegister);
+  ge::util::copyArgumentManager2VariableRegister(data.variableRegister,*argm,data.functionRegister);
+  std::cout<<data.variableRegister->toStr(0,data.typeRegister)<<std::endl;
 
   data.mainLoop = std::make_shared<ge::util::SDLEventProc>();
   data.mainLoop->setIdleCallback(std::make_shared<Data::IdleCallback>(&data));

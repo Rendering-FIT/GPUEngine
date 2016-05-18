@@ -13,9 +13,11 @@
 namespace ge{
   namespace util{
     class GEUTIL_EXPORT ArgumentManager{
+      public:
+        using Name2Data = std::map<std::string,ArgData*>;
       protected:
         std::vector<std::string>_arguments;
-        std::map<std::string,ArgData*>_data;
+        Name2Data _data;
         std::string _getFullName(std::string prefix,std::string name);
         void _tokenize(std::vector<std::string>&args,std::string src);
         void _loadArgs(std::vector<std::string>&args,std::string file);
@@ -50,11 +52,14 @@ namespace ge{
         ArgData*_ARRAY      (std::vector<std::string>&args,unsigned&pos);
         ArgData*_STRUCT     (std::vector<std::string>&args,unsigned&pos);
       public:
-        typedef std::map<std::string,ArgData*>::iterator Iterator;
+        using Iterator = Name2Data::iterator;
+        using ConstIterator = std::map<std::string,ArgData*>::const_iterator;
         ArgumentManager(int nofArguments,char*arguments[]);
         ~ArgumentManager();
         Iterator begin();
         Iterator end  ();
+        ConstIterator begin()const;
+        ConstIterator end()const;
         std::string toStr();
     };
   }

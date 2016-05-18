@@ -39,11 +39,11 @@ namespace ge{
         void clear();
       protected:
         enum ConfigBits{
-          EMPTY           = 0u   ,
-          GOBACK          = 1u<<0,
-          BEGIN           = 1u<<1,
-          END             = 1u<<2,
-          CREATE          = 1u<<3,
+          EMPTY  = 0u   ,
+          GOBACK = 1u<<0,
+          BEGIN  = 1u<<1,
+          END    = 1u<<2,
+          CREATE = 1u<<3,
         };
         using Config = int;
         class Data;

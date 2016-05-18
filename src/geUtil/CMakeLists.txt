@@ -60,6 +60,7 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
    ${HEADER_PATH}/copyArgumentManager2Namespace.h
+   ${HEADER_PATH}/CopyArgumentManager2VariableRegister.h
 )
 
 
@@ -71,6 +72,7 @@ set(GL_SOURCES
    HighResolutionTimer.cpp
    Progress.cpp
    copyArgumentManager2Namespace.cpp
+   CopyArgumentManager2VariableRegister.cpp
 )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)

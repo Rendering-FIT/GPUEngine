@@ -19,6 +19,7 @@ os.system(
 "./"+subscriptsDir+"depreprocess.py |"+
 "./"+subscriptsDir+"matchbrackes.py |"+
 "./"+subscriptsDir+"getFunctions.py |"+
+"./"+subscriptsDir+"glExtensionFilter.py |"+
 "./"+subscriptsDir+"glFuncFormater.py >"+
 allFormatedFunctions)
 

@@ -80,7 +80,7 @@ void,glUniformMatrix3dv,GLint,location,GLsizei,count,GLboolean,transpose,const G
 void,glProgramUniformMatrix3x4dv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLdouble*,value
 void,glNamedFramebufferTexture,GLuint,framebuffer,GLenum,attachment,GLuint,texture,GLint,level
 void,glBindBuffersRange,GLenum,target,GLuint,first,GLsizei,count,const GLuint*,buffers,const GLintptr*,offsets,const GLsizeiptr*,sizes
-void,glGetVertexArrayIndexediv,GLuint,vaobj,GLuint,index,GLenum,pname,GLint*,param
+void,glInvalidateBufferSubData,GLuint,buffer,GLintptr,offset,GLsizeiptr,length
 void,glResumeTransformFeedback
 void,glProgramUniformMatrix4x3fv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
 void,glViewportArrayv,GLuint,first,GLsizei,count,const GLfloat*,v
@@ -410,6 +410,7 @@ void,glVertexAttrib4uiv,GLuint,index,const GLuint*,v
 void,glPointParameteri,GLenum,pname,GLint,param
 void,glBlendColor,GLfloat,red,GLfloat,green,GLfloat,blue,GLfloat,alpha
 void,glSamplerParameterIuiv,GLuint,sampler,GLenum,pname,const GLuint*,param
+void,glNamedBufferPageCommitmentEXT,GLuint,buffer,GLintptr,offset,GLsizeiptr,size,GLboolean,commit
 GLenum,glCheckNamedFramebufferStatus,GLuint,framebuffer,GLenum,target
 GLboolean,glUnmapBuffer,GLenum,target
 void,glPointParameterf,GLenum,pname,GLfloat,param
@@ -489,7 +490,7 @@ void,glGetTextureLevelParameteriv,GLuint,texture,GLint,level,GLenum,pname,GLint*
 void,glGetnUniformiv,GLuint,program,GLint,location,GLsizei,bufSize,GLint*,params
 const GLubyte*,glGetStringi,GLenum,name,GLuint,index
 void,glUniform3ui,GLint,location,GLuint,v0,GLuint,v1,GLuint,v2
-void,glInvalidateBufferSubData,GLuint,buffer,GLintptr,offset,GLsizeiptr,length
+void,glGetVertexArrayIndexediv,GLuint,vaobj,GLuint,index,GLenum,pname,GLint*,param
 void,glPointParameterfv,GLenum,pname,const GLfloat*,params
 void,glUniform2fv,GLint,location,GLsizei,count,const GLfloat*,value
 void,glGetActiveSubroutineUniformName,GLuint,program,GLenum,shadertype,GLuint,index,GLsizei,bufsize,GLsizei*,length,GLchar*,name

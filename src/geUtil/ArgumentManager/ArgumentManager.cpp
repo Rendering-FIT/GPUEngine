@@ -91,6 +91,15 @@ ArgumentManager::Iterator ArgumentManager::end  (){
   return this->_data.end();
 }
 
+ArgumentManager::ConstIterator ArgumentManager::begin()const{
+  return this->_data.begin();
+}
+
+ArgumentManager::ConstIterator ArgumentManager::end  ()const{
+  return this->_data.end();
+}
+
+
 std::string ArgumentManager::_getFullName(std::string prefix,std::string name){
   if(prefix=="")return name;
   return prefix+"."+name;
