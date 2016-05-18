@@ -33,6 +33,7 @@ set(FSA_INCLUDES
 
 set(CORE_INCLUDES
   ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/Object.h
   ${HEADER_PATH}/geCore.h
   ${HEADER_PATH}/Command.h
   ${HEADER_PATH}/CopyOp.h
@@ -40,57 +41,10 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/EnumRegister.h
   ${HEADER_PATH}/Functor.h
   ${HEADER_PATH}/InitAndFinalize.h
-  ${HEADER_PATH}/Object.h
   ${HEADER_PATH}/StandardSemanticsNames.h
-  ${HEADER_PATH}/TypeRegister.h
-  ${HEADER_PATH}/Resource.h
-  ${HEADER_PATH}/AtomicResource.h
-  ${HEADER_PATH}/CompositeResource.h
   ${HEADER_PATH}/DisjointSet.h
-  ${HEADER_PATH}/Interpret.h
-  ${HEADER_PATH}/Statement.h
-  ${HEADER_PATH}/Function.h
-  ${HEADER_PATH}/AtomicFunction.h
-  ${HEADER_PATH}/RegisterBasicFunction.h
-  ${HEADER_PATH}/While.h
-  ${HEADER_PATH}/If.h
-  ${HEADER_PATH}/Body.h
-  ${HEADER_PATH}/BodyFactory.h
-  ${HEADER_PATH}/IfFactory.h
-  ${HEADER_PATH}/WhileFactory.h
-  ${HEADER_PATH}/Namespace.h
-  ${HEADER_PATH}/ObjectFactory.h
-  ${HEADER_PATH}/ResourceFactory.h
-  ${HEADER_PATH}/StatementFactory.h
-  ${HEADER_PATH}/BodyFactory.h
-  ${HEADER_PATH}/CompositeFunction.h
-  ${HEADER_PATH}/FunctionFactory.h
-  ${HEADER_PATH}/FactoryOfFunctionFactory.h
-  ${HEADER_PATH}/CompositeFunctionFactory.h
-  ${HEADER_PATH}/FunctionNodeFactory.h
-  ${HEADER_PATH}/StdFunctions.h
-  ${HEADER_PATH}/StdNumericFunctions.h
-  ${HEADER_PATH}/StdRelationalFunctions.h
-  ${HEADER_PATH}/StdIntegerFunctions.h
-  ${HEADER_PATH}/StdCastFunctions.h
-  ${HEADER_PATH}/Token.h
-  #    ${HEADER_PATH}/lexer.h
   ${HEADER_PATH}/idof.h
-  ${HEADER_PATH}/NodeContext.h
-  ${HEADER_PATH}/Grammar.h
-  ${HEADER_PATH}/Nonterm.h
-  ${HEADER_PATH}/NontermNode.h
-  ${HEADER_PATH}/Symbol.h
-  ${HEADER_PATH}/Syntax.h
-  ${HEADER_PATH}/SyntaxNode.h
-  ${HEADER_PATH}/SyntaxTree.h
-  ${HEADER_PATH}/SyntaxTreeProcessor.h
-  ${HEADER_PATH}/Term.h
-  ${HEADER_PATH}/TermNode.h
-  ${HEADER_PATH}/Tokenization.h
   ${HEADER_PATH}/Text.h
-  ${HEADER_PATH}/FunctionRegister.h
-  ${HEADER_PATH}/NameRegister.h
   )
 
 set(CORE_SOURCES
@@ -100,41 +54,7 @@ set(CORE_SOURCES
   Command.cpp
   EnumRegister.cpp
   StandardSemanticsNames.cpp
-  TypeRegister.cpp
-  #Resource.cpp
-  AtomicResource.cpp
-  CompositeResource.cpp
-  #statement.cpp
-  Function.cpp
-  AtomicFunction.cpp
-  While.cpp
-  If.cpp
-  WhileFactory.cpp
-  #body.cpp
-  Namespace.cpp
-  ResourceFactory.cpp
-  StatementFactory.cpp
-  CompositeFunction.cpp
-  FunctionFactory.cpp
-  CompositeFunctionFactory.cpp
-  FunctionNodeFactory.cpp
-  StdFunctions.cpp
-  StdNumericFunctions.cpp
-  StdRelationalFunctions.cpp
-  StdIntegerFunctions.cpp
-  StdCastFunctions.cpp
-  #token.cpp
-  #    lexer.cpp
-  Grammar.cpp
-  Nonterm.cpp
-  NontermNode.cpp
-  Syntax.cpp
-  SyntaxTreeProcessor.cpp
-  TermNode.cpp
-  Tokenization.cpp
   Text.cpp
-  FunctionRegister.cpp
-  NameRegister.cpp
   )
 
 add_library(${LIB_NAME}

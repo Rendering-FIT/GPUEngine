@@ -1,15 +1,15 @@
-#include<geCore/Namespace.h>
+#include<geDE/Namespace.h>
 #include<iostream>
 #include<sstream>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
 
-using namespace ge::core;
+using namespace ge::de;
 
 SCENARIO( "namespace tests", "[Namespace]" ) {
   auto r=std::make_shared<TypeRegister>();
-  auto n=std::make_shared<ge::core::sim::Namespace>("*");
+  auto n=std::make_shared<Namespace>("*");
   WHEN("adding variable a of type i32"){
     THEN("namespace should contain it"){
       n->insert("a",r->sharedResource("i32"));

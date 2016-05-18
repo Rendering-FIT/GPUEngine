@@ -3,7 +3,7 @@
 #include<geGL/geGL.h>
 #include<geGL/Shader.h>
 #include<geGL/Program.h>
-#include<geUtil/NamespaceWithUsers.h>
+#include<geDE/NamespaceWithUsers.h>
 #include<geUtil/copyArgumentManager2Namespace.h>
 #include<geUtil/ArgumentManager/ArgumentManager.h>
 #include<geAd/SDLWindow/SDLWindow.h>
@@ -14,8 +14,8 @@
 #include<geAd/SDLWindow/SDLEventData.h>
 
 struct Data{
-  std::shared_ptr<ge::core::TypeRegister>           typeRegister = nullptr;
-  std::shared_ptr<ge::util::sim::NamespaceWithUsers>sData        = nullptr;
+  std::shared_ptr<ge::de::TypeRegister>             typeRegister = nullptr;
+  std::shared_ptr<ge::de::NamespaceWithUsers>       sData        = nullptr;
   std::shared_ptr<ge::gl::opengl::FunctionProvider> gl           = nullptr;
   std::shared_ptr<ge::util::SDLEventProc>           mainLoop     = nullptr;
   std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
@@ -43,8 +43,8 @@ struct Data{
 
 int main(int argc,char*argv[]){
   Data data;
-  data.typeRegister = std::make_shared<ge::core::TypeRegister>();
-  data.sData        = std::make_shared<ge::util::sim::NamespaceWithUsers>("*");
+  data.typeRegister = std::make_shared<ge::de::TypeRegister>();
+  data.sData        = std::make_shared<ge::de::NamespaceWithUsers>("*");
   auto argm = std::make_shared<ge::util::ArgumentManager>(argc-1,argv+1);
   ge::util::sim::copyArgumentManager2Namespace(data.sData,&*argm,data.typeRegister);
 

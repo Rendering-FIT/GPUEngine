@@ -1,10 +1,11 @@
-#include<geCore/Syntax.h>
-#include<geCore/NodeContext.h>
+#include<geParser/Syntax.h>
+#include<geParser/NodeContext.h>
 #include<geCore/Text.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
 
+using namespace ge::parser;
 using namespace ge::core;
 
 SCENARIO("Syntax basic tests"){
@@ -330,7 +331,7 @@ SCENARIO("Syntax basic tests"){
       syn.begin();
       THEN("it should pass"){
         auto res=syn.parse("i32 a;");
-        REQUIRE(res.first==ge::core::NodeContext::Status::TRUE_STATUS);
+        REQUIRE(res.first==NodeContext::Status::TRUE_STATUS);
       }
       syn.end();
     }

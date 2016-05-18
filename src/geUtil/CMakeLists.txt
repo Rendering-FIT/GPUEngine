@@ -59,8 +59,6 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
-   ${HEADER_PATH}/NamespaceWithUsers.h
-   ${HEADER_PATH}/User.h
    ${HEADER_PATH}/copyArgumentManager2Namespace.h
 )
 
@@ -72,7 +70,6 @@ set(GL_SOURCES
    FPSPrinter.cpp
    HighResolutionTimer.cpp
    Progress.cpp
-   NamespaceWithUsers.cpp
    copyArgumentManager2Namespace.cpp
 )
 
@@ -103,7 +100,7 @@ find_package(glm)
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps geGL)
+set(Internal_deps geGL geDE)
 set(External_deps_Export glm)
 set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)

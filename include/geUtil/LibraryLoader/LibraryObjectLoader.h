@@ -2,7 +2,7 @@
 
 #include<geUtil/Export.h>
 #include<geUtil/LibraryLoader/LibraryLoader.h>
-#include<geCore/TypeRegister.h>
+#include<geDE/TypeRegister.h>
 #include<geUtil/LibraryLoader/RuntimeClassInterface.h>
 
 namespace ge{
@@ -33,7 +33,7 @@ namespace ge{
          */
         RuntimeClassInterface*getInterface(
             std::string lib,
-            std::shared_ptr<ge::core::TypeRegister>&typeRegister);
+            std::shared_ptr<de::TypeRegister>&typeRegister);
     };
   }
 }

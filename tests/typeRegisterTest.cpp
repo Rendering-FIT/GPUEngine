@@ -1,12 +1,12 @@
-#include<geCore/TypeRegister.h>
-#include<geCore/Resource.h>
+#include<geDE/TypeRegister.h>
+#include<geDE/Resource.h>
 #include<iostream>
 #include<sstream>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
 
-using namespace ge::core;
+using namespace ge::de;
 
 int32_t counter=0;
 SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
@@ -43,10 +43,10 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       r->addType("c",TypeRegister::ARRAY);
       r->addType("d");
       THEN("they should not be added"){
-        REQUIRE(r->getTypeId("a")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("b")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("c")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("d")==ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("b")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("c")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("d")==TypeRegister::UNREGISTERED);
       }
     }
 
@@ -55,9 +55,9 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       r->addType("a3",TypeRegister::ARRAY,80,TypeRegister::ARRAY,8);
       r->addType("a4",TypeRegister::ARRAY,80,TypeRegister::ARRAY);
       THEN("they should not be added"){
-        REQUIRE(r->getTypeId("a2")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a3")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a4")==ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a2")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a3")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a4")==TypeRegister::UNREGISTERED);
       }
     }
 
@@ -66,9 +66,9 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       r->addType("a1",TypeRegister::ARRAY,90,"i32");
       r->addType("a5",TypeRegister::ARRAY,80,TypeRegister::ARRAY,80,TypeRegister::I32);
       THEN("they should be added"){
-        REQUIRE(r->getTypeId("a0")!=ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a1")!=ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a5")!=ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a0")!=TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a1")!=TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a5")!=TypeRegister::UNREGISTERED);
       }
     }
     WHEN("adding wrong struct descriptions"){
@@ -80,13 +80,13 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       r->addType("a7",TypeRegister::STRUCT,1,TypeRegister::STRUCT,300);
       r->addType("a8",TypeRegister::STRUCT,1,TypeRegister::STRUCT);
       THEN("they should not be added"){
-        REQUIRE(r->getTypeId("a0")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a1")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a22")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a3")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a6")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a7")==ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a8")==ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a0")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a1")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a22")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a3")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a6")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a7")==TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a8")==TypeRegister::UNREGISTERED);
       }
     }
 
@@ -95,14 +95,14 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       r->addType("a5",TypeRegister::STRUCT,1,TypeRegister::I8);
       r->addType("a9",TypeRegister::STRUCT,1,TypeRegister::STRUCT,1,TypeRegister::I32);
       THEN("they should be added"){
-        REQUIRE(r->getTypeId("a4")!=ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a5")!=ge::core::TypeRegister::UNREGISTERED);
-        REQUIRE(r->getTypeId("a9")!=ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a4")!=TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a5")!=TypeRegister::UNREGISTERED);
+        REQUIRE(r->getTypeId("a9")!=TypeRegister::UNREGISTERED);
       }
     }
 
     WHEN("adding mujTyp = ARRAY 2 I32"){
-      r->addType("mujTyp",ge::core::TypeRegister::ARRAY,2,ge::core::TypeRegister::I32);
+      r->addType("mujTyp",TypeRegister::ARRAY,2,TypeRegister::I32);
       auto dat=r->sharedResource("mujTyp");
       *(*dat)[0]=12;
       *(*dat)[1]=32;
@@ -114,8 +114,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding mujTyp2 = STRUCT ARRAY 2 I32 F32"){
-      r->addType("mujTyp",ge::core::TypeRegister::ARRAY,2,ge::core::TypeRegister::I32);
-      r->addType("mujTyp2",ge::core::TypeRegister::STRUCT,2,"mujTyp","f32");
+      r->addType("mujTyp",TypeRegister::ARRAY,2,TypeRegister::I32);
+      r->addType("mujTyp2",TypeRegister::STRUCT,2,"mujTyp","f32");
       auto dat2=r->sharedResource("mujTyp2");
       *(*(*dat2)[0])[0]=32;
       *(*(*dat2)[0])[1]=10;
@@ -187,8 +187,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding two same types with different names"){
-      auto a=r->addType("ivec10",ge::core::TypeRegister::ARRAY,10,ge::core::TypeRegister::I32);
-      auto b=r->addType("int10",ge::core::TypeRegister::ARRAY,10,ge::core::TypeRegister::I32);
+      auto a=r->addType("ivec10",TypeRegister::ARRAY,10,TypeRegister::I32);
+      auto b=r->addType("int10",TypeRegister::ARRAY,10,TypeRegister::I32);
       THEN("they should be synonyms"){
         REQUIRE(r->hasSynonyms(a)==true);
         REQUIRE(r->areSynonyms("ivec10","int10")==true);
@@ -197,17 +197,17 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding nullary function"){
-      auto a=r->addType("nul",ge::core::TypeRegister::FCE,ge::core::TypeRegister::F32,0);
+      auto a=r->addType("nul",TypeRegister::FCE,TypeRegister::F32,0);
       THEN("it should be registered"){
-        REQUIRE(a!=ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(a!=TypeRegister::UNREGISTERED);
         REQUIRE(r->getNofFceArgs(a)==0);
       }
     }
 
     WHEN("adding unspecified nullary function"){
-      auto a=r->addType("nul0",ge::core::TypeRegister::FCE,ge::core::TypeRegister::UNREGISTERED,0);
+      auto a=r->addType("nul0",TypeRegister::FCE,TypeRegister::UNREGISTERED,0);
       THEN("it should be registered"){
-        REQUIRE(a!=ge::core::TypeRegister::UNREGISTERED);
+        REQUIRE(a!=TypeRegister::UNREGISTERED);
       }
     }
 

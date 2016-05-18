@@ -22,6 +22,15 @@ if(GPUENGINE_BUILD_GEUTIL)
   set(PACKAGES ${PACKAGES} geUtil)
 endif()
 
+if(GPUENGINE_BUILD_GEPARSER)
+  set(PACKAGES ${PACKAGES} geParser)
+endif()
+
+if(GPUENGINE_BUILD_GEDE)
+  set(PACKAGES ${PACKAGES} geDE)
+endif()
+
+
 
 FOREACH(mylibfolder ${PACKAGES}
     #geGL

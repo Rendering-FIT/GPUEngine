@@ -1,36 +1,36 @@
-#include<geCore/Interpret.h>
-#include<geCore/AtomicFunction.h>
-#include<geCore/StdFunctions.h>
-#include<geCore/CompositeFunction.h>
-#include<geCore/If.h>
+#include<geDE/Interpret.h>
+#include<geDE/AtomicFunction.h>
+#include<geDE/StdFunctions.h>
+#include<geDE/CompositeFunction.h>
+#include<geDE/If.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
 
-using namespace ge::core;
+using namespace ge::de;
 
 SCENARIO( "basic interpret tests", "[Function]" ) {
-  auto typeRegister = std::make_shared<ge::core::TypeRegister>();
+  auto typeRegister = std::make_shared<ge::de::TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
-  auto fr = std::make_shared<ge::core::FunctionRegister>(typeRegister,nr);
-  ge::core::registerStdFunctions(fr);
+  auto fr = std::make_shared<ge::de::FunctionRegister>(typeRegister,nr);
+  ge::de::registerStdFunctions(fr);
   //std::cerr<<fr->str();
   GIVEN( "basic expression" ) {
-    auto fa=std::make_shared<ge::core::Nullary>(fr,101.f );
-    auto fb=std::make_shared<ge::core::Nullary>(fr,1.1f  );
-    auto fc=std::make_shared<ge::core::Nullary>(fr,2.2f  );
-    auto fd=std::make_shared<ge::core::Nullary>(fr,1000.f);
+    auto fa=std::make_shared<ge::de::Nullary>(fr,101.f );
+    auto fb=std::make_shared<ge::de::Nullary>(fr,1.1f  );
+    auto fc=std::make_shared<ge::de::Nullary>(fr,2.2f  );
+    auto fd=std::make_shared<ge::de::Nullary>(fr,1000.f);
 
-    auto f0=std::make_shared<ge::core::Add<float>>(fr,typeRegister->sharedResource("f32"));
+    auto f0=std::make_shared<ge::de::Add<float>>(fr,typeRegister->sharedResource("f32"));
     f0->bindInput(fr,0,fa);
     f0->bindInput(fr,1,fb);
-    auto f1=std::make_shared<ge::core::Add<float>>(fr,typeRegister->sharedResource("f32"));
+    auto f1=std::make_shared<ge::de::Add<float>>(fr,typeRegister->sharedResource("f32"));
     f1->bindInput(fr,0,f0);
     f1->bindInput(fr,1,fc);
-    auto f2=std::make_shared<ge::core::Sub<float>>(fr,typeRegister->sharedResource("f32"));
+    auto f2=std::make_shared<ge::de::Sub<float>>(fr,typeRegister->sharedResource("f32"));
     f2->bindInput(fr,0,f0);
     f2->bindInput(fr,1,fd);
-    auto f3=std::make_shared<ge::core::Cast<float,int>>(fr,typeRegister->sharedResource("i32"));
+    auto f3=std::make_shared<ge::de::Cast<float,int>>(fr,typeRegister->sharedResource("i32"));
     f3->bindInput(fr,0,f2);
     WHEN("running f1"){
       (*f1)();
@@ -62,23 +62,23 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
      * else
      *  c=b;
      */
-    auto fa=std::make_shared<ge::core::Nullary>(fr,(unsigned)10);
-    auto fb=std::make_shared<ge::core::Nullary>(fr,(unsigned)12);
-    auto fc=std::make_shared<ge::core::Nullary>(fr,(unsigned)0 );
+    auto fa=std::make_shared<ge::de::Nullary>(fr,(unsigned)10);
+    auto fb=std::make_shared<ge::de::Nullary>(fr,(unsigned)12);
+    auto fc=std::make_shared<ge::de::Nullary>(fr,(unsigned)0 );
 
-    auto cond=std::make_shared<ge::core::Less<uint32_t>>(fr,typeRegister->sharedResource("bool"));
+    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,typeRegister->sharedResource("bool"));
     cond->bindInput(fr,0,fa);
     cond->bindInput(fr,1,fb);
 
-    auto trueBody = std::make_shared<ge::core::Assignment<uint32_t>>(fr);
+    auto trueBody = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
     trueBody->bindOutput(fr,fc->getOutputData());
     trueBody->bindInput(fr,0,fa);
 
-    auto falseBody = std::make_shared<ge::core::Assignment<uint32_t>>(fr);
+    auto falseBody = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
     falseBody->bindOutput(fr,fc->getOutputData());
     falseBody->bindInput(fr,0,fb);
 
-    auto iff=std::make_shared<ge::core::If>(cond,trueBody,falseBody);
+    auto iff=std::make_shared<ge::de::If>(cond,trueBody,falseBody);
 
     WHEN("running iff"){
       (*iff)();
@@ -100,42 +100,42 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
      *  i=i1;
      * }
      */
-    auto fi    = std::make_shared<ge::core::Nullary>(fr,(unsigned)1u );
-    auto fk    = std::make_shared<ge::core::Nullary>(fr,(unsigned)1u );
-    auto fki   = std::make_shared<ge::core::Nullary>(fr,(unsigned)0u );
-    auto fi1   = std::make_shared<ge::core::Nullary>(fr,(unsigned)1u );
-    auto fiend = std::make_shared<ge::core::Nullary>(fr,(unsigned)10u);
-    auto f1    = std::make_shared<ge::core::Nullary>(fr,(unsigned)1u );
+    auto fi    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
+    auto fk    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
+    auto fki   = std::make_shared<ge::de::Nullary>(fr,(unsigned)0u );
+    auto fi1   = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
+    auto fiend = std::make_shared<ge::de::Nullary>(fr,(unsigned)10u);
+    auto f1    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
 
-    auto cond=std::make_shared<ge::core::Less<uint32_t>>(fr,typeRegister->sharedResource("bool"));
+    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,typeRegister->sharedResource("bool"));
     cond->bindInput(fr,0,fi   );
     cond->bindInput(fr,1,fiend);
 
-    auto mult=std::make_shared<ge::core::Mul<uint32_t>>(fr);
+    auto mult=std::make_shared<ge::de::Mul<uint32_t>>(fr);
     mult->bindInput(fr,0,fk);
     mult->bindInput(fr,1,fi);
     mult->bindOutput(fr,fki->getOutputData());
 
-    auto ass0 = std::make_shared<ge::core::Assignment<uint32_t>>(fr);
+    auto ass0 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
     ass0->bindInput(fr,0,fki);
     ass0->bindOutput(fr,fk->getOutputData());
 
-    auto add=std::make_shared<ge::core::Add<uint32_t>>(fr);
+    auto add=std::make_shared<ge::de::Add<uint32_t>>(fr);
     add->bindInput(fr,0,fi);
     add->bindInput(fr,1,f1);
     add->bindOutput(fr,fi1->getOutputData());
 
-    auto ass1 = std::make_shared<ge::core::Assignment<uint32_t>>(fr);
+    auto ass1 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
     ass1->bindInput(fr,0,fi1);
     ass1->bindOutput(fr,fi->getOutputData());
 
-    auto body=std::make_shared<ge::core::Body>();
+    auto body=std::make_shared<ge::de::Body>();
     body->addStatement(mult);
     body->addStatement(ass0);
     body->addStatement(add );
     body->addStatement(ass1);
 
-    auto wh=std::make_shared<ge::core::While>(cond,body);
+    auto wh=std::make_shared<ge::de::While>(cond,body);
     WHEN("running wh"){
       (*wh)();
       THEN("it should compute factorial of 9"){
@@ -148,14 +148,14 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
 
 SCENARIO( "ticks tests", "[Function]" ) {
-  auto typeRegister = std::make_shared<ge::core::TypeRegister>();
+  auto typeRegister = std::make_shared<ge::de::TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
-  auto fr = std::make_shared<ge::core::FunctionRegister>(typeRegister,nr);
-  ge::core::registerStdFunctions(fr);
-  class AddTen: public ge::core::AtomicFunction{
+  auto fr = std::make_shared<ge::de::FunctionRegister>(typeRegister,nr);
+  ge::de::registerStdFunctions(fr);
+  class AddTen: public ge::de::AtomicFunction{
     public:
       unsigned counter=0;
-      AddTen(std::shared_ptr<ge::core::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::F32,1,TypeRegister::F32},"AddTen",nullptr){
+      AddTen(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::F32,1,TypeRegister::F32},"AddTen",nullptr){
         //this->_setInput(0,tr->getTypeId("f32"));
         //this->_setOutput(tr->getTypeId("f32"));
       }
@@ -169,10 +169,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
         return true;
       }
   };
-  class Add: public ge::core::AtomicFunction{
+  class Add: public ge::de::AtomicFunction{
     public:
       unsigned counter=0;
-      Add(std::shared_ptr<ge::core::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::F32,2,TypeRegister::F32,TypeRegister::F32},"Add",nullptr){
+      Add(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::F32,2,TypeRegister::F32,TypeRegister::F32},"Add",nullptr){
         //this->_setInput(0,tr->getTypeId("f32"));
         //this->_setInput(1,tr->getTypeId("f32"));
         //this->_setOutput(tr->getTypeId("f32"));
@@ -188,7 +188,7 @@ SCENARIO( "ticks tests", "[Function]" ) {
       }
   };
   GIVEN( "basic expression" ) {
-    auto fa      = std::make_shared<ge::core::Nullary>(fr,10.f);
+    auto fa      = std::make_shared<ge::de::Nullary>(fr,10.f);
     auto faddten = std::make_shared<AddTen>(fr);
     auto fadd    = std::make_shared<Add>(fr);
 
@@ -213,10 +213,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
 
 /*
 SCENARIO( "macro function tests", "[CompositeFunction]" ) {
-  auto tr = std::make_shared<ge::core::TypeRegister>();
-  auto fr = std::make_shared<ge::core::FunctionRegister>(tr);
-  ge::core::registerStdFunctions(fr);
+  auto tr = std::make_shared<ge::de::TypeRegister>();
+  auto fr = std::make_shared<ge::de::FunctionRegister>(tr);
+  ge::de::registerStdFunctions(fr);
   auto ftype = tr->addType("",{TypeRegister::FCE,TypeRegister::I32,3,TypeRegister::I32,TypeRegister::I32,TypeRegister::I32});
 
-  auto add3 = std::shared_ptr<ge::core::CompositeFunction>(fr,)
+  auto add3 = std::shared_ptr<ge::de::CompositeFunction>(fr,)
 }*/
