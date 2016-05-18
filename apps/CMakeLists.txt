@@ -8,6 +8,7 @@ if(APPS_BUILD_EMPTYWINDOW)
 endif()
 
 add_subdirectory(ShaderTest)
+add_subdirectory(VertexArray)
 
 if(APPS_BUILD_TRIANGLERENDERING)
   add_subdirectory(TriangleRendering)

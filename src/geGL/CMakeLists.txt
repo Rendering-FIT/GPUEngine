@@ -39,14 +39,8 @@ set(GL_INCLUDES
   ${HEADER_PATH}/Sampler.h
   ${HEADER_PATH}/ProgramPipeline.h
   ${HEADER_PATH}/Shader.h
-  ${HEADER_PATH}/ShaderObject.h
   ${HEADER_PATH}/Program.h
-  ${HEADER_PATH}/ProgramObject.h
-  ${HEADER_PATH}/ProgramObjectMacro.h
-  ${HEADER_PATH}/ProgramObjectParameter.h
-  ${HEADER_PATH}/ProgramObjectSubroutine.h
-  ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
-  ${HEADER_PATH}/ProgramObjectSubroutineUniform.h
+  ${HEADER_PATH}/ProgramInfo.h
   ${HEADER_PATH}/Renderbuffer.h
   ${HEADER_PATH}/OpenGL.h
   ${HEADER_PATH}/OpenGLUtil.h
@@ -75,12 +69,7 @@ set(GL_SOURCES
   Sampler.cpp
   ProgramPipeline.cpp
   Shader.cpp
-  ShaderObject.cpp
   Program.cpp
-  ProgramObject.cpp
-  ProgramObjectParameter.cpp
-  ProgramObjectSubroutine.cpp
-  ProgramObjectSubroutineUniform.cpp
   Renderbuffer.cpp
   AsynchronousQuery.cpp
   DebugMessage.cpp

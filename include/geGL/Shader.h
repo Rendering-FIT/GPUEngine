@@ -33,6 +33,23 @@ namespace ge{
         GLuint      getSourceLength ()const;
         std::string getInfoLog      ()const;
         Source      getSource       ()const;
+        static std::string define(std::string name);
+        static std::string define(std::string name,unsigned value);
+        static std::string define(std::string name,unsigned value0,unsigned value1);
+        static std::string define(std::string name,unsigned value0,unsigned value1,unsigned value2);
+        static std::string define(std::string name,unsigned value0,unsigned value1,unsigned value2,unsigned value3);
+        static std::string define(std::string name,unsigned vectorSize,unsigned*values);
+        static std::string define(std::string name,int value);
+        static std::string define(std::string name,int value0,int value1);
+        static std::string define(std::string name,int value0,int value1,int value2);
+        static std::string define(std::string name,int value0,int value1,int value2,int value3);
+        static std::string define(std::string name,unsigned vectorSize,int*values);
+        static std::string define(std::string name,float value);
+        static std::string define(std::string name,float value0,float value1);
+        static std::string define(std::string name,float value0,float value1,float value2);
+        static std::string define(std::string name,float value0,float value1,float value2,float value3);
+        static std::string define(std::string name,unsigned vectorSize,float*values);
+        static std::string define(std::string name,std::string value);
         template<typename...ARGS>
           Shader(GLenum type,ARGS...args);
         template<typename...ARGS>

@@ -1,5 +1,6 @@
 #include<geGL/Shader.h>
 #include<geGL/Program.h>
+#include<sstream>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
@@ -100,7 +101,10 @@ void Shader::setSource(Sources const& sources){
 void Shader::compile(Sources const& sources){
   if(sources.size()>0)this->setSource(sources);
   glCompileShader(this->getId());
-  if(!this->getCompileStatus())return;
+  if(!this->getCompileStatus()){
+    std::cerr<<this->getInfoLog()<<std::endl;
+    return;
+  }
   for(auto const&x:this->_programs){
     x->link();
   }
@@ -185,4 +189,121 @@ Shader::Source Shader::getSource()const{
   glGetShaderSource(this->getId(),length,NULL,(GLchar*)source.c_str());
   return source;
 }
+
+std::string Shader::define(std::string name){
+  return"#define "+name+"\n";
+}
+
+std::string Shader::define(std::string name,unsigned value){
+  std::stringstream result;
+  result<<"#define "<<name<<" "<<value<<"u\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string name,unsigned value0,unsigned value1){
+  std::stringstream result;
+  result<<"#define "<<name<<" uvec2("<<value0<<"u,"<<value1<<"u)\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string name,unsigned value0,unsigned value1,unsigned value2){
+  std::stringstream result;
+  result<<"#define "<<name<<" uvec3("<<value0<<"u,"<<value1<<"u,"<<value2<<"u)\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string name,unsigned value0,unsigned value1,unsigned value2,unsigned value3){
+  std::stringstream result;
+  result<<"#define "<<name<<" uvec3("<<value0<<"u,"<<value1<<"u,"<<value2<<"u,"<<value3<<"u)\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,unsigned vectorSize,unsigned*values){
+  if(vectorSize==1)return define(Name,values[0]);
+  std::stringstream result;
+  result<<"#define "<<Name<<" uvec"<<vectorSize<<"(";
+  for(unsigned i=0;i<vectorSize;++i){
+    result<<values[i]<<"u";
+    if(i==vectorSize-1)result<<")\n";
+    else result<<",";
+  }
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,int Value){
+  std::stringstream result;
+  result<<"#define "<<Name<<" "<<Value<<"\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,int value0,int value1){
+  std::stringstream result;
+  result<<"#define "<<Name<<" ivec2("<<value0<<","<<value1<<")\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,int value0,int value1,int value2){
+  std::stringstream result;
+  result<<"#define "<<Name<<" ivec3("<<value0<<","<<value1<<","<<value2<<")\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,int value0,int value1,int value2,int value3){
+  std::stringstream result;
+  result<<"#define "<<Name<<" ivec3("<<value0<<","<<value1<<","<<value2<<","<<value3<<")\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,unsigned vectorSize,int*values){
+  if(vectorSize==1)return define(Name,values[0]);
+  std::stringstream result;
+  result<<"#define "<<Name<<" ivec"<<vectorSize<<"(";
+  for(unsigned i=0;i<vectorSize;++i){
+    result<<values[i];
+    if(i==vectorSize-1)result<<")\n";
+    else result<<",";
+  }
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,float Value){
+  std::stringstream result;
+  result<<"#define "<<Name<<" "<<Value<<"\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,float value0,float value1){
+  std::stringstream result;
+  result<<"#define "<<Name<<" vec2("<<value0<<","<<value1<<")\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,float value0,float value1,float value2){
+  std::stringstream result;
+  result<<"#define "<<Name<<" vec3("<<value0<<","<<value1<<","<<value2<<")\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,float value0,float value1,float value2,float value3){
+  std::stringstream result;
+  result<<"#define "<<Name<<" vec3("<<value0<<","<<value1<<","<<value2<<","<<value3<<")\n";
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,unsigned vectorSize,float*values){
+  if(vectorSize==1)return define(Name,values[0]);
+  std::stringstream result;
+  result<<"#define "<<Name<<" vec"<<vectorSize<<"(";
+  for(unsigned i=0;i<vectorSize;++i){
+    result<<values[i];
+    if(i==vectorSize-1)result<<")\n";
+    else result<<",";
+  }
+  return result.str();
+}
+
+std::string Shader::define(std::string Name,std::string Value){
+  return"#define "+Name+" "+Value+"\n";
+}
+
 

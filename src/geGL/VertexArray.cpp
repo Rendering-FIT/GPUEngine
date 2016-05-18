@@ -118,7 +118,16 @@ GLsizei   VertexArray::getAttribStride        (GLuint index)const{
 
 GLenum    VertexArray::getAttribType          (GLuint index)const{
   assert(this!=nullptr);
-  return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_TYPE);
+//return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_TYPE);
+//AMD bug in 15.9 on Linux glGetVertexArrayIndexediv return type's number instead of type
+  GLuint oldId;
+  glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId);
+  glBindVertexArray(this->_id);
+  GLint data;
+  glGetVertexAttribiv(index,GL_VERTEX_ATTRIB_ARRAY_TYPE,&data);
+  glBindVertexArray(oldId);
+  return data;
+
 }
 
 GLboolean VertexArray::isAttribNormalized    (GLuint index)const{

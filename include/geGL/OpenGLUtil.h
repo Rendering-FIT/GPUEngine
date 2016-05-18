@@ -37,6 +37,12 @@ namespace ge{
     GEGL_EXPORT std::string translateAttribType(GLenum    type   );
     GEGL_EXPORT std::string translateBoolean   (GLboolean boolean);
     GEGL_EXPORT unsigned    getTypeSize        (GLenum    type   );
+
+    GEGL_EXPORT std::string translateUniformType      (GLenum      type    );
+    GEGL_EXPORT std::string translateBufferProperty   (GLenum      property);
+
+
+    GEGL_EXPORT bool isSamplerType(GLenum type);
   }
 }
 

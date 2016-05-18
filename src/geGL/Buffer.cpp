@@ -156,13 +156,14 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
   }else if(flags==KEEP_DATA          ){
     Buffer*newBuffer=new Buffer(newSize,nullptr,bufferFlags);
     newBuffer->copy(*this);
+    glDeleteBuffers(1,&this->_id);
     this->~Buffer();
     this->_id = newBuffer->_id;
     delete(char*)newBuffer;
     this->_updateVertexArrays();
   }else if(flags==NEW_BUFFER         ){
-    this->~Buffer();
-    new(this)Buffer(newSize,nullptr,bufferFlags);
+    glDeleteBuffers(1,&this->_id);
+    this->alloc(newSize,nullptr,bufferFlags);
     this->_updateVertexArrays();
   }else{
     std::cerr<<"ERROR: invalid buffer reallocation flags: "<<flags<<std::endl;
@@ -170,6 +171,7 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
   }
   return true;
 }
+
 
 void Buffer::_updateVertexArrays(){
   auto me = this->shared_from_this();
@@ -181,8 +183,7 @@ void Buffer::_updateVertexArrays(){
     for(auto const&y:x->_buffers)
       if(y.second == me)
         attribs.push_back(y.first);
-
-    for(auto const&y:attribs)
+    for(auto const&y:attribs){
       x->addAttrib(
           me,
           y,
@@ -193,6 +194,7 @@ void Buffer::_updateVertexArrays(){
           x->isAttribNormalized(y),
           x->getAttribDivisor(y),
           x->isAttribInteger(y)?VertexArray::I:(x->isAttribLong(y)?VertexArray::L:VertexArray::NONE));
+    }
   }
 }
 

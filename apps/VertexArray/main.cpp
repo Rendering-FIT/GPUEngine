@@ -20,8 +20,8 @@ struct Data{
   std::shared_ptr<ge::util::SDLEventProc>           mainLoop     = nullptr;
   std::shared_ptr<ge::util::SDLWindow>              window       = nullptr;
   std::shared_ptr<ge::gl::Program>program0 = nullptr;
-  std::shared_ptr<ge::gl::Program>program1 = nullptr;
-  std::shared_ptr<ge::gl::VertexArray>emptyVAO = nullptr;
+  std::shared_ptr<ge::gl::VertexArray>vao = nullptr;
+  std::shared_ptr<ge::gl::Buffer>vbo = nullptr;
   static void init(Data*data);
   class IdleCallback: public ge::util::CallbackInterface{
     public:
@@ -64,13 +64,10 @@ int main(int argc,char*argv[]){
 void Data::IdleCallback::operator()(){
   this->data->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-  this->data->emptyVAO->bind();
+  this->data->vao->bind();
   this->data->program0->use();
-  this->data->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
-  this->data->program1->use();
-  this->data->program1->set4f("color",0,1,1,0);
-  this->data->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
-  this->data->emptyVAO->unbind();
+  this->data->gl->glDrawArrays(GL_LINE_STRIP,0,4);
+  this->data->vao->unbind();
 
   this->data->window->swap();
 }
@@ -97,22 +94,20 @@ void Data::init(Data*data){
   data->gl->glClearColor(0,1,0,1);
   auto vp0 = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
       "#version 450\n",
-      "void main(){gl_Position = vec4(gl_VertexID%2,gl_VertexID/2,0,1);}");
-  auto vp1 = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
-      "#version 450\n",
-      "void main(){gl_Position = vec4(gl_VertexID%2-1,gl_VertexID/2-1,0,1);}");
+      "layout(location=0)in float h;\n"
+      "void main(){gl_Position = vec4(gl_VertexID/10.,h,0,1);}");
   auto fp0 = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
       "#version 450\n",
       "out vec4 fColor;\n"
       "void main(){fColor = vec4(1);}");
   data->program0 = std::make_shared<ge::gl::Program>(vp0,fp0);
-  data->program1 = std::make_shared<ge::gl::Program>(vp1,fp0);
 
-  //change fragment shader, both programs should be affected
-  fp0->compile("#version 450\n",
-      "out vec4 fColor;\n"
-      "uniform vec4 color = vec4(0,0,1,0);\n"
-      "void main(){fColor = color;}");
+  data->vao = std::make_shared<ge::gl::VertexArray>();
+  float d[2]={0,.5};
+  data->vbo = std::make_shared<ge::gl::Buffer>(sizeof(float)*2,d);
+  data->vao->addAttrib(data->vbo,0,1,GL_FLOAT);
 
-  data->emptyVAO = std::make_shared<ge::gl::VertexArray>();
+  data->vbo->realloc(sizeof(float)*4);
+  float dd[4]={.5,0,.5,0};
+  data->vbo->setData(dd);
 }

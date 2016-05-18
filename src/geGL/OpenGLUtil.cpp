@@ -523,4 +523,194 @@ unsigned ge::gl::getTypeSize(GLenum type){
   }
 }
 
+bool ge::gl::isSamplerType(GLenum type){
+  switch(type){
+    case GL_SAMPLER_1D                               :
+    case GL_SAMPLER_2D                               :
+    case GL_SAMPLER_3D                               :
+    case GL_SAMPLER_CUBE                             :
+    case GL_SAMPLER_1D_SHADOW                        :
+    case GL_SAMPLER_2D_SHADOW                        :
+    case GL_SAMPLER_1D_ARRAY                         :
+    case GL_SAMPLER_2D_ARRAY                         :
+    case GL_SAMPLER_1D_ARRAY_SHADOW                  :
+    case GL_SAMPLER_2D_ARRAY_SHADOW                  :
+    case GL_SAMPLER_2D_MULTISAMPLE                   :
+    case GL_SAMPLER_2D_MULTISAMPLE_ARRAY             :
+    case GL_SAMPLER_CUBE_SHADOW                      :
+    case GL_SAMPLER_BUFFER                           :
+    case GL_SAMPLER_2D_RECT                          :
+    case GL_SAMPLER_2D_RECT_SHADOW                   :
+    case GL_INT_SAMPLER_1D                           :
+    case GL_INT_SAMPLER_2D                           :
+    case GL_INT_SAMPLER_3D                           :
+    case GL_INT_SAMPLER_CUBE                         :
+    case GL_INT_SAMPLER_1D_ARRAY                     :
+    case GL_INT_SAMPLER_2D_ARRAY                     :
+    case GL_INT_SAMPLER_2D_MULTISAMPLE               :
+    case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY         :
+    case GL_INT_SAMPLER_BUFFER                       :
+    case GL_INT_SAMPLER_2D_RECT                      :
+    case GL_UNSIGNED_INT_SAMPLER_1D                  :
+    case GL_UNSIGNED_INT_SAMPLER_2D                  :
+    case GL_UNSIGNED_INT_SAMPLER_3D                  :
+    case GL_UNSIGNED_INT_SAMPLER_CUBE                :
+    case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY            :
+    case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY            :
+    case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE      :
+    case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:
+    case GL_UNSIGNED_INT_SAMPLER_BUFFER              :
+    case GL_UNSIGNED_INT_SAMPLER_2D_RECT             :
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief translates enum to string for uniform types
+ *
+ * @param type uniform type
+ *
+ * @return string representation
+ */
+std::string ge::gl::translateUniformType(GLenum type){
+  switch(type){
+    case GL_FLOAT                                    :return"GL_FLOAT"                                    ;
+    case GL_FLOAT_VEC2                               :return"GL_FLOAT_VEC2"                               ;
+    case GL_FLOAT_VEC3                               :return"GL_FLOAT_VEC3"                               ;
+    case GL_FLOAT_VEC4                               :return"GL_FLOAT_VEC4"                               ;
+    case GL_DOUBLE                                   :return"GL_DOUBLE"                                   ;
+    case GL_DOUBLE_VEC2                              :return"GL_DOUBLE_VEC2"                              ;
+    case GL_DOUBLE_VEC3                              :return"GL_DOUBLE_VEC3"                              ;
+    case GL_DOUBLE_VEC4                              :return"GL_DOUBLE_VEC4"                              ;
+    case GL_INT                                      :return"GL_INT"                                      ;
+    case GL_INT_VEC2                                 :return"GL_INT_VEC2"                                 ;
+    case GL_INT_VEC3                                 :return"GL_INT_VEC3"                                 ;
+    case GL_INT_VEC4                                 :return"GL_INT_VEC4"                                 ;
+    case GL_UNSIGNED_INT                             :return"GL_UNSIGNED_INT"                             ;
+    case GL_UNSIGNED_INT_VEC2                        :return"GL_UNSIGNED_INT_VEC2"                        ;
+    case GL_UNSIGNED_INT_VEC3                        :return"GL_UNSIGNED_INT_VEC3"                        ;
+    case GL_UNSIGNED_INT_VEC4                        :return"GL_UNSIGNED_INT_VEC4"                        ;
+    case GL_BOOL                                     :return"GL_BOOL"                                     ;
+    case GL_BOOL_VEC2                                :return"GL_BOOL_VEC2"                                ;
+    case GL_BOOL_VEC3                                :return"GL_BOOL_VEC3"                                ;
+    case GL_BOOL_VEC4                                :return"GL_BOOL_VEC4"                                ;
+    case GL_FLOAT_MAT2                               :return"GL_FLOAT_MAT2"                               ;
+    case GL_FLOAT_MAT3                               :return"GL_FLOAT_MAT3"                               ;
+    case GL_FLOAT_MAT4                               :return"GL_FLOAT_MAT4"                               ;
+    case GL_FLOAT_MAT2x3                             :return"GL_FLOAT_MAT2x3"                             ;
+    case GL_FLOAT_MAT2x4                             :return"GL_FLOAT_MAT2x4"                             ;
+    case GL_FLOAT_MAT3x2                             :return"GL_FLOAT_MAT3x2"                             ;
+    case GL_FLOAT_MAT3x4                             :return"GL_FLOAT_MAT3x4"                             ;
+    case GL_FLOAT_MAT4x2                             :return"GL_FLOAT_MAT4x2"                             ;
+    case GL_FLOAT_MAT4x3                             :return"GL_FLOAT_MAT4x3"                             ;
+    case GL_DOUBLE_MAT2                              :return"GL_DOUBLE_MAT2"                              ;
+    case GL_DOUBLE_MAT3                              :return"GL_DOUBLE_MAT3"                              ;
+    case GL_DOUBLE_MAT4                              :return"GL_DOUBLE_MAT4"                              ;
+    case GL_DOUBLE_MAT2x3                            :return"GL_DOUBLE_MAT2x3"                            ;
+    case GL_DOUBLE_MAT2x4                            :return"GL_DOUBLE_MAT2x4"                            ;
+    case GL_DOUBLE_MAT3x2                            :return"GL_DOUBLE_MAT3x2"                            ;
+    case GL_DOUBLE_MAT3x4                            :return"GL_DOUBLE_MAT3x4"                            ;
+    case GL_DOUBLE_MAT4x2                            :return"GL_DOUBLE_MAT4x2"                            ;
+    case GL_DOUBLE_MAT4x3                            :return"GL_DOUBLE_MAT4x3"                            ;
+    case GL_SAMPLER_1D                               :return"GL_SAMPLER_1D"                               ;
+    case GL_SAMPLER_2D                               :return"GL_SAMPLER_2D"                               ;
+    case GL_SAMPLER_3D                               :return"GL_SAMPLER_3D"                               ;
+    case GL_SAMPLER_CUBE                             :return"GL_SAMPLER_CUBE"                             ;
+    case GL_SAMPLER_1D_SHADOW                        :return"GL_SAMPLER_1D_SHADOW"                        ;
+    case GL_SAMPLER_2D_SHADOW                        :return"GL_SAMPLER_2D_SHADOW"                        ;
+    case GL_SAMPLER_1D_ARRAY                         :return"GL_SAMPLER_1D_ARRAY"                         ;
+    case GL_SAMPLER_2D_ARRAY                         :return"GL_SAMPLER_2D_ARRAY"                         ;
+    case GL_SAMPLER_1D_ARRAY_SHADOW                  :return"GL_SAMPLER_1D_ARRAY_SHADOW"                  ;
+    case GL_SAMPLER_2D_ARRAY_SHADOW                  :return"GL_SAMPLER_2D_ARRAY_SHADOW"                  ;
+    case GL_SAMPLER_2D_MULTISAMPLE                   :return"GL_SAMPLER_2D_MULTISAMPLE"                   ;
+    case GL_SAMPLER_2D_MULTISAMPLE_ARRAY             :return"GL_SAMPLER_2D_MULTISAMPLE_ARRAY"             ;
+    case GL_SAMPLER_CUBE_SHADOW                      :return"GL_SAMPLER_CUBE_SHADOW"                      ;
+    case GL_SAMPLER_BUFFER                           :return"GL_SAMPLER_BUFFER"                           ;
+    case GL_SAMPLER_2D_RECT                          :return"GL_SAMPLER_2D_RECT"                          ;
+    case GL_SAMPLER_2D_RECT_SHADOW                   :return"GL_SAMPLER_2D_RECT_SHADOW"                   ;
+    case GL_INT_SAMPLER_1D                           :return"GL_INT_SAMPLER_1D"                           ;
+    case GL_INT_SAMPLER_2D                           :return"GL_INT_SAMPLER_2D"                           ;
+    case GL_INT_SAMPLER_3D                           :return"GL_INT_SAMPLER_3D"                           ;
+    case GL_INT_SAMPLER_CUBE                         :return"GL_INT_SAMPLER_CUBE"                         ;
+    case GL_INT_SAMPLER_1D_ARRAY                     :return"GL_INT_SAMPLER_1D_ARRAY"                     ;
+    case GL_INT_SAMPLER_2D_ARRAY                     :return"GL_INT_SAMPLER_2D_ARRAY"                     ;
+    case GL_INT_SAMPLER_2D_MULTISAMPLE               :return"GL_INT_SAMPLER_2D_MULTISAMPLE"               ;
+    case GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY         :return"GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY"         ;
+    case GL_INT_SAMPLER_BUFFER                       :return"GL_INT_SAMPLER_BUFFER"                       ;
+    case GL_INT_SAMPLER_2D_RECT                      :return"GL_INT_SAMPLER_2D_RECT"                      ;
+    case GL_UNSIGNED_INT_SAMPLER_1D                  :return"GL_UNSIGNED_INT_SAMPLER_1D"                  ;
+    case GL_UNSIGNED_INT_SAMPLER_2D                  :return"GL_UNSIGNED_INT_SAMPLER_2D"                  ;
+    case GL_UNSIGNED_INT_SAMPLER_3D                  :return"GL_UNSIGNED_INT_SAMPLER_3D"                  ;
+    case GL_UNSIGNED_INT_SAMPLER_CUBE                :return"GL_UNSIGNED_INT_SAMPLER_CUBE"                ;
+    case GL_UNSIGNED_INT_SAMPLER_1D_ARRAY            :return"GL_UNSIGNED_INT_SAMPLER_1D_ARRAY"            ;
+    case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY            :return"GL_UNSIGNED_INT_SAMPLER_2D_ARRAY"            ;
+    case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE      :return"GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE"      ;
+    case GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY:return"GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY";
+    case GL_UNSIGNED_INT_SAMPLER_BUFFER              :return"GL_UNSIGNED_INT_SAMPLER_BUFFER"              ;
+    case GL_UNSIGNED_INT_SAMPLER_2D_RECT             :return"GL_UNSIGNED_INT_SAMPLER_2D_RECT"             ;
+    default                                          :return"unknown"                                     ;
+  }
+}
+
+/**
+ * @brief translates enum to string for buffer property types
+ *
+ * @param property buffer property type
+ *
+ * @return string representation
+ */
+std::string ge::gl::translateBufferProperty(GLenum property){
+  switch(property){
+    case GL_TYPE                                :return"GL_TYPE"                                ;
+    case GL_ARRAY_SIZE                          :return"GL_ARRAY_SIZE"                          ;
+    case GL_OFFSET                              :return"GL_OFFSET"                              ;
+    case GL_BLOCK_INDEX                         :return"GL_BLOCK_INDEX"                         ;
+    case GL_ARRAY_STRIDE                        :return"GL_ARRAY_STRIDE"                        ;
+    case GL_MATRIX_STRIDE                       :return"GL_MATRIX_STRIDE"                       ;
+    case GL_IS_ROW_MAJOR                        :return"GL_IS_ROW_MAJOR"                        ;
+    case GL_REFERENCED_BY_VERTEX_SHADER         :return"GL_REFERENCED_BY_VERTEX_SHADER"         ;
+    case GL_REFERENCED_BY_TESS_CONTROL_SHADER   :return"GL_REFERENCED_BY_TESS_CONTROL_SHADER"   ;
+    case GL_REFERENCED_BY_TESS_EVALUATION_SHADER:return"GL_REFERENCED_BY_TESS_EVALUATION_SHADER";
+    case GL_REFERENCED_BY_GEOMETRY_SHADER       :return"GL_REFERENCED_BY_GEOMETRY_SHADER"       ;
+    case GL_REFERENCED_BY_FRAGMENT_SHADER       :return"GL_REFERENCED_BY_FRAGMENT_SHADER"       ;
+    case GL_REFERENCED_BY_COMPUTE_SHADER        :return"GL_REFERENCED_BY_COMPUTE_SHADER"        ;
+    case GL_TOP_LEVEL_ARRAY_SIZE                :return"GL_TOP_LEVEL_ARRAY_SIZE"                ;
+    case GL_TOP_LEVEL_ARRAY_STRIDE              :return"GL_TOP_LEVEL_ARRAY_STRIDE"              ;
+    default                                     :return"unknown"                                ;
+  }
+}
+
+
+
+template<size_t TO>
+size_t convertComplexShaderType(size_t what){
+  using Element = std::tuple<GLenum,GLenum,GLint>;
+  const std::array<Element,20>elements = {
+    Element(GL_FLOAT            ,GL_FLOAT       ,1),
+    Element(GL_FLOAT_VEC2       ,GL_FLOAT       ,2),
+    Element(GL_FLOAT_VEC3       ,GL_FLOAT       ,3),
+    Element(GL_FLOAT_VEC4       ,GL_FLOAT       ,4),
+    Element(GL_DOUBLE           ,GL_DOUBLE      ,1),
+    Element(GL_DOUBLE_VEC2      ,GL_DOUBLE      ,2),
+    Element(GL_DOUBLE_VEC3      ,GL_DOUBLE      ,3),
+    Element(GL_DOUBLE_VEC4      ,GL_DOUBLE      ,4),
+    Element(GL_INT              ,GL_INT         ,1),
+    Element(GL_INT_VEC2         ,GL_INT         ,2),
+    Element(GL_INT_VEC3         ,GL_INT         ,3),
+    Element(GL_INT_VEC4         ,GL_INT         ,4),
+    Element(GL_UNSIGNED_INT     ,GL_UNSIGNED_INT,1),
+    Element(GL_UNSIGNED_INT_VEC2,GL_UNSIGNED_INT,2),
+    Element(GL_UNSIGNED_INT_VEC3,GL_UNSIGNED_INT,3),
+    Element(GL_UNSIGNED_INT_VEC4,GL_UNSIGNED_INT,4),
+    Element(GL_BOOL             ,GL_BOOL        ,1),
+    Element(GL_BOOL_VEC2        ,GL_BOOL        ,2),
+    Element(GL_BOOL_VEC3        ,GL_BOOL        ,3),
+    Element(GL_BOOL_VEC4        ,GL_BOOL        ,4),
+  };
+  for(auto const&x:elements)
+    if(std::get<0>(x)==what)return std::get<TO>(x);
+  return -1;
+}
 
