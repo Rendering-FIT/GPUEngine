@@ -3,6 +3,7 @@
 #include<geDE/Resource.h>
 #include<geDE/StdFunctions.h>
 #include<cassert>
+#include<algorithm>
 
 using namespace ge::de;
 
@@ -50,6 +51,28 @@ std::string VariableRegister::toStr(
   for(auto x:this->_name2Register)
     ss<<x.second->toStr(indentation+2,tr);
   ss<<ind<<"}"<<std::endl;
+  return ss.str();
+}
+
+std::string VariableRegister::getName()const{
+  return this->_name;
+}
+
+std::string VariableRegister::getFullName()const{
+  std::stringstream ss;
+  VariableRegister const*node=this;
+  std::vector<std::string>path;
+  while(node){
+    path.push_back(node->getName());
+    node = node->_parent;
+  }
+  std::reverse(path.begin(),path.end());
+  bool first=true;
+  for(auto const&x:path){
+    if(first)first=false;
+    else ss<<".";
+    ss<<x;
+  }
   return ss.str();
 }
 
@@ -126,4 +149,8 @@ bool VariableRegister::contain(std::string name)const{
   return this->_name2Variable.count(name)!=0;
 }
 
+VariableRegister::VariableIterator VariableRegister::varsBegin     (){return this->_name2Variable.begin();}
+VariableRegister::VariableIterator VariableRegister::varsEnd       (){return this->_name2Variable.end();}
+VariableRegister::RegisterIterator VariableRegister::registersBegin(){return this->_name2Register.begin();}
+VariableRegister::RegisterIterator VariableRegister::registersEnd  (){return this->_name2Register.end();}
 

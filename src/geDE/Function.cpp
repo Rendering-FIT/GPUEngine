@@ -56,3 +56,28 @@ bool Function::_outputBindingCheck(
   return true;
 }
 
+void Function::setDirty(){
+  if(!this->_dirtyFlag)this->_setOutputDirty();
+  this->_dirtyFlag = true;
+}
+
+bool Function::isDirty()const{
+  return this->_dirtyFlag;
+}
+
+void Function::_setOutputDirty(){
+  for(auto const&x:this->_outputFunctions){
+    if(std::get<0>(x)->_dirtyFlag)continue;
+    std::get<0>(x)->_dirtyFlag = true;
+    std::get<0>(x)->_setOutputDirty();
+  }
+}
+
+void Function::_addOutputFunction(Function*fce,InputIndex index){
+  this->_outputFunctions.insert(Function::OutputFunction(fce,index));
+}
+
+void Function::_removeOutputFunction(Function*fce,InputIndex index){
+  this->_outputFunctions.erase(Function::OutputFunction(fce,index));
+}
+

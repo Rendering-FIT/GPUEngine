@@ -50,6 +50,11 @@ bool AtomicFunction::bindInput(
   if(!this->_inputBindingCheck(fr,i,function))
     return false;
   //std::cerr<<this->_name<<".bindInput("<<i<<","<<function<<")"<<std::endl;
+  if(function)function->_addOutputFunction(this,i);
+  else if(this->_inputs[i].function){
+    this->_inputs[i].function->_removeOutputFunction(this,i);
+  }
+  this->setDirty();
   this->_inputs[i].function = function;
   if(function)this->_inputs[i].updateTicks = function->getUpdateTicks() - 1;
   this->_inputs[i].changed  = true;
@@ -63,6 +68,7 @@ bool AtomicFunction::bindOutput(
   if(!this->_outputBindingCheck(fr,data))
     return false;
   this->_outputData = data;
+  this->setDirty();
   return true;
 }
 
@@ -72,9 +78,30 @@ void AtomicFunction::operator()(){
   this->_processInputs();
   if(this->_do())
     this->_updateTicks++;
+
+  //new scheme
+  this->_dirtyFlag = false;
 }
 
 void AtomicFunction::_processInputs(){
+  //new scheme
+  assert(this!=nullptr);
+  for(InputIndex i=0;i<this->_inputs.size();++i){
+    assert(this->_inputs[i].function!=nullptr);
+    if(!this->hasInput(i)||!this->_inputs[i].function->_dirtyFlag){
+      this->_inputs[i].changed = false;
+      continue;
+    }
+    (*this->_inputs[i].function)();
+    this->_inputs[i].function->setCheckTicks(this->_checkTicks);
+    this->_inputs[i].changed=
+      this->_inputs[i].updateTicks<this->_inputs[i].function->getUpdateTicks();
+    if(this->_inputs[i].changed)
+      this->_inputs[i].updateTicks=this->_inputs[i].function->getUpdateTicks();
+  }
+
+  //old scheme based on checkTicks and updateTicks
+  /*
   assert(this!=nullptr);
   for(InputIndex i=0;i<this->_inputs.size();++i){
     assert(this->_inputs[i].function!=nullptr);
@@ -89,6 +116,7 @@ void AtomicFunction::_processInputs(){
     if(this->_inputs[i].changed)
       this->_inputs[i].updateTicks=this->_inputs[i].function->getUpdateTicks();
   }
+  */
 }
 
 bool AtomicFunction::_do(){

@@ -21,6 +21,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fc=std::make_shared<ge::de::Nullary>(fr,2.2f  );
     auto fd=std::make_shared<ge::de::Nullary>(fr,1000.f);
 
+    //f0 = fa + fb
+    //f1 = f0 + fc
+    //f2 = f0 + fd
+    //f3 = (int)f2
     auto f0=std::make_shared<ge::de::Add<float>>(fr,typeRegister->sharedResource("f32"));
     f0->bindInput(fr,0,fa);
     f0->bindInput(fr,1,fb);
@@ -33,19 +37,25 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto f3=std::make_shared<ge::de::Cast<float,int>>(fr,typeRegister->sharedResource("i32"));
     f3->bindInput(fr,0,f2);
     WHEN("running f1"){
+      REQUIRE(f1->isDirty()==true);
       (*f1)();
+      REQUIRE(f1->isDirty()==false);
       THEN( "output of f1 should be computed correctly" ) {
         REQUIRE((float)(*f1->getOutputData())==((101.f+1.1f)+2.2f));
       }
     }
     WHEN("running f2"){
+      REQUIRE(f2->isDirty()==true);
       (*f2)();
+      REQUIRE(f2->isDirty()==false);
       THEN( "output of f2 should be computed correctly"){
         REQUIRE((float)(*f2->getOutputData())==((101.f+1.1f)-1000.f));
       }
     }
     WHEN("running f3"){
+      REQUIRE(f3->isDirty()==true);
       (*f3)();
+      REQUIRE(f3->isDirty()==false);
       THEN("output of f3 should be computed correctly"){
         REQUIRE((int)(*f3->getOutputData())==(int)((101.f+1.1f)-1000.f));
       }

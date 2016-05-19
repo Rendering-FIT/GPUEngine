@@ -10,7 +10,9 @@ namespace ge{
     // function: selector of element of Resource
 
     class Resource;
+    class AtomicFunction;
     class GEDE_EXPORT Function: public Statement{
+      friend class AtomicFunction;
       public:
         using InputIndex = size_t;
         using Ticks      = uint64_t;
@@ -36,7 +38,15 @@ namespace ge{
         virtual void  setCheckTicks (Ticks ticks) = 0;
         virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const = 0;
         virtual inline std::string doc()const;
+        void setDirty();
+        bool isDirty()const;
       protected:
+        using OutputFunction = std::tuple<Function*,InputIndex>;
+        std::set<OutputFunction>_outputFunctions;
+        bool _dirtyFlag = false;
+        void _setOutputDirty();
+        void _addOutputFunction(Function*fce,InputIndex index);
+        void _removeOutputFunction(Function*fce,InputIndex index);
         FunctionRegister::FunctionID     _id;
         bool _inputBindingCheck (
             std::shared_ptr<FunctionRegister>const&fr      ,

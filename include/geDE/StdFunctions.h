@@ -33,6 +33,7 @@ namespace ge{
           void update(TYPE const&data){
             (TYPE&)*this->_outputData=data;
             this->_updateTicks++;
+            this->setDirty();
           }
     };
 
