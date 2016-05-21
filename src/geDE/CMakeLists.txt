@@ -30,10 +30,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/BodyFactory.h
   ${HEADER_PATH}/IfFactory.h
   ${HEADER_PATH}/WhileFactory.h
-  ${HEADER_PATH}/Namespace.h
-  ${HEADER_PATH}/NamespaceWithUsers.h
   ${HEADER_PATH}/VariableRegister.h
-  ${HEADER_PATH}/User.h
   ${HEADER_PATH}/ObjectFactory.h
   ${HEADER_PATH}/ResourceFactory.h
   ${HEADER_PATH}/StatementFactory.h
@@ -62,8 +59,6 @@ set(DE_SOURCES
   While.cpp
   If.cpp
   WhileFactory.cpp
-  Namespace.cpp
-  NamespaceWithUsers.cpp
   VariableRegister.cpp
   ResourceFactory.cpp
   StatementFactory.cpp
