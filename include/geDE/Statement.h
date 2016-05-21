@@ -1,10 +1,11 @@
 #pragma once
 
 #include<geCore/Command.h>
+#include<geDE/Export.h>
 
 namespace ge{
   namespace de{
-    class GECORE_EXPORT Statement: public ge::core::Command{
+    class GEDE_EXPORT Statement: public ge::core::Command{
       public:
         enum Type{
           FUNCTION,

@@ -50,6 +50,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/StdCastFunctions.h
   ${HEADER_PATH}/FunctionRegister.h
   ${HEADER_PATH}/NameRegister.h
+  ${HEADER_PATH}/geDE.h
   )
 
 set(DE_SOURCES

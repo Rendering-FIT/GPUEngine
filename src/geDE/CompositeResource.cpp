@@ -61,7 +61,7 @@ void const*CompositeResource::getDataAddress()const{
   return this->_components[0]->getDataAddress();
 }
 
-std::shared_ptr<Resource> CompositeResource::operator[](TypeRegister::DescriptionIndex elem)const{
+std::shared_ptr<Resource> CompositeResource::operator[](TypeRegister::DescriptionIndex elem){
   TypeRegister::DescriptionElement offset=0;
   decltype(this->_components)::size_type i=0;
   while(elem>offset+this->_components[i]->getNofElements()){
@@ -86,7 +86,7 @@ std::string CompositeResource::data2Str()const{
       for(TypeRegister::DescriptionElement i=0;i<this->_manager->getArraySize(this->_id);++i){
         if(first)first=false;
         else ss<<",";
-        ss<<((*this)[i])->data2Str();
+        ss<<((*(CompositeResource*)this)[i])->data2Str();
       }
       ss<<"]";
       break;
@@ -96,7 +96,7 @@ std::string CompositeResource::data2Str()const{
       for(TypeRegister::DescriptionElement e=0;e<this->_manager->getNofStructElements(this->_id);++e){
         if(first)first=false;
         else ss<<",";
-        ss<<((*this)[e])->data2Str();
+        ss<<((*(CompositeResource*)this)[e])->data2Str();
       }
       ss<<"}";
       break;

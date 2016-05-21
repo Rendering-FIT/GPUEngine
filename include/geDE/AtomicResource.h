@@ -32,7 +32,7 @@ namespace ge{
         virtual ~AtomicResource();
         virtual void*getData()const;
         virtual void const*getDataAddress()const;
-        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem)const;
+        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem);
         virtual TypeRegister::DescriptionElement getNofElements()const;
         const void*getPointer()const;
         virtual std::string data2Str()const;

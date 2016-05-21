@@ -15,7 +15,7 @@ namespace ge{
             std::vector<std::shared_ptr<Resource>>const&accessors = {}                        );
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
-        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem)const=0;
+        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem);
         virtual TypeRegister::DescriptionElement getNofElements()const=0;
         virtual std::string data2Str()const=0;
     };

@@ -5,7 +5,7 @@
 namespace ge{
   namespace de{
     class Function;
-    class GECORE_EXPORT If: public Statement{
+    class GEDE_EXPORT If: public Statement{
       protected:
         std::shared_ptr<Function >_condition = nullptr;
         std::shared_ptr<Statement>_trueBody  = nullptr;

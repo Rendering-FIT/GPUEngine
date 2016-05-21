@@ -25,7 +25,7 @@ namespace ge{
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
         inline TypeRegister::TypeID getId()const;
-        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem)const=0;
+        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem) = 0;
         virtual TypeRegister::DescriptionElement getNofElements()const=0;
         virtual std::string data2Str()const=0;
         template<typename T>

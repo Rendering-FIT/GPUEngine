@@ -16,17 +16,7 @@ namespace ge{
     /**
      * @brief Class represents camera
      */
-    class GEUTIL_EXPORT CameraObject
-    {
-      private:
-        float     _fovy;        ///<field of view
-        float     _near;        ///<near plane distance
-        float     _far;         ///<far plane fistance
-        unsigned  _size[2];     ///<size of viewport
-        glm::mat4 _viewRotation;///<rotation part of view matrix
-        glm::mat4 _projection;  ///<projection matrix
-        glm::vec3 _position;    ///<position of camera
-        void      _computeProjection();///<it computes projection matrix
+    class GEUTIL_EXPORT CameraObject{
       public:
         /**
          * @brief Constructor
@@ -192,6 +182,16 @@ namespace ge{
          * @return pickup vector
          */
         glm::vec3 getPickVector(unsigned x,unsigned y);
+      private:
+        float     _fovy;        ///<field of view
+        float     _near;        ///<near plane distance
+        float     _far;         ///<far plane fistance
+        unsigned  _size[2];     ///<size of viewport
+        glm::mat4 _viewRotation;///<rotation part of view matrix
+        glm::mat4 _projection;  ///<projection matrix
+        glm::vec3 _position;    ///<position of camera
+        void      _computeProjection();///<it computes projection matrix
+
     };
   }//util
 }//ge

@@ -1,10 +1,12 @@
 #pragma once
 
-#include<geCore/StatementFactory.h>
+#include<geDE/StatementFactory.h>
+#include<geDE/AtomicFunction.h>
+#include<geDE/FunctionFactory.h>
 
 namespace ge{
-  namespace{
-    class GECORE_EXPORT IfFactory: public StatementFactory{
+  namespace de{
+    class GEDE_EXPORT IfFactory: public StatementFactory{
       public:
         IfFactory(std::string name = "",unsigned maxUses = 1);
         virtual ~IfFactory();

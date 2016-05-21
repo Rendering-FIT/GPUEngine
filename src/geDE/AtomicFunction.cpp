@@ -39,6 +39,11 @@ AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,Functio
 
 
 AtomicFunction::~AtomicFunction(){
+  InputIndex i=0;
+  for(auto const&x:this->_inputs){
+    if(x.function)x.function->_removeOutputFunction(this,i);
+    i++;
+  }
   //std::cerr<<"AtomicFunction::~AtomicFunction() - "<<this->_name<<" "<<this<<std::endl;
 }
 

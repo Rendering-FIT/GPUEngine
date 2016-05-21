@@ -8,6 +8,10 @@
 #include<SDL2/SDL.h>
 
 #include<geAd/SDLWindow/EventDataInterface.h>
+#include<geAd/SDLWindow/SDLEventProc.h>
+#include<geAd/SDLWindow/EventDataInterface.h>
+#include<geAd/SDLWindow/EventCallbackInterface.h>
+#include<geAd/SDLWindow/SDLEventData.h>
 
 namespace ge{
   namespace util{
