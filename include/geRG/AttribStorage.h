@@ -125,7 +125,7 @@ namespace ge
       inline ge::gl::VertexArrayObject* AttribStorage::vertexArrayObject() const  { return _vao; }
       inline const std::vector<ge::gl::BufferObject*>& AttribStorage::bufferObjectList() const  { return _bufferObjectList; }
       inline ge::gl::BufferObject* AttribStorage::bufferObject(unsigned index) const  { return _bufferObjectList[index]; }
-      inline unsigned AttribStorage::numBufferObjects() const  { return _bufferObjectList.size(); }
+      inline unsigned AttribStorage::numBufferObjects() const  { return unsigned(_bufferObjectList.size()); }
       inline ge::gl::BufferObject* AttribStorage::elementBufferObject() const  { return _ebo; }
       inline std::shared_ptr<AttribStorage::Factory>& AttribStorage::factory() { return _factory; }
       inline void AttribStorage::setFactory(std::shared_ptr<AttribStorage::Factory>& f) { _factory = f; }

@@ -115,8 +115,7 @@ void ge::util::BVHGenerator::computeBSforCurrentNode(std::shared_ptr<ste::Node<s
 
 std::shared_ptr<ge::util::BVHGenerator::MeshBS> ge::util::BVHGenerator::generateMeshBS(std::shared_ptr<ge::sg::Mesh>& mesh, ge::util::MatrixStack& matrixStack)
 {
-   unsigned positionSemantic = ge::sg::AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::position);
-   auto attrIt = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [positionSemantic](std::shared_ptr<ge::sg::AttributeDescriptor>& attr){ return attr->semantic == positionSemantic; });
+   auto attrIt = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [](std::shared_ptr<ge::sg::AttributeDescriptor>& attr){ return attr->semantic == ge::sg::AttributeDescriptor::Semantic::POSITION; });
    unsigned size = (*attrIt)->size / (*attrIt)->getSize(sg::AttributeDescriptor::DataType::FLOAT);
 
    std::shared_ptr<MeshBS> bs(std::make_shared<MeshBS>(mesh));

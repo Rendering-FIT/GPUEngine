@@ -168,7 +168,7 @@ std::shared_ptr<fsg::CommandList> fsg::ForryPhongTechnique::createMeshCommandLis
    {
 
       ge::gl::BufferObject *buff = new ge::gl::BufferObject(attribute->size, (char*)(attribute->data.get()) + attribute->offset);
-      if(attribute->semantic == AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::indices))
+      if(attribute->semantic == AttributeDescriptor::Semantic::INDICES)
       {
          VAO->addElementBuffer(buff);
       }

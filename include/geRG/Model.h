@@ -3,7 +3,7 @@
 
 #include <list>
 #include <memory>
-#include <geCore/idof.h>
+#include <geCore/idlist.h>
 #include <geRG/Export.h>
 #include <geRG/Basics.h>
 

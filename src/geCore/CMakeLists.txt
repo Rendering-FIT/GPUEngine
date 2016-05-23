@@ -75,7 +75,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/StdCastFunctions.h
   ${HEADER_PATH}/Token.h
   #    ${HEADER_PATH}/lexer.h
-  ${HEADER_PATH}/idof.h
+  ${HEADER_PATH}/idlist.h
   ${HEADER_PATH}/NodeContext.h
   ${HEADER_PATH}/Grammar.h
   ${HEADER_PATH}/Nonterm.h

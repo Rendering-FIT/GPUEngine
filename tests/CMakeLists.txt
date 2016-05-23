@@ -6,9 +6,9 @@ function(add_tests)
   endforeach(TARG)
 endfunction(add_tests)
 
-set(TEST_TARGETS 
-  typeRegisterTest 
-  functionRegisterTest 
+set(TEST_TARGETS
+  typeRegisterTest
+  functionRegisterTest
   fsaTest
   tokenizationTest
   syntaxTest
@@ -16,6 +16,7 @@ set(TEST_TARGETS
   namespaceTest
   statementFactoryTest
   mealyMachineTest
+  idlistTest
   )
 add_tests()
 

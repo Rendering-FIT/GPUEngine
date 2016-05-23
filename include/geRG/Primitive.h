@@ -46,8 +46,11 @@ namespace ge
        */
       struct GERG_EXPORT Primitive {
       protected:
+
          unsigned data; // 32-bits, verified by assert in Primitive.cpp
+
       public:
+
          constexpr inline unsigned offset4() const  { return data&0x07ffffff; } // return the lowest 27 bits
          constexpr inline unsigned mode() const     { return data>>27; } // return upmost 5 bits
          inline void setOffset4(unsigned value)  { data=(data&0xf8000000)|value; } // set lowest 27 bits, value must fit to 27 bits

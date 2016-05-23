@@ -7,7 +7,7 @@
 
 namespace fsg
 {
-   GLuint semnatic2Attribute(unsigned semantic);
+   GLuint semnatic2Attribute(ge::sg::AttributeDescriptor::Semantic semantic);
    GLenum translateEnum(ge::sg::AttributeDescriptor::DataType type);
    GLenum translateEnum(ge::sg::Image::DataType type);
    GLenum translateEnum(ge::sg::Image::Format type);

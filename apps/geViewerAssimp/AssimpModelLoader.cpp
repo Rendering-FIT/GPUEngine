@@ -105,7 +105,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
       indices->numComponents = 1;
       indices->stride = 0;
       indices->type = ge::sg::AttributeDescriptor::DataType::UNSIGNED_INT;
-      indices->semantic = attributeSemantics.indices;
+      indices->semantic = ge::sg::AttributeDescriptor::Semantic::INDICES;
       //! Beware - default deleter needed
       indices->data = std::shared_ptr<unsigned>(getindices(aimesh, &mesh->count), std::default_delete<unsigned[]>());
       indices->size = sizeof(unsigned) * mesh->count;
@@ -118,7 +118,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
    vertices->numComponents = 3;
    vertices->stride = 0;
    vertices->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-   vertices->semantic = attributeSemantics.position;
+   vertices->semantic = ge::sg::AttributeDescriptor::Semantic::POSITION;
    vertices->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 3], std::default_delete<float[]>());
    std::copy(aimesh->mVertices,aimesh->mVertices+aimesh->mNumVertices, static_cast<aiVector3D*>(vertices->data.get()));
    mesh->attributes.push_back(vertices);
@@ -131,7 +131,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
       normals->numComponents = 3;
       normals->stride = 0;
       normals->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-      normals->semantic = attributeSemantics.normal;
+      normals->semantic = ge::sg::AttributeDescriptor::Semantic::NORMAL;
       normals->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 3], std::default_delete<float[]>());
       std::copy(aimesh->mNormals, aimesh->mNormals + aimesh->mNumVertices, static_cast<aiVector3D*>(normals->data.get()));
       mesh->attributes.push_back(normals);
@@ -144,7 +144,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
       tangents->numComponents = 3;
       tangents->stride = 0;
       tangents->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-      tangents->semantic = attributeSemantics.tangent;
+      tangents->semantic = ge::sg::AttributeDescriptor::Semantic::TANGENT;
       tangents->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 3], std::default_delete<float[]>());
       std::copy(aimesh->mTangents, aimesh->mTangents + aimesh->mNumVertices, static_cast<aiVector3D*>(tangents->data.get()));
       mesh->attributes.push_back(tangents);
@@ -162,7 +162,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
             texcoord->numComponents = 2;
             texcoord->stride = 0;
             texcoord->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-            texcoord->semantic = attributeSemantics.texcoord;
+            texcoord->semantic = ge::sg::AttributeDescriptor::Semantic::TEXCOORD;
             texcoord->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 2], std::default_delete<float[]>());
             copy_MofN((float*)aimesh->mTextureCoords[i], (float*)texcoord->data.get(), 2, 3, aimesh->mNumVertices*3);
             mesh->attributes.push_back(texcoord);
@@ -466,16 +466,7 @@ void AssimpModelLoader::registerSemantics()
    materialSemantics.displacementTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::displacementTexture);
    materialSemantics.lightmapTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::lightmapTexture);
    materialSemantics.reflectionTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::reflectionTexture);
-
-   attributeSemantics.position = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::position);
-   attributeSemantics.normal = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::normal);
-   attributeSemantics.tangent = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::tangent);
-   attributeSemantics.binormal = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::binormal);
-   attributeSemantics.indices = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::indices);
-   attributeSemantics.texcoord = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::texcoord);
 }
-
-AssimpModelLoader::AttributeSemantics AssimpModelLoader::attributeSemantics;
 
 AssimpModelLoader::MaterialSemantics AssimpModelLoader::materialSemantics;
 
@@ -496,13 +487,4 @@ AssimpModelLoader::MaterialSemantics::MaterialSemantics()
    ,  displacementTexture(ge::core::EnumRegister::notRegistered)
    ,  lightmapTexture(ge::core::EnumRegister::notRegistered)
    ,  reflectionTexture(ge::core::EnumRegister::notRegistered)
-{}
-
-AssimpModelLoader::AttributeSemantics::AttributeSemantics()
-   : position(ge::core::EnumRegister::notRegistered)
-   , normal(ge::core::EnumRegister::notRegistered)
-   , tangent(ge::core::EnumRegister::notRegistered)
-   , binormal(ge::core::EnumRegister::notRegistered)
-   , indices(ge::core::EnumRegister::notRegistered)
-   , texcoord(ge::core::EnumRegister::notRegistered)
 {}

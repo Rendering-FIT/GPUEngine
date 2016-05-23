@@ -60,18 +60,6 @@ public:
       unsigned reflectionTexture;
    };
 
-   struct AttributeSemantics
-   {
-      AttributeSemantics();
-
-      unsigned position;
-      unsigned normal;
-      unsigned tangent;
-      unsigned binormal;
-      unsigned indices;
-      unsigned texcoord;
-   };
-
    static ge::sg::Scene* loadScene(const char* modelIdentifier);
    static ge::sg::Scene* loadScene(const char* modelIdentifier, unsigned options);
    static void registerSemantics();
@@ -98,6 +86,5 @@ protected:
    static void processAnimations(const aiScene& ai_scene, ge::sg::Scene& scene, AnimationMap& animationMap);
 
    static MaterialSemantics materialSemantics;
-   static AttributeSemantics attributeSemantics;
 
 };

@@ -3,7 +3,6 @@
 #include <geUtil/macros.h>
 
 #include <geSG/Export.h>
-//#include <Drawable.h>
 #include <geSG/Model.h>
 #include <geSG/AttributeDescriptor.h>
 
@@ -15,7 +14,6 @@
 namespace ge{
    namespace sg
    {
-      //struct AttributeDescriptor;
       class Material;
 
       /**
@@ -23,7 +21,7 @@ namespace ge{
        * by number of attributes (position, normal etc.) and one material.
        * It is basically opengl draw command.
        */
-      class /*GESG_EXPORT*/ Mesh// : public Drawable
+      class /*GESG_EXPORT*/ Mesh
       {
       public:
 
@@ -32,31 +30,33 @@ namespace ge{
           *
           * @see getAttribute
           */
-         struct IsSemantic
-         {
+         struct IsSemantic {
+         protected:
 
-            IsSemantic(unsigned sem) : semantic(sem){}
-            IsSemantic(const std::string& sem) : semantic(AttributeDescriptor::semanticRegister.getValue(sem)){}
+            AttributeDescriptor::Semantic semantic;
 
-            inline bool operator()(unsigned semantic, std::shared_ptr<AttributeDescriptor> desc)
+         public:
+
+            IsSemantic(AttributeDescriptor::Semantic sem) : semantic(sem){}
+            IsSemantic(const std::string& sem) : semantic(AttributeDescriptor::Semantic_register::str2id(sem)){}
+
+            inline bool operator()(AttributeDescriptor::Semantic semantic, std::shared_ptr<AttributeDescriptor> desc)
             {
                return desc->semantic == semantic;
             }
 
             inline bool operator()(const std::string& semantic, std::shared_ptr<AttributeDescriptor> desc)
             {
-               return desc->semantic == AttributeDescriptor::semanticRegister.getValue(semantic);
+               return desc->semantic == AttributeDescriptor::Semantic_register::str2id(semantic);
             }
 
             inline bool operator()(std::shared_ptr<AttributeDescriptor> desc)
             {
                return desc->semantic == this->semantic;
             }
-
-            unsigned semantic;
          };
 
-         inline std::shared_ptr<AttributeDescriptor> getAttribute(unsigned semantic)
+         inline std::shared_ptr<AttributeDescriptor> getAttribute(AttributeDescriptor::Semantic semantic)
          {
             auto it = std::find_if(this->attributes.begin(), this->attributes.end(), Mesh::IsSemantic(semantic));
             if(it != this->attributes.end())
@@ -89,7 +89,7 @@ namespace ge{
          };*/
 
          ENUM_CLASS_FRIEND_OPERATOR(PrimitiveType, UNKNOWN, POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN, QUADS, QUAD_STRIP, POLYGON, PATCH, )
-            size_t count; ///< vertex count
+         size_t count; ///< vertex count
          PrimitiveType primitive;
          std::vector<std::shared_ptr<AttributeDescriptor>>   attributes;
          std::shared_ptr<Material> material;
@@ -97,6 +97,5 @@ namespace ge{
       private:
       };
 
-      
    }
 }

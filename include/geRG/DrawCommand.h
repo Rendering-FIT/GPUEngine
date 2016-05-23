@@ -20,6 +20,14 @@ namespace ge
          unsigned primitiveSetOffset4;
          unsigned matrixListControlOffset4;
          unsigned stateSetOffset4;
+
+         inline DrawCommandGpuData()  {}
+         constexpr inline DrawCommandGpuData(unsigned primitiveSetOffset4_,
+                                             unsigned matrixListControlOffset4_,
+                                             unsigned stateSetOffset4_)
+            : primitiveSetOffset4(primitiveSetOffset4_)
+            , matrixListControlOffset4(matrixListControlOffset4_)
+            , stateSetOffset4(stateSetOffset4_)  {}
       };
 
 
@@ -32,14 +40,14 @@ namespace ge
       public:
          unsigned data; // 32-bits exactly, verified by assert in DrawCommand.cpp
 
-         inline unsigned index() const  { return data&0x07ffffff; } // return lowest 27 bits
-         inline unsigned mode() const     { return data>>27; } // return upmost 5 bits
+         constexpr inline unsigned index() const  { return data&0x07ffffff; } // return lowest 27 bits
+         constexpr inline unsigned mode() const     { return data>>27; } // return upmost 5 bits
          inline void setIndex(unsigned value)  { data=(data&0xf8000000)|value; } // set lowest 27 bits, value must fit to 27 bits
          inline void setMode(unsigned value)     { data=(data&0x07ffffff)|(value<<27); } // set upmost 5 bits
          inline void set(unsigned index,unsigned mode)  { data=index|(mode<<27); } // set data, offset4 must fit to 27 bits
 
          inline DrawCommand() {}
-         inline DrawCommand(unsigned offset4,unsigned mode)  { set(offset4,mode); }
+         constexpr inline DrawCommand(unsigned index,unsigned mode) : data(index|(mode<<27))  {}
       };
 
 

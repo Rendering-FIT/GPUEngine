@@ -1,5 +1,5 @@
-#ifndef GE_CORE_IDOF_H
-#define GE_CORE_IDOF_H
+#ifndef GE_CORE_IDLIST_H
+#define GE_CORE_IDLIST_H
 
 #include <map>
 #include <ostream>
@@ -9,27 +9,27 @@ namespace ge {
 namespace core {
 
 
-/** idof_register_data keeps run-time data for particular idlist.
- *  It is designed as template struct as enum underlying type might
- *  vary (int, unsigned, long long int, etc.). */
+/** idlist_register_data keeps run-time data for particular idlist.
+ *  The template parameter T allows the underlying enum type to vary
+ *  (int, unsigned, long long int, etc.). */
 template<typename T>
-struct idof_register_data {
+struct idlist_register_data {
    std::map<std::string,T> str2id;  ///< Map from string to enumeration item (id).
    std::map<T,std::string> id2str;  ///< Map from enumeration item (id) to string.
    T next_available_id;             ///< Id that will be assigned upon next allocation request.
-   idof_register_data(const char* s);  ///< Constructor. The parameter s must be non-null,
-                                       ///< pointing to idlist initialization string
-                                       ///< (possibly empty) that will be used to fill
-                                       ///< idof_register_data with initial content.
+   idlist_register_data(const char* s);  ///< Constructor. The parameter s must be non-null,
+                                         ///< pointing to idlist initialization string
+                                         ///< (possibly empty) that will be used to fill
+                                         ///< idlist_register_data with initial content.
 };
 
 
 template<typename T>
-idof_register_data<T>::idof_register_data(const char* s)
+idlist_register_data<T>::idlist_register_data(const char* s)
    : next_available_id(0)
 {
 #if 0 // debug
-   std::cout<<"idof_register_data construction string: \""<<s<<'\"'<<std::endl;
+   std::cout<<"idlist_register_data construction string: \""<<s<<'\"'<<std::endl;
 #endif
    const char *p=s;
    do {
@@ -53,7 +53,7 @@ idof_register_data<T>::idof_register_data(const char* s)
       }
       T id=hasValue?value:next_available_id++;
 #if 0 // debug
-      std::cout<<"idof_register_data processed token: \""<<name<<"\", value: "<<id<<std::endl;
+      std::cout<<"idlist_register_data processed token: \""<<name<<"\", value: "<<id<<std::endl;
 #endif
       str2id.insert(std::pair<std::string,T>(name,id));
       id2str.insert(std::pair<T,std::string>(id,name));
@@ -74,9 +74,9 @@ idof_register_data<T>::idof_register_data(const char* s)
       typedef _name_ EnumType; \
       typedef std::underlying_type<_name_>::type UnderlyingType; \
       const char* chars = #_name_; \
-      static ge::core::idof_register_data<UnderlyingType>& get() \
+      static ge::core::idlist_register_data<UnderlyingType>& get() \
       { \
-         static ge::core::idof_register_data<UnderlyingType> r(#__VA_ARGS__); \
+         static ge::core::idlist_register_data<UnderlyingType> r(#__VA_ARGS__); \
          return r; \
       } \
       static EnumType str2id(const std::string& s) \
@@ -90,7 +90,7 @@ idof_register_data<T>::idof_register_data(const char* s)
          reg.str2id.insert(std::pair<std::string,UnderlyingType>(s,id)); \
          reg.id2str.insert(std::pair<UnderlyingType,std::string>(id,s)); \
          /* debug line bellow */ \
-         /* std::cout<<"idof: Created entry \""<<s<<"\": "<<id<<std::endl; */ \
+         /* std::cout<<"idlist: Created entry \""<<s<<"\": "<<id<<std::endl; */ \
          return static_cast<EnumType>(id); \
       } \
    }; \
@@ -102,6 +102,13 @@ idof_register_data<T>::idof_register_data(const char* s)
       os<<(it!=m.end()?it->second:"?"); \
       return os; \
    }
+
+// idlist_empty macro is used to declare initially empty idlist.
+// Using idlist(name) violates C99 standard and causes g++ emit warning:
+// "ISO C99 requires rest arguments to be used".
+// You can use idlist(name,) or idlist_empty(name).
+#define idlist_empty(_name_) \
+   idlist(_name_,)
 
 
 #if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 workaround (it does not support constexpr
@@ -209,4 +216,4 @@ typename enum_register::EnumType idof_template<enum_register,id_name>::id =
 } /* namespace ge */
 
 
-#endif /* GE_CORE_IDOF_H */
+#endif /* GE_CORE_IDLIST_H */

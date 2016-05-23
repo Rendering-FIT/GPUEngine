@@ -1,7 +1,7 @@
 #include <geCore/StandardSemanticsNames.h>
 #include "EnumToGL.h"
 
-GLuint fsg::semnatic2Attribute(unsigned semantic)
+GLuint fsg::semnatic2Attribute(ge::sg::AttributeDescriptor::Semantic semantic)
 {
    /*switch(semantic)
    {
@@ -13,13 +13,13 @@ GLuint fsg::semnatic2Attribute(unsigned semantic)
          break;
    }*/
 
-   if(semantic == ge::sg::AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::position))
+   if(semantic == ge::sg::AttributeDescriptor::Semantic::POSITION)
       return 0;
-   else if(semantic == ge::sg::AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::normal))
+   else if(semantic == ge::sg::AttributeDescriptor::Semantic::NORMAL)
       return 1;
-   else if(semantic == ge::sg::AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::texcoord))
+   else if(semantic == ge::sg::AttributeDescriptor::Semantic::TEXCOORD)
       return 2;
-   else if(semantic == ge::sg::AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::tangent))
+   else if(semantic == ge::sg::AttributeDescriptor::Semantic::TANGENT)
       return 6;
    return ge::core::EnumRegister::notRegistered;
 }
