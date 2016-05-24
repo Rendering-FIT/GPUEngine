@@ -594,7 +594,7 @@ std::shared_ptr<Resource>TypeRegister::sharedResource(std::string const&name)con
 
 std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(TypeID id,std::function<OBJDestructor>destructor)const{
   if(destructor)
-    return std::shared_ptr<Resource>(new AtomicResource(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),id),[destructor](AtomicResource*ac){destructor((unsigned char*)ac->getData());delete ac;});
+    return std::shared_ptr<Resource>(new AtomicResource(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),id),[destructor](AtomicResource*ac){destructor((unsigned char*)ac->getData());delete(unsigned char*)ac->getData();delete ac;});
 
   return this->sharedEmptyResource(id,this->_id2Destructor.find(id)->second);
   //return std::shared_ptr<Resource>(new AtomicResource(this->shared_from_this(),id),[destructor](AtomicResource*ac){destructor((unsigned char*)ac->getData());delete ac;});

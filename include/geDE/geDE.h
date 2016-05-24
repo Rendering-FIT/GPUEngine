@@ -30,3 +30,5 @@
 #include<geDE/FunctionRegister.h>
 #include<geDE/NameRegister.h>
 #include<geDE/VariableRegister.h>
+
+#include<geDE/RegisterBasicFunction.h>

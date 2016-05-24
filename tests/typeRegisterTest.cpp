@@ -9,6 +9,20 @@
 using namespace ge::de;
 
 int32_t counter=0;
+
+struct StructData{
+  int*data;
+};
+void init_StructData(StructData*sd){
+  counter++;
+  sd->data = new int[10];
+}
+void free_StructData(StructData*sd){
+  counter--;
+  delete[]sd->data;
+}
+
+
 SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
 
   GIVEN( "empty typeRegister" ) {
@@ -31,7 +45,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(((std::string&)*s)=="ahoj svete");
       }
     }
-//#define SHOWCERR
+    //#define SHOWCERR
 #ifndef SHOWCERR
     std::stringstream oss;
     auto old = std::cerr.rdbuf( oss.rdbuf() );
@@ -150,7 +164,6 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         a0=nullptr;
         REQUIRE(counter==0);
       }
-
       THEN("creating Resource with addClassC should correctly incr and decr counter"){
         counter=0;
         auto a1=r->sharedResource("Class1");
@@ -158,7 +171,6 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         a1=nullptr;
         REQUIRE(counter==1);
       }
-
       THEN("creating Resource with addClassD should correctly incr and decr counter"){
         counter=1;
         auto a2=r->sharedResource("Class2");
@@ -166,7 +178,6 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         a2=nullptr;
         REQUIRE(counter==0);
       }
-
       THEN("creating Resource with addClass should correctly incr and decr counter"){
         counter=0;
         auto a3=r->sharedResource("Class3");
@@ -174,7 +185,6 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         a3=nullptr;
         REQUIRE(counter==0);
       }
-
       THEN("create empty Resource and filling it later should be doable"){
         counter=0;
         auto a0=r->sharedEmptyResource("Class0");
@@ -211,6 +221,56 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       }
     }
 
+    WHEN("adding structure with extern init and free functions"){
+      auto id = r->addClass<StructData>("StructData");
+      r->addConstructor(id,std::function<TypeRegister::OBJConstructor>([](signed char*ptr){init_StructData((StructData*)ptr);}));
+      r->addDestructor(id,std::function<TypeRegister::OBJDestructor>([](unsigned char*ptr){free_StructData((StructData*)ptr);}));
+      counter = 0;
+      auto data = r->sharedResource("StructData");
+      REQUIRE(counter == 1);
+      data = nullptr;
+      REQUIRE(counter == 0);
+    }
+
+    WHEN("adding structure with extern init and free functions and using it as EmptyResource"){
+      auto id = r->addClass<StructData>("StructData");
+      r->addConstructor(id,std::function<TypeRegister::OBJConstructor>([](signed char*ptr){init_StructData((StructData*)ptr);}));
+      r->addDestructor(id,std::function<TypeRegister::OBJDestructor>([](unsigned char*ptr){free_StructData((StructData*)ptr);}));
+      counter = 0;
+      auto data = r->sharedEmptyResource("StructData");
+      auto alloc=[](StructData**d){*d=new StructData;init_StructData(*d);};
+      alloc(*data);
+
+      REQUIRE(counter == 1);
+      data = nullptr;
+      REQUIRE(counter == 0);
+    }
+
+    WHEN("adding structure with extern init and free functions and using it as shared ptr"){
+      auto id = r->addClass<std::shared_ptr<StructData>>("SharedStructData");
+
+
+
+      r->addConstructor(id,std::function<TypeRegister::OBJConstructor>([](signed char*ptr){new(ptr)std::shared_ptr<StructData>();init_StructData((StructData*)ptr);}));
+      r->addDestructor(id,std::function<TypeRegister::OBJDestructor>([](unsigned char*ptr){free_StructData((StructData*)ptr);((std::shared_ptr<StructData>*)ptr)->~shared_ptr();}));
+      counter = 0;
+      auto data = r->sharedResource("SharedStructData");
+
+      REQUIRE(counter == 1);
+      data = nullptr;
+      REQUIRE(counter == 0);
+    }
+
+    WHEN("adding float as class"){
+      auto id = r->addClass<float>("f32");
+
+//      r->addConstructor(id,std::function<TypeRegister::OBJConstructor>([](signed char*ptr){new(ptr)std::shared_ptr<StructData>();init_StructData((StructData*)ptr);}));
+//      r->addDestructor(id,std::function<TypeRegister::OBJDestructor>([](unsigned char*ptr){free_StructData((StructData*)ptr);((std::shared_ptr<StructData>*)ptr)->~shared_ptr();}));
+      auto data = r->sharedResource("float");
+
+      (float&)(*data)=32.3f;
+      REQUIRE((float&)(*data) == 32.3f);
+    }
 
 
 #ifndef SHOWCERR
@@ -218,4 +278,6 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
 #endif
   }
 }
+
+
 

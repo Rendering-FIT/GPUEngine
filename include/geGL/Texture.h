@@ -2,17 +2,13 @@
 
 #include<geGL/OpenGLObject.h>
 #include<iostream>
+#include<set>
 
 namespace ge{
   namespace gl{
+    class Framebuffer;
     class GEGL_EXPORT Texture: public OpenGLObject{
-      private:
-        inline GLint _getTexLevelParameter(GLint level,GLenum pname)const;
-        inline GLint _getTexParameter (GLenum pname)const;
-        inline void  _getTexParameterf(GLfloat*data,GLenum pname)const;
-        inline GLuint _bindSafe()const;
-        GLenum  _target;
-        GLenum  _format;
+      friend class Framebuffer;
       public:
         Texture(
             GLenum  target        ,
@@ -152,6 +148,15 @@ namespace ge{
         std::string getInfo()const;
         unsigned long long getSize()const;
         unsigned long long getLevelSize(GLint level)const;
+      private:
+        inline GLint _getTexLevelParameter(GLint level,GLenum pname)const;
+        inline GLint _getTexParameter (GLenum pname)const;
+        inline void  _getTexParameterf(GLfloat*data,GLenum pname)const;
+        inline GLuint _bindSafe()const;
+        GLenum  _target;
+        GLenum  _format;
+        std::set<Framebuffer*>_framebuffers;
+
     };
   }//gl
 }//ge

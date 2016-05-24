@@ -1,5 +1,7 @@
 #include<geGL/Framebuffer.h>
 #include<geGL/OpenGLUtil.h>
+#include<geGL/Texture.h>
+#include<geGL/Renderbuffer.h>
 #include<iostream>
 #include<sstream>
 
@@ -23,11 +25,6 @@ GLint Framebuffer::getAttachmentParam(GLenum attachment,GLenum pname){
   return param;
 }
 
-Framebuffer::Framebuffer (bool defaultFramebuffer){
-  if(defaultFramebuffer)this->_id=0;
-  else glCreateFramebuffers(1,&this->_id);
-}
-
 Framebuffer::Framebuffer (
     FunctionTablePointer const&table,
     bool defaultFramebuffer):OpenGLObject(table){
@@ -35,19 +32,56 @@ Framebuffer::Framebuffer (
   else glCreateFramebuffers(1,&this->_id);
 }
 
+Framebuffer::Framebuffer (bool defaultFramebuffer):Framebuffer(nullptr,defaultFramebuffer){
+}
+
 Framebuffer::~Framebuffer(){
+  for(auto const&x:this->_textureAttachments)
+    x.second->_framebuffers.erase(this);
+  for(auto const&x:this->_renderbufferAttachments)
+    x.second->_framebuffers.erase(this);
   glDeleteFramebuffers(1,&this->_id);
 }
 
-void Framebuffer::attachRenderbuffer(GLenum attachment,GLuint renderbuffer)const{
-  glNamedFramebufferRenderbuffer(this->_id,attachment,GL_RENDERBUFFER,renderbuffer);
+void Framebuffer::attachRenderbuffer(
+    GLenum                             attachment  ,
+    std::shared_ptr<Renderbuffer>const&renderbuffer){
+  auto ii = this->_renderbufferAttachments.find(attachment);
+  if(ii!=this->_renderbufferAttachments.end()){
+    ii->second->_framebuffers.erase(this);
+  }
+  this->_renderbufferAttachments.erase(attachment);
+
+  if(!renderbuffer){
+    glNamedFramebufferRenderbuffer(this->_id,attachment,GL_RENDERBUFFER,0);
+    return;
+  }
+
+  this->_renderbufferAttachments[attachment] = renderbuffer;
+  renderbuffer->_framebuffers.insert(this);
+  glNamedFramebufferRenderbuffer(this->_id,attachment,GL_RENDERBUFFER,renderbuffer->getId());
 }
 
-void Framebuffer::attachTexture(GLenum attachment,GLuint texture,GLint level,GLint layer)const{
+void Framebuffer::attachTexture(GLenum attachment,std::shared_ptr<Texture>const&texture,GLint level,GLint layer){
+  auto ii = this->_textureAttachments.find(attachment);
+  if(ii!=this->_textureAttachments.end()){
+    ii->second->_framebuffers.erase(this);
+  }
+  this->_textureAttachments.erase(attachment);
+
+  if(!texture){
+    if(layer==-1)
+      glNamedFramebufferTexture(this->_id,attachment,0,level);
+    else
+      glNamedFramebufferTextureLayer(this->_id,attachment,0,level,layer);
+    return;
+  }
+
+  this->_textureAttachments[attachment] = texture;
   if(layer==-1)
-    glNamedFramebufferTexture(this->_id,attachment,texture,level);
+    glNamedFramebufferTexture(this->_id,attachment,texture->getId(),level);
   else
-    glNamedFramebufferTextureLayer(this->_id,attachment,texture,level,layer);
+    glNamedFramebufferTextureLayer(this->_id,attachment,texture->getId(),level,layer);
 }
 
 void Framebuffer::bind  (GLenum target)const{

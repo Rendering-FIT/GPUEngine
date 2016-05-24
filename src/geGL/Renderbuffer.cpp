@@ -4,39 +4,30 @@ using namespace ge::gl;
 using namespace ge::gl::opengl;
 
 Renderbuffer::Renderbuffer(
+    FunctionTablePointer const&table,
     GLenum  internalFormat,
     GLsizei width,
-    GLsizei height){
+    GLsizei height,
+    GLsizei samples):OpenGLObject(table){
   glCreateRenderbuffers(1,&this->_id);
-  glNamedRenderbufferStorage(this->_id,internalFormat,width,height);
+  this->setStorage(internalFormat,width,height,samples);
 }
 
 Renderbuffer::Renderbuffer( 
     GLenum  internalFormat,
-    GLsizei samples,
     GLsizei width,
-    GLsizei height){
-  glCreateRenderbuffers(1,&this->_id);
+    GLsizei height,
+    GLsizei samples):Renderbuffer(nullptr,internalFormat,width,height,samples){
+}
+
+void Renderbuffer::setStorage(
+    GLenum  internalFormat,
+    GLsizei width,
+    GLsizei height,
+    GLsizei samples)const{
   glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
 }
 
-Renderbuffer::Renderbuffer(
-    FunctionTablePointer const&table,
-    GLenum  internalFormat,
-    GLsizei samples,
-    GLsizei width,
-    GLsizei height):OpenGLObject(table){
-  glCreateRenderbuffers(1,&this->_id);
-  glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
-}
-Renderbuffer::Renderbuffer(
-    FunctionTablePointer const&table,
-    GLenum  internalFormat,
-    GLsizei width,
-    GLsizei height):OpenGLObject(table){
-  glCreateRenderbuffers(1,&this->_id);
-  glNamedRenderbufferStorage(this->_id,internalFormat,width,height);
-}
 
 Renderbuffer::~Renderbuffer(){
   glDeleteRenderbuffers(1,&this->_id);
@@ -46,63 +37,54 @@ void   Renderbuffer::bind()const{
   glBindRenderbuffer(GL_RENDERBUFFER,this->_id);
 }
 
+void Renderbuffer::unbind()const{
+  glBindRenderbuffer(GL_RENDERBUFFER,0);
+}
+
 GLint Renderbuffer::getWidth()const{
-  GLint width;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_WIDTH,&width);
-  return width;
+  return this->_getParamateri(GL_RENDERBUFFER_WIDTH);
 }
 
 GLint Renderbuffer::getHeight()const{
-  GLint height;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_HEIGHT,&height);
-  return height;
+  return this->_getParamateri(GL_RENDERBUFFER_HEIGHT);
 }
 
 GLenum Renderbuffer::getInternalFormat()const{
-  GLint internalFormat;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_INTERNAL_FORMAT,&internalFormat);
-  return internalFormat;
+  return this->_getParamateri(GL_RENDERBUFFER_INTERNAL_FORMAT);
 }
 
 GLint Renderbuffer::getSamples()const{
-  GLint samples;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_SAMPLES,&samples);
-  return samples;
+  return this->_getParamateri(GL_RENDERBUFFER_SAMPLES);
 }
 
 GLint Renderbuffer::getRedSize()const{
-  GLint redSize;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_RED_SIZE,&redSize);
-  return redSize;
+  return this->_getParamateri(GL_RENDERBUFFER_RED_SIZE);
 }
 
 GLint Renderbuffer::getGreenSize()const{
-  GLint greenSize;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_GREEN_SIZE,&greenSize);
-  return greenSize;
+  return this->_getParamateri(GL_RENDERBUFFER_GREEN_SIZE);
 }
 
 GLint Renderbuffer::getBlueSize()const{
-  GLint blueSize;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_BLUE_SIZE,&blueSize);
-  return blueSize;
+  return this->_getParamateri(GL_RENDERBUFFER_BLUE_SIZE);
 }
 
 GLint Renderbuffer::getAlphaSize()const{
-  GLint alphaSize;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_ALPHA_SIZE,&alphaSize);
-  return alphaSize;
+  return this->_getParamateri(GL_RENDERBUFFER_ALPHA_SIZE);
 }
 
 GLint Renderbuffer::getDepthSize()const{
-  GLint depthSize;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_DEPTH_SIZE,&depthSize);
-  return depthSize;
+  return this->_getParamateri(GL_RENDERBUFFER_DEPTH_SIZE);
 }
 
 GLint Renderbuffer::getStencilSize()const{
-  GLint stencilSize;
-  glGetNamedRenderbufferParameteriv(this->_id,GL_RENDERBUFFER_STENCIL_SIZE,&stencilSize);
-  return stencilSize;
+  return this->_getParamateri(GL_RENDERBUFFER_STENCIL_SIZE);
 }
+
+GLint Renderbuffer::_getParamateri(GLenum pname)const{
+  GLint param;
+  glGetNamedRenderbufferParameteriv(this->_id,pname,&param);
+  return param;
+}
+
 

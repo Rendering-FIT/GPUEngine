@@ -3,17 +3,15 @@
 #include<geGL/OpenGLObject.h>
 #include<stdarg.h>
 #include<iostream>
+#include<map>
 
 namespace ge{
   namespace gl{
-    /**
-     * @brief 
-     */
+    class Texture;
+    class Renderbuffer;
     class GEGL_EXPORT Framebuffer: public OpenGLObject{
-      private:
-        inline GLint getParam(GLenum pname);
-        inline void  setParam(GLenum pname,GLint);
-        inline GLint getAttachmentParam(GLenum attachment,GLenum pname);
+      friend class Texture;
+      friend class Renderbuffer;
       public:
         Framebuffer (bool defaultFramebuffer=false);
         Framebuffer (
@@ -23,21 +21,21 @@ namespace ge{
         void   bind  (GLenum target = GL_DRAW_FRAMEBUFFER)const;
         void   unbind(GLenum target = GL_DRAW_FRAMEBUFFER)const;
         void attachTexture(
-            GLenum attachment     ,
-            GLuint texture        ,
-            GLint  level      =  0,
-            GLint  layer      = -1)const;
+            GLenum                        attachment          ,
+            std::shared_ptr<Texture>const&texture    = nullptr,
+            GLint                         level      = 0      ,
+            GLint                         layer      = -1     );
         void attachRenderbuffer(
-            GLenum attachment  ,
-            GLuint renderbuffer)const;
+            GLenum                             attachment            ,
+            std::shared_ptr<Renderbuffer>const&renderbuffer = nullptr);
         bool check()const;
         void drawBuffer(GLenum buffer)const;
         void drawBuffers(GLsizei n,const GLenum *buffers)const;
         void drawBuffers(GLsizei n,...)const;
-        void clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*   value)const;
-        void clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat* value)const;
-        void clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*  value)const;
-        void clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const;
+        void clearBuffer(GLenum buffer,GLint drawBuffer,const GLint*   value)const;
+        void clearBuffer(GLenum buffer,GLint drawBuffer,const GLfloat* value)const;
+        void clearBuffer(GLenum buffer,GLint drawBuffer,const GLuint*  value)const;
+        void clearBuffer(GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const;
         void invalidateFramebuffer(
             GLsizei       numAttachments     ,
             const GLenum* attachments        ,
@@ -84,6 +82,12 @@ namespace ge{
         void clearDepth  (GLfloat  d);
         void clearStencil(GLint    s);
         std::string getInfo();
+      private:
+        inline GLint getParam(GLenum pname);
+        inline void  setParam(GLenum pname,GLint);
+        inline GLint getAttachmentParam(GLenum attachment,GLenum pname);
+        std::map<GLenum,std::shared_ptr<Texture>>_textureAttachments;
+        std::map<GLenum,std::shared_ptr<Renderbuffer>>_renderbufferAttachments;
     };
   }//gl
 }//ge
