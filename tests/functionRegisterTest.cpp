@@ -49,13 +49,14 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   REQUIRE(fr->getName(0)=="unregistered");
-  REQUIRE(fr->getType(0)==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>());
-  auto ft =       tr->addType("",{
+  REQUIRE(fr->getType(0)==tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Unregistered>()));
+  auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+  auto ft =       tr->addCompositeType("",{
         TypeRegister::FCE,
-        TypeRegister::getTypeTypeId<int32_t>(),
+        i32,
         2,
-        TypeRegister::getTypeTypeId<int32_t>(),
-        TypeRegister::getTypeTypeId<int32_t>()});
+        i32,
+        i32});
   auto id = fr->addFunction(
       ft,
       TypeRegister::getTypeKeyword<Add<int32_t>>(),//::name(),
@@ -80,21 +81,23 @@ SCENARIO("registration of stdFunction","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
+  auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
   registerStdFunctions(fr);
   auto a0 = std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr));
   REQUIRE(fr->getName(a0->getId()) == "Add<i32>");
   
   REQUIRE(tr->getNofFceArgs(fr->getType(a0->getId())) == 2);
   
-  REQUIRE(tr->getFceArgTypeId(fr->getType(a0->getId()),0) == TypeRegister::getTypeTypeId<int32_t>());
-  REQUIRE(tr->getFceArgTypeId(fr->getType(a0->getId()),1) == TypeRegister::getTypeTypeId<int32_t>());
-  REQUIRE(tr->getFceReturnTypeId(fr->getType(a0->getId())) == TypeRegister::getTypeTypeId<int32_t>());
+  REQUIRE(tr->getFceArgTypeId(fr->getType(a0->getId()),0) == i32);
+  REQUIRE(tr->getFceArgTypeId(fr->getType(a0->getId()),1) == i32);
+  REQUIRE(tr->getFceReturnTypeId(fr->getType(a0->getId())) == i32);
 }
 
 SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
+  auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
   registerStdFunctions(fr);
 
   auto ra = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),1);
@@ -137,7 +140,7 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
       {CompositeFunctionFactory::FactoryInput(b,0),CompositeFunctionFactory::FactoryInput(d,0)},
       {CompositeFunctionFactory::FactoryInput(c,1),CompositeFunctionFactory::FactoryInput(d,1)}});
 
-  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::I32,2,TypeRegister::I32,TypeRegister::I32}),"newFce",fac);
+  fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,i32,2,i32,i32}),"newFce",fac);
 
   auto f=fr->sharedFunction("newFce");
   auto ff=std::dynamic_pointer_cast<Function>(f);

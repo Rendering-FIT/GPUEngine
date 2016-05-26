@@ -10,9 +10,9 @@
 using namespace ge::de;
 
 SCENARIO( "basic interpret tests", "[Function]" ) {
-  auto typeRegister = std::make_shared<ge::de::TypeRegister>();
+  auto tr = std::make_shared<ge::de::TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
-  auto fr = std::make_shared<ge::de::FunctionRegister>(typeRegister,nr);
+  auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
   //std::cerr<<fr->str();
   GIVEN( "basic expression" ) {
@@ -25,16 +25,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     //f1 = f0 + fc
     //f2 = f0 + fd
     //f3 = (int)f2
-    auto f0=std::make_shared<ge::de::Add<float>>(fr,typeRegister->sharedResource("f32"));
+    auto f0=std::make_shared<ge::de::Add<float>>(fr,tr->sharedResource("f32"));
     f0->bindInput(fr,0,fa);
     f0->bindInput(fr,1,fb);
-    auto f1=std::make_shared<ge::de::Add<float>>(fr,typeRegister->sharedResource("f32"));
+    auto f1=std::make_shared<ge::de::Add<float>>(fr,tr->sharedResource("f32"));
     f1->bindInput(fr,0,f0);
     f1->bindInput(fr,1,fc);
-    auto f2=std::make_shared<ge::de::Sub<float>>(fr,typeRegister->sharedResource("f32"));
+    auto f2=std::make_shared<ge::de::Sub<float>>(fr,tr->sharedResource("f32"));
     f2->bindInput(fr,0,f0);
     f2->bindInput(fr,1,fd);
-    auto f3=std::make_shared<ge::de::Cast<float,int>>(fr,typeRegister->sharedResource("i32"));
+    auto f3=std::make_shared<ge::de::Cast<float,int>>(fr,tr->sharedResource("i32"));
     f3->bindInput(fr,0,f2);
     WHEN("running f1"){
       REQUIRE(f1->isDirty()==true);
@@ -76,7 +76,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fb=std::make_shared<ge::de::Nullary>(fr,(unsigned)12);
     auto fc=std::make_shared<ge::de::Nullary>(fr,(unsigned)0 );
 
-    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,typeRegister->sharedResource("bool"));
+    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,tr->sharedResource("bool"));
     cond->bindInput(fr,0,fa);
     cond->bindInput(fr,1,fb);
 
@@ -117,7 +117,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto fiend = std::make_shared<ge::de::Nullary>(fr,(unsigned)10u);
     auto f1    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
 
-    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,typeRegister->sharedResource("bool"));
+    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,tr->sharedResource("bool"));
     cond->bindInput(fr,0,fi   );
     cond->bindInput(fr,1,fiend);
 
@@ -158,14 +158,14 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
 
 SCENARIO( "ticks tests", "[Function]" ) {
-  auto typeRegister = std::make_shared<ge::de::TypeRegister>();
+  auto tr = std::make_shared<ge::de::TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
-  auto fr = std::make_shared<ge::de::FunctionRegister>(typeRegister,nr);
+  auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
   class AddTen: public ge::de::AtomicFunction{
     public:
       unsigned counter=0;
-      AddTen(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::F32,1,TypeRegister::F32},"AddTen",nullptr){
+      AddTen(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>()),1,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>())},"AddTen",nullptr){
         //this->_setInput(0,tr->getTypeId("f32"));
         //this->_setOutput(tr->getTypeId("f32"));
       }
@@ -182,7 +182,7 @@ SCENARIO( "ticks tests", "[Function]" ) {
   class Add: public ge::de::AtomicFunction{
     public:
       unsigned counter=0;
-      Add(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,TypeRegister::F32,2,TypeRegister::F32,TypeRegister::F32},"Add",nullptr){
+      Add(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>()),2,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>()),fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>())},"Add",nullptr){
         //this->_setInput(0,tr->getTypeId("f32"));
         //this->_setInput(1,tr->getTypeId("f32"));
         //this->_setOutput(tr->getTypeId("f32"));
@@ -203,10 +203,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
     auto fadd    = std::make_shared<Add>(fr);
 
     faddten->bindInput(fr,0,fa);
-    faddten->bindOutput(fr,typeRegister->sharedResource("f32"));
+    faddten->bindOutput(fr,tr->sharedResource("f32"));
     fadd->bindInput(fr,0,faddten);
     fadd->bindInput(fr,1,faddten);
-    fadd->bindOutput(fr,typeRegister->sharedResource("f32"));
+    fadd->bindOutput(fr,tr->sharedResource("f32"));
 
     WHEN("running fadd"){
       (*fadd)();

@@ -12,7 +12,7 @@ std::string FunctionRegister::_genDefaultName(InputIndex i)const{
 }
 
 FunctionRegister::FunctionID FunctionRegister::addFunction(
-    TypeRegister::TypeID             const&type   ,
+    TypeRegister::TypeId             const&type   ,
     std::string                      const&name   ,
     std::shared_ptr<StatementFactory>const&factory){
   assert(this!=nullptr);

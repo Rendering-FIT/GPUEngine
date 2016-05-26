@@ -5,7 +5,7 @@ using namespace ge::de;
 
 CompositeResource::CompositeResource(
     std::shared_ptr<TypeRegister>const&         manager  ,
-    TypeRegister::TypeID                        id       ,
+    TypeRegister::TypeId                        id       ,
     std::vector<std::shared_ptr<Resource>>const&accessors):Resource(manager,id){
   this->_nofElements = 0;
   switch(manager->getTypeIdType(id)){
@@ -17,9 +17,9 @@ CompositeResource::CompositeResource(
         return;
       }
       for(auto x:accessors){
-        if(manager->getArrayInnerTypeId(id)!=x->getId()){
+        if(manager->getArrayElementTypeId(id)!=x->getId()){
           std::cerr<<"ERROR - CompositeResource::CompositeResource - one of components differs from arrays inner type - ";
-          std::cerr<<manager->getTypeIdName(manager->getArrayInnerTypeId(id))<<" != ";
+          std::cerr<<manager->getTypeIdName(manager->getArrayElementTypeId(id))<<" != ";
           std::cerr<<manager->getTypeIdName(x->getId());
           std::cerr<<std::endl;
           return;
@@ -61,7 +61,7 @@ void const*CompositeResource::getDataAddress()const{
   return this->_components[0]->getDataAddress();
 }
 
-std::shared_ptr<Resource> CompositeResource::operator[](TypeRegister::DescriptionIndex elem){
+std::shared_ptr<Resource> CompositeResource::operator[](size_t elem){
   TypeRegister::DescriptionElement offset=0;
   decltype(this->_components)::size_type i=0;
   while(elem>offset+this->_components[i]->getNofElements()){

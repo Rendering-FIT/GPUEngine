@@ -33,7 +33,7 @@ namespace ge{
             FunctionRegister::FunctionID           id);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr                       ,
-            TypeRegister::DescriptionList    const&typeDescription          ,
+            TypeRegister::DescriptionVector  const&typeDescription          ,
             std::string                            name            = ""     ,
             std::shared_ptr<StatementFactory>const&factory         = nullptr);
         AtomicFunction(

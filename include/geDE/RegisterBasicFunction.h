@@ -39,7 +39,7 @@ namespace ge{
         assert(fr->getTypeRegister()!=nullptr);
         static const std::string ss=name;
         auto tr = fr->getTypeRegister();
-        auto tid = tr->addType("",getDescription(tr,FCE));
+        auto tid = tr->addCompositeType("",getDescription(tr,FCE));
 
         class BasicFunction: public AtomicFunction{
           protected:

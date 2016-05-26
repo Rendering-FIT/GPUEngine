@@ -15,17 +15,17 @@ namespace ge{
   namespace de{
     class TypeRegister;
 
-    class GECORE_EXPORT Resource{
+    class GEDE_EXPORT Resource{
       public:
         inline Resource(
             std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
-            TypeRegister::TypeID               id      = TypeRegister::UNREGISTERED);
+            TypeRegister::TypeId               id      = TypeRegister::UNREGISTERED);
         inline virtual ~Resource();
         inline std::shared_ptr<TypeRegister>const&getManager()const;
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
-        inline TypeRegister::TypeID getId()const;
-        virtual std::shared_ptr<Resource> operator[](TypeRegister::DescriptionIndex elem) = 0;
+        inline TypeRegister::TypeId getId()const;
+        virtual std::shared_ptr<Resource> operator[](size_t elem) = 0;
         virtual TypeRegister::DescriptionElement getNofElements()const=0;
         virtual std::string data2Str()const=0;
         template<typename T>
@@ -38,12 +38,12 @@ namespace ge{
           operator T**()const;
       protected:
         std::shared_ptr<TypeRegister>_manager = nullptr;
-        TypeRegister::TypeID _id = TypeRegister::UNREGISTERED;
+        TypeRegister::TypeId _id = TypeRegister::UNREGISTERED;
     };
 
     inline Resource::Resource(
         std::shared_ptr<TypeRegister>const&manager,
-        TypeRegister::TypeID               id     ){
+        TypeRegister::TypeId               id     ){
       this->_manager = manager;
       this->_id = id;
     }
@@ -56,7 +56,7 @@ namespace ge{
       return this->_manager;
     }
 
-    inline TypeRegister::TypeID Resource::getId()const{
+    inline TypeRegister::TypeId Resource::getId()const{
       return this->_id;
     }
 
@@ -82,21 +82,21 @@ namespace ge{
       }
 
 
-
+/*
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Resource>TypeRegister::sharedResource(std::string const&name,ARGS... args)const{
-        TypeID id=this->getTypeId(name);
-        return this->sharedResourceTypeID<CLASS>(id,args...);
+        TypeId id=this->getTypeId(name);
+        return this->sharedResourceTypeId<CLASS>(id,args...);
       }
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Resource>TypeRegister::sharedResource(const char* name,ARGS... args)const{
-        TypeID id=this->getTypeId(std::string(name));
-        return this->sharedResourceTypeID<CLASS>(id,args...);
+        TypeId id=this->getTypeId(std::string(name));
+        return this->sharedResourceTypeId<CLASS>(id,args...);
       }
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Resource>TypeRegister::sharedResource(ARGS... args)const{
-        TypeID id=this->getTypeId(this->getTypeKeyword<CLASS>());
-        return this->sharedResourceTypeID<CLASS>(id,args...);
+        TypeId id=this->getTypeId(this->getTypeKeyword<CLASS>());
+        return this->sharedResourceTypeId<CLASS>(id,args...);
       }
     template<typename CLASS,typename... ARGS>
       inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddCD(std::string const&name,ARGS... args){
@@ -118,5 +118,6 @@ namespace ge{
         this->addClass<CLASS>(name);
         return this->sharedResource<CLASS>(name,args...);
       }
+      */
   }
 }

@@ -1,6 +1,123 @@
 #pragma once
 
 #include<geDE/Export.h>
+
+#include<vector>
+#include<map>
+#include<set>
+#include<iostream>
+#include<memory>
+
+namespace ge{
+  namespace de{
+    class Resource;
+    class GEDE_EXPORT TypeRegister: public std::enable_shared_from_this<TypeRegister>{
+      protected:
+        class TypeDescription;
+        using TypeVector = std::vector<TypeDescription*>;
+      public:
+        struct Unregistered;
+        using Destructor         = void(*)(uint8_t*);
+        using Constructor        = void(*)(int8_t*);
+        using TypeId             = TypeVector::size_type;
+        using DescriptionElement = size_t;
+        using DescriptionVector  = std::vector<DescriptionElement>;
+        enum TypeType{
+          UNREGISTERED = 0,
+          ANY          = 1,
+          ATOMIC       = 2,
+          ARRAY        = 3,
+          STRUCT       = 4,
+          FCE          = 5,
+          TYPEID       = 6,
+        };
+        TypeRegister();
+        virtual ~TypeRegister();
+        TypeId addAtomicType(
+              std::string const&name                 ,
+              size_t      const&size                 ,
+              Destructor  const&destructor  = nullptr,
+              Constructor const&constructor = nullptr);
+        TypeId addCompositeType(
+            std::string       const&name       ,
+            DescriptionVector const&description);
+        size_t getNofTypes()const;
+        std::string type2Str(size_t typeIndex)const;
+        TypeType                    getTypeIdType         (TypeId id)const;
+        size_t                      getNofStructElements  (TypeId id)const;
+        TypeId                      getStructElementTypeId(TypeId id,size_t index)const;
+        size_t                      getArraySize          (TypeId id)const;
+        TypeId                      getArrayElementTypeId (TypeId id)const;
+        TypeId                      getFceReturnTypeId    (TypeId id)const;
+        size_t                      getNofFceArgs         (TypeId id)const;
+        TypeId                      getFceArgTypeId       (TypeId id,size_t index)const;
+        TypeId                      getTypeId             (std::string const&name)const;
+        std::string const&          getTypeIdName         (TypeId id)const;
+        std::set<std::string>const& getTypeIdSynonyms     (TypeId id)const;
+        bool                        hasSynonyms           (TypeId id)const;
+        bool                        areSynonyms           (std::string const&name0,std::string const&name1)const;
+        size_t                      computeTypeIdSize     (TypeId id)const;
+        void*alloc(TypeId id)const;
+        void free(void*ptr)const;
+        void*construct(TypeId id)const;
+        void destroy(void*ptr,TypeId id)const;
+        std::shared_ptr<Resource>sharedResource(TypeId id)const;
+        std::shared_ptr<Resource>sharedResource(std::string const&name)const;
+        std::shared_ptr<Resource>sharedEmptyResource(TypeId id)const;
+        std::shared_ptr<Resource>sharedEmptyResource(std::string const&name)const;
+        void addDestructor(TypeId id,Destructor const&destructor = nullptr);
+        void addConstructor(TypeId id,Constructor const&constructor = nullptr);
+        template<typename TYPE>
+        static std::string getTypeKeyword();
+      protected:
+        class ArrayDescription;
+        class StructDescription;
+        class FunctionDescription;
+        class AtomicDescription;
+        TypeVector _types;
+        std::map<TypeId,std::set<std::string>>_typeId2Synonyms;
+        std::map<std::string,TypeId>_name2TypeId;
+        TypeId _vectorIndex2TypeId(TypeId const&index)const;
+        TypeId _typeId2VectorIndex(TypeId const&id   )const;
+        void _bindTypeIdWithName(TypeId id,std::string const&name);
+        TypeId _typeExists(
+            DescriptionVector const&description,
+            size_t                 &i);
+        TypeId _typeIdExists(
+            DescriptionVector const&description,
+            size_t                 &i);
+        TypeId _addType(
+            std::string       const&name       ,
+            DescriptionVector const&description,
+            size_t                 &i          );
+        TypeId _addTypeId(
+            std::string       const&name       ,
+            DescriptionVector const&description,
+            size_t                 &i          );
+        void _callConstructors(uint8_t*ptr,TypeId id)const;
+        void _callDestructors(uint8_t*ptr,TypeId id)const;
+        TypeDescription*_getDescription(TypeId id)const;
+    };
+
+    template<>inline std::string TypeRegister::getTypeKeyword<TypeRegister::Unregistered>(){return"unregistered";}
+    template<>inline std::string TypeRegister::getTypeKeyword<void                      >(){return"void"        ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<bool                      >(){return"bool"        ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int8_t                    >(){return"i8"          ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int16_t                   >(){return"i16"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int32_t                   >(){return"i32"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<int64_t                   >(){return"i64"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint8_t                   >(){return"u8"          ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint16_t                  >(){return"u16"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint32_t                  >(){return"u32"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<uint64_t                  >(){return"u64"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<float                     >(){return"f32"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<double                    >(){return"f64"         ;}
+    template<>inline std::string TypeRegister::getTypeKeyword<std::string               >(){return"string"      ;}
+  }
+}
+
+
+#if 0
 #include<geCore/Dtemplates.h>
 #include<iostream>
 #include<vector>
@@ -72,33 +189,33 @@ namespace ge{
         std::shared_ptr<Resource>sharedEmptyResource(std::string const&name,std::function<OBJDestructor> destructor  = nullptr)const;
 
         template<typename TYPE>
-        static std::string getTypeKeyword();
+          static std::string getTypeKeyword();
         template<typename TYPE>
-        static TypeID getTypeTypeId();
+          static TypeID getTypeTypeId();
         template<typename TYPE>
-        static DescriptionElement getTypeDescription();
+          static DescriptionElement getTypeDescription();
         template<typename TYPE>
-        std::function<OBJConstructor> getConstructor();
+          std::function<OBJConstructor> getConstructor();
         template<typename TYPE>
-        std::function<OBJDestructor> getDestructor();
+          std::function<OBJDestructor> getDestructor();
 
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResourceTypeID(TypeID id,ARGS... args)const;
+          inline std::shared_ptr<Resource>sharedResourceTypeID(TypeID id,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResource(std::string const&name,ARGS... args)const;
+          inline std::shared_ptr<Resource>sharedResource(std::string const&name,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResource(const char* name,ARGS... args)const;
+          inline std::shared_ptr<Resource>sharedResource(const char* name,ARGS... args)const;
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResource(ARGS... args)const;
+          inline std::shared_ptr<Resource>sharedResource(ARGS... args)const;
 
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResourceAddCD(std::string const&name,ARGS... args);
+          inline std::shared_ptr<Resource>sharedResourceAddCD(std::string const&name,ARGS... args);
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResourceAddC(std::string const&name,ARGS... args);
+          inline std::shared_ptr<Resource>sharedResourceAddC(std::string const&name,ARGS... args);
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResourceAddD(std::string const&name,ARGS... args);
+          inline std::shared_ptr<Resource>sharedResourceAddD(std::string const&name,ARGS... args);
         template<typename CLASS,typename... ARGS>
-        inline std::shared_ptr<Resource>sharedResourceAdd(std::string const&name,ARGS... args);
+          inline std::shared_ptr<Resource>sharedResourceAdd(std::string const&name,ARGS... args);
 
         void destroyUsingCustomDestroyer    (unsigned char*ptr,TypeID id)const;
         void constructUsingCustomConstructor(  signed char*ptr,TypeID id)const;
@@ -108,13 +225,13 @@ namespace ge{
 
 
         template<typename CLASS>
-        TypeID addClassCD(std::string const&name);
+          TypeID addClassCD(std::string const&name);
         template<typename CLASS>
-        TypeID addClassD(std::string const&name);
+          TypeID addClassD(std::string const&name);
         template<typename CLASS>
-        TypeID addClassC(std::string const&name);
+          TypeID addClassC(std::string const&name);
         template<typename CLASS>
-        TypeID addClass(std::string const&name);
+          TypeID addClass(std::string const&name);
 
         DescriptionIndex   getNofDescriptionUints()const;
         DescriptionElement getDescription(DescriptionIndex i)const;
@@ -163,11 +280,11 @@ namespace ge{
         void   _callConstructors(char*ptr,TypeID id)const;
 
         template<typename TO>
-        TO _argsTo()const;
+          TO _argsTo()const;
         template<typename TO,typename... ARGS>
-        TO _argsTo(TO to,ARGS... args)const;
+          TO _argsTo(TO to,ARGS... args)const;
         template<typename TO,typename NOTTO,typename... ARGS>
-        typename std::enable_if<!std::is_same<TO,NOTTO>::value,TO>::type _argsTo(NOTTO,ARGS... args)const;
+          typename std::enable_if<!std::is_same<TO,NOTTO>::value,TO>::type _argsTo(NOTTO,ARGS... args)const;
 
 
         template<typename...>
@@ -258,7 +375,7 @@ namespace ge{
     template<>inline TypeRegister::DescriptionElement TypeRegister::getTypeDescription<std::string               >(){return TypeRegister::STRING      ;}
 
     template<typename TYPE>
-    inline TypeRegister::TypeID TypeRegister::getTypeTypeId(){return TypeRegister::TYPEID+TypeRegister::getTypeDescription<TYPE>();}
+      inline TypeRegister::TypeID TypeRegister::getTypeTypeId(){return TypeRegister::TYPEID+TypeRegister::getTypeDescription<TYPE>();}
 
     template<typename TYPE>
       std::function<TypeRegister::OBJConstructor> TypeRegister::getConstructor(){
@@ -329,3 +446,4 @@ namespace ge{
 
   }
 }
+#endif

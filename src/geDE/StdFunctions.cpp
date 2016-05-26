@@ -16,7 +16,7 @@ Nullary::Nullary(
 
 void ge::de::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
   auto tr=fr->getTypeRegister();
-  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::UNREGISTERED,0}),
+  fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,TypeRegister::UNREGISTERED,0}),
               TypeRegister::getTypeKeyword<Nullary>(),
               factoryOfFunctionFactory<Nullary>(TypeRegister::getTypeKeyword<Nullary>()));
 

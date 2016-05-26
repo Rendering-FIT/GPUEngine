@@ -7,10 +7,10 @@ RuntimeArgMetaData::RuntimeArgMetaData(
     std::shared_ptr<TypeRegister>&typeRegister,
     ArgMetaData const&argMetaData){
   this->_name = argMetaData.name;
-  this->_type = typeRegister->addType("",argMetaData.description);
+  this->_type = typeRegister->addCompositeType("",argMetaData.description);
 }
 
-TypeRegister::TypeID RuntimeArgMetaData::getType()const{
+TypeRegister::TypeId RuntimeArgMetaData::getType()const{
   return this->_type;
 }
 
@@ -23,12 +23,12 @@ RuntimeFceMetaData::RuntimeFceMetaData(
     std::shared_ptr<TypeRegister>&typeRegister,
     FceMetaData const&fceMetaData){
   this->_name = fceMetaData.name;
-  this->_returnType = typeRegister->addType("",fceMetaData.returnType);
+  this->_returnType = typeRegister->addCompositeType("",fceMetaData.returnType);
   for(unsigned a=0;a<fceMetaData.args.size();++a)
     this->_args.push_back(RuntimeArgMetaData(typeRegister,fceMetaData.args[a]));
 }
 
-TypeRegister::TypeID RuntimeFceMetaData::getReturnType()const{
+TypeRegister::TypeId RuntimeFceMetaData::getReturnType()const{
   return this->_returnType;
 }
 

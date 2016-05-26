@@ -24,8 +24,8 @@ bool Function::_inputBindingCheck(
     assert(function->getOutputData() != nullptr);
 
   if(
-      function                                      != nullptr                                                  &&
-      tr->getFceArgTypeId(fr->getType(this->_id),i) != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
+      function                                      != nullptr                   &&
+      tr->getFceArgTypeId(fr->getType(this->_id),i) != TypeRegister::UNREGISTERED&&
       tr->getFceArgTypeId(fr->getType(this->_id),i) != function->getOutputData()->getId()                       ){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".input["<<nr->getFceInputName(this->_id,i)<<"] has different type - ";
     std::cerr<<tr->getTypeIdName(tr->getFceArgTypeId(fr->getType(this->_id        ),i));
@@ -43,8 +43,8 @@ bool Function::_outputBindingCheck(
   assert(this!=nullptr);
   auto tr = fr->getTypeRegister();
   if(
-      data                                           != nullptr                                                  &&
-      tr->getFceReturnTypeId(fr->getType(this->_id)) != TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()&&
+      data                                           != nullptr                   &&
+      tr->getFceReturnTypeId(fr->getType(this->_id)) != TypeRegister::UNREGISTERED&&
       data->getId()                                  != tr->getFceReturnTypeId(fr->getType(this->_id))){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".output has different type - ";
     std::cerr<<tr->getTypeIdName(fr->getType(this->_id));

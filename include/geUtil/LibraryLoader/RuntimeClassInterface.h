@@ -39,9 +39,9 @@ namespace ge{
         std::string getClassName()const;
         std::vector<ge::util::RuntimeFceMetaData>::size_type getNofFunctions()const;
         std::string getFunctionName(unsigned id)const;
-        de::TypeRegister::TypeID getFunctionReturnTypeID(unsigned id)const;
+        de::TypeRegister::TypeId getFunctionReturnTypeId(unsigned id)const;
         std::vector<ge::util::RuntimeArgMetaData>::size_type getNofFunctionArguments(unsigned id)const;
-        de::TypeRegister::TypeID getFunctionArgumentTypeID(unsigned id,unsigned arg)const;
+        de::TypeRegister::TypeId getFunctionArgumentTypeId(unsigned id,unsigned arg)const;
         std::string getFunctionArgumentName(unsigned fce,unsigned arg)const;
         virtual void call(void*instance,std::string fce,std::vector<de::Resource>&args);
         template<typename... ARGS>
@@ -52,7 +52,7 @@ namespace ge{
           }
         std::vector<ge::util::RuntimeConstructorMetaData>::size_type getNofConstructors()const;
         std::vector<ge::util::RuntimeArgMetaData>::size_type getNofConstructorArguments(unsigned id)const;
-        de::TypeRegister::TypeID getConstructorArgumentTypeID(unsigned id,unsigned arg)const;
+        de::TypeRegister::TypeId getConstructorArgumentTypeId(unsigned id,unsigned arg)const;
         std::string getConstructorArgumentName(unsigned id,unsigned arg)const;
         virtual void*construct(std::vector<de::Resource>&args)const;
         template<typename... ARGS>

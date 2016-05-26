@@ -27,9 +27,9 @@ AtomicFunction::AtomicFunction(
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
-    TypeRegister::DescriptionList const&typeDescription,
+    TypeRegister::DescriptionVector const&typeDescription,
     std::string name,
-    std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addType("",typeDescription),name,factory)){
+    std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addCompositeType("",typeDescription),name,factory)){
 }
 
 AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Resource>const&output):AtomicFunction(fr,id){

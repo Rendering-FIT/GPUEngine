@@ -9,26 +9,26 @@ namespace ge{
 
     class GEUTIL_EXPORT RuntimeArgMetaData{
       protected:
-        de::TypeRegister::TypeID _type;
+        de::TypeRegister::TypeId _type;
         std::string _name;
       public:
         RuntimeArgMetaData(
             std::shared_ptr<de::TypeRegister>&typeRegister,
             ArgMetaData const&argMetaData);
-        de::TypeRegister::TypeID getType()const;
+        de::TypeRegister::TypeId getType()const;
         std::string getName()const;
     };
 
     class GEUTIL_EXPORT RuntimeFceMetaData{
       protected:
-        de::TypeRegister::TypeID _returnType;
+        de::TypeRegister::TypeId _returnType;
         std::string _name;
         std::vector<RuntimeArgMetaData>_args;
       public:
         RuntimeFceMetaData(
             std::shared_ptr<de::TypeRegister>&typeRegister,
             FceMetaData const&fceMetaData);
-        de::TypeRegister::TypeID getReturnType()const;
+        de::TypeRegister::TypeId getReturnType()const;
         std::string getName()const;
         decltype(_args)::size_type getNofArgs()const;
         RuntimeArgMetaData const&getArg(unsigned i)const;

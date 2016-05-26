@@ -327,30 +327,30 @@ namespace ge{
     }
 
 
-#define BINARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1,INPUT2){\
+#define BINARY_FUNTION_DESCRIPTION(TR,OUTPUT,INPUT1,INPUT2){\
   TypeRegister::FCE,\
-  TypeRegister::getTypeDescription<OUTPUT>(),\
+  TR->getTypeId(TypeRegister::getTypeKeyword<OUTPUT>()),\
   2,\
-  TypeRegister::getTypeDescription<INPUT1>(),\
-  TypeRegister::getTypeDescription<INPUT2>()}
+  TR->getTypeId(TypeRegister::getTypeKeyword<INPUT1>()),\
+  TR->getTypeId(TypeRegister::getTypeKeyword<INPUT2>())}
 
-#define UNARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1){\
+#define UNARY_FUNTION_DESCRIPTION(TR,OUTPUT,INPUT1){\
   TypeRegister::FCE,\
-  TypeRegister::getTypeDescription<OUTPUT>(),\
+  TR->getTypeId(TypeRegister::getTypeKeyword<OUTPUT>()),\
   1,\
-  TypeRegister::getTypeDescription<INPUT1>()}
+  TR->getTypeId(TypeRegister::getTypeKeyword<INPUT1>())}
 
-#define CAST_FUNCTION_DESCRIPTION(FROM,TO){\
+#define CAST_FUNCTION_DESCRIPTION(TR,FROM,TO){\
   TypeRegister::FCE,\
-  TypeRegister::getTypeDescription<TO>(),\
+  TR->getTypeId(TypeRegister::getTypeKeyword<TO>()),\
   1,\
-  TypeRegister::getTypeDescription<FROM>()}
+  TR->getTypeId(TypeRegister::getTypeKeyword<FROM>())}
 
 #define ADD_BINARY_FUNCTION(OUTPUT,INPUT1,INPUT2,NAME,FACTORY)\
-  fr->addFunction(tr->addType("",BINARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1,INPUT2)),NAME,FACTORY);
+  fr->addFunction(tr->addCompositeType("",BINARY_FUNTION_DESCRIPTION(tr,OUTPUT,INPUT1,INPUT2)),NAME,FACTORY);
 
 #define ADD_UNARY_FUNCTION(OUTPUT,INPUT1,NAME,FACTORY)\
-  fr->addFunction(tr->addType("",UNARY_FUNTION_DESCRIPTION(OUTPUT,INPUT1)),NAME,FACTORY);
+  fr->addFunction(tr->addCompositeType("",UNARY_FUNTION_DESCRIPTION(tr,OUTPUT,INPUT1)),NAME,FACTORY);
 
 #define ADD_BINARY_FUNCTION_SIMPLE(CLASS,TYPE)\
     ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,TypeRegister::getTypeKeyword<CLASS<TYPE>>(),factoryOfFunctionFactory<CLASS<TYPE>>(TypeRegister::getTypeKeyword<CLASS<TYPE>>()))
@@ -364,7 +364,7 @@ namespace ge{
     //{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}
 
 #define ADD_CAST_FUNCTION(FROM,TO)\
-  fr->addFunction(tr->addType("",{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}),TypeRegister::getTypeKeyword<Cast<FROM,TO>>(),factoryOfFunctionFactory<Cast<FROM,TO>>(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()));
+  fr->addFunction(tr->addCompositeType("",CAST_FUNCTION_DESCRIPTION(tr,FROM,TO)),TypeRegister::getTypeKeyword<Cast<FROM,TO>>(),factoryOfFunctionFactory<Cast<FROM,TO>>(TypeRegister::getTypeKeyword<Cast<FROM,TO>>()));
 
     NUMERIC_FCE_LOOP(NUMERIC_LOOP,DEFINE_GETTYPEKEYWORD)
     RELATIONAL_FCE_LOOP(ALL_LOOP,DEFINE_GETTYPEKEYWORD)

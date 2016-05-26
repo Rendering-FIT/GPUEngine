@@ -9,10 +9,10 @@ namespace ge{
     class FunctionRegister;
     class GEDE_EXPORT ResourceFactory: public ObjectFactory{
       protected:
-        TypeRegister::TypeID     _type   = TypeRegister::UNREGISTERED;
+        TypeRegister::TypeId     _type   = TypeRegister::UNREGISTERED;
         std::shared_ptr<Resource>_result = nullptr                   ;
       public:
-        inline ResourceFactory(TypeRegister::TypeID const&type,Uses const&maxUses=1);
+        inline ResourceFactory(TypeRegister::TypeId const&type,Uses const&maxUses=1);
         inline virtual ~ResourceFactory();
         inline void reset();
         inline bool firstConstruction()const;
@@ -20,7 +20,7 @@ namespace ge{
     };
 
     inline ResourceFactory::ResourceFactory(
-        TypeRegister::TypeID const&type   ,
+        TypeRegister::TypeId const&type   ,
         Uses                 const&maxUses){
       this->_type    = type   ;
       this->_maxUses = maxUses;

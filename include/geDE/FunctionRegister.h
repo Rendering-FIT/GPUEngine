@@ -35,18 +35,18 @@ namespace ge{
             std::shared_ptr<NameRegister>       const&namer);
         inline ~FunctionRegister();
         FunctionID addFunction(
-            TypeRegister::TypeID             const&type   ,
+            TypeRegister::TypeId             const&type   ,
             std::string                      const&name   ,
             std::shared_ptr<StatementFactory>const&factory);
-        inline TypeRegister::TypeID             getType   (FunctionID id)const;
+        inline TypeRegister::TypeId             getType   (FunctionID id)const;
         inline std::string                      getName   (FunctionID id)const;
         inline std::shared_ptr<StatementFactory>getFactory(FunctionID id)const;
         inline FunctionID getFunctionId(std::string const&name)const;
         inline InputIndex  getNofInputs (FunctionID id)const;
         inline std::string getOutputName(FunctionID id)const;
         inline std::string getInputName (FunctionID id,InputIndex input)const;
-        inline TypeRegister::TypeID getInputType (FunctionID id,InputIndex input)const;
-        inline TypeRegister::TypeID getOutputType(FunctionID id)const;
+        inline TypeRegister::TypeId getInputType (FunctionID id,InputIndex input)const;
+        inline TypeRegister::TypeId getOutputType(FunctionID id)const;
         inline InputIndex getInputIndex(FunctionID id,std::string const&name)const;
         inline std::shared_ptr<TypeRegister>const&getTypeRegister()const;
         inline std::shared_ptr<NameRegister>const&getNameRegister()const;
@@ -63,7 +63,7 @@ namespace ge{
         std::string str()const;
       protected:
         using FunctionDefinition = std::tuple<
-          TypeRegister::TypeID,
+          TypeRegister::TypeId,
           std::string,
           std::shared_ptr<StatementFactory>>;
         enum FunctionDefinitionParts{
@@ -88,7 +88,7 @@ namespace ge{
       assert(typeRegister!=nullptr);
       this->_typeRegister = typeRegister;
       this->_functions[0]=FunctionDefinition(
-          TypeRegister::getTypeTypeId<TypeRegister::Unregistered>(),
+          TypeRegister::UNREGISTERED,
           "unregistered",
           nullptr);
       this->_namer = namer;
@@ -119,7 +119,7 @@ namespace ge{
       return ii->second;
     }
 
-    inline TypeRegister::TypeID FunctionRegister::getType(FunctionID id)const{
+    inline TypeRegister::TypeId FunctionRegister::getType(FunctionID id)const{
       assert(this!=nullptr);
       return std::get<TYPE>(this->_getDefinition(id));
     }
@@ -148,7 +148,7 @@ namespace ge{
       assert(this!=nullptr);
       assert(this->_typeRegister!=nullptr);
       auto t=this->getType(id);
-      if(t==TypeRegister::getTypeTypeId<TypeRegister::Unregistered>()){
+      if(t==TypeRegister::UNREGISTERED){
         ge::core::printError("FunctionRegister::getNofInputs","there is no such function",id);
         return 0;
       }
@@ -167,14 +167,14 @@ namespace ge{
       return this->_namer->getFceInputName(id,input);
     }
 
-    inline TypeRegister::TypeID FunctionRegister::getInputType(FunctionID id,InputIndex input)const{
+    inline TypeRegister::TypeId FunctionRegister::getInputType(FunctionID id,InputIndex input)const{
       assert(this!=nullptr);
       assert(this->_typeRegister!=nullptr);
       auto type = this->getType(id);
       return this->_typeRegister->getFceArgTypeId(type,input);
     }
 
-    inline TypeRegister::TypeID FunctionRegister::getOutputType(FunctionID id)const{
+    inline TypeRegister::TypeId FunctionRegister::getOutputType(FunctionID id)const{
       assert(this!=nullptr);
       assert(this->_typeRegister!=nullptr);
       auto type = this->getType(id);
