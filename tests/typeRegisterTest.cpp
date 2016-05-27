@@ -46,7 +46,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(((std::string&)*s)=="ahoj svete");
       }
     }
-    #define SHOWCERR
+//#define SHOWCERR
 #ifndef SHOWCERR
     std::stringstream oss;
     auto old = std::cerr.rdbuf( oss.rdbuf() );
@@ -107,19 +107,11 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding mujTyp = ARRAY 2 I32"){
-      ___;
       auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
       r->addCompositeType("mujTyp",{TypeRegister::ARRAY,2,i32});
-      ___;
-      std::cerr<<r->getTypeId("mujType")<<std::endl;
-      for(size_t i=0;i<r->getNofTypes();++i)
-        std::cerr<<r->type2Str(i)<<std::endl;
       auto dat=r->sharedResource("mujTyp");
-      ___;
       *(*dat)[0]=12;
-      ___;
       *(*dat)[1]=32;
-      ___;
       THEN("TypeRegister should be able to create shared Resource of it"){
         REQUIRE(dat->getNofElements()==2);
         REQUIRE((int32_t)*(*dat)[0]==12);
@@ -128,8 +120,10 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding mujTyp2 = STRUCT ARRAY 2 I32 F32"){
-      auto mt = r->addCompositeType("mujTyp",{TypeRegister::ARRAY,2,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
-      r->addCompositeType("mujTyp2",{TypeRegister::STRUCT,2,mt,r->getTypeId(TypeRegister::getTypeKeyword<float>())});
+      auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+      auto f32 = r->getTypeId(TypeRegister::getTypeKeyword<float>());
+      auto mt = r->addCompositeType("mujTyp",{TypeRegister::ARRAY,2,i32});
+      r->addCompositeType("mujTyp2",{TypeRegister::STRUCT,2,mt,f32});
       auto dat2=r->sharedResource("mujTyp2");
       *(*(*dat2)[0])[0]=32;
       *(*(*dat2)[0])[1]=10;
@@ -142,8 +136,6 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE((float_t)*(*dat2)[1]==13.3f);
       }
     }
-
-#if 0
     WHEN("adding custom class"){
       class Class0{
         public:
@@ -154,10 +146,10 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
             counter--;
           }
       };
-      r->addClassCD<Class0>("Class0");
-      r->addClassC <Class0>("Class1");
-      r->addClassD <Class0>("Class2");
-      r->addClass  <Class0>("Class3");
+      r->addAtomicType("Class0",sizeof(Class0),[](void*ptr){new(ptr)Class0;},[](void*ptr){((Class0*)ptr)->~Class0();});
+      r->addAtomicType("Class1",sizeof(Class0),[](void*ptr){new(ptr)Class0;});
+      r->addAtomicType("Class2",sizeof(Class0),nullptr,[](void*ptr){((Class0*)ptr)->~Class0();});
+      r->addAtomicType("Class3",sizeof(Class0));
       THEN("creating Resource with addClassCD should correctly incr and decr counter"){
         counter=0;
         auto a0=r->sharedResource("Class0");
@@ -196,7 +188,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(counter==0);
       }
     }
-#endif
+
     WHEN("adding two same types with different names"){
       auto a=r->addCompositeType("ivec10",{TypeRegister::ARRAY,10,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
       auto b=r->addCompositeType("int10",{TypeRegister::ARRAY,10,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
@@ -216,7 +208,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding unspecified nullary function"){
-      auto a=r->addCompositeType("nul0",{TypeRegister::FCE,TypeRegister::UNREGISTERED,0});
+      auto a=r->addCompositeType("nul0",{TypeRegister::FCE,TypeRegister::AUTO,0});
       THEN("it should be registered"){
         REQUIRE(a!=TypeRegister::UNREGISTERED);
       }
@@ -226,8 +218,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       auto id = r->addAtomicType(
           "StructData",
           sizeof(StructData),
-          [](uint8_t*ptr){free_StructData((StructData*)ptr);},
-          [](int8_t*ptr){init_StructData((StructData*)ptr);});
+          [](void*ptr){init_StructData((StructData*)ptr);},
+          [](void*ptr){free_StructData((StructData*)ptr);});
       counter = 0;
       auto data = r->sharedResource("StructData");
       REQUIRE(counter == 1);
@@ -239,8 +231,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       auto id = r->addAtomicType(
           "StructData",
           sizeof(StructData),
-          [](uint8_t*ptr){free_StructData((StructData*)ptr);},
-          [](int8_t*ptr){init_StructData((StructData*)ptr);});
+          [](void*ptr){init_StructData((StructData*)ptr);},
+          [](void*ptr){free_StructData((StructData*)ptr);});
       counter = 0;
       auto data = r->sharedEmptyResource("StructData");
       auto alloc=[](StructData**d){*d=new StructData;init_StructData(*d);};
@@ -253,10 +245,10 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
 
     WHEN("adding structure with extern init and free functions and using it as shared ptr"){
       auto id = r->addAtomicType(
-          "StructData",
-          sizeof(StructData),
-          [](uint8_t*ptr){free_StructData((StructData*)ptr);((std::shared_ptr<StructData>*)ptr)->~shared_ptr();},
-          [](int8_t*ptr){new(ptr)std::shared_ptr<StructData>();init_StructData((StructData*)ptr);});
+          "SharedStructData",
+          sizeof(std::shared_ptr<StructData>),
+          [](void*ptr){new(ptr)std::shared_ptr<StructData>();init_StructData((StructData*)ptr);},
+          [](void*ptr){free_StructData((StructData*)ptr);((std::shared_ptr<StructData>*)ptr)->~shared_ptr();});
 
       counter = 0;
       auto data = r->sharedResource("SharedStructData");

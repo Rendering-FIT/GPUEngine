@@ -6,16 +6,16 @@
 namespace ge{
   namespace de{
    template<typename OUTPUT,typename...ARGS>
-      inline std::vector<TypeRegister::DescriptionElement>getDescription(
+      inline TypeRegister::DescriptionVector getDescription(
           std::shared_ptr<TypeRegister>const&tr,
           OUTPUT(*)(ARGS...)){
         assert(tr!=nullptr);
-        std::vector<TypeRegister::DescriptionElement>result;
+        TypeRegister::DescriptionVector result;
         result.push_back(TypeRegister::FCE);
         result.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<OUTPUT>()));
         result.push_back(sizeof...(ARGS));
-        std::vector<TypeRegister::DescriptionElement> ar(tr->getTypeId(TypeRegister::getTypeKeyword<ARGS>())...);
-        for(auto x:ar)result.push_back(x);
+        TypeRegister::DescriptionVector ar{tr->getTypeId(TypeRegister::getTypeKeyword<ARGS>())...};
+        for(auto const&x:ar)result.push_back(x);
         return result;
       }
 

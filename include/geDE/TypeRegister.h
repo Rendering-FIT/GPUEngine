@@ -16,15 +16,15 @@ namespace ge{
         class TypeDescription;
         using TypeVector = std::vector<TypeDescription*>;
       public:
-        struct Unregistered;
-        using Destructor         = void(*)(uint8_t*);
-        using Constructor        = void(*)(int8_t*);
+        struct Auto;
+        using Destructor         = void(*)(void*);
+        using Constructor        = void(*)(void*);
         using TypeId             = TypeVector::size_type;
         using DescriptionElement = size_t;
         using DescriptionVector  = std::vector<DescriptionElement>;
         enum TypeType{
           UNREGISTERED = 0,
-          ANY          = 1,
+          AUTO         = 1,
           ATOMIC       = 2,
           ARRAY        = 3,
           STRUCT       = 4,
@@ -36,8 +36,8 @@ namespace ge{
         TypeId addAtomicType(
               std::string const&name                 ,
               size_t      const&size                 ,
-              Destructor  const&destructor  = nullptr,
-              Constructor const&constructor = nullptr);
+              Constructor const&constructor = nullptr,
+              Destructor  const&destructor  = nullptr);
         TypeId addCompositeType(
             std::string       const&name       ,
             DescriptionVector const&description);
@@ -74,6 +74,7 @@ namespace ge{
         class StructDescription;
         class FunctionDescription;
         class AtomicDescription;
+        class AutoDescription;
         TypeVector _types;
         std::map<TypeId,std::set<std::string>>_typeId2Synonyms;
         std::map<std::string,TypeId>_name2TypeId;
@@ -94,12 +95,12 @@ namespace ge{
             std::string       const&name       ,
             DescriptionVector const&description,
             size_t                 &i          );
-        void _callConstructors(uint8_t*ptr,TypeId id)const;
-        void _callDestructors(uint8_t*ptr,TypeId id)const;
+        void _callConstructors(void*ptr,TypeId id)const;
+        void _callDestructors(void*ptr,TypeId id)const;
         TypeDescription*_getDescription(TypeId id)const;
     };
 
-    template<>inline std::string TypeRegister::getTypeKeyword<TypeRegister::Unregistered>(){return"unregistered";}
+    template<>inline std::string TypeRegister::getTypeKeyword<TypeRegister::Auto        >(){return"auto"        ;}
     template<>inline std::string TypeRegister::getTypeKeyword<void                      >(){return"void"        ;}
     template<>inline std::string TypeRegister::getTypeKeyword<bool                      >(){return"bool"        ;}
     template<>inline std::string TypeRegister::getTypeKeyword<int8_t                    >(){return"i8"          ;}

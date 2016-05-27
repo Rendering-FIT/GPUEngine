@@ -49,7 +49,7 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   REQUIRE(fr->getName(0)=="unregistered");
-  REQUIRE(fr->getType(0)==tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Unregistered>()));
+  REQUIRE(fr->getType(0)==TypeRegister::UNREGISTERED);
   auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
   auto ft =       tr->addCompositeType("",{
         TypeRegister::FCE,
@@ -163,6 +163,10 @@ int blb(int a,int b){
   return a+b;
 }
 
+int baba(int a,int b,int c){
+  return a+b+c;
+}
+
 SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
@@ -181,4 +185,5 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   REQUIRE((int32_t)(*ff->getOutputData())==10+12);
 
   registerBasicFunction(fr,"loadTextFile",loadTextFile);
+  registerBasicFunction(fr,"baba",baba);
 }
