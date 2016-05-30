@@ -128,6 +128,8 @@ namespace ge
          inline iterator end();
          inline const_iterator begin() const;
          inline const_iterator end() const;
+         inline unsigned firstId() const;
+         inline unsigned lastId() const;
 
          inline bool canAllocate(unsigned numItems) const;
          bool alloc(unsigned *id);  ///< \brief Allocates one item and stores the item's id in the variable pointed by id parameter.
@@ -236,6 +238,8 @@ namespace ge
       inline ItemAllocationManager::iterator ItemAllocationManager::end()  { return _allocations.end()-_numItemsAvailableAtTheEnd; }
       inline ItemAllocationManager::const_iterator ItemAllocationManager::begin() const  { return _allocations.begin()+_numNullItems; }
       inline ItemAllocationManager::const_iterator ItemAllocationManager::end() const  { return _allocations.end()-_numItemsAvailableAtTheEnd; }
+      inline unsigned ItemAllocationManager::firstId() const  { return _numNullItems; }
+      inline unsigned ItemAllocationManager::lastId() const  { return _firstItemAvailableAtTheEnd-1; }
 
       template<typename OwnerType> inline bool ArrayAllocationManager<OwnerType>::canAllocate(unsigned numItems) const
       { return _numItemsAvailableAtTheEnd>=numItems; }

@@ -48,12 +48,12 @@ namespace ge
           *  variable instead.
           */
          struct SharedDataOffset {
-            unsigned _gpuDataOffset64;  ///< Index (or offset multiplied by 64) to the matrix buffer.
+            unsigned _gpuDataOffset64;  ///< Index (or offset multiplied by 64) to the matrix buffer. Zero value is reserved for non-allocated matrix.
             unsigned _refCounter;       ///< Reference counter. It contains number of attached Transformation objects.
          };
 
          unsigned *_gpuDataOffsetPtr;  ///< Points either to _gpuDataOffset64 member or to externally allocated SharedDataOffset::_gpuDataOffset64.
-         unsigned _gpuDataOffset64;    ///< Index (or offset multiplied by 64) to the matrix buffer where the transformation matrix is stored.
+         unsigned _gpuDataOffset64;    ///< Index (or offset multiplied by 64) to the matrix buffer where the transformation matrix is stored. Zero value is reserved for non-allocated matrix.
          std::shared_ptr<MatrixList> _matrixList;  ///< MatrixList, if attached, will receive the transformation computed by multiplication of all parent Transformations.
 
       public:

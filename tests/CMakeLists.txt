@@ -21,6 +21,23 @@ set(TEST_TARGETS
 add_tests()
 
 
+set(TARG geRG_test)
+project(${TARG})
+add_executable(${TARG} ${TARG}.cpp)
+target_link_libraries(${TARG} geCore)
+
+set(Internal_deps geRG WindowObject)
+set(Internal_inc
+  ${GPUEngine_SOURCE_DIR}/include
+  ${GPUEngine_SOURCE_DIR}
+  )
+
+target_link_libraries(${TARG} ${Internal_deps} ${External_libs})
+set_target_properties(${TARG} PROPERTIES
+  INCLUDE_DIRECTORIES "${Internal_inc}"
+  )
+
+
 #set(TYPEREGISTERTEST_NAME typeRegisterTest)
 #project(${TYPEREGISTERTEST_NAME})
 #set(TYPEREGISTERTEST_SOURCES typeRegisterTest.cpp)

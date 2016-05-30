@@ -585,6 +585,20 @@ void RenderingContext::cancelAllAllocations()
       for(auto asIt=list.begin(); asIt!=list.end(); asIt++)
          (*asIt)->cancelAllAllocations();
    }
+
+   // break Transformation references into the transformation matrix buffer
+   {
+      unsigned id=_transformationAllocationManager.firstId();
+      unsigned last=_transformationAllocationManager.lastId();
+      for(; id<=last; id++)
+      {
+         unsigned *p=_transformationAllocationManager[id];
+         if(p!=nullptr) {
+            _transformationAllocationManager.free(id);
+            *p=0;
+         }
+      }
+   }
 }
 
 

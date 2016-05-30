@@ -68,7 +68,8 @@ Transformation::Transformation(const Transformation &t,unsigned constructionFlag
 
 Transformation::~Transformation()
 {
-   RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
+   if(gpuDataOffset64()!=0)
+      RenderingContext::current()->transformationAllocationManager().free(_gpuDataOffsetPtr[0]);
    if(_gpuDataOffsetPtr!=&_gpuDataOffset64) {
       if(--_gpuDataOffsetPtr[1]==0)
          delete reinterpret_cast<SharedDataOffset*>(_gpuDataOffsetPtr);
