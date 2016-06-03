@@ -148,7 +148,6 @@ int main(int argc, char** argv)
       // load animations
       if(scene && scene->animations.size()>0) {
          if(scene->animations[0]) {
-            animationManager.addAnimation(scene->animations[0]);
             animationManager.playAnimation(scene->animations[0]);
          }
       }
@@ -358,18 +357,11 @@ int main(int argc, char** argv)
    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
    //cam->updateViewMatrix();
 
-
-   //main loop
-   glfwSetTime(0.0);
-   double time = 0.0;
-
    while(!glfwWindowShouldClose(window))
    {
       glfwMakeContextCurrent(window);
 
-      time = glfwGetTime();
-
-      animationManager.update(time);
+      animationManager.update(ge::core::time_point::clock::now());
 
       near_far = nfAdjustor.computeNearFar();
 
