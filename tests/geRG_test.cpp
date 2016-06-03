@@ -80,26 +80,29 @@ SCENARIO("geRG test")
             "core",
             "");
 
-      glewExperimental=GL_TRUE;
-      glewInit();
-      glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
-                    // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
-                    // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
-      RenderingContext::setCurrent(make_shared<RenderingContext>());
+      if(window!=nullptr) // if OpenGL 4.3 is supported, we should get window
+      {
+         glewExperimental=GL_TRUE;
+         glewInit();
+         glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
+                       // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                       // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
+         RenderingContext::setCurrent(make_shared<RenderingContext>());
 
-      glEnable(GL_DEPTH_TEST);
-      glDepthFunc(GL_LEQUAL);
-      glDisable(GL_CULL_FACE);
+         glEnable(GL_DEPTH_TEST);
+         glDepthFunc(GL_LEQUAL);
+         glDisable(GL_CULL_FACE);
 
-      WHEN("rendering single yellow triangle in the middle of the screen") {
-         Init();
-         window->mainLoop();
-         THEN("pixel in the screen center should be yellow") {
-            REQUIRE(samplePixel==0x0000ffff);
+         WHEN("rendering single yellow triangle in the middle of the screen") {
+            Init();
+            window->mainLoop();
+            THEN("pixel in the screen center should be yellow") {
+               REQUIRE(samplePixel==0x0000ffff);
+            }
          }
-      }
 
-      delete window;
+         delete window;
+      }
    }
 }
 

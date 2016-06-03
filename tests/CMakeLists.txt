@@ -21,21 +21,26 @@ set(TEST_TARGETS
 add_tests()
 
 
-set(TARG geRG_test)
-project(${TARG})
-add_executable(${TARG} ${TARG}.cpp)
-target_link_libraries(${TARG} geCore)
+if(TARGET WindowObject) # WindowObject is prerequisite to allow geRG_test
+                        # (It is part of geAd package - GPUENGINE_BUILD_geAd needs to be enabled.)
 
-set(Internal_deps geRG WindowObject)
-set(Internal_inc
-  ${GPUEngine_SOURCE_DIR}/include
-  ${GPUEngine_SOURCE_DIR}
-  )
+  set(TARG geRG_test)
+  project(${TARG})
+  add_executable(${TARG} ${TARG}.cpp)
+  target_link_libraries(${TARG} geCore)
 
-target_link_libraries(${TARG} ${Internal_deps} ${External_libs})
-set_target_properties(${TARG} PROPERTIES
+  set(Internal_deps geRG WindowObject)
+  set(Internal_inc
+    ${GPUEngine_SOURCE_DIR}/include
+    ${GPUEngine_SOURCE_DIR}
+    )
+
+  target_link_libraries(${TARG} ${Internal_deps} ${External_libs})
+  set_target_properties(${TARG} PROPERTIES
   INCLUDE_DIRECTORIES "${Internal_inc}"
-  )
+    )
+
+endif()
 
 
 #set(TYPEREGISTERTEST_NAME typeRegisterTest)

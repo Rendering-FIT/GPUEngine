@@ -8,7 +8,8 @@ find_package(glm REQUIRED)
 find_package(SDL2)
 find_package(AntTweakBar)
 
-if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
+if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND OR
+   NOT TARGET WindowObject)
    return()
 endif()
 
