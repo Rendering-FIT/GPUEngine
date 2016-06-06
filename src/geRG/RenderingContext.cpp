@@ -116,13 +116,14 @@ RenderingContext::RenderingContext()
 
    // matrixStorage - array-based
    // null objects:
-   // - id 0 - numItems set to zero (no buffer space)
-#if 0
-   // - id 1 - numItems set to 1, index to 0 pointing to identity matrix
-   _matrixStorage.alloc(1,*static_cast<MatrixList*>(nullptr));
+   // - id 0 - numItems set to 1 (one identity matrix)
    float *p1=static_cast<float*>(_matrixStorage.bufferObject()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
    memcpy(p1,identityMatrix,sizeof(float)*16);
    _matrixStorage.bufferObject()->unmap();
+#if 0
+   // - id 0 - numItems set to zero (no buffer space)
+   // - id 1 - numItems set to 1, index to 0 pointing to identity matrix
+   _matrixStorage.alloc(1,*static_cast<MatrixList*>(nullptr));
 #endif
 
    // matrixListControlStorage - item-based
@@ -282,7 +283,8 @@ void RenderingContext::setCpuTransformationBufferCapacity(unsigned numMatrices)
 
    // realloc buffer
    float *newBuffer=new float[numMatrices*16];
-   memcpy(newBuffer,_cpuTransformationBuffer,capacity*16*sizeof(float));
+   unsigned copyNumBytes=((capacity<numMatrices)?capacity:numMatrices)*16*sizeof(float);
+   memcpy(newBuffer,_cpuTransformationBuffer,copyNumBytes);
    delete[] _cpuTransformationBuffer;
    _cpuTransformationBuffer=newBuffer;
 }
@@ -1165,20 +1167,27 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV,Re
 
 void RenderingContext::evaluateTransformationGraph()
 {
-   unsigned totalMatrices=0;
+   // count matrices
+   unsigned totalMatrices=_matrixStorage.numNullItems(); // skip null items
    for(auto it=_transformationGraphs.begin(); it!=_transformationGraphs.end(); it++)
       countMatrices(it->get(),totalMatrices);
 
-   // resize matrix buffer
-   if(_matrixStorage.capacity()<totalMatrices) {
+   if(totalMatrices>_matrixStorage.capacity()) {
+
+      // resize matrix buffer
       unsigned newSize=unsigned(totalMatrices*1.2f);
       _matrixStorage.setCapacity(newSize);
-      _matrixStorage.bufferObject()->realloc(newSize,ge::gl::BufferObject::NEW_BUFFER);
+      _matrixStorage.bufferObject()->realloc(newSize*sizeof(float)*16,ge::gl::BufferObject::KEEP_ID);
+
+      // initialize identity matrix on the beginning of the buffer
+      float *p=static_cast<float*>(_matrixStorage.bufferObject()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+      memcpy(p,identityMatrix,sizeof(float)*16);
+      _matrixStorage.bufferObject()->unmap();
    }
 
    // reset buffer position
    // here, we use it as index to matrix4 buffer that is stored in MatrixStorage
-   setBufferPosition(1); // start at index 1 as index zero is reserved for identity matrix
+   setBufferPosition(_matrixStorage.numNullItems()); // skip null items
 
    glm::mat4 mv{}; // identity matrix
    matrixStorage()->map(BufferStorageAccess::WRITE);
@@ -1211,7 +1220,7 @@ void RenderingContext::setupRendering()
    // resize drawIndirectBuffer if necessary
    if(_drawIndirectBuffer->getSize()<bufferPosition()*4)
       _drawIndirectBuffer->realloc(static_cast<decltype(_bufferPosition)>(
-            bufferPosition()*4*1.2f), // multiply by 1.2 to avoid possibly many reallocations by very small amount
+            bufferPosition()*1.2f)*4, // multiply by 1.2 to avoid possibly many reallocations by very small amount
             BufferObject::NEW_BUFFER);
 }
 

@@ -106,7 +106,7 @@ void Transformation::allocTransformationGpuData()
    {
       // resize buffer
       unsigned capacity=transformationAllocationManager.capacity();
-      unsigned delta=(capacity==0)?4:capacity; // double the capacity, only if empty set initial size to 4
+      unsigned delta=(capacity==0)?4:capacity; // double the capacity with the exception of empty set that will receive size 4
       RenderingContext::current()->setCpuTransformationBufferCapacity(capacity+delta);
 
       // alloc gpu data
