@@ -3,12 +3,15 @@ set(APP_NAME geViewerOSG)
 project(${APP_NAME})
 
 find_package(OpenGL REQUIRED)
+find_package(GLEW   REQUIRED)
+find_package(glm    REQUIRED)
 find_package(SDL2)
 find_package(AntTweakBar)
 find_package(osg)
 find_package(osgDB)
+find_package(OpenThreads)
 
-if(NOT osg_FOUND OR NOT osgDB_FOUND OR
+if(NOT osg_FOUND OR NOT osgDB_FOUND OR NOT OpenThreads_FOUND OR
    NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
    return()
 endif()
@@ -24,7 +27,7 @@ set(APP_INCLUDES
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geRG geGL geUtil WindowObject OsgImport)
-set(External_libs OpenGL GLEW SDL2 AntTweakBar osg osgDB)
+set(External_libs OpenGL GLEW SDL2 AntTweakBar osg osgDB OpenThreads)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

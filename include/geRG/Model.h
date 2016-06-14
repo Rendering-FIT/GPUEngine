@@ -15,7 +15,7 @@ namespace ge
       class Transformation;
 
 
-      class GERG_EXPORT Model {
+      class Model { // note no GERG_EXPORT as only inline methods in the class
       public:
 
          typedef std::list<std::shared_ptr<Model>> ModelList;
@@ -37,7 +37,7 @@ namespace ge
          inline void removeMesh(MeshList::iterator it);
 
          inline const std::shared_ptr<Transformation>& transformationRoot(
-               TransformationRootId id=idof(TransformationRootId,SCENE)) const;
+               TransformationRootId id=TransformationRootId::SCENE) const;
          inline TransformationRootList& transformationRootList();
          inline const TransformationRootList& transformationRootList() const;
          inline TransformationRootList::iterator addTransformationRoot(TransformationRootId id,const std::shared_ptr<Transformation>& t);

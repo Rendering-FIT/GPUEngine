@@ -9,6 +9,10 @@
 #include <geRG/Model.h>
 #include <geRG/Transformation.h>
 #include <geRG/StateSet.h>
+#if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 (seen on Update 5) does not put type_info into std
+      // namespace. Actually, it puts, but only when exceptions are enabled (_HAS_EXCEPTIONS must be defined).
+namespace std { typedef type_info type_info; }
+#endif
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/LightSource>
@@ -407,7 +411,7 @@ public:
             osg::DrawElements *e=ps->getDrawElements();
             if(e!=nullptr)
             {
-               primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+               primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
                                        mode);
                count=e->getNumIndices();
                first=numIndices;
@@ -418,7 +422,7 @@ public:
                switch(ps->getType()) {
                   case osg::PrimitiveSet::DrawArraysPrimitiveType:
                   {
-                     primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                     primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
                                              mode);
                      osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
                      count=a->getCount();
@@ -435,9 +439,9 @@ public:
                   {
                      osg::DrawArrayLengths *a=static_cast<osg::DrawArrayLengths*>(ps);
                      first=useIndices?numIndices:a->getFirst();
-                     for(size_t i=0,c=a->size(); i<c; i++)
+                     for(ge::rg::size_t i=0,c=a->size(); i<c; i++)
                      {
-                        primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                        primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
                                                 mode);
                         unsigned count=a->operator[](i);
                         primitiveData.emplace_back(useIndices?count|0x80000000:count, // countAndIndexedFlag
@@ -543,14 +547,14 @@ public:
          for(unsigned i=0,c=unsigned(configData.attribTypes.size()); i<c; i++)
          {
             AttribType &t=configData.attribTypes[i];
-            size_t attribBufSize=t.elementSize()*numVertices;
-            size_t osgBufSize=osgArrays[i]->getTotalDataSize();
+            auto attribBufSize=t.elementSize()*numVertices;
+            auto osgBufSize=osgArrays[i]->getTotalDataSize();
             void *p=malloc(attribBufSize);
             if(osgArrays[i]->getBinding()==osg::Array::BIND_OVERALL)
             {
                const void *src=osgArrays[i]->getDataPointer();
                uint8_t *dst=static_cast<uint8_t*>(p);
-               size_t size=osgArrays[i]->getElementSize();
+               auto size=osgArrays[i]->getElementSize();
                for(unsigned i=0; i<numVertices; i++) {
                   memcpy(dst,src,size);
                   dst+=size;

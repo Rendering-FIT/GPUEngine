@@ -13,6 +13,10 @@
 #include <geAd/WindowObject/WindowObject.h>
 #include <geUtil/ArgumentObject.h>
 #include <osg/ref_ptr>
+#if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 (seen on Update 5) does not put type_info into std
+      // namespace. Actually, it puts, but only when exceptions are enabled (_HAS_EXCEPTIONS must be defined).
+namespace std { typedef type_info type_info; }
+#endif
 #include <osgDB/ReadFile>
 #include "OrbitCameraManipulator.h"
 

@@ -44,7 +44,7 @@ namespace ge
 
 
       template<typename GEGL_UNIFORM,class ...ARGS>
-      class GERG_EXPORT FlexibleUniform : public GEGL_UNIFORM {
+      class FlexibleUniform : public GEGL_UNIFORM {
       public:
 
          inline FlexibleUniform(const std::string &name,ARGS... args) : GEGL_UNIFORM(FlexibleLocation(name),args...) {}

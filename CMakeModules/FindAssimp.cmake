@@ -14,7 +14,7 @@
 
 
 # try config-based find first
-# (Assimp version 3.1.1 includes config file, but no import target it created)
+# (Assimp version 3.1.1 includes config file, but no import target is created)
 find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 
 
