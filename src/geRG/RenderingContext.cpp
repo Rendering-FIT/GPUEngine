@@ -43,7 +43,7 @@ void RenderingContext::global_init()
    NoExport::_currentContext.usingNiftyCounter=true; // this will write into local thread storage (lts)
                                                      // and may trigger all the constructors in lts
    if(NoExport::_currentContext.initialized==false) {
-      ::new(&NoExport::_currentContext.ptr[0])shared_ptr<RenderingContext>();
+      ::new(&NoExport::_currentContext.ptr)shared_ptr<RenderingContext>();
       NoExport::_currentContext.initialized=true;
    }
 }
@@ -64,7 +64,7 @@ RenderingContext::AutoInitRenderingContext::AutoInitRenderingContext()
 
    // placement new on shared_ptr
    // (memory is statically preallocated)
-   ::new(&ptr[0])shared_ptr<RenderingContext>();
+   ::new(&ptr)shared_ptr<RenderingContext>();
    initialized=true;
 }
 

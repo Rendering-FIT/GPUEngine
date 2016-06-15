@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <geGL/geGL.h>
 #include <geGL/ProgramObject.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
@@ -48,6 +49,7 @@ int main(int argc,char* argv[])
    glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
                  // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
                  // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
+   ge::gl::init();
    RenderingContext::setCurrent(make_shared<RenderingContext>());
 
    glEnable(GL_DEPTH_TEST);

@@ -213,8 +213,9 @@ namespace ge
          struct AutoInitRenderingContext {
             bool initialized; // initialized to false if struct is declared static
             bool usingNiftyCounter;
-            uint8_t ptr[sizeof(std::shared_ptr<RenderingContext>)];
-            inline std::shared_ptr<RenderingContext>& get()  { return reinterpret_cast<std::shared_ptr<RenderingContext>&>(ptr); }
+            typedef std::shared_ptr<RenderingContext> Ptr;
+            std::aligned_storage<sizeof(Ptr),std::alignment_of<Ptr>::value>::type ptr;
+            inline std::shared_ptr<RenderingContext>& get()  { return reinterpret_cast<Ptr&>(ptr); }
             AutoInitRenderingContext();
             ~AutoInitRenderingContext();
          };
