@@ -163,19 +163,59 @@ protected:
    vector<shared_ptr<Transformation>> transformationStack;
    vector<osg::ref_ptr<osg::StateSet>> osgStateSetStack;
 
+   struct MaterialCacheItem {
+      shared_ptr<FlexibleUniform4f> specularAndShininessUniform;
+      shared_ptr<ge::core::SharedCommandList> specularShininessAndDiffuseUniforms;
+   };
+   map<osg::Material*,MaterialCacheItem> materialCache;
+
+   shared_ptr<ge::core::Command> materialCache_getOrCreate(osg::Material *m,bool includeDiffuseUniform)
+   {
+      MaterialCacheItem& item=materialCache[m];
+      if(!item.specularAndShininessUniform) {
+         if(m) {
+            const osg::Vec4& specular=m->getSpecular(osg::Material::FRONT);
+            float shininess=m->getShininess(osg::Material::FRONT);
+            item.specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+                  specular.r(),specular.g(),specular.b(),shininess);
+         } else {
+            item.specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+                  0.f,0.f,0.f,0.f);
+         }
+      }
+      if(includeDiffuseUniform && !item.specularShininessAndDiffuseUniforms)
+      {
+         item.specularShininessAndDiffuseUniforms=make_shared<ge::core::SharedCommandList>();
+         const osg::Vec4& diffuse=m?m->getDiffuse(osg::Material::FRONT)
+                                   :osg::Vec4(0.8f,0.8f,0.8f,1.f);
+         item.specularShininessAndDiffuseUniforms->emplace_back(make_shared<FlexibleUniform4f>(
+               "color",diffuse.r(),diffuse.g(),diffuse.b(),diffuse.a()));
+         item.specularShininessAndDiffuseUniforms->emplace_back(item.specularAndShininessUniform);
+      }
+      return includeDiffuseUniform?item.specularShininessAndDiffuseUniforms
+                                  :static_pointer_cast<ge::core::Command>(item.specularAndShininessUniform);
+   }
+
 public:
 
    inline shared_ptr<Model> model()  { return _model; }
 
-
-   inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+   void reset()
    {
+      transformationStack.clear();
+      osgStateSetStack.clear();
+      materialCache.clear();
       _model=make_shared<Model>();
       shared_ptr<Transformation> t=make_shared<Transformation>();
       transformationStack.emplace_back(t);
       t->allocTransformationGpuData();
       t->uploadMatrix(osg2glTransformation);
       osgStateSetStack.push_back(new osg::StateSet);
+   }
+
+   inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+   {
+      reset();
    }
 
    void pushState(osg::StateSet& stateSet)
@@ -350,23 +390,6 @@ public:
 
       }
 
-      // get material
-      osg::Material* osgMaterial=static_cast<osg::Material*>(
-            ss->getAttribute(osg::StateAttribute::MATERIAL));
-      shared_ptr<FlexibleUniform4f> specularAndShininessUniform;
-      if(osgMaterial)
-      {
-         const osg::Vec4& specular=osgMaterial->getSpecular(osg::Material::FRONT);
-         float shininess=osgMaterial->getShininess(osg::Material::FRONT);
-         specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
-               specular.r(),specular.g(),specular.b(),shininess);
-      }
-      else
-      {
-         specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
-               0.f,0.f,0.f,0.f);
-      }
-
       // process geometry
       osg::Geometry *g=drawable.asGeometry();
       if(g)
@@ -495,9 +518,14 @@ public:
          // create AttribConfigRef
          AttribConfigRef config(configData);
 
+         // get material
+         osg::Material* osgMaterial=static_cast<osg::Material*>(
+               ss->getAttribute(osg::StateAttribute::MATERIAL));
+         bool usePerVertexColor=g->getColorArray()!=nullptr;
+         shared_ptr<ge::core::Command> materialCommandList=materialCache_getOrCreate(osgMaterial,!usePerVertexColor);
+
          // create GLState
          StateSetManager::GLState *glState=rc->createGLState();
-         bool usePerVertexColor=g->getColorArray()!=nullptr;
          shared_ptr<ge::gl::ProgramObject> ambientProgram(usePerVertexColor?RenderingContext::current()->getAmbientProgram():RenderingContext::current()->getAmbientUniformColorProgram());
          shared_ptr<ge::gl::ProgramObject> phongProgram(usePerVertexColor?RenderingContext::current()->getPhongProgram():RenderingContext::current()->getPhongUniformColorProgram());
          glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
@@ -505,19 +533,7 @@ public:
          glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
          glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
          glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
-         shared_ptr<ge::core::SharedCommandList> commandList;
-         if(usePerVertexColor)
-            glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&specularAndShininessUniform);
-         else {
-            // FIXME: avoid multiple stateSets if they are using the same diffuse and specular color
-            commandList=make_shared<ge::core::SharedCommandList>();
-            const osg::Vec4& diffuse=osgMaterial?osgMaterial->getDiffuse(osg::Material::FRONT)
-                                                :osg::Vec4(0.8f,0.8f,0.8f,1.f);
-            commandList->emplace_back(make_shared<FlexibleUniform4f>("color",
-                  diffuse.r(),diffuse.g(),diffuse.b(),diffuse.a()));
-            commandList->emplace_back(specularAndShininessUniform);
-            glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&commandList);
-         }
+         glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
 
          // find (or create new) geRG StateSet
          // (StateSet is fully initialized during creation with all the rendering commands, etc.)
