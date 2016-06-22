@@ -49,7 +49,7 @@ bool disableAnttweakbar=true;
 ge::util::ArgumentObject *args;
 ge::util::WindowObject   *window;
 static bool showFPS=false;
-static vector<chrono::time_point<chrono::steady_clock>> frameTimePoints;
+static vector<chrono::steady_clock::time_point> frameTimePoints;
 
 static bool useARBShaderDrawParameters=false;
 static fsg::OrbitObjectManipulator cameraManipulator;
