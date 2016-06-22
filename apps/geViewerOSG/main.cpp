@@ -1,4 +1,5 @@
 #include <string>
+#include <chrono>
 #include <GL/glew.h>
 #include <glm/vec2.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -47,6 +48,8 @@ struct SWindowParam{
 bool disableAnttweakbar=true;
 ge::util::ArgumentObject *args;
 ge::util::WindowObject   *window;
+static bool showFPS=false;
+static vector<chrono::time_point<chrono::steady_clock>> frameTimePoints;
 
 static bool useARBShaderDrawParameters=false;
 static fsg::OrbitObjectManipulator cameraManipulator;
@@ -63,6 +66,7 @@ int main(int argc,char*argv[])
    args=new ge::util::ArgumentObject(argc,argv);
 
    disableAnttweakbar=true;
+   showFPS=args->isPresent("--show-fps");
 
    //window args
    WindowParam.Size[0]    = atoi(args->getArg("-w","800").c_str());
@@ -77,9 +81,11 @@ int main(int argc,char*argv[])
    // file name
    if(argc>1)
    {
-      int i=argc-1;
-      if(argv[i][0]!='-')
-         if(argc==2 || argv[i-1][0]!='-')  fileName=argv[1];
+      for(int i=1; i<argc; i++)
+         if(argv[i][0]!='-') {
+            fileName=argv[i];
+            break;
+         }
    }
 
    window=new ge::util::WindowObject(
@@ -147,13 +153,32 @@ void Wheel(int){
 
 void Idle()
 {
+   // initial frame time point
+   if(showFPS && frameTimePoints.empty())
+      frameTimePoints.push_back(chrono::steady_clock::now());
+
+   // update camera
    cameraManipulator.updateViewMatrix();
    cameraTransformation->uploadMatrix(cameraManipulator.getMatrix());
 
    // render scene
    RenderingContext::current()->frame();
-
    window->swap();
+
+   // print FPS each second
+   if(showFPS) {
+      auto t=chrono::steady_clock::now();
+      double dt=chrono::duration<double>(t-frameTimePoints[0]).count();
+      if(dt<1.)
+         frameTimePoints.push_back(t);
+      else
+      {
+         double avgFrameTime=dt/frameTimePoints.size();
+         cout<<"Average frame time: "<<avgFrameTime*1000<<"ms  (FPS: "<<1./avgFrameTime<<")"<<endl;
+         frameTimePoints.clear();
+         frameTimePoints.push_back(t);
+      }
+   }
 }
 
 
