@@ -3,6 +3,7 @@ function(add_tests)
     project(${TARG})
     add_executable(${TARG} ${TARG}.cpp)
     target_link_libraries(${TARG} geCore)
+    set_target_properties(${TARG} PROPERTIES FOLDER "Tests")
   endforeach(TARG)
 endfunction(add_tests)
 
