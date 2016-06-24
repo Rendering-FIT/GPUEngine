@@ -94,7 +94,7 @@ namespace ge
          inline AttribStorageData* getAttribStorageData(const AttribStorage *storage) const;
          inline std::map<AttribStorage*,AttribStorageData>::iterator getOrCreateAttribStorageData(AttribStorage *storage);
          inline void releaseAttribStorageDataIfEmpty(std::map<AttribStorage*,AttribStorageData>::iterator iterator);
-         inline const std::map<AttribStorage*,AttribStorageData>& getAttribStorageDataMap() const;
+         inline const std::map<AttribStorage*,AttribStorageData>& attribStorageDataMap() const;
 
          inline unsigned getStateSetBufferOffset4(unsigned mode,const AttribStorage *storage) const;
          inline unsigned getStateSetBufferOffset4(unsigned mode,const AttribStorageData &storageData) const;
@@ -167,7 +167,7 @@ namespace ge
       { return _attribStorageData.emplace(storage,storage).first; }
       inline void StateSet::releaseAttribStorageDataIfEmpty(std::map<AttribStorage*,AttribStorageData>::iterator iterator)
       { if(iterator->second.numDrawCommands==0) _attribStorageData.erase(iterator); }
-      inline const std::map<AttribStorage*,StateSet::AttribStorageData>& StateSet::getAttribStorageDataMap() const  { return _attribStorageData; }
+      inline const std::map<AttribStorage*,StateSet::AttribStorageData>& StateSet::attribStorageDataMap() const  { return _attribStorageData; }
       inline unsigned StateSet::getStateSetBufferOffset4(unsigned mode,const AttribStorage* storage) const
       { const StateSet::AttribStorageData *storageData=getAttribStorageData(storage); return storageData ? getStateSetBufferOffset4(mode,*storageData) : 0; }
       inline unsigned StateSet::getStateSetBufferOffset4(unsigned mode,const AttribStorageData &storageData) const

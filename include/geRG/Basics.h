@@ -12,9 +12,10 @@ namespace ge
       using size_t=std::size_t;
       constexpr const size_t size_max=-1; // do not remove const - it is required by MSVC 2013
 
-      extern const std::shared_ptr<void> GERG_EXPORT _nullSharedPtr;
+      extern std::aligned_storage<sizeof(std::shared_ptr<void>),
+            std::alignment_of<std::shared_ptr<void>>::value>::type GERG_EXPORT _nullSharedPtr;
       template<typename T>
-      inline const std::shared_ptr<T>& nullSharedPtr()  { return *reinterpret_cast<const std::shared_ptr<T>*>(&_nullSharedPtr); }
+      inline const std::shared_ptr<T>& nullSharedPtr()  { return reinterpret_cast<const std::shared_ptr<T>&>(_nullSharedPtr); }
    }
 }
 

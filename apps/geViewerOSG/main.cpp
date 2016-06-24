@@ -48,6 +48,7 @@ struct SWindowParam{
 bool disableAnttweakbar=true;
 ge::util::ArgumentObject *args;
 ge::util::WindowObject   *window;
+static bool printModelInfo=false;
 static bool showFPS=false;
 static vector<chrono::steady_clock::time_point> frameTimePoints;
 
@@ -67,6 +68,7 @@ int main(int argc,char*argv[])
 
    disableAnttweakbar=true;
    showFPS=args->isPresent("--show-fps");
+   printModelInfo=args->isPresent("--model-info");
 
    //window args
    WindowParam.Size[0]    = atoi(args->getArg("-w","800").c_str());
@@ -182,13 +184,45 @@ void Idle()
 }
 
 
+static const char* primitiveType2str(unsigned t)
+{
+   switch(t) {
+      case 0: return "POINTS";
+      case 1: return "LINES";
+      case 2: return "LINE_LOOP";
+      case 3: return "LINE_STRIP";
+      case 4: return "TRIANGLES";
+      case 5: return "TRIANGLE_STRIP";
+      case 6: return "TRIANGLE_FAN";
+      case 7: return "QUADS";
+      case 8: return "QUAD_STRIP";
+      case 9: return "POLYGON";
+      case 10: return "LINES_ADJACENCY";
+      case 11: return "LINE_STRIP_ADJACENCY";
+      case 12: return "TRIANGLES_ADJACENCY";
+      case 13: return "TRIANGLE_STRIP_ADJACENCY";
+      case 14: return "PATCHES";
+      default: return "unknown";
+   }
+}
+
+
+static unsigned countTransformations(Transformation *t)
+{
+   unsigned r=1;
+   for(auto& ch : t->childList())
+      r+=countTransformations(ch.get());
+   return r;
+}
+
+
 void Init()
 {
    ge::gl::initShadersAndPrograms();
 
    // load model
    glm::vec3 center;
-   float radius;
+   float radius=1.f;
    float zNear=1.f;
    float zFar=100.f;
    if(!fileName.empty())
@@ -223,6 +257,38 @@ void Init()
       cameraManipulator.setEye(center+glm::vec3(0.f,0.f,radius*2.f));
       zNear=radius*0.99f;
       zFar=radius*3.01f;
+   }
+
+   if(model && printModelInfo)
+   {
+      auto mgr=static_cast<StateSetDefaultManager*>(RenderingContext::current()->stateSetManager().get());
+      auto& ssm=mgr->stateSetMap();
+      array<unsigned,16> vertexCountsPerType;
+      for(unsigned &a : vertexCountsPerType)
+         a=0;
+      cout<<"Num Meshes: "<<model->meshList().size()<<endl;
+      cout<<"Num StateSets: "<<ssm.size()<<endl;
+      unsigned numTransformations=0;
+      auto& transformationRootList=model->transformationRootList();
+      for(auto& t : transformationRootList)
+         numTransformations+=countTransformations(t.second.get());
+      cout<<"Num Transformations: "<<numTransformations<<endl;
+      unsigned counter=0;
+      for(auto it1=ssm.begin(); it1!=ssm.end(); it1++,counter++) {
+         shared_ptr<StateSet> ss=it1->second.lock();
+         auto& asdMap=ss->attribStorageDataMap();
+         cout<<"StateSet "<<counter<<" (num used AttribStorages: "<<asdMap.size()<<")"<<endl;
+         for(auto it2=asdMap.begin(); it2!=asdMap.end(); it2++) {
+            auto& rd=it2->second.renderingData;
+            for(auto it3=rd.begin(); it3!=rd.end(); it3++) {
+               cout<<"   PrimitiveType: "<<primitiveType2str(it3->glMode)<<" , Count: "<<it3->drawCommandCount<<endl;
+               vertexCountsPerType[it3->glMode]+=it3->drawCommandCount;
+            }
+         }
+      }
+      for(unsigned i=0; i<vertexCountsPerType.size(); i++)
+         if(vertexCountsPerType[i]!=0)
+            cout<<"Total VertexCounts for "<<primitiveType2str(i)<<": "<<vertexCountsPerType[i]<<endl;
    }
 
    // unmap buffers
