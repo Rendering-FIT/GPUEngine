@@ -24,6 +24,8 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 ##################################################
 #Set the output to one set of directories lib/ bin/
 ##################################################
