@@ -14,6 +14,65 @@
 
 namespace ge{
   namespace core{
+    template<typename...ARGS>
+      std::string argsToStr(ARGS...);
+
+    template<typename F,typename...ARGS>
+      std::string argsToStr_help(F const&a,ARGS...args){
+        std::stringstream ss;
+        ss<<a;
+        if(sizeof...(args)>0)
+          ss<<","<<argsToStr(args...);
+        return ss.str();
+      }
+
+    template<typename...ARGS>
+      std::string argsToStr(ARGS...args){
+        return argsToStr_help(args...);
+      }
+
+    template<> inline std::string argsToStr(){
+      return "";
+    }
+
+
+//    GECORE_EXPORT extern int indentCounter;
+//    GECORE_EXPORT extern std::string indent;
+    class GECORE_EXPORT PrintCallStack{
+      public:
+        static int indentCounter;
+        static std::string indent;
+        template<typename...ARGS>
+          PrintCallStack(std::string fceName,ARGS...args){
+            std::cout<<indent<<fceName<<"("<<argsToStr(args...)<<"){"<<std::endl;
+            indentCounter+=2;
+            indent="";
+            for(int i=0;i<indentCounter;++i)
+              indent+=" ";
+          }
+        ~PrintCallStack(){
+          indentCounter-=2;
+          if(indentCounter<0)
+            indentCounter=0;
+          indent="";
+          for(int i=0;i<indentCounter;++i)
+            indent+=" ";
+          std::cout<<indent<<"}"<<std::endl;
+        }
+    };
+  }
+}
+
+#if 0
+#define PRINT_CALL_STACK(...)ge::core::PrintCallStack superduperhiddenvar(__VA_ARGS__)
+#else
+#define PRINT_CALL_STACK(...)
+#endif
+
+
+
+namespace ge{
+  namespace core{
     class FSA;
     class GECORE_EXPORT ParseEnumArgs{
       protected:

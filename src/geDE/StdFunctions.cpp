@@ -13,12 +13,22 @@ Nullary::Nullary(
   this->_outputData = data;
 }
 
+void Nullary::addSignaling(Statement*statement){
+  this->_addSignaling(statement);
+}
+
+void Nullary::operator()(){
+  if(!this->_dirtyFlag)return;
+  this->_dirtyFlag = false;
+  this->_updateTicks++;
+  this->setSignalingDirty();
+}
 
 void ge::de::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
   auto tr=fr->getTypeRegister();
   fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,TypeRegister::AUTO,0}),
-              TypeRegister::getTypeKeyword<Nullary>(),
-              factoryOfFunctionFactory<Nullary>(TypeRegister::getTypeKeyword<Nullary>()));
+      TypeRegister::getTypeKeyword<Nullary>(),
+      factoryOfFunctionFactory<Nullary>(TypeRegister::getTypeKeyword<Nullary>()));
 
   registerStdNumericFunctions(fr);
   registerStdRelationalFunctions(fr);
@@ -26,6 +36,6 @@ void ge::de::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
   registerStdCastFunctions(fr);
 
   ADD_BINARY_FUNCTION_SIMPLE(Add,std::string)
-  ALL_LOOP(ADD_UNARY_FUNCTION_SIMPLE,Assignment)
-  SIGNED_NUMERIC_LOOP(ADD_UNARY_FUNCTION_SIMPLE,UnaryMinus)
+    ALL_LOOP(ADD_UNARY_FUNCTION_SIMPLE,Assignment)
+    SIGNED_NUMERIC_LOOP(ADD_UNARY_FUNCTION_SIMPLE,UnaryMinus)
 }

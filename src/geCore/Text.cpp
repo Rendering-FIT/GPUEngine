@@ -11,7 +11,7 @@ std::string ge::core::loadTextFile(std::string fileName){
   if(!f.is_open()){
     std::cerr<<"ERROR: ge::core::loadTextFile("<<fileName;
     std::cerr<<") - cannot open file"<<std::endl;
-    return 0;
+    return "";
   }
   std::string str((std::istreambuf_iterator<char>(f)),std::istreambuf_iterator<char>());
   f.close();

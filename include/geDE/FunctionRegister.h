@@ -32,7 +32,7 @@ namespace ge{
         using FunctionID = size_t;
         inline FunctionRegister(
             std::shared_ptr<TypeRegister>const&typeRegister,
-            std::shared_ptr<NameRegister>       const&namer);
+            std::shared_ptr<NameRegister>const&namer       );
         inline ~FunctionRegister();
         FunctionID addFunction(
             TypeRegister::TypeId             const&type   ,
@@ -58,8 +58,8 @@ namespace ge{
         std::shared_ptr<Function>sharedFunction(std::string const&name)const;
         std::shared_ptr<Statement>sharedStatement(FunctionID  id  )const;
         std::shared_ptr<Statement>sharedStatement(std::string const&name)const;
-        std::shared_ptr<StatementFactory>sharedFactory(FunctionID  id  ,StatementFactory::Uses maxUses = 1)const;
-        std::shared_ptr<StatementFactory>sharedFactory(std::string const&name,StatementFactory::Uses maxUses = 1)const;
+        std::shared_ptr<StatementFactory>sharedFactory(FunctionID  id  ,StatementFactory::Uses maxUses = 0)const;
+        std::shared_ptr<StatementFactory>sharedFactory(std::string const&name,StatementFactory::Uses maxUses = 0)const;
         std::string str()const;
       protected:
         using FunctionDefinition = std::tuple<

@@ -39,6 +39,13 @@ bool CompositeFunction::bindOutput(
   return this->_outputMapping->bindOutput(fr,data);
 }
 
+bool CompositeFunction::bindOutput(
+    std::shared_ptr<FunctionRegister>const&fr     ,
+    std::shared_ptr<Nullary>         const&nullary){
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  return this->_outputMapping->bindOutput(fr,nullary);
+}
 
 bool CompositeFunction::hasInput(InputIndex i)const{
   assert(this!=nullptr);
@@ -76,19 +83,7 @@ Function::Ticks CompositeFunction::getUpdateTicks()const{
   return this->_outputMapping->getUpdateTicks();
 }
 
-Function::Ticks CompositeFunction::getCheckTicks ()const{
-  assert(this!=nullptr);
-  assert(this->_outputMapping!=nullptr);
-  return this->_outputMapping->getCheckTicks();
-}
-
 void  CompositeFunction::setUpdateTicks(Ticks ticks){
-  assert(this!=nullptr);
-  assert(this->_outputMapping!=nullptr);
-  this->_outputMapping->setUpdateTicks(ticks);
-}
-
-void  CompositeFunction::setCheckTicks(Ticks ticks){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   this->_outputMapping->setUpdateTicks(ticks);

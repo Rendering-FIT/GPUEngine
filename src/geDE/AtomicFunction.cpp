@@ -1,5 +1,6 @@
 #include<geDE/AtomicFunction.h>
 #include<geDE/Resource.h>
+#include<geDE/StdFunctions.h>
 
 using namespace ge::de;
 
@@ -22,7 +23,7 @@ AtomicFunction::AtomicFunction(
   assert(this!=nullptr);
   auto nofInputs = fr->getNofInputs(id);
   for(decltype(nofInputs)i=0;i<nofInputs;++i)
-    this->_inputs.push_back(AtomicFunctionInput());
+    this->_inputs.push_back(std::make_shared<AtomicFunctionInput>());
 }
 
 AtomicFunction::AtomicFunction(
@@ -39,12 +40,8 @@ AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,Functio
 
 
 AtomicFunction::~AtomicFunction(){
-  InputIndex i=0;
-  for(auto const&x:this->_inputs){
-    if(x.function)x.function->_removeOutputFunction(this,i);
-    i++;
-  }
-  //std::cerr<<"AtomicFunction::~AtomicFunction() - "<<this->_name<<" "<<this<<std::endl;
+  for(auto const&x:this->_forSignaling)
+    x->_removeSignaling(this);
 }
 
 bool AtomicFunction::bindInput(
@@ -54,15 +51,30 @@ bool AtomicFunction::bindInput(
   assert(this!=nullptr);
   if(!this->_inputBindingCheck(fr,i,function))
     return false;
-  //std::cerr<<this->_name<<".bindInput("<<i<<","<<function<<")"<<std::endl;
-  if(function)function->_addOutputFunction(this,i);
-  else if(this->_inputs[i].function){
-    this->_inputs[i].function->_removeOutputFunction(this,i);
+  assert(i<this->_inputs.size());
+  auto oldFunction = this->_inputs.at(i)->function;
+  if(oldFunction == function)return true;
+  if(oldFunction){
+    std::dynamic_pointer_cast<Statement>(oldFunction)->_removeSignaling(this);
+    this->_fce2Indices.at(oldFunction).erase(i);
+    if(this->_fce2Indices.at(oldFunction).empty()){
+      this->_fce2Indices.erase(oldFunction);
+      this->_fce2FceInput.erase(oldFunction);
+    }
   }
+  if(function){
+    std::dynamic_pointer_cast<Statement>(function)->_addSignaling(this);
+    auto ii = this->_fce2Indices.find(function);
+    if(ii==this->_fce2Indices.end()){
+      this->_fce2Indices[function]=std::set<InputIndex>();
+      this->_fce2FceInput[function]=this->_inputs.at(i);
+    }
+    this->_fce2Indices.at(function).insert(i);
+    this->_inputs.at(i)->updateTicks = function->getUpdateTicks() - 1;
+  }
+  this->_inputs.at(i)->function = function;
+  this->_inputs.at(i)->changed  = true;
   this->setDirty();
-  this->_inputs[i].function = function;
-  if(function)this->_inputs[i].updateTicks = function->getUpdateTicks() - 1;
-  this->_inputs[i].changed  = true;
   return true;
 }
 
@@ -77,51 +89,46 @@ bool AtomicFunction::bindOutput(
   return true;
 }
 
-void AtomicFunction::operator()(){
+bool AtomicFunction::bindOutput(
+    std::shared_ptr<FunctionRegister>const&fr     ,
+    std::shared_ptr<Nullary>         const&nullary){
   assert(this!=nullptr);
-  this->_checkTicks++;
-  this->_processInputs();
-  if(this->_do())
-    this->_updateTicks++;
-
-  //new scheme
-  this->_dirtyFlag = false;
+  if(!this->_outputBindingCheck(fr,nullary->getOutputData()))
+    return false;
+  if(this->_outputSignaling)this->_removeSignaling(this->_outputSignaling);
+  this->_outputData = nullary->getOutputData();
+  this->_outputSignaling = &*nullary;
+  this->_addSignaling(this->_outputSignaling);
+  return true;
 }
 
-void AtomicFunction::_processInputs(){
-  //new scheme
-  assert(this!=nullptr);
-  for(InputIndex i=0;i<this->_inputs.size();++i){
-    assert(this->_inputs[i].function!=nullptr);
-    if(!this->hasInput(i)||!this->_inputs[i].function->_dirtyFlag){
-      this->_inputs[i].changed = false;
-      continue;
-    }
-    (*this->_inputs[i].function)();
-    this->_inputs[i].function->setCheckTicks(this->_checkTicks);
-    this->_inputs[i].changed=
-      this->_inputs[i].updateTicks<this->_inputs[i].function->getUpdateTicks();
-    if(this->_inputs[i].changed)
-      this->_inputs[i].updateTicks=this->_inputs[i].function->getUpdateTicks();
-  }
 
-  //old scheme based on checkTicks and updateTicks
-  /*
+void AtomicFunction::operator()(){
   assert(this!=nullptr);
-  for(InputIndex i=0;i<this->_inputs.size();++i){
-    assert(this->_inputs[i].function!=nullptr);
-    if(!this->hasInput(i)||this->_inputs[i].function->getCheckTicks()>=this->_checkTicks){
-      this->_inputs[i].changed = false;
-      continue;
-    }
-    (*this->_inputs[i].function)();
-    this->_inputs[i].function->setCheckTicks(this->_checkTicks);
-    this->_inputs[i].changed=
-      this->_inputs[i].updateTicks<this->_inputs[i].function->getUpdateTicks();
-    if(this->_inputs[i].changed)
-      this->_inputs[i].updateTicks=this->_inputs[i].function->getUpdateTicks();
+  if(!this->_dirtyFlag)return;
+  this->_dirtyFlag = false;
+  bool anyInputChanged = this->_processInputs();
+  if(!anyInputChanged)
+    return;
+  if(this->_do()){
+    this->_updateTicks++;
+    this->setSignalingDirty();
   }
-  */
+  //this->_dirtyFlag = false;
+}
+
+bool AtomicFunction::_processInputs(){
+  assert(this!=nullptr);
+  bool anyInputChanged = false;
+  for(auto const&x:this->_fce2FceInput){
+    auto input = x.second;
+    (*input->function)();
+    bool changed = input->updateTicks < input->function->getUpdateTicks();
+    input->changed = changed;
+    input->updateTicks = input->function->getUpdateTicks();
+    anyInputChanged |= changed;
+  }
+  return anyInputChanged;
 }
 
 bool AtomicFunction::_do(){

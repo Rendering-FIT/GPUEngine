@@ -24,6 +24,7 @@ namespace ge{
         void insertVariableRegister(std::string name,SharedVariableRegister const&vr);
         bool insert(std::string name,SharedVariable const&variable);
         void erase(std::string name);
+        void eraseVariableRegister(std::string name);
         std::string toStr(unsigned indentation,std::shared_ptr<TypeRegister>const&tr)const;
         std::string getName()const;
         std::string getFullName()const;
@@ -37,6 +38,7 @@ namespace ge{
         RegisterIterator registersBegin();
         RegisterIterator registersEnd();
       protected:
+        bool _checkPath(std::string const&path)const;
         std::string _name = "";
         VariableRegister*_parent = nullptr;
         Name2Register _name2Register;

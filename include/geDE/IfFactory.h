@@ -8,7 +8,7 @@ namespace ge{
   namespace de{
     class GEDE_EXPORT IfFactory: public StatementFactory{
       public:
-        IfFactory(std::string name = "",unsigned maxUses = 1);
+        IfFactory(std::string name = "",unsigned maxUses = 0);
         virtual ~IfFactory();
         std::shared_ptr<StatementFactory>trueFactory      = nullptr;
         std::shared_ptr<StatementFactory>falseFactory     = nullptr;

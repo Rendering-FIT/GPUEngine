@@ -6,7 +6,7 @@ namespace ge{
   namespace de{
     class /*GECORE_EXPORT*/ BodyFactory: public StatementFactory{
       public:
-        inline BodyFactory(std::string name = "",unsigned maxUses = 1);
+        inline BodyFactory(std::string name = "",unsigned maxUses = 0);
         inline virtual ~BodyFactory();
         inline virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister> const&);
         std::vector<std::shared_ptr<StatementFactory>>factories;

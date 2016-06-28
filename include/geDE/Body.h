@@ -9,8 +9,6 @@ namespace ge{
         using StatementVector   = std::vector<std::shared_ptr<Statement>>;
         using StatementIndex    = StatementVector::size_type;
         using StatementIterator = StatementVector::const_iterator;
-      protected:
-        StatementVector _statements;
       public:
         inline Body();
         inline virtual ~Body();
@@ -20,16 +18,24 @@ namespace ge{
         inline StatementIterator begin()const;
         inline StatementIterator end  ()const;
         inline virtual void operator()()override;
+      protected:
+        StatementVector _statements;
+        std::vector<size_t>_statementsUpdateTicks;
     };
 
     inline Body::Body():Statement(BODY){
     }
 
     inline Body::~Body(){
+      for(auto const&x:this->_statements)
+        x->_removeSignaling(this);
     }
 
     inline void Body::addStatement(std::shared_ptr<Statement>const&statement){
       this->_statements.push_back(statement);
+      this->_statementsUpdateTicks.push_back(0);
+      statement->_addSignaling(this);
+      this->setDirty();
     }
 
     inline Body::StatementIndex Body::size()const{
@@ -49,8 +55,18 @@ namespace ge{
     }
 
     inline void Body::operator()(){
-      for(auto x:this->_statements)
-        (*x)();
+      if(!this->_dirtyFlag)return;
+      bool changed = false;
+      for(size_t i=0;i<this->_statements.size();++i){
+        (*this->_statements.at(i))();
+        if(this->_statementsUpdateTicks.at(i)!=this->_statements.at(i)->getUpdateTicks())
+          changed = true;
+        this->_statementsUpdateTicks[i]=this->_statements.at(i)->getUpdateTicks();
+      }
+      if(!changed)return;
+      this->_updateTicks++;
+      this->_dirtyFlag = false;
+      this->setSignalingDirty();
     }
   }
 }

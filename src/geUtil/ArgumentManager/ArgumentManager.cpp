@@ -289,7 +289,7 @@ bool ArgumentManager::_START(std::vector<std::string>&args,unsigned&pos,std::str
 
   std::string name=args[pos];
   pos++;
-  if(args.size()<=pos)return falseBranch("expected value after name, or {");
+  if(args.size()<=pos)return falseBranch("expected value after name: \""+name+"\", or {");
   if(args[pos]=="{"){
     pos++;
     if(!this->_START(args,pos,this->_getFullName(prefix,name)))

@@ -100,32 +100,64 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
   registerStdFunctions(fr);
 
-  auto ra = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),1);
-  auto rb = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),1);
-  auto rc = std::make_shared<ResourceFactory>(tr->getTypeId("i32"),2);
+  auto aaaa=
+  "ra = resourceFactory(i32);"
+  "rb = resourceFactory(i32);"
+  "rc = resourceFactory(i32);"
+  "d = nodeFactory(\"newFce_d\",\"Add<i32>\");"
+  "c = nodeFactory(\"newFce_c\",\"Mul<i32>\",rc,d);"
+  "b = nodeFactory(\"newFce_b\",\"Mul<i32>\",0,0,rc,d);"
+  "a = nodeFactory(\"newFce_a\",\"Add<i32>\",ra,b,rb,c);"
+  "registerCompositeFunction(\"newFce\",a,{b,0,d,0},{c,1,d,1});"
+  "Add<i32>[\"newFce_a\"]("
+  "  Mul<i32>[\"newFce_b\"](),,)"
+  ;(void)aaaa;
 
-  auto d = std::make_shared<FunctionNodeFactory>("newFce_d",2);
+  /*
+   * def newFce = newFce_a[Add<i32>](
+   *   newFce_b[Mul<i32>](
+   *     a,
+   *     newFce_d[Add<i32>](a,b)
+   *   ),
+   *   newFce_c[Mul<i32>](
+   *     newFce_d[Add<i32>](a,b),
+   *     b
+   *   )
+   * )
+   *
+   *
+   *
+   *
+   *
+   *
+   */
+
+  auto ra = std::make_shared<ResourceFactory>(tr->getTypeId("i32"));
+  auto rb = std::make_shared<ResourceFactory>(tr->getTypeId("i32"));
+  auto rc = std::make_shared<ResourceFactory>(tr->getTypeId("i32"));
+
+  auto d = std::make_shared<FunctionNodeFactory>("newFce_d");
   d->setFactory(fr->sharedFactory("Add<i32>"));
   d->addResourceFactory(nullptr);
   d->addResourceFactory(nullptr);
   d->addInputFactory(nullptr);
   d->addInputFactory(nullptr);
 
-  auto c = std::make_shared<FunctionNodeFactory>("newFce_c",1);
+  auto c = std::make_shared<FunctionNodeFactory>("newFce_c");
   c->setFactory(fr->sharedFactory("Mul<i32>"));
   c->addResourceFactory(rc);
   c->addResourceFactory(nullptr);
   c->addInputFactory(d);
   c->addInputFactory(nullptr);
 
-  auto b = std::make_shared<FunctionNodeFactory>("newFce_b",1);
+  auto b = std::make_shared<FunctionNodeFactory>("newFce_b");
   b->setFactory(fr->sharedFactory("Mul<i32>"));
   b->addResourceFactory(nullptr);
   b->addResourceFactory(rc);
   b->addInputFactory(nullptr);
   b->addInputFactory(d);
 
-  auto a = std::make_shared<FunctionNodeFactory>("newFce_a",1);
+  auto a = std::make_shared<FunctionNodeFactory>("newFce_a");
   a->setFactory(fr->sharedFactory("Add<i32>"));
   a->addResourceFactory(ra);
   a->addResourceFactory(rb);

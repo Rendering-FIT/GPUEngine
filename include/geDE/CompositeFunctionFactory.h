@@ -23,7 +23,10 @@ namespace ge{
         inline std::shared_ptr<FunctionFactory>const&getInputFactory(size_t input)const;
         void setFactory(std::shared_ptr<StatementFactory>const&fac);
         void setInputFactories(std::vector<FactoryInputList>const&inputs);
-        virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&fr);
+        virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&fr)override;
+        virtual TypeRegister::TypeId getOutputType(std::shared_ptr<FunctionRegister>const&fr)const override;
+        virtual size_t getNofInputs(std::shared_ptr<FunctionRegister>const&fr)const override;
+        virtual TypeRegister::TypeId getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const override;
       protected:
         std::shared_ptr<FunctionNodeFactory>_factory = nullptr;
         std::vector<FactoryInputList> _inputs;

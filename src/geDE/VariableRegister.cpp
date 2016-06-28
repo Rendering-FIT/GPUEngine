@@ -89,64 +89,119 @@ bool VariableRegister::hasVariable(std::string name)const{
 
 VariableRegister::SharedVariableRegister const&VariableRegister::getVariableRegister(std::string name)const{
   assert(this!=nullptr);
-  assert(this->_name2Register.count(name)!=0);
   auto ii = this->_name2Register.find(name);
+  if(ii==this->_name2Register.end())
+    ge::core::printError("VariableRegister::getVariableRegister","there is no such sub variable register",name);
+  assert(ii!=this->_name2Register.end());
   return ii->second;
 }
 
 bool VariableRegister::insert(std::string name,SharedVariable const&variable){
   assert(this!=nullptr);
-  std::size_t pos=name.find(".");
-  if(pos==0){
-    std::cerr<<"ERROR: can't insert variable "+name+" into "+this->_name+" - incorrect variable name, there is no namespace name before \".\""<<std::endl;
+  if(!this->_checkPath(name)){
+    std::cerr<<"ERROR: can't insert variable "+name+" into variableRegister "+this->getFullName()+" - incorrect variable name"<<std::endl;
     return false;
   }
+  std::size_t pos=name.find(".");
+  if(pos!=std::string::npos){
+    std::string rest=name.substr(pos+1);
+    std::string registerName=name.substr(0,pos);
+    SharedVariableRegister nextVariableRegister = nullptr;
+    if(this->hasVariableRegister(registerName))
+      nextVariableRegister=this->getVariableRegister(registerName);
+    if(!nextVariableRegister){
+      nextVariableRegister=std::make_shared<VariableRegister>(registerName);
+      this->insertVariableRegister(registerName,nextVariableRegister);
+      nextVariableRegister->setParent(this);
+    }
+    if(!nextVariableRegister->insert(rest,variable))
+      return false;
+  }
+
   if(this->contain(name))this->erase(name);
   this->_name2Variable[name]=variable;
-  if(pos==std::string::npos)return true;
-  std::string rest=name.substr(pos+1);
-  std::string registerName=name.substr(0,pos);
-  SharedVariableRegister nextVariableRegister = nullptr;
-  if(this->hasVariableRegister(registerName))
-    nextVariableRegister=this->getVariableRegister(registerName);
-  if(!nextVariableRegister){
-    nextVariableRegister=std::make_shared<VariableRegister>(registerName);
-    this->insertVariableRegister(registerName,nextVariableRegister);
-    nextVariableRegister->setParent(this);
-  }
-  return nextVariableRegister->insert(rest,variable);
+  return true;
 }
 
 void VariableRegister::erase(std::string name){
   assert(this!=nullptr);
-  std::size_t pos=name.find(".");
-  if(pos==0){
-    std::cerr<<"ERROR: can't erase variable "+name+" from "+this->_name+" - incorrect variable name, there is no namespace name before \".\""<<std::endl;
+
+  name = this->getFullName()+"."+name;
+  if(!this->_checkPath(name)){
+    std::cerr<<"ERROR: can't erase variable "+name+" - incorrect variable name"<<std::endl;
     return;
   }
-  this->_name2Variable.erase(name);
-  if(pos==std::string::npos)return;
-  std::string rest=name.substr(pos+1);
-  std::string namespaceName=name.substr(0,pos);
-  auto nextVariableRegister=this->getVariableRegister(namespaceName);
-  if(!nextVariableRegister){
-    std::cerr<<"ERROR: namespace "+this->_name+" does not sub namepace "+namespaceName<<std::endl;
-    return;
+
+  name = name.substr(name.find(".")+1);
+  VariableRegister*reg = this;
+  while(reg->_parent)reg = reg->_parent;
+  do{
+    reg->_name2Variable.erase(name);
+    size_t pos = name.find(".");
+    if(pos==std::string::npos)break;
+    auto regName = name.substr(0,pos);
+    name = name.substr(pos+1);
+    if(!reg->hasVariableRegister(regName))break;
+    reg = &*reg->getVariableRegister(regName);
+  }while(true);
+
+  while(reg->empty()){
+    std::string regName = reg->_name;
+    if(!reg->_parent)break;
+    reg = reg->_parent;
+    reg->_name2Register.erase(regName);
   }
-  nextVariableRegister->erase(rest);
-  if(nextVariableRegister->empty())
-    this->_name2Register.erase(namespaceName);
+}
+
+void VariableRegister::eraseVariableRegister(std::string name){
+  assert(this!=nullptr);
+  std::size_t pos;
+  VariableRegister*reg = this;
+  std::string path = name;
+  while((pos = path.find("."))!=std::string::npos){
+    std::string first = path.substr(0,pos);
+    if(!reg->hasVariableRegister(first))return;
+    reg = &*reg->getVariableRegister(first);
+    path = path.substr(pos+1);
+  }
+  std::vector<std::string>varsToErase;
+  for(auto const&x:reg->_name2Variable){
+    auto varName = reg->getFullName()+"."+x.first;
+    varName = varName.substr(varName.find(".")+1);
+    varsToErase.push_back(varName);
+  }
+  reg = this;
+  while(reg->_parent)
+    reg = reg->_parent;
+
+  for(auto const&x:varsToErase)
+    reg->erase(x);
 }
 
 VariableRegister::SharedVariable const&VariableRegister::getVariable (std::string name)const{
   assert(this!=nullptr);
-  assert(this->_name2Variable.count(name)!=0);
   auto it=this->_name2Variable.find(name);
+  if(it==this->_name2Variable.end())
+    ge::core::printError("VariableRegister::getVariable","there is no such variable",name);
+  assert(this->_name2Variable.count(name)!=0);
   return it->second;
 }
 
 bool VariableRegister::contain(std::string name)const{
   return this->_name2Variable.count(name)!=0;
+}
+
+bool VariableRegister::_checkPath(std::string const&path)const{
+  size_t pos = 0;
+  size_t newPos;
+  do{
+    newPos = path.find(".",pos);
+    if(newPos==std::string::npos)return true;
+    if(newPos==pos)return false;
+    pos = newPos+1;
+    if(pos>=path.size())return false;
+  }while(true);
+  return true;
 }
 
 VariableRegister::VariableIterator VariableRegister::varsBegin     (){return this->_name2Variable.begin();}

@@ -18,12 +18,14 @@ void FunctionNodeFactory::addResourceFactory(
     std::shared_ptr<ResourceFactory>const&factory){
   assert(this!=nullptr);
   this->resourceFactories.push_back(factory);
+  if(factory)factory->setUses(factory->getUses()+1);
 }
 
 void FunctionNodeFactory::addInputFactory(
     std::shared_ptr<StatementFactory>const&factory){
   assert(this!=nullptr);
   this->inputFactories.push_back(std::dynamic_pointer_cast<FunctionFactory>(factory));
+  if(factory)factory->setUses(factory->getUses()+1);
 }
 
 FunctionNodeFactory::~FunctionNodeFactory(){
@@ -69,4 +71,22 @@ std::shared_ptr<Statement>FunctionNodeFactory::_do(
   return res;
 }
 
+std::shared_ptr<FunctionFactory>const&FunctionNodeFactory::getFactory()const{
+  return this->functionFactory;
+}
+
+TypeRegister::TypeId FunctionNodeFactory::getOutputType(std::shared_ptr<FunctionRegister>const&fr)const{
+  assert(this!=nullptr);
+  return this->functionFactory->getOutputType(fr);
+}
+
+size_t FunctionNodeFactory::getNofInputs(std::shared_ptr<FunctionRegister>const&fr)const{
+  assert(this!=nullptr);
+  return this->functionFactory->getNofInputs(fr);
+}
+
+TypeRegister::TypeId FunctionNodeFactory::getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
+  assert(this!=nullptr);
+  return this->functionFactory->getInputType(fr,i);
+}
 

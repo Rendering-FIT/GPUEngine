@@ -28,14 +28,15 @@ namespace ge{
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr            ,
             std::shared_ptr<Resource>        const&data = nullptr)override;
+        virtual bool bindOutput(
+            std::shared_ptr<FunctionRegister>const&fr            ,
+            std::shared_ptr<Nullary>         const&nullary       )override;
         virtual bool hasInput (InputIndex i)const override;
         virtual bool hasOutput(            )const override;
         virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData(            )const override;
         virtual Ticks getUpdateTicks()const override;
-        virtual Ticks getCheckTicks ()const override;
         virtual void  setUpdateTicks(Ticks ticks)override;
-        virtual void  setCheckTicks (Ticks ticks)override;
         virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const override;
         virtual inline std::string doc()const override;
       protected:

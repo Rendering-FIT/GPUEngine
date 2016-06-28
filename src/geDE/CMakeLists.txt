@@ -47,6 +47,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/StdCastFunctions.h
   ${HEADER_PATH}/FunctionRegister.h
   ${HEADER_PATH}/NameRegister.h
+  ${HEADER_PATH}/Kernel.h
   ${HEADER_PATH}/geDE.h
   )
 
@@ -73,6 +74,7 @@ set(DE_SOURCES
   StdCastFunctions.cpp
   FunctionRegister.cpp
   NameRegister.cpp
+  Kernel.cpp
   )
 
 add_library(${LIB_NAME}

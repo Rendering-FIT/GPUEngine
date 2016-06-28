@@ -13,7 +13,7 @@ set(TEST_TARGETS
   tokenizationTest
   syntaxTest
   interpretTest
-  #  namespaceTest
+  variableRegisterTest
   statementFactoryTest
   mealyMachineTest
   )

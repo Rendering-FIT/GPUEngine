@@ -32,9 +32,11 @@ namespace ge{
         template<typename TYPE>
           void update(TYPE const&data){
             (TYPE&)*this->_outputData=data;
-            this->_updateTicks++;
+            //this->_updateTicks++;
             this->setDirty();
           }
+        void addSignaling(Statement*statement);
+        virtual void operator()()override;
     };
 
     template<typename TYPE>

@@ -2,6 +2,7 @@
 #include<geDE/FunctionRegister.h>
 #include<geDE/FunctionNodeFactory.h>
 #include<geDE/CompositeFunction.h>
+#include<geDE/FactoryOfFunctionFactory.h>
 
 using namespace ge::de;
 
@@ -73,4 +74,25 @@ std::shared_ptr<Statement>CompositeFunctionFactory::_do(
         fceInputs));
 }
 
+TypeRegister::TypeId CompositeFunctionFactory::getOutputType(
+    std::shared_ptr<FunctionRegister>const&fr)const{
+  assert(this!=nullptr);
+  return this->_factory->getOutputType(fr);
+}
+
+size_t CompositeFunctionFactory::getNofInputs(
+    std::shared_ptr<FunctionRegister>const&)const{
+  assert(this!=nullptr);
+  return this->_inputs.size();
+}
+
+TypeRegister::TypeId CompositeFunctionFactory::getInputType(
+    std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
+  assert(this!=nullptr);
+  assert(i<this->_inputs.size());
+  assert(this->_inputs.at(i).size()>0);
+  auto const&fac=std::get<FACTORY>(this->_inputs.at(i).at(0));
+  auto const&input=std::get<INPUT>(this->_inputs.at(i).at(0));
+  return fac->getInputType(fr,input);
+}
 

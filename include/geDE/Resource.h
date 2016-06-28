@@ -76,9 +76,10 @@ namespace ge{
         return (T*)this->getData();
       }
 
+    
     template<typename T>
       Resource::operator T**()const{
-        return (T**)this->getDataAddress();
+        return (T**)this->getData();//this->getDataAddress();
       }
 
 

@@ -24,11 +24,11 @@ void free_StructData(StructData*sd){
 
 
 SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
-
   GIVEN( "empty typeRegister" ) {
     std::shared_ptr<TypeRegister>r=std::make_shared<TypeRegister>();
     auto nofDefaultTypes=r->getNofTypes();
     auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+#if 1
     WHEN( "adding new type int5 that is registered using TypeRegister::ARRAY 5 TypeRegister::I32" ) {
       auto t=r->addCompositeType("int5",{TypeRegister::ARRAY,5,i32});
 
@@ -46,7 +46,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(((std::string&)*s)=="ahoj svete");
       }
     }
-//#define SHOWCERR
+#define SHOWCERR
 #ifndef SHOWCERR
     std::stringstream oss;
     auto old = std::cerr.rdbuf( oss.rdbuf() );
@@ -105,7 +105,17 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(r->getTypeId("a9")!=TypeRegister::UNREGISTERED);
       }
     }
-
+#endif
+    WHEN("adding pointer"){
+      auto i32p = r->addAtomicType("i32*",sizeof(int32_t*));
+      auto s = r->construct(i32p);
+      int32_t a=32;
+      *(int32_t**)s=&a;
+      a=100;
+      REQUIRE(*(*(int32_t**)s)==100);
+      r->destroy(s,i32p);
+    }
+#if 1
     WHEN("adding mujTyp = ARRAY 2 I32"){
       auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
       r->addCompositeType("mujTyp",{TypeRegister::ARRAY,2,i32});
@@ -182,7 +192,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         counter=0;
         auto a0=r->sharedEmptyResource("Class0");
         auto alloc=[](Class0**d){*d=new Class0;};
-        alloc(*a0);
+        alloc((Class0**)a0->getDataAddress());
         REQUIRE(counter==1);
         a0=nullptr;
         REQUIRE(counter==0);
@@ -236,7 +246,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
       counter = 0;
       auto data = r->sharedEmptyResource("StructData");
       auto alloc=[](StructData**d){*d=new StructData;init_StructData(*d);};
-      alloc(*data);
+      alloc((StructData**)data->getDataAddress());
 
       REQUIRE(counter == 1);
       data = nullptr;
@@ -260,6 +270,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
 
 #ifndef SHOWCERR
     std::cerr.rdbuf(old);
+#endif
+
 #endif
   }
 }

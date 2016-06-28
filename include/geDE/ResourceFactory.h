@@ -12,7 +12,7 @@ namespace ge{
         TypeRegister::TypeId     _type   = TypeRegister::UNREGISTERED;
         std::shared_ptr<Resource>_result = nullptr                   ;
       public:
-        inline ResourceFactory(TypeRegister::TypeId const&type,Uses const&maxUses=1);
+        inline ResourceFactory(TypeRegister::TypeId const&type,Uses const&maxUses=0);
         inline virtual ~ResourceFactory();
         inline void reset();
         inline bool firstConstruction()const;

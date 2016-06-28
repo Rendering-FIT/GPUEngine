@@ -11,6 +11,7 @@ namespace ge{
 
     class Resource;
     class AtomicFunction;
+    class Nullary;
     class GEDE_EXPORT Function: public Statement{
       friend class AtomicFunction;
       public:
@@ -28,25 +29,17 @@ namespace ge{
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr                ,
             std::shared_ptr<Resource>        const&data     = nullptr) = 0;
+        virtual bool bindOutput(
+            std::shared_ptr<FunctionRegister>const&fr                ,
+            std::shared_ptr<Nullary>         const&nullary  = nullptr) = 0;
         virtual bool hasInput (InputIndex i)const = 0;
         virtual bool hasOutput(            )const = 0; 
         virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const = 0;
         virtual std::shared_ptr<Resource>const&getOutputData(            )const = 0;
-        virtual Ticks getUpdateTicks()const = 0;
-        virtual Ticks getCheckTicks ()const = 0;
-        virtual void  setUpdateTicks(Ticks ticks) = 0;
-        virtual void  setCheckTicks (Ticks ticks) = 0;
         virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const = 0;
         virtual inline std::string doc()const;
-        void setDirty();
-        bool isDirty()const;
       protected:
-        using OutputFunction = std::tuple<Function*,InputIndex>;
-        std::set<OutputFunction>_outputFunctions;
-        bool _dirtyFlag = false;
-        void _setOutputDirty();
-        void _addOutputFunction(Function*fce,InputIndex index);
-        void _removeOutputFunction(Function*fce,InputIndex index);
+        Statement*_outputSignaling = nullptr;
         FunctionRegister::FunctionID     _id;
         bool _inputBindingCheck (
             std::shared_ptr<FunctionRegister>const&fr      ,

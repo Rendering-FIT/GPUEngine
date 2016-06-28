@@ -6,9 +6,6 @@ namespace ge{
   namespace de{
     class Function;
     class GECORE_EXPORT While: public Statement{
-      protected:
-        std::shared_ptr<Function> _condition = nullptr;
-        std::shared_ptr<Statement>_body      = nullptr;
       public:
         inline While(
             std::shared_ptr<Function> const&condition = nullptr,
@@ -19,25 +16,40 @@ namespace ge{
         inline std::shared_ptr<Function >const&getCondition()const;
         inline std::shared_ptr<Statement>const&getBody()const;
         virtual void operator()();
+      protected:
+        std::shared_ptr<Function> _condition = nullptr;
+        std::shared_ptr<Statement>_body      = nullptr;
+        size_t _conditionUpdateTicks = 0;
+        size_t _bodyUpdateTicks = 0;
     };
 
     inline While::While(
         std::shared_ptr<Function >const&condition,
         std::shared_ptr<Statement>const&body     ):Statement(WHILE){
-      this->_condition = condition;
-      this->_body      = body;
+      this->setCondition(condition);
+      this->setBody(body);
     }
 
     inline While::~While(){
-
+      if(this->_condition)
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
+      if(this->_body)this->_body->_removeSignaling(this);
     }
 
     inline void While::setBody(std::shared_ptr<Statement>const&body){
+      if(this->_body)this->_body->_removeSignaling(this);
       this->_body = body;
+      if(this->_body)this->_body->_addSignaling(this);
+      this->setDirty();
     }
 
     inline void While::setCondition(std::shared_ptr<Function>const&condition){
+      if(this->_condition)
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
       this->_condition = condition;
+      if(this->_condition)
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_addSignaling(this);
+      this->setDirty();
     }
 
     inline std::shared_ptr<Function>const&While::getCondition()const{

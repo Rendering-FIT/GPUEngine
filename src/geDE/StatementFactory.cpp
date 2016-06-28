@@ -10,7 +10,7 @@ std::shared_ptr<Statement>StatementFactory::operator()(
   if(!this->_result)this->_result = this->_do(tr);
   res = this->_result;
   this->_uses++;
-  if(this->_uses==this->_maxUses){
+  if(this->_uses>=this->_maxUses){
     this->_uses = 0;
     this->_result = nullptr;
   }

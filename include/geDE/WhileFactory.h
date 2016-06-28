@@ -7,7 +7,7 @@ namespace ge{
     class FunctionFactory;
     class GEDE_EXPORT WhileFactory: public StatementFactory{
       public:
-        inline WhileFactory(std::string const&name = "",Uses maxUses = 1);
+        inline WhileFactory(std::string const&name = "",Uses maxUses = 0);
         inline virtual ~WhileFactory();
         std::shared_ptr<StatementFactory>bodyFactory      = nullptr;
         std::shared_ptr<FunctionFactory >conditionFactory = nullptr;

@@ -24,9 +24,9 @@ bool Function::_inputBindingCheck(
     assert(function->getOutputData() != nullptr);
 
   if(
-      function                                      != nullptr                   &&
+      function                                      != nullptr                                                          &&
       tr->getFceArgTypeId(fr->getType(this->_id),i) != tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Auto>())&&
-      tr->getFceArgTypeId(fr->getType(this->_id),i) != function->getOutputData()->getId()                       ){
+      tr->getFceArgTypeId(fr->getType(this->_id),i) != function->getOutputData()->getId()                               ){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".input["<<nr->getFceInputName(this->_id,i)<<"] has different type - ";
     std::cerr<<tr->getTypeIdName(tr->getFceArgTypeId(fr->getType(this->_id        ),i));
     std::cerr<<" != ";
@@ -43,9 +43,9 @@ bool Function::_outputBindingCheck(
   assert(this!=nullptr);
   auto tr = fr->getTypeRegister();
   if(
-      data                                           != nullptr                   &&
+      data                                           != nullptr                                                          &&
       tr->getFceReturnTypeId(fr->getType(this->_id)) != tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Auto>())&&
-      data->getId()                                  != tr->getFceReturnTypeId(fr->getType(this->_id))){
+      data->getId()                                  != tr->getFceReturnTypeId(fr->getType(this->_id))                   ){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".output has different type - ";
     std::cerr<<tr->getTypeIdName(fr->getType(this->_id));
     std::cerr<<" != ";
@@ -56,28 +56,30 @@ bool Function::_outputBindingCheck(
   return true;
 }
 
+/*
 void Function::setDirty(){
+  assert(this!=nullptr);
   if(!this->_dirtyFlag)this->_setOutputDirty();
   this->_dirtyFlag = true;
 }
 
-bool Function::isDirty()const{
-  return this->_dirtyFlag;
-}
-
 void Function::_setOutputDirty(){
+  assert(this!=nullptr);
   for(auto const&x:this->_outputFunctions){
-    if(std::get<0>(x)->_dirtyFlag)continue;
-    std::get<0>(x)->_dirtyFlag = true;
-    std::get<0>(x)->_setOutputDirty();
+    if(std::get<FUNCTION_PART>(x)->_dirtyFlag)continue;
+    std::get<FUNCTION_PART>(x)->_dirtyFlag = true;
+    std::get<FUNCTION_PART>(x)->_setOutputDirty();
   }
 }
 
+
 void Function::_addOutputFunction(Function*fce,InputIndex index){
+  assert(this!=nullptr);
   this->_outputFunctions.insert(Function::OutputFunction(fce,index));
 }
 
 void Function::_removeOutputFunction(Function*fce,InputIndex index){
+  assert(this!=nullptr);
   this->_outputFunctions.erase(Function::OutputFunction(fce,index));
 }
-
+*/

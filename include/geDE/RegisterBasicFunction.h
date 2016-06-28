@@ -24,14 +24,14 @@ namespace ge{
         assert(mf!=nullptr);
         assert(FCE!=nullptr);
 #if defined(_MSC_VER) && _MSC_VER<1900
-        return FCE((ARGS&...)(*mf->getInputData(I))...);
+        return FCE((ARGS const&...)(*mf->getInputData(I))...);
 #else
-        return FCE((ARGS&)(*mf->getInputData(I))...);
+        return FCE((ARGS const&)(*mf->getInputData(I))...);
 #endif
       }
 
     template<typename OUTPUT,typename...ARGS>
-      void registerBasicFunction(
+      FunctionRegister::FunctionID registerBasicFunction(
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
           OUTPUT(*FCE)(ARGS...)){
@@ -59,12 +59,14 @@ namespace ge{
               //typedef OUTPUT(*FF)(ARGS...);
               //FF f=reinterpret_cast<FF>(this->_functionRegister->getImplementation(this->_id));
               //(OUTPUT&)(*this->getOutputData()) = uber_call(this,f,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              (OUTPUT&)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //(OUTPUT&)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              *(OUTPUT*)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };
         auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));
         fr->addImplementation(f,reinterpret_cast<void(*)()>(FCE));
+        return f;
       }
 
 

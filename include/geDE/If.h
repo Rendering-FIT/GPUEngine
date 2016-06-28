@@ -6,10 +6,6 @@ namespace ge{
   namespace de{
     class Function;
     class GEDE_EXPORT If: public Statement{
-      protected:
-        std::shared_ptr<Function >_condition = nullptr;
-        std::shared_ptr<Statement>_trueBody  = nullptr;
-        std::shared_ptr<Statement>_falseBody = nullptr;
       public:
         inline If(
             std::shared_ptr<Function >const&condition = nullptr,
@@ -23,31 +19,52 @@ namespace ge{
         inline std::shared_ptr<Statement>const&getTrueBody ()const;
         inline std::shared_ptr<Statement>const&getFalseBody()const;
         virtual void operator()()override;
+      protected:
+        size_t _conditionUpdateTicks = 0;
+        size_t _trueBodyUpdateTicks = 0;
+        size_t _falseBodyUpdateTicks = 0;
+        std::shared_ptr<Function >_condition = nullptr;
+        std::shared_ptr<Statement>_trueBody  = nullptr;
+        std::shared_ptr<Statement>_falseBody = nullptr;
     };
 
     inline If::If(
         std::shared_ptr<Function >const&condition,
         std::shared_ptr<Statement>const&trueBody ,
         std::shared_ptr<Statement>const&falseBody):Statement(IF){
-      this->_condition = condition;
-      this->_trueBody  = trueBody ;
-      this->_falseBody = falseBody;
+      this->setCondition(condition);
+      this->setTrueBody(trueBody);
+      this->setFalseBody(falseBody);
     }
 
     inline If::~If(){
-
+      if(this->_condition)
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
+      if(this->_trueBody)this->_trueBody->_removeSignaling(this);
+      if(this->_falseBody)this->_falseBody->_removeSignaling(this);
     }
 
     inline void If::setCondition(std::shared_ptr<Function>const&condition){
+      if(this->_condition)
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
       this->_condition = condition;
+      if(this->_condition)
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_addSignaling(this);
+      this->setDirty();
     }
 
     inline void If::setTrueBody (std::shared_ptr<Statement>const&trueBody ){
+      if(this->_trueBody)this->_trueBody->_removeSignaling(this);
       this->_trueBody = trueBody;
+      if(this->_trueBody)this->_trueBody->_addSignaling(this);
+      this->setDirty();
     }
 
     inline void If::setFalseBody(std::shared_ptr<Statement>const&falseBody){
+      if(this->_falseBody)this->_falseBody->_removeSignaling(this);
       this->_falseBody = falseBody;
+      if(this->_falseBody)this->_falseBody->_addSignaling(this);
+      this->setDirty();
     }
 
     inline std::shared_ptr<Function>const&If::getCondition()const{
@@ -61,6 +78,5 @@ namespace ge{
     inline std::shared_ptr<Statement>const&If::getFalseBody()const{
       return this->_falseBody;
     }
-
   }
 }

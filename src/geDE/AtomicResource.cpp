@@ -88,7 +88,7 @@ const void*AtomicResource::getPointer()const{
 }
 
 std::string AtomicResource::data2Str()const{
-  return "";//TODO
+  return this->_manager->data2Str(this->getData(),this->_id);
   /*
   TypeRegister::Type type=this->_manager->getTypeIdType(this->_id);
   std::stringstream ss;
