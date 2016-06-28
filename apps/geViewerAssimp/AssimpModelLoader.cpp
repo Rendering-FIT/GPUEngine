@@ -17,6 +17,7 @@
 #include <assimp/mesh.h>
 #include <assimp/types.h>
 
+#include "UnicodeIOSystem.h"
 #include "ste/DAG.h"
 #include "ste/stl_extension.h"
 
@@ -28,6 +29,7 @@
 
 using namespace std;
 using namespace ge::sg;
+using namespace ge::core;
 
 /**
  * Load model with default options (aiProcess_Triangulate | aiProcess_SortByPType).
@@ -49,18 +51,53 @@ ge::sg::Scene* AssimpModelLoader::loadScene(const char* modelIdentifier)
 ge::sg::Scene* AssimpModelLoader::loadScene(const char* modelIdentifier, unsigned options)
 {
    Assimp::Importer importer;
-   const aiScene *ai_scene = importer.ReadFile(modelIdentifier, options);  // no polygons larger than triangles | meshes with only one primitive type at the time
+   importer.SetIOHandler(new UnicodeIOSystem());
+   const aiScene *ai_scene = importer.ReadFile(modelIdentifier, options);
+   
    if(!ai_scene) return nullptr;
 
+   
+   return createScene(ai_scene);
+}
+
+ge::sg::Scene* AssimpModelLoader::loadScene(const wchar_t* modelIdentifier)
+{
+   return loadScene(modelIdentifier, aiProcess_Triangulate | aiProcess_SortByPType);  // no polygons larger than triangles | meshes with only one primitive type at the time
+}
+
+ge::sg::Scene* AssimpModelLoader::loadScene(const wchar_t* modelIdentifier, unsigned options)
+{
+   Assimp::Importer importer;
+   importer.SetIOHandler(new UnicodeIOSystem());
+   /**
+    * This will not work with real wchar_t string, because assimp makes internal deep copy of
+    * the file name (string) and this copied string is then sent to custom IOSystem class.
+    * Thus if you reinterpret the wchar_t to char the deep copy will not represent the original
+    * wchar_t string. You either call the const char* overload or this one but with reinterpreted
+    * modelIdentifier from char to wchar_t. Which here gets reinterpreted back.
+    * This overload is implemented only for sake of consistent interface, because other model
+    * loading libraries might get better use of wchar_t.
+    */
+   const aiScene *ai_scene = importer.ReadFile(reinterpret_cast<const char*>(modelIdentifier), options);
+
+   if(!ai_scene) return nullptr;
+
+
+   return createScene(ai_scene);
+}
+
+
+ge::sg::Scene * AssimpModelLoader::createScene(const aiScene *ai_scene)
+{
    ge::sg::Scene* scene = new ge::sg::Scene;
    std::shared_ptr<ge::sg::Model> model(std::make_shared<ge::sg::Model>());
    scene->models.push_back(model);
    /* Make list of all things loaded so we can reference them in scene graph.*/
    /*
-    * Materials has to be processed before meshes since mesh is referencing material.
-    * Since in assimp they are referenced by index we need to save them in exact same order
-    * inside model.materials too.
-    */
+   * Materials has to be processed before meshes since mesh is referencing material.
+   * Since in assimp they are referenced by index we need to save them in exact same order
+   * inside model.materials too.
+   */
    processSceneMaterials(ai_scene, model.get()); //
    processSceneMeshes(ai_scene, model.get());
 
@@ -75,6 +112,7 @@ ge::sg::Scene* AssimpModelLoader::loadScene(const char* modelIdentifier, unsigne
    scene->rootNode = model->rootNode;
    return scene;
 }
+
 
 void AssimpModelLoader::processSceneMeshes(const aiScene* scene, ge::sg::Model *model)
 {
@@ -105,10 +143,10 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
       indices->numComponents = 1;
       indices->stride = 0;
       indices->type = ge::sg::AttributeDescriptor::DataType::UNSIGNED_INT;
-      indices->semantic = attributeSemantics.indices;
+      indices->semantic = ge::sg::AttributeDescriptor::Semantic::INDICES;
       //! Beware - default deleter needed
       indices->data = std::shared_ptr<unsigned>(getindices(aimesh, &mesh->count), std::default_delete<unsigned[]>());
-      indices->size = sizeof(unsigned) * mesh->count;
+      indices->size = sizeof(unsigned) * (int)mesh->count;
       mesh->attributes.push_back(indices);
    }
 
@@ -118,7 +156,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
    vertices->numComponents = 3;
    vertices->stride = 0;
    vertices->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-   vertices->semantic = attributeSemantics.position;
+   vertices->semantic = ge::sg::AttributeDescriptor::Semantic::POSITION;
    vertices->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 3], std::default_delete<float[]>());
    std::copy(aimesh->mVertices,aimesh->mVertices+aimesh->mNumVertices, static_cast<aiVector3D*>(vertices->data.get()));
    mesh->attributes.push_back(vertices);
@@ -131,7 +169,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
       normals->numComponents = 3;
       normals->stride = 0;
       normals->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-      normals->semantic = attributeSemantics.normal;
+      normals->semantic = ge::sg::AttributeDescriptor::Semantic::NORMAL;
       normals->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 3], std::default_delete<float[]>());
       std::copy(aimesh->mNormals, aimesh->mNormals + aimesh->mNumVertices, static_cast<aiVector3D*>(normals->data.get()));
       mesh->attributes.push_back(normals);
@@ -144,7 +182,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
       tangents->numComponents = 3;
       tangents->stride = 0;
       tangents->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-      tangents->semantic = attributeSemantics.tangent;
+      tangents->semantic = ge::sg::AttributeDescriptor::Semantic::TANGENT;
       tangents->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 3], std::default_delete<float[]>());
       std::copy(aimesh->mTangents, aimesh->mTangents + aimesh->mNumVertices, static_cast<aiVector3D*>(tangents->data.get()));
       mesh->attributes.push_back(tangents);
@@ -162,7 +200,7 @@ ge::sg::Mesh* AssimpModelLoader::createMesh(const aiMesh* aimesh, const aiScene*
             texcoord->numComponents = 2;
             texcoord->stride = 0;
             texcoord->type = ge::sg::AttributeDescriptor::DataType::FLOAT;
-            texcoord->semantic = attributeSemantics.texcoord;
+            texcoord->semantic = ge::sg::AttributeDescriptor::Semantic::TEXCOORD;
             texcoord->data = std::shared_ptr<float>(new float[aimesh->mNumVertices * 2], std::default_delete<float[]>());
             copy_MofN((float*)aimesh->mTextureCoords[i], (float*)texcoord->data.get(), 2, 3, aimesh->mNumVertices*3);
             mesh->attributes.push_back(texcoord);
@@ -277,11 +315,11 @@ void AssimpModelLoader::processSceneMaterials(const aiScene * scene, ge::sg::Mod
  * It processes textures and materials beginning with "$clr" and "$mat"
  * TBD: Process all of them. Will be done if needed.
  */
-ge::sg::Material* AssimpModelLoader::createMaterial(aiMaterial* aimat, const aiScene* /*scene*/)
+ge::sg::Material* AssimpModelLoader::createMaterial(aiMaterial* aimat, const aiScene * /*scene*/)
 {
    ge::sg::Material *mat = new ge::sg::Material;
    //for each property
-   for(unsigned i = 0; i < aimat->mNumProperties; i++)
+   for(unsigned int i = 0; i < aimat->mNumProperties; i++)
    {
       aiMaterialProperty* matprop = aimat->mProperties[i];
       if(matprop->mSemantic == 0) //non-texture property
@@ -419,9 +457,9 @@ ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNo
       return channel;
    }
    channel->setTarget(it->second.second->data->getRefMatrix());
-   ste::transform_copy(ai_node_anim->mPositionKeys, ai_node_anim->mPositionKeys + ai_node_anim->mNumPositionKeys, std::back_inserter(channel->positionKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(key.mTime*frame_time, glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
-   ste::transform_copy(ai_node_anim->mScalingKeys, ai_node_anim->mScalingKeys + ai_node_anim->mNumScalingKeys, std::back_inserter(channel->scaleKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(key.mTime*frame_time, glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
-   ste::transform_copy(ai_node_anim->mRotationKeys, ai_node_anim->mRotationKeys + ai_node_anim->mNumRotationKeys, std::back_inserter(channel->orientationKF), [frame_time](aiQuatKey key){ return ge::sg::MovementAnimationChannel::QuatKeyFrame(key.mTime*frame_time, glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)); });
+   ste::transform_copy(ai_node_anim->mPositionKeys, ai_node_anim->mPositionKeys + ai_node_anim->mNumPositionKeys, std::back_inserter(channel->positionKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
+   ste::transform_copy(ai_node_anim->mScalingKeys, ai_node_anim->mScalingKeys + ai_node_anim->mNumScalingKeys, std::back_inserter(channel->scaleKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
+   ste::transform_copy(ai_node_anim->mRotationKeys, ai_node_anim->mRotationKeys + ai_node_anim->mNumRotationKeys, std::back_inserter(channel->orientationKF), [frame_time](aiQuatKey key){ return ge::sg::MovementAnimationChannel::QuatKeyFrame(ge::core::toTimeUnit(key.mTime*frame_time), glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)); });
 
 
    return channel;
@@ -429,9 +467,9 @@ ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNo
 
 ge::sg::Animation * AssimpModelLoader::createAnimation(aiAnimation& m_animation, ge::sg::Scene& scene, AssimpModelLoader::AnimationMap& animationMap)
 {
-   double frameTime = 1.0 / m_animation.mTicksPerSecond;
+   double frameTime = 1000.0 / m_animation.mTicksPerSecond; //one anim tick in ms
    ge::sg::Animation* animation = new ge::sg::Animation;
-   animation->duration = (m_animation.mDuration) / m_animation.mTicksPerSecond;
+   animation->duration = ge::core::toTimeUnit((m_animation.mDuration) / m_animation.mTicksPerSecond * 1000.);
    for (unsigned i = 0; i < m_animation.mNumChannels; ++i)
    {
       animation->channels.emplace_back(createMovementAnimationChannel(m_animation.mChannels[i],scene,frameTime, animationMap));
@@ -455,27 +493,18 @@ void AssimpModelLoader::registerSemantics()
    materialSemantics.specularColor = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::specularColor);
    materialSemantics.emissiveColor = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::emissiveColor);
    materialSemantics.shininess = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::shininess);
-   materialSemantics.ambientTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::ambientTexture);
-   materialSemantics.diffuseTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::diffuseTexture);
-   materialSemantics.specularTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::specularTexture);
-   materialSemantics.emissiveTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::emissiveTexture);
-   materialSemantics.heightTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::heightTexture);
-   materialSemantics.normalTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::normalTexture);
-   materialSemantics.shininessTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::shininessTexture);
-   materialSemantics.opacityTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::opacityTexture);
-   materialSemantics.displacementTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::displacementTexture);
-   materialSemantics.lightmapTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::lightmapTexture);
-   materialSemantics.reflectionTexture = ge::sg::MaterialImageComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::reflectionTexture);
-
-   attributeSemantics.position = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::position);
-   attributeSemantics.normal = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::normal);
-   attributeSemantics.tangent = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::tangent);
-   attributeSemantics.binormal = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::binormal);
-   attributeSemantics.indices = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::indices);
-   attributeSemantics.texcoord = ge::sg::AttributeDescriptor::semanticRegister.registerConstant(ge::core::StandardSemanticNames::texcoord);
+   materialSemantics.ambientTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::ambientTexture);
+   materialSemantics.diffuseTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::diffuseTexture);
+   materialSemantics.specularTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::specularTexture);
+   materialSemantics.emissiveTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::emissiveTexture);
+   materialSemantics.heightTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::heightTexture);
+   materialSemantics.normalTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::normalTexture);
+   materialSemantics.shininessTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::shininessTexture);
+   materialSemantics.opacityTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::opacityTexture);
+   materialSemantics.displacementTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::displacementTexture);
+   materialSemantics.lightmapTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::lightmapTexture);
+   materialSemantics.reflectionTexture = ge::sg::MaterialSimpleComponent::semanticRegister.registerConstant(ge::core::StandardSemanticNames::reflectionTexture);
 }
-
-AssimpModelLoader::AttributeSemantics AssimpModelLoader::attributeSemantics;
 
 AssimpModelLoader::MaterialSemantics AssimpModelLoader::materialSemantics;
 
@@ -496,13 +525,4 @@ AssimpModelLoader::MaterialSemantics::MaterialSemantics()
    ,  displacementTexture(ge::core::EnumRegister::notRegistered)
    ,  lightmapTexture(ge::core::EnumRegister::notRegistered)
    ,  reflectionTexture(ge::core::EnumRegister::notRegistered)
-{}
-
-AssimpModelLoader::AttributeSemantics::AttributeSemantics()
-   : position(ge::core::EnumRegister::notRegistered)
-   , normal(ge::core::EnumRegister::notRegistered)
-   , tangent(ge::core::EnumRegister::notRegistered)
-   , binormal(ge::core::EnumRegister::notRegistered)
-   , indices(ge::core::EnumRegister::notRegistered)
-   , texcoord(ge::core::EnumRegister::notRegistered)
 {}

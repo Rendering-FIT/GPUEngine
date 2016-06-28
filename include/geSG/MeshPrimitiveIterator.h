@@ -160,7 +160,7 @@ namespace ge
 
          MeshTriangleIterator(Mesh* mesh)
          {
-            auto it = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [](std::shared_ptr<AttributeDescriptor>& attr){ return attr->semantic == AttributeDescriptor::semanticRegister.getValue(ge::core::StandardSemanticNames::position); });
+            auto it = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [](std::shared_ptr<AttributeDescriptor>& attr){ return attr->semantic == AttributeDescriptor::Semantic::POSITION; });
             _Ptr = static_cast<float*>((**it).data.get());
             N = (**it).numComponents;
             _triangle.setToContinuous(_Ptr, N);

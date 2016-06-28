@@ -2,7 +2,7 @@ set(LIB_NAME geRG)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-if(GPUENGINE_DYNAMIC)
+if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
    add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
 else()
@@ -21,7 +21,6 @@ set(RG_INCLUDES
     ${HEADER_PATH}/AttribType.h
     ${HEADER_PATH}/AttribConfig.h
     ${HEADER_PATH}/AttribStorage.h
-    ${HEADER_PATH}/SeparateBuffersAttribStorage.h
     ${HEADER_PATH}/Mesh.h
     ${HEADER_PATH}/Primitive.h
     ${HEADER_PATH}/Drawable.h
@@ -34,6 +33,7 @@ set(RG_INCLUDES
     ${HEADER_PATH}/MatrixGpuData.h
     ${HEADER_PATH}/FlexibleUniform.h
     ${HEADER_PATH}/Model.h
+    ${HEADER_PATH}/ProgressStamp.h
   )
 
 set(RG_SOURCES
@@ -42,7 +42,6 @@ set(RG_SOURCES
     AttribType.cpp
     AttribConfig.cpp
     AttribStorage.cpp
-    SeparateBuffersAttribStorage.cpp
     Primitive.cpp
     DrawCommand.cpp
     RenderingContext.cpp
@@ -51,6 +50,7 @@ set(RG_SOURCES
     Transformation.cpp
     MatrixList.cpp
     FlexibleUniform.cpp
+    ProgressStamp.cpp
   )
 
 ################################################

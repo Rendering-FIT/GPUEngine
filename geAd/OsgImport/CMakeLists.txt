@@ -3,17 +3,20 @@ set(LIB_NAME OsgImport)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-if(GPUENGINE_DYNAMIC)
+if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-   add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
+   add_definitions(-DGEAD_LIBRARY)
 else()
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
    add_definitions(-DGE_LIBRARY_STATIC)
 endif()
 
+find_package(glm    REQUIRED)
+find_package(GLEW   REQUIRED)
 find_package(osg)
+find_package(OpenThreads)
 
-if(NOT osg_FOUND)
+if(NOT osg_FOUND OR NOT OpenThreads_FOUND)
    return()
 endif()
 
@@ -42,13 +45,13 @@ add_library(${LIB_NAME}
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps geRG geGL)
+set(Internal_deps glm geRG geGL)
 set(External_deps_Export)
-set(External_libs osg)
+set(External_libs osg OpenThreads)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
 set(includes_to_export)
 
-target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
+target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs})
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"
    INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"

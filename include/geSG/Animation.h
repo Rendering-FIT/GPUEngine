@@ -4,29 +4,39 @@
 #include <memory>
 #include <vector>
 #include <geUtil/macros.h>
+#include <geCore/Updatable.h>
+#include <chrono>
 
 namespace ge
 {
    namespace sg{
       class AnimationChannel;
 
-      class GESG_EXPORT Animation
+      /**
+       * Basic animation which groups particular channels. The init
+       * should set the duration, mode and add some channels. Befor each 
+       * replay you need to set start time to 0 (default constructed time_point).
+       * The correct startTime is properly on the first (of current replay)
+       * update invocation.
+       */
+      class GESG_EXPORT Animation : public ge::core::Updatable
       {
       public:
          ENUM_CLASS_FRIEND_OPERATOR(Mode, ONCE, LOOP);
 
          Animation();
 
-         void update(double t);
+         void update(core::time_point t = core::time_point()) override;
 
-         inline double getCurrentTime(){ return currentTime; }
+         inline core::time_unit getCurrentTime(){ return currentTime; }
 
          std::vector<std::shared_ptr<AnimationChannel>> channels;
 
          Mode mode;
-         double duration;
+         core::time_unit duration;
 
-         double currentTime; //animation relative time
+         core::time_unit currentTime; //animation relative time
+         core::time_point startTime; ///< simulation time of animation start
       protected:
       };
    }

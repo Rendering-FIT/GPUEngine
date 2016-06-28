@@ -7,6 +7,7 @@
 #include <vector>
 #include <geRG/Export.h>
 #include <geRG/ParentChildList.h>
+#include <geRG/ProgressStamp.h>
 #include <geGL/OpenGL.h>
 #include <geCore/Command.h>
 
@@ -24,10 +25,10 @@ namespace ge
 
       struct GERG_EXPORT RenderingCommandData
       {
-         unsigned indirectBufferOffset4;
-         unsigned stateSetBufferOffset4;
-         unsigned glMode;
-         unsigned drawCommandCount;
+         unsigned indirectBufferOffset4;  ///< Offset to draw indirect buffer (RenderingContext::drawIndirectBuffer()) where the draw command will be written. The value might change each frame. The new value is generated during StateSet::setupRendering().
+         unsigned stateSetBufferOffset4;  ///< Offset to the state set buffer (RenderingContext::stateSetStorage()) where StateSetGpuData of associated StateSet is stored.
+         unsigned glMode;                 ///< Rendering mode of the draw command, such as GL_TRIANGLES, GL_LINE_STRIP, etc.
+         unsigned drawCommandCount;       ///< Number of vertices that will be used for rendering of the draw command.
 
 #if defined(_MSC_VER) && _MSC_VER<=1900
          // MSVC 2013 (tested with Update 4 and 5) and MSVC 2015 (original release)
@@ -38,6 +39,7 @@ namespace ge
          RenderingCommandData& operator=(const RenderingCommandData&); // this must be never called
 #else
          RenderingCommandData(const RenderingCommandData&) = delete;
+         RenderingCommandData& operator=(const RenderingCommandData&) = delete;
 #endif
          inline RenderingCommandData(RenderingCommandData&& rhs) { *this = std::move(rhs); }
          RenderingCommandData& operator=(RenderingCommandData&& rhs);
@@ -79,6 +81,7 @@ namespace ge
 
          unsigned _numDrawCommands;
          unsigned _drawableCounter;        ///< Number of Drawables referencing this StateSet. As long as the counter is non-zero, StateSet is prevented from being freed from memory. \sa _self
+         ProgressStamp _progressStamp;
          std::shared_ptr<StateSet> _self;  ///< Reference to itself. It is used by _drawableCounter to prevent the object from being deleted as long as any drawables still reference it.
 
          std::map<AttribStorage*,AttribStorageData> _attribStorageData;
@@ -91,7 +94,7 @@ namespace ge
          inline AttribStorageData* getAttribStorageData(const AttribStorage *storage) const;
          inline std::map<AttribStorage*,AttribStorageData>::iterator getOrCreateAttribStorageData(AttribStorage *storage);
          inline void releaseAttribStorageDataIfEmpty(std::map<AttribStorage*,AttribStorageData>::iterator iterator);
-         inline const std::map<AttribStorage*,AttribStorageData>& getAttribStorageDataMap() const;
+         inline const std::map<AttribStorage*,AttribStorageData>& attribStorageDataMap() const;
 
          inline unsigned getStateSetBufferOffset4(unsigned mode,const AttribStorage *storage) const;
          inline unsigned getStateSetBufferOffset4(unsigned mode,const AttribStorageData &storageData) const;
@@ -164,7 +167,7 @@ namespace ge
       { return _attribStorageData.emplace(storage,storage).first; }
       inline void StateSet::releaseAttribStorageDataIfEmpty(std::map<AttribStorage*,AttribStorageData>::iterator iterator)
       { if(iterator->second.numDrawCommands==0) _attribStorageData.erase(iterator); }
-      inline const std::map<AttribStorage*,StateSet::AttribStorageData>& StateSet::getAttribStorageDataMap() const  { return _attribStorageData; }
+      inline const std::map<AttribStorage*,StateSet::AttribStorageData>& StateSet::attribStorageDataMap() const  { return _attribStorageData; }
       inline unsigned StateSet::getStateSetBufferOffset4(unsigned mode,const AttribStorage* storage) const
       { const StateSet::AttribStorageData *storageData=getAttribStorageData(storage); return storageData ? getStateSetBufferOffset4(mode,*storageData) : 0; }
       inline unsigned StateSet::getStateSetBufferOffset4(unsigned mode,const AttribStorageData &storageData) const

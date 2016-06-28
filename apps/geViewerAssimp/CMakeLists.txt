@@ -14,6 +14,12 @@ if(NOT glfw3_FOUND OR NOT Assimp_FOUND OR
    return()
 endif()
 
+if(WIN32)
+   set(EXTRA_SOURCE_FILES UnicodeIOSystem_win32.cpp)
+else()
+   set(EXTRA_SOURCE_FILES UnicodeIOSystem_other.cpp)
+endif(WIN32)
+
 set(APP_SOURCES
   main.cpp
   AssimpModelLoader.cpp
@@ -25,6 +31,8 @@ set(APP_SOURCES
   ForrysVisualizationTechniques.cpp
   InputController.cpp
   NFPlaneAdjustor.cpp
+  UnicodeIOStream.cpp
+  ${EXTRA_SOURCE_FILES}
   )
 
 set(APP_INCLUDES

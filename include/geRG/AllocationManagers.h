@@ -67,6 +67,7 @@ namespace ge
          inline unsigned numItemsAvailableAtTheEnd() const;  ///< Returns the number of items that are available at the end of the managed memory, e.g. number of items in the array at the end.
          inline unsigned firstItemAvailableAtTheEnd() const; ///< Returns the index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
          inline unsigned idOfArrayAtTheEnd() const;          ///< Returns id (index to std::vector\<ArrayAllocation\>) of the last allocated array at the end of the managed memory.
+         inline unsigned numNullItems() const;               ///< Returns the number of null items. Null items are stored in the array with Id 0 and always placed on the beginning of the allocated memory or buffer.
 
          inline ArrayAllocation<ArrayOwnerType>& operator[](unsigned id);
          inline const ArrayAllocation<ArrayOwnerType>& operator[](unsigned id) const;
@@ -118,7 +119,7 @@ namespace ge
          inline unsigned largestAvailable() const;            ///< Returns the number of available items in the largest continuous array.
          inline unsigned numItemsAvailableAtTheEnd() const;   ///< Returns the number of items that are available at the end of the managed memory, e.g. number of items in the array at the end.
          inline unsigned firstItemAvailableAtTheEnd() const;  ///< Returns the index of the first available item at the end of the managed memory, e.g. the first available item that is followed by available items only.
-         inline unsigned numNullItems() const;                ///< Returns the number of null items (null design pattern) allocated at the beginning of the managed memory.
+         inline unsigned numNullItems() const;                ///< Returns the number of null items (null design pattern) allocated at the beginning of the managed memory. Ids of null items are in the range 0 and numNullItems()-1.
 
          inline unsigned*& operator[](unsigned id);
          inline unsigned*const& operator[](unsigned id) const;
@@ -128,6 +129,8 @@ namespace ge
          inline iterator end();
          inline const_iterator begin() const;
          inline const_iterator end() const;
+         inline unsigned firstId() const;
+         inline unsigned lastId() const;
 
          inline bool canAllocate(unsigned numItems) const;
          bool alloc(unsigned *id);  ///< \brief Allocates one item and stores the item's id in the variable pointed by id parameter.
@@ -184,12 +187,12 @@ namespace ge
       template<typename OwnerType>
       void ArrayAllocationManager<OwnerType>::clear()
       {
-         auto numItemsOfNullObject=_allocations[0].numItems;
+         auto numItemsOfNullArray=numNullItems();
          _allocations.clear();
-         _allocations.emplace_back(0,numItemsOfNullObject,0,nullptr);
-         _available=_capacity-numItemsOfNullObject;
+         _allocations.emplace_back(0,numItemsOfNullArray,0,nullptr);
+         _available=_capacity-numItemsOfNullArray;
          _numItemsAvailableAtTheEnd=_available;
-         _firstItemAvailableAtTheEnd=numItemsOfNullObject;
+         _firstItemAvailableAtTheEnd=numItemsOfNullArray;
          _idOfArrayAtTheEnd=0;
       }
       inline ItemAllocationManager::ItemAllocationManager(unsigned capacity)
@@ -211,6 +214,7 @@ namespace ge
       template<typename OwnerType> inline unsigned ArrayAllocationManager<OwnerType>::numItemsAvailableAtTheEnd() const  { return _numItemsAvailableAtTheEnd; }
       template<typename OwnerType> inline unsigned ArrayAllocationManager<OwnerType>::firstItemAvailableAtTheEnd() const  { return _firstItemAvailableAtTheEnd; }
       template<typename OwnerType> inline unsigned ArrayAllocationManager<OwnerType>::idOfArrayAtTheEnd() const  { return _idOfArrayAtTheEnd; }
+      template<typename OwnerType> inline unsigned ArrayAllocationManager<OwnerType>::numNullItems() const  { return _allocations[0].numItems; }
       inline unsigned ItemAllocationManager::capacity() const  { return _capacity; }
       inline unsigned ItemAllocationManager::available() const  { return _available; }
       inline unsigned ItemAllocationManager::largestAvailable() const  { return _numItemsAvailableAtTheEnd; }
@@ -236,6 +240,8 @@ namespace ge
       inline ItemAllocationManager::iterator ItemAllocationManager::end()  { return _allocations.end()-_numItemsAvailableAtTheEnd; }
       inline ItemAllocationManager::const_iterator ItemAllocationManager::begin() const  { return _allocations.begin()+_numNullItems; }
       inline ItemAllocationManager::const_iterator ItemAllocationManager::end() const  { return _allocations.end()-_numItemsAvailableAtTheEnd; }
+      inline unsigned ItemAllocationManager::firstId() const  { return _numNullItems; }
+      inline unsigned ItemAllocationManager::lastId() const  { return _firstItemAvailableAtTheEnd-1; }
 
       template<typename OwnerType> inline bool ArrayAllocationManager<OwnerType>::canAllocate(unsigned numItems) const
       { return _numItemsAvailableAtTheEnd>=numItems; }

@@ -60,25 +60,16 @@ public:
       unsigned reflectionTexture;
    };
 
-   struct AttributeSemantics
-   {
-      AttributeSemantics();
-
-      unsigned position;
-      unsigned normal;
-      unsigned tangent;
-      unsigned binormal;
-      unsigned indices;
-      unsigned texcoord;
-   };
-
    static ge::sg::Scene* loadScene(const char* modelIdentifier);
    static ge::sg::Scene* loadScene(const char* modelIdentifier, unsigned options);
+   static ge::sg::Scene* loadScene(const wchar_t* modelIdentifier);
+   static ge::sg::Scene* loadScene(const wchar_t* modelIdentifier, unsigned options);
    static void registerSemantics();
 
    typedef std::map<std::string, std::pair<aiNode*, std::shared_ptr<ge::sg::MatrixTransformNode> >> AnimationMap;
 
 protected:
+   static ge::sg::Scene * createScene(const aiScene *ai_scene);
    static ge::sg::Mesh* createMesh(const aiMesh* aimesh, const aiScene* scene); //need scene for materials
    static void processSceneMeshes(const aiScene* scene, ge::sg::Model *model);
    static unsigned *getindices(const aiMesh* aimesh, size_t* count=NULL);
@@ -98,6 +89,5 @@ protected:
    static void processAnimations(const aiScene& ai_scene, ge::sg::Scene& scene, AnimationMap& animationMap);
 
    static MaterialSemantics materialSemantics;
-   static AttributeSemantics attributeSemantics;
 
 };

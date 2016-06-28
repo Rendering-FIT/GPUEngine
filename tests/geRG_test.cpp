@@ -1,7 +1,6 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
-#include <geGL/geGL.h>
 #include <geGL/ProgramObject.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
@@ -10,59 +9,101 @@
 #include <typeinfo> // MSVC 2013 requires this rather at the end of headers to compile successfully
 #include <typeindex>
 
+#define CATCH_CONFIG_MAIN
+#include"catch.hpp"
+
 
 using namespace std;
 using namespace ge::rg;
 
 
 static ge::util::WindowObject* window;
-static glm::ivec2 windowSize;
+static glm::ivec2 windowSize(800,600);
 static shared_ptr<ge::gl::ProgramObject> glProgram;
 static Mesh mesh;
+static unsigned samplePixel;
+
 
 void Init();
 void Idle();
+void EmptyIdle();
 void Mouse();
 void Wheel(int d);
 
 
-int main(int argc,char* argv[])
+SCENARIO("geRG test")
 {
-   ge::util::ArgumentObject* args=new ge::util::ArgumentObject(argc,argv);
+#if 0 // this is currently causing SIGSEGV in WindowObject::mainLoop() when called second time
+   GIVEN("geRG rendering window") {
+      window=new ge::util::WindowObject(
+            windowSize[0],
+            windowSize[1],
+            false,
+            EmptyIdle,
+            Mouse,
+            false,
+            430,
+            "core",
+            "");
 
-   windowSize=glm::ivec2(atoi(args->getArg("-w","800").c_str()),
-                         atoi(args->getArg("-h","600").c_str()));
+      glewExperimental=GL_TRUE;
+      glewInit();
+      glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
+                    // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                    // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
+      RenderingContext::setCurrent(make_shared<RenderingContext>());
 
-   window=new ge::util::WindowObject(
-         windowSize[0],
-         windowSize[1],
-         args->isPresent("-f"),
-         Idle,
-         Mouse,
-         false,
-         atoi(args->getArg("--context-version","430").c_str()),
-         args->getArg("--context-profile","core"),
-         args->getArg("--context-flag","debug"));
+      glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LEQUAL);
+      glDisable(GL_CULL_FACE);
 
-   glewExperimental=GL_TRUE;
-   glewInit();
-   glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
-                 // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
-                 // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
-   ge::gl::init();
-   RenderingContext::setCurrent(make_shared<RenderingContext>());
+      WHEN("rendering empty screen") {
+         window->mainLoop();
+         THEN("pixel in the screen center should be black") {
+            REQUIRE(samplePixel==0x00000000);
+         }
+      }
 
-   glEnable(GL_DEPTH_TEST);
-   glDepthFunc(GL_LEQUAL);
-   glDisable(GL_CULL_FACE);
+      delete window;
+   }
+#endif
 
-   Init();
-   window->mainLoop();
+   GIVEN("geRG rendering window") {
+      window=new ge::util::WindowObject(
+            windowSize[0],
+            windowSize[1],
+            false,
+            Idle,
+            Mouse,
+            false,
+            430,
+            "core",
+            "");
 
-   delete window;
-   delete args;
+      if(window!=nullptr) // if OpenGL 4.3 is supported, we should get window
+      {
+         glewExperimental=GL_TRUE;
+         glewInit();
+         glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
+                       // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
+                       // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
+         RenderingContext::setCurrent(make_shared<RenderingContext>());
 
-   return 0;
+         glEnable(GL_DEPTH_TEST);
+         glDepthFunc(GL_LEQUAL);
+         glDisable(GL_CULL_FACE);
+
+         WHEN("rendering single yellow triangle in the middle of the screen") {
+            Init();
+            window->mainLoop();
+            THEN("pixel in the screen center should be yellow") {
+               REQUIRE(samplePixel==0x0000ffff);
+            }
+         }
+
+         delete window;
+      }
+   }
 }
 
 
@@ -74,10 +115,26 @@ void Wheel(int /*d*/){
 }
 
 
+void EmptyIdle()
+{
+   // read sample pixel
+   glReadPixels(windowSize[0]/2,windowSize[1]/2+10,1,1,GL_RGB,GL_UNSIGNED_BYTE,&samplePixel);
+
+   // swap buffers and exit mainLoop
+   window->swap();
+   window->stopMainLoop();
+}
+
+
 void Idle()
 {
+   // render scene and read sample pixel
    RenderingContext::current()->frame();
+   glReadPixels(windowSize[0]/2,windowSize[1]/2+10,1,1,GL_RGB,GL_UNSIGNED_BYTE,&samplePixel);
+
+   // swap buffers and exit mainLoop
    window->swap();
+   window->stopMainLoop();
 }
 
 

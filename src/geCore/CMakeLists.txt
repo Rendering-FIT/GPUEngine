@@ -3,7 +3,7 @@ set(LIB_NAME geCore)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-if(GPUENGINE_DYNAMIC)
+if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
    add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
 else()
@@ -75,7 +75,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/StdCastFunctions.h
   ${HEADER_PATH}/Token.h
   #    ${HEADER_PATH}/lexer.h
-  ${HEADER_PATH}/idof.h
+  ${HEADER_PATH}/idlist.h
   ${HEADER_PATH}/NodeContext.h
   ${HEADER_PATH}/Grammar.h
   ${HEADER_PATH}/Nonterm.h
@@ -89,6 +89,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/TermNode.h
   ${HEADER_PATH}/Tokenization.h
   ${HEADER_PATH}/Text.h
+  ${HEADER_PATH}/Updatable.h
   ${HEADER_PATH}/FunctionRegister.h
   ${HEADER_PATH}/NameRegister.h
   )

@@ -25,7 +25,7 @@ namespace ge
          unsigned _verticesDataId;
          unsigned _indicesDataId;
          unsigned _primitivesDataId;
-         std::vector<Primitive> _primitiveList;
+         PrimitiveList _primitiveList;
          DrawableList _drawables;
 
       public:

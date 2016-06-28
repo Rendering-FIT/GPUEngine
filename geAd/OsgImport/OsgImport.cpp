@@ -9,6 +9,10 @@
 #include <geRG/Model.h>
 #include <geRG/Transformation.h>
 #include <geRG/StateSet.h>
+#if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 (seen on Update 5) does not put type_info into std
+      // namespace. Actually, it puts, but only when exceptions are enabled (_HAS_EXCEPTIONS must be defined).
+namespace std { typedef type_info type_info; }
+#endif
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/LightSource>
@@ -159,19 +163,59 @@ protected:
    vector<shared_ptr<Transformation>> transformationStack;
    vector<osg::ref_ptr<osg::StateSet>> osgStateSetStack;
 
+   struct MaterialCacheItem {
+      shared_ptr<FlexibleUniform4f> specularAndShininessUniform;
+      shared_ptr<ge::core::SharedCommandList> specularShininessAndDiffuseUniforms;
+   };
+   map<osg::Material*,MaterialCacheItem> materialCache;
+
+   shared_ptr<ge::core::Command> materialCache_getOrCreate(osg::Material *m,bool includeDiffuseUniform)
+   {
+      MaterialCacheItem& item=materialCache[m];
+      if(!item.specularAndShininessUniform) {
+         if(m) {
+            const osg::Vec4& specular=m->getSpecular(osg::Material::FRONT);
+            float shininess=m->getShininess(osg::Material::FRONT);
+            item.specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+                  specular.r(),specular.g(),specular.b(),shininess);
+         } else {
+            item.specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+                  0.f,0.f,0.f,0.f);
+         }
+      }
+      if(includeDiffuseUniform && !item.specularShininessAndDiffuseUniforms)
+      {
+         item.specularShininessAndDiffuseUniforms=make_shared<ge::core::SharedCommandList>();
+         const osg::Vec4& diffuse=m?m->getDiffuse(osg::Material::FRONT)
+                                   :osg::Vec4(0.8f,0.8f,0.8f,1.f);
+         item.specularShininessAndDiffuseUniforms->emplace_back(make_shared<FlexibleUniform4f>(
+               "color",diffuse.r(),diffuse.g(),diffuse.b(),diffuse.a()));
+         item.specularShininessAndDiffuseUniforms->emplace_back(item.specularAndShininessUniform);
+      }
+      return includeDiffuseUniform?item.specularShininessAndDiffuseUniforms
+                                  :static_pointer_cast<ge::core::Command>(item.specularAndShininessUniform);
+   }
+
 public:
 
    inline shared_ptr<Model> model()  { return _model; }
 
-
-   inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+   void reset()
    {
+      transformationStack.clear();
+      osgStateSetStack.clear();
+      materialCache.clear();
       _model=make_shared<Model>();
       shared_ptr<Transformation> t=make_shared<Transformation>();
       transformationStack.emplace_back(t);
       t->allocTransformationGpuData();
       t->uploadMatrix(osg2glTransformation);
       osgStateSetStack.push_back(new osg::StateSet);
+   }
+
+   inline BuildGpuEngineGraphVisitor() : osg::NodeVisitor(osg::NodeVisitor::NODE_VISITOR,osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+   {
+      reset();
    }
 
    void pushState(osg::StateSet& stateSet)
@@ -257,11 +301,11 @@ public:
       MatrixList *matrixList=(node.getReferenceFrame()==osg::LightSource::ABSOLUTE_RF)?
             nullptr:transformationStack.back()->getOrCreateMatrixList().get();
 #else
-      MatrixList *matrixList=transformationStack.back()->getOrCreateMatrixList().get();
+      shared_ptr<MatrixList> matrixList=transformationStack.back()->getOrCreateMatrixList();
 #endif
 
       // add light
-      RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,matrixList);
+      RenderingContext::current()->stateSetManager()->addLight(pos,posUniform,lightCommands,matrixList.get());
 
       // traverse subgraph
       traverse(node);
@@ -346,39 +390,6 @@ public:
 
       }
 
-      // get material
-      osg::Material* osgMaterial=static_cast<osg::Material*>(
-            ss->getAttribute(osg::StateAttribute::MATERIAL));
-      shared_ptr<FlexibleUniform4f> specularAndShininessUniform;
-      if(osgMaterial)
-      {
-         const osg::Vec4& specular=osgMaterial->getSpecular(osg::Material::FRONT);
-         float shininess=osgMaterial->getShininess(osg::Material::FRONT);
-         specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
-               specular.r(),specular.g(),specular.b(),shininess);
-      }
-      else
-      {
-         specularAndShininessUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
-               0.f,0.f,0.f,0.f);
-      }
-
-      // create GLState
-      StateSetManager::GLState *glState=rc->createGLState();
-      shared_ptr<ge::gl::ProgramObject> ambientProgram(RenderingContext::current()->getAmbientProgram());
-      shared_ptr<ge::gl::ProgramObject> phongProgram(RenderingContext::current()->getPhongProgram());
-      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
-      glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&phongProgram);
-      glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
-      glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
-      glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
-      glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&specularAndShininessUniform);
-
-      // find (or create new) geRG StateSet
-      // (StateSet is fully initialized during creation with all the rendering commands, etc.)
-      shared_ptr<ge::rg::StateSet> stateSet(rc->getOrCreateStateSet(glState));
-      delete glState;
-
       // process geometry
       osg::Geometry *g=drawable.asGeometry();
       if(g)
@@ -423,7 +434,7 @@ public:
             osg::DrawElements *e=ps->getDrawElements();
             if(e!=nullptr)
             {
-               primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+               primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
                                        mode);
                count=e->getNumIndices();
                first=numIndices;
@@ -434,7 +445,7 @@ public:
                switch(ps->getType()) {
                   case osg::PrimitiveSet::DrawArraysPrimitiveType:
                   {
-                     primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                     primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
                                              mode);
                      osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
                      count=a->getCount();
@@ -451,9 +462,9 @@ public:
                   {
                      osg::DrawArrayLengths *a=static_cast<osg::DrawArrayLengths*>(ps);
                      first=useIndices?numIndices:a->getFirst();
-                     for(size_t i=0,c=a->size(); i<c; i++)
+                     for(ge::rg::size_t i=0,c=a->size(); i<c; i++)
                      {
-                        primitives.emplace_back(primitiveData.size()*sizeof(PrimitiveGpuData)/4, // offset4
+                        primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
                                                 mode);
                         unsigned count=a->operator[](i);
                         primitiveData.emplace_back(useIndices?count|0x80000000:count, // countAndIndexedFlag
@@ -507,6 +518,28 @@ public:
          // create AttribConfigRef
          AttribConfigRef config(configData);
 
+         // get material
+         osg::Material* osgMaterial=static_cast<osg::Material*>(
+               ss->getAttribute(osg::StateAttribute::MATERIAL));
+         bool usePerVertexColor=g->getColorArray()!=nullptr;
+         shared_ptr<ge::core::Command> materialCommandList=materialCache_getOrCreate(osgMaterial,!usePerVertexColor);
+
+         // create GLState
+         StateSetManager::GLState *glState=rc->createGLState();
+         shared_ptr<ge::gl::ProgramObject> ambientProgram(usePerVertexColor?RenderingContext::current()->getAmbientProgram():RenderingContext::current()->getAmbientUniformColorProgram());
+         shared_ptr<ge::gl::ProgramObject> phongProgram(usePerVertexColor?RenderingContext::current()->getPhongProgram():RenderingContext::current()->getPhongUniformColorProgram());
+         glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
+         glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&phongProgram);
+         glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
+         glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
+         glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
+         glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
+
+         // find (or create new) geRG StateSet
+         // (StateSet is fully initialized during creation with all the rendering commands, etc.)
+         shared_ptr<ge::rg::StateSet> stateSet(rc->getOrCreateStateSet(glState));
+         delete glState;
+
          // create Mesh
          _model->meshList().emplace_back(make_shared<Mesh>());
          Mesh *m=_model->meshList().back().get();
@@ -530,14 +563,14 @@ public:
          for(unsigned i=0,c=unsigned(configData.attribTypes.size()); i<c; i++)
          {
             AttribType &t=configData.attribTypes[i];
-            size_t attribBufSize=t.elementSize()*numVertices;
-            size_t osgBufSize=osgArrays[i]->getTotalDataSize();
+            auto attribBufSize=t.elementSize()*numVertices;
+            auto osgBufSize=osgArrays[i]->getTotalDataSize();
             void *p=malloc(attribBufSize);
             if(osgArrays[i]->getBinding()==osg::Array::BIND_OVERALL)
             {
                const void *src=osgArrays[i]->getDataPointer();
                uint8_t *dst=static_cast<uint8_t*>(p);
-               size_t size=osgArrays[i]->getElementSize();
+               auto size=osgArrays[i]->getElementSize();
                for(unsigned i=0; i<numVertices; i++) {
                   memcpy(dst,src,size);
                   dst+=size;

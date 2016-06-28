@@ -2,10 +2,11 @@
 #include <memory>
 #include <geRG/AttribStorage.h>
 #include <geRG/Mesh.h>
-#include <geRG/SeparateBuffersAttribStorage.h> // for DefaultFactory
 #include <geRG/StateSet.h>
+#include <geGL/VertexArrayObject.h>
 
 using namespace ge::rg;
+using namespace ge::gl;
 using namespace std;
 
 
@@ -21,13 +22,80 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    , _renderingContext(config->renderingContext())
 {
    _renderingContext->onAttribStorageInit(this);
+
+   // get ConfigData
+   const AttribConfig::ConfigData &configData=config->configData();
+
+   // create VAO
+   _vao = new VertexArrayObject;
+
+   // create buffer objects
+   _bufferObjectList.reserve(configData.attribTypes.size());
+   unsigned i=0;
+   for(auto it=configData.attribTypes.begin(); it!=configData.attribTypes.end(); it++,i++)
+   {
+      AttribType t=*it;
+      BufferObject *bo=new BufferObject(numVertices*t.elementSize(),NULL,GL_DYNAMIC_DRAW);
+      _vao->addAttrib(bo,i,t.numComponents(),t.glTypeAsInt(),t.elementSize(),0,
+                      t.typeHandling()==AttribType::INTEGER_NORMALIZE,t.divisor());
+      _bufferObjectList.push_back(bo);
+   }
+
+   // create EBO
+   if(configData.ebo)
+   {
+      _ebo=new BufferObject(numIndices*4,NULL,GL_DYNAMIC_DRAW);
+      _vao->addElementBuffer(_ebo);
+   }
+   else
+   {
+      if(numIndices>0)
+         cout<<"Warning in AttribStorage constructor: If config parameter\n"
+               "   specifies to not use indices (AttribConfig::ebo),\n"
+               "   numIndices parameter must be zero.\n"<<endl;
+      _ebo = NULL;
+   }
+
+   // append transformation matrix to VAO
+   if(_renderingContext->useARBShaderDrawParameters()==false) {
+      _vao->bind();
+      ge::gl::BufferObject *bo=_renderingContext->matrixStorage()->bufferObject();
+      bo->bind(GL_ARRAY_BUFFER);
+      const GLuint index=12;
+      glEnableVertexAttribArray(index+0);
+      glEnableVertexAttribArray(index+1);
+      glEnableVertexAttribArray(index+2);
+      glEnableVertexAttribArray(index+3);
+      glVertexAttribPointer(index+0,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*0));
+      glVertexAttribPointer(index+1,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*4));
+      glVertexAttribPointer(index+2,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*8));
+      glVertexAttribPointer(index+3,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*12));
+      glVertexAttribDivisor(index+0,1);
+      glVertexAttribDivisor(index+1,1);
+      glVertexAttribDivisor(index+2,1);
+      glVertexAttribDivisor(index+3,1);
+      _vao->unbind();
+   }
 }
 
 
 AttribStorage::~AttribStorage()
 {
+   // delete buffers
+   delete _vao;
+   delete _ebo;
+   for(auto it=_bufferObjectList.begin(); it!=_bufferObjectList.end(); it++)
+      delete *it;
+
+   // invalidate all allocations and clean up
    cancelAllAllocations();
    _renderingContext->onAttribStorageRelease(this);
+}
+
+
+void AttribStorage::bind() const
+{
+   _vao->bind();
 }
 
 
@@ -144,6 +212,43 @@ void AttribStorage::freeData(Mesh &mesh)
 }
 
 
+void AttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
+                                   unsigned attribListSize,
+                                   unsigned numVertices,unsigned fromIndex)
+{
+   const AttribConfig::ConfigData &configData=_attribConfig->configData();
+   unsigned c = unsigned(_bufferObjectList.size());
+   assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
+                               "AttribStorage must match.");
+   for(unsigned i=0; i<c; i++)
+   {
+      AttribType t=configData.attribTypes[i];
+      unsigned elementSize=t.elementSize();
+      unsigned srcOffset=fromIndex*elementSize;
+      unsigned dstOffset=(_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex)*elementSize;
+      const void *data=attribList[i];
+      _bufferObjectList[i]->setData(((uint8_t*)data)+srcOffset,
+                                    numVertices*elementSize,dstOffset);
+   }
+}
+
+
+void AttribStorage::uploadIndices(Mesh &mesh,const void *indices,
+                                  unsigned numIndices,unsigned fromIndex)
+{
+   if(_ebo==nullptr) {
+      cout<<"Error in AttribStorage::uploadIndices(): ebo is null.\n"
+            "   AttribStorage was probably created with AttribConfig\n"
+            "   without ebo member set to true." << endl;
+      return;
+   }
+   const unsigned elementSize=4;
+   unsigned srcOffset=fromIndex*elementSize;
+   unsigned dstOffset=(_indexAllocationManager[mesh.indicesDataId()].startIndex+fromIndex)*elementSize;
+   _ebo->setData((uint8_t*)indices+srcOffset,numIndices*elementSize,dstOffset);
+}
+
+
 void AttribStorage::render(const std::vector<RenderingCommandData>& renderingDataList)
 {
    // bind VAO
@@ -186,7 +291,7 @@ void AttribStorage::cancelAllAllocations()
 shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &config,
         unsigned numVertices,unsigned numIndices)
 {
-   return make_shared<SeparateBuffersAttribStorage>(config,numVertices,numIndices);
+   return make_shared<AttribStorage>(config,numVertices,numIndices);
 }
 
 
