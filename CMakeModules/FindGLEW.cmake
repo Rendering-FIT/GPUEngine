@@ -5,6 +5,7 @@
 # GLEW_FOUND - True if GLEW development files were found
 # GLEW_INCLUDE_DIR - GLEW include directories
 # GLEW_LIBRARY - GLEW libraries to link
+# GLEW_DYNAMIC_LINKAGE - link with dynamic or static library
 #
 # GLEW target will be created for cmake 3.0.0 and newer
 #
@@ -58,11 +59,11 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
    endif()
 
-   # static vs. dynamic GLEW linkage
-   set(GLEW_STATIC OFF CACHE BOOL "Link GLEW as static library (single lib) or shared library (lib+dll).")
+   # dynamic vs. static GLEW linkage
+   set(GLEW_DYNAMIC_LINKAGE ON CACHE BOOL "Link GLEW as static library (single lib) or shared library (lib+dll).")
 
    # set GLEW_STATIC preprocessor macro
-   if(GLEW_STATIC)
+   if(NOT GLEW_DYNAMIC_LINKAGE)
       add_definitions(-DGLEW_STATIC)
    endif()
 
