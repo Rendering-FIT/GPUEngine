@@ -2,6 +2,10 @@
 #include<string>
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
+#include<geGL/OpenGLCommands.h>
+#include<geGL/ConvertTo.h>
+#include<geGL/OpenGLFunctionProvider.h>
+
 
 struct Data{
   std::shared_ptr<ge::gl::opengl::FunctionProvider> gl           = nullptr;
@@ -99,4 +103,9 @@ void Data::init(Data*data){
       "void main(){fColor = color;}");
 
   data->emptyVAO = std::make_shared<ge::gl::VertexArray>();
+
+  GLubyte const*d;
+  auto cmd = ge::gl::sharedCommand(&ge::gl::opengl::FunctionProvider::glGetString,&d,GL_VERSION);
+  (*cmd)();
+  std::cout<<d<<std::endl;
 }

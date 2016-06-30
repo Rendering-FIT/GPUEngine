@@ -8,8 +8,8 @@
 #include<geGL/OpenGLCapabilities.h>
 #include<geGL/OpenGLFunctionProvider.h>
 
-GEGL_EXPORT thread_local ge::gl::opengl::FunctionTablePointer    _defaultOpenGLFunctionTable    = nullptr;
-GEGL_EXPORT thread_local ge::gl::opengl::FunctionProviderPointer _defaultOpenGLFunctionProvider = nullptr;
+thread_local ge::gl::opengl::FunctionTablePointer    _defaultOpenGLFunctionTable    = nullptr;
+thread_local ge::gl::opengl::FunctionProviderPointer _defaultOpenGLFunctionProvider = nullptr;
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;

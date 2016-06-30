@@ -7,7 +7,7 @@ namespace ge{
     namespace opengl{
       class GEGL_EXPORT FunctionProvider{
         public:
-          FunctionProvider(FunctionTablePointer const&t);
+          FunctionProvider(FunctionTablePointer const&t = nullptr);
           ~FunctionProvider(){}
           FunctionTablePointer const&getFunctionTable()const{return this->m_table;}
           void setFunctionTable(FunctionTablePointer const&t){this->m_table = t;}

@@ -11,7 +11,6 @@
 #include<geGL/Sampler.h>
 #include<geGL/Renderbuffer.h>
 #include<geGL/DebugMessage.h>
-#include<geGL/OpenGLFunctionTable.h>
 #include<geGL/FunctionLoaderInterface.h>
 #include<geGL/DefaultLoader.h>
 

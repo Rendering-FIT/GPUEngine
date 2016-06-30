@@ -48,7 +48,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/DebugMessage.h
   ${HEADER_PATH}/OpenGLObject.h
   ${HEADER_PATH}/geGL.h
-  ${HEADER_PATH}/AllAttribs.h
+  ${HEADER_PATH}/ConvertTo.h
   ${HEADER_PATH}/OpenGLCommands.h
   ${HEADER_PATH}/OpenGLFunctionTable.h
   ${HEADER_PATH}/OpenGLFunctionProvider.h
