@@ -3,7 +3,7 @@ set(LIB_NAME geGL)
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-if(GPUENGINE_DYNAMIC)
+if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
    add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
 else()
@@ -83,13 +83,6 @@ set(GL_SOURCES
 ################################################
 # PACKAGES
 
-if(GPUENGINE_REPLACE_GLEW)
-else()
-  find_package(GLEW   REQUIRED)
-  find_package(OpenGL REQUIRED)
-endif()
-
-
 add_library(${LIB_NAME}
   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
   ${GL_INCLUDES}
@@ -105,11 +98,6 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps geCore)
-if(GPUENGINE_REPLACE_GLEW)
-else()
-  set(External_deps_Export "GLEW OpenGL")
-  set(External_libs GLEW OpenGL)
-endif()
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
