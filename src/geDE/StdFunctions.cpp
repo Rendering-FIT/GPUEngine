@@ -6,24 +6,6 @@
 
 using namespace ge::de;
 
-Nullary::Nullary(
-    std::shared_ptr<FunctionRegister>const&fr  ,
-    FunctionRegister::FunctionID           id  ,
-    std::shared_ptr<Resource>const&        data):AtomicFunction(fr,id){
-  this->_outputData = data;
-}
-
-void Nullary::addSignaling(Statement*statement){
-  this->_addSignaling(statement);
-}
-
-void Nullary::operator()(){
-  if(!this->_dirtyFlag)return;
-  this->_dirtyFlag = false;
-  this->_updateTicks++;
-  this->setSignalingDirty();
-}
-
 void ge::de::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
   auto tr=fr->getTypeRegister();
   fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,TypeRegister::AUTO,0}),

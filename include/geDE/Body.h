@@ -56,6 +56,7 @@ namespace ge{
 
     inline void Body::operator()(){
       if(!this->_dirtyFlag)return;
+      this->_dirtyFlag = false;
       bool changed = false;
       for(size_t i=0;i<this->_statements.size();++i){
         (*this->_statements.at(i))();
@@ -65,7 +66,6 @@ namespace ge{
       }
       if(!changed)return;
       this->_updateTicks++;
-      this->_dirtyFlag = false;
       this->setSignalingDirty();
     }
   }

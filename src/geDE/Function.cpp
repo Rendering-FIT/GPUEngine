@@ -56,30 +56,3 @@ bool Function::_outputBindingCheck(
   return true;
 }
 
-/*
-void Function::setDirty(){
-  assert(this!=nullptr);
-  if(!this->_dirtyFlag)this->_setOutputDirty();
-  this->_dirtyFlag = true;
-}
-
-void Function::_setOutputDirty(){
-  assert(this!=nullptr);
-  for(auto const&x:this->_outputFunctions){
-    if(std::get<FUNCTION_PART>(x)->_dirtyFlag)continue;
-    std::get<FUNCTION_PART>(x)->_dirtyFlag = true;
-    std::get<FUNCTION_PART>(x)->_setOutputDirty();
-  }
-}
-
-
-void Function::_addOutputFunction(Function*fce,InputIndex index){
-  assert(this!=nullptr);
-  this->_outputFunctions.insert(Function::OutputFunction(fce,index));
-}
-
-void Function::_removeOutputFunction(Function*fce,InputIndex index){
-  assert(this!=nullptr);
-  this->_outputFunctions.erase(Function::OutputFunction(fce,index));
-}
-*/

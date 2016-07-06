@@ -99,36 +99,106 @@ bool AtomicFunction::bindOutput(
   this->_outputData = nullary->getOutputData();
   this->_outputSignaling = &*nullary;
   this->_addSignaling(this->_outputSignaling);
+  this->setDirty();
   return true;
 }
 
+/*
+           ┌─────────┐
+           │Statement│ 
+           └────△────┘
+     ┌───────┬──┴──┬───────┐
+┌────┴───┐ ┌─┴┐ ┌──┴──┐ ┌──┴─┐
+│Function│ │If│ │While│ │Body│
+└────△───┘ └──┘ └─────┘ └────┘
+     └──┬───────────────┐
+┌───────┴──────┐┌───────┴─────────┐
+│AtomicFunction││CompositeFunction│
+└───────△──────┘└───────△─────────┘
+□□□□■□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□▣□□□□□□□□
+□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
+□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
+□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
+□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
+*/
+
+/*
+─ ━ ┄ ┅ ┈ ┉
+│ ┃ ┆ ┇ ┊ ┋
+┌ ┍ ┎ ┏
+┐ ┑ ┒ ┓
+└ ┕ ┖ ┗
+┘ ┙ ┚ ┛
+├ ┝ ┞ ┟ ┠ ┡ ┢ ┣
+┤ ┥ ┦ ┧ ┨ ┩ ┪ ┫
+┬ ┭ ┮ ┯ ┰ ┱ ┲ ┳
+┴ ┵ ┶ ┷ ┸ ┹ ┺ ┻
+┼ ┽ ┾ ┿
+
+▀
+▁▂▃▄▅▆▇█
+▉
+▊
+▋
+▌
+▍
+▎
+▏
+▐
+░
+▒
+▓
+▔
+▕
+▖
+▗
+▘
+▙
+▚
+▛
+▜
+▝
+▞
+▟
+■□▢▣▤▥▦▧▨▩
+▪▫
+▬▭
+▮▯
+▰▱
+▲△▴▵
+▶▷▸▹►▻
+▼▽▾▿
+*/
 
 void AtomicFunction::operator()(){
   assert(this!=nullptr);
   if(!this->_dirtyFlag)return;
-  this->_dirtyFlag = false;
-  bool anyInputChanged = this->_processInputs();
-  if(!anyInputChanged)
+  //this->_dirtyFlag = false;
+  bool isAnyInputChanged = this->_processInputs();
+  if(!isAnyInputChanged){
+    this->_dirtyFlag = false;
     return;
-  if(this->_do()){
+  }
+  bool isOutputChanged = this->_do();
+  this->_dirtyFlag = false;
+  if(isOutputChanged){
     this->_updateTicks++;
     this->setSignalingDirty();
   }
-  //this->_dirtyFlag = false;
 }
 
 bool AtomicFunction::_processInputs(){
   assert(this!=nullptr);
-  bool anyInputChanged = false;
+  bool isAnyInputChanged = false;
   for(auto const&x:this->_fce2FceInput){
     auto input = x.second;
     (*input->function)();
     bool changed = input->updateTicks < input->function->getUpdateTicks();
     input->changed = changed;
     input->updateTicks = input->function->getUpdateTicks();
-    anyInputChanged |= changed;
+    isAnyInputChanged |= changed;
   }
-  return anyInputChanged;
+  return isAnyInputChanged;
 }
 
 bool AtomicFunction::_do(){

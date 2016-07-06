@@ -40,6 +40,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/FactoryOfFunctionFactory.h
   ${HEADER_PATH}/CompositeFunctionFactory.h
   ${HEADER_PATH}/FunctionNodeFactory.h
+  ${HEADER_PATH}/Nullary.h
   ${HEADER_PATH}/StdFunctions.h
   ${HEADER_PATH}/StdNumericFunctions.h
   ${HEADER_PATH}/StdRelationalFunctions.h
@@ -67,6 +68,7 @@ set(DE_SOURCES
   FunctionFactory.cpp
   CompositeFunctionFactory.cpp
   FunctionNodeFactory.cpp
+  Nullary.cpp
   StdFunctions.cpp
   StdNumericFunctions.cpp
   StdRelationalFunctions.cpp

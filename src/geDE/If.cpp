@@ -9,6 +9,7 @@ void If::operator()(){
   assert(this->_condition!=nullptr);
   assert(this->_trueBody!=nullptr);
   if(!this->_dirtyFlag)return;
+  this->_dirtyFlag = false;
   (*this->_condition)();
   bool changed = false;
   if(this->_conditionUpdateTicks!=this->_condition->getUpdateTicks())changed = true;
@@ -26,7 +27,5 @@ void If::operator()(){
   }
   if(!changed)return;
   this->_updateTicks++;
-  this->_dirtyFlag = false;
-  this->setSignalingDirty();
 }
 

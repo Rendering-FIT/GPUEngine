@@ -4,41 +4,10 @@
 #include<geDE/Resource.h>
 #include<geDE/AtomicFunction.h>
 #include<geDE/FactoryOfFunctionFactory.h>
+#include<geDE/Nullary.h>
 
 namespace ge{
   namespace de{
-
-    class GEDE_EXPORT Nullary: public AtomicFunction{
-      public:
-        Nullary(
-            std::shared_ptr<FunctionRegister>const&fr            ,
-            FunctionRegister::FunctionID           id            ,
-            std::shared_ptr<Resource>const&        data = nullptr);
-        template<typename TYPE>
-          Nullary(
-              std::shared_ptr<FunctionRegister>const&fr  ,
-              FunctionRegister::FunctionID           id  ,
-              TYPE const&                            data):AtomicFunction(
-              fr,id){
-           auto ss=fr->getTypeRegister()->sharedResource(TypeRegister::getTypeKeyword<TYPE>());
-           (TYPE&)(*ss) = data;
-           this->bindOutput(fr,ss);//fr->getTypeRegister()->sharedResource<TYPE>(data));
-          }
-        template<typename TYPE>
-          Nullary(
-              std::shared_ptr<FunctionRegister>const&fr  ,
-              TYPE const&                            data):Nullary(
-                fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Nullary>()),data){}
-        template<typename TYPE>
-          void update(TYPE const&data){
-            (TYPE&)*this->_outputData=data;
-            //this->_updateTicks++;
-            this->setDirty();
-          }
-        void addSignaling(Statement*statement);
-        virtual void operator()()override;
-    };
-
     template<typename TYPE>
     class /*GEDE_EXPORT*/ Assignment: public AtomicFunction{
       public:
@@ -49,8 +18,17 @@ namespace ge{
             std::shared_ptr<FunctionRegister>const&fr):Assignment(fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Assignment<TYPE>>())){}
 
         ~Assignment(){}
-        virtual void operator()(){
+        /*virtual void operator()(){
+          if(!this->_dirtyFlag)return;
+
+          this->_dirtyFlag = false;
           (TYPE&)(*this->getOutputData()) = (TYPE&)(*this->getInputData(0));
+          this->setSignalingDirty();
+          this->_updateTicks++;
+        }*/
+        virtual bool _do(){
+          (TYPE&)(*this->getOutputData()) = (TYPE&)(*this->getInputData(0));
+          return true;
         }
     };
 
@@ -62,7 +40,10 @@ namespace ge{
             FunctionRegister::FunctionID           id):AtomicFunction(fr,id){}
         ~UnaryMinus(){}
         virtual void operator()(){
+          if(!this->_dirtyFlag)return;
+          this->_dirtyFlag = false;
           (TYPE&)(*this->getOutputData()) = (TYPE) (- (TYPE&)(*this->getInputData(0)));
+          this->_updateTicks++;
         }
     };
 

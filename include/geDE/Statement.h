@@ -34,6 +34,8 @@ namespace ge{
         bool isDirty()const;
         virtual Ticks getUpdateTicks()const;
         virtual void setUpdateTicks(Ticks ticks);
+        bool hasSignaling(Statement*statement)const;
+        size_t nofSignaling()const;
       protected:
         Type _type;
         bool _dirtyFlag = false;
@@ -63,6 +65,16 @@ namespace ge{
     inline void Statement::_removeSignaling(Statement*statement){
       assert(this!=nullptr);
       this->_forSignaling.erase(statement);
+    }
+
+    inline bool Statement::hasSignaling(Statement*statement)const{
+      assert(this!=nullptr);
+      return this->_forSignaling.count(statement)!=0;
+    }
+
+    inline size_t Statement::nofSignaling()const{
+      assert(this!=nullptr);
+      return this->_forSignaling.size();
     }
 
     inline void Statement::setDirty(){
