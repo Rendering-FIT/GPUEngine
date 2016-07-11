@@ -38,32 +38,53 @@ namespace ge{
     }
 
     inline If::~If(){
-      if(this->_condition)
-        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
+      /*
+      if(this->_condition){
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingSource(this);
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingSource(this);
+
+      }
       if(this->_trueBody)this->_trueBody->_removeSignaling(this);
       if(this->_falseBody)this->_falseBody->_removeSignaling(this);
+      */
     }
 
     inline void If::setCondition(std::shared_ptr<Function>const&condition){
-      if(this->_condition)
-        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
+      if(this->_condition){
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingTarget(this);
+        this->_removeSignalingSource((Statement*)&*this->_condition);
+      }
       this->_condition = condition;
-      if(this->_condition)
-        std::dynamic_pointer_cast<Statement>(this->_condition)->_addSignaling(this);
+      if(this->_condition){
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_addSignalingTarget(this);
+        this->_addSignalingSource((Statement*)&*this->_condition);
+      }
       this->setDirty();
     }
 
     inline void If::setTrueBody (std::shared_ptr<Statement>const&trueBody ){
-      if(this->_trueBody)this->_trueBody->_removeSignaling(this);
+      if(this->_trueBody){
+        this->_trueBody->_removeSignalingTarget(this);
+        this->_removeSignalingSource(&*this->_trueBody);
+      }
       this->_trueBody = trueBody;
-      if(this->_trueBody)this->_trueBody->_addSignaling(this);
+      if(this->_trueBody){
+        this->_trueBody->_addSignalingTarget(this);
+        this->_addSignalingSource(&*this->_trueBody);
+      }
       this->setDirty();
     }
 
     inline void If::setFalseBody(std::shared_ptr<Statement>const&falseBody){
-      if(this->_falseBody)this->_falseBody->_removeSignaling(this);
+      if(this->_falseBody){
+        this->_falseBody->_removeSignalingTarget(this);
+        this->_removeSignalingSource(&*this->_falseBody);
+      }
       this->_falseBody = falseBody;
-      if(this->_falseBody)this->_falseBody->_addSignaling(this);
+      if(this->_falseBody){
+        this->_falseBody->_addSignalingTarget(this);
+        this->_addSignalingSource(&*this->_falseBody);
+      }
       this->setDirty();
     }
 

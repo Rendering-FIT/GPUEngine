@@ -20,6 +20,9 @@ Kernel::~Kernel(){
 }
 
 bool Kernel::addEmptyVariable(std::string const&type,std::string const&name){
+  assert(this!=nullptr);
+  assert(this->typeRegister!=nullptr);
+  assert(this->functionRegister!=nullptr);
   auto id = this->typeRegister->getTypeId(type);
   if(id == TypeRegister::UNREGISTERED){
     return false;
@@ -30,11 +33,13 @@ bool Kernel::addEmptyVariable(std::string const&type,std::string const&name){
   auto sac = this->typeRegister->sharedResource(id);
   auto var = this->functionRegister->sharedFunction("Nullary");
   var->bindOutput(this->functionRegister,sac);
+  assert(this->variableRegister!=nullptr);
   this->variableRegister->insert(name,std::dynamic_pointer_cast<Nullary>(var));
   return true;
 }
 
 void Kernel::removeVariable(std::string const&name){
+  assert(this!=nullptr);
   this->variableRegister->erase(name);
 }
 
@@ -108,28 +113,79 @@ TypeRegister::TypeId Kernel::addAtomicType(
   return this->typeRegister->addAtomicType(name,size,constructor,destructor);
 }
 
-/*
-std::shared_ptr<FunctionNodeFactory>Kernel::createFunctionNodeFactory(
-    std::string name,
-    std::string functionName,
-    std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories,
-    std::vector<std::string>const&inputResourceFactoryNames){
-  std::vector<std::shared_ptr<ResourceFactory>>inputResourceFactories;
-  for(auto const&x:inputResourceFactoryNames){
-    if(x=="")
-      inputResourceFactories.push_back(nullptr);
-    else
-      inputResourceFactories.push_back(this->createResourceFactory(x));
-  }
-  return this->createFunctionNodeFactory(name,functionName,inputFunctionFactories,inputResourceFactories);
+TypeRegister::TypeId Kernel::addCompositeType(
+    std::string                     const&name       ,
+    TypeRegister::DescriptionVector const&description){
+  return this->typeRegister->addCompositeType(name,description);
 }
-*/
+
+TypeRegister::TypeId Kernel::addStructType(
+    std::string                     const&name,
+    TypeRegister::DescriptionVector const&typeids){
+  TypeRegister::DescriptionVector d;
+  d.push_back(TypeRegister::STRUCT);
+  d.push_back(typeids.size());
+  d.insert(d.end(),typeids.begin(),typeids.end());
+  return this->addCompositeType(name,d);
+}
+
+TypeRegister::TypeId Kernel::addStructType(
+    std::string             const&name     ,
+    std::vector<std::string>const&typeNames){
+  TypeRegister::DescriptionVector d;
+  d.push_back(TypeRegister::STRUCT);
+  d.push_back(typeNames.size());
+  for(auto const&x:typeNames)
+    d.push_back(this->typeRegister->getTypeId(x));
+  return this->addCompositeType(name,d);
+}
+
+TypeRegister::TypeId Kernel::addArrayType(
+    std::string          const&name     ,
+    size_t                     size     ,
+    TypeRegister::TypeId       innerType){
+  TypeRegister::DescriptionVector d;
+  d.push_back(TypeRegister::ARRAY);
+  d.push_back(size);
+  d.push_back(innerType);
+  return this->addCompositeType(name,d);
+}
+
+TypeRegister::TypeId Kernel::addArrayType(
+    std::string const&name     ,
+    size_t            size     ,
+    std::string const&innerType){
+  TypeRegister::DescriptionVector d;
+  d.push_back(TypeRegister::ARRAY);
+  d.push_back(size);
+  d.push_back(this->typeRegister->getTypeId(innerType));
+  return this->addCompositeType(name,d);
+}
+
+
+
+/*
+   std::shared_ptr<FunctionNodeFactory>Kernel::createFunctionNodeFactory(
+   std::string name,
+   std::string functionName,
+   std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories,
+   std::vector<std::string>const&inputResourceFactoryNames){
+   std::vector<std::shared_ptr<ResourceFactory>>inputResourceFactories;
+   for(auto const&x:inputResourceFactoryNames){
+   if(x=="")
+   inputResourceFactories.push_back(nullptr);
+   else
+   inputResourceFactories.push_back(this->createResourceFactory(x));
+   }
+   return this->createFunctionNodeFactory(name,functionName,inputFunctionFactories,inputResourceFactories);
+   }
+   */
 
 std::shared_ptr<FunctionNodeFactory>Kernel::createFunctionNodeFactory(
     std::string name,
     std::string functionName,
     std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories){//,
-    //std::vector<std::shared_ptr<ResourceFactory>>const&inputResourceFactories){
+  //std::vector<std::shared_ptr<ResourceFactory>>const&inputResourceFactories){
   auto result = std::make_shared<FunctionNodeFactory>(name);
   result->setFactory(this->functionRegister->sharedFactory(functionName));
   auto id = this->functionRegister->getFunctionId(functionName);

@@ -32,7 +32,7 @@ namespace ge{
             //this->_updateTicks++;
             this->setDirty();
           }
-        void addSignaling(Statement*statement);
+        //void addSignaling(Statement*statement);
         virtual void operator()()override;
     };
 

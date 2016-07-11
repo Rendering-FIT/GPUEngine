@@ -46,7 +46,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(((std::string&)*s)=="ahoj svete");
       }
     }
-#define SHOWCERR
+//#define SHOWCERR
 #ifndef SHOWCERR
     std::stringstream oss;
     auto old = std::cerr.rdbuf( oss.rdbuf() );

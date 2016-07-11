@@ -27,14 +27,13 @@ namespace ge{
     }
 
     inline Body::~Body(){
-      for(auto const&x:this->_statements)
-        x->_removeSignaling(this);
     }
 
     inline void Body::addStatement(std::shared_ptr<Statement>const&statement){
       this->_statements.push_back(statement);
       this->_statementsUpdateTicks.push_back(0);
-      statement->_addSignaling(this);
+      statement->_addSignalingTarget(this);
+      this->_addSignalingSource(&*statement);
       this->setDirty();
     }
 

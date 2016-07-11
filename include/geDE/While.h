@@ -31,24 +31,31 @@ namespace ge{
     }
 
     inline While::~While(){
-      if(this->_condition)
-        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
-      if(this->_body)this->_body->_removeSignaling(this);
     }
 
     inline void While::setBody(std::shared_ptr<Statement>const&body){
-      if(this->_body)this->_body->_removeSignaling(this);
+      if(this->_body){
+        this->_body->_removeSignalingTarget(this);
+        this->_removeSignalingSource(&*this->_body);
+      }
       this->_body = body;
-      if(this->_body)this->_body->_addSignaling(this);
+      if(this->_body){
+        this->_body->_addSignalingTarget(this);
+        this->_addSignalingSource(&*this->_body);
+      }
       this->setDirty();
     }
 
     inline void While::setCondition(std::shared_ptr<Function>const&condition){
-      if(this->_condition)
-        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignaling(this);
+      if(this->_condition){
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingTarget(this);
+        this->_removeSignalingSource((Statement*)&*this->_condition);
+      }
       this->_condition = condition;
-      if(this->_condition)
-        std::dynamic_pointer_cast<Statement>(this->_condition)->_addSignaling(this);
+      if(this->_condition){
+        std::dynamic_pointer_cast<Statement>(this->_condition)->_addSignalingTarget(this);
+        this->_addSignalingSource((Statement*)&*this->_condition);
+      }
       this->setDirty();
     }
 

@@ -67,7 +67,6 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
   auto nr=std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
-  ___;
   //std::cerr<<fr->str();
   GIVEN( "basic expression" ) {
     auto fa=std::make_shared<ge::de::Nullary>(fr,101.f );
@@ -124,7 +123,6 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     }
   }
 
-  ___;
   GIVEN("if statement"){
     /*
      * unsigned a=10;
@@ -161,7 +159,6 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     }
   }
 
-  ___;
   GIVEN("while statement"){
     /*
      * unsigned i=1;
@@ -245,38 +242,38 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     body->addStatement(ass1);
 
     auto wh=std::make_shared<ge::de::While>(cond,body);
-    REQUIRE(cond->hasSignaling(&*wh)==true);
-    REQUIRE(cond->nofSignaling()==1);
-    REQUIRE(body->hasSignaling(&*wh)==true);
-    REQUIRE(body->nofSignaling()==1);
+    REQUIRE(cond->hasSignalingTarget(&*wh)==true);
+    REQUIRE(cond->nofSignalingTargets()==1);
+    REQUIRE(body->hasSignalingTarget(&*wh)==true);
+    REQUIRE(body->nofSignalingTargets()==1);
 
-    REQUIRE(ass0->hasSignaling(&*body)==true);
-    REQUIRE(ass0->hasSignaling(&*fk)==true);
-    REQUIRE(ass0->nofSignaling()==2);
+    REQUIRE(ass0->hasSignalingTarget(&*body)==true);
+    REQUIRE(ass0->hasSignalingTarget(&*fk)==true);
+    REQUIRE(ass0->nofSignalingTargets()==2);
 
-    REQUIRE(ass1->hasSignaling(&*body)==true);
-    REQUIRE(ass1->hasSignaling(&*fi)==true);
-    REQUIRE(ass1->nofSignaling()==2);
+    REQUIRE(ass1->hasSignalingTarget(&*body)==true);
+    REQUIRE(ass1->hasSignalingTarget(&*fi)==true);
+    REQUIRE(ass1->nofSignalingTargets()==2);
 
-    REQUIRE(add->hasSignaling(&*ass1)==true);
-    REQUIRE(add->nofSignaling()==1);
+    REQUIRE(add->hasSignalingTarget(&*ass1)==true);
+    REQUIRE(add->nofSignalingTargets()==1);
 
-    REQUIRE(mult->hasSignaling(&*ass0)==true);
-    REQUIRE(mult->nofSignaling()==1);
+    REQUIRE(mult->hasSignalingTarget(&*ass0)==true);
+    REQUIRE(mult->nofSignalingTargets()==1);
 
-    REQUIRE(f1->hasSignaling(&*add)==true);
-    REQUIRE(f1->nofSignaling()==1);
+    REQUIRE(f1->hasSignalingTarget(&*add)==true);
+    REQUIRE(f1->nofSignalingTargets()==1);
 
-    REQUIRE(fi->hasSignaling(&*add)==true);
-    REQUIRE(fi->hasSignaling(&*mult)==true);
-    REQUIRE(fi->hasSignaling(&*cond)==true);
-    REQUIRE(fi->nofSignaling()==3);
+    REQUIRE(fi->hasSignalingTarget(&*add)==true);
+    REQUIRE(fi->hasSignalingTarget(&*mult)==true);
+    REQUIRE(fi->hasSignalingTarget(&*cond)==true);
+    REQUIRE(fi->nofSignalingTargets()==3);
 
-    REQUIRE(fiend->hasSignaling(&*cond)==true);
-    REQUIRE(fiend->nofSignaling()==1);
+    REQUIRE(fiend->hasSignalingTarget(&*cond)==true);
+    REQUIRE(fiend->nofSignalingTargets()==1);
 
-    REQUIRE(fk->hasSignaling(&*mult));
-    REQUIRE(fk->nofSignaling()==1);
+    REQUIRE(fk->hasSignalingTarget(&*mult));
+    REQUIRE(fk->nofSignalingTargets()==1);
         
 
     //fk = ass0(fki=mult(fk,fi))
@@ -284,7 +281,6 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     //fi=ass1(fi1=add(fki,f1))
 
     /*
-    ___;
     REQUIRE(fi->isDirty()==true);
     REQUIRE(fk->isDirty()==true);
     REQUIRE(fiend->isDirty()==false);

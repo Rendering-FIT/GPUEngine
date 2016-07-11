@@ -65,6 +65,23 @@ namespace ge{
             size_t                    const&size                 ,
             TypeRegister::Constructor const&constructor = nullptr,
             TypeRegister::Destructor  const&destructor  = nullptr);
+        TypeRegister::TypeId addCompositeType(
+            std::string                     const&name       ,
+            TypeRegister::DescriptionVector const&description);
+        TypeRegister::TypeId addStructType(
+            std::string                     const&name,
+            TypeRegister::DescriptionVector const&typeids);
+        TypeRegister::TypeId addStructType(
+            std::string             const&name     ,
+            std::vector<std::string>const&typeNames);
+        TypeRegister::TypeId addArrayType(
+            std::string          const&name     ,
+            size_t                     size     ,
+            TypeRegister::TypeId       innerType);
+        TypeRegister::TypeId addArrayType(
+            std::string const&name     ,
+            size_t            size     ,
+            std::string const&innerType);
         std::shared_ptr<FunctionNodeFactory>createFunctionNodeFactory(
             std::string name,
             std::string functionName,

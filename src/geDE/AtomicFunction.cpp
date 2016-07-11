@@ -40,8 +40,6 @@ AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,Functio
 
 
 AtomicFunction::~AtomicFunction(){
-  for(auto const&x:this->_forSignaling)
-    x->_removeSignaling(this);
 }
 
 bool AtomicFunction::bindInput(
@@ -55,7 +53,8 @@ bool AtomicFunction::bindInput(
   auto oldFunction = this->_inputs.at(i)->function;
   if(oldFunction == function)return true;
   if(oldFunction){
-    std::dynamic_pointer_cast<Statement>(oldFunction)->_removeSignaling(this);
+    std::dynamic_pointer_cast<Statement>(oldFunction)->_removeSignalingTarget(this);
+    this->_removeSignalingSource((Statement*)&*oldFunction);
     this->_fce2Indices.at(oldFunction).erase(i);
     if(this->_fce2Indices.at(oldFunction).empty()){
       this->_fce2Indices.erase(oldFunction);
@@ -63,7 +62,8 @@ bool AtomicFunction::bindInput(
     }
   }
   if(function){
-    std::dynamic_pointer_cast<Statement>(function)->_addSignaling(this);
+    std::dynamic_pointer_cast<Statement>(function)->_addSignalingTarget(this);
+    this->_addSignalingSource((Statement*)&*function);
     auto ii = this->_fce2Indices.find(function);
     if(ii==this->_fce2Indices.end()){
       this->_fce2Indices[function]=std::set<InputIndex>();
@@ -95,10 +95,14 @@ bool AtomicFunction::bindOutput(
   assert(this!=nullptr);
   if(!this->_outputBindingCheck(fr,nullary->getOutputData()))
     return false;
-  if(this->_outputSignaling)this->_removeSignaling(this->_outputSignaling);
+  if(this->_outputSignaling){
+    this->_removeSignalingTarget(this->_outputSignaling);
+    this->_outputSignaling->_removeSignalingSource(this);
+  }
   this->_outputData = nullary->getOutputData();
   this->_outputSignaling = &*nullary;
-  this->_addSignaling(this->_outputSignaling);
+  this->_addSignalingTarget(this->_outputSignaling);
+  this->_outputSignaling->_addSignalingSource(this);
   this->setDirty();
   return true;
 }

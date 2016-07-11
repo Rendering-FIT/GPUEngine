@@ -34,15 +34,20 @@ namespace ge{
         bool isDirty()const;
         virtual Ticks getUpdateTicks()const;
         virtual void setUpdateTicks(Ticks ticks);
-        bool hasSignaling(Statement*statement)const;
-        size_t nofSignaling()const;
+        bool hasSignalingSource(Statement*statement)const;
+        bool hasSignalingTarget(Statement*statement)const;
+        size_t nofSignalingSources()const;
+        size_t nofSignalingTargets()const;
       protected:
         Type _type;
         bool _dirtyFlag = false;
         Ticks _updateTicks = 0;
-        std::set<Statement*>_forSignaling;
-        void _addSignaling(Statement*statement);
-        void _removeSignaling(Statement*statement);
+        std::set<Statement*>_signalingSources;
+        std::set<Statement*>_signalingTargets;
+        void _addSignalingSource(Statement*statement);
+        void _addSignalingTarget(Statement*statement);
+        void _removeSignalingSource(Statement*statement);
+        void _removeSignalingTarget(Statement*statement);
     };
 
     inline Statement::Statement(Type const&type){
@@ -51,30 +56,56 @@ namespace ge{
     }
 
     inline Statement::~Statement(){
+      for(auto const&x:this->_signalingSources)
+        x->_removeSignalingTarget(this);
+      for(auto const&x:this->_signalingTargets)
+        x->_removeSignalingSource(this);
     }
 
     inline bool Statement::isDirty()const{
       assert(this!=nullptr);
       return this->_dirtyFlag;
     }
-    inline void Statement::_addSignaling(Statement*statement){
+
+    inline void Statement::_addSignalingSource(Statement*statement){
       assert(this!=nullptr);
-      this->_forSignaling.insert(statement);
+      this->_signalingSources.insert(statement);
     }
 
-    inline void Statement::_removeSignaling(Statement*statement){
+    inline void Statement::_removeSignalingSource(Statement*statement){
       assert(this!=nullptr);
-      this->_forSignaling.erase(statement);
+      this->_signalingSources.erase(statement);
     }
 
-    inline bool Statement::hasSignaling(Statement*statement)const{
+    inline bool Statement::hasSignalingSource(Statement*statement)const{
       assert(this!=nullptr);
-      return this->_forSignaling.count(statement)!=0;
+      return this->_signalingSources.count(statement)!=0;
     }
 
-    inline size_t Statement::nofSignaling()const{
+    inline void Statement::_addSignalingTarget(Statement*statement){
       assert(this!=nullptr);
-      return this->_forSignaling.size();
+      this->_signalingTargets.insert(statement);
+    }
+
+    inline void Statement::_removeSignalingTarget(Statement*statement){
+      assert(this!=nullptr);
+      this->_signalingTargets.erase(statement);
+    }
+
+    inline bool Statement::hasSignalingTarget(Statement*statement)const{
+      assert(this!=nullptr);
+      return this->_signalingTargets.count(statement)!=0;
+    }
+
+
+    inline size_t Statement::nofSignalingSources()const{
+      assert(this!=nullptr);
+      return this->_signalingSources.size();
+    }
+
+    inline size_t Statement::nofSignalingTargets()const{
+      assert(this!=nullptr);
+      return this->_signalingTargets.size();
     }
 
     inline void Statement::setDirty(){
@@ -85,7 +116,7 @@ namespace ge{
 
     inline void Statement::setSignalingDirty(){
       assert(this!=nullptr);
-      for(auto const&x:this->_forSignaling)
+      for(auto const&x:this->_signalingTargets)
         if(!x->isDirty())x->setDirty();
     }
 
