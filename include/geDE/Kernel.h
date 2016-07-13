@@ -33,15 +33,28 @@ namespace ge{
         template<typename T>
         std::shared_ptr<Nullary>createVariable(T const&val);
         std::shared_ptr<Resource>createResource(std::string const&name);
-        std::shared_ptr<Function>createFunction(std::string const&name,
-            std::vector<std::shared_ptr<Function>>const&inputs = {},
-            std::shared_ptr<Resource>const&output = nullptr);
-        std::shared_ptr<Function>createFunction(std::string const&name,
+        std::shared_ptr<Function>createFunction2(
+            std::string                           const&name  ,
             std::vector<std::shared_ptr<Function>>const&inputs,
-            std::string const&outputType);
-        std::shared_ptr<Function>createFunction(std::string const&name,
-            std::vector<std::string>const&inputNames,
-            std::string             const&outputType);
+            std::shared_ptr<Resource>             const&output);
+        std::shared_ptr<Function>createFunction2(
+            std::string                           const&name        ,
+            std::vector<std::shared_ptr<Function>>const&inputs      ,
+            std::string                           const&variableName);
+        std::shared_ptr<Function>createFunction2(
+            std::string                           const&name  ,
+            std::vector<std::shared_ptr<Function>>const&inputs);
+        std::shared_ptr<Function>createFunction(
+            std::string             const&name        ,
+            std::vector<std::string>const&inputNames  ,
+            std::string             const&variableName);
+        std::shared_ptr<Function>createFunction(
+            std::string              const&name      ,
+            std::vector<std::string> const&inputNames,
+            std::shared_ptr<Resource>const&output    );
+        std::shared_ptr<Function>createFunction(
+            std::string              const&name      ,
+            std::vector<std::string> const&inputNames);
 
         std::shared_ptr<Nullary>const&variable(std::string const&name)const;
         template<typename T>
@@ -49,7 +62,8 @@ namespace ge{
         template<typename OUTPUT,typename...ARGS>
           FunctionRegister::FunctionID addFunction(
               std::vector<std::string>const&names,
-              OUTPUT(*FCE)(ARGS...));
+              OUTPUT(*fce)(ARGS...),
+              bool(*sig)(ARGS...) = nullptr);
 
         FunctionRegister::FunctionID addCompositeFunction(
             std::vector<std::string>const&names,
@@ -60,6 +74,9 @@ namespace ge{
         void bindOutput(
             std::shared_ptr<Function>const&fce,
             std::shared_ptr<Resource>const&output);
+        void bindOutput(
+            std::shared_ptr<Function>const&fce,
+            std::shared_ptr<Nullary> const&var);
         TypeRegister::TypeId addAtomicType(
             std::string               const&name                 ,
             size_t                    const&size                 ,
@@ -121,12 +138,13 @@ namespace ge{
     template<typename OUTPUT,typename...ARGS>
       FunctionRegister::FunctionID Kernel::addFunction(
           std::vector<std::string>const&names,
-          OUTPUT(*FCE)(ARGS...)){
+          OUTPUT(*fce)(ARGS...),
+          bool(*sig)(ARGS...)){
         if(names.size()==0){
           std::cerr<<"ERROR: Kernel::addFunction() - at least function name has to be specified"<<std::endl;
           return 0;
         }
-        auto ret = registerBasicFunction(this->functionRegister,names[0],FCE);
+        auto ret = registerBasicFunction(this->functionRegister,names[0],fce,sig);
         if(names.size()>1)
           this->nameRegister->setFceOutputName(ret,names[1]);
         for(size_t i=2;i<names.size();++i)
