@@ -1,3 +1,7 @@
+/*!
+ * OpenGL part of geGL library contains two main objects - FunctionTable and FunctionProvider
+ */
+
 #pragma once
 
 #include<geGL/Export.h>

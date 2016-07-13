@@ -37,7 +37,7 @@ Shader::Shader(GLenum type,Sources const&sources){
 }
 
 /**
- * @brief enpty consturctor
+ * @brief empty consturctor
  *
  * @param table OpenGLFunctionTable
  */
@@ -80,8 +80,8 @@ void Shader::create(GLenum type){
 }
 
 /**
- * @brief this function sets shader source to shader
- * it does not compile shader
+ * @brief this function sets shader source to shader.
+ * It does not compile shader.
  *
  * @param source source codes of shader
  */
@@ -93,8 +93,8 @@ void Shader::setSource(Sources const& sources){
 }
 
 /**
- * @brief this function can set shader source code and compile shader
- * it also call link in programs that are using this shader
+ * @brief this function can set shader source code and compile shader.
+ * It also call link in programs that are using this shader.
  *
  * @param source optional source codes
  */

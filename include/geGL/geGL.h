@@ -1,3 +1,27 @@
+/*!
+ * geGL library contains 10 OpenGLObject.
+ * All are derived from OpenGLObject.
+ * OpenGLObject class is derived from FunctionProvider that provides OpenGL.
+ *
+ *                        ┌────────────────────────┐
+ *                        │opengl::FunctionProvider│
+ *                        └────────────△───────────┘
+ *                              ┌──────┴─────┐
+ *                              │OpenGLObject│
+ *                              └──────△─────┘
+ *          ┌───────────────┬──────────┴──┬─────────────┬──────────┬─────┐
+ * ┌────────┴────────┐   ┌──┴───┐   ┌─────┴─────┐   ┌───┴──┐   ┌───┴───┐ │
+ * │AsynchronousQuery│   │Buffer│   │Framebuffer│   │Shader│   │Program│ │
+ * └─────────────────┘   └──────┘   └───────────┘   └──────┘   └───────┘ │
+ *         ┌────────────┬────────┬──────────┬─────────────┬──────────────┘
+ * ┌───────┴───────┐┌───┴───┐┌───┴───┐┌─────┴──────┐┌─────┴─────┐
+ * │ProgramPipeline││Texture││Sampler││Renderbuffer││VertexArray│
+ * └───────────────┘└───────┘└───────┘└────────────┘└───────────┘
+ *
+ * geGL library also contains OpenGL debug message handling,
+ * FunctionTable and FunctionProvider classes and FunctionTable decorators.
+ */
+
 #pragma once
 
 #include<geGL/AsynchronousQuery.h>
@@ -16,6 +40,12 @@
 
 namespace ge{
   namespace gl{
+    /**
+     * @brief This function initialises geGL library.
+     * It requeires FunctionLoader object that can load OpenGL functions
+     *
+     * @param loader function loader (see DefaultLoader.h)
+     */
     GEGL_EXPORT void init(
         std::shared_ptr<opengl::FunctionLoaderInterface>const&loader = nullptr);
   }
