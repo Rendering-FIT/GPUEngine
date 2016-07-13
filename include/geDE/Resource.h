@@ -15,7 +15,7 @@ namespace ge{
   namespace de{
     class TypeRegister;
 
-    class GEDE_EXPORT Resource{
+    class /*GEDE_EXPORT*/ Resource{
       public:
         inline Resource(
             std::shared_ptr<TypeRegister>const&manager = nullptr                   ,

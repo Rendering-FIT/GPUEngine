@@ -12,7 +12,7 @@ namespace ge{
     class While;
     class Function;
     class AtomicFunction;
-    class GEDE_EXPORT Statement: public ge::core::Command{
+    class /*GEDE_EXPORT*/ Statement: public ge::core::Command{
       friend class Body;
       friend class If;
       friend class While;

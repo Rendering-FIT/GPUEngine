@@ -10,7 +10,7 @@
 namespace ge{
   namespace de{
 
-    class GECORE_EXPORT NameRegister{
+    class GEDE_EXPORT NameRegister{
       public:
         using ElementIndex = size_t;
         using Id = size_t;

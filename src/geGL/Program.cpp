@@ -1,6 +1,7 @@
 #include<geGL/Program.h>
 #include<geGL/OpenGLUtil.h>
 #include<iostream>
+#include<string>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
