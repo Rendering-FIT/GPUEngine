@@ -19,7 +19,7 @@ SCENARIO("basic dirty flag tests","[Function]"){
   auto nr=std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
-  auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);
+  auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);//[](int32_t i)->int32_t{return i+1;});//addOne);
   auto a0 = std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
 
   auto b0 = fr->sharedFunction(addOneId);

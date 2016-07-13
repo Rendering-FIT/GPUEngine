@@ -28,6 +28,7 @@ namespace ge{
     class GEDE_EXPORT FunctionRegister: public std::enable_shared_from_this<FunctionRegister>{
       public:
         typedef void(*Implementation)();
+        typedef bool(*SignalingDecider)();
         using InputIndex = size_t;
         using FunctionID = size_t;
         inline FunctionRegister(
@@ -38,22 +39,26 @@ namespace ge{
             TypeRegister::TypeId             const&type   ,
             std::string                      const&name   ,
             std::shared_ptr<StatementFactory>const&factory);
-        inline TypeRegister::TypeId             getType   (FunctionID id)const;
-        inline std::string                      getName   (FunctionID id)const;
-        inline std::shared_ptr<StatementFactory>getFactory(FunctionID id)const;
-        inline FunctionID getFunctionId(std::string const&name)const;
-        inline InputIndex  getNofInputs (FunctionID id)const;
-        inline std::string getOutputName(FunctionID id)const;
-        inline std::string getInputName (FunctionID id,InputIndex input)const;
-        inline TypeRegister::TypeId getInputType (FunctionID id,InputIndex input)const;
-        inline TypeRegister::TypeId getOutputType(FunctionID id)const;
-        inline InputIndex getInputIndex(FunctionID id,std::string const&name)const;
-        inline std::shared_ptr<TypeRegister>const&getTypeRegister()const;
-        inline std::shared_ptr<NameRegister>const&getNameRegister()const;
-        inline void addImplementation(FunctionID  id  ,Implementation impl);
-        inline void addImplementation(std::string const&name,Implementation impl);
-        inline Implementation getImplementation(FunctionID  id  )const;
-        inline Implementation getImplementation(std::string const&name)const;
+        TypeRegister::TypeId             getType   (FunctionID id)const;
+        std::string                      getName   (FunctionID id)const;
+        std::shared_ptr<StatementFactory>getFactory(FunctionID id)const;
+        FunctionID getFunctionId(std::string const&name)const;
+        InputIndex  getNofInputs (FunctionID id)const;
+        std::string getOutputName(FunctionID id)const;
+        std::string getInputName (FunctionID id,InputIndex input)const;
+        TypeRegister::TypeId getInputType (FunctionID id,InputIndex input)const;
+        TypeRegister::TypeId getOutputType(FunctionID id)const;
+        InputIndex getInputIndex(FunctionID id,std::string const&name)const;
+        std::shared_ptr<TypeRegister>const&getTypeRegister()const;
+        std::shared_ptr<NameRegister>const&getNameRegister()const;
+        void addImplementation(FunctionID  id  ,Implementation impl);
+        void addImplementation(std::string const&name,Implementation impl);
+        Implementation getImplementation(FunctionID  id  )const;
+        Implementation getImplementation(std::string const&name)const;
+        void addSignalingDecider(FunctionID id,SignalingDecider sig);
+        void addSignalingDecider(std::string const&name,SignalingDecider sig);
+        SignalingDecider getSignalingDecider(FunctionID id)const;
+        SignalingDecider getSignalingDecider(std::string const&name)const;
         std::shared_ptr<Function>sharedFunction(FunctionID  id  )const;
         std::shared_ptr<Function>sharedFunction(std::string const&name)const;
         std::shared_ptr<Statement>sharedStatement(FunctionID  id  )const;
@@ -75,6 +80,7 @@ namespace ge{
         std::shared_ptr<TypeRegister>_typeRegister;
         std::map<FunctionID,FunctionDefinition>_functions;
         std::map<FunctionID,Implementation>_implementations;
+        std::map<FunctionID,SignalingDecider>_signalingDeciders;
         std::map<std::string,FunctionID>_name2Function;
         inline FunctionDefinition      & _getDefinition(FunctionID id);
         inline FunctionDefinition const& _getDefinition(FunctionID id)const;
@@ -219,6 +225,26 @@ namespace ge{
       return this->getImplementation(this->getFunctionId(name));
     }
 
+    inline void FunctionRegister::addSignalingDecider(FunctionID id,SignalingDecider sig){
+      assert(this!=nullptr);
+      this->_signalingDeciders[id]=sig;
+    }
+
+    inline void FunctionRegister::addSignalingDecider(std::string const&name,SignalingDecider sig){
+      assert(this!=nullptr);
+      this->addSignalingDecider(this->getFunctionId(name),sig);
+    }
+
+    inline FunctionRegister::SignalingDecider FunctionRegister::getSignalingDecider(FunctionID id)const{
+      assert(this!=nullptr);
+      assert(this->_signalingDeciders.count(id)!=0);
+      return this->_signalingDeciders.find(id)->second;
+    }
+
+    inline FunctionRegister::SignalingDecider FunctionRegister::getSignalingDecider(std::string const&name)const{
+      assert(this!=nullptr);
+      return this->getSignalingDecider(this->getFunctionId(name));
+    }
 
   }
 }
