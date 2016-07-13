@@ -1,21 +1,30 @@
 #pragma once
 
-#include<geGL/OpenGL.h>
 #include<geGL/OpenGLObject.h>
 #include<iostream>
+#include<vector>
+#include<set>
+#include<memory>
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT Shader: public OpenGLObject{
-      protected:
-        GLint _getParam(GLenum pname)const;
+    class Program;
+    class GEGL_EXPORT Shader:public OpenGLObject{
+      friend class Program;
       public:
+        using Source  = std::string;
+        using Sources = std::vector<Source>;
         Shader();
-        Shader(GLenum type,std::string source="");
+        Shader(GLenum type,Sources const& sources = {});
+        Shader(opengl::FunctionTablePointer const&table);
+        Shader(
+            opengl::FunctionTablePointer const&table       ,
+            GLenum                       const&type        ,
+            Sources                      const&sources = {});
         virtual ~Shader();
-        void        create(GLenum type,std::string source="");
-        void        setSource(std::string source   );
-        void        compile  (std::string source="");
+        void        create(GLenum type);
+        void        setSource(Sources const& sources = {});
+        void        compile  (Sources const& sources = {});
         GLboolean   isShader        ()const;
         GLenum      getType         ()const;
         GLboolean   getDeleteStatus ()const;
@@ -23,8 +32,57 @@ namespace ge{
         GLuint      getInfoLogLength()const;
         GLuint      getSourceLength ()const;
         std::string getInfoLog      ()const;
-        std::string getSource       ()const;
+        Source      getSource       ()const;
+        static std::string define(std::string name);
+        static std::string define(std::string name,unsigned value);
+        static std::string define(std::string name,unsigned value0,unsigned value1);
+        static std::string define(std::string name,unsigned value0,unsigned value1,unsigned value2);
+        static std::string define(std::string name,unsigned value0,unsigned value1,unsigned value2,unsigned value3);
+        static std::string define(std::string name,unsigned vectorSize,unsigned*values);
+        static std::string define(std::string name,int value);
+        static std::string define(std::string name,int value0,int value1);
+        static std::string define(std::string name,int value0,int value1,int value2);
+        static std::string define(std::string name,int value0,int value1,int value2,int value3);
+        static std::string define(std::string name,unsigned vectorSize,int*values);
+        static std::string define(std::string name,float value);
+        static std::string define(std::string name,float value0,float value1);
+        static std::string define(std::string name,float value0,float value1,float value2);
+        static std::string define(std::string name,float value0,float value1,float value2,float value3);
+        static std::string define(std::string name,unsigned vectorSize,float*values);
+        static std::string define(std::string name,std::string value);
+        template<typename...ARGS>
+          Shader(GLenum type,ARGS...args);
+        template<typename...ARGS>
+          Shader(
+              opengl::FunctionTablePointer const&table       ,
+              GLenum                       const&type        ,
+              ARGS...                            sources     );
+        template<typename...ARGS>
+          void        setSource(ARGS... sources);
+        template<typename...ARGS>
+          void        compile  (ARGS... sources);
+      protected:
+        GLint _getParam(GLenum pname)const;
+        std::set<Program*>_programs;
     };
+
+    template<typename...ARGS>
+      Shader::Shader(GLenum type,ARGS...args):
+        Shader(type,Sources({args...})){}
+    template<typename...ARGS>
+      Shader::Shader(
+          opengl::FunctionTablePointer const&table  ,
+          GLenum                       const&type   ,
+          ARGS...                            sources):
+        Shader(table,type,Sources({sources...})){}
+    template<typename...ARGS>
+      void Shader::setSource(ARGS... sources){
+        this->setSource(Sources({sources...}));
+      }
+    template<typename...ARGS>
+      void Shader::compile(ARGS... sources){
+        this->compile(Sources({sources...}));
+      }
   }
 }
 

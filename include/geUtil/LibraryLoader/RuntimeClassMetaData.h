@@ -2,33 +2,33 @@
 
 #include<geUtil/LibraryLoader/ClassMetaData.h>
 #include<geUtil/Export.h>
-#include<geCore/TypeRegister.h>
+#include<geDE/TypeRegister.h>
 
 namespace ge{
   namespace util{
 
     class GEUTIL_EXPORT RuntimeArgMetaData{
       protected:
-        ge::core::TypeRegister::TypeID _type;
+        de::TypeRegister::TypeId _type;
         std::string _name;
       public:
         RuntimeArgMetaData(
-            std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+            std::shared_ptr<de::TypeRegister>&typeRegister,
             ArgMetaData const&argMetaData);
-        ge::core::TypeRegister::TypeID getType()const;
+        de::TypeRegister::TypeId getType()const;
         std::string getName()const;
     };
 
     class GEUTIL_EXPORT RuntimeFceMetaData{
       protected:
-        ge::core::TypeRegister::TypeID _returnType;
+        de::TypeRegister::TypeId _returnType;
         std::string _name;
         std::vector<RuntimeArgMetaData>_args;
       public:
         RuntimeFceMetaData(
-            std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+            std::shared_ptr<de::TypeRegister>&typeRegister,
             FceMetaData const&fceMetaData);
-        ge::core::TypeRegister::TypeID getReturnType()const;
+        de::TypeRegister::TypeId getReturnType()const;
         std::string getName()const;
         decltype(_args)::size_type getNofArgs()const;
         RuntimeArgMetaData const&getArg(unsigned i)const;
@@ -39,7 +39,7 @@ namespace ge{
         std::vector<RuntimeArgMetaData>_args;
       public:
         RuntimeConstructorMetaData(
-            std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+            std::shared_ptr<de::TypeRegister>&typeRegister,
             ConstructorMetaData const&constructorMetaData);
         decltype(_args)::size_type getNofArgs()const;
         RuntimeArgMetaData const&getArg(unsigned i)const;
@@ -52,7 +52,7 @@ namespace ge{
         std::vector<RuntimeConstructorMetaData>_constructors;
       public:
         RuntimeClassMetaData(
-            std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+            std::shared_ptr<de::TypeRegister>&typeRegister,
             ClassMetaData const&classMetaData);
         std::string getName()const;
         decltype(_fces)::size_type getNofFces()const;

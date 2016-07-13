@@ -2,7 +2,7 @@ function(add_tests)
   foreach(TARG ${TEST_TARGETS})
     project(${TARG})
     add_executable(${TARG} ${TARG}.cpp)
-    target_link_libraries(${TARG} geCore)
+    target_link_libraries(${TARG} geCore geDE geParser)
     set_target_properties(${TARG} PROPERTIES FOLDER "Tests")
   endforeach(TARG)
 endfunction(add_tests)
@@ -14,7 +14,7 @@ set(TEST_TARGETS
   tokenizationTest
   syntaxTest
   interpretTest
-  namespaceTest
+  variableRegisterTest
   statementFactoryTest
   mealyMachineTest
   idlistTest

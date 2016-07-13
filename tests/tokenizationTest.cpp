@@ -1,16 +1,17 @@
-#include<geCore/Tokenization.h>
+#include<geParser/Tokenization.h>
 #include<geCore/Text.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
 
 using namespace ge::core;
+using namespace ge::parser;
 
 SCENARIO("Tokenization basic tests"){
   GIVEN("c++ tokenization"){
     std::string identStart = "_a\\-zA\\-Z";
-    std::string identBody  = identStart+ge::core::FSA::digit;
-    std::string operatorStop = identStart+ge::core::FSA::digit+".,!(){}[]~;\"\'";// /
+    std::string identBody  = identStart+FSA::digit;
+    std::string operatorStop = identStart+FSA::digit+".,!(){}[]~;\"\'";// /
     std::string keywords="identifier for while if else bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 void struct typedef return";
 
     Tokenization t("START");

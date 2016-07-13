@@ -1,6 +1,7 @@
 #include<geUtil/LibraryLoader/LibraryObjectLoader.h>
 
 using namespace ge::util;
+using namespace ge::de;
 
 void*ge::util::ObjectLoader::getObject(std::string name){
   auto lib=this->load(name);
@@ -11,9 +12,9 @@ void*ge::util::ObjectLoader::getObject(std::string name){
 
 RuntimeClassInterface*ge::util::ObjectLoader::getInterface(
     std::string name,
-    std::shared_ptr<ge::core::TypeRegister>&typeRegister){
+    std::shared_ptr<TypeRegister>&typeRegister){
   auto lib=this->load(name);
-  RuntimeClassInterface*(*objectFactory)(std::shared_ptr<ge::core::TypeRegister>&);
+  RuntimeClassInterface*(*objectFactory)(std::shared_ptr<TypeRegister>&);
   *(void**)(&objectFactory)=this->get(lib,"getInterface");
   return objectFactory(typeRegister);
 }

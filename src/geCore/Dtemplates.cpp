@@ -1,6 +1,9 @@
 #include<geCore/Dtemplates.h>
 #include<geCore/fsa/Fsa.h>
 
+int ge::core::PrintCallStack::indentCounter = 0;
+std::string ge::core::PrintCallStack::indent = "";
+
 using namespace ge::core;
 
 void ParseEnumArgs::_begin(ge::core::FSA*fsa,void*data){

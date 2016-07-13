@@ -1,15 +1,16 @@
 #include<geUtil/LibraryLoader/RuntimeClassMetaData.h>
 
 using namespace ge::util;
+using namespace ge::de;
 
 RuntimeArgMetaData::RuntimeArgMetaData(
-    std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+    std::shared_ptr<TypeRegister>&typeRegister,
     ArgMetaData const&argMetaData){
   this->_name = argMetaData.name;
-  this->_type = typeRegister->addType("",argMetaData.description);
+  this->_type = typeRegister->addCompositeType("",argMetaData.description);
 }
 
-ge::core::TypeRegister::TypeID RuntimeArgMetaData::getType()const{
+TypeRegister::TypeId RuntimeArgMetaData::getType()const{
   return this->_type;
 }
 
@@ -19,15 +20,15 @@ std::string RuntimeArgMetaData::getName()const{
 
 
 RuntimeFceMetaData::RuntimeFceMetaData(
-    std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+    std::shared_ptr<TypeRegister>&typeRegister,
     FceMetaData const&fceMetaData){
   this->_name = fceMetaData.name;
-  this->_returnType = typeRegister->addType("",fceMetaData.returnType);
+  this->_returnType = typeRegister->addCompositeType("",fceMetaData.returnType);
   for(unsigned a=0;a<fceMetaData.args.size();++a)
     this->_args.push_back(RuntimeArgMetaData(typeRegister,fceMetaData.args[a]));
 }
 
-ge::core::TypeRegister::TypeID RuntimeFceMetaData::getReturnType()const{
+TypeRegister::TypeId RuntimeFceMetaData::getReturnType()const{
   return this->_returnType;
 }
 
@@ -44,7 +45,7 @@ RuntimeArgMetaData const&RuntimeFceMetaData::getArg(unsigned i)const{
 }
 
 RuntimeConstructorMetaData::RuntimeConstructorMetaData(
-    std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+    std::shared_ptr<TypeRegister>&typeRegister,
     ConstructorMetaData const&constructorMetaData){
   for(unsigned a=0;a<constructorMetaData.args.size();++a)
     this->_args.push_back(RuntimeArgMetaData(typeRegister,constructorMetaData.args[a]));
@@ -60,7 +61,7 @@ RuntimeArgMetaData const&RuntimeConstructorMetaData::getArg(unsigned i)const{
 
 
 RuntimeClassMetaData::RuntimeClassMetaData(
-    std::shared_ptr<ge::core::TypeRegister>&typeRegister,
+    std::shared_ptr<TypeRegister>&typeRegister,
     ClassMetaData const&classMetaData){
   this->_name = classMetaData.name;
   for(unsigned f=0;f<classMetaData.fces.size();++f)

@@ -39,6 +39,7 @@ inline void MealyMachine::_call(Transition const&transition){
 }
 
 inline bool MealyMachine::_nextState(State const&state){
+  assert(this!=nullptr);
   auto const& transitionIndex = 
     std::get<CHOOSER>(state)->getTransition(this->_currentSymbol);
   Transition const* transition = nullptr;
@@ -61,6 +62,9 @@ inline bool MealyMachine::_nextState(State const&state){
 
 MealyMachine::StateIndex MealyMachine::addState(
     std::shared_ptr<TransitionChooser>const&chooser){
+  assert(this!=nullptr);
+  assert(chooser!=nullptr);
+  assert(chooser->getSize()<=this->_symbolBuffer.size());
   auto id = this->_states.size();
   this->_states.push_back(State(TransitionVector(),chooser,nullptr,nullptr));
   return id;
@@ -108,12 +112,15 @@ void MealyMachine::addEOFTransition(
 
 
 void MealyMachine::begin(){
+  assert(this!=nullptr);
   this->_currentState = 0;
   this->_symbolBufferIndex = 0;
   this->_readingPosition = 0;
 }
 
 bool MealyMachine::parse(BasicUnit const*data,size_t size){
+  assert(this!=nullptr);
+  assert(this->_currentState<this->_states.size());
   size_t read = 0;
   auto const& state = this->_states[this->_currentState];
   auto const& chooser = std::get<CHOOSER>(state);
@@ -161,11 +168,13 @@ bool MealyMachine::parse(BasicUnit const*data,size_t size){
 }
 
 bool MealyMachine::end(){
+  assert(this!=nullptr);
   if(this->_symbolBufferIndex>0){
     ge::core::printError("MealyMachine::end",
         "there are some unprocess bytes at the end of stream");
     return false;
   }
+  assert(this->_currentState<this->_states.size());
   auto const&state = this->_states[this->_currentState];
   auto const&transition = std::get<EOF_TRANSITION>(state);
   if(!transition)return false;
@@ -178,6 +187,7 @@ const MealyMachine::TransitionIndex MealyMachine::nonexistingTransition =
 
 
 std::string MealyMachine::str()const{
+  assert(this!=nullptr);
   auto printTransition = [](Transition const&t){
     std::stringstream ss;
     ss<<std::get<STATE_INDEX>(t);

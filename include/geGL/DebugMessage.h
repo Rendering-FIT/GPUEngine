@@ -1,21 +1,22 @@
-#ifndef _DEBUGMESSAGE_H_
-#define _DEBUGMESSAGE_H_
+#pragma once
 
 #include<geGL/OpenGL.h>
-#include<iostream>
+#include<geGL/OpenGLFunctionProvider.h>
 
 namespace ge{
   namespace gl{
-    GEGL_EXPORT std::string translateDebugSource  (GLenum source  );
-    GEGL_EXPORT std::string translateDebugType    (GLenum type    );
-    GEGL_EXPORT std::string translateDebugSeverity(GLenum severity);
-    GEGL_EXPORT void setDefaultDebugMessage();
-    GEGL_EXPORT void setLowAndGreaterDebugMessage();
-    GEGL_EXPORT void setMediumAndGreaterDebugMessage();
-    GEGL_EXPORT void setHighDebugMessage();
-    GEGL_EXPORT void setDebugMessage(GLDEBUGPROC fce,void*data);
+    GEGL_EXPORT void setDefaultDebugMessage(
+        opengl::FunctionProviderPointer const&gl = nullptr);
+    GEGL_EXPORT void setLowAndGreaterDebugMessage(
+        opengl::FunctionProviderPointer const&gl = nullptr);
+    GEGL_EXPORT void setMediumAndGreaterDebugMessage(
+        opengl::FunctionProviderPointer const&gl = nullptr);
+    GEGL_EXPORT void setHighDebugMessage(
+        opengl::FunctionProviderPointer const&gl = nullptr);
+    GEGL_EXPORT void setDebugMessage(
+        GLDEBUGPROC fce,
+        void*data,
+        opengl::FunctionProviderPointer const&gl = nullptr);
   }//gl
 }//ge
 
-
-#endif//_DEBUGMESSAGE_H_

@@ -59,9 +59,7 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
-   ${HEADER_PATH}/NamespaceWithUsers.h
-   ${HEADER_PATH}/User.h
-   ${HEADER_PATH}/copyArgumentManager2Namespace.h
+   ${HEADER_PATH}/CopyArgumentManager2VariableRegister.h
 )
 
 
@@ -72,8 +70,7 @@ set(GL_SOURCES
    FPSPrinter.cpp
    HighResolutionTimer.cpp
    Progress.cpp
-   NamespaceWithUsers.cpp
-   copyArgumentManager2Namespace.cpp
+   CopyArgumentManager2VariableRegister.cpp
 )
 
 if(ANTTWEAKBAR_FOUND AND SDL2_FOUND)
@@ -95,7 +92,6 @@ add_library(${LIB_NAME}
 # PACKAGES
 
 find_package(glm)
-find_package(GLEW)
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
@@ -104,14 +100,18 @@ find_package(GLEW)
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps geGL)
-set(External_deps_Export glm GLEW)
-set(External_libs glm GLEW)
+set(Internal_deps geGL geDE)
+set(External_deps_Export glm)
+set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
+if(UNIX)
+  set(External_libs ${External_libs} dl)
+endif()
 
-target_link_libraries(${LIB_NAME} ${GLEW_LIBRARY} ${OPENGL_LIBRARY} ${Internal_deps} ${External_libs})
+
+target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs})
 set_target_properties(${LIB_NAME} PROPERTIES
    INCLUDE_DIRECTORIES "${Internal_inc}"
    INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"

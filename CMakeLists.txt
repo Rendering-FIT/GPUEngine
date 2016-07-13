@@ -13,10 +13,16 @@ SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
-SET(GPUENGINE_BUILD_geAd ON CACHE BOOL "Build addons (geAd directory).")
-SET(GPUENGINE_BUILD_APPS OFF CACHE BOOL "Build applications (apps directory).")
+SET(GPUENGINE_BUILD_geAd     ON  CACHE BOOL "Build addons (geAd directory).")
+SET(GPUENGINE_BUILD_APPS     ON  CACHE BOOL "Build applications (apps directory).")
 SET(GPUENGINE_BUILD_EXAMPLES OFF CACHE BOOL "Build examples (examples directory).")
-SET(GPUENGINE_BUILD_TESTS OFF CACHE BOOL "Build and run tests (tests directory).")
+SET(GPUENGINE_BUILD_TESTS    ON  CACHE BOOL "Build and run tests (tests directory).")
+SET(GPUENGINE_BUILD_GEGL     ON  CACHE BOOL "Build geGL package.")
+SET(GPUENGINE_BUILD_GESG     OFF CACHE BOOL "Build geSG package.")
+SET(GPUENGINE_BUILD_GERG     OFF CACHE BOOL "Build geRG package.")
+SET(GPUENGINE_BUILD_GEUTIL   ON  CACHE BOOL "Build geUtil package.")
+SET(GPUENGINE_BUILD_GEPARSER ON  CACHE BOOL "Build geParser package.")
+SET(GPUENGINE_BUILD_GEDE     ON  CACHE BOOL "Build geDE package.")
 
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
@@ -69,27 +75,22 @@ IF(MSVC)
    ELSE()
       # MSVC 2015 workarounds to be placed here (currently none)
    ENDIF()
+   IF(GPUENGINE_REPLACE_GLEW)
+     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DREPLACE_GLEW")
+   ENDIF()
 ENDIF()
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -W -Wall -pedantic")
+  IF(GPUENGINE_REPLACE_GLEW)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DREPLACE_GLEW")
+  ENDIF()
 ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
 # Dynamic vs Static Linkage
 OPTION(GPUENGINE_DYNAMIC_LINKAGE "Build GPUEngine as libs for dynamic linkage. Use OFF for static libs." ON)
-FIND_PACKAGE(GLEW REQUIRED)
-IF(WIN32)
-   IF(GPUENGINE_DYNAMIC_LINKAGE)
-      IF(NOT GLEW_DYNAMIC_LINKAGE)
-         MESSAGE(WARNING "GLEW_DYNAMIC_LINKAGE set to OFF (static linkage) while "
-                         "GPUENGINE_DYNAMIC_LINKAGE set to ON may cause multiple GLEW "
-                         "instances inside final application, resulting in mysterious crashes.")
-      ENDIF()
-   ENDIF()
-ENDIF()
-
 
 ##################################################
 # Export Things
@@ -99,30 +100,30 @@ SET(INSTALL_CM_DIR cmake)
 
 configure_file(version.h.in "include/version.h" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
-        DESTINATION include
-        )
+  DESTINATION include
+  )
 
 configure_file(
-   GPUEngineConfig.cmake.in
-   GPUEngineConfig.cmake
-   @ONLY
-)
+  GPUEngineConfig.cmake.in
+  GPUEngineConfig.cmake
+  @ONLY
+  )
 
 configure_file(
-   GPUEngineConfigVersion.cmake.in
-   GPUEngineConfigVersion.cmake
-   @ONLY
-)
+  GPUEngineConfigVersion.cmake.in
+  GPUEngineConfigVersion.cmake
+  @ONLY
+  )
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
- #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
-              "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
-        DESTINATION ${INSTALL_CM_DIR}
-        )
+  #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+  DESTINATION ${INSTALL_CM_DIR}
+  )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
-        DESTINATION "${INSTALL_CM_DIR}/CMakeModules"
-       )
+  DESTINATION "${INSTALL_CM_DIR}/CMakeModules"
+  )
 
 
 add_subdirectory(src)
@@ -132,10 +133,10 @@ if(GPUENGINE_BUILD_geAd)
 endif()
 
 if(GPUENGINE_BUILD_APPS)
-   if(NOT GPUENGINE_BUILD_geAd)
-      message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
-   endif()
-   add_subdirectory(apps)
+  if(NOT GPUENGINE_BUILD_geAd)
+    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
+  endif()
+  add_subdirectory(apps)
 endif()
 
 if(GPUENGINE_BUILD_EXAMPLES)

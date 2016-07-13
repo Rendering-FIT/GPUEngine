@@ -1,27 +1,46 @@
-#include<geCore/Interpret.h>
-#include<geCore/StdFunctions.h>
-#include<geCore/CompositeFunction.h>
-#include<geCore/FunctionNodeFactory.h>
-#include<geCore/Body.h>
-#include<geCore/ResourceFactory.h>
-#include<geCore/BodyFactory.h>
+#include<geDE/Interpret.h>
+#include<geDE/StdFunctions.h>
+#include<geDE/CompositeFunction.h>
+#include<geDE/FunctionNodeFactory.h>
+#include<geDE/Body.h>
+#include<geDE/ResourceFactory.h>
+#include<geDE/BodyFactory.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
 
-using namespace ge::core;
+using namespace ge::de;
+
+SCENARIO("maxUses test","[StatementFactory]"){
+  auto r  = std::make_shared<TypeRegister>();
+  auto nr = std::make_shared<NameRegister>();
+  auto fr = std::make_shared<FunctionRegister>(r,nr);
+  registerStdFunctions(fr);
+  auto resourceFactory = std::make_shared<ResourceFactory>(r->getTypeId("i32"));
+  resourceFactory->setUses(2);
+  auto a = (*resourceFactory)(fr);
+  auto b = (*resourceFactory)(fr);
+  auto c = (*resourceFactory)(fr);
+  auto d = (*resourceFactory)(fr);
+  REQUIRE(a==b);
+  REQUIRE(c==d);
+  REQUIRE(a!=c);
+  REQUIRE(a!=d);
+  REQUIRE(b!=c);
+  REQUIRE(b!=d);
+}
 
 
 SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
-  auto r = std::make_shared<ge::core::TypeRegister>();
-  auto nr=std::make_shared<NameRegister>();
-  auto fr = std::make_shared<ge::core::FunctionRegister>(r,nr);
-  ge::core::registerStdFunctions(fr);
+  auto r  = std::make_shared<TypeRegister>();
+  auto nr = std::make_shared<NameRegister>();
+  auto fr = std::make_shared<FunctionRegister>(r,nr);
+  registerStdFunctions(fr);
   GIVEN( "basic function factory" ) {
     auto factory = fr->sharedFactory("Add<i32>");
     auto statement = (*factory)(fr);
-    auto fa=std::make_shared<ge::core::Nullary>(fr,(int32_t)10);
-    auto fb=std::make_shared<ge::core::Nullary>(fr,(int32_t)11);
+    auto fa=std::make_shared<Nullary>(fr,(int32_t)10);
+    auto fb=std::make_shared<Nullary>(fr,(int32_t)11);
     auto function = std::dynamic_pointer_cast<Function>(statement);
     function->bindInput(fr,0,fa);
     function->bindInput(fr,1,fb);
@@ -34,10 +53,10 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     }
   }
   GIVEN("basic function node factory add(a,b)"){
-    auto factory = std::make_shared<ge::core::FunctionNodeFactory>();
+    auto factory = std::make_shared<::FunctionNodeFactory>();
     factory->setFactory(fr->sharedFactory("Add<i32>"));
-    factory->addResourceFactory(std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32")));
-    factory->addResourceFactory(std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32")));
+    factory->addResourceFactory(std::make_shared<ResourceFactory>(r->getTypeId("i32")));
+    factory->addResourceFactory(std::make_shared<ResourceFactory>(r->getTypeId("i32")));
     factory->addInputFactory(fr->sharedFactory("Nullary"));
     factory->addInputFactory(fr->sharedFactory("Nullary"));
     auto statement = (*factory)(fr);
@@ -53,15 +72,19 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     }
   }
   GIVEN("basic function node factory add(a,a)"){
-    auto factory = std::make_shared<ge::core::FunctionNodeFactory>();
+    auto factory = std::make_shared<FunctionNodeFactory>();
     factory->setFactory(fr->sharedFactory("Add<i32>"));
-    auto resourceFactory = std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32"),2);
-    auto inputFactory = std::make_shared<ge::core::FunctionNodeFactory>();
-    inputFactory->setFactory(fr->sharedFactory("Nullary",2));
+    auto resourceFactory = std::make_shared<ResourceFactory>(r->getTypeId("i32"));
+    auto inputFactory = std::make_shared<FunctionNodeFactory>();
+    inputFactory->setFactory(fr->sharedFactory("Nullary"));
     factory->addResourceFactory(resourceFactory);
     factory->addResourceFactory(resourceFactory);
     factory->addInputFactory(inputFactory);
     factory->addInputFactory(inputFactory);
+    factory->setUses(1);
+    REQUIRE(resourceFactory->getUses()==2);
+    REQUIRE(inputFactory->getUses()==2);
+    REQUIRE(factory->getUses()==1);
 
     auto statement0 = (*factory)(fr);
     auto function0 = std::dynamic_pointer_cast<Function>(statement0);
@@ -74,6 +97,11 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     function1->bindOutput(fr,r->sharedResource("i32"));
     *function1->getInputData(0)=(int32_t)30;
     *function1->getInputData(1)=(int32_t)31;
+
+    REQUIRE(function0->getInputData(0) != function1->getInputData(0));
+    REQUIRE(function0->getInputData(1) != function1->getInputData(1));
+    REQUIRE(*(int32_t*)function0->getInputData(0)->getData() != *(int32_t*)function1->getInputData(0)->getData());
+    REQUIRE(*(int32_t*)function0->getInputData(1)->getData() != *(int32_t*)function1->getInputData(1)->getData());
 
     WHEN("running constructed statement0 and statement1"){
       (*statement0)();
@@ -89,17 +117,17 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
     //  a+a;
     //  a+b;
     //}
-    auto factory = std::make_shared<ge::core::BodyFactory>();
-    auto add0 = std::make_shared<ge::core::FunctionNodeFactory>();
+    auto factory = std::make_shared<BodyFactory>();
+    auto add0 = std::make_shared<FunctionNodeFactory>();
     add0->setFactory(fr->sharedFactory("Add<i32>"));
-    auto add1 = std::make_shared<ge::core::FunctionNodeFactory>();
+    auto add1 = std::make_shared<FunctionNodeFactory>();
     add1->setFactory(fr->sharedFactory("Add<i32>"));
-    auto anFactory = std::make_shared<ge::core::FunctionNodeFactory>();
-    anFactory->setFactory(fr->sharedFactory("Nullary",3));
-    auto aFactory = std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32"),3);
-    auto bnFactory = std::make_shared<ge::core::FunctionNodeFactory>();
+    auto anFactory = std::make_shared<FunctionNodeFactory>();
+    anFactory->setFactory(fr->sharedFactory("Nullary"));
+    auto aFactory = std::make_shared<ResourceFactory>(r->getTypeId("i32"));
+    auto bnFactory = std::make_shared<FunctionNodeFactory>();
     bnFactory->setFactory(fr->sharedFactory("Nullary"));
-    auto bFactory = std::make_shared<ge::core::ResourceFactory>(r->getTypeId("i32"),1);
+    auto bFactory = std::make_shared<ResourceFactory>(r->getTypeId("i32"));
     factory->factories.push_back(add0);
     factory->factories.push_back(add1);
     add0->addResourceFactory(aFactory);

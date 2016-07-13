@@ -33,6 +33,7 @@ set(FSA_INCLUDES
 
 set(CORE_INCLUDES
   ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/Object.h
   ${HEADER_PATH}/geCore.h
   ${HEADER_PATH}/Command.h
   ${HEADER_PATH}/CopyOp.h
@@ -40,13 +41,9 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/EnumRegister.h
   ${HEADER_PATH}/Functor.h
   ${HEADER_PATH}/InitAndFinalize.h
-  ${HEADER_PATH}/Object.h
   ${HEADER_PATH}/StandardSemanticsNames.h
-  ${HEADER_PATH}/TypeRegister.h
-  ${HEADER_PATH}/Resource.h
-  ${HEADER_PATH}/AtomicResource.h
-  ${HEADER_PATH}/CompositeResource.h
   ${HEADER_PATH}/DisjointSet.h
+<<<<<<< HEAD
   ${HEADER_PATH}/Interpret.h
   ${HEADER_PATH}/Statement.h
   ${HEADER_PATH}/Function.h
@@ -92,6 +89,10 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/Updatable.h
   ${HEADER_PATH}/FunctionRegister.h
   ${HEADER_PATH}/NameRegister.h
+=======
+  ${HEADER_PATH}/idof.h
+  ${HEADER_PATH}/Text.h
+>>>>>>> dormonSandBox
   )
 
 set(CORE_SOURCES
@@ -101,41 +102,7 @@ set(CORE_SOURCES
   Command.cpp
   EnumRegister.cpp
   StandardSemanticsNames.cpp
-  TypeRegister.cpp
-  #Resource.cpp
-  AtomicResource.cpp
-  CompositeResource.cpp
-  #statement.cpp
-  Function.cpp
-  AtomicFunction.cpp
-  While.cpp
-  If.cpp
-  WhileFactory.cpp
-  #body.cpp
-  Namespace.cpp
-  ResourceFactory.cpp
-  StatementFactory.cpp
-  CompositeFunction.cpp
-  FunctionFactory.cpp
-  CompositeFunctionFactory.cpp
-  FunctionNodeFactory.cpp
-  StdFunctions.cpp
-  StdNumericFunctions.cpp
-  StdRelationalFunctions.cpp
-  StdIntegerFunctions.cpp
-  StdCastFunctions.cpp
-  #token.cpp
-  #    lexer.cpp
-  Grammar.cpp
-  Nonterm.cpp
-  NontermNode.cpp
-  Syntax.cpp
-  SyntaxTreeProcessor.cpp
-  TermNode.cpp
-  Tokenization.cpp
   Text.cpp
-  FunctionRegister.cpp
-  NameRegister.cpp
   )
 
 add_library(${LIB_NAME}
