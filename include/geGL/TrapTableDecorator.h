@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geGL/OpenGLFunctionTable.h>
+#include<string>
 
 namespace ge{
   namespace gl{

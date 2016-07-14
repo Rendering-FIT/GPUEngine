@@ -4,7 +4,7 @@
 
 namespace ge{
   namespace de{
-    class GECORE_EXPORT AtomicResource: public Resource{
+    class GEDE_EXPORT AtomicResource: public Resource{
       protected:
         std::shared_ptr<char>_data   = nullptr;
         size_t               _offset = 0u     ;

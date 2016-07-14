@@ -5,7 +5,7 @@
 namespace ge{
   namespace de{
     class Function;
-    class GECORE_EXPORT While: public Statement{
+    class GEDE_EXPORT While: public Statement{
       public:
         inline While(
             std::shared_ptr<Function> const&condition = nullptr,

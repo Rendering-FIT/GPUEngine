@@ -4,7 +4,7 @@
 
 namespace ge{
   namespace de{
-    class GECORE_EXPORT Body: public Statement{
+    class GEDE_EXPORT Body: public Statement{
       public:
         using StatementVector   = std::vector<std::shared_ptr<Statement>>;
         using StatementIndex    = StatementVector::size_type;

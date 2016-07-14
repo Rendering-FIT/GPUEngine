@@ -24,9 +24,9 @@ namespace ge{
         assert(mf!=nullptr);
         assert(FCE!=nullptr);
 #if defined(_MSC_VER) && _MSC_VER<1900
-        return FCE((ARGS const&...)(*mf->getInputData(I))...);
+        return FCE((const ARGS&...)(*mf->getInputData(I))...);
 #else
-        return FCE((ARGS const&)(*mf->getInputData(I))...);
+        return FCE((const ARGS&)(*mf->getInputData(I))...);
 #endif
       }
 
@@ -35,9 +35,9 @@ namespace ge{
         assert(mf!=nullptr);
         assert(SIG!=nullptr);
 #if defined(_MSC_VER) && _MSC_VER<1900
-        return SIG((ARGS const&...)(*mf->getInputData(I))...);
+        return SIG((const ARGS&...)(*mf->getInputData(I))...);
 #else
-        return SIG((ARGS const&)(*mf->getInputData(I))...);
+        return SIG((const ARGS&)(*mf->getInputData(I))...);
 #endif
       }
 
@@ -74,8 +74,8 @@ namespace ge{
               assert(this!=nullptr);
 
               bool doUberCall = true;
-              if(this->_sigImpl)
-                doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //if(this->_sigImpl)
+              //  doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               if(!doUberCall)return false;
               *(OUTPUT*)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
