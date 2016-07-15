@@ -7,18 +7,19 @@ namespace ge{
     class Function;
     class GEDE_EXPORT If: public Statement{
       public:
-        inline If(
+        If(
             std::shared_ptr<Function >const&condition = nullptr,
             std::shared_ptr<Statement>const&trueBody  = nullptr,
             std::shared_ptr<Statement>const&falseBody = nullptr);
-        inline virtual ~If()override;
-        inline void setCondition(std::shared_ptr<Function >const&condition = nullptr);
-        inline void setTrueBody (std::shared_ptr<Statement>const&trueBody  = nullptr);
-        inline void setFalseBody(std::shared_ptr<Statement>const&falseBody = nullptr);
-        inline std::shared_ptr<Function >const&getCondition()const;
-        inline std::shared_ptr<Statement>const&getTrueBody ()const;
-        inline std::shared_ptr<Statement>const&getFalseBody()const;
+        virtual ~If()override;
+        void setCondition(std::shared_ptr<Function >const&condition = nullptr);
+        void setTrueBody (std::shared_ptr<Statement>const&trueBody  = nullptr);
+        void setFalseBody(std::shared_ptr<Statement>const&falseBody = nullptr);
+        std::shared_ptr<Function >const&getCondition()const;
+        std::shared_ptr<Statement>const&getTrueBody ()const;
+        std::shared_ptr<Statement>const&getFalseBody()const;
         virtual void operator()()override;
+        std::shared_ptr<If>toIf()const override;
       protected:
         size_t _conditionUpdateTicks = 0;
         size_t _trueBodyUpdateTicks = 0;
@@ -99,5 +100,10 @@ namespace ge{
     inline std::shared_ptr<Statement>const&If::getFalseBody()const{
       return this->_falseBody;
     }
+
+    inline std::shared_ptr<If>If::toIf()const{
+      return std::dynamic_pointer_cast<If>(std::const_pointer_cast<Statement>(this->shared_from_this()));
+    }
+
   }
 }

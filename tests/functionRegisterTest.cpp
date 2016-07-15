@@ -219,3 +219,41 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   registerBasicFunction(fr,"loadTextFile",loadTextFile);
   registerBasicFunction(fr,"baba",baba);
 }
+
+class TestClass{
+  public:
+    int data;
+    TestClass(int d){this->data =d;}
+    int add(int v){return this->data+v;}
+};
+
+namespace ge{
+  namespace de{
+    template<>
+      inline std::string TypeRegister::getTypeKeyword<TestClass>(){return "TestClass";}
+  }
+}
+
+SCENARIO( "registration of external member function as boxes", "[FunctionRegister]" ) {
+  auto tr=std::make_shared<TypeRegister>();
+  auto nr=std::make_shared<NameRegister>();
+  auto fr=std::make_shared<FunctionRegister>(tr,nr);
+  registerStdFunctions(fr);
+
+  tr->addAtomicType(
+      ge::de::TypeRegister::getTypeKeyword<TestClass>(),
+      sizeof(TestClass),
+      [](void*ptr){new(ptr)TestClass(100);},
+      [](void*ptr){((TestClass*)ptr)->~TestClass();});
+
+  registerClassFunction(fr,"TestClass::add",&TestClass::add);
+  auto f=fr->sharedFunction("TestClass::add");
+  auto ff=std::dynamic_pointer_cast<Function>(f);
+  ff->bindOutput(fr,tr->sharedResource("i32"));
+  auto a=std::make_shared<Nullary>(fr,tr->sharedResource("TestClass"));
+  auto b=std::make_shared<Nullary>(fr,(int32_t)12);
+  ff->bindInput(fr,0,a);
+  ff->bindInput(fr,1,b);
+  (*f)();
+  REQUIRE((int32_t)(*ff->getOutputData())==100+12);
+}

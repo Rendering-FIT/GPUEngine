@@ -10,14 +10,16 @@ namespace ge{
         using StatementIndex    = StatementVector::size_type;
         using StatementIterator = StatementVector::const_iterator;
       public:
-        inline Body();
-        inline virtual ~Body();
-        inline void addStatement(std::shared_ptr<Statement>const&statement);
-        inline StatementIndex size()const;
-        inline std::shared_ptr<Statement>const&operator[](StatementIndex index)const;
-        inline StatementIterator begin()const;
-        inline StatementIterator end  ()const;
-        inline virtual void operator()()override;
+        Body();
+        virtual ~Body();
+        void addStatement(std::shared_ptr<Statement>const&statement);
+        StatementIndex size()const;
+        std::shared_ptr<Statement>const&operator[](StatementIndex index)const;
+        StatementIterator begin()const;
+        StatementIterator end  ()const;
+        virtual void operator()()override;
+        std::shared_ptr<Body>toBody()const override;
+        std::shared_ptr<Statement>const&at(size_t i)const;
       protected:
         StatementVector _statements;
         std::vector<size_t>_statementsUpdateTicks;
@@ -30,6 +32,7 @@ namespace ge{
     }
 
     inline void Body::addStatement(std::shared_ptr<Statement>const&statement){
+      assert(this!=nullptr);
       this->_statements.push_back(statement);
       this->_statementsUpdateTicks.push_back(0);
       statement->_addSignalingTarget(this);
@@ -38,22 +41,27 @@ namespace ge{
     }
 
     inline Body::StatementIndex Body::size()const{
+      assert(this!=nullptr);
       return this->_statements.size();
     }
 
     inline std::shared_ptr<Statement>const&Body::operator[](StatementIndex index)const{
+      assert(this!=nullptr);
       return this->_statements[index];
     }
 
     inline Body::StatementIterator Body::begin()const{
+      assert(this!=nullptr);
       return this->_statements.begin();
     }
 
     inline Body::StatementIterator Body::end()const{
+      assert(this!=nullptr);
       return this->_statements.end();
     }
 
     inline void Body::operator()(){
+      assert(this!=nullptr);
       if(!this->_dirtyFlag)return;
       this->_dirtyFlag = false;
       bool changed = false;
@@ -67,5 +75,15 @@ namespace ge{
       this->_updateTicks++;
       this->setSignalingDirty();
     }
+
+    inline std::shared_ptr<Body>Body::toBody()const{
+      assert(this!=nullptr);
+      return std::dynamic_pointer_cast<Body>(std::const_pointer_cast<Statement>(this->shared_from_this()));
+    }
+
+    inline std::shared_ptr<Statement>const&Body::at(size_t i)const{
+      return this->_statements.at(i);
+    }
+
   }
 }

@@ -64,7 +64,11 @@ namespace ge{
               std::vector<std::string>const&names,
               OUTPUT(*fce)(ARGS...),
               bool(*sig)(ARGS...) = nullptr);
-
+        template<typename OUTPUT,typename CLASS,typename...ARGS>
+          FunctionRegister::FunctionID addFunction(
+              std::vector<std::string>const&names,
+              OUTPUT(CLASS::*fce)(ARGS...),
+              bool(*sig)(ARGS...) = nullptr);
         FunctionRegister::FunctionID addCompositeFunction(
             std::vector<std::string>const&names,
             std::shared_ptr<CompositeFunctionFactory>const&factory);
@@ -151,6 +155,23 @@ namespace ge{
           this->nameRegister->setFceInputName(ret,i-2,names[i]);
         return ret;
       }
+    template<typename OUTPUT,typename CLASS,typename...ARGS>
+      FunctionRegister::FunctionID Kernel::addFunction(
+          std::vector<std::string>const&names,
+          OUTPUT(CLASS::*fce)(ARGS...),
+          bool(*sig)(ARGS...)){
+        if(names.size()==0){
+          std::cerr<<"ERROR: Kernel::addFunction() - at least function name has to be specified"<<std::endl;
+          return 0;
+        }
+        auto ret = registerClassFunction(this->functionRegister,names[0],fce,sig);
+        if(names.size()>1)
+          this->nameRegister->setFceOutputName(ret,names[1]);
+        for(size_t i=2;i<names.size();++i)
+          this->nameRegister->setFceInputName(ret,i-2,names[i]);
+        return ret;
+      }
+
 
     template<typename CLASS>
       TypeRegister::TypeId Kernel::addAtomicClass(std::string const&name){

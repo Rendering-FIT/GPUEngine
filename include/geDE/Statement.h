@@ -12,7 +12,7 @@ namespace ge{
     class While;
     class Function;
     class AtomicFunction;
-    class /*GEDE_EXPORT*/ Statement: public ge::core::Command{
+    class /*GEDE_EXPORT*/ Statement: public ge::core::Command, public std::enable_shared_from_this<Statement>{
       friend class Body;
       friend class If;
       friend class While;
@@ -38,6 +38,10 @@ namespace ge{
         bool hasSignalingTarget(Statement*statement)const;
         size_t nofSignalingSources()const;
         size_t nofSignalingTargets()const;
+        virtual std::shared_ptr<Body>toBody()const;
+        virtual std::shared_ptr<If>toIf()const;
+        virtual std::shared_ptr<While>toWhile()const;
+        virtual std::shared_ptr<Function>toFunction()const;
       protected:
         Type _type;
         bool _dirtyFlag = false;
@@ -128,6 +132,22 @@ namespace ge{
     inline void Statement::setUpdateTicks(Ticks ticks){
       assert(this!=nullptr);
       this->_updateTicks = ticks;
+    }
+
+    inline std::shared_ptr<Body>Statement::toBody()const{
+      return nullptr;
+    }
+
+    inline std::shared_ptr<If>Statement::toIf()const{
+      return nullptr;
+    }
+
+    inline std::shared_ptr<While>Statement::toWhile()const{
+      return nullptr;
+    }
+
+    inline std::shared_ptr<Function>Statement::toFunction()const{
+      return nullptr;
     }
 
   }

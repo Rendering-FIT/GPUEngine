@@ -25,10 +25,12 @@ namespace ge{
      * 3rd party libraries.
      * Every 3rd party function's pointer can be stored
      */
+    class Empty;
     class GEDE_EXPORT FunctionRegister: public std::enable_shared_from_this<FunctionRegister>{
       public:
         typedef void(*Implementation)();
         typedef bool(*SignalingDecider)();
+        using ClassImplementation = void(Empty::*)();
         using InputIndex = size_t;
         using FunctionID = size_t;
         inline FunctionRegister(
@@ -59,6 +61,11 @@ namespace ge{
         void addSignalingDecider(std::string const&name,SignalingDecider sig);
         SignalingDecider getSignalingDecider(FunctionID id)const;
         SignalingDecider getSignalingDecider(std::string const&name)const;
+        void addClassImplementation(FunctionID id,ClassImplementation impl);
+        void addClassImplementation(std::string const&name,ClassImplementation impl);
+        ClassImplementation getClassImplementation(FunctionID id)const;
+        ClassImplementation getClassImplementation(std::string const&name)const;
+
         std::shared_ptr<Function>sharedFunction(FunctionID  id  )const;
         std::shared_ptr<Function>sharedFunction(std::string const&name)const;
         std::shared_ptr<Statement>sharedStatement(FunctionID  id  )const;
@@ -81,6 +88,7 @@ namespace ge{
         std::map<FunctionID,FunctionDefinition>_functions;
         std::map<FunctionID,Implementation>_implementations;
         std::map<FunctionID,SignalingDecider>_signalingDeciders;
+        std::map<FunctionID,ClassImplementation>_classImplementations;
         std::map<std::string,FunctionID>_name2Function;
         inline FunctionDefinition      & _getDefinition(FunctionID id);
         inline FunctionDefinition const& _getDefinition(FunctionID id)const;
@@ -244,6 +252,27 @@ namespace ge{
     inline FunctionRegister::SignalingDecider FunctionRegister::getSignalingDecider(std::string const&name)const{
       assert(this!=nullptr);
       return this->getSignalingDecider(this->getFunctionId(name));
+    }
+
+    inline void FunctionRegister::addClassImplementation(FunctionID id,ClassImplementation impl){
+      assert(this!=nullptr);
+      this->_classImplementations[id] = impl;
+    }
+
+    inline void FunctionRegister::addClassImplementation(std::string const&name,ClassImplementation impl){
+      assert(this!=nullptr);
+      this->addClassImplementation(this->getFunctionId(name),impl);
+    }
+
+    inline FunctionRegister::ClassImplementation FunctionRegister::getClassImplementation(FunctionID id)const{
+      assert(this!=nullptr);
+      assert(this->_classImplementations.count(id)!=0);
+      return this->_classImplementations.find(id)->second;
+    }
+
+    inline FunctionRegister::ClassImplementation FunctionRegister::getClassImplementation(std::string const&name)const{
+      assert(this!=nullptr);
+      return this->getClassImplementation(this->getFunctionId(name));
     }
 
   }

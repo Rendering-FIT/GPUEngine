@@ -7,15 +7,16 @@ namespace ge{
     class Function;
     class GEDE_EXPORT While: public Statement{
       public:
-        inline While(
+        While(
             std::shared_ptr<Function> const&condition = nullptr,
             std::shared_ptr<Statement>const&body      = nullptr);
-        inline virtual ~While();
-        inline void setBody     (std::shared_ptr<Statement>const&body = nullptr);
-        inline void setCondition(std::shared_ptr<Function >const&condition = nullptr);
-        inline std::shared_ptr<Function >const&getCondition()const;
-        inline std::shared_ptr<Statement>const&getBody()const;
-        virtual void operator()();
+        virtual ~While();
+        void setBody     (std::shared_ptr<Statement>const&body = nullptr);
+        void setCondition(std::shared_ptr<Function >const&condition = nullptr);
+        std::shared_ptr<Function >const&getCondition()const;
+        std::shared_ptr<Statement>const&getBody()const;
+        virtual void operator()()override;
+        virtual std::shared_ptr<While>toWhile()const override;
       protected:
         std::shared_ptr<Function> _condition = nullptr;
         std::shared_ptr<Statement>_body      = nullptr;
@@ -66,5 +67,10 @@ namespace ge{
     inline std::shared_ptr<Statement>const&While::getBody()const{
       return this->_body;
     }
+
+    inline std::shared_ptr<While>While::toWhile()const{
+      return std::dynamic_pointer_cast<While>(std::const_pointer_cast<Statement>(this->shared_from_this()));
+    }
+
   }
 }

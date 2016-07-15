@@ -17,11 +17,11 @@ namespace ge{
       public:
         using InputIndex = size_t;
         using Ticks      = uint64_t;
-        inline Function(
+        Function(
             std::shared_ptr<FunctionRegister>const&fr,
             FunctionRegister::FunctionID           id);
-        virtual inline ~Function();
-        inline FunctionRegister::FunctionID getId()const;
+        virtual ~Function();
+        FunctionRegister::FunctionID getId()const;
         virtual bool bindInput (
             std::shared_ptr<FunctionRegister>const&fr                ,
             InputIndex                             i                 ,
@@ -37,7 +37,8 @@ namespace ge{
         virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const = 0;
         virtual std::shared_ptr<Resource>const&getOutputData(            )const = 0;
         virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const = 0;
-        virtual inline std::string doc()const;
+        virtual std::string doc()const;
+        virtual std::shared_ptr<Function>toFunction()const override;
       protected:
         Statement*_outputSignaling = nullptr;
         FunctionRegister::FunctionID     _id;
@@ -59,13 +60,17 @@ namespace ge{
     inline Function::~Function(){
     }
 
-    FunctionRegister::FunctionID Function::getId()const{
+    inline FunctionRegister::FunctionID Function::getId()const{
       return this->_id;
     }
 
     inline std::string Function::doc()const{
       assert(this!=nullptr);
       return"";
+    }
+
+    inline std::shared_ptr<Function>Function::toFunction()const{
+      return std::dynamic_pointer_cast<Function>(std::const_pointer_cast<Statement>(this->shared_from_this()));
     }
 
   }

@@ -103,20 +103,26 @@ namespace ge{
         TypeDescription*_getDescription(TypeId id)const;
     };
 
+#define GE_DE_ADD_KEYWORD(type,name)\
+    template<>inline std::string TypeRegister::getTypeKeyword<type>(){return name;}\
+    template<>inline std::string TypeRegister::getTypeKeyword<type &>(){return name;}\
+    template<>inline std::string TypeRegister::getTypeKeyword<type const&>(){return name;}
+
+    GE_DE_ADD_KEYWORD(bool       ,"bool"  )
+    GE_DE_ADD_KEYWORD(int8_t     ,"i8"    )
+    GE_DE_ADD_KEYWORD(int16_t    ,"i16"   )
+    GE_DE_ADD_KEYWORD(int32_t    ,"i32"   )
+    GE_DE_ADD_KEYWORD(int64_t    ,"i64"   )
+    GE_DE_ADD_KEYWORD(uint8_t    ,"u8"    )
+    GE_DE_ADD_KEYWORD(uint16_t   ,"u16"   )
+    GE_DE_ADD_KEYWORD(uint32_t   ,"u32"   )
+    GE_DE_ADD_KEYWORD(uint64_t   ,"u64"   )
+    GE_DE_ADD_KEYWORD(float      ,"f32"   )
+    GE_DE_ADD_KEYWORD(double     ,"f64"   )
+    GE_DE_ADD_KEYWORD(std::string,"string")
+
     template<>inline std::string TypeRegister::getTypeKeyword<TypeRegister::Auto>(){return"auto"  ;}
     template<>inline std::string TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<bool              >(){return"bool"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int8_t            >(){return"i8"    ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int16_t           >(){return"i16"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int32_t           >(){return"i32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<int64_t           >(){return"i64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint8_t           >(){return"u8"    ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint16_t          >(){return"u16"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint32_t          >(){return"u32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<uint64_t          >(){return"u64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<float             >(){return"f32"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<double            >(){return"f64"   ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<std::string       >(){return"string";}
   }
 }
 
