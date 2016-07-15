@@ -2,7 +2,6 @@ set(APP_NAME EmptyWindow)
 
 project(${APP_NAME})
 
-find_package(OpenGL REQUIRED)
 find_package(SDL2)
 
 if(NOT SDL2_FOUND)
