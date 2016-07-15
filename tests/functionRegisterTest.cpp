@@ -254,6 +254,7 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   auto b=std::make_shared<Nullary>(fr,(int32_t)12);
   ff->bindInput(fr,0,a);
   ff->bindInput(fr,1,b);
+  ((TestClass&)*a->getOutputData()).data = 1000;
   (*f)();
-  REQUIRE((int32_t)(*ff->getOutputData())==100+12);
+  REQUIRE((int32_t)(*ff->getOutputData())==1000+12);
 }
