@@ -47,14 +47,17 @@ AtomicResource::~AtomicResource(){
 }
 
 void*AtomicResource::getData()const{
+  assert(this!=nullptr);
   return (char*)&(*this->_data)+this->_offset;
 }
 
 void const*AtomicResource::getDataAddress()const{
+  assert(this!=nullptr);
   return &this->_data;
 }
 
 std::shared_ptr<Resource> AtomicResource::operator[](size_t elem){
+  assert(this!=nullptr);
   TypeRegister::TypeId innerType = 0;
   size_t               offset    = 0;
   switch(this->getManager()->getTypeIdType(this->_id)){
@@ -73,6 +76,7 @@ std::shared_ptr<Resource> AtomicResource::operator[](size_t elem){
 }
 
 TypeRegister::DescriptionElement AtomicResource::getNofElements()const{
+  assert(this!=nullptr);
   switch(this->_manager->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
       return this->getManager()->getArraySize(this->getId());
@@ -84,86 +88,13 @@ TypeRegister::DescriptionElement AtomicResource::getNofElements()const{
 }
 
 const void*AtomicResource::getPointer()const{
+  assert(this!=nullptr);
   return (void*)this->getData();
 }
 
 std::string AtomicResource::data2Str()const{
+  assert(this!=nullptr);
   return this->_manager->data2Str(this->getData(),this->_id);
-  /*
-  TypeRegister::Type type=this->_manager->getTypeIdType(this->_id);
-  std::stringstream ss;
-  bool first;
-  switch(type){
-    case TypeRegister::VOID  :
-      break;
-    case TypeRegister::BOOL  :
-      ss<<((bool)(*this)?"true":"false");
-      break;
-    case TypeRegister::I8    :
-      ss<<(int)(char)(*this);
-      break;
-    case TypeRegister::I16   :
-      ss<<(short)(*this);
-      break;
-    case TypeRegister::I32   :
-      ss<<(int)(*this);
-      break;
-    case TypeRegister::I64   :
-      ss<<(long long int)(*this);
-      break;
-    case TypeRegister::U8    :
-      ss<<(unsigned)(unsigned char)(*this);
-      break;
-    case TypeRegister::U16   :
-      ss<<(unsigned short)(*this);
-      break;
-    case TypeRegister::U32   :
-      ss<<(unsigned)(*this);
-      break;
-    case TypeRegister::U64   :
-      ss<<(unsigned long long)(*this);
-      break;
-    case TypeRegister::F32   :
-      ss<<(float)(*this);
-      break;
-    case TypeRegister::F64   :
-      ss<<(double)(*this);
-      break;
-    case TypeRegister::PTR   :
-      ss<<(void*)(*this);
-      break;
-    case TypeRegister::STRING:
-      ss<<(std::string&)(*this);
-      break;
-    case TypeRegister::ARRAY:
-      ss<<"[";
-      first=true;
-      for(TypeRegister::DescriptionElement i=0;i<this->_manager->getArraySize(this->_id);++i){
-        if(first)first=false;
-        else ss<<",";
-        ss<<((*(AtomicResource*)this)[i])->data2Str();
-      }
-      ss<<"]";
-      break;
-    case TypeRegister::STRUCT:
-      ss<<"{";
-      first=true;
-      for(TypeRegister::DescriptionElement e=0;e<this->_manager->getNofStructElements(this->_id);++e){
-        if(first)first=false;
-        else ss<<",";
-        ss<<((*(AtomicResource*)this)[e])->data2Str();
-      }
-      ss<<"}";
-      break;
-    case TypeRegister::FCE:
-      break;
-    case TypeRegister::OBJ:
-      break;
-    default:
-      break;
-  }
-  return ss.str();
-  */
 }
 
 

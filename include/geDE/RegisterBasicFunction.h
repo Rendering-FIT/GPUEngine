@@ -40,9 +40,9 @@ namespace ge{
         assert(mf!=nullptr);
         assert(FCE!=nullptr);
 #if defined(_MSC_VER) && _MSC_VER<1900
-        return FCE((const ARGS&...)(*mf->getInputData(I))...);
+        return FCE(/*(const ARGS&...)*/(*mf->getInputData(I))...);
 #else
-        return FCE((const ARGS&)(*mf->getInputData(I))...);
+        return FCE(/*(const ARGS&)*/(*mf->getInputData(I))...);
 #endif
       }
 
@@ -52,9 +52,9 @@ namespace ge{
         assert(fce!=nullptr);
         using emptyType = OUTPUT(Empty::*)(ARGS...);
 #if defined(_MSC_VER) && _MSC_VER<1900
-        return (*(Empty**)(*mf->getInputData(0))->*((emptyType)fce))((const ARGS&...)(*mf->getInputData(1+I))...);
+        return (*(Empty**)(*mf->getInputData(0))->*((emptyType)fce))(/*(const ARGS&...)*/(*mf->getInputData(1+I))...);
 #else
-        return ((Empty*)(*mf->getInputData(0))->*((emptyType)fce))((const ARGS&)(*mf->getInputData(1+I))...);
+        return ((Empty*)(*mf->getInputData(0))->*((emptyType)fce))(/*(const ARGS&)*/(*mf->getInputData(1+I))...);
 #endif
       }
 

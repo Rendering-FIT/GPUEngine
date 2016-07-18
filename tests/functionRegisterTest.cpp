@@ -251,6 +251,7 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   auto ff=std::dynamic_pointer_cast<Function>(f);
   ff->bindOutput(fr,tr->sharedResource("i32"));
   auto a=std::make_shared<Nullary>(fr,tr->sharedResource("TestClass"));
+  //auto a=std::make_shared<Nullary>(fr,(int32_t)12);
   auto b=std::make_shared<Nullary>(fr,(int32_t)12);
   ff->bindInput(fr,0,a);
   ff->bindInput(fr,1,b);

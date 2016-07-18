@@ -19,7 +19,7 @@ Kernel::~Kernel(){
   this->typeRegister = nullptr;
 }
 
-bool Kernel::addEmptyVariable(std::string const&type,std::string const&name){
+bool Kernel::addEmptyVariable(std::string const&name,std::string const&type){
   assert(this!=nullptr);
   assert(this->typeRegister!=nullptr);
   assert(this->functionRegister!=nullptr);

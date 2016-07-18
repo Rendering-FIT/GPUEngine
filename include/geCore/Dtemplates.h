@@ -14,6 +14,29 @@
 
 namespace ge{
   namespace core{
+    template<typename T>struct is_basic                    :std::false_type{};
+    template<          >struct is_basic<void              >:std::true_type {};
+    template<          >struct is_basic<bool              >:std::true_type {};
+    template<          >struct is_basic<char              >:std::true_type {};
+    template<          >struct is_basic<signed char       >:std::true_type {};
+    template<          >struct is_basic<unsigned char     >:std::true_type {};
+    template<          >struct is_basic<short             >:std::true_type {};
+    template<          >struct is_basic<unsigned short    >:std::true_type {};
+    template<          >struct is_basic<int               >:std::true_type {};
+    template<          >struct is_basic<unsigned int      >:std::true_type {};
+    template<          >struct is_basic<long              >:std::true_type {};
+    template<          >struct is_basic<unsigned long     >:std::true_type {};
+    template<          >struct is_basic<long long         >:std::true_type {};
+    template<          >struct is_basic<unsigned long long>:std::true_type {};
+    template<          >struct is_basic<float             >:std::true_type {};
+    template<          >struct is_basic<double            >:std::true_type {};
+    template<          >struct is_basic<long double       >:std::true_type {};
+    template<          >struct is_basic<wchar_t           >:std::true_type {};
+    template<          >struct is_basic<char16_t          >:std::true_type {};
+    template<          >struct is_basic<char32_t          >:std::true_type {};
+
+
+
     template<typename...ARGS>
       std::string argsToStr(ARGS...);
 
@@ -36,8 +59,8 @@ namespace ge{
     }
 
 
-//    GECORE_EXPORT extern int indentCounter;
-//    GECORE_EXPORT extern std::string indent;
+    //    GECORE_EXPORT extern int indentCounter;
+    //    GECORE_EXPORT extern std::string indent;
     class GECORE_EXPORT PrintCallStack{
       public:
         static int indentCounter;

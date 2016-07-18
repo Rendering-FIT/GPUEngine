@@ -19,7 +19,7 @@ namespace ge{
       public:
         Kernel();
         ~Kernel();
-        bool addEmptyVariable(std::string const&type,std::string const&name);
+        bool addEmptyVariable(std::string const&name,std::string const&type);
         void removeVariable(std::string const&name);
         void addCommand(std::shared_ptr<Statement>const&command);
         void run();

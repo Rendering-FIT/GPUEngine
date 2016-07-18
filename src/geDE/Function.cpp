@@ -25,12 +25,13 @@ bool Function::_inputBindingCheck(
 
   if(
       function                                      != nullptr                                                          &&
-      tr->getFceArgTypeId(fr->getType(this->_id),i) != tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Auto>())&&
-      tr->getFceArgTypeId(fr->getType(this->_id),i) != function->getOutputData()->getId()                               ){
+      !tr->areConvertible(tr->getFceArgTypeId(fr->getType(this->_id),i),function->getOutputData()->getId())){
+      //tr->getFceArgTypeId(fr->getType(this->_id),i) != tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Auto>())&&
+      //tr->getFceArgTypeId(fr->getType(this->_id),i) != function->getOutputData()->getId()                               ){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".input["<<nr->getFceInputName(this->_id,i)<<"] has different type - ";
     std::cerr<<tr->getTypeIdName(tr->getFceArgTypeId(fr->getType(this->_id        ),i));
     std::cerr<<" != ";
-    std::cerr<<tr->getTypeIdName(tr->getFceArgTypeId(fr->getType(function->getId()),i));
+    std::cerr<<tr->getTypeIdName(function->getOutputData()->getId());
     std::cerr<<std::endl;
     return false;
   }
@@ -44,8 +45,9 @@ bool Function::_outputBindingCheck(
   auto tr = fr->getTypeRegister();
   if(
       data                                           != nullptr                                                          &&
-      tr->getFceReturnTypeId(fr->getType(this->_id)) != tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Auto>())&&
-      data->getId()                                  != tr->getFceReturnTypeId(fr->getType(this->_id))                   ){
+      !tr->areConvertible(tr->getFceReturnTypeId(fr->getType(this->_id)),data->getId())){
+      //tr->getFceReturnTypeId(fr->getType(this->_id)) != tr->getTypeId(TypeRegister::getTypeKeyword<TypeRegister::Auto>())&&
+      //data->getId()                                  != tr->getFceReturnTypeId(fr->getType(this->_id))                   ){
     std::cerr<<"ERROR: "<<fr->getName(this->_id)<<".output has different type - ";
     std::cerr<<tr->getTypeIdName(fr->getType(this->_id));
     std::cerr<<" != ";

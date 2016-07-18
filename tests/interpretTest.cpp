@@ -14,9 +14,36 @@ int32_t addOne(int32_t i){
   return i+1;
 }
 
+int32_t addVec(int32_t*ivec3){
+  return ivec3[0]+ivec3[1]+ivec3[2];
+}
+
+SCENARIO("pointer cast test","Function"){
+  auto tr = std::make_shared<ge::de::TypeRegister>();
+  auto nr = std::make_shared<NameRegister>();
+  auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
+  ge::de::registerStdFunctions(fr);
+  tr->addCompositeType("ivec3",{TypeRegister::ARRAY,3,tr->getTypeId("i32")});
+  tr->addCompositeType(TypeRegister::getTypeKeyword<int32_t*>(),{TypeRegister::PTR,tr->getTypeId("i32")});//sizeof(int32_t*));
+  auto addVecId = ge::de::registerBasicFunction(fr,"addVec",addVec);
+  auto f = fr->sharedFunction(addVecId);
+  auto a0 = fr->sharedFunction(fr->getFunctionId("Nullary"));//
+  a0->bindOutput(fr,tr->sharedResource("ivec3"));
+  ((int32_t*)(*a0->getOutputData()))[0]=1;
+  ((int32_t*)(*a0->getOutputData()))[1]=2;
+  ((int32_t*)(*a0->getOutputData()))[2]=3;
+
+  f->bindInput(fr,0,a0);
+  f->bindOutput(fr,tr->sharedResource("i32"));
+
+  (*f)();
+
+  REQUIRE((int32_t&)*f->getOutputData()==1+2+3);
+}
+
 SCENARIO("basic dirty flag tests","[Function]"){
   auto tr = std::make_shared<ge::de::TypeRegister>();
-  auto nr=std::make_shared<NameRegister>();
+  auto nr = std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
   auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);//[](int32_t i)->int32_t{return i+1;});//addOne);

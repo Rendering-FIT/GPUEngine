@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geDE/Export.h>
+#include<geCore/Dtemplates.h>
 
 #include<vector>
 #include<map>
@@ -30,7 +31,8 @@ namespace ge{
           ARRAY        = 3,
           STRUCT       = 4,
           FCE          = 5,
-          TYPEID       = 6,
+          PTR          = 6,
+          TYPEID       = 7,
         };
         TypeRegister();
         virtual ~TypeRegister();
@@ -49,6 +51,7 @@ namespace ge{
         TypeId                      getStructElementTypeId(TypeId id,size_t index)const;
         size_t                      getArraySize          (TypeId id)const;
         TypeId                      getArrayElementTypeId (TypeId id)const;
+        TypeId                      getPtrType            (TypeId id)const;
         TypeId                      getFceReturnTypeId    (TypeId id)const;
         size_t                      getNofFceArgs         (TypeId id)const;
         TypeId                      getFceArgTypeId       (TypeId id,size_t index)const;
@@ -58,6 +61,7 @@ namespace ge{
         bool                        hasSynonyms           (TypeId id)const;
         bool                        areSynonyms           (std::string const&name0,std::string const&name1)const;
         size_t                      computeTypeIdSize     (TypeId id)const;
+        bool                        areConvertible        (TypeId a,TypeId b)const;
         void*alloc(TypeId id)const;
         void free(void*ptr)const;
         void*construct(TypeId id)const;
@@ -70,13 +74,34 @@ namespace ge{
         std::shared_ptr<Resource>sharedEmptyResource(std::string const&name)const;
         void addDestructor (TypeId id,Destructor  const&destructor  = nullptr);
         void addConstructor(TypeId id,Constructor const&constructor = nullptr);
-        template<typename TYPE>
-        static std::string getTypeKeyword();
+        //template<typename TYPE>
+        //static std::string getTypeKeyword();
+        template<typename T,typename std::enable_if<ge::core::is_basic<T>::value,unsigned>::type = 0>
+          static std::string getTypeKeyword();
+
+        template<typename T,typename std::enable_if<std::is_class<T>::value,unsigned>::type = 0>
+          static std::string getTypeKeyword();
+
+        template<typename T,typename std::enable_if<!std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type = 0>
+          static std::string getTypeKeyword();
+
+        template<typename T,typename std::enable_if< std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type = 0>
+          static std::string getTypeKeyword();
+
+        template<typename T,typename std::enable_if< std::is_pointer<T>::value && !std::is_const<T>::value,unsigned>::type = 0>
+          static std::string getTypeKeyword();
+
+        template<typename T,typename std::enable_if<std::is_reference<T>::value,unsigned>::type = 0>
+          static std::string getTypeKeyword();
+
+
+
       protected:
         class ArrayDescription;
         class StructDescription;
         class FunctionDescription;
         class AtomicDescription;
+        class PtrDescription;
         class AutoDescription;
         TypeVector _types;
         std::map<TypeId,std::set<std::string>>_typeId2Synonyms;
@@ -102,12 +127,30 @@ namespace ge{
         void _callDestructors (void*ptr,TypeId id)const;
         TypeDescription*_getDescription(TypeId id)const;
     };
+    template<typename T,typename std::enable_if< std::is_pointer<T>::value && !std::is_const<T>::value,unsigned>::type>
+      inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_pointer<T>::type>()+"*";}
 
+    template<typename T,typename std::enable_if<!std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type>
+      inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_const<T>::type>()/*+" const"*/;}
+
+    template<typename T,typename std::enable_if< std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type>
+      inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_const<T>::type>()/*+"const"*/;}
+
+    template<typename T,typename std::enable_if<std::is_reference<T>::value,unsigned>::type>
+      inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_reference<T>::type>()/*+"&"*/;}
+
+
+
+/*
 #define GE_DE_ADD_KEYWORD(type,name)\
     template<>inline std::string TypeRegister::getTypeKeyword<type>(){return name;}\
     template<>inline std::string TypeRegister::getTypeKeyword<type &>(){return name;}\
     template<>inline std::string TypeRegister::getTypeKeyword<type const&>(){return name;}
+*/
+#define GE_DE_ADD_KEYWORD(type,name)\
+    template<>inline std::string TypeRegister::getTypeKeyword<type>(){return name;}
 
+    GE_DE_ADD_KEYWORD(void       ,"void"  )
     GE_DE_ADD_KEYWORD(bool       ,"bool"  )
     GE_DE_ADD_KEYWORD(int8_t     ,"i8"    )
     GE_DE_ADD_KEYWORD(int16_t    ,"i16"   )
@@ -120,9 +163,7 @@ namespace ge{
     GE_DE_ADD_KEYWORD(float      ,"f32"   )
     GE_DE_ADD_KEYWORD(double     ,"f64"   )
     GE_DE_ADD_KEYWORD(std::string,"string")
-
-    template<>inline std::string TypeRegister::getTypeKeyword<TypeRegister::Auto>(){return"auto"  ;}
-    template<>inline std::string TypeRegister::getTypeKeyword<void              >(){return"void"  ;}
+    GE_DE_ADD_KEYWORD(TypeRegister::Auto,"auto")
   }
 }
 
