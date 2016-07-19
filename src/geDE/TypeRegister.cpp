@@ -496,6 +496,8 @@ class TypeRegister::AtomicDescription: public TypeDescription{
 class TypeRegister::PtrDescription: public TypeDescription{
   public:
     TypeId innerType;
+    Destructor destructor = nullptr;
+    Constructor constructor = nullptr;
     PtrDescription(TypeId id):TypeDescription(PTR){
       this->innerType = id;
     }
@@ -547,10 +549,12 @@ class TypeRegister::PtrDescription: public TypeDescription{
     virtual void callConstructor(TypeRegister*,void*ptr)const override{
       (void)ptr;
       PRINT_CALL_STACK("PtrDescription::callConstructor",ptr);
+      if(this->constructor)this->constructor(ptr);
     }
     virtual void callDestructor(TypeRegister*,void*ptr)const override{
       (void)ptr;
       PRINT_CALL_STACK("PtrDescription::callDestructor",ptr);
+      if(this->destructor)this->destructor(ptr);
     }
     virtual size_t byteSize(TypeRegister const*)const override{
       PRINT_CALL_STACK("PtrDescription::byteSize");
@@ -1026,15 +1030,21 @@ TypeRegister::TypeDescription*TypeRegister::_getDescription(TypeId id)const{
 void TypeRegister::addDestructor(TypeId id,Destructor const&destructor){
   PRINT_CALL_STACK("TypeRegister::addDestructor",id,destructor);
   assert(this!=nullptr);
-  assert(this->_getDescription(id)->type == ATOMIC);
-  ((AtomicDescription*)this->_getDescription(id))->destructor = destructor;
+  assert(this->_getDescription(id)->type == ATOMIC || this->_getDescription(id)->type == PTR);
+  if(this->_getDescription(id)->type == ATOMIC)
+    ((AtomicDescription*)this->_getDescription(id))->destructor = destructor;
+  if(this->_getDescription(id)->type == PTR)
+    ((PtrDescription*)this->_getDescription(id))->destructor = destructor;
 }
 
 void TypeRegister::addConstructor(TypeId id,Constructor const&constructor){
   PRINT_CALL_STACK("TypeRegister::addConstructor",id,constructor);
   assert(this!=nullptr);
-  assert(this->_getDescription(id)->type == ATOMIC);
-  ((AtomicDescription*)this->_getDescription(id))->constructor = constructor;
+  assert(this->_getDescription(id)->type == ATOMIC || this->_getDescription(id)->type == PTR);
+  if(this->_getDescription(id)->type == ATOMIC)
+    ((AtomicDescription*)this->_getDescription(id))->constructor = constructor;
+  if(this->_getDescription(id)->type == PTR)
+    ((PtrDescription*)this->_getDescription(id))->constructor = constructor;
 }
 
 std::shared_ptr<Resource>TypeRegister::sharedResource(TypeId id)const{

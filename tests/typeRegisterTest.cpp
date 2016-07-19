@@ -22,6 +22,15 @@ void free_StructData(StructData*sd){
   delete[]sd->data;
 }
 
+SCENARIO("keyword tests","[TypeRegister]"){
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t>()=="i32");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t&>()=="i32");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t const>()=="i32");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t const&>()=="i32");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t*>()=="i32*");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t const*>()=="i32*");
+
+}
 
 SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
   GIVEN( "empty typeRegister" ) {

@@ -64,9 +64,9 @@ namespace ge{
         assert(mf!=nullptr);
         assert(SIG!=nullptr);
 #if defined(_MSC_VER) && _MSC_VER<1900
-        return SIG((const ARGS&...)(*mf->getInputData(I))...);
+        return SIG(/*(const ARGS&...)*/(*mf->getInputData(I))...);
 #else
-        return SIG((const ARGS&)(*mf->getInputData(I))...);
+        return SIG(/*(const ARGS&)*/(*mf->getInputData(I))...);
 #endif
       }
 
@@ -106,7 +106,10 @@ namespace ge{
               if(this->_sigImpl)
                 doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               if(!doUberCall)return false;
-              *(OUTPUT*)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              *this->getOutputData() = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //auto ret = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //std::memcpy(this->getOutputData()->getData(),&ret,sizeof(OUTPUT));
+              //*(OUTPUT*)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };
@@ -150,7 +153,10 @@ namespace ge{
               if(this->_sigImpl)
                 doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               if(!doUberCall)return false;
-              *(OUTPUT*)(*this->getOutputData()) = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //auto ret = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+              //std::memcpy(this->getOutputData()->getData(),&ret,sizeof(OUTPUT));
+              //*(OUTPUT*)(*this->getOutputData()) = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };

@@ -79,7 +79,7 @@ namespace ge{
         template<typename T,typename std::enable_if<ge::core::is_basic<T>::value,unsigned>::type = 0>
           static std::string getTypeKeyword();
 
-        template<typename T,typename std::enable_if<std::is_class<T>::value,unsigned>::type = 0>
+        template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_const<T>::value,unsigned>::type = 0>
           static std::string getTypeKeyword();
 
         template<typename T,typename std::enable_if<!std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type = 0>
