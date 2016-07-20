@@ -31,8 +31,8 @@ namespace ge{
           ARRAY        = 3,
           STRUCT       = 4,
           FCE          = 5,
-          PTR          = 6,
-          TYPEID       = 7,
+          //PTR          = 6,
+          TYPEID       = 6,//7,
         };
         TypeRegister();
         virtual ~TypeRegister();
@@ -51,7 +51,7 @@ namespace ge{
         TypeId                      getStructElementTypeId(TypeId id,size_t index)const;
         size_t                      getArraySize          (TypeId id)const;
         TypeId                      getArrayElementTypeId (TypeId id)const;
-        TypeId                      getPtrType            (TypeId id)const;
+        //TypeId                      getPtrType            (TypeId id)const;
         TypeId                      getFceReturnTypeId    (TypeId id)const;
         size_t                      getNofFceArgs         (TypeId id)const;
         TypeId                      getFceArgTypeId       (TypeId id,size_t index)const;
@@ -101,7 +101,7 @@ namespace ge{
         class StructDescription;
         class FunctionDescription;
         class AtomicDescription;
-        class PtrDescription;
+        //class PtrDescription;
         class AutoDescription;
         TypeVector _types;
         std::map<TypeId,std::set<std::string>>_typeId2Synonyms;
@@ -128,7 +128,7 @@ namespace ge{
         TypeDescription*_getDescription(TypeId id)const;
     };
     template<typename T,typename std::enable_if< std::is_pointer<T>::value && !std::is_const<T>::value,unsigned>::type>
-      inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_pointer<T>::type>()+"*";}
+      inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_pointer<T>::type>()/*+"*"*/;}
 
     template<typename T,typename std::enable_if<!std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type>
       inline std::string TypeRegister::getTypeKeyword(){return getTypeKeyword<typename std::remove_const<T>::type>()/*+" const"*/;}

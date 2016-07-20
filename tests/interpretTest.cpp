@@ -24,7 +24,7 @@ SCENARIO("pointer cast test","Function"){
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
   tr->addCompositeType("ivec3",{TypeRegister::ARRAY,3,tr->getTypeId("i32")});
-  tr->addCompositeType(TypeRegister::getTypeKeyword<int32_t*>(),{TypeRegister::PTR,tr->getTypeId("i32")});//sizeof(int32_t*));
+  //tr->addCompositeType(TypeRegister::getTypeKeyword<int32_t*>(),{TypeRegister::PTR,tr->getTypeId("i32")});//sizeof(int32_t*));
   auto addVecId = ge::de::registerBasicFunction(fr,"addVec",addVec);
   auto f = fr->sharedFunction(addVecId);
   auto a0 = fr->sharedFunction(fr->getFunctionId("Nullary"));//

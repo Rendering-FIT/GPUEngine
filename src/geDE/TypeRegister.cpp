@@ -493,75 +493,76 @@ class TypeRegister::AtomicDescription: public TypeDescription{
 
 };
 
-class TypeRegister::PtrDescription: public TypeDescription{
-  public:
-    TypeId innerType;
-    Destructor destructor = nullptr;
-    Constructor constructor = nullptr;
-    PtrDescription(TypeId id):TypeDescription(PTR){
-      this->innerType = id;
-    }
-    PtrDescription():TypeDescription(PTR){}
-    virtual ~PtrDescription(){}
-    virtual bool init(
-        TypeRegister*           tr         ,
-        DescriptionVector const&description,
-        size_t                 &i          ,
-        bool                    exists     )override{
-      assert(this!=nullptr);
-      size_t old = i;
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description is empty"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(description[i++]!=PTR){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description does not start with PTR"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description does not contain innter type"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(exists)this->innerType = tr->_typeExists(description,i);
-      else this->innerType = tr->_addType("",description,i);
-      if(this->innerType == UNREGISTERED){i=old;return false;}
-      return true;
-    }
-    bool operator==(PtrDescription const&other)const{
-      assert(this!=nullptr);
-      return this->innerType == other.innerType;
-    }
-    virtual bool equal(TypeDescription const*other)const override{
-      assert(this!=nullptr);
-      if(this->type != other->type)return false;
-      return *this==*(PtrDescription*)other;
-    }
-    virtual std::string toStr(TypeRegister const*tr,TypeId)const override{
-      assert(this!=nullptr);
-      std::stringstream ss;
-      ss<<tr->type2Str(tr->_typeId2VectorIndex(this->innerType));
-      ss<<"*";
-      return ss.str();
-    }
-    virtual void callConstructor(TypeRegister*,void*ptr)const override{
-      (void)ptr;
-      PRINT_CALL_STACK("PtrDescription::callConstructor",ptr);
-      if(this->constructor)this->constructor(ptr);
-    }
-    virtual void callDestructor(TypeRegister*,void*ptr)const override{
-      (void)ptr;
-      PRINT_CALL_STACK("PtrDescription::callDestructor",ptr);
-      if(this->destructor)this->destructor(ptr);
-    }
-    virtual size_t byteSize(TypeRegister const*)const override{
-      PRINT_CALL_STACK("PtrDescription::byteSize");
-      assert(this!=nullptr);
-      return sizeof(void*);
-    }
-};
+
+//class TypeRegister::PtrDescription: public TypeDescription{
+//  public:
+//    TypeId innerType;
+//    Destructor destructor = nullptr;
+//    Constructor constructor = nullptr;
+//    PtrDescription(TypeId id):TypeDescription(PTR){
+//      this->innerType = id;
+//    }
+//    PtrDescription():TypeDescription(PTR){}
+//    virtual ~PtrDescription(){}
+//    virtual bool init(
+//        TypeRegister*           tr         ,
+//        DescriptionVector const&description,
+//        size_t                 &i          ,
+//        bool                    exists     )override{
+//      assert(this!=nullptr);
+//      size_t old = i;
+//      if(i>=description.size()){
+//        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description is empty"<<std::endl;
+//        i=old;
+//        return false;
+//      }
+//      if(description[i++]!=PTR){
+//        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description does not start with PTR"<<std::endl;
+//        i=old;
+//        return false;
+//      }
+//      if(i>=description.size()){
+//        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description does not contain innter type"<<std::endl;
+//        i=old;
+//        return false;
+//      }
+//      if(exists)this->innerType = tr->_typeExists(description,i);
+//      else this->innerType = tr->_addType("",description,i);
+//      if(this->innerType == UNREGISTERED){i=old;return false;}
+//      return true;
+//    }
+//    bool operator==(PtrDescription const&other)const{
+//      assert(this!=nullptr);
+//      return this->innerType == other.innerType;
+//    }
+//    virtual bool equal(TypeDescription const*other)const override{
+//      assert(this!=nullptr);
+//      if(this->type != other->type)return false;
+//      return *this==*(PtrDescription*)other;
+//    }
+//    virtual std::string toStr(TypeRegister const*tr,TypeId)const override{
+//      assert(this!=nullptr);
+//      std::stringstream ss;
+//      ss<<tr->type2Str(tr->_typeId2VectorIndex(this->innerType));
+//      ss<<"*";
+//      return ss.str();
+//    }
+//    virtual void callConstructor(TypeRegister*,void*ptr)const override{
+//      (void)ptr;
+//      PRINT_CALL_STACK("PtrDescription::callConstructor",ptr);
+//      if(this->constructor)this->constructor(ptr);
+//    }
+//    virtual void callDestructor(TypeRegister*,void*ptr)const override{
+//      (void)ptr;
+//      PRINT_CALL_STACK("PtrDescription::callDestructor",ptr);
+//      if(this->destructor)this->destructor(ptr);
+//    }
+//    virtual size_t byteSize(TypeRegister const*)const override{
+//      PRINT_CALL_STACK("PtrDescription::byteSize");
+//      assert(this!=nullptr);
+//      return sizeof(void*);
+//    }
+//};
 
 class TypeRegister::AutoDescription: public TypeDescription{
   public:
@@ -725,7 +726,7 @@ TypeRegister::TypeId TypeRegister::_typeExists(
     case ARRAY       :{ArrayDescription    desc;return desc.findInRegister(this,description,i);}
     case STRUCT      :{StructDescription   desc;return desc.findInRegister(this,description,i);}
     case FCE         :{FunctionDescription desc;return desc.findInRegister(this,description,i);}
-    case PTR         :{PtrDescription      desc;return desc.findInRegister(this,description,i);}
+    //case PTR         :{PtrDescription      desc;return desc.findInRegister(this,description,i);}
     case AUTO        :{AutoDescription     desc;return desc.findInRegister(this,description,i);}
     default          :return this->_typeIdExists(description,i);
   }
@@ -779,7 +780,7 @@ TypeRegister::TypeId TypeRegister::_addType(
     case AUTO        :return TypeDescription::checkAndBindType(this,name,description,new AutoDescription    (),i);
     case ARRAY       :return TypeDescription::checkAndBindType(this,name,description,new ArrayDescription   (),i);
     case STRUCT      :return TypeDescription::checkAndBindType(this,name,description,new StructDescription  (),i);
-    case PTR         :return TypeDescription::checkAndBindType(this,name,description,new PtrDescription     (),i);
+    //case PTR         :return TypeDescription::checkAndBindType(this,name,description,new PtrDescription     (),i);
     case FCE         :return TypeDescription::checkAndBindType(this,name,description,new FunctionDescription(),i);
     default          :return this->_addTypeId(name,description,i);
   }
@@ -860,11 +861,11 @@ TypeRegister::TypeId TypeRegister::getArrayElementTypeId(TypeId id)const{
   return ((ArrayDescription*)this->_getDescription(id))->elementType;
 }
 
-TypeRegister::TypeId TypeRegister::getPtrType(TypeId id)const{
-  assert(this!=nullptr);
-  assert((PtrDescription*)this->_getDescription(id)!=nullptr);
-  return ((PtrDescription*)this->_getDescription(id))->innerType;
-}
+//TypeRegister::TypeId TypeRegister::getPtrType(TypeId id)const{
+//  assert(this!=nullptr);
+//  assert((PtrDescription*)this->_getDescription(id)!=nullptr);
+//  return ((PtrDescription*)this->_getDescription(id))->innerType;
+//}
 
 TypeRegister::TypeId TypeRegister::getFceReturnTypeId(TypeId id)const{
   assert(this!=nullptr);
@@ -927,7 +928,7 @@ size_t TypeRegister::computeTypeIdSize(TypeId id)const{
     case ARRAY :
     case STRUCT:
     case FCE   :
-    case PTR   :
+    //case PTR   :
     case ATOMIC:return this->_getDescription(id)->byteSize(this);
     default    :return 0;
   }
@@ -939,15 +940,24 @@ bool TypeRegister::areConvertible(TypeId a,TypeId b)const{
   if(a==b)return true;
   if(this->getTypeIdType(a)==AUTO)return true;
   if(this->getTypeIdType(b)==AUTO)return true;
-  if(this->getTypeIdType(a)==ARRAY){
-    if(this->getTypeIdType(b)==PTR)
-      return this->getArrayElementTypeId(a) == this->getPtrType(b);
-  }
-  if(this->getTypeIdType(a)==PTR){
-    if(this->getTypeIdType(b)==ARRAY)
-      return this->getArrayElementTypeId(b) == this->getPtrType(a);
-  }
+  if(this->getTypeIdType(a)==ARRAY)
+    return this->areConvertible(this->getArrayElementTypeId(a),b);
+  if(this->getTypeIdType(b)==ARRAY)
+    return this->areConvertible(a,this->getArrayElementTypeId(b));
+
   return false;
+  //if(a==b)return true;
+  //if(this->getTypeIdType(a)==AUTO)return true;
+  //if(this->getTypeIdType(b)==AUTO)return true;
+  //if(this->getTypeIdType(a)==ARRAY){
+  //  if(this->getTypeIdType(b)==PTR)
+  //    return this->getArrayElementTypeId(a) == this->getPtrType(b);
+  //}
+  //if(this->getTypeIdType(a)==PTR){
+  //  if(this->getTypeIdType(b)==ARRAY)
+  //    return this->getArrayElementTypeId(b) == this->getPtrType(a);
+  //}
+  //return false;
 }
 
 void*TypeRegister::alloc(TypeId id)const{
@@ -986,7 +996,7 @@ void TypeRegister::_callConstructors(void*ptr,TypeId id)const{
     case ATOMIC:
     case ARRAY :
     case STRUCT:
-    case PTR   :
+    //case PTR   :
     case FCE   :
       this->_getDescription(id)->callConstructor((TypeRegister*)this,ptr);
       break;
@@ -1001,7 +1011,7 @@ void TypeRegister::_callDestructors(void*ptr,TypeId id)const{
     case ATOMIC:
     case ARRAY :
     case STRUCT:
-    case PTR   :
+    //case PTR   :
     case FCE   :this->_getDescription(id)->callDestructor((TypeRegister*)this,ptr);break;
     default    :break;
   }
@@ -1030,21 +1040,21 @@ TypeRegister::TypeDescription*TypeRegister::_getDescription(TypeId id)const{
 void TypeRegister::addDestructor(TypeId id,Destructor const&destructor){
   PRINT_CALL_STACK("TypeRegister::addDestructor",id,destructor);
   assert(this!=nullptr);
-  assert(this->_getDescription(id)->type == ATOMIC || this->_getDescription(id)->type == PTR);
+  assert(this->_getDescription(id)->type == ATOMIC);// || this->_getDescription(id)->type == PTR);
   if(this->_getDescription(id)->type == ATOMIC)
     ((AtomicDescription*)this->_getDescription(id))->destructor = destructor;
-  if(this->_getDescription(id)->type == PTR)
-    ((PtrDescription*)this->_getDescription(id))->destructor = destructor;
+  //if(this->_getDescription(id)->type == PTR)
+  //  ((PtrDescription*)this->_getDescription(id))->destructor = destructor;
 }
 
 void TypeRegister::addConstructor(TypeId id,Constructor const&constructor){
   PRINT_CALL_STACK("TypeRegister::addConstructor",id,constructor);
   assert(this!=nullptr);
-  assert(this->_getDescription(id)->type == ATOMIC || this->_getDescription(id)->type == PTR);
+  assert(this->_getDescription(id)->type == ATOMIC);// || this->_getDescription(id)->type == PTR);
   if(this->_getDescription(id)->type == ATOMIC)
     ((AtomicDescription*)this->_getDescription(id))->constructor = constructor;
-  if(this->_getDescription(id)->type == PTR)
-    ((PtrDescription*)this->_getDescription(id))->constructor = constructor;
+  //if(this->_getDescription(id)->type == PTR)
+  //  ((PtrDescription*)this->_getDescription(id))->constructor = constructor;
 }
 
 std::shared_ptr<Resource>TypeRegister::sharedResource(TypeId id)const{

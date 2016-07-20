@@ -222,8 +222,10 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
 
 class TestClass{
   public:
-    int data;
-    TestClass(int d = 0){this->data =d;}
+    int data = 1;
+    TestClass(){}
+    ~TestClass(){}
+    TestClass(int d){this->data =d;}
     int add(int v){return this->data+v;}
 };
 
@@ -234,7 +236,7 @@ namespace ge{
   }
 }
 
-template<typename T>T const&removeSharedPointer(std::shared_ptr<T>const&val){std::cout<<"BEGIN"<<std::endl;return *val;}
+template<typename T>T const&removeSharedPointer(std::shared_ptr<T>const&val){return *val;}
 
 SCENARIO( "registration of external member function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
@@ -242,55 +244,46 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);
 
-//  tr->addAtomicType(
-//      ge::de::TypeRegister::getTypeKeyword<TestClass>(),
-//      sizeof(TestClass),
-//      [](void*ptr){new(ptr)TestClass(100);},
-//      [](void*ptr){((TestClass*)ptr)->~TestClass();});
-//
-//  registerClassFunction(fr,"TestClass::add",&TestClass::add);
-//  auto f=fr->sharedFunction("TestClass::add");
-//  auto ff=std::dynamic_pointer_cast<Function>(f);
-//  ff->bindOutput(fr,tr->sharedResource("i32"));
-//  auto a=std::make_shared<Nullary>(fr,tr->sharedResource("TestClass"));
-//  auto b=std::make_shared<Nullary>(fr,(int32_t)12);
-//  ff->bindInput(fr,0,a);
-//  ff->bindInput(fr,1,b);
-//  ((TestClass&)*a->getOutputData()).data = 1000;
-//  (*f)();
-//  REQUIRE((int32_t)(*ff->getOutputData())==1000+12);
-//
-//  tr->addAtomicType(
-//      ge::de::TypeRegister::getTypeKeyword<std::shared_ptr<TestClass>>(),
-//      sizeof(std::shared_ptr<TestClass>),
-//      [](void*ptr){new(ptr)std::shared_ptr<TestClass>();},
-//      [](void*ptr){((std::shared_ptr<TestClass>*)ptr)->~shared_ptr();});
-//
-//  auto f1 = fr->sharedFunction("TestClass::add");
-//  ___;
-//  auto ff1 = std::dynamic_pointer_cast<Function>(f1);
-//  ___;
-//  ff1->bindOutput(fr,tr->sharedResource("i32"));
-//  ___;
-//  auto a1=std::make_shared<Nullary>(fr,tr->sharedResource("SharedTestClass"));
-//  ___;
-//  registerBasicFunction(fr,"removeSharedPointerFromTestClass",removeSharedPointer<TestClass>);
-//  ___;
-//  auto b1=fr->sharedFunction("removeSharedPointerFromTestClass");
-//  ___;
-//  b1->bindInput(fr,0,a1);
-//  ___;
-//  b1->bindOutput(fr,tr->sharedResource("TestClass"));
-//  ___;
-//  auto c1=std::make_shared<Nullary>(fr,(int32_t)32);
-//  ___;
-//  ff1->bindInput(fr,0,b1);
-//  ___;
-//  ff1->bindInput(fr,1,c1);
-//  ___;
-//  //(*(std::shared_ptr<TestClass>*)*a1->getOutputData())->data=100;
-//  ___;
-//  (*ff1)();
-//  ___;
-//  REQUIRE((int32_t)(*ff1->getOutputData())==100+32);
+  tr->addAtomicType(
+      ge::de::TypeRegister::getTypeKeyword<TestClass>(),
+      sizeof(TestClass),
+      [](void*ptr){new(ptr)TestClass(100);},
+      [](void*ptr){((TestClass*)ptr)->~TestClass();});
+
+  registerClassFunction(fr,"TestClass::add",&TestClass::add);
+  auto f=fr->sharedFunction("TestClass::add");
+  auto ff=std::dynamic_pointer_cast<Function>(f);
+  ff->bindOutput(fr,tr->sharedResource("i32"));
+  auto a=std::make_shared<Nullary>(fr,tr->sharedResource("TestClass"));
+  auto b=std::make_shared<Nullary>(fr,(int32_t)12);
+  ff->bindInput(fr,0,a);
+  ff->bindInput(fr,1,b);
+  ((TestClass&)*a->getOutputData()).data = 1000;
+  (*f)();
+  REQUIRE((int32_t)(*ff->getOutputData())==1000+12);
+
+  tr->addAtomicType(
+      ge::de::TypeRegister::getTypeKeyword<std::shared_ptr<TestClass>>(),
+      sizeof(std::shared_ptr<TestClass>),
+      [](void*ptr){
+      new(ptr)std::shared_ptr<TestClass>(new TestClass());
+      },
+      [](void*ptr){
+      ((std::shared_ptr<TestClass>*)ptr)->~shared_ptr();
+      });
+
+  auto f1 = fr->sharedFunction("TestClass::add");
+  auto ff1 = std::dynamic_pointer_cast<Function>(f1);
+  ff1->bindOutput(fr,tr->sharedResource("i32"));
+  auto a1=std::make_shared<Nullary>(fr,tr->sharedResource("SharedTestClass"));
+  registerBasicFunction(fr,"removeSharedPointerFromTestClass",removeSharedPointer<TestClass>);
+  auto b1=fr->sharedFunction("removeSharedPointerFromTestClass");
+  b1->bindInput(fr,0,a1);
+  b1->bindOutput(fr,tr->sharedResource("TestClass"));
+  auto c1=std::make_shared<Nullary>(fr,(int32_t)32);
+  ff1->bindInput(fr,0,b1);
+  ff1->bindInput(fr,1,c1);
+  (*(std::shared_ptr<TestClass>*)a1->getOutputData()->getData())->data = 100;
+  (*ff1)();
+  REQUIRE((int32_t)(*ff1->getOutputData())==100+32);
 }

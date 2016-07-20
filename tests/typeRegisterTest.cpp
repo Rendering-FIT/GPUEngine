@@ -27,8 +27,8 @@ SCENARIO("keyword tests","[TypeRegister]"){
   REQUIRE(TypeRegister::getTypeKeyword<int32_t&>()=="i32");
   REQUIRE(TypeRegister::getTypeKeyword<int32_t const>()=="i32");
   REQUIRE(TypeRegister::getTypeKeyword<int32_t const&>()=="i32");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t*>()=="i32*");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t const*>()=="i32*");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t*>()=="i32");
+  REQUIRE(TypeRegister::getTypeKeyword<int32_t const*>()=="i32");
 
 }
 
