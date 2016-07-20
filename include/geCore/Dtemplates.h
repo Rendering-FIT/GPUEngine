@@ -32,8 +32,11 @@ namespace ge{
     template<          >struct is_basic<double            >:std::true_type {};
     template<          >struct is_basic<long double       >:std::true_type {};
     template<          >struct is_basic<wchar_t           >:std::true_type {};
+
+#if !defined(_MSC_VER)
     template<          >struct is_basic<char16_t          >:std::true_type {};
     template<          >struct is_basic<char32_t          >:std::true_type {};
+#endif
 
 
 
