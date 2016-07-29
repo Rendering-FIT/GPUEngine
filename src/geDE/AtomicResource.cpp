@@ -17,17 +17,17 @@ AtomicResource::AtomicResource(AtomicResource const& ac):Resource(ac._manager,ac
 AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
     const void*                        data   ,
-    TypeRegister::TypeId               id     ,
+    TypeId                             id     ,
     size_t                             offset ):Resource(manager,id){
   //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
   this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){manager->destroy(ptr,id);});
-  this->_offset  =        offset ;
+  this->_offset  = offset ;
 }
 
 AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
     std::shared_ptr<char>const&        data   ,
-    TypeRegister::TypeId               id     ,
+    TypeId                             id     ,
     size_t                             offset ):Resource(manager,id){
   //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
   this->_data    = data   ;
@@ -36,7 +36,7 @@ AtomicResource::AtomicResource(
 
 AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
-    TypeRegister::TypeId               id     ):Resource(manager,id){
+    TypeId               id     ):Resource(manager,id){
   //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
   this->_data    = nullptr;
   this->_offset  = 0      ;
@@ -58,7 +58,7 @@ void const*AtomicResource::getDataAddress()const{
 
 std::shared_ptr<Resource> AtomicResource::operator[](size_t elem){
   assert(this!=nullptr);
-  TypeRegister::TypeId innerType = 0;
+  TypeId innerType = 0;
   size_t               offset    = 0;
   switch(this->getManager()->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
@@ -75,7 +75,7 @@ std::shared_ptr<Resource> AtomicResource::operator[](size_t elem){
   }
 }
 
-TypeRegister::DescriptionElement AtomicResource::getNofElements()const{
+size_t AtomicResource::getNofElements()const{
   assert(this!=nullptr);
   switch(this->_manager->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :

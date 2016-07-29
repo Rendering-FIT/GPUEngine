@@ -10,7 +10,7 @@ RuntimeArgMetaData::RuntimeArgMetaData(
   this->_type = typeRegister->addCompositeType("",argMetaData.description);
 }
 
-TypeRegister::TypeId RuntimeArgMetaData::getType()const{
+TypeId RuntimeArgMetaData::getType()const{
   return this->_type;
 }
 
@@ -28,7 +28,7 @@ RuntimeFceMetaData::RuntimeFceMetaData(
     this->_args.push_back(RuntimeArgMetaData(typeRegister,fceMetaData.args[a]));
 }
 
-TypeRegister::TypeId RuntimeFceMetaData::getReturnType()const{
+TypeId RuntimeFceMetaData::getReturnType()const{
   return this->_returnType;
 }
 

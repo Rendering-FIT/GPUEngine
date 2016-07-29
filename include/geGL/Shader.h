@@ -5,6 +5,7 @@
 #include<vector>
 #include<set>
 #include<memory>
+#include<cassert>
 
 namespace ge{
   namespace gl{
@@ -54,9 +55,9 @@ namespace ge{
           Shader(GLenum type,ARGS...args);
         template<typename...ARGS>
           Shader(
-              opengl::FunctionTablePointer const&table       ,
-              GLenum                       const&type        ,
-              ARGS...                            sources     );
+              opengl::FunctionTablePointer const&table  ,
+              GLenum                       const&type   ,
+              ARGS...                            sources);
         template<typename...ARGS>
           void        setSource(ARGS... sources);
         template<typename...ARGS>
@@ -77,10 +78,12 @@ namespace ge{
         Shader(table,type,Sources({sources...})){}
     template<typename...ARGS>
       void Shader::setSource(ARGS... sources){
+        assert(this!=nullptr);
         this->setSource(Sources({sources...}));
       }
     template<typename...ARGS>
       void Shader::compile(ARGS... sources){
+        assert(this!=nullptr);
         this->compile(Sources({sources...}));
       }
   }

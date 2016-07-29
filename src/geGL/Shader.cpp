@@ -13,6 +13,7 @@ using namespace ge::gl::opengl;
  * @return value of parameter
  */
 GLint Shader::_getParam(GLenum pname)const{
+  assert(this!=nullptr);
   GLint params;
   glGetShaderiv(this->getId(),pname,&params);
   return params;
@@ -22,6 +23,7 @@ GLint Shader::_getParam(GLenum pname)const{
  * @brief empty constructor
  */
 Shader::Shader(){
+  assert(this!=nullptr);
   this->_id = 0;
 }
 
@@ -32,6 +34,7 @@ Shader::Shader(){
  * @param sources optional source code of shader
  */
 Shader::Shader(GLenum type,Sources const&sources){
+  assert(this!=nullptr);
   this->create(type);
   this->compile(sources);
 }
@@ -42,6 +45,7 @@ Shader::Shader(GLenum type,Sources const&sources){
  * @param table OpenGLFunctionTable
  */
 Shader::Shader(FunctionTablePointer const&table):OpenGLObject(table){
+  assert(this!=nullptr);
   this->_id = 0;
 }
 
@@ -56,6 +60,7 @@ Shader::Shader(
     FunctionTablePointer const&table  ,
     GLenum               const&type   ,
     Sources              const&sources):OpenGLObject(table){
+  assert(this!=nullptr);
   this->create(type);
   this->compile(sources);
 }
@@ -64,6 +69,7 @@ Shader::Shader(
  * @brief destructor that invalidates id
  */
 Shader::~Shader(){
+  assert(this!=nullptr);
   glDeleteShader(this->_id);
 }
 
@@ -75,6 +81,7 @@ Shader::~Shader(){
  * @param sources optional source codes of shader
  */
 void Shader::create(GLenum type){
+  assert(this!=nullptr);
   if(this->_id != 0)return;
   this->_id = glCreateShader(type);
 }
@@ -86,6 +93,7 @@ void Shader::create(GLenum type){
  * @param source source codes of shader
  */
 void Shader::setSource(Sources const& sources){
+  assert(this!=nullptr);
   std::vector<const GLchar*>ptr;
   for(auto const&x:sources)ptr.push_back(x.c_str());
 
@@ -99,6 +107,7 @@ void Shader::setSource(Sources const& sources){
  * @param source optional source codes
  */
 void Shader::compile(Sources const& sources){
+  assert(this!=nullptr);
   if(sources.size()>0)this->setSource(sources);
   glCompileShader(this->getId());
   if(!this->getCompileStatus()){
@@ -116,6 +125,7 @@ void Shader::compile(Sources const& sources){
  * @return true if object represents valid shader
  */
 GLboolean Shader::isShader()const{
+  assert(this!=nullptr);
   return glIsShader(this->getId());
 }
 
@@ -125,6 +135,7 @@ GLboolean Shader::isShader()const{
  * @return type of shader
  */
 GLenum Shader::getType()const{
+  assert(this!=nullptr);
   return this->_getParam(GL_SHADER_TYPE);
 }
 
@@ -134,6 +145,7 @@ GLenum Shader::getType()const{
  * @return delete status of shader
  */
 GLboolean Shader::getDeleteStatus()const{
+  assert(this!=nullptr);
   return (GLboolean)this->_getParam(GL_DELETE_STATUS);
 }
 
@@ -143,6 +155,7 @@ GLboolean Shader::getDeleteStatus()const{
  * @return compile status of shader
  */
 GLboolean Shader::getCompileStatus()const{
+  assert(this!=nullptr);
   return (GLboolean)this->_getParam(GL_COMPILE_STATUS);
 }
 
@@ -152,6 +165,7 @@ GLboolean Shader::getCompileStatus()const{
  * @return info log length
  */
 GLuint Shader::getInfoLogLength()const{
+  assert(this!=nullptr);
   return this->_getParam(GL_INFO_LOG_LENGTH);
 }
 
@@ -161,6 +175,7 @@ GLuint Shader::getInfoLogLength()const{
  * @return source code length
  */
 GLuint Shader::getSourceLength()const{
+  assert(this!=nullptr);
   return this->_getParam(GL_SHADER_SOURCE_LENGTH);
 }
 
@@ -170,6 +185,7 @@ GLuint Shader::getSourceLength()const{
  * @return info log or empty string if there is no info log
  */
 std::string Shader::getInfoLog()const{
+  assert(this!=nullptr);
   GLuint length = this->getInfoLogLength();
   if(!length)return"";
   std::string info(length,' ');
@@ -183,6 +199,7 @@ std::string Shader::getInfoLog()const{
  * @return shader source or empty string if there is no source
  */
 Shader::Source Shader::getSource()const{
+  assert(this!=nullptr);
   GLuint length=this->getSourceLength();
   if(!length)return"";
   std::string source(length,' ');

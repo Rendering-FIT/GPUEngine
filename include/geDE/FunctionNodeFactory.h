@@ -27,9 +27,9 @@ namespace ge{
         std::shared_ptr<FunctionFactory>const&getFactory()const;
         size_t getNofInputs()const;
 
-        virtual TypeRegister::TypeId getOutputType(std::shared_ptr<FunctionRegister>const&fr)const override;
+        virtual TypeId getOutputType(std::shared_ptr<FunctionRegister>const&fr)const override;
         virtual size_t getNofInputs(std::shared_ptr<FunctionRegister>const&fr)const override;
-        virtual TypeRegister::TypeId getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const override;
+        virtual TypeId getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const override;
     };
 
     inline std::shared_ptr<FunctionFactory>const&FunctionNodeFactory::getInputFactory(size_t input)const{

@@ -50,7 +50,7 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   REQUIRE(fr->getName(0)=="unregistered");
   REQUIRE(fr->getType(0)==TypeRegister::UNREGISTERED);
-  auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+  auto i32 = tr->getTypeId(keyword<int32_t>());
   auto ft =       tr->addCompositeType("",{
         TypeRegister::FCE,
         i32,
@@ -59,8 +59,8 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
         i32});
   auto id = fr->addFunction(
       ft,
-      TypeRegister::getTypeKeyword<Add<int32_t>>(),//::name(),
-      factoryOfFunctionFactory<Add<int32_t>>(TypeRegister::getTypeKeyword<Add<int32_t>>()));
+      keyword<Add<int32_t>>(),//::name(),
+      factoryOfFunctionFactory<Add<int32_t>>(keyword<Add<int32_t>>()));
   fr->getNameRegister()->setFceOutputName(id,"vysledek");
   fr->getNameRegister()->setFceInputName(id,0,"a");
   fr->getNameRegister()->setFceInputName(id,1,"b");
@@ -81,7 +81,7 @@ SCENARIO("registration of stdFunction","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
-  auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+  auto i32 = tr->getTypeId(keyword<int32_t>());
   registerStdFunctions(fr);
   auto a0 = std::dynamic_pointer_cast<Function>((*fr->sharedFactory("Add<i32>"))(fr));
   REQUIRE(fr->getName(a0->getId()) == "Add<i32>");
@@ -97,7 +97,7 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
-  auto i32 = tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+  auto i32 = tr->getTypeId(keyword<int32_t>());
   registerStdFunctions(fr);
 
   auto aaaa=
@@ -245,7 +245,7 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   registerStdFunctions(fr);
 
   tr->addAtomicType(
-      ge::de::TypeRegister::getTypeKeyword<TestClass>(),
+      ge::de::keyword<TestClass>(),
       sizeof(TestClass),
       [](void*ptr){new(ptr)TestClass(100);},
       [](void*ptr){((TestClass*)ptr)->~TestClass();});
@@ -263,7 +263,7 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   REQUIRE((int32_t)(*ff->getOutputData())==1000+12);
 
   tr->addAtomicType(
-      ge::de::TypeRegister::getTypeKeyword<std::shared_ptr<TestClass>>(),
+      ge::de::keyword<std::shared_ptr<TestClass>>(),
       sizeof(std::shared_ptr<TestClass>),
       [](void*ptr){
       new(ptr)std::shared_ptr<TestClass>(new TestClass());

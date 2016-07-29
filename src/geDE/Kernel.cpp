@@ -7,7 +7,7 @@ using namespace ge::de;
 Kernel::Kernel(){
   this->typeRegister     = std::make_shared<TypeRegister>();
   this->nameRegister     = std::make_shared<NameRegister>();
-  this->functionRegister  = std::make_shared<FunctionRegister>(this->typeRegister,this->nameRegister);
+  this->functionRegister = std::make_shared<FunctionRegister>(this->typeRegister,this->nameRegister);
   this->variableRegister = std::make_shared<VariableRegister>("*");
   registerStdFunctions(this->functionRegister);
 }
@@ -160,34 +160,34 @@ void Kernel::bindOutput(
   fce->bindOutput(this->functionRegister,var);
 }
 
-TypeRegister::TypeId Kernel::addAtomicType(
-    std::string               const&name       ,
-    size_t                    const&size       ,
-    TypeRegister::Constructor const&constructor,
-    TypeRegister::Destructor  const&destructor ){
+TypeId Kernel::addAtomicType(
+    std::string const&name       ,
+    size_t      const&size       ,
+    CDPtr       const&constructor,
+    CDPtr       const&destructor ){
   return this->typeRegister->addAtomicType(name,size,constructor,destructor);
 }
 
-TypeRegister::TypeId Kernel::addCompositeType(
-    std::string                     const&name       ,
-    TypeRegister::DescriptionVector const&description){
+TypeId Kernel::addCompositeType(
+    std::string           const&name       ,
+    TypeDescriptionVector const&description){
   return this->typeRegister->addCompositeType(name,description);
 }
 
-TypeRegister::TypeId Kernel::addStructType(
+TypeId Kernel::addStructType(
     std::string                     const&name,
-    TypeRegister::DescriptionVector const&typeids){
-  TypeRegister::DescriptionVector d;
+    TypeDescriptionVector const&typeids){
+  TypeDescriptionVector d;
   d.push_back(TypeRegister::STRUCT);
   d.push_back(typeids.size());
   d.insert(d.end(),typeids.begin(),typeids.end());
   return this->addCompositeType(name,d);
 }
 
-TypeRegister::TypeId Kernel::addStructType(
+TypeId Kernel::addStructType(
     std::string             const&name     ,
     std::vector<std::string>const&typeNames){
-  TypeRegister::DescriptionVector d;
+  TypeDescriptionVector d;
   d.push_back(TypeRegister::STRUCT);
   d.push_back(typeNames.size());
   for(auto const&x:typeNames)
@@ -195,22 +195,22 @@ TypeRegister::TypeId Kernel::addStructType(
   return this->addCompositeType(name,d);
 }
 
-TypeRegister::TypeId Kernel::addArrayType(
+TypeId Kernel::addArrayType(
     std::string          const&name     ,
     size_t                     size     ,
-    TypeRegister::TypeId       innerType){
-  TypeRegister::DescriptionVector d;
+    TypeId       innerType){
+  TypeDescriptionVector d;
   d.push_back(TypeRegister::ARRAY);
   d.push_back(size);
   d.push_back(innerType);
   return this->addCompositeType(name,d);
 }
 
-TypeRegister::TypeId Kernel::addArrayType(
+TypeId Kernel::addArrayType(
     std::string const&name     ,
     size_t            size     ,
     std::string const&innerType){
-  TypeRegister::DescriptionVector d;
+  TypeDescriptionVector d;
   d.push_back(TypeRegister::ARRAY);
   d.push_back(size);
   d.push_back(this->typeRegister->getTypeId(innerType));
@@ -263,10 +263,10 @@ std::shared_ptr<ResourceFactory>Kernel::createResourceFactory(
   return std::make_shared<ResourceFactory>(this->typeRegister->getTypeId(name));
 }
 
-FunctionRegister::FunctionID Kernel::addCompositeFunction(
+FunctionId Kernel::addCompositeFunction(
     std::vector<std::string>const&names,
     std::shared_ptr<CompositeFunctionFactory>const&factory){
-  TypeRegister::DescriptionVector dv;
+  TypeDescriptionVector dv;
   dv.push_back(TypeRegister::FCE);
   dv.push_back(factory->getOutputType(this->functionRegister));
   size_t n=factory->getNofInputs(this->functionRegister);

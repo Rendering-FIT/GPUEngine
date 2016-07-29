@@ -6,7 +6,7 @@ using namespace ge::de;
 
 CompositeFunction::CompositeFunction(
     std::shared_ptr<FunctionRegister>const&fr,
-    FunctionRegister::FunctionID id,
+    FunctionId id,
     std::shared_ptr<Function>const&output,
     std::vector<FceInputList>const&inputs):Function(fr,id){
   this->_outputMapping = output;

@@ -19,14 +19,14 @@ namespace ge{
       public:
         inline Resource(
             std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
-            TypeRegister::TypeId               id      = TypeRegister::UNREGISTERED);
+            TypeId               id      = TypeRegister::UNREGISTERED);
         inline virtual ~Resource();
         inline std::shared_ptr<TypeRegister>const&getManager()const;
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
-        inline TypeRegister::TypeId getId()const;
+        inline TypeId getId()const;
         virtual std::shared_ptr<Resource> operator[](size_t elem) = 0;
-        virtual TypeRegister::DescriptionElement getNofElements()const=0;
+        virtual size_t getNofElements()const=0;
         virtual std::string data2Str()const=0;
         template<typename T>
           Resource& operator=(const T&data);
@@ -38,12 +38,12 @@ namespace ge{
           operator T**()const;
       protected:
         std::shared_ptr<TypeRegister>_manager = nullptr;
-        TypeRegister::TypeId _id = TypeRegister::UNREGISTERED;
+        TypeId _id = TypeRegister::UNREGISTERED;
     };
 
     inline Resource::Resource(
         std::shared_ptr<TypeRegister>const&manager,
-        TypeRegister::TypeId               id     ){
+        TypeId               id     ){
       this->_manager = manager;
       this->_id = id;
     }
@@ -56,7 +56,7 @@ namespace ge{
       return this->_manager;
     }
 
-    inline TypeRegister::TypeId Resource::getId()const{
+    inline TypeId Resource::getId()const{
       return this->_id;
     }
 

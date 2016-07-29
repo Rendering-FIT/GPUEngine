@@ -4,8 +4,7 @@
 
 namespace ge{
   namespace gl{
-    class GEGL_EXPORT AsynchronousQuery: public OpenGLObject
-    {
+    class GEGL_EXPORT AsynchronousQuery: public OpenGLObject{
       public:
         enum ResultSize{
           INT32,

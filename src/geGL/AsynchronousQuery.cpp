@@ -1,4 +1,6 @@
-#include <geGL/AsynchronousQuery.h>
+#include<geGL/AsynchronousQuery.h>
+
+#include<cassert>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
@@ -7,6 +9,7 @@ AsynchronousQuery::AsynchronousQuery(
     GLenum     target,
     GLenum     waitingType,
     ResultSize resultSize){
+  assert(this!=nullptr);
   glGenQueries(1,&this->_id);
   this->_target      = target;
   this->_waitingType = waitingType;
@@ -15,6 +18,7 @@ AsynchronousQuery::AsynchronousQuery(
 
 AsynchronousQuery::AsynchronousQuery(
     AsynchronousQuery*existingQuery){
+  assert(this!=nullptr);
   glGenQueries(1,&this->_id);
   this->_target      = existingQuery->_target;
   this->_waitingType = existingQuery->_waitingType;
@@ -26,6 +30,7 @@ AsynchronousQuery::AsynchronousQuery(
     GLenum     target,
     GLenum     waitingType,
     ResultSize resultSize):OpenGLObject(table){
+  assert(this!=nullptr);
   glGenQueries(1,&this->_id);
   this->_target      = target;
   this->_waitingType = waitingType;
@@ -35,6 +40,7 @@ AsynchronousQuery::AsynchronousQuery(
 AsynchronousQuery::AsynchronousQuery(
     FunctionTablePointer const&table,
     AsynchronousQuery*existingQuery):OpenGLObject(table){
+  assert(this!=nullptr);
   glGenQueries(1,&this->_id);
   this->_target      = existingQuery->_target;
   this->_waitingType = existingQuery->_waitingType;
@@ -42,12 +48,17 @@ AsynchronousQuery::AsynchronousQuery(
 }
 
 AsynchronousQuery::~AsynchronousQuery(){
+  assert(this!=nullptr);
   glDeleteQueries(1,&this->_id);
 }
+
 void AsynchronousQuery::begin(){
+  assert(this!=nullptr);
   glBeginQuery(this->_target,this->_id);
 }
+
 void AsynchronousQuery::end(){
+  assert(this!=nullptr);
   glEndQuery(this->_target);
   switch(this->_resultSize){
     case INT32:
@@ -64,30 +75,46 @@ void AsynchronousQuery::end(){
       break;
   }
 }
+
 void AsynchronousQuery::begin(GLuint index){
+  assert(this!=nullptr);
   glBeginQueryIndexed(this->_target,index,this->_id);
   //TODO
 }
+
 void AsynchronousQuery::end(GLuint index){
+  assert(this!=nullptr);
   glEndQueryIndexed(this->_target,index);
   //TODO
 }
+
 GLuint64 AsynchronousQuery::getui64(){
+  assert(this!=nullptr);
   return this->_dataui64;
 }
+
 GLint64  AsynchronousQuery::geti64(){
+  assert(this!=nullptr);
   return this->_datai64;
 }
+
 GLuint   AsynchronousQuery::getui(){
+  assert(this!=nullptr);
   return this->_dataui32;
 }
+
 GLint    AsynchronousQuery::geti(){
+  assert(this!=nullptr);
   return this->_datai32;
 }
+
 GLenum   AsynchronousQuery::getTarget(){
+  assert(this!=nullptr);
   return this->_target;
 }
+
 GLenum   AsynchronousQuery::getWaitingType(){
+  assert(this!=nullptr);
   return this->_waitingType;
 }
 

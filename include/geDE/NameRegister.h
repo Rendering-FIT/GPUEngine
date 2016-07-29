@@ -5,7 +5,7 @@
 #include<tuple>
 #include<map>
 #include<geDE/Export.h>
-#include<geCore/Dtemplates.h>
+#include<geCore/ErrorPrinter.h>
 
 namespace ge{
   namespace de{

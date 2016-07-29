@@ -130,14 +130,17 @@ namespace ge{
           ARGS...                            shaders):Program(table,ShaderPointers({shaders...})){}
     template<typename...ARGS>
       void Program::attachShaders(ARGS... shaders){
+        assert(this!=nullptr);
         this->attachShaders(ShaderPointers({shaders...}));
       }
     template<typename...ARGS>
       void Program::detachShaders(ARGS... shaders){
+        assert(this!=nullptr);
         this->detachShaders(ShaderPointers({shaders...}));
       }
     template<typename...ARGS>
       void Program::link(ARGS... shaders){
+        assert(this!=nullptr);
         this->link(ShaderPointers({shaders...}));
       }
 

@@ -8,7 +8,7 @@ namespace ge{
     class GEDE_EXPORT CompositeFunction: public Function{
       friend class CompositeFunctionFactory;
       public:
-        using FceInput = std::tuple<std::shared_ptr<Function>,FunctionRegister::InputIndex>;
+        using FceInput = std::tuple<std::shared_ptr<Function>,InputIndex>;
         enum FceInputParts{
           FUNCTION = 0,
           INPUT    = 1,
@@ -16,7 +16,7 @@ namespace ge{
         using FceInputList = std::vector<FceInput>;
         CompositeFunction(
             std::shared_ptr<FunctionRegister>const&fr    ,
-            FunctionRegister::FunctionID           id    ,
+            FunctionId                             id    ,
             std::shared_ptr<Function>        const&output,
             std::vector<FceInputList>        const&inputs);
         ~CompositeFunction();

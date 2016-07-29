@@ -14,91 +14,6 @@
 
 namespace ge{
   namespace core{
-    template<typename T>struct is_basic                    :std::false_type{};
-    template<          >struct is_basic<void              >:std::true_type {};
-    template<          >struct is_basic<bool              >:std::true_type {};
-    template<          >struct is_basic<char              >:std::true_type {};
-    template<          >struct is_basic<signed char       >:std::true_type {};
-    template<          >struct is_basic<unsigned char     >:std::true_type {};
-    template<          >struct is_basic<short             >:std::true_type {};
-    template<          >struct is_basic<unsigned short    >:std::true_type {};
-    template<          >struct is_basic<int               >:std::true_type {};
-    template<          >struct is_basic<unsigned int      >:std::true_type {};
-    template<          >struct is_basic<long              >:std::true_type {};
-    template<          >struct is_basic<unsigned long     >:std::true_type {};
-    template<          >struct is_basic<long long         >:std::true_type {};
-    template<          >struct is_basic<unsigned long long>:std::true_type {};
-    template<          >struct is_basic<float             >:std::true_type {};
-    template<          >struct is_basic<double            >:std::true_type {};
-    template<          >struct is_basic<long double       >:std::true_type {};
-    template<          >struct is_basic<wchar_t           >:std::true_type {};
-
-#if !defined(_MSC_VER)
-    template<          >struct is_basic<char16_t          >:std::true_type {};
-    template<          >struct is_basic<char32_t          >:std::true_type {};
-#endif
-
-
-
-    template<typename...ARGS>
-      std::string argsToStr(ARGS...);
-
-    template<typename F,typename...ARGS>
-      std::string argsToStr_help(F const&a,ARGS...args){
-        std::stringstream ss;
-        ss<<a;
-        if(sizeof...(args)>0)
-          ss<<","<<argsToStr(args...);
-        return ss.str();
-      }
-
-    template<typename...ARGS>
-      std::string argsToStr(ARGS...args){
-        return argsToStr_help(args...);
-      }
-
-    template<> inline std::string argsToStr(){
-      return "";
-    }
-
-
-    //    GECORE_EXPORT extern int indentCounter;
-    //    GECORE_EXPORT extern std::string indent;
-    class GECORE_EXPORT PrintCallStack{
-      public:
-        static int indentCounter;
-        static std::string indent;
-        template<typename...ARGS>
-          PrintCallStack(std::string fceName,ARGS...args){
-            std::cout<<indent<<fceName<<"("<<argsToStr(args...)<<"){"<<std::endl;
-            indentCounter+=2;
-            indent="";
-            for(int i=0;i<indentCounter;++i)
-              indent+=" ";
-          }
-        ~PrintCallStack(){
-          indentCounter-=2;
-          if(indentCounter<0)
-            indentCounter=0;
-          indent="";
-          for(int i=0;i<indentCounter;++i)
-            indent+=" ";
-          std::cout<<indent<<"}"<<std::endl;
-        }
-    };
-  }
-}
-
-#if 0
-#define PRINT_CALL_STACK(...)ge::core::PrintCallStack superduperhiddenvar(__VA_ARGS__)
-#else
-#define PRINT_CALL_STACK(...)
-#endif
-
-
-
-namespace ge{
-  namespace core{
     class FSA;
     class GECORE_EXPORT ParseEnumArgs{
       protected:
@@ -286,13 +201,6 @@ namespace ge{
       void printArgs(HEAD head,TAIL...tail){
         std::cerr<<head;
         printArgs2(tail...);
-      }
-
-    template<typename...ARGS,typename = std::enable_if<sizeof...(ARGS)!=0>>
-      void printError(std::string fceName,std::string message,ARGS...args){
-        std::cerr<<"ERROR: "<<fceName<<"(";
-        printArgs(args...);
-        std::cerr<<") - "<<message<<std::endl;
       }
 
     GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);

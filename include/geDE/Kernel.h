@@ -60,16 +60,16 @@ namespace ge{
         template<typename T>
           bool addVariable(std::string const&name,T const&val);
         template<typename OUTPUT,typename...ARGS>
-          FunctionRegister::FunctionID addFunction(
+          FunctionId addFunction(
               std::vector<std::string>const&names,
               OUTPUT(*fce)(ARGS...),
               bool(*sig)(ARGS...) = nullptr);
         template<typename OUTPUT,typename CLASS,typename...ARGS>
-          FunctionRegister::FunctionID addFunction(
+          FunctionId addFunction(
               std::vector<std::string>const&names,
               OUTPUT(CLASS::*fce)(ARGS...),
               bool(*sig)(ARGS...) = nullptr);
-        FunctionRegister::FunctionID addCompositeFunction(
+        FunctionId addCompositeFunction(
             std::vector<std::string>const&names,
             std::shared_ptr<CompositeFunctionFactory>const&factory);
         void bindInput(
@@ -81,25 +81,25 @@ namespace ge{
         void bindOutput(
             std::shared_ptr<Function>const&fce,
             std::shared_ptr<Nullary> const&var);
-        TypeRegister::TypeId addAtomicType(
+        TypeId addAtomicType(
             std::string               const&name                 ,
             size_t                    const&size                 ,
-            TypeRegister::Constructor const&constructor = nullptr,
-            TypeRegister::Destructor  const&destructor  = nullptr);
-        TypeRegister::TypeId addCompositeType(
+            CDPtr const&constructor = nullptr,
+            CDPtr const&destructor  = nullptr);
+        TypeId addCompositeType(
             std::string                     const&name       ,
-            TypeRegister::DescriptionVector const&description);
-        TypeRegister::TypeId addStructType(
+            TypeDescriptionVector const&description);
+        TypeId addStructType(
             std::string                     const&name,
-            TypeRegister::DescriptionVector const&typeids);
-        TypeRegister::TypeId addStructType(
+            TypeDescriptionVector const&typeids);
+        TypeId addStructType(
             std::string             const&name     ,
             std::vector<std::string>const&typeNames);
-        TypeRegister::TypeId addArrayType(
+        TypeId addArrayType(
             std::string          const&name     ,
             size_t                     size     ,
-            TypeRegister::TypeId       innerType);
-        TypeRegister::TypeId addArrayType(
+            TypeId       innerType);
+        TypeId addArrayType(
             std::string const&name     ,
             size_t            size     ,
             std::string const&innerType);
@@ -125,13 +125,13 @@ namespace ge{
         std::shared_ptr<ResourceFactory>createResourceFactory(
             std::string name);
         template<typename CLASS>
-          TypeRegister::TypeId addAtomicClass(std::string const&name);
+          TypeId addAtomicClass(std::string const&name);
     };
 
     template<typename T>
       std::shared_ptr<Nullary>Kernel::createVariable(T const&val){
         auto fce = this->functionRegister->sharedFunction("Nullary");
-        fce->bindOutput(this->functionRegister,this->typeRegister->sharedResource(TypeRegister::getTypeKeyword<T>()));
+        fce->bindOutput(this->functionRegister,this->typeRegister->sharedResource(keyword<T>()));
         *(T*)(*fce->getOutputData()) = val;
         return std::dynamic_pointer_cast<Nullary>(fce);
       }
@@ -140,7 +140,7 @@ namespace ge{
         return this->variableRegister->insert(name,this->createVariable(val));
       }
     template<typename OUTPUT,typename...ARGS>
-      FunctionRegister::FunctionID Kernel::addFunction(
+      FunctionId Kernel::addFunction(
           std::vector<std::string>const&names,
           OUTPUT(*fce)(ARGS...),
           bool(*sig)(ARGS...)){
@@ -156,7 +156,7 @@ namespace ge{
         return ret;
       }
     template<typename OUTPUT,typename CLASS,typename...ARGS>
-      FunctionRegister::FunctionID Kernel::addFunction(
+      FunctionId Kernel::addFunction(
           std::vector<std::string>const&names,
           OUTPUT(CLASS::*fce)(ARGS...),
           bool(*sig)(ARGS...)){
@@ -174,7 +174,7 @@ namespace ge{
 
 
     template<typename CLASS>
-      TypeRegister::TypeId Kernel::addAtomicClass(std::string const&name){
+      TypeId Kernel::addAtomicClass(std::string const&name){
         auto result = this->typeRegister->addAtomicType(name,sizeof(CLASS));
         this->typeRegister->addConstructor(result,[](void*ptr){new(ptr)CLASS;});
         this->typeRegister->addDestructor(result,[](void*ptr){((CLASS*)ptr)->~CLASS();});

@@ -11,21 +11,21 @@ std::string FunctionRegister::_genDefaultName(InputIndex i)const{
   return ss.str();
 }
 
-FunctionRegister::FunctionID FunctionRegister::addFunction(
-    TypeRegister::TypeId             const&type   ,
+FunctionId FunctionRegister::addFunction(
+    TypeId                           const&type   ,
     std::string                      const&name   ,
     std::shared_ptr<StatementFactory>const&factory){
   assert(this!=nullptr);
   assert(this->_typeRegister!=nullptr);
   assert(this->_namer!=nullptr);
-  FunctionID id = this->_functions.size();
+  FunctionId id = this->_functions.size();
   this->_functions[id]=FunctionDefinition(type,name,factory);
   this->_namer->addFceNaming(id,this->_typeRegister->getNofFceArgs(type));
   this->_name2Function[name]=id;
   return id;
 }
 
-std::shared_ptr<Statement>FunctionRegister::sharedStatement(FunctionID id)const{
+std::shared_ptr<Statement>FunctionRegister::sharedStatement(FunctionId id)const{
   assert(this!=nullptr);
   assert(std::get<FACTORY>(this->_getDefinition(id))!=nullptr);
   return (*std::get<FACTORY>(this->_getDefinition(id)))(std::const_pointer_cast<FunctionRegister>(this->shared_from_this()));
@@ -36,15 +36,17 @@ std::shared_ptr<Statement>FunctionRegister::sharedStatement(std::string const&na
   return this->sharedStatement(this->getFunctionId(name));
 }
 
-std::shared_ptr<Function>FunctionRegister::sharedFunction(FunctionID id)const{
+std::shared_ptr<Function>FunctionRegister::sharedFunction(FunctionId id)const{
+  assert(this!=nullptr);
   return std::dynamic_pointer_cast<Function>(this->sharedStatement(id));
 }
 
 std::shared_ptr<Function>FunctionRegister::sharedFunction(std::string const&name)const{
+  assert(this!=nullptr);
   return std::dynamic_pointer_cast<Function>(this->sharedStatement(name));
 }
 
-std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,StatementFactory::Uses maxUses)const{
+std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionId id,StatementFactory::Uses maxUses)const{
   assert(this!=nullptr);
   class Factory: public FunctionFactory{
     public:
@@ -55,7 +57,7 @@ std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,S
         assert(fr!=nullptr);
         return fr->sharedStatement(this->_name);
       }
-      virtual TypeRegister::TypeId getOutputType(std::shared_ptr<FunctionRegister>const&fr)const override{
+      virtual TypeId getOutputType(std::shared_ptr<FunctionRegister>const&fr)const override{
         assert(this!=nullptr);
         return fr->getOutputType(fr->getFunctionId(this->getName()));
       }
@@ -63,7 +65,7 @@ std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(FunctionID id,S
         assert(this!=nullptr);
         return fr->getNofInputs(fr->getFunctionId(this->getName()));
       }
-      virtual TypeRegister::TypeId getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const override{
+      virtual TypeId getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const override{
         assert(this!=nullptr);
         return fr->getInputType(fr->getFunctionId(this->getName()),i);
       }
@@ -82,7 +84,7 @@ std::shared_ptr<StatementFactory>FunctionRegister::sharedFactory(std::string con
 std::string FunctionRegister::str()const{
   assert(this!=nullptr);
   std::stringstream ss;
-  for(auto x:this->_name2Function)
+  for(auto const&x:this->_name2Function)
     ss<<x.first<<std::endl;
   return ss.str();
 }

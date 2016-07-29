@@ -5,7 +5,7 @@ using namespace ge::de;
 
 CompositeResource::CompositeResource(
     std::shared_ptr<TypeRegister>const&         manager  ,
-    TypeRegister::TypeId                        id       ,
+    TypeId                                      id       ,
     std::vector<std::shared_ptr<Resource>>const&accessors):Resource(manager,id){
   this->_nofElements = 0;
   switch(manager->getTypeIdType(id)){
@@ -62,7 +62,7 @@ void const*CompositeResource::getDataAddress()const{
 }
 
 std::shared_ptr<Resource> CompositeResource::operator[](size_t elem){
-  TypeRegister::DescriptionElement offset=0;
+  size_t offset=0;
   decltype(this->_components)::size_type i=0;
   while(elem>offset+this->_components[i]->getNofElements()){
     offset+=this->_components[i]->getNofElements();
@@ -72,7 +72,7 @@ std::shared_ptr<Resource> CompositeResource::operator[](size_t elem){
 
 }
 
-TypeRegister::DescriptionElement CompositeResource::getNofElements()const{
+size_t CompositeResource::getNofElements()const{
   return this->_nofElements;
 }
 
@@ -83,7 +83,7 @@ std::string CompositeResource::data2Str()const{
     case TypeRegister::ARRAY:
       ss<<"[";
       first=true;
-      for(TypeRegister::DescriptionElement i=0;i<this->_manager->getArraySize(this->_id);++i){
+      for(size_t i=0;i<this->_manager->getArraySize(this->_id);++i){
         if(first)first=false;
         else ss<<",";
         ss<<((*(CompositeResource*)this)[i])->data2Str();
@@ -93,7 +93,7 @@ std::string CompositeResource::data2Str()const{
     case TypeRegister::STRUCT:
       ss<<"{";
       first=true;
-      for(TypeRegister::DescriptionElement e=0;e<this->_manager->getNofStructElements(this->_id);++e){
+      for(size_t e=0;e<this->_manager->getNofStructElements(this->_id);++e){
         if(first)first=false;
         else ss<<",";
         ss<<((*(CompositeResource*)this)[e])->data2Str();

@@ -19,7 +19,7 @@ AtomicFunctionInput::~AtomicFunctionInput(){
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
-    FunctionRegister::FunctionID id):Function(fr,id){
+    FunctionId id):Function(fr,id){
   assert(this!=nullptr);
   auto nofInputs = fr->getNofInputs(id);
   for(decltype(nofInputs)i=0;i<nofInputs;++i)
@@ -28,12 +28,12 @@ AtomicFunction::AtomicFunction(
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
-    TypeRegister::DescriptionVector const&typeDescription,
+    TypeDescriptionVector const&typeDescription,
     std::string name,
     std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addCompositeType("",typeDescription),name,factory)){
 }
 
-AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionRegister::FunctionID id,std::shared_ptr<Resource>const&output):AtomicFunction(fr,id){
+AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionId id,std::shared_ptr<Resource>const&output):AtomicFunction(fr,id){
   assert(this!=nullptr);
   this->bindOutput(fr,output);
 }

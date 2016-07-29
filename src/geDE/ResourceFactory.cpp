@@ -1,5 +1,6 @@
 #include<geDE/ResourceFactory.h>
 #include<geDE/FunctionRegister.h>
+#include<geDE/TypeRegister.h>
 
 using namespace ge::de;
 

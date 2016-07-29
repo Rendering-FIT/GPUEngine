@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geDE/AtomicFunction.h>
+#include<geDE/FunctionRegister.h>
 
 namespace ge{
   namespace de{
@@ -8,15 +9,15 @@ namespace ge{
       public:
         Nullary(
             std::shared_ptr<FunctionRegister>const&fr            ,
-            FunctionRegister::FunctionID           id            ,
+            FunctionId                             id            ,
             std::shared_ptr<Resource>const&        data = nullptr);
         template<typename TYPE>
           Nullary(
               std::shared_ptr<FunctionRegister>const&fr  ,
-              FunctionRegister::FunctionID           id  ,
+              FunctionId           id  ,
               TYPE const&                            data):AtomicFunction(
                 fr,id){
-                auto ss=fr->getTypeRegister()->sharedResource(TypeRegister::getTypeKeyword<TYPE>());
+                auto ss=fr->getTypeRegister()->sharedResource(keyword<TYPE>());
                 (TYPE&)(*ss) = data;
                 this->bindOutput(fr,ss);//fr->getTypeRegister()->sharedResource<TYPE>(data));
                 this->_dirtyFlag = false;
@@ -25,7 +26,7 @@ namespace ge{
           Nullary(
               std::shared_ptr<FunctionRegister>const&fr  ,
               TYPE const&                            data):Nullary(
-                fr,fr->getFunctionId(TypeRegister::getTypeKeyword<Nullary>()),data){}
+                fr,fr->getFunctionId(keyword<Nullary>()),data){}
         template<typename TYPE>
           void update(TYPE const&data){
             (TYPE&)*this->_outputData=data;

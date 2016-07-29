@@ -1,6 +1,7 @@
 #include<geGL/DebugMessage.h>
 #include<geGL/OpenGLUtil.h>
 #include<string>
+#include<cassert>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
@@ -79,6 +80,7 @@ ge::gl::opengl::FunctionProviderPointer const&getProvider(ge::gl::opengl::Functi
 void ge::gl::setLowAndGreaterDebugMessage(
     opengl::FunctionProviderPointer const&ogl){
   auto gl = getProvider(ogl);
+  assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)lowDebugMessage,NULL);
 }
@@ -89,6 +91,7 @@ void ge::gl::setLowAndGreaterDebugMessage(
 void ge::gl::setMediumAndGreaterDebugMessage(
     opengl::FunctionProviderPointer const&ogl){
   auto gl = getProvider(ogl);
+  assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)mediumDebugMessage,NULL);
 }
@@ -99,6 +102,7 @@ void ge::gl::setMediumAndGreaterDebugMessage(
 void ge::gl::setHighDebugMessage(
     opengl::FunctionProviderPointer const&ogl){
   auto gl = getProvider(ogl);
+  assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)highDebugMessage,NULL);
 }
@@ -109,6 +113,7 @@ void ge::gl::setHighDebugMessage(
 void ge::gl::setDefaultDebugMessage(
     opengl::FunctionProviderPointer const&ogl){
   auto gl = getProvider(ogl);
+  assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback((GLDEBUGPROC)defaultDebugMessage,NULL);
 }
@@ -124,6 +129,7 @@ void ge::gl::setDebugMessage(
     void*data,
     opengl::FunctionProviderPointer const&ogl){
   auto gl = getProvider(ogl);
+  assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
   gl->glDebugMessageCallback(fce,data);
 }

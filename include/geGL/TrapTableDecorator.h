@@ -14,6 +14,7 @@ namespace ge{
             virtual~TrapTableDecorator(){}
           protected:
             virtual bool m_init(){
+              assert(this!=nullptr);
               if(!T::m_init())return false;
 #include<geGL/Generated/TrapCalls.h>
               return true;

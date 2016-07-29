@@ -9,46 +9,46 @@ using namespace ge::de;
 using namespace ge::util;
 
 void ArgData2Description(
-    TypeRegister::DescriptionVector&descriptor,
+    TypeDescriptionVector&descriptor,
     ArgData*data,
     std::shared_ptr<TypeRegister>const&tr){
   ArgData::Type type=data->getType();
   switch(type){
     case ArgData::BOOL:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<bool>()));
+      descriptor.push_back(tr->getTypeId(keyword<bool>()));
       return;
     case ArgData::I8:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<int8_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<int8_t>()));
       return;
     case ArgData::I16:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<int16_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<int16_t>()));
       return;
     case ArgData::I32:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<int32_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<int32_t>()));
       return;
     case ArgData::I64:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<int64_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<int64_t>()));
       return;
     case ArgData::U8:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<uint8_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<uint8_t>()));
       return;
     case ArgData::U16:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<uint16_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<uint16_t>()));
       return;
     case ArgData::U32:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<uint32_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<uint32_t>()));
       return;
     case ArgData::U64:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<uint64_t>()));
+      descriptor.push_back(tr->getTypeId(keyword<uint64_t>()));
       return;
     case ArgData::F32:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<float>()));
+      descriptor.push_back(tr->getTypeId(keyword<float>()));
       return;
     case ArgData::F64:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<double>()));
+      descriptor.push_back(tr->getTypeId(keyword<double>()));
       return;
     case ArgData::STRING:
-      descriptor.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<std::string>()));
+      descriptor.push_back(tr->getTypeId(keyword<std::string>()));
       return;
     case ArgData::ARRAY:
       descriptor.push_back(TypeRegister::ARRAY);
@@ -120,7 +120,7 @@ void ge::util::copyArgumentManager2VariableRegister(
     std::shared_ptr<FunctionRegister>const&fr){
   auto tr = fr->getTypeRegister();
   for(auto const&x:argm){
-    TypeRegister::DescriptionVector typeDescriptor;
+    TypeDescriptionVector typeDescriptor;
     ArgData2Description(typeDescriptor,x.second,tr);
     std::shared_ptr<Resource>sac=tr->sharedResource(tr->addCompositeType("",typeDescriptor));
     ArgData2Resource(sac,x.second);

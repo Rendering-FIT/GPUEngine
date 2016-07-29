@@ -1,7 +1,7 @@
 #pragma once
 
 #include<geDE/Statement.h>
-#include<geDE/FunctionRegister.h>
+#include<geDE/Types.h>
 
 namespace ge{
   namespace de{
@@ -12,6 +12,7 @@ namespace ge{
     class Resource;
     class AtomicFunction;
     class Nullary;
+    class FunctionRegister;
     class GEDE_EXPORT Function: public Statement{
       friend class AtomicFunction;
       public:
@@ -19,9 +20,9 @@ namespace ge{
         using Ticks      = uint64_t;
         Function(
             std::shared_ptr<FunctionRegister>const&fr,
-            FunctionRegister::FunctionID           id);
+            FunctionId           id);
         virtual ~Function();
-        FunctionRegister::FunctionID getId()const;
+        FunctionId getId()const;
         virtual bool bindInput (
             std::shared_ptr<FunctionRegister>const&fr                ,
             InputIndex                             i                 ,
@@ -41,7 +42,7 @@ namespace ge{
         virtual std::shared_ptr<Function>toFunction()const override;
       protected:
         Statement*_outputSignaling = nullptr;
-        FunctionRegister::FunctionID     _id;
+        FunctionId     _id;
         bool _inputBindingCheck (
             std::shared_ptr<FunctionRegister>const&fr      ,
             InputIndex                             i       ,
@@ -53,14 +54,14 @@ namespace ge{
 
     inline Function::Function(
         std::shared_ptr<FunctionRegister>const&,
-        FunctionRegister::FunctionID id):Statement(FUNCTION){
+        FunctionId id):Statement(FUNCTION){
       this->_id = id;
     }
 
     inline Function::~Function(){
     }
 
-    inline FunctionRegister::FunctionID Function::getId()const{
+    inline FunctionId Function::getId()const{
       return this->_id;
     }
 

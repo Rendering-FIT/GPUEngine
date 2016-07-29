@@ -11,6 +11,7 @@ using namespace ge::gl::opengl;
  * @brief Empty constructor, it sets ID=0
  */
 Buffer::Buffer(){
+  assert(this!=nullptr);
   this->_id = 0;
 }
 
@@ -25,10 +26,12 @@ Buffer::Buffer(
     GLsizeiptr    size,
     const GLvoid *data,
     GLbitfield    flags){
+  assert(this!=nullptr);
   this->alloc(size,data,flags);
 }
 
 Buffer::Buffer(FunctionTablePointer const&table):OpenGLObject(table){
+  assert(this!=nullptr);
   this->_id = 0;
 }
 
@@ -37,10 +40,12 @@ Buffer::Buffer(
     GLsizeiptr    size ,
     const GLvoid* data ,
     GLbitfield    flags):OpenGLObject(table){
+  assert(this!=nullptr);
   this->alloc(size,data,flags);
 }
 
 Buffer::~Buffer(){
+  assert(this!=nullptr);
   glDeleteBuffers(1,&this->_id);
 }
 
@@ -147,6 +152,7 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
   GLbitfield bufferFlags=this->getUsage();
   if      (flags==(KEEP_ID|KEEP_DATA)){
     Buffer*temp=new Buffer(newSize,nullptr,bufferFlags);
+    assert(temp!=nullptr);
     temp->copy(*this);
     this->_bufferData(newSize,nullptr,bufferFlags);
     this->copy(*temp);
@@ -155,6 +161,7 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
     this->_bufferData(newSize,nullptr,bufferFlags);
   }else if(flags==KEEP_DATA          ){
     Buffer*newBuffer=new Buffer(newSize,nullptr,bufferFlags);
+    assert(newBuffer!=nullptr);
     newBuffer->copy(*this);
     glDeleteBuffers(1,&this->_id);
     this->~Buffer();
@@ -174,6 +181,7 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
 
 
 void Buffer::_updateVertexArrays(){
+  assert(this!=nullptr);
   auto me = this->shared_from_this();
   for(auto const&x:this->_vertexArrays){
     if(x->_elementBuffer == me){

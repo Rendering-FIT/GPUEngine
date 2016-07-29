@@ -15,6 +15,7 @@ namespace ge{
             Capabilities capabilities;
           protected:
             virtual bool m_init(){
+              assert(this!=nullptr);
               if(!T::m_init())return false;
               this->capabilities.opengl200 = false;
               this->capabilities.opengl210 = false;

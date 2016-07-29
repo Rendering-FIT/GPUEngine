@@ -8,12 +8,12 @@ namespace ge{
   namespace util{
 
     struct ArgMetaData{
-      de::TypeRegister::DescriptionVector description;
+      de::TypeDescriptionVector description;
       std::string name;
     };
 
     struct FceMetaData{
-      de::TypeRegister::DescriptionVector returnType;
+      de::TypeDescriptionVector returnType;
       std::string name;
       std::vector<ArgMetaData>args;
     };

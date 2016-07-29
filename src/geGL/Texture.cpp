@@ -19,6 +19,7 @@ Texture::Texture(
     GLenum  internalFormat,
     GLsizei levels,
     GLsizei width){
+  assert(this!=nullptr);
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(this->_target,1,&this->_id);
@@ -48,6 +49,7 @@ Texture::Texture(
     GLsizei levels,
     GLsizei width,
     GLsizei height){
+  assert(this!=nullptr);
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -73,6 +75,7 @@ Texture::Texture(
     GLsizei width,
     GLsizei height,
     GLsizei depth){
+  assert(this!=nullptr);
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -89,6 +92,7 @@ Texture::Texture(
     GLenum  internalFormat,
     GLsizei levels,
     GLsizei width):OpenGLObject(table){
+  assert(this!=nullptr);
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(this->_target,1,&this->_id);
@@ -104,6 +108,7 @@ Texture::Texture(
     GLsizei levels,
     GLsizei width,
     GLsizei height):OpenGLObject(table){
+  assert(this!=nullptr);
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -120,6 +125,7 @@ Texture::Texture(
     GLsizei width,
     GLsizei height,
     GLsizei depth):OpenGLObject(table){
+  assert(this!=nullptr);
   this->_target = target;
   this->_format = internalFormat;
   glCreateTextures(target,1,&this->_id);
@@ -133,6 +139,7 @@ Texture::Texture(
  * @brief destroys texture
  */
 Texture::~Texture(){
+  assert(this!=nullptr);
   glDeleteTextures(1,&this->_id);
 }
 
@@ -142,6 +149,7 @@ Texture::~Texture(){
  * @param unit texture unit
  */
 void   Texture::bind(GLuint unit)const{
+  assert(this!=nullptr);
   glBindTextureUnit(unit,this->_id);
 }
 
@@ -151,6 +159,7 @@ void   Texture::bind(GLuint unit)const{
  * @param unit texture unit
  */
 void Texture::unbind(GLuint unit)const{
+  assert(this!=nullptr);
   glBindTextureUnit(unit,0);
 }
 
@@ -171,6 +180,7 @@ void Texture::bindImage(
     GLenum    access,
     GLboolean layered,
     GLint     layer)const{
+  assert(this!=nullptr);
   if(format == 0)format=this->_format;
   glBindImageTexture(unit,this->_id,level,layered,
       layer,access,format);
@@ -183,6 +193,7 @@ void Texture::setData1D(
     GLint        level  ,
     GLint        xoffset,
     GLsizei      width  )const{
+  assert(this!=nullptr);
   if(width==0)width=this->getWidth(0);
   for(GLint l=0;l<level;++l)width/=2;
   glTextureSubImage1D(this->_id,level,xoffset,width,format,type,data);
@@ -198,6 +209,7 @@ void Texture::setData2D(
     GLsizei      width    ,
     GLsizei      height   ,
     GLint        rowLength)const{
+  assert(this!=nullptr);
   if(width==0){
     width  = this->getWidth (0);
     height = this->getHeight(0);
@@ -225,6 +237,7 @@ void Texture::setData3D(
     GLsizei      depth    ,
     GLint        rowLength,
     GLint        imgHeight)const{
+  assert(this!=nullptr);
   if(width==0){
     width  = this->getWidth (0);
     height = this->getHeight(0);
@@ -251,6 +264,7 @@ void Texture::setData3D(
  * @param params value of parameter
  */
 void Texture::texParameteri(GLenum pname,GLint params)const{
+  assert(this!=nullptr);
   glTextureParameteri(this->_id,pname,params);
 }
 
@@ -261,6 +275,7 @@ void Texture::texParameteri(GLenum pname,GLint params)const{
  * @param params values of parameter
  */
 void Texture::texParameterfv(GLenum pname,GLfloat *params)const{
+  assert(this!=nullptr);
 #ifndef USE_DSA
   glBindTexture   (this->getTarget(),this->_id);
   glTexParameterfv(this->getTarget(),pname,params);
@@ -276,11 +291,13 @@ void Texture::texParameterfv(GLenum pname,GLfloat *params)const{
  * @return format
  */
 GLenum Texture::getFormat()const{
+  assert(this!=nullptr);
   return this->_format;
   //glGetTextureParameteriv(this->_id,GL_TEXTURE_INTERNAL_FORMAT,(GLint*)format);
 }
 
 GLuint Texture::_bindSafe()const{
+  assert(this!=nullptr);
   GLuint oldId;
   GLenum target=this->getTarget();
   glGetIntegerv(ge::gl::textureTarget2Binding(target),(GLint*)&oldId);
@@ -289,6 +306,7 @@ GLuint Texture::_bindSafe()const{
 }
 
 GLint Texture::_getTexLevelParameter(GLint level,GLenum pname)const{
+  assert(this!=nullptr);
   GLint param;
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
@@ -301,6 +319,7 @@ GLint Texture::_getTexLevelParameter(GLint level,GLenum pname)const{
 }
 
 GLint Texture::_getTexParameter(GLenum pname)const{
+  assert(this!=nullptr);
   GLint param;
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
@@ -313,6 +332,7 @@ GLint Texture::_getTexParameter(GLenum pname)const{
 }
 
 void Texture::_getTexParameterf(GLfloat*data,GLenum pname)const{
+  assert(this!=nullptr);
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
   glGetTexParameterfv(this->getTarget(),pname,data);
@@ -330,6 +350,7 @@ void Texture::_getTexParameterf(GLfloat*data,GLenum pname)const{
  * @return width of mipmap
  */
 GLuint Texture::getWidth(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_WIDTH);
 }
 
@@ -341,6 +362,7 @@ GLuint Texture::getWidth(GLint level)const{
  * @return height of mipmap
  */
 GLuint Texture::getHeight(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_HEIGHT);
 }
 
@@ -352,6 +374,7 @@ GLuint Texture::getHeight(GLint level)const{
  * @return depth of mipmap
  */
 GLuint Texture::getDepth(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH);
 }
 
@@ -363,6 +386,7 @@ GLuint Texture::getDepth(GLint level)const{
  * @return number of samples
  */
 GLuint Texture::getSamples(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_SAMPLES);
 }
 
@@ -374,6 +398,7 @@ GLuint Texture::getSamples(GLint level)const{
  * @return fixed sample location
  */
 GLboolean Texture::getFixedSampleLocation(GLint level)const{
+  assert(this!=nullptr);
   return (GLboolean)this->_getTexLevelParameter(level,GL_TEXTURE_FIXED_SAMPLE_LOCATIONS);
 }
 
@@ -385,6 +410,7 @@ GLboolean Texture::getFixedSampleLocation(GLint level)const{
  * @return internal format
  */
 GLenum Texture::getInternalFormat(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_INTERNAL_FORMAT);
 }
 
@@ -396,6 +422,7 @@ GLenum Texture::getInternalFormat(GLint level)const{
  * @return red size
  */
 GLuint Texture::getRedSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_RED_SIZE);
 }
 
@@ -407,6 +434,7 @@ GLuint Texture::getRedSize(GLint level)const{
  * @return green size
  */
 GLuint Texture::getGreenSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_GREEN_SIZE);
 }
 
@@ -418,6 +446,7 @@ GLuint Texture::getGreenSize(GLint level)const{
  * @return blue size
  */
 GLuint Texture::getBlueSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_BLUE_SIZE);
 }
 
@@ -429,6 +458,7 @@ GLuint Texture::getBlueSize(GLint level)const{
  * @return alpha size
  */
 GLuint Texture::getAlphaSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_ALPHA_SIZE);
 }
 
@@ -440,6 +470,7 @@ GLuint Texture::getAlphaSize(GLint level)const{
  * @return depth size
  */
 GLuint Texture::getDepthSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH_SIZE);
 }
 
@@ -451,6 +482,7 @@ GLuint Texture::getDepthSize(GLint level)const{
  * @return stencil size
  */
 GLuint Texture::getStencilSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_STENCIL_SIZE);
 }
 
@@ -462,6 +494,7 @@ GLuint Texture::getStencilSize(GLint level)const{
  * @return shared size
  */
 GLuint Texture::getSharedSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_SHARED_SIZE);
 }
 
@@ -473,6 +506,7 @@ GLuint Texture::getSharedSize(GLint level)const{
  * @return red type
  */
 GLenum Texture::getRedType(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_RED_TYPE);
 }
 
@@ -484,6 +518,7 @@ GLenum Texture::getRedType(GLint level)const{
  * @return blue type
  */
 GLenum Texture::getBlueType(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_BLUE_TYPE);
 }
 
@@ -495,6 +530,7 @@ GLenum Texture::getBlueType(GLint level)const{
  * @return green type
  */
 GLenum Texture::getGreenType(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_GREEN_TYPE);
 }
 
@@ -506,6 +542,7 @@ GLenum Texture::getGreenType(GLint level)const{
  * @return alpha type
  */
 GLenum Texture::getAlphaType(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_ALPHA_TYPE);
 }
 
@@ -517,6 +554,7 @@ GLenum Texture::getAlphaType(GLint level)const{
  * @return depth type
  */
 GLenum Texture::getDepthType(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_DEPTH_TYPE);
 }
 
@@ -528,6 +566,7 @@ GLenum Texture::getDepthType(GLint level)const{
  * @return compressed flag
  */
 GLboolean Texture::getCompressed(GLint level)const{
+  assert(this!=nullptr);
   return (GLboolean)this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED);
 }
 
@@ -539,6 +578,7 @@ GLboolean Texture::getCompressed(GLint level)const{
  * @return compressed image size
  */
 GLuint Texture::getCompressedImageSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_COMPRESSED_IMAGE_SIZE);
 }
 
@@ -550,6 +590,7 @@ GLuint Texture::getCompressedImageSize(GLint level)const{
  * @return texture buffer binding
  */
 GLuint Texture::getBufferDataStoreBinding(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_BUFFER_DATA_STORE_BINDING);
 }
 
@@ -561,6 +602,7 @@ GLuint Texture::getBufferDataStoreBinding(GLint level)const{
  * @return texture buffer offset
  */
 GLint Texture::getBufferOffset(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_BUFFER_OFFSET);
 }
 
@@ -572,6 +614,7 @@ GLint Texture::getBufferOffset(GLint level)const{
  * @return texture buffer size
  */
 GLint Texture::getBufferSize(GLint level)const{
+  assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_BUFFER_SIZE);
 }
 
@@ -581,6 +624,7 @@ GLint Texture::getBufferSize(GLint level)const{
  * @return red swizzle
  */
 GLenum Texture::getSwizzleR()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_R);
 }
 
@@ -590,6 +634,7 @@ GLenum Texture::getSwizzleR()const{
  * @return green swizzle
  */
 GLenum Texture::getSwizzleG()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_G);
 }
 
@@ -599,6 +644,7 @@ GLenum Texture::getSwizzleG()const{
  * @return blue swizzle
  */
 GLenum Texture::getSwizzleB()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_B);
 }
 
@@ -608,6 +654,7 @@ GLenum Texture::getSwizzleB()const{
  * @return alpha swizzle
  */
 GLenum Texture::getSwizzleA()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_SWIZZLE_A);
 }
 
@@ -617,6 +664,7 @@ GLenum Texture::getSwizzleA()const{
  * @param color border color
  */
 void Texture::getBorderColor(GLfloat*color)const{
+  assert(this!=nullptr);
   this->_getTexParameterf(color,GL_TEXTURE_BORDER_COLOR);
 }
 
@@ -626,6 +674,7 @@ void Texture::getBorderColor(GLfloat*color)const{
  * @return min filter
  */
 GLenum Texture::getMinFilter()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_MIN_FILTER);
 }
 
@@ -635,6 +684,7 @@ GLenum Texture::getMinFilter()const{
  * @return mag filter
  */
 GLenum Texture::getMagFilter()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_MAG_FILTER);
 }
 
@@ -644,6 +694,7 @@ GLenum Texture::getMagFilter()const{
  * @return wrapS
  */
 GLenum Texture::getWrapS()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_WRAP_S);
 }
 
@@ -653,6 +704,7 @@ GLenum Texture::getWrapS()const{
  * @return wrapT
  */
 GLenum Texture::getWrapT()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_WRAP_T);
 }
 
@@ -662,6 +714,7 @@ GLenum Texture::getWrapT()const{
  * @return wrapR
  */
 GLenum Texture::getWrapR()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_WRAP_R);
 }
 
@@ -671,6 +724,7 @@ GLenum Texture::getWrapR()const{
  * @return target
  */
 GLenum Texture::getTarget()const{
+  assert(this!=nullptr);
 #ifndef USE_DSA
   return this->_target;
 #else //USE_DSA
@@ -684,6 +738,7 @@ GLenum Texture::getTarget()const{
  * @return texture minlod
  */
 GLfloat Texture::getMinLod()const{
+  assert(this!=nullptr);
   GLfloat lod;
   this->_getTexParameterf(&lod,GL_TEXTURE_MIN_LOD);
   return lod;
@@ -695,6 +750,7 @@ GLfloat Texture::getMinLod()const{
  * @return texture maxlod
  */
 GLfloat Texture::getMaxLod()const{
+  assert(this!=nullptr);
   GLfloat lod;
   this->_getTexParameterf(&lod,GL_TEXTURE_MAX_LOD);
   return lod;
@@ -706,6 +762,7 @@ GLfloat Texture::getMaxLod()const{
  * @return texture base level
  */
 GLuint Texture::getBaseLevel()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_BASE_LEVEL);
 }
 
@@ -715,6 +772,7 @@ GLuint Texture::getBaseLevel()const{
  * @return texture max level
  */
 GLuint Texture::getMaxLevel()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_MAX_LEVEL);
 }
 
@@ -724,6 +782,7 @@ GLuint Texture::getMaxLevel()const{
  * @return texture lod bias
  */
 GLfloat Texture::getLodBias()const{
+  assert(this!=nullptr);
   GLfloat bias;
   this->_getTexParameterf(&bias,GL_TEXTURE_LOD_BIAS);
   return bias;
@@ -735,6 +794,7 @@ GLfloat Texture::getLodBias()const{
  * @return depth stencil texture mode
  */
 GLenum Texture::getDepthStencilTextureMode()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_DEPTH_STENCIL_TEXTURE_MODE);
 }
 
@@ -744,6 +804,7 @@ GLenum Texture::getDepthStencilTextureMode()const{
  * @return texture compare mode
  */
 GLenum Texture::getCompareMode()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_COMPARE_MODE);
 }
 
@@ -753,6 +814,7 @@ GLenum Texture::getCompareMode()const{
  * @return texture compare func
  */
 GLenum Texture::getCompareFunc()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_COMPARE_FUNC);
 }
 
@@ -762,6 +824,7 @@ GLenum Texture::getCompareFunc()const{
  * @return texture image format compatibility type
  */
 GLenum Texture::getImageFormatCompatibilityType()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_IMAGE_FORMAT_COMPATIBILITY_TYPE);
 }
 
@@ -771,6 +834,7 @@ GLenum Texture::getImageFormatCompatibilityType()const{
  * @return texture immutable format
  */
 GLboolean Texture::getImmutableFormat()const{
+  assert(this!=nullptr);
   return (GLboolean)this->_getTexParameter(GL_TEXTURE_IMMUTABLE_FORMAT);
 }
 
@@ -780,6 +844,7 @@ GLboolean Texture::getImmutableFormat()const{
  * @return texture immutable levels
  */
 GLuint Texture::getImmutableLevels()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_IMMUTABLE_LEVELS);
 }
 
@@ -789,6 +854,7 @@ GLuint Texture::getImmutableLevels()const{
  * @return texture view min level
  */
 GLuint Texture::getViewMinLevel()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_VIEW_MIN_LEVEL);
 }
 
@@ -798,6 +864,7 @@ GLuint Texture::getViewMinLevel()const{
  * @return texture view num levels
  */
 GLuint Texture::getViewNumLevels()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_VIEW_NUM_LEVELS);
 }
 
@@ -807,6 +874,7 @@ GLuint Texture::getViewNumLevels()const{
  * @return texture view min layer
  */
 GLuint Texture::getViewMinLayer()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_VIEW_MIN_LAYER);
 }
 
@@ -816,11 +884,13 @@ GLuint Texture::getViewMinLayer()const{
  * @return texture view num layers
  */
 GLuint Texture::getViewNumLayers()const{
+  assert(this!=nullptr);
   return this->_getTexParameter(GL_TEXTURE_VIEW_NUM_LAYERS);
 }
 
 
 std::string Texture::getInfo()const{
+  assert(this!=nullptr);
   std::stringstream ss;
   ss<<"GL_TEXTURE_WIDTH: " <<this->getWidth (0)<<std::endl;
   ss<<"GL_TEXTURE_HEIGHT: "<<this->getHeight(0)<<std::endl;
@@ -882,6 +952,7 @@ std::string Texture::getInfo()const{
 }
 
 bool Texture::hasHeight()const{
+  assert(this!=nullptr);
   switch(this->_target){
     case GL_TEXTURE_1D_ARRAY            :
     case GL_TEXTURE_2D                  :
@@ -898,6 +969,7 @@ bool Texture::hasHeight()const{
 }
 
 bool Texture::hasDepth ()const{
+  assert(this!=nullptr);
   switch(this->_target){
     case GL_TEXTURE_2D_ARRAY            :
     case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
@@ -914,6 +986,7 @@ bool Texture::hasDepth ()const{
 }
 
 unsigned long long Texture::getLevelSize(GLint level)const{
+  assert(this!=nullptr);
   unsigned long long size=internalFormatSize(this->getInternalFormat(level))*this->getWidth(level);
   if(this->hasHeight())size*=this->getHeight(level);
   if(this->hasDepth())size*=this->getDepth(level);
@@ -921,6 +994,7 @@ unsigned long long Texture::getLevelSize(GLint level)const{
 }
 
 unsigned long long Texture::getSize()const{
+  assert(this!=nullptr);
   GLint nofLevels=this->getViewNumLayers();//TODO neco lepsiho?
   unsigned long long size=0;
   for(GLint l=0;l<nofLevels;++l)

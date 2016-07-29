@@ -4,22 +4,26 @@
 #include<geGL/Renderbuffer.h>
 #include<iostream>
 #include<sstream>
+#include<cassert>
 
 using namespace ge::gl;
 using namespace ge::gl::opengl;
 
 
 GLint Framebuffer::getParam(GLenum pname){
+  assert(this!=nullptr);
   GLint param;
   glGetNamedFramebufferParameteriv(this->_id,pname,&param);
   return param;
 }
 
 void Framebuffer::setParam(GLenum pname,GLint param){
+  assert(this!=nullptr);
   glNamedFramebufferParameteri(this->_id,pname,param);
 }
 
 GLint Framebuffer::getAttachmentParam(GLenum attachment,GLenum pname){
+  assert(this!=nullptr);
   GLint param;
   glGetNamedFramebufferAttachmentParameteriv(this->_id,attachment,pname,&param);
   return param;
@@ -28,6 +32,7 @@ GLint Framebuffer::getAttachmentParam(GLenum attachment,GLenum pname){
 Framebuffer::Framebuffer (
     FunctionTablePointer const&table,
     bool defaultFramebuffer):OpenGLObject(table){
+  assert(this!=nullptr);
   if(defaultFramebuffer)this->_id=0;
   else glCreateFramebuffers(1,&this->_id);
 }
@@ -36,6 +41,7 @@ Framebuffer::Framebuffer (bool defaultFramebuffer):Framebuffer(nullptr,defaultFr
 }
 
 Framebuffer::~Framebuffer(){
+  assert(this!=nullptr);
   for(auto const&x:this->_textureAttachments)
     x.second->_framebuffers.erase(this);
   for(auto const&x:this->_renderbufferAttachments)
@@ -46,6 +52,7 @@ Framebuffer::~Framebuffer(){
 void Framebuffer::attachRenderbuffer(
     GLenum                             attachment  ,
     std::shared_ptr<Renderbuffer>const&renderbuffer){
+  assert(this!=nullptr);
   auto ii = this->_renderbufferAttachments.find(attachment);
   if(ii!=this->_renderbufferAttachments.end()){
     ii->second->_framebuffers.erase(this);
@@ -63,6 +70,7 @@ void Framebuffer::attachRenderbuffer(
 }
 
 void Framebuffer::attachTexture(GLenum attachment,std::shared_ptr<Texture>const&texture,GLint level,GLint layer){
+  assert(this!=nullptr);
   auto ii = this->_textureAttachments.find(attachment);
   if(ii!=this->_textureAttachments.end()){
     ii->second->_framebuffers.erase(this);
@@ -85,26 +93,33 @@ void Framebuffer::attachTexture(GLenum attachment,std::shared_ptr<Texture>const&
 }
 
 void Framebuffer::bind  (GLenum target)const{
+  assert(this!=nullptr);
   glBindFramebuffer(target,this->_id);
 }
 void Framebuffer::unbind(GLenum target)const{
+  assert(this!=nullptr);
   glBindFramebuffer(target,0);
 }
 
 bool Framebuffer::check()const{
+  assert(this!=nullptr);
   return glCheckNamedFramebufferStatus(this->_id,GL_DRAW_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE;
 }
 
 void Framebuffer::drawBuffer(GLenum buffer)const{
+  assert(this!=nullptr);
   glNamedFramebufferDrawBuffer(this->_id,buffer);
 }
 
 void Framebuffer::drawBuffers(GLsizei n,const GLenum *buffers)const{
+  assert(this!=nullptr);
   glNamedFramebufferDrawBuffers(this->_id,n,buffers);
 }
 
 void Framebuffer::drawBuffers(GLsizei n,...)const{
+  assert(this!=nullptr);
   GLenum*drawBuffers=new GLenum[n];
+  assert(drawBuffers!=nullptr);
   va_list args;
   va_start(args,n);
   for(GLsizei i=0;i<n;++i){
@@ -116,18 +131,22 @@ void Framebuffer::drawBuffers(GLsizei n,...)const{
 }
 
 void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,const GLint*value)const{
+  assert(this!=nullptr);
   glClearNamedFramebufferiv(this->_id,buffer,drawBuffer,value);
 }
 
 void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,const GLfloat*value)const{
+  assert(this!=nullptr);
   glClearNamedFramebufferfv(this->_id,buffer,drawBuffer,value);
 }
 
 void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,const GLuint*value)const{
+  assert(this!=nullptr);
   glClearNamedFramebufferuiv(this->_id,buffer,drawBuffer,value);
 }
 
 void Framebuffer::clearBuffer (GLenum buffer,GLint drawBuffer,GLfloat depth,GLint stencil)const{
+  assert(this!=nullptr);
   glClearNamedFramebufferfi(this->_id,buffer,drawBuffer,depth,stencil);
 }
 
@@ -138,6 +157,7 @@ void Framebuffer::invalidateFramebuffer(
     GLint         y             ,
     GLsizei       width         ,
     GLsizei       height        )const{
+  assert(this!=nullptr);
   if(x==-1)
     glInvalidateNamedFramebufferData(this->_id,numAttachments,attachments);
   else
@@ -145,105 +165,137 @@ void Framebuffer::invalidateFramebuffer(
 }
 
 GLboolean Framebuffer::isFramebuffer()const{
+  assert(this!=nullptr);
   return glIsFramebuffer(this->_id);
 }
 
 void Framebuffer::setDefaultWidth(GLint width){
+  assert(this!=nullptr);
   this->setParam(GL_FRAMEBUFFER_DEFAULT_WIDTH,width);
 }
 void Framebuffer::setDefaultHeight(GLint height){
+  assert(this!=nullptr);
   this->setParam(GL_FRAMEBUFFER_DEFAULT_HEIGHT,height);
 }
 void Framebuffer::setDefaultFixedSampleLocations(GLint location){
+  assert(this!=nullptr);
   this->setParam(GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS,location);
 }
 void Framebuffer::setDefaultSamples(GLint samples){
+  assert(this!=nullptr);
   this->setParam(GL_FRAMEBUFFER_DEFAULT_SAMPLES,samples);
 }
 void Framebuffer::setDefaultLayers(GLint layers){
+  assert(this!=nullptr);
   this->setParam(GL_FRAMEBUFFER_DEFAULT_LAYERS,layers);
 }
 
 GLint Framebuffer::getDefaultWidth(){
+  assert(this!=nullptr);
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_WIDTH );
 }
 GLint Framebuffer::getDefaultHeight(){
+  assert(this!=nullptr);
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_HEIGHT);
 }
 GLint Framebuffer::getDefaultLayers(){
+  assert(this!=nullptr);
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_LAYERS);
 }
 GLint Framebuffer::getDefaultSamples(){
+  assert(this!=nullptr);
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_SAMPLES);
 }
 GLint Framebuffer::getDefaultFixedSampleLocations(){
+  assert(this!=nullptr);
   return this->getParam(GL_FRAMEBUFFER_DEFAULT_FIXED_SAMPLE_LOCATIONS);
 }
 GLint Framebuffer::getSamples(){
+  assert(this!=nullptr);
   return this->getParam(GL_SAMPLES);
 }
 GLint Framebuffer::getSampleBuffers(){
+  assert(this!=nullptr);
   return this->getParam(GL_SAMPLE_BUFFERS);
 }
 
 GLenum Framebuffer::getAttachmentObjectType   (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE);
 }
 GLint  Framebuffer::getAttachmentRedSize      (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE);
 }
 GLint  Framebuffer::getAttachmentGreenSize    (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE);
 }
 GLint  Framebuffer::getAttachmentBlueSize     (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE);
 }
 GLint  Framebuffer::getAttachmentAlphaSize    (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE);
 }
 GLint  Framebuffer::getAttachmentDepthSize    (){
+  assert(this!=nullptr);
   return this->getAttachmentParam(GL_DEPTH_ATTACHMENT,GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE);
 }
 GLint  Framebuffer::getAttachmentStencilSize  (){
+  assert(this!=nullptr);
   return this->getAttachmentParam(GL_STENCIL_ATTACHMENT,GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE);
 }
 GLenum Framebuffer::getAttachmentComponentType(GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_COMPONENT_TYPE);
 }
 GLenum    Framebuffer::getAttachmentColorEncoding     (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING);
 }
 GLuint    Framebuffer::getAttachmentObjectName        (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME);
 }
 GLint     Framebuffer::getAttachmentTextureLevel      (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL);
 }
 GLenum    Framebuffer::getAttachmentTextureCubeMapFace(GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE);
 }
 GLboolean Framebuffer::isAttachmentLayered            (GLenum attachment){
+  assert(this!=nullptr);
   return (GLboolean)this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_LAYERED);
 }
 GLint     Framebuffer::getAttachmentTextureLayer      (GLenum attachment){
+  assert(this!=nullptr);
   return this->getAttachmentParam(attachment,GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER);
 }
 
 
 GLint Framebuffer::getDoubleBuffer(){
+  assert(this!=nullptr);
   return this->getParam(GL_DOUBLEBUFFER);
 }
 GLint Framebuffer::getImplementationColorReadFormat(){
+  assert(this!=nullptr);
   return this->getParam(GL_IMPLEMENTATION_COLOR_READ_FORMAT);
 }
 GLint Framebuffer::getImplementationColorReadType  (){
+  assert(this!=nullptr);
   return this->getParam(GL_IMPLEMENTATION_COLOR_READ_TYPE);
 }
 GLint Framebuffer::getStereo(){
+  assert(this!=nullptr);
   return this->getParam(GL_STEREO);
 }
 
 std::string Framebuffer::getInfo(){
+  assert(this!=nullptr);
   std::stringstream ss;
   ss<<"Default Width:               "<<this->getDefaultWidth               ()<<std::endl;
   ss<<"Default Height:              "<<this->getDefaultHeight              ()<<std::endl;

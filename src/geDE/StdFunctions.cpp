@@ -8,9 +8,9 @@ using namespace ge::de;
 
 void ge::de::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
   auto tr=fr->getTypeRegister();
-  fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,TypeRegister::AUTO,0}),
-      TypeRegister::getTypeKeyword<Nullary>(),
-      factoryOfFunctionFactory<Nullary>(TypeRegister::getTypeKeyword<Nullary>()));
+  fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,TypeRegister::ANY,0}),
+      keyword<Nullary>(),
+      factoryOfFunctionFactory<Nullary>(keyword<Nullary>()));
 
   registerStdNumericFunctions(fr);
   registerStdRelationalFunctions(fr);

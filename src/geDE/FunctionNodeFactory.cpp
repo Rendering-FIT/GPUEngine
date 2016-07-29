@@ -75,7 +75,7 @@ std::shared_ptr<FunctionFactory>const&FunctionNodeFactory::getFactory()const{
   return this->functionFactory;
 }
 
-TypeRegister::TypeId FunctionNodeFactory::getOutputType(std::shared_ptr<FunctionRegister>const&fr)const{
+TypeId FunctionNodeFactory::getOutputType(std::shared_ptr<FunctionRegister>const&fr)const{
   assert(this!=nullptr);
   return this->functionFactory->getOutputType(fr);
 }
@@ -85,7 +85,7 @@ size_t FunctionNodeFactory::getNofInputs(std::shared_ptr<FunctionRegister>const&
   return this->functionFactory->getNofInputs(fr);
 }
 
-TypeRegister::TypeId FunctionNodeFactory::getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
+TypeId FunctionNodeFactory::getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
   assert(this!=nullptr);
   return this->functionFactory->getInputType(fr,i);
 }

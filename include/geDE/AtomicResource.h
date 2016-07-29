@@ -10,30 +10,30 @@ namespace ge{
         size_t               _offset = 0u     ;
         static void _callDestructors(
             char*                                    ptr    ,
-            TypeRegister::TypeId                     id     ,
+            TypeId                     id     ,
             std::shared_ptr<const TypeRegister>const&manager);
       public:
         AtomicResource(AtomicResource const& ac);
         AtomicResource(
             std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
             const void*                        data    = nullptr                   ,
-            TypeRegister::TypeId               id      = TypeRegister::UNREGISTERED,
+            TypeId                             id      = TypeRegister::UNREGISTERED,
             size_t                             offset  = 0                         );
         AtomicResource(
             std::shared_ptr<TypeRegister>const&manager                             ,
             std::shared_ptr<char>const&        data                                ,
-            TypeRegister::TypeId               id      = TypeRegister::UNREGISTERED,
+            TypeId                             id      = TypeRegister::UNREGISTERED,
             size_t                             offset  = 0                         );
         AtomicResource(
             std::shared_ptr<TypeRegister>const&manager,
-            TypeRegister::TypeId               id     );
+            TypeId                             id     );
         template<typename TYPE>
           AtomicResource(TYPE val,std::shared_ptr<TypeRegister>const&manager);
         virtual ~AtomicResource();
         virtual void*getData()const;
         virtual void const*getDataAddress()const;
         virtual std::shared_ptr<Resource> operator[](size_t elem);
-        virtual TypeRegister::DescriptionElement getNofElements()const;
+        virtual size_t getNofElements()const;
         const void*getPointer()const;
         virtual std::string data2Str()const;
         template<typename T>
@@ -53,7 +53,7 @@ namespace ge{
       AtomicResource::AtomicResource(TYPE val,std::shared_ptr<TypeRegister>const&manager){
         this->_id      = manager->getTypeId(TypeRegister::getTypeKeyword<TYPE>());
         this->_manager = manager;
-        ge::de::TypeRegister::TypeId id=this->_id;
+        ge::de::TypeId id=this->_id;
         this->_data    = std::shared_ptr<char>((char*)manager->alloc(this->_id),[id,manager](char*ptr){AtomicResource::_callDestructors(ptr,id,manager);delete[]ptr;});
         this->_offset  = 0;
         (*this)=val;

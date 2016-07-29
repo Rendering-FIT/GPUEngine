@@ -74,7 +74,7 @@ std::shared_ptr<Statement>CompositeFunctionFactory::_do(
         fceInputs));
 }
 
-TypeRegister::TypeId CompositeFunctionFactory::getOutputType(
+TypeId CompositeFunctionFactory::getOutputType(
     std::shared_ptr<FunctionRegister>const&fr)const{
   assert(this!=nullptr);
   return this->_factory->getOutputType(fr);
@@ -86,7 +86,7 @@ size_t CompositeFunctionFactory::getNofInputs(
   return this->_inputs.size();
 }
 
-TypeRegister::TypeId CompositeFunctionFactory::getInputType(
+TypeId CompositeFunctionFactory::getInputType(
     std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
   assert(this!=nullptr);
   assert(i<this->_inputs.size());

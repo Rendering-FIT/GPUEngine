@@ -2,34 +2,35 @@
 
 #include<geDE/AtomicFunction.h>
 #include<geDE/FactoryOfFunctionFactory.h>
+#include<geCore/Dtemplates.h>
 
 namespace ge{
   namespace de{
    template<typename OUTPUT,typename...ARGS>
-      inline TypeRegister::DescriptionVector getDescription(
+      inline TypeDescriptionVector getDescription(
           std::shared_ptr<TypeRegister>const&tr,
           OUTPUT(*)(ARGS...)){
         assert(tr!=nullptr);
-        TypeRegister::DescriptionVector result;
+        TypeDescriptionVector result;
         result.push_back(TypeRegister::FCE);
-        result.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<OUTPUT>()));
+        result.push_back(tr->getTypeId(keyword<OUTPUT>()));
         result.push_back(sizeof...(ARGS));
-        TypeRegister::DescriptionVector ar{tr->getTypeId(TypeRegister::getTypeKeyword<ARGS>())...};
+        TypeDescriptionVector ar{tr->getTypeId(keyword<ARGS>())...};
         for(auto const&x:ar)result.push_back(x);
         return result;
       }
 
    template<typename OUTPUT,typename CLASS,typename...ARGS>
-      inline TypeRegister::DescriptionVector getClassDescription(
+      inline TypeDescriptionVector getClassDescription(
           std::shared_ptr<TypeRegister>const&tr,
           OUTPUT(CLASS::*)(ARGS...)){
         assert(tr!=nullptr);
-        TypeRegister::DescriptionVector result;
+        TypeDescriptionVector result;
         result.push_back(TypeRegister::FCE);
-        result.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<OUTPUT>()));
+        result.push_back(tr->getTypeId(keyword<OUTPUT>()));
         result.push_back(sizeof...(ARGS)+1);
-        TypeRegister::DescriptionVector ar{tr->getTypeId(TypeRegister::getTypeKeyword<ARGS>())...};
-        result.push_back(tr->getTypeId(TypeRegister::getTypeKeyword<CLASS>()));
+        TypeDescriptionVector ar{tr->getTypeId(keyword<ARGS>())...};
+        result.push_back(tr->getTypeId(keyword<CLASS>()));
         for(auto const&x:ar)result.push_back(x);
         return result;
       }
@@ -73,7 +74,7 @@ namespace ge{
 
 
     template<typename OUTPUT,typename...ARGS>
-      FunctionRegister::FunctionID registerBasicFunction(
+      FunctionId registerBasicFunction(
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
           OUTPUT(*fce)(ARGS...),
@@ -93,7 +94,7 @@ namespace ge{
           public:
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
-                FunctionRegister::FunctionID                     id):AtomicFunction(fr,id){
+                FunctionId                     id):AtomicFunction(fr,id){
               this->_fceImpl=reinterpret_cast<FF>(fr->getImplementation(this->_id));
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
@@ -108,7 +109,10 @@ namespace ge{
               if(!doUberCall)return false;
               *this->getOutputData() = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               //auto ret = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              //std::memcpy(this->getOutputData()->getData(),&ret,sizeof(OUTPUT));
+              //if(std::is_pointer<OUTPUT>::value)
+              //  std::memcpy(this->getOutputData()->getData(),ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
+              //else
+              //  std::memcpy(this->getOutputData()->getData(),&ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
               //*(OUTPUT*)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
@@ -120,7 +124,7 @@ namespace ge{
       }
 
     template<typename OUTPUT,typename CLASS,typename...ARGS>
-      FunctionRegister::FunctionID registerClassFunction(
+      FunctionId registerClassFunction(
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
           OUTPUT(CLASS::*fce)(ARGS...),
@@ -140,7 +144,7 @@ namespace ge{
           public:
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
-                FunctionRegister::FunctionID           id):AtomicFunction(fr,id){
+                FunctionId           id):AtomicFunction(fr,id){
               this->_fceImpl=reinterpret_cast<FF>(fr->getClassImplementation(this->_id));
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
@@ -155,7 +159,10 @@ namespace ge{
               if(!doUberCall)return false;
               *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               //auto ret = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              //std::memcpy(this->getOutputData()->getData(),&ret,sizeof(OUTPUT));
+              //if(std::is_pointer<OUTPUT>::value)
+              //  std::memcpy(this->getOutputData()->getData(),ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
+              //else
+              //  std::memcpy(this->getOutputData()->getData(),&ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
               //*(OUTPUT*)(*this->getOutputData()) = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }

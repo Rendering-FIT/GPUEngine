@@ -23,12 +23,12 @@ void free_StructData(StructData*sd){
 }
 
 SCENARIO("keyword tests","[TypeRegister]"){
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t>()=="i32");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t&>()=="i32");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t const>()=="i32");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t const&>()=="i32");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t*>()=="i32");
-  REQUIRE(TypeRegister::getTypeKeyword<int32_t const*>()=="i32");
+  REQUIRE(keyword<int32_t>()=="i32");
+  REQUIRE(keyword<int32_t&>()=="i32");
+  REQUIRE(keyword<int32_t const>()=="i32");
+  REQUIRE(keyword<int32_t const&>()=="i32");
+  REQUIRE(keyword<int32_t*>()=="i32*");
+  REQUIRE(keyword<int32_t const*>()=="i32*");
 
 }
 
@@ -36,7 +36,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
   GIVEN( "empty typeRegister" ) {
     std::shared_ptr<TypeRegister>r=std::make_shared<TypeRegister>();
     auto nofDefaultTypes=r->getNofTypes();
-    auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+    auto i32 = r->getTypeId(keyword<int32_t>());
 #if 1
     WHEN( "adding new type int5 that is registered using TypeRegister::ARRAY 5 TypeRegister::I32" ) {
       auto t=r->addCompositeType("int5",{TypeRegister::ARRAY,5,i32});
@@ -82,8 +82,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding correct array descriptions"){
-      r->addCompositeType("a0",{TypeRegister::ARRAY,100,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
-      r->addCompositeType("a5",{TypeRegister::ARRAY,80,TypeRegister::ARRAY,80,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
+      r->addCompositeType("a0",{TypeRegister::ARRAY,100,r->getTypeId(keyword<int32_t>())});
+      r->addCompositeType("a5",{TypeRegister::ARRAY,80,TypeRegister::ARRAY,80,r->getTypeId(keyword<int32_t>())});
       THEN("they should be added"){
         REQUIRE(r->getTypeId("a0")!=TypeRegister::UNREGISTERED);
         REQUIRE(r->getTypeId("a5")!=TypeRegister::UNREGISTERED);
@@ -92,7 +92,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     WHEN("adding wrong struct descriptions"){
       r->addCompositeType("a0" ,{TypeRegister::STRUCT,1,2000});
       r->addCompositeType("a1" ,{TypeRegister::STRUCT,1});
-      r->addCompositeType("a22",{TypeRegister::STRUCT,2,TypeRegister::STRUCT,2,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
+      r->addCompositeType("a22",{TypeRegister::STRUCT,2,TypeRegister::STRUCT,2,r->getTypeId(keyword<int32_t>())});
       r->addCompositeType("a6" ,{TypeRegister::STRUCT,1,TypeRegister::STRUCT,1,2000});
       r->addCompositeType("a7" ,{TypeRegister::STRUCT,1,TypeRegister::STRUCT,300});
       r->addCompositeType("a8" ,{TypeRegister::STRUCT,1,TypeRegister::STRUCT});
@@ -107,8 +107,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding correct struct descriptions"){
-      r->addCompositeType("a5",{TypeRegister::STRUCT,1,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
-      r->addCompositeType("a9",{TypeRegister::STRUCT,1,TypeRegister::STRUCT,1,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
+      r->addCompositeType("a5",{TypeRegister::STRUCT,1,r->getTypeId(keyword<int32_t>())});
+      r->addCompositeType("a9",{TypeRegister::STRUCT,1,TypeRegister::STRUCT,1,r->getTypeId(keyword<int32_t>())});
       THEN("they should be added"){
         REQUIRE(r->getTypeId("a5")!=TypeRegister::UNREGISTERED);
         REQUIRE(r->getTypeId("a9")!=TypeRegister::UNREGISTERED);
@@ -126,7 +126,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 #if 1
     WHEN("adding mujTyp = ARRAY 2 I32"){
-      auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
+      auto i32 = r->getTypeId(keyword<int32_t>());
       r->addCompositeType("mujTyp",{TypeRegister::ARRAY,2,i32});
       auto dat=r->sharedResource("mujTyp");
       *(*dat)[0]=12;
@@ -139,8 +139,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding mujTyp2 = STRUCT ARRAY 2 I32 F32"){
-      auto i32 = r->getTypeId(TypeRegister::getTypeKeyword<int32_t>());
-      auto f32 = r->getTypeId(TypeRegister::getTypeKeyword<float>());
+      auto i32 = r->getTypeId(keyword<int32_t>());
+      auto f32 = r->getTypeId(keyword<float>());
       auto mt = r->addCompositeType("mujTyp",{TypeRegister::ARRAY,2,i32});
       r->addCompositeType("mujTyp2",{TypeRegister::STRUCT,2,mt,f32});
       auto dat2=r->sharedResource("mujTyp2");
@@ -209,8 +209,8 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding two same types with different names"){
-      auto a=r->addCompositeType("ivec10",{TypeRegister::ARRAY,10,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
-      auto b=r->addCompositeType("int10",{TypeRegister::ARRAY,10,r->getTypeId(TypeRegister::getTypeKeyword<int32_t>())});
+      auto a=r->addCompositeType("ivec10",{TypeRegister::ARRAY,10,r->getTypeId(keyword<int32_t>())});
+      auto b=r->addCompositeType("int10",{TypeRegister::ARRAY,10,r->getTypeId(keyword<int32_t>())});
       THEN("they should be synonyms"){
         REQUIRE(r->hasSynonyms(a)==true);
         REQUIRE(r->areSynonyms("ivec10","int10")==true);
@@ -219,7 +219,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding nullary function"){
-      auto a=r->addCompositeType("nul",{TypeRegister::FCE,r->getTypeId(TypeRegister::getTypeKeyword<float>()),0});
+      auto a=r->addCompositeType("nul",{TypeRegister::FCE,r->getTypeId(keyword<float>()),0});
       THEN("it should be registered"){
         REQUIRE(a!=TypeRegister::UNREGISTERED);
         REQUIRE(r->getNofFceArgs(a)==0);
@@ -227,7 +227,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
     }
 
     WHEN("adding unspecified nullary function"){
-      auto a=r->addCompositeType("nul0",{TypeRegister::FCE,TypeRegister::AUTO,0});
+      auto a=r->addCompositeType("nul0",{TypeRegister::FCE,TypeRegister::ANY,0});
       THEN("it should be registered"){
         REQUIRE(a!=TypeRegister::UNREGISTERED);
       }

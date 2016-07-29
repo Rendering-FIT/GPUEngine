@@ -8,7 +8,7 @@
 #include<iomanip>
 #include<algorithm>
 
-#include<geCore/Dtemplates.h>
+#include<geCore/ErrorPrinter.h>
 #include<geCore/fsa/TransitionChooser.h>
 
 using namespace ge::core;

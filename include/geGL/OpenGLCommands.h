@@ -10,7 +10,10 @@ namespace ge{
     //function with non void return value
     template<typename OUTPUT_TO,typename...ARGS_TO,typename OUTPUT_FROM,typename... ARGS_FROM,std::size_t...I,typename std::enable_if<!std::is_same<OUTPUT_TO,void>::value,unsigned>::type = 0>
       void callProviderMethod(OUTPUT_FROM o,std::tuple<ARGS_FROM...>const&args,OUTPUT_TO(opengl::FunctionProvider::*f)(ARGS_TO...)const,ge::core::index_sequence<I...>){
+        assert(opengl::getDefaultFunctionProvider()!=nullptr);
         auto prov = &*opengl::getDefaultFunctionProvider();
+        assert(prov!=nullptr);
+        assert(o!=nullptr);
         *o = (OUTPUT_TO)(prov->*f)(ge::core::convertTo<ARGS_TO,ARGS_FROM>(std::get<I>(args))...);
       }
 
@@ -22,22 +25,27 @@ namespace ge{
             std::tuple<ARGS_FROM...>_args;
             OUTPUT_TO(opengl::FunctionProvider::*_impl)(ARGS_TO...)const;
             FunctionCommand(OUTPUT_TO(opengl::FunctionProvider::*f)(ARGS_TO...)const,OUTPUT_FROM o,ARGS_FROM...ar){
+              assert(this!=nullptr);
               this->_output = o;
               this->_args = std::tuple<ARGS_FROM...>(ar...);
               this->_impl = f;
             }
             virtual void operator()(){
+              assert(this!=nullptr);
               callProviderMethod(this->_output,this->_args,this->_impl,typename ge::core::make_index_sequence<sizeof...(ARGS_FROM)>::type{});
             }
         };
         auto ret = std::make_shared<FunctionCommand>(fce,output,args...);
+        assert(ret!=nullptr);
         return std::dynamic_pointer_cast<ge::core::Command>(ret);
       }
 
     //void functions
     template<typename...TO,typename...FROM,std::size_t...I>
       void callProviderMethod(std::tuple<FROM...>const&args,void(opengl::FunctionProvider::*f)(TO...),ge::core::index_sequence<I...>){
+        assert(opengl::getDefaultFunctionProvider()!=nullptr);
         auto prov = &*opengl::getDefaultFunctionProvider();
+        assert(prov!=nullptr);
         (prov->*f)(ge::core::convertTo<TO,FROM>(std::get<I>(args))...);
       }
 
@@ -48,14 +56,17 @@ namespace ge{
             std::tuple<FROM...>_args;
             void(opengl::FunctionProvider::*_impl)(TO...);
             FunctionCommand(void(opengl::FunctionProvider::*f)(TO...),FROM...ar){
+              assert(this!=nullptr);
               this->_args = std::tuple<FROM...>(ar...);
               this->_impl = f;
             }
             virtual void operator()(){
+              assert(this!=nullptr);
               callProviderMethod(this->_args,this->_impl,typename ge::core::make_index_sequence<sizeof...(FROM)>::type{});
             }
         };
         auto ret = std::make_shared<FunctionCommand>(fce,args...);
+        assert(ret!=nullptr);
         return std::dynamic_pointer_cast<ge::core::Command>(ret);
       }
   }

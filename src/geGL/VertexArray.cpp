@@ -11,11 +11,13 @@ using namespace ge::gl::opengl;
  * @brief Creates empty vertex array object
  */
 VertexArray::VertexArray (){
+  assert(this!=nullptr);
   glCreateVertexArrays(1,&this->_id);
 }
 
 VertexArray::VertexArray (
     FunctionTablePointer const&table):OpenGLObject(table){
+  assert(this!=nullptr);
   glCreateVertexArrays(1,&this->_id);
 }
 
@@ -23,6 +25,7 @@ VertexArray::VertexArray (
  * @brief Destroyes vertex array object
  */
 VertexArray::~VertexArray(){
+  assert(this!=nullptr);
   glDeleteVertexArrays(1,&this->_id);
   for(auto const&x:this->_buffers)
     x.second->_vertexArrays.erase(this);

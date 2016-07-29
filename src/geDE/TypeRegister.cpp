@@ -7,618 +7,36 @@
 #include<cstring>
 #include<vector>
 
+#include<geCore/ErrorPrinter.h>
+#include<geDE/TypeDescription.h>
+#include<geDE/AtomicDescription.h>
+#include<geDE/PtrDescription.h>
+#include<geDE/ArrayDescription.h>
+#include<geDE/StructDescription.h>
+#include<geDE/FceDescription.h>
+#include<geDE/MemFceDescription.h>
+#include<geDE/VoidDescription.h>
+#include<geDE/AnyDescription.h>
+
 using namespace ge::de;
 
 class Function;
 
-/*
-std::ostream& operator<<(std::ostream& out,int8_t* const& f){
-  return out << (void*)f;
-}
-std::ostream& operator<<(std::ostream& out,uint8_t* const& f){
-  return out << (void*)f;
-}
-
-template<typename...ARGS>
-std::string argsToStr(ARGS...);
-
-template<typename F,typename...ARGS>
-std::string argsToStr_help(F const&a,ARGS...args){
-  std::stringstream ss;
-  ss<<a;
-  if(sizeof...(args)>0)
-    ss<<","<<argsToStr(args...);
-  return ss.str();
-}
-
-template<typename...ARGS>
-std::string argsToStr(ARGS...args){
-  return argsToStr_help(args...);
-}
-
-template<>std::string argsToStr(){
-  return "";
-}
-
-int indentCounter = 0;
-std::string indent = "";
-class iii{
-  public:
-    template<typename...ARGS>
-    iii(std::string fceName,ARGS...args){
-      std::cout<<indent<<fceName<<"("<<argsToStr(args...)<<"){"<<std::endl;
-      indentCounter+=2;
-      indent="";
-      for(int i=0;i<indentCounter;++i)
-        indent+=" ";
-    }
-    ~iii(){
-      indentCounter-=2;
-      if(indentCounter<0)
-        indentCounter=0;
-      indent="";
-      for(int i=0;i<indentCounter;++i)
-        indent+=" ";
-      std::cout<<indent<<"}"<<std::endl;
-    }
-};
-
-#if 0
-#define PRINT_CALL_STACK(...)iii superduperhidden(__VA_ARGS__)
-#else
-#define PRINT_CALL_STACK(...)
-#endif
-*/
-
-template<typename T>
-std::string vec2str(std::vector<T>const&data,typename std::vector<T>::size_type from=0){
-  std::stringstream ss;
-  ss<<"[";
-  if(from<data.size())ss<<data[from];
-  for(typename std::vector<T>::size_type i=from+1;i<data.size();++i)
-    ss<<","<<data[i];
-  ss<<"]";
-  return ss.str();
-}
-
-class TypeRegister::TypeDescription{
-  public:
-    TypeType type;
-    ToStr data2StrPtr = nullptr;
-    TypeDescription(TypeType const&type){
-      this->type = type;
-      this->data2StrPtr = nullptr;
-    }
-    virtual ~TypeDescription(){}
-    virtual bool init(
-        TypeRegister           *tr         ,
-        DescriptionVector const&description,
-        size_t                 &i          ,
-        bool                    exists     ) = 0;
-    virtual std::string toStr(TypeRegister const*,TypeId)const = 0;
-    virtual bool equal(TypeDescription const*other)const = 0;
-    TypeId findInRegister(
-        TypeRegister           *tr         ,
-        DescriptionVector const&description,
-        size_t                 &i          ){
-      assert(this!=nullptr);
-      size_t old = i;
-      if(!this->init(tr,description,i,true))return UNREGISTERED;
-      TypeId index = 0;
-      for(auto const&x:tr->_types){
-        if(x->equal(this))
-          return tr->_vectorIndex2TypeId(index);
-        index++;
-      }
-      i = old;
-      return UNREGISTERED;
-    }
-    virtual void callConstructor(TypeRegister*tr,void*ptr)const = 0;
-    virtual void callDestructor(TypeRegister*tr,void*ptr)const = 0;
-    virtual size_t byteSize(TypeRegister const*tr)const = 0;
-    virtual std::string data2Str(TypeRegister const*,void*ptr){
-      PRINT_CALL_STACK("TypeDescription::data2Str",ptr);
-      assert(this!=nullptr);
-      if(this->data2StrPtr)return this->data2StrPtr(ptr);
-      return "";
-    }
-
-    static TypeId checkAndBindType(
-        TypeRegister     *tr,
-        std::string const&name,
-        DescriptionVector const&description,
-        TypeDescription*d,
-        size_t &i){
-      size_t old = i;
-      if(!d->init(tr,description,i,false)){
-        delete d;
-        return UNREGISTERED;
-      }
-      auto id = tr->_vectorIndex2TypeId(tr->_types.size());
-      auto ii = tr->_name2TypeId.find(name);
-      if(ii != tr->_name2TypeId.end()){
-        std::cerr<<"ERROR: TypeDescription::checkAndBindType() - ";
-        std::cerr<<"name "<<name<<" is already used with different type: "<<ii->second<<" aka "<<ii->first;
-        std::cerr<<std::endl;
-        i=old;
-        delete d;
-        return UNREGISTERED;
-      }
-      tr->_types.push_back(d);
-      tr->_bindTypeIdWithName(id,name);
-      return id;
-    }
-
-};
-
-class TypeRegister::ArrayDescription: public TypeDescription{
-  public:
-    size_t size;
-    TypeId elementType;
-    ArrayDescription(
-        TypeId const&elementType,
-        size_t const&size       ):TypeDescription(ARRAY){
-      this->elementType = elementType;
-      this->size = size;
-    }
-    ArrayDescription():TypeDescription(ARRAY){}
-    virtual bool init(
-        TypeRegister*           tr         ,
-        DescriptionVector const&description,
-        size_t                 &i          ,
-        bool                    exists     )override{
-      assert(this!=nullptr);
-      size_t old = i;
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Array description is empty"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(description[i++]!=ARRAY){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Array description does not start with ARRAY"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Array description does not contain size"<<std::endl;
-        i=old;
-        return false;
-      }
-      this->size = description[i++];
-      if(exists)
-        this->elementType = tr->_typeExists(description,i);
-      else
-        this->elementType = tr->_addType("",description,i);
-      if(elementType == UNREGISTERED){i=old;return UNREGISTERED;}
-      return true;
-    }
-    virtual ~ArrayDescription(){}
-    bool operator==(ArrayDescription const&other)const{
-      assert(this!=nullptr);
-      return this->size == other.size && this->elementType == other.elementType;
-    }
-    virtual bool equal(TypeDescription const*other)const override{
-      assert(this!=nullptr);
-      if(this->type != other->type)return false;
-      return *this==*(ArrayDescription*)other;
-    }
-    virtual std::string toStr(TypeRegister const*tr,TypeId)const override{
-      assert(this!=nullptr);
-      std::stringstream ss;
-      ss<<"["<<this->size<<","<<tr->type2Str(tr->_typeId2VectorIndex(this->elementType))<<"]";
-      return ss.str();
-    }
-    virtual void callConstructor(TypeRegister*tr,void*ptr)const override{
-      PRINT_CALL_STACK("ArrayDescription::callConstructor",tr,ptr);
-      assert(this!=nullptr);
-      size_t elementSize = tr->computeTypeIdSize(this->elementType);
-      for(size_t i=0;i<this->size;++i)
-        tr->_callConstructors((uint8_t*)ptr+elementSize*i,this->elementType);
-    }
-    virtual void callDestructor(TypeRegister*tr,void*ptr)const override{
-      PRINT_CALL_STACK("ArrayDescription::callDestructor",tr,ptr);
-      assert(this!=nullptr);
-      size_t elementSize = tr->computeTypeIdSize(this->elementType);
-      for(size_t i=0;i<this->size;++i)
-        tr->_callDestructors((uint8_t*)ptr+elementSize*i,this->elementType);
-    }
-    virtual size_t byteSize(TypeRegister const*tr)const override{
-      PRINT_CALL_STACK("ArrayDescription::byteSize",tr);
-      assert(this!=nullptr);
-      return this->size*tr->computeTypeIdSize(this->elementType);
-    }
-    virtual std::string data2Str(TypeRegister const*tr,void*ptr)override{
-      PRINT_CALL_STACK("ArrayDescription::data2Str",ptr);
-      assert(this!=nullptr);
-      if(this->data2StrPtr)this->TypeDescription::data2Str(tr,ptr);
-      size_t elementSize = tr->computeTypeIdSize(this->elementType);
-      std::stringstream ss;
-      ss<<"[";
-      for(size_t i=0;i<this->size;++i){
-        if(i>0)ss<<",";
-        ss<<tr->data2Str((uint8_t*)ptr+elementSize*i,this->elementType);
-      }
-      ss<<"]";
-      return ss.str();
-    }
-};
-
-class TypeRegister::StructDescription: public TypeDescription{
-  public:
-    std::vector<TypeId>elementTypes;
-    StructDescription(
-        std::vector<TypeId>const&elementTypes):TypeDescription(STRUCT){
-      this->elementTypes = elementTypes;
-    }
-    StructDescription():TypeDescription(STRUCT){}
-    virtual bool init(
-        TypeRegister*           tr         ,
-        DescriptionVector const&description,
-        size_t                 &i          ,
-        bool                    exists     )override{
-      assert(this!=nullptr);
-      size_t old = i;
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Struct description is empty"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(description[i++]!=STRUCT){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Struct description does not start with STRUCT"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Struct description does not contain size"<<std::endl;
-        i=old;
-        return false;
-      }
-      size_t size = description[i++];
-      for(size_t e=0;e<size;++e){
-        if(exists)
-          this->elementTypes.push_back(tr->_typeExists(description,i));
-        else
-          this->elementTypes.push_back(tr->_addType("",description,i));
-        if(this->elementTypes.back() == UNREGISTERED){i=old;return false;}
-      }
-      return true;
-    }
-    virtual ~StructDescription(){}
-    bool operator==(StructDescription const&other)const{
-      assert(this!=nullptr);
-      return this->elementTypes == other.elementTypes;
-    }
-    virtual bool equal(TypeDescription const*other)const override{
-      assert(this!=nullptr);
-      if(this->type != other->type)return false;
-      return *this==*(StructDescription*)other;
-    }
-    virtual std::string toStr(TypeRegister const*tr,TypeId)const override{
-      assert(this!=nullptr);
-      std::stringstream ss;
-      ss<<"struct{";
-      bool first=true;
-      for(auto const&x:this->elementTypes){
-        if(first)first = false;
-        else ss<<",";
-        ss<<tr->type2Str(tr->_typeId2VectorIndex(x));
-      }
-      ss<<"}";
-      return ss.str();
-    }
-    virtual void callConstructor(TypeRegister*tr,void*ptr)const override{
-      PRINT_CALL_STACK("StructDescription::callConstructor",tr,ptr);
-      assert(this!=nullptr);
-      size_t offset = 0;
-      for(auto const&x:this->elementTypes){
-        tr->_callConstructors((uint8_t*)ptr+offset,x);
-        offset += tr->computeTypeIdSize(x);
-      }
-    }
-    virtual void callDestructor(TypeRegister*tr,void*ptr)const override{
-      PRINT_CALL_STACK("StructDescription::callDestructor",tr,ptr);
-      assert(this!=nullptr);
-      size_t offset = 0;
-      for(auto const&x:this->elementTypes){
-        tr->_callDestructors((uint8_t*)ptr+offset,x);
-        offset += tr->computeTypeIdSize(x);
-      }
-    }
-    virtual size_t byteSize(TypeRegister const*tr)const override{
-      PRINT_CALL_STACK("StructDescription::byteSize",tr);
-      assert(this!=nullptr);
-      size_t size = 0;
-      for(auto const&x:this->elementTypes)
-        size+=tr->computeTypeIdSize(x);
-      return size;
-    }
-    virtual std::string data2Str(TypeRegister const*tr,void*ptr)override{
-      PRINT_CALL_STACK("StructDescription::data2Str",ptr);
-      assert(this!=nullptr);
-      if(this->data2StrPtr)this->TypeDescription::data2Str(tr,ptr);
-      size_t offset = 0;
-      std::stringstream ss;
-      ss<<"{";
-      bool first = true;
-      for(auto const&x:this->elementTypes){
-        if(first)first = false;
-        else ss<<",";
-        ss<<tr->data2Str((uint8_t*)ptr+offset,x);
-        offset += tr->computeTypeIdSize(x);
-      }
-      ss<<"}";
-      return ss.str();
-    }
-};
-
-class TypeRegister::FunctionDescription: public TypeDescription{
-  public:
-    std::vector<TypeId>argumentTypes;
-    TypeId returnType;
-    FunctionDescription(
-        TypeId             const&returnType   ,
-        std::vector<TypeId>const&argumentTypes):TypeDescription(FCE){
-      this->returnType = returnType;
-      this->argumentTypes = argumentTypes;
-    }
-    FunctionDescription():TypeDescription(FCE){}
-    virtual bool init(
-        TypeRegister*           tr         ,
-        DescriptionVector const&description,
-        size_t                 &i          ,
-        bool                    exists     )override{
-      assert(this!=nullptr);
-      size_t old = i;
-      if(i>=description.size()){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Function description is empty"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(description[i++]!=FCE){
-        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Function description does not start with FCE"<<std::endl;
-        i=old;
-        return false;
-      }
-      if(exists)
-        this->returnType = tr->_typeExists(description,i);
-      else
-        this->returnType = tr->_addType("",description,i);
-      if(returnType == UNREGISTERED){
-        i=old;
-        return false;
-      }
-      if(i>=description.size()){i=old;return false;}
-      size_t size = description[i++];
-      for(size_t e=0;e<size;++e){
-        if(exists)
-          this->argumentTypes.push_back(tr->_typeExists(description,i));
-        else
-          this->argumentTypes.push_back(tr->_addType("",description,i));
-        if(this->argumentTypes.back() == UNREGISTERED){i=old;return false;}
-      }
-      return true;
-    }
-    virtual ~FunctionDescription(){}
-    bool operator==(FunctionDescription const&other)const{
-      assert(this!=nullptr);
-      return 
-        this->returnType == other.returnType && 
-        this->argumentTypes == other.argumentTypes;
-    }
-    virtual bool equal(TypeDescription const*other)const override{
-      assert(this!=nullptr);
-      if(this->type != other->type)return false;
-      return *this==*(FunctionDescription*)other;
-    }
-    virtual std::string toStr(TypeRegister const*tr,TypeId)const override{
-      assert(this!=nullptr);
-      std::stringstream ss;
-      ss<<"(";
-      bool first=true;
-      for(auto const&x:this->argumentTypes){
-        if(first)first = false;
-        else ss<<",";
-        ss<<tr->type2Str(tr->_typeId2VectorIndex(x));
-      }
-      ss<<")->"<<tr->type2Str(tr->_typeId2VectorIndex(this->returnType));
-      return ss.str();
-    }
-    virtual void callConstructor(TypeRegister*,void*ptr)const override{
-      PRINT_CALL_STACK("FunctionDescription::callConstructor",ptr);
-      new(ptr)std::shared_ptr<Function>();
-    }
-    virtual void callDestructor(TypeRegister*,void*ptr)const override{
-      PRINT_CALL_STACK("FunctionDescription::callDestructor",ptr);
-      ((std::shared_ptr<Function>*)ptr)->~shared_ptr();
-    }
-    virtual size_t byteSize(TypeRegister const*)const override{
-      PRINT_CALL_STACK("FunctionDescription::byteSize");
-      return sizeof(std::shared_ptr<FunctionDescription>);
-    }
-
-};
-
-class TypeRegister::AtomicDescription: public TypeDescription{
-  public:
-    size_t size;
-    Destructor destructor;
-    Constructor constructor;
-    AtomicDescription(
-        size_t      const&size                 ,
-        Destructor  const&destructor  = nullptr,
-        Constructor const&constructor = nullptr):TypeDescription(ATOMIC){
-      this->size = size;
-      this->destructor  = destructor;
-      this->constructor = constructor;
-    }
-    virtual ~AtomicDescription(){}
-    virtual bool init(
-        TypeRegister*           ,
-        DescriptionVector const&,
-        size_t                 &,
-        bool                    )override{return true;}
-    bool operator==(AtomicDescription const&other)const{
-      assert(this!=nullptr);
-      return this->size == other.size &&
-        this->destructor == other.destructor &&
-        this->constructor == other.constructor;
-    }
-    virtual bool equal(TypeDescription const*other)const override{
-      assert(this!=nullptr);
-      if(this->type != other->type)return false;
-      return *this==*(AtomicDescription*)other;
-    }
-    virtual std::string toStr(TypeRegister const*tr,TypeId id)const override{
-      assert(this!=nullptr);
-      assert(tr->_typeId2Synonyms.count(id)!=0);
-      std::stringstream ss;
-      ss<<*tr->_typeId2Synonyms.find(id)->second.begin();
-      return ss.str();
-    }
-    virtual void callConstructor(TypeRegister*,void*ptr)const override{
-      PRINT_CALL_STACK("AtomicDescription::callConstructor",ptr);
-      assert(this!=nullptr);
-      if(this->constructor)this->constructor(ptr);
-    }
-    virtual void callDestructor(TypeRegister*,void*ptr)const override{
-      PRINT_CALL_STACK("AtomicDescription::callDestructor",ptr);
-      assert(this!=nullptr);
-      if(this->destructor)this->destructor(ptr);
-    }
-    virtual size_t byteSize(TypeRegister const*)const override{
-      PRINT_CALL_STACK("AtomicDescription::byteSize");
-      assert(this!=nullptr);
-      return this->size;
-    }
-
-};
-
-
-//class TypeRegister::PtrDescription: public TypeDescription{
-//  public:
-//    TypeId innerType;
-//    Destructor destructor = nullptr;
-//    Constructor constructor = nullptr;
-//    PtrDescription(TypeId id):TypeDescription(PTR){
-//      this->innerType = id;
-//    }
-//    PtrDescription():TypeDescription(PTR){}
-//    virtual ~PtrDescription(){}
-//    virtual bool init(
-//        TypeRegister*           tr         ,
-//        DescriptionVector const&description,
-//        size_t                 &i          ,
-//        bool                    exists     )override{
-//      assert(this!=nullptr);
-//      size_t old = i;
-//      if(i>=description.size()){
-//        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description is empty"<<std::endl;
-//        i=old;
-//        return false;
-//      }
-//      if(description[i++]!=PTR){
-//        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description does not start with PTR"<<std::endl;
-//        i=old;
-//        return false;
-//      }
-//      if(i>=description.size()){
-//        if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Ptr description does not contain innter type"<<std::endl;
-//        i=old;
-//        return false;
-//      }
-//      if(exists)this->innerType = tr->_typeExists(description,i);
-//      else this->innerType = tr->_addType("",description,i);
-//      if(this->innerType == UNREGISTERED){i=old;return false;}
-//      return true;
-//    }
-//    bool operator==(PtrDescription const&other)const{
-//      assert(this!=nullptr);
-//      return this->innerType == other.innerType;
-//    }
-//    virtual bool equal(TypeDescription const*other)const override{
-//      assert(this!=nullptr);
-//      if(this->type != other->type)return false;
-//      return *this==*(PtrDescription*)other;
-//    }
-//    virtual std::string toStr(TypeRegister const*tr,TypeId)const override{
-//      assert(this!=nullptr);
-//      std::stringstream ss;
-//      ss<<tr->type2Str(tr->_typeId2VectorIndex(this->innerType));
-//      ss<<"*";
-//      return ss.str();
-//    }
-//    virtual void callConstructor(TypeRegister*,void*ptr)const override{
-//      (void)ptr;
-//      PRINT_CALL_STACK("PtrDescription::callConstructor",ptr);
-//      if(this->constructor)this->constructor(ptr);
-//    }
-//    virtual void callDestructor(TypeRegister*,void*ptr)const override{
-//      (void)ptr;
-//      PRINT_CALL_STACK("PtrDescription::callDestructor",ptr);
-//      if(this->destructor)this->destructor(ptr);
-//    }
-//    virtual size_t byteSize(TypeRegister const*)const override{
-//      PRINT_CALL_STACK("PtrDescription::byteSize");
-//      assert(this!=nullptr);
-//      return sizeof(void*);
-//    }
-//};
-
-class TypeRegister::AutoDescription: public TypeDescription{
-  public:
-    AutoDescription():TypeDescription(AUTO){
-    }
-    virtual ~AutoDescription(){}
-    virtual bool init(
-        TypeRegister*           ,
-        DescriptionVector const&description,
-        size_t                 &i,
-        bool                    )override{
-      if(i>=description.size())return false;
-      if(description[i]!=AUTO)return false;
-      i++;
-      return true;
-    }
-    bool operator==(AutoDescription const&)const{
-      return true;
-    }
-    virtual bool equal(TypeDescription const*other)const override{
-      assert(this!=nullptr);
-      if(this->type != other->type)return false;
-      return *this==*(AutoDescription*)other;
-    }
-    virtual std::string toStr(TypeRegister const*tr,TypeId id)const override{
-      assert(this!=nullptr);
-      assert(tr->_typeId2Synonyms.count(id)!=0);
-      std::stringstream ss;
-      ss<<*tr->_typeId2Synonyms.find(id)->second.begin();
-      return ss.str();
-    }
-    virtual void callConstructor(TypeRegister*,void*)const override{};
-    virtual void callDestructor(TypeRegister*,void*)const override{};
-    virtual size_t byteSize(TypeRegister const*)const override{
-      PRINT_CALL_STACK("AtomicDescription::byteSize");
-      return 0;
-    }
-
-};
-
-
 TypeRegister::TypeRegister(){
-  this->addCompositeType(TypeRegister::getTypeKeyword<TypeRegister::Auto>(),{AUTO});
-  auto Void   = this->addAtomicType(TypeRegister::getTypeKeyword<void       >(),0                  );(void)Void;
-  auto Bool   = this->addAtomicType(TypeRegister::getTypeKeyword<bool       >(),sizeof(bool       ));
-  auto I8     = this->addAtomicType(TypeRegister::getTypeKeyword<int8_t     >(),sizeof(int8_t     ));
-  auto I16    = this->addAtomicType(TypeRegister::getTypeKeyword<int16_t    >(),sizeof(int16_t    ));
-  auto I32    = this->addAtomicType(TypeRegister::getTypeKeyword<int32_t    >(),sizeof(int32_t    ));
-  auto I64    = this->addAtomicType(TypeRegister::getTypeKeyword<int64_t    >(),sizeof(int64_t    ));
-  auto U8     = this->addAtomicType(TypeRegister::getTypeKeyword<uint8_t    >(),sizeof(uint8_t    ));
-  auto U16    = this->addAtomicType(TypeRegister::getTypeKeyword<uint16_t   >(),sizeof(uint16_t   ));
-  auto U32    = this->addAtomicType(TypeRegister::getTypeKeyword<uint32_t   >(),sizeof(uint32_t   ));
-  auto U64    = this->addAtomicType(TypeRegister::getTypeKeyword<uint64_t   >(),sizeof(uint64_t   ));
-  auto F32    = this->addAtomicType(TypeRegister::getTypeKeyword<float      >(),sizeof(float      ));
-  auto F64    = this->addAtomicType(TypeRegister::getTypeKeyword<double     >(),sizeof(double     ));
-  auto String = this->addAtomicType(TypeRegister::getTypeKeyword<std::string>(),sizeof(std::string),[](void*ptr){new(ptr)std::string();},[](void*ptr){((std::string*)ptr)->~basic_string();});
+  this->addCompositeType(keyword<Any>(),{ANY});
+  auto Void   = this->addAtomicType(keyword<void       >(),0                  );(void)Void;
+  auto Bool   = this->addAtomicType(keyword<bool       >(),sizeof(bool       ));
+  auto I8     = this->addAtomicType(keyword<int8_t     >(),sizeof(int8_t     ));
+  auto I16    = this->addAtomicType(keyword<int16_t    >(),sizeof(int16_t    ));
+  auto I32    = this->addAtomicType(keyword<int32_t    >(),sizeof(int32_t    ));
+  auto I64    = this->addAtomicType(keyword<int64_t    >(),sizeof(int64_t    ));
+  auto U8     = this->addAtomicType(keyword<uint8_t    >(),sizeof(uint8_t    ));
+  auto U16    = this->addAtomicType(keyword<uint16_t   >(),sizeof(uint16_t   ));
+  auto U32    = this->addAtomicType(keyword<uint32_t   >(),sizeof(uint32_t   ));
+  auto U64    = this->addAtomicType(keyword<uint64_t   >(),sizeof(uint64_t   ));
+  auto F32    = this->addAtomicType(keyword<float      >(),sizeof(float      ));
+  auto F64    = this->addAtomicType(keyword<double     >(),sizeof(double     ));
+  auto String = this->addAtomicType(keyword<std::string>(),sizeof(std::string),[](void*ptr){new(ptr)std::string();},[](void*ptr){((std::string*)ptr)->~basic_string();});
   this->addCompositeType("vec2",{ARRAY,2,F32});
   this->addCompositeType("vec3",{ARRAY,3,F32});
   this->addCompositeType("vec4",{ARRAY,4,F32});
@@ -649,56 +67,155 @@ TypeRegister::~TypeRegister(){
 }
 
 
-TypeRegister::TypeId TypeRegister::addAtomicType(
-    std::string const&name       ,
-    size_t      const&size       ,
-    Constructor const&constructor,
-    Destructor  const&destructor ){
+TypeId TypeRegister::_addTypeByDescription(std::string const&name,TypeDescription*d){
   assert(this!=nullptr);
-  auto ii = this->_name2TypeId.find(name);
-  if(ii!=this->_name2TypeId.end()){
-    TypeId id = ii->second;
-    auto index = this->_typeId2VectorIndex(id);
-    assert(index<this->_types.size());
-    auto type = (AtomicDescription*)this->_types[index];
-    if(type->size != size)return UNREGISTERED;
-    if(
-        type->destructor != nullptr &&
-        destructor       != nullptr && 
-        type->destructor != destructor)return UNREGISTERED;
-    if(
-        type->constructor != nullptr &&
-        constructor       != nullptr &&
-        type->constructor != constructor)return UNREGISTERED;
-    if(destructor)type->destructor = destructor;
-    if(constructor)type->constructor = constructor;
-    return id;
-  }
-  TypeId index = 0;
-  for(auto const&x:this->_types){
-    if(x->type != ATOMIC){
-      index++;
-      continue;
-    }
-    auto type = (AtomicDescription*)x;
-    if(
-        type->size == size &&
-        type->destructor != nullptr &&
-        type->constructor != nullptr &&
-        type->destructor == destructor &&
-        type->constructor == constructor){
-      TypeId id = this->_vectorIndex2TypeId(index);
-      assert(id<this->_typeId2Synonyms.size());
-      if(name!="")this->_typeId2Synonyms[id].insert(name);
-      return id;
-    }
-    index++;
-  }
   TypeId id = this->_vectorIndex2TypeId(this->_types.size());
-  this->_types.push_back(new AtomicDescription(size,destructor,constructor));
+  this->_types.push_back(d);
   this->_bindTypeIdWithName(id,name);
   return id;
 }
+
+bool TypeRegister::_checkIfTypeNameExists(
+    TypeId&result,
+    std::string const&name,
+    TypeDescription*d,
+    std::string const&errFceName,
+    std::string const&errMsg){
+  assert(this!=nullptr);
+  auto ii = this->_name2TypeId.find(name);
+  if(ii==this->_name2TypeId.end())return false;
+  if(!d->equal(this->_getDescription(ii->second))){
+    ge::core::printError(errFceName,errMsg);
+    delete d;
+    result = UNREGISTERED;
+    return true;
+  }
+  delete d;
+  result = ii->second;
+  return true;
+}
+
+
+bool TypeRegister::_checkIfTypeDescriptionExists(
+    TypeId&result,
+    std::string const&name,
+    TypeDescription*d){
+  assert(this!=nullptr);
+  TypeId index = 0;
+  for(auto const&x:this->_types){
+    if(d->equal(x)){
+      TypeId id = this->_vectorIndex2TypeId(index);
+      assert(this->_typeId2Synonyms.count(id)!=0);
+      if(name!="")this->_typeId2Synonyms.at(id).insert(name);
+      delete d;
+      result = id;
+      return true;
+    }
+    index++;
+  }
+  return false;
+}
+
+TypeId TypeRegister::_checkAndAddTypeByDescription(
+    std::string const&name,
+    TypeDescription*d,
+    std::string const&errFceName,
+    std::string const&errMsg){
+  assert(this!=nullptr);
+  TypeId id;
+  if(this->_checkIfTypeNameExists(id,name,d,errFceName,errMsg))
+    return id;
+
+  if(this->_checkIfTypeDescriptionExists(id,name,d))
+    return id;
+
+  return this->_addTypeByDescription(name,d);
+}
+
+
+TypeId TypeRegister::addAtomicType(
+    std::string const&name       ,
+    size_t      const&size       ,
+    CDPtr       const&constructor,
+    CDPtr       const&destructor ){
+  assert(this!=nullptr);
+  auto newDesc = new AtomicDescription(size,constructor,destructor);
+  assert(newDesc!=nullptr);
+
+  TypeId id;
+  if(this->_checkIfTypeNameExists(id,name,newDesc,GE_CORE_FCENAME,"Atomic type named "+name+" already exists and is different"))
+    return id;
+
+  if(constructor!=nullptr&&destructor!=nullptr)
+    if(this->_checkIfTypeDescriptionExists(id,name,newDesc))
+      return id;
+
+  return this->_addTypeByDescription(name,newDesc);
+}
+
+TypeId TypeRegister::addPtrType(
+    std::string const&name,
+    TypeId      const&innerType){
+  assert(this!=nullptr);
+  auto newDesc = new PtrDescription(innerType);
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Ptr type named "+name+" already exists and is different");
+}
+
+TypeId TypeRegister::addArrayType(
+    std::string const&name     ,
+    TypeId      const&innerType,
+    size_t      const&size     ){
+  assert(this!=nullptr);
+  auto newDesc = new ArrayDescription(innerType,size);
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Array type named "+name+" already exists and is different");
+}
+
+TypeId TypeRegister::addStructType(
+    std::string        const&name     ,
+    std::vector<TypeId>const&elements){
+  assert(this!=nullptr);
+  auto newDesc = new StructDescription(elements);
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Struct type named "+name+" already exists and is different");
+}
+
+TypeId TypeRegister::addFceType(
+    std::string        const&name      ,
+    TypeId             const&returnType,
+    std::vector<TypeId>const&elements  ){
+  assert(this!=nullptr);
+  auto newDesc = new FceDescription(returnType,elements);
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Fce type named "+name+" already exists and is different");
+}
+
+TypeId TypeRegister::addMemFceType(
+    std::string        const&name      ,
+    TypeId             const&returnType,
+    TypeId             const&classType ,
+    std::vector<TypeId>const&elements  ){
+  assert(this!=nullptr);
+  auto newDesc = new MemFceDescription(returnType,classType,elements);
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"MemFce type named "+name+" already exists and is different");
+}
+
+
+//MemFce
+//Void
+
+TypeId TypeRegister::addAnyType(
+    std::string        const&name){
+  assert(this!=nullptr);
+  auto newDesc = new AnyDescription();
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Any type named "+name+" already exists and is different");
+}
+
+
+
 
 void TypeRegister::_bindTypeIdWithName(TypeId id,std::string const&name){
   assert(this!=nullptr);
@@ -715,25 +232,27 @@ void TypeRegister::_bindTypeIdWithName(TypeId id,std::string const&name){
   this->_name2TypeId[name]=id;
 }
 
-TypeRegister::TypeId TypeRegister::_typeExists(
-    DescriptionVector const&description,
+TypeId TypeRegister::_typeExists(
+    TypeDescriptionVector const&description,
     size_t                 &i){
   assert(this!=nullptr);
   if(i>=description.size())return UNREGISTERED;
   switch(description[i]){
     case UNREGISTERED:return UNREGISTERED;
     case ATOMIC      :return UNREGISTERED;
+    case PTR         :{PtrDescription      desc;return desc.findInRegister(this,description,i);}
     case ARRAY       :{ArrayDescription    desc;return desc.findInRegister(this,description,i);}
     case STRUCT      :{StructDescription   desc;return desc.findInRegister(this,description,i);}
-    case FCE         :{FunctionDescription desc;return desc.findInRegister(this,description,i);}
-    //case PTR         :{PtrDescription      desc;return desc.findInRegister(this,description,i);}
-    case AUTO        :{AutoDescription     desc;return desc.findInRegister(this,description,i);}
+    case FCE         :{FceDescription      desc;return desc.findInRegister(this,description,i);}
+    case MEMFCE      :{MemFceDescription   desc;return desc.findInRegister(this,description,i);}
+    case VOID        :{VoidDescription     desc;return desc.findInRegister(this,description,i);}
+    case ANY         :{AnyDescription      desc;return desc.findInRegister(this,description,i);}
     default          :return this->_typeIdExists(description,i);
   }
 }
 
-TypeRegister::TypeId TypeRegister::_typeIdExists(
-    DescriptionVector const&description,
+TypeId TypeRegister::_typeIdExists(
+    TypeDescriptionVector const&description,
     size_t                 &i){
   assert(this!=nullptr);
   if(i>=description.size())return UNREGISTERED;
@@ -743,17 +262,17 @@ TypeRegister::TypeId TypeRegister::_typeIdExists(
   return description[i++];
 }
 
-TypeRegister::TypeId TypeRegister::addCompositeType(
+TypeId TypeRegister::addCompositeType(
     std::string        const&name       ,
-    DescriptionVector  const&description){
+    TypeDescriptionVector  const&description){
   assert(this!=nullptr);
   size_t i=0;
   return this->_addType(name,description,i);
 }
 
-TypeRegister::TypeId TypeRegister::_addType(
+TypeId TypeRegister::_addType(
     std::string       const&name       ,
-    DescriptionVector const&description,
+    TypeDescriptionVector const&description,
     size_t                 &i          ){
   assert(this!=nullptr);
   size_t old = i;
@@ -777,18 +296,20 @@ TypeRegister::TypeId TypeRegister::_addType(
   switch(description[i]){
     case UNREGISTERED:return UNREGISTERED;
     case ATOMIC      :return UNREGISTERED;
-    case AUTO        :return TypeDescription::checkAndBindType(this,name,description,new AutoDescription    (),i);
-    case ARRAY       :return TypeDescription::checkAndBindType(this,name,description,new ArrayDescription   (),i);
-    case STRUCT      :return TypeDescription::checkAndBindType(this,name,description,new StructDescription  (),i);
-    //case PTR         :return TypeDescription::checkAndBindType(this,name,description,new PtrDescription     (),i);
-    case FCE         :return TypeDescription::checkAndBindType(this,name,description,new FunctionDescription(),i);
+    case PTR         :return TypeDescription::checkAndBindType(this,name,description,new PtrDescription   (),i);
+    case ARRAY       :return TypeDescription::checkAndBindType(this,name,description,new ArrayDescription (),i);
+    case STRUCT      :return TypeDescription::checkAndBindType(this,name,description,new StructDescription(),i);
+    case FCE         :return TypeDescription::checkAndBindType(this,name,description,new FceDescription   (),i);
+    case MEMFCE      :return TypeDescription::checkAndBindType(this,name,description,new MemFceDescription(),i);
+    case VOID        :return TypeDescription::checkAndBindType(this,name,description,new VoidDescription  (),i);
+    case ANY         :return TypeDescription::checkAndBindType(this,name,description,new AnyDescription   (),i);
     default          :return this->_addTypeId(name,description,i);
   }
 }
 
-TypeRegister::TypeId TypeRegister::_addTypeId(
+TypeId TypeRegister::_addTypeId(
     std::string       const&name       ,
-    DescriptionVector const&description,
+    TypeDescriptionVector const&description,
     size_t                 &i          ){
   assert(this!=nullptr);
   if(i>=description.size())return UNREGISTERED;
@@ -810,11 +331,11 @@ TypeRegister::TypeId TypeRegister::_addTypeId(
   return description[i++];
 }
 
-TypeRegister::TypeId TypeRegister::_vectorIndex2TypeId(TypeId const&index)const{
+TypeId TypeRegister::_vectorIndex2TypeId(TypeId const&index)const{
   return index+TYPEID;
 }
 
-TypeRegister::TypeId TypeRegister::_typeId2VectorIndex(TypeId const&id)const{
+TypeId TypeRegister::_typeId2VectorIndex(TypeId const&id)const{
   return id-TYPEID;
 }
 
@@ -836,57 +357,107 @@ TypeRegister::TypeType TypeRegister::getTypeIdType(TypeId id)const{
   return this->_getDescription(id)->type;
 }
 
-size_t TypeRegister::getNofStructElements(TypeId id)const{
+TypeId TypeRegister::getPtrType(TypeId id)const{
   assert(this!=nullptr);
-  assert((StructDescription*)this->_getDescription(id)!=nullptr);
-  return ((StructDescription*)this->_getDescription(id))->elementTypes.size();
-}
-
-TypeRegister::TypeId TypeRegister::getStructElementTypeId(TypeId id,size_t index)const{
-  assert(this!=nullptr);
-  assert((StructDescription*)this->_getDescription(id)!=nullptr);
-  assert(index<((StructDescription*)this->_getDescription(id))->elementTypes.size());
-  return ((StructDescription*)this->_getDescription(id))->elementTypes[index];
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == PTR);
+  return ((PtrDescription*)d)->innerType;
 }
 
 size_t TypeRegister::getArraySize(TypeId id)const{
   assert(this!=nullptr);
-  assert((ArrayDescription*)this->_getDescription(id)!=nullptr);
-  return ((ArrayDescription*)this->_getDescription(id))->size;
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == ARRAY);
+  return ((ArrayDescription*)d)->size;
 }
 
-TypeRegister::TypeId TypeRegister::getArrayElementTypeId(TypeId id)const{
+TypeId TypeRegister::getArrayElementTypeId(TypeId id)const{
   assert(this!=nullptr);
-  assert((ArrayDescription*)this->_getDescription(id)!=nullptr);
-  return ((ArrayDescription*)this->_getDescription(id))->elementType;
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == ARRAY);
+  return ((ArrayDescription*)d)->elementType;
 }
 
-//TypeRegister::TypeId TypeRegister::getPtrType(TypeId id)const{
-//  assert(this!=nullptr);
-//  assert((PtrDescription*)this->_getDescription(id)!=nullptr);
-//  return ((PtrDescription*)this->_getDescription(id))->innerType;
-//}
-
-TypeRegister::TypeId TypeRegister::getFceReturnTypeId(TypeId id)const{
+size_t TypeRegister::getNofStructElements(TypeId id)const{
   assert(this!=nullptr);
-  assert((FunctionDescription*)this->_getDescription(id)!=nullptr);
-  return ((FunctionDescription*)this->_getDescription(id))->returnType;
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == STRUCT);
+  return ((StructDescription*)d)->elementTypes.size();
+}
+
+TypeId TypeRegister::getStructElementTypeId(TypeId id,size_t index)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == STRUCT);
+  assert(index<((StructDescription*)d)->elementTypes.size());
+  return ((StructDescription*)d)->elementTypes.at(index);
+}
+
+TypeId TypeRegister::getFceReturnTypeId(TypeId id)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == FCE);
+  return ((FceDescription*)d)->returnType;
 }
 
 size_t TypeRegister::getNofFceArgs(TypeId id)const{
   assert(this!=nullptr);
-  assert((FunctionDescription*)this->_getDescription(id)!=nullptr);
-  return ((FunctionDescription*)this->_getDescription(id))->argumentTypes.size();
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == FCE);
+  return ((FceDescription*)d)->argumentTypes.size();
 }
 
-TypeRegister::TypeId TypeRegister::getFceArgTypeId(TypeId id,size_t index)const{
+TypeId TypeRegister::getFceArgTypeId(TypeId id,size_t index)const{
   assert(this!=nullptr);
-  assert((FunctionDescription*)this->_getDescription(id)!=nullptr);
-  assert(index<((FunctionDescription*)this->_getDescription(id))->argumentTypes.size());
-  return ((FunctionDescription*)this->_getDescription(id))->argumentTypes[index];
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == FCE);
+  assert(index<((FceDescription*)d)->argumentTypes.size());
+  return ((FceDescription*)d)->argumentTypes.at(index);
 }
 
-TypeRegister::TypeId TypeRegister::getTypeId(std::string const&name)const{
+TypeId TypeRegister::getMemFceReturnTypeId (TypeId id)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == MEMFCE);
+  return ((MemFceDescription*)d)->returnType;
+}
+
+TypeId TypeRegister::getMemFceClassTypeId  (TypeId id)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == MEMFCE);
+  return ((MemFceDescription*)d)->classType;
+}
+
+size_t TypeRegister::getNofMemFceArgs      (TypeId id)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == MEMFCE);
+  return ((MemFceDescription*)d)->argumentTypes.size();
+}
+
+TypeId TypeRegister::getMemFceArgTypeId    (TypeId id,size_t index)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == MEMFCE);
+  assert(index<((MemFceDescription*)d)->argumentTypes.size());
+  return ((MemFceDescription*)d)->argumentTypes.at(index);
+}
+
+
+TypeId TypeRegister::getTypeId(std::string const&name)const{
   assert(this!=nullptr);
   if(this->_name2TypeId.count(name)==0){
     ge::core::printError("TypeRegister::getTypeId","there is no such type",name);
@@ -922,24 +493,17 @@ bool TypeRegister::areSynonyms(std::string const&name0,std::string const&name1)c
 
 
 size_t TypeRegister::computeTypeIdSize(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::computeTypeIdSize",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
-  switch(this->getTypeIdType(id)){
-    case ARRAY :
-    case STRUCT:
-    case FCE   :
-    //case PTR   :
-    case ATOMIC:return this->_getDescription(id)->byteSize(this);
-    default    :return 0;
-  }
+  return this->_getDescription(id)->byteSize(this);
 }
 
 
 bool TypeRegister::areConvertible(TypeId a,TypeId b)const{
   assert(this!=nullptr);
   if(a==b)return true;
-  if(this->getTypeIdType(a)==AUTO)return true;
-  if(this->getTypeIdType(b)==AUTO)return true;
+  if(this->getTypeIdType(a)==ANY)return true;
+  if(this->getTypeIdType(b)==ANY)return true;
   if(this->getTypeIdType(a)==ARRAY)
     return this->areConvertible(this->getArrayElementTypeId(a),b);
   if(this->getTypeIdType(b)==ARRAY)
@@ -947,8 +511,8 @@ bool TypeRegister::areConvertible(TypeId a,TypeId b)const{
 
   return false;
   //if(a==b)return true;
-  //if(this->getTypeIdType(a)==AUTO)return true;
-  //if(this->getTypeIdType(b)==AUTO)return true;
+  //if(this->getTypeIdType(a)==ANY)return true;
+  //if(this->getTypeIdType(b)==ANY)return true;
   //if(this->getTypeIdType(a)==ARRAY){
   //  if(this->getTypeIdType(b)==PTR)
   //    return this->getArrayElementTypeId(a) == this->getPtrType(b);
@@ -992,29 +556,13 @@ void TypeRegister::destroy(void*ptr,TypeId id)const{
 void TypeRegister::_callConstructors(void*ptr,TypeId id)const{
   PRINT_CALL_STACK("TypeRegister::_callConstructors",ptr,id);
   assert(this!=nullptr);
-  switch(this->getTypeIdType(id)){
-    case ATOMIC:
-    case ARRAY :
-    case STRUCT:
-    //case PTR   :
-    case FCE   :
-      this->_getDescription(id)->callConstructor((TypeRegister*)this,ptr);
-      break;
-    default    :break;
-  }
+  this->_getDescription(id)->callConstructor((TypeRegister*)this,ptr);
 }
 
 void TypeRegister::_callDestructors(void*ptr,TypeId id)const{
   PRINT_CALL_STACK("TypeRegister::_callDestructors",ptr,id);
   assert(this!=nullptr);
-  switch(this->getTypeIdType(id)){
-    case ATOMIC:
-    case ARRAY :
-    case STRUCT:
-    //case PTR   :
-    case FCE   :this->_getDescription(id)->callDestructor((TypeRegister*)this,ptr);break;
-    default    :break;
-  }
+  this->_getDescription(id)->callDestructor((TypeRegister*)this,ptr);
 }
 
 std::string TypeRegister::data2Str(void*ptr,TypeId id)const{
@@ -1030,14 +578,14 @@ void TypeRegister::addToStrFunction(TypeId id,ToStr const&fce){
 }
 
 
-TypeRegister::TypeDescription*TypeRegister::_getDescription(TypeId id)const{
+TypeDescription*TypeRegister::_getDescription(TypeId id)const{
   PRINT_CALL_STACK("TypeRegister::_getDescription",id);
   assert(this!=nullptr);
   assert(this->_typeId2VectorIndex(id)<this->_types.size());
   return this->_types.at(this->_typeId2VectorIndex(id));
 }
 
-void TypeRegister::addDestructor(TypeId id,Destructor const&destructor){
+void TypeRegister::addDestructor(TypeId id,CDPtr const&destructor){
   PRINT_CALL_STACK("TypeRegister::addDestructor",id,destructor);
   assert(this!=nullptr);
   assert(this->_getDescription(id)->type == ATOMIC);// || this->_getDescription(id)->type == PTR);
@@ -1047,7 +595,7 @@ void TypeRegister::addDestructor(TypeId id,Destructor const&destructor){
   //  ((PtrDescription*)this->_getDescription(id))->destructor = destructor;
 }
 
-void TypeRegister::addConstructor(TypeId id,Constructor const&constructor){
+void TypeRegister::addConstructor(TypeId id,CDPtr const&constructor){
   PRINT_CALL_STACK("TypeRegister::addConstructor",id,constructor);
   assert(this!=nullptr);
   assert(this->_getDescription(id)->type == ATOMIC);// || this->_getDescription(id)->type == PTR);

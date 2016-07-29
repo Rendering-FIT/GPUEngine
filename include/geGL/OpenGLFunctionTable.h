@@ -1,5 +1,6 @@
 #pragma once
 
+#include<cassert>
 #include<geGL/OpenGL.h>
 
 namespace ge{
@@ -9,7 +10,10 @@ namespace ge{
         public:
           FunctionTable(){}
           virtual ~FunctionTable(){}
-          bool construct(){return this->m_init();}
+          bool construct(){
+            assert(this!=nullptr);
+            return this->m_init();
+          }
           virtual bool m_init(){return true;}
 #include<geGL/Generated/FunctionTableCalls.h>
 #include<geGL/Generated/OpenGLPFN.h>

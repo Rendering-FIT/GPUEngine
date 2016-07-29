@@ -1,7 +1,8 @@
 #pragma once
 
+#include<memory>
 #include<geDE/ObjectFactory.h>
-#include<geDE/TypeRegister.h>
+#include<geDE/Types.h>
 
 namespace ge{
   namespace de{
@@ -9,10 +10,10 @@ namespace ge{
     class FunctionRegister;
     class GEDE_EXPORT ResourceFactory: public ObjectFactory{
       protected:
-        TypeRegister::TypeId     _type   = TypeRegister::UNREGISTERED;
+        TypeId                   _type;
         std::shared_ptr<Resource>_result = nullptr                   ;
       public:
-        inline ResourceFactory(TypeRegister::TypeId const&type,Uses const&maxUses=0);
+        inline ResourceFactory(TypeId const&type,Uses const&maxUses=0);
         inline virtual ~ResourceFactory();
         inline void reset();
         inline bool firstConstruction()const;
@@ -20,8 +21,8 @@ namespace ge{
     };
 
     inline ResourceFactory::ResourceFactory(
-        TypeRegister::TypeId const&type   ,
-        Uses                 const&maxUses){
+        TypeId const&type   ,
+        Uses   const&maxUses){
       this->_type    = type   ;
       this->_maxUses = maxUses;
       this->reset();

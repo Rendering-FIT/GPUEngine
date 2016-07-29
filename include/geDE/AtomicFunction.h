@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geDE/Function.h>
+#include<map>
 
 namespace ge{
   namespace de{
@@ -34,15 +35,15 @@ namespace ge{
       public:
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr,
-            FunctionRegister::FunctionID           id);
+            FunctionId           id);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr                       ,
-            TypeRegister::DescriptionVector  const&typeDescription          ,
+            TypeDescriptionVector  const&typeDescription          ,
             std::string                            name            = ""     ,
             std::shared_ptr<StatementFactory>const&factory         = nullptr);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr    ,
-            FunctionRegister::FunctionID           id    ,
+            FunctionId           id    ,
             std::shared_ptr<Resource>        const&output);
         virtual ~AtomicFunction();
         virtual void operator()()override;

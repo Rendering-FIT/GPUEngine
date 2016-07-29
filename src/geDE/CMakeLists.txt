@@ -15,7 +15,18 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
 set(DE_INCLUDES
   ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/Types.h
+  ${HEADER_PATH}/Keyword.h
   ${HEADER_PATH}/TypeRegister.h
+  ${HEADER_PATH}/TypeDescription.h
+  ${HEADER_PATH}/AtomicDescription.h
+  ${HEADER_PATH}/PtrDescription.h
+  ${HEADER_PATH}/ArrayDescription.h
+  ${HEADER_PATH}/StructDescription.h
+  ${HEADER_PATH}/FceDescription.h
+  ${HEADER_PATH}/MemFceDescription.h
+  ${HEADER_PATH}/VoidDescription.h
+  ${HEADER_PATH}/AnyDescription.h
   ${HEADER_PATH}/Resource.h
   ${HEADER_PATH}/AtomicResource.h
   ${HEADER_PATH}/CompositeResource.h
@@ -54,6 +65,15 @@ set(DE_INCLUDES
 
 set(DE_SOURCES
   TypeRegister.cpp
+  TypeDescription.cpp
+  AtomicDescription.cpp
+  PtrDescription.cpp
+  ArrayDescription.cpp
+  StructDescription.cpp
+  FceDescription.cpp
+  MemFceDescription.cpp
+  VoidDescription.cpp
+  AnyDescription.cpp
   AtomicResource.cpp
   CompositeResource.cpp
   Function.cpp
