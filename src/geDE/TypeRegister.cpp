@@ -3,7 +3,6 @@
 #include<geDE/AtomicResource.h>
 #include<sstream>
 #include<memory>
-#include<cassert>
 #include<cstring>
 #include<vector>
 
@@ -23,29 +22,29 @@ using namespace ge::de;
 class Function;
 
 TypeRegister::TypeRegister(){
-  this->addCompositeType(keyword<Any>(),{ANY});
-  auto Void   = this->addAtomicType(keyword<void       >(),0                  );(void)Void;
-  auto Bool   = this->addAtomicType(keyword<bool       >(),sizeof(bool       ));
-  auto I8     = this->addAtomicType(keyword<int8_t     >(),sizeof(int8_t     ));
-  auto I16    = this->addAtomicType(keyword<int16_t    >(),sizeof(int16_t    ));
-  auto I32    = this->addAtomicType(keyword<int32_t    >(),sizeof(int32_t    ));
-  auto I64    = this->addAtomicType(keyword<int64_t    >(),sizeof(int64_t    ));
-  auto U8     = this->addAtomicType(keyword<uint8_t    >(),sizeof(uint8_t    ));
-  auto U16    = this->addAtomicType(keyword<uint16_t   >(),sizeof(uint16_t   ));
-  auto U32    = this->addAtomicType(keyword<uint32_t   >(),sizeof(uint32_t   ));
-  auto U64    = this->addAtomicType(keyword<uint64_t   >(),sizeof(uint64_t   ));
-  auto F32    = this->addAtomicType(keyword<float      >(),sizeof(float      ));
-  auto F64    = this->addAtomicType(keyword<double     >(),sizeof(double     ));
-  auto String = this->addAtomicType(keyword<std::string>(),sizeof(std::string),[](void*ptr){new(ptr)std::string();},[](void*ptr){((std::string*)ptr)->~basic_string();});
-  this->addCompositeType("vec2",{ARRAY,2,F32});
-  this->addCompositeType("vec3",{ARRAY,3,F32});
-  this->addCompositeType("vec4",{ARRAY,4,F32});
-  this->addCompositeType("ivec2",{ARRAY,2,I32});
-  this->addCompositeType("ivec3",{ARRAY,3,I32});
-  this->addCompositeType("ivec4",{ARRAY,4,I32});
-  this->addCompositeType("uvec2",{ARRAY,2,U32});
-  this->addCompositeType("uvec3",{ARRAY,3,U32});
-  this->addCompositeType("uvec4",{ARRAY,4,U32});
+  auto any    = this->addType<Any     >();(void)any;
+  auto Void   = this->addType<void    >();(void)Void;
+  auto Bool   = this->addType<bool    >();
+  auto I8     = this->addType<int8_t  >();
+  auto I16    = this->addType<int16_t >();
+  auto I32    = this->addType<int32_t >();
+  auto I64    = this->addType<int64_t >();
+  auto U8     = this->addType<uint8_t >();
+  auto U16    = this->addType<uint16_t>();
+  auto U32    = this->addType<uint32_t>();
+  auto U64    = this->addType<uint64_t>();
+  auto F32    = this->addType<float   >();
+  auto F64    = this->addType<double  >();
+  auto String = this->addType<std::string>([](void*ptr){new(ptr)std::string();},[](void*ptr){((std::string*)ptr)->~basic_string();});
+  this->addType<float[2]>("vec2");
+  this->addType<float[3]>("vec3");
+  this->addType<float[4]>("vec4");
+  this->addType<int32_t[]>("ivec2");
+  this->addType<int32_t[]>("ivec3");
+  this->addType<int32_t[]>("ivec4");
+  this->addType<uint32_t[]>("uvec2");
+  this->addType<uint32_t[]>("uvec3");
+  this->addType<uint32_t[]>("uvec4");
   this->addToStrFunction(Bool,  [](void*ptr){if((bool&)ptr)return std::string("true");else return std::string("false");});
   this->addToStrFunction(I8 ,   [](void*ptr){std::stringstream ss;ss<<*(int8_t  *)ptr;return ss.str();});
   this->addToStrFunction(I16,   [](void*ptr){std::stringstream ss;ss<<*(int16_t *)ptr;return ss.str();});
@@ -202,9 +201,13 @@ TypeId TypeRegister::addMemFceType(
   return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"MemFce type named "+name+" already exists and is different");
 }
 
-
-//MemFce
-//Void
+TypeId TypeRegister::addVoidType(
+    std::string        const&name){
+  assert(this!=nullptr);
+  auto newDesc = new VoidDescription();
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Void type named "+name+" already exists and is different");
+}
 
 TypeId TypeRegister::addAnyType(
     std::string        const&name){
@@ -271,9 +274,9 @@ TypeId TypeRegister::addCompositeType(
 }
 
 TypeId TypeRegister::_addType(
-    std::string       const&name       ,
+    std::string           const&name       ,
     TypeDescriptionVector const&description,
-    size_t                 &i          ){
+    size_t                     &i          ){
   assert(this!=nullptr);
   size_t old = i;
   auto id = this->_typeExists(description,i);
@@ -281,9 +284,7 @@ TypeId TypeRegister::_addType(
     auto ii = this->_name2TypeId.find(name);
     if(ii != this->_name2TypeId.end()){
       if(ii->second != id){
-        std::cerr<<"ERROR: TypeRegister::_addType() - ";
-        std::cerr<<"name "<<name<<" is already used with different type: "<<ii->second;
-        std::cerr<<std::endl;
+        ge::core::printError(GE_CORE_FCENAME,"name "+name+" is already used with different type: "+ge::core::value2str(ii->second),name,description,i);
         i = old;
         return UNREGISTERED;
       }
@@ -319,9 +320,7 @@ TypeId TypeRegister::_addTypeId(
     auto ii = this->_name2TypeId.find(name);
     if(ii != this->_name2TypeId.end()){
       if(ii->second != description[i]){
-        std::cerr<<"ERROR: TypeRegister::_addTypeId() - ";
-        std::cerr<<"name "<<name<<" is already used with different type: "<<ii->second<<" aka "<<ii->first;
-        std::cerr<<std::endl;
+        ge::core::printError(GE_CORE_FCENAME,"name "+name+" is already used with different type: "+ge::core::value2str(ii->second)+" aka "+ii->first,name,description,i);
         return UNREGISTERED;
       }
       return description[i++];
@@ -352,7 +351,7 @@ std::string TypeRegister::type2Str(size_t index)const{
 }
 
 TypeRegister::TypeType TypeRegister::getTypeIdType(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::getTypeIdType",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   return this->_getDescription(id)->type;
 }
@@ -460,7 +459,7 @@ TypeId TypeRegister::getMemFceArgTypeId    (TypeId id,size_t index)const{
 TypeId TypeRegister::getTypeId(std::string const&name)const{
   assert(this!=nullptr);
   if(this->_name2TypeId.count(name)==0){
-    ge::core::printError("TypeRegister::getTypeId","there is no such type",name);
+    ge::core::printError(GE_CORE_FCENAME,"there is no such type",name);
     return UNREGISTERED;
   }
   return this->_name2TypeId.find(name)->second;
@@ -499,33 +498,32 @@ size_t TypeRegister::computeTypeIdSize(TypeId id)const{
 }
 
 
-bool TypeRegister::areConvertible(TypeId a,TypeId b)const{
+bool TypeRegister::areConvertible(TypeId to,TypeId from)const{
   assert(this!=nullptr);
-  if(a==b)return true;
-  if(this->getTypeIdType(a)==ANY)return true;
-  if(this->getTypeIdType(b)==ANY)return true;
-  if(this->getTypeIdType(a)==ARRAY)
-    return this->areConvertible(this->getArrayElementTypeId(a),b);
-  if(this->getTypeIdType(b)==ARRAY)
-    return this->areConvertible(a,this->getArrayElementTypeId(b));
+  if(to==from)return true;
+  if(this->getTypeIdType(to)==ANY)return true;
+  if(this->getTypeIdType(from)==ANY)return true;
+  if(this->getTypeIdType(to)==ARRAY && this->getTypeIdType(from) == ARRAY)
+    return this->getArraySize(to)<=this->getArraySize(from);
+
+  auto fceConv = [this](TypeId memfce,TypeId fce)->bool{
+    if(this->getMemFceReturnTypeId(memfce)!=this->getFceReturnTypeId(fce))return false;
+    if(this->getNofMemFceArgs(memfce)!=this->getNofFceArgs(fce)+1)return false;
+    if(this->getMemFceClassTypeId(memfce)!=this->getFceArgTypeId(fce,0))return false;
+    for(size_t i=0;i<this->getNofMemFceArgs(memfce);++i)
+      if(this->getMemFceArgTypeId(memfce,i)!=this->getFceArgTypeId(fce,1+i))return false;
+    return true;
+  };
+  if(this->getTypeIdType(to)==MEMFCE && this->getTypeIdType(from) == FCE)
+    return fceConv(to,from);
+  if(this->getTypeIdType(to)==FCE && this->getTypeIdType(from) == MEMFCE)
+    return fceConv(from,to);
 
   return false;
-  //if(a==b)return true;
-  //if(this->getTypeIdType(a)==ANY)return true;
-  //if(this->getTypeIdType(b)==ANY)return true;
-  //if(this->getTypeIdType(a)==ARRAY){
-  //  if(this->getTypeIdType(b)==PTR)
-  //    return this->getArrayElementTypeId(a) == this->getPtrType(b);
-  //}
-  //if(this->getTypeIdType(a)==PTR){
-  //  if(this->getTypeIdType(b)==ARRAY)
-  //    return this->getArrayElementTypeId(b) == this->getPtrType(a);
-  //}
-  //return false;
 }
 
 void*TypeRegister::alloc(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::alloc",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   size_t size = this->computeTypeIdSize(id);
   uint8_t*ptr=new uint8_t[size];
@@ -534,13 +532,13 @@ void*TypeRegister::alloc(TypeId id)const{
 }
 
 void TypeRegister::free(void*ptr)const{
-  PRINT_CALL_STACK("TypeRegister::free",ptr);
+  PRINT_CALL_STACK(ptr);
   assert(this!=nullptr);
   delete[]((uint8_t*)ptr);
 }
 
 void*TypeRegister::construct(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::construct",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   auto ptr=this->alloc(id);
   this->_callConstructors(ptr,id);
@@ -548,78 +546,74 @@ void*TypeRegister::construct(TypeId id)const{
 }
 
 void TypeRegister::destroy(void*ptr,TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::destroy",ptr,id);
+  PRINT_CALL_STACK(ptr,id);
   this->_callDestructors(ptr,id);
   this->free(ptr);
 }
 
 void TypeRegister::_callConstructors(void*ptr,TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::_callConstructors",ptr,id);
+  PRINT_CALL_STACK(ptr,id);
   assert(this!=nullptr);
   this->_getDescription(id)->callConstructor((TypeRegister*)this,ptr);
 }
 
 void TypeRegister::_callDestructors(void*ptr,TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::_callDestructors",ptr,id);
+  PRINT_CALL_STACK(ptr,id);
   assert(this!=nullptr);
   this->_getDescription(id)->callDestructor((TypeRegister*)this,ptr);
 }
 
 std::string TypeRegister::data2Str(void*ptr,TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::data2Str",ptr,id);
+  PRINT_CALL_STACK(ptr,id);
   assert(this!=nullptr);
   return this->_getDescription(id)->data2Str(this,ptr);
 }
 
 void TypeRegister::addToStrFunction(TypeId id,ToStr const&fce){
-  PRINT_CALL_STACK("TypeRegister::addToStrFunction",id,fce);
+  PRINT_CALL_STACK(id,fce);
   assert(this!=nullptr);
   this->_getDescription(id)->data2StrPtr = fce;
 }
 
 
 TypeDescription*TypeRegister::_getDescription(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::_getDescription",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   assert(this->_typeId2VectorIndex(id)<this->_types.size());
   return this->_types.at(this->_typeId2VectorIndex(id));
 }
 
 void TypeRegister::addDestructor(TypeId id,CDPtr const&destructor){
-  PRINT_CALL_STACK("TypeRegister::addDestructor",id,destructor);
+  PRINT_CALL_STACK(id,destructor);
   assert(this!=nullptr);
-  assert(this->_getDescription(id)->type == ATOMIC);// || this->_getDescription(id)->type == PTR);
+  assert(this->_getDescription(id)->type == ATOMIC);
   if(this->_getDescription(id)->type == ATOMIC)
     ((AtomicDescription*)this->_getDescription(id))->destructor = destructor;
-  //if(this->_getDescription(id)->type == PTR)
-  //  ((PtrDescription*)this->_getDescription(id))->destructor = destructor;
 }
 
 void TypeRegister::addConstructor(TypeId id,CDPtr const&constructor){
-  PRINT_CALL_STACK("TypeRegister::addConstructor",id,constructor);
+  PRINT_CALL_STACK(id,constructor);
   assert(this!=nullptr);
-  assert(this->_getDescription(id)->type == ATOMIC);// || this->_getDescription(id)->type == PTR);
+  assert(this->_getDescription(id)->type == ATOMIC);
   if(this->_getDescription(id)->type == ATOMIC)
     ((AtomicDescription*)this->_getDescription(id))->constructor = constructor;
-  //if(this->_getDescription(id)->type == PTR)
-  //  ((PtrDescription*)this->_getDescription(id))->constructor = constructor;
 }
 
 std::shared_ptr<Resource>TypeRegister::sharedResource(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::sharedResource",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   return std::make_shared<AtomicResource>(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),this->construct(id),id);
 }
 
 std::shared_ptr<Resource>TypeRegister::sharedResource(std::string const&name)const{
-  PRINT_CALL_STACK("TypeRegister::sharedResource",name);
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   auto id = this->getTypeId(name);
   return this->sharedResource(id);
 }
 
 std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(TypeId id)const{
-  PRINT_CALL_STACK("TypeRegister::sharedEmptyResource",id);
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
 
   return std::shared_ptr<AtomicResource>(new AtomicResource(std::const_pointer_cast<TypeRegister>(this->shared_from_this()),id)
@@ -628,7 +622,7 @@ std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(TypeId id)const{
 }
 
 std::shared_ptr<Resource>TypeRegister::sharedEmptyResource(std::string const&name)const{
-  PRINT_CALL_STACK("TypeRegister::sharedEmptyResource",name);
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   return this->sharedEmptyResource(this->getTypeId(name));
 }

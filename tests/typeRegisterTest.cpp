@@ -32,6 +32,27 @@ SCENARIO("keyword tests","[TypeRegister]"){
 
 }
 
+class Class{
+  public:
+    int32_t get(int32_t);
+};
+
+namespace ge{
+  namespace de{
+    template<>inline std::string keyword<Class>(){return "Class";}
+  }
+}
+
+SCENARIO("template addType tests","[TypeRegister]"){
+  auto tr = std::make_shared<TypeRegister>();
+  auto arrayId  = tr->addType<int32_t[3][3]>();
+  auto classId  = tr->addType<Class>();
+  auto memfceId = tr->addType<int32_t(Class::*)(int32_t)>();
+  REQUIRE(tr->getTypeIdName(classId)==keyword<Class>());
+  REQUIRE(tr->getTypeIdName(memfceId)=="Class::(i32)->i32");
+  REQUIRE(tr->getTypeIdName(arrayId)==keyword<int32_t[3][3]>());
+}
+
 SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
   GIVEN( "empty typeRegister" ) {
     std::shared_ptr<TypeRegister>r=std::make_shared<TypeRegister>();
@@ -55,7 +76,7 @@ SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
         REQUIRE(((std::string&)*s)=="ahoj svete");
       }
     }
-//#define SHOWCERR
+    //#define SHOWCERR
 #ifndef SHOWCERR
     std::stringstream oss;
     auto old = std::cerr.rdbuf( oss.rdbuf() );

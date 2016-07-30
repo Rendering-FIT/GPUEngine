@@ -2,17 +2,6 @@
 
 #include<geDE/TypeRegister.h>
 
-template<typename T>
-std::string vec2str(std::vector<T>const&data,typename std::vector<T>::size_type from=0){
-  std::stringstream ss;
-  ss<<"[";
-  if(from<data.size())ss<<data[from];
-  for(typename std::vector<T>::size_type i=from+1;i<data.size();++i)
-    ss<<","<<data[i];
-  ss<<"]";
-  return ss.str();
-}
-
 namespace ge{
   namespace de{
     class TypeDescription{

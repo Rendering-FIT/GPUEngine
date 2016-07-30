@@ -44,81 +44,59 @@ namespace ge{
     inline Resource::Resource(
         std::shared_ptr<TypeRegister>const&manager,
         TypeId               id     ){
+      PRINT_CALL_STACK(manager,id);
+      assert(this!=nullptr);
       this->_manager = manager;
       this->_id = id;
     }
 
     inline Resource::~Resource(){
-
+      PRINT_CALL_STACK();
     }
 
     inline std::shared_ptr<TypeRegister>const&Resource::getManager()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return this->_manager;
     }
 
     inline TypeId Resource::getId()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return this->_id;
     }
 
     template<typename T>
       Resource& Resource::operator=(const T&data){
+        PRINT_CALL_STACK(data);
+        assert(this!=nullptr);
+        assert(this->getData()!=nullptr);
         *((T*)this->getData()) = data;
         return *this;
       }
 
     template<typename T>
       Resource::operator T&()const{
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        assert(this->getData()!=nullptr);
         return *((T*)this->getData());
       }
 
     template<typename T>
       Resource::operator T*()const{
-        return (T*)this->getData();
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        assert(this->getData()!=nullptr);
+        return *(T**)this->getData();
       }
 
     
     template<typename T>
       Resource::operator T**()const{
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
         return (T**)this->getData();//this->getDataAddress();
       }
-
-
-/*
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResource(std::string const&name,ARGS... args)const{
-        TypeId id=this->getTypeId(name);
-        return this->sharedResourceTypeId<CLASS>(id,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResource(const char* name,ARGS... args)const{
-        TypeId id=this->getTypeId(std::string(name));
-        return this->sharedResourceTypeId<CLASS>(id,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResource(ARGS... args)const{
-        TypeId id=this->getTypeId(this->getTypeKeyword<CLASS>());
-        return this->sharedResourceTypeId<CLASS>(id,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddCD(std::string const&name,ARGS... args){
-        this->addClassCD<CLASS>(name);
-        return this->sharedResource<CLASS>(name,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddC(std::string const&name,ARGS... args){
-        this->addClassC<CLASS>(name);
-        return this->sharedResource<CLASS>(name,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAddD(std::string const&name,ARGS... args){
-        this->addClassD<CLASS>(name);
-        return this->sharedResource<CLASS>(name,args...);
-      }
-    template<typename CLASS,typename... ARGS>
-      inline std::shared_ptr<Resource>TypeRegister::sharedResourceAdd(std::string const&name,ARGS... args){
-        this->addClass<CLASS>(name);
-        return this->sharedResource<CLASS>(name,args...);
-      }
-      */
   }
 }

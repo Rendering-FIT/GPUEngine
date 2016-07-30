@@ -1,34 +1,42 @@
 #include<geDE/FceDescription.h>
 #include<cassert>
+#include<geCore/ErrorPrinter.h>
 
 using namespace ge::de;
 
 FceDescription::FceDescription(
     TypeId             const&returnType   ,
     std::vector<TypeId>const&argumentTypes):TypeDescription(TypeRegister::FCE){
+  PRINT_CALL_STACK(returnType,argumentTypes);
   assert(this!=nullptr);
   this->returnType = returnType;
   this->argumentTypes = argumentTypes;
 }
 
-FceDescription::FceDescription():TypeDescription(TypeRegister::FCE){}
+FceDescription::FceDescription():TypeDescription(TypeRegister::FCE){
+  PRINT_CALL_STACK();
+}
 
-FceDescription::~FceDescription(){}
+FceDescription::~FceDescription(){
+  PRINT_CALL_STACK();
+}
 
 bool FceDescription::init(
-    TypeRegister*           tr         ,
+    TypeRegister*               tr         ,
     TypeDescriptionVector const&description,
-    size_t                 &i          ,
-    bool                    exists     ){
+    size_t                     &i          ,
+    bool                        exists     ){
+  PRINT_CALL_STACK(tr,description,i,exists);
   assert(this!=nullptr);
+  assert(tr!=nullptr);
   size_t old = i;
   if(i>=description.size()){
-    if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Function description is empty"<<std::endl;
+    if(!exists)ge::core::printError(GE_CORE_FCENAME,"Function description is empty",tr,description,i,exists);
     i=old;
     return false;
   }
   if(description[i++]!=TypeRegister::FCE){
-    if(!exists)std::cerr<<"ERROR - TypeRegister::addCompositeType("<<vec2str(description)<<") - Function description does not start with FCE"<<std::endl;
+    if(!exists)ge::core::printError(GE_CORE_FCENAME,"Function description does not start with FCE",tr,description,i,exists);
     i=old;
     return false;
   }
@@ -54,6 +62,7 @@ bool FceDescription::init(
 
 
 bool FceDescription::operator==(FceDescription const&other)const{
+  PRINT_CALL_STACK(other);
   assert(this!=nullptr);
   return 
     this->returnType == other.returnType && 
@@ -61,15 +70,19 @@ bool FceDescription::operator==(FceDescription const&other)const{
 }
 
 bool FceDescription::equal(TypeDescription const*other)const{
+  PRINT_CALL_STACK(other);
   assert(this!=nullptr);
+  assert(other!=nullptr);
   if(this->type != other->type)return false;
   return *this==*(FceDescription*)other;
 }
 
 std::string FceDescription::toStr(TypeRegister const*tr,TypeId)const{
+  PRINT_CALL_STACK(tr);
   assert(this!=nullptr);
+  assert(tr!=nullptr);
   std::stringstream ss;
-  ss<<"(";
+  ss<<"Fce-(";
   bool first=true;
   for(auto const&x:this->argumentTypes){
     if(first)first = false;
@@ -81,19 +94,16 @@ std::string FceDescription::toStr(TypeRegister const*tr,TypeId)const{
 }
 
 void FceDescription::callConstructor(TypeRegister*,void*)const{
-  PRINT_CALL_STACK("FunctionDescription::callConstructor",ptr);
-  //new(ptr)std::shared_ptr<Function>();
+  assert(false&&"ERROR: Fce is not constructible!");
 }
 
 void FceDescription::callDestructor(TypeRegister*,void*)const{
-  PRINT_CALL_STACK("FunctionDescription::callDestructor",ptr);
-  //((std::shared_ptr<Function>*)ptr)->~shared_ptr();
+  assert(false&&"ERROR: Fce is not destructible!");
 }
 
 size_t FceDescription::byteSize(TypeRegister const*)const{
-  PRINT_CALL_STACK("FunctionDescription::byteSize");
+  assert(false&&"ERROR: Fce has no size!");
   return 0;
-  //return sizeof(std::shared_ptr<FceDescription>);
 }
 
 

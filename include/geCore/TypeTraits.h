@@ -29,6 +29,20 @@ namespace ge{
     template<          >struct is_basic<char32_t          >:std::true_type {};
 #endif
 
+    template<typename FCE>struct FceArgType;
+    template<typename OUTPUT,typename... ARGS>
+      struct FceArgType<OUTPUT(ARGS...)>{
+        using type = std::tuple<ARGS...>;
+      };
+
+    template<typename FCE>struct FceReturnType;
+    template<typename OUTPUT,typename... ARGS>
+      struct FceReturnType<OUTPUT(ARGS...)>{
+        using type = OUTPUT;
+      };
+
+
+
     template<typename FCE>struct MemFceArgType;
     template<typename OUTPUT,typename CLASS,typename... ARGS>
       struct MemFceArgType<OUTPUT(CLASS::*)(ARGS...)>{

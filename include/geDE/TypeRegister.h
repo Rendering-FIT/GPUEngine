@@ -1,7 +1,6 @@
 #pragma once
 
 #include<geDE/Export.h>
-//#include<geCore/Dtemplates.h>
 #include<geCore/CallStackPrinter.h>
 #include<geDE/Types.h>
 #include<geDE/Keyword.h>
@@ -11,6 +10,7 @@
 #include<set>
 #include<iostream>
 #include<memory>
+#include<cassert>
 
 namespace ge{
   namespace de{
@@ -86,11 +86,11 @@ namespace ge{
         size_t getNofTypes()const;
         std::string type2Str(size_t typeIndex)const;
         TypeType                    getTypeIdType         (TypeId id)const;
-        size_t                      getNofStructElements  (TypeId id)const;
-        TypeId                      getStructElementTypeId(TypeId id,size_t index)const;
+        TypeId                      getPtrType            (TypeId id)const;
         size_t                      getArraySize          (TypeId id)const;
         TypeId                      getArrayElementTypeId (TypeId id)const;
-        TypeId                      getPtrType            (TypeId id)const;
+        size_t                      getNofStructElements  (TypeId id)const;
+        TypeId                      getStructElementTypeId(TypeId id,size_t index)const;
         TypeId                      getFceReturnTypeId    (TypeId id)const;
         size_t                      getNofFceArgs         (TypeId id)const;
         TypeId                      getFceArgTypeId       (TypeId id,size_t index)const;
@@ -104,7 +104,7 @@ namespace ge{
         bool                        hasSynonyms           (TypeId id)const;
         bool                        areSynonyms           (std::string const&name0,std::string const&name1)const;
         size_t                      computeTypeIdSize     (TypeId id)const;
-        bool                        areConvertible        (TypeId a,TypeId b)const;
+        bool                        areConvertible        (TypeId to,TypeId from)const;
         void*alloc(TypeId id)const;
         void free(void*ptr)const;
         void*construct(TypeId id)const;
@@ -117,6 +117,26 @@ namespace ge{
         std::shared_ptr<Resource>sharedEmptyResource(std::string const&name)const;
         void addDestructor (TypeId id,CDPtr const&destructor  = nullptr);
         void addConstructor(TypeId id,CDPtr const&constructor = nullptr);
+        template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && !std::is_same<T,void>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>(),CDPtr c = nullptr,CDPtr d = nullptr);
+        template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_same<T,Any>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>(),CDPtr c = nullptr,CDPtr d = nullptr);
+        template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_same<T,Any>::value,unsigned>::type = 0>
+          TypeId addType(CDPtr c,CDPtr d = nullptr);
+        template<typename T,typename std::enable_if<std::is_pointer<T>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
+        template<typename T,typename std::enable_if<std::is_array<T>::value && std::rank<T>::value==1,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
+        template<typename T,typename std::enable_if<std::is_array<T>::value && std::rank<T>::value!=1,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
+        template<typename T,typename std::enable_if<std::is_function<T>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
+        template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
+        template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && std::is_same<T,void>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
+        template<typename T,typename std::enable_if<std::is_same<T,Any>::value,unsigned>::type = 0>
+          TypeId addType(std::string const&name = keyword<T>());
       protected:
         std::vector<TypeDescription*> _types;
         std::map<TypeId,std::set<std::string>>_typeId2Synonyms;
@@ -157,26 +177,109 @@ namespace ge{
             TypeDescription*d,
             std::string const&errFceName,
             std::string const&errMsg);
+        template<typename...ARGS>
+          std::vector<TypeId>_tupleToTypeIds(std::tuple<ARGS...>const&){
+            assert(this!=nullptr);
+            return {this->getTypeId(keyword<ARGS>())...};
+          }
+
     };
+
+    template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && !std::is_same<T,void>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name,CDPtr c,CDPtr d){
+        PRINT_CALL_STACK(c,d);
+        assert(this!=nullptr);
+        return this->addAtomicType(name,sizeof(T),c,d);
+      }
+
+    template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_same<T,Any>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name,CDPtr c,CDPtr d){
+        PRINT_CALL_STACK(c,d);
+        assert(this!=nullptr);
+        return this->addAtomicType(name,sizeof(T),c,d);
+      }
+
+    template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_same<T,Any>::value,unsigned>::type>
+      TypeId TypeRegister::addType(CDPtr c,CDPtr d){
+        PRINT_CALL_STACK(c,d);
+        assert(this!=nullptr);
+        return this->addAtomicType(keyword<T>(),sizeof(T),c,d);
+      }
+
+    template<typename T,typename std::enable_if<std::is_pointer<T>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        using pure = typename std::remove_pointer<T>::type;
+        return this->addPtrType(name,this->getTypeId(keyword<pure>()));
+      }
+
+    template<typename T,typename std::enable_if<std::is_array<T>::value && std::rank<T>::value==1,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        return this->addArrayType(name,this->getTypeId(keyword<typename std::remove_extent<T>::type>()),std::extent<T>::value);
+      }
+
+    template<typename T,typename std::enable_if<std::is_array<T>::value && std::rank<T>::value!=1,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        auto id = this->addType<typename std::remove_extent<T>::type>();
+        return this->addArrayType(name,id,std::extent<T>::value);
+      }
+
+    template<typename T,typename std::enable_if<std::is_function<T>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        using OUTPUT = typename ge::core::FceReturnType<T>::type;
+        using ARGS = typename ge::core::FceArgType<T>::type;
+        return this->addFceType(name,this->getTypeId(keyword<OUTPUT>()),this->_tupleToTypeIds(ARGS{}));
+      }
+
+    template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        using OUTPUT = typename ge::core::MemFceReturnType<T>::type;
+        using CLASS = typename ge::core::MemFceClassType<T>::type;
+        using ARGS = typename ge::core::MemFceArgType<T>::type;
+        return this->addMemFceType(name,this->getTypeId(keyword<OUTPUT>()),this->getTypeId(keyword<CLASS>()),this->_tupleToTypeIds(ARGS{}));
+      }
+
+    template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && std::is_same<T,void>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK(c,d);
+        assert(this!=nullptr);
+        return this->addVoidType(name);
+      }
+
+    template<typename T,typename std::enable_if<std::is_same<T,Any>::value,unsigned>::type>
+      TypeId TypeRegister::addType(std::string const&name){
+        PRINT_CALL_STACK();
+        assert(this!=nullptr);
+        return this->addAnyType(name);
+      }
 
 
 #define GE_DE_ADD_KEYWORD(type,name)\
     template<>inline std::string keyword<type>(){return name;}
 
     GE_DE_ADD_KEYWORD(void       ,"void"  )
-    GE_DE_ADD_KEYWORD(bool       ,"bool"  )
-    GE_DE_ADD_KEYWORD(int8_t     ,"i8"    )
-    GE_DE_ADD_KEYWORD(int16_t    ,"i16"   )
-    GE_DE_ADD_KEYWORD(int32_t    ,"i32"   )
-    GE_DE_ADD_KEYWORD(int64_t    ,"i64"   )
-    GE_DE_ADD_KEYWORD(uint8_t    ,"u8"    )
-    GE_DE_ADD_KEYWORD(uint16_t   ,"u16"   )
-    GE_DE_ADD_KEYWORD(uint32_t   ,"u32"   )
-    GE_DE_ADD_KEYWORD(uint64_t   ,"u64"   )
-    GE_DE_ADD_KEYWORD(float      ,"f32"   )
-    GE_DE_ADD_KEYWORD(double     ,"f64"   )
-    GE_DE_ADD_KEYWORD(std::string,"string")
-    GE_DE_ADD_KEYWORD(Any        ,"any"   )
+      GE_DE_ADD_KEYWORD(bool       ,"bool"  )
+      GE_DE_ADD_KEYWORD(int8_t     ,"i8"    )
+      GE_DE_ADD_KEYWORD(int16_t    ,"i16"   )
+      GE_DE_ADD_KEYWORD(int32_t    ,"i32"   )
+      GE_DE_ADD_KEYWORD(int64_t    ,"i64"   )
+      GE_DE_ADD_KEYWORD(uint8_t    ,"u8"    )
+      GE_DE_ADD_KEYWORD(uint16_t   ,"u16"   )
+      GE_DE_ADD_KEYWORD(uint32_t   ,"u32"   )
+      GE_DE_ADD_KEYWORD(uint64_t   ,"u64"   )
+      GE_DE_ADD_KEYWORD(float      ,"f32"   )
+      GE_DE_ADD_KEYWORD(double     ,"f64"   )
+      GE_DE_ADD_KEYWORD(std::string,"string")
+      GE_DE_ADD_KEYWORD(Any        ,"any"   )
   }
 }
 

@@ -67,21 +67,9 @@ namespace ge{
         return argPrinter<ARGS...>();
       }
 
-    template<typename FCE>struct FceArgType;
-    template<typename OUTPUT,typename... ARGS>
-      struct FceArgType<OUTPUT(ARGS...)>{
-        using type = std::tuple<ARGS...>;
-      };
-
-    template<typename FCE>struct FceReturnType;
-    template<typename OUTPUT,typename... ARGS>
-      struct FceReturnType<OUTPUT(ARGS...)>{
-        using type = OUTPUT;
-      };
-
     template<typename T,typename std::enable_if<std::is_function<T>::value,unsigned>::type>
       std::string keyword(){
-        return "("+printArgs(typename FceArgType<T>::type())+")->"+keyword<typename FceReturnType<T>::type>();
+        return "("+printArgs(typename ge::core::FceArgType<T>::type())+")->"+keyword<typename ge::core::FceReturnType<T>::type>();
       }
 
 

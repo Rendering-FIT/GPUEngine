@@ -42,6 +42,7 @@ std::string VoidDescription::toStr(TypeRegister const*tr,TypeId id)const{
   assert(tr!=nullptr);
   assert(tr->_typeId2Synonyms.count(id)!=0);
   std::stringstream ss;
+  ss<<"Void-";
   ss<<*tr->_typeId2Synonyms.find(id)->second.begin();
   return ss.str();
 }

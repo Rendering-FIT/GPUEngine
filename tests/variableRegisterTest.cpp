@@ -31,8 +31,8 @@ SCENARIO( "variableRegister tests", "[VariableRegister]" ) {
     THEN("setting value of variable a should be doable"){
       vr->insert("a",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
       vr->getVariable("a")->bindOutput(fr,tr->sharedResource("i32"));
-      *(int32_t*)(*vr->getVariable("a")->getOutputData())=32;
-      REQUIRE(*(int32_t*)(*vr->getVariable("a")->getOutputData())==32);
+      (int32_t&)(*vr->getVariable("a")->getOutputData())=32;
+      REQUIRE((int32_t&)(*vr->getVariable("a")->getOutputData())==32);
     }
   }
   WHEN("adding variables a.var0 a.var1 a.var2 b.var0 b.var1 c.var0 c.var2"){

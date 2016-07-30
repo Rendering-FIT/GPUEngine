@@ -8,8 +8,6 @@ namespace ge{
     class PtrDescription: public TypeDescription{
       public:
         TypeId innerType;
-        CDPtr destructor = nullptr;
-        CDPtr constructor = nullptr;
         PtrDescription(TypeId id);
         PtrDescription();
         virtual ~PtrDescription();

@@ -45,12 +45,12 @@ TypeId TypeDescription::checkAndBindType(
     size_t                     &i          ){
   PRINT_CALL_STACK(tr,name,description,d,i);
   assert(d!=nullptr);
+  assert(tr!=nullptr);
   size_t old = i;
   if(!d->init(tr,description,i,false)){
     delete d;
     return TypeRegister::UNREGISTERED;
   }
-  assert(tr!=nullptr);
   auto id = tr->_vectorIndex2TypeId(tr->_types.size());
   auto ii = tr->_name2TypeId.find(name);
   if(ii != tr->_name2TypeId.end()){

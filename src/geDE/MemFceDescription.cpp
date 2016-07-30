@@ -30,6 +30,7 @@ bool MemFceDescription::init(
     bool                        exists     ){
   PRINT_CALL_STACK(tr,description,i,exists);
   assert(this!=nullptr);
+  assert(tr!=nullptr);
   size_t old = i;
 
   if(i>=description.size()){
@@ -97,6 +98,7 @@ std::string MemFceDescription::toStr(TypeRegister const*tr,TypeId)const{
   assert(this!=nullptr);
   assert(tr!=nullptr);
   std::stringstream ss;
+  ss<<"MemFce-";
   ss<<tr->type2Str(tr->_typeId2VectorIndex(this->classType));
   ss<<"::(";
   bool first=true;

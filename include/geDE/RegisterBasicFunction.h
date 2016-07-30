@@ -40,11 +40,7 @@ namespace ge{
       OUTPUT uber_call(Function*mf,OUTPUT(*FCE)(ARGS...),ge::core::index_sequence<I...>){
         assert(mf!=nullptr);
         assert(FCE!=nullptr);
-#if defined(_MSC_VER) && _MSC_VER<1900
-        return FCE(/*(const ARGS&...)*/(*mf->getInputData(I))...);
-#else
-        return FCE(/*(const ARGS&)*/(*mf->getInputData(I))...);
-#endif
+        return FCE((*mf->getInputData(I))...);
       }
 
     template<typename OUTPUT,typename CLASS,typename...ARGS,std::size_t...I>
@@ -52,11 +48,7 @@ namespace ge{
         assert(mf!=nullptr);
         assert(fce!=nullptr);
         using emptyType = OUTPUT(Empty::*)(ARGS...);
-#if defined(_MSC_VER) && _MSC_VER<1900
-        return (*(Empty**)(*mf->getInputData(0))->*((emptyType)fce))(/*(const ARGS&...)*/(*mf->getInputData(1+I))...);
-#else
-        return ((Empty*)(*mf->getInputData(0))->*((emptyType)fce))(/*(const ARGS&)*/(*mf->getInputData(1+I))...);
-#endif
+        return ((Empty&)(*mf->getInputData(0)).*((emptyType)fce))((*mf->getInputData(1+I))...);
       }
 
 
@@ -64,16 +56,12 @@ namespace ge{
       bool sig_uber_call(Function*mf,bool(*SIG)(ARGS...),ge::core::index_sequence<I...>){
         assert(mf!=nullptr);
         assert(SIG!=nullptr);
-#if defined(_MSC_VER) && _MSC_VER<1900
-        return SIG(/*(const ARGS&...)*/(*mf->getInputData(I))...);
-#else
-        return SIG(/*(const ARGS&)*/(*mf->getInputData(I))...);
-#endif
+        return SIG((*mf->getInputData(I))...);
       }
 
 
 
-    template<typename OUTPUT,typename...ARGS>
+    template<typename OUTPUT,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
       FunctionId registerBasicFunction(
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
@@ -108,12 +96,6 @@ namespace ge{
                 doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               if(!doUberCall)return false;
               *this->getOutputData() = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              //auto ret = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              //if(std::is_pointer<OUTPUT>::value)
-              //  std::memcpy(this->getOutputData()->getData(),ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
-              //else
-              //  std::memcpy(this->getOutputData()->getData(),&ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
-              //*(OUTPUT*)(*this->getOutputData()) = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };
@@ -123,7 +105,7 @@ namespace ge{
         return f;
       }
 
-    template<typename OUTPUT,typename CLASS,typename...ARGS>
+    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
       FunctionId registerClassFunction(
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
@@ -158,12 +140,6 @@ namespace ge{
                 doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               if(!doUberCall)return false;
               *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              //auto ret = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              //if(std::is_pointer<OUTPUT>::value)
-              //  std::memcpy(this->getOutputData()->getData(),ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
-              //else
-              //  std::memcpy(this->getOutputData()->getData(),&ret,sizeof(typename std::remove_pointer<OUTPUT>::type));
-              //*(OUTPUT*)(*this->getOutputData()) = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
         };

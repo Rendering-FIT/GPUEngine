@@ -1,6 +1,7 @@
 #include<geDE/PtrDescription.h>
 #include<geCore/ErrorPrinter.h>
 #include<cassert>
+#include<cstring>
 
 using namespace ge::de;
 
@@ -25,6 +26,7 @@ bool PtrDescription::init(
     bool                        exists     ){
   PRINT_CALL_STACK(tr,description,i,exits);
   assert(this!=nullptr);
+  assert(tr!=nullptr);
   size_t old = i;
   if(i>=description.size()){
     if(!exists)ge::core::printError(GE_CORE_FCENAME,"Ptr description is empty",tr,description,i,exists);
@@ -56,6 +58,7 @@ bool PtrDescription::operator==(PtrDescription const&other)const{
 bool PtrDescription::equal(TypeDescription const*other)const{
   PRINT_CALL_STACK(other);
   assert(this!=nullptr);
+  assert(other!=nullptr);
   if(this->type != other->type)return false;
   return *this==*(PtrDescription*)other;
 }
@@ -63,27 +66,27 @@ bool PtrDescription::equal(TypeDescription const*other)const{
 std::string PtrDescription::toStr(TypeRegister const*tr,TypeId)const{
   PRINT_CALL_STACK(tr);
   assert(this!=nullptr);
+  assert(tr!=nullptr);
   std::stringstream ss;
+  ss<<"Ptr-";
   ss<<tr->type2Str(tr->_typeId2VectorIndex(this->innerType));
   ss<<"*";
   return ss.str();
 }
 
-void PtrDescription::callConstructor(TypeRegister*,void*ptr)const{
+void PtrDescription::callConstructor(TypeRegister*tr,void*ptr)const{
   PRINT_CALL_STACK(ptr);
   (void)ptr;
-  PRINT_CALL_STACK("PtrDescription::callConstructor",ptr);
-  if(this->constructor)this->constructor(ptr);
+  std::memset(ptr,0,this->byteSize(tr));
 }
 
 void PtrDescription::callDestructor(TypeRegister*,void*ptr)const{
   (void)ptr;
-  PRINT_CALL_STACK("PtrDescription::callDestructor",ptr);
-  if(this->destructor)this->destructor(ptr);
+  PRINT_CALL_STACK(ptr);
 }
 
 size_t PtrDescription::byteSize(TypeRegister const*)const{
-  PRINT_CALL_STACK("PtrDescription::byteSize");
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   return sizeof(void*);
 }
