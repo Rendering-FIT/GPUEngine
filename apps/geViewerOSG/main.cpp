@@ -281,7 +281,7 @@ void Init()
          for(auto it2=asdMap.begin(); it2!=asdMap.end(); it2++) {
             auto& rd=it2->second.renderingData;
             for(auto it3=rd.begin(); it3!=rd.end(); it3++) {
-               cout<<"   PrimitiveType: "<<primitiveType2str(it3->glMode)<<" , Count: "<<it3->drawCommandCount<<endl;
+               cout<<"   PrimitiveType: "<<primitiveType2str(it3->glMode)<<", Count: "<<it3->drawCommandCount<<endl;
                vertexCountsPerType[it3->glMode]+=it3->drawCommandCount;
             }
          }

@@ -516,7 +516,7 @@ public:
          configData.updateId();
 
          // create AttribConfigRef
-         AttribConfigRef config(configData);
+         AttribConfigRef attribConfig(configData);
 
          // get material
          osg::Material* osgMaterial=static_cast<osg::Material*>(
@@ -543,7 +543,7 @@ public:
          // create Mesh
          _model->meshList().emplace_back(make_shared<Mesh>());
          Mesh *m=_model->meshList().back().get();
-         m->allocData(config,numVertices,numIndices,unsigned(primitiveData.size()));
+         m->allocData(attribConfig,numVertices,numIndices,unsigned(primitiveData.size()));
 
          // upload primitives
          m->setAndUploadPrimitives(primitiveData.data(),
