@@ -38,12 +38,12 @@ void _recBuildInput(
     CompositeFunctionFactory::FactoryInputList const&factoryInputList){
   assert((fce!=nullptr) == (fac!=nullptr));
   if(fce==nullptr || fac==nullptr)return;
-  for(Function::InputIndex i=0;i<factoryInputList.size();++i)
+  for(size_t i=0;i<factoryInputList.size();++i)
     if(std::get<CompositeFunctionFactory::FACTORY>(factoryInputList[i])==fac)
       output.push_back(CompositeFunction::FceInput(fce,std::get<CompositeFunctionFactory::INPUT>(factoryInputList[i])));
 
   auto functionNodeFactory = std::dynamic_pointer_cast<FunctionNodeFactory>(fac);
-  for(Function::InputIndex i=0;i<functionNodeFactory->getNofInputs();++i){
+  for(size_t i=0;i<functionNodeFactory->getNofInputs();++i){
     if(functionNodeFactory == nullptr)
       _recBuildInput(output,fce->getInputFunction(i),nullptr,factoryInputList);
     else
@@ -62,7 +62,7 @@ std::shared_ptr<Statement>CompositeFunctionFactory::_do(
   auto ff = std::dynamic_pointer_cast<Function>(res);
   std::vector<CompositeFunction::FceInputList> fceInputs;
   assert(ff!=nullptr);
-  for(Function::InputIndex i=0;i<this->_inputs.size();++i){
+  for(size_t i=0;i<this->_inputs.size();++i){
     fceInputs.push_back(CompositeFunction::FceInputList());
     _recBuildInput(fceInputs[i],std::dynamic_pointer_cast<Function>(res),this->_factory,this->_inputs[i]);
   }

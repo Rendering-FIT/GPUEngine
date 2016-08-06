@@ -1,5 +1,6 @@
 #include<geDE/CompositeFunction.h>
 #include<geDE/FunctionNodeFactory.h>
+#include<geDE/Nullary.h>
 #include<algorithm>
 
 using namespace ge::de;
@@ -16,6 +17,18 @@ CompositeFunction::CompositeFunction(
 CompositeFunction::~CompositeFunction(){
 }
 
+void CompositeFunction::_addSignalingTarget(Statement*statement){
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  this->_outputMapping->_addSignalingTarget(statement);
+}
+
+void CompositeFunction::_removeSignalingTarget(Statement*statement){
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  this->_outputMapping->_removeSignalingTarget(statement);
+}
+
 bool CompositeFunction::bindInput(
     std::shared_ptr<FunctionRegister>const&fr      ,
     InputIndex                             i       ,
@@ -25,8 +38,20 @@ bool CompositeFunction::bindInput(
     return false;
   for(auto x:this->_inputMapping[i]){
     assert(std::get<FUNCTION>(x)!=nullptr);
+    /*
+       auto oldFunction = std::get<FUNCTION>(x)->getInputFunction(std::get<INPUT>(x));
+       if(oldFunction == function)continue;
+       if(oldFunction){
+       std::dynamic_pointer_cast<Statement>(oldFunction)->_removeSignalingTarget(this);
+       this->_removeSignalingSource((Statement*)&*oldFunction);
+       }
+       if(function){
+       std::dynamic_pointer_cast<Statement>(function)->_addSignalingTarget(this);
+       this->_addSignalingSource((Statement*)&*function);
+       }*/
     std::get<FUNCTION>(x)->bindInput(fr,std::get<INPUT>(x),function);
   }
+  this->setDirty();
   return true;
 }
 
@@ -36,6 +61,7 @@ bool CompositeFunction::bindOutput(
     std::shared_ptr<Resource>        const&data){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
+  //this->setDirty();
   return this->_outputMapping->bindOutput(fr,data);
 }
 
@@ -44,6 +70,15 @@ bool CompositeFunction::bindOutput(
     std::shared_ptr<Nullary>         const&nullary){
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
+  /*
+     if(!this->_outputBindingCheck(fr,nullary->getOutputData()))
+     return false;
+     if(this->_outputSignaling){
+     this->_removeSignalingTarget(this->_outputSignaling);
+     this->_outputSignaling->_removeSignalingSource(this);
+     }
+     this->_outputMapping = nullary;
+     this->setDirty();*/
   return this->_outputMapping->bindOutput(fr,nullary);
 }
 

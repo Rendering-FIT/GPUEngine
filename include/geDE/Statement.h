@@ -12,12 +12,14 @@ namespace ge{
     class While;
     class Function;
     class AtomicFunction;
+    class CompositeFunction;
     class /*GEDE_EXPORT*/ Statement: public ge::core::Command, public std::enable_shared_from_this<Statement>{
       friend class Body;
       friend class If;
       friend class While;
       friend class Function;
       friend class AtomicFunction;
+      friend class CompositeFunction;
       public:
         using Ticks = size_t;
         enum Type{
@@ -48,10 +50,10 @@ namespace ge{
         Ticks _updateTicks = 0;
         std::set<Statement*>_signalingSources;
         std::set<Statement*>_signalingTargets;
-        void _addSignalingSource(Statement*statement);
-        void _addSignalingTarget(Statement*statement);
-        void _removeSignalingSource(Statement*statement);
-        void _removeSignalingTarget(Statement*statement);
+        virtual void _addSignalingSource(Statement*statement);
+        virtual void _addSignalingTarget(Statement*statement);
+        virtual void _removeSignalingSource(Statement*statement);
+        virtual void _removeSignalingTarget(Statement*statement);
     };
 
     inline Statement::Statement(Type const&type){

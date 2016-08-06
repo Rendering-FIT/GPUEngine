@@ -1,12 +1,12 @@
 #include<geDE/TypeRegister.h>
 
-#include<geDE/AtomicResource.h>
 #include<sstream>
 #include<memory>
 #include<cstring>
 #include<vector>
 
 #include<geCore/ErrorPrinter.h>
+#include<geDE/AtomicResource.h>
 #include<geDE/TypeDescription.h>
 #include<geDE/AtomicDescription.h>
 #include<geDE/PtrDescription.h>
@@ -19,44 +19,7 @@
 
 using namespace ge::de;
 
-class Function;
-
 TypeRegister::TypeRegister(){
-  auto any    = this->addType<Any     >();(void)any;
-  auto Void   = this->addType<void    >();(void)Void;
-  auto Bool   = this->addType<bool    >();
-  auto I8     = this->addType<int8_t  >();
-  auto I16    = this->addType<int16_t >();
-  auto I32    = this->addType<int32_t >();
-  auto I64    = this->addType<int64_t >();
-  auto U8     = this->addType<uint8_t >();
-  auto U16    = this->addType<uint16_t>();
-  auto U32    = this->addType<uint32_t>();
-  auto U64    = this->addType<uint64_t>();
-  auto F32    = this->addType<float   >();
-  auto F64    = this->addType<double  >();
-  auto String = this->addType<std::string>([](void*ptr){new(ptr)std::string();},[](void*ptr){((std::string*)ptr)->~basic_string();});
-  this->addType<float[2]>("vec2");
-  this->addType<float[3]>("vec3");
-  this->addType<float[4]>("vec4");
-  this->addType<int32_t[]>("ivec2");
-  this->addType<int32_t[]>("ivec3");
-  this->addType<int32_t[]>("ivec4");
-  this->addType<uint32_t[]>("uvec2");
-  this->addType<uint32_t[]>("uvec3");
-  this->addType<uint32_t[]>("uvec4");
-  this->addToStrFunction(Bool,  [](void*ptr){if((bool&)ptr)return std::string("true");else return std::string("false");});
-  this->addToStrFunction(I8 ,   [](void*ptr){std::stringstream ss;ss<<*(int8_t  *)ptr;return ss.str();});
-  this->addToStrFunction(I16,   [](void*ptr){std::stringstream ss;ss<<*(int16_t *)ptr;return ss.str();});
-  this->addToStrFunction(I32,   [](void*ptr){std::stringstream ss;ss<<*(int32_t *)ptr;return ss.str();});
-  this->addToStrFunction(I64,   [](void*ptr){std::stringstream ss;ss<<*(int64_t *)ptr;return ss.str();});
-  this->addToStrFunction(U8 ,   [](void*ptr){std::stringstream ss;ss<<*(uint8_t *)ptr;return ss.str();});
-  this->addToStrFunction(U16,   [](void*ptr){std::stringstream ss;ss<<*(uint16_t*)ptr;return ss.str();});
-  this->addToStrFunction(U32,   [](void*ptr){std::stringstream ss;ss<<*(uint32_t*)ptr;return ss.str();});
-  this->addToStrFunction(U64,   [](void*ptr){std::stringstream ss;ss<<*(uint64_t*)ptr;return ss.str();});
-  this->addToStrFunction(F32,   [](void*ptr){std::stringstream ss;ss<<*(float   *)ptr;return ss.str();});
-  this->addToStrFunction(F64,   [](void*ptr){std::stringstream ss;ss<<*(double  *)ptr;return ss.str();});
-  this->addToStrFunction(String,[](void*ptr){std::stringstream ss;ss<<"\""<<*(std::string*)ptr<<"\"";return ss.str();});
 }
 
 TypeRegister::~TypeRegister(){
@@ -75,11 +38,11 @@ TypeId TypeRegister::_addTypeByDescription(std::string const&name,TypeDescriptio
 }
 
 bool TypeRegister::_checkIfTypeNameExists(
-    TypeId&result,
-    std::string const&name,
-    TypeDescription*d,
-    std::string const&errFceName,
-    std::string const&errMsg){
+    TypeId               &result    ,
+    std::string     const&name      ,
+    TypeDescription      *d         ,
+    std::string     const&errFceName,
+    std::string     const&errMsg    ){
   assert(this!=nullptr);
   auto ii = this->_name2TypeId.find(name);
   if(ii==this->_name2TypeId.end())return false;
@@ -96,9 +59,9 @@ bool TypeRegister::_checkIfTypeNameExists(
 
 
 bool TypeRegister::_checkIfTypeDescriptionExists(
-    TypeId&result,
-    std::string const&name,
-    TypeDescription*d){
+    TypeId               &result,
+    std::string     const&name  ,
+    TypeDescription      *d     ){
   assert(this!=nullptr);
   TypeId index = 0;
   for(auto const&x:this->_types){
@@ -116,10 +79,10 @@ bool TypeRegister::_checkIfTypeDescriptionExists(
 }
 
 TypeId TypeRegister::_checkAndAddTypeByDescription(
-    std::string const&name,
-    TypeDescription*d,
-    std::string const&errFceName,
-    std::string const&errMsg){
+    std::string     const&name      ,
+    TypeDescription      *d         ,
+    std::string     const&errFceName,
+    std::string     const&errMsg    ){
   assert(this!=nullptr);
   TypeId id;
   if(this->_checkIfTypeNameExists(id,name,d,errFceName,errMsg))

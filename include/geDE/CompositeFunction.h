@@ -38,19 +38,16 @@ namespace ge{
         virtual Ticks getUpdateTicks()const override;
         virtual void  setUpdateTicks(Ticks ticks)override;
         virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const override;
-        virtual inline std::string doc()const override;
       protected:
         std::vector<FceInputList>_inputMapping;
         std::shared_ptr<Function>_outputMapping;
+        virtual void _addSignalingTarget(Statement*statement)override;
+        virtual void _removeSignalingTarget(Statement*statement)override;
     };
 
     inline void CompositeFunction::operator()(){
       assert(this!=nullptr);
       (*this->_outputMapping)();
-    }
-
-    inline std::string CompositeFunction::doc()const{
-      return "";
     }
   }
 }

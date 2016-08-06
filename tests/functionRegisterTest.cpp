@@ -9,6 +9,8 @@
 #include<geDE/FactoryOfFunctionFactory.h>
 #include<geDE/FunctionNodeFactory.h>
 #include<geDE/CompositeFunctionFactory.h>
+#include<geDE/Reference.h>
+#include<geDE/RegisterBasicTypes.h>
 #include<geCore/Text.h>
 #include<iostream>
 #include<sstream>
@@ -42,10 +44,9 @@ std::string printFce(std::shared_ptr<Function>const&fce,std::shared_ptr<Function
   return ss.str();
 }
 
-
-
 SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   REQUIRE(fr->getName(0)=="unregistered");
@@ -79,6 +80,7 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
 
 SCENARIO("registration of stdFunction","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   auto i32 = tr->getTypeId(keyword<int32_t>());
@@ -95,6 +97,7 @@ SCENARIO("registration of stdFunction","[FunctionRegister]"){
 
 SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   auto i32 = tr->getTypeId(keyword<int32_t>());
@@ -201,6 +204,7 @@ int baba(int a,int b,int c){
 
 SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);
@@ -219,6 +223,42 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   registerBasicFunction(fr,"loadTextFile",loadTextFile);
   registerBasicFunction(fr,"baba",baba);
 }
+
+int32_t addP(int32_t const*a,int32_t const*b){
+  return *a+*b;
+}
+
+SCENARIO("Reference tests","[Reference]"){
+  auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
+  auto nr=std::make_shared<NameRegister>();
+  auto fr=std::make_shared<FunctionRegister>(tr,nr);
+  tr->addType<int32_t*>();
+  registerStdFunctions(fr);
+  registerBasicFunction(fr,"addP",addP);
+  fr->addFunction(tr->addType<int32_t*(int32_t)>(),"Reference<i32>",factoryOfFunctionFactory<Reference>("Reference<i32>"));
+
+  auto f = fr->sharedFunction("addP");
+  f->bindOutput(fr,tr->sharedResource("i32"));
+  auto a=std::make_shared<Nullary>(fr,(int32_t)10);
+  auto b=std::make_shared<Nullary>(fr,(int32_t)12);
+
+  auto pa = std::make_shared<Reference>(fr,tr->getTypeId("i32"));
+  auto pb = std::make_shared<Reference>(fr,tr->getTypeId("i32"));
+  pa->bindInput(fr,0,a);
+  pb->bindInput(fr,0,b);
+  pa->bindOutput(fr,tr->sharedResource(tr->getTypeId("i32*")));
+  pb->bindOutput(fr,tr->sharedResource(tr->getTypeId("i32*")));
+
+  f->bindInput(fr,0,pa);
+  f->bindInput(fr,1,pb);
+
+  (*f)();
+
+  REQUIRE((int32_t&)*f->getOutputData()==10+12);
+}
+
+
 
 class TestClass{
   public:
@@ -240,6 +280,7 @@ template<typename T>T const&removeSharedPointer(std::shared_ptr<T>const&val){ret
 
 SCENARIO( "registration of external member function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   registerStdFunctions(fr);

@@ -19,21 +19,24 @@ AtomicFunctionInput::~AtomicFunctionInput(){
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
-    FunctionId id):Function(fr,id){
+    FunctionId                             id):Function(fr,id){
   assert(this!=nullptr);
-  auto nofInputs = fr->getNofInputs(id);
-  for(decltype(nofInputs)i=0;i<nofInputs;++i)
+  assert(fr!=nullptr);
+  for(size_t i=0;i<fr->getNofInputs(id);++i)
     this->_inputs.push_back(std::make_shared<AtomicFunctionInput>());
 }
 
 AtomicFunction::AtomicFunction(
-    std::shared_ptr<FunctionRegister>const&fr,
-    TypeDescriptionVector const&typeDescription,
-    std::string name,
-    std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(fr->getTypeRegister()->addCompositeType("",typeDescription),name,factory)){
+    std::shared_ptr<FunctionRegister>const&fr     ,
+    TypeId                                 type   ,
+    std::string                      const&name   ,
+    std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(type,name,factory)){
 }
 
-AtomicFunction::AtomicFunction(std::shared_ptr<FunctionRegister>const&fr,FunctionId id,std::shared_ptr<Resource>const&output):AtomicFunction(fr,id){
+AtomicFunction::AtomicFunction(
+    std::shared_ptr<FunctionRegister>const&fr    ,
+    FunctionId                             id    ,
+    std::shared_ptr<Resource>        const&output):AtomicFunction(fr,id){
   assert(this!=nullptr);
   this->bindOutput(fr,output);
 }
@@ -44,7 +47,7 @@ AtomicFunction::~AtomicFunction(){
 
 bool AtomicFunction::bindInput(
     std::shared_ptr<FunctionRegister>const&fr      ,
-    InputIndex                             i       ,
+    size_t                                 i       ,
     std::shared_ptr<Function>        const&function){
   assert(this!=nullptr);
   if(!this->_inputBindingCheck(fr,i,function))
@@ -66,7 +69,7 @@ bool AtomicFunction::bindInput(
     this->_addSignalingSource((Statement*)&*function);
     auto ii = this->_fce2Indices.find(function);
     if(ii==this->_fce2Indices.end()){
-      this->_fce2Indices[function]=std::set<InputIndex>();
+      this->_fce2Indices[function]=std::set<size_t>();
       this->_fce2FceInput[function]=this->_inputs.at(i);
     }
     this->_fce2Indices.at(function).insert(i);
@@ -95,89 +98,21 @@ bool AtomicFunction::bindOutput(
   assert(this!=nullptr);
   if(!this->_outputBindingCheck(fr,nullary->getOutputData()))
     return false;
-  if(this->_outputSignaling){
-    this->_removeSignalingTarget(this->_outputSignaling);
-    this->_outputSignaling->_removeSignalingSource(this);
+  if(this->_outputNullary){
+    this->_removeSignalingTarget(this->_outputNullary);
+    this->_outputNullary->_removeSignalingSource(this);
   }
   this->_outputData = nullary->getOutputData();
-  this->_outputSignaling = &*nullary;
-  this->_addSignalingTarget(this->_outputSignaling);
-  this->_outputSignaling->_addSignalingSource(this);
+  this->_outputNullary = &*nullary;
+  this->_addSignalingTarget(this->_outputNullary);
+  this->_outputNullary->_addSignalingSource(this);
   this->setDirty();
   return true;
 }
 
-/*
-           ┌─────────┐
-           │Statement│ 
-           └────△────┘
-     ┌───────┬──┴──┬───────┐
-┌────┴───┐ ┌─┴┐ ┌──┴──┐ ┌──┴─┐
-│Function│ │If│ │While│ │Body│
-└────△───┘ └──┘ └─────┘ └────┘
-     └──┬───────────────┐
-┌───────┴──────┐┌───────┴─────────┐
-│AtomicFunction││CompositeFunction│
-└───────△──────┘└───────△─────────┘
-□□□□■□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□▣□□□□□□□□
-□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
-□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
-□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
-□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□□
-*/
-
-/*
-─ ━ ┄ ┅ ┈ ┉
-│ ┃ ┆ ┇ ┊ ┋
-┌ ┍ ┎ ┏
-┐ ┑ ┒ ┓
-└ ┕ ┖ ┗
-┘ ┙ ┚ ┛
-├ ┝ ┞ ┟ ┠ ┡ ┢ ┣
-┤ ┥ ┦ ┧ ┨ ┩ ┪ ┫
-┬ ┭ ┮ ┯ ┰ ┱ ┲ ┳
-┴ ┵ ┶ ┷ ┸ ┹ ┺ ┻
-┼ ┽ ┾ ┿
-
-▀
-▁▂▃▄▅▆▇█
-▉
-▊
-▋
-▌
-▍
-▎
-▏
-▐
-░
-▒
-▓
-▔
-▕
-▖
-▗
-▘
-▙
-▚
-▛
-▜
-▝
-▞
-▟
-■□▢▣▤▥▦▧▨▩
-▪▫
-▬▭
-▮▯
-▰▱
-▲△▴▵
-▶▷▸▹►▻
-▼▽▾▿
-*/
-
 void AtomicFunction::operator()(){
   assert(this!=nullptr);
   if(!this->_dirtyFlag)return;
-  //this->_dirtyFlag = false;
   bool isAnyInputChanged = this->_processInputs();
   if(!isAnyInputChanged){
     this->_dirtyFlag = false;

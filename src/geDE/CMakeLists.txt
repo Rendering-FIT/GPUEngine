@@ -18,6 +18,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/Types.h
   ${HEADER_PATH}/Keyword.h
   ${HEADER_PATH}/TypeRegister.h
+  ${HEADER_PATH}/RegisterBasicTypes.h
   ${HEADER_PATH}/TypeDescription.h
   ${HEADER_PATH}/AtomicDescription.h
   ${HEADER_PATH}/PtrDescription.h
@@ -52,6 +53,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/CompositeFunctionFactory.h
   ${HEADER_PATH}/FunctionNodeFactory.h
   ${HEADER_PATH}/Nullary.h
+  ${HEADER_PATH}/Reference.h
   ${HEADER_PATH}/StdFunctions.h
   ${HEADER_PATH}/StdNumericFunctions.h
   ${HEADER_PATH}/StdRelationalFunctions.h
@@ -65,6 +67,7 @@ set(DE_INCLUDES
 
 set(DE_SOURCES
   TypeRegister.cpp
+  RegisterBasicTypes.cpp
   TypeDescription.cpp
   AtomicDescription.cpp
   PtrDescription.cpp
@@ -89,6 +92,7 @@ set(DE_SOURCES
   CompositeFunctionFactory.cpp
   FunctionNodeFactory.cpp
   Nullary.cpp
+  Reference.cpp
   StdFunctions.cpp
   StdNumericFunctions.cpp
   StdRelationalFunctions.cpp

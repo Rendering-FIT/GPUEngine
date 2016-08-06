@@ -25,64 +25,60 @@ namespace ge{
         using SharedAtomicFunctionInput = std::shared_ptr<AtomicFunctionInput>;
         using Fce2FceInput = std::map<SharedFunction,SharedAtomicFunctionInput>;
         using InputList  = std::vector<SharedAtomicFunctionInput>;
-        using InputIndex = InputList::size_type;
       protected:
         InputList                _inputs               ;
-        std::map<SharedFunction,std::set<InputIndex>>_fce2Indices;
+        std::map<SharedFunction,std::set<size_t>>_fce2Indices;
         Fce2FceInput             _fce2FceInput        ;
         Function::Ticks          _updateTicks = 1      ;
         std::shared_ptr<Resource>_outputData  = nullptr;
       public:
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr,
-            FunctionId           id);
+            FunctionId                             id);
         AtomicFunction(
-            std::shared_ptr<FunctionRegister>const&fr                       ,
-            TypeDescriptionVector  const&typeDescription          ,
-            std::string                            name            = ""     ,
-            std::shared_ptr<StatementFactory>const&factory         = nullptr);
+            std::shared_ptr<FunctionRegister>const&fr               ,
+            TypeId                                 type             ,
+            std::string                      const&name             ,
+            std::shared_ptr<StatementFactory>const&factory = nullptr);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr    ,
-            FunctionId           id    ,
+            FunctionId                             id    ,
             std::shared_ptr<Resource>        const&output);
         virtual ~AtomicFunction();
         virtual void operator()()override;
         virtual bool bindInput (
             std::shared_ptr<FunctionRegister>const&fr                ,
-            InputIndex                             i                 ,
+            size_t                                 i                 ,
             std::shared_ptr<Function>        const&function = nullptr)override;
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr            ,
             std::shared_ptr<Resource>        const&data = nullptr)override;
         virtual bool bindOutput(
-            std::shared_ptr<FunctionRegister>const&fr                ,
-            std::shared_ptr<Nullary>         const&nullary  = nullptr)override;
-        virtual bool hasInput (InputIndex  i   )const override;
-        virtual bool hasOutput(                )const override;
-        virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;
-        virtual std::shared_ptr<Resource>const&getOutputData(            )const override;
+            std::shared_ptr<FunctionRegister>const&fr     ,
+            std::shared_ptr<Nullary>         const&nullary)override;
+        virtual bool hasInput(size_t i)const override;
+        virtual bool hasOutput()const override;
+        virtual std::shared_ptr<Resource>const&getInputData(size_t i)const override;
+        virtual std::shared_ptr<Resource>const&getOutputData()const override;
         virtual Ticks getUpdateTicks()const override;
         virtual void setUpdateTicks(Ticks ticks)override;
-        virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const override;
-        virtual std::string doc()const override;
+        virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
       protected:
         bool _processInputs();
         virtual bool _do();
-        inline bool _inputChanged(InputIndex  i    )const;
+        inline bool _inputChanged(size_t i)const;
     };
-
-
 
     inline std::shared_ptr<Resource>const&AtomicFunction::getOutputData()const{
       assert(this!=nullptr);
       return this->_outputData;
     }
 
-    inline bool AtomicFunction::hasInput(InputIndex i)const{
+    inline bool AtomicFunction::hasInput(size_t i)const{
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs[i]!=nullptr);
-      return this->_inputs[i]->function!=nullptr;
+      assert(this->_inputs.at(i)!=nullptr);
+      return this->_inputs.at(i)->function!=nullptr;
     }
 
     inline Function::Ticks AtomicFunction::getUpdateTicks()const{
@@ -95,15 +91,11 @@ namespace ge{
       this->_updateTicks = ticks;
     }
 
-    inline std::shared_ptr<Function>const&AtomicFunction::getInputFunction(InputIndex i)const{
+    inline std::shared_ptr<Function>const&AtomicFunction::getInputFunction(size_t i)const{
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs[i]!=nullptr);
-      return this->_inputs[i]->function;
-    }
-
-    inline std::string AtomicFunction::doc()const{
-      return"";
+      assert(this->_inputs.at(i)!=nullptr);
+      return this->_inputs.at(i)->function;
     }
 
     inline bool AtomicFunction::hasOutput()const{
@@ -111,19 +103,19 @@ namespace ge{
       return this->_outputData!=nullptr;
     }
 
-    inline std::shared_ptr<Resource>const&AtomicFunction::getInputData(InputIndex i)const{
+    inline std::shared_ptr<Resource>const&AtomicFunction::getInputData(size_t i)const{
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs[i]!=nullptr);
-      assert(this->_inputs[i]->function!=nullptr);
-      return this->_inputs[i]->function->getOutputData();
+      assert(this->_inputs.at(i)!=nullptr);
+      assert(this->_inputs.at(i)->function!=nullptr);
+      return this->_inputs.at(i)->function->getOutputData();
     }
 
-    inline bool AtomicFunction::_inputChanged(InputIndex i)const{
+    inline bool AtomicFunction::_inputChanged(size_t i)const{
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs[i]!=nullptr);
-      return this->_inputs[i]->changed;
+      assert(this->_inputs.at(i)!=nullptr);
+      return this->_inputs.at(i)->changed;
     }
 
   }

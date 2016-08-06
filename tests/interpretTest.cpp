@@ -4,6 +4,7 @@
 #include<geDE/CompositeFunction.h>
 #include<geDE/RegisterBasicFunction.h>
 #include<geDE/If.h>
+#include<geDE/RegisterBasicTypes.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
@@ -46,6 +47,7 @@ SCENARIO("pointer cast test","Function"){
 
 SCENARIO("basic dirty flag tests","[Function]"){
   auto tr = std::make_shared<ge::de::TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr = std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
@@ -94,6 +96,7 @@ SCENARIO("basic dirty flag tests","[Function]"){
 
 SCENARIO( "basic interpret tests", "[Function]" ) {
   auto tr = std::make_shared<ge::de::TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
@@ -415,18 +418,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
   }
 }
 
-/*
 SCENARIO( "ticks tests", "[Function]" ) {
   auto tr = std::make_shared<ge::de::TypeRegister>();
   auto nr=std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
+  ge::de::registerBasicTypes(tr);
   ge::de::registerStdFunctions(fr);
   class AddTen: public ge::de::AtomicFunction{
     public:
       unsigned counter=0;
-      AddTen(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>()),1,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>())},"AddTen",nullptr){
-        //this->_setInput(0,tr->getTypeId("f32"));
-        //this->_setOutput(tr->getTypeId("f32"));
+      AddTen(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,fr->getTypeRegister()->addType<float(float)>(),"AddTen",nullptr){
       }
     protected:
       virtual bool _do(){
@@ -441,15 +442,11 @@ SCENARIO( "ticks tests", "[Function]" ) {
   class Add: public ge::de::AtomicFunction{
     public:
       unsigned counter=0;
-      Add(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,{TypeRegister::FCE,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>()),2,fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>()),fr->getTypeRegister()->getTypeId(TypeRegister::getTypeKeyword<float>())},"Add",nullptr){
-        //this->_setInput(0,tr->getTypeId("f32"));
-        //this->_setInput(1,tr->getTypeId("f32"));
-        //this->_setOutput(tr->getTypeId("f32"));
+      Add(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,fr->getTypeRegister()->addType<float(float,float)>(),"Add",nullptr){
       }
     protected:
       virtual bool _do(){
         if(!this->hasInput(0)||!this->hasInput(1)||!this->hasOutput())return false;
-        if(!this->_inputChanged(0)&&!this->_inputChanged(1))return false;
         counter++;
         (float&)(*this->_outputData)=
           (float&)(*this->getInputData(0))+(float&)(*this->getInputData(1));
@@ -479,7 +476,7 @@ SCENARIO( "ticks tests", "[Function]" ) {
   }
 
 }
-*/
+
 /*
 SCENARIO( "macro function tests", "[CompositeFunction]" ) {
   auto tr = std::make_shared<ge::de::TypeRegister>();

@@ -5,6 +5,7 @@
 #include<geDE/Body.h>
 #include<geDE/ResourceFactory.h>
 #include<geDE/BodyFactory.h>
+#include<geDE/RegisterBasicTypes.h>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
@@ -13,6 +14,7 @@ using namespace ge::de;
 
 SCENARIO("maxUses test","[StatementFactory]"){
   auto r  = std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(r);
   auto nr = std::make_shared<NameRegister>();
   auto fr = std::make_shared<FunctionRegister>(r,nr);
   registerStdFunctions(fr);
@@ -33,6 +35,7 @@ SCENARIO("maxUses test","[StatementFactory]"){
 
 SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
   auto r  = std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(r);
   auto nr = std::make_shared<NameRegister>();
   auto fr = std::make_shared<FunctionRegister>(r,nr);
   registerStdFunctions(fr);

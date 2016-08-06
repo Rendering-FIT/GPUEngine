@@ -3,6 +3,7 @@
 #include<geDE/VariableRegister.h>
 #include<geDE/NameRegister.h>
 #include<geDE/StdFunctions.h>
+#include<geDE/RegisterBasicTypes.h>
 #include<iostream>
 #include<sstream>
 
@@ -19,6 +20,7 @@ SCENARIO( "variableRegister tests", "[VariableRegister]" ) {
 #endif
 
   auto tr=std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto nr=std::make_shared<NameRegister>();
   auto fr=std::make_shared<FunctionRegister>(tr,nr);
   auto vr=std::make_shared<VariableRegister>("*");

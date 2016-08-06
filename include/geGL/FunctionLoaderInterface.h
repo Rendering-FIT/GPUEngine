@@ -4,7 +4,7 @@ namespace ge{
   namespace gl{
     namespace opengl{
       typedef void(*FUNCTION_POINTER)();
-      typedef FUNCTION_POINTER(*GET_PROC_ADDRESS)(char const*);
+      typedef void*(*GET_PROC_ADDRESS)(char const*);
       class FunctionLoaderInterface{
         public:
           FunctionLoaderInterface(){}

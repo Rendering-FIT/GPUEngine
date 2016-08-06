@@ -48,6 +48,13 @@ namespace ge{
      */
     GEGL_EXPORT void init(
         std::shared_ptr<opengl::FunctionLoaderInterface>const&loader = nullptr);
+    /**
+     * @brief This function initialises geGL library
+     * It requires getProcAddress such as SDL_GL_GetProcAddress or wglGetProcAddress
+     *
+     * @param getProcAddress
+     */
+    GEGL_EXPORT void init(opengl::GET_PROC_ADDRESS getProcAddress);
   }
 }
 

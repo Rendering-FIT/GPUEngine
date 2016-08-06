@@ -1,18 +1,22 @@
 #include<geDE/Kernel.h>
 #include<geDE/Function.h>
 #include<geDE/StdFunctions.h>
+#include<geDE/RegisterBasicTypes.h>
 
 using namespace ge::de;
 
 Kernel::Kernel(){
+  assert(this!=nullptr);
   this->typeRegister     = std::make_shared<TypeRegister>();
   this->nameRegister     = std::make_shared<NameRegister>();
   this->functionRegister = std::make_shared<FunctionRegister>(this->typeRegister,this->nameRegister);
   this->variableRegister = std::make_shared<VariableRegister>("*");
+  registerBasicTypes(this->typeRegister);
   registerStdFunctions(this->functionRegister);
 }
 
 Kernel::~Kernel(){
+  assert(this!=nullptr);
   this->variableRegister = nullptr;
   this->functionRegister = nullptr;
   this->nameRegister = nullptr;

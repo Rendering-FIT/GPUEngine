@@ -24,7 +24,7 @@ namespace ge{
            * @return function pointer to requested OpenGL function
            */
           virtual FUNCTION_POINTER load(char const*fceName)const override{
-            return this->m_getProcAddress(fceName);
+            return ((FUNCTION_POINTER(*)(char const*))this->m_getProcAddress)(fceName);
           }
         protected:
           ge::gl::opengl::GET_PROC_ADDRESS m_getProcAddress = nullptr;

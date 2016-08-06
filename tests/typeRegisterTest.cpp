@@ -1,4 +1,5 @@
 #include<geDE/TypeRegister.h>
+#include<geDE/RegisterBasicTypes.h>
 #include<geDE/Resource.h>
 #include<iostream>
 #include<sstream>
@@ -45,6 +46,7 @@ namespace ge{
 
 SCENARIO("template addType tests","[TypeRegister]"){
   auto tr = std::make_shared<TypeRegister>();
+  ge::de::registerBasicTypes(tr);
   auto arrayId  = tr->addType<int32_t[3][3]>();
   auto classId  = tr->addType<Class>();
   auto memfceId = tr->addType<int32_t(Class::*)(int32_t)>();
@@ -56,6 +58,7 @@ SCENARIO("template addType tests","[TypeRegister]"){
 SCENARIO( "arrays can be registered using typeRegister", "[TypeRegister]" ) {
   GIVEN( "empty typeRegister" ) {
     std::shared_ptr<TypeRegister>r=std::make_shared<TypeRegister>();
+    ge::de::registerBasicTypes(r);
     auto nofDefaultTypes=r->getNofTypes();
     auto i32 = r->getTypeId(keyword<int32_t>());
 #if 1

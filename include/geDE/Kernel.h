@@ -3,6 +3,7 @@
 #include<geDE/Export.h>
 #include<memory>
 #include<vector>
+#include<geCore/ErrorPrinter.h>
 #include<geDE/TypeRegister.h>
 #include<geDE/FunctionRegister.h>
 #include<geDE/NameRegister.h>
@@ -130,13 +131,20 @@ namespace ge{
 
     template<typename T>
       std::shared_ptr<Nullary>Kernel::createVariable(T const&val){
+        assert(this!=nullptr);
+        assert(this->functionRegister!=nullptr);
         auto fce = this->functionRegister->sharedFunction("Nullary");
+        assert(fce!=nullptr);
+        assert(this->typeRegister!=nullptr);
         fce->bindOutput(this->functionRegister,this->typeRegister->sharedResource(keyword<T>()));
-        *(T*)(*fce->getOutputData()) = val;
+        assert(fce->getOutputData()!=nullptr);
+        *fce->getOutputData() = val;
         return std::dynamic_pointer_cast<Nullary>(fce);
       }
     template<typename T>
       bool Kernel::addVariable(std::string const&name,T const&val){
+        assert(this!=nullptr);
+        assert(this->variableRegister!=nullptr);
         return this->variableRegister->insert(name,this->createVariable(val));
       }
     template<typename OUTPUT,typename...ARGS>
@@ -144,8 +152,11 @@ namespace ge{
           std::vector<std::string>const&names,
           OUTPUT(*fce)(ARGS...),
           bool(*sig)(ARGS...)){
+        assert(this!=nullptr);
+        assert(this->functionRegister!=nullptr);
+        assert(this->nameRegister!=nullptr);
         if(names.size()==0){
-          std::cerr<<"ERROR: Kernel::addFunction() - at least function name has to be specified"<<std::endl;
+          ge::core::printError(GE_CORE_FCENAME,"at least function name has to be specified",names,fce,sig);
           return 0;
         }
         auto ret = registerBasicFunction(this->functionRegister,names[0],fce,sig);
@@ -160,8 +171,11 @@ namespace ge{
           std::vector<std::string>const&names,
           OUTPUT(CLASS::*fce)(ARGS...),
           bool(*sig)(ARGS...)){
+        assert(this!=nullptr);
+        assert(this->functionRegister!=nullptr);
+        assert(this->nameRegister!=nullptr);
         if(names.size()==0){
-          std::cerr<<"ERROR: Kernel::addFunction() - at least function name has to be specified"<<std::endl;
+          ge::core::printError(GE_CORE_FCENAME,"at least function name has to be specified",names,fce,sig);
           return 0;
         }
         auto ret = registerClassFunction(this->functionRegister,names[0],fce,sig);
@@ -175,6 +189,8 @@ namespace ge{
 
     template<typename CLASS>
       TypeId Kernel::addAtomicClass(std::string const&name){
+        assert(this!=nullptr);
+        assert(this->typeRegister!=nullptr);
         auto result = this->typeRegister->addAtomicType(name,sizeof(CLASS));
         this->typeRegister->addConstructor(result,[](void*ptr){new(ptr)CLASS;});
         this->typeRegister->addDestructor(result,[](void*ptr){((CLASS*)ptr)->~CLASS();});

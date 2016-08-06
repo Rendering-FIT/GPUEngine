@@ -164,19 +164,19 @@ namespace ge{
         TypeId _addTypeByDescription(std::string const&name,TypeDescription*d);
         bool _checkIfTypeNameExists(
             TypeId&result,
-            std::string const&name,
-            TypeDescription*d,
-            std::string const&errFceName,
-            std::string const&errMsg);
+            std::string     const&name      ,
+            TypeDescription      *d         ,
+            std::string     const&errFceName,
+            std::string     const&errMsg    );
         bool _checkIfTypeDescriptionExists(
-            TypeId&result,
-            std::string const&name,
-            TypeDescription*d);
+            TypeId               &result,
+            std::string     const&name  ,
+            TypeDescription      *d     );
         TypeId _checkAndAddTypeByDescription(
-            std::string const&name,
-            TypeDescription*d,
-            std::string const&errFceName,
-            std::string const&errMsg);
+            std::string     const&name      ,
+            TypeDescription      *d         ,
+            std::string     const&errFceName,
+            std::string     const&errMsg    );
         template<typename...ARGS>
           std::vector<TypeId>_tupleToTypeIds(std::tuple<ARGS...>const&){
             assert(this!=nullptr);

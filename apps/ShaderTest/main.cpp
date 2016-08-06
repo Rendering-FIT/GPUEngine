@@ -75,7 +75,7 @@ bool Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&even
 void Data::init(Data*data){
   data->window->makeCurrent("rendering");
 
-  ge::gl::init(std::make_shared<ge::gl::opengl::DefaultLoader>((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
+  ge::gl::init(SDL_GL_GetProcAddress);
   data->gl = ge::gl::opengl::getDefaultFunctionProvider();
   ge::gl::setHighDebugMessage();
 
@@ -83,6 +83,7 @@ void Data::init(Data*data){
   data->gl->glDepthFunc(GL_LEQUAL);
   data->gl->glDisable(GL_CULL_FACE);
   data->gl->glClearColor(0,1,0,1);
+
   auto vp0 = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
       "#version 450\n",
       "void main(){gl_Position = vec4(gl_VertexID%2,gl_VertexID/2,0,1);}");
