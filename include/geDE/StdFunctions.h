@@ -69,17 +69,8 @@ namespace ge{
 #define DEF_CLASS_PROLOGUE2(CLASS,INPUT1)\
     class CLASS: public AtomicFunction{\
       public:\
-             CLASS(\
-                 std::shared_ptr<FunctionRegister>const&fr              ,\
-                 FunctionId                             id              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
-                   PRINT_CALL_STACK(fr,id,output);\
-                   assert(this!=nullptr);\
-                   this->bindOutput(fr,output);\
-                 }\
-              CLASS(\
-                 std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS<INPUT1>>()),output){PRINT_CALL_STACK(fr,output);}\
+              CLASS(std::shared_ptr<FunctionRegister>const&fr):AtomicFunction(fr,fr->getFunctionId(keyword<CLASS<INPUT1>>())){PRINT_CALL_STACK(fr);}\
+              CLASS(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){PRINT_CALL_STACK(fr,id);}\
       protected:\
                 virtual bool _do(){\
                   PRINT_CALL_STACK();\
@@ -88,15 +79,8 @@ namespace ge{
 #define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,INPUT)\
     class CLASS: public AtomicFunction{\
       public:\
-             CLASS(\
-                 std::shared_ptr<FunctionRegister>const&fr              ,\
-                 FunctionId                             id              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id,output){\
-                   PRINT_CALL_STACK(fr,id,output);\
-                 }\
-              CLASS(\
-                 std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS<INPUT>>()),output){PRINT_CALL_STACK(fr,output);}\
+              CLASS(std::shared_ptr<FunctionRegister>const&fr):AtomicFunction(fr,fr->getFunctionId(keyword<CLASS<INPUT>>())){PRINT_CALL_STACK(fr);}\
+              CLASS(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){PRINT_CALL_STACK(fr);}\
       protected:\
                 virtual bool _do(){\
                   PRINT_CALL_STACK();\
@@ -162,17 +146,8 @@ namespace ge{
 #define DEF_AND_OR_OPERATOR(CLASS,OPERATOR)\
     class CLASS: public AtomicFunction{\
       public:\
-             CLASS(\
-                 std::shared_ptr<FunctionRegister>const&fr              ,\
-                 FunctionId           id              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
-                   PRINT_CALL_STACK(fr,id,output);\
-                   assert(this!=nullptr);\
-                   this->bindOutput(fr,output);\
-                 }\
-              CLASS(\
-                 std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS>()),output){PRINT_CALL_STACK(fr,output);}\
+              CLASS(std::shared_ptr<FunctionRegister>const&fr):AtomicFunction(fr,fr->getFunctionId(keyword<CLASS>())){PRINT_CALL_STACK(fr);}\
+              CLASS(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){PRINT_CALL_STACK(fr);}\
       protected:\
                 virtual bool _do(){\
                   PRINT_CALL_STACK()\
@@ -218,8 +193,7 @@ namespace ge{
       class Cast: public AtomicFunction{
         public:
           Cast(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){PRINT_CALL_STACK(fr,id);}
-          Cast(std::shared_ptr<ge::de::FunctionRegister>const&fr,
-              std::shared_ptr<ge::de::Resource>const&output=nullptr):AtomicFunction(fr,fr->getFunctionId(keyword<Cast<FROM,TO>>()),output){PRINT_CALL_STACK(fr,output);}
+          Cast(std::shared_ptr<ge::de::FunctionRegister>const&fr):AtomicFunction(fr,fr->getFunctionId(keyword<Cast<FROM,TO>>())){PRINT_CALL_STACK(fr);}
         protected:
           virtual bool _do(){
             PRINT_CALL_STACK();

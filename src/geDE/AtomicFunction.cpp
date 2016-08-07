@@ -37,16 +37,6 @@ AtomicFunction::AtomicFunction(
   PRINT_CALL_STACK(fr,type,name,factory);
 }
 
-AtomicFunction::AtomicFunction(
-    std::shared_ptr<FunctionRegister>const&fr    ,
-    FunctionId                             id    ,
-    std::shared_ptr<Resource>        const&output):AtomicFunction(fr,id){
-  PRINT_CALL_STACK(fr,id,output);
-  assert(this!=nullptr);
-  this->bindOutput(fr,output);
-}
-
-
 AtomicFunction::~AtomicFunction(){
   PRINT_CALL_STACK();
 }

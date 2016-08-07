@@ -39,10 +39,6 @@ namespace ge{
             TypeId                                 type             ,
             std::string                      const&name             ,
             std::shared_ptr<StatementFactory>const&factory = nullptr);
-        AtomicFunction(
-            std::shared_ptr<FunctionRegister>const&fr    ,
-            FunctionId                             id    ,
-            std::shared_ptr<Resource>        const&output);
         virtual ~AtomicFunction();
         virtual void operator()()override;
         virtual bool bindInput (
