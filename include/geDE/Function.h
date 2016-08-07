@@ -58,6 +58,16 @@ namespace ge{
         bool _outputBindingCheck(
             std::shared_ptr<FunctionRegister>const&fr      ,
             std::shared_ptr<Resource>        const&resource)const;
+        bool _outputBindingCircularCheck(
+            std::shared_ptr<FunctionRegister>const&fr      ,
+            std::shared_ptr<Resource>        const&resource)const;
+        bool _inputBindingCircularCheck(
+            std::shared_ptr<FunctionRegister>const&fr      ,
+            std::shared_ptr<Resource>const&resource)const;
+        bool _recOutputBindingCircularCheck(
+            std::shared_ptr<FunctionRegister>const&fr      ,
+            std::set<Function const*>&visited,
+            std::shared_ptr<Resource>const&resource)const;
         std::set<Resource*>_targetResources;
         std::set<Resource*>_sourceResources;
         virtual void _addTargetResource(Resource*r);

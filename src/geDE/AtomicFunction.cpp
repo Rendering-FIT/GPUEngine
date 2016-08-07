@@ -49,6 +49,8 @@ bool AtomicFunction::bindInput(
   assert(this!=nullptr);
   if(!this->_inputBindingCheck(fr,i,r))
     return false;
+  if(!this->_inputBindingCircularCheck(fr,r))
+    return false;
   assert(i<this->_inputs.size());
   auto oldResource = this->_inputs.at(i)->resource;
   if(oldResource == r)return true;
@@ -84,6 +86,8 @@ bool AtomicFunction::bindOutput(
   PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
   if(!this->_outputBindingCheck(fr,r))
+    return false;
+  if(!this->_outputBindingCircularCheck(fr,r))
     return false;
   if(this->_outputData == r){
     if(r==nullptr)return true;
