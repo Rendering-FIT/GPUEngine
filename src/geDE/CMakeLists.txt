@@ -52,7 +52,6 @@ set(DE_INCLUDES
   ${HEADER_PATH}/FactoryOfFunctionFactory.h
   ${HEADER_PATH}/CompositeFunctionFactory.h
   ${HEADER_PATH}/FunctionNodeFactory.h
-  ${HEADER_PATH}/Nullary.h
   ${HEADER_PATH}/Reference.h
   ${HEADER_PATH}/StdFunctions.h
   ${HEADER_PATH}/StdNumericFunctions.h
@@ -77,6 +76,7 @@ set(DE_SOURCES
   MemFceDescription.cpp
   VoidDescription.cpp
   AnyDescription.cpp
+  Resource.cpp
   AtomicResource.cpp
   CompositeResource.cpp
   Function.cpp
@@ -91,7 +91,6 @@ set(DE_SOURCES
   FunctionFactory.cpp
   CompositeFunctionFactory.cpp
   FunctionNodeFactory.cpp
-  Nullary.cpp
   Reference.cpp
   StdFunctions.cpp
   StdNumericFunctions.cpp

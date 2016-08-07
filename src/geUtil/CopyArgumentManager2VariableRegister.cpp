@@ -124,9 +124,7 @@ void ge::util::copyArgumentManager2VariableRegister(
     ArgData2Description(typeDescriptor,x.second,tr);
     std::shared_ptr<Resource>sac=tr->sharedResource(tr->addCompositeType("",typeDescriptor));
     ArgData2Resource(sac,x.second);
-    auto var = std::make_shared<ge::de::Nullary>(fr,fr->getFunctionId("Nullary"));
-    var->bindOutput(fr,sac);
-    vr->insert(x.first,var);
+    vr->insert(x.first,sac);
   }
 }
 

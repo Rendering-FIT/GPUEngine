@@ -23,21 +23,28 @@ namespace ge{
     inline ResourceFactory::ResourceFactory(
         TypeId const&type   ,
         Uses   const&maxUses){
+      PRINT_CALL_STACK(type,maxUses);
+      assert(this!=nullptr);
       this->_type    = type   ;
       this->_maxUses = maxUses;
       this->reset();
     }
 
     inline ResourceFactory::~ResourceFactory(){
+      PRINT_CALL_STACK();
     }
 
     inline void ResourceFactory::reset(){
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       this->_uses   = 0      ;
       this->_result = nullptr;
       this->_first  = true   ;
     }
 
     inline bool ResourceFactory::firstConstruction()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return this->_first;
     }
   }

@@ -6,11 +6,13 @@ using namespace ge::de;
 
 std::shared_ptr<Resource>ResourceFactory::operator()(
     std::shared_ptr<FunctionRegister>const&fr){
+  PRINT_CALL_STACK(fr);
+  assert(this!=nullptr);
+  assert(fr!=nullptr);
   this->_first=this->_uses==0;
-  std::shared_ptr<Resource>res;
   if(!this->_result)
     this->_result = fr->getTypeRegister()->sharedResource(this->_type);
-  res=this->_result;
+  auto res=this->_result;
   this->_uses++;
   if(this->_uses==this->_maxUses){
     this->_uses   = 0      ;

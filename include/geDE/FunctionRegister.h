@@ -37,7 +37,7 @@ namespace ge{
             std::shared_ptr<NameRegister>const&namer       );
         inline ~FunctionRegister();
         FunctionId addFunction(
-            TypeId             const&type   ,
+            TypeId                           const&type   ,
             std::string                      const&name   ,
             std::shared_ptr<StatementFactory>const&factory);
         TypeId                           getType   (FunctionId id)const;
@@ -98,6 +98,8 @@ namespace ge{
     inline FunctionRegister::FunctionRegister(
         std::shared_ptr<TypeRegister>const&typeRegister,
         std::shared_ptr<NameRegister>const&namer){
+      PRINT_CALL_STACK(typeRegister,namer);
+      assert(this!=nullptr);
       assert(typeRegister!=nullptr);
       this->_typeRegister = typeRegister;
       this->_functions[0]=FunctionDefinition(
@@ -109,9 +111,11 @@ namespace ge{
 
 
     inline FunctionRegister::~FunctionRegister(){
+      PRINT_CALL_STACK();
     }
 
     inline FunctionRegister::FunctionDefinition &FunctionRegister::_getDefinition(FunctionId id){
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       auto ii=this->_functions.find(id);
       if(ii==this->_functions.end()){
@@ -123,6 +127,7 @@ namespace ge{
 
     
     inline FunctionRegister::FunctionDefinition const&FunctionRegister::_getDefinition(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       auto ii=this->_functions.find(id);
       if(ii==this->_functions.end()){
@@ -133,21 +138,25 @@ namespace ge{
     }
 
     inline TypeId FunctionRegister::getType(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       return std::get<TYPE>(this->_getDefinition(id));
     }
 
     inline std::string FunctionRegister::getName(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       return std::get<NAME>(this->_getDefinition(id));
     }
 
     inline std::shared_ptr<StatementFactory>FunctionRegister::getFactory(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       return std::get<FACTORY>(this->_getDefinition(id));
     }
 
     inline FunctionId FunctionRegister::getFunctionId(std::string const&name)const{
+      PRINT_CALL_STACK(name);
       assert(this!=nullptr);
       auto ii=this->_name2Function.find(name);
       if(ii==this->_name2Function.end()){
@@ -158,6 +167,7 @@ namespace ge{
     }
 
     inline FunctionRegister::InputIndex FunctionRegister::getNofInputs(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_typeRegister!=nullptr);
       auto t=this->getType(id);
@@ -169,18 +179,21 @@ namespace ge{
     }
 
     inline std::string FunctionRegister::getOutputName(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_namer!=nullptr);
       return this->_namer->getFceOutputName(id);
     }
 
     inline std::string FunctionRegister::getInputName(FunctionId id,InputIndex input)const{
+      PRINT_CALL_STACK(id,input);
       assert(this!=nullptr);
       assert(this->_namer!=nullptr);
       return this->_namer->getFceInputName(id,input);
     }
 
     inline TypeId FunctionRegister::getInputType(FunctionId id,InputIndex input)const{
+      PRINT_CALL_STACK(id,input);
       assert(this!=nullptr);
       assert(this->_typeRegister!=nullptr);
       auto type = this->getType(id);
@@ -188,6 +201,7 @@ namespace ge{
     }
 
     inline TypeId FunctionRegister::getOutputType(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_typeRegister!=nullptr);
       auto type = this->getType(id);
@@ -196,80 +210,95 @@ namespace ge{
 
 
     inline FunctionRegister::InputIndex FunctionRegister::getInputIndex(FunctionId id,std::string const&name)const{
+      PRINT_CALL_STACK(id,name);
       assert(this!=nullptr);
       assert(this->_namer!=nullptr);
       return this->_namer->getFceInput(id,name);
     }
 
     inline std::shared_ptr<TypeRegister>const&FunctionRegister::getTypeRegister()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_typeRegister;
     }
 
     inline std::shared_ptr<NameRegister>const&FunctionRegister::getNameRegister()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_namer;
     }
 
     inline void FunctionRegister::addImplementation(FunctionId id,Implementation impl){
+      PRINT_CALL_STACK(id,impl);
       assert(this!=nullptr);
       this->_implementations[id]=impl;
     }
     
     inline void FunctionRegister::addImplementation(std::string const&name,Implementation impl){
+      PRINT_CALL_STACK(name,impl);
       assert(this!=nullptr);
       this->addImplementation(this->getFunctionId(name),impl);
     }
 
     inline FunctionRegister::Implementation FunctionRegister::getImplementation(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_implementations.count(id)!=0);
       return this->_implementations.find(id)->second;
     }
 
     inline FunctionRegister::Implementation FunctionRegister::getImplementation(std::string const&name)const{
+      PRINT_CALL_STACK(name);
       assert(this!=nullptr);
       return this->getImplementation(this->getFunctionId(name));
     }
 
     inline void FunctionRegister::addSignalingDecider(FunctionId id,SignalingDecider sig){
+      PRINT_CALL_STACK(id,sig);
       assert(this!=nullptr);
       this->_signalingDeciders[id]=sig;
     }
 
     inline void FunctionRegister::addSignalingDecider(std::string const&name,SignalingDecider sig){
+      PRINT_CALL_STACK(name,sig);
       assert(this!=nullptr);
       this->addSignalingDecider(this->getFunctionId(name),sig);
     }
 
     inline FunctionRegister::SignalingDecider FunctionRegister::getSignalingDecider(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_signalingDeciders.count(id)!=0);
       return this->_signalingDeciders.find(id)->second;
     }
 
     inline FunctionRegister::SignalingDecider FunctionRegister::getSignalingDecider(std::string const&name)const{
+      PRINT_CALL_STACK(name);
       assert(this!=nullptr);
       return this->getSignalingDecider(this->getFunctionId(name));
     }
 
     inline void FunctionRegister::addClassImplementation(FunctionId id,ClassImplementation impl){
+      PRINT_CALL_STACK(id,sig);
       assert(this!=nullptr);
       this->_classImplementations[id] = impl;
     }
 
     inline void FunctionRegister::addClassImplementation(std::string const&name,ClassImplementation impl){
+      PRINT_CALL_STACK(name,impl);
       assert(this!=nullptr);
       this->addClassImplementation(this->getFunctionId(name),impl);
     }
 
     inline FunctionRegister::ClassImplementation FunctionRegister::getClassImplementation(FunctionId id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_classImplementations.count(id)!=0);
       return this->_classImplementations.find(id)->second;
     }
 
     inline FunctionRegister::ClassImplementation FunctionRegister::getClassImplementation(std::string const&name)const{
+      PRINT_CALL_STACK(name);
       assert(this!=nullptr);
       return this->getClassImplementation(this->getFunctionId(name));
     }

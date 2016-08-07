@@ -10,6 +10,7 @@ namespace ge{
       inline TypeDescriptionVector getDescription(
           std::shared_ptr<TypeRegister>const&tr,
           OUTPUT(*)(ARGS...)){
+        PRINT_CALL_STACK(tr);
         assert(tr!=nullptr);
         TypeDescriptionVector result;
         result.push_back(TypeRegister::FCE);
@@ -24,6 +25,7 @@ namespace ge{
       inline TypeDescriptionVector getClassDescription(
           std::shared_ptr<TypeRegister>const&tr,
           OUTPUT(CLASS::*)(ARGS...)){
+        PRINT_CALL_STACK(tr);
         assert(tr!=nullptr);
         TypeDescriptionVector result;
         result.push_back(TypeRegister::FCE);
@@ -37,14 +39,16 @@ namespace ge{
 
 
     template<typename OUTPUT,typename...ARGS,std::size_t...I>
-      OUTPUT uber_call(Function*mf,OUTPUT(*FCE)(ARGS...),ge::core::index_sequence<I...>){
+      OUTPUT uber_call(Function*mf,OUTPUT(*fce)(ARGS...),ge::core::index_sequence<I...>){
+        PRINT_CALL_STACK(mf,fce);
         assert(mf!=nullptr);
-        assert(FCE!=nullptr);
-        return FCE((*mf->getInputData(I))...);
+        assert(fce!=nullptr);
+        return fce((*mf->getInputData(I))...);
       }
 
     template<typename OUTPUT,typename CLASS,typename...ARGS,std::size_t...I>
       OUTPUT uber_class_call(Function*mf,OUTPUT(CLASS::*fce)(ARGS...),ge::core::index_sequence<I...>){
+        PRINT_CALL_STACK(mf,fce);
         assert(mf!=nullptr);
         assert(fce!=nullptr);
         using emptyType = OUTPUT(Empty::*)(ARGS...);
@@ -53,10 +57,11 @@ namespace ge{
 
 
     template<typename...ARGS,std::size_t...I>
-      bool sig_uber_call(Function*mf,bool(*SIG)(ARGS...),ge::core::index_sequence<I...>){
+      bool sig_uber_call(Function*mf,bool(*sig)(ARGS...),ge::core::index_sequence<I...>){
+        PRINT_CALL_STACK(mf,sig);
         assert(mf!=nullptr);
-        assert(SIG!=nullptr);
-        return SIG((*mf->getInputData(I))...);
+        assert(sig!=nullptr);
+        return sig((*mf->getInputData(I))...);
       }
 
 
@@ -67,12 +72,13 @@ namespace ge{
           const std::string name,
           OUTPUT(*fce)(ARGS...),
           bool(*sig)(ARGS...) = nullptr){
+        PRINT_CALL_STACK(fr,name,fce,sig);
         assert(fr!=nullptr);
         assert(fr->getTypeRegister()!=nullptr);
         static const std::string ss=name;
         auto tr = fr->getTypeRegister();
-        //auto tid = tr->addType<OUTPUT(*)(ARGS...)>();
-        auto tid = tr->addCompositeType("",getDescription(tr,fce));
+        auto tid = tr->addType<OUTPUT(ARGS...)>();
+        //auto tid = tr->addCompositeType(keyword<OUTPUT(ARGS...)>(),getDescription(tr,fce));
 
         class BasicFunction: public AtomicFunction{
           protected:
@@ -84,18 +90,25 @@ namespace ge{
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
                 FunctionId                     id):AtomicFunction(fr,id){
+              PRINT_CALL_STACK(fr,id);
+              assert(this!=nullptr);
+              assert(fr!=nullptr);
               this->_fceImpl=reinterpret_cast<FF>(fr->getImplementation(this->_id));
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
-            virtual ~BasicFunction(){}
+            virtual ~BasicFunction(){
+              PRINT_CALL_STACK();
+            }
           protected:
             virtual bool _do(){
+              PRINT_CALL_STACK();
               assert(this!=nullptr);
 
               bool doUberCall = true;
               if(this->_sigImpl)
                 doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               if(!doUberCall)return false;
+              assert(this->getOutputData()!=nullptr);
               *this->getOutputData() = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
               return true;
             }
@@ -112,11 +125,13 @@ namespace ge{
           const std::string name,
           OUTPUT(*fce)(ARGS...),
           bool(*sig)(ARGS...) = nullptr){
+        PRINT_CALL_STACK(fr,name,fce,sig);
         assert(fr!=nullptr);
         assert(fr->getTypeRegister()!=nullptr);
         static const std::string ss=name;
         auto tr = fr->getTypeRegister();
-        auto tid = tr->addCompositeType("",getDescription(tr,fce));
+        auto tid = tr->addType<OUTPUT(ARGS...)>();
+        //auto tid = tr->addCompositeType("",getDescription(tr,fce));
 
         class BasicFunction: public AtomicFunction{
           protected:
@@ -128,12 +143,18 @@ namespace ge{
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
                 FunctionId                     id):AtomicFunction(fr,id){
+              PRINT_CALL_STACK(fr,id);
+              assert(this!=nullptr);
+              assert(fr!=nullptr);
               this->_fceImpl=reinterpret_cast<FF>(fr->getImplementation(this->_id));
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
-            virtual ~BasicFunction(){}
+            virtual ~BasicFunction(){
+              PRINT_CALL_STACK();
+            }
           protected:
             virtual bool _do(){
+              PRINT_CALL_STACK();
               assert(this!=nullptr);
 
               bool doUberCall = true;
@@ -156,12 +177,15 @@ namespace ge{
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
           OUTPUT(CLASS::*fce)(ARGS...),
-          bool(*SIG)(ARGS...) = nullptr){
+          bool(*sig)(ARGS...) = nullptr){
+        PRINT_CALL_STACK(fr,name,fce,sig);
         assert(fr!=nullptr);
         assert(fr->getTypeRegister()!=nullptr);
         static const std::string ss=name;
         auto tr = fr->getTypeRegister();
-        auto tid = tr->addCompositeType("",getClassDescription(tr,fce));
+        auto tid = tr->addType<OUTPUT(CLASS::*)(ARGS...)>();
+        //auto tid = tr->addCompositeType("",getClassDescription(tr,fce));
+
 
         class BasicFunction: public AtomicFunction{
           protected:
@@ -173,10 +197,15 @@ namespace ge{
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
                 FunctionId           id):AtomicFunction(fr,id){
+              PRINT_CALL_STACK(fr,id);
+              assert(this!=nullptr);
+              assert(fr!=nullptr);
               this->_fceImpl=reinterpret_cast<FF>(fr->getClassImplementation(this->_id));
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
-            virtual ~BasicFunction(){}
+            virtual ~BasicFunction(){
+              PRINT_CALL_STACK();
+            }
           protected:
             virtual bool _do(){
               assert(this!=nullptr);
@@ -191,7 +220,7 @@ namespace ge{
         };
         auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));
         fr->addClassImplementation(f,reinterpret_cast<FunctionRegister::ClassImplementation>(fce));
-        fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(SIG));
+        fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));
         return f;
       }
 
@@ -200,12 +229,14 @@ namespace ge{
           std::shared_ptr<FunctionRegister>const&fr,
           const std::string name,
           OUTPUT(CLASS::*fce)(ARGS...),
-          bool(*SIG)(ARGS...) = nullptr){
+          bool(*sig)(ARGS...) = nullptr){
+        PRINT_CALL_STACK(fr,name,fce,sig);
         assert(fr!=nullptr);
         assert(fr->getTypeRegister()!=nullptr);
         static const std::string ss=name;
         auto tr = fr->getTypeRegister();
-        auto tid = tr->addCompositeType("",getClassDescription(tr,fce));
+        auto tid = tr->addType<OUTPUT(CLASS::*)(ARGS...)>();
+        //auto tid = tr->addCompositeType("",getClassDescription(tr,fce));
 
         class BasicFunction: public AtomicFunction{
           protected:
@@ -217,12 +248,18 @@ namespace ge{
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
                 FunctionId           id):AtomicFunction(fr,id){
+              PRINT_CALL_STACK(fr,id);
+              assert(this!=nullptr);
+              assert(fr!=nullptr);
               this->_fceImpl=reinterpret_cast<FF>(fr->getClassImplementation(this->_id));
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
-            virtual ~BasicFunction(){}
+            virtual ~BasicFunction(){
+              PRINT_CALL_STACK();
+            }
           protected:
             virtual bool _do(){
+              PRINT_CALL_STACK();
               assert(this!=nullptr);
 
               bool doUberCall = true;
@@ -235,7 +272,7 @@ namespace ge{
         };
         auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));
         fr->addClassImplementation(f,reinterpret_cast<FunctionRegister::ClassImplementation>(fce));
-        fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(SIG));
+        fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));
         return f;
       }
 

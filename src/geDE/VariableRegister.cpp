@@ -10,30 +10,41 @@ using namespace ge::de;
 VariableRegister::VariableRegister(
     std::string      name  ,
     VariableRegister*parent){
+  PRINT_CALL_STACK(name,parent);
+  assert(this!=nullptr);
   this->_name   = name  ;
   this->_parent = parent;
 }
 
 VariableRegister::~VariableRegister(){
+  PRINT_CALL_STACK();
 }
 
 bool VariableRegister::empty()const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
   return this->_name2Variable.size()==0 && this->_name2Register.size()==0;
 }
 
 void VariableRegister::setParent(VariableRegister*parent){
+  PRINT_CALL_STACK(parent);
+  assert(this!=nullptr);
   this->_parent = parent;
 }
 
 void VariableRegister::insertVariableRegister(
     std::string name,
     SharedVariableRegister const&vr){
+  PRINT_CALL_STACK(name,vr);
+  assert(this!=nullptr);
   this->_name2Register[name]=vr;
 }
 
 std::string VariableRegister::toStr(
     unsigned indentation,
     std::shared_ptr<TypeRegister>const&tr)const{
+  PRINT_CALL_STACK(indentation,tr);
+  assert(this!=nullptr);
   std::stringstream ss;
   std::string ind="";
   for(unsigned i=0;i<indentation;++i)ind+=" ";
@@ -41,7 +52,7 @@ std::string VariableRegister::toStr(
   for(auto x:this->_name2Variable){
     if(x.first.find(".")==std::string::npos){
       ss<<ind<<"  "<<x.first;
-      auto resource = x.second->getOutputData();
+      auto resource = x.second;
       if(resource){
         ss<<" "<<tr->getTypeIdName(resource->getId())<<": ";
         ss<<resource->data2Str()<<std::endl;
@@ -55,10 +66,14 @@ std::string VariableRegister::toStr(
 }
 
 std::string VariableRegister::getName()const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
   return this->_name;
 }
 
 std::string VariableRegister::getFullName()const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
   std::stringstream ss;
   VariableRegister const*node=this;
   std::vector<std::string>path;
@@ -77,29 +92,33 @@ std::string VariableRegister::getFullName()const{
 }
 
 bool VariableRegister::hasVariableRegister(std::string name)const{
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   return this->_name2Register.count(name)!=0;
 }
 
 bool VariableRegister::hasVariable(std::string name)const{
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   return this->_name2Variable.count(name)!=0;
 }
 
 
 VariableRegister::SharedVariableRegister const&VariableRegister::getVariableRegister(std::string name)const{
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   auto ii = this->_name2Register.find(name);
   if(ii==this->_name2Register.end())
-    ge::core::printError("VariableRegister::getVariableRegister","there is no such sub variable register",name);
+    ge::core::printError(GE_CORE_FCENAME,"there is no such sub variable register",name);
   assert(ii!=this->_name2Register.end());
   return ii->second;
 }
 
 bool VariableRegister::insert(std::string name,SharedVariable const&variable){
+  PRINT_CALL_STACK(name,variable);
   assert(this!=nullptr);
   if(!this->_checkPath(name)){
-    std::cerr<<"ERROR: can't insert variable "+name+" into variableRegister "+this->getFullName()+" - incorrect variable name"<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,"can't insert variable "+name+" into variableRegister "+this->getFullName()+" - incorrect variable name",name,variable);
     return false;
   }
   std::size_t pos=name.find(".");
@@ -124,11 +143,12 @@ bool VariableRegister::insert(std::string name,SharedVariable const&variable){
 }
 
 void VariableRegister::erase(std::string name){
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
 
   name = this->getFullName()+"."+name;
   if(!this->_checkPath(name)){
-    std::cerr<<"ERROR: can't erase variable "+name+" - incorrect variable name"<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,"can't erase variable "+name+" - incorrect variable name",name);
     return;
   }
 
@@ -154,6 +174,7 @@ void VariableRegister::erase(std::string name){
 }
 
 void VariableRegister::eraseVariableRegister(std::string name){
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   std::size_t pos;
   VariableRegister*reg = this;
@@ -179,19 +200,23 @@ void VariableRegister::eraseVariableRegister(std::string name){
 }
 
 VariableRegister::SharedVariable const&VariableRegister::getVariable (std::string name)const{
+  PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   auto it=this->_name2Variable.find(name);
   if(it==this->_name2Variable.end())
-    ge::core::printError("VariableRegister::getVariable","there is no such variable",name);
+    ge::core::printError(GE_CORE_FCENAME,"there is no such variable",name);
   assert(this->_name2Variable.count(name)!=0);
   return it->second;
 }
 
 bool VariableRegister::contain(std::string name)const{
+  PRINT_CALL_STACK(name);
+  assert(this!=nullptr);
   return this->_name2Variable.count(name)!=0;
 }
 
 bool VariableRegister::_checkPath(std::string const&path)const{
+  PRINT_CALL_STACK(path);
   size_t pos = 0;
   size_t newPos;
   do{
@@ -204,8 +229,27 @@ bool VariableRegister::_checkPath(std::string const&path)const{
   return true;
 }
 
-VariableRegister::VariableIterator VariableRegister::varsBegin     (){return this->_name2Variable.begin();}
-VariableRegister::VariableIterator VariableRegister::varsEnd       (){return this->_name2Variable.end();}
-VariableRegister::RegisterIterator VariableRegister::registersBegin(){return this->_name2Register.begin();}
-VariableRegister::RegisterIterator VariableRegister::registersEnd  (){return this->_name2Register.end();}
+VariableRegister::VariableIterator VariableRegister::varsBegin     (){
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  return this->_name2Variable.begin();
+}
+
+VariableRegister::VariableIterator VariableRegister::varsEnd       (){
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  return this->_name2Variable.end();
+}
+
+VariableRegister::RegisterIterator VariableRegister::registersBegin(){
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  return this->_name2Register.begin();
+}
+
+VariableRegister::RegisterIterator VariableRegister::registersEnd  (){
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  return this->_name2Register.end();
+}
 

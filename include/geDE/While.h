@@ -27,14 +27,19 @@ namespace ge{
     inline While::While(
         std::shared_ptr<Function >const&condition,
         std::shared_ptr<Statement>const&body     ):Statement(WHILE){
+      PRINT_CALL_STACK(condition,body);
+      assert(this!=nullptr);
       this->setCondition(condition);
       this->setBody(body);
     }
 
     inline While::~While(){
+      PRINT_CALL_STACK();
     }
 
     inline void While::setBody(std::shared_ptr<Statement>const&body){
+      PRINT_CALL_STACK(body);
+      assert(this!=nullptr);
       if(this->_body){
         this->_body->_removeSignalingTarget(this);
         this->_removeSignalingSource(&*this->_body);
@@ -48,6 +53,8 @@ namespace ge{
     }
 
     inline void While::setCondition(std::shared_ptr<Function>const&condition){
+      PRINT_CALL_STACK(condition);
+      assert(this!=nullptr);
       if(this->_condition){
         std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingTarget(this);
         this->_removeSignalingSource((Statement*)&*this->_condition);
@@ -61,14 +68,20 @@ namespace ge{
     }
 
     inline std::shared_ptr<Function>const&While::getCondition()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return this->_condition;
     }
 
     inline std::shared_ptr<Statement>const&While::getBody()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return this->_body;
     }
 
     inline std::shared_ptr<While>While::toWhile()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return std::dynamic_pointer_cast<While>(std::const_pointer_cast<Statement>(this->shared_from_this()));
     }
 

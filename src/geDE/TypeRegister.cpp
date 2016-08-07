@@ -364,6 +364,8 @@ TypeId TypeRegister::getFceReturnTypeId(TypeId id)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == MEMFCE)
+    return this->getMemFceReturnTypeId(id);
   assert(d->type == FCE);
   return ((FceDescription*)d)->returnType;
 }
@@ -372,6 +374,8 @@ size_t TypeRegister::getNofFceArgs(TypeId id)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == MEMFCE)
+    return this->getNofMemFceArgs(id)+1;
   assert(d->type == FCE);
   return ((FceDescription*)d)->argumentTypes.size();
 }
@@ -380,6 +384,10 @@ TypeId TypeRegister::getFceArgTypeId(TypeId id,size_t index)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == MEMFCE){
+    if(index==0)return this->getMemFceClassTypeId(id);
+    else return this->getMemFceArgTypeId(id,index-1);
+  }
   assert(d->type == FCE);
   assert(index<((FceDescription*)d)->argumentTypes.size());
   return ((FceDescription*)d)->argumentTypes.at(index);
@@ -389,6 +397,8 @@ TypeId TypeRegister::getMemFceReturnTypeId (TypeId id)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == FCE)
+    return this->getFceReturnTypeId(id);
   assert(d->type == MEMFCE);
   return ((MemFceDescription*)d)->returnType;
 }
@@ -397,6 +407,8 @@ TypeId TypeRegister::getMemFceClassTypeId  (TypeId id)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == FCE)
+    return this->getFceArgTypeId(id,0);
   assert(d->type == MEMFCE);
   return ((MemFceDescription*)d)->classType;
 }
@@ -405,6 +417,8 @@ size_t TypeRegister::getNofMemFceArgs      (TypeId id)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == FCE)
+    return this->getNofFceArgs(id)-1;
   assert(d->type == MEMFCE);
   return ((MemFceDescription*)d)->argumentTypes.size();
 }
@@ -413,6 +427,8 @@ TypeId TypeRegister::getMemFceArgTypeId    (TypeId id,size_t index)const{
   assert(this!=nullptr);
   auto d = this->_getDescription(id);
   assert(d!=nullptr);
+  if(d->type == FCE)
+    return this->getFceArgTypeId(id,index+1);
   assert(d->type == MEMFCE);
   assert(index<((MemFceDescription*)d)->argumentTypes.size());
   return ((MemFceDescription*)d)->argumentTypes.at(index);

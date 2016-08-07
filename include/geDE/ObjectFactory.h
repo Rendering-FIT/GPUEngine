@@ -3,6 +3,7 @@
 #include<cstddef>
 #include<cassert>
 #include<geDE/Export.h>
+#include<geCore/CallStackPrinter.h>
 
 namespace ge{
   namespace de{
@@ -21,20 +22,25 @@ namespace ge{
     };
 
     inline ObjectFactory::ObjectFactory(Uses const&maxUses){
+      PRINT_CALL_STACK(maxUses);
+      assert(this!=nullptr);
       this->_maxUses = maxUses;
       this->_uses    = 0      ;
       this->_first   = true   ;
     }
 
     inline ObjectFactory::~ObjectFactory(){
+      PRINT_CALL_STACK();
     }
 
     inline ObjectFactory::Uses ObjectFactory::getUses()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_maxUses;
     }
 
     inline void ObjectFactory::setUses(Uses uses){
+      PRINT_CALL_STACK(uses);
       assert(this!=nullptr);
       this->_maxUses = uses;
     }

@@ -33,12 +33,15 @@ namespace ge{
         std::shared_ptr<Function >const&condition,
         std::shared_ptr<Statement>const&trueBody ,
         std::shared_ptr<Statement>const&falseBody):Statement(IF){
+      PRINT_CALL_STACK(condition,trueBody,falseBody);
+      assert(this!=nullptr);
       this->setCondition(condition);
       this->setTrueBody(trueBody);
       this->setFalseBody(falseBody);
     }
 
     inline If::~If(){
+      PRINT_CALL_STACK();
       /*
       if(this->_condition){
         std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingSource(this);
@@ -51,6 +54,8 @@ namespace ge{
     }
 
     inline void If::setCondition(std::shared_ptr<Function>const&condition){
+      PRINT_CALL_STACK(condition);
+      assert(this!=nullptr);
       if(this->_condition){
         std::dynamic_pointer_cast<Statement>(this->_condition)->_removeSignalingTarget(this);
         this->_removeSignalingSource((Statement*)&*this->_condition);
@@ -64,6 +69,8 @@ namespace ge{
     }
 
     inline void If::setTrueBody (std::shared_ptr<Statement>const&trueBody ){
+      PRINT_CALL_STACK(trueBody);
+      assert(this!=nullptr);
       if(this->_trueBody){
         this->_trueBody->_removeSignalingTarget(this);
         this->_removeSignalingSource(&*this->_trueBody);
@@ -77,6 +84,8 @@ namespace ge{
     }
 
     inline void If::setFalseBody(std::shared_ptr<Statement>const&falseBody){
+      PRINT_CALL_STACK(falseBody);
+      assert(this!=nullptr);
       if(this->_falseBody){
         this->_falseBody->_removeSignalingTarget(this);
         this->_removeSignalingSource(&*this->_falseBody);
@@ -90,18 +99,25 @@ namespace ge{
     }
 
     inline std::shared_ptr<Function>const&If::getCondition()const{
+      PRINT_CALL_STACK(f);
+      assert(this!=nullptr);
       return this->_condition;
     }
 
     inline std::shared_ptr<Statement>const&If::getTrueBody()const{
+      assert(this!=nullptr);
       return this->_trueBody;
     }
 
     inline std::shared_ptr<Statement>const&If::getFalseBody()const{
+      PRINT_CALL_STACK(f);
+      assert(this!=nullptr);
       return this->_falseBody;
     }
 
     inline std::shared_ptr<If>If::toIf()const{
+      PRINT_CALL_STACK(f);
+      assert(this!=nullptr);
       return std::dynamic_pointer_cast<If>(std::const_pointer_cast<Statement>(this->shared_from_this()));
     }
 

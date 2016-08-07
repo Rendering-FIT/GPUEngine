@@ -22,31 +22,32 @@ namespace ge{
         ~CompositeFunction();
         virtual inline void operator()()override;
         virtual bool bindInput (
-            std::shared_ptr<FunctionRegister>const&fr                ,
-            InputIndex                             i                 ,
-            std::shared_ptr<Function>        const&function = nullptr)override;
+            std::shared_ptr<FunctionRegister>const&fr          ,
+            InputIndex                             i           ,
+            std::shared_ptr<Resource>        const&r  = nullptr)override;
         virtual bool bindOutput(
-            std::shared_ptr<FunctionRegister>const&fr            ,
-            std::shared_ptr<Resource>        const&data = nullptr)override;
-        virtual bool bindOutput(
-            std::shared_ptr<FunctionRegister>const&fr            ,
-            std::shared_ptr<Nullary>         const&nullary       )override;
+            std::shared_ptr<FunctionRegister>const&fr          ,
+            std::shared_ptr<Resource>        const&r  = nullptr)override;
+        virtual bool bindOutputAsVariable(
+            std::shared_ptr<FunctionRegister>const&fr,
+            std::shared_ptr<Resource>        const&r )override;
         virtual bool hasInput (InputIndex i)const override;
         virtual bool hasOutput(            )const override;
         virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData(            )const override;
-        virtual Ticks getUpdateTicks()const override;
-        virtual void  setUpdateTicks(Ticks ticks)override;
-        virtual std::shared_ptr<Function>const&getInputFunction(InputIndex i)const override;
       protected:
         std::vector<FceInputList>_inputMapping;
         std::shared_ptr<Function>_outputMapping;
         virtual void _addSignalingTarget(Statement*statement)override;
         virtual void _removeSignalingTarget(Statement*statement)override;
+        virtual void _addTargetResource(Resource*resource)override;
+        virtual void _removeTargetResource(Resource*resource)override;
     };
 
     inline void CompositeFunction::operator()(){
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
+      assert(this->_outputMapping!=nullptr);
       (*this->_outputMapping)();
     }
   }

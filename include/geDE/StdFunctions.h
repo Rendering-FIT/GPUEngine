@@ -4,7 +4,6 @@
 #include<geDE/Resource.h>
 #include<geDE/AtomicFunction.h>
 #include<geDE/FactoryOfFunctionFactory.h>
-#include<geDE/Nullary.h>
 
 namespace ge{
   namespace de{
@@ -13,11 +12,17 @@ namespace ge{
       public:
         Assignment(
             std::shared_ptr<FunctionRegister>const&fr,
-            FunctionId           id):AtomicFunction(fr,id){}
+            FunctionId           id):AtomicFunction(fr,id){
+          PRINT_CALL_STACK(fr,id);
+        }
         Assignment(
-            std::shared_ptr<FunctionRegister>const&fr):Assignment(fr,fr->getFunctionId(keyword<Assignment<TYPE>>())){}
+            std::shared_ptr<FunctionRegister>const&fr):Assignment(fr,fr->getFunctionId(keyword<Assignment<TYPE>>())){
+          PRINT_CALL_STACK(fr);
+        }
 
-        ~Assignment(){}
+        ~Assignment(){
+          PRINT_CALL_STACK();
+        }
         /*virtual void operator()(){
           if(!this->_dirtyFlag)return;
 
@@ -27,7 +32,12 @@ namespace ge{
           this->_updateTicks++;
         }*/
         virtual bool _do(){
+          PRINT_CALL_STACK();
+          assert(this!=nullptr);
+          assert(this->getOutputData()!=nullptr);
+          assert(this->getInputData(0)!=nullptr);
           (TYPE&)(*this->getOutputData()) = (TYPE&)(*this->getInputData(0));
+          //this->getOutputData()->updateTicks();
           return true;
         }
     };
@@ -37,9 +47,17 @@ namespace ge{
       public:
         UnaryMinus(
             std::shared_ptr<FunctionRegister>const&fr,
-            FunctionId           id):AtomicFunction(fr,id){}
-        ~UnaryMinus(){}
+            FunctionId           id):AtomicFunction(fr,id){
+          PRINT_CALL_STACK(fr,id);
+        }
+        ~UnaryMinus(){
+          PRINT_CALL_STACK();
+        }
         virtual void operator()(){
+          PRINT_CALL_STACK();
+          assert(this!=nullptr);
+          assert(this->getOutputData()!=nullptr);
+          assert(this->getInputData(0)!=nullptr);
           if(!this->_dirtyFlag)return;
           this->_dirtyFlag = false;
           (TYPE&)(*this->getOutputData()) = (TYPE) (- (TYPE&)(*this->getInputData(0)));
@@ -53,30 +71,36 @@ namespace ge{
       public:\
              CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 FunctionId           id              ,\
+                 FunctionId                             id              ,\
                  std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
+                   PRINT_CALL_STACK(fr,id,output);\
+                   assert(this!=nullptr);\
                    this->bindOutput(fr,output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS<INPUT1>>()),output){}\
+                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS<INPUT1>>()),output){PRINT_CALL_STACK(fr,output);}\
       protected:\
-                virtual bool _do(){//}}
+                virtual bool _do(){\
+                  PRINT_CALL_STACK();\
+                  assert(this!=nullptr);//}}
 
 #define DEF_CLASS_PROLOGUE2_NONTEMP(CLASS,INPUT)\
     class CLASS: public AtomicFunction{\
       public:\
              CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 FunctionId           id              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
-                   this->bindOutput(fr,output);\
+                 FunctionId                             id              ,\
+                 std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id,output){\
+                   PRINT_CALL_STACK(fr,id,output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS<INPUT>>()),output){}\
+                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS<INPUT>>()),output){PRINT_CALL_STACK(fr,output);}\
       protected:\
-                virtual bool _do(){//}}
+                virtual bool _do(){\
+                  PRINT_CALL_STACK();\
+                  assert(this!=nullptr);//}}
 
 #define DEF_CLASS_EPILOGUE()/*{{*/\
     return true;\
@@ -142,13 +166,17 @@ namespace ge{
                  std::shared_ptr<FunctionRegister>const&fr              ,\
                  FunctionId           id              ,\
                  std::shared_ptr<Resource>const&        output = nullptr):AtomicFunction(fr,id){\
+                   PRINT_CALL_STACK(fr,id,output);\
+                   assert(this!=nullptr);\
                    this->bindOutput(fr,output);\
                  }\
               CLASS(\
                  std::shared_ptr<FunctionRegister>const&fr              ,\
-                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS>()),output){}\
+                 std::shared_ptr<Resource>const&        output = nullptr):CLASS(fr,fr->getFunctionId(keyword<CLASS>()),output){PRINT_CALL_STACK(fr,output);}\
       protected:\
                 virtual bool _do(){\
+                  PRINT_CALL_STACK()\
+                  assert(this!=nullptr);\
     INPUT_CHECK();\
     LEFT_RIGHT_SIDE(STD_CAST,bool,bool,OPERATOR,RIGHT_SIDE);\
     DEF_CLASS_EPILOGUE()//}}
@@ -189,12 +217,15 @@ namespace ge{
     template<typename FROM,typename TO>
       class Cast: public AtomicFunction{
         public:
-          Cast(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){}
+          Cast(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){PRINT_CALL_STACK(fr,id);}
           Cast(std::shared_ptr<ge::de::FunctionRegister>const&fr,
-              std::shared_ptr<ge::de::Resource>const&output=nullptr):AtomicFunction(fr,fr->getFunctionId(keyword<Cast<FROM,TO>>()),output){}
+              std::shared_ptr<ge::de::Resource>const&output=nullptr):AtomicFunction(fr,fr->getFunctionId(keyword<Cast<FROM,TO>>()),output){PRINT_CALL_STACK(fr,output);}
         protected:
           virtual bool _do(){
+            PRINT_CALL_STACK();
+            assert(this!=nullptr);
             if(!this->_inputChanged(0))return false;
+            assert(this->_outputData!=nullptr);
             (TO&)(*this->_outputData)=(TO)((FROM&)(*this->getInputData(0)));
             return true;
           }
@@ -358,7 +389,6 @@ namespace ge{
     SIGNED_NUMERIC_LOOP(DEFINE_GETTYPEKEYWORD,UnaryMinus)
 
     ALL_LOOP2(ALL_LOOP3,DEFINE_CASTKEYWORD)
-    template<>inline std::string keyword<Nullary>(){return "Nullary";}
     GEDE_EXPORT void registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr);
   }
 }

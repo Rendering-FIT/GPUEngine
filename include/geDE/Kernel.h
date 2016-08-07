@@ -32,19 +32,19 @@ namespace ge{
         std::vector<std::shared_ptr<Statement>>commands;
         size_t currentCommand = 0;
         template<typename T>
-        std::shared_ptr<Nullary>createVariable(T const&val);
+        std::shared_ptr<Resource>createVariable(T const&val);
         std::shared_ptr<Resource>createResource(std::string const&name);
         std::shared_ptr<Function>createFunction2(
             std::string                           const&name  ,
-            std::vector<std::shared_ptr<Function>>const&inputs,
+            std::vector<std::shared_ptr<Resource>>const&inputs,
             std::shared_ptr<Resource>             const&output);
         std::shared_ptr<Function>createFunction2(
             std::string                           const&name        ,
-            std::vector<std::shared_ptr<Function>>const&inputs      ,
+            std::vector<std::shared_ptr<Resource>>const&inputs      ,
             std::string                           const&variableName);
         std::shared_ptr<Function>createFunction2(
             std::string                           const&name  ,
-            std::vector<std::shared_ptr<Function>>const&inputs);
+            std::vector<std::shared_ptr<Resource>>const&inputs);
         std::shared_ptr<Function>createFunction(
             std::string             const&name        ,
             std::vector<std::string>const&inputNames  ,
@@ -57,7 +57,7 @@ namespace ge{
             std::string              const&name      ,
             std::vector<std::string> const&inputNames);
 
-        std::shared_ptr<Nullary>const&variable(std::string const&name)const;
+        std::shared_ptr<Resource>const&variable(std::string const&name)const;
         template<typename T>
           bool addVariable(std::string const&name,T const&val);
         template<typename OUTPUT,typename...ARGS>
@@ -75,23 +75,23 @@ namespace ge{
             std::shared_ptr<CompositeFunctionFactory>const&factory);
         void bindInput(
             std::shared_ptr<Function>const&fce,
-            std::vector<std::shared_ptr<Function>>const&inputs);
+            std::vector<std::shared_ptr<Resource>>const&inputs);
         void bindOutput(
             std::shared_ptr<Function>const&fce,
             std::shared_ptr<Resource>const&output);
-        void bindOutput(
+        void bindOutputAsVariable(
             std::shared_ptr<Function>const&fce,
-            std::shared_ptr<Nullary> const&var);
+            std::shared_ptr<Resource>const&var);
         TypeId addAtomicType(
             std::string               const&name                 ,
             size_t                    const&size                 ,
             CDPtr const&constructor = nullptr,
             CDPtr const&destructor  = nullptr);
         TypeId addCompositeType(
-            std::string                     const&name       ,
+            std::string           const&name       ,
             TypeDescriptionVector const&description);
         TypeId addStructType(
-            std::string                     const&name,
+            std::string           const&name,
             TypeDescriptionVector const&typeids);
         TypeId addStructType(
             std::string             const&name     ,
@@ -130,16 +130,13 @@ namespace ge{
     };
 
     template<typename T>
-      std::shared_ptr<Nullary>Kernel::createVariable(T const&val){
+      std::shared_ptr<Resource>Kernel::createVariable(T const&val){
         assert(this!=nullptr);
         assert(this->functionRegister!=nullptr);
-        auto fce = this->functionRegister->sharedFunction("Nullary");
-        assert(fce!=nullptr);
         assert(this->typeRegister!=nullptr);
-        fce->bindOutput(this->functionRegister,this->typeRegister->sharedResource(keyword<T>()));
-        assert(fce->getOutputData()!=nullptr);
-        *fce->getOutputData() = val;
-        return std::dynamic_pointer_cast<Nullary>(fce);
+        auto result = this->typeRegister->sharedResource(keyword<T>());
+        *result = val;
+        return result;
       }
     template<typename T>
       bool Kernel::addVariable(std::string const&name,T const&val){

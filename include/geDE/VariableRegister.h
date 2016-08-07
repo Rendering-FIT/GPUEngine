@@ -8,11 +8,11 @@
 namespace ge{
   namespace de{
     class TypeRegister;
-    class Nullary;
+    class Resource;
     class GEDE_EXPORT VariableRegister{
       public:
         using SharedVariableRegister = std::shared_ptr<VariableRegister>;
-        using SharedVariable = std::shared_ptr<Nullary>;
+        using SharedVariable = std::shared_ptr<Resource>;
         using Name2Register = std::map<std::string,SharedVariableRegister>;
         using Name2Variable = std::map<std::string,SharedVariable>;
         using VariableIterator = Name2Variable::iterator;

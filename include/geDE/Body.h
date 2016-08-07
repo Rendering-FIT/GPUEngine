@@ -26,12 +26,15 @@ namespace ge{
     };
 
     inline Body::Body():Statement(BODY){
+      PRINT_CALL_STACK();
     }
 
     inline Body::~Body(){
+      PRINT_CALL_STACK();
     }
 
     inline void Body::addStatement(std::shared_ptr<Statement>const&statement){
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       this->_statements.push_back(statement);
       this->_statementsUpdateTicks.push_back(0);
@@ -41,26 +44,31 @@ namespace ge{
     }
 
     inline Body::StatementIndex Body::size()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_statements.size();
     }
 
     inline std::shared_ptr<Statement>const&Body::operator[](StatementIndex index)const{
+      PRINT_CALL_STACK(index);
       assert(this!=nullptr);
-      return this->_statements[index];
+      return this->_statements.at(index);
     }
 
     inline Body::StatementIterator Body::begin()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_statements.begin();
     }
 
     inline Body::StatementIterator Body::end()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_statements.end();
     }
 
     inline void Body::operator()(){
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       if(!this->_dirtyFlag)return;
       this->_dirtyFlag = false;
@@ -77,11 +85,14 @@ namespace ge{
     }
 
     inline std::shared_ptr<Body>Body::toBody()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return std::dynamic_pointer_cast<Body>(std::const_pointer_cast<Statement>(this->shared_from_this()));
     }
 
     inline std::shared_ptr<Statement>const&Body::at(size_t i)const{
+      PRINT_CALL_STACK(i);
+      assert(this!=nullptr);
       return this->_statements.at(i);
     }
 

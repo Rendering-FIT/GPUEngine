@@ -4,6 +4,8 @@
 using namespace ge::de;
 
 void ge::de::registerBasicTypes(std::shared_ptr<TypeRegister>const&tr){
+  PRINT_CALL_STACK(tr);
+  assert(tr!=nullptr);
   auto any    = tr->addType<Any     >();(void)any;
   auto Void   = tr->addType<void    >();(void)Void;
   auto Bool   = tr->addType<bool    >();

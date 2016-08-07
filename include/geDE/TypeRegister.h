@@ -113,6 +113,8 @@ namespace ge{
         void addToStrFunction(TypeId id,ToStr const&fce = nullptr);
         std::shared_ptr<Resource>sharedResource(TypeId id)const;
         std::shared_ptr<Resource>sharedResource(std::string const&name)const;
+        template<typename T>
+          std::shared_ptr<Resource>createResource(T const&value)const;
         std::shared_ptr<Resource>sharedEmptyResource(TypeId id)const;
         std::shared_ptr<Resource>sharedEmptyResource(std::string const&name)const;
         void addDestructor (TypeId id,CDPtr const&destructor  = nullptr);
@@ -177,13 +179,24 @@ namespace ge{
             TypeDescription      *d         ,
             std::string     const&errFceName,
             std::string     const&errMsg    );
-        template<typename...ARGS>
-          std::vector<TypeId>_tupleToTypeIds(std::tuple<ARGS...>const&){
+        template<typename TUPLE,std::size_t...I>
+          inline std::vector<TypeId>_tupleToTypeIds2_help(ge::core::index_sequence<I...>){
             assert(this!=nullptr);
-            return {this->getTypeId(keyword<ARGS>())...};
+            return {this->getTypeId(keyword<typename std::tuple_element<I,TUPLE>::type>())...};
           }
-
+        template<typename TUPLE>
+          inline std::vector<TypeId>_tupleToTypeIds2(){
+            assert(this!=nullptr);
+            return this->_tupleToTypeIds2_help<TUPLE>(typename ge::core::make_index_sequence<std::tuple_size<TUPLE>::value>::type{});
+          }
     };
+    template<typename T>
+      std::shared_ptr<Resource>TypeRegister::createResource(T const&value)const{
+        assert(this!=nullptr);
+        auto result = this->sharedResource(keyword<T>());
+        *result = value;
+        return result;
+      }
 
     template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && !std::is_same<T,void>::value,unsigned>::type>
       TypeId TypeRegister::addType(std::string const&name,CDPtr c,CDPtr d){
@@ -235,7 +248,7 @@ namespace ge{
         assert(this!=nullptr);
         using OUTPUT = typename ge::core::FceReturnType<T>::type;
         using ARGS = typename ge::core::FceArgType<T>::type;
-        return this->addFceType(name,this->getTypeId(keyword<OUTPUT>()),this->_tupleToTypeIds(ARGS{}));
+        return this->addFceType(name,this->getTypeId(keyword<OUTPUT>()),this->_tupleToTypeIds2<ARGS>());
       }
 
     template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type>
@@ -245,7 +258,7 @@ namespace ge{
         using OUTPUT = typename ge::core::MemFceReturnType<T>::type;
         using CLASS = typename ge::core::MemFceClassType<T>::type;
         using ARGS = typename ge::core::MemFceArgType<T>::type;
-        return this->addMemFceType(name,this->getTypeId(keyword<OUTPUT>()),this->getTypeId(keyword<CLASS>()),this->_tupleToTypeIds(ARGS{}));
+        return this->addMemFceType(name,this->getTypeId(keyword<OUTPUT>()),this->getTypeId(keyword<CLASS>()),this->_tupleToTypeIds2<ARGS>());
       }
 
     template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && std::is_same<T,void>::value,unsigned>::type>

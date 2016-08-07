@@ -4,6 +4,7 @@
 using namespace ge::de;
 
 void NameRegister::addFceNaming(NameRegister::Id id,NameRegister::ElementIndex nofInputs){
+  PRINT_CALL_STACK(id,nofInputs);
   assert(this!=nullptr);
   std::vector<std::string>i2n;
   std::map<std::string,ElementIndex>n2i;
@@ -18,6 +19,7 @@ void NameRegister::addFceNaming(NameRegister::Id id,NameRegister::ElementIndex n
 }
 
 void NameRegister::addStructNaming(NameRegister::Id id,NameRegister::ElementIndex nofElements){
+  PRINT_CALL_STACK(id,nofElements);
   assert(this!=nullptr);
   std::vector<std::string>i2n;
   std::map<std::string,ElementIndex>n2i;
@@ -32,11 +34,13 @@ void NameRegister::addStructNaming(NameRegister::Id id,NameRegister::ElementInde
 }
 
 void NameRegister::removeFceNaming(Id id){
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   this->_functionNaming.erase(id);
 }
 
 void NameRegister::removeStructNaming(Id id){
+  PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   this->_structureNaming.erase(id);
 }

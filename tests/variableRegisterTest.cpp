@@ -27,24 +27,23 @@ SCENARIO( "variableRegister tests", "[VariableRegister]" ) {
   registerStdFunctions(fr);
   WHEN("adding variable a of type i32"){
     THEN("variableRegister should contain it"){
-      vr->insert("a",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
+      vr->insert("a",tr->sharedResource("i32"));
       REQUIRE(vr->hasVariable("a")==true);
     }
     THEN("setting value of variable a should be doable"){
-      vr->insert("a",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-      vr->getVariable("a")->bindOutput(fr,tr->sharedResource("i32"));
-      (int32_t&)(*vr->getVariable("a")->getOutputData())=32;
-      REQUIRE((int32_t&)(*vr->getVariable("a")->getOutputData())==32);
+      vr->insert("a",tr->sharedResource("i32"));
+      (int32_t&)(*vr->getVariable("a"))=32;
+      REQUIRE((int32_t&)(*vr->getVariable("a"))==32);
     }
   }
   WHEN("adding variables a.var0 a.var1 a.var2 b.var0 b.var1 c.var0 c.var2"){
-    vr->insert("a.var0",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-    vr->insert("a.var1",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-    vr->insert("a.var2",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-    vr->insert("b.var0",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-    vr->insert("b.var1",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-    vr->insert("c.var0",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
-    vr->insert("c.var2",std::dynamic_pointer_cast<Nullary>(fr->sharedFunction("Nullary")));
+    vr->insert("a.var0",tr->sharedResource("i32"));
+    vr->insert("a.var1",tr->sharedResource("i32"));
+    vr->insert("a.var2",tr->sharedResource("i32"));
+    vr->insert("b.var0",tr->sharedResource("i32"));
+    vr->insert("b.var1",tr->sharedResource("i32"));
+    vr->insert("c.var0",tr->sharedResource("i32"));
+    vr->insert("c.var2",tr->sharedResource("i32"));
     REQUIRE(vr->hasVariableRegister("a")==true);
     REQUIRE(vr->hasVariableRegister("b")==true);
     REQUIRE(vr->hasVariableRegister("c")==true);
@@ -81,13 +80,13 @@ SCENARIO( "variableRegister tests", "[VariableRegister]" ) {
     REQUIRE(vr->hasVariableRegister("b")==false);
     vr->eraseVariableRegister("c");
     REQUIRE(vr->empty()==true);
-    vr->insert(".a",std::dynamic_pointer_cast<Nullary>(fr->sharedFactory("Nullary")));
+    vr->insert(".a",tr->sharedResource("i32"));
     REQUIRE(vr->empty()==true);
-    vr->insert("a..a",std::dynamic_pointer_cast<Nullary>(fr->sharedFactory("Nullary")));
+    vr->insert("a..a",tr->sharedResource("i32"));
     REQUIRE(vr->empty()==true);
-    vr->insert("a.b..a",std::dynamic_pointer_cast<Nullary>(fr->sharedFactory("Nullary")));
+    vr->insert("a.b..a",tr->sharedResource("i32"));
     REQUIRE(vr->empty()==true);
-    vr->insert("a.b.a.",std::dynamic_pointer_cast<Nullary>(fr->sharedFactory("Nullary")));
+    vr->insert("a.b.a.",tr->sharedResource("i32"));
     REQUIRE(vr->empty()==true);
 
 #ifndef SHOWCERR

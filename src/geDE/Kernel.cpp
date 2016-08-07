@@ -35,10 +35,8 @@ bool Kernel::addEmptyVariable(std::string const&name,std::string const&type){
     return false;
   }
   auto sac = this->typeRegister->sharedResource(id);
-  auto var = this->functionRegister->sharedFunction("Nullary");
-  var->bindOutput(this->functionRegister,sac);
   assert(this->variableRegister!=nullptr);
-  this->variableRegister->insert(name,std::dynamic_pointer_cast<Nullary>(var));
+  this->variableRegister->insert(name,sac);
   return true;
 }
 
@@ -68,7 +66,7 @@ std::shared_ptr<Resource>Kernel::createResource(std::string const&name){
 
 std::shared_ptr<Function>Kernel::createFunction2(
     std::string                           const&name  ,
-    std::vector<std::shared_ptr<Function>>const&inputs,
+    std::vector<std::shared_ptr<Resource>>const&inputs,
     std::shared_ptr<Resource>             const&output){
   assert(this!=nullptr);
   auto result = this->functionRegister->sharedFunction(name);
@@ -79,7 +77,7 @@ std::shared_ptr<Function>Kernel::createFunction2(
 
 std::shared_ptr<Function>Kernel::createFunction2(
     std::string                           const&name        ,
-    std::vector<std::shared_ptr<Function>>const&inputs      ,
+    std::vector<std::shared_ptr<Resource>>const&inputs      ,
     std::string                           const&variableName){
   assert(this!=nullptr);
   if(!this->variableRegister->hasVariable(variableName)){
@@ -95,7 +93,7 @@ std::shared_ptr<Function>Kernel::createFunction2(
 
 std::shared_ptr<Function>Kernel::createFunction2(
     std::string                           const&name  ,
-    std::vector<std::shared_ptr<Function>>const&inputs){
+    std::vector<std::shared_ptr<Resource>>const&inputs){
   assert(this!=nullptr);
   auto result = this->functionRegister->sharedFunction(name);
   this->bindInput(result,inputs);
@@ -109,7 +107,7 @@ std::shared_ptr<Function>Kernel::createFunction(
     std::vector<std::string>const&inputNames  ,
     std::string             const&variableName){
   assert(this!=nullptr);
-  std::vector<std::shared_ptr<Function>>inputs;
+  std::vector<std::shared_ptr<Resource>>inputs;
   for(auto const&x:inputNames)
     inputs.push_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs,variableName);
@@ -120,7 +118,7 @@ std::shared_ptr<Function>Kernel::createFunction(
     std::vector<std::string> const&inputNames,
     std::shared_ptr<Resource>const&output    ){
   assert(this!=nullptr);
-  std::vector<std::shared_ptr<Function>>inputs;
+  std::vector<std::shared_ptr<Resource>>inputs;
   for(auto const&x:inputNames)
     inputs.push_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs,output);
@@ -130,21 +128,21 @@ std::shared_ptr<Function>Kernel::createFunction(
     std::string              const&name      ,
     std::vector<std::string> const&inputNames){
   assert(this!=nullptr);
-  std::vector<std::shared_ptr<Function>>inputs;
+  std::vector<std::shared_ptr<Resource>>inputs;
   for(auto const&x:inputNames)
     inputs.push_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs);
 }
 
 
-std::shared_ptr<Nullary>const&Kernel::variable(std::string const&name)const{
+std::shared_ptr<Resource>const&Kernel::variable(std::string const&name)const{
   assert(this!=nullptr);
   return this->variableRegister->getVariable(name);
 }
 
 void Kernel::bindInput(
     std::shared_ptr<Function>const&fce,
-    std::vector<std::shared_ptr<Function>>const&inputs){
+    std::vector<std::shared_ptr<Resource>>const&inputs){
   assert(this!=nullptr);
   for(size_t i=0;i<inputs.size();++i)
     fce->bindInput(this->functionRegister,i,inputs[i]);
@@ -157,11 +155,11 @@ void Kernel::bindOutput(
   fce->bindOutput(this->functionRegister,output);
 }
 
-void Kernel::bindOutput(
+void Kernel::bindOutputAsVariable(
     std::shared_ptr<Function>const&fce,
-    std::shared_ptr<Nullary> const&var){
+    std::shared_ptr<Resource>const&var){
   assert(this!=nullptr);
-  fce->bindOutput(this->functionRegister,var);
+  fce->bindOutputAsVariable(this->functionRegister,var);
 }
 
 TypeId Kernel::addAtomicType(

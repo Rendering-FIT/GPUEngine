@@ -9,6 +9,8 @@ namespace ge{
     using CDPtr = void(*)(void*);
     ///<type identificator
     using TypeId = size_t;
+    ///<ticks of resources
+    using Ticks = size_t;
     ///<function identificator
     using FunctionId = size_t;
     ///<function input index

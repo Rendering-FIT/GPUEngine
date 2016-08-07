@@ -7,10 +7,9 @@
 using namespace ge::de;
 
 void ge::de::registerStdFunctions(std::shared_ptr<FunctionRegister>const&fr){
+  PRINT_CALL_STACK(fr);
+  assert(fr!=nullptr);
   auto tr=fr->getTypeRegister();
-  fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,TypeRegister::ANY,0}),
-      keyword<Nullary>(),
-      factoryOfFunctionFactory<Nullary>(keyword<Nullary>()));
 
   registerStdNumericFunctions(fr);
   registerStdRelationalFunctions(fr);

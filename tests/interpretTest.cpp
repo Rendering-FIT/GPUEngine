@@ -52,44 +52,39 @@ SCENARIO("basic dirty flag tests","[Function]"){
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
   auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);//[](int32_t i)->int32_t{return i+1;});//addOne);
-  auto a0 = std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
+  auto a0 = tr->createResource((int32_t)0);//sharedResource(tr->getTypeId(keyword<int32_t>()));
+  //std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
 
   auto b0 = fr->sharedFunction(addOneId);
   b0->bindInput(fr,0,a0);
   b0->bindOutput(fr,tr->sharedResource("i32"));
 
-  REQUIRE(a0->isDirty()==false);
   REQUIRE(b0->isDirty()==true);
   (*b0)();
-  REQUIRE(a0->isDirty()==false);
   REQUIRE(b0->isDirty()==false);
 
-  auto a1 = std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
+  auto a1 = tr->createResource((int32_t)0);//tr->getTypeId(keyword<int32_t>()));
   auto b1 = fr->sharedFunction(addOneId);
   b1->bindInput(fr,0,a1);
-  b1->bindOutput(fr,a1);
+  b1->bindOutputAsVariable(fr,a1);
 
-  REQUIRE(a1->isDirty()==true);
   REQUIRE(b1->isDirty()==true);
   (*b1)();
-  REQUIRE(a1->isDirty()==true);
   REQUIRE(b1->isDirty()==true);
 
-  auto a2 = std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
+  auto a2 = tr->createResource((int32_t)0);
   auto b2 = fr->sharedFunction(addOneId);
   b2->bindInput(fr,0,a2);
-  b2->bindOutput(fr,a2);
+  b2->bindOutputAsVariable(fr,a2);
   auto c2 = std::make_shared<ge::de::Assignment<int32_t>>(fr);
   c2->bindInput(fr,0,a2);
   c2->bindOutput(fr,tr->sharedResource("i32"));
 
-  REQUIRE(a2->isDirty()==true);
   REQUIRE(b2->isDirty()==true);
   REQUIRE(c2->isDirty()==true);
 
   (*c2)();
 
-  REQUIRE(a2->isDirty()==false);
   REQUIRE(b2->isDirty()==true );
   REQUIRE(c2->isDirty()==false);
 }
@@ -102,36 +97,34 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
   ge::de::registerStdFunctions(fr);
   //std::cerr<<fr->str();
   GIVEN( "basic expression" ) {
-    auto fa=std::make_shared<ge::de::Nullary>(fr,101.f );
-    auto fb=std::make_shared<ge::de::Nullary>(fr,1.1f  );
-    auto fc=std::make_shared<ge::de::Nullary>(fr,2.2f  );
-    auto fd=std::make_shared<ge::de::Nullary>(fr,1000.f);
+    auto fa=tr->createResource(101.f );
+    auto fb=tr->createResource(1.1f  );
+    auto fc=tr->createResource(2.2f  );
+    auto fd=tr->createResource(1000.f);
 
     //f0 = fa + fb
     //f1 = f0 + fc
     //f2 = f0 + fd
     //f3 = (int)f2
-    auto f0=std::make_shared<ge::de::Add<float>>(fr,tr->sharedResource("f32"));
+    auto f0=std::make_shared<ge::de::Add<float>>(fr);
+    f0->bindOutput(fr,tr->sharedResource("f32"));
     f0->bindInput(fr,0,fa);
     f0->bindInput(fr,1,fb);
-    auto f1=std::make_shared<ge::de::Add<float>>(fr,tr->sharedResource("f32"));
-    f1->bindInput(fr,0,f0);
+    auto f1=std::make_shared<ge::de::Add<float>>(fr);
+    f1->bindOutput(fr,tr->sharedResource("f32"));
+    f1->bindInput(fr,0,f0->getOutputData());
     f1->bindInput(fr,1,fc);
-    auto f2=std::make_shared<ge::de::Sub<float>>(fr,tr->sharedResource("f32"));
-    f2->bindInput(fr,0,f0);
+    auto f2=std::make_shared<ge::de::Sub<float>>(fr);
+    f2->bindOutput(fr,tr->sharedResource("f32"));
+    f2->bindInput(fr,0,f0->getOutputData());
     f2->bindInput(fr,1,fd);
-    auto f3=std::make_shared<ge::de::Cast<float,int>>(fr,tr->sharedResource("i32"));
-    f3->bindInput(fr,0,f2);
+    auto f3=std::make_shared<ge::de::Cast<float,int>>(fr);
+    f3->bindOutput(fr,tr->sharedResource("i32"));
+    f3->bindInput(fr,0,f2->getOutputData());
     WHEN("running f1"){
-      REQUIRE(fa->isDirty()==false);
-      REQUIRE(fb->isDirty()==false);
-      REQUIRE(fc->isDirty()==false);
       REQUIRE(f0->isDirty()==true);
       REQUIRE(f1->isDirty()==true);
       (*f1)();
-      REQUIRE(fa->isDirty()==false);
-      REQUIRE(fb->isDirty()==false);
-      REQUIRE(fc->isDirty()==false);
       REQUIRE(f0->isDirty()==false);
       REQUIRE(f1->isDirty()==false);
       THEN( "output of f1 should be computed correctly" ) {
@@ -166,20 +159,21 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
      * else
      *  c=b;
      */
-    auto fa=std::make_shared<ge::de::Nullary>(fr,(unsigned)10);
-    auto fb=std::make_shared<ge::de::Nullary>(fr,(unsigned)12);
-    auto fc=std::make_shared<ge::de::Nullary>(fr,(unsigned)0 );
+    auto fa=tr->createResource((unsigned)10);
+    auto fb=tr->createResource((unsigned)12);
+    auto fc=tr->createResource((unsigned)0 );
 
-    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,tr->sharedResource("bool"));
+    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr);
+    cond->bindOutput(fr,tr->sharedResource("bool"));
     cond->bindInput(fr,0,fa);
     cond->bindInput(fr,1,fb);
 
     auto trueBody = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    trueBody->bindOutput(fr,fc->getOutputData());
+    trueBody->bindOutputAsVariable(fr,fc);
     trueBody->bindInput(fr,0,fa);
 
     auto falseBody = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    falseBody->bindOutput(fr,fc->getOutputData());
+    falseBody->bindOutputAsVariable(fr,fc);
     falseBody->bindInput(fr,0,fb);
 
     auto iff=std::make_shared<ge::de::If>(cond,trueBody,falseBody);
@@ -187,7 +181,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     WHEN("running iff"){
       (*iff)();
       THEN("it should correctly choose lesser value"){
-        REQUIRE((unsigned)(*fc->getOutputData())==10);
+        REQUIRE((unsigned)(*fc)==10);
       }
     }
   }
@@ -229,19 +223,18 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
 
      */
-    auto fi    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
-    REQUIRE(fi->isDirty()==false);
-    auto fk    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
+    auto fi    = tr->createResource((unsigned)1u );
+    auto fk    = tr->createResource((unsigned)1u );
     //auto fki   = std::make_shared<ge::de::Nullary>(fr,(unsigned)0u );
     //auto fi1   = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
-    auto fiend = std::make_shared<ge::de::Nullary>(fr,(unsigned)10u);
-    auto f1    = std::make_shared<ge::de::Nullary>(fr,(unsigned)1u );
+    auto fiend = tr->createResource((unsigned)10u);
+    auto f1    = tr->createResource((unsigned)1u );
 
-    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr,tr->sharedResource("bool"));
+    auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr);
+    cond->bindOutput(fr,tr->sharedResource("bool"));
     cond->bindInput(fr,0,fi   );
     cond->bindInput(fr,1,fiend);
 
-    REQUIRE(fi->isDirty()==false);
     auto mult=std::make_shared<ge::de::Mul<uint32_t>>(fr);
     mult->bindInput(fr,0,fk);
     mult->bindInput(fr,1,fi);
@@ -249,10 +242,9 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     //mult->bindOutput(fr,fki);
     //mult->bindOutput(fr,fki->getOutputData());
 
-    REQUIRE(fi->isDirty()==false);
     auto ass0 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    ass0->bindInput(fr,0,mult);//fki);
-    ass0->bindOutput(fr,fk);
+    ass0->bindInput(fr,0,mult->getOutputData());//fki);
+    ass0->bindOutputAsVariable(fr,fk);
     //ass0->bindOutput(fr,fk->getOutputData());
 
     auto add=std::make_shared<ge::de::Add<uint32_t>>(fr);
@@ -261,13 +253,11 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     add->bindOutput(fr,tr->sharedResource("u32"));//fi1);
     //add->bindOutput(fr,fi1->getOutputData());
 
-    REQUIRE(fi->isDirty()==false);
     auto ass1 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    ass1->bindInput(fr,0,add);//fi1);
-    ass1->bindOutput(fr,fi);
+    ass1->bindInput(fr,0,add->getOutputData());//fi1);
+    ass1->bindOutputAsVariable(fr,fi);
     //ass1->bindOutput(fr,fi->getOutputData());
 
-    REQUIRE(fi->isDirty()==true);
     auto body=std::make_shared<ge::de::Body>();
     //body->addStatement(mult);
     body->addStatement(ass0);
@@ -277,47 +267,85 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto wh=std::make_shared<ge::de::While>(cond,body);
     REQUIRE(cond->hasSignalingTarget(&*wh)==true);
     REQUIRE(cond->nofSignalingTargets()==1);
+    REQUIRE(cond->hasSourceResource(&*fi));
+    REQUIRE(cond->hasSourceResource(&*fiend));
+    REQUIRE(cond->nofSourceResources()==2);
     REQUIRE(body->hasSignalingTarget(&*wh)==true);
     REQUIRE(body->nofSignalingTargets()==1);
 
     REQUIRE(ass0->hasSignalingTarget(&*body)==true);
-    REQUIRE(ass0->hasSignalingTarget(&*fk)==true);
-    REQUIRE(ass0->nofSignalingTargets()==2);
+    REQUIRE(ass0->nofSignalingTargets()==1);
+    REQUIRE(ass0->hasTargetResource(&*fk)==true);
+    REQUIRE(ass0->hasSourceResource(&*mult->getOutputData())==true);
+    REQUIRE(ass0->nofTargetResources()==1);
+    REQUIRE(ass0->nofSourceResources()==1);
+
 
     REQUIRE(ass1->hasSignalingTarget(&*body)==true);
-    REQUIRE(ass1->hasSignalingTarget(&*fi)==true);
-    REQUIRE(ass1->nofSignalingTargets()==2);
+    REQUIRE(ass1->nofSignalingTargets()==1);
+    REQUIRE(ass1->hasTargetResource(&*fi)==true);
+    REQUIRE(ass1->hasSourceResource(&*add->getOutputData())==true);
+    REQUIRE(ass1->nofTargetResources()==1);
+    REQUIRE(ass1->nofSourceResources()==1);
 
-    REQUIRE(add->hasSignalingTarget(&*ass1)==true);
-    REQUIRE(add->nofSignalingTargets()==1);
+    REQUIRE(add->hasTargetResource(&*ass1->getInputData(0))==true);
+    REQUIRE(add->hasSourceResource(&*f1)==true);
+    REQUIRE(add->hasSourceResource(&*fi)==true);
+    REQUIRE(add->nofTargetResources()==1);
+    REQUIRE(add->nofSourceResources()==2);
+    REQUIRE(add->nofSignalingTargets()==0);
 
-    REQUIRE(mult->hasSignalingTarget(&*ass0)==true);
-    REQUIRE(mult->nofSignalingTargets()==1);
+    REQUIRE(mult->hasTargetResource(&*ass0->getInputData(0))==true);
+    REQUIRE(mult->hasSourceResource(&*fi)==true);
+    REQUIRE(mult->hasSourceResource(&*fk)==true);
+    REQUIRE(mult->nofTargetResources()==1);
+    REQUIRE(mult->nofSourceResources()==2);
+    REQUIRE(mult->nofSignalingTargets()==0);
 
     REQUIRE(f1->hasSignalingTarget(&*add)==true);
     REQUIRE(f1->nofSignalingTargets()==1);
+    REQUIRE(f1->nofSignalingSources()==0);
 
     REQUIRE(fi->hasSignalingTarget(&*add)==true);
     REQUIRE(fi->hasSignalingTarget(&*mult)==true);
     REQUIRE(fi->hasSignalingTarget(&*cond)==true);
     REQUIRE(fi->nofSignalingTargets()==3);
+    REQUIRE(fi->hasSignalingSource(&*ass1)==true);
+    REQUIRE(fi->nofSignalingSources()==1);
 
     REQUIRE(fiend->hasSignalingTarget(&*cond)==true);
     REQUIRE(fiend->nofSignalingTargets()==1);
+    REQUIRE(fiend->nofSignalingSources()==0);
 
-    REQUIRE(fk->hasSignalingTarget(&*mult));
+    REQUIRE(fk->hasSignalingTarget(&*mult)==true);
+    REQUIRE(fk->hasSignalingSource(&*ass0)==true);
     REQUIRE(fk->nofSignalingTargets()==1);
-        
+    REQUIRE(fk->nofSignalingSources()==1);
+
+    REQUIRE(add->getOutputData()->hasSignalingSource(&*add)==true);
+    REQUIRE(add->getOutputData()->hasSignalingTarget(&*ass1)==true);
+    REQUIRE(add->getOutputData()->nofSignalingSources()==1);
+    REQUIRE(add->getOutputData()->nofSignalingTargets()==1);
+
+    REQUIRE(mult->getOutputData()->hasSignalingSource(&*mult)==true);
+    REQUIRE(mult->getOutputData()->hasSignalingTarget(&*ass0)==true);
+    REQUIRE(mult->getOutputData()->nofSignalingSources()==1);
+    REQUIRE(mult->getOutputData()->nofSignalingTargets()==1);
+
+    REQUIRE(cond->getOutputData()->hasSignalingSource(&*cond)==true);
+    REQUIRE(cond->getOutputData()->nofSignalingSources()==1);
+    REQUIRE(cond->getOutputData()->nofSignalingTargets()==0);
+      
 
     //fk = ass0(fki=mult(fk,fi))
     //cond(fi,fiend)
     //fi=ass1(fi1=add(fki,f1))
 
     /*
-    REQUIRE(fi->isDirty()==true);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==true);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==true);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -327,10 +355,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     (*cond)();
 
-    REQUIRE(fi->isDirty()==false);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==false);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==false);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -340,10 +368,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     (*ass0)();
 
-    REQUIRE(fi->isDirty()==false);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==false);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==false);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -353,10 +381,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     (*ass1)();
 
-    REQUIRE(fi->isDirty()==true);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==true);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==true);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -366,10 +394,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     (*cond)();
 
-    REQUIRE(fi->isDirty()==false);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==false);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==false);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -379,10 +407,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     (*ass0)();
 
-    REQUIRE(fi->isDirty()==false);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==false);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==false);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -392,10 +420,10 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     (*ass1)();
 
-    REQUIRE(fi->isDirty()==true);
-    REQUIRE(fk->isDirty()==true);
-    REQUIRE(fiend->isDirty()==false);
-    REQUIRE(f1->isDirty()==false);
+    //REQUIRE(fi->isDirty()==true);
+    //REQUIRE(fk->isDirty()==true);
+    //REQUIRE(fiend->isDirty()==false);
+    //REQUIRE(f1->isDirty()==false);
     REQUIRE(cond->isDirty()==true);
     REQUIRE(mult->isDirty()==true);
     REQUIRE(ass0->isDirty()==true);
@@ -411,7 +439,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     WHEN("running wh"){
       (*wh)();
       THEN("it should compute factorial of 9"){
-        REQUIRE((unsigned)(*fk->getOutputData())==362880);
+        REQUIRE((unsigned)(*fk)==362880);
       }
     }// */
 
@@ -454,14 +482,14 @@ SCENARIO( "ticks tests", "[Function]" ) {
       }
   };
   GIVEN( "basic expression" ) {
-    auto fa      = std::make_shared<ge::de::Nullary>(fr,10.f);
+    auto fa      = tr->createResource(10.f);
     auto faddten = std::make_shared<AddTen>(fr);
     auto fadd    = std::make_shared<Add>(fr);
 
     faddten->bindInput(fr,0,fa);
     faddten->bindOutput(fr,tr->sharedResource("f32"));
-    fadd->bindInput(fr,0,faddten);
-    fadd->bindInput(fr,1,faddten);
+    fadd->bindInput(fr,0,faddten->getOutputData());
+    fadd->bindInput(fr,1,faddten->getOutputData());
     fadd->bindOutput(fr,tr->sharedResource("f32"));
 
     WHEN("running fadd"){

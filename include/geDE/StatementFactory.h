@@ -26,16 +26,22 @@ namespace ge{
     inline StatementFactory::StatementFactory(
         std::string const&name   ,
         Uses        const&maxUses): ObjectFactory(maxUses){
+      PRINT_CALL_STACK(name,maxUses);
+      assert(this!=nullptr);
       this->_name = name;
     }
 
     inline StatementFactory::~StatementFactory(){
+      PRINT_CALL_STACK();
     }
 
     inline void StatementFactory::reset(){
+      PRINT_CALL_STACK();
     }
 
     inline std::string const&StatementFactory::getName()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       return this->_name;
     }
   }

@@ -5,6 +5,7 @@
 using namespace ge::de;
 
 void If::operator()(){
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   assert(this->_condition!=nullptr);
   assert(this->_trueBody!=nullptr);

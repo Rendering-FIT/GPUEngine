@@ -1,6 +1,5 @@
 #include<geDE/CompositeFunction.h>
 #include<geDE/FunctionNodeFactory.h>
-#include<geDE/Nullary.h>
 #include<algorithm>
 
 using namespace ge::de;
@@ -10,46 +9,56 @@ CompositeFunction::CompositeFunction(
     FunctionId id,
     std::shared_ptr<Function>const&output,
     std::vector<FceInputList>const&inputs):Function(fr,id){
+  PRINT_CALL_STACK(fr,id,output,inputs);
+  assert(this!=nullptr);
   this->_outputMapping = output;
   this->_inputMapping  = inputs;
 }
 
 CompositeFunction::~CompositeFunction(){
+  PRINT_CALL_STACK();
 }
 
 void CompositeFunction::_addSignalingTarget(Statement*statement){
+  PRINT_CALL_STACK(statement);
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   this->_outputMapping->_addSignalingTarget(statement);
 }
 
 void CompositeFunction::_removeSignalingTarget(Statement*statement){
+  PRINT_CALL_STACK(statement);
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   this->_outputMapping->_removeSignalingTarget(statement);
 }
 
-bool CompositeFunction::bindInput(
-    std::shared_ptr<FunctionRegister>const&fr      ,
-    InputIndex                             i       ,
-    std::shared_ptr<Function>        const&function){
+void CompositeFunction::_addTargetResource(Resource*resource){
+  PRINT_CALL_STACK(resource);
   assert(this!=nullptr);
-  if(!this->_inputBindingCheck(fr,i,function))
+  assert(this->_outputMapping!=nullptr);
+  this->_outputMapping->_addTargetResource(resource);
+}
+
+void CompositeFunction::_removeTargetResource(Resource*resource){
+  PRINT_CALL_STACK(resource);
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  this->_outputMapping->_removeTargetResource(resource);
+}
+
+
+bool CompositeFunction::bindInput(
+    std::shared_ptr<FunctionRegister>const&fr,
+    InputIndex                             i ,
+    std::shared_ptr<Resource>        const&r ){
+  PRINT_CALL_STACK(fr,i,r);
+  assert(this!=nullptr);
+  if(!this->_inputBindingCheck(fr,i,r))
     return false;
   for(auto x:this->_inputMapping[i]){
     assert(std::get<FUNCTION>(x)!=nullptr);
-    /*
-       auto oldFunction = std::get<FUNCTION>(x)->getInputFunction(std::get<INPUT>(x));
-       if(oldFunction == function)continue;
-       if(oldFunction){
-       std::dynamic_pointer_cast<Statement>(oldFunction)->_removeSignalingTarget(this);
-       this->_removeSignalingSource((Statement*)&*oldFunction);
-       }
-       if(function){
-       std::dynamic_pointer_cast<Statement>(function)->_addSignalingTarget(this);
-       this->_addSignalingSource((Statement*)&*function);
-       }*/
-    std::get<FUNCTION>(x)->bindInput(fr,std::get<INPUT>(x),function);
+    std::get<FUNCTION>(x)->bindInput(fr,std::get<INPUT>(x),r);
   }
   this->setDirty();
   return true;
@@ -57,34 +66,28 @@ bool CompositeFunction::bindInput(
 
 
 bool CompositeFunction::bindOutput(
-    std::shared_ptr<FunctionRegister>const&fr  ,
-    std::shared_ptr<Resource>        const&data){
+    std::shared_ptr<FunctionRegister>const&fr,
+    std::shared_ptr<Resource>        const&r ){
+  PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   //this->setDirty();
-  return this->_outputMapping->bindOutput(fr,data);
+  return this->_outputMapping->bindOutput(fr,r);
 }
 
-bool CompositeFunction::bindOutput(
-    std::shared_ptr<FunctionRegister>const&fr     ,
-    std::shared_ptr<Nullary>         const&nullary){
+bool CompositeFunction::bindOutputAsVariable(
+    std::shared_ptr<FunctionRegister>const&fr,
+    std::shared_ptr<Resource>        const&r ){
+  PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
-  /*
-     if(!this->_outputBindingCheck(fr,nullary->getOutputData()))
-     return false;
-     if(this->_outputSignaling){
-     this->_removeSignalingTarget(this->_outputSignaling);
-     this->_outputSignaling->_removeSignalingSource(this);
-     }
-     this->_outputMapping = nullary;
-     this->setDirty();*/
-  return this->_outputMapping->bindOutput(fr,nullary);
+  return this->_outputMapping->bindOutputAsVariable(fr,r);
 }
 
 bool CompositeFunction::hasInput(InputIndex i)const{
+  PRINT_CALL_STACK(i);
   assert(this!=nullptr);
-  for(auto x:this->_inputMapping[i]){
+  for(auto const&x:this->_inputMapping[i]){
     assert(std::get<FUNCTION>(x)!=nullptr);
     if(!std::get<FUNCTION>(x)->hasInput(std::get<INPUT>(x)))return false;
   }
@@ -92,46 +95,27 @@ bool CompositeFunction::hasInput(InputIndex i)const{
 }
 
 bool CompositeFunction::hasOutput()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->hasOutput();
 }
 
 std::shared_ptr<Resource>const&CompositeFunction::getInputData(InputIndex i)const{
+  PRINT_CALL_STACK(i);
   assert(this!=nullptr);
   assert(i<this->_inputMapping.size());
   assert(this->_inputMapping[i].size()>0);
-  FceInput const&mapping = this->_inputMapping[i][0];
+  FceInput const&mapping = this->_inputMapping.at(i).at(0);
   assert(std::get<FUNCTION>(mapping)!=nullptr);
   return std::get<FUNCTION>(mapping)->getInputData(std::get<INPUT>(mapping));
 }
 
 std::shared_ptr<Resource>const&CompositeFunction::getOutputData()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->getOutputData();
 }
-
-Function::Ticks CompositeFunction::getUpdateTicks()const{
-  assert(this!=nullptr);
-  assert(this->_outputMapping!=nullptr);
-  return this->_outputMapping->getUpdateTicks();
-}
-
-void  CompositeFunction::setUpdateTicks(Ticks ticks){
-  assert(this!=nullptr);
-  assert(this->_outputMapping!=nullptr);
-  this->_outputMapping->setUpdateTicks(ticks);
-}
-
-std::shared_ptr<Function>const&CompositeFunction::getInputFunction(InputIndex i)const{
-  assert(this!=nullptr);
-  assert(i<this->_inputMapping.size());
-  assert(this->_inputMapping[i].size()>0);
-  FceInput const&mapping = this->_inputMapping[i][0];
-  assert(std::get<FUNCTION>(mapping)!=nullptr);
-  return std::get<FUNCTION>(mapping)->getInputFunction(std::get<INPUT>(mapping));
-}
-
 
 

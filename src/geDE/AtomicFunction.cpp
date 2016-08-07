@@ -5,21 +5,24 @@
 using namespace ge::de;
 
 AtomicFunctionInput::AtomicFunctionInput(
-    std::shared_ptr<Function>const&fce        ,
-    Function::Ticks                updateTicks,
+    std::shared_ptr<Resource>const&r          ,
+    Ticks                          updateTicks,
     bool                           changed    ){
+  PRINT_CALL_STACK(r,updateTicks,changed);
   assert(this!=nullptr);
   this->updateTicks = updateTicks;
   this->changed     = changed;
-  this->function    = fce;
+  this->resource    = r;
 }
 
 AtomicFunctionInput::~AtomicFunctionInput(){
+  PRINT_CALL_STACK();
 }
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
     FunctionId                             id):Function(fr,id){
+  PRINT_CALL_STACK(fr,id);
   assert(this!=nullptr);
   assert(fr!=nullptr);
   for(size_t i=0;i<fr->getNofInputs(id);++i)
@@ -31,86 +34,120 @@ AtomicFunction::AtomicFunction(
     TypeId                                 type   ,
     std::string                      const&name   ,
     std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(type,name,factory)){
+  PRINT_CALL_STACK(fr,type,name,factory);
 }
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr    ,
     FunctionId                             id    ,
     std::shared_ptr<Resource>        const&output):AtomicFunction(fr,id){
+  PRINT_CALL_STACK(fr,id,output);
   assert(this!=nullptr);
   this->bindOutput(fr,output);
 }
 
 
 AtomicFunction::~AtomicFunction(){
+  PRINT_CALL_STACK();
 }
 
 bool AtomicFunction::bindInput(
-    std::shared_ptr<FunctionRegister>const&fr      ,
-    size_t                                 i       ,
-    std::shared_ptr<Function>        const&function){
+    std::shared_ptr<FunctionRegister>const&fr,
+    size_t                                 i ,
+    std::shared_ptr<Resource>        const&r ){
+  PRINT_CALL_STACK(fr,i,r);
   assert(this!=nullptr);
-  if(!this->_inputBindingCheck(fr,i,function))
+  if(!this->_inputBindingCheck(fr,i,r))
     return false;
   assert(i<this->_inputs.size());
-  auto oldFunction = this->_inputs.at(i)->function;
-  if(oldFunction == function)return true;
-  if(oldFunction){
-    std::dynamic_pointer_cast<Statement>(oldFunction)->_removeSignalingTarget(this);
-    this->_removeSignalingSource((Statement*)&*oldFunction);
-    this->_fce2Indices.at(oldFunction).erase(i);
-    if(this->_fce2Indices.at(oldFunction).empty()){
-      this->_fce2Indices.erase(oldFunction);
-      this->_fce2FceInput.erase(oldFunction);
+  auto oldResource = this->_inputs.at(i)->resource;
+  if(oldResource == r)return true;
+  if(oldResource){
+    oldResource->_removeSignalingTarget(this);
+    this->_removeSourceResource(&*oldResource);
+    this->_res2Indices.at(oldResource).erase(i);
+    if(this->_res2Indices.at(oldResource).empty()){
+      this->_res2Indices.erase(oldResource);
+      this->_res2FceInput.erase(oldResource);
     }
   }
-  if(function){
-    std::dynamic_pointer_cast<Statement>(function)->_addSignalingTarget(this);
-    this->_addSignalingSource((Statement*)&*function);
-    auto ii = this->_fce2Indices.find(function);
-    if(ii==this->_fce2Indices.end()){
-      this->_fce2Indices[function]=std::set<size_t>();
-      this->_fce2FceInput[function]=this->_inputs.at(i);
+  if(r){
+    r->_addSignalingTarget(this);
+    this->_addSourceResource(&*r);
+    auto ii = this->_res2Indices.find(r);
+    if(ii==this->_res2Indices.end()){
+      this->_res2Indices[r]=std::set<size_t>();
+      this->_res2FceInput[r]=this->_inputs.at(i);
     }
-    this->_fce2Indices.at(function).insert(i);
-    this->_inputs.at(i)->updateTicks = function->getUpdateTicks() - 1;
+    this->_res2Indices.at(r).insert(i);
+    this->_inputs.at(i)->updateTicks = r->_ticks - 1;
   }
-  this->_inputs.at(i)->function = function;
+  this->_inputs.at(i)->resource = r;
   this->_inputs.at(i)->changed  = true;
   this->setDirty();
   return true;
 }
 
 bool AtomicFunction::bindOutput(
-    std::shared_ptr<FunctionRegister>const&fr  ,
-    std::shared_ptr<Resource>        const&data){
+    std::shared_ptr<FunctionRegister>const&fr,
+    std::shared_ptr<Resource>        const&r ){
+  PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
-  if(!this->_outputBindingCheck(fr,data))
+  if(!this->_outputBindingCheck(fr,r))
     return false;
-  this->_outputData = data;
+  if(this->_outputData == r){
+    if(r==nullptr)return true;
+    if(r->_producer)
+      if(&*r->_producer == this)return true;
+    r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
+    return true;
+  }
+  if(this->_outputData){
+    this->_outputData->_removeSignalingSource(this);
+    this->_removeTargetResource(&*this->_outputData);
+    r->setProducer(nullptr);
+  }
+  if(r){
+    this->_addTargetResource(&*r);
+    r->_addSignalingSource(this);
+    auto st = this->shared_from_this();
+    auto cst = std::dynamic_pointer_cast<Function>(st);
+    r->setProducer(cst);//std::dynamic_pointer_cast<Function>(this->shared_from_this()));
+    //r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
+  }
+  this->_outputData = r;
   this->setDirty();
   return true;
 }
 
-bool AtomicFunction::bindOutput(
-    std::shared_ptr<FunctionRegister>const&fr     ,
-    std::shared_ptr<Nullary>         const&nullary){
+bool AtomicFunction::bindOutputAsVariable(
+    std::shared_ptr<FunctionRegister>const&fr,
+    std::shared_ptr<Resource>        const&r ){
+  PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
-  if(!this->_outputBindingCheck(fr,nullary->getOutputData()))
+  if(!this->_outputBindingCheck(fr,r))
     return false;
-  if(this->_outputNullary){
-    this->_removeSignalingTarget(this->_outputNullary);
-    this->_outputNullary->_removeSignalingSource(this);
+  if(this->_outputData == r){
+    if(r->_producer)
+      if(&*r->_producer == this)r->_producer = nullptr;
+    return true;
   }
-  this->_outputData = nullary->getOutputData();
-  this->_outputNullary = &*nullary;
-  this->_addSignalingTarget(this->_outputNullary);
-  this->_outputNullary->_addSignalingSource(this);
+  if(this->_outputData){
+    this->_outputData->_removeSignalingSource(this);
+    this->_removeTargetResource(&*this->_outputData);
+    r->setProducer(nullptr);
+  }
+  if(r){
+    this->_addTargetResource(&*r);
+    r->_addSignalingSource(this);
+  }
+  this->_outputData = r;
   this->setDirty();
   return true;
 }
 
 void AtomicFunction::operator()(){
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   if(!this->_dirtyFlag)return;
   bool isAnyInputChanged = this->_processInputs();
@@ -121,25 +158,28 @@ void AtomicFunction::operator()(){
   bool isOutputChanged = this->_do();
   this->_dirtyFlag = false;
   if(isOutputChanged){
+    this->getOutputData()->updateTicks();
     this->_updateTicks++;
     this->setSignalingDirty();
   }
 }
 
 bool AtomicFunction::_processInputs(){
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   bool isAnyInputChanged = false;
-  for(auto const&x:this->_fce2FceInput){
+  for(auto const&x:this->_res2FceInput){
     auto input = x.second;
-    (*input->function)();
-    bool changed = input->updateTicks < input->function->getUpdateTicks();
+    (*input->resource)();
+    bool changed = input->updateTicks < input->resource->_ticks;
     input->changed = changed;
-    input->updateTicks = input->function->getUpdateTicks();
+    input->updateTicks = input->resource->_ticks;
     isAnyInputChanged |= changed;
   }
   return isAnyInputChanged;
 }
 
 bool AtomicFunction::_do(){
+  PRINT_CALL_STACK();
   return true;
 }

@@ -2,6 +2,7 @@
 
 #include<geCore/Command.h>
 #include<geDE/Export.h>
+#include<geCore/CallStackPrinter.h>
 #include<cassert>
 #include<set>
 
@@ -32,7 +33,7 @@ namespace ge{
         virtual ~Statement();
         virtual void operator()()=0;
         void setDirty();
-        void setSignalingDirty();
+        virtual void setSignalingDirty();
         bool isDirty()const;
         virtual Ticks getUpdateTicks()const;
         virtual void setUpdateTicks(Ticks ticks);
@@ -57,11 +58,14 @@ namespace ge{
     };
 
     inline Statement::Statement(Type const&type){
+      PRINT_CALL_STACK(type);
       assert(this!=nullptr);
       this->_type = type;
     }
 
     inline Statement::~Statement(){
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
       for(auto const&x:this->_signalingSources)
         x->_removeSignalingTarget(this);
       for(auto const&x:this->_signalingTargets)
@@ -69,86 +73,103 @@ namespace ge{
     }
 
     inline bool Statement::isDirty()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_dirtyFlag;
     }
 
     inline void Statement::_addSignalingSource(Statement*statement){
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       this->_signalingSources.insert(statement);
     }
 
     inline void Statement::_removeSignalingSource(Statement*statement){
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       this->_signalingSources.erase(statement);
     }
 
     inline bool Statement::hasSignalingSource(Statement*statement)const{
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       return this->_signalingSources.count(statement)!=0;
     }
 
     inline void Statement::_addSignalingTarget(Statement*statement){
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       this->_signalingTargets.insert(statement);
     }
 
     inline void Statement::_removeSignalingTarget(Statement*statement){
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       this->_signalingTargets.erase(statement);
     }
 
     inline bool Statement::hasSignalingTarget(Statement*statement)const{
+      PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
       return this->_signalingTargets.count(statement)!=0;
     }
 
 
     inline size_t Statement::nofSignalingSources()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_signalingSources.size();
     }
 
     inline size_t Statement::nofSignalingTargets()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_signalingTargets.size();
     }
 
     inline void Statement::setDirty(){
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       this->_dirtyFlag = true;
       this->setSignalingDirty();
     }
 
     inline void Statement::setSignalingDirty(){
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       for(auto const&x:this->_signalingTargets)
         if(!x->isDirty())x->setDirty();
     }
 
     inline Statement::Ticks Statement::getUpdateTicks()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_updateTicks;
     }
 
     inline void Statement::setUpdateTicks(Ticks ticks){
+      PRINT_CALL_STACK(ticks);
       assert(this!=nullptr);
       this->_updateTicks = ticks;
     }
 
     inline std::shared_ptr<Body>Statement::toBody()const{
+      PRINT_CALL_STACK();
       return nullptr;
     }
 
     inline std::shared_ptr<If>Statement::toIf()const{
+      PRINT_CALL_STACK();
       return nullptr;
     }
 
     inline std::shared_ptr<While>Statement::toWhile()const{
+      PRINT_CALL_STACK();
       return nullptr;
     }
 
     inline std::shared_ptr<Function>Statement::toFunction()const{
+      PRINT_CALL_STACK();
       return nullptr;
     }
 

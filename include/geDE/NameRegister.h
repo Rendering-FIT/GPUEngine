@@ -6,6 +6,7 @@
 #include<map>
 #include<geDE/Export.h>
 #include<geCore/ErrorPrinter.h>
+#include<geCore/CallStackPrinter.h>
 
 namespace ge{
   namespace de{
@@ -53,11 +54,16 @@ namespace ge{
         StructureMap _structureNaming;
     };
 
-    inline NameRegister::NameRegister(){}
+    inline NameRegister::NameRegister(){
+      PRINT_CALL_STACK();
+    }
 
-    inline NameRegister::~NameRegister(){}
+    inline NameRegister::~NameRegister(){
+      PRINT_CALL_STACK();
+    }
 
     inline std::string const&NameRegister::getFceInputName(Id id,ElementIndex input)const{
+      PRINT_CALL_STACK(id,input);
       assert(this!=nullptr);
       assert(this->_functionNaming.count(id)!=0);
       assert(input<std::get<INPUT_NAME>(this->_functionNaming.find(id)->second).size());
@@ -65,12 +71,14 @@ namespace ge{
     }
 
     inline std::string const&NameRegister::getFceOutputName(Id id)const{
+      PRINT_CALL_STACK(id);
       assert(this!=nullptr);
       assert(this->_functionNaming.count(id)!=0);
       return std::get<OUTPUT>(this->_functionNaming.find(id)->second);
     }
 
     inline void NameRegister::setFceInputName(Id id,ElementIndex input,std::string const&name){
+      PRINT_CALL_STACK(id,input,name);
       assert(this!=nullptr);
       assert(this->_functionNaming.count(id)!=0);
       assert(input<std::get<INPUT_NAME>(this->_functionNaming[id]).size());
@@ -84,12 +92,14 @@ namespace ge{
     }
 
     inline void NameRegister::setFceOutputName(Id id,std::string const&name){
+      PRINT_CALL_STACK(id,name);
       assert(this!=nullptr);
       assert(this->_functionNaming.count(id)!=0);
       std::get<OUTPUT>(this->_functionNaming[id]) = name;
     }
 
     inline std::string const&NameRegister::getStructElementName(Id id,ElementIndex element)const{
+      PRINT_CALL_STACK(id,element);
       assert(this!=nullptr);
       assert(this->_structureNaming.count(id)!=0);
       assert(element<std::get<ELEMENT_NAME>(this->_structureNaming.find(id)->second).size());
@@ -97,6 +107,7 @@ namespace ge{
     }
 
     inline void NameRegister::setStructElementName(Id id,ElementIndex element,std::string const&name){
+      PRINT_CALL_STACK(id,element,name);
       assert(this!=nullptr);
       assert(this->_structureNaming.count(id)!=0);
       assert(element<std::get<ELEMENT_NAME>(this->_structureNaming.find(id)->second).size());
@@ -106,6 +117,7 @@ namespace ge{
     }
 
     inline NameRegister::ElementIndex NameRegister::getFceInput(Id id,std::string const&name)const{
+      PRINT_CALL_STACK(id,name);
       assert(this!=nullptr);
       assert(this->_functionNaming.count(id)!=0);
       auto fi = this->_functionNaming.find(id);
@@ -118,6 +130,7 @@ namespace ge{
     }
 
     inline NameRegister::ElementIndex NameRegister::getStructElement(Id id,std::string const&name)const{
+      PRINT_CALL_STACK(id,name);
       assert(this!=nullptr);
       assert(this->_structureNaming.count(id)!=0);
       auto si = this->_structureNaming.find(id);
@@ -130,12 +143,14 @@ namespace ge{
     }
 
     inline bool NameRegister::hasFceInput(Id id,std::string const&name)const{
+      PRINT_CALL_STACK(id,name);
       assert(this!=nullptr);
       assert(this->_functionNaming.count(id)!=0);
       return std::get<NAME_2_INPUT>(this->_functionNaming.find(id)->second).count(name)>0;
     }
 
     inline bool NameRegister::hasStructElement(Id id,std::string const&name)const{
+      PRINT_CALL_STACK(id,name);
       assert(this!=nullptr);
       assert(this->_structureNaming.count(id)!=0);
       return std::get<NAME_2_ELEMENT>(this->_structureNaming.find(id)->second).count(name)>0;

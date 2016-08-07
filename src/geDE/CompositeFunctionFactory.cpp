@@ -3,30 +3,36 @@
 #include<geDE/FunctionNodeFactory.h>
 #include<geDE/CompositeFunction.h>
 #include<geDE/FactoryOfFunctionFactory.h>
+#include<geDE/Resource.h>
 
 using namespace ge::de;
 
 CompositeFunctionFactory::CompositeFunctionFactory(
     std::string const&name   ,
     Uses              maxUses):FunctionFactory(name,maxUses){
+  PRINT_CALL_STACK(name,maxUses);
 }
 
 CompositeFunctionFactory::~CompositeFunctionFactory(){
+  PRINT_CALL_STACK();
 }
 
 std::shared_ptr<FunctionFactory>const&CompositeFunctionFactory::getInputFactory(size_t input)const{
+  PRINT_CALL_STACK(input);
   assert(this!=nullptr);
   return this->_factory->getInputFactory(input);
 }
 
 
 void CompositeFunctionFactory::setFactory(std::shared_ptr<StatementFactory>const&fac){
+  PRINT_CALL_STACK(fac);
   assert(this!=nullptr);
   this->_factory = std::dynamic_pointer_cast<FunctionNodeFactory>(fac);
 }
 
 void CompositeFunctionFactory::setInputFactories(
     std::vector<FactoryInputList>const&inputs){
+  PRINT_CALL_STACK(inputs);
   assert(this!=nullptr);
   this->_inputs = inputs;
 }
@@ -36,6 +42,7 @@ void _recBuildInput(
     std::shared_ptr<Function>                  const&fce             ,
     std::shared_ptr<FunctionFactory>           const&fac             ,
     CompositeFunctionFactory::FactoryInputList const&factoryInputList){
+  PRINT_CALL_STACK(output,fce,fac,factoryInputList);
   assert((fce!=nullptr) == (fac!=nullptr));
   if(fce==nullptr || fac==nullptr)return;
   for(size_t i=0;i<factoryInputList.size();++i)
@@ -44,10 +51,17 @@ void _recBuildInput(
 
   auto functionNodeFactory = std::dynamic_pointer_cast<FunctionNodeFactory>(fac);
   for(size_t i=0;i<functionNodeFactory->getNofInputs();++i){
-    if(functionNodeFactory == nullptr)
-      _recBuildInput(output,fce->getInputFunction(i),nullptr,factoryInputList);
-    else
-      _recBuildInput(output,fce->getInputFunction(i),functionNodeFactory->getInputFactory(i),factoryInputList);
+    if(functionNodeFactory == nullptr){
+      if(fce->getInputData(i))
+        _recBuildInput(output,fce->getInputFunction(i),nullptr,factoryInputList);
+      else
+        _recBuildInput(output,nullptr,nullptr,factoryInputList);
+    }else{
+      if(fce->getInputData(i))
+        _recBuildInput(output,fce->getInputFunction(i),functionNodeFactory->getInputFactory(i),factoryInputList);
+      else
+        _recBuildInput(output,nullptr,functionNodeFactory->getInputFactory(i),factoryInputList);
+    }
   }
 }
 
@@ -55,6 +69,7 @@ void _recBuildInput(
 
 std::shared_ptr<Statement>CompositeFunctionFactory::_do(
     std::shared_ptr<FunctionRegister>const&fr){
+  PRINT_CALL_STACK(fr);
   assert(this!=nullptr);
   assert(fr!=nullptr);
   auto res = (*this->_factory)(fr);
@@ -76,18 +91,21 @@ std::shared_ptr<Statement>CompositeFunctionFactory::_do(
 
 TypeId CompositeFunctionFactory::getOutputType(
     std::shared_ptr<FunctionRegister>const&fr)const{
+  PRINT_CALL_STACK(fr);
   assert(this!=nullptr);
   return this->_factory->getOutputType(fr);
 }
 
 size_t CompositeFunctionFactory::getNofInputs(
     std::shared_ptr<FunctionRegister>const&)const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   return this->_inputs.size();
 }
 
 TypeId CompositeFunctionFactory::getInputType(
     std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
+  PRINT_CALL_STACK(fr,i);
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
   assert(this->_inputs.at(i).size()>0);

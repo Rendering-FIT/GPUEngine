@@ -8,9 +8,11 @@ Reference::Reference(
     std::shared_ptr<FunctionRegister>const&fr,
     TypeId                                 id):AtomicFunction(fr,fr->getFunctionId(
         keyword<Reference>()+"<"+fr->getTypeRegister()->getTypeIdName(id)+">")){
+      PRINT_CALL_STACK(fr,id);
 }
 
 bool Reference::_do(){
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   assert(this->getOutputData()!=nullptr);
   assert(this->getInputData(0)!=nullptr);

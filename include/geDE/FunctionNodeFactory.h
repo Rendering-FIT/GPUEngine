@@ -33,12 +33,14 @@ namespace ge{
     };
 
     inline std::shared_ptr<FunctionFactory>const&FunctionNodeFactory::getInputFactory(size_t input)const{
+      PRINT_CALL_STACK(input);
       assert(this!=nullptr);
       assert(input<this->inputFactories.size());
       return this->inputFactories.at(input);
     }
     
     inline size_t FunctionNodeFactory::getNofInputs()const{
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->inputFactories.size();
     }

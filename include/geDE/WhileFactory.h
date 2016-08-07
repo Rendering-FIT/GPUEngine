@@ -18,9 +18,11 @@ namespace ge{
     inline WhileFactory::WhileFactory(
         std::string const&name   ,
         Uses              maxUses):StatementFactory(name,maxUses){
+      PRINT_CALL_STACK(name,maxUses);
     }
 
     inline WhileFactory::~WhileFactory(){
+      PRINT_CALL_STACK();
     }
   }
 }
