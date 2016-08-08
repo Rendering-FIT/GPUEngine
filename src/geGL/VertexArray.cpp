@@ -28,7 +28,7 @@ VertexArray::~VertexArray(){
   assert(this!=nullptr);
   glDeleteVertexArrays(1,&this->_id);
   for(auto const&x:this->_buffers)
-    x.second->_vertexArrays.erase(this);
+    if(x)x->_vertexArrays.erase(this);
   if(this->_elementBuffer)this->_elementBuffer->_vertexArrays.erase(this);
 }
 
@@ -70,7 +70,8 @@ void VertexArray::addAttrib(
 
   glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),(GLintptr)pointer,stride);
   glVertexArrayBindingDivisor(this->_id,index,divisor);
-  this->_buffers[index]=buffer;
+  while(index>this->_buffers.size())this->_buffers.push_back(nullptr);
+  this->_buffers.push_back(buffer);
   buffer->_vertexArrays.insert(this);
 }
 
@@ -207,8 +208,8 @@ std::shared_ptr<Buffer>const&VertexArray::getElement()const{
 
 std::shared_ptr<Buffer>const&VertexArray::getBuffer(GLuint index)const{
   assert(this!=nullptr);
-  assert(this->_buffers.count(index)!=0);
-  return this->_buffers.find(index)->second;
+  assert(index<this->_buffers.size());
+  return this->_buffers.at(index);
 }
 
 //OpenGL 3.3

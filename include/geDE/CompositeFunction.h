@@ -34,7 +34,7 @@ namespace ge{
         virtual bool hasInput (InputIndex i)const override;
         virtual bool hasOutput(            )const override;
         virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;
-        virtual std::shared_ptr<Resource>const&getOutputData(            )const override;
+        virtual Resource*getOutputData()const override;
       protected:
         std::vector<FceInputList>_inputMapping;
         std::shared_ptr<Function>_outputMapping;

@@ -29,7 +29,7 @@ namespace ge{
         InputList                _inputs               ;
         std::map<SharedResource,std::set<size_t>>_res2Indices;
         Res2FceInput             _res2FceInput        ;
-        std::shared_ptr<Resource>_outputData  = nullptr;
+        Resource*_outputData  = nullptr;
       public:
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr,
@@ -54,14 +54,14 @@ namespace ge{
         virtual bool hasInput(size_t i)const override;
         virtual bool hasOutput()const override;
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const override;
-        virtual std::shared_ptr<Resource>const&getOutputData()const override;
+        virtual Resource*getOutputData()const override;
       protected:
         bool _processInputs();
         virtual bool _do();
         inline bool _inputChanged(size_t i)const;
     };
 
-    inline std::shared_ptr<Resource>const&AtomicFunction::getOutputData()const{
+    inline Resource*AtomicFunction::getOutputData()const{
       PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_outputData;

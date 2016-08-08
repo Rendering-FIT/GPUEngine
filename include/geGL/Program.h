@@ -53,48 +53,73 @@ namespace ge{
         GLint getInterfaceParam(GLenum interface,GLenum pname)const;
         std::string getResourceName(GLenum interface,GLuint index)const;
         GLint getResourceParam(GLenum interface,GLenum pname,GLuint index)const;
-        void set1f(std::string name,float v0                           ){glProgramUniform1f(this->_id,this->_getUniform(name),v0         );}
-        void set2f(std::string name,float v0,float v1                  ){glProgramUniform2f(this->_id,this->_getUniform(name),v0,v1      );}
-        void set3f(std::string name,float v0,float v1,float v2         ){glProgramUniform3f(this->_id,this->_getUniform(name),v0,v1,v2   );}
-        void set4f(std::string name,float v0,float v1,float v2,float v3){glProgramUniform4f(this->_id,this->_getUniform(name),v0,v1,v2,v3);}
-        void set1i(std::string name,int32_t v0                                 ){glProgramUniform1i(this->_id,this->_getUniform(name),v0         );}
-        void set2i(std::string name,int32_t v0,int32_t v1                      ){glProgramUniform2i(this->_id,this->_getUniform(name),v0,v1      );}
-        void set3i(std::string name,int32_t v0,int32_t v1,int32_t v2           ){glProgramUniform3i(this->_id,this->_getUniform(name),v0,v1,v2   );}
-        void set4i(std::string name,int32_t v0,int32_t v1,int32_t v2,int32_t v3){glProgramUniform4i(this->_id,this->_getUniform(name),v0,v1,v2,v3);}
-        void set1ui(std::string name,uint32_t v0                                    ){glProgramUniform1ui(this->_id,this->_getUniform(name),v0         );}
-        void set2ui(std::string name,uint32_t v0,uint32_t v1                        ){glProgramUniform2ui(this->_id,this->_getUniform(name),v0,v1      );}
-        void set3ui(std::string name,uint32_t v0,uint32_t v1,uint32_t v2            ){glProgramUniform3ui(this->_id,this->_getUniform(name),v0,v1,v2   );}
-        void set4ui(std::string name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3){glProgramUniform4ui(this->_id,this->_getUniform(name),v0,v1,v2,v3);}
-        void set1fv(std::string name,float const*v0,GLsizei count = 1){glProgramUniform1fv(this->_id,this->_getUniform(name),count,v0);}
-        void set2fv(std::string name,float const*v0,GLsizei count = 1){glProgramUniform2fv(this->_id,this->_getUniform(name),count,v0);}
-        void set3fv(std::string name,float const*v0,GLsizei count = 1){glProgramUniform3fv(this->_id,this->_getUniform(name),count,v0);}
-        void set4fv(std::string name,float const*v0,GLsizei count = 1){glProgramUniform4fv(this->_id,this->_getUniform(name),count,v0);}
-        void set1iv(std::string name,int32_t const*v0,GLsizei count = 1){glProgramUniform1iv(this->_id,this->_getUniform(name),count,v0);}
-        void set2iv(std::string name,int32_t const*v0,GLsizei count = 1){glProgramUniform2iv(this->_id,this->_getUniform(name),count,v0);}
-        void set3iv(std::string name,int32_t const*v0,GLsizei count = 1){glProgramUniform3iv(this->_id,this->_getUniform(name),count,v0);}
-        void set4iv(std::string name,int32_t const*v0,GLsizei count = 1){glProgramUniform4iv(this->_id,this->_getUniform(name),count,v0);}
-        void set1uiv(std::string name,uint32_t const*v0,GLsizei count = 1){glProgramUniform1uiv(this->_id,this->_getUniform(name),count,v0);}
-        void set2uiv(std::string name,uint32_t const*v0,GLsizei count = 1){glProgramUniform2uiv(this->_id,this->_getUniform(name),count,v0);}
-        void set3uiv(std::string name,uint32_t const*v0,GLsizei count = 1){glProgramUniform3uiv(this->_id,this->_getUniform(name),count,v0);}
-        void set4uiv(std::string name,uint32_t const*v0,GLsizei count = 1){glProgramUniform4uiv(this->_id,this->_getUniform(name),count,v0);}
-        void setMatrix4fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix4fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix3fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix3fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix2fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix2fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix4x3fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix4x3fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix4x2fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix4x2fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix3x4fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix3x4fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix3x2fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix3x2fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix2x4fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix2x4fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix2x3fv(std::string name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix2x3fv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix4dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix4dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix3dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix3dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix2dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix2dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix4x3dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix4x3dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix4x2dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix4x2dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix3x4dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix3x4dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix3x2dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix3x2dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix2x4dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix2x4dv(this->_id,this->_getUniform(name),count,transpose,v0);}
-        void setMatrix2x3dv(std::string name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE){glProgramUniformMatrix2x3dv(this->_id,this->_getUniform(name),count,transpose,v0);}
+        void set1f(std::string const&name,float v0                           );
+        void set2f(std::string const&name,float v0,float v1                  );
+        void set3f(std::string const&name,float v0,float v1,float v2         );
+        void set4f(std::string const&name,float v0,float v1,float v2,float v3);
+        void set1i(std::string const&name,int32_t v0                                 );
+        void set2i(std::string const&name,int32_t v0,int32_t v1                      );
+        void set3i(std::string const&name,int32_t v0,int32_t v1,int32_t v2           );
+        void set4i(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3);
+        void set1ui(std::string const&name,uint32_t v0                                    );
+        void set2ui(std::string const&name,uint32_t v0,uint32_t v1                        );
+        void set3ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2            );
+        void set4ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3);
+        void set1fv(std::string const&name,float const*v0,GLsizei count = 1);
+        void set2fv(std::string const&name,float const*v0,GLsizei count = 1);
+        void set3fv(std::string const&name,float const*v0,GLsizei count = 1);
+        void set4fv(std::string const&name,float const*v0,GLsizei count = 1);
+        void set1iv(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set2iv(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set3iv(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set4iv(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set1uiv(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void set2uiv(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void set3uiv(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void set4uiv(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void setMatrix4fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix3fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix2fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix4x3fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix4x2fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix3x4fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix3x2fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix2x4fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix2x3fv(std::string const&name,float const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix4dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix3dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix2dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix4x3dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix4x2dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix3x4dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix3x2dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix2x4dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void setMatrix2x3dv(std::string const&name,double const*v0,GLsizei count = 1,GLboolean transpose = GL_FALSE);
+        void set(std::string const&name,float v0                           );
+        void set(std::string const&name,float v0,float v1                  );
+        void set(std::string const&name,float v0,float v1,float v2         );
+        void set(std::string const&name,float v0,float v1,float v2,float v3);
+        void set(std::string const&name,int32_t v0                                 );
+        void set(std::string const&name,int32_t v0,int32_t v1                      );
+        void set(std::string const&name,int32_t v0,int32_t v1,int32_t v2           );
+        void set(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3);
+        void set(std::string const&name,uint32_t v0                                    );
+        void set(std::string const&name,uint32_t v0,uint32_t v1                        );
+        void set(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2            );
+        void set(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3);
+        void set1v(std::string const&name,float const*v0,GLsizei count = 1);
+        void set2v(std::string const&name,float const*v0,GLsizei count = 1);
+        void set3v(std::string const&name,float const*v0,GLsizei count = 1);
+        void set4v(std::string const&name,float const*v0,GLsizei count = 1);
+        void set1v(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set2v(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set3v(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set4v(std::string const&name,int32_t const*v0,GLsizei count = 1);
+        void set1v(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void set2v(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void set3v(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+        void set4v(std::string const&name,uint32_t const*v0,GLsizei count = 1);
+
         std::shared_ptr<ProgramInfo> const&getInfo()const{return this->_info;}
       public:
         template<typename...ARGS>
@@ -143,6 +168,29 @@ namespace ge{
         assert(this!=nullptr);
         this->link(ShaderPointers({shaders...}));
       }
-
+    inline void Program::set(std::string const&name,float v0                           ){assert(this!=nullptr);this->set1f(name,v0);}
+    inline void Program::set(std::string const&name,float v0,float v1                  ){assert(this!=nullptr);this->set2f(name,v0,v1);}
+    inline void Program::set(std::string const&name,float v0,float v1,float v2         ){assert(this!=nullptr);this->set3f(name,v0,v1,v2);}
+    inline void Program::set(std::string const&name,float v0,float v1,float v2,float v3){assert(this!=nullptr);this->set4f(name,v0,v1,v2,v3);}
+    inline void Program::set(std::string const&name,int32_t v0                                 ){assert(this!=nullptr);this->set1i(name,v0);}
+    inline void Program::set(std::string const&name,int32_t v0,int32_t v1                      ){assert(this!=nullptr);this->set2i(name,v0,v1);}
+    inline void Program::set(std::string const&name,int32_t v0,int32_t v1,int32_t v2           ){assert(this!=nullptr);this->set3i(name,v0,v1,v2);}
+    inline void Program::set(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3){assert(this!=nullptr);this->set4i(name,v0,v1,v2,v3);}
+    inline void Program::set(std::string const&name,uint32_t v0                                    ){assert(this!=nullptr);this->set1ui(name,v0);}
+    inline void Program::set(std::string const&name,uint32_t v0,uint32_t v1                        ){assert(this!=nullptr);this->set2ui(name,v0,v1);}
+    inline void Program::set(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2            ){assert(this!=nullptr);this->set3ui(name,v0,v1,v2);}
+    inline void Program::set(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3){assert(this!=nullptr);this->set4ui(name,v0,v1,v2,v3);}
+    inline void Program::set1v(std::string const&name,float const*v0,GLsizei count){assert(this!=nullptr);this->set1fv(name,v0,count);}
+    inline void Program::set2v(std::string const&name,float const*v0,GLsizei count){assert(this!=nullptr);this->set2fv(name,v0,count);}
+    inline void Program::set3v(std::string const&name,float const*v0,GLsizei count){assert(this!=nullptr);this->set3fv(name,v0,count);}
+    inline void Program::set4v(std::string const&name,float const*v0,GLsizei count){assert(this!=nullptr);this->set4fv(name,v0,count);}
+    inline void Program::set1v(std::string const&name,int32_t const*v0,GLsizei count){assert(this!=nullptr);this->set1iv(name,v0,count);}
+    inline void Program::set2v(std::string const&name,int32_t const*v0,GLsizei count){assert(this!=nullptr);this->set2iv(name,v0,count);}
+    inline void Program::set3v(std::string const&name,int32_t const*v0,GLsizei count){assert(this!=nullptr);this->set3iv(name,v0,count);}
+    inline void Program::set4v(std::string const&name,int32_t const*v0,GLsizei count){assert(this!=nullptr);this->set4iv(name,v0,count);}
+    inline void Program::set1v(std::string const&name,uint32_t const*v0,GLsizei count){assert(this!=nullptr);this->set1uiv(name,v0,count);}
+    inline void Program::set2v(std::string const&name,uint32_t const*v0,GLsizei count){assert(this!=nullptr);this->set2uiv(name,v0,count);}
+    inline void Program::set3v(std::string const&name,uint32_t const*v0,GLsizei count){assert(this!=nullptr);this->set3uiv(name,v0,count);}
+    inline void Program::set4v(std::string const&name,uint32_t const*v0,GLsizei count){assert(this!=nullptr);this->set4uiv(name,v0,count);}
   }
 }

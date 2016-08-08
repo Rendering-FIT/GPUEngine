@@ -2,7 +2,7 @@
 
 #include<geGL/OpenGLObject.h>
 #include<iostream>
-#include<map>
+#include<vector>
 #include<memory>
 
 namespace ge{
@@ -49,7 +49,7 @@ namespace ge{
         std::shared_ptr<Buffer>const&getElement()const;
         std::shared_ptr<Buffer>const&getBuffer(GLuint index)const;
       protected:
-        std::map<GLuint,std::shared_ptr<Buffer>>_buffers;
+        std::vector<std::shared_ptr<Buffer>>_buffers;
         std::shared_ptr<Buffer>_elementBuffer = nullptr;
         inline GLint _getAttrib(GLuint index,GLenum pname)const;
     };

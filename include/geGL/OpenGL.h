@@ -1,5 +1,5 @@
 /*!
- * OpenGL part of geGL library contains two main objects - FunctionTable and FunctionProvider
+ * OpenGL part of geGL library contains two main objects - FunctionTable and Context
  */
 
 #pragma once
@@ -17,16 +17,16 @@ namespace ge{
     namespace opengl{
       class FunctionTable;
       using FunctionTablePointer = std::shared_ptr<FunctionTable>;
-      class FunctionProvider;
-      using FunctionProviderPointer = std::shared_ptr<FunctionProvider>;
+      class Context;
+      using ContextPointer = std::shared_ptr<Context>;
       class FunctionLoaderInterface;
       using FunctionLoaderInterfacePointer = std::shared_ptr<FunctionLoaderInterface>;
       GEGL_EXPORT FunctionTablePointer    const& getDefaultFunctionTable();
-      GEGL_EXPORT FunctionProviderPointer const& getDefaultFunctionProvider();
-      GEGL_EXPORT void setDefaultFunctionTable   (FunctionTablePointer    const&table   );
-      GEGL_EXPORT void setDefaultFunctionProvider(FunctionProviderPointer const&provider);
-      GEGL_EXPORT FunctionTablePointer    createTable(FunctionLoaderInterfacePointer const&loader);
-      GEGL_EXPORT FunctionProviderPointer createProvider(FunctionTablePointer const&table = nullptr);
+      GEGL_EXPORT ContextPointer const& getDefaultContext();
+      GEGL_EXPORT void setDefaultFunctionTable   (FunctionTablePointer const&table   );
+      GEGL_EXPORT void setDefaultContext         (ContextPointer       const&provider);
+      GEGL_EXPORT FunctionTablePointer    createTable  (FunctionLoaderInterfacePointer const&loader);
+      GEGL_EXPORT ContextPointer createContext(FunctionTablePointer const&table = nullptr);
     }
   }
 }

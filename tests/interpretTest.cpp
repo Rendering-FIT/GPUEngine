@@ -178,20 +178,22 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     //f2 = f0 + fd
     //f3 = (int)f2
     auto f0=std::make_shared<ge::de::Add<float>>(fr);
-    f0->bindOutput(fr,tr->sharedResource("f32"));
+    auto f0o = tr->sharedResource("f32");
+    f0->bindOutput(fr,f0o);
     f0->bindInput(fr,0,fa);
     f0->bindInput(fr,1,fb);
     auto f1=std::make_shared<ge::de::Add<float>>(fr);
     f1->bindOutput(fr,tr->sharedResource("f32"));
-    f1->bindInput(fr,0,f0->getOutputData());
+    f1->bindInput(fr,0,f0o);
     f1->bindInput(fr,1,fc);
     auto f2=std::make_shared<ge::de::Sub<float>>(fr);
-    f2->bindOutput(fr,tr->sharedResource("f32"));
-    f2->bindInput(fr,0,f0->getOutputData());
+    auto f2o = tr->sharedResource("f32");
+    f2->bindOutput(fr,f2o);
+    f2->bindInput(fr,0,f0o);
     f2->bindInput(fr,1,fd);
     auto f3=std::make_shared<ge::de::Cast<float,int>>(fr);
     f3->bindOutput(fr,tr->sharedResource("i32"));
-    f3->bindInput(fr,0,f2->getOutputData());
+    f3->bindInput(fr,0,f2o);
     WHEN("running f1"){
       REQUIRE(f0->isDirty()==true);
       REQUIRE(f1->isDirty()==true);
@@ -309,23 +311,25 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     auto mult=std::make_shared<ge::de::Mul<uint32_t>>(fr);
     mult->bindInput(fr,0,fk);
     mult->bindInput(fr,1,fi);
-    mult->bindOutput(fr,tr->sharedResource("u32"));
+    auto multo = tr->sharedResource("u32");
+    mult->bindOutput(fr,multo);
     //mult->bindOutput(fr,fki);
     //mult->bindOutput(fr,fki->getOutputData());
 
     auto ass0 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    ass0->bindInput(fr,0,mult->getOutputData());//fki);
+    ass0->bindInput(fr,0,multo);//fki);
     ass0->bindOutputAsVariable(fr,fk);
     //ass0->bindOutput(fr,fk->getOutputData());
 
     auto add=std::make_shared<ge::de::Add<uint32_t>>(fr);
     add->bindInput(fr,0,fi);
     add->bindInput(fr,1,f1);
-    add->bindOutput(fr,tr->sharedResource("u32"));//fi1);
+    auto addo = tr->sharedResource("u32");
+    add->bindOutput(fr,addo);//fi1);
     //add->bindOutput(fr,fi1->getOutputData());
 
     auto ass1 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    ass1->bindInput(fr,0,add->getOutputData());//fi1);
+    ass1->bindInput(fr,0,addo);//fi1);
     ass1->bindOutputAsVariable(fr,fi);
     //ass1->bindOutput(fr,fi->getOutputData());
 
@@ -558,9 +562,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
     auto fadd    = std::make_shared<Add>(fr);
 
     faddten->bindInput(fr,0,fa);
-    faddten->bindOutput(fr,tr->sharedResource("f32"));
-    fadd->bindInput(fr,0,faddten->getOutputData());
-    fadd->bindInput(fr,1,faddten->getOutputData());
+    auto faddteno = tr->sharedResource("f32");
+    faddten->bindOutput(fr,faddteno);
+    fadd->bindInput(fr,0,faddteno);
+    fadd->bindInput(fr,1,faddteno);
     fadd->bindOutput(fr,tr->sharedResource("f32"));
 
     WHEN("running fadd"){

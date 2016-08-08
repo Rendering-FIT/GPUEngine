@@ -66,6 +66,7 @@ namespace ge{
           FULLSCREEN_DESKTOP = SDL_WINDOW_FULLSCREEN_DESKTOP,
         };
         void setFullscreen(Fullscreen const&type);
+        Fullscreen getFullscreen();
       protected:
         using SharedSDLContext = std::shared_ptr<SDL_GLContext>;
         SDL_Window*                             m_window         = nullptr;

@@ -252,11 +252,11 @@ SCENARIO("Reference tests","[Reference]"){
   auto pb = std::make_shared<Reference>(fr,tr->getTypeId("i32"));
   pa->bindInput(fr,0,a);
   pb->bindInput(fr,0,b);
-  pa->bindOutput(fr,tr->sharedResource(tr->getTypeId("i32*")));
-  pb->bindOutput(fr,tr->sharedResource(tr->getTypeId("i32*")));
+  f->bindInput(fr,0,tr->sharedResource(tr->getTypeId("i32*")));
+  f->bindInput(fr,1,tr->sharedResource(tr->getTypeId("i32*")));
+  pa->bindOutput(fr,f->getInputData(0));
+  pb->bindOutput(fr,f->getInputData(1));
 
-  f->bindInput(fr,0,pa);
-  f->bindInput(fr,1,pb);
 
   (*f)();
 
@@ -325,9 +325,9 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   registerBasicFunction(fr,"removeSharedPointerFromTestClass",removeSharedPointer<TestClass>);
   auto b1=fr->sharedFunction("removeSharedPointerFromTestClass");
   b1->bindInput(fr,0,a1);
-  b1->bindOutput(fr,tr->sharedResource("TestClass"));
   auto c1=tr->createResource((int32_t)32);
-  ff1->bindInput(fr,0,b1);
+  ff1->bindInput(fr,0,tr->sharedResource("TestClass"));
+  b1->bindOutput(fr,ff1->getInputData(0));
   ff1->bindInput(fr,1,c1);
   ((std::shared_ptr<TestClass>&)*a1)->data = 100;
   (*ff1)();

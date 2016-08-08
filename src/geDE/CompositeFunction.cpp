@@ -111,7 +111,7 @@ std::shared_ptr<Resource>const&CompositeFunction::getInputData(InputIndex i)cons
   return std::get<FUNCTION>(mapping)->getInputData(std::get<INPUT>(mapping));
 }
 
-std::shared_ptr<Resource>const&CompositeFunction::getOutputData()const{
+Resource*CompositeFunction::getOutputData()const{
   PRINT_CALL_STACK();
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);

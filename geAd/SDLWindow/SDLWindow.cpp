@@ -107,5 +107,13 @@ uint32_t SDLWindow::getHeight()const{
 }
 
 void SDLWindow::setFullscreen(Fullscreen const&type){
-  SDL_SetWindowFullscreen(this->m_window,type);
+  if(SDL_SetWindowFullscreen(this->m_window,type))
+    std::cerr<<SDL_GetError()<<std::endl;
+}
+
+SDLWindow::Fullscreen SDLWindow::getFullscreen(){
+  auto flags = SDL_GetWindowFlags(this->m_window);
+  if(flags&FULLSCREEN)return FULLSCREEN;
+  if(flags&FULLSCREEN_DESKTOP)return FULLSCREEN_DESKTOP;
+  return WINDOW;
 }

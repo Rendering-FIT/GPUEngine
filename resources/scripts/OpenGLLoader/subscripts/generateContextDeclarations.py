@@ -18,12 +18,12 @@ def getReturn(type):
         return ""
     return "return "
 
-def printFunctionProviderDeclaration(data):
+def printContextDeclaration(data):
     params = data.split(",")
     args = ",".join(map(lambda x:x[0]+" "+x[1],zip(params[2::2],params[3::2])))
     params2 = map(lambda x:re.sub(r"\[.*\]","",x),params);
     print params[0]+" "+params[1]+"("+args+")const;"
 
 for x in data0:
-    printFunctionProviderDeclaration(x)
+    printContextDeclaration(x)
 

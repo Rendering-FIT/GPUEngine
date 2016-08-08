@@ -187,10 +187,12 @@ void Buffer::_updateVertexArrays(){
     if(x->_elementBuffer == me){
       x->addElementBuffer(me);
     }
-    std::vector<decltype(x->_buffers)::key_type>attribs;
-    for(auto const&y:x->_buffers)
-      if(y.second == me)
-        attribs.push_back(y.first);
+    std::vector<size_t>attribs;
+    size_t attribId = 0;
+    for(auto const&y:x->_buffers){
+      if(y == me)attribs.push_back(attribId);
+      attribId++;
+    }
     for(auto const&y:attribs){
       x->addAttrib(
           me,

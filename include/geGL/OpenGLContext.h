@@ -6,10 +6,10 @@
 namespace ge{
   namespace gl{
     namespace opengl{
-      class GEGL_EXPORT FunctionProvider{
+      class GEGL_EXPORT Context{
         public:
-          FunctionProvider(FunctionTablePointer const&t = nullptr);
-          ~FunctionProvider(){}
+          Context(FunctionTablePointer const&t = nullptr);
+          ~Context(){}
           FunctionTablePointer const&getFunctionTable()const{
             assert(this!=nullptr);
             return this->m_table;
@@ -18,7 +18,7 @@ namespace ge{
             assert(this!=nullptr);
             this->m_table = t;
           }
-#include<geGL/Generated/FunctionProviderDeclarations.h>
+#include<geGL/Generated/ContextDeclarations.h>
         protected:
           FunctionTablePointer m_table = nullptr;
       };

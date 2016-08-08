@@ -87,9 +87,9 @@ bool AtomicFunction::bindOutput(
   assert(this!=nullptr);
   if(!this->_outputBindingCheck(fr,r))
     return false;
-  if(!this->_outputBindingCircularCheck(fr,r))
+  if(!this->_outputBindingCircularCheck(fr,&*r))
     return false;
-  if(this->_outputData == r){
+  if(this->_outputData == &*r){
     if(r==nullptr)return true;
     if(r->_producer)
       if(&*r->_producer == this)return true;
@@ -105,7 +105,7 @@ bool AtomicFunction::bindOutput(
     r->_addSignalingSource(this);
     r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
   }
-  this->_outputData = r;
+  this->_outputData = &*r;
   this->setDirty();
   return true;
 }
@@ -117,7 +117,8 @@ bool AtomicFunction::bindOutputAsVariable(
   assert(this!=nullptr);
   if(!this->_outputBindingCheck(fr,r))
     return false;
-  if(this->_outputData == r){
+  //TODO r could be nullptr and *r will cause segfault
+  if(this->_outputData == &*r){
     if(r==nullptr)return true;
     if(!r->_producer)return true;
     if(&*r->_producer == this)r->_producer = nullptr;
@@ -133,7 +134,7 @@ bool AtomicFunction::bindOutputAsVariable(
     this->_addTargetResource(&*r);
     r->_addSignalingSource(this);
   }
-  this->_outputData = r;
+  this->_outputData = &*r;
   this->setDirty();
   return true;
 }

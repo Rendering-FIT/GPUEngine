@@ -28,10 +28,11 @@ namespace ge{
             std::shared_ptr<FunctionRegister>const&fr          ,
             size_t                                 i           ,
             std::shared_ptr<Resource>        const&r  = nullptr) = 0;
+        /*
         bool bindInput(
             std::shared_ptr<FunctionRegister>const&fr,
             size_t                                 i ,
-            std::shared_ptr<Function>        const&f );
+            std::shared_ptr<Function>        const&f );*/
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr            ,
             std::shared_ptr<Resource>        const&data = nullptr) = 0;
@@ -41,7 +42,7 @@ namespace ge{
         virtual bool hasInput(size_t i)const = 0;
         virtual bool hasOutput()const = 0; 
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const = 0;
-        virtual std::shared_ptr<Resource>const&getOutputData()const = 0;
+        virtual Resource*getOutputData()const = 0;
         virtual std::shared_ptr<Function>toFunction()const override;
         virtual void setSignalingDirty()override;
         std::shared_ptr<Function>getInputFunction(size_t i)const;
@@ -60,14 +61,14 @@ namespace ge{
             std::shared_ptr<Resource>        const&resource)const;
         bool _outputBindingCircularCheck(
             std::shared_ptr<FunctionRegister>const&fr      ,
-            std::shared_ptr<Resource>        const&resource)const;
+            Resource*resource)const;
         bool _inputBindingCircularCheck(
             std::shared_ptr<FunctionRegister>const&fr      ,
             std::shared_ptr<Resource>const&resource)const;
         bool _recOutputBindingCircularCheck(
             std::shared_ptr<FunctionRegister>const&fr      ,
             std::set<Function const*>&visited,
-            std::shared_ptr<Resource>const&resource)const;
+            Resource*resource)const;
         std::set<Resource*>_targetResources;
         std::set<Resource*>_sourceResources;
         virtual void _addTargetResource(Resource*r);
@@ -93,6 +94,7 @@ namespace ge{
       return std::dynamic_pointer_cast<Function>(std::const_pointer_cast<Statement>(this->shared_from_this()));
     }
     
+    /*
     inline bool Function::bindInput(
         std::shared_ptr<FunctionRegister>const&fr,
         size_t                                 i ,
@@ -100,7 +102,7 @@ namespace ge{
       PRINT_CALL_STACK(fr,i,f);
       assert(this!=nullptr);
       return this->bindInput(fr,i,f->getOutputData());
-    }
+    }*/
 
     inline void Function::_addTargetResource(Resource*r){
       PRINT_CALL_STACK(r);

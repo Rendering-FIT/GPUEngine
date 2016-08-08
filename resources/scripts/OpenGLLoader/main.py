@@ -63,13 +63,13 @@ outputDir+"FunctionTableCalls.h")
 
 os.system(
 "cat "+allFormatedFunctions+" |"+
-"./"+subscriptsDir+"generateFunctionProviderDeclarations.py >"+
-outputDir+"FunctionProviderDeclarations.h")
+"./"+subscriptsDir+"generateContextDeclarations.py >"+
+outputDir+"ContextDeclarations.h")
 
 os.system(
 "cat "+allFormatedFunctions+" |"+
-"./"+subscriptsDir+"generateFunctionProviderCalls.py >"+
-outputDir+"FunctionProviderCalls.h")
+"./"+subscriptsDir+"generateContextCalls.py >"+
+outputDir+"ContextCalls.h")
 
 os.system(
 "cat "+allFormatedFunctions+" |"+

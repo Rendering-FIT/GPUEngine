@@ -4,14 +4,14 @@
 using namespace ge::gl;
 using namespace ge::gl::opengl;
 
-OpenGLObject::OpenGLObject(GLuint id):FunctionProvider(nullptr){
+OpenGLObject::OpenGLObject(GLuint id):Context(nullptr){
   assert(this!=nullptr);
   this->_id = id;
 }
 
 OpenGLObject::OpenGLObject(
     FunctionTablePointer const&table,
-    GLuint id):FunctionProvider(table){
+    GLuint id):Context(table){
   assert(this!=nullptr);
   this->_id = id;
 }
@@ -26,3 +26,6 @@ GLuint OpenGLObject::getId()const{
   return this->_id;
 }
 
+opengl::Context const*OpenGLObject::getContext()const{
+  return this;
+}

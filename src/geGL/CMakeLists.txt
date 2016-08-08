@@ -14,8 +14,8 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
 set(GENERATED_INCLUDES
-  ${HEADER_PATH}/Generated/FunctionProviderCalls.h
-  ${HEADER_PATH}/Generated/FunctionProviderDeclarations.h
+  ${HEADER_PATH}/Generated/ContextCalls.h
+  ${HEADER_PATH}/Generated/ContextDeclarations.h
   ${HEADER_PATH}/Generated/FunctionTableCalls.h
   ${HEADER_PATH}/Generated/LoaderImplementation.h
   ${HEADER_PATH}/Generated/LoaderLoadingCalls.h
@@ -51,7 +51,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/ConvertTo.h
   ${HEADER_PATH}/OpenGLCommands.h
   ${HEADER_PATH}/OpenGLFunctionTable.h
-  ${HEADER_PATH}/OpenGLFunctionProvider.h
+  ${HEADER_PATH}/OpenGLContext.h
   ${HEADER_PATH}/OpenGLCapabilities.h
   ${HEADER_PATH}/FunctionLoaderInterface.h
   ${HEADER_PATH}/DefaultLoader.h
@@ -75,7 +75,7 @@ set(GL_SOURCES
   DebugMessage.cpp
   OpenGLObject.cpp
   geGL.cpp
-  OpenGLFunctionProvider.cpp
+  OpenGLContext.cpp
   OpenGL.cpp
   OpenGLUtil.cpp
   )

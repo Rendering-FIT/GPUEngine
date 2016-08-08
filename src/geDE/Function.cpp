@@ -75,13 +75,13 @@ std::shared_ptr<Function>Function::getInputFunction(size_t i)const{
 bool Function::_recOutputBindingCircularCheck(
     std::shared_ptr<FunctionRegister>const&fr,
     std::set<Function const*>&visited,
-    std::shared_ptr<Resource>const&resource)const{
+    Resource*resource)const{
   assert(this!=nullptr);
   assert(fr!=nullptr);
   if(visited.count(this)!=0)return true;
   size_t n = fr->getNofInputs(this->getId());
   for(size_t i=0;i<n;++i)
-    if(this->getInputData(i)==resource)return false;
+    if(&*this->getInputData(i)==resource)return false;
   visited.insert(this);
   for(size_t i=0;i<n;++i){
     auto r=this->getInputData(i);
@@ -102,7 +102,7 @@ bool Function::_inputBindingCircularCheck(
   if(o==nullptr)return true;
   if(o->_producer==nullptr)return true;
   if(&*o->_producer!=this)return true;
-  if(o==resource){
+  if(o==&*resource){
     ge::core::printError(GE_CORE_FCENAME,"binding resource as input would result in fast circular dependence, you should use bindOutputAsVariable in some point",fr,resource);
     return false;
   }
@@ -116,7 +116,7 @@ bool Function::_inputBindingCircularCheck(
 
 bool Function::_outputBindingCircularCheck(
     std::shared_ptr<FunctionRegister>const&fr      ,
-    std::shared_ptr<Resource>        const&resource)const{
+    Resource*resource)const{
   assert(this!=nullptr);
   if(resource==nullptr)return true;
   auto visited = std::set<Function const*>();

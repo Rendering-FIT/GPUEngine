@@ -18,12 +18,12 @@ def getReturn(type):
         return ""
     return "return "
 
-def printFunctionProviderCall(data):
+def printContextCall(data):
     params = data.split(",")
     args = ",".join(map(lambda x:x[0]+" "+x[1],zip(params[2::2],params[3::2])))
     params2 = map(lambda x:re.sub(r"\[.*\]","",x),params);
-    print params[0]+" "+"ge::gl::opengl::FunctionProvider::"+params[1]+"("+args+")const{"+getReturn(params[0])+"this->getFunctionTable()->"+params[1]+"("+",".join(params2[3::2])+");}"
+    print params[0]+" "+"ge::gl::opengl::Context::"+params[1]+"("+args+")const{"+getReturn(params[0])+"this->getFunctionTable()->"+params[1]+"("+",".join(params2[3::2])+");}"
 
 for x in data0:
-    printFunctionProviderCall(x)
+    printContextCall(x)
 
