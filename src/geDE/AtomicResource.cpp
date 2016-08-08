@@ -9,7 +9,8 @@ namespace ge{
 }
 
 AtomicResource::AtomicResource(AtomicResource const& ac):Resource(ac._manager,ac._id){
-  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
+  PRINT_CALL_STACK(ac);
+  assert(this!=nullptr);
   this->_data   = ac._data  ;
   this->_offset = ac._offset;
 }
@@ -19,17 +20,22 @@ AtomicResource::AtomicResource(
     const void*                        data   ,
     TypeId                             id     ,
     size_t                             offset ):Resource(manager,id){
-  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
-  this->_data    = std::shared_ptr<char>((char*)data,[id,manager](char*ptr){manager->destroy(ptr,id);});
+  PRINT_CALL_STACK(manager,data,id,offset);
+  assert(this!=nullptr);
+  this->_data = std::shared_ptr<uint8_t>((uint8_t*)data,[id,manager](uint8_t*ptr){
+      PRINT_CALL_STACK(ptr);
+      assert(manager!=nullptr);
+      manager->destroy(ptr,id);});
   this->_offset  = offset ;
 }
 
 AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
-    std::shared_ptr<char>const&        data   ,
+    std::shared_ptr<uint8_t>const&        data   ,
     TypeId                             id     ,
     size_t                             offset ):Resource(manager,id){
-  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
+  PRINT_CALL_STACK(manager,data,id,offset);
+  assert(this!=nullptr);
   this->_data    = data   ;
   this->_offset  = offset ;
 }
@@ -37,29 +43,35 @@ AtomicResource::AtomicResource(
 AtomicResource::AtomicResource(
     std::shared_ptr<TypeRegister>const&manager,
     TypeId               id     ):Resource(manager,id){
-  //std::cerr<<"AtomicResource::AtomicResource() - "<<this<<std::endl;
+  PRINT_CALL_STACK(manager,id);
+  assert(this!=nullptr);
   this->_data    = nullptr;
   this->_offset  = 0      ;
 }
 
 AtomicResource::~AtomicResource(){
-  //std::cerr<<"AtomicResource::~AtomicResource() - "<<this<<std::endl;
+  PRINT_CALL_STACK();
 }
 
 void*AtomicResource::getData()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
-  return (char*)&(*this->_data)+this->_offset;
+  assert(this->_data!=nullptr);
+  return (uint8_t*)&(*this->_data)+this->_offset;
 }
 
 void const*AtomicResource::getDataAddress()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   return &this->_data;
 }
 
 std::shared_ptr<Resource> AtomicResource::operator[](size_t elem){
+  PRINT_CALL_STACK(elem);
   assert(this!=nullptr);
+  assert(this->getManager()!=nullptr);
   TypeId innerType = 0;
-  size_t               offset    = 0;
+  size_t offset    = 0;
   switch(this->getManager()->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
       innerType = this->getManager()->getArrayElementTypeId(this->getId());
@@ -76,8 +88,10 @@ std::shared_ptr<Resource> AtomicResource::operator[](size_t elem){
 }
 
 size_t AtomicResource::getNofElements()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
-  switch(this->_manager->getTypeIdType(this->_id)){
+  assert(this->getManager()!=nullptr);
+  switch(this->getManager()->getTypeIdType(this->_id)){
     case TypeRegister::ARRAY :
       return this->getManager()->getArraySize(this->getId());
     case TypeRegister::STRUCT:
@@ -88,13 +102,16 @@ size_t AtomicResource::getNofElements()const{
 }
 
 const void*AtomicResource::getPointer()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
   return (void*)this->getData();
 }
 
 std::string AtomicResource::data2Str()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
-  return this->_manager->data2Str(this->getData(),this->_id);
+  assert(this->getManager()!=nullptr);
+  return this->getManager()->data2Str(this->getData(),this->_id);
 }
 
 

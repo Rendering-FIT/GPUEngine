@@ -44,6 +44,77 @@ SCENARIO("pointer cast test","Function"){
   REQUIRE((int32_t&)*f->getOutputData()==1+2+3);
 }
 */
+SCENARIO("fast loop binding test","[Function]"){
+  auto tr = std::make_shared<ge::de::TypeRegister>();
+  ge::de::registerBasicTypes(tr);
+  auto nr = std::make_shared<NameRegister>();
+  auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
+  ge::de::registerStdFunctions(fr);
+  auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);
+  auto a0 = tr->createResource((int32_t)0);
+
+  auto b0 = fr->sharedFunction(addOneId);
+    //#define SHOWCERR
+#ifndef SHOWCERR
+    std::stringstream oss;
+    auto old = std::cerr.rdbuf( oss.rdbuf() );
+#endif
+
+  REQUIRE(b0->bindOutput(fr,a0)==true);
+  REQUIRE(b0->hasTargetResource(&*a0)==true);
+  REQUIRE(b0->nofTargetResources()==1);
+  REQUIRE(b0->nofSourceResources()==0);
+  REQUIRE(a0->hasSignalingSource(&*b0)==true);
+  REQUIRE(a0->nofSignalingSources()==1);
+  REQUIRE(a0->nofSignalingTargets()==0);
+
+  REQUIRE(b0->bindInput(fr,0,a0)==false);
+  REQUIRE(b0->hasTargetResource(&*a0)==true);
+  REQUIRE(b0->nofTargetResources()==1);
+  REQUIRE(b0->nofSourceResources()==0);
+  REQUIRE(a0->hasSignalingSource(&*b0)==true);
+  REQUIRE(a0->nofSignalingSources()==1);
+  REQUIRE(a0->nofSignalingTargets()==0);
+
+
+  REQUIRE(b0->bindOutput(fr,nullptr)==true);
+  REQUIRE(b0->nofTargetResources()==0);
+  REQUIRE(b0->nofSourceResources()==0);
+  REQUIRE(a0->nofSignalingSources()==0);
+  REQUIRE(a0->nofSignalingTargets()==0);
+
+
+  REQUIRE(b0->bindInput(fr,0,a0)==true);
+  REQUIRE(b0->hasSourceResource(&*a0)==true);
+  REQUIRE(b0->nofTargetResources()==0);
+  REQUIRE(b0->nofSourceResources()==1);
+  REQUIRE(a0->hasSignalingTarget(&*b0)==true);
+  REQUIRE(a0->nofSignalingSources()==0);
+  REQUIRE(a0->nofSignalingTargets()==1);
+
+
+  REQUIRE(b0->bindOutput(fr,a0)==false);
+  REQUIRE(b0->hasSourceResource(&*a0)==true);
+  REQUIRE(b0->nofTargetResources()==0);
+  REQUIRE(b0->nofSourceResources()==1);
+  REQUIRE(a0->hasSignalingTarget(&*b0)==true);
+  REQUIRE(a0->nofSignalingSources()==0);
+  REQUIRE(a0->nofSignalingTargets()==1);
+
+  REQUIRE(b0->bindOutputAsVariable(fr,a0)==true);
+  REQUIRE(b0->hasSourceResource(&*a0)==true);
+  REQUIRE(b0->hasTargetResource(&*a0)==true);
+  REQUIRE(b0->nofTargetResources()==1);
+  REQUIRE(b0->nofSourceResources()==1);
+  REQUIRE(a0->hasSignalingSource(&*b0)==true);
+  REQUIRE(a0->hasSignalingTarget(&*b0)==true);
+  REQUIRE(a0->nofSignalingSources()==1);
+  REQUIRE(a0->nofSignalingTargets()==1);
+
+#ifndef SHOWCERR
+    std::cerr.rdbuf(old);
+#endif
+}
 
 SCENARIO("basic dirty flag tests","[Function]"){
   auto tr = std::make_shared<ge::de::TypeRegister>();
@@ -54,9 +125,9 @@ SCENARIO("basic dirty flag tests","[Function]"){
   auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);//[](int32_t i)->int32_t{return i+1;});//addOne);
   auto a0 = tr->createResource((int32_t)0);//sharedResource(tr->getTypeId(keyword<int32_t>()));
   //std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
-
   auto b0 = fr->sharedFunction(addOneId);
   b0->bindInput(fr,0,a0);
+
   b0->bindOutput(fr,tr->sharedResource("i32"));
 
   REQUIRE(b0->isDirty()==true);

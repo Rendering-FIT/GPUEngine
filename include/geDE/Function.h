@@ -44,7 +44,7 @@ namespace ge{
         virtual std::shared_ptr<Resource>const&getOutputData()const = 0;
         virtual std::shared_ptr<Function>toFunction()const override;
         virtual void setSignalingDirty()override;
-        std::shared_ptr<Function>const&getInputFunction(size_t i)const;
+        std::shared_ptr<Function>getInputFunction(size_t i)const;
         bool hasTargetResource(Resource*r)const;
         bool hasSourceResource(Resource*r)const;
         size_t nofTargetResources()const;
@@ -84,6 +84,7 @@ namespace ge{
     }
 
     inline FunctionId Function::getId()const{
+      assert(this!=nullptr);
       return this->_id;
     }
 

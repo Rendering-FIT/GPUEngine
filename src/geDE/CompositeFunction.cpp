@@ -56,7 +56,7 @@ bool CompositeFunction::bindInput(
   assert(this!=nullptr);
   if(!this->_inputBindingCheck(fr,i,r))
     return false;
-  for(auto x:this->_inputMapping[i]){
+  for(auto const&x:this->_inputMapping[i]){
     assert(std::get<FUNCTION>(x)!=nullptr);
     std::get<FUNCTION>(x)->bindInput(fr,std::get<INPUT>(x),r);
   }

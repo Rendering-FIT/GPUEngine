@@ -57,12 +57,11 @@ std::shared_ptr<Statement>FunctionNodeFactory::_do(
   }
   if(!this->functionFactory)return nullptr;
 
-  auto res = (*this->functionFactory)(fr);
-  assert(res!=nullptr);
+  auto statement = (*this->functionFactory)(fr);
+  assert(statement!=nullptr);
 
-  auto fce=std::dynamic_pointer_cast<Function>(res);
-  using Iter=decltype(this->resourceFactories)::size_type;
-  for(Iter i=0;i<this->resourceFactories.size();++i){
+  auto fce=std::dynamic_pointer_cast<Function>(statement);
+  for(size_t i=0;i<this->resourceFactories.size();++i){
     if(this->resourceFactories[i]==nullptr&&this->inputFactories[i]!=nullptr){
       ge::core::printError(GE_CORE_FCENAME,"there is input factory but there is no resource factory",fr);
       return nullptr;
@@ -75,25 +74,11 @@ std::shared_ptr<Statement>FunctionNodeFactory::_do(
       auto inFce = std::dynamic_pointer_cast<Function>(in);
       assert(inFce!=nullptr);
       inFce->bindOutput(fr,resource);
-
     }
     assert(fce!=nullptr);
     fce->bindInput(fr,i,resource);
-    /*
-       if(!this->resourceFactories[i]!=!this->inputFactories[i]){
-       ge::core::printError(GE_CORE_FCENAME,"input factory and input resource does not correspond",fr);
-       return nullptr;
-       }
-       if(!this->resourceFactories[i])continue;
-       auto in=(*this->inputFactories[i])(fr);
-       auto inFce = std::dynamic_pointer_cast<Function>(in);
-       assert(inFce!=nullptr);
-       inFce->bindOutput(fr,(*this->resourceFactories[i])(fr));
-       assert(fce!=nullptr);
-       fce->bindInput(fr,i,inFce->getOutputData());
-       */
   }
-  return res;
+  return statement;
 }
 
 std::shared_ptr<FunctionFactory>const&FunctionNodeFactory::getFactory()const{

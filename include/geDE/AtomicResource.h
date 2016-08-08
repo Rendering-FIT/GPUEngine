@@ -6,11 +6,11 @@ namespace ge{
   namespace de{
     class GEDE_EXPORT AtomicResource: public Resource{
       protected:
-        std::shared_ptr<char>_data   = nullptr;
-        size_t               _offset = 0u     ;
+        std::shared_ptr<uint8_t>_data   = nullptr;
+        size_t                  _offset = 0u     ;
         static void _callDestructors(
-            char*                                    ptr    ,
-            TypeId                     id     ,
+            uint8_t*                                 ptr    ,
+            TypeId                                   id     ,
             std::shared_ptr<const TypeRegister>const&manager);
       public:
         AtomicResource(AtomicResource const& ac);
@@ -21,7 +21,7 @@ namespace ge{
             size_t                             offset  = 0                         );
         AtomicResource(
             std::shared_ptr<TypeRegister>const&manager                             ,
-            std::shared_ptr<char>const&        data                                ,
+            std::shared_ptr<uint8_t>const&     data                                ,
             TypeId                             id      = TypeRegister::UNREGISTERED,
             size_t                             offset  = 0                         );
         AtomicResource(
@@ -61,24 +61,32 @@ namespace ge{
 */
     template<typename T>
       AtomicResource& AtomicResource::operator=(const T&data){
+        assert(this!=nullptr);
+        assert(this->getData()!=nullptr);
         *((T*)this->getData()) = data;
         return *this;
       }
     template<typename T>
       AtomicResource::operator T&()const{
+        assert(this!=nullptr);
+        assert(this->getData()!=nullptr);
         return *((T*)this->getData());
       }
     template<typename T>
       AtomicResource::operator T*()const{
-        return (T*)this->getData();
+        assert(this!=nullptr);
+        assert(this->getData()!=nullptr);
+        return *(T**)this->getData();
       }
     template<typename T>
       AtomicResource::operator T**()const{
+        assert(this!=nullptr);
         return (T**)this->getDataAddress();
       }
 
     template<typename CLASS,typename... ARGS>
       void AtomicResource::callConstructor(ARGS... args){
+        assert(this!=nullptr);
         new(this->getData())CLASS(args...);
       }
 /*

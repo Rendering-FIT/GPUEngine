@@ -65,10 +65,11 @@ void Function::setSignalingDirty(){
     x->_setSignalingDirty();
 }
 
-std::shared_ptr<Function>const&Function::getInputFunction(size_t i)const{
+std::shared_ptr<Function>Function::getInputFunction(size_t i)const{
   assert(this!=nullptr);
   assert(this->getInputData(i)!=nullptr);
   return this->getInputData(i)->_producer;
+//  return std::const_pointer_cast<Function>(std::dynamic_pointer_cast<Function>(this->getInputData(i)->_producer->shared_from_this()));
 }
 
 bool Function::_recOutputBindingCircularCheck(
@@ -96,6 +97,7 @@ bool Function::_inputBindingCircularCheck(
     std::shared_ptr<Resource>const&resource)const{
   assert(this!=nullptr);
   assert(fr!=nullptr);
+  if(resource==nullptr)return true;
   auto o = this->getOutputData();
   if(o==nullptr)return true;
   if(o->_producer==nullptr)return true;
@@ -116,6 +118,7 @@ bool Function::_outputBindingCircularCheck(
     std::shared_ptr<FunctionRegister>const&fr      ,
     std::shared_ptr<Resource>        const&resource)const{
   assert(this!=nullptr);
+  if(resource==nullptr)return true;
   auto visited = std::set<Function const*>();
   if(!this->_recOutputBindingCircularCheck(fr,visited,resource)){
     ge::core::printError(GE_CORE_FCENAME,"binding resource as output would result in fast cicular dependence, you should use bindOutputAsVariable",fr,resource);

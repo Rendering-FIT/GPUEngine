@@ -20,7 +20,7 @@
 
 using namespace ge::core;
 using namespace ge::de;
-
+#if 1
 std::string printFce(std::shared_ptr<Function>const&fce,std::shared_ptr<FunctionRegister>const&fr){
   if(fce==nullptr)return"nullptr";
   auto tr = fr->getTypeRegister();
@@ -96,7 +96,7 @@ SCENARIO("registration of stdFunction","[FunctionRegister]"){
   REQUIRE(tr->getFceArgTypeId(fr->getType(a0->getId()),1) == i32);
   REQUIRE(tr->getFceReturnTypeId(fr->getType(a0->getId())) == i32);
 }
-
+#endif
 SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto tr=std::make_shared<TypeRegister>();
   ge::de::registerBasicTypes(tr);
@@ -169,7 +169,6 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   a->addInputFactory(b);
   a->addInputFactory(c);
 
-
   //newFce ::= (va+vb)va + (va+vb)vb
   auto fac = std::make_shared<CompositeFunctionFactory>("newFce");
   fac->setFactory(a);
@@ -180,6 +179,7 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   fr->addFunction(tr->addCompositeType("",{TypeRegister::FCE,i32,2,i32,i32}),"newFce",fac);
 
   auto f=fr->sharedFunction("newFce");
+#if 0
   auto ff=std::dynamic_pointer_cast<Function>(f);
   REQUIRE(fr->getName(ff->getId())=="newFce");
   REQUIRE(tr->getFceArgTypeId(fr->getType(ff->getId()),0) == tr->getTypeId("i32"));
@@ -194,8 +194,10 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
 //  std::cerr<<fr->getName(ff->getInputFunction(0)->getId())<<" "<<fr->getName(ff->getInputFunction(1)->getId())<<std::endl;
 //  std::cerr<<tr->getTypeIdName(ff->getInputData(0)->getId())<<" "<<tr->getTypeIdName(ff->getInputData(1)->getId())<<std::endl;
   (*f)();
+#endif
 }
 
+#if 1
 int blb(int a,int b){
   return a+b;
 }
@@ -203,6 +205,7 @@ int blb(int a,int b){
 int baba(int a,int b,int c){
   return a+b+c;
 }
+
 
 SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
@@ -330,3 +333,4 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   (*ff1)();
   REQUIRE((int32_t)(*ff1->getOutputData())==100+32);
 }
+#endif

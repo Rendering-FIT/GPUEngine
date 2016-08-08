@@ -87,7 +87,7 @@ std::shared_ptr<Function>Kernel::createFunction2(
   auto result = this->functionRegister->sharedFunction(name);
   this->bindInput(result,inputs);
   auto var = this->variableRegister->getVariable(variableName);
-  this->bindOutput(result,var);
+  this->bindOutputAsVariable(result,var);
   return result;
 }
 

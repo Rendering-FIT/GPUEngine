@@ -99,15 +99,11 @@ bool AtomicFunction::bindOutput(
   if(this->_outputData){
     this->_outputData->_removeSignalingSource(this);
     this->_removeTargetResource(&*this->_outputData);
-    r->setProducer(nullptr);
   }
   if(r){
     this->_addTargetResource(&*r);
     r->_addSignalingSource(this);
-    auto st = this->shared_from_this();
-    auto cst = std::dynamic_pointer_cast<Function>(st);
-    r->setProducer(cst);//std::dynamic_pointer_cast<Function>(this->shared_from_this()));
-    //r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
+    r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
   }
   this->_outputData = r;
   this->setDirty();
@@ -122,16 +118,18 @@ bool AtomicFunction::bindOutputAsVariable(
   if(!this->_outputBindingCheck(fr,r))
     return false;
   if(this->_outputData == r){
-    if(r->_producer)
-      if(&*r->_producer == this)r->_producer = nullptr;
+    if(r==nullptr)return true;
+    if(!r->_producer)return true;
+    if(&*r->_producer == this)r->_producer = nullptr;
     return true;
   }
   if(this->_outputData){
     this->_outputData->_removeSignalingSource(this);
     this->_removeTargetResource(&*this->_outputData);
-    r->setProducer(nullptr);
   }
   if(r){
+    if(r->_producer)
+      if(&*r->_producer == this)r->_producer = nullptr;
     this->_addTargetResource(&*r);
     r->_addSignalingSource(this);
   }
