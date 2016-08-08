@@ -43,7 +43,7 @@ GLM:
   target name: "glm"
 - GLM_FORCE_RADIANS define was required in version 0.9.5.x (otherwise warning appeared),
   version 0.9.6.0 (released 2014-11-30) use radians by default and ignores the define
-- Ubuntu 16.04: version 0.9.7.2 (section: libdevel)
+- Ubuntu 16.04: version 0.9.7.2 (pkgName: libglm-dev, section: libdevel)
 - Ubuntu 15.04: version 0.9.5.4 (main)
 - Ubuntu 14.04: version 0.9.5.1 (main)
 - CentOS: no rpm (seems that no rpm is available for Fedora)

@@ -2,9 +2,7 @@
 
 #include <geUtil/CameraObject.h>
 
-#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#undef GLM_FORCE_RADIANS
 
 #include <memory>
 

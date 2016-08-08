@@ -56,7 +56,6 @@ set(RG_SOURCES
 ################################################
 # PACKAGES
 
-find_package(GLEW   REQUIRED)
 find_package(glm    REQUIRED)
 
 
@@ -75,8 +74,8 @@ add_library(${LIB_NAME}
 
 
 set(Internal_deps geGL)
-set(External_deps_Export glm GLEW)
-set(External_libs glm GLEW)
+set(External_deps_Export glm)
+set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
