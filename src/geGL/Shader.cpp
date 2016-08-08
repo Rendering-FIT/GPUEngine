@@ -15,7 +15,7 @@ using namespace ge::gl::opengl;
 GLint Shader::_getParam(GLenum pname)const{
   assert(this!=nullptr);
   GLint params;
-  glGetShaderiv(this->getId(),pname,&params);
+  this->_gl.glGetShaderiv(this->getId(),pname,&params);
   return params;
 }
 
@@ -70,7 +70,7 @@ Shader::Shader(
  */
 Shader::~Shader(){
   assert(this!=nullptr);
-  glDeleteShader(this->_id);
+  this->_gl.glDeleteShader(this->_id);
 }
 
 /**
@@ -83,7 +83,7 @@ Shader::~Shader(){
 void Shader::create(GLenum type){
   assert(this!=nullptr);
   if(this->_id != 0)return;
-  this->_id = glCreateShader(type);
+  this->_id = this->_gl.glCreateShader(type);
 }
 
 /**
@@ -97,7 +97,7 @@ void Shader::setSource(Sources const& sources){
   std::vector<const GLchar*>ptr;
   for(auto const&x:sources)ptr.push_back(x.c_str());
 
-  glShaderSource(this->getId(),(GLsizei)ptr.size(),ptr.data(),nullptr);
+  this->_gl.glShaderSource(this->getId(),(GLsizei)ptr.size(),ptr.data(),nullptr);
 }
 
 /**
@@ -109,7 +109,7 @@ void Shader::setSource(Sources const& sources){
 void Shader::compile(Sources const& sources){
   assert(this!=nullptr);
   if(sources.size()>0)this->setSource(sources);
-  glCompileShader(this->getId());
+  this->_gl.glCompileShader(this->getId());
   if(!this->getCompileStatus()){
     std::cerr<<this->getInfoLog()<<std::endl;
     return;
@@ -126,7 +126,7 @@ void Shader::compile(Sources const& sources){
  */
 GLboolean Shader::isShader()const{
   assert(this!=nullptr);
-  return glIsShader(this->getId());
+  return this->_gl.glIsShader(this->getId());
 }
 
 /**
@@ -189,7 +189,7 @@ std::string Shader::getInfoLog()const{
   GLuint length = this->getInfoLogLength();
   if(!length)return"";
   std::string info(length,' ');
-  glGetShaderInfoLog(this->getId(),length,NULL,(GLchar*)info.c_str());
+  this->_gl.glGetShaderInfoLog(this->getId(),length,NULL,(GLchar*)info.c_str());
   return info;
 }
 
@@ -203,7 +203,7 @@ Shader::Source Shader::getSource()const{
   GLuint length=this->getSourceLength();
   if(!length)return"";
   std::string source(length,' ');
-  glGetShaderSource(this->getId(),length,NULL,(GLchar*)source.c_str());
+  this->_gl.glGetShaderSource(this->getId(),length,NULL,(GLchar*)source.c_str());
   return source;
 }
 

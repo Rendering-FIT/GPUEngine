@@ -12,13 +12,13 @@ using namespace ge::gl::opengl;
  */
 VertexArray::VertexArray (){
   assert(this!=nullptr);
-  glCreateVertexArrays(1,&this->_id);
+  this->_gl.glCreateVertexArrays(1,&this->_id);
 }
 
 VertexArray::VertexArray (
     FunctionTablePointer const&table):OpenGLObject(table){
   assert(this!=nullptr);
-  glCreateVertexArrays(1,&this->_id);
+  this->_gl.glCreateVertexArrays(1,&this->_id);
 }
 
 /**
@@ -26,7 +26,7 @@ VertexArray::VertexArray (
  */
 VertexArray::~VertexArray(){
   assert(this!=nullptr);
-  glDeleteVertexArrays(1,&this->_id);
+  this->_gl.glDeleteVertexArrays(1,&this->_id);
   for(auto const&x:this->_buffers)
     if(x)x->_vertexArrays.erase(this);
   if(this->_elementBuffer)this->_elementBuffer->_vertexArrays.erase(this);
@@ -43,7 +43,7 @@ VertexArray::~VertexArray(){
  * @param pointer       offset to the first attrib
  * @param normalized    should the attrib be normalized?
  * @param divisor       rate of incrementation of attrib per instance, 0 = per VS invocation
- * @param apt           NONE - glVertexAttribPointer, I - glVertexAttribIPointer, L - glVertexAttribLPointer
+ * @param apt           NONE - this->_gl.glVertexAttribPointer, I - this->_gl.glVertexAttribIPointer, L - this->_gl.glVertexAttribLPointer
  */
 void VertexArray::addAttrib(
     std::shared_ptr<Buffer>const&buffer           ,
@@ -58,18 +58,18 @@ void VertexArray::addAttrib(
   assert(this!=nullptr);
   if(stride==0)
     stride=ge::gl::getTypeSize(type)*nofComponents;
-  glVertexArrayAttribBinding (this->_id,index,index);
-  glEnableVertexArrayAttrib  (this->_id,index);
+  this->_gl.glVertexArrayAttribBinding (this->_id,index,index);
+  this->_gl.glEnableVertexArrayAttrib  (this->_id,index);
 
   if(apt==VertexArray::AttribPointerType::NONE)
-    glVertexArrayAttribFormat  (this->_id,index,nofComponents,type,normalized,0);
+    this->_gl.glVertexArrayAttribFormat  (this->_id,index,nofComponents,type,normalized,0);
   else if(apt==VertexArray::AttribPointerType::I)
-    glVertexArrayAttribIFormat (this->_id,index,nofComponents,type,0);
+    this->_gl.glVertexArrayAttribIFormat (this->_id,index,nofComponents,type,0);
   else if(apt==VertexArray::AttribPointerType::L)
-    glVertexArrayAttribLFormat (this->_id,index,nofComponents,type,0);
+    this->_gl.glVertexArrayAttribLFormat (this->_id,index,nofComponents,type,0);
 
-  glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),(GLintptr)pointer,stride);
-  glVertexArrayBindingDivisor(this->_id,index,divisor);
+  this->_gl.glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),(GLintptr)pointer,stride);
+  this->_gl.glVertexArrayBindingDivisor(this->_id,index,divisor);
   while(index>this->_buffers.size())this->_buffers.push_back(nullptr);
   this->_buffers.push_back(buffer);
   buffer->_vertexArrays.insert(this);
@@ -79,24 +79,24 @@ void VertexArray::addElementBuffer(
     std::shared_ptr<Buffer>const&buffer){
   assert(this!=nullptr);
   this->_elementBuffer = buffer;
-  glVertexArrayElementBuffer(this->_id,buffer->getId());
+  this->_gl.glVertexArrayElementBuffer(this->_id,buffer->getId());
   buffer->_vertexArrays.insert(this);
 }
 
 void VertexArray::bind()const{
   assert(this!=nullptr);
-  glBindVertexArray(this->_id);
+  this->_gl.glBindVertexArray(this->_id);
 }
 
 void VertexArray::unbind()const{
   assert(this!=nullptr);
-  glBindVertexArray(0);
+  this->_gl.glBindVertexArray(0);
 }
 
 GLint VertexArray::_getAttrib(GLuint index,GLenum pname)const{
   assert(this!=nullptr);
   GLint param;
-  glGetVertexArrayIndexediv(this->_id,index,pname,&param);
+  this->_gl.glGetVertexArrayIndexediv(this->_id,index,pname,&param);
   return param;
 }
 
@@ -123,13 +123,13 @@ GLsizei   VertexArray::getAttribStride        (GLuint index)const{
 GLenum    VertexArray::getAttribType          (GLuint index)const{
   assert(this!=nullptr);
 //return this->_getAttrib(index,GL_VERTEX_ATTRIB_ARRAY_TYPE);
-//AMD bug in 15.9 on Linux glGetVertexArrayIndexediv return type's number instead of type
+//AMD bug in 15.9 on Linux this->_gl.glGetVertexArrayIndexediv return type's number instead of type
   GLuint oldId;
-  glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId);
-  glBindVertexArray(this->_id);
+  this->_gl.glGetIntegerv(GL_VERTEX_ARRAY_BINDING,(GLint*)&oldId);
+  this->_gl.glBindVertexArray(this->_id);
   GLint data;
-  glGetVertexAttribiv(index,GL_VERTEX_ATTRIB_ARRAY_TYPE,&data);
-  glBindVertexArray(oldId);
+  this->_gl.glGetVertexAttribiv(index,GL_VERTEX_ATTRIB_ARRAY_TYPE,&data);
+  this->_gl.glBindVertexArray(oldId);
   return data;
 
 }
@@ -167,7 +167,7 @@ GLuint    VertexArray::getAttribRelativeOffset(GLuint index)const{
 GLuint    VertexArray::getElementBuffer()const{
   assert(this!=nullptr);
   GLint id;
-  glGetVertexArrayiv(this->_id,GL_ELEMENT_ARRAY_BUFFER_BINDING,&id);
+  this->_gl.glGetVertexArrayiv(this->_id,GL_ELEMENT_ARRAY_BUFFER_BINDING,&id);
   return id;
 }
 
@@ -175,7 +175,7 @@ std::string VertexArray::getInfo()const{
   assert(this!=nullptr);
   std::stringstream ss;
   GLint maxVertexAttribs;
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&maxVertexAttribs);
+  this->_gl.glGetIntegerv(GL_MAX_VERTEX_ATTRIBS,&maxVertexAttribs);
   ss<<"vao: "<<this->getId()<<std::endl;
   ss<<"GL_MAX_VERTEX_ATTRIBS: "<<maxVertexAttribs<<std::endl;
   for(GLint a=0;a<maxVertexAttribs;++a){

@@ -46,15 +46,15 @@ Buffer::Buffer(
 
 Buffer::~Buffer(){
   assert(this!=nullptr);
-  glDeleteBuffers(1,&this->_id);
+  this->_gl.glDeleteBuffers(1,&this->_id);
 }
 
 void Buffer::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const{
   assert(this!=nullptr);
   if(ge::gl::areBufferFlagsMutable(flags))
-    glNamedBufferData(this->_id,size,data,flags);
+    this->_gl.glNamedBufferData(this->_id,size,data,flags);
   else
-    glNamedBufferStorage(this->_id,size,data,flags);
+    this->_gl.glNamedBufferStorage(this->_id,size,data,flags);
 }
 
 void Buffer::alloc(
@@ -62,7 +62,7 @@ void Buffer::alloc(
     const GLvoid *data,
     GLbitfield    flags){
   assert(this!=nullptr);
-  glCreateBuffers(1,&this->_id);
+  this->_gl.glCreateBuffers(1,&this->_id);
   this->_bufferData(size,data,flags);
 }
 
@@ -74,7 +74,7 @@ void Buffer::alloc(
 void Buffer::bind(
     GLenum target)const{
   assert(this!=nullptr);
-  glBindBuffer(target,this->_id);
+  this->_gl.glBindBuffer(target,this->_id);
 }
 
 /**
@@ -91,7 +91,7 @@ void Buffer::bindRange(
     GLintptr   offset,
     GLsizeiptr size)const{
   assert(this!=nullptr);
-  glBindBufferRange(target,index,this->_id,offset,size);
+  this->_gl.glBindBufferRange(target,index,this->_id,offset,size);
 }
 
 /**
@@ -102,7 +102,7 @@ void Buffer::bindRange(
  */
 void Buffer::bindBase(GLenum target,GLuint index)const{
   assert(this!=nullptr);
-  glBindBufferBase(target,index,this->_id);
+  this->_gl.glBindBufferBase(target,index,this->_id);
 }
 
 /**
@@ -112,7 +112,7 @@ void Buffer::bindBase(GLenum target,GLuint index)const{
  */
 void Buffer::unbind(GLenum target)const{
   assert(this!=nullptr);
-  glBindBuffer(target,0);
+  this->_gl.glBindBuffer(target,0);
 }
 
 /**
@@ -123,7 +123,7 @@ void Buffer::unbind(GLenum target)const{
  */
 void Buffer::unbindRange(GLenum target,GLuint index)const{
   assert(this!=nullptr);
-  glBindBufferBase(target,index,0);
+  this->_gl.glBindBufferBase(target,index,0);
 }
 
 /**
@@ -134,7 +134,7 @@ void Buffer::unbindRange(GLenum target,GLuint index)const{
  */
 void Buffer::unbindBase(GLenum target,GLuint index)const{
   assert(this!=nullptr);
-  glBindBufferBase(target,index,0);
+  this->_gl.glBindBufferBase(target,index,0);
 }
 
 /**
@@ -163,13 +163,13 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
     Buffer*newBuffer=new Buffer(newSize,nullptr,bufferFlags);
     assert(newBuffer!=nullptr);
     newBuffer->copy(*this);
-    glDeleteBuffers(1,&this->_id);
+    this->_gl.glDeleteBuffers(1,&this->_id);
     this->~Buffer();
     this->_id = newBuffer->_id;
     delete(char*)newBuffer;
     this->_updateVertexArrays();
   }else if(flags==NEW_BUFFER         ){
-    glDeleteBuffers(1,&this->_id);
+    this->_gl.glDeleteBuffers(1,&this->_id);
     this->alloc(newSize,nullptr,bufferFlags);
     this->_updateVertexArrays();
   }else{
@@ -217,7 +217,7 @@ void Buffer::copy(
     Buffer const&buffer)const{
   assert(this!=nullptr);
   GLsizeiptr maxSize=(this->getSize()>buffer.getSize())?buffer.getSize():this->getSize();
-  glCopyNamedBufferSubData(buffer._id,this->_id,0,0,maxSize);
+  this->_gl.glCopyNamedBufferSubData(buffer._id,this->_id,0,0,maxSize);
 }
 
 /**
@@ -230,7 +230,7 @@ void Buffer::copy(
 void Buffer::flushMapped(GLsizeiptr size,GLintptr offset)const{
   assert(this!=nullptr);
   if(size==0)size=this->getSize();
-  glFlushMappedNamedBufferRange(this->_id,offset,size);
+  this->_gl.glFlushMappedNamedBufferRange(this->_id,offset,size);
 }
 
 /**
@@ -241,7 +241,7 @@ void Buffer::flushMapped(GLsizeiptr size,GLintptr offset)const{
  */
 void Buffer::invalidate(GLsizeiptr size,GLintptr offset)const{
   assert(this!=nullptr);
-  glInvalidateBufferSubData(this->_id,offset,size);
+  this->_gl.glInvalidateBufferSubData(this->_id,offset,size);
 }
 
 /**
@@ -258,7 +258,7 @@ void Buffer::clear(
     GLenum        type,
     const GLvoid *data)const{
   assert(this!=nullptr);
-  glClearNamedBufferData(this->_id,internalFormat,format,type,data);
+  this->_gl.glClearNamedBufferData(this->_id,internalFormat,format,type,data);
 }
 
 /**
@@ -279,7 +279,7 @@ void Buffer::clear(
     GLenum        type,
     const GLvoid *data)const{
   assert(this!=nullptr);
-  glClearNamedBufferSubData(this->_id,internalFormat,offset,size,format,type,data);
+  this->_gl.glClearNamedBufferSubData(this->_id,internalFormat,offset,size,format,type,data);
 }
 
 GLvoid*Buffer::map(
@@ -288,7 +288,7 @@ GLvoid*Buffer::map(
   if(access==GL_READ_ONLY )access=GL_MAP_READ_BIT ;
   if(access==GL_WRITE_ONLY)access=GL_MAP_WRITE_BIT;
   if(access==GL_READ_WRITE)access=GL_MAP_READ_BIT|GL_MAP_WRITE_BIT;
-  return glMapNamedBufferRange(this->_id,0,this->getSize(),access);
+  return this->_gl.glMapNamedBufferRange(this->_id,0,this->getSize(),access);
 }
 
 GLvoid*Buffer::map(
@@ -296,12 +296,12 @@ GLvoid*Buffer::map(
     GLsizeiptr size,
     GLbitfield access)const{
   assert(this!=nullptr);
-  return glMapNamedBufferRange(this->_id,offset,size,access);
+  return this->_gl.glMapNamedBufferRange(this->_id,offset,size,access);
 }
 
 void Buffer::unmap()const{
   assert(this!=nullptr);
-  glUnmapNamedBuffer(this->_id);
+  this->_gl.glUnmapNamedBuffer(this->_id);
 }
 
 void Buffer::setData(
@@ -310,7 +310,7 @@ void Buffer::setData(
     GLintptr      offset)const{
   assert(this!=nullptr);
   if(size==0)size=this->getSize();
-  glNamedBufferSubData(this->_id,offset,size,data);
+  this->_gl.glNamedBufferSubData(this->_id,offset,size,data);
 }
 
 void Buffer::getData(
@@ -319,20 +319,20 @@ void Buffer::getData(
     GLintptr    offset)const{
   assert(this!=nullptr);
   if(size==0)size=this->getSize();
-  glGetNamedBufferSubData(this->_id,offset,size,data);
+  this->_gl.glGetNamedBufferSubData(this->_id,offset,size,data);
 }
 
 GLint Buffer::_getBufferParameter(GLenum pname)const{
   assert(this!=nullptr);
   GLint param;
-  glGetNamedBufferParameteriv(this->_id,pname,&param);
+  this->_gl.glGetNamedBufferParameteriv(this->_id,pname,&param);
   return param;
 }
 
 GLvoid*Buffer::_getBufferPointer(GLenum pname)const{
   assert(this!=nullptr);
   GLvoid *param;
-  glGetNamedBufferPointerv(this->_id,pname,&param);
+  this->_gl.glGetNamedBufferPointerv(this->_id,pname,&param);
   return param;
 }
 

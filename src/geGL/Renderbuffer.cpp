@@ -10,7 +10,7 @@ Renderbuffer::Renderbuffer(
     GLsizei height,
     GLsizei samples):OpenGLObject(table){
   assert(this!=nullptr);
-  glCreateRenderbuffers(1,&this->_id);
+  this->_gl.glCreateRenderbuffers(1,&this->_id);
   this->setStorage(internalFormat,width,height,samples);
 }
 
@@ -27,23 +27,23 @@ void Renderbuffer::setStorage(
     GLsizei height,
     GLsizei samples)const{
   assert(this!=nullptr);
-  glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
+  this->_gl.glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
 }
 
 
 Renderbuffer::~Renderbuffer(){
   assert(this!=nullptr);
-  glDeleteRenderbuffers(1,&this->_id);
+  this->_gl.glDeleteRenderbuffers(1,&this->_id);
 }
 
 void   Renderbuffer::bind()const{
   assert(this!=nullptr);
-  glBindRenderbuffer(GL_RENDERBUFFER,this->_id);
+  this->_gl.glBindRenderbuffer(GL_RENDERBUFFER,this->_id);
 }
 
 void Renderbuffer::unbind()const{
   assert(this!=nullptr);
-  glBindRenderbuffer(GL_RENDERBUFFER,0);
+  this->_gl.glBindRenderbuffer(GL_RENDERBUFFER,0);
 }
 
 GLint Renderbuffer::getWidth()const{
@@ -99,7 +99,7 @@ GLint Renderbuffer::getStencilSize()const{
 GLint Renderbuffer::_getParamateri(GLenum pname)const{
   assert(this!=nullptr);
   GLint param;
-  glGetNamedRenderbufferParameteriv(this->_id,pname,&param);
+  this->_gl.glGetNamedRenderbufferParameteriv(this->_id,pname,&param);
   return param;
 }
 
