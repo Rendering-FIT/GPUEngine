@@ -1,6 +1,6 @@
 #include<geAd/SDLWindow/SDLWindow.h>
-#include<geAd/SDLWindow/SDLEventProc.h>
-#include<geAd/SDLWindow/EventCallbackInterface.h>
+#include<geAd/SDLWindow/SDLMainLoop.h>
+#include<geAd/SDLWindow/SDLEventCallbackInterface.h>
 
 #include<iostream>
 #include<cassert>
@@ -65,8 +65,8 @@ SDLWindow::WindowId SDLWindow::getId()const{
 }
 
 void SDLWindow::setEventCallback(
-    EventType            const&eventType,
-    EventCallbackPointer const&callback ){
+    EventType               const&eventType,
+    SDLEventCallbackPointer const&callback ){
   assert(this!=nullptr);
   this->m_eventCallbacks[eventType] = callback;
 }
@@ -79,8 +79,8 @@ bool SDLWindow::hasEventCallback(
 }
 
 void SDLWindow::callEventCallback(
-    EventType        const&eventType,
-    EventDataPointer const&event    ){
+    EventType const&eventType,
+    SDL_Event const&event    ){
   assert(this!=nullptr);
   assert(this->m_eventCallbacks.count(eventType)!=0);
   assert(this->m_eventCallbacks[eventType] != nullptr);

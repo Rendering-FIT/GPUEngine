@@ -5,21 +5,21 @@
 
 struct Data{
   std::shared_ptr<ge::gl::opengl::Context> gl           = nullptr;
-  std::shared_ptr<ge::util::SDLEventProc>  mainLoop     = nullptr;
+  std::shared_ptr<ge::util::SDLMainLoop>   mainLoop     = nullptr;
   std::shared_ptr<ge::util::SDLWindow>     window       = nullptr;
   static void init(Data*data);
-  class IdleCallback: public ge::util::CallbackInterface{
+  class IdleCallback: public ge::util::SDLCallbackInterface{
     public:
       Data*data;
       IdleCallback(Data*data){this->data = data;}
       virtual void operator()()override;
       virtual ~IdleCallback(){}
   };
-  class WindowEventCallback: public ge::util::EventCallbackInterface{
+  class WindowEventCallback: public ge::util::SDLEventCallbackInterface{
     public:
       Data*data;
       WindowEventCallback(Data*data){this->data = data;}
-      virtual bool operator()(ge::util::EventDataPointer const&)override;
+      virtual bool operator()(SDL_Event const&)override;
       virtual ~WindowEventCallback(){}
   };
 };
@@ -29,7 +29,7 @@ struct Data{
 int main(int,char*[]){
   Data data;
 
-  data.mainLoop = std::make_shared<ge::util::SDLEventProc>();
+  data.mainLoop = std::make_shared<ge::util::SDLMainLoop>();
   data.mainLoop->setIdleCallback(std::make_shared<Data::IdleCallback>(&data));
 
   data.window   = std::make_shared<ge::util::SDLWindow>();
@@ -47,9 +47,8 @@ void Data::IdleCallback::operator()(){
   this->data->window->swap();
 }
 
-bool Data::WindowEventCallback::operator()(ge::util::EventDataPointer const&event){
-  auto sdlEventData = (ge::util::SDLEventData const*)(event);
-  if(sdlEventData->event.window.event==SDL_WINDOWEVENT_CLOSE){
+bool Data::WindowEventCallback::operator()(SDL_Event const&event){
+  if(event.window.event==SDL_WINDOWEVENT_CLOSE){
     this->data->mainLoop->removeWindow("primaryWindow");
     return true;
   }

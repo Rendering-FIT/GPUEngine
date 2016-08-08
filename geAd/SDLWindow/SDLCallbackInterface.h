@@ -2,9 +2,9 @@
 
 namespace ge{
   namespace util{
-    class CallbackInterface{
+    class SDLCallbackInterface{
       public:
-        virtual ~CallbackInterface(){}
+        virtual ~SDLCallbackInterface(){}
         virtual void operator()() = 0;
     };
   }

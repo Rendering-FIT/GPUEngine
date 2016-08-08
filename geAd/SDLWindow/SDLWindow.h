@@ -7,11 +7,8 @@
 #include<geAd/Export.h>
 #include<SDL2/SDL.h>
 
-#include<geAd/SDLWindow/EventDataInterface.h>
-#include<geAd/SDLWindow/SDLEventProc.h>
-#include<geAd/SDLWindow/EventDataInterface.h>
-#include<geAd/SDLWindow/EventCallbackInterface.h>
-#include<geAd/SDLWindow/SDLEventData.h>
+#include<geAd/SDLWindow/SDLMainLoop.h>
+#include<geAd/SDLWindow/SDLEventCallbackInterface.h>
 
 namespace ge{
   namespace util{
@@ -20,7 +17,7 @@ namespace ge{
       public:
         using WindowId             = uint32_t;
         using EventType            = uint32_t;
-        using EventCallbackPointer = std::shared_ptr<EventCallbackInterface>;
+        using SDLEventCallbackPointer = std::shared_ptr<SDLEventCallbackInterface>;
         enum Profile{
           CORE          = SDL_GL_CONTEXT_PROFILE_CORE         ,
           COMPATIBILITY = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY,
@@ -50,13 +47,13 @@ namespace ge{
         WindowId getId()const;
 
         void setEventCallback(
-            EventType            const&eventType          ,
-            EventCallbackPointer const&callback  = nullptr);
+            EventType               const&eventType          ,
+            SDLEventCallbackPointer const&callback  = nullptr);
         bool hasEventCallback(
             EventType const&eventType)const;
         void callEventCallback(
-            EventType        const&eventType,
-            EventDataPointer const&eventData);
+            EventType const&eventType,
+            SDL_Event const&eventData);
         void setSize(uint32_t width,uint32_t heght);
         uint32_t getWidth()const;
         uint32_t getHeight()const;
@@ -71,7 +68,7 @@ namespace ge{
         using SharedSDLContext = std::shared_ptr<SDL_GLContext>;
         SDL_Window*                             m_window         = nullptr;
         std::map<std::string,SharedSDLContext>  m_contexts                ;
-        std::map<EventType,EventCallbackPointer>m_eventCallbacks          ;
+        std::map<EventType,SDLEventCallbackPointer>m_eventCallbacks          ;
     };
   }//util
 }//ge

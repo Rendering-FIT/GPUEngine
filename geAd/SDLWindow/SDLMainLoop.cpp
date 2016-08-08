@@ -1,22 +1,21 @@
-#include<geAd/SDLWindow/SDLEventProc.h>
+#include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geAd/SDLWindow/SDLWindow.h>
-#include<geAd/SDLWindow/CallbackInterface.h>
-#include<geAd/SDLWindow/SDLEventData.h>
+#include<geAd/SDLWindow/SDLCallbackInterface.h>
 #include<cassert>
 
 using namespace ge::util;
 
-SDLEventProc::SDLEventProc(bool pooling){
+SDLMainLoop::SDLMainLoop(bool pooling){
   assert(this!=nullptr);
   SDL_Init(SDL_INIT_VIDEO);
   this->m_pooling = pooling;
 }
 
-SDLEventProc::~SDLEventProc(){
+SDLMainLoop::~SDLMainLoop(){
   SDL_Quit();
 }
 
-void SDLEventProc::addWindow(
+void SDLMainLoop::addWindow(
     std::string  const&name  ,
     SharedWindow const&window){
   assert(this!=nullptr);
@@ -25,29 +24,28 @@ void SDLEventProc::addWindow(
   this->m_id2Name[window->getId()] = name;
 }
 
-bool SDLEventProc::hasWindow(std::string const&name)const{
+bool SDLMainLoop::hasWindow(std::string const&name)const{
   assert(this!=nullptr);
   return this->m_name2Window.count(name)!=0;
 }
 
-void SDLEventProc::removeWindow(std::string const&name){
+void SDLMainLoop::removeWindow(std::string const&name){
   assert(this!=nullptr);
   this->m_id2Name.erase(this->getWindow(name)->getId());
   this->m_name2Window.erase(name);
 }
 
-SDLEventProc::SharedWindow const&SDLEventProc::getWindow(
+SDLMainLoop::SharedWindow const&SDLMainLoop::getWindow(
     std::string const&name)const{
   assert(this!=nullptr);
   assert(this->m_name2Window.count(name)!=0);
   return this->m_name2Window.find(name)->second;
 }
 
-void SDLEventProc::operator()(){
+void SDLMainLoop::operator()(){
   assert(this!=nullptr);
   this->m_running = true;
   SDL_Event event;
-  SDLEventData eventData;
   while(this->m_running){
     if(this->m_name2Window.size() == 0){
       this->m_running = false;
@@ -59,18 +57,17 @@ void SDLEventProc::operator()(){
       if(this->m_pooling)
         if(!SDL_PollEvent(&event))break;
 
-      eventData.event = event;
       bool handledByEventHandler = false;
 
       if(this->hasEventHandler())
-        handledByEventHandler = this->callEventHandler(&eventData);
+        handledByEventHandler = this->callEventHandler(event);
 
       if(!handledByEventHandler){
         auto windowIter = this->m_id2Name.find(event.window.windowID);
         if(windowIter == this->m_id2Name.end())continue;
         auto window = this->m_name2Window[windowIter->second];
         if(window->hasEventCallback(event.type))
-          window->callEventCallback(event.type,&eventData);
+          window->callEventCallback(event.type,event);
       }
 
       if(!this->m_pooling)
@@ -81,63 +78,63 @@ void SDLEventProc::operator()(){
   }
 }
 
-void SDLEventProc::setIdleCallback(
-    CallbackPointer  const&callback){
+void SDLMainLoop::setIdleCallback(
+    SDLCallbackPointer const&callback){
   assert(this!=nullptr);
   this->m_idleCallback = callback;
 }
 
-bool SDLEventProc::hasIdleCallback()const{
+bool SDLMainLoop::hasIdleCallback()const{
   assert(this!=nullptr);
   return this->m_idleCallback != nullptr;
 }
 
-void SDLEventProc::callIdleCallback(){
+void SDLMainLoop::callIdleCallback(){
   assert(this!=nullptr);
   assert(this->m_idleCallback != nullptr);
   (*this->m_idleCallback)();
 }
 
 
-void SDLEventProc::setEventHandler(
+void SDLMainLoop::setEventHandler(
     EventHandlerPointer const&handler){
   assert(this!=nullptr);
   this->m_eventHandler = handler;
 }
 
-bool SDLEventProc::hasEventHandler()const{
+bool SDLMainLoop::hasEventHandler()const{
   assert(this!=nullptr);
   return this->m_eventHandler != nullptr;
 }
 
-bool SDLEventProc::callEventHandler(EventDataPointer const&event){
+bool SDLMainLoop::callEventHandler(SDL_Event const&event){
   assert(this!=nullptr);
   assert(this->m_eventHandler != nullptr);
   return (*this->m_eventHandler)(event);
 }
 
 
-SDLEventProc::ConstNameIterator SDLEventProc::nameBegin()const{
+SDLMainLoop::ConstNameIterator SDLMainLoop::nameBegin()const{
   assert(this!=0);
   return this->m_name2Window.begin();
 }
 
-SDLEventProc::ConstNameIterator SDLEventProc::nameEnd  ()const{
+SDLMainLoop::ConstNameIterator SDLMainLoop::nameEnd  ()const{
   assert(this!=0);
   return this->m_name2Window.end();
 }
 
-SDLEventProc::ConstIdIterator SDLEventProc::idBegin()const{
+SDLMainLoop::ConstIdIterator SDLMainLoop::idBegin()const{
   assert(this!=0);
   return this->m_id2Name.begin();
 }
 
-SDLEventProc::ConstIdIterator SDLEventProc::idEnd  ()const{
+SDLMainLoop::ConstIdIterator SDLMainLoop::idEnd  ()const{
   assert(this!=0);
   return this->m_id2Name.end();
 }
 
-size_t SDLEventProc::getNofWindows()const{
+size_t SDLMainLoop::getNofWindows()const{
   assert(this!=0);
   return this->m_name2Window.size();
 }
