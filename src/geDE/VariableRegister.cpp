@@ -8,7 +8,7 @@
 using namespace ge::de;
 
 VariableRegister::VariableRegister(
-    std::string      name  ,
+    std::string const&name  ,
     VariableRegister*parent){
   PRINT_CALL_STACK(name,parent);
   assert(this!=nullptr);
@@ -33,7 +33,7 @@ void VariableRegister::setParent(VariableRegister*parent){
 }
 
 void VariableRegister::insertVariableRegister(
-    std::string name,
+    std::string const&name,
     SharedVariableRegister const&vr){
   PRINT_CALL_STACK(name,vr);
   assert(this!=nullptr);
@@ -91,20 +91,20 @@ std::string VariableRegister::getFullName()const{
   return ss.str();
 }
 
-bool VariableRegister::hasVariableRegister(std::string name)const{
+bool VariableRegister::hasVariableRegister(std::string const&name)const{
   PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   return this->_name2Register.count(name)!=0;
 }
 
-bool VariableRegister::hasVariable(std::string name)const{
+bool VariableRegister::hasVariable(std::string const&name)const{
   PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   return this->_name2Variable.count(name)!=0;
 }
 
 
-VariableRegister::SharedVariableRegister const&VariableRegister::getVariableRegister(std::string name)const{
+VariableRegister::SharedVariableRegister const&VariableRegister::getVariableRegister(std::string const&name)const{
   PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   auto ii = this->_name2Register.find(name);
@@ -114,7 +114,7 @@ VariableRegister::SharedVariableRegister const&VariableRegister::getVariableRegi
   return ii->second;
 }
 
-bool VariableRegister::insert(std::string name,SharedVariable const&variable){
+bool VariableRegister::insert(std::string const&name,SharedVariable const&variable){
   PRINT_CALL_STACK(name,variable);
   assert(this!=nullptr);
   if(!this->_checkPath(name)){
@@ -142,11 +142,11 @@ bool VariableRegister::insert(std::string name,SharedVariable const&variable){
   return true;
 }
 
-void VariableRegister::erase(std::string name){
-  PRINT_CALL_STACK(name);
+void VariableRegister::erase(std::string const&n){
+  PRINT_CALL_STACK(n);
   assert(this!=nullptr);
 
-  name = this->getFullName()+"."+name;
+  std::string name = this->getFullName()+"."+n;
   if(!this->_checkPath(name)){
     ge::core::printError(GE_CORE_FCENAME,"can't erase variable "+name+" - incorrect variable name",name);
     return;
@@ -173,7 +173,7 @@ void VariableRegister::erase(std::string name){
   }
 }
 
-void VariableRegister::eraseVariableRegister(std::string name){
+void VariableRegister::eraseVariableRegister(std::string const&name){
   PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   std::size_t pos;
@@ -199,7 +199,7 @@ void VariableRegister::eraseVariableRegister(std::string name){
     reg->erase(x);
 }
 
-VariableRegister::SharedVariable const&VariableRegister::getVariable (std::string name)const{
+VariableRegister::SharedVariable const&VariableRegister::getVariable (std::string const&name)const{
   PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   auto it=this->_name2Variable.find(name);
@@ -209,7 +209,7 @@ VariableRegister::SharedVariable const&VariableRegister::getVariable (std::strin
   return it->second;
 }
 
-bool VariableRegister::contain(std::string name)const{
+bool VariableRegister::contain(std::string const&name)const{
   PRINT_CALL_STACK(name);
   assert(this!=nullptr);
   return this->_name2Variable.count(name)!=0;

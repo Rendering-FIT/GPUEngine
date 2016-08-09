@@ -8,7 +8,7 @@
 using namespace ge::de;
 using namespace ge::util;
 
-void ArgData2Description(
+GEUTIL_EXPORT void ArgData2Description(
     TypeDescriptionVector&descriptor,
     ArgData*data,
     std::shared_ptr<TypeRegister>const&tr){
@@ -64,7 +64,7 @@ void ArgData2Description(
   }
 }
 
-void ArgData2Resource(std::shared_ptr<Resource>const&ac,ArgData*data){
+GEUTIL_EXPORT void ArgData2Resource(std::shared_ptr<Resource>const&ac,ArgData*data){
   ArgData::Type type=data->getType();
   switch(type){
     case ArgData::BOOL:
@@ -114,7 +114,7 @@ void ArgData2Resource(std::shared_ptr<Resource>const&ac,ArgData*data){
   }
 }
 
-void ge::util::copyArgumentManager2VariableRegister(
+GEUTIL_EXPORT void ge::util::copyArgumentManager2VariableRegister(
     std::shared_ptr<VariableRegister>const&vr,
     ArgumentManager const&argm,
     std::shared_ptr<FunctionRegister>const&fr){

@@ -219,7 +219,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
   GIVEN( "basic expression" ) {
     float avalue = 101.f;
     float bvalue = 1.1f;
-    float cvalue = 2.2;
+    float cvalue = 2.2f;
     float dvalue = 1000.f;
     auto fa=tr->createResource(avalue);
     auto fb=tr->createResource(bvalue);

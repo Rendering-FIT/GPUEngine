@@ -187,8 +187,8 @@ void Buffer::_updateVertexArrays(){
     if(x->_elementBuffer == me){
       x->addElementBuffer(me);
     }
-    std::vector<size_t>attribs;
-    size_t attribId = 0;
+    std::vector<GLuint>attribs;
+    GLuint attribId = 0;
     for(auto const&y:x->_buffers){
       if(y == me)attribs.push_back(attribId);
       attribId++;

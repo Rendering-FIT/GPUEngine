@@ -51,8 +51,13 @@ namespace ge{
         PRINT_CALL_STACK(mf,fce);
         assert(mf!=nullptr);
         assert(fce!=nullptr);
-        using emptyType = OUTPUT(Empty::*)(ARGS...);
-        return ((Empty&)(*mf->getInputData(0)).*((emptyType)fce))((*mf->getInputData(1+I))...);
+#if defined(_MSC_VER)
+        using ClassType = OUTPUT(CLASS::*)(ARGS...);
+        return ((CLASS&)(*mf->getInputData(0)).*((ClassType)fce))((*mf->getInputData(1+I))...);
+#else
+        using EmptyType = OUTPUT(Empty::*)(ARGS...);
+        return ((Empty&)(*mf->getInputData(0)).*((EmptyType)fce))((*mf->getInputData(1+I))...);
+#endif
       }
 
 
@@ -194,13 +199,27 @@ namespace ge{
             FF _fceImpl;
             SIGFF _sigImpl;
           public:
+#if defined(_MSC_VER)
+            class MyCLSImpl: public FunctionRegister::CLSImpl{
+               public:
+                  using FF = OUTPUT(CLASS::*)(ARGS...);
+                  FF ptr;
+                  MyCLSImpl(FF const&z){
+                     this->ptr = z;
+                  }
+            };
+#endif
             BasicFunction(
                 std::shared_ptr<FunctionRegister>const&fr,
                 FunctionId           id):AtomicFunction(fr,id){
               PRINT_CALL_STACK(fr,id);
               assert(this!=nullptr);
               assert(fr!=nullptr);
+#if defined(_MSC_VER)
+              this->_fceImpl = ((MyCLSImpl*)fr->getClassImplementation(this->_id))->ptr;
+#else
               this->_fceImpl=reinterpret_cast<FF>(fr->getClassImplementation(this->_id));
+#endif
               this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
             }
             virtual ~BasicFunction(){
@@ -219,7 +238,11 @@ namespace ge{
             }
         };
         auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));
+#if defined(_MSC_VER)
+        fr->addClassImplementation(f,new BasicFunction::MyCLSImpl(fce));
+#else
         fr->addClassImplementation(f,reinterpret_cast<FunctionRegister::ClassImplementation>(fce));
+#endif
         fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));
         return f;
       }

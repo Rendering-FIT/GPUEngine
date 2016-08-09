@@ -40,7 +40,7 @@ namespace ge{
       std::string extents();
 
     template<typename T,typename std::enable_if<!std::is_array<T>::value,unsigned>::type = 0>
-      std::string extents(){
+      inline std::string extents(){
         return "";
       }
 
@@ -48,23 +48,23 @@ namespace ge{
 
 
 
-    template<typename...ARGS,typename std::enable_if<sizeof...(ARGS)==0,unsigned>::type = 0>
-      std::string argPrinter(){
+    //template<typename...ARGS,typename std::enable_if<sizeof...(ARGS)==0,unsigned>::type = 0>
+      inline std::string argPrinter(){
         return"";
       }
 
-    template<typename HEAD,typename...ARGS,typename std::enable_if<sizeof...(ARGS)==0,unsigned>::type = 0>
-      std::string argPrinter(){
+    template<typename HEAD>//,typename...ARGS,typename std::enable_if<sizeof...(ARGS)==0,unsigned>::type = 0>
+      inline std::string argPrinter(){
         return keyword<HEAD>();
       }
 
-    template<typename HEAD,typename...ARGS,typename std::enable_if<(sizeof...(ARGS)>0),unsigned>::type = 0>
-      std::string argPrinter(){
+    template<typename HEAD,typename...ARGS>//,typename std::enable_if<(sizeof...(ARGS)!=0),unsigned>::type = 0>
+      inline typename std::enable_if<(sizeof...(ARGS)!=0),std::string>::type argPrinter(){
         return keyword<HEAD>()+","+argPrinter<ARGS...>();
       }
 
     template<typename TTT,std::size_t...I>
-      std::string printArgs2_help(ge::core::index_sequence<I...>){
+      inline std::string printArgs2_help(ge::core::index_sequence<I...>){
         return argPrinter<typename std::tuple_element<I,TTT>::type...>();
       }
 
@@ -77,12 +77,12 @@ namespace ge{
 
 
     template<typename...ARGS>
-      std::string printArgs(std::tuple<ARGS...>const&){
+      inline std::string printArgs(std::tuple<ARGS...>const&){
         return argPrinter<ARGS...>();
       }
 
     template<typename T,typename std::enable_if<std::is_function<T>::value,unsigned>::type>
-      std::string keyword(){
+      inline std::string keyword(){
         return "("+
           printArgs2<typename ge::core::FceArgType<T>::type>()
           //printArgs(typename ge::core::FceArgType<T>::type())
@@ -92,7 +92,7 @@ namespace ge{
 
 
     template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type>
-      std::string keyword(){
+      inline std::string keyword(){
         return keyword<typename ge::core::MemFceClassType<T>::type>()+"::("+
           printArgs2<typename ge::core::MemFceArgType<T>::type>()
           //printArgs(typename ge::core::MemFceArgType<T>::type())
@@ -103,7 +103,7 @@ namespace ge{
 
 
     template<typename T,typename std::enable_if<std::is_array<T>::value,unsigned>::type>
-      std::string extents(){
+      inline std::string extents(){
         std::stringstream ss;
         ss<<"[";
         ss<<std::extent<T>::value;

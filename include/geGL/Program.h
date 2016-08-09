@@ -17,7 +17,7 @@ namespace ge{
       public:
         using ShaderPointer  = std::shared_ptr<Shader>;
         using ShaderPointers = std::vector<ShaderPointer>;
-        Program(ShaderPointers const&shaders = {});
+        Program(ShaderPointers const&shaders);
         Program(
             opengl::FunctionTablePointer const&table       ,
             ShaderPointers               const&shaders = {});
