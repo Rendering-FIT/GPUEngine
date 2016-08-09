@@ -19,7 +19,6 @@ namespace ge{
             std::shared_ptr<Function>const&function             ,
             Function::Ticks                updateTicks = 0      ,
             bool                           changed     = false  );
-
         virtual ~AtomicFunctionInput();
     };
 
@@ -27,9 +26,7 @@ namespace ge{
 
     class GEDE_EXPORT AtomicFunction: public Function{
       public:
-        using SharedFunction = std::shared_ptr<Function>;
         using SharedAtomicFunctionInput = std::shared_ptr<AtomicFunctionInput>;
-        using Fce2FceInput = std::map<SharedFunction,SharedAtomicFunctionInput>;
         using InputList  = std::vector<SharedAtomicFunctionInput>;
       public:
         AtomicFunction(
@@ -61,8 +58,7 @@ namespace ge{
         virtual bool hasInputFunction(size_t i)const override;
       protected:
         InputList _inputs;
-        std::map<SharedFunction,std::set<size_t>>_fce2Indices;
-        Fce2FceInput _fce2FceInput;
+        std::map<std::shared_ptr<Function>,size_t>_fces;
         std::shared_ptr<Resource>_outputData  = nullptr;
         void _unbindInput(size_t i);
         void _unbindOutput();

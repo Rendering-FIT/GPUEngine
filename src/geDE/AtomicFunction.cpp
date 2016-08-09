@@ -70,11 +70,9 @@ void AtomicFunction::_unbindInput(size_t i){
     this->_removeSignalingSource(&*in->function);
     in->function->getOutputData()->_removeSignalingTarget(this);
     this->_removeSourceResource(&*in->function->getOutputData());
-    this->_fce2Indices.at(in->function).erase(i);
-    if(this->_fce2Indices.at(in->function).empty()){
-      this->_fce2Indices.erase(in->function);
-      this->_fce2FceInput.erase(in->function);
-    }
+    assert(this->_fces.count(in->function)!=0);
+    this->_fces[in->function]--;
+    if(this->_fces[in->function]==0)this->_fces.erase(in->function);
     in->function = nullptr;
   }
 }
@@ -114,12 +112,9 @@ bool AtomicFunction::bindInput(
   this->_addSignalingSource(&*f);
   f->getOutputData()->_addSignalingTarget(this);
   this->_addSourceResource(&*f->getOutputData());
-  auto ii = this->_fce2Indices.find(f);
-  if(ii==this->_fce2Indices.end()){
-    this->_fce2Indices[f]=std::set<size_t>();
-    this->_fce2FceInput[f]=this->_inputs.at(i);
-  }
-  this->_fce2Indices.at(f).insert(i);
+  if(this->_fces.count(f)==0)
+    this->_fces[f]=0;
+  this->_fces[f]++;
   this->_inputs.at(i)->updateTicks = f->getOutputData()->getTicks() - 1;
   this->_inputs.at(i)->function = f;
   this->_inputs.at(i)->changed  = true;
@@ -212,9 +207,9 @@ bool AtomicFunction::_processInputs(){
   PRINT_CALL_STACK();
   assert(this!=nullptr);
   bool isAnyInputChanged = false;
-  for(auto const&x:this->_fce2FceInput){
-    assert(x.second->function!=nullptr);
-    (*x.second->function)();
+  for(auto const&x:this->_fces){
+    assert(x.first!=nullptr);
+    (*x.first)();
   }
   for(auto const&x:this->_inputs){
     bool changed = false;
