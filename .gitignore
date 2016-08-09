@@ -33,5 +33,7 @@ include/geGL/Export.h
 include/geRG/Export.h
 include/geSG/Export.h
 include/geUtil/Export.h
-geAd/WindowObject/Export.h
+include/geDE/Export.h
+include/geParser/Export.h
+geAd/SDLWindow/Export.h
 geAd/Export.h

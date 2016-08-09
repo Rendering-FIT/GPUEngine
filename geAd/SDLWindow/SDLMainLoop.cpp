@@ -3,7 +3,7 @@
 #include<geAd/SDLWindow/SDLCallbackInterface.h>
 #include<cassert>
 
-using namespace ge::util;
+using namespace ge::ad;
 
 SDLMainLoop::SDLMainLoop(bool pooling){
   assert(this!=nullptr);

@@ -11,7 +11,7 @@
 #include<geAd/SDLWindow/SDLEventHandlerInterface.h>
 
 namespace ge{
-  namespace util{
+  namespace ad{
     class SDLWindow;
     class SDLCallbackInterface;
     class GEAD_EXPORT SDLMainLoop{

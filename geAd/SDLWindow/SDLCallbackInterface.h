@@ -1,7 +1,7 @@
 #pragma once
 
 namespace ge{
-  namespace util{
+  namespace ad{
     class SDLCallbackInterface{
       public:
         virtual ~SDLCallbackInterface(){}

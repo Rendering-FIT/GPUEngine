@@ -3,7 +3,7 @@
 #include<SDL2/SDL.h>
 
 namespace ge{
-  namespace util{
+  namespace ad{
     class SDLEventCallbackInterface{
       public:
         virtual ~SDLEventCallbackInterface(){}

@@ -4,21 +4,21 @@
 #include<geAd/SDLWindow/SDLWindow.h>
 
 struct Data{
-  std::shared_ptr<ge::gl::opengl::Context> gl           = nullptr;
-  std::shared_ptr<ge::util::SDLMainLoop>   mainLoop     = nullptr;
-  std::shared_ptr<ge::util::SDLWindow>     window       = nullptr;
+  std::shared_ptr<ge::gl::opengl::Context>gl       = nullptr;
+  std::shared_ptr<ge::ad::SDLMainLoop>    mainLoop = nullptr;
+  std::shared_ptr<ge::ad::SDLWindow>      window   = nullptr;
   std::shared_ptr<ge::gl::Program>program0 = nullptr;
   std::shared_ptr<ge::gl::VertexArray>vao = nullptr;
   std::shared_ptr<ge::gl::Buffer>vbo = nullptr;
   static void init(Data*data);
-  class IdleCallback: public ge::util::SDLCallbackInterface{
+  class IdleCallback: public ge::ad::SDLCallbackInterface{
     public:
       Data*data;
       IdleCallback(Data*data){this->data = data;}
       virtual void operator()()override;
       virtual ~IdleCallback(){}
   };
-  class WindowEventCallback: public ge::util::SDLEventCallbackInterface{
+  class WindowEventCallback: public ge::ad::SDLEventCallbackInterface{
     public:
       Data*data;
       WindowEventCallback(Data*data){this->data = data;}
@@ -32,11 +32,11 @@ struct Data{
 int main(int,char*[]){
   Data data;
 
-  data.mainLoop = std::make_shared<ge::util::SDLMainLoop>();
+  data.mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   data.mainLoop->setIdleCallback(std::make_shared<Data::IdleCallback>(&data));
 
-  data.window   = std::make_shared<ge::util::SDLWindow>();
-  data.window->createContext("rendering",450u,ge::util::SDLWindow::CORE,ge::util::SDLWindow::DEBUG);
+  data.window   = std::make_shared<ge::ad::SDLWindow>();
+  data.window->createContext("rendering",450u,ge::ad::SDLWindow::CORE,ge::ad::SDLWindow::DEBUG);
   data.window->setEventCallback(SDL_WINDOWEVENT,std::make_shared<Data::WindowEventCallback>(&data));
   data.mainLoop->addWindow("primaryWindow",data.window);
   data.init(&data);

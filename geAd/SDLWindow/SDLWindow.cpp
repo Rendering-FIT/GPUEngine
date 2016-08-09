@@ -5,7 +5,7 @@
 #include<iostream>
 #include<cassert>
 
-using namespace ge::util;
+using namespace ge::ad;
 
 SDLWindow::SDLWindow(uint32_t width,uint32_t height){
   assert(this!=nullptr);

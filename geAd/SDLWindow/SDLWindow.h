@@ -11,8 +11,7 @@
 #include<geAd/SDLWindow/SDLEventCallbackInterface.h>
 
 namespace ge{
-  namespace util{
-    class EventCallbackInterface;
+  namespace ad{
     class GEAD_EXPORT SDLWindow{
       public:
         using WindowId             = uint32_t;
