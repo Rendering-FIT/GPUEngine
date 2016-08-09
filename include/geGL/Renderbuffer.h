@@ -15,7 +15,7 @@ namespace ge{
             GLsizei height            ,
             GLsizei samples        = 0);
         Renderbuffer(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             GLenum  internalFormat    ,
             GLsizei width             ,
             GLsizei height            ,

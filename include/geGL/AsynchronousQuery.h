@@ -55,12 +55,12 @@ namespace ge{
         AsynchronousQuery(
             AsynchronousQuery*existingQuery);
         AsynchronousQuery(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             GLenum     target,
             GLenum     waitingType,
             ResultSize resultSize);
         AsynchronousQuery(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             AsynchronousQuery*existingQuery);
         /**
          * @brief Destructor

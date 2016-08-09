@@ -5,7 +5,6 @@
 #include<cassert>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 /**
  * @brief Creates empty vertex array object

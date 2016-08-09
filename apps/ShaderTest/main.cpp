@@ -8,9 +8,9 @@
 
 
 struct Data{
-  std::shared_ptr<ge::gl::opengl::Context>gl       = nullptr;
-  std::shared_ptr<ge::ad::SDLMainLoop>    mainLoop = nullptr;
-  std::shared_ptr<ge::ad::SDLWindow>      window   = nullptr;
+  std::shared_ptr<ge::gl::Context>    gl       = nullptr;
+  std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
+  std::shared_ptr<ge::ad::SDLWindow>  window   = nullptr;
   std::shared_ptr<ge::gl::Program>program0 = nullptr;
   std::shared_ptr<ge::gl::Program>program1 = nullptr;
   std::shared_ptr<ge::gl::VertexArray>emptyVAO = nullptr;
@@ -75,7 +75,7 @@ void Data::init(Data*data){
   data->window->makeCurrent("rendering");
 
   ge::gl::init(SDL_GL_GetProcAddress);
-  data->gl = ge::gl::opengl::getDefaultContext();
+  data->gl = ge::gl::getDefaultContext();
   ge::gl::setHighDebugMessage();
 
   data->gl->glEnable(GL_DEPTH_TEST);
@@ -105,7 +105,7 @@ void Data::init(Data*data){
   data->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
   GLubyte const*d;
-  auto cmd = ge::gl::createCommand(&ge::gl::opengl::Context::glGetString,&d,GL_VERSION);
+  auto cmd = ge::gl::createCommand(&ge::gl::Context::glGetString,&d,GL_VERSION);
   (*cmd)();
   std::cout<<d<<std::endl;
 }

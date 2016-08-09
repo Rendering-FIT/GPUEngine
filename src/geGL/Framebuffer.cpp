@@ -7,7 +7,6 @@
 #include<cassert>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 
 GLint Framebuffer::getParam(GLenum pname){

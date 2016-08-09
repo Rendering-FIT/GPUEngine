@@ -2,7 +2,6 @@
 #include<cassert>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 OpenGLObject::OpenGLObject(GLuint id):_gl(nullptr){
   assert(this!=nullptr);
@@ -26,6 +25,6 @@ GLuint OpenGLObject::getId()const{
   return this->_id;
 }
 
-opengl::Context const&OpenGLObject::getContext()const{
+ge::gl::Context const&OpenGLObject::getContext()const{
   return this->_gl;
 }

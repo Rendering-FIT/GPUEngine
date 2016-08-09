@@ -19,7 +19,7 @@ namespace ge{
         using ShaderPointers = std::vector<ShaderPointer>;
         Program(ShaderPointers const&shaders);
         Program(
-            opengl::FunctionTablePointer const&table       ,
+            FunctionTablePointer const&table       ,
             ShaderPointers               const&shaders = {});
         ~Program();
         void create       ();
@@ -126,7 +126,7 @@ namespace ge{
           Program(ARGS...shaders);
         template<typename...ARGS>
           Program(
-              opengl::FunctionTablePointer const&table  ,
+              FunctionTablePointer const&table  ,
               ARGS...                            shaders);
         template<typename...ARGS>
           void attachShaders(ARGS... shaders);
@@ -151,7 +151,7 @@ namespace ge{
       Program::Program(ARGS...shaders):Program(ShaderPointers({shaders...})){}
     template<typename...ARGS>
       Program::Program(
-          opengl::FunctionTablePointer const&table  ,
+          FunctionTablePointer const&table  ,
           ARGS...                            shaders):Program(table,ShaderPointers({shaders...})){}
     template<typename...ARGS>
       void Program::attachShaders(ARGS... shaders){

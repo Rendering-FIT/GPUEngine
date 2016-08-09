@@ -4,7 +4,7 @@
 #include<geAd/SDLWindow/SDLWindow.h>
 
 struct Data{
-  std::shared_ptr<ge::gl::opengl::Context>gl       = nullptr;
+  std::shared_ptr<ge::gl::Context>gl       = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop>    mainLoop = nullptr;
   std::shared_ptr<ge::ad::SDLWindow>      window   = nullptr;
   static void init(Data*data);
@@ -57,8 +57,8 @@ bool Data::WindowEventCallback::operator()(SDL_Event const&event){
 
 void Data::init(Data*data){
   data->window->makeCurrent("rendering");
-  ge::gl::init(std::make_shared<ge::gl::opengl::DefaultLoader>((ge::gl::opengl::GET_PROC_ADDRESS)SDL_GL_GetProcAddress));
-  data->gl = ge::gl::opengl::getDefaultContext();
+  ge::gl::init(SDL_GL_GetProcAddress);
+  data->gl = ge::gl::getDefaultContext();
 
   data->gl->glEnable(GL_DEPTH_TEST);
   data->gl->glDepthFunc(GL_LEQUAL);

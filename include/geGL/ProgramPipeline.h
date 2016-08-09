@@ -7,7 +7,7 @@ namespace ge{
     class GEGL_EXPORT ProgramPipeline: public OpenGLObject{
       public:
         ProgramPipeline();
-        ProgramPipeline(opengl::FunctionTablePointer const&table);
+        ProgramPipeline(FunctionTablePointer const&table);
         ~ProgramPipeline();
         void bind()const;
         void unbind()const;

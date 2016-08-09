@@ -29,20 +29,20 @@ namespace ge{
             GLsizei height        ,
             GLsizei depth         );
         Texture(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         );
         Texture(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,
             GLsizei width         ,
             GLsizei height        );
         Texture(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             GLenum  target        ,
             GLenum  internalFormat,
             GLsizei levels        ,

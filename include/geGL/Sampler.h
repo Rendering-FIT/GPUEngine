@@ -11,9 +11,9 @@ namespace ge{
       public:
         Sampler ();
         Sampler (Sampler*sampler);
-        Sampler (opengl::FunctionTablePointer const&table);
+        Sampler (FunctionTablePointer const&table);
         Sampler (
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             Sampler*sampler);
         ~Sampler();
         void setBorderColor(GLfloat*color    )const;

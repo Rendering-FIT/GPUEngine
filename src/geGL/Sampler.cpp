@@ -1,7 +1,6 @@
 #include<geGL/Sampler.h>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 Sampler::Sampler(){
   assert(this!=nullptr);

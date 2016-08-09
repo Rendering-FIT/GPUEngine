@@ -4,7 +4,6 @@
 #include<string>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 GLint Program::_getParam(GLenum pname)const{
   assert(this!=nullptr);
@@ -21,7 +20,7 @@ Program::Program(ShaderPointers const&shaders){
 }
 
 Program::Program(
-    opengl::FunctionTablePointer const&table  ,
+    FunctionTablePointer const&table  ,
     ShaderPointers               const&shaders):OpenGLObject(table){
   assert(this!=nullptr);
   this->_info = std::make_shared<ProgramInfo>();

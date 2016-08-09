@@ -17,9 +17,9 @@ namespace ge{
         using Sources = std::vector<Source>;
         Shader();
         Shader(GLenum type,Sources const& sources = {});
-        Shader(opengl::FunctionTablePointer const&table);
+        Shader(FunctionTablePointer const&table);
         Shader(
-            opengl::FunctionTablePointer const&table       ,
+            FunctionTablePointer const&table       ,
             GLenum                       const&type        ,
             Sources                      const&sources = {});
         virtual ~Shader();
@@ -55,7 +55,7 @@ namespace ge{
           Shader(GLenum type,ARGS...args);
         template<typename...ARGS>
           Shader(
-              opengl::FunctionTablePointer const&table  ,
+              FunctionTablePointer const&table  ,
               GLenum                       const&type   ,
               ARGS...                            sources);
         template<typename...ARGS>
@@ -72,7 +72,7 @@ namespace ge{
         Shader(type,Sources({args...})){}
     template<typename...ARGS>
       Shader::Shader(
-          opengl::FunctionTablePointer const&table  ,
+          FunctionTablePointer const&table  ,
           GLenum                       const&type   ,
           ARGS...                            sources):
         Shader(table,type,Sources({sources...})){}

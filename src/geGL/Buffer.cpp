@@ -5,7 +5,6 @@
 #include<vector>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 /**
  * @brief Empty constructor, it sets ID=0

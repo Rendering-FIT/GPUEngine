@@ -1,7 +1,6 @@
 #include<geGL/Renderbuffer.h>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 Renderbuffer::Renderbuffer(
     FunctionTablePointer const&table,

@@ -3,7 +3,6 @@
 #include<cassert>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 AsynchronousQuery::AsynchronousQuery(
     GLenum     target,

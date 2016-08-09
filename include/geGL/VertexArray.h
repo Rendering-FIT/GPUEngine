@@ -17,7 +17,7 @@ namespace ge{
           L
         };
         VertexArray ();
-        VertexArray (opengl::FunctionTablePointer const&table);
+        VertexArray (FunctionTablePointer const&table);
         ~VertexArray();
         void addAttrib(
             std::shared_ptr<Buffer>const&buffer                      ,

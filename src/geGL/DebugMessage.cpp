@@ -4,7 +4,6 @@
 #include<cassert>
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 void defaultDebugMessage(
     GLenum        source,
@@ -69,16 +68,16 @@ void highDebugMessage(
     " : "        <<message                         <<std::endl;
 }
 
-ge::gl::opengl::ContextPointer const&getContext(ge::gl::opengl::ContextPointer const&gl){
+ge::gl::ContextPointer const&getContext(ge::gl::ContextPointer const&gl){
   if(gl!=nullptr)return gl;
-  return ge::gl::opengl::getDefaultContext();
+  return ge::gl::getDefaultContext();
 }
 
 /**
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_LOW/MEDIUM/HIGH
  */
 void ge::gl::setLowAndGreaterDebugMessage(
-    opengl::ContextPointer const&ogl){
+    ContextPointer const&ogl){
   auto gl = getContext(ogl);
   assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
@@ -89,7 +88,7 @@ void ge::gl::setLowAndGreaterDebugMessage(
  * @brief sets debug function - it will report GL_DEBUG_SEVERITY_MEDIUM/HIGH
  */
 void ge::gl::setMediumAndGreaterDebugMessage(
-    opengl::ContextPointer const&ogl){
+    ContextPointer const&ogl){
   auto gl = getContext(ogl);
   assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
@@ -100,7 +99,7 @@ void ge::gl::setMediumAndGreaterDebugMessage(
  * @brief sets debug function - it will report only GL_DEBUG_SEVERITY_HIGH errors
  */
 void ge::gl::setHighDebugMessage(
-    opengl::ContextPointer const&ogl){
+    ContextPointer const&ogl){
   auto gl = getContext(ogl);
   assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
@@ -111,7 +110,7 @@ void ge::gl::setHighDebugMessage(
  * @brief sets default debug function - it will report everything
  */
 void ge::gl::setDefaultDebugMessage(
-    opengl::ContextPointer const&ogl){
+    ContextPointer const&ogl){
   auto gl = getContext(ogl);
   assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);
@@ -127,7 +126,7 @@ void ge::gl::setDefaultDebugMessage(
 void ge::gl::setDebugMessage(
     GLDEBUGPROC fce,
     void*data,
-    opengl::ContextPointer const&ogl){
+    ContextPointer const&ogl){
   auto gl = getContext(ogl);
   assert(gl!=nullptr);
   gl->glEnable(GL_DEBUG_OUTPUT);

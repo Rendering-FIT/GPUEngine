@@ -5,24 +5,22 @@
 
 namespace ge{
   namespace gl{
-    namespace opengl{
-      class GEGL_EXPORT Context{
-        public:
-          Context(FunctionTablePointer const&t = nullptr);
-          ~Context(){}
-          FunctionTablePointer const&getFunctionTable()const{
-            assert(this!=nullptr);
-            return this->m_table;
-          }
-          void setFunctionTable(FunctionTablePointer const&t){
-            assert(this!=nullptr);
-            this->m_table = t;
-          }
+    class GEGL_EXPORT Context{
+      public:
+        Context(FunctionTablePointer const&t = nullptr);
+        ~Context(){}
+        FunctionTablePointer const&getFunctionTable()const{
+          assert(this!=nullptr);
+          return this->m_table;
+        }
+        void setFunctionTable(FunctionTablePointer const&t){
+          assert(this!=nullptr);
+          this->m_table = t;
+        }
 #include<geGL/Generated/ContextDeclarations.h>
-        protected:
-          FunctionTablePointer m_table = nullptr;
-      };
-    }
+      protected:
+        FunctionTablePointer m_table = nullptr;
+    };
   }
 }
 

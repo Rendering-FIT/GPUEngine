@@ -10,8 +10,8 @@ namespace ge{
     class GEGL_EXPORT Buffer:
       public OpenGLObject,
       public std::enable_shared_from_this<Buffer>{
-      friend class VertexArray;
-      public:
+        friend class VertexArray;
+        public:
         enum ReallocFlags{
           NEW_BUFFER = 0u    ,
           KEEP_ID    = 1u<<0u,
@@ -22,9 +22,9 @@ namespace ge{
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
-        Buffer(opengl::FunctionTablePointer const&table);
+        Buffer(FunctionTablePointer const&table);
         Buffer(
-            opengl::FunctionTablePointer const&table,
+            FunctionTablePointer const&table,
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
@@ -83,13 +83,13 @@ namespace ge{
         GLsizeiptr getMapSize    ()const;
         GLvoid*    getMapPointer ()const;
         GLboolean  isImmutable   ()const;
-      private:
+        private:
         GLint   _getBufferParameter(GLenum pname)const;
         GLvoid* _getBufferPointer  (GLenum pname)const;
         void    _bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const;
         std::set<VertexArray*>_vertexArrays;
         void _updateVertexArrays();
-    };
+      };
   }
 }
 

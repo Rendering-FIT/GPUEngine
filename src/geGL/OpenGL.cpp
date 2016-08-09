@@ -8,18 +8,17 @@
 #include<geGL/OpenGLCapabilities.h>
 #include<geGL/OpenGLContext.h>
 
-thread_local ge::gl::opengl::FunctionTablePointer _defaultOpenGLFunctionTable = nullptr;
-thread_local ge::gl::opengl::ContextPointer       _defaultOpenGLContext       = nullptr;
+thread_local ge::gl::FunctionTablePointer _defaultOpenGLFunctionTable = nullptr;
+thread_local ge::gl::ContextPointer       _defaultOpenGLContext       = nullptr;
 
 using namespace ge::gl;
-using namespace ge::gl::opengl;
 
 /**
  * @brief Function returns default, global OpenGLFunctionTable
  *
  * @return default OpenGLFunctionTable
  */
-ge::gl::opengl::FunctionTablePointer const&ge::gl::opengl::getDefaultFunctionTable(){
+ge::gl::FunctionTablePointer const&ge::gl::getDefaultFunctionTable(){
   return _defaultOpenGLFunctionTable;
 }
 
@@ -28,7 +27,7 @@ ge::gl::opengl::FunctionTablePointer const&ge::gl::opengl::getDefaultFunctionTab
  *
  * @return default OpenGLfunctionProvider
  */
-ge::gl::opengl::ContextPointer const& ge::gl::opengl::getDefaultContext(){
+ge::gl::ContextPointer const& ge::gl::getDefaultContext(){
   return _defaultOpenGLContext;
 }
 
@@ -37,7 +36,7 @@ ge::gl::opengl::ContextPointer const& ge::gl::opengl::getDefaultContext(){
  *
  * @param OpenGLFunctionTable
  */
-void ge::gl::opengl::setDefaultFunctionTable   (FunctionTablePointer    const&table   ){
+void ge::gl::setDefaultFunctionTable   (FunctionTablePointer    const&table   ){
   _defaultOpenGLFunctionTable = table;
   if(_defaultOpenGLContext)
     _defaultOpenGLContext->setFunctionTable(table);
@@ -48,7 +47,7 @@ void ge::gl::opengl::setDefaultFunctionTable   (FunctionTablePointer    const&ta
  *
  * @param provider OpenGLContext
  */
-void ge::gl::opengl::setDefaultContext(ContextPointer const&provider){
+void ge::gl::setDefaultContext(ContextPointer const&provider){
   _defaultOpenGLContext = provider;
 }
 
@@ -60,7 +59,7 @@ void ge::gl::opengl::setDefaultContext(ContextPointer const&provider){
  *
  * @return OpenGLFunctionTable
  */
-FunctionTablePointer ge::gl::opengl::createTable(FunctionLoaderInterfacePointer const&loader){
+FunctionTablePointer ge::gl::createTable(FunctionLoaderInterfacePointer const&loader){
   auto table = std::make_shared<
     TrapTableDecorator<
     CapabilitiesTableDecorator<
@@ -78,7 +77,7 @@ FunctionTablePointer ge::gl::opengl::createTable(FunctionLoaderInterfacePointer 
  *
  * @return Context
  */
-ContextPointer ge::gl::opengl::createContext(FunctionTablePointer const&table){
+ContextPointer ge::gl::createContext(FunctionTablePointer const&table){
   return std::make_shared<Context>(table);
 }
 

@@ -14,20 +14,18 @@
 
 namespace ge{
   namespace gl{
-    namespace opengl{
-      class FunctionTable;
-      using FunctionTablePointer = std::shared_ptr<FunctionTable>;
-      class Context;
-      using ContextPointer = std::shared_ptr<Context>;
-      class FunctionLoaderInterface;
-      using FunctionLoaderInterfacePointer = std::shared_ptr<FunctionLoaderInterface>;
-      GEGL_EXPORT FunctionTablePointer    const& getDefaultFunctionTable();
-      GEGL_EXPORT ContextPointer const& getDefaultContext();
-      GEGL_EXPORT void setDefaultFunctionTable   (FunctionTablePointer const&table   );
-      GEGL_EXPORT void setDefaultContext         (ContextPointer       const&provider);
-      GEGL_EXPORT FunctionTablePointer    createTable  (FunctionLoaderInterfacePointer const&loader);
-      GEGL_EXPORT ContextPointer createContext(FunctionTablePointer const&table = nullptr);
-    }
+    class FunctionTable;
+    using FunctionTablePointer = std::shared_ptr<FunctionTable>;
+    class Context;
+    using ContextPointer = std::shared_ptr<Context>;
+    class FunctionLoaderInterface;
+    using FunctionLoaderInterfacePointer = std::shared_ptr<FunctionLoaderInterface>;
+    GEGL_EXPORT FunctionTablePointer    const& getDefaultFunctionTable();
+    GEGL_EXPORT ContextPointer const& getDefaultContext();
+    GEGL_EXPORT void setDefaultFunctionTable   (FunctionTablePointer const&table   );
+    GEGL_EXPORT void setDefaultContext         (ContextPointer       const&provider);
+    GEGL_EXPORT FunctionTablePointer    createTable  (FunctionLoaderInterfacePointer const&loader);
+    GEGL_EXPORT ContextPointer createContext(FunctionTablePointer const&table = nullptr);
   }
 }
 
