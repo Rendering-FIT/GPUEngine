@@ -38,7 +38,7 @@ AtomicFunction::AtomicFunction(
   assert(this!=nullptr);
   assert(fr!=nullptr);
   for(size_t i=0;i<fr->getNofInputs(id);++i)
-    this->_inputs.push_back(std::make_shared<AtomicFunctionInput>());
+    this->_inputs.emplace_back();
 }
 
 AtomicFunction::AtomicFunction(
@@ -57,23 +57,22 @@ AtomicFunction::~AtomicFunction(){
 void AtomicFunction::_unbindInput(size_t i){
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
-  auto in = this->_inputs.at(i);
-  assert(in!=nullptr);
-  if(in->resource == nullptr && in->function == nullptr)return;
-  assert(!in->resource != !in->function);
-  if(in->resource){
-    in->resource->_removeSignalingTarget(this);
-    this->_removeSourceResource(&*in->resource);
-    in->resource = nullptr;
+  auto&in = this->_inputs.at(i);
+  if(in.resource == nullptr && in.function == nullptr)return;
+  assert(!in.resource != !in.function);
+  if(in.resource){
+    in.resource->_removeSignalingTarget(this);
+    this->_removeSourceResource(&*in.resource);
+    in.resource = nullptr;
   }else{
-    in->function->_removeSignalingTarget(this);
-    this->_removeSignalingSource(&*in->function);
-    in->function->getOutputData()->_removeSignalingTarget(this);
-    this->_removeSourceResource(&*in->function->getOutputData());
-    assert(this->_fces.count(in->function)!=0);
-    this->_fces[in->function]--;
-    if(this->_fces[in->function]==0)this->_fces.erase(in->function);
-    in->function = nullptr;
+    in.function->_removeSignalingTarget(this);
+    this->_removeSignalingSource(&*in.function);
+    in.function->getOutputData()->_removeSignalingTarget(this);
+    this->_removeSourceResource(&*in.function->getOutputData());
+    assert(this->_fces.count(in.function)!=0);
+    this->_fces[in.function]--;
+    if(this->_fces[in.function]==0)this->_fces.erase(in.function);
+    in.function = nullptr;
   }
 }
 
@@ -115,9 +114,9 @@ bool AtomicFunction::bindInput(
   if(this->_fces.count(f)==0)
     this->_fces[f]=0;
   this->_fces[f]++;
-  this->_inputs.at(i)->updateTicks = f->getOutputData()->getTicks() - 1;
-  this->_inputs.at(i)->function = f;
-  this->_inputs.at(i)->changed  = true;
+  this->_inputs.at(i).updateTicks = f->getOutputData()->getTicks() - 1;
+  this->_inputs.at(i).function = f;
+  this->_inputs.at(i).changed  = true;
   this->setDirty();
   return true;
 }
@@ -140,9 +139,9 @@ bool AtomicFunction::bindInputAsVariable (
   this->_unbindInput(i);
   r->_addSignalingTarget(this);
   this->_addSourceResource(&*r);
-  this->_inputs.at(i)->updateTicks = r->getTicks() - 1;
-  this->_inputs.at(i)->resource = r;
-  this->_inputs.at(i)->changed  = true;
+  this->_inputs.at(i).updateTicks = r->getTicks() - 1;
+  this->_inputs.at(i).resource = r;
+  this->_inputs.at(i).changed  = true;
   this->setDirty();
   return true;
 }
@@ -175,14 +174,14 @@ std::shared_ptr<Function>const&AtomicFunction::getInputFunction(size_t i)const{
   PRINT_CALL_STACK(i);
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
-  return this->_inputs.at(i)->function;
+  return this->_inputs.at(i).function;
 }
 
 bool AtomicFunction::hasInputFunction(size_t i)const{
   PRINT_CALL_STACK(i);
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
-  return this->_inputs.at(i)->function!=nullptr;
+  return this->_inputs.at(i).function!=nullptr;
 }
 
 void AtomicFunction::operator()(){
@@ -211,16 +210,16 @@ bool AtomicFunction::_processInputs(){
     assert(x.first!=nullptr);
     (*x.first)();
   }
-  for(auto const&x:this->_inputs){
+  for(auto &x:this->_inputs){
     bool changed = false;
-    if(x->resource){
-      changed = x->updateTicks < x->resource->getTicks();
-      x->changed = changed;
-      x->updateTicks = x->resource->getTicks();
+    if(x.resource){
+      changed = x.updateTicks < x.resource->getTicks();
+      x.changed = changed;
+      x.updateTicks = x.resource->getTicks();
     }else{
-      changed = x->updateTicks < x->function->getOutputData()->getTicks();
-      x->changed = changed;
-      x->updateTicks = x->function->getOutputData()->getTicks();
+      changed = x.updateTicks < x.function->getOutputData()->getTicks();
+      x.changed = changed;
+      x.updateTicks = x.function->getOutputData()->getTicks();
     }
     isAnyInputChanged |= changed;
   }

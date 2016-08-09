@@ -26,9 +26,6 @@ namespace ge{
 
     class GEDE_EXPORT AtomicFunction: public Function{
       public:
-        using SharedAtomicFunctionInput = std::shared_ptr<AtomicFunctionInput>;
-        using InputList  = std::vector<SharedAtomicFunctionInput>;
-      public:
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr,
             FunctionId                             id);
@@ -57,7 +54,7 @@ namespace ge{
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
         virtual bool hasInputFunction(size_t i)const override;
       protected:
-        InputList _inputs;
+        std::vector<AtomicFunctionInput>_inputs;
         std::map<std::shared_ptr<Function>,size_t>_fces;
         std::shared_ptr<Resource>_outputData  = nullptr;
         void _unbindInput(size_t i);
@@ -77,8 +74,7 @@ namespace ge{
       PRINT_CALL_STACK(i);
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs.at(i)!=nullptr);
-      return this->_inputs.at(i)->resource!=nullptr || this->_inputs.at(i)->function!=nullptr;
+      return this->_inputs.at(i).resource!=nullptr || this->_inputs.at(i).function!=nullptr;
     }
 
     inline bool AtomicFunction::hasOutput()const{
@@ -91,18 +87,16 @@ namespace ge{
       PRINT_CALL_STACK(i);
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs.at(i)!=nullptr);
-      if(this->_inputs.at(i)->function)
-        return this->_inputs.at(i)->function->getOutputData();
-      return this->_inputs.at(i)->resource;
+      if(this->_inputs.at(i).function)
+        return this->_inputs.at(i).function->getOutputData();
+      return this->_inputs.at(i).resource;
     }
 
     inline bool AtomicFunction::_inputChanged(size_t i)const{
       PRINT_CALL_STACK(i);
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
-      assert(this->_inputs.at(i)!=nullptr);
-      return this->_inputs.at(i)->changed;
+      return this->_inputs.at(i).changed;
     }
 
   }
