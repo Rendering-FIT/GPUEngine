@@ -335,10 +335,10 @@ namespace ge{
   TR->getTypeId(keyword<FROM>())}
 
 #define ADD_BINARY_FUNCTION(OUTPUT,INPUT1,INPUT2,NAME,FACTORY)\
-  fr->addFunction(tr->addCompositeType("",BINARY_FUNTION_DESCRIPTION(tr,OUTPUT,INPUT1,INPUT2)),NAME,FACTORY);
+  fr->addFunction(tr->addType<OUTPUT(INPUT1,INPUT2)>(),NAME,FACTORY);
 
 #define ADD_UNARY_FUNCTION(OUTPUT,INPUT1,NAME,FACTORY)\
-  fr->addFunction(tr->addCompositeType("",UNARY_FUNTION_DESCRIPTION(tr,OUTPUT,INPUT1)),NAME,FACTORY);
+  fr->addFunction(tr->addType<OUTPUT(INPUT1)>(),NAME,FACTORY);
 
 #define ADD_BINARY_FUNCTION_SIMPLE(CLASS,TYPE)\
     ADD_BINARY_FUNCTION(TYPE,TYPE,TYPE,keyword<CLASS<TYPE>>(),factoryOfFunctionFactory<CLASS<TYPE>>(keyword<CLASS<TYPE>>()))
@@ -352,7 +352,7 @@ namespace ge{
     //{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}
 
 #define ADD_CAST_FUNCTION(FROM,TO)\
-  fr->addFunction(tr->addCompositeType("",CAST_FUNCTION_DESCRIPTION(tr,FROM,TO)),keyword<Cast<FROM,TO>>(),factoryOfFunctionFactory<Cast<FROM,TO>>(keyword<Cast<FROM,TO>>()));
+  fr->addFunction(tr->addType<TO(FROM)>(),keyword<Cast<FROM,TO>>(),factoryOfFunctionFactory<Cast<FROM,TO>>(keyword<Cast<FROM,TO>>()));
 
     NUMERIC_FCE_LOOP(NUMERIC_LOOP,DEFINE_GETTYPEKEYWORD)
     RELATIONAL_FCE_LOOP(ALL_LOOP,DEFINE_GETTYPEKEYWORD)

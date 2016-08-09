@@ -42,11 +42,9 @@ SCENARIO( "basic statement factory tests", "[StatementFactory]" ) {
   GIVEN( "basic function factory" ) {
     auto factory = fr->sharedFactory("Add<i32>");
     auto statement = (*factory)(fr);
-    auto fa=tr->createResource((int32_t)10);
-    auto fb=tr->createResource((int32_t)11);
     auto function = std::dynamic_pointer_cast<Function>(statement);
-    function->bindInput(fr,0,fa);
-    function->bindInput(fr,1,fb);
+    function->bindInputAsVariable(fr,0,tr->createResource((int32_t)10));
+    function->bindInputAsVariable(fr,1,tr->createResource((int32_t)11));
     function->bindOutput(fr,tr->sharedResource("i32"));
     WHEN("running constructed statement"){
       (*statement)();

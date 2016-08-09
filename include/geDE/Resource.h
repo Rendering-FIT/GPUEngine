@@ -40,7 +40,6 @@ namespace ge{
           operator T*()const;
         template<typename T>
           operator T**()const;
-        void setProducer(std::shared_ptr<Function>const&f);
         Ticks getTicks()const;
         void updateTicks();
         template<typename T>
@@ -55,13 +54,11 @@ namespace ge{
         Ticks _ticks = 1;
         std::shared_ptr<TypeRegister>_manager = nullptr;
         TypeId _id = TypeRegister::UNREGISTERED;
-        std::shared_ptr<Function>_producer = nullptr;
         void _setSignalingDirty();
         void _addSignalingSource(Function*f);
         void _removeSignalingSource(Function*f);
         void _addSignalingTarget(Function*f);
         void _removeSignalingTarget(Function*f);
-        virtual void operator()();
     };
 
     inline Resource::Resource(

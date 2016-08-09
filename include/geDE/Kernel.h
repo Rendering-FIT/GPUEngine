@@ -18,6 +18,18 @@ namespace ge{
   namespace de{
     class GEDE_EXPORT Kernel{
       public:
+        using RFNT = std::tuple<std::shared_ptr<Resource>,std::shared_ptr<Function>,std::string>;
+        class RFN: public RFNT{
+          public:
+            RFN(std::shared_ptr<Resource>const&res):RFNT(res,nullptr,""){}
+            RFN(std::shared_ptr<Function>const&fce):RFNT(nullptr,fce,""){}
+            RFN(std::string const&name):RFNT(nullptr,nullptr,name){}
+        };
+        enum{
+          RESOURCE = 0,
+          FUNCTION = 1,
+          NAME     = 2,
+        };
         Kernel();
         ~Kernel();
         bool addEmptyVariable(std::string const&name,std::string const&type);
@@ -35,16 +47,16 @@ namespace ge{
         std::shared_ptr<Resource>createVariable(T const&val);
         std::shared_ptr<Resource>createResource(std::string const&name);
         std::shared_ptr<Function>createFunction2(
-            std::string                           const&name  ,
-            std::vector<std::shared_ptr<Resource>>const&inputs,
-            std::shared_ptr<Resource>             const&output);
+            std::string              const&name  ,
+            std::vector<RFN>         const&inputs,
+            std::shared_ptr<Resource>const&output);
         std::shared_ptr<Function>createFunction2(
-            std::string                           const&name        ,
-            std::vector<std::shared_ptr<Resource>>const&inputs      ,
-            std::string                           const&variableName);
+            std::string     const&name        ,
+            std::vector<RFN>const&inputs      ,
+            std::string     const&variableName);
         std::shared_ptr<Function>createFunction2(
-            std::string                           const&name  ,
-            std::vector<std::shared_ptr<Resource>>const&inputs);
+            std::string     const&name  ,
+            std::vector<RFN>const&inputs);
         std::shared_ptr<Function>createFunction(
             std::string             const&name        ,
             std::vector<std::string>const&inputNames  ,
@@ -75,13 +87,10 @@ namespace ge{
             std::shared_ptr<CompositeFunctionFactory>const&factory);
         void bindInput(
             std::shared_ptr<Function>const&fce,
-            std::vector<std::shared_ptr<Resource>>const&inputs);
+            std::vector<RFN>         const&inputs);
         void bindOutput(
             std::shared_ptr<Function>const&fce,
             std::shared_ptr<Resource>const&output);
-        void bindOutputAsVariable(
-            std::shared_ptr<Function>const&fce,
-            std::shared_ptr<Resource>const&var);
         TypeId addAtomicType(
             std::string               const&name                 ,
             size_t                    const&size                 ,
@@ -97,9 +106,9 @@ namespace ge{
             std::string             const&name     ,
             std::vector<std::string>const&typeNames);
         TypeId addArrayType(
-            std::string          const&name     ,
-            size_t                     size     ,
-            TypeId       innerType);
+            std::string const&name     ,
+            size_t            size     ,
+            TypeId            innerType);
         TypeId addArrayType(
             std::string const&name     ,
             size_t            size     ,

@@ -218,10 +218,8 @@ SCENARIO( "registration of outside function as boxes", "[FunctionRegister]" ) {
   auto f=fr->sharedFunction("blb");
   auto ff=std::dynamic_pointer_cast<Function>(f);
   ff->bindOutput(fr,tr->sharedResource("i32"));
-  auto a=tr->createResource((int32_t)10);
-  auto b=tr->createResource((int32_t)12);
-  ff->bindInput(fr,0,a);
-  ff->bindInput(fr,1,b);
+  ff->bindInputAsVariable(fr,0,tr->createResource((int32_t)10));
+  ff->bindInputAsVariable(fr,1,tr->createResource((int32_t)12));
   (*f)();
   REQUIRE((int32_t)(*ff->getOutputData())==10+12);
 
@@ -245,18 +243,15 @@ SCENARIO("Reference tests","[Reference]"){
 
   auto f = fr->sharedFunction("addP");
   f->bindOutput(fr,tr->sharedResource("i32"));
-  auto a=tr->createResource((int32_t)10);
-  auto b=tr->createResource((int32_t)12);
 
   auto pa = std::make_shared<Reference>(fr,tr->getTypeId("i32"));
   auto pb = std::make_shared<Reference>(fr,tr->getTypeId("i32"));
-  pa->bindInput(fr,0,a);
-  pb->bindInput(fr,0,b);
-  f->bindInput(fr,0,tr->sharedResource(tr->getTypeId("i32*")));
-  f->bindInput(fr,1,tr->sharedResource(tr->getTypeId("i32*")));
-  pa->bindOutput(fr,f->getInputData(0));
-  pb->bindOutput(fr,f->getInputData(1));
-
+  pa->bindInputAsVariable(fr,0,tr->createResource((int32_t)10));
+  pa->bindOutput(fr,tr->sharedResource(tr->getTypeId("i32*")));
+  pb->bindInputAsVariable(fr,0,tr->createResource((int32_t)12));
+  pb->bindOutput(fr,tr->sharedResource(tr->getTypeId("i32*")));
+  f->bindInput(fr,0,pa);
+  f->bindInput(fr,1,pb);
 
   (*f)();
 
@@ -300,11 +295,9 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   auto f=fr->sharedFunction("TestClass::add");
   auto ff=std::dynamic_pointer_cast<Function>(f);
   ff->bindOutput(fr,tr->sharedResource("i32"));
-  auto a=tr->sharedResource("TestClass");
-  auto b=tr->createResource((int32_t)12);
-  ff->bindInput(fr,0,a);
-  ff->bindInput(fr,1,b);
-  ((TestClass&)*a).data = 1000;
+  ff->bindInputAsVariable(fr,0,tr->sharedResource("TestClass"));
+  ff->bindInputAsVariable(fr,1,tr->createResource((int32_t)12));
+  ((TestClass&)*ff->getInputData(0)).data = 1000;
   (*f)();
   REQUIRE((int32_t)(*ff->getOutputData())==1000+12);
 
@@ -321,15 +314,13 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   auto f1 = fr->sharedFunction("TestClass::add");
   auto ff1 = std::dynamic_pointer_cast<Function>(f1);
   ff1->bindOutput(fr,tr->sharedResource("i32"));
-  auto a1=tr->sharedResource("SharedTestClass");
   registerBasicFunction(fr,"removeSharedPointerFromTestClass",removeSharedPointer<TestClass>);
   auto b1=fr->sharedFunction("removeSharedPointerFromTestClass");
-  b1->bindInput(fr,0,a1);
-  auto c1=tr->createResource((int32_t)32);
-  ff1->bindInput(fr,0,tr->sharedResource("TestClass"));
-  b1->bindOutput(fr,ff1->getInputData(0));
-  ff1->bindInput(fr,1,c1);
-  ((std::shared_ptr<TestClass>&)*a1)->data = 100;
+  b1->bindInputAsVariable(fr,0,tr->sharedResource("SharedTestClass"));
+  b1->bindOutput(fr,tr->sharedResource("TestClass"));
+  ff1->bindInput(fr,0,b1);
+  ff1->bindInputAsVariable(fr,1,tr->createResource((int32_t)32));
+  ((std::shared_ptr<TestClass>&)*b1->getInputData(0))->data = 100;
   (*ff1)();
   REQUIRE((int32_t)(*ff1->getOutputData())==100+32);
 }

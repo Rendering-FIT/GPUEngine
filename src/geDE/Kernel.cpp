@@ -65,9 +65,9 @@ std::shared_ptr<Resource>Kernel::createResource(std::string const&name){
 }
 
 std::shared_ptr<Function>Kernel::createFunction2(
-    std::string                           const&name  ,
-    std::vector<std::shared_ptr<Resource>>const&inputs,
-    std::shared_ptr<Resource>             const&output){
+    std::string              const&name  ,
+    std::vector<RFN>         const&inputs,
+    std::shared_ptr<Resource>const&output){
   assert(this!=nullptr);
   auto result = this->functionRegister->sharedFunction(name);
   this->bindInput(result,inputs);
@@ -76,9 +76,9 @@ std::shared_ptr<Function>Kernel::createFunction2(
 }
 
 std::shared_ptr<Function>Kernel::createFunction2(
-    std::string                           const&name        ,
-    std::vector<std::shared_ptr<Resource>>const&inputs      ,
-    std::string                           const&variableName){
+    std::string     const&name        ,
+    std::vector<RFN>const&inputs      ,
+    std::string     const&variableName){
   assert(this!=nullptr);
   if(!this->variableRegister->hasVariable(variableName)){
     ge::core::printError("Kernel::createFunction","there is no such variable",name,variableName);
@@ -87,13 +87,13 @@ std::shared_ptr<Function>Kernel::createFunction2(
   auto result = this->functionRegister->sharedFunction(name);
   this->bindInput(result,inputs);
   auto var = this->variableRegister->getVariable(variableName);
-  this->bindOutputAsVariable(result,var);
+  this->bindOutput(result,var);
   return result;
 }
 
 std::shared_ptr<Function>Kernel::createFunction2(
-    std::string                           const&name  ,
-    std::vector<std::shared_ptr<Resource>>const&inputs){
+    std::string     const&name  ,
+    std::vector<RFN>const&inputs){
   assert(this!=nullptr);
   auto result = this->functionRegister->sharedFunction(name);
   this->bindInput(result,inputs);
@@ -107,9 +107,9 @@ std::shared_ptr<Function>Kernel::createFunction(
     std::vector<std::string>const&inputNames  ,
     std::string             const&variableName){
   assert(this!=nullptr);
-  std::vector<std::shared_ptr<Resource>>inputs;
+  std::vector<RFN>inputs;
   for(auto const&x:inputNames)
-    inputs.push_back(this->variableRegister->getVariable(x));
+    inputs.emplace_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs,variableName);
 }
 
@@ -118,9 +118,9 @@ std::shared_ptr<Function>Kernel::createFunction(
     std::vector<std::string> const&inputNames,
     std::shared_ptr<Resource>const&output    ){
   assert(this!=nullptr);
-  std::vector<std::shared_ptr<Resource>>inputs;
+  std::vector<RFN>inputs;
   for(auto const&x:inputNames)
-    inputs.push_back(this->variableRegister->getVariable(x));
+    inputs.emplace_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs,output);
 }
 
@@ -128,9 +128,9 @@ std::shared_ptr<Function>Kernel::createFunction(
     std::string              const&name      ,
     std::vector<std::string> const&inputNames){
   assert(this!=nullptr);
-  std::vector<std::shared_ptr<Resource>>inputs;
+  std::vector<RFN>inputs;
   for(auto const&x:inputNames)
-    inputs.push_back(this->variableRegister->getVariable(x));
+    inputs.emplace_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs);
 }
 
@@ -142,10 +142,18 @@ std::shared_ptr<Resource>const&Kernel::variable(std::string const&name)const{
 
 void Kernel::bindInput(
     std::shared_ptr<Function>const&fce,
-    std::vector<std::shared_ptr<Resource>>const&inputs){
+    std::vector<RFN>         const&inputs){
   assert(this!=nullptr);
-  for(size_t i=0;i<inputs.size();++i)
-    fce->bindInput(this->functionRegister,i,inputs[i]);
+  size_t i=0;
+  for(auto const&x:inputs){
+    if(std::get<RESOURCE>(x))
+      fce->bindInputAsVariable(this->functionRegister,i,std::get<RESOURCE>(x));
+    else if(std::get<FUNCTION>(x))
+      fce->bindInput(this->functionRegister,i,std::get<FUNCTION>(x));
+    else
+      fce->bindInputAsVariable(this->functionRegister,i,this->variableRegister->getVariable(std::get<NAME>(x)));
+    i++;
+  }
 }
 
 void Kernel::bindOutput(
@@ -153,13 +161,6 @@ void Kernel::bindOutput(
     std::shared_ptr<Resource>const&output){
   assert(this!=nullptr);
   fce->bindOutput(this->functionRegister,output);
-}
-
-void Kernel::bindOutputAsVariable(
-    std::shared_ptr<Function>const&fce,
-    std::shared_ptr<Resource>const&var){
-  assert(this!=nullptr);
-  fce->bindOutputAsVariable(this->functionRegister,var);
 }
 
 TypeId Kernel::addAtomicType(

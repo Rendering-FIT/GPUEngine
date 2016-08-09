@@ -69,14 +69,18 @@ std::shared_ptr<Statement>FunctionNodeFactory::_do(
     if(this->resourceFactories[i]==nullptr)continue;
     auto resource = (*this->resourceFactories[i])(fr);
     assert(resource!=nullptr);
+    std::shared_ptr<Function>inFce = nullptr;
     if(this->inputFactories[i]){
       auto in=(*this->inputFactories[i])(fr);
-      auto inFce = std::dynamic_pointer_cast<Function>(in);
+      inFce = std::dynamic_pointer_cast<Function>(in);
       assert(inFce!=nullptr);
       inFce->bindOutput(fr,resource);
     }
     assert(fce!=nullptr);
-    fce->bindInput(fr,i,resource);
+    if(inFce)
+      fce->bindInput(fr,i,inFce);
+    else
+      fce->bindInputAsVariable(fr,i,resource);
   }
   return statement;
 }

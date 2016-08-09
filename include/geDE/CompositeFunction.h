@@ -23,18 +23,22 @@ namespace ge{
         virtual inline void operator()()override;
         virtual bool bindInput (
             std::shared_ptr<FunctionRegister>const&fr          ,
-            InputIndex                             i           ,
-            std::shared_ptr<Resource>        const&r  = nullptr)override;
-        virtual bool bindOutput(
-            std::shared_ptr<FunctionRegister>const&fr          ,
-            std::shared_ptr<Resource>        const&r  = nullptr)override;
-        virtual bool bindOutputAsVariable(
+            size_t                                 i           ,
+            std::shared_ptr<Function>        const&f  = nullptr)override;
+        virtual bool bindInputAsVariable(
             std::shared_ptr<FunctionRegister>const&fr,
+            size_t                                 i ,
             std::shared_ptr<Resource>        const&r )override;
-        virtual bool hasInput (InputIndex i)const override;
-        virtual bool hasOutput(            )const override;
-        virtual std::shared_ptr<Resource>const&getInputData (InputIndex i)const override;
-        virtual Resource*getOutputData()const override;
+        virtual bool bindOutput(
+            std::shared_ptr<FunctionRegister>const&fr            ,
+            std::shared_ptr<Resource>        const&data = nullptr)override;
+
+        virtual bool hasInput (size_t i)const override;
+        virtual bool hasOutput(        )const override;
+        virtual std::shared_ptr<Resource>const&getInputData (size_t i)const override;
+        virtual std::shared_ptr<Resource>const&getOutputData()const override;
+        virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
+        virtual bool hasInputFunction(size_t i)const override;
       protected:
         std::vector<FceInputList>_inputMapping;
         std::shared_ptr<Function>_outputMapping;

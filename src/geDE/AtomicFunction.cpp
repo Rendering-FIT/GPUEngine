@@ -15,6 +15,18 @@ AtomicFunctionInput::AtomicFunctionInput(
   this->resource    = r;
 }
 
+AtomicFunctionInput::AtomicFunctionInput(
+    std::shared_ptr<Function>const&f          ,
+    Ticks                          updateTicks,
+    bool                           changed    ){
+  PRINT_CALL_STACK(f,updateTicks,changed);
+  assert(this!=nullptr);
+  this->updateTicks = updateTicks;
+  this->changed     = changed;
+  this->function    = f;
+}
+
+
 AtomicFunctionInput::~AtomicFunctionInput(){
   PRINT_CALL_STACK();
 }
@@ -41,102 +53,141 @@ AtomicFunction::~AtomicFunction(){
   PRINT_CALL_STACK();
 }
 
+
+void AtomicFunction::_unbindInput(size_t i){
+  assert(this!=nullptr);
+  assert(i<this->_inputs.size());
+  auto in = this->_inputs.at(i);
+  assert(in!=nullptr);
+  if(in->resource == nullptr && in->function == nullptr)return;
+  assert(!in->resource != !in->function);
+  if(in->resource){
+    in->resource->_removeSignalingTarget(this);
+    this->_removeSourceResource(&*in->resource);
+    in->resource = nullptr;
+  }else{
+    in->function->_removeSignalingTarget(this);
+    this->_removeSignalingSource(&*in->function);
+    in->function->getOutputData()->_removeSignalingTarget(this);
+    this->_removeSourceResource(&*in->function->getOutputData());
+    this->_fce2Indices.at(in->function).erase(i);
+    if(this->_fce2Indices.at(in->function).empty()){
+      this->_fce2Indices.erase(in->function);
+      this->_fce2FceInput.erase(in->function);
+    }
+    in->function = nullptr;
+  }
+}
+
+void AtomicFunction::_unbindOutput(){
+  assert(this!=nullptr);
+  if(this->_outputData==nullptr)return;
+  this->_outputData->_removeSignalingSource(this);
+  this->_removeTargetResource(&*this->_outputData);
+  this->_outputData = nullptr;
+}
+
 bool AtomicFunction::bindInput(
+    std::shared_ptr<FunctionRegister>const&fr,
+    size_t                                 i ,
+    std::shared_ptr<Function>        const&f ){
+  PRINT_CALL_STACK(fr,i,f);
+  assert(this!=nullptr);
+  assert(i<this->_inputs.size());
+  if(f==nullptr){
+    this->_unbindInput(i);
+    this->setDirty();
+    return true;
+  }
+  if(f->getOutputData()==nullptr){
+    ge::core::printError(GE_CORE_FCENAME,"input function does not have output",fr,i,f);
+    return false;
+  }
+  if(!this->_inputBindingCheck(fr,i,f))
+    return false;
+  if(!this->_inputBindingCircularCheck(fr,f))
+    return false;
+
+  this->_unbindInput(i);
+
+  f->_addSignalingTarget(this);
+  this->_addSignalingSource(&*f);
+  f->getOutputData()->_addSignalingTarget(this);
+  this->_addSourceResource(&*f->getOutputData());
+  auto ii = this->_fce2Indices.find(f);
+  if(ii==this->_fce2Indices.end()){
+    this->_fce2Indices[f]=std::set<size_t>();
+    this->_fce2FceInput[f]=this->_inputs.at(i);
+  }
+  this->_fce2Indices.at(f).insert(i);
+  this->_inputs.at(i)->updateTicks = f->getOutputData()->getTicks() - 1;
+  this->_inputs.at(i)->function = f;
+  this->_inputs.at(i)->changed  = true;
+  this->setDirty();
+  return true;
+}
+
+bool AtomicFunction::bindInputAsVariable (
     std::shared_ptr<FunctionRegister>const&fr,
     size_t                                 i ,
     std::shared_ptr<Resource>        const&r ){
   PRINT_CALL_STACK(fr,i,r);
   assert(this!=nullptr);
+  assert(i<this->_inputs.size());
+  if(r==nullptr){
+    this->_unbindInput(i);
+    this->setDirty();
+    return true;
+  }
   if(!this->_inputBindingCheck(fr,i,r))
     return false;
-  if(!this->_inputBindingCircularCheck(fr,r))
-    return false;
-  assert(i<this->_inputs.size());
-  auto oldResource = this->_inputs.at(i)->resource;
-  if(oldResource == r)return true;
-  if(oldResource){
-    oldResource->_removeSignalingTarget(this);
-    this->_removeSourceResource(&*oldResource);
-    this->_res2Indices.at(oldResource).erase(i);
-    if(this->_res2Indices.at(oldResource).empty()){
-      this->_res2Indices.erase(oldResource);
-      this->_res2FceInput.erase(oldResource);
-    }
-  }
-  if(r){
-    r->_addSignalingTarget(this);
-    this->_addSourceResource(&*r);
-    auto ii = this->_res2Indices.find(r);
-    if(ii==this->_res2Indices.end()){
-      this->_res2Indices[r]=std::set<size_t>();
-      this->_res2FceInput[r]=this->_inputs.at(i);
-    }
-    this->_res2Indices.at(r).insert(i);
-    this->_inputs.at(i)->updateTicks = r->_ticks - 1;
-  }
+
+  this->_unbindInput(i);
+  r->_addSignalingTarget(this);
+  this->_addSourceResource(&*r);
+  this->_inputs.at(i)->updateTicks = r->getTicks() - 1;
   this->_inputs.at(i)->resource = r;
   this->_inputs.at(i)->changed  = true;
   this->setDirty();
   return true;
 }
 
+
 bool AtomicFunction::bindOutput(
     std::shared_ptr<FunctionRegister>const&fr,
     std::shared_ptr<Resource>        const&r ){
   PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
-  if(!this->_outputBindingCheck(fr,r))
-    return false;
-  if(!this->_outputBindingCircularCheck(fr,&*r))
-    return false;
-  if(this->_outputData == &*r){
-    if(r==nullptr)return true;
-    if(r->_producer)
-      if(&*r->_producer == this)return true;
-    r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
+  if(r==nullptr){
+    this->_unbindOutput();
     return true;
   }
-  if(this->_outputData){
-    this->_outputData->_removeSignalingSource(this);
-    this->_removeTargetResource(&*this->_outputData);
-  }
-  if(r){
-    this->_addTargetResource(&*r);
-    r->_addSignalingSource(this);
-    r->setProducer(std::dynamic_pointer_cast<Function>(this->shared_from_this()));
-  }
-  this->_outputData = &*r;
+  if(!this->_outputBindingCheck(fr,r))
+    return false;
+  if(!this->_outputBindingCircularCheck(fr,r))
+    return false;
+
+  this->_unbindOutput();
+
+  r->_addSignalingSource(this);
+  this->_addTargetResource(&*r);
+  this->_outputData = r;
   this->setDirty();
   return true;
 }
 
-bool AtomicFunction::bindOutputAsVariable(
-    std::shared_ptr<FunctionRegister>const&fr,
-    std::shared_ptr<Resource>        const&r ){
-  PRINT_CALL_STACK(fr,r);
+std::shared_ptr<Function>const&AtomicFunction::getInputFunction(size_t i)const{
+  PRINT_CALL_STACK(i);
   assert(this!=nullptr);
-  if(!this->_outputBindingCheck(fr,r))
-    return false;
-  //TODO r could be nullptr and *r will cause segfault
-  if(this->_outputData == &*r){
-    if(r==nullptr)return true;
-    if(!r->_producer)return true;
-    if(&*r->_producer == this)r->_producer = nullptr;
-    return true;
-  }
-  if(this->_outputData){
-    this->_outputData->_removeSignalingSource(this);
-    this->_removeTargetResource(&*this->_outputData);
-  }
-  if(r){
-    if(r->_producer)
-      if(&*r->_producer == this)r->_producer = nullptr;
-    this->_addTargetResource(&*r);
-    r->_addSignalingSource(this);
-  }
-  this->_outputData = &*r;
-  this->setDirty();
-  return true;
+  assert(i<this->_inputs.size());
+  return this->_inputs.at(i)->function;
+}
+
+bool AtomicFunction::hasInputFunction(size_t i)const{
+  PRINT_CALL_STACK(i);
+  assert(this!=nullptr);
+  assert(i<this->_inputs.size());
+  return this->_inputs.at(i)->function!=nullptr;
 }
 
 void AtomicFunction::operator()(){
@@ -161,12 +212,21 @@ bool AtomicFunction::_processInputs(){
   PRINT_CALL_STACK();
   assert(this!=nullptr);
   bool isAnyInputChanged = false;
-  for(auto const&x:this->_res2FceInput){
-    auto input = x.second;
-    (*input->resource)();
-    bool changed = input->updateTicks < input->resource->_ticks;
-    input->changed = changed;
-    input->updateTicks = input->resource->_ticks;
+  for(auto const&x:this->_fce2FceInput){
+    assert(x.second->function!=nullptr);
+    (*x.second->function)();
+  }
+  for(auto const&x:this->_inputs){
+    bool changed = false;
+    if(x->resource){
+      changed = x->updateTicks < x->resource->getTicks();
+      x->changed = changed;
+      x->updateTicks = x->resource->getTicks();
+    }else{
+      changed = x->updateTicks < x->function->getOutputData()->getTicks();
+      x->changed = changed;
+      x->updateTicks = x->function->getOutputData()->getTicks();
+    }
     isAnyInputChanged |= changed;
   }
   return isAnyInputChanged;

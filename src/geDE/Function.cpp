@@ -15,6 +15,16 @@ Function::~Function(){
 bool Function::_inputBindingCheck(
     std::shared_ptr<FunctionRegister>const&fr,
     size_t                                 i ,
+    std::shared_ptr<Function>        const&f )const{
+  assert(this!=nullptr);
+  if(f==nullptr)return true;
+  assert(f->getOutputData()!=nullptr);
+  return this->_inputBindingCheck(fr,i,f->getOutputData());
+}
+
+bool Function::_inputBindingCheck(
+    std::shared_ptr<FunctionRegister>const&fr,
+    size_t                                 i ,
     std::shared_ptr<Resource>        const&r )const{
   assert(this!=nullptr);
   assert(fr!=nullptr);
@@ -35,8 +45,8 @@ bool Function::_inputBindingCheck(
   if(tr->areConvertible(toType,fromType))return true;
   ge::core::printError(GE_CORE_FCENAME,
       std::string("in function of type: ")+tr->getTypeIdName(fr->getType(this->_id))+", "+
-      std::string("input ")+fr->getName(this->_id)+"."+nr->getFceInputName(this->_id,i)+" has different type - "+
-      tr->getTypeIdName(toType)+" != "+tr->getTypeIdName(fromType),
+      std::string("input ")+fr->getName(this->_id)+"."+nr->getFceInputName(this->_id,i)+" has different type - INPUT: "+
+      tr->getTypeIdName(toType)+" != RESOURCE: "+tr->getTypeIdName(fromType),
       fr,i,r);
   return false;
 }
@@ -53,8 +63,10 @@ bool Function::_outputBindingCheck(
   auto fromType = data->getId();
   if(tr->areConvertible(toType,fromType))return true;
   ge::core::printError(GE_CORE_FCENAME,
-      "output has different type - "+
-      tr->getTypeIdName(toType)+" != "+tr->getTypeIdName(fromType),
+      "function: "+fr->getName(this->getId())+
+      " of type: "+fr->getTypeRegister()->getTypeIdName(fr->getType(this->getId()))+
+      ", output has different type - OUTPUT: "+
+      tr->getTypeIdName(toType)+" != RESOURCE: "+tr->getTypeIdName(fromType),
       fr,data);
   return false;
 }
@@ -65,50 +77,42 @@ void Function::setSignalingDirty(){
     x->_setSignalingDirty();
 }
 
-std::shared_ptr<Function>Function::getInputFunction(size_t i)const{
-  assert(this!=nullptr);
-  assert(this->getInputData(i)!=nullptr);
-  return this->getInputData(i)->_producer;
-//  return std::const_pointer_cast<Function>(std::dynamic_pointer_cast<Function>(this->getInputData(i)->_producer->shared_from_this()));
-}
-
 bool Function::_recOutputBindingCircularCheck(
-    std::shared_ptr<FunctionRegister>const&fr,
-    std::set<Function const*>&visited,
-    Resource*resource)const{
+    std::shared_ptr<FunctionRegister>const&fr      ,
+    std::set<Function const*>             &visited ,
+    std::shared_ptr<Resource>        const&resource)const{
   assert(this!=nullptr);
   assert(fr!=nullptr);
   if(visited.count(this)!=0)return true;
   size_t n = fr->getNofInputs(this->getId());
-  for(size_t i=0;i<n;++i)
-    if(&*this->getInputData(i)==resource)return false;
+  for(size_t i=0;i<n;++i){
+    if(!this->hasInputFunction(i))continue;
+    if(this->getInputFunction(i)->getOutputData()==resource)return false;
+  }
   visited.insert(this);
   for(size_t i=0;i<n;++i){
-    auto r=this->getInputData(i);
-    if(!r)continue;
-    if(r->_producer)
-      if(!r->_producer->_recOutputBindingCircularCheck(fr,visited,resource))return false;
+    if(!this->hasInputFunction(i))continue;
+    if(!this->getInputFunction(i)->_recOutputBindingCircularCheck(fr,visited,resource))
+      return false;
   }
   return true;
 }
 
 bool Function::_inputBindingCircularCheck(
     std::shared_ptr<FunctionRegister>const&fr      ,
-    std::shared_ptr<Resource>const&resource)const{
+    std::shared_ptr<Function>        const&function)const{
   assert(this!=nullptr);
   assert(fr!=nullptr);
-  if(resource==nullptr)return true;
+  if(function==nullptr)return true;
+  assert(function->getOutputData()!=nullptr);
   auto o = this->getOutputData();
   if(o==nullptr)return true;
-  if(o->_producer==nullptr)return true;
-  if(&*o->_producer!=this)return true;
-  if(o==&*resource){
-    ge::core::printError(GE_CORE_FCENAME,"binding resource as input would result in fast circular dependence, you should use bindOutputAsVariable in some point",fr,resource);
+  if(o==function->getOutputData()){
+    ge::core::printError(GE_CORE_FCENAME,"1 binding function as input would result in fast circular dependence, you should use bindInputAsVariable in some point",fr,function);
     return false;
   }
-  if(resource->_producer==nullptr)return true;
-  if(!resource->_producer->_outputBindingCircularCheck(fr,o)){
-    ge::core::printError(GE_CORE_FCENAME,"binding resource as input would result in fast circular dependence, you should use bindOutputAsVariable in some point",fr,resource);
+  if(!function->_outputBindingCircularCheck(fr,o)){
+    ge::core::printError(GE_CORE_FCENAME,"2 binding function as input would result in fast circular dependence, you should use bindInputAsVariable in some point",fr,function);
     return false;
   }
   return true;
@@ -116,12 +120,12 @@ bool Function::_inputBindingCircularCheck(
 
 bool Function::_outputBindingCircularCheck(
     std::shared_ptr<FunctionRegister>const&fr      ,
-    Resource*resource)const{
+    std::shared_ptr<Resource>        const&resource)const{
   assert(this!=nullptr);
   if(resource==nullptr)return true;
   auto visited = std::set<Function const*>();
   if(!this->_recOutputBindingCircularCheck(fr,visited,resource)){
-    ge::core::printError(GE_CORE_FCENAME,"binding resource as output would result in fast cicular dependence, you should use bindOutputAsVariable",fr,resource);
+    ge::core::printError(GE_CORE_FCENAME,"binding resource as output would result in fast cicular dependence, you should use bindInputAsVariable in some point",fr,resource);
     return false;
   }
   return true;

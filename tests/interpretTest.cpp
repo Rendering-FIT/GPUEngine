@@ -51,65 +51,113 @@ SCENARIO("fast loop binding test","[Function]"){
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
   auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);
-  auto a0 = tr->createResource((int32_t)0);
+  auto res = tr->createResource((int32_t)0);
 
-  auto b0 = fr->sharedFunction(addOneId);
+  auto f0 = fr->sharedFunction(addOneId);
+  auto f1 = fr->sharedFunction(addOneId);
+
+  REQUIRE(f0->bindOutput(fr,res)==true);
+  REQUIRE(f0->bindInputAsVariable(fr,0,res)==true);
     //#define SHOWCERR
 #ifndef SHOWCERR
     std::stringstream oss;
     auto old = std::cerr.rdbuf( oss.rdbuf() );
 #endif
 
-  REQUIRE(b0->bindOutput(fr,a0)==true);
-  REQUIRE(b0->hasTargetResource(&*a0)==true);
-  REQUIRE(b0->nofTargetResources()==1);
-  REQUIRE(b0->nofSourceResources()==0);
-  REQUIRE(a0->hasSignalingSource(&*b0)==true);
-  REQUIRE(a0->nofSignalingSources()==1);
-  REQUIRE(a0->nofSignalingTargets()==0);
+  REQUIRE(f1->bindOutput(fr,res)==true);
+  REQUIRE(f0->nofSourceResources()==1);
+  REQUIRE(f0->nofTargetResources()==1);
+  REQUIRE(f0->nofSignalingSources()==0);
+  REQUIRE(f0->nofSignalingTargets()==0);
+  REQUIRE(f0->hasSourceResource(&*res)==true);
+  REQUIRE(f0->hasTargetResource(&*res)==true);
+  REQUIRE(f1->nofSourceResources()==0);
+  REQUIRE(f1->nofTargetResources()==1);
+  REQUIRE(f1->nofSignalingSources()==0);
+  REQUIRE(f1->nofSignalingTargets()==0);
+  REQUIRE(f1->hasTargetResource(&*res)==true);
+  REQUIRE(res->nofSignalingSources()==2);
+  REQUIRE(res->nofSignalingTargets()==1);
+  REQUIRE(res->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->hasSignalingSource(&*f1)==true);
+  REQUIRE(res->hasSignalingTarget(&*f0)==true);
 
-  REQUIRE(b0->bindInput(fr,0,a0)==false);
-  REQUIRE(b0->hasTargetResource(&*a0)==true);
-  REQUIRE(b0->nofTargetResources()==1);
-  REQUIRE(b0->nofSourceResources()==0);
-  REQUIRE(a0->hasSignalingSource(&*b0)==true);
-  REQUIRE(a0->nofSignalingSources()==1);
-  REQUIRE(a0->nofSignalingTargets()==0);
+  REQUIRE(f1->bindInput(fr,0,f0)==false);
+  REQUIRE(f0->nofSourceResources()==1);
+  REQUIRE(f0->nofTargetResources()==1);
+  REQUIRE(f0->nofSignalingSources()==0);
+  REQUIRE(f0->nofSignalingTargets()==0);
+  REQUIRE(f0->hasSourceResource(&*res)==true);
+  REQUIRE(f0->hasTargetResource(&*res)==true);
+  REQUIRE(f1->nofSourceResources()==0);
+  REQUIRE(f1->nofTargetResources()==1);
+  REQUIRE(f1->nofSignalingSources()==0);
+  REQUIRE(f1->nofSignalingTargets()==0);
+  REQUIRE(f1->hasTargetResource(&*res)==true);
+  REQUIRE(res->nofSignalingSources()==2);
+  REQUIRE(res->nofSignalingTargets()==1);
+  REQUIRE(res->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->hasSignalingSource(&*f1)==true);
+  REQUIRE(res->hasSignalingTarget(&*f0)==true);
 
 
-  REQUIRE(b0->bindOutput(fr,nullptr)==true);
-  REQUIRE(b0->nofTargetResources()==0);
-  REQUIRE(b0->nofSourceResources()==0);
-  REQUIRE(a0->nofSignalingSources()==0);
-  REQUIRE(a0->nofSignalingTargets()==0);
+  REQUIRE(f1->bindOutput(fr,nullptr)==true);
+  REQUIRE(f0->nofSourceResources()==1);
+  REQUIRE(f0->nofTargetResources()==1);
+  REQUIRE(f0->nofSignalingSources()==0);
+  REQUIRE(f0->nofSignalingTargets()==0);
+  REQUIRE(f0->hasSourceResource(&*res)==true);
+  REQUIRE(f0->hasTargetResource(&*res)==true);
+  REQUIRE(f1->nofSourceResources()==0);
+  REQUIRE(f1->nofTargetResources()==0);
+  REQUIRE(f1->nofSignalingSources()==0);
+  REQUIRE(f1->nofSignalingTargets()==0);
+  REQUIRE(res->nofSignalingSources()==1);
+  REQUIRE(res->nofSignalingTargets()==1);
+  REQUIRE(res->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->hasSignalingTarget(&*f0)==true);
 
 
-  REQUIRE(b0->bindInput(fr,0,a0)==true);
-  REQUIRE(b0->hasSourceResource(&*a0)==true);
-  REQUIRE(b0->nofTargetResources()==0);
-  REQUIRE(b0->nofSourceResources()==1);
-  REQUIRE(a0->hasSignalingTarget(&*b0)==true);
-  REQUIRE(a0->nofSignalingSources()==0);
-  REQUIRE(a0->nofSignalingTargets()==1);
+  REQUIRE(f1->bindInput(fr,0,f0)==true);
+  REQUIRE(f0->nofSourceResources()==1);
+  REQUIRE(f0->nofTargetResources()==1);
+  REQUIRE(f0->nofSignalingSources()==0);
+  REQUIRE(f0->nofSignalingTargets()==1);
+  REQUIRE(f0->hasSourceResource(&*res)==true);
+  REQUIRE(f0->hasTargetResource(&*res)==true);
+  REQUIRE(f0->hasSignalingTarget(&*f1)==true);
+  REQUIRE(f1->nofSourceResources()==1);
+  REQUIRE(f1->nofTargetResources()==0);
+  REQUIRE(f1->nofSignalingSources()==1);
+  REQUIRE(f1->nofSignalingTargets()==0);
+  REQUIRE(f1->hasSourceResource(&*res)==true);
+  REQUIRE(f1->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->nofSignalingSources()==1);
+  REQUIRE(res->nofSignalingTargets()==2);
+  REQUIRE(res->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->hasSignalingTarget(&*f0)==true);
+  REQUIRE(res->hasSignalingTarget(&*f1)==true);
 
 
-  REQUIRE(b0->bindOutput(fr,a0)==false);
-  REQUIRE(b0->hasSourceResource(&*a0)==true);
-  REQUIRE(b0->nofTargetResources()==0);
-  REQUIRE(b0->nofSourceResources()==1);
-  REQUIRE(a0->hasSignalingTarget(&*b0)==true);
-  REQUIRE(a0->nofSignalingSources()==0);
-  REQUIRE(a0->nofSignalingTargets()==1);
-
-  REQUIRE(b0->bindOutputAsVariable(fr,a0)==true);
-  REQUIRE(b0->hasSourceResource(&*a0)==true);
-  REQUIRE(b0->hasTargetResource(&*a0)==true);
-  REQUIRE(b0->nofTargetResources()==1);
-  REQUIRE(b0->nofSourceResources()==1);
-  REQUIRE(a0->hasSignalingSource(&*b0)==true);
-  REQUIRE(a0->hasSignalingTarget(&*b0)==true);
-  REQUIRE(a0->nofSignalingSources()==1);
-  REQUIRE(a0->nofSignalingTargets()==1);
+  REQUIRE(f1->bindOutput(fr,res)==false);
+  REQUIRE(f0->nofSourceResources()==1);
+  REQUIRE(f0->nofTargetResources()==1);
+  REQUIRE(f0->nofSignalingSources()==0);
+  REQUIRE(f0->nofSignalingTargets()==1);
+  REQUIRE(f0->hasSourceResource(&*res)==true);
+  REQUIRE(f0->hasTargetResource(&*res)==true);
+  REQUIRE(f0->hasSignalingTarget(&*f1)==true);
+  REQUIRE(f1->nofSourceResources()==1);
+  REQUIRE(f1->nofTargetResources()==0);
+  REQUIRE(f1->nofSignalingSources()==1);
+  REQUIRE(f1->nofSignalingTargets()==0);
+  REQUIRE(f1->hasSourceResource(&*res)==true);
+  REQUIRE(f1->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->nofSignalingSources()==1);
+  REQUIRE(res->nofSignalingTargets()==2);
+  REQUIRE(res->hasSignalingSource(&*f0)==true);
+  REQUIRE(res->hasSignalingTarget(&*f0)==true);
+  REQUIRE(res->hasSignalingTarget(&*f1)==true);
 
 #ifndef SHOWCERR
     std::cerr.rdbuf(old);
@@ -122,42 +170,43 @@ SCENARIO("basic dirty flag tests","[Function]"){
   auto nr = std::make_shared<NameRegister>();
   auto fr = std::make_shared<ge::de::FunctionRegister>(tr,nr);
   ge::de::registerStdFunctions(fr);
-  auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);//[](int32_t i)->int32_t{return i+1;});//addOne);
-  auto a0 = tr->createResource((int32_t)0);//sharedResource(tr->getTypeId(keyword<int32_t>()));
-  //std::make_shared<ge::de::Nullary>(fr,(int32_t)0);
-  auto b0 = fr->sharedFunction(addOneId);
-  b0->bindInput(fr,0,a0);
+  auto addOneId = ge::de::registerBasicFunction(fr,"addOne",addOne);
 
-  b0->bindOutput(fr,tr->sharedResource("i32"));
+  {
+    auto f = fr->sharedFunction(addOneId);
+    f->bindInputAsVariable(fr,0,tr->createResource((int32_t)0));
+    f->bindOutput(fr,tr->sharedResource("i32"));
+    REQUIRE(f->isDirty()==true);
+    (*f)();
+    REQUIRE(f->isDirty()==false);
+  }
 
-  REQUIRE(b0->isDirty()==true);
-  (*b0)();
-  REQUIRE(b0->isDirty()==false);
+  {
+    auto f = fr->sharedFunction(addOneId);
+    f->bindOutput(fr,tr->createResource((int32_t)0));
+    f->bindInputAsVariable(fr,0,f->getOutputData());
+    REQUIRE(f->isDirty()==true);
+    (*f)();
+    REQUIRE(f->isDirty()==true);
+  }
 
-  auto a1 = tr->createResource((int32_t)0);//tr->getTypeId(keyword<int32_t>()));
-  auto b1 = fr->sharedFunction(addOneId);
-  b1->bindInput(fr,0,a1);
-  b1->bindOutputAsVariable(fr,a1);
+  {
+  auto res = tr->createResource((int32_t)0);
+  auto f0 = fr->sharedFunction(addOneId);
+  f0->bindInputAsVariable(fr,0,res);
+  f0->bindOutput(fr,res);
+  auto f1 = std::make_shared<ge::de::Assignment<int32_t>>(fr);
+  f1->bindInputAsVariable(fr,0,res);
+  f1->bindOutput(fr,tr->sharedResource("i32"));
 
-  REQUIRE(b1->isDirty()==true);
-  (*b1)();
-  REQUIRE(b1->isDirty()==true);
+  REQUIRE(f0->isDirty()==true);
+  REQUIRE(f1->isDirty()==true);
 
-  auto a2 = tr->createResource((int32_t)0);
-  auto b2 = fr->sharedFunction(addOneId);
-  b2->bindInput(fr,0,a2);
-  b2->bindOutputAsVariable(fr,a2);
-  auto c2 = std::make_shared<ge::de::Assignment<int32_t>>(fr);
-  c2->bindInput(fr,0,a2);
-  c2->bindOutput(fr,tr->sharedResource("i32"));
+  (*f1)();
 
-  REQUIRE(b2->isDirty()==true);
-  REQUIRE(c2->isDirty()==true);
-
-  (*c2)();
-
-  REQUIRE(b2->isDirty()==true );
-  REQUIRE(c2->isDirty()==false);
+  REQUIRE(f0->isDirty()==true );
+  REQUIRE(f1->isDirty()==false);
+  }
 }
 
 SCENARIO( "basic interpret tests", "[Function]" ) {
@@ -168,32 +217,34 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
   ge::de::registerStdFunctions(fr);
   //std::cerr<<fr->str();
   GIVEN( "basic expression" ) {
-    auto fa=tr->createResource(101.f );
-    auto fb=tr->createResource(1.1f  );
-    auto fc=tr->createResource(2.2f  );
-    auto fd=tr->createResource(1000.f);
+    float avalue = 101.f;
+    float bvalue = 1.1f;
+    float cvalue = 2.2;
+    float dvalue = 1000.f;
+    auto fa=tr->createResource(avalue);
+    auto fb=tr->createResource(bvalue);
+    auto fc=tr->createResource(cvalue);
+    auto fd=tr->createResource(dvalue);
 
     //f0 = fa + fb
     //f1 = f0 + fc
     //f2 = f0 + fd
     //f3 = (int)f2
     auto f0=std::make_shared<ge::de::Add<float>>(fr);
-    auto f0o = tr->sharedResource("f32");
-    f0->bindOutput(fr,f0o);
-    f0->bindInput(fr,0,fa);
-    f0->bindInput(fr,1,fb);
+    f0->bindOutput(fr,tr->sharedResource("f32"));
+    f0->bindInputAsVariable(fr,0,fa);
+    f0->bindInputAsVariable(fr,1,fb);
     auto f1=std::make_shared<ge::de::Add<float>>(fr);
     f1->bindOutput(fr,tr->sharedResource("f32"));
-    f1->bindInput(fr,0,f0o);
-    f1->bindInput(fr,1,fc);
+    f1->bindInput(fr,0,f0);
+    f1->bindInputAsVariable(fr,1,fc);
     auto f2=std::make_shared<ge::de::Sub<float>>(fr);
-    auto f2o = tr->sharedResource("f32");
-    f2->bindOutput(fr,f2o);
-    f2->bindInput(fr,0,f0o);
-    f2->bindInput(fr,1,fd);
+    f2->bindOutput(fr,tr->sharedResource("f32"));
+    f2->bindInput(fr,0,f0);
+    f2->bindInputAsVariable(fr,1,fd);
     auto f3=std::make_shared<ge::de::Cast<float,int>>(fr);
     f3->bindOutput(fr,tr->sharedResource("i32"));
-    f3->bindInput(fr,0,f2o);
+    f3->bindInput(fr,0,f2);
     WHEN("running f1"){
       REQUIRE(f0->isDirty()==true);
       REQUIRE(f1->isDirty()==true);
@@ -201,7 +252,8 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
       REQUIRE(f0->isDirty()==false);
       REQUIRE(f1->isDirty()==false);
       THEN( "output of f1 should be computed correctly" ) {
-        REQUIRE((float)(*f1->getOutputData())==((101.f+1.1f)+2.2f));
+        REQUIRE((float)(*f0->getOutputData())==(avalue+bvalue));
+        REQUIRE((float)(*f1->getOutputData())==((avalue+bvalue)+2.2f));
       }
     }
     WHEN("running f2"){
@@ -209,7 +261,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
       (*f2)();
       REQUIRE(f2->isDirty()==false);
       THEN( "output of f2 should be computed correctly"){
-        REQUIRE((float)(*f2->getOutputData())==((101.f+1.1f)-1000.f));
+        REQUIRE((float)(*f2->getOutputData())==((avalue+bvalue)-dvalue));
       }
     }
     WHEN("running f3"){
@@ -217,7 +269,7 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
       (*f3)();
       REQUIRE(f3->isDirty()==false);
       THEN("output of f3 should be computed correctly"){
-        REQUIRE((int)(*f3->getOutputData())==(int)((101.f+1.1f)-1000.f));
+        REQUIRE((int)(*f3->getOutputData())==(int)((avalue+bvalue)-dvalue));
       }
     }
   }
@@ -238,16 +290,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr);
     cond->bindOutput(fr,tr->sharedResource("bool"));
-    cond->bindInput(fr,0,fa);
-    cond->bindInput(fr,1,fb);
+    cond->bindInputAsVariable(fr,0,fa);
+    cond->bindInputAsVariable(fr,1,fb);
 
     auto trueBody = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    trueBody->bindOutputAsVariable(fr,fc);
-    trueBody->bindInput(fr,0,fa);
+    trueBody->bindOutput(fr,fc);
+    trueBody->bindInputAsVariable(fr,0,fa);
 
     auto falseBody = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    falseBody->bindOutputAsVariable(fr,fc);
-    falseBody->bindInput(fr,0,fb);
+    falseBody->bindOutput(fr,fc);
+    falseBody->bindInputAsVariable(fr,0,fb);
 
     auto iff=std::make_shared<ge::de::If>(cond,trueBody,falseBody);
 
@@ -305,32 +357,30 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
 
     auto cond=std::make_shared<ge::de::Less<uint32_t>>(fr);
     cond->bindOutput(fr,tr->sharedResource("bool"));
-    cond->bindInput(fr,0,fi   );
-    cond->bindInput(fr,1,fiend);
+    cond->bindInputAsVariable(fr,0,fi   );
+    cond->bindInputAsVariable(fr,1,fiend);
 
     auto mult=std::make_shared<ge::de::Mul<uint32_t>>(fr);
-    mult->bindInput(fr,0,fk);
-    mult->bindInput(fr,1,fi);
-    auto multo = tr->sharedResource("u32");
-    mult->bindOutput(fr,multo);
+    mult->bindInputAsVariable(fr,0,fk);
+    mult->bindInputAsVariable(fr,1,fi);
+    mult->bindOutput(fr,tr->sharedResource("u32"));
     //mult->bindOutput(fr,fki);
     //mult->bindOutput(fr,fki->getOutputData());
 
     auto ass0 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    ass0->bindInput(fr,0,multo);//fki);
-    ass0->bindOutputAsVariable(fr,fk);
+    ass0->bindInput(fr,0,mult);//fki);
+    ass0->bindOutput(fr,fk);
     //ass0->bindOutput(fr,fk->getOutputData());
 
     auto add=std::make_shared<ge::de::Add<uint32_t>>(fr);
-    add->bindInput(fr,0,fi);
-    add->bindInput(fr,1,f1);
-    auto addo = tr->sharedResource("u32");
-    add->bindOutput(fr,addo);//fi1);
+    add->bindInputAsVariable(fr,0,fi);
+    add->bindInputAsVariable(fr,1,f1);
+    add->bindOutput(fr,tr->sharedResource("u32"));//fi1);
     //add->bindOutput(fr,fi1->getOutputData());
 
     auto ass1 = std::make_shared<ge::de::Assignment<uint32_t>>(fr);
-    ass1->bindInput(fr,0,addo);//fi1);
-    ass1->bindOutputAsVariable(fr,fi);
+    ass1->bindInput(fr,0,add);//fi1);
+    ass1->bindOutput(fr,fi);
     //ass1->bindOutput(fr,fi->getOutputData());
 
     auto body=std::make_shared<ge::de::Body>();
@@ -368,14 +418,16 @@ SCENARIO( "basic interpret tests", "[Function]" ) {
     REQUIRE(add->hasSourceResource(&*fi)==true);
     REQUIRE(add->nofTargetResources()==1);
     REQUIRE(add->nofSourceResources()==2);
-    REQUIRE(add->nofSignalingTargets()==0);
+    REQUIRE(add->nofSignalingTargets()==1);
+    REQUIRE(add->hasSignalingTarget(&*ass1)==true);
 
     REQUIRE(mult->hasTargetResource(&*ass0->getInputData(0))==true);
     REQUIRE(mult->hasSourceResource(&*fi)==true);
     REQUIRE(mult->hasSourceResource(&*fk)==true);
     REQUIRE(mult->nofTargetResources()==1);
     REQUIRE(mult->nofSourceResources()==2);
-    REQUIRE(mult->nofSignalingTargets()==0);
+    REQUIRE(mult->nofSignalingTargets()==1);
+    REQUIRE(mult->hasSignalingTarget(&*ass0)==true);
 
     REQUIRE(f1->hasSignalingTarget(&*add)==true);
     REQUIRE(f1->nofSignalingTargets()==1);
@@ -561,11 +613,10 @@ SCENARIO( "ticks tests", "[Function]" ) {
     auto faddten = std::make_shared<AddTen>(fr);
     auto fadd    = std::make_shared<Add>(fr);
 
-    faddten->bindInput(fr,0,fa);
-    auto faddteno = tr->sharedResource("f32");
-    faddten->bindOutput(fr,faddteno);
-    fadd->bindInput(fr,0,faddteno);
-    fadd->bindInput(fr,1,faddteno);
+    faddten->bindInputAsVariable(fr,0,fa);
+    faddten->bindOutput(fr,tr->sharedResource("f32"));
+    fadd->bindInput(fr,0,faddten);
+    fadd->bindInput(fr,1,faddten);
     fadd->bindOutput(fr,tr->sharedResource("f32"));
 
     WHEN("running fadd"){
