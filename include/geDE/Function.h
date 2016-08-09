@@ -42,7 +42,6 @@ namespace ge{
         virtual std::shared_ptr<Function>toFunction()const override;
         virtual void setSignalingDirty()override;
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const = 0;
-        virtual bool hasInputFunction(size_t i)const = 0;
         bool hasTargetResource(Resource*r)const;
         bool hasSourceResource(Resource*r)const;
         size_t nofTargetResources()const;

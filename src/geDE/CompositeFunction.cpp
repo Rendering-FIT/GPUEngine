@@ -118,16 +118,6 @@ std::shared_ptr<Function>const&CompositeFunction::getInputFunction(size_t i)cons
   return std::get<FUNCTION>(mapping)->getInputFunction(std::get<INPUT>(mapping));
 }
 
-bool CompositeFunction::hasInputFunction(size_t i)const{
-  PRINT_CALL_STACK();
-  assert(this!=nullptr);
-  assert(i<this->_inputMapping.size());
-  assert(this->_inputMapping.at(i).size()>0);
-  FceInput const&mapping = this->_inputMapping.at(i).at(0);
-  assert(std::get<FUNCTION>(mapping)!=nullptr);
-  return std::get<FUNCTION>(mapping)->hasInputFunction(std::get<INPUT>(mapping));
-}
-
 void CompositeFunction::_addSignalingTarget(Statement*statement){
   PRINT_CALL_STACK(statement);
   assert(this!=nullptr);

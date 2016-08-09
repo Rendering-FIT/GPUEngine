@@ -177,13 +177,6 @@ std::shared_ptr<Function>const&AtomicFunction::getInputFunction(size_t i)const{
   return this->_inputs.at(i).function;
 }
 
-bool AtomicFunction::hasInputFunction(size_t i)const{
-  PRINT_CALL_STACK(i);
-  assert(this!=nullptr);
-  assert(i<this->_inputs.size());
-  return this->_inputs.at(i).function!=nullptr;
-}
-
 void AtomicFunction::operator()(){
   PRINT_CALL_STACK();
   assert(this!=nullptr);

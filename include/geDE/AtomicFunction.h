@@ -52,7 +52,6 @@ namespace ge{
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData()const override;
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
-        virtual bool hasInputFunction(size_t i)const override;
       protected:
         std::vector<AtomicFunctionInput>_inputs;
         std::map<std::shared_ptr<Function>,size_t>_fces;

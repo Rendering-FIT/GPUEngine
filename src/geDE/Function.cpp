@@ -86,13 +86,15 @@ bool Function::_recOutputBindingCircularCheck(
   if(visited.count(this)!=0)return true;
   size_t n = fr->getNofInputs(this->getId());
   for(size_t i=0;i<n;++i){
-    if(!this->hasInputFunction(i))continue;
-    if(this->getInputFunction(i)->getOutputData()==resource)return false;
+    auto fce = this->getInputFunction(i);
+    if(!fce)continue;
+    if(fce->getOutputData()==resource)return false;
   }
   visited.insert(this);
   for(size_t i=0;i<n;++i){
-    if(!this->hasInputFunction(i))continue;
-    if(!this->getInputFunction(i)->_recOutputBindingCircularCheck(fr,visited,resource))
+    auto fce = this->getInputFunction(i);
+    if(!fce)continue;
+    if(!fce->_recOutputBindingCircularCheck(fr,visited,resource))
       return false;
   }
   return true;
