@@ -23,21 +23,12 @@ namespace ge{
         ~Assignment(){
           PRINT_CALL_STACK();
         }
-        /*virtual void operator()(){
-          if(!this->_dirtyFlag)return;
-
-          this->_dirtyFlag = false;
-          (TYPE&)(*this->getOutputData()) = (TYPE&)(*this->getInputData(0));
-          this->setSignalingDirty();
-          this->_updateTicks++;
-        }*/
         virtual bool _do(){
           PRINT_CALL_STACK();
           assert(this!=nullptr);
           assert(this->getOutputData()!=nullptr);
           assert(this->getInputData(0)!=nullptr);
           (TYPE&)(*this->getOutputData()) = (TYPE&)(*this->getInputData(0));
-          //this->getOutputData()->updateTicks();
           return true;
         }
     };
@@ -315,25 +306,6 @@ namespace ge{
     }
 
 
-#define BINARY_FUNTION_DESCRIPTION(TR,OUTPUT,INPUT1,INPUT2){\
-  TypeRegister::FCE,\
-  TR->getTypeId(keyword<OUTPUT>()),\
-  2,\
-  TR->getTypeId(keyword<INPUT1>()),\
-  TR->getTypeId(keyword<INPUT2>())}
-
-#define UNARY_FUNTION_DESCRIPTION(TR,OUTPUT,INPUT1){\
-  TypeRegister::FCE,\
-  TR->getTypeId(keyword<OUTPUT>()),\
-  1,\
-  TR->getTypeId(keyword<INPUT1>())}
-
-#define CAST_FUNCTION_DESCRIPTION(TR,FROM,TO){\
-  TypeRegister::FCE,\
-  TR->getTypeId(keyword<TO>()),\
-  1,\
-  TR->getTypeId(keyword<FROM>())}
-
 #define ADD_BINARY_FUNCTION(OUTPUT,INPUT1,INPUT2,NAME,FACTORY)\
   fr->addFunction(tr->addType<OUTPUT(INPUT1,INPUT2)>(),NAME,FACTORY);
 
@@ -348,8 +320,6 @@ namespace ge{
 
 #define ADD_UNARY_FUNCTION_SIMPLE(CLASS,TYPE)\
     ADD_UNARY_FUNCTION(TYPE,TYPE,keyword<CLASS<TYPE>>(),factoryOfFunctionFactory<CLASS<TYPE>>(keyword<CLASS<TYPE>>()))
-
-    //{TypeRegister::FCE,TypeRegister::getTypeDescription<TO>(),1,TypeRegister::getTypeDescription<FROM>()}
 
 #define ADD_CAST_FUNCTION(FROM,TO)\
   fr->addFunction(tr->addType<TO(FROM)>(),keyword<Cast<FROM,TO>>(),factoryOfFunctionFactory<Cast<FROM,TO>>(keyword<Cast<FROM,TO>>()));
