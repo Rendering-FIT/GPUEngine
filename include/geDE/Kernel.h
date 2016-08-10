@@ -13,6 +13,7 @@
 #include<geDE/CompositeFunctionFactory.h>
 #include<geDE/CompositeFunction.h>
 #include<geDE/ResourceFactory.h>
+#include<geDE/RegisterBasicFunction.h>
 
 namespace ge{
   namespace de{
