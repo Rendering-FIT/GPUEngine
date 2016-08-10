@@ -3,11 +3,11 @@
 using namespace ge::rg;
 
 
-thread_local std::shared_ptr<ge::gl::ProgramObject> FlexibleUseProgram::NoExport::_activeProgram;
+thread_local std::shared_ptr<ge::gl::Program> FlexibleUseProgram::NoExport::_activeProgram;
 
 
 void FlexibleUseProgram::operator()()
 {
-   inherited::operator()();
-   NoExport::_activeProgram=inherited::program;
+   _program->use();
+   NoExport::_activeProgram=_program;
 }

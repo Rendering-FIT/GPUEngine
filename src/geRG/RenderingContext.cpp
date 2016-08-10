@@ -4,18 +4,17 @@
 #include <sstream>
 #include <geRG/RenderingContext.h>
 #include <geRG/AttribStorage.h>
-#include <geRG/FlexibleUniform.h>
 #include <geRG/MatrixList.h>
 #include <geRG/Mesh.h>
 #include <geRG/StateSet.h>
 #include <geRG/StateSetManager.h>
 #include <geRG/Transformation.h>
-#include <geGL/BufferObject.h>
-#include <geGL/ProgramObject.h>
+#include <geGL/Buffer.h>
+#include <geGL/Program.h>
 
+using namespace std;
 using namespace ge::rg;
 using namespace ge::gl;
-using namespace std;
 
 thread_local RenderingContext::AutoInitRenderingContext RenderingContext::NoExport::_currentContext;
 
@@ -98,28 +97,28 @@ RenderingContext::RenderingContext()
    // - id 1 - numItems set to 1, index to 0 (single allocation on the beginning of buffer)
    _primitiveStorage.alloc(1,*static_cast<Mesh*>(nullptr));
    PrimitiveGpuData *psData=static_cast<PrimitiveGpuData*>(
-         _primitiveStorage.bufferObject()->map(0,sizeof(PrimitiveGpuData),GL_MAP_WRITE_BIT));
+         _primitiveStorage.buffer()->map(0,sizeof(PrimitiveGpuData),GL_MAP_WRITE_BIT));
    psData->countAndIndexedFlag=0;
    psData->first=0;
    psData->vertexOffset=0;
-   _primitiveStorage.bufferObject()->unmap();
+   _primitiveStorage.buffer()->unmap();
 #endif
 
    // drawCommandStorage - item-based
    // null object on id 0: all members points to zero objects
    DrawCommandGpuData *dcData=static_cast<DrawCommandGpuData*>(
-         _drawCommandStorage.bufferObject()->map(0,sizeof(DrawCommandGpuData),GL_MAP_WRITE_BIT));
+         _drawCommandStorage.buffer()->map(0,sizeof(DrawCommandGpuData),GL_MAP_WRITE_BIT));
    dcData->primitiveSetOffset4=0;
    dcData->matrixListControlOffset4=0;
    dcData->stateSetOffset4=0;
-   _drawCommandStorage.bufferObject()->unmap();
+   _drawCommandStorage.buffer()->unmap();
 
    // matrixStorage - array-based
    // null objects:
    // - id 0 - numItems set to 1 (one identity matrix)
-   float *p1=static_cast<float*>(_matrixStorage.bufferObject()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+   float *p1=static_cast<float*>(_matrixStorage.buffer()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
    memcpy(p1,identityMatrix,sizeof(float)*16);
-   _matrixStorage.bufferObject()->unmap();
+   _matrixStorage.buffer()->unmap();
 #if 0
    // - id 0 - numItems set to zero (no buffer space)
    // - id 1 - numItems set to 1, index to 0 pointing to identity matrix
@@ -130,17 +129,17 @@ RenderingContext::RenderingContext()
    // null object on id 0: startIndex set to 0 (points to identity matrix),
    // numItems to zero (e.g. empty list)
    ListControlGpuData *maData=static_cast<ListControlGpuData*>(
-         _matrixListControlStorage.bufferObject()->map(0,sizeof(ListControlGpuData),GL_MAP_WRITE_BIT));
+         _matrixListControlStorage.buffer()->map(0,sizeof(ListControlGpuData),GL_MAP_WRITE_BIT));
    maData->startIndex=0;
    maData->numItems=0;
-   _matrixListControlStorage.bufferObject()->unmap();
+   _matrixListControlStorage.buffer()->unmap();
 
    // stateSetStorage - item-based
    // null object, id 0: points to the zero index in _drawIndirectBuffer
    StateSetGpuData *ssData=static_cast<StateSetGpuData*>(
-         _stateSetStorage.bufferObject()->map(0,sizeof(StateSetGpuData),GL_MAP_WRITE_BIT));
+         _stateSetStorage.buffer()->map(0,sizeof(StateSetGpuData),GL_MAP_WRITE_BIT));
    ssData->drawIndirectBufferOffset=0;
-   _stateSetStorage.bufferObject()->unmap();
+   _stateSetStorage.buffer()->unmap();
 
    // cpuTransformationBuffer + transformationAllocationManager - item-based
    // null object, id 0: points to identity matrix
@@ -149,7 +148,7 @@ RenderingContext::RenderingContext()
 
    // drawIndirectBuffer
    // written by compute shader by processing drawCommandBuffer
-   _drawIndirectBuffer=new BufferObject(initialDrawIndirectBufferSize,nullptr,GL_DYNAMIC_COPY);
+   _drawIndirectBuffer=make_shared<Buffer>(initialDrawIndirectBufferSize,nullptr,GL_DYNAMIC_COPY);
 }
 
 
@@ -179,7 +178,6 @@ RenderingContext::~RenderingContext()
    //_instancingMatrixAllocationManager.assertEmpty();
 
    // delete buffers
-   delete _drawIndirectBuffer;
    //delete _transformationBuffer;
    delete[] _cpuTransformationBuffer;
 }
@@ -231,7 +229,7 @@ void RenderingContext::onAttribStorageRelease(AttribStorage*)
 }
 
 
-void* RenderingContext::mapBuffer(BufferObject *buffer,
+void* RenderingContext::mapBuffer(Buffer *buffer,
                                   MappedBufferAccess requestedAccess,
                                   void* &mappedBufferPtr,
                                   MappedBufferAccess &grantedAccess)
@@ -250,7 +248,7 @@ void* RenderingContext::mapBuffer(BufferObject *buffer,
 }
 
 
-void RenderingContext::unmapBuffer(ge::gl::BufferObject *buffer,
+void RenderingContext::unmapBuffer(ge::gl::Buffer *buffer,
                                    void* &mappedBufferPtr,
                                    MappedBufferAccess &currentAccess)
 {
@@ -610,471 +608,471 @@ void RenderingContext::handleContextLost()
 }
 
 
-const shared_ptr<ProgramObject>& RenderingContext::getProcessDrawCommandsProgram() const
+const shared_ptr<Program>& RenderingContext::getProcessDrawCommandsProgram() const
 {
    if(!_processDrawCommandsProgram)
-      const_cast<RenderingContext*>(this)->_processDrawCommandsProgram=make_shared<ProgramObject>(
-         GL_COMPUTE_SHADER,
-         "#version 430\n"
-         "\n"
-         "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
-         "\n"
-         "layout(std430,binding=0) restrict readonly buffer PrimitiveBuffer {\n"
-         "   uint primitiveBuffer[];\n"
-         "};\n"
-         "layout(std430,binding=1) restrict readonly buffer DrawCommandBuffer {\n"
-         "   uint drawCommandBuffer[];\n"
-         "};\n"
-         "layout(std430,binding=2) restrict readonly buffer MatrixListControlBuffer {\n"
-         "   uint matrixListControlBuffer[];\n"
-         "};\n"
-         "layout(std430,binding=3) restrict writeonly buffer DrawIndirectBuffer {\n"
-         "   uint drawIndirectBuffer[];\n"
-         "};\n"
-         "layout(std430,binding=4) restrict buffer StateSetBuffer {\n"
-         "   uint stateSetBuffer[];\n"
-         "};\n"
-         "\n"
-         "uniform uint numToProcess;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
-         "      return;\n"
-         "\n"
-         "   // draw command buffer data\n"
-         "   uint drawCommandOffset4=gl_GlobalInvocationID.x*3;\n"
-         "   uint primitiveOffset4=drawCommandBuffer[drawCommandOffset4+0];\n"
-         "   uint matrixControlOffset4=drawCommandBuffer[drawCommandOffset4+1];\n"
-         "   uint stateSetDataOffset4=drawCommandBuffer[drawCommandOffset4+2];\n"
-         "\n"
-         "   // matrix control data\n"
-         "   uint matrixListOffset64=matrixListControlBuffer[matrixControlOffset4+0];\n"
-         "   uint numMatrices=matrixListControlBuffer[matrixControlOffset4+1];\n"
-         "\n"
-         "   // compute increment and get indirectBufferOffset\n"
-         "   uint countAndIndexedFlag=primitiveBuffer[primitiveOffset4+0];\n"
-         "   uint indirectBufferIncrement=4+bitfieldExtract(countAndIndexedFlag,31,1); // make increment 4 or 5\n"
-         "   uint indirectBufferOffset4=atomicAdd(stateSetBuffer[stateSetDataOffset4],indirectBufferIncrement);\n"
-         "\n"
-         "   // write indirect buffer data\n"
-         "   drawIndirectBuffer[indirectBufferOffset4]=countAndIndexedFlag&0x7fffffff; // indexCount or vertexCount\n"
-         "   indirectBufferOffset4++;\n"
-         "   drawIndirectBuffer[indirectBufferOffset4]=numMatrices; // instanceCount\n"
-         "   indirectBufferOffset4++;\n"
-         "   uint first=primitiveBuffer[primitiveOffset4+1]; // firstIndex or firstVertex\n"
-         "   uint vertexOffset=primitiveBuffer[primitiveOffset4+2]; // vertexOffset\n"
-         "   if(countAndIndexedFlag>=0x80000000) {\n"
-         "      drawIndirectBuffer[indirectBufferOffset4]=first; // firstIndex\n"
-         "      indirectBufferOffset4++;\n"
-         "      drawIndirectBuffer[indirectBufferOffset4]=vertexOffset; // vertexOffset\n"
-         "      indirectBufferOffset4++;\n"
-         "   } else {\n"
-         "      drawIndirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
-         "      indirectBufferOffset4++;\n"
-         "   }\n"
-         "   drawIndirectBuffer[indirectBufferOffset4]=matrixListOffset64; // base instance\n"
-         "}\n");
+      const_cast<RenderingContext*>(this)->_processDrawCommandsProgram=make_shared<Program>(
+         make_shared<Shader>(GL_COMPUTE_SHADER,
+            "#version 430\n"
+            "\n"
+            "layout(local_size_x=64,local_size_y=1,local_size_z=1) in;\n"
+            "\n"
+            "layout(std430,binding=0) restrict readonly buffer PrimitiveBuffer {\n"
+            "   uint primitiveBuffer[];\n"
+            "};\n"
+            "layout(std430,binding=1) restrict readonly buffer DrawCommandBuffer {\n"
+            "   uint drawCommandBuffer[];\n"
+            "};\n"
+            "layout(std430,binding=2) restrict readonly buffer MatrixListControlBuffer {\n"
+            "   uint matrixListControlBuffer[];\n"
+            "};\n"
+            "layout(std430,binding=3) restrict writeonly buffer DrawIndirectBuffer {\n"
+            "   uint drawIndirectBuffer[];\n"
+            "};\n"
+            "layout(std430,binding=4) restrict buffer StateSetBuffer {\n"
+            "   uint stateSetBuffer[];\n"
+            "};\n"
+            "\n"
+            "uniform uint numToProcess;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   if(gl_GlobalInvocationID.x>=numToProcess)\n"
+            "      return;\n"
+            "\n"
+            "   // draw command buffer data\n"
+            "   uint drawCommandOffset4=gl_GlobalInvocationID.x*3;\n"
+            "   uint primitiveOffset4=drawCommandBuffer[drawCommandOffset4+0];\n"
+            "   uint matrixControlOffset4=drawCommandBuffer[drawCommandOffset4+1];\n"
+            "   uint stateSetDataOffset4=drawCommandBuffer[drawCommandOffset4+2];\n"
+            "\n"
+            "   // matrix control data\n"
+            "   uint matrixListOffset64=matrixListControlBuffer[matrixControlOffset4+0];\n"
+            "   uint numMatrices=matrixListControlBuffer[matrixControlOffset4+1];\n"
+            "\n"
+            "   // compute increment and get indirectBufferOffset\n"
+            "   uint countAndIndexedFlag=primitiveBuffer[primitiveOffset4+0];\n"
+            "   uint indirectBufferIncrement=4+bitfieldExtract(countAndIndexedFlag,31,1); // make increment 4 or 5\n"
+            "   uint indirectBufferOffset4=atomicAdd(stateSetBuffer[stateSetDataOffset4],indirectBufferIncrement);\n"
+            "\n"
+            "   // write indirect buffer data\n"
+            "   drawIndirectBuffer[indirectBufferOffset4]=countAndIndexedFlag&0x7fffffff; // indexCount or vertexCount\n"
+            "   indirectBufferOffset4++;\n"
+            "   drawIndirectBuffer[indirectBufferOffset4]=numMatrices; // instanceCount\n"
+            "   indirectBufferOffset4++;\n"
+            "   uint first=primitiveBuffer[primitiveOffset4+1]; // firstIndex or firstVertex\n"
+            "   uint vertexOffset=primitiveBuffer[primitiveOffset4+2]; // vertexOffset\n"
+            "   if(countAndIndexedFlag>=0x80000000) {\n"
+            "      drawIndirectBuffer[indirectBufferOffset4]=first; // firstIndex\n"
+            "      indirectBufferOffset4++;\n"
+            "      drawIndirectBuffer[indirectBufferOffset4]=vertexOffset; // vertexOffset\n"
+            "      indirectBufferOffset4++;\n"
+            "   } else {\n"
+            "      drawIndirectBuffer[indirectBufferOffset4]=first+vertexOffset; // firstVertex\n"
+            "      indirectBufferOffset4++;\n"
+            "   }\n"
+            "   drawIndirectBuffer[indirectBufferOffset4]=matrixListOffset64; // base instance\n"
+            "}\n"));
    return _processDrawCommandsProgram;
 }
 
 
-const shared_ptr<ProgramObject>& RenderingContext::getAmbientProgram() const
+const shared_ptr<Program>& RenderingContext::getAmbientProgram() const
 {
    if(!_ambientProgram) {
-      const_cast<RenderingContext*>(this)->_ambientProgram=make_shared<ProgramObject>(
-         GL_VERTEX_SHADER,
-         static_cast<std::stringstream&>(stringstream()<<
-         "#version 430\n"
-         <<(_useARBShaderDrawParameters
-         ? "#extension GL_ARB_shader_draw_parameters : enable\n"
-           "\n"
-           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-           "   mat4 instancingMatrixBuffer[];\n"
-           "};\n"
-         : ""
-         )<<
-         "\n"
-         "layout(location=0) in vec4 position;\n"
-         "layout(location=2) in vec4 color;\n"
-         "layout(location=3) in vec2 texCoord;\n"
-         <<(_useARBShaderDrawParameters
-         ? ""
-         : "layout(location=12) in mat4 instancingMatrix;\n"
-         )<<
-         "\n"
-         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-         "   vec4 color;\n"
-         "   vec2 texCoord;\n"
-         "} o;\n"
-         "\n"
-         "uniform vec4 globalAmbientLight; // alpha must be 1\n"
-         "uniform mat4 projection;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // ambient lighting\n"
-         "   o.color=globalAmbientLight*color;\n"
-         "   o.texCoord=texCoord;\n"
-         "\n"
-         "   // vertex position\n"
-         <<(_useARBShaderDrawParameters
-         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-           "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
-         : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
-         )<<
-         "}\n").str(),
-         GL_FRAGMENT_SHADER,
-         "#version 330\n"
-         "\n"
-         "in VertexData {\n"
-         "   vec4 color;\n"
-         "   vec2 texCoord;\n"
-         "};\n"
-         "\n"
-         "layout(location=0) out vec4 fragColor;\n"
-         "\n"
-         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-         "uniform sampler2D colorTexture;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // texturing and final color\n"
-         "   if(colorTexturingMode==0) // no texturing\n"
-         "      fragColor=color;\n"
-         "   else if(colorTexturingMode==1) // modulate\n"
-         "      fragColor=color*texture(colorTexture,texCoord);\n"
-         "   else // replace\n"
-         "      fragColor=texture(colorTexture,texCoord);\n"
-         "}\n");
+      const_cast<RenderingContext*>(this)->_ambientProgram=make_shared<Program>(
+         make_shared<Shader>(GL_VERTEX_SHADER,
+            static_cast<std::stringstream&>(stringstream()<<
+            "#version 430\n"
+            <<(_useARBShaderDrawParameters
+            ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+            "\n"
+            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+            "   mat4 instancingMatrixBuffer[];\n"
+            "};\n"
+            : ""
+            )<<
+            "\n"
+            "layout(location=0) in vec4 position;\n"
+            "layout(location=2) in vec4 color;\n"
+            "layout(location=3) in vec2 texCoord;\n"
+            <<(_useARBShaderDrawParameters
+            ? ""
+            : "layout(location=12) in mat4 instancingMatrix;\n"
+            )<<
+            "\n"
+            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+            "   vec4 color;\n"
+            "   vec2 texCoord;\n"
+            "} o;\n"
+            "\n"
+            "uniform vec4 globalAmbientLight; // alpha must be 1\n"
+            "uniform mat4 projection;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   // ambient lighting\n"
+            "   o.color=globalAmbientLight*color;\n"
+            "   o.texCoord=texCoord;\n"
+            "\n"
+            "   // vertex position\n"
+            <<(_useARBShaderDrawParameters
+            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+            "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
+            : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
+            )<<
+            "}\n").str()),
+         make_shared<Shader>(GL_FRAGMENT_SHADER,
+            "#version 330\n"
+            "\n"
+            "in VertexData {\n"
+            "   vec4 color;\n"
+            "   vec2 texCoord;\n"
+            "};\n"
+            "\n"
+            "layout(location=0) out vec4 fragColor;\n"
+            "\n"
+            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+            "uniform sampler2D colorTexture;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   // texturing and final color\n"
+            "   if(colorTexturingMode==0) // no texturing\n"
+            "      fragColor=color;\n"
+            "   else if(colorTexturingMode==1) // modulate\n"
+            "      fragColor=color*texture(colorTexture,texCoord);\n"
+            "   else // replace\n"
+            "      fragColor=texture(colorTexture,texCoord);\n"
+            "}\n"));
    }
    return _ambientProgram;
 }
 
 
-const shared_ptr<ProgramObject>& RenderingContext::getAmbientUniformColorProgram() const
+const shared_ptr<Program>& RenderingContext::getAmbientUniformColorProgram() const
 {
    if(!_ambientUniformColorProgram) {
-      const_cast<RenderingContext*>(this)->_ambientUniformColorProgram=make_shared<ProgramObject>(
-         GL_VERTEX_SHADER,
-         static_cast<std::stringstream&>(stringstream()<<
-         "#version 430\n"
-         <<(_useARBShaderDrawParameters
-         ? "#extension GL_ARB_shader_draw_parameters : enable\n"
-           "\n"
-           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-           "   mat4 instancingMatrixBuffer[];\n"
-           "};\n"
-         : ""
-         )<<
-         "\n"
-         "layout(location=0) in vec4 position;\n"
-         "layout(location=3) in vec2 texCoord;\n"
-         <<(_useARBShaderDrawParameters
-         ? ""
-         : "layout(location=12) in mat4 instancingMatrix;\n"
-         )<<
-         "\n"
-         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-         "   flat vec4 color;\n"
-         "   vec2 texCoord;\n"
-         "} o;\n"
-         "\n"
-         "uniform vec4 color;\n"
-         "uniform vec4 globalAmbientLight; // alpha must be 1\n"
-         "uniform mat4 projection;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // ambient lighting\n"
-         "   o.color=globalAmbientLight*color;\n"
-         "   o.texCoord=texCoord;\n"
-         "\n"
-         "   // vertex position\n"
-         <<(_useARBShaderDrawParameters
-         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-           "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
-         : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
-         )<<
-         "}\n").str(),
-         GL_FRAGMENT_SHADER,
-         "#version 330\n"
-         "\n"
-         "in VertexData {\n"
-         "   flat vec4 color;\n"
-         "   vec2 texCoord;\n"
-         "};\n"
-         "\n"
-         "layout(location=0) out vec4 fragColor;\n"
-         "\n"
-         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-         "uniform sampler2D colorTexture;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // texturing and final color\n"
-         "   if(colorTexturingMode==0) // no texturing\n"
-         "      fragColor=color;\n"
-         "   else if(colorTexturingMode==1) // modulate\n"
-         "      fragColor=color*texture(colorTexture,texCoord);\n"
-         "   else // replace\n"
-         "      fragColor=texture(colorTexture,texCoord);\n"
-         "}\n");
+      const_cast<RenderingContext*>(this)->_ambientUniformColorProgram=make_shared<Program>(
+         make_shared<Shader>(GL_VERTEX_SHADER,
+            static_cast<std::stringstream&>(stringstream()<<
+            "#version 430\n"
+            <<(_useARBShaderDrawParameters
+            ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+            "\n"
+            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+            "   mat4 instancingMatrixBuffer[];\n"
+            "};\n"
+            : ""
+            )<<
+            "\n"
+            "layout(location=0) in vec4 position;\n"
+            "layout(location=3) in vec2 texCoord;\n"
+            <<(_useARBShaderDrawParameters
+            ? ""
+            : "layout(location=12) in mat4 instancingMatrix;\n"
+            )<<
+            "\n"
+            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+            "   flat vec4 color;\n"
+            "   vec2 texCoord;\n"
+            "} o;\n"
+            "\n"
+            "uniform vec4 color;\n"
+            "uniform vec4 globalAmbientLight; // alpha must be 1\n"
+            "uniform mat4 projection;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   // ambient lighting\n"
+            "   o.color=globalAmbientLight*color;\n"
+            "   o.texCoord=texCoord;\n"
+            "\n"
+            "   // vertex position\n"
+            <<(_useARBShaderDrawParameters
+            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+            "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
+            : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
+            )<<
+            "}\n").str()),
+         make_shared<Shader>(GL_FRAGMENT_SHADER,
+            "#version 330\n"
+            "\n"
+            "in VertexData {\n"
+            "   flat vec4 color;\n"
+            "   vec2 texCoord;\n"
+            "};\n"
+            "\n"
+            "layout(location=0) out vec4 fragColor;\n"
+            "\n"
+            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+            "uniform sampler2D colorTexture;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   // texturing and final color\n"
+            "   if(colorTexturingMode==0) // no texturing\n"
+            "      fragColor=color;\n"
+            "   else if(colorTexturingMode==1) // modulate\n"
+            "      fragColor=color*texture(colorTexture,texCoord);\n"
+            "   else // replace\n"
+            "      fragColor=texture(colorTexture,texCoord);\n"
+            "}\n"));
    }
    return _ambientUniformColorProgram;
 }
 
 
-const shared_ptr<ProgramObject>& RenderingContext::getPhongProgram() const
+const shared_ptr<Program>& RenderingContext::getPhongProgram() const
 {
    if(!_phongProgram) {
-      const_cast<RenderingContext*>(this)->_phongProgram=make_shared<ProgramObject>(
-         GL_VERTEX_SHADER,
-         static_cast<std::stringstream&>(stringstream()
-         <<(_useARBShaderDrawParameters
-         ? "#version 430\n"
-           "#extension GL_ARB_shader_draw_parameters : enable\n"
-           "\n"
-           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-           "   mat4 instancingMatrixBuffer[];\n"
-           "};\n"
-         : "#version 330\n"
-         )<<
-         "\n"
-         "layout(location=0) in vec4 position;\n"
-         "layout(location=1) in vec3 normal;\n"
-         "layout(location=2) in vec4 color;\n"
-         "layout(location=3) in vec2 texCoord;\n"
-         <<(_useARBShaderDrawParameters
-         ? ""
-         : "layout(location=12) in mat4 instancingMatrix;\n"
-         )<<
-         "\n"
-         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-         "   vec3 eyePosition;\n"
-         "   vec3 eyeNormal;\n"
-         "   vec4 color;\n"
-         "   vec2 texCoord;\n"
-         "} o;\n"
-         "\n"
-         "uniform mat4 projection;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   o.color=color;\n"
-         "   o.texCoord=texCoord;\n"
-         <<(_useARBShaderDrawParameters
-         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-           "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
-           "   vec4 v=instancingMatrix*position;\n"
-         : "   vec4 v=instancingMatrix*position;\n"
-         )<<
-         "   o.eyePosition=v.xyz;\n"
-         "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
-         "   gl_Position=projection*v;\n"
-         "}\n").str(),
-         GL_FRAGMENT_SHADER,
-         "#version 330\n"
-         "\n"
-         "in VertexData {\n"
-         "   vec3 eyePosition;\n"
-         "   vec3 eyeNormal;\n"
-         "   vec4 color;\n"
-         "   vec2 texCoord;\n"
-         "};\n"
-         "\n"
-         "layout(location=0) out vec4 fragColor;\n"
-         "\n"
-         "uniform vec4 specularAndShininess; // shininess in alpha\n"
-         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-         "uniform sampler2D colorTexture;\n"
-         "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
-         "uniform vec3 lightColor;\n"
-         "uniform vec3 lightAttenuation;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // compute VL - vertex to light vector, in eye coordinates\n"
-         "   vec3 VL=lightPosition.xyz;\n"
-         "   if(lightPosition.w!=0.)\n"
-         "      VL-=eyePosition;\n"
-         "   float VLlen=length(VL);\n"
-         "   vec3 VLdir=VL/VLlen;\n"
-         "\n"
-         "   // invert normals on back facing triangles\n"
-         "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
-         "\n"
-         "   // Lambert's diffuse reflection\n"
-         "   float NdotL=dot(N,VLdir);\n"
-         "\n"
-         "   // fragments facing the light get all the lighting\n"
-         "   // while those not facing the light get only ambient lighting\n"
-         "   if(NdotL<=0.)\n"
-         "   {\n"
-         "      // final sum for light-not-facing fragments\n"
-         "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
-         "      // or we can simply drop the fragment.)\n"
-         "      discard;\n"
-         "   }\n"
-         "   else\n"
-         "   {\n"
-         "      // specular effect\n"
-         "      float specularEffect;\n"
-         "      vec3 R=reflect(-VLdir,N);\n"
-         "      vec3 Vdir=normalize(eyePosition.xyz);\n"
-         "      float RdotV=dot(R,-Vdir);\n"
-         "      if(RdotV>0.)\n"
-         "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
-         "      else\n"
-         "         specularEffect = 0.;\n"
-         "\n"
-         "      // attenuation\n"
-         "      float attenuation=lightAttenuation[0]+\n"
-         "                        lightAttenuation[1]*VLlen+\n"
-         "                        lightAttenuation[2]*VLlen*VLlen;\n"
-         "\n"
-         "      // texturing\n"
-         "      vec4 c;\n;"
-         "      if(colorTexturingMode==0) // no texturing\n"
-         "         c=color;\n"
-         "      else if(colorTexturingMode==1) // modulate\n"
-         "         c=texture(colorTexture,texCoord)*color;\n"
-         "      else // replace\n"
-         "         c=texture(colorTexture,texCoord);\n"
-         "\n"
-         "      // final sum for light-facing fragments\n"
-         "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
-         "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
-         "                      attenuation,\n"
-         "                     c.a);\n"
-         "   }\n"
-         "}\n");
+      const_cast<RenderingContext*>(this)->_phongProgram=make_shared<Program>(
+         make_shared<Shader>(GL_VERTEX_SHADER,
+            static_cast<std::stringstream&>(stringstream()
+            <<(_useARBShaderDrawParameters
+            ? "#version 430\n"
+            "#extension GL_ARB_shader_draw_parameters : enable\n"
+            "\n"
+            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+            "   mat4 instancingMatrixBuffer[];\n"
+            "};\n"
+            : "#version 330\n"
+            )<<
+            "\n"
+            "layout(location=0) in vec4 position;\n"
+            "layout(location=1) in vec3 normal;\n"
+            "layout(location=2) in vec4 color;\n"
+            "layout(location=3) in vec2 texCoord;\n"
+            <<(_useARBShaderDrawParameters
+            ? ""
+            : "layout(location=12) in mat4 instancingMatrix;\n"
+            )<<
+            "\n"
+            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+            "   vec3 eyePosition;\n"
+            "   vec3 eyeNormal;\n"
+            "   vec4 color;\n"
+            "   vec2 texCoord;\n"
+            "} o;\n"
+            "\n"
+            "uniform mat4 projection;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   o.color=color;\n"
+            "   o.texCoord=texCoord;\n"
+            <<(_useARBShaderDrawParameters
+            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+            "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
+            "   vec4 v=instancingMatrix*position;\n"
+            : "   vec4 v=instancingMatrix*position;\n"
+            )<<
+            "   o.eyePosition=v.xyz;\n"
+            "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+            "   gl_Position=projection*v;\n"
+            "}\n").str()),
+         make_shared<Shader>(GL_FRAGMENT_SHADER,
+            "#version 330\n"
+            "\n"
+            "in VertexData {\n"
+            "   vec3 eyePosition;\n"
+            "   vec3 eyeNormal;\n"
+            "   vec4 color;\n"
+            "   vec2 texCoord;\n"
+            "};\n"
+            "\n"
+            "layout(location=0) out vec4 fragColor;\n"
+            "\n"
+            "uniform vec4 specularAndShininess; // shininess in alpha\n"
+            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+            "uniform sampler2D colorTexture;\n"
+            "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+            "uniform vec3 lightColor;\n"
+            "uniform vec3 lightAttenuation;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   // compute VL - vertex to light vector, in eye coordinates\n"
+            "   vec3 VL=lightPosition.xyz;\n"
+            "   if(lightPosition.w!=0.)\n"
+            "      VL-=eyePosition;\n"
+            "   float VLlen=length(VL);\n"
+            "   vec3 VLdir=VL/VLlen;\n"
+            "\n"
+            "   // invert normals on back facing triangles\n"
+            "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+            "\n"
+            "   // Lambert's diffuse reflection\n"
+            "   float NdotL=dot(N,VLdir);\n"
+            "\n"
+            "   // fragments facing the light get all the lighting\n"
+            "   // while those not facing the light get only ambient lighting\n"
+            "   if(NdotL<=0.)\n"
+            "   {\n"
+            "      // final sum for light-not-facing fragments\n"
+            "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
+            "      // or we can simply drop the fragment.)\n"
+            "      discard;\n"
+            "   }\n"
+            "   else\n"
+            "   {\n"
+            "      // specular effect\n"
+            "      float specularEffect;\n"
+            "      vec3 R=reflect(-VLdir,N);\n"
+            "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+            "      float RdotV=dot(R,-Vdir);\n"
+            "      if(RdotV>0.)\n"
+            "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+            "      else\n"
+            "         specularEffect = 0.;\n"
+            "\n"
+            "      // attenuation\n"
+            "      float attenuation=lightAttenuation[0]+\n"
+            "                        lightAttenuation[1]*VLlen+\n"
+            "                        lightAttenuation[2]*VLlen*VLlen;\n"
+            "\n"
+            "      // texturing\n"
+            "      vec4 c;\n;"
+            "      if(colorTexturingMode==0) // no texturing\n"
+            "         c=color;\n"
+            "      else if(colorTexturingMode==1) // modulate\n"
+            "         c=texture(colorTexture,texCoord)*color;\n"
+            "      else // replace\n"
+            "         c=texture(colorTexture,texCoord);\n"
+            "\n"
+            "      // final sum for light-facing fragments\n"
+            "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
+            "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+            "                      attenuation,\n"
+            "                     c.a);\n"
+            "   }\n"
+            "}\n"));
    }
    return _phongProgram;
 }
 
 
-const shared_ptr<ProgramObject>& RenderingContext::getPhongUniformColorProgram() const
+const shared_ptr<Program>& RenderingContext::getPhongUniformColorProgram() const
 {
    if(!_phongUniformColorProgram) {
-      const_cast<RenderingContext*>(this)->_phongUniformColorProgram=make_shared<ProgramObject>(
-         GL_VERTEX_SHADER,
-         static_cast<std::stringstream&>(stringstream()
-         <<(_useARBShaderDrawParameters
-         ? "#version 430\n"
-           "#extension GL_ARB_shader_draw_parameters : enable\n"
-           "\n"
-           "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-           "   mat4 instancingMatrixBuffer[];\n"
-           "};\n"
-         : "#version 330\n"
-         )<<
-         "\n"
-         "layout(location=0) in vec4 position;\n"
-         "layout(location=1) in vec3 normal;\n"
-         "layout(location=3) in vec2 texCoord;\n"
-         <<(_useARBShaderDrawParameters
-         ? ""
-         : "layout(location=12) in mat4 instancingMatrix;\n"
-         )<<
-         "\n"
-         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-         "   vec3 eyePosition;\n"
-         "   vec3 eyeNormal;\n"
-         "   vec2 texCoord;\n"
-         "} o;\n"
-         "\n"
-         "uniform mat4 projection;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   o.texCoord=texCoord;\n"
-         <<(_useARBShaderDrawParameters
-         ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-           "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
-           "   vec4 v=instancingMatrix*position;\n"
-         : "   vec4 v=instancingMatrix*position;\n"
-         )<<
-         "   o.eyePosition=v.xyz;\n"
-         "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
-         "   gl_Position=projection*v;\n"
-         "}\n").str(),
-         GL_FRAGMENT_SHADER,
-         "#version 330\n"
-         "\n"
-         "in VertexData {\n"
-         "   vec3 eyePosition;\n"
-         "   vec3 eyeNormal;\n"
-         "   vec2 texCoord;\n"
-         "};\n"
-         "\n"
-         "layout(location=0) out vec4 fragColor;\n"
-         "\n"
-         "uniform vec4 color;\n"
-         "uniform vec4 specularAndShininess; // shininess in alpha\n"
-         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-         "uniform sampler2D colorTexture;\n"
-         "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
-         "uniform vec3 lightColor;\n"
-         "uniform vec3 lightAttenuation;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // compute VL - vertex to light vector, in eye coordinates\n"
-         "   vec3 VL=lightPosition.xyz;\n"
-         "   if(lightPosition.w!=0.)\n"
-         "      VL-=eyePosition;\n"
-         "   float VLlen=length(VL);\n"
-         "   vec3 VLdir=VL/VLlen;\n"
-         "\n"
-         "   // invert normals on back facing triangles\n"
-         "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
-         "\n"
-         "   // Lambert's diffuse reflection\n"
-         "   float NdotL=dot(N,VLdir);\n"
-         "\n"
-         "   // fragments facing the light get all the lighting\n"
-         "   // while those not facing the light get only ambient lighting\n"
-         "   if(NdotL<=0.)\n"
-         "   {\n"
-         "      // final sum for light-not-facing fragments\n"
-         "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
-         "      // or we can simply drop the fragment.)\n"
-         "      discard;\n"
-         "   }\n"
-         "   else\n"
-         "   {\n"
-         "      // specular effect\n"
-         "      float specularEffect;\n"
-         "      vec3 R=reflect(-VLdir,N);\n"
-         "      vec3 Vdir=normalize(eyePosition.xyz);\n"
-         "      float RdotV=dot(R,-Vdir);\n"
-         "      if(RdotV>0.)\n"
-         "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
-         "      else\n"
-         "         specularEffect = 0.;\n"
-         "\n"
-         "      // attenuation\n"
-         "      float attenuation=lightAttenuation[0]+\n"
-         "                        lightAttenuation[1]*VLlen+\n"
-         "                        lightAttenuation[2]*VLlen*VLlen;\n"
-         "\n"
-         "      // texturing\n"
-         "      vec4 c;\n;"
-         "      if(colorTexturingMode==0) // no texturing\n"
-         "         c=color;\n"
-         "      else if(colorTexturingMode==1) // modulate\n"
-         "         c=texture(colorTexture,texCoord)*color;\n"
-         "      else // replace\n"
-         "         c=texture(colorTexture,texCoord);\n"
-         "\n"
-         "      // final sum for light-facing fragments\n"
-         "      fragColor=vec4(1.f,0.f,0.f,1.f);/*(c.rgb*lightColor*NdotL+\n"
-         "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
-         "                      attenuation,\n"
-         "                     c.a)*/;\n"
-         "   }\n"
-         "}\n");
+      const_cast<RenderingContext*>(this)->_phongUniformColorProgram=make_shared<Program>(
+         make_shared<Shader>(GL_VERTEX_SHADER,
+            static_cast<std::stringstream&>(stringstream()
+            <<(_useARBShaderDrawParameters
+            ? "#version 430\n"
+            "#extension GL_ARB_shader_draw_parameters : enable\n"
+            "\n"
+            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
+            "   mat4 instancingMatrixBuffer[];\n"
+            "};\n"
+            : "#version 330\n"
+            )<<
+            "\n"
+            "layout(location=0) in vec4 position;\n"
+            "layout(location=1) in vec3 normal;\n"
+            "layout(location=3) in vec2 texCoord;\n"
+            <<(_useARBShaderDrawParameters
+            ? ""
+            : "layout(location=12) in mat4 instancingMatrix;\n"
+            )<<
+            "\n"
+            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+            "   vec3 eyePosition;\n"
+            "   vec3 eyeNormal;\n"
+            "   vec2 texCoord;\n"
+            "} o;\n"
+            "\n"
+            "uniform mat4 projection;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   o.texCoord=texCoord;\n"
+            <<(_useARBShaderDrawParameters
+            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
+            "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
+            "   vec4 v=instancingMatrix*position;\n"
+            : "   vec4 v=instancingMatrix*position;\n"
+            )<<
+            "   o.eyePosition=v.xyz;\n"
+            "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+            "   gl_Position=projection*v;\n"
+            "}\n").str()),
+         make_shared<Shader>(GL_FRAGMENT_SHADER,
+            "#version 330\n"
+            "\n"
+            "in VertexData {\n"
+            "   vec3 eyePosition;\n"
+            "   vec3 eyeNormal;\n"
+            "   vec2 texCoord;\n"
+            "};\n"
+            "\n"
+            "layout(location=0) out vec4 fragColor;\n"
+            "\n"
+            "uniform vec4 color;\n"
+            "uniform vec4 specularAndShininess; // shininess in alpha\n"
+            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+            "uniform sampler2D colorTexture;\n"
+            "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+            "uniform vec3 lightColor;\n"
+            "uniform vec3 lightAttenuation;\n"
+            "\n"
+            "void main()\n"
+            "{\n"
+            "   // compute VL - vertex to light vector, in eye coordinates\n"
+            "   vec3 VL=lightPosition.xyz;\n"
+            "   if(lightPosition.w!=0.)\n"
+            "      VL-=eyePosition;\n"
+            "   float VLlen=length(VL);\n"
+            "   vec3 VLdir=VL/VLlen;\n"
+            "\n"
+            "   // invert normals on back facing triangles\n"
+            "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+            "\n"
+            "   // Lambert's diffuse reflection\n"
+            "   float NdotL=dot(N,VLdir);\n"
+            "\n"
+            "   // fragments facing the light get all the lighting\n"
+            "   // while those not facing the light get only ambient lighting\n"
+            "   if(NdotL<=0.)\n"
+            "   {\n"
+            "      // final sum for light-not-facing fragments\n"
+            "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
+            "      // or we can simply drop the fragment.)\n"
+            "      discard;\n"
+            "   }\n"
+            "   else\n"
+            "   {\n"
+            "      // specular effect\n"
+            "      float specularEffect;\n"
+            "      vec3 R=reflect(-VLdir,N);\n"
+            "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+            "      float RdotV=dot(R,-Vdir);\n"
+            "      if(RdotV>0.)\n"
+            "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+            "      else\n"
+            "         specularEffect = 0.;\n"
+            "\n"
+            "      // attenuation\n"
+            "      float attenuation=lightAttenuation[0]+\n"
+            "                        lightAttenuation[1]*VLlen+\n"
+            "                        lightAttenuation[2]*VLlen*VLlen;\n"
+            "\n"
+            "      // texturing\n"
+            "      vec4 c;\n;"
+            "      if(colorTexturingMode==0) // no texturing\n"
+            "         c=color;\n"
+            "      else if(colorTexturingMode==1) // modulate\n"
+            "         c=texture(colorTexture,texCoord)*color;\n"
+            "      else // replace\n"
+            "         c=texture(colorTexture,texCoord);\n"
+            "\n"
+            "      // final sum for light-facing fragments\n"
+            "      fragColor=vec4(1.f,0.f,0.f,1.f);/*(c.rgb*lightColor*NdotL+\n"
+            "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+            "                      attenuation,\n"
+            "                     c.a)*/;\n"
+            "   }\n"
+            "}\n"));
    }
    return _phongUniformColorProgram;
 }
@@ -1177,12 +1175,12 @@ void RenderingContext::evaluateTransformationGraph()
       // resize matrix buffer
       unsigned newSize=unsigned(totalMatrices*1.2f);
       _matrixStorage.setCapacity(newSize);
-      _matrixStorage.bufferObject()->realloc(newSize*sizeof(float)*16,ge::gl::BufferObject::KEEP_ID);
+      _matrixStorage.buffer()->realloc(newSize*sizeof(float)*16,ge::gl::Buffer::KEEP_ID);
 
       // initialize identity matrix on the beginning of the buffer
-      float *p=static_cast<float*>(_matrixStorage.bufferObject()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
+      float *p=static_cast<float*>(_matrixStorage.buffer()->map(0,sizeof(float)*16,GL_MAP_WRITE_BIT));
       memcpy(p,identityMatrix,sizeof(float)*16);
-      _matrixStorage.bufferObject()->unmap();
+      _matrixStorage.buffer()->unmap();
    }
 
    // reset buffer position
@@ -1221,7 +1219,7 @@ void RenderingContext::setupRendering()
    if(_drawIndirectBuffer->getSize()<bufferPosition()*4)
       _drawIndirectBuffer->realloc(static_cast<decltype(_bufferPosition)>(
             bufferPosition()*1.2f)*4, // multiply by 1.2 to avoid possibly many reallocations by very small amount
-            BufferObject::NEW_BUFFER);
+            Buffer::NEW_BUFFER);
 }
 
 
@@ -1231,29 +1229,29 @@ void RenderingContext::processDrawCommands()
    auto processDrawCommandsProgram=getProcessDrawCommandsProgram();
    processDrawCommandsProgram->use();
    unsigned numInstances=drawCommandStorage()->firstItemAvailableAtTheEnd();
-   processDrawCommandsProgram->set("numToProcess",numInstances);
-   primitiveStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-   drawCommandStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-   matrixListControlStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
+   processDrawCommandsProgram->set1ui("numToProcess",numInstances);
+   primitiveStorage()->buffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+   drawCommandStorage()->buffer()->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+   matrixListControlStorage()->buffer()->bindBase(GL_SHADER_STORAGE_BUFFER,2);
    drawIndirectBuffer()->bindBase(GL_SHADER_STORAGE_BUFFER,3);
-   stateSetStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
-   glDispatchCompute((numInstances+63)/64,1,1);
+   stateSetStorage()->buffer()->bindBase(GL_SHADER_STORAGE_BUFFER,4);
+   gl.glDispatchCompute((numInstances+63)/64,1,1);
 }
 
 
 void RenderingContext::fenceSyncGpuComputation()
 {
    // finish all current commands in GPU queue
-   GLsync syncObj=glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
+   GLsync syncObj=gl.glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
 #if 0 // glWaitSync does not work on my Quadro K1000M (Keppler architecture), drivers 352.21
       // (this would be faster as it does not involve CPU)
-   //glFlush();
-   //glWaitSync(syncObj,0,GL_TIMEOUT_IGNORED);
+   //gl.glFlush();
+   //gl.glWaitSync(syncObj,0,GL_TIMEOUT_IGNORED);
 #else
    // synchronization involving CPU
-   glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,(GLuint64)1e9);
+   gl.glClientWaitSync(syncObj,GL_SYNC_FLUSH_COMMANDS_BIT,(GLuint64)1e9);
 #endif
-   glDeleteSync(syncObj);
+   gl.glDeleteSync(syncObj);
 }
 
 
@@ -1262,23 +1260,23 @@ void RenderingContext::render()
    // bind buffers for rendering
    drawIndirectBuffer()->bind(GL_DRAW_INDIRECT_BUFFER);
    if(_useARBShaderDrawParameters)
-      matrixStorage()->bufferObject()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+      matrixStorage()->buffer()->bindBase(GL_SHADER_STORAGE_BUFFER,0);
 
 #if 0
-   cout<<_primitiveStorage.bufferObject()->getSize()<<endl;
-   cout<<_drawCommandStorage.bufferObject()->getSize()<<endl;
-   cout<<_matrixStorage.bufferObject()->getSize()<<endl;
-   cout<<_matrixListControlStorage.bufferObject()->getSize()<<endl;
-   cout<<_stateSetStorage.bufferObject()->getSize()<<endl;
+   cout<<_primitiveStorage.buffer()->getSize()<<endl;
+   cout<<_drawCommandStorage.buffer()->getSize()<<endl;
+   cout<<_matrixStorage.buffer()->getSize()<<endl;
+   cout<<_matrixListControlStorage.buffer()->getSize()<<endl;
+   cout<<_stateSetStorage.buffer()->getSize()<<endl;
    cout<<_transformationAllocationManager.capacity()<<endl;
    cout<<_drawIndirectBuffer->getSize()<<endl;
 #endif
 #if 0
-   printIntBufferContent(RenderingContext::current()->primitiveStorage()->bufferObject(),
+   printIntBufferContent(RenderingContext::current()->primitiveStorage()->buffer(),
                          RenderingContext::current()->primitiveStorage()->firstItemAvailableAtTheEnd()*3);
-   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->bufferObject(),
+   printIntBufferContent(RenderingContext::current()->drawCommandStorage()->buffer(),
                          RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*3);
-   printIntBufferContent(RenderingContext::current()->stateSetStorage()->bufferObject(),
+   printIntBufferContent(RenderingContext::current()->stateSetStorage()->buffer(),
                          RenderingContext::current()->stateSetStorage()->firstItemAvailableAtTheEnd());
    printIntBufferContent(RenderingContext::current()->drawIndirectBuffer(),
                          RenderingContext::current()->drawCommandStorage()->firstItemAvailableAtTheEnd()*5);
@@ -1295,7 +1293,7 @@ void RenderingContext::frame()
    incrementProgressStamp();
 
    // clear screen
-   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+   gl.glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
    // compute transformation matrices
    evaluateTransformationGraph();
@@ -1313,17 +1311,17 @@ void RenderingContext::frame()
    render();
 
    // check for OpenGL errors
-   unsigned e=glGetError();
+   unsigned e=gl.glGetError();
    if(e!=GL_NO_ERROR)
       cout<<"OpenGL error "<<e<<" detected after the frame rendering"<<endl;
 }
 
 
-std::shared_ptr<ge::gl::TextureObject> RenderingContext::cachedTextureObject(const std::string& path) const
+std::shared_ptr<ge::gl::Texture> RenderingContext::cachedTexture(const std::string& path) const
 {
    auto it=_textureCache.find(path);
    if(it==_textureCache.end())
-      return std::shared_ptr<ge::gl::TextureObject>();
+      return std::shared_ptr<ge::gl::Texture>();
    auto r=it->second.lock();
    if(!r)
       const_cast<RenderingContext*>(this)->_textureCache.erase(it);

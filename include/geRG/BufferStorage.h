@@ -7,7 +7,7 @@ namespace ge
 {
    namespace gl
    {
-      class BufferObject;
+      class Buffer;
    }
    namespace rg
    {
@@ -24,11 +24,11 @@ namespace ge
       { return BufferStorageAccess(uint8_t(a) | uint8_t(b)); }
 
 
-      /** BufferStorage template combines the functionality of ge::gl::BufferObject
+      /** BufferStorage template combines the functionality of ge::gl::Buffer
        *  and allocation manager functionality (such as ItemMemoryManager, BlockMemoryManager,
        *  ChunkMemoryManager) into the single class.
        *
-       *  BufferStorage maintains buffer (using ge::gl::BufferObject) and allows to
+       *  BufferStorage maintains buffer (using ge::gl::Buffer) and allows to
        *  allocate data inside it using one of allocation managers. When the buffer
        *  free space is exhausted or gets low, it allows for buffer reallocation.
        */
@@ -36,7 +36,7 @@ namespace ge
       class BufferStorage : public AllocationManagerT {
       protected:
 
-         ge::gl::BufferObject* _bufferObject;
+         std::shared_ptr<ge::gl::Buffer> _buffer;
          Type* _mappedBufferPtr;
          BufferStorageAccess _mappedBufferAccess;
 
@@ -60,7 +60,7 @@ namespace ge
                        unsigned flags,void *data=nullptr);
          virtual ~BufferStorage();
 
-         inline ge::gl::BufferObject* bufferObject() const;
+         inline const std::shared_ptr<ge::gl::Buffer>& buffer() const;
 
          inline Type* ptr() const;
          Type* map(BufferStorageAccess access=BufferStorageAccess::READ_WRITE);
@@ -93,7 +93,7 @@ namespace ge
 
 // inline and template methods
 
-#include <geGL/BufferObject.h>
+#include <geGL/Buffer.h>
 #include <assert.h>
 
 namespace ge
@@ -104,7 +104,7 @@ namespace ge
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(unsigned capacity,unsigned flags,void *data)
          : AllocationManagerT(capacity)
-         , _bufferObject(new ge::gl::BufferObject(capacity*AllocationItemSize,data,flags))
+         , _buffer(std::make_shared<ge::gl::Buffer>(capacity*AllocationItemSize,data,flags))
          , _mappedBufferPtr(nullptr)
          , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
       {}
@@ -112,7 +112,7 @@ namespace ge
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(unsigned capacity,unsigned nullObjectElements,unsigned flags,void *data)
          : AllocationManagerT(capacity,nullObjectElements)
-         , _bufferObject(new ge::gl::BufferObject(capacity*AllocationItemSize,data,flags))
+         , _buffer(std::make_shared<ge::gl::Buffer>(capacity*AllocationItemSize,data,flags))
          , _mappedBufferPtr(nullptr)
          , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
       {}
@@ -121,7 +121,7 @@ namespace ge
       BufferStorage<AllocationManagerT,Type,AllocationItemSize>::BufferStorage(
             unsigned bufferSize,unsigned allocManagerCapacity,unsigned nullObjectElements,unsigned flags,void *data)
          : AllocationManagerT(allocManagerCapacity,nullObjectElements)
-         , _bufferObject(new ge::gl::BufferObject(bufferSize,data,flags))
+         , _buffer(std::make_shared<ge::gl::Buffer>(bufferSize,data,flags))
          , _mappedBufferPtr(nullptr)
          , _mappedBufferAccess(BufferStorageAccess::NO_ACCESS)
       {
@@ -132,12 +132,11 @@ namespace ge
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       BufferStorage<AllocationManagerT,Type,AllocationItemSize>::~BufferStorage()
       {
-         delete _bufferObject;
       }
 
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
-      inline ge::gl::BufferObject* BufferStorage<AllocationManagerT,Type,AllocationItemSize>::bufferObject() const
-      { return _bufferObject; }
+      inline const std::shared_ptr<ge::gl::Buffer>& BufferStorage<AllocationManagerT,Type,AllocationItemSize>::buffer() const
+      { return _buffer; }
 
       template<typename AllocationManagerT,typename Type,unsigned AllocationItemSize>
       inline Type* BufferStorage<AllocationManagerT,Type,AllocationItemSize>::ptr() const
@@ -152,10 +151,10 @@ namespace ge
             return _mappedBufferPtr;
 
          if(_mappedBufferAccess!=BufferStorageAccess::NO_ACCESS)
-            _bufferObject->unmap();
+            _buffer->unmap();
 
          _mappedBufferAccess=_mappedBufferAccess|requestedAccess;
-         _mappedBufferPtr=static_cast<Type*>(_bufferObject->map(static_cast<GLbitfield>(_mappedBufferAccess)));
+         _mappedBufferPtr=static_cast<Type*>(_buffer->map(static_cast<GLbitfield>(_mappedBufferAccess)));
          return _mappedBufferPtr;
       }
 
@@ -165,7 +164,7 @@ namespace ge
          if(_mappedBufferAccess==BufferStorageAccess::NO_ACCESS)
             return;
 
-         _bufferObject->unmap();
+         _buffer->unmap();
          _mappedBufferPtr=nullptr;
          _mappedBufferAccess=BufferStorageAccess::NO_ACCESS;
       }
@@ -220,15 +219,15 @@ namespace ge
          unsigned newCapacity=capacity+delta;
          AllocationManagerT::setCapacity(newCapacity);
 
-         // realloc BufferObject
-         unsigned bufferSize=unsigned(_bufferObject->getSize());
+         // realloc Buffer
+         unsigned bufferSize=unsigned(_buffer->getSize());
          unsigned newBufferSize=newCapacity*AllocationItemSize;
          if(newBufferSize>bufferSize) {
             if(_mappedBufferAccess!=BufferStorageAccess::NO_ACCESS)
-               _bufferObject->unmap();
-            _bufferObject->realloc(newBufferSize,ge::gl::BufferObject::KEEP_DATA);
+               _buffer->unmap();
+            _buffer->realloc(newBufferSize,ge::gl::Buffer::KEEP_DATA);
             if(_mappedBufferAccess!=BufferStorageAccess::NO_ACCESS)
-               _mappedBufferPtr=static_cast<Type*>(_bufferObject->map(static_cast<GLbitfield>(_mappedBufferAccess)));
+               _mappedBufferPtr=static_cast<Type*>(_buffer->map(static_cast<GLbitfield>(_mappedBufferAccess)));
          }
       }
 

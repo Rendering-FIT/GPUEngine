@@ -10,7 +10,7 @@ Prerequisities:
 - Linux: gcc 4.8 (<=4.7 not tested)
 - cmake 3.0.0 or newer
 - glm 0.9.7.0 or newer
-- glew
+- glew (not required since 2016-08)
 
 Optional:
 - glfw
@@ -92,6 +92,7 @@ FreeImage and FreeImagePlus:
 - CentOS 7.1: yes (epel repository), version 3.10.0, Fedora: seems yes
 
 OpenSceneGraph:
+- Ubuntu 16.04: version 3.2.1 (universe)
 - Ubuntu 15.04: version 3.2.1 (universe)
 - Ubuntu 14.04: version 3.2.0 (universe)
 - CentOS: no, Fedora: seems yes

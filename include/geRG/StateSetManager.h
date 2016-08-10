@@ -16,16 +16,13 @@ namespace ge
 {
    namespace gl
    {
-      class ProgramObject;
-      class TextureObject;
-      template<typename LOCATION,typename V0,typename V1,typename V2,typename V3> class Uniform4f;
+      class Program;
+      class Texture;
    }
    namespace rg
    {
-      class FlexibleLocation;
-      template<typename UNIFORM,class ...ARGS> class FlexibleUniform;
-      typedef FlexibleUniform<ge::gl::Uniform4f<FlexibleLocation,float,float,float,float>,
-            float,float,float,float> FlexibleUniform4f;
+      template<class ...ARGS> class FlexibleUniform;
+      typedef FlexibleUniform<float,float,float,float> FlexibleUniform4f;
       class MatrixList;
       class StateSet;
 
@@ -118,8 +115,8 @@ namespace ge
       public:
          unsigned internalLevel;
          std::vector<int> binList;
-         std::vector<std::weak_ptr<ge::gl::ProgramObject>> glProgramList;
-         std::vector<std::weak_ptr<ge::gl::TextureObject>> colorTextureList;
+         std::vector<std::weak_ptr<ge::gl::Program>> glProgramList;
+         std::vector<std::weak_ptr<ge::gl::Texture>> colorTextureList;
          std::vector<std::list<std::weak_ptr<ge::core::Command>>> uniformSetList;
          inline StateSetDefaultGLState();
          StateSetDefaultGLState(const StateSetDefaultGLState& s,unsigned internalLevel);

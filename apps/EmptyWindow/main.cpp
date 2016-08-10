@@ -4,7 +4,7 @@
 #include<geAd/SDLWindow/SDLWindow.h>
 
 struct Data{
-  std::shared_ptr<ge::gl::Context>gl       = nullptr;
+  std::shared_ptr<ge::gl::Context>        gl       = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop>    mainLoop = nullptr;
   std::shared_ptr<ge::ad::SDLWindow>      window   = nullptr;
   static void init(Data*data);
@@ -33,7 +33,10 @@ int main(int,char*[]){
   data.mainLoop->setIdleCallback(std::make_shared<Data::IdleCallback>(&data));
 
   data.window   = std::make_shared<ge::ad::SDLWindow>();
-  data.window->createContext("rendering",330,ge::ad::SDLWindow::COMPATIBILITY);
+  if(!data.window->createContext("rendering",330,ge::ad::SDLWindow::CORE)){
+     std::cout<<"Error: Can not create OpenGL context."<<std::endl;
+     return EXIT_FAILURE;
+  }
   data.window->setEventCallback(SDL_WINDOWEVENT,std::make_shared<Data::WindowEventCallback>(&data));
   data.mainLoop->addWindow("primaryWindow",data.window);
   data.init(&data);

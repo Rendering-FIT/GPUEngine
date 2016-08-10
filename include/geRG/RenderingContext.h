@@ -18,15 +18,16 @@
 #include <geRG/ProgressStamp.h>
 #include <geRG/StateSet.h>
 #include <geRG/StateSetManager.h>
+#include <geGL/OpenGLContext.h>
 #include <geCore/InitAndFinalize.h>
 
 namespace ge
 {
    namespace gl
    {
-      class BufferObject;
-      class ProgramObject;
-      class TextureObject;
+      class Buffer;
+      class Program;
+      class Texture;
    }
    namespace rg
    {
@@ -64,6 +65,8 @@ namespace ge
          typedef std::vector<std::shared_ptr<Transformation>> TransformationGraphList;
          enum class MappedBufferAccess : uint8_t { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
 
+         ge::gl::Context gl;
+
       protected:
 
          mutable PrimitiveStorage _primitiveStorage;
@@ -73,12 +76,12 @@ namespace ge
          mutable StateSetStorage _stateSetStorage;
          ItemAllocationManager _transformationAllocationManager;
          float *_cpuTransformationBuffer;
-         ge::gl::BufferObject *_drawIndirectBuffer;
+         std::shared_ptr<ge::gl::Buffer> _drawIndirectBuffer;
 
          AttribConfigList _attribConfigList;
          unsigned _numAttribStorages;
          std::shared_ptr<StateSetManager> _stateSetManager;
-         std::map<std::string,std::weak_ptr<ge::gl::TextureObject>> _textureCache;
+         std::map<std::string,std::weak_ptr<ge::gl::Texture>> _textureCache;
          TransformationGraphList _transformationGraphs;
          std::shared_ptr<MatrixList> _emptyMatrixList;
          bool _useARBShaderDrawParameters;
@@ -86,17 +89,17 @@ namespace ge
          unsigned _bufferPosition;
          ProgressStamp _progressStamp; ///< Monotonically increasing number wrapping on overflow.
 
-         std::shared_ptr<ge::gl::ProgramObject> _processDrawCommandsProgram;
-         std::shared_ptr<ge::gl::ProgramObject> _ambientProgram;
-         std::shared_ptr<ge::gl::ProgramObject> _phongProgram;
-         std::shared_ptr<ge::gl::ProgramObject> _ambientUniformColorProgram;
-         std::shared_ptr<ge::gl::ProgramObject> _phongUniformColorProgram;
+         std::shared_ptr<ge::gl::Program> _processDrawCommandsProgram;
+         std::shared_ptr<ge::gl::Program> _ambientProgram;
+         std::shared_ptr<ge::gl::Program> _phongProgram;
+         std::shared_ptr<ge::gl::Program> _ambientUniformColorProgram;
+         std::shared_ptr<ge::gl::Program> _phongUniformColorProgram;
 
-         static void* mapBuffer(ge::gl::BufferObject *buffer,
+         static void* mapBuffer(ge::gl::Buffer *buffer,
                                 MappedBufferAccess requestedAccess,
                                 void* &_mappedBufferPtr,
                                 MappedBufferAccess &grantedAccess);
-         static void unmapBuffer(ge::gl::BufferObject *buffer,
+         static void unmapBuffer(ge::gl::Buffer *buffer,
                                  void* &mappedBufferPtr,
                                  MappedBufferAccess &currentAccess);
 
@@ -121,13 +124,13 @@ namespace ge
          void onAttribStorageInit(AttribStorage *a);
          void onAttribStorageRelease(AttribStorage *a);
 
-         inline PrimitiveStorage* primitiveStorage() const;          ///< Returns BufferStorage that contains primitive set data of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
-         inline DrawCommandStorage* drawCommandStorage() const;            ///< Returns BufferStorage that contains draw commands. Any modification to the buffer must be done carefully to not break internal data consistency.
+         inline PrimitiveStorage* primitiveStorage() const;                   ///< Returns BufferStorage that contains primitive set data of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
+         inline DrawCommandStorage* drawCommandStorage() const;               ///< Returns BufferStorage that contains draw commands. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline MatrixStorage* matrixStorage() const;
          inline ListControlStorage* matrixListControlStorage() const;
-         inline StateSetStorage* stateSetStorage() const;                  ///< Returns BufferStorage that contains StateSet specific data.
+         inline StateSetStorage* stateSetStorage() const;                     ///< Returns BufferStorage that contains StateSet specific data.
 
-         inline ge::gl::BufferObject* drawIndirectBuffer();  ///< Returns draw indirect buffer used for indirect rendering.
+         inline const std::shared_ptr<ge::gl::Buffer>& drawIndirectBuffer();  ///< Returns draw indirect buffer used for indirect rendering.
          inline float* cpuTransformationBuffer();
 
          void unmapBuffers();
@@ -194,14 +197,14 @@ namespace ge
          inline const std::shared_ptr<StateSetManager>& stateSetManager();
          void setStateSetManager(const std::shared_ptr<StateSetManager>& stateSetManager);
 
-         const std::shared_ptr<ge::gl::ProgramObject>& getProcessDrawCommandsProgram() const;
-         const std::shared_ptr<ge::gl::ProgramObject>& getAmbientProgram() const;
-         const std::shared_ptr<ge::gl::ProgramObject>& getPhongProgram() const;
-         const std::shared_ptr<ge::gl::ProgramObject>& getAmbientUniformColorProgram() const;
-         const std::shared_ptr<ge::gl::ProgramObject>& getPhongUniformColorProgram() const;
+         const std::shared_ptr<ge::gl::Program>& getProcessDrawCommandsProgram() const;
+         const std::shared_ptr<ge::gl::Program>& getAmbientProgram() const;
+         const std::shared_ptr<ge::gl::Program>& getPhongProgram() const;
+         const std::shared_ptr<ge::gl::Program>& getAmbientUniformColorProgram() const;
+         const std::shared_ptr<ge::gl::Program>& getPhongUniformColorProgram() const;
 
-         std::shared_ptr<ge::gl::TextureObject> cachedTextureObject(const std::string& path) const;
-         inline void addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture);
+         std::shared_ptr<ge::gl::Texture> cachedTexture(const std::string& path) const;
+         inline void addCacheTexture(const std::string &path,const std::shared_ptr<ge::gl::Texture>& texture);
 
          static inline const std::shared_ptr<RenderingContext>& current();
          static void setCurrent(const std::shared_ptr<RenderingContext>& ptr);
@@ -258,7 +261,7 @@ namespace ge
       inline MatrixStorage* RenderingContext::matrixStorage() const  { return &_matrixStorage; }
       inline ListControlStorage* RenderingContext::matrixListControlStorage() const  { return &_matrixListControlStorage; }
       inline StateSetStorage* RenderingContext::stateSetStorage() const  { return &_stateSetStorage; }
-      inline ge::gl::BufferObject* RenderingContext::drawIndirectBuffer()  { return _drawIndirectBuffer; }
+      inline const std::shared_ptr<ge::gl::Buffer>& RenderingContext::drawIndirectBuffer()  { return _drawIndirectBuffer; }
       inline float* RenderingContext::cpuTransformationBuffer()  { return _cpuTransformationBuffer; }
       inline unsigned* RenderingContext::transformationAllocation(unsigned id) const  { return _transformationAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::transformationAllocationManager()  { return _transformationAllocationManager; }
@@ -284,7 +287,7 @@ namespace ge
       inline StateSetManager::GLState* RenderingContext::createGLState()  { return _stateSetManager->createGLState(); }
       inline const std::shared_ptr<StateSetManager>& RenderingContext::stateSetManager()  { return _stateSetManager; }
 
-      inline void RenderingContext::addCacheTextureObject(const std::string &path,const std::shared_ptr<ge::gl::TextureObject>& texture)  { _textureCache[path]=texture; }
+      inline void RenderingContext::addCacheTexture(const std::string &path,const std::shared_ptr<ge::gl::Texture>& texture)  { _textureCache[path]=texture; }
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b)
       { (uint8_t&)a|=(uint8_t)b; return a; }

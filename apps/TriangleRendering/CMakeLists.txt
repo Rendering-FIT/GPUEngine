@@ -2,13 +2,10 @@ set(APP_NAME TriangleRendering)
 
 project(${APP_NAME})
 
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
 find_package(SDL2)
-find_package(AntTweakBar)
 
-if(NOT SDL2_FOUND OR NOT AntTweakBar_FOUND)
+if(NOT SDL2_FOUND)
    return()
 endif()
 
@@ -21,8 +18,8 @@ set(APP_INCLUDES
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
-set(Internal_deps geRG geGL geUtil WindowObject)
-set(External_libs OpenGL GLEW glm SDL2 AntTweakBar)
+set(Internal_deps geRG geGL geUtil SDLWindow geDE)
+set(External_libs glm SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

@@ -3,7 +3,7 @@
 #include <geRG/AttribStorage.h>
 #include <geRG/Mesh.h>
 #include <geRG/StateSet.h>
-#include <geGL/VertexArrayObject.h>
+#include <geGL/VertexArray.h>
 
 using namespace ge::rg;
 using namespace ge::gl;
@@ -27,25 +27,25 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    const AttribConfig::ConfigData &configData=config->configData();
 
    // create VAO
-   _vao = new VertexArrayObject;
+   _va=make_shared<VertexArray>();
 
    // create buffer objects
-   _bufferObjectList.reserve(configData.attribTypes.size());
+   _bufferList.reserve(configData.attribTypes.size());
    unsigned i=0;
    for(auto it=configData.attribTypes.begin(); it!=configData.attribTypes.end(); it++,i++)
    {
       AttribType t=*it;
-      BufferObject *bo=new BufferObject(numVertices*t.elementSize(),NULL,GL_DYNAMIC_DRAW);
-      _vao->addAttrib(bo,i,t.numComponents(),t.glTypeAsInt(),t.elementSize(),0,
-                      t.typeHandling()==AttribType::INTEGER_NORMALIZE,t.divisor());
-      _bufferObjectList.push_back(bo);
+      auto b=make_shared<Buffer>(numVertices*t.elementSize(),nullptr,GL_DYNAMIC_DRAW);
+      _va->addAttrib(b,i,t.numComponents(),t.glTypeAsInt(),t.elementSize(),0,
+                     t.typeHandling()==AttribType::INTEGER_NORMALIZE,t.divisor());
+      _bufferList.push_back(b);
    }
 
    // create EBO
    if(configData.ebo)
    {
-      _ebo=new BufferObject(numIndices*4,NULL,GL_DYNAMIC_DRAW);
-      _vao->addElementBuffer(_ebo);
+      _eb=make_shared<Buffer>(numIndices*4,nullptr,GL_DYNAMIC_DRAW);
+      _va->addElementBuffer(_eb);
    }
    else
    {
@@ -53,40 +53,34 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
          cout<<"Warning in AttribStorage constructor: If config parameter\n"
                "   specifies to not use indices (AttribConfig::ebo),\n"
                "   numIndices parameter must be zero.\n"<<endl;
-      _ebo = NULL;
+      _eb=nullptr;
    }
 
    // append transformation matrix to VAO
    if(_renderingContext->useARBShaderDrawParameters()==false) {
-      _vao->bind();
-      ge::gl::BufferObject *bo=_renderingContext->matrixStorage()->bufferObject();
-      bo->bind(GL_ARRAY_BUFFER);
+      _va->bind();
+      _renderingContext->matrixStorage()->buffer()->bind(GL_ARRAY_BUFFER);
       const GLuint index=12;
-      glEnableVertexAttribArray(index+0);
-      glEnableVertexAttribArray(index+1);
-      glEnableVertexAttribArray(index+2);
-      glEnableVertexAttribArray(index+3);
-      glVertexAttribPointer(index+0,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*0));
-      glVertexAttribPointer(index+1,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*4));
-      glVertexAttribPointer(index+2,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*8));
-      glVertexAttribPointer(index+3,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*12));
-      glVertexAttribDivisor(index+0,1);
-      glVertexAttribDivisor(index+1,1);
-      glVertexAttribDivisor(index+2,1);
-      glVertexAttribDivisor(index+3,1);
-      _vao->unbind();
+      auto& gl=_va->getContext();
+      gl.glEnableVertexAttribArray(index+0);
+      gl.glEnableVertexAttribArray(index+1);
+      gl.glEnableVertexAttribArray(index+2);
+      gl.glEnableVertexAttribArray(index+3);
+      gl.glVertexAttribPointer(index+0,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*0));
+      gl.glVertexAttribPointer(index+1,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*4));
+      gl.glVertexAttribPointer(index+2,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*8));
+      gl.glVertexAttribPointer(index+3,4,GL_FLOAT,GL_FALSE,int(sizeof(float)*16),(void*)(sizeof(float)*12));
+      gl.glVertexAttribDivisor(index+0,1);
+      gl.glVertexAttribDivisor(index+1,1);
+      gl.glVertexAttribDivisor(index+2,1);
+      gl.glVertexAttribDivisor(index+3,1);
+      _va->unbind();
    }
 }
 
 
 AttribStorage::~AttribStorage()
 {
-   // delete buffers
-   delete _vao;
-   delete _ebo;
-   for(auto it=_bufferObjectList.begin(); it!=_bufferObjectList.end(); it++)
-      delete *it;
-
    // invalidate all allocations and clean up
    cancelAllAllocations();
    _renderingContext->onAttribStorageRelease(this);
@@ -95,7 +89,7 @@ AttribStorage::~AttribStorage()
 
 void AttribStorage::bind() const
 {
-   _vao->bind();
+   _va->bind();
 }
 
 
@@ -217,7 +211,7 @@ void AttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
                                    unsigned numVertices,unsigned fromIndex)
 {
    const AttribConfig::ConfigData &configData=_attribConfig->configData();
-   unsigned c = unsigned(_bufferObjectList.size());
+   unsigned c = unsigned(_bufferList.size());
    assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
                                "AttribStorage must match.");
    for(unsigned i=0; i<c; i++)
@@ -227,8 +221,8 @@ void AttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
       unsigned srcOffset=fromIndex*elementSize;
       unsigned dstOffset=(_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex)*elementSize;
       const void *data=attribList[i];
-      _bufferObjectList[i]->setData(((uint8_t*)data)+srcOffset,
-                                    numVertices*elementSize,dstOffset);
+      _bufferList[i]->setData(((uint8_t*)data)+srcOffset,
+                              numVertices*elementSize,dstOffset);
    }
 }
 
@@ -236,7 +230,7 @@ void AttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
 void AttribStorage::uploadIndices(Mesh &mesh,const void *indices,
                                   unsigned numIndices,unsigned fromIndex)
 {
-   if(_ebo==nullptr) {
+   if(_eb==nullptr) {
       cout<<"Error in AttribStorage::uploadIndices(): ebo is null.\n"
             "   AttribStorage was probably created with AttribConfig\n"
             "   without ebo member set to true." << endl;
@@ -245,7 +239,7 @@ void AttribStorage::uploadIndices(Mesh &mesh,const void *indices,
    const unsigned elementSize=4;
    unsigned srcOffset=fromIndex*elementSize;
    unsigned dstOffset=(_indexAllocationManager[mesh.indicesDataId()].startIndex+fromIndex)*elementSize;
-   _ebo->setData((uint8_t*)indices+srcOffset,numIndices*elementSize,dstOffset);
+   _eb->setData((uint8_t*)indices+srcOffset,numIndices*elementSize,dstOffset);
 }
 
 
@@ -255,19 +249,20 @@ void AttribStorage::render(const std::vector<RenderingCommandData>& renderingDat
    bind();
 
    // perform indirect draw calls
+   auto& gl=_va->getContext();
    if(attribConfig()->configData().ebo)
       for(auto it2=renderingDataList.begin(),e=renderingDataList.end(); it2!=e; it2++)
       {
          // call MultiDrawElementsIndirect
          GLintptr offset=it2->indirectBufferOffset4*4;
-         glMultiDrawElementsIndirect(it2->glMode,GL_UNSIGNED_INT,(const void*)offset,GLsizei(it2->drawCommandCount),0);
+         gl.glMultiDrawElementsIndirect(it2->glMode,GL_UNSIGNED_INT,(const void*)offset,GLsizei(it2->drawCommandCount),0);
       }
    else
       for(auto it2=renderingDataList.begin(),e=renderingDataList.end(); it2!=e; it2++)
       {
          // call MultiDrawArraysIndirect
          GLintptr offset=it2->indirectBufferOffset4*4;
-         glMultiDrawArraysIndirect(it2->glMode,(const void*)offset,GLsizei(it2->drawCommandCount),0);
+         gl.glMultiDrawArraysIndirect(it2->glMode,(const void*)offset,GLsizei(it2->drawCommandCount),0);
       }
 }
 

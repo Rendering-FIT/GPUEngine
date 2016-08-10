@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <GL/glew.h>
 #include <geRG/StateSet.h>
 #include <geRG/RenderingContext.h>
 #if _MSC_VER<1900

@@ -36,22 +36,22 @@ void StateSetDefaultGLState::add(const string& name,const type_index& typeIndex,
                "   \"bin\" name."<<endl;
    }
    else if(name=="glProgram") {
-      if(*static_cast<shared_ptr<ge::gl::ProgramObject>*>(data)) { // proceed with non-nullptr only
-         if(typeIndex==type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)))
-            glProgramList.push_back(*static_cast<shared_ptr<ge::gl::ProgramObject>*>(data));
-         else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::ProgramObject>*)))
-            glProgramList.push_back(*static_cast<weak_ptr<ge::gl::ProgramObject>*>(data));
+      if(*static_cast<shared_ptr<ge::gl::Program>*>(data)) { // proceed with non-nullptr only
+         if(typeIndex==type_index(typeid(shared_ptr<ge::gl::Program>*)))
+            glProgramList.push_back(*static_cast<shared_ptr<ge::gl::Program>*>(data));
+         else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::Program>*)))
+            glProgramList.push_back(*static_cast<weak_ptr<ge::gl::Program>*>(data));
          else
             cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
                   "   \"glProgram\" name."<<endl;
       }
    }
    else if(name=="colorTexture") {
-      if(*static_cast<shared_ptr<ge::gl::TextureObject>*>(data)) { // proceed with non-nullptr only
-         if(typeIndex==type_index(typeid(shared_ptr<ge::gl::TextureObject>*)))
-            colorTextureList.push_back(*static_cast<shared_ptr<ge::gl::TextureObject>*>(data));
-         else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::TextureObject>*)))
-            colorTextureList.push_back(*static_cast<weak_ptr<ge::gl::TextureObject>*>(data));
+      if(*static_cast<shared_ptr<ge::gl::Texture>*>(data)) { // proceed with non-nullptr only
+         if(typeIndex==type_index(typeid(shared_ptr<ge::gl::Texture>*)))
+            colorTextureList.push_back(*static_cast<shared_ptr<ge::gl::Texture>*>(data));
+         else if(typeIndex==type_index(typeid(weak_ptr<ge::gl::Texture>*)))
+            colorTextureList.push_back(*static_cast<weak_ptr<ge::gl::Texture>*>(data));
          else
             cout<<"StateSetDefaultGLState::set() error: Unsupported parameter typeIndex for\n"
                   "   \"colorTexture\" name."<<endl;
@@ -210,7 +210,10 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          ss->clearCommands();
          auto t=colorTextureList.front().lock();
          assert(t && "StateSetDefaultGLState error: colorTexture was destroyed.");
+#if 0 // FIXME: this needs geGL improvements (probably), that will be fixed ASAP; until that textures are not working
          ss->addCommand(ge::gl::sharedBindTexture(GL_TEXTURE_2D,t));
+         ss->addCommand(ge::gl::sharedCommand(&ge::gl::glBindTexture,GL_TEXTURE_2D,t->?));
+#endif
          ss->addRenderCommand();
       }
 
@@ -410,8 +413,9 @@ void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
    if(lightPassSs) {
 
       // enable blending for light passes
-      glBlendFunc(GL_ONE,GL_ONE);
-      glEnable(GL_BLEND);
+      auto &gl=RenderingContext::current()->gl;
+      gl.glBlendFunc(GL_ONE,GL_ONE);
+      gl.glEnable(GL_BLEND);
 
       // iterate through all lights
       for(auto it_light=lightList.begin(),e_light=lightList.end(); it_light!=e_light; it_light++) {
@@ -429,11 +433,7 @@ void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
          {
             // light position in view space
             glm::vec4 pos=matrices[i]*it_light->position();
-            FlexibleUniform4f *u=it_light->positionUniform().get();
-            u->v0=pos[0];
-            u->v1=pos[1];
-            u->v2=pos[2];
-            u->v3=pos[3];
+            it_light->positionUniform()->setValues(pos[0],pos[1],pos[2],pos[3]);
 
             // iterate through the whole scene
             for(auto it_glProgramSs=lightPassSs->childList().begin(),
@@ -451,7 +451,7 @@ void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
             }
          }
       }
-      glDisable(GL_BLEND);
+      gl.glDisable(GL_BLEND);
    }
 }
 
