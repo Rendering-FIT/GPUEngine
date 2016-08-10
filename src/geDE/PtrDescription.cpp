@@ -24,7 +24,7 @@ bool PtrDescription::init(
     TypeDescriptionVector const&description,
     size_t                     &i          ,
     bool                        exists     ){
-  PRINT_CALL_STACK(tr,description,i,exits);
+  PRINT_CALL_STACK(tr,description,i,exists);
   assert(this!=nullptr);
   assert(tr!=nullptr);
   size_t old = i;

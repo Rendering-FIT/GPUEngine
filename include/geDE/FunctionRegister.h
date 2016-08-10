@@ -323,7 +323,7 @@ namespace ge{
     }
 #else
     inline void FunctionRegister::addClassImplementation(FunctionId id,ClassImplementation impl){
-      PRINT_CALL_STACK(id,sig);
+      PRINT_CALL_STACK(id,impl);
       assert(this!=nullptr);
       this->_classImplementations[id] = impl;
     }

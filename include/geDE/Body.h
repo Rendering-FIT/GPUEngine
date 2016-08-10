@@ -31,6 +31,11 @@ namespace ge{
 
     inline Body::~Body(){
       PRINT_CALL_STACK();
+      assert(this!=nullptr);
+      for(auto const&x:this->_statements){
+        x->_removeSignalingTarget(this);
+        this->_removeSignalingSource(&*x);
+      }
     }
 
     inline void Body::addStatement(std::shared_ptr<Statement>const&statement){

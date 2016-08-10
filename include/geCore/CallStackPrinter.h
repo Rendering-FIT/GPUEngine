@@ -69,7 +69,7 @@ namespace ge{
 }
 
 #define PRINT_CALL_STACK(...)\
-  CallStackPrinter HIDDEN_VARIABLE_NAME{__VA_ARGS__};\
+  ge::core::CallStackPrinter HIDDEN_VARIABLE_NAME{__VA_ARGS__};\
   HIDDEN_VARIABLE_NAME.print(GE_CORE_FCENAME)
 
 #else

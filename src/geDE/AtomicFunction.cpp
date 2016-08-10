@@ -50,11 +50,14 @@ AtomicFunction::AtomicFunction(
 }
 
 AtomicFunction::~AtomicFunction(){
+  for(size_t i=0;i<this->_inputs.size();++i)
+    this->unbindInput(i);
+  this->unbindOutput();
   PRINT_CALL_STACK();
 }
 
 
-void AtomicFunction::_unbindInput(size_t i){
+void AtomicFunction::unbindInput(size_t i){
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
   auto&in = this->_inputs.at(i);
@@ -76,7 +79,7 @@ void AtomicFunction::_unbindInput(size_t i){
   }
 }
 
-void AtomicFunction::_unbindOutput(){
+void AtomicFunction::unbindOutput(){
   assert(this!=nullptr);
   if(this->_outputData==nullptr)return;
   this->_outputData->_removeSignalingSource(this);
@@ -92,7 +95,7 @@ bool AtomicFunction::bindInput(
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
   if(f==nullptr){
-    this->_unbindInput(i);
+    this->unbindInput(i);
     this->setDirty();
     return true;
   }
@@ -105,7 +108,7 @@ bool AtomicFunction::bindInput(
   if(!this->_inputBindingCircularCheck(fr,f))
     return false;
 
-  this->_unbindInput(i);
+  this->unbindInput(i);
 
   f->_addSignalingTarget(this);
   this->_addSignalingSource(&*f);
@@ -129,14 +132,14 @@ bool AtomicFunction::bindInputAsVariable (
   assert(this!=nullptr);
   assert(i<this->_inputs.size());
   if(r==nullptr){
-    this->_unbindInput(i);
+    this->unbindInput(i);
     this->setDirty();
     return true;
   }
   if(!this->_inputBindingCheck(fr,i,r))
     return false;
 
-  this->_unbindInput(i);
+  this->unbindInput(i);
   r->_addSignalingTarget(this);
   this->_addSourceResource(&*r);
   this->_inputs.at(i).updateTicks = r->getTicks() - 1;
@@ -153,7 +156,7 @@ bool AtomicFunction::bindOutput(
   PRINT_CALL_STACK(fr,r);
   assert(this!=nullptr);
   if(r==nullptr){
-    this->_unbindOutput();
+    this->unbindOutput();
     return true;
   }
   if(!this->_outputBindingCheck(fr,r))
@@ -161,7 +164,7 @@ bool AtomicFunction::bindOutput(
   if(!this->_outputBindingCircularCheck(fr,r))
     return false;
 
-  this->_unbindOutput();
+  this->unbindOutput();
 
   r->_addSignalingSource(this);
   this->_addTargetResource(&*r);

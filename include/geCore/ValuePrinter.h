@@ -30,6 +30,9 @@ namespace ge{
     template<typename T,typename std::enable_if<std::is_class<T>::value,unsigned>::type = 0>
       inline std::string value2str(T const&v);
 
+    template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type = 0>
+      inline std::string value2str(T const&v);
+
 
     template<typename T,typename std::enable_if<std::is_fundamental<T>::value,unsigned>::type>
       inline std::string value2str(T const&v){
@@ -53,7 +56,7 @@ namespace ge{
         for(auto const&x:v){
           if(first)first=false;
           else ss<<",";
-          ss << x;
+          ss << value2str(x);
         }
         ss << "]";
         return ss.str();
@@ -83,6 +86,14 @@ namespace ge{
         ss<<typeid(T).name();
         return ss.str();
       }
+
+    template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type>
+      inline std::string value2str(T const&v){
+        std::stringstream ss;
+        ss<<v;
+        return ss.str();
+      }
+
   }
 }
 

@@ -151,6 +151,7 @@ namespace ge{
       PRINT_CALL_STACK();
       assert(this!=nullptr);
       this->_ticks++;
+      this->_setSignalingDirty();
     }
     template<typename T>
       inline void Resource::update(T const&value){

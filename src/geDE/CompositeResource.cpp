@@ -53,6 +53,10 @@ CompositeResource::CompositeResource(
     this->_nofElements += x->getNofElements();
 }
 
+CompositeResource::~CompositeResource(){
+  PRINT_CALL_STACK();
+}
+
 void*CompositeResource::getData()const{
   PRINT_CALL_STACK();
   assert(this!=nullptr);

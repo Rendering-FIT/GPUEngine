@@ -263,7 +263,7 @@ namespace ge{
 
     template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && std::is_same<T,void>::value,unsigned>::type>
       TypeId TypeRegister::addType(std::string const&name){
-        PRINT_CALL_STACK(c,d);
+        PRINT_CALL_STACK(name);
         assert(this!=nullptr);
         return this->addVoidType(name);
       }

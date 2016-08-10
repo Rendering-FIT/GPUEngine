@@ -99,7 +99,7 @@ namespace ge{
     }
 
     inline std::shared_ptr<Function>const&If::getCondition()const{
-      PRINT_CALL_STACK(f);
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_condition;
     }
@@ -110,13 +110,13 @@ namespace ge{
     }
 
     inline std::shared_ptr<Statement>const&If::getFalseBody()const{
-      PRINT_CALL_STACK(f);
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_falseBody;
     }
 
     inline std::shared_ptr<If>If::toIf()const{
-      PRINT_CALL_STACK(f);
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return std::dynamic_pointer_cast<If>(std::const_pointer_cast<Statement>(this->shared_from_this()));
     }

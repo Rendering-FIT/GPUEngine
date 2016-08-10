@@ -47,6 +47,8 @@ namespace ge{
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr            ,
             std::shared_ptr<Resource>        const&data = nullptr)override;
+        virtual void unbindInput(size_t i)override;
+        virtual void unbindOutput()override;
         virtual bool hasInput(size_t i)const override;
         virtual bool hasOutput()const override;
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const override;
@@ -56,8 +58,6 @@ namespace ge{
         std::vector<AtomicFunctionInput>_inputs;
         std::map<std::shared_ptr<Function>,size_t>_fces;
         std::shared_ptr<Resource>_outputData  = nullptr;
-        void _unbindInput(size_t i);
-        void _unbindOutput();
         bool _processInputs();
         virtual bool _do();
         inline bool _inputChanged(size_t i)const;

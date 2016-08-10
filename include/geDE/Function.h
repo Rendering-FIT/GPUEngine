@@ -35,6 +35,8 @@ namespace ge{
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr            ,
             std::shared_ptr<Resource>        const&data = nullptr) = 0;
+        virtual void unbindInput(size_t i) = 0;
+        virtual void unbindOutput() = 0;
         virtual bool hasInput(size_t i)const = 0;
         virtual bool hasOutput()const = 0; 
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const = 0;
@@ -133,13 +135,13 @@ namespace ge{
     }
 
     inline size_t Function::nofTargetResources()const{
-      PRINT_CALL_STACK(r);
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_targetResources.size();
     }
 
     inline size_t Function::nofSourceResources()const{
-      PRINT_CALL_STACK(r);
+      PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_sourceResources.size();
     }

@@ -32,7 +32,8 @@ namespace ge{
         virtual bool bindOutput(
             std::shared_ptr<FunctionRegister>const&fr            ,
             std::shared_ptr<Resource>        const&data = nullptr)override;
-
+        virtual void unbindInput(size_t i)override;
+        virtual void unbindOutput()override;
         virtual bool hasInput (size_t i)const override;
         virtual bool hasOutput(        )const override;
         virtual std::shared_ptr<Resource>const&getInputData (size_t i)const override;

@@ -141,7 +141,7 @@ namespace ge{
               CLASS(std::shared_ptr<FunctionRegister>const&fr,FunctionId id):AtomicFunction(fr,id){PRINT_CALL_STACK(fr);}\
       protected:\
                 virtual bool _do(){\
-                  PRINT_CALL_STACK()\
+                  PRINT_CALL_STACK();\
                   assert(this!=nullptr);\
     INPUT_CHECK();\
     LEFT_RIGHT_SIDE(STD_CAST,bool,bool,OPERATOR,RIGHT_SIDE);\

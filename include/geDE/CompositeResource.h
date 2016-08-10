@@ -13,6 +13,7 @@ namespace ge{
             std::shared_ptr<TypeRegister>const&         manager   = nullptr                   ,
             TypeId                                      id        = TypeRegister::UNREGISTERED,
             std::vector<std::shared_ptr<Resource>>const&accessors = {}                        );
+        virtual ~CompositeResource();
         virtual void*getData()const = 0;
         virtual void const*getDataAddress()const = 0;
         virtual std::shared_ptr<Resource> operator[](size_t elem);

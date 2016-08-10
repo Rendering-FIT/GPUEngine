@@ -17,6 +17,10 @@ CompositeFunction::CompositeFunction(
 
 CompositeFunction::~CompositeFunction(){
   PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  for(size_t i=0;i<this->_inputMapping.size();++i)
+    this->unbindInput(i);
+  this->unbindOutput();
 }
 
 bool CompositeFunction::bindInput (
@@ -72,6 +76,24 @@ bool CompositeFunction::bindOutput(
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
   return this->_outputMapping->bindOutput(fr,data);
+}
+
+void CompositeFunction::unbindInput(size_t i){
+  PRINT_CALL_STACK(fr,i,f);
+  assert(this!=nullptr);
+  assert(i<this->_inputMapping.size());
+
+  for(auto const&x:this->_inputMapping.at(i)){
+    assert(std::get<FUNCTION>(x)!=nullptr);
+    std::get<FUNCTION>(x)->unbindInput(std::get<INPUT>(x));
+  }
+}
+
+void CompositeFunction::unbindOutput(){
+  PRINT_CALL_STACK(fr,data);
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  return this->_outputMapping->unbindOutput();
 }
 
 bool CompositeFunction::hasInput(InputIndex i)const{
