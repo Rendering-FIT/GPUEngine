@@ -7,6 +7,64 @@
 
 namespace ge{
   namespace de{
+    /**
+     * @brief This function register external non void function into FunctionRegister
+     *
+     * @param fr function register
+     * @param name name of function
+     * @param fce function pointer that will be registered
+     * @param sig signaling function, if this function returns true, output is marked as changed
+     * when no sig function is provided output is always marked as changed
+     *
+     * @return function id of registered function
+     */
+    template<typename OUTPUT,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+      FunctionId registerBasicFunction(std::shared_ptr<FunctionRegister>const&fr,std::string const&name,OUTPUT(*fce)(ARGS...),bool(*sig)(ARGS...) = nullptr);
+    /**
+     * @brief This function register external void function into FunctionRegister
+     *
+     * @param fr function register
+     * @param name name of function
+     * @param fce function pointer that will be registered
+     * @param sig signaling function, if this function returns true, output is marked as changed
+     * when no sig function is provided output is always marked as changed
+     *
+     * @return function id of registered function
+     */
+    template<typename OUTPUT,typename...ARGS,typename std::enable_if<std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+      FunctionId registerBasicFunction(std::shared_ptr<FunctionRegister>const&fr,std::string const&name,OUTPUT(*fce)(ARGS...),bool(*sig)(ARGS...) = nullptr);
+    /**
+     * @brief This function register member non void function into FunctionRegister
+     *
+     * @param fr function register
+     * @param name name of function
+     * @param fce member function pointer that will be registered
+     * @param sig signaling function, if this function returns true, output is marked as changed
+     * when no sig function is provided output is always marked as changed
+     *
+     * @return function id of registered function
+     */
+    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+      FunctionId registerClassFunction(std::shared_ptr<FunctionRegister>const&fr,std::string const&name,OUTPUT(CLASS::*fce)(ARGS...),bool(*sig)(ARGS...) = nullptr);
+    /**
+     * @brief This function register member void function into FunctionRegister
+     *
+     * @param fr function register
+     * @param name name of function
+     * @param fce member function pointer that will be registered
+     * @param sig signaling function, if this function returns true, output is marked as changed
+     * when no sig function is provided output is always marked as changed
+     *
+     * @return function id of registered function
+     */
+    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+      FunctionId registerClassFunction(std::shared_ptr<FunctionRegister>const&fr,std::string const&name,OUTPUT(CLASS::*fce)(ARGS...),bool(*sig)(ARGS...) = nullptr);
+
+
+
+
+/////////////YOU SHOULD NOT LOOK BELOW THIS LINE////////////////
+
     template<typename OUTPUT,typename...ARGS,std::size_t...I>
       inline OUTPUT uber_call(Function*mf,OUTPUT(*fce)(ARGS...),ge::core::index_sequence<I...>){
         PRINT_CALL_STACK(mf,fce);
@@ -42,7 +100,6 @@ namespace ge{
     PRINT_CALL_STACK(fr,name,fce,sig);\
     assert(fr!=nullptr);\
     assert(fr->getTypeRegister()!=nullptr);\
-    static const std::string ss=name;\
     auto tr = fr->getTypeRegister();\
     auto tid = tr->addType<OUTPUT(ARGS...)>();\
     class BasicFunction: public AtomicFunction{\
@@ -87,146 +144,104 @@ namespace ge{
     return f
 
 
-    template<typename OUTPUT,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+    template<typename OUTPUT,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type>
       FunctionId registerBasicFunction(
           std::shared_ptr<FunctionRegister>const&fr,
-          const std::string name,
+          std::string const&name,
           OUTPUT(*fce)(ARGS...),
-          bool(*sig)(ARGS...) = nullptr){
+          bool(*sig)(ARGS...)){
         GE_DE_REGISTER_BASIC_FUNCTION_PROLOGUE();
         *this->getOutputData() = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
         GE_DE_REGISTER_BASIC_FUNCTION_EPILOGUE();
       }
 
-    template<typename OUTPUT,typename...ARGS,typename std::enable_if<std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+    template<typename OUTPUT,typename...ARGS,typename std::enable_if<std::is_same<OUTPUT,void>::value,unsigned>::type>
       FunctionId registerBasicFunction(
           std::shared_ptr<FunctionRegister>const&fr,
-          const std::string name,
+          std::string const&name,
           OUTPUT(*fce)(ARGS...),
-          bool(*sig)(ARGS...) = nullptr){
+          bool(*sig)(ARGS...)){
         GE_DE_REGISTER_BASIC_FUNCTION_PROLOGUE();
         uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
         GE_DE_REGISTER_BASIC_FUNCTION_EPILOGUE();
       }
 
+#define GE_DE_REGISTER_CLASS_FUNCTION_PROLOGUE()\
+    PRINT_CALL_STACK(fr,name,fce,sig);\
+    assert(fr!=nullptr);\
+    assert(fr->getTypeRegister()!=nullptr);\
+    auto tr = fr->getTypeRegister();\
+    auto tid = tr->addType<OUTPUT(CLASS::*)(ARGS...)>();\
+    class BasicFunction: public AtomicFunction{\
+      protected:\
+                \
+      using FceType          = OUTPUT(CLASS::*)(ARGS...);\
+      using SignalingFceType = bool(*)(ARGS...);\
+      FceType _fceImpl;\
+      SignalingFceType _sigImpl;\
+      public:\
+             \
+      class MyCLSImpl: public FunctionRegister::CLSImpl{\
+        public:\
+               \
+        using FceType = OUTPUT(CLASS::*)(ARGS...);\
+        FceType ptr;\
+        MyCLSImpl(FceType const&z){\
+          this->ptr = z;\
+        }\
+      };\
+      BasicFunction(\
+          std::shared_ptr<FunctionRegister>const&fr,\
+          FunctionId           id):AtomicFunction(fr,id){\
+        PRINT_CALL_STACK(fr,id);\
+        assert(this!=nullptr);\
+        assert(fr!=nullptr);\
+        this->_fceImpl = ((MyCLSImpl*)fr->getClassImplementation(this->_id))->ptr;\
+        this->_sigImpl=reinterpret_cast<SignalingFceType>(fr->getSignalingDecider(this->_id));\
+      }\
+      virtual ~BasicFunction(){\
+        PRINT_CALL_STACK();\
+      }\
+      protected:\
+                \
+      virtual bool _do(){\
+        assert(this!=nullptr);\
+        bool doUberCall = true;\
+        if(this->_sigImpl)\
+        doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});\
+        if(!doUberCall)return false//}}
 
-    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+#define GE_DE_REGISTER_CLASS_FUNCTION_EPILOGUE()\
+    return true;\
+    /*{*/}\
+    /*{*/};\
+    auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));\
+    fr->addClassImplementation(f,new typename BasicFunction::MyCLSImpl(fce));\
+    fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));\
+    return f
+
+
+    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<!std::is_same<OUTPUT,void>::value,unsigned>::type>
       FunctionId registerClassFunction(
           std::shared_ptr<FunctionRegister>const&fr,
-          const std::string name,
+          std::string const&name,
           OUTPUT(CLASS::*fce)(ARGS...),
-          bool(*sig)(ARGS...) = nullptr){
-        PRINT_CALL_STACK(fr,name,fce,sig);
-        assert(fr!=nullptr);
-        assert(fr->getTypeRegister()!=nullptr);
-        static const std::string ss=name;
-        auto tr = fr->getTypeRegister();
-        auto tid = tr->addType<OUTPUT(CLASS::*)(ARGS...)>();
-
-        class BasicFunction: public AtomicFunction{
-          protected:
-            using FF = OUTPUT(CLASS::*)(ARGS...);
-            using SIGFF = bool(*)(ARGS...);
-            FF _fceImpl;
-            SIGFF _sigImpl;
-          public:
-            class MyCLSImpl: public FunctionRegister::CLSImpl{
-              public:
-                using FF = OUTPUT(CLASS::*)(ARGS...);
-                FF ptr;
-                MyCLSImpl(FF const&z){
-                  this->ptr = z;
-                }
-            };
-            BasicFunction(
-                std::shared_ptr<FunctionRegister>const&fr,
-                FunctionId           id):AtomicFunction(fr,id){
-              PRINT_CALL_STACK(fr,id);
-              assert(this!=nullptr);
-              assert(fr!=nullptr);
-              this->_fceImpl = ((MyCLSImpl*)fr->getClassImplementation(this->_id))->ptr;
-              this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
-            }
-            virtual ~BasicFunction(){
-              PRINT_CALL_STACK();
-            }
-          protected:
-            virtual bool _do(){
-              assert(this!=nullptr);
-
-              bool doUberCall = true;
-              if(this->_sigImpl)
-                doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              if(!doUberCall)return false;
-              *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              return true;
-            }
-        };
-        auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));
-        fr->addClassImplementation(f,new typename BasicFunction::MyCLSImpl(fce));
-        fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));
-        return f;
+          bool(*sig)(ARGS...)){
+        GE_DE_REGISTER_CLASS_FUNCTION_PROLOGUE();
+        *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+        GE_DE_REGISTER_CLASS_FUNCTION_EPILOGUE();
       }
 
-    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<std::is_same<OUTPUT,void>::value,unsigned>::type = 0>
+    template<typename OUTPUT,typename CLASS,typename...ARGS,typename std::enable_if<std::is_same<OUTPUT,void>::value,unsigned>::type>
       FunctionId registerClassFunction(
           std::shared_ptr<FunctionRegister>const&fr,
-          const std::string name,
+          std::string const&name,
           OUTPUT(CLASS::*fce)(ARGS...),
-          bool(*sig)(ARGS...) = nullptr){
-        PRINT_CALL_STACK(fr,name,fce,sig);
-        assert(fr!=nullptr);
-        assert(fr->getTypeRegister()!=nullptr);
-        static const std::string ss=name;
-        auto tr = fr->getTypeRegister();
-        auto tid = tr->addType<OUTPUT(CLASS::*)(ARGS...)>();
-
-        class BasicFunction: public AtomicFunction{
-          protected:
-            using FF = OUTPUT(CLASS::*)(ARGS...);
-            using SIGFF = bool(*)(ARGS...);
-            FF _fceImpl;
-            SIGFF _sigImpl;
-          public:
-            class MyCLSImpl: public FunctionRegister::CLSImpl{
-              public:
-                using FF = OUTPUT(CLASS::*)(ARGS...);
-                FF ptr;
-                MyCLSImpl(FF const&z){
-                  this->ptr = z;
-                }
-            };
-            BasicFunction(
-                std::shared_ptr<FunctionRegister>const&fr,
-                FunctionId           id):AtomicFunction(fr,id){
-              PRINT_CALL_STACK(fr,id);
-              assert(this!=nullptr);
-              assert(fr!=nullptr);
-              this->_fceImpl = ((MyCLSImpl*)fr->getClassImplementation(this->_id))->ptr;
-              this->_sigImpl=reinterpret_cast<SIGFF>(fr->getSignalingDecider(this->_id));
-            }
-            virtual ~BasicFunction(){
-              PRINT_CALL_STACK();
-            }
-          protected:
-            virtual bool _do(){
-              PRINT_CALL_STACK();
-              assert(this!=nullptr);
-
-              bool doUberCall = true;
-              if(this->_sigImpl)
-                doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              if(!doUberCall)return false;
-              uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
-              return true;
-            }
-        };
-        auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));
-        fr->addClassImplementation(f,new typename BasicFunction::MyCLSImpl(fce));
-        fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));
-        return f;
+          bool(*sig)(ARGS...)){
+        GE_DE_REGISTER_CLASS_FUNCTION_PROLOGUE();
+        uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
+        GE_DE_REGISTER_CLASS_FUNCTION_EPILOGUE();
       }
-
   }
 }
 
