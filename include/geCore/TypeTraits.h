@@ -48,16 +48,28 @@ namespace ge{
       struct MemFceArgType<OUTPUT(CLASS::*)(ARGS...)>{
         using type = std::tuple<ARGS...>;
       };
+    template<typename OUTPUT,typename CLASS,typename... ARGS>
+      struct MemFceArgType<OUTPUT(CLASS::*)(ARGS...)const>{
+        using type = std::tuple<ARGS...>;
+      };
 
     template<typename FCE>struct MemFceClassType;
     template<typename OUTPUT,typename CLASS,typename...ARGS>
       struct MemFceClassType<OUTPUT(CLASS::*)(ARGS...)>{
         using type = CLASS;
       };
+    template<typename OUTPUT,typename CLASS,typename...ARGS>
+      struct MemFceClassType<OUTPUT(CLASS::*)(ARGS...)const>{
+        using type = CLASS;
+      };
 
     template<typename FCE>struct MemFceReturnType;
     template<typename OUTPUT,typename CLASS,typename...ARGS>
       struct MemFceReturnType<OUTPUT(CLASS::*)(ARGS...)>{
+        using type = OUTPUT;
+      };
+    template<typename OUTPUT,typename CLASS,typename...ARGS>
+      struct MemFceReturnType<OUTPUT(CLASS::*)(ARGS...)const>{
         using type = OUTPUT;
       };
   }

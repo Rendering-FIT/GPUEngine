@@ -1,6 +1,7 @@
 #pragma once
 
 #include<geDE/Statement.h>
+#include<iostream>
 
 namespace ge{
   namespace de{
@@ -10,7 +11,7 @@ namespace ge{
         using StatementIndex    = StatementVector::size_type;
         using StatementIterator = StatementVector::const_iterator;
       public:
-        Body(bool immediate = false);
+        Body(bool ignore    = false);
         virtual ~Body();
         void addStatement(std::shared_ptr<Statement>const&statement);
         StatementIndex size()const;
@@ -25,7 +26,7 @@ namespace ge{
         std::vector<size_t>_statementsUpdateTicks;
     };
 
-    inline Body::Body(bool immediate):Statement(BODY,immediate){
+    inline Body::Body(bool ignore   ):Statement(BODY,ignore   ){
       PRINT_CALL_STACK();
     }
 
@@ -75,7 +76,7 @@ namespace ge{
     inline void Body::operator()(){
       PRINT_CALL_STACK();
       assert(this!=nullptr);
-      if(!this->_immediate)
+      if(!this->_ignoreDirty)
         if(!this->_dirtyFlag)return;
       this->_dirtyFlag = false;
       bool changed = false;

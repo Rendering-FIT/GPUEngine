@@ -22,7 +22,7 @@ namespace ge{
         Function(
             std::shared_ptr<FunctionRegister>const&fr               ,
             FunctionId                             id               ,
-            bool                                   immediate = false);
+            bool                                   ignore    = false);
         virtual ~Function();
         FunctionId getId()const;
         virtual bool bindInput (
@@ -49,6 +49,8 @@ namespace ge{
         bool hasSourceResource(Resource*r)const;
         size_t nofTargetResources()const;
         size_t nofSourceResources()const;
+        virtual bool isIgnoringInputChanges()const = 0;
+        virtual void setIgnoreInputChanges(bool ignore = false) = 0;
       protected:
         FunctionId _id;
         bool _inputBindingCheck (
@@ -85,7 +87,7 @@ namespace ge{
     inline Function::Function(
         std::shared_ptr<FunctionRegister>const&,
         FunctionId id,
-        bool immediate):Statement(FUNCTION,immediate){
+        bool ignore):Statement(FUNCTION,ignore){
       assert(this!=nullptr);
       this->_id = id;
     }

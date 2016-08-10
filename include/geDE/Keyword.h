@@ -68,10 +68,14 @@ namespace ge{
         return argPrinter<typename std::tuple_element<I,TTT>::type...>();
       }
 
-    template<typename T>
+    template<typename T,typename std::enable_if<!std::is_same<T,std::tuple<>>::value,unsigned>::type = 0>
       inline std::string printArgs2(){
         return printArgs2_help<T>(typename ge::core::make_index_sequence<std::tuple_size<T>::value>::type{});
       }
+    template<typename T,typename std::enable_if<std::is_same<T,std::tuple<>>::value,unsigned>::type = 0>
+    inline std::string printArgs2(){
+      return"";
+    }
 
 
 

@@ -9,7 +9,7 @@ CompositeFunction::CompositeFunction(
     FunctionId id,
     std::shared_ptr<Function>const&output,
     std::vector<FceInputList>const&inputs,
-    bool immediate):Function(fr,id,immediate){
+    bool ignore   ):Function(fr,id,ignore   ){
   PRINT_CALL_STACK(fr,id,output,inputs);
   assert(this!=nullptr);
   this->_outputMapping = output;
@@ -169,17 +169,37 @@ void CompositeFunction::_removeTargetResource(Resource*resource){
   this->_outputMapping->_removeTargetResource(resource);
 }
 
-bool CompositeFunction::isImmediate()const{
+bool CompositeFunction::isIgnoringDirty()const{
   PRINT_CALL_STACK(resource);
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
-  return this->_outputMapping->isImmediate();
+  return this->_outputMapping->isIgnoringDirty();
 }
 
-void CompositeFunction::setImmediate(bool immediate){
+void CompositeFunction::setIgnoreDirty(bool ignore   ){
   PRINT_CALL_STACK(resource);
   assert(this!=nullptr);
   assert(this->_outputMapping!=nullptr);
-  this->_outputMapping->setImmediate(immediate);
+  this->_outputMapping->setIgnoreDirty(ignore   );
+}
+
+bool CompositeFunction::isIgnoringInputChanges()const{
+  PRINT_CALL_STACK(resource);
+  assert(this!=nullptr);
+  if(0<this->_inputMapping.size())return false;
+  assert(this->_inputMapping[0].size()>0);
+  FceInput const&mapping = this->_inputMapping.at(0).at(0);
+  assert(std::get<FUNCTION>(mapping)!=nullptr);
+  return std::get<FUNCTION>(mapping)->isIgnoringInputChanges();
+}
+
+void CompositeFunction::setIgnoreInputChanges(bool ignore){
+  PRINT_CALL_STACK(resource);
+  assert(this!=nullptr);
+  for(auto const&y:this->_inputMapping)
+    for(auto const&x:y){
+      assert(std::get<FUNCTION>(x)!=nullptr);
+      std::get<FUNCTION>(x)->setIgnoreInputChanges(ignore);
+    }
 }
 

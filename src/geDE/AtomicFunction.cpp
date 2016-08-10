@@ -34,7 +34,7 @@ AtomicFunctionInput::~AtomicFunctionInput(){
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
     FunctionId                             id,
-    bool immediate                           ):Function(fr,id,immediate){
+    bool ignore                              ):Function(fr,id,ignore   ){
   PRINT_CALL_STACK(fr,id);
   assert(this!=nullptr);
   assert(fr!=nullptr);
@@ -47,7 +47,7 @@ AtomicFunction::AtomicFunction(
     TypeId                                 type     ,
     std::string                      const&name     ,
     std::shared_ptr<StatementFactory>const&factory  ,
-    bool                                   immediate):AtomicFunction(fr,fr->addFunction(type,name,factory),immediate){
+    bool                                   ignore   ):AtomicFunction(fr,fr->addFunction(type,name,factory),ignore   ){
   PRINT_CALL_STACK(fr,type,name,factory);
 }
 
@@ -185,16 +185,19 @@ std::shared_ptr<Function>const&AtomicFunction::getInputFunction(size_t i)const{
 void AtomicFunction::operator()(){
   PRINT_CALL_STACK();
   assert(this!=nullptr);
-  if(!this->_dirtyFlag)return;
+  if(!this->_ignoreDirty)
+    if(!this->_dirtyFlag)return;
   bool isAnyInputChanged = this->_processInputs();
-  if(!isAnyInputChanged){
-    this->_dirtyFlag = false;
-    return;
-  }
+  if(!this->_ignoreInputChanges)
+    if(!isAnyInputChanged){
+      this->_dirtyFlag = false;
+      return;
+    }
   bool isOutputChanged = this->_do();
   this->_dirtyFlag = false;
   if(isOutputChanged){
-    this->getOutputData()->updateTicks();
+    if(this->getOutputData())
+      this->getOutputData()->updateTicks();
     this->_updateTicks++;
     this->setSignalingDirty();
   }

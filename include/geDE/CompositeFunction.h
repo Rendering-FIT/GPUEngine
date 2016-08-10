@@ -19,7 +19,7 @@ namespace ge{
             FunctionId                             id               ,
             std::shared_ptr<Function>        const&output           ,
             std::vector<FceInputList>        const&inputs           ,
-            bool                                   immediate = false);
+            bool                                   ignore    = false);
         ~CompositeFunction();
         virtual inline void operator()()override;
         virtual bool bindInput (
@@ -40,8 +40,10 @@ namespace ge{
         virtual std::shared_ptr<Resource>const&getInputData (size_t i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData()const override;
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
-        virtual bool isImmediate()const override;
-        virtual void setImmediate(bool immediate = false)override;
+        virtual bool isIgnoringDirty()const override;
+        virtual void setIgnoreDirty(bool ignore    = false)override;
+        virtual bool isIgnoringInputChanges()const override;
+        virtual void setIgnoreInputChanges(bool ignore = false)override;
       protected:
         std::vector<FceInputList>_inputMapping;
         std::shared_ptr<Function>_outputMapping;

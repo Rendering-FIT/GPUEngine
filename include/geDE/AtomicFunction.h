@@ -29,13 +29,13 @@ namespace ge{
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr               ,
             FunctionId                             id               ,
-            bool                                   immediate = false);
+            bool                                   ignore    = false);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr               ,
             TypeId                                 type             ,
             std::string                      const&name             ,
             std::shared_ptr<StatementFactory>const&factory = nullptr,
-            bool                                   immediate = false);
+            bool                                   ignore    = false);
         virtual ~AtomicFunction();
         virtual void operator()()override;
         virtual bool bindInput (
@@ -56,7 +56,10 @@ namespace ge{
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData()const override;
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
+        virtual bool isIgnoringInputChanges()const override;
+        virtual void setIgnoreInputChanges(bool ignore = false)override;
       protected:
+        bool _ignoreInputChanges = false;
         std::vector<AtomicFunctionInput>_inputs;
         std::map<std::shared_ptr<Function>,size_t>_fces;
         std::shared_ptr<Resource>_outputData  = nullptr;
@@ -98,6 +101,17 @@ namespace ge{
       assert(this!=nullptr);
       assert(i<this->_inputs.size());
       return this->_inputs.at(i).changed;
+    }
+    inline bool AtomicFunction::isIgnoringInputChanges()const{
+      PRINT_CALL_STACK(i);
+      assert(this!=nullptr);
+      return this->_ignoreInputChanges;
+    }
+
+    inline void AtomicFunction::setIgnoreInputChanges(bool ignore){
+      PRINT_CALL_STACK(i);
+      assert(this!=nullptr);
+      this->_ignoreInputChanges = ignore;
     }
 
   }

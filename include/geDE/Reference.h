@@ -10,7 +10,7 @@ namespace ge{
         Reference(
             std::shared_ptr<FunctionRegister>const&fr               ,
             TypeId                                 id               ,
-            bool                                   immediate = false);
+            bool                                   ignore    = false);
       protected:
         virtual bool _do();
     };

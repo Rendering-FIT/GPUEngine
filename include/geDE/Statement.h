@@ -29,7 +29,7 @@ namespace ge{
           WHILE   ,
           IF      ,
         };
-        Statement(Type const&type,bool immediate = false);
+        Statement(Type const&type,bool ignoreDirty = false);
         virtual ~Statement();
         virtual void operator()()=0;
         void setDirty();
@@ -45,13 +45,13 @@ namespace ge{
         virtual std::shared_ptr<If>toIf()const;
         virtual std::shared_ptr<While>toWhile()const;
         virtual std::shared_ptr<Function>toFunction()const;
-        virtual bool isImmediate()const;
-        virtual void setImmediate(bool immediate = false);
+        virtual bool isIgnoringDirty()const;
+        virtual void setIgnoreDirty(bool ignore = false);
       protected:
         Type _type;
         bool _dirtyFlag = false;
         Ticks _updateTicks = 0;
-        bool _immediate = false;
+        bool _ignoreDirty = false;
         std::set<Statement*>_signalingSources;
         std::set<Statement*>_signalingTargets;
         virtual void _addSignalingSource(Statement*statement);
@@ -60,11 +60,11 @@ namespace ge{
         virtual void _removeSignalingTarget(Statement*statement);
     };
 
-    inline Statement::Statement(Type const&type,bool immediate){
+    inline Statement::Statement(Type const&type,bool ignore){
       PRINT_CALL_STACK(type);
       assert(this!=nullptr);
       this->_type = type;
-      this->_immediate = immediate;
+      this->_ignoreDirty = ignore;
     }
 
     inline Statement::~Statement(){
@@ -177,16 +177,16 @@ namespace ge{
       return nullptr;
     }
 
-    inline bool Statement::isImmediate()const{
+    inline bool Statement::isIgnoringDirty()const{
       PRINT_CALL_STACK();
       assert(this!=nullptr);
-      return this->_immediate;
+      return this->_ignoreDirty;
     }
 
-    inline void Statement::setImmediate(bool immediate){
+    inline void Statement::setIgnoreDirty(bool ignore){
       PRINT_CALL_STACK();
       assert(this!=nullptr);
-      this->_immediate = immediate;
+      this->_ignoreDirty = ignore;
     }
   }
 }

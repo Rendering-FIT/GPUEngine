@@ -11,7 +11,7 @@ namespace ge{
             std::shared_ptr<Function >const&condition = nullptr,
             std::shared_ptr<Statement>const&trueBody  = nullptr,
             std::shared_ptr<Statement>const&falseBody = nullptr,
-            bool                            immediate = false  );
+            bool                            ignore    = false  );
         virtual ~If()override;
         void setCondition(std::shared_ptr<Function >const&condition = nullptr);
         void setTrueBody (std::shared_ptr<Statement>const&trueBody  = nullptr);
@@ -34,7 +34,7 @@ namespace ge{
         std::shared_ptr<Function >const&condition,
         std::shared_ptr<Statement>const&trueBody ,
         std::shared_ptr<Statement>const&falseBody,
-        bool                            immediate):Statement(IF,immediate){
+        bool                            ignore   ):Statement(IF,ignore   ){
       PRINT_CALL_STACK(condition,trueBody,falseBody);
       assert(this!=nullptr);
       this->setCondition(condition);
