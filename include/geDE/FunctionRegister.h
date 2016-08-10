@@ -30,12 +30,7 @@ namespace ge{
       public:
         typedef void(*Implementation)();
         typedef bool(*SignalingDecider)();
-#if defined(_MSC_VER)
-        class CLSImpl{
-        };
-#else
-        using ClassImplementation = void(Empty::*)();
-#endif
+        class CLSImpl{};
         using InputIndex = size_t;
         inline FunctionRegister(
             std::shared_ptr<TypeRegister>const&typeRegister,
@@ -65,17 +60,10 @@ namespace ge{
         void addSignalingDecider(std::string const&name,SignalingDecider sig);
         SignalingDecider getSignalingDecider(FunctionId id)const;
         SignalingDecider getSignalingDecider(std::string const&name)const;
-#if defined(_MSC_VER)
         void addClassImplementation(FunctionId id,CLSImpl* impl);
         void addClassImplementation(std::string const&name,CLSImpl* impl);
         CLSImpl* getClassImplementation(FunctionId id)const;
         CLSImpl* getClassImplementation(std::string const&name)const;
-#else
-        void addClassImplementation(FunctionId id,ClassImplementation impl);
-        void addClassImplementation(std::string const&name,ClassImplementation impl);
-        ClassImplementation getClassImplementation(FunctionId id)const;
-        ClassImplementation getClassImplementation(std::string const&name)const;
-#endif
         std::shared_ptr<Function>sharedFunction(FunctionId  id  )const;
         std::shared_ptr<Function>sharedFunction(std::string const&name)const;
         std::shared_ptr<Statement>sharedStatement(FunctionId  id  )const;
@@ -98,11 +86,7 @@ namespace ge{
         std::map<FunctionId,FunctionDefinition>_functions;
         std::map<FunctionId,Implementation>_implementations;
         std::map<FunctionId,SignalingDecider>_signalingDeciders;
-#if defined(_MSC_VER)
         std::map<FunctionId,CLSImpl*>_classImplementations;
-#else
-        std::map<FunctionId,ClassImplementation>_classImplementations;
-#endif
         std::map<std::string,FunctionId>_name2Function;
         inline FunctionDefinition      & _getDefinition(FunctionId id);
         inline FunctionDefinition const& _getDefinition(FunctionId id)const;
@@ -127,10 +111,8 @@ namespace ge{
 
     inline FunctionRegister::~FunctionRegister(){
       PRINT_CALL_STACK();
-#if defined(_MSC_VER)
       for(auto const&x:this->_classImplementations)
          delete x.second;
-#endif
     }
 
     inline FunctionRegister::FunctionDefinition &FunctionRegister::_getDefinition(FunctionId id){
@@ -296,7 +278,7 @@ namespace ge{
       assert(this!=nullptr);
       return this->getSignalingDecider(this->getFunctionId(name));
     }
-#if defined(_MSC_VER)
+
     inline void FunctionRegister::addClassImplementation(FunctionId id,CLSImpl* impl){
       PRINT_CALL_STACK(id,sig);
       assert(this!=nullptr);
@@ -321,31 +303,6 @@ namespace ge{
       assert(this!=nullptr);
       return this->getClassImplementation(this->getFunctionId(name));
     }
-#else
-    inline void FunctionRegister::addClassImplementation(FunctionId id,ClassImplementation impl){
-      PRINT_CALL_STACK(id,impl);
-      assert(this!=nullptr);
-      this->_classImplementations[id] = impl;
-    }
-
-    inline void FunctionRegister::addClassImplementation(std::string const&name,ClassImplementation impl){
-      PRINT_CALL_STACK(name,impl);
-      assert(this!=nullptr);
-      this->addClassImplementation(this->getFunctionId(name),impl);
-    }
-    
-    inline FunctionRegister::ClassImplementation FunctionRegister::getClassImplementation(FunctionId id)const{
-      PRINT_CALL_STACK(id);
-      assert(this!=nullptr);
-      assert(this->_classImplementations.count(id)!=0);
-      return this->_classImplementations.find(id)->second;
-    }
-
-    inline FunctionRegister::ClassImplementation FunctionRegister::getClassImplementation(std::string const&name)const{
-      PRINT_CALL_STACK(name);
-      assert(this!=nullptr);
-      return this->getClassImplementation(this->getFunctionId(name));
-    }
-#endif
   }
 }
+
