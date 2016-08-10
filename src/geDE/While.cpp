@@ -9,7 +9,8 @@ void While::operator()(){
   assert(this!=nullptr);
   assert(this->_condition!=nullptr);
   assert(this->_body!=nullptr);
-  if(!this->_dirtyFlag)return;
+  if(!this->_immediate)
+    if(!this->_dirtyFlag)return;
   this->_dirtyFlag = false;
   bool changed = false;
   //unsigned counter = 0;

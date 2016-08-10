@@ -27,13 +27,15 @@ namespace ge{
     class GEDE_EXPORT AtomicFunction: public Function{
       public:
         AtomicFunction(
-            std::shared_ptr<FunctionRegister>const&fr,
-            FunctionId                             id);
+            std::shared_ptr<FunctionRegister>const&fr               ,
+            FunctionId                             id               ,
+            bool                                   immediate = false);
         AtomicFunction(
             std::shared_ptr<FunctionRegister>const&fr               ,
             TypeId                                 type             ,
             std::string                      const&name             ,
-            std::shared_ptr<StatementFactory>const&factory = nullptr);
+            std::shared_ptr<StatementFactory>const&factory = nullptr,
+            bool                                   immediate = false);
         virtual ~AtomicFunction();
         virtual void operator()()override;
         virtual bool bindInput (

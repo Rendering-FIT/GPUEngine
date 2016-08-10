@@ -40,8 +40,14 @@ bool Function::_inputBindingCheck(
 
   if(r == nullptr)return true;
 
-  auto toType = tr->getFceArgTypeId(fr->getType(this->_id),i);
+  auto fceType = fr->getType(this->_id);
+  auto toType = tr->getFceArgTypeId(fceType,i);
   auto fromType = r->getId();
+
+  if(i==0&&tr->getTypeIdType(fceType)==TypeRegister::MEMFCE&&r->isPointer())
+    if(tr->getPtrType(r->getId())==tr->getMemFceClassTypeId(fceType))
+      return true;
+
   if(tr->areConvertible(toType,fromType))return true;
   ge::core::printError(GE_CORE_FCENAME,
       std::string("in function of type: ")+tr->getTypeIdName(fr->getType(this->_id))+", "+

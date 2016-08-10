@@ -277,6 +277,7 @@ namespace ge{
 }
 
 template<typename T>T const&removeSharedPointer(std::shared_ptr<T>const&val){return *val;}
+template<typename T>T*sharedPointerToPointer(std::shared_ptr<T>const&val){return &*val;}
 
 SCENARIO( "registration of external member function as boxes", "[FunctionRegister]" ) {
   auto tr=std::make_shared<TypeRegister>();
@@ -310,6 +311,7 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
       [](void*ptr){
       ((std::shared_ptr<TestClass>*)ptr)->~shared_ptr();
       });
+  tr->addType<TestClass*>();
 
   auto f1 = fr->sharedFunction("TestClass::add");
   auto ff1 = std::dynamic_pointer_cast<Function>(f1);
@@ -323,5 +325,23 @@ SCENARIO( "registration of external member function as boxes", "[FunctionRegiste
   ((std::shared_ptr<TestClass>&)*b1->getInputData(0))->data = 100;
   (*ff1)();
   REQUIRE((int32_t)(*ff1->getOutputData())==100+32);
+
+  {
+    registerBasicFunction(fr,"sharedPointerToPointerTestClass",sharedPointerToPointer<TestClass>);
+    auto res = tr->sharedResource("SharedTestClass");
+    auto val = tr->createResource<int32_t>(4);
+    auto f0 = fr->sharedFunction("sharedPointerToPointerTestClass");
+    auto f1 = fr->sharedFunction("TestClass::add");
+    f0->bindInputAsVariable(fr,0,res);
+    f0->bindOutput(fr,tr->sharedResource("TestClass*"));
+    f1->bindInput(fr,0,f0);
+    f1->bindInputAsVariable(fr,1,val);
+    f1->bindOutput(fr,tr->sharedResource("i32"));
+    (*f1)();
+    REQUIRE((int32_t)(*f1->getOutputData())==4+1);
+  }
+  
+
+
 }
 #endif

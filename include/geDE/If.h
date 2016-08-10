@@ -10,7 +10,8 @@ namespace ge{
         If(
             std::shared_ptr<Function >const&condition = nullptr,
             std::shared_ptr<Statement>const&trueBody  = nullptr,
-            std::shared_ptr<Statement>const&falseBody = nullptr);
+            std::shared_ptr<Statement>const&falseBody = nullptr,
+            bool                            immediate = false  );
         virtual ~If()override;
         void setCondition(std::shared_ptr<Function >const&condition = nullptr);
         void setTrueBody (std::shared_ptr<Statement>const&trueBody  = nullptr);
@@ -32,7 +33,8 @@ namespace ge{
     inline If::If(
         std::shared_ptr<Function >const&condition,
         std::shared_ptr<Statement>const&trueBody ,
-        std::shared_ptr<Statement>const&falseBody):Statement(IF){
+        std::shared_ptr<Statement>const&falseBody,
+        bool                            immediate):Statement(IF,immediate){
       PRINT_CALL_STACK(condition,trueBody,falseBody);
       assert(this!=nullptr);
       this->setCondition(condition);

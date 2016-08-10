@@ -33,7 +33,8 @@ AtomicFunctionInput::~AtomicFunctionInput(){
 
 AtomicFunction::AtomicFunction(
     std::shared_ptr<FunctionRegister>const&fr,
-    FunctionId                             id):Function(fr,id){
+    FunctionId                             id,
+    bool immediate                           ):Function(fr,id,immediate){
   PRINT_CALL_STACK(fr,id);
   assert(this!=nullptr);
   assert(fr!=nullptr);
@@ -42,10 +43,11 @@ AtomicFunction::AtomicFunction(
 }
 
 AtomicFunction::AtomicFunction(
-    std::shared_ptr<FunctionRegister>const&fr     ,
-    TypeId                                 type   ,
-    std::string                      const&name   ,
-    std::shared_ptr<StatementFactory>const&factory):AtomicFunction(fr,fr->addFunction(type,name,factory)){
+    std::shared_ptr<FunctionRegister>const&fr       ,
+    TypeId                                 type     ,
+    std::string                      const&name     ,
+    std::shared_ptr<StatementFactory>const&factory  ,
+    bool                                   immediate):AtomicFunction(fr,fr->addFunction(type,name,factory),immediate){
   PRINT_CALL_STACK(fr,type,name,factory);
 }
 

@@ -9,7 +9,8 @@ void If::operator()(){
   assert(this!=nullptr);
   assert(this->_condition!=nullptr);
   assert(this->_trueBody!=nullptr);
-  if(!this->_dirtyFlag)return;
+  if(!this->_immediate)
+    if(!this->_dirtyFlag)return;
   this->_dirtyFlag = false;
   (*this->_condition)();
   bool changed = false;

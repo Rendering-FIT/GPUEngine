@@ -48,6 +48,7 @@ namespace ge{
         bool hasSignalingTarget(Function*fce)const;
         size_t nofSignalingSources()const;
         size_t nofSignalingTargets()const;
+        bool isPointer()const;
       protected:
         std::set<Function*>_signalingSources;
         std::set<Function*>_signalingTargets;
@@ -186,6 +187,11 @@ namespace ge{
       return this->_signalingTargets.size();
     }
 
+    inline bool Resource::isPointer()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
+      return this->_manager->getTypeIdType(this->_id)==TypeRegister::PTR;
+    }
 
   }
 }

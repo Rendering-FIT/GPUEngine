@@ -8,7 +8,8 @@ CompositeFunction::CompositeFunction(
     std::shared_ptr<FunctionRegister>const&fr,
     FunctionId id,
     std::shared_ptr<Function>const&output,
-    std::vector<FceInputList>const&inputs):Function(fr,id){
+    std::vector<FceInputList>const&inputs,
+    bool immediate):Function(fr,id,immediate){
   PRINT_CALL_STACK(fr,id,output,inputs);
   assert(this!=nullptr);
   this->_outputMapping = output;
@@ -168,4 +169,17 @@ void CompositeFunction::_removeTargetResource(Resource*resource){
   this->_outputMapping->_removeTargetResource(resource);
 }
 
+bool CompositeFunction::isImmediate()const{
+  PRINT_CALL_STACK(resource);
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  return this->_outputMapping->isImmediate();
+}
+
+void CompositeFunction::setImmediate(bool immediate){
+  PRINT_CALL_STACK(resource);
+  assert(this!=nullptr);
+  assert(this->_outputMapping!=nullptr);
+  this->_outputMapping->setImmediate(immediate);
+}
 

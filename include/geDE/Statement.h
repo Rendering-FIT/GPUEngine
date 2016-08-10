@@ -29,7 +29,7 @@ namespace ge{
           WHILE   ,
           IF      ,
         };
-        Statement(Type const&type);
+        Statement(Type const&type,bool immediate = false);
         virtual ~Statement();
         virtual void operator()()=0;
         void setDirty();
@@ -45,10 +45,13 @@ namespace ge{
         virtual std::shared_ptr<If>toIf()const;
         virtual std::shared_ptr<While>toWhile()const;
         virtual std::shared_ptr<Function>toFunction()const;
+        virtual bool isImmediate()const;
+        virtual void setImmediate(bool immediate = false);
       protected:
         Type _type;
         bool _dirtyFlag = false;
         Ticks _updateTicks = 0;
+        bool _immediate = false;
         std::set<Statement*>_signalingSources;
         std::set<Statement*>_signalingTargets;
         virtual void _addSignalingSource(Statement*statement);
@@ -57,10 +60,11 @@ namespace ge{
         virtual void _removeSignalingTarget(Statement*statement);
     };
 
-    inline Statement::Statement(Type const&type){
+    inline Statement::Statement(Type const&type,bool immediate){
       PRINT_CALL_STACK(type);
       assert(this!=nullptr);
       this->_type = type;
+      this->_immediate = immediate;
     }
 
     inline Statement::~Statement(){
@@ -173,6 +177,17 @@ namespace ge{
       return nullptr;
     }
 
+    inline bool Statement::isImmediate()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
+      return this->_immediate;
+    }
+
+    inline void Statement::setImmediate(bool immediate){
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
+      this->_immediate = immediate;
+    }
   }
 }
 

@@ -3,7 +3,6 @@
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geGL/OpenGLCommands.h>
-#include<geGL/ConvertTo.h>
 #include<geGL/OpenGLContext.h>
 
 
@@ -71,6 +70,25 @@ bool Data::WindowEventCallback::operator()(SDL_Event const&event){
   return false;
 }
 
+namespace ge{
+  namespace core{
+    /*
+    template<typename TO,typename FROM,typename std::enable_if<std::is_integral<TO>::value && std::is_integral<FROM>::value,unsigned>::type = 0>
+      inline TO convertTo(FROM const& d){
+        return (TO)d;
+      }
+      */
+    template<>
+      inline GLuint convertTo(std::shared_ptr<ge::gl::Shader>const&d){
+        return d->getId();
+      }
+    template<>
+      inline GLuint convertTo(GLuint const& d){
+        return d;
+      }
+  }
+}
+
 void Data::init(Data*data){
   data->window->makeCurrent("rendering");
 
@@ -105,7 +123,14 @@ void Data::init(Data*data){
   data->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
   GLubyte const*d;
-  auto cmd = ge::gl::createCommand(&ge::gl::Context::glGetString,&d,GL_VERSION);
+  auto cmd = ge::gl::createCommand(&ge::gl::Context::glGetString,&d,(GLuint)GL_VERSION);
   (*cmd)();
   std::cout<<d<<std::endl;
+
+  
+  auto sharedShader = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER);
+  bool output = false;
+  auto cmd2 = ge::gl::createCommand(&ge::gl::Context::glIsShader,&output,sharedShader);
+  (*cmd2)();
+  std::cout<<"isShader? "<<output<<std::endl;
 }

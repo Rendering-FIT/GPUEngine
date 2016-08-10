@@ -1,5 +1,6 @@
 #pragma once
 
+#include<geDE/Resource.h>
 #include<geDE/AtomicFunction.h>
 #include<geDE/FactoryOfFunctionFactory.h>
 #include<geCore/Dtemplates.h>
@@ -20,7 +21,12 @@ namespace ge{
         assert(mf!=nullptr);
         assert(fce!=nullptr);
         using EmptyType = OUTPUT(CLASS::*)(ARGS...);
-        return ((CLASS&)(*mf->getInputData(0)).*((EmptyType)fce))((*mf->getInputData(1+I))...);
+        if(mf->getInputData(0)->isPointer()){
+          assert(mf->getInputData(0)!=nullptr);
+          assert(mf->getInputData(0)->getData()!=nullptr);
+          return ((CLASS*)(*(void**)mf->getInputData(0)->getData())->*((EmptyType)fce))((*mf->getInputData(1+I))...);
+        }else
+          return ((CLASS&)(*mf->getInputData(0)).*((EmptyType)fce))((*mf->getInputData(1+I))...);
       }
 
 

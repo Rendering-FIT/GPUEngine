@@ -5,9 +5,10 @@
 using namespace ge::de;
 
 Reference::Reference(
-    std::shared_ptr<FunctionRegister>const&fr,
-    TypeId                                 id):AtomicFunction(fr,fr->getFunctionId(
-        keyword<Reference>()+"<"+fr->getTypeRegister()->getTypeIdName(id)+">")){
+    std::shared_ptr<FunctionRegister>const&fr      ,
+    TypeId                                 id      ,
+    bool                                   immediate):AtomicFunction(fr,fr->getFunctionId(
+        keyword<Reference>()+"<"+fr->getTypeRegister()->getTypeIdName(id)+">"),immediate){
       PRINT_CALL_STACK(fr,id);
 }
 

@@ -8,8 +8,9 @@ namespace ge{
     class GEDE_EXPORT Reference: public AtomicFunction{
       public:
         Reference(
-            std::shared_ptr<FunctionRegister>const&fr,
-            TypeId                                 id);
+            std::shared_ptr<FunctionRegister>const&fr               ,
+            TypeId                                 id               ,
+            bool                                   immediate = false);
       protected:
         virtual bool _do();
     };

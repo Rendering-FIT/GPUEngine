@@ -221,11 +221,6 @@ namespace ge{
     template<typename TO,typename FROM>
       TO convertTo(FROM const&d);
 
-    template<typename TO,typename FROM>
-      TO convertTo(FROM const&d){
-        return d;
-      }
-
 
     template<typename TYPE>
       inline void convertFrom(std::shared_ptr<TYPE>&output,TYPE const&input){

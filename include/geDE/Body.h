@@ -10,7 +10,7 @@ namespace ge{
         using StatementIndex    = StatementVector::size_type;
         using StatementIterator = StatementVector::const_iterator;
       public:
-        Body();
+        Body(bool immediate = false);
         virtual ~Body();
         void addStatement(std::shared_ptr<Statement>const&statement);
         StatementIndex size()const;
@@ -25,7 +25,7 @@ namespace ge{
         std::vector<size_t>_statementsUpdateTicks;
     };
 
-    inline Body::Body():Statement(BODY){
+    inline Body::Body(bool immediate):Statement(BODY,immediate){
       PRINT_CALL_STACK();
     }
 
@@ -75,7 +75,8 @@ namespace ge{
     inline void Body::operator()(){
       PRINT_CALL_STACK();
       assert(this!=nullptr);
-      if(!this->_dirtyFlag)return;
+      if(!this->_immediate)
+        if(!this->_dirtyFlag)return;
       this->_dirtyFlag = false;
       bool changed = false;
       for(size_t i=0;i<this->_statements.size();++i){

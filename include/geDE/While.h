@@ -9,7 +9,8 @@ namespace ge{
       public:
         While(
             std::shared_ptr<Function> const&condition = nullptr,
-            std::shared_ptr<Statement>const&body      = nullptr);
+            std::shared_ptr<Statement>const&body      = nullptr,
+            bool                           immediate  = false  );
         virtual ~While();
         void setBody     (std::shared_ptr<Statement>const&body = nullptr);
         void setCondition(std::shared_ptr<Function >const&condition = nullptr);
@@ -26,7 +27,8 @@ namespace ge{
 
     inline While::While(
         std::shared_ptr<Function >const&condition,
-        std::shared_ptr<Statement>const&body     ):Statement(WHILE){
+        std::shared_ptr<Statement>const&body     ,
+        bool                            immediate):Statement(WHILE,immediate){
       PRINT_CALL_STACK(condition,body);
       assert(this!=nullptr);
       this->setCondition(condition);

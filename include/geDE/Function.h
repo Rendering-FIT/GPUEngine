@@ -20,8 +20,9 @@ namespace ge{
       friend class CompositeFunction;
       public:
         Function(
-            std::shared_ptr<FunctionRegister>const&fr,
-            FunctionId                             id);
+            std::shared_ptr<FunctionRegister>const&fr               ,
+            FunctionId                             id               ,
+            bool                                   immediate = false);
         virtual ~Function();
         FunctionId getId()const;
         virtual bool bindInput (
@@ -83,7 +84,8 @@ namespace ge{
 
     inline Function::Function(
         std::shared_ptr<FunctionRegister>const&,
-        FunctionId id):Statement(FUNCTION){
+        FunctionId id,
+        bool immediate):Statement(FUNCTION,immediate){
       assert(this!=nullptr);
       this->_id = id;
     }
