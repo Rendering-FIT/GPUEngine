@@ -69,6 +69,64 @@ namespace ge{
         std::shared_ptr<Function>createFunction(
             std::string              const&name      ,
             std::vector<std::string> const&inputNames);
+        template<typename...ARGS>
+          std::shared_ptr<Function>createFce(
+              std::string const&name,
+              ARGS... args);
+
+        inline std::shared_ptr<Resource>_getOutputFromArgs(){return nullptr;}
+        inline std::shared_ptr<Resource>_getOutputFromArgs(std::shared_ptr<Resource>const&r){
+          return r;
+        }
+        template<typename T,typename std::enable_if<!std::is_same<std::shared_ptr<Resource>,T>::value,unsigned>::type = 0>
+          inline std::shared_ptr<Resource>_getOutputFromArgs(T const&){
+            return nullptr;
+          }
+        inline std::shared_ptr<Resource>_getOutputFromArgs(std::string const&s){
+          if(this->variableRegister->hasVariable(s))
+            return this->variable(s);
+          return this->createResource(s);
+        }
+        inline std::shared_ptr<Resource>_getOutputFromArgs(const char*s){
+          if(this->variableRegister->hasVariable(s))
+            return this->variable(s);
+          return this->createResource(s);
+        }
+        template<typename HEAD,typename...TAIL,typename std::enable_if<sizeof...(TAIL)!=0,unsigned>::type = 0>
+          inline std::shared_ptr<Resource>_getOutputFromArgs(HEAD const&,TAIL...args){
+            return this->_getOutputFromArgs(args...);
+          }
+
+        template<typename LAST>
+          inline void _getInputsFromArgsWithoutLast(std::vector<RFN>&,LAST const&){}
+        inline void _addArgToInputs(std::vector<RFN>&inputs,std::string const&s){
+          inputs.emplace_back(s);
+        }
+        inline void _addArgToInputs(std::vector<RFN>&inputs,const char*s){
+          inputs.emplace_back(std::string(s));
+        }
+        inline void _addArgToInputs(std::vector<RFN>&inputs,std::shared_ptr<Function>const&f){
+          inputs.emplace_back(f);
+        }
+        inline void _addArgToInputs(std::vector<RFN>&inputs,std::shared_ptr<Resource>const&r){
+          inputs.emplace_back(r);
+        }
+        template<typename HEAD,typename...TAIL,typename std::enable_if<sizeof...(TAIL)!=0,unsigned>::type = 0>
+          inline void _getInputsFromArgsWithoutLast(std::vector<RFN>&inputs,HEAD const&h,TAIL...args){
+            this->_addArgToInputs(inputs,h);
+            this->_getInputsFromArgsWithoutLast(inputs,args...);
+          }
+
+        inline void _getInputsFromArgs(std::vector<RFN>&){}
+        template<typename HEAD>
+          inline void _getInputsFromArgs(std::vector<RFN>&inputs,HEAD const&h){
+            this->_addArgToInputs(inputs,h);
+          }
+        template<typename HEAD,typename...TAIL,typename std::enable_if<sizeof...(TAIL)!=0,unsigned>::type = 0>
+          inline void _getInputsFromArgs(std::vector<RFN>&inputs,HEAD const&h,TAIL...args){
+            this->_addArgToInputs(inputs,h);
+            this->_getInputsFromArgs(inputs,args...);
+          }
 
         std::shared_ptr<Resource>const&variable(std::string const&name)const;
         template<typename T>
@@ -225,6 +283,34 @@ namespace ge{
         auto result = this->typeRegister->addAtomicType(name,sizeof(CLASS));
         this->typeRegister->addConstructor(result,[](void*ptr){new(ptr)CLASS;});
         this->typeRegister->addDestructor(result,[](void*ptr){((CLASS*)ptr)->~CLASS();});
+        return result;
+      }
+
+    template<typename...ARGS>
+      std::shared_ptr<Function>Kernel::createFce(
+          std::string const&name,
+          ARGS... args){
+        assert(this!=nullptr);
+        auto fr = this->functionRegister;
+        assert(fr!=nullptr);
+        auto tr = fr->getTypeRegister();
+        assert(tr!=nullptr);
+        auto result = fr->sharedFunction(name);
+        std::vector<RFN>inputs;
+        std::shared_ptr<Resource>output;
+        if(sizeof...(ARGS)==1+fr->getNofInputs(result->getId())){
+          this->_getInputsFromArgsWithoutLast(inputs,args...);
+          output = this->_getOutputFromArgs(args...);
+        }else{
+          this->_getInputsFromArgs(inputs,args...);
+          auto type = tr->getFceReturnTypeId(fr->getType(result->getId()));
+          if(tr->getTypeIdType(type)==TypeRegister::VOID)
+            output = nullptr;
+          else
+            output = tr->sharedResource(type);
+        }
+        this->bindInput(result,inputs);
+        this->bindOutput(result,output);
         return result;
       }
 
