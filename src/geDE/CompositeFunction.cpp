@@ -1,6 +1,7 @@
 #include<geDE/CompositeFunction.h>
 #include<geDE/FunctionNodeFactory.h>
 #include<algorithm>
+#include<tuple>
 
 using namespace ge::de;
 
