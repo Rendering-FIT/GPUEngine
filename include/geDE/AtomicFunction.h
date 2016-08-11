@@ -53,6 +53,7 @@ namespace ge{
         virtual void unbindOutput()override;
         virtual bool hasInput(size_t i)const override;
         virtual bool hasOutput()const override;
+        virtual size_t getNofInputs()const override;
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData()const override;
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;
@@ -85,6 +86,12 @@ namespace ge{
       PRINT_CALL_STACK();
       assert(this!=nullptr);
       return this->_outputData!=nullptr;
+    }
+
+    inline size_t AtomicFunction::getNofInputs()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
+      return this->_inputs.size();
     }
 
     inline std::shared_ptr<Resource>const&AtomicFunction::getInputData(size_t i)const{

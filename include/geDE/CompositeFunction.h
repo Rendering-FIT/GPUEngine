@@ -37,6 +37,7 @@ namespace ge{
         virtual void unbindOutput()override;
         virtual bool hasInput (size_t i)const override;
         virtual bool hasOutput(        )const override;
+        virtual size_t getNofInputs()const override;
         virtual std::shared_ptr<Resource>const&getInputData (size_t i)const override;
         virtual std::shared_ptr<Resource>const&getOutputData()const override;
         virtual std::shared_ptr<Function>const&getInputFunction(size_t i)const override;

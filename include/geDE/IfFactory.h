@@ -9,7 +9,7 @@ namespace ge{
   namespace de{
     class GEDE_EXPORT IfFactory: public StatementFactory{
       public:
-        IfFactory(std::string name = "",unsigned maxUses = 0);
+        IfFactory(/*std::string name = "",*/unsigned maxUses = 0);
         virtual ~IfFactory();
         std::shared_ptr<StatementFactory>trueFactory      = nullptr;
         std::shared_ptr<StatementFactory>falseFactory     = nullptr;
@@ -17,8 +17,8 @@ namespace ge{
         virtual std::shared_ptr<Statement>_do(std::shared_ptr<FunctionRegister>const&)override;
     };
 
-    inline IfFactory::IfFactory(std::string name,unsigned maxUses):StatementFactory(name,maxUses){
-      PRINT_CALL_STACK(name,maxUses);
+    inline IfFactory::IfFactory(/*std::string name,*/unsigned maxUses):StatementFactory(/*name,*/maxUses){
+      PRINT_CALL_STACK(/*name,*/maxUses);
     }
 
     inline IfFactory::~IfFactory(){

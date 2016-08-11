@@ -6,8 +6,8 @@
 using namespace ge::de;
 
 FunctionNodeFactory::FunctionNodeFactory(
-    std::string name,Uses maxUses):FunctionFactory(name,maxUses){
-  PRINT_CALL_STACK(name,maxUses);
+    Uses maxUses):FunctionFactory(maxUses){
+  PRINT_CALL_STACK(maxUses);
 }
 
 void FunctionNodeFactory::setFactory(
@@ -91,21 +91,10 @@ std::shared_ptr<FunctionFactory>const&FunctionNodeFactory::getFactory()const{
   return this->functionFactory;
 }
 
-TypeId FunctionNodeFactory::getOutputType(std::shared_ptr<FunctionRegister>const&fr)const{
-  PRINT_CALL_STACK(fr);
-  assert(this!=nullptr);
-  return this->functionFactory->getOutputType(fr);
-}
 
-size_t FunctionNodeFactory::getNofInputs(std::shared_ptr<FunctionRegister>const&fr)const{
-  PRINT_CALL_STACK(fr);
+FunctionId FunctionNodeFactory::getFunctionId()const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
-  return this->functionFactory->getNofInputs(fr);
+  assert(this->getFactory()!=nullptr);
+  return this->getFactory()->getFunctionId();
 }
-
-TypeId FunctionNodeFactory::getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
-  PRINT_CALL_STACK(fr,i);
-  assert(this!=nullptr);
-  return this->functionFactory->getInputType(fr,i);
-}
-

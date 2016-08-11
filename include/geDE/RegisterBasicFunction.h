@@ -177,7 +177,7 @@ namespace ge{
     return true;\
     /*{*/}\
     /*{*/};\
-    auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));\
+    auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(/*name*/));\
     fr->addImplementation(f,reinterpret_cast<FunctionRegister::Implementation>(fce));\
     fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));\
     return f
@@ -254,7 +254,7 @@ namespace ge{
     return true;\
     /*{*/}\
     /*{*/};\
-    auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(name));\
+    auto f=fr->addFunction(tid,name,factoryOfFunctionFactory<BasicFunction>(/*name*/));\
     fr->addClassImplementation(f,new typename BasicFunction::MyCLSImpl(fce));\
     fr->addSignalingDecider(f,reinterpret_cast<FunctionRegister::SignalingDecider>(sig));\
     return f

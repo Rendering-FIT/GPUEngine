@@ -8,9 +8,8 @@
 using namespace ge::de;
 
 CompositeFunctionFactory::CompositeFunctionFactory(
-    std::string const&name   ,
-    Uses              maxUses):FunctionFactory(name,maxUses){
-  PRINT_CALL_STACK(name,maxUses);
+    Uses maxUses):FunctionFactory(maxUses){
+  PRINT_CALL_STACK(maxUses);
 }
 
 CompositeFunctionFactory::~CompositeFunctionFactory(){
@@ -50,7 +49,7 @@ void _recBuildInput(
       output.push_back(CompositeFunction::FceInput(fce,std::get<CompositeFunctionFactory::INPUT>(factoryInputList[i])));
 
   auto functionNodeFactory = std::dynamic_pointer_cast<FunctionNodeFactory>(fac);
-  for(size_t i=0;i<functionNodeFactory->getNofInputs();++i){
+  for(size_t i=0;i<fce->getNofInputs();++i){
     if(functionNodeFactory == nullptr){
       if(fce->getInputData(i))
         _recBuildInput(output,fce->getInputFunction(i),nullptr,factoryInputList);
@@ -79,38 +78,41 @@ std::shared_ptr<Statement>CompositeFunctionFactory::_do(
   assert(ff!=nullptr);
   for(size_t i=0;i<this->_inputs.size();++i){
     fceInputs.push_back(CompositeFunction::FceInputList());
-    _recBuildInput(fceInputs[i],std::dynamic_pointer_cast<Function>(res),this->_factory,this->_inputs[i]);
+    _recBuildInput(fceInputs[i],ff,this->_factory,this->_inputs[i]);
   }
   return std::dynamic_pointer_cast<Statement>(
       std::make_shared<CompositeFunction>(
         fr,
-        fr->getFunctionId(this->_name),
-        std::dynamic_pointer_cast<Function>(res),
+        this->getFunctionId(),
+        ff,
         fceInputs));
 }
 
-TypeId CompositeFunctionFactory::getOutputType(
-    std::shared_ptr<FunctionRegister>const&fr)const{
-  PRINT_CALL_STACK(fr);
-  assert(this!=nullptr);
-  return this->_factory->getOutputType(fr);
-}
-
-size_t CompositeFunctionFactory::getNofInputs(
-    std::shared_ptr<FunctionRegister>const&)const{
+TypeId CompositeFunctionFactory::getNofInputs()const{
   PRINT_CALL_STACK();
   assert(this!=nullptr);
   return this->_inputs.size();
 }
 
-TypeId CompositeFunctionFactory::getInputType(
-    std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
-  PRINT_CALL_STACK(fr,i);
+TypeId CompositeFunctionFactory::getOutputType(std::shared_ptr<FunctionRegister>const&fr)const{
+  PRINT_CALL_STACK();
   assert(this!=nullptr);
+  assert(fr!=nullptr);
+  auto tr = fr->getTypeRegister();
+  assert(tr!=nullptr);
+  return tr->getFceReturnTypeId(fr->getType(this->_factory->getFactory()->getFunctionId()));
+}
+
+TypeId CompositeFunctionFactory::getInputType(std::shared_ptr<FunctionRegister>const&fr,size_t i)const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  assert(fr!=nullptr);
+  auto tr = fr->getTypeRegister();
+  assert(tr!=nullptr);
   assert(i<this->_inputs.size());
-  assert(this->_inputs.at(i).size()>0);
-  auto const&fac=std::get<FACTORY>(this->_inputs.at(i).at(0));
-  auto const&input=std::get<INPUT>(this->_inputs.at(i).at(0));
-  return fac->getInputType(fr,input);
+  assert(this->_inputs.at(i).size()!=0);
+  auto const&x=this->_inputs.at(i).at(0);
+  assert(std::get<FACTORY>(x)!=nullptr);
+  return tr->getFceArgTypeId(fr->getType(std::get<FACTORY>(x)->getFunctionId()),std::get<INPUT>(x));
 }
 

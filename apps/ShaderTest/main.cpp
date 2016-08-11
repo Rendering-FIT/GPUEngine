@@ -81,6 +81,7 @@ namespace ge{
     template<>
       inline GLuint convertTo(std::shared_ptr<ge::gl::Shader>const&d){
         return d->getId();
+        d->getType();
       }
     template<>
       inline GLuint convertTo(GLuint const& d){

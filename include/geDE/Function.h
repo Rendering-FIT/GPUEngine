@@ -40,6 +40,7 @@ namespace ge{
         virtual void unbindOutput() = 0;
         virtual bool hasInput(size_t i)const = 0;
         virtual bool hasOutput()const = 0; 
+        virtual size_t getNofInputs()const = 0;
         virtual std::shared_ptr<Resource>const&getInputData(size_t i)const = 0;
         virtual std::shared_ptr<Resource>const&getOutputData()const = 0;
         virtual std::shared_ptr<Function>toFunction()const override;

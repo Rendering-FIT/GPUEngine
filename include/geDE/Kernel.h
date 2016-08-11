@@ -147,6 +147,7 @@ namespace ge{
               OUTPUT(CLASS::*fce)(ARGS...)const,
               bool(*sig)(ARGS...) = nullptr);
         FunctionId addCompositeFunction(
+            std::string const&fceName,
             std::vector<std::string>const&names,
             std::shared_ptr<CompositeFunctionFactory>const&factory);
         void bindInput(
@@ -178,7 +179,6 @@ namespace ge{
             size_t            size     ,
             std::string const&innerType);
         std::shared_ptr<FunctionNodeFactory>createFunctionNodeFactory(
-            std::string name,
             std::string functionName,
             std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories = {});/*,
             std::vector<std::shared_ptr<ResourceFactory>>const&inputResourceFactories = {});*/
@@ -190,7 +190,6 @@ namespace ge{
             std::vector<std::string>const&inputResourceFactoryNames);
             */
         std::shared_ptr<CompositeFunctionFactory>createCompositeFunctionFactory(
-            std::string const&name,
             std::shared_ptr<FunctionNodeFactory>const&root,
             std::vector<std::vector<std::shared_ptr<FunctionNodeFactory>>>const&inputs,
             std::vector<std::vector<size_t>>const&inputIndices);

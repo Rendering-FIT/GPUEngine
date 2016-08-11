@@ -60,8 +60,8 @@ SCENARIO( "basic functionRegister tests", "[FunctionRegister]" ) {
         i32});
   auto id = fr->addFunction(
       ft,
-      keyword<Add<int32_t>>(),//::name(),
-      factoryOfFunctionFactory<Add<int32_t>>(keyword<Add<int32_t>>()));
+      keyword<Add<int32_t>>(),
+      factoryOfFunctionFactory<Add<int32_t>>());
   fr->getNameRegister()->setFceOutputName(id,"vysledek");
   fr->getNameRegister()->setFceInputName(id,0,"a");
   fr->getNameRegister()->setFceInputName(id,1,"b");
@@ -141,28 +141,28 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   auto rb = std::make_shared<ResourceFactory>(tr->getTypeId("i32"));
   auto rc = std::make_shared<ResourceFactory>(tr->getTypeId("i32"));
 
-  auto d = std::make_shared<FunctionNodeFactory>("newFce_d");
+  auto d = std::make_shared<FunctionNodeFactory>();
   d->setFactory(fr->sharedFactory("Add<i32>"));
   d->addResourceFactory(nullptr);
   d->addResourceFactory(nullptr);
   d->addInputFactory(nullptr);
   d->addInputFactory(nullptr);
 
-  auto c = std::make_shared<FunctionNodeFactory>("newFce_c");
+  auto c = std::make_shared<FunctionNodeFactory>();
   c->setFactory(fr->sharedFactory("Mul<i32>"));
   c->addResourceFactory(rc);
   c->addResourceFactory(nullptr);
   c->addInputFactory(d);
   c->addInputFactory(nullptr);
 
-  auto b = std::make_shared<FunctionNodeFactory>("newFce_b");
+  auto b = std::make_shared<FunctionNodeFactory>();
   b->setFactory(fr->sharedFactory("Mul<i32>"));
   b->addResourceFactory(nullptr);
   b->addResourceFactory(rc);
   b->addInputFactory(nullptr);
   b->addInputFactory(d);
 
-  auto a = std::make_shared<FunctionNodeFactory>("newFce_a");
+  auto a = std::make_shared<FunctionNodeFactory>();
   a->setFactory(fr->sharedFactory("Add<i32>"));
   a->addResourceFactory(ra);
   a->addResourceFactory(rb);
@@ -170,7 +170,7 @@ SCENARIO("registration of functionNode factories","[FunctionRegister]"){
   a->addInputFactory(c);
 
   //newFce ::= (va+vb)va + (va+vb)vb
-  auto fac = std::make_shared<CompositeFunctionFactory>("newFce");
+  auto fac = std::make_shared<CompositeFunctionFactory>();
   fac->setFactory(a);
   fac->setInputFactories({
       {CompositeFunctionFactory::FactoryInput(b,0),CompositeFunctionFactory::FactoryInput(d,0)},
@@ -239,7 +239,7 @@ SCENARIO("Reference tests","[Reference]"){
   tr->addType<int32_t*>();
   registerStdFunctions(fr);
   registerBasicFunction(fr,"addP",addP);
-  fr->addFunction(tr->addType<int32_t*(int32_t)>(),"Reference<i32>",factoryOfFunctionFactory<Reference>("Reference<i32>"));
+  fr->addFunction(tr->addType<int32_t*(int32_t)>(),"Reference<i32>",factoryOfFunctionFactory<Reference>());
 
   auto f = fr->sharedFunction("addP");
   f->bindOutput(fr,tr->sharedResource("i32"));

@@ -88,7 +88,6 @@ set(DE_SOURCES
   ResourceFactory.cpp
   StatementFactory.cpp
   CompositeFunction.cpp
-  FunctionFactory.cpp
   CompositeFunctionFactory.cpp
   FunctionNodeFactory.cpp
   Reference.cpp

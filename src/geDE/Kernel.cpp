@@ -240,11 +240,10 @@ TypeId Kernel::addArrayType(
    */
 
 std::shared_ptr<FunctionNodeFactory>Kernel::createFunctionNodeFactory(
-    std::string name,
     std::string functionName,
     std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories){//,
   //std::vector<std::shared_ptr<ResourceFactory>>const&inputResourceFactories){
-  auto result = std::make_shared<FunctionNodeFactory>(name);
+  auto result = std::make_shared<FunctionNodeFactory>();
   result->setFactory(this->functionRegister->sharedFactory(functionName));
   auto id = this->functionRegister->getFunctionId(functionName);
   size_t nof = this->functionRegister->getNofInputs(id);
@@ -267,16 +266,17 @@ std::shared_ptr<ResourceFactory>Kernel::createResourceFactory(
 }
 
 FunctionId Kernel::addCompositeFunction(
+    std::string const&fceName,
     std::vector<std::string>const&names,
     std::shared_ptr<CompositeFunctionFactory>const&factory){
   TypeDescriptionVector dv;
   dv.push_back(TypeRegister::FCE);
   dv.push_back(factory->getOutputType(this->functionRegister));
-  size_t n=factory->getNofInputs(this->functionRegister);
+  size_t n=factory->getNofInputs();
   dv.push_back(n);
   for(size_t i=0;i<n;++i)
     dv.push_back(factory->getInputType(this->functionRegister,i));
-  auto ret = this->functionRegister->addFunction(this->typeRegister->addCompositeType("",dv),factory->getName(),factory);
+  auto ret = this->functionRegister->addFunction(this->typeRegister->addCompositeType("",dv),fceName,factory);
   if(names.size()>0)
     this->nameRegister->setFceOutputName(ret,names[0]);
   for(size_t i=1;i<names.size();++i)
@@ -286,21 +286,20 @@ FunctionId Kernel::addCompositeFunction(
 
 
 std::shared_ptr<CompositeFunctionFactory>Kernel::createCompositeFunctionFactory(
-    std::string const&name,
     std::shared_ptr<FunctionNodeFactory>const&root,
     std::vector<std::vector<std::shared_ptr<FunctionNodeFactory>>>const&inputs,
     std::vector<std::vector<size_t>>const&inputIndices){
   if(inputs.size()!=inputIndices.size()){
-    ge::core::printError("invalid inputs",name,root,inputs,inputIndices);
+    ge::core::printError(GE_CORE_FCENAME,"invalid inputs",root,inputs,inputIndices);
     return nullptr;
   }
   for(size_t i=0;i<inputs.size();++i){
     if(inputs.at(i).size()!=inputIndices.at(i).size()){
-      ge::core::printError("invalid inputs",name,root,inputs,inputIndices);
+      ge::core::printError(GE_CORE_FCENAME,"invalid inputs",root,inputs,inputIndices);
       return nullptr;
     }
   }
-  auto fac = std::make_shared<CompositeFunctionFactory>(name);
+  auto fac = std::make_shared<CompositeFunctionFactory>();
   fac->setFactory(root);
   std::vector<std::vector<CompositeFunctionFactory::FactoryInput>>in;
   for(size_t i=0;i<inputs.size();++i){

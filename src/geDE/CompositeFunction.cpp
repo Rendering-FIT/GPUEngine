@@ -114,6 +114,12 @@ bool CompositeFunction::hasOutput()const{
   return this->_outputMapping->hasOutput();
 }
 
+size_t CompositeFunction::getNofInputs()const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  return this->_inputMapping.size();
+}
+
 std::shared_ptr<Resource>const&CompositeFunction::getInputData(InputIndex i)const{
   PRINT_CALL_STACK(i);
   assert(this!=nullptr);
