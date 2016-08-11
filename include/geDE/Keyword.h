@@ -18,7 +18,7 @@ namespace ge{
     template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type = 0>
       std::string keyword();
 
-    template<typename T,typename std::enable_if<std::is_array<T>::value,unsigned>::type = 0>
+    template<typename T,typename std::enable_if<std::is_array<T>::value && !std::is_const<T>::value,unsigned>::type = 0>
       std::string keyword();
 
     template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_const<T>::value,unsigned>::type = 0>
@@ -116,7 +116,7 @@ namespace ge{
         return ss.str();
       }
 
-    template<typename T,typename std::enable_if<std::is_array<T>::value,unsigned>::type>
+    template<typename T,typename std::enable_if<std::is_array<T>::value && !std::is_const<T>::value,unsigned>::type>
       inline std::string keyword(){
         std::stringstream ss;
         ss<<keyword<typename std::remove_all_extents<T>::type>();
