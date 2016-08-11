@@ -291,12 +291,12 @@ std::shared_ptr<CompositeFunctionFactory>Kernel::createCompositeFunctionFactory(
     std::vector<std::vector<std::shared_ptr<FunctionNodeFactory>>>const&inputs,
     std::vector<std::vector<size_t>>const&inputIndices){
   if(inputs.size()!=inputIndices.size()){
-    ge::core::printError("Kernel::createCompositeFunctionFactory","invalid inputs");
+    ge::core::printError("invalid inputs",name,root,inputs,inputIndices);
     return nullptr;
   }
   for(size_t i=0;i<inputs.size();++i){
     if(inputs.at(i).size()!=inputIndices.at(i).size()){
-      ge::core::printError("Kernel::createCompositeFunctionFactory","invalid inputs");
+      ge::core::printError("invalid inputs",name,root,inputs,inputIndices);
       return nullptr;
     }
   }
