@@ -10,7 +10,8 @@ using namespace ge::ad;
 SDLWindow::SDLWindow(uint32_t width,uint32_t height){
   assert(this!=nullptr);
   Uint32 flags = SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN;
-  this->m_window  = SDL_CreateWindow("",0,0,width,height,flags);
+  this->m_window  = SDL_CreateWindow("",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width,height,flags);
+  this->setWindowEventCallback(SDL_WINDOWEVENT_CLOSE,SDLWindow::m_defaultCloseCallback,this);
 }
 
 SDLWindow::~SDLWindow(){
@@ -68,8 +69,78 @@ void SDLWindow::setEventCallback(
     EventType               const&eventType,
     SDLEventCallbackPointer const&callback ){
   assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_eventCallbacks.erase(eventType);
+    return;
+  }
   this->m_eventCallbacks[eventType] = callback;
 }
+
+void SDLWindow::setEventCallback(
+    EventType const&eventType,
+    bool(*callback)(SDL_Event const&,void*),
+    void*data){
+  assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_eventCallbacks.erase(eventType);
+    return;
+  }
+  class BasicEventCallback: public SDLEventCallbackInterface{
+    public:
+      void*data;
+      bool(*fce)(SDL_Event const&,void*);
+      BasicEventCallback(bool(*f)(SDL_Event const&,void*),void*d){
+        assert(this!=nullptr);
+        this->fce = f;
+        this->data = d;
+      }
+      virtual bool operator()(SDL_Event const&event)override{
+        assert(this!=nullptr);
+        assert(this->fce!=nullptr);
+        return this->fce(event,this->data);
+      }
+  };
+  this->m_eventCallbacks[eventType] = std::make_shared<BasicEventCallback>(callback,data);
+}
+
+void SDLWindow::setWindowEventCallback(
+    uint8_t                 const&eventType,
+    SDLEventCallbackPointer const&callback){
+  assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_windowEventCallbacks.erase(eventType);
+    return;
+  }
+  this->m_windowEventCallbacks[eventType] = callback;
+}
+
+void SDLWindow::setWindowEventCallback(
+    uint8_t const&eventType,
+    bool(*callback)(SDL_Event const&,void*),
+    void*data){
+  assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_windowEventCallbacks.erase(eventType);
+    return;
+  }
+  class BasicEventCallback: public SDLEventCallbackInterface{
+    public:
+      void*data;
+      bool(*fce)(SDL_Event const&,void*);
+      BasicEventCallback(bool(*f)(SDL_Event const&,void*),void*d){
+        assert(this!=nullptr);
+        this->fce = f;
+        this->data = d;
+      }
+      virtual bool operator()(SDL_Event const&event)override{
+        assert(this!=nullptr);
+        assert(this->fce!=nullptr);
+        return this->fce(event,this->data);
+      }
+  };
+  this->m_windowEventCallbacks[eventType] = std::make_shared<BasicEventCallback>(callback,data);
+}
+
 
 bool SDLWindow::hasEventCallback(
     EventType const&eventType)const{
@@ -78,13 +149,29 @@ bool SDLWindow::hasEventCallback(
   return ii!=this->m_eventCallbacks.end() && ii->second != nullptr;
 }
 
-void SDLWindow::callEventCallback(
+bool SDLWindow::callEventCallback(
     EventType const&eventType,
     SDL_Event const&event    ){
   assert(this!=nullptr);
   assert(this->m_eventCallbacks.count(eventType)!=0);
-  assert(this->m_eventCallbacks[eventType] != nullptr);
-  (*this->m_eventCallbacks[eventType])(event);
+  assert(this->m_eventCallbacks.at(eventType) != nullptr);
+  return (*this->m_eventCallbacks.at(eventType))(event);
+}
+
+bool SDLWindow::hasWindowEventCallback(
+    uint8_t const&eventType)const{
+  assert(this!=nullptr);
+  auto ii = this->m_windowEventCallbacks.find(eventType);
+  return ii!=this->m_windowEventCallbacks.end() && ii->second != nullptr;
+}
+
+bool SDLWindow::callWindowEventCallback(
+    uint8_t   const&eventType,
+    SDL_Event const&eventData){
+  assert(this!=nullptr);
+  assert(this->m_windowEventCallbacks.count(eventType)!=0);
+  assert(this->m_windowEventCallbacks.at(eventType) != nullptr);
+  return (*this->m_windowEventCallbacks.at(eventType))(eventData);
 }
 
 void SDLWindow::setSize(uint32_t width,uint32_t heght){
@@ -116,4 +203,12 @@ SDLWindow::Fullscreen SDLWindow::getFullscreen(){
   if(flags&FULLSCREEN)return FULLSCREEN;
   if(flags&FULLSCREEN_DESKTOP)return FULLSCREEN_DESKTOP;
   return WINDOW;
+}
+
+bool SDLWindow::m_defaultCloseCallback(SDL_Event const&,void*d){
+  assert(d!=nullptr);
+  auto _this = (SDLWindow*)d;
+  assert(_this->m_mainLoop!=nullptr);
+  _this->m_mainLoop->removeWindow(_this->getId());
+  return true;
 }

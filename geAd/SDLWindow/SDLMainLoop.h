@@ -7,13 +7,12 @@
 #include<geAd/Export.h>
 #include<SDL2/SDL.h>
 
-#include<geAd/SDLWindow/SDLCallbackInterface.h>
-#include<geAd/SDLWindow/SDLEventHandlerInterface.h>
 
 namespace ge{
   namespace ad{
     class SDLWindow;
     class SDLCallbackInterface;
+    class SDLEventHandlerInterface;
     class GEAD_EXPORT SDLMainLoop{
       public:
         using SharedWindow        = std::shared_ptr<SDLWindow>;
@@ -31,15 +30,22 @@ namespace ge{
             std::string  const&name  ,
             SharedWindow const&window);
         void removeWindow(std::string const&name);
+        void removeWindow(uint32_t const&id);
         bool hasWindow(std::string const&name)const;
         SharedWindow const&getWindow(std::string const&name)const;
         void operator()();
         void setIdleCallback(
             SDLCallbackPointer const&callback = nullptr);
+        void setIdleCallback(
+            void(*callback)(void*) = nullptr,
+            void*data = nullptr);
         bool hasIdleCallback()const;
         void callIdleCallback();
         void setEventHandler(
             EventHandlerPointer const&handler = nullptr);
+        void setEventHandler(
+            bool(*handler)(SDL_Event const&,void*) = nullptr,
+            void*data = nullptr);
         bool hasEventHandler()const;
         bool callEventHandler(SDL_Event const&event);
         ConstNameIterator nameBegin()const;

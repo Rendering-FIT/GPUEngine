@@ -6,13 +6,18 @@
 
 #include<geAd/Export.h>
 #include<SDL2/SDL.h>
+#include<SDL2/SDL_video.h>
 
 #include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geAd/SDLWindow/SDLEventCallbackInterface.h>
+#include<geAd/SDLWindow/SDLCallbackInterface.h>
+#include<geAd/SDLWindow/SDLEventHandlerInterface.h>
 
 namespace ge{
   namespace ad{
+    class SDLMainLoop;
     class GEAD_EXPORT SDLWindow{
+      friend class SDLMainLoop;
       public:
         using WindowId             = uint32_t;
         using EventType            = uint32_t;
@@ -48,10 +53,26 @@ namespace ge{
         void setEventCallback(
             EventType               const&eventType          ,
             SDLEventCallbackPointer const&callback  = nullptr);
+        void setEventCallback(
+            EventType const&eventType,
+            bool(*callback)(SDL_Event const&,void*),
+            void*data);
+        void setWindowEventCallback(
+            uint8_t                 const&eventType,
+            SDLEventCallbackPointer const&callback = nullptr);
+        void setWindowEventCallback(
+            uint8_t const&eventType,
+            bool(*callback)(SDL_Event const&,void*) = nullptr,
+            void*data = nullptr);
         bool hasEventCallback(
             EventType const&eventType)const;
-        void callEventCallback(
+        bool callEventCallback(
             EventType const&eventType,
+            SDL_Event const&eventData);
+        bool hasWindowEventCallback(
+            uint8_t const&eventType)const;
+        bool callWindowEventCallback(
+            uint8_t   const&eventType,
             SDL_Event const&eventData);
         void setSize(uint32_t width,uint32_t heght);
         uint32_t getWidth()const;
@@ -64,10 +85,13 @@ namespace ge{
         void setFullscreen(Fullscreen const&type);
         Fullscreen getFullscreen();
       protected:
-        using SharedSDLContext = std::shared_ptr<SDL_GLContext>;
+        using SharedSDLContext = std::shared_ptr<SDL_GLContext>           ;
         SDL_Window*                             m_window         = nullptr;
         std::map<std::string,SharedSDLContext>  m_contexts                ;
-        std::map<EventType,SDLEventCallbackPointer>m_eventCallbacks          ;
+        std::map<EventType,SDLEventCallbackPointer>m_eventCallbacks       ;
+        std::map<uint8_t,SDLEventCallbackPointer>m_windowEventCallbacks;
+        SDLMainLoop*m_mainLoop;
+        static bool m_defaultCloseCallback(SDL_Event const&,void*);
     };
   }//util
 }//ge
