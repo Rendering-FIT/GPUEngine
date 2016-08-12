@@ -64,6 +64,7 @@ std::shared_ptr<Resource>Kernel::createResource(std::string const&name){
   return this->typeRegister->sharedResource(name);
 }
 
+/*
 std::shared_ptr<Function>Kernel::createFunction2(
     std::string              const&name  ,
     std::vector<RFN>         const&inputs,
@@ -133,7 +134,7 @@ std::shared_ptr<Function>Kernel::createFunction(
     inputs.emplace_back(this->variableRegister->getVariable(x));
   return this->createFunction2(name,inputs);
 }
-
+*/
 
 std::shared_ptr<Resource>const&Kernel::variable(std::string const&name)const{
   assert(this!=nullptr);

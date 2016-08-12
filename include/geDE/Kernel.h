@@ -45,35 +45,76 @@ namespace ge{
         std::vector<std::shared_ptr<Statement>>commands;
         size_t currentCommand = 0;
         template<typename T>
-        std::shared_ptr<Resource>createVariable(T const&val);
+          std::shared_ptr<Resource>createVariable(T const&val);
         std::shared_ptr<Resource>createResource(std::string const&name);
-        std::shared_ptr<Function>createFunction2(
-            std::string              const&name  ,
-            std::vector<RFN>         const&inputs,
-            std::shared_ptr<Resource>const&output);
-        std::shared_ptr<Function>createFunction2(
-            std::string     const&name        ,
-            std::vector<RFN>const&inputs      ,
-            std::string     const&variableName);
-        std::shared_ptr<Function>createFunction2(
-            std::string     const&name  ,
-            std::vector<RFN>const&inputs);
-        std::shared_ptr<Function>createFunction(
-            std::string             const&name        ,
-            std::vector<std::string>const&inputNames  ,
-            std::string             const&variableName);
-        std::shared_ptr<Function>createFunction(
-            std::string              const&name      ,
-            std::vector<std::string> const&inputNames,
-            std::shared_ptr<Resource>const&output    );
-        std::shared_ptr<Function>createFunction(
-            std::string              const&name      ,
-            std::vector<std::string> const&inputNames);
         template<typename...ARGS>
           std::shared_ptr<Function>createFce(
               std::string const&name,
               ARGS... args);
 
+
+        std::shared_ptr<Resource>const&variable(std::string const&name)const;
+        template<typename T>
+          bool addVariable(std::string const&name,T const&val);
+        template<typename OUTPUT,typename...ARGS>
+          FunctionId addFunction(
+              std::vector<std::string>const&names,
+              OUTPUT(*fce)(ARGS...),
+              bool(*sig)(ARGS...) = nullptr);
+        template<typename OUTPUT,typename CLASS,typename...ARGS>
+          FunctionId addFunction(
+              std::vector<std::string>const&names,
+              OUTPUT(CLASS::*fce)(ARGS...),
+              bool(*sig)(ARGS...) = nullptr);
+        template<typename OUTPUT,typename CLASS,typename...ARGS>
+          FunctionId addFunction(
+              std::vector<std::string>const&names,
+              OUTPUT(CLASS::*fce)(ARGS...)const,
+              bool(*sig)(ARGS...) = nullptr);
+        FunctionId addCompositeFunction(
+            std::string const&fceName,
+            std::vector<std::string>const&names,
+            std::shared_ptr<CompositeFunctionFactory>const&factory);
+        void bindInput(
+            std::shared_ptr<Function>const&fce,
+            std::vector<RFN>         const&inputs);
+        void bindOutput(
+            std::shared_ptr<Function>const&fce,
+            std::shared_ptr<Resource>const&output);
+        TypeId addAtomicType(
+            std::string               const&name                 ,
+            size_t                    const&size                 ,
+            CDPtr const&constructor = nullptr,
+            CDPtr const&destructor  = nullptr);
+        TypeId addCompositeType(
+            std::string           const&name       ,
+            TypeDescriptionVector const&description);
+        TypeId addStructType(
+            std::string           const&name,
+            TypeDescriptionVector const&typeids);
+        TypeId addStructType(
+            std::string             const&name     ,
+            std::vector<std::string>const&typeNames);
+        TypeId addArrayType(
+            std::string const&name     ,
+            size_t            size     ,
+            TypeId            innerType);
+        TypeId addArrayType(
+            std::string const&name     ,
+            size_t            size     ,
+            std::string const&innerType);
+        std::shared_ptr<FunctionNodeFactory>createFunctionNodeFactory(
+            std::string functionName,
+            std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories = {});
+        std::shared_ptr<CompositeFunctionFactory>createCompositeFunctionFactory(
+            std::shared_ptr<FunctionNodeFactory>const&root,
+            std::vector<std::vector<std::shared_ptr<FunctionNodeFactory>>>const&inputs,
+            std::vector<std::vector<size_t>>const&inputIndices);
+        std::shared_ptr<ResourceFactory>createResourceFactory(
+            std::string name);
+        template<typename CLASS>
+          TypeId addAtomicClass(std::string const&name);
+      protected:
         inline std::shared_ptr<Resource>_getOutputFromArgs(){return nullptr;}
         inline std::shared_ptr<Resource>_getOutputFromArgs(std::shared_ptr<Resource>const&r){
           return r;
@@ -128,77 +169,6 @@ namespace ge{
             this->_getInputsFromArgs(inputs,args...);
           }
 
-        std::shared_ptr<Resource>const&variable(std::string const&name)const;
-        template<typename T>
-          bool addVariable(std::string const&name,T const&val);
-        template<typename OUTPUT,typename...ARGS>
-          FunctionId addFunction(
-              std::vector<std::string>const&names,
-              OUTPUT(*fce)(ARGS...),
-              bool(*sig)(ARGS...) = nullptr);
-        template<typename OUTPUT,typename CLASS,typename...ARGS>
-          FunctionId addFunction(
-              std::vector<std::string>const&names,
-              OUTPUT(CLASS::*fce)(ARGS...),
-              bool(*sig)(ARGS...) = nullptr);
-        template<typename OUTPUT,typename CLASS,typename...ARGS>
-          FunctionId addFunction(
-              std::vector<std::string>const&names,
-              OUTPUT(CLASS::*fce)(ARGS...)const,
-              bool(*sig)(ARGS...) = nullptr);
-        FunctionId addCompositeFunction(
-            std::string const&fceName,
-            std::vector<std::string>const&names,
-            std::shared_ptr<CompositeFunctionFactory>const&factory);
-        void bindInput(
-            std::shared_ptr<Function>const&fce,
-            std::vector<RFN>         const&inputs);
-        void bindOutput(
-            std::shared_ptr<Function>const&fce,
-            std::shared_ptr<Resource>const&output);
-        TypeId addAtomicType(
-            std::string               const&name                 ,
-            size_t                    const&size                 ,
-            CDPtr const&constructor = nullptr,
-            CDPtr const&destructor  = nullptr);
-        TypeId addCompositeType(
-            std::string           const&name       ,
-            TypeDescriptionVector const&description);
-        TypeId addStructType(
-            std::string           const&name,
-            TypeDescriptionVector const&typeids);
-        TypeId addStructType(
-            std::string             const&name     ,
-            std::vector<std::string>const&typeNames);
-        TypeId addArrayType(
-            std::string const&name     ,
-            size_t            size     ,
-            TypeId            innerType);
-        TypeId addArrayType(
-            std::string const&name     ,
-            size_t            size     ,
-            std::string const&innerType);
-        std::shared_ptr<FunctionNodeFactory>createFunctionNodeFactory(
-            std::string functionName,
-            std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories = {});/*,
-            std::vector<std::shared_ptr<ResourceFactory>>const&inputResourceFactories = {});*/
-        /*
-        std::shared_ptr<FunctionNodeFactory>createFunctionNodeFactory(
-            std::string name,
-            std::string functionName,
-            std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories,
-            std::vector<std::string>const&inputResourceFactoryNames);
-            */
-        std::shared_ptr<CompositeFunctionFactory>createCompositeFunctionFactory(
-            std::shared_ptr<FunctionNodeFactory>const&root,
-            std::vector<std::vector<std::shared_ptr<FunctionNodeFactory>>>const&inputs,
-            std::vector<std::vector<size_t>>const&inputIndices);
-           
-
-        std::shared_ptr<ResourceFactory>createResourceFactory(
-            std::string name);
-        template<typename CLASS>
-          TypeId addAtomicClass(std::string const&name);
     };
 
     template<typename T>

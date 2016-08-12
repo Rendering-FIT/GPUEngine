@@ -482,8 +482,26 @@ bool TypeRegister::areConvertible(TypeId to,TypeId from)const{
   if(to==from)return true;
   if(this->getTypeIdType(to)==ANY)return true;
   if(this->getTypeIdType(from)==ANY)return true;
-  if(this->getTypeIdType(to)==ARRAY && this->getTypeIdType(from) == ARRAY)
-    return this->getArraySize(to)<=this->getArraySize(from);
+
+  auto arrayInnerType = [this](TypeId a)->TypeId{
+    while(this->getTypeIdType(a)==ARRAY)
+      a=this->getArrayElementTypeId(a);
+    return a;
+  };
+  auto arraySize = [this](TypeId a)->size_t{
+    size_t s=1;
+    while(this->getTypeIdType(a)==ARRAY){
+      s*=this->getArraySize(a);
+      a=this->getArrayElementTypeId(a);
+    }
+    return s;
+  };
+
+  if(this->getTypeIdType(to)==ARRAY && this->getTypeIdType(from) == ARRAY){
+    if(arraySize(to)>arraySize(from))return false;
+    return arrayInnerType(to)==arrayInnerType(from);
+//    return this->getArraySize(to)<=this->getArraySize(from);
+  }
 
   auto fceConv = [this](TypeId memfce,TypeId fce)->bool{
     if(this->getMemFceReturnTypeId(memfce)!=this->getFceReturnTypeId(fce))return false;
