@@ -26,6 +26,7 @@ set(DE_INCLUDES
   ${HEADER_PATH}/StructDescription.h
   ${HEADER_PATH}/FceDescription.h
   ${HEADER_PATH}/MemFceDescription.h
+  ${HEADER_PATH}/EnumDescription.h
   ${HEADER_PATH}/VoidDescription.h
   ${HEADER_PATH}/AnyDescription.h
   ${HEADER_PATH}/Resource.h
@@ -74,6 +75,7 @@ set(DE_SOURCES
   StructDescription.cpp
   FceDescription.cpp
   MemFceDescription.cpp
+  EnumDescription.cpp
   VoidDescription.cpp
   AnyDescription.cpp
   Resource.cpp

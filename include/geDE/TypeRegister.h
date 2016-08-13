@@ -23,8 +23,10 @@ namespace ge{
     class StructDescription;
     class FceDescription;
     class MemFceDescription;
+    class EnumDescription;
     class VoidDescription;
     class AnyDescription;
+    using EnumElementType = uint32_t;
     class GEDE_EXPORT TypeRegister: public std::enable_shared_from_this<TypeRegister>{
       friend class TypeDescription;
       friend class AtomicDescription;
@@ -33,21 +35,23 @@ namespace ge{
       friend class StructDescription;
       friend class FceDescription;
       friend class MemFceDescription;
+      friend class EnumDescription;
       friend class VoidDescription;
       friend class AnyDescription;
       public:
         using ToStr = std::string(*)(void*);
         enum TypeType{
-          UNREGISTERED = 0,
-          ATOMIC       = 1,
-          PTR          = 2,
-          ARRAY        = 3,
-          STRUCT       = 4,
-          FCE          = 5,
-          MEMFCE       = 6,
-          VOID         = 7,
-          ANY          = 8,
-          TYPEID       = 9,
+          UNREGISTERED = 0 ,
+          ATOMIC       = 1 ,
+          PTR          = 2 ,
+          ARRAY        = 3 ,
+          STRUCT       = 4 ,
+          FCE          = 5 ,
+          MEMFCE       = 6 ,
+          ENUM         = 7 ,
+          VOID         = 8 ,
+          ANY          = 9 ,
+          TYPEID       = 10,
         };
         TypeRegister();
         virtual ~TypeRegister();
@@ -75,6 +79,9 @@ namespace ge{
             TypeId             const&returnType,
             TypeId             const&classType ,
             std::vector<TypeId>const&args      );
+        TypeId addEnumType(
+            std::string const&name,
+            std::vector<EnumElementType>const&values);
         TypeId addVoidType(
             std::string const&name);
         TypeId addAnyType(
@@ -98,6 +105,9 @@ namespace ge{
         TypeId                      getMemFceClassTypeId  (TypeId id)const;
         size_t                      getNofMemFceArgs      (TypeId id)const;
         TypeId                      getMemFceArgTypeId    (TypeId id,size_t index)const;
+        size_t                      getNofEnumElements    (TypeId id)const;
+        EnumElementType             getEnumElement        (TypeId id,size_t index)const;
+        size_t                      getEnumElementIndex   (TypeId id,EnumElementType element)const;
         TypeId                      getTypeId             (std::string const&name)const;
         std::string const&          getTypeIdName         (TypeId id)const;
         std::set<std::string>const& getTypeIdSynonyms     (TypeId id)const;

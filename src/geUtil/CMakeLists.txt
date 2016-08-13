@@ -51,7 +51,7 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/CameraObject.h
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
-   ${HEADER_PATH}/HighResolutionTimer.h
+   ${HEADER_PATH}/Timer.h
    ${HEADER_PATH}/Interpolator.h
    ${HEADER_PATH}/Intersector.h
    ${HEADER_PATH}/macros.h
@@ -68,7 +68,6 @@ set(GL_SOURCES
    CameraObject.cpp
    CameraPath.cpp
    FPSPrinter.cpp
-   HighResolutionTimer.cpp
    Progress.cpp
    CopyArgumentManager2VariableRegister.cpp
 )

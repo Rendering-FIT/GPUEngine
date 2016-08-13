@@ -4,6 +4,7 @@
 #include<memory>
 #include<cstring>
 #include<vector>
+#include<algorithm>
 
 #include<geCore/ErrorPrinter.h>
 #include<geDE/AtomicResource.h>
@@ -14,6 +15,7 @@
 #include<geDE/StructDescription.h>
 #include<geDE/FceDescription.h>
 #include<geDE/MemFceDescription.h>
+#include<geDE/EnumDescription.h>
 #include<geDE/VoidDescription.h>
 #include<geDE/AnyDescription.h>
 
@@ -164,6 +166,15 @@ TypeId TypeRegister::addMemFceType(
   return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"MemFce type named "+name+" already exists and is different");
 }
 
+TypeId TypeRegister::addEnumType(
+    std::string                 const&name,
+    std::vector<EnumElementType>const&elements){
+  assert(this!=nullptr);
+  auto newDesc = new EnumDescription(elements);
+  assert(newDesc!=nullptr);
+  return this->_checkAndAddTypeByDescription(name,newDesc,GE_CORE_FCENAME,"Enum type named "+name+" already exists and is different");
+}
+
 TypeId TypeRegister::addVoidType(
     std::string        const&name){
   assert(this!=nullptr);
@@ -211,6 +222,7 @@ TypeId TypeRegister::_typeExists(
     case STRUCT      :{StructDescription   desc;return desc.findInRegister(this,description,i);}
     case FCE         :{FceDescription      desc;return desc.findInRegister(this,description,i);}
     case MEMFCE      :{MemFceDescription   desc;return desc.findInRegister(this,description,i);}
+    case ENUM        :{EnumDescription     desc;return desc.findInRegister(this,description,i);}
     case VOID        :{VoidDescription     desc;return desc.findInRegister(this,description,i);}
     case ANY         :{AnyDescription      desc;return desc.findInRegister(this,description,i);}
     default          :return this->_typeIdExists(description,i);
@@ -265,6 +277,7 @@ TypeId TypeRegister::_addType(
     case STRUCT      :return TypeDescription::checkAndBindType(this,name,description,new StructDescription(),i);
     case FCE         :return TypeDescription::checkAndBindType(this,name,description,new FceDescription   (),i);
     case MEMFCE      :return TypeDescription::checkAndBindType(this,name,description,new MemFceDescription(),i);
+    case ENUM        :return TypeDescription::checkAndBindType(this,name,description,new EnumDescription  (),i);
     case VOID        :return TypeDescription::checkAndBindType(this,name,description,new VoidDescription  (),i);
     case ANY         :return TypeDescription::checkAndBindType(this,name,description,new AnyDescription   (),i);
     default          :return this->_addTypeId(name,description,i);
@@ -434,6 +447,33 @@ TypeId TypeRegister::getMemFceArgTypeId    (TypeId id,size_t index)const{
   return ((MemFceDescription*)d)->argumentTypes.at(index);
 }
 
+size_t TypeRegister::getNofEnumElements(TypeId id)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == ENUM);
+  return ((EnumDescription*)d)->elements.size();
+}
+
+EnumElementType TypeRegister::getEnumElement(TypeId id,size_t i)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == ENUM);
+  assert(i<((EnumDescription*)d)->elements.size());
+  return ((EnumDescription*)d)->elements.at(i);
+}
+
+size_t TypeRegister::getEnumElementIndex(TypeId id,EnumElementType element)const{
+  assert(this!=nullptr);
+  auto d = this->_getDescription(id);
+  assert(d!=nullptr);
+  assert(d->type == ENUM);
+  auto dd = (EnumDescription*)d;
+  auto ii = std::find(dd->elements.begin(),dd->elements.end(),element);
+  assert(ii!=dd->elements.end());
+  return *ii;
+}
 
 TypeId TypeRegister::getTypeId(std::string const&name)const{
   assert(this!=nullptr);
@@ -499,8 +539,7 @@ bool TypeRegister::areConvertible(TypeId to,TypeId from)const{
 
   if(this->getTypeIdType(to)==ARRAY && this->getTypeIdType(from) == ARRAY){
     if(arraySize(to)>arraySize(from))return false;
-    return arrayInnerType(to)==arrayInnerType(from);
-//    return this->getArraySize(to)<=this->getArraySize(from);
+    return this->areConvertible(arrayInnerType(to),arrayInnerType(from));
   }
 
   auto fceConv = [this](TypeId memfce,TypeId fce)->bool{

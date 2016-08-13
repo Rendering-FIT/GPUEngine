@@ -14,7 +14,7 @@ FPSPrinter::FPSPrinter(unsigned framesToElapse,bool useSTDPrint){
   this->_useSTDPrint    = useSTDPrint;
   this->_msCallBack     = NULL;
   this->_msData         = NULL;
-  this->_timer = new ge::util::HighResolutionTimer();
+  this->_timer = new Timer<float>();
   this->start();
 }
 void FPSPrinter::setMsCallBack(MSCALLBACK fce,void*data){
@@ -33,7 +33,7 @@ void FPSPrinter::start(){
 void FPSPrinter::endOfFrame(){
   this->_elapsedFrames++;
   if(this->_elapsedFrames==this->_framesToElapse){
-    double time=this->_timer->getElapsedTimeFromLastQuerySeconds();
+    double time=this->_timer->elapsedFromLast();
     this->_lastTimePerFrame=time/this->_framesToElapse;
     this->_lastFPS=this->_framesToElapse/time;
     if(this->_useSTDPrint){

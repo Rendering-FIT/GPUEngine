@@ -1,7 +1,7 @@
 #pragma once
 
 #include<geUtil/Export.h>
-#include<geUtil/HighResolutionTimer.h>
+#include<geUtil/Timer.h>
 
 namespace ge{
   namespace util{
@@ -11,7 +11,7 @@ namespace ge{
       private:
         unsigned _framesToElapse;
         unsigned _elapsedFrames;
-        ge::util::HighResolutionTimer*_timer;
+        Timer<float>*_timer;
         double     _lastTimePerFrame;
         double     _lastFPS;
         bool       _useSTDPrint;

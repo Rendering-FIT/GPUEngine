@@ -33,6 +33,22 @@ void NameRegister::addStructNaming(NameRegister::Id id,NameRegister::ElementInde
   this->_structureNaming[id] = StructureNaming(i2n,n2i);
 }
 
+void NameRegister::addEnumNaming(NameRegister::Id id,NameRegister::ElementIndex nofElements){
+  PRINT_CALL_STACK(id,nofElements);
+  assert(this!=nullptr);
+  std::vector<std::string>i2n;
+  std::map<std::string,ElementIndex>n2i;
+  i2n.resize(nofElements);
+  for(NameRegister::ElementIndex i=0;i<nofElements;++i){
+    std::stringstream ss;
+    ss<<"element"<<i;
+    i2n[i]=ss.str();
+    n2i[ss.str()]=i;
+  }
+  this->_enumNaming[id] = EnumNaming(i2n,n2i);
+}
+
+
 void NameRegister::removeFceNaming(Id id){
   PRINT_CALL_STACK(id);
   assert(this!=nullptr);
@@ -43,5 +59,11 @@ void NameRegister::removeStructNaming(Id id){
   PRINT_CALL_STACK(id);
   assert(this!=nullptr);
   this->_structureNaming.erase(id);
+}
+
+void NameRegister::removeEnumNaming(Id id){
+  PRINT_CALL_STACK(id);
+  assert(this!=nullptr);
+  this->_enumNaming.erase(id);
 }
 

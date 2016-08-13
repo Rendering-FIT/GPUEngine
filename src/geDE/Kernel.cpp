@@ -221,6 +221,22 @@ TypeId Kernel::addArrayType(
   return this->addCompositeType(name,d);
 }
 
+TypeId Kernel::addEnumType(
+    std::string const&name,
+    std::vector<EnumElementType>const&elements,
+    std::vector<std::string>const&names){
+  assert(this!=nullptr);
+  assert(this->typeRegister!=nullptr);
+  assert(this->nameRegister!=nullptr);
+  auto id = this->typeRegister->addEnumType(name,elements);
+  this->nameRegister->addEnumNaming(id,elements.size());
+  size_t i=0;
+  for(auto const&x:names){
+    this->nameRegister->setEnumElementName(id,i,x);
+    i++;
+  }
+  return id;
+}
 
 
 /*

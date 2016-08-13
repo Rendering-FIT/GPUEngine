@@ -51,6 +51,11 @@ namespace ge{
           std::shared_ptr<Function>createFce(
               std::string const&name,
               ARGS... args);
+        template<typename...ARGS>
+          std::shared_ptr<Function>createAlwaysExecFce(
+              std::string const&name,
+              ARGS... args);
+
 
 
         std::shared_ptr<Resource>const&variable(std::string const&name)const;
@@ -103,6 +108,10 @@ namespace ge{
             std::string const&name     ,
             size_t            size     ,
             std::string const&innerType);
+        TypeId addEnumType(
+            std::string const&name,
+            std::vector<EnumElementType>const&elements,
+            std::vector<std::string>const&names);
         std::shared_ptr<FunctionNodeFactory>createFunctionNodeFactory(
             std::string functionName,
             std::vector<std::shared_ptr<StatementFactory>>const&inputFunctionFactories = {});
@@ -282,6 +291,16 @@ namespace ge{
         this->bindOutput(result,output);
         return result;
       }
+    template<typename...ARGS>
+      inline std::shared_ptr<Function>Kernel::createAlwaysExecFce(
+          std::string const&name,
+          ARGS... args){
+        auto res = this->createFce(name,args...);
+        res->setIgnoreDirty(true);
+        res->setIgnoreInputChanges(true);
+        return res;
+      }
+
 
 
   }
