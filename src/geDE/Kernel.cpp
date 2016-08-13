@@ -328,3 +328,15 @@ std::shared_ptr<CompositeFunctionFactory>Kernel::createCompositeFunctionFactory(
   return fac;
 }
 
+
+void Kernel::nameFunctionInterface(TypeId id,std::vector<std::string>const&names){
+  assert(this!=nullptr);
+  assert(this->nameRegister!=nullptr);
+  size_t i=0;
+  for(auto const&x:names){
+    if(i<this->functionRegister->getNofInputs(id))
+      this->nameRegister->setFceInputName(id,i,x);
+    if(i==this->functionRegister->getNofInputs(id))
+      this->nameRegister->setFceOutputName(id,x);
+  }
+}

@@ -25,7 +25,7 @@ namespace ge{
             GLint                        nofComponentsa              ,
             GLenum                       type                        ,
             GLsizei                      stride            = 0       ,
-            const GLvoid*                pointer           = NULL    ,
+            GLintptr                     pointer           = 0       ,
             GLboolean                    normalized        = GL_FALSE,  
             GLuint                       divisor           = 0       ,
             enum AttribPointerType       attribPointerType = NONE    );

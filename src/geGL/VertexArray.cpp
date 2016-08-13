@@ -50,7 +50,7 @@ void VertexArray::addAttrib(
     GLint                        nofComponents    ,
     GLenum                       type             ,
     GLsizei                      stride           ,
-    const GLvoid*                pointer          ,
+    GLintptr                     pointer          ,
     GLboolean                    normalized       ,  
     GLuint                       divisor          ,
     enum AttribPointerType       apt              ){
@@ -67,7 +67,7 @@ void VertexArray::addAttrib(
   else if(apt==VertexArray::AttribPointerType::L)
     this->_gl.glVertexArrayAttribLFormat (this->_id,index,nofComponents,type,0);
 
-  this->_gl.glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),(GLintptr)pointer,stride);
+  this->_gl.glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),pointer,stride);
   this->_gl.glVertexArrayBindingDivisor(this->_id,index,divisor);
   while(index>this->_buffers.size())this->_buffers.push_back(nullptr);
   this->_buffers.push_back(buffer);

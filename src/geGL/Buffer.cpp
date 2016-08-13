@@ -199,7 +199,7 @@ void Buffer::_updateVertexArrays(){
           x->getAttribSize(y),
           x->getAttribType(y),
           x->getAttribStride(y),
-          (const GLvoid*)(size_t)x->getAttribRelativeOffset(y),
+          x->getAttribRelativeOffset(y),
           x->isAttribNormalized(y),
           x->getAttribDivisor(y),
           x->isAttribInteger(y)?VertexArray::I:(x->isAttribLong(y)?VertexArray::L:VertexArray::NONE));

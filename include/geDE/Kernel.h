@@ -63,16 +63,19 @@ namespace ge{
           bool addVariable(std::string const&name,T const&val);
         template<typename OUTPUT,typename...ARGS>
           FunctionId addFunction(
+              std::string const&fceName,
               std::vector<std::string>const&names,
               OUTPUT(*fce)(ARGS...),
               bool(*sig)(ARGS...) = nullptr);
         template<typename OUTPUT,typename CLASS,typename...ARGS>
           FunctionId addFunction(
+              std::string const&fceName,
               std::vector<std::string>const&names,
               OUTPUT(CLASS::*fce)(ARGS...),
               bool(*sig)(ARGS...) = nullptr);
         template<typename OUTPUT,typename CLASS,typename...ARGS>
           FunctionId addFunction(
+              std::string const&fceName,
               std::vector<std::string>const&names,
               OUTPUT(CLASS::*fce)(ARGS...)const,
               bool(*sig)(ARGS...) = nullptr);
@@ -122,7 +125,8 @@ namespace ge{
         std::shared_ptr<ResourceFactory>createResourceFactory(
             std::string name);
         template<typename CLASS>
-          TypeId addAtomicClass(std::string const&name);
+          TypeId addAtomicClass(std::string const&name = keyword<CLASS>());
+        void nameFunctionInterface(TypeId id,std::vector<std::string>const&names);
       protected:
         inline std::shared_ptr<Resource>_getOutputFromArgs(){return nullptr;}
         inline std::shared_ptr<Resource>_getOutputFromArgs(std::shared_ptr<Resource>const&r){
@@ -197,59 +201,41 @@ namespace ge{
       }
     template<typename OUTPUT,typename...ARGS>
       FunctionId Kernel::addFunction(
+          std::string const&fceName,
           std::vector<std::string>const&names,
           OUTPUT(*fce)(ARGS...),
           bool(*sig)(ARGS...)){
         assert(this!=nullptr);
         assert(this->functionRegister!=nullptr);
         assert(this->nameRegister!=nullptr);
-        if(names.size()==0){
-          ge::core::printError(GE_CORE_FCENAME,"at least function name has to be specified",names,fce,sig);
-          return 0;
-        }
-        auto ret = registerBasicFunction(this->functionRegister,names[0],fce,sig);
-        if(names.size()>1)
-          this->nameRegister->setFceOutputName(ret,names[1]);
-        for(size_t i=2;i<names.size();++i)
-          this->nameRegister->setFceInputName(ret,i-2,names[i]);
+        auto ret = registerBasicFunction(this->functionRegister,fceName,fce,sig);
+        this->nameFunctionInterface(ret,names);
         return ret;
       }
     template<typename OUTPUT,typename CLASS,typename...ARGS>
       FunctionId Kernel::addFunction(
+          std::string const&fceName,
           std::vector<std::string>const&names,
           OUTPUT(CLASS::*fce)(ARGS...),
           bool(*sig)(ARGS...)){
         assert(this!=nullptr);
         assert(this->functionRegister!=nullptr);
         assert(this->nameRegister!=nullptr);
-        if(names.size()==0){
-          ge::core::printError(GE_CORE_FCENAME,"at least function name has to be specified",names,fce,sig);
-          return 0;
-        }
-        auto ret = registerClassFunction(this->functionRegister,names[0],fce,sig);
-        if(names.size()>1)
-          this->nameRegister->setFceOutputName(ret,names[1]);
-        for(size_t i=2;i<names.size();++i)
-          this->nameRegister->setFceInputName(ret,i-2,names[i]);
+        auto ret = registerClassFunction(this->functionRegister,fceName,fce,sig);
+        this->nameFunctionInterface(ret,names);
         return ret;
       }
     template<typename OUTPUT,typename CLASS,typename...ARGS>
       FunctionId Kernel::addFunction(
+          std::string const&fceName,
           std::vector<std::string>const&names,
           OUTPUT(CLASS::*fce)(ARGS...)const,
           bool(*sig)(ARGS...)){
         assert(this!=nullptr);
         assert(this->functionRegister!=nullptr);
         assert(this->nameRegister!=nullptr);
-        if(names.size()==0){
-          ge::core::printError(GE_CORE_FCENAME,"at least function name has to be specified",names,fce,sig);
-          return 0;
-        }
-        auto ret = registerClassFunction(this->functionRegister,names[0],fce,sig);
-        if(names.size()>1)
-          this->nameRegister->setFceOutputName(ret,names[1]);
-        for(size_t i=2;i<names.size();++i)
-          this->nameRegister->setFceInputName(ret,i-2,names[i]);
+        auto ret = registerClassFunction(this->functionRegister,fceName,fce,sig);
+        this->nameFunctionInterface(ret,names);
         return ret;
       }
 
