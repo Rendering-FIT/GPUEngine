@@ -13,7 +13,7 @@ namespace ge{
       public:
         Body(bool ignore    = false);
         virtual ~Body();
-        void addStatement(std::shared_ptr<Statement>const&statement);
+        size_t addStatement(std::shared_ptr<Statement>const&statement);
         StatementIndex size()const;
         std::shared_ptr<Statement>const&operator[](StatementIndex index)const;
         StatementIterator begin()const;
@@ -39,14 +39,16 @@ namespace ge{
       }
     }
 
-    inline void Body::addStatement(std::shared_ptr<Statement>const&statement){
+    inline size_t Body::addStatement(std::shared_ptr<Statement>const&statement){
       PRINT_CALL_STACK(statement);
       assert(this!=nullptr);
+      size_t index = this->_statements.size();
       this->_statements.push_back(statement);
       this->_statementsUpdateTicks.push_back(0);
       statement->_addSignalingTarget(this);
       this->_addSignalingSource(&*statement);
       this->setDirty();
+      return index;
     }
 
     inline Body::StatementIndex Body::size()const{
