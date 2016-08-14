@@ -39,7 +39,7 @@ VertexArray::~VertexArray(){
  * @param nofComponents number of components of attrib vec3 = 3
  * @param type          type of attrib vec3 = float, ivec2 = int
  * @param stride        distance between attribs 
- * @param pointer       offset to the first attrib
+ * @param offset        offset to the first attrib
  * @param normalized    should the attrib be normalized?
  * @param divisor       rate of incrementation of attrib per instance, 0 = per VS invocation
  * @param apt           NONE - this->_gl.glVertexAttribPointer, I - this->_gl.glVertexAttribIPointer, L - this->_gl.glVertexAttribLPointer
@@ -50,11 +50,12 @@ void VertexArray::addAttrib(
     GLint                        nofComponents    ,
     GLenum                       type             ,
     GLsizei                      stride           ,
-    GLintptr                     pointer          ,
+    GLintptr                     offset           ,
     GLboolean                    normalized       ,  
     GLuint                       divisor          ,
     enum AttribPointerType       apt              ){
   assert(this!=nullptr);
+  //std::cout<<this<<"->addAttrib("<<buffer<<","<<index<<","<<nofComponents<<","<<type<<","<<stride<<","<<offset<<","<<normalized<<","<<divisor<<","<<apt<<")"<<std::endl;
   if(stride==0)
     stride=ge::gl::getTypeSize(type)*nofComponents;
   this->_gl.glVertexArrayAttribBinding (this->_id,index,index);
@@ -67,7 +68,7 @@ void VertexArray::addAttrib(
   else if(apt==VertexArray::AttribPointerType::L)
     this->_gl.glVertexArrayAttribLFormat (this->_id,index,nofComponents,type,0);
 
-  this->_gl.glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),pointer,stride);
+  this->_gl.glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),offset,stride);
   this->_gl.glVertexArrayBindingDivisor(this->_id,index,divisor);
   while(index>this->_buffers.size())this->_buffers.push_back(nullptr);
   this->_buffers.push_back(buffer);
@@ -84,11 +85,13 @@ void VertexArray::addElementBuffer(
 
 void VertexArray::bind()const{
   assert(this!=nullptr);
+  //std::cout<<this<<"->bind()"<<std::endl;
   this->_gl.glBindVertexArray(this->_id);
 }
 
 void VertexArray::unbind()const{
   assert(this!=nullptr);
+  //std::cout<<this<<"->unbind()"<<std::endl;
   this->_gl.glBindVertexArray(0);
 }
 

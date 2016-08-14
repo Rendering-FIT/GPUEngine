@@ -9,7 +9,7 @@ using namespace ge::ad;
 
 SDLWindow::SDLWindow(uint32_t width,uint32_t height){
   assert(this!=nullptr);
-  Uint32 flags = SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN;
+  Uint32 flags = SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE;
   this->m_window  = SDL_CreateWindow("",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width,height,flags);
   this->setWindowEventCallback(SDL_WINDOWEVENT_CLOSE,SDLWindow::m_defaultCloseCallback,this);
 }

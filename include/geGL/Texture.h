@@ -91,6 +91,7 @@ namespace ge{
             GLint        imgHeight = 0               )const;
 
 
+        void    generateMipmap()const;
         void    texParameteri (GLenum pname,GLint    params)const;
         void    texParameterfv(GLenum pname,GLfloat *params)const;
         GLenum  getFormat()const;

@@ -36,6 +36,9 @@ namespace ge{
     template<typename T,typename std::enable_if<std::is_reference<T>::value,unsigned>::type = 0>
       std::string keyword();
 
+    template<typename T,typename std::enable_if<std::is_enum<T>::value,unsigned>::type = 0>
+      std::string keyword();
+
     template<typename T,typename std::enable_if<std::is_array<T>::value,unsigned>::type = 0>
       std::string extents();
 
@@ -49,9 +52,9 @@ namespace ge{
 
 
     //template<typename...ARGS,typename std::enable_if<sizeof...(ARGS)==0,unsigned>::type = 0>
-      inline std::string argPrinter(){
-        return"";
-      }
+    inline std::string argPrinter(){
+      return"";
+    }
 
     template<typename HEAD>//,typename...ARGS,typename std::enable_if<sizeof...(ARGS)==0,unsigned>::type = 0>
       inline std::string argPrinter(){
@@ -73,9 +76,9 @@ namespace ge{
         return printArgs2_help<T>(typename ge::core::make_index_sequence<std::tuple_size<T>::value>::type{});
       }
     template<typename T,typename std::enable_if<std::is_same<T,std::tuple<>>::value,unsigned>::type = 0>
-    inline std::string printArgs2(){
-      return"";
-    }
+      inline std::string printArgs2(){
+        return"";
+      }
 
 
 
@@ -129,6 +132,13 @@ namespace ge{
 
     template<typename T,typename std::enable_if<!std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type>
       inline std::string keyword(){return keyword<typename std::remove_const<T>::type>();}//+" const";}
+
+    template<typename T,typename std::enable_if<std::is_enum<T>::value,unsigned>::type>
+      std::string keyword(){
+        return keyword<int32_t>();
+      }
+
+
 
   template<typename T,typename std::enable_if< std::is_pointer<T>::value &&  std::is_const<T>::value,unsigned>::type>
     inline std::string keyword(){return keyword<typename std::remove_const<T>::type>();}//+"const";}

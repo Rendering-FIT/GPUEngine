@@ -219,7 +219,9 @@ void Texture::setData2D(
   }
   if(rowLength==0)rowLength=width;
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH,rowLength);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,1);
   this->_gl.glTextureSubImage2D(this->_id,level,xoffset,yoffset,width,height,format,type,data);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,4);
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
 }
 
@@ -251,9 +253,16 @@ void Texture::setData3D(
   if(imgHeight==0)imgHeight=height;
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH  ,rowLength);
   this->_gl.glPixelStorei(GL_UNPACK_IMAGE_HEIGHT,imgHeight);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,1);
   this->_gl.glTextureSubImage3D(this->_id,level,xoffset,yoffset,zoffset,width,height,depth,format,type,data);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,4);
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH  ,0);
   this->_gl.glPixelStorei(GL_UNPACK_IMAGE_HEIGHT,0);
+}
+
+void Texture::generateMipmap()const{
+  assert(this!=nullptr);
+  this->_gl.glGenerateTextureMipmap(this->_id);
 }
 
 /**
