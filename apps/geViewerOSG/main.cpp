@@ -1,17 +1,14 @@
 #include <string>
 #include <chrono>
-#include <GL/glew.h>
 #include <glm/vec2.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <geGL/DebugMessage.h>
 #include <geGL/geGL.h>
-#include <geGL/ProgramObject.h>
 #include <geRG/FlexibleUniform.h>
 #include <geRG/Model.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
 #include <geAd/OsgImport/OsgImport.h>
-#include <geAd/WindowObject/WindowObject.h>
+#include <geAd/SDLWindow/SDLWindow.h>
 #include <geUtil/ArgumentObject.h>
 #include <osg/ref_ptr>
 #if defined(_MSC_VER) && _MSC_VER<1900 // MSVC 2013 (seen on Update 5) does not put type_info into std
@@ -26,59 +23,52 @@ using namespace ge::gl;
 using namespace ge::rg;
 
 
-void Init();
-void Idle();
-void Mouse();
-void Wheel(int d);
+static void init(unsigned windowWidth,unsigned windowHeight);
+static void idleCallback(void*);
+static bool mouseButtonCallback(const SDL_Event& event,void*);
+static bool mouseMotionCallback(const SDL_Event& event,void*);
 
 
-struct SContextParam{
-  unsigned    Version;
-  std::string Profile;
-  std::string Flag;
-}ContextParam;
-
-
-struct SWindowParam{
-  unsigned Size[2];
-  bool     Fullscreen;
-}WindowParam;
-
-
-bool disableAnttweakbar=true;
-ge::util::ArgumentObject *args;
-ge::util::WindowObject   *window;
+static ge::util::ArgumentObject *args;
+static ge::ad::SDLMainLoop mainLoop;
+static shared_ptr<ge::ad::SDLWindow> window;
 static bool printModelInfo=false;
 static bool showFPS=false;
 static vector<chrono::steady_clock::time_point> frameTimePoints;
 
-static bool useARBShaderDrawParameters=false;
 static fsg::OrbitObjectManipulator cameraManipulator;
 static shared_ptr<Transformation> cameraTransformation;
 static string fileName;
 static shared_ptr<Model> model;
 
-static bool mouseRightDown=false;
 static glm::ivec2 lastMousePos;
 
 
 int main(int argc,char*argv[])
 {
+   // arguments
    args=new ge::util::ArgumentObject(argc,argv);
-
-   disableAnttweakbar=true;
    showFPS=args->isPresent("--show-fps");
    printModelInfo=args->isPresent("--model-info");
 
-   //window args
-   WindowParam.Size[0]    = atoi(args->getArg("-w","800").c_str());
-   WindowParam.Size[1]    = atoi(args->getArg("-h","600").c_str());
-   WindowParam.Fullscreen = args->isPresent("-f");
+   // window
+   window=std::make_shared<ge::ad::SDLWindow>(atoi(args->getArg("-w","800").c_str()),
+                                              atoi(args->getArg("-h","600").c_str()));
+   if(args->isPresent("-f"))
+      window->setFullscreen(ge::ad::SDLWindow::FULLSCREEN);
+   if(!window->createContext("rendering",430,ge::ad::SDLWindow::CORE)) {
+      std::cout<<"Error: Can not create OpenGL context."<<std::endl;
+      return EXIT_FAILURE;
+   }
+   window->setEventCallback(SDL_MOUSEBUTTONDOWN,mouseButtonCallback,nullptr);
+   window->setEventCallback(SDL_MOUSEBUTTONUP,mouseButtonCallback,nullptr);
+   window->setEventCallback(SDL_MOUSEMOTION,mouseMotionCallback,nullptr);
+   mainLoop.addWindow("primaryWindow",window);
+   mainLoop.setIdleCallback(idleCallback);
 
-   //context args
-   ContextParam.Version = atoi(args->getArg("--context-version","430").c_str());
-   ContextParam.Profile = args->getArg("--context-profile","core");
-   ContextParam.Flag    = args->getArg("--context-flag","debug");
+   // rendering context
+   ge::gl::init(SDL_GL_GetProcAddress);
+   RenderingContext::setCurrent(make_shared<RenderingContext>());
 
    // file name
    if(argc>1)
@@ -90,70 +80,54 @@ int main(int argc,char*argv[])
          }
    }
 
-   window=new ge::util::WindowObject(
-         WindowParam.Size[0],
-         WindowParam.Size[1],
-         WindowParam.Fullscreen,
-         Idle,
-         Mouse,
-         !disableAnttweakbar,
-         ContextParam.Version,
-         ContextParam.Profile,
-         ContextParam.Flag);
-
-   glewExperimental=GL_TRUE;
-   glewInit();
-   glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
-                 // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
-                 // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
-   ge::gl::init();
-   RenderingContext::setCurrent(make_shared<RenderingContext>());
-   RenderingContext::current()->setUseARBShaderDrawParameters(useARBShaderDrawParameters);
+   // create scene
    cameraTransformation=make_shared<Transformation>();
    RenderingContext::current()->addTransformationGraph(cameraTransformation);
+   init(window->getWidth(),window->getHeight());
 
-   // OpenGL debugging messages
-   //ge::gl::setDefaultDebugMessage();
+   // main loop
+   mainLoop.operator()();
 
-   glEnable(GL_DEPTH_TEST);
-   glDepthFunc(GL_LEQUAL);
-   glDisable(GL_CULL_FACE);
-
-   Init();
-   window->mainLoop();
-   delete window;
+   // clean up
    delete args;
    return 0;
 }
 
 
-void Mouse()
+static bool mouseButtonCallback(const SDL_Event& event,void*)
 {
-   if(!mouseRightDown && window->isRightDown()!=0) {
-      mouseRightDown=true;
-      lastMousePos=glm::make_vec2(window->getMousePosition());
+   const SDL_MouseButtonEvent& e=reinterpret_cast<const SDL_MouseButtonEvent&>(event);
+   if(e.button==SDL_BUTTON_RIGHT) {
+      if(e.type==SDL_MOUSEBUTTONDOWN) {
+         lastMousePos=glm::ivec2(e.x,e.y);
+      }
+      else if(e.type==SDL_MOUSEBUTTONUP) {
+         glm::vec2 size(window->getWidth(),window->getHeight());
+         glm::vec2 delta=glm::vec2(glm::ivec2(e.x,e.y)-lastMousePos)/size;
+         cameraManipulator.rotate(delta.x,delta.y);
+      }
+      return true;
    }
-   else if(mouseRightDown && window->isRightDown()) {
-      glm::ivec2 currentMousePos=glm::make_vec2(window->getMousePosition());
-      glm::vec2 size=glm::make_vec2(window->getWindowSize());
+   return false;
+}
+
+
+static bool mouseMotionCallback(const SDL_Event& event,void*)
+{
+   const SDL_MouseMotionEvent& e=reinterpret_cast<const SDL_MouseMotionEvent&>(event);
+   if((e.state&SDL_BUTTON_RMASK)!=0) {
+      glm::ivec2 currentMousePos(e.x,e.y);
+      glm::vec2 size(window->getWidth(),window->getHeight());
       glm::vec2 delta=glm::vec2(currentMousePos-lastMousePos)/size;
       lastMousePos=currentMousePos;
       cameraManipulator.rotate(delta.x,delta.y);
+      return true;
    }
-   else if(mouseRightDown && !window->isRightDown()) {
-      mouseRightDown=false;
-      glm::vec2 size=glm::make_vec2(window->getWindowSize());
-      glm::vec2 delta=glm::vec2(glm::make_vec2(window->getMousePosition())-lastMousePos)/size;
-      cameraManipulator.rotate(delta.x,delta.y);
-   }
+   return false;
 }
 
 
-void Wheel(int){
-}
-
-
-void Idle()
+static void idleCallback(void*)
 {
    // initial frame time point
    if(showFPS && frameTimePoints.empty())
@@ -216,9 +190,13 @@ static unsigned countTransformations(Transformation *t)
 }
 
 
-void Init()
+static void init(unsigned windowWidth,unsigned windowHeight)
 {
-   ge::gl::initShadersAndPrograms();
+   // setup OpenGL
+   auto& gl=RenderingContext::current()->gl;
+   gl.glEnable(GL_DEPTH_TEST);
+   gl.glDepthFunc(GL_LEQUAL);
+   gl.glEnable(GL_CULL_FACE);
 
    // load model
    glm::vec3 center;
@@ -296,24 +274,24 @@ void Init()
    RenderingContext::current()->unmapBuffers();
 
    const glm::vec4 ambientLight(0.2f,0.2f,0.2f,1.f);
-   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(WindowParam.Size[0])/WindowParam.Size[1],zNear,zFar);
+   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(windowWidth)/windowHeight,zNear,zFar);
    auto ambientProgram=RenderingContext::current()->getAmbientProgram();
    ambientProgram->use();
+   ambientProgram->setMatrix4fv("projection",glm::value_ptr(projection),1,GL_FALSE);
    ambientProgram->set("globalAmbientLight",ambientLight.r,ambientLight.g,ambientLight.b,ambientLight.a);
-   ambientProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    ambientProgram->set("colorTexture",int(0));
    auto phongProgram=RenderingContext::current()->getPhongProgram();
    phongProgram->use();
-   phongProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   phongProgram->setMatrix4fv("projection",glm::value_ptr(projection),1,GL_FALSE);
    phongProgram->set("colorTexture",int(0));
    auto ambientUniformColorProgram=RenderingContext::current()->getAmbientUniformColorProgram();
    ambientUniformColorProgram->use();
+   ambientUniformColorProgram->setMatrix4fv("projection",glm::value_ptr(projection),1,GL_FALSE);
    ambientUniformColorProgram->set("globalAmbientLight",ambientLight.r,ambientLight.g,ambientLight.b,ambientLight.a);
-   ambientUniformColorProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
    ambientUniformColorProgram->set("colorTexture",int(0));
    auto phongUniformColorProgram=RenderingContext::current()->getPhongUniformColorProgram();
    phongUniformColorProgram->use();
-   phongUniformColorProgram->set("projection",1,GL_FALSE,glm::value_ptr(projection));
+   phongUniformColorProgram->setMatrix4fv("projection",glm::value_ptr(projection),1,GL_FALSE);
    phongUniformColorProgram->set("colorTexture",int(0));
 
    // append light
@@ -328,7 +306,7 @@ void Init()
 #endif
 
    // check for OpenGL errors
-   int e=glGetError();
+   int e=gl.glGetError();
    if(e!=GL_NO_ERROR)
       cout<<"OpenGL errror after Init(): "<<e<<endl;
 }

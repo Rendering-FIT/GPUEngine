@@ -15,15 +15,15 @@ namespace ge
       struct PrimitiveGpuData {
          unsigned countAndIndexedFlag; ///< Number of vertices of the primitive and indexing flag on the highest bit indicating whether glDrawArrays or glDrawElements should be used for rendering.
          unsigned first;               ///< Index of the first vertex or first index of the primitive.
-         unsigned vertexOffset;        ///< Offset of the start of the allocated block of vertices or indices within AttribStorage. Thus, the real start index is first+vertexOffset.
+         unsigned vertexOffset;        ///< Offset of the start of the allocated block of vertices or indices within AttribStorage. Thus, the real start index is first+vertexOffset. The value is computed and updated automatically.
 
          inline PrimitiveGpuData()  {}
-         constexpr inline PrimitiveGpuData(unsigned countAndIndexedFlag,unsigned first,
-                                           unsigned vertexOffset);
-         constexpr inline PrimitiveGpuData(unsigned count,bool indexing,
-                                           unsigned first,unsigned vertexOffset);
+         constexpr inline PrimitiveGpuData(unsigned countAndIndexedFlag,unsigned first);
+         constexpr inline PrimitiveGpuData(unsigned count,unsigned first,bool indexed);
+         constexpr inline PrimitiveGpuData(const PrimitiveGpuData&) = default;
+
          constexpr inline unsigned count() const  { return countAndIndexedFlag&0x7fffffff; }
-         constexpr inline bool indexing() const  { return (countAndIndexedFlag&0x80000000)!=0; }
+         constexpr inline bool indexed() const  { return (countAndIndexedFlag&0x80000000)!=0; }
       };
 
 
@@ -40,8 +40,8 @@ namespace ge
        *  thus index is memory offset divided by four. Real memory offset is
        *  computed as offset4()*4.
        *
-       *  Implementation note: The structure provides setters and getters as we want to
-       *  make sure the structure occupies only 4 bytes. (Bit fields are known to not be
+       *  Implementation note: The structure contains single 32-bit integer as we want to
+       *  make sure it occupies only 4 bytes. (Bit fields are known not to be
        *  always tightly packed on MSVC.)
        */
       struct GERG_EXPORT Primitive {
@@ -55,10 +55,10 @@ namespace ge
          constexpr inline unsigned mode() const     { return data>>27; } // return upmost 5 bits
          inline void setOffset4(unsigned value)  { data=(data&0xf8000000)|value; } // set lowest 27 bits, value must fit to 27 bits
          inline void setMode(unsigned value)     { data=(data&0x07ffffff)|(value<<27); } // set upmost 5 bits
-         inline void set(unsigned offset4,unsigned mode)  { data=offset4|(mode<<27); } // set data, offset4 must fit to 27 bits
+         inline void set(unsigned mode,unsigned offset4)  { data=(mode<<27)|offset4; } // set data, offset4 must fit to 27 bits
 
          inline Primitive()  {}
-         constexpr inline Primitive(unsigned offset4,unsigned mode) : data(offset4|(mode<<27))  {}
+         constexpr inline Primitive(unsigned mode,unsigned offset4) : data((mode<<27)|offset4)  {}
       };
 
 
@@ -67,10 +67,10 @@ namespace ge
 
 
       // inline methods
-      constexpr inline PrimitiveGpuData::PrimitiveGpuData(unsigned countAndIndexedFlag_,unsigned first_,unsigned vertexOffset_)
-         : countAndIndexedFlag(countAndIndexedFlag_), first(first_), vertexOffset(vertexOffset_)  {}
-      constexpr inline PrimitiveGpuData::PrimitiveGpuData(unsigned count,bool indexing,unsigned first_,unsigned vertexOffset_)
-         : countAndIndexedFlag(count|(indexing?0x80000000:0)), first(first_), vertexOffset(vertexOffset_)  {}
+      constexpr inline PrimitiveGpuData::PrimitiveGpuData(unsigned countAndIndexedFlag_,unsigned first_)
+         : countAndIndexedFlag(countAndIndexedFlag_), first(first_), vertexOffset(0)  {}
+      constexpr inline PrimitiveGpuData::PrimitiveGpuData(unsigned count,unsigned first_,bool indexed)
+         : countAndIndexedFlag(count|(indexed?0x80000000:0)), first(first_), vertexOffset(0)  {}
 
    }
 }

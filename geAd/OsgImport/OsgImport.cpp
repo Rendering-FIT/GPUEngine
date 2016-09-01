@@ -3,7 +3,8 @@
 #include <vector>
 #include <typeinfo>
 #include <typeindex>
-#include <geGL/TextureObject.h>
+#include <geGL/geGL.h>
+#include <geGL/Texture.h>
 #include <geRG/AttribType.h>
 #include <geRG/FlexibleUniform.h>
 #include <geRG/Model.h>
@@ -335,7 +336,7 @@ public:
          pushState(*drawable.getStateSet());
 
       // get colorTexture
-      std::shared_ptr<ge::gl::TextureObject> colorTexture;
+      std::shared_ptr<ge::gl::Texture> colorTexture;
       osg::StateSet* ss=osgStateSetStack.back();
       osg::Texture* osgColorTexture=static_cast<osg::Texture*>(
             ss->getTextureAttribute(0,osg::StateAttribute::TEXTURE));
@@ -350,7 +351,7 @@ public:
 
          // lookup texture cache
          // FIXME: path should be made canonical for cache lookup
-         colorTexture=rc->cachedTextureObject(colorTexturePath);
+         colorTexture=rc->cachedTexture(colorTexturePath);
 
          // create texture if not found in cache
          if(!colorTexture) {
@@ -370,23 +371,24 @@ public:
 
             // create texture object
             colorTexture=
-                  d<=1 ? make_shared<ge::gl::TextureObject>(target,internalFormat,
-                                                            1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h)
-                       : make_shared<ge::gl::TextureObject>(target,internalFormat,
-                                                            1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h,d);
+                  d<=1 ? make_shared<ge::gl::Texture>(target,internalFormat,
+                                                      1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h)
+                       : make_shared<ge::gl::Texture>(target,internalFormat,
+                                                      1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h,d);
 
             // fill texture object with data
             if(data) {
                colorTexture->bind(0);
-               if(d<=1) glTexSubImage2D(target,0,0,0,w,h,format,type,data);
-               else     glTexSubImage3D(target,0,0,0,0,w,h,d,format,type,data);
-               glGenerateMipmap(target);
+               auto& gl=colorTexture->getContext();
+               if(d<=1) gl.glTexSubImage2D(target,0,0,0,w,h,format,type,data);
+               else     gl.glTexSubImage3D(target,0,0,0,0,w,h,d,format,type,data);
+               gl.glGenerateMipmap(target);
             }
          }
 
          // update texture cache
          // FIXME: path should be made canonical for cache lookup
-         rc->addCacheTextureObject(colorTexturePath,colorTexture);
+         rc->addCacheTexture(colorTexturePath,colorTexture);
 
       }
 
@@ -434,8 +436,7 @@ public:
             osg::DrawElements *e=ps->getDrawElements();
             if(e!=nullptr)
             {
-               primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
-                                       mode);
+               primitives.emplace_back(mode,unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4));
                count=e->getNumIndices();
                first=numIndices;
                numIndices+=count;
@@ -445,8 +446,7 @@ public:
                switch(ps->getType()) {
                   case osg::PrimitiveSet::DrawArraysPrimitiveType:
                   {
-                     primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
-                                             mode);
+                     primitives.emplace_back(mode,unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4));
                      osg::DrawArrays *a=static_cast<osg::DrawArrays*>(ps);
                      count=a->getCount();
                      if(useIndices)
@@ -464,11 +464,9 @@ public:
                      first=useIndices?numIndices:a->getFirst();
                      for(ge::rg::size_t i=0,c=a->size(); i<c; i++)
                      {
-                        primitives.emplace_back(unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4), // offset4
-                                                mode);
+                        primitives.emplace_back(mode,unsigned(primitiveData.size()*sizeof(PrimitiveGpuData)/4));
                         unsigned count=a->operator[](i);
-                        primitiveData.emplace_back(useIndices?count|0x80000000:count, // countAndIndexedFlag
-                                                   first,0);
+                        primitiveData.emplace_back(count,first,useIndices);
                         first+=count;
                         if(useIndices)
                            numIndices+=count;
@@ -479,8 +477,7 @@ public:
                      continue;
                }
             }
-            primitiveData.emplace_back(useIndices?count|0x80000000:count, // countAndIndexedFlag
-                                       first,0);
+            primitiveData.emplace_back(count,first,useIndices);
          }
 
          // create AttribConfig::ConfigData
@@ -526,10 +523,10 @@ public:
 
          // create GLState
          StateSetManager::GLState *glState=rc->createGLState();
-         shared_ptr<ge::gl::ProgramObject> ambientProgram(usePerVertexColor?RenderingContext::current()->getAmbientProgram():RenderingContext::current()->getAmbientUniformColorProgram());
-         shared_ptr<ge::gl::ProgramObject> phongProgram(usePerVertexColor?RenderingContext::current()->getPhongProgram():RenderingContext::current()->getPhongUniformColorProgram());
-         glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&ambientProgram);
-         glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&phongProgram);
+         shared_ptr<ge::gl::Program> ambientProgram(usePerVertexColor?RenderingContext::current()->getAmbientProgram():RenderingContext::current()->getAmbientUniformColorProgram());
+         shared_ptr<ge::gl::Program> phongProgram(usePerVertexColor?RenderingContext::current()->getPhongProgram():RenderingContext::current()->getPhongUniformColorProgram());
+         glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&ambientProgram);
+         glState->add("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&phongProgram);
          glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
          glState->add("bin",type_index(typeid(int)),reinterpret_cast<void*>(1)); // bin 1 is for all light-rendering stuff
          glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);

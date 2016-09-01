@@ -12,7 +12,6 @@ else()
 endif()
 
 find_package(glm    REQUIRED)
-find_package(GLEW   REQUIRED)
 find_package(osg)
 find_package(OpenThreads)
 

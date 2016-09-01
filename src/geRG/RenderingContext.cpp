@@ -443,7 +443,7 @@ RenderingContext::generatePrimitiveList(const unsigned *modesAndOffsets4,unsigne
    r.reserve(numPrimitives);
    for(unsigned i=0,c=numPrimitives*2; i<c; i+=2)
    {
-      r.emplace_back(modesAndOffsets4[i+1],modesAndOffsets4[i+0]);
+      r.emplace_back(modesAndOffsets4[i+0],modesAndOffsets4[i+1]);
    }
    return r;
 }
@@ -1079,10 +1079,10 @@ const shared_ptr<Program>& RenderingContext::getPhongUniformColorProgram() const
 
 
 #if 0 // uncomment for debugging purposes (it is commented out to kill warning of unused function)
-static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
+static void printIntBufferContent(const shared_ptr<ge::gl::Buffer>& b,unsigned numInts)
 {
    cout<<"Buffer contains "<<numInts<<" int values:"<<endl;
-   unsigned *p=(unsigned*)bo->map(GL_MAP_READ_BIT);
+   unsigned *p=(unsigned*)b->map(GL_MAP_READ_BIT);
    if(p==nullptr) return;
    unsigned i;
    for(i=0; i<numInts; i++)
@@ -1091,17 +1091,17 @@ static void printIntBufferContent(ge::gl::BufferObject *bo,unsigned numInts)
       if(i%4==3)
          cout<<endl;
    }
-   bo->unmap();
+   b->unmap();
    if(i%4!=0)
       cout<<endl;
    cout<<endl;
 }
 
 
-static void printFloatBufferContent(ge::gl::BufferObject *bo,unsigned numFloats)
+static void printFloatBufferContent(shared_ptr<ge::gl::Buffer>& b,unsigned numFloats)
 {
    cout<<"Buffer contains "<<numFloats<<" float values:"<<endl;
-   float *p=(float*)bo->map(GL_MAP_READ_BIT);
+   float *p=(float*)b->map(GL_MAP_READ_BIT);
    if(p==nullptr) return;
    unsigned i;
    for(i=0; i<numFloats; i++)
@@ -1110,7 +1110,7 @@ static void printFloatBufferContent(ge::gl::BufferObject *bo,unsigned numFloats)
       if(i%4==3)
          cout<<endl;
    }
-   bo->unmap();
+   b->unmap();
    if(i%4!=0)
       cout<<endl;
    cout<<endl;

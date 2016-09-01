@@ -19,21 +19,12 @@ using namespace ge::gl;
 using namespace ge::rg;
 
 
-class IdleCallback : public ge::ad::SDLCallbackInterface {
-public:
-   virtual void operator()() override;
-};
-
-class WindowEventCallback : public ge::ad::SDLEventCallbackInterface {
-public:
-   virtual bool operator()(const SDL_Event&) override;
-};
-
-void init(unsigned windowWidth, unsigned windowHeight);
+static void init(unsigned windowWidth,unsigned windowHeight);
+static void idleCallback(void*);
 
 
-ge::ad::SDLMainLoop mainLoop;
-shared_ptr<ge::ad::SDLWindow> window;
+static ge::ad::SDLMainLoop mainLoop;
+static shared_ptr<ge::ad::SDLWindow> window;
 
 static shared_ptr<Program> glProgram;
 static Mesh meshDirectNI;
@@ -45,14 +36,13 @@ static Mesh meshIndirectI;
 int main(int,char*[])
 {
    window=std::make_shared<ge::ad::SDLWindow>();
-   window->setEventCallback(SDL_WINDOWEVENT,std::make_shared<WindowEventCallback>());
    if(!window->createContext("rendering",430,ge::ad::SDLWindow::CORE)) {
       std::cout<<"Error: Can not create OpenGL context."<<std::endl;
       return EXIT_FAILURE;
    }
 
    mainLoop.addWindow("primaryWindow",window);
-   mainLoop.setIdleCallback(std::make_shared<IdleCallback>());
+   mainLoop.setIdleCallback(idleCallback);
 
    ge::gl::init(SDL_GL_GetProcAddress);
    RenderingContext::setCurrent(make_shared<RenderingContext>());
@@ -63,17 +53,7 @@ int main(int,char*[])
 }
 
 
-bool WindowEventCallback::operator()(const SDL_Event& event)
-{
-   if(event.window.event==SDL_WINDOWEVENT_CLOSE) {
-      mainLoop.removeWindow("primaryWindow");
-      return true;
-   }
-   return false;
-}
-
-
-void IdleCallback::operator()()
+static void idleCallback(void*)
 {
    RenderingContext::current()->frame();
 
@@ -95,7 +75,7 @@ void IdleCallback::operator()()
 }
 
 
-void init(unsigned windowWidth, unsigned windowHeight)
+static void init(unsigned windowWidth,unsigned windowHeight)
 {
    // setup OpenGL
    auto& gl=RenderingContext::current()->gl;
@@ -170,11 +150,11 @@ void init(unsigned windowWidth, unsigned windowHeight)
       glm::vec3(iShiftX+0,directShiftY+0,z),
       glm::vec3(iShiftX+0,directShiftY+1,z),
       glm::vec3(iShiftX+1,directShiftY+0,z),
-      glm::vec3(iShiftX+0,directShiftY+0.1f,z),
+      glm::vec3(iShiftX+0,directShiftY+0,z),
       glm::vec3(iShiftX+0,directShiftY-1,z),
       glm::vec3(iShiftX-1,directShiftY+0,z),
    };
-   const vector<unsigned> indices = { 5, 1, 2, 3, 4, 5 };
+   const vector<unsigned> indices = { 3, 1, 2, 3, 4, 5 };
 
    attribList[0]=twoTrianglesI.data();
    meshDirectI.allocData(config,6,6,0);
@@ -193,8 +173,8 @@ void init(unsigned windowWidth, unsigned windowHeight)
       glm::vec3(niShiftX-1,indirectShiftY+0,z),
    };
    vector<PrimitiveGpuData> primitiveDataNI = {
-      { 3,0,0 },
-      { 3,3,3 }
+      { 3,0,false },
+      { 3,3,false }
    };
    const vector<unsigned> modesAndOffsets4 = {
       GL_TRIANGLES,0,
@@ -226,8 +206,8 @@ void init(unsigned windowWidth, unsigned windowHeight)
       glm::vec3(iShiftX-1,indirectShiftY+0,z),
    };
    vector<PrimitiveGpuData> primitiveDataI = {
-      { 0x80000003,0,0 },
-      { 0x80000003,3,3 }
+      { 3,0,true },
+      { 3,3,true }
    };
 
    config.ebo=true;

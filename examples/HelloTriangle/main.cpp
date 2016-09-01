@@ -1,12 +1,11 @@
-#include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <geGL/geGL.h>
-#include <geGL/ProgramObject.h>
+#include <geGL/Program.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
 #include <geUtil/ArgumentObject.h>
-#include <geAd/WindowObject/WindowObject.h>
+#include <geAd/SDLWindow/SDLWindow.h>
 #include <typeinfo> // MSVC 2013 requires this rather at the end of headers to compile successfully
 #include <typeindex>
 
@@ -15,103 +14,90 @@ using namespace std;
 using namespace ge::rg;
 
 
-static ge::util::WindowObject* window;
-static glm::ivec2 windowSize;
-static shared_ptr<ge::gl::ProgramObject> glProgram;
-static Mesh mesh;
+static void init(unsigned windowWidth,unsigned windowHeight);
+static void idleCallback(void*);
 
-void Init();
-void Idle();
-void Mouse();
-void Wheel(int d);
+static ge::ad::SDLMainLoop mainLoop;
+static shared_ptr<ge::ad::SDLWindow> window;
+static shared_ptr<ge::gl::Program> glProgram;
+static Mesh mesh;
 
 
 int main(int argc,char* argv[])
 {
+   // argument parser
    ge::util::ArgumentObject* args=new ge::util::ArgumentObject(argc,argv);
 
-   windowSize=glm::ivec2(atoi(args->getArg("-w","800").c_str()),
-                         atoi(args->getArg("-h","600").c_str()));
+   // window
+   window=std::make_shared<ge::ad::SDLWindow>(atoi(args->getArg("-w","800").c_str()),
+                                              atoi(args->getArg("-h","600").c_str()));
+   if(args->isPresent("-f"))
+      window->setFullscreen(ge::ad::SDLWindow::FULLSCREEN);
+   if(!window->createContext("rendering",430,ge::ad::SDLWindow::CORE)) {
+      std::cout<<"Error: Can not create OpenGL context."<<std::endl;
+      return EXIT_FAILURE;
+   }
+   mainLoop.addWindow("primaryWindow",window);
+   mainLoop.setIdleCallback(idleCallback);
 
-   window=new ge::util::WindowObject(
-         windowSize[0],
-         windowSize[1],
-         args->isPresent("-f"),
-         Idle,
-         Mouse,
-         false,
-         atoi(args->getArg("--context-version","430").c_str()),
-         args->getArg("--context-profile","core"),
-         args->getArg("--context-flag","debug"));
-
-   glewExperimental=GL_TRUE;
-   glewInit();
-   glGetError(); // glewInit() might generate GL_INVALID_ENUM on some glew versions
-                 // as said on https://www.opengl.org/wiki/OpenGL_Loading_Library,
-                 // problem seen on CentOS 7.1 (release date 2015-03-31) with GLEW 1.9 (release date 2012-08-06)
-   ge::gl::init();
+   // rendering context
+   ge::gl::init(SDL_GL_GetProcAddress);
    RenderingContext::setCurrent(make_shared<RenderingContext>());
 
-   glEnable(GL_DEPTH_TEST);
-   glDepthFunc(GL_LEQUAL);
-   glDisable(GL_CULL_FACE);
+   // init scene and main loop
+   init(window->getWidth(),window->getHeight());
+   mainLoop.operator()();
 
-   Init();
-   window->mainLoop();
-
-   delete window;
+   // clean up
    delete args;
 
    return 0;
 }
 
 
-void Mouse(){
-}
-
-
-void Wheel(int /*d*/){
-}
-
-
-void Idle()
+static void idleCallback(void*)
 {
    RenderingContext::current()->frame();
    window->swap();
 }
 
 
-void Init()
+static void init(unsigned windowWidth,unsigned windowHeight)
 {
+   // setup OpenGL
+   auto& gl=RenderingContext::current()->gl;
+   gl.glEnable(GL_DEPTH_TEST);
+   gl.glDepthFunc(GL_LEQUAL);
+   gl.glDisable(GL_CULL_FACE);
+
    // setup shaders and prepare GLSL program
-   //ge::gl::initShadersAndPrograms();
-   glProgram=make_shared<ge::gl::ProgramObject>(
-      GL_VERTEX_SHADER,
-      "#version 330\n"
-      "layout(location=0)  in vec3 coords;\n"
-      "layout(location=12) in mat4 instancingMatrix;\n"
-      "uniform mat4 mvp;\n"
-      "void main()\n"
-      "{\n"
-      "   gl_Position = mvp*instancingMatrix*vec4(coords,1.f);\n"
-      "}\n",
-      GL_FRAGMENT_SHADER,
-      "#version 330\n"
-      "layout(location=0) out vec4 fragColor;\n"
-      "void main()\n"
-      "{\n"
-      "   fragColor=vec4(1.f,1.f,0.,1.);\n"
-      "}\n");
+   glProgram=make_shared<ge::gl::Program>(
+      make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
+         "#version 330\n"
+         "layout(location=0)  in vec3 coords;\n"
+         "layout(location=12) in mat4 instancingMatrix;\n"
+         "uniform mat4 mvp;\n"
+         "void main()\n"
+         "{\n"
+         "   gl_Position = mvp*instancingMatrix*vec4(coords,1.f);\n"
+         "}\n"),
+      make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
+         "#version 330\n"
+         "layout(location=0) out vec4 fragColor;\n"
+         "void main()\n"
+         "{\n"
+         "   fragColor=vec4(1.f,1.f,0.,1.);\n"
+         "}\n"));
    glm::mat4 modelView(1.f); // identity
-   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(windowSize[0])/(float)windowSize[1],1.f,100.f);
+   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(windowWidth)/float(windowHeight),1.f,100.f);
    glm::mat4 mvp=modelView*projection;
    glProgram->use();
-   glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
+   glProgram->setMatrix4fv("mvp",glm::value_ptr(mvp),1,GL_FALSE);
 
    // state set
    StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
    glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
-   glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::ProgramObject>*)),&glProgram);
+   glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
    shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
    delete glState;
 
@@ -133,7 +119,7 @@ void Init()
 
    // primitive data (count,first,vertexOffset)
    vector<PrimitiveGpuData> primitives = {
-      { 0x80000003,0,0 },
+      { 3,0,true },
    };
 
    // GL primitive mode and offset to primitives

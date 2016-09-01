@@ -2,15 +2,14 @@ set(APP_NAME geViewerAssimp)
 
 project(${APP_NAME})
 
-find_package(OpenGL REQUIRED)
-find_package(glfw3)
-find_package(X11) # glfw3 requires linking with X11_LIBRARIES
+find_package(SDL2)
 find_package(Assimp)
 find_package(FreeImage)
 find_package(FreeImagePlus)
 
-if(NOT glfw3_FOUND OR NOT Assimp_FOUND OR
-   NOT FreeImage_FOUND OR NOT FreeImagePlus_FOUND)
+if(NOT SDL2_FOUND OR NOT Assimp_FOUND OR
+   NOT FreeImage_FOUND OR NOT FreeImagePlus_FOUND OR
+   NOT TARGET geRG)
    return()
 endif()
 
@@ -41,7 +40,7 @@ set(APP_INCLUDES
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geGL geRG geSG geUtil geCore)
-set(External_libs OpenGL GLEW glfw3 Assimp FreeImage FreeImagePlus
+set(External_libs SDL Assimp FreeImage FreeImagePlus
   )
 if(UNIX)
   # this is a list of libraries that are not properly included

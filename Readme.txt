@@ -13,9 +13,7 @@ Prerequisities:
 - glew (not required since 2016-08)
 
 Optional:
-- glfw
 - SDL 2.0.0 or newer
-- AntTweakBar
 - Assimp
 - FreeImage
 - FreeImagePlus
@@ -80,7 +78,7 @@ AntTweakBar:
 
 Assimp:
 - import targets: version 3.1.1 has config file but it does not create import target
-- Ubuntu 16.04: version 3.2 (section: universe/libdevel)
+- Ubuntu 16.04: version 3.2 (section: universe/libdevel), bugs: include path is wrongly detected to be /usr/lib/include instead of /usr/include
 - Ubuntu 15.04: version 3.0 (universe)
 - Ubuntu 14.04: version 3.0 (universe)
 - CentOS 7.1: yes (epel repository), version 3.1.1, Fedora: seems yes

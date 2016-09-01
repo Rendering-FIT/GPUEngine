@@ -22,10 +22,22 @@ if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
    # adjust variable names according to GPUEngine customs
    # and clean cache from non-sense stuff (config file is poorly written as of version 3.1.1)
-   set(ASSIMP_INCLUDE_DIR ${ASSIMP_INCLUDE_DIRS} CACHE PATH "Assimp include directory")
+   set(ASSIMP_INCLUDE_DIR "${ASSIMP_INCLUDE_DIRS}" CACHE PATH "Assimp include directory" FORCE)
    unset(ASSIMP_INCLUDE_DIRS)
    unset(ASSIMP_LIBRARIES)
    unset(ASSIMP_LIBRARY_SUFFIX CACHE)
+
+   # Assimp bug workaround: include path is detected to be /usr/lib/include (wrong) instead
+   # of /usr/include (correct), seen on Assimp 3.2, Kubuntu 16.04.
+   # Workaround redetects include dir in the standard way.
+   if(NOT EXISTS "${ASSIMP_INCLUDE_DIR}")
+      unset(ASSIMP_INCLUDE_DIR CACHE)
+      find_path(ASSIMP_INCLUDE_DIR assimp/mesh.h
+         HINTS ${ASSIMP_ROOT_DIR}
+         PATH_SUFFIXES include
+         DOC "Assimp include directory"
+      )
+   endif()
 
 else()
 
