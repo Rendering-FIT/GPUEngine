@@ -1,2 +1,4 @@
+add_subdirectory(EmptyWindow)
 add_subdirectory(HelloTriangle)
+add_subdirectory(TriangleRendering)
 add_subdirectory(ObjLoader)
