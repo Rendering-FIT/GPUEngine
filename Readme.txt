@@ -6,7 +6,8 @@ Compile
 -------------------------------------------------------------------------------
 
 Prerequisities:
-- Windows: Microsoft Visual C++ 2013 (Update 4, previous not tested), 2015 or newer
+- Windows: Microsoft Visual C++ 2013 (Update 4, previous not tested),
+           Microsoft Visual C++ 2015 (Update 3, previous updates: it is known to fail on update 1)
 - Linux: gcc 4.8 (<=4.7 not tested)
 - cmake 3.0.0 or newer
 - glm 0.9.7.0 or newer
