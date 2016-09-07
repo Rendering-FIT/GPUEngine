@@ -8,6 +8,7 @@
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
 #include <geAd/OsgImport/OsgImport.h>
+#include <geAd/SDLWindow/SDLOrbitManipulator.h>
 #include <geAd/SDLWindow/SDLWindow.h>
 #include <geUtil/ArgumentObject.h>
 #include <osg/ref_ptr>
@@ -25,8 +26,6 @@ using namespace ge::rg;
 
 static void init(unsigned windowWidth,unsigned windowHeight);
 static void idleCallback(void*);
-static bool mouseButtonCallback(const SDL_Event& event,void*);
-static bool mouseMotionCallback(const SDL_Event& event,void*);
 
 
 static ge::util::ArgumentObject *args;
@@ -36,12 +35,10 @@ static bool printModelInfo=false;
 static bool showFPS=false;
 static vector<chrono::steady_clock::time_point> frameTimePoints;
 
-static fsg::OrbitObjectManipulator cameraManipulator;
+static ge::ad::SDLOrbitManipulator cameraManipulator;
 static shared_ptr<Transformation> cameraTransformation;
 static string fileName;
 static shared_ptr<Model> model;
-
-static glm::ivec2 lastMousePos;
 
 
 int main(int argc,char*argv[])
@@ -60,9 +57,6 @@ int main(int argc,char*argv[])
       std::cout<<"Error: Can not create OpenGL context."<<std::endl;
       return EXIT_FAILURE;
    }
-   window->setEventCallback(SDL_MOUSEBUTTONDOWN,mouseButtonCallback,nullptr);
-   window->setEventCallback(SDL_MOUSEBUTTONUP,mouseButtonCallback,nullptr);
-   window->setEventCallback(SDL_MOUSEMOTION,mouseMotionCallback,nullptr);
    mainLoop.addWindow("primaryWindow",window);
    mainLoop.setIdleCallback(idleCallback);
 
@@ -83,6 +77,7 @@ int main(int argc,char*argv[])
    // create scene
    cameraTransformation=make_shared<Transformation>();
    RenderingContext::current()->addTransformationGraph(cameraTransformation);
+   cameraManipulator.connect(window,SDL_BUTTON_RMASK);
    init(window->getWidth(),window->getHeight());
 
    // main loop
@@ -94,39 +89,6 @@ int main(int argc,char*argv[])
 }
 
 
-static bool mouseButtonCallback(const SDL_Event& event,void*)
-{
-   const SDL_MouseButtonEvent& e=reinterpret_cast<const SDL_MouseButtonEvent&>(event);
-   if(e.button==SDL_BUTTON_RIGHT) {
-      if(e.type==SDL_MOUSEBUTTONDOWN) {
-         lastMousePos=glm::ivec2(e.x,e.y);
-      }
-      else if(e.type==SDL_MOUSEBUTTONUP) {
-         glm::vec2 size(window->getWidth(),window->getHeight());
-         glm::vec2 delta=glm::vec2(glm::ivec2(e.x,e.y)-lastMousePos)/size;
-         cameraManipulator.rotate(delta.x,delta.y);
-      }
-      return true;
-   }
-   return false;
-}
-
-
-static bool mouseMotionCallback(const SDL_Event& event,void*)
-{
-   const SDL_MouseMotionEvent& e=reinterpret_cast<const SDL_MouseMotionEvent&>(event);
-   if((e.state&SDL_BUTTON_RMASK)!=0) {
-      glm::ivec2 currentMousePos(e.x,e.y);
-      glm::vec2 size(window->getWidth(),window->getHeight());
-      glm::vec2 delta=glm::vec2(currentMousePos-lastMousePos)/size;
-      lastMousePos=currentMousePos;
-      cameraManipulator.rotate(delta.x,delta.y);
-      return true;
-   }
-   return false;
-}
-
-
 static void idleCallback(void*)
 {
    // initial frame time point
@@ -134,8 +96,7 @@ static void idleCallback(void*)
       frameTimePoints.push_back(chrono::steady_clock::now());
 
    // update camera
-   cameraManipulator.updateViewMatrix();
-   cameraTransformation->uploadMatrix(cameraManipulator.getMatrix());
+   cameraTransformation->uploadMatrix(cameraManipulator.mat());
 
    // render scene
    RenderingContext::current()->frame();

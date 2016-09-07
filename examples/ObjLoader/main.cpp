@@ -6,6 +6,7 @@
 #include <geRG/Transformation.h>
 #include <geUtil/ArgumentObject.h>
 #include <geAd/SDLWindow/SDLWindow.h>
+#include <geAd/SDLWindow/SDLOrbitManipulator.h>
 #include <typeinfo> // MSVC 2013 requires this rather at the end of headers to compile successfully
 #include <typeindex>
 #include <fstream>
@@ -21,6 +22,8 @@ static void idleCallback(void*);
 
 static ge::ad::SDLMainLoop mainLoop;
 static shared_ptr<ge::ad::SDLWindow> window;
+static ge::ad::SDLOrbitManipulator cameraManipulator;
+static shared_ptr<Transformation> cameraTransformation;
 
 static string fileName;
 static shared_ptr<ge::gl::Program> glProgram;
@@ -60,6 +63,7 @@ int main(int argc,char* argv[])
 
    // init scene and main loop
    init(window->getWidth(),window->getHeight());
+   cameraManipulator.connect(window,SDL_BUTTON_RMASK);
    mainLoop.operator()();
 
    // clean up
@@ -71,6 +75,10 @@ int main(int argc,char* argv[])
 
 static void idleCallback(void*)
 {
+   // update camera
+   cameraTransformation->uploadMatrix(cameraManipulator.mat());
+
+   // render scene
    RenderingContext::current()->frame();
    window->swap();
 
@@ -117,15 +125,15 @@ shared_ptr<Mesh> generateMesh(const vector<glm::vec3>& coordBuffer,
    // alloc space for vertices and indices in AttribStorage
    // and for primitives in RenderingContext::PrimitiveStorage
    shared_ptr<Mesh> mesh=make_shared<Mesh>();
-   mesh->allocData(config,coordBuffer.size(),0,1); // numVertices,numIndices,numPrimitives
+   mesh->allocData(config,unsigned(coordBuffer.size()),0,1); // numVertices,numIndices,numPrimitives
 
    // upload vertices to AttribStorage
    mesh->uploadVertices(attribList.data(),
-                        attribList.size(),
-                        coordBuffer.size()); // numVertices
+                        unsigned(attribList.size()),
+                        unsigned(coordBuffer.size())); // numVertices
 
    // upload primitives to RenderingContext::PrimitiveStorage
-   PrimitiveGpuData primitiveGpuData(coordBuffer.size(),0,false);
+   PrimitiveGpuData primitiveGpuData(unsigned(coordBuffer.size()),0,false);
    Primitive primitive(GL_TRIANGLES,0);
    mesh->setAndUploadPrimitives(&primitiveGpuData,
                                 &primitive,
@@ -155,7 +163,7 @@ bool checkDataAndPush(const std::vector<T>& data,std::vector<T>& buffer,const ve
    }
    else if(j<0) {
       // test negative vertex index for out of range
-      j=data.size()+j;
+      j=int(data.size())+j;
       if(j<0)
          return false;
    }
@@ -177,31 +185,127 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    gl.glDepthFunc(GL_LEQUAL);
    gl.glEnable(GL_CULL_FACE);
 
+   // setup camera manipulator and clipping planes
+   glm::vec3 center(0.f,0.f,0.f);
+   float radius=5.f;
+   float zNear=radius*0.99f;
+   float zFar=radius*3.01f;
+   cameraManipulator.setCenter(center);
+   cameraManipulator.setEye(center+glm::vec3(0.f,0.f,radius*2.f));
+
    // setup shaders and prepare GLSL program
    glProgram=make_shared<ge::gl::Program>(
       make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
          "#version 330\n"
-         "layout(location=0)  in vec3 coords;\n"
+         "\n"
+         "layout(location=0)  in vec4 position;\n"
+         "layout(location=1)  in vec3 normal;\n"
+         "layout(location=3)  in vec2 texCoord;\n"
          "layout(location=12) in mat4 instancingMatrix;\n"
-         "uniform mat4 mvp;\n"
+         "\n"
+         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
+         "   vec3 eyePosition;\n"
+         "   vec3 eyeNormal;\n"
+         "   vec2 texCoord;\n"
+         "} o;\n"
+         "\n"
+         "uniform mat4 projection;\n"
+         "\n"
          "void main()\n"
          "{\n"
-         "   gl_Position = mvp*instancingMatrix*vec4(coords,1.f);\n"
+         "   o.texCoord=texCoord;\n"
+         "   vec4 v=instancingMatrix*position;\n"
+         "   o.eyePosition=v.xyz;\n"
+         "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+         "   gl_Position=projection*v;\n"
          "}\n"),
       make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
          "#version 330\n"
+         "\n"
+         "in VertexData {\n"
+         "   vec3 eyePosition;\n"
+         "   vec3 eyeNormal;\n"
+         "   vec2 texCoord;\n"
+         "};\n"
+         "\n"
          "layout(location=0) out vec4 fragColor;\n"
+         "\n"
+         "uniform vec4 color;\n"
+         "uniform vec4 specularAndShininess; // shininess in alpha\n"
+         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
+         "uniform sampler2D colorTexture;\n"
+         "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+         "uniform vec3 lightColor;\n"
+         "uniform vec3 lightAttenuation;\n"
+         "\n"
          "void main()\n"
          "{\n"
-         "   fragColor=vec4(1.f,1.f,0.,1.);\n"
+         "   // compute VL - vertex to light vector, in eye coordinates\n"
+         "   vec3 VL=lightPosition.xyz;\n"
+         "   if(lightPosition.w!=0.)\n"
+         "      VL-=eyePosition;\n"
+         "   float VLlen=length(VL);\n"
+         "   vec3 VLdir=VL/VLlen;\n"
+         "\n"
+         "   // invert normals on back facing triangles\n"
+         "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+         "\n"
+         "   // Lambert's diffuse reflection\n"
+         "   float NdotL=dot(N,VLdir);\n"
+         "\n"
+         "   // fragments facing the light get all the lighting\n"
+         "   // while those not facing the light get only ambient lighting\n"
+         "   if(NdotL<=0.)\n"
+         "   {\n"
+         "      // final sum for light-not-facing fragments\n"
+         "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
+         "      // or we can simply drop the fragment.)\n"
+         "      discard;\n"
+         "   }\n"
+         "   else\n"
+         "   {\n"
+         "      // specular effect\n"
+         "      float specularEffect;\n"
+         "      vec3 R=reflect(-VLdir,N);\n"
+         "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+         "      float RdotV=dot(R,-Vdir);\n"
+         "      if(RdotV>0.)\n"
+         "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+         "      else\n"
+         "         specularEffect = 0.;\n"
+         "\n"
+         "      // attenuation\n"
+         "      float attenuation=lightAttenuation[0]+\n"
+         "                        lightAttenuation[1]*VLlen+\n"
+         "                        lightAttenuation[2]*VLlen*VLlen;\n"
+         "\n"
+         "      // texturing\n"
+         "      vec4 c;\n;"
+         "      if(colorTexturingMode==0) // no texturing\n"
+         "         c=color;\n"
+         "      else if(colorTexturingMode==1) // modulate\n"
+         "         c=texture(colorTexture,texCoord)*color;\n"
+         "      else // replace\n"
+         "         c=texture(colorTexture,texCoord);\n"
+         "\n"
+         "      // final sum for light-facing fragments\n"
+         "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
+         "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+         "                      attenuation,\n"
+         "                     c.a);\n"
+         "   }\n"
          "}\n"));
-   glm::mat4 modelView(1.f); // identity
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),
-                                         float(windowWidth)/float(windowHeight),1.f,100.f);
-   glm::mat4 mvp=modelView*projection;
+                                         float(windowWidth)/float(windowHeight),zNear,zFar);
    glProgram->use();
-   //glProgram->set("mvp",1,GL_FALSE,glm::value_ptr(mvp));
-   glProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
+   glProgram->setMatrix4fv("projection",glm::value_ptr(projection));
+   glProgram->set("color",0.8f,0.8f,0.8f,1.f);
+   glProgram->set("specularAndShininess",0.2f,0.2f,0.2f,1.f);
+   glProgram->set("colorTexturingMode",int(0));
+   glProgram->set("colorTexture",int(0));
+   glProgram->set("lightPosition",0.f,0.f,0.f,1.f);
+   glProgram->set("lightColor",1.f,1.f,1.f);
+   glProgram->set("lightAttenuation",1.f,0.f,0.f);
 
    // state set
    StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
@@ -211,9 +315,8 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    delete glState;
 
    // transformation
-   shared_ptr<Transformation> transformation=make_shared<Transformation>();
-   transformation->uploadMatrix(glm::translate(glm::vec3(0.f,0.f,-10.f)));
-   RenderingContext::current()->addTransformationGraph(transformation);
+   cameraTransformation=make_shared<Transformation>();
+   RenderingContext::current()->addTransformationGraph(cameraTransformation);
 
 
    if(fileName.empty())
@@ -352,7 +455,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
       meshList.push_back(m);
 
       // create drawable
-      m->createDrawable(transformation->getOrCreateMatrixList().get(),stateSet.get());
+      m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
    }
 
    // unmap buffers
