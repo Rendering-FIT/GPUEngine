@@ -1067,10 +1067,10 @@ const shared_ptr<Program>& RenderingContext::getPhongUniformColorProgram() const
             "         c=texture(colorTexture,texCoord);\n"
             "\n"
             "      // final sum for light-facing fragments\n"
-            "      fragColor=vec4(1.f,0.f,0.f,1.f);/*(c.rgb*lightColor*NdotL+\n"
+            "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
             "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
             "                      attenuation,\n"
-            "                     c.a)*/;\n"
+            "                     c.a);\n"
             "   }\n"
             "}\n"));
    }
