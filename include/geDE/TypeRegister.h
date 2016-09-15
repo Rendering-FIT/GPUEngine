@@ -40,6 +40,7 @@ namespace ge{
       friend class AnyDescription;
       public:
         using ToStr = std::string(*)(void*);
+        using Copy = void(*)(void*,void*);
         enum TypeType{
           UNREGISTERED = 0 ,
           ATOMIC       = 1 ,
@@ -121,6 +122,8 @@ namespace ge{
         void destroy(void*ptr,TypeId id)const;
         std::string data2Str(void*ptr,TypeId id)const;
         void addToStrFunction(TypeId id,ToStr const&fce = nullptr);
+        void copy(void*o,void*i,TypeId id)const;
+        void addCopyFunction(TypeId id,Copy const&fce = nullptr);
         std::shared_ptr<Resource>sharedResource(TypeId id)const;
         std::shared_ptr<Resource>sharedResource(std::string const&name)const;
         template<typename T>

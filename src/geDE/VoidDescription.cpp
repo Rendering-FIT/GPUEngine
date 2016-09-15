@@ -47,6 +47,10 @@ std::string VoidDescription::toStr(TypeRegister const*tr,TypeId id)const{
   return ss.str();
 }
 
+void VoidDescription::copy(void*,void*,TypeRegister const*,TypeId)const{
+  assert(false&&"ERROR: void cannot be copied!");
+}
+
 void VoidDescription::callConstructor(TypeRegister*,void*)const{
   assert(false&&"ERROR: void is not constructible!");
 }

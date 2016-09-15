@@ -611,6 +611,18 @@ void TypeRegister::addToStrFunction(TypeId id,ToStr const&fce){
   this->_getDescription(id)->data2StrPtr = fce;
 }
 
+void TypeRegister::copy(void*o,void*i,TypeId id)const{
+  PRINT_CALL_STACK(ptr,id);
+  assert(this!=nullptr);
+  return this->_getDescription(id)->copy(o,i,this,id);
+}
+
+void TypeRegister::addCopyFunction(TypeId id,Copy const&fce){
+  PRINT_CALL_STACK(id,fce);
+  assert(this!=nullptr);
+  this->_getDescription(id)->copyData = fce;
+}
+
 
 TypeDescription*TypeRegister::_getDescription(TypeId id)const{
   PRINT_CALL_STACK(id);

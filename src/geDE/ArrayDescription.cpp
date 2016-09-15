@@ -81,6 +81,20 @@ std::string ArrayDescription::toStr(TypeRegister const*tr,TypeId)const{
   return ss.str();
 }
 
+void ArrayDescription::copy(void*out,void*in,TypeRegister const*tr,TypeId id)const{
+  PRINT_CALL_STACK(out,in,tr,id);
+  assert(this!=nullptr);
+  assert(tr!=nullptr);
+  size_t size = tr->getArraySize(id);
+  TypeId elemType = tr->getArrayElementTypeId(id);
+  size_t elemSize = tr->computeTypeIdSize(elemType);
+  for(size_t i=0;i<size;++i){
+    tr->copy(out,in,elemType);
+    out = (uint8_t*)out + elemSize;
+    in  = (uint8_t*)in  + elemSize;
+  }
+}
+
 void ArrayDescription::callConstructor(TypeRegister*tr,void*ptr)const{
   PRINT_CALL_STACK(tr,ptr);
   assert(this!=nullptr);

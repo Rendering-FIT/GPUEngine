@@ -30,12 +30,14 @@ namespace ge{
         template<typename TYPE>
           AtomicResource(TYPE val,std::shared_ptr<TypeRegister>const&manager);
         virtual ~AtomicResource();
-        virtual void*getData()const;
-        virtual void const*getDataAddress()const;
-        virtual std::shared_ptr<Resource> operator[](size_t elem);
-        virtual size_t getNofElements()const;
+        virtual void*getData()const override;
+        virtual void const*getDataAddress()const override;
+        virtual uint8_t getByte(size_t offset)const override;
+        virtual void setByte(size_t offset,uint8_t byte)override;
+        virtual std::shared_ptr<Resource> operator[](size_t elem)override;
+        virtual size_t getNofElements()const override;
         const void*getPointer()const;
-        virtual std::string data2Str()const;
+        virtual std::string data2Str()const override;
         template<typename T>
           AtomicResource& operator=(const T&data);
         template<typename T>

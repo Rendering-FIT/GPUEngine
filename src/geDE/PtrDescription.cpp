@@ -74,6 +74,14 @@ std::string PtrDescription::toStr(TypeRegister const*tr,TypeId)const{
   return ss.str();
 }
 
+void PtrDescription::copy(void*o,void*i,TypeRegister const*tr,TypeId id)const{
+  PRINT_CALL_STACK(o,i,tr,id);
+  assert(this!=nullptr);
+  assert(tr!=nullptr);
+  if(this->copyData)this->copyData(o,i);
+  else std::memcpy(o,i,tr->computeTypeIdSize(id));
+}
+
 void PtrDescription::callConstructor(TypeRegister*tr,void*ptr)const{
   PRINT_CALL_STACK(ptr);
   (void)ptr;

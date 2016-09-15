@@ -47,6 +47,10 @@ std::string AnyDescription::toStr(TypeRegister const*tr,TypeId id)const{
   return ss.str();
 }
 
+void AnyDescription::copy(void*,void*,TypeRegister const*,TypeId)const{
+  assert(false&&"ERROR: Any cannot be copied!");
+}
+
 void AnyDescription::callConstructor(TypeRegister*,void*)const{
   assert(false&&"ERROR: Any is not constructible!");
 }
