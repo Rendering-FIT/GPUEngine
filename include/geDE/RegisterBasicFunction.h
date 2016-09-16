@@ -244,6 +244,7 @@ namespace ge{
       protected:\
                 \
       virtual bool _do(){\
+        PRINT_CALL_STACK();\
         assert(this!=nullptr);\
         bool doUberCall = true;\
         if(this->_sigImpl)\
