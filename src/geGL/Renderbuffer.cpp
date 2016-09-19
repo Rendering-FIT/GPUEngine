@@ -2,6 +2,10 @@
 
 using namespace ge::gl;
 
+Renderbuffer::Renderbuffer(){
+  this->_gl.glCreateRenderbuffers(1,&this->_id);
+}
+
 Renderbuffer::Renderbuffer(
     FunctionTablePointer const&table,
     GLenum  internalFormat,

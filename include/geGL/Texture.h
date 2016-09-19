@@ -10,6 +10,14 @@ namespace ge{
     class GEGL_EXPORT Texture: public OpenGLObject{
       friend class Framebuffer;
       public:
+        Texture();
+        void create(
+            GLenum  target            ,
+            GLenum  internalFormat    ,
+            GLsizei levels            ,
+            GLsizei width             ,
+            GLsizei height         = 0,
+            GLsizei depth          = 0);
         Texture(
             GLenum  target        ,
             GLenum  internalFormat,
