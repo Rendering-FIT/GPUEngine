@@ -11,6 +11,7 @@
 #include <typeindex>
 #include <fstream>
 #include <sstream>
+#include "Material.h"
 
 using namespace std;
 using namespace ge::rg;
@@ -194,107 +195,8 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    cameraManipulator.setEye(center+glm::vec3(0.f,0.f,radius*2.f));
 
    // setup shaders and prepare GLSL program
-   glProgram=make_shared<ge::gl::Program>(
-      make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
-         "#version 330\n"
-         "\n"
-         "layout(location=0)  in vec4 position;\n"
-         "layout(location=1)  in vec3 normal;\n"
-         "layout(location=3)  in vec2 texCoord;\n"
-         "layout(location=12) in mat4 instancingMatrix;\n"
-         "\n"
-         "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-         "   vec3 eyePosition;\n"
-         "   vec3 eyeNormal;\n"
-         "   vec2 texCoord;\n"
-         "} o;\n"
-         "\n"
-         "uniform mat4 projection;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   o.texCoord=texCoord;\n"
-         "   vec4 v=instancingMatrix*position;\n"
-         "   o.eyePosition=v.xyz;\n"
-         "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
-         "   gl_Position=projection*v;\n"
-         "}\n"),
-      make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,
-         "#version 330\n"
-         "\n"
-         "in VertexData {\n"
-         "   vec3 eyePosition;\n"
-         "   vec3 eyeNormal;\n"
-         "   vec2 texCoord;\n"
-         "};\n"
-         "\n"
-         "layout(location=0) out vec4 fragColor;\n"
-         "\n"
-         "uniform vec4 color;\n"
-         "uniform vec4 specularAndShininess; // shininess in alpha\n"
-         "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-         "uniform sampler2D colorTexture;\n"
-         "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
-         "uniform vec3 lightColor;\n"
-         "uniform vec3 lightAttenuation;\n"
-         "\n"
-         "void main()\n"
-         "{\n"
-         "   // compute VL - vertex to light vector, in eye coordinates\n"
-         "   vec3 VL=lightPosition.xyz;\n"
-         "   if(lightPosition.w!=0.)\n"
-         "      VL-=eyePosition;\n"
-         "   float VLlen=length(VL);\n"
-         "   vec3 VLdir=VL/VLlen;\n"
-         "\n"
-         "   // invert normals on back facing triangles\n"
-         "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
-         "\n"
-         "   // Lambert's diffuse reflection\n"
-         "   float NdotL=dot(N,VLdir);\n"
-         "\n"
-         "   // fragments facing the light get all the lighting\n"
-         "   // while those not facing the light get only ambient lighting\n"
-         "   if(NdotL<=0.)\n"
-         "   {\n"
-         "      // final sum for light-not-facing fragments\n"
-         "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
-         "      // or we can simply drop the fragment.)\n"
-         "      discard;\n"
-         "   }\n"
-         "   else\n"
-         "   {\n"
-         "      // specular effect\n"
-         "      float specularEffect;\n"
-         "      vec3 R=reflect(-VLdir,N);\n"
-         "      vec3 Vdir=normalize(eyePosition.xyz);\n"
-         "      float RdotV=dot(R,-Vdir);\n"
-         "      if(RdotV>0.)\n"
-         "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
-         "      else\n"
-         "         specularEffect = 0.;\n"
-         "\n"
-         "      // attenuation\n"
-         "      float attenuation=lightAttenuation[0]+\n"
-         "                        lightAttenuation[1]*VLlen+\n"
-         "                        lightAttenuation[2]*VLlen*VLlen;\n"
-         "\n"
-         "      // texturing\n"
-         "      vec4 c;\n;"
-         "      if(colorTexturingMode==0) // no texturing\n"
-         "         c=color;\n"
-         "      else if(colorTexturingMode==1) // modulate\n"
-         "         c=texture(colorTexture,texCoord)*color;\n"
-         "      else // replace\n"
-         "         c=texture(colorTexture,texCoord);\n"
-         "\n"
-         "      // final sum for light-facing fragments\n"
-         "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
-         "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
-         "                      attenuation,\n"
-         "                     c.a);\n"
-         "   }\n"
-         "}\n"));
+   glProgram=RenderingContext::current()->getProgram(
+         RenderingContext::ProgramType::AMBIENT_AND_LIGHT_PASS,true);
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),
                                          float(windowWidth)/float(windowHeight),zNear,zFar);
    glProgram->use();
@@ -319,12 +221,33 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    RenderingContext::current()->addTransformationGraph(cameraTransformation);
 
 
+   // empty file name
    if(fileName.empty())
       return;
 
+   // path
+   string path;
+#if defined(__WIN32__) or defined(_WIN32)
+   string::size_type i=fileName.find_last_of('\\');
+#else
+   string::size_type i=fileName.find_last_of('/');
+#endif
+   if(i!=string::npos)
+      path=fileName.substr(0,i+1);
+
    // open file
    ifstream f(fileName);
+   if(!f) {
+      cout<<"Failed to open file \""<<fileName<<"\"."<<endl;
+      return;
+   }
 
+   // initialize variables
+   stringstream line;
+   string lineBuf;
+   string token;
+   f.imbue(locale("en_US.UTF-8"));
+   line.imbue(locale("en_US.UTF-8"));
    vector<glm::vec3> coords;
    vector<glm::vec2> texCoords;
    vector<glm::vec3> normals;
@@ -334,49 +257,85 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    vector<glm::vec3> coordBuffer;
    vector<glm::vec2> texCoordBuffer;
    vector<glm::vec3> normalBuffer;
-   while(f)
-   {
-      string token;
-      f>>token;
-      if(!f) break;
+   map<string,Material> materials;
+   Material *currentMaterial=nullptr;
 
+   // parsing loop
+   while(true)
+   {
+      // read line
+      getline(f,lineBuf);
+      if(!f) break;
+      line.clear();
+      line.str(lineBuf);
+
+      line>>token;
+      if(!line) continue;
       const char *s=token.c_str();
       switch(s[0]) {
 
+         case '\0':
          case '#':
-            f.ignore(0xffffffff,'\n');
+            // ignore empty lines and comment lines
             continue;
 
+         case 'v':
+            switch(s[1]) {
+               case '\0': {
+                  // coordinates are 3 or 4 floats and 3 floats might be appended as r,g,b for per-vertex color
+                  // (only 3 floats coordinates implemented at the moment)
+                  float x,y,z;
+                  line>>x>>y>>z;
+                  coords.push_back(glm::vec3(x,y,z));
+                  continue;
+               }
+               case 'n': {
+                  // normal is always 3 floats
+                  float x,y,z;
+                  line>>x>>y>>z;
+                  normals.push_back(glm::vec3(x,y,z));
+                  continue;
+               }
+               case 't': {
+                  // texture coordinate is 2 or 3 floats
+                  // (3 float support not implemented yet)
+                  float u,v;
+                  line>>u>>v;
+                  texCoords.push_back(glm::vec2(u,v));
+                  continue;
+               }
+               // 'p' (e.g. "vp") for parameter space vertices not implemented yet
+               default:
+                  cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+                  continue;
+            }
+
+         // faces
          case 'f': {
 
-            // read the whole line
-            string line;
-            getline(f,line);
-
-            // parse all vertices on the line
-            stringstream ss(line);
-            while(ss) {
+            // parse all indices on the line
+            while(line) {
                int i=0;
                char c;
-               ss>>i; // parse vertex index
+               line>>i; // parse vertex index
                if(i!=0)
                   vi.push_back(i);
-               if(ss.peek()=='/') {
-                  ss>>c;
-                  if(ss.peek()=='/') {
+               if(line.peek()=='/') {
+                  line>>c;
+                  if(line.peek()=='/') {
                      i=0;
-                     ss>>c>>i; // parse normal index
+                     line>>c>>i; // parse normal index
                      if(i!=0)
                         ni.push_back(i);
                   }
                   else {
                      i=0;
-                     ss>>i; // parse texCoord index
+                     line>>i; // parse texCoord index
                      if(i!=0)
                         ti.push_back(i);
-                     if(ss.peek()=='/') {
+                     if(line.peek()=='/') {
                         i=0;
-                        ss>>c>>i; // parse normal index
+                        line>>c>>i; // parse normal index
                         if(i!=0)
                            ni.push_back(i);
                      }
@@ -417,39 +376,61 @@ static void init(unsigned windowWidth,unsigned windowHeight)
             continue;
          }
 
-         case 'v':
-            switch(s[1]) {
-               case '\0': {
-                  // coordinates are 3 or 4 floats and 3 floats might be appended as r,g,b for per-vertex color
-                  // (only 3 floats coordinates implemented at the moment)
-                  float x,y,z;
-                  f>>x>>y>>z;
-                  coords.push_back(glm::vec3(x,y,z));
-                  continue;
-               }
-               case 'n': {
-                  // normal is always 3 floats
-                  float x,y,z;
-                  f>>x>>y>>z;
-                  normals.push_back(glm::vec3(x,y,z));
-                  continue;
-               }
-               case 't': {
-                  // texture coordinate is 2 or 3 floats
-                  // (3 float support not implemented yet)
-                  float u,v;
-                  f>>u>>v;
-                  texCoords.push_back(glm::vec2(u,v));
-                  continue;
-               }
-               // 'p' (e.g. "vp") for parameter space vertices not implemented yet
+         // parse mtl file
+         case 'm':
+            if(token=="mtllib") {
+               string fileName;
+               line>>fileName;
+               parseMtl(path+fileName,materials);
+               continue;
             }
+            else {
+               cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+               continue;
+            }
+
+         // change material
+         case 'u':
+            if(token=="usemtl") {
+               string name;
+               line>>name;
+               auto it=materials.find(name);
+               if(it!=materials.end()) {
+
+                  // create mesh and drawable for parsed geometry
+                  if(currentMaterial) {
+                     shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
+                     if(m) {
+                        meshList.push_back(m);
+
+                        // create drawable
+                        m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
+                     }
+                  }
+
+                  // prepare buffers for new geometry
+                  coordBuffer.clear();
+                  texCoordBuffer.clear();
+                  normalBuffer.clear();
+
+                  // set new material
+                  currentMaterial=&it->second;
+
+               } else
+                  cout<<"Unknown material \""<<name<<"\"."<<endl;
+               continue;
+            }
+            else {
+               cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+               continue;
+            }
+
          default:
-            cout<<"Unknown token \""<<token<<"\"\n"<<endl;
-            f.ignore(0xffffffff,'\n');
+            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
       }
    }
 
+   // create mesh and drawable for parsed geometry
    shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
    if(m) {
       meshList.push_back(m);

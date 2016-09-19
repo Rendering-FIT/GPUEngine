@@ -118,7 +118,7 @@ namespace ge
                                                 AttribConfigId id);
          void removeAttribConfig(AttribConfigList::iterator it);
 
-         inline bool useARBShaderDrawParameters() const;
+         inline bool getUseARBShaderDrawParameters() const;
          void setUseARBShaderDrawParameters(bool value);
          inline unsigned numAttribStorages() const;
          void onAttribStorageInit(AttribStorage *a);
@@ -202,6 +202,8 @@ namespace ge
          const std::shared_ptr<ge::gl::Program>& getPhongProgram() const;
          const std::shared_ptr<ge::gl::Program>& getAmbientUniformColorProgram() const;
          const std::shared_ptr<ge::gl::Program>& getPhongUniformColorProgram() const;
+         enum class ProgramType { AMBIENT_PASS,LIGHT_PASS,AMBIENT_AND_LIGHT_PASS };
+         const std::shared_ptr<ge::gl::Program>& getProgram(ProgramType type,bool uniformColor) const;
 
          std::shared_ptr<ge::gl::Texture> cachedTexture(const std::string& path) const;
          inline void addCacheTexture(const std::string &path,const std::shared_ptr<ge::gl::Texture>& texture);
@@ -213,6 +215,7 @@ namespace ge
          static void global_finalize();
 
       protected:
+
          struct AutoInitRenderingContext {
             bool initialized; // initialized to false if struct is declared static
             bool usingNiftyCounter;
@@ -226,6 +229,16 @@ namespace ge
                            // solution: nested structures are not DLL-exported and do not inherit DLL-export of parent class
             static thread_local AutoInitRenderingContext _currentContext;
          };
+
+         struct ProgramConfig {
+            ProgramType type;
+            bool uniformColor;
+            bool operator<(const ProgramConfig& rhs) const;
+         };
+         mutable std::map<ProgramConfig,std::shared_ptr<ge::gl::Program>> _programCache;
+         static std::shared_ptr<ge::gl::Program> createProgram(ProgramType type,bool uniformColor,
+                                                               bool useARBShaderDrawParameters=false);
+
       };
 
 
@@ -254,7 +267,7 @@ namespace ge
       { return getAttribConfig(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo)); }
       inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
       { return getAttribConfig(AttribConfig::ConfigData(attribTypes,ebo,id)); }
-      inline bool RenderingContext::useARBShaderDrawParameters() const  { return _useARBShaderDrawParameters; }
+      inline bool RenderingContext::getUseARBShaderDrawParameters() const  { return _useARBShaderDrawParameters; }
       inline unsigned RenderingContext::numAttribStorages() const  { return _numAttribStorages; }
       inline PrimitiveStorage* RenderingContext::primitiveStorage() const  { return &_primitiveStorage; }
       inline DrawCommandStorage* RenderingContext::drawCommandStorage() const  { return &_drawCommandStorage; }
