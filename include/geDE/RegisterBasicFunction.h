@@ -170,8 +170,7 @@ namespace ge{
         bool doUberCall = true;\
         if(this->_sigImpl)\
         doUberCall = sig_uber_call(this,this->_sigImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});\
-        if(!doUberCall)return false;\
-        assert(this->getOutputData()!=nullptr)//}}
+        if(!doUberCall)return false//}}
 
 #define GE_DE_REGISTER_BASIC_FUNCTION_EPILOGUE()\
     return true;\
@@ -190,6 +189,7 @@ namespace ge{
           OUTPUT(*fce)(ARGS...),
           bool(*sig)(ARGS...)){
         GE_DE_REGISTER_BASIC_FUNCTION_PROLOGUE();
+        assert(this->getOutputData()!=nullptr);
         *this->getOutputData() = uber_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
         GE_DE_REGISTER_BASIC_FUNCTION_EPILOGUE();
       }
@@ -268,6 +268,7 @@ namespace ge{
           OUTPUT(CLASS::*fce)(ARGS...),
           bool(*sig)(ARGS...)){
         GE_DE_REGISTER_CLASS_FUNCTION_PROLOGUE();
+        assert(this->getOutputData()!=nullptr);
         *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
         GE_DE_REGISTER_CLASS_FUNCTION_EPILOGUE();
       }
@@ -290,6 +291,7 @@ namespace ge{
           OUTPUT(CLASS::*fce)(ARGS...)const,
           bool(*sig)(ARGS...)){
         GE_DE_REGISTER_CLASS_FUNCTION_PROLOGUE();
+        assert(this->getOutputData()!=nullptr);
         *this->getOutputData() = uber_class_call(this,this->_fceImpl,typename ge::core::make_index_sequence<sizeof...(ARGS)>::type{});
         GE_DE_REGISTER_CLASS_FUNCTION_EPILOGUE();
       }

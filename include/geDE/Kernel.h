@@ -153,6 +153,7 @@ namespace ge{
 
         template<typename LAST>
           inline void _getInputsFromArgsWithoutLast(std::vector<RFN>&,LAST const&){}
+        inline void _getInputsFromArgsWithoutLast(std::vector<RFN>&){}
         inline void _addArgToInputs(std::vector<RFN>&inputs,std::string const&s){
           inputs.emplace_back(s);
         }
