@@ -209,11 +209,12 @@ void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
 
 void RenderingContext::setUseARBShaderDrawParameters(bool value)
 {
-   if(_numAttribStorages==0)
+   if(_numAttribStorages==0 && _programCache.size()==0)
       _useARBShaderDrawParameters=value;
    else
       cerr<<"RenderingContext::setUseARBShaderDrawParameters(): The method can be used\n"
-            "   only until the first AttribStorage is created for the rendering context."<<endl;
+            "   only until the first AttribStorage is created for the rendering context\n"
+            "   or first ge::gl::Program is created by RenderingContext::getProgram()."<<endl;
 }
 
 
@@ -677,74 +678,295 @@ const shared_ptr<Program>& RenderingContext::getProcessDrawCommandsProgram() con
 }
 
 
-const shared_ptr<Program>& RenderingContext::getAmbientProgram() const
+shared_ptr<Program> RenderingContext::createProgram(RenderingContext::ProgramType type,
+                                                    bool uniformColor,
+                                                    bool useARBShaderDrawParameters)
 {
-   if(!_ambientProgram) {
-      const_cast<RenderingContext*>(this)->_ambientProgram=make_shared<Program>(
-         make_shared<Shader>(GL_VERTEX_SHADER,
-            static_cast<std::stringstream&>(stringstream()<<
-            "#version 430\n"
-            <<(_useARBShaderDrawParameters
-            ? "#extension GL_ARB_shader_draw_parameters : enable\n"
+   return make_shared<Program>(
+      make_shared<Shader>(GL_VERTEX_SHADER,
+         static_cast<std::stringstream&>(stringstream()
+
+            // buffer for shader_draw_parameters rendering
+            <<(useARBShaderDrawParameters
+            ? "#version 430\n"
+            "#extension GL_ARB_shader_draw_parameters : enable\n"
             "\n"
             "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
             "   mat4 instancingMatrixBuffer[];\n"
             "};\n"
-            : ""
+            : "#version 330\n"
             )<<
             "\n"
+
+            // attributes
             "layout(location=0) in vec4 position;\n"
-            "layout(location=2) in vec4 color;\n"
+            <<(type!=ProgramType::AMBIENT_PASS // normals are not used in ambient pass
+            ? "layout(location=1) in vec3 normal;\n"
+            : "")
+            <<(!uniformColor
+            ? "layout(location=2) in vec4 color;\n"
+            : "")<<
             "layout(location=3) in vec2 texCoord;\n"
-            <<(_useARBShaderDrawParameters
+            <<(useARBShaderDrawParameters
             ? ""
             : "layout(location=12) in mat4 instancingMatrix;\n"
             )<<
             "\n"
+
+            // output interface
             "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-            "   vec4 color;\n"
+            <<(type!=ProgramType::AMBIENT_PASS
+            ? "   vec3 eyePosition;\n"
+              "   vec3 eyeNormal;\n"
+            : "")
+            <<(type!=ProgramType::AMBIENT_PASS && !uniformColor
+            ? "   vec4 color;\n"
+            : "")
+            <<(type!=ProgramType::AMBIENT_PASS && uniformColor
+            ? "   flat vec4 color;\n"
+            : "")
+            <<(type!=ProgramType::LIGHT_PASS && !uniformColor
+            ? "   vec4 ambientColor;\n"
+            : "")
+            <<(type!=ProgramType::LIGHT_PASS && uniformColor
+            ? "   flat vec4 ambientColor;\n"
+            : "")<<
             "   vec2 texCoord;\n"
             "} o;\n"
             "\n"
-            "uniform vec4 globalAmbientLight; // alpha must be 1\n"
+
+            // uniforms
+            <<(uniformColor
+            ? "uniform vec4 color;\n"
+            : "")
+            <<(type!=ProgramType::LIGHT_PASS
+            ? "uniform vec4 globalAmbientLight; // alpha must be 1\n"
+            : "")<<
             "uniform mat4 projection;\n"
             "\n"
+
+            // main function
             "void main()\n"
             "{\n"
-            "   // ambient lighting\n"
-            "   o.color=globalAmbientLight*color;\n"
-            "   o.texCoord=texCoord;\n"
-            "\n"
-            "   // vertex position\n"
-            <<(_useARBShaderDrawParameters
+
+            // instancing matrix (shader_draw_parameters)
+            <<(useARBShaderDrawParameters
             ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-            "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
-            : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
+              "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
+            : ""
             )<<
+
+            // output data
+            "   vec4 v=instancingMatrix*position;\n"
+            "   gl_Position=projection*v;\n"
+            <<(type!=ProgramType::AMBIENT_PASS
+            ? "   o.eyePosition=v.xyz;\n"
+              "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
+              "   o.color=color;\n"
+            : "")
+            <<(type!=ProgramType::LIGHT_PASS
+            ? "   o.ambientColor=globalAmbientLight*color;\n"
+            : "")<<
+            "   o.texCoord=texCoord;\n"
             "}\n").str()),
-         make_shared<Shader>(GL_FRAGMENT_SHADER,
+
+      make_shared<Shader>(GL_FRAGMENT_SHADER,
+         static_cast<std::stringstream&>(stringstream()<<
             "#version 330\n"
             "\n"
+
+            // input interface
             "in VertexData {\n"
-            "   vec4 color;\n"
+            <<(type!=ProgramType::AMBIENT_PASS
+            ? "   vec3 eyePosition;\n"
+              "   vec3 eyeNormal;\n"
+            : "")
+            <<(type!=ProgramType::AMBIENT_PASS && !uniformColor
+            ? "   vec4 color;\n"
+            : "")
+            <<(type!=ProgramType::AMBIENT_PASS && uniformColor
+            ? "   flat vec4 color;\n"
+            : "")
+            <<(type!=ProgramType::LIGHT_PASS && !uniformColor
+            ? "   vec4 ambientColor;\n"
+            : "")
+            <<(type!=ProgramType::LIGHT_PASS && uniformColor
+            ? "   flat vec4 ambientColor;\n"
+            : "")<<
             "   vec2 texCoord;\n"
             "};\n"
             "\n"
+
+            // output variables
             "layout(location=0) out vec4 fragColor;\n"
             "\n"
+
+            // uniforms
             "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
             "uniform sampler2D colorTexture;\n"
+            <<(type!=ProgramType::AMBIENT_PASS
+            ? "uniform vec4 specularAndShininess; // shininess in alpha\n"
+              "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
+              "uniform vec3 lightColor;\n"
+              "uniform vec3 lightAttenuation;\n"
+            : "")<<
             "\n"
+
+            // main function
             "void main()\n"
             "{\n"
-            "   // texturing and final color\n"
-            "   if(colorTexturingMode==0) // no texturing\n"
-            "      fragColor=color;\n"
-            "   else if(colorTexturingMode==1) // modulate\n"
-            "      fragColor=color*texture(colorTexture,texCoord);\n"
-            "   else // replace\n"
-            "      fragColor=texture(colorTexture,texCoord);\n"
-            "}\n"));
+
+            // texturing for AMBIENT_AND_LIGHT_PASS
+            <<(type==ProgramType::AMBIENT_AND_LIGHT_PASS
+            ? "   // texturing\n"
+              "   vec4 c,ac;\n;"
+              "   if(colorTexturingMode==0) // no texturing\n"
+              "      c=color;\n"
+              "   else {\n"
+              "      vec4 t=texture(colorTexture,texCoord);\n"
+              "      if(colorTexturingMode==1) { // modulate\n"
+              "         c=t*color;\n"
+              "         ac=t*ambientColor;\n"
+              "      }\n"
+              "      else { // replace\n"
+              "         c=t;\n"
+              "         ac=t;\n"
+              "      }\n"
+              "   }\n"
+              "\n"
+            : "")
+
+            // diffuse lighting for LIGHT_PASS and AMBIENT_AND_LIGHT_PASS
+            <<(type!=ProgramType::AMBIENT_PASS
+            ? "   // compute VL - vertex to light vector, in eye coordinates\n"
+              "   vec3 VL=lightPosition.xyz;\n"
+              "   if(lightPosition.w!=0.)\n"
+              "      VL-=eyePosition;\n"
+              "   float VLlen=length(VL);\n"
+              "   vec3 VLdir=VL/VLlen;\n"
+              "\n"
+              "   // invert normals on back facing triangles\n"
+              "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
+              "\n"
+              "   // Lambert's diffuse reflection\n"
+              "   float NdotL=dot(N,VLdir);\n"
+              "\n"
+              "   // fragments facing the light get light and ambient light contributions\n"
+              "   // while those not facing the light get only ambient lighting\n"
+              "   if(NdotL<=0.)\n"
+              "   {\n"
+            : "")
+
+            // discard is used in LIGHT_PASS on light-not-facing fragments
+            <<(type==ProgramType::LIGHT_PASS
+            ? "      // light-not-facing fragment color is vec4(0,0,0,diffuse.a),\n"
+              "      // so we can drop the fragment\n"
+              "      discard;\n"
+            : "")
+
+            // ambient component with applied texture is returned in AMBIENT_AND_LIGHT_PASS on light-not-facing fragments
+            <<(type==ProgramType::AMBIENT_AND_LIGHT_PASS
+            ? "      // final sum for light-not-facing fragments\n"
+              "      fragColor=vec4(ac.rgb,c.a);\n"
+              "      return;\n"
+            : "")
+
+            // specular lighting in LIGHT_PASS and AMBIENT_AND_LIGHT_PASS
+            <<(type!=ProgramType::AMBIENT_PASS
+            ? "   }\n"
+              "   else\n"
+              "   {\n"
+              "      // specular effect\n"
+              "      float specularEffect;\n"
+              "      vec3 R=reflect(-VLdir,N);\n"
+              "      vec3 Vdir=normalize(eyePosition.xyz);\n"
+              "      float RdotV=dot(R,-Vdir);\n"
+              "      if(RdotV>0.)\n"
+              "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
+              "      else\n"
+              "         specularEffect = 0.;\n"
+              "\n"
+              "      // attenuation\n"
+              "      float attenuation=lightAttenuation[0]+\n"
+              "                        lightAttenuation[1]*VLlen+\n"
+              "                        lightAttenuation[2]*VLlen*VLlen;\n"
+              "\n"
+            : "")
+
+            // LIGHT_PASS texturing
+            <<(type==ProgramType::LIGHT_PASS
+            ? "      // texturing\n"
+              "      vec4 c;\n;"
+              "      if(colorTexturingMode==0) // no texturing\n"
+              "         c=color;\n"
+              "      else if(colorTexturingMode==1) // modulate\n"
+              "         c=texture(colorTexture,texCoord)*color;\n"
+              "      else // replace\n"
+              "         c=texture(colorTexture,texCoord);\n"
+              "\n"
+
+            // final lighting sum in LIGHT_PASS
+              "      // final sum for light-facing fragments\n"
+              "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
+              "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
+              "                      attenuation,\n"
+              "                     c.a);\n"
+              "   }\n"
+              "}\n"
+            : "")
+
+            // final lighting sum in AMBIENT_AND_LIGHT_PASS
+            <<(type==ProgramType::AMBIENT_AND_LIGHT_PASS
+            ? "      // final sum for light-facing fragments\n"
+              "      fragColor=vec4(ac.rgb+\n"
+              "                     ((c.rgb*lightColor*NdotL+\n"
+              "                       specularAndShininess.rgb*lightColor*specularEffect)/\n"
+              "                       attenuation),\n"
+              "                     c.a);\n"
+              "   }\n"
+              "}\n"
+            : "")
+
+            // AMBIENT_PASS texturing and final sum
+            <<(type==ProgramType::AMBIENT_PASS
+            ? "   // texturing\n"
+              "   vec4 ac;\n;"
+              "   if(colorTexturingMode==0) // no texturing\n"
+              "      ac=ambientColor;\n"
+              "   else if(colorTexturingMode==1) // modulate\n"
+              "      ac=texture(colorTexture,texCoord)*ambientColor;\n"
+              "   else // replace\n"
+              "      ac=texture(colorTexture,texCoord);\n"
+              "\n"
+              "   // final sum for light-facing fragments\n"
+              "   fragColor=ac;\n"
+              "}\n"
+            : "")).str()));
+}
+
+
+const std::shared_ptr<ge::gl::Program>& RenderingContext::getProgram(ProgramType type,bool uniformColor) const
+{
+   auto &ptr=_programCache[ProgramConfig{type,uniformColor}];
+   if(!ptr)
+      ptr=createProgram(type,uniformColor,_useARBShaderDrawParameters);
+   return ptr;
+}
+
+
+bool RenderingContext::ProgramConfig::operator<(const ProgramConfig& rhs) const
+{
+   if(this->type<rhs.type)  return true;
+   if(this->type>rhs.type)  return false;
+   return this->uniformColor<rhs.uniformColor;
+}
+
+
+const shared_ptr<Program>& RenderingContext::getAmbientProgram() const
+{
+   if(!_ambientProgram) {
+      const_cast<RenderingContext*>(this)->_ambientProgram=
+            createProgram(ProgramType::AMBIENT_PASS,false,_useARBShaderDrawParameters);
    }
    return _ambientProgram;
 }
@@ -753,71 +975,8 @@ const shared_ptr<Program>& RenderingContext::getAmbientProgram() const
 const shared_ptr<Program>& RenderingContext::getAmbientUniformColorProgram() const
 {
    if(!_ambientUniformColorProgram) {
-      const_cast<RenderingContext*>(this)->_ambientUniformColorProgram=make_shared<Program>(
-         make_shared<Shader>(GL_VERTEX_SHADER,
-            static_cast<std::stringstream&>(stringstream()<<
-            "#version 430\n"
-            <<(_useARBShaderDrawParameters
-            ? "#extension GL_ARB_shader_draw_parameters : enable\n"
-            "\n"
-            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-            "   mat4 instancingMatrixBuffer[];\n"
-            "};\n"
-            : ""
-            )<<
-            "\n"
-            "layout(location=0) in vec4 position;\n"
-            "layout(location=3) in vec2 texCoord;\n"
-            <<(_useARBShaderDrawParameters
-            ? ""
-            : "layout(location=12) in mat4 instancingMatrix;\n"
-            )<<
-            "\n"
-            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-            "   flat vec4 color;\n"
-            "   vec2 texCoord;\n"
-            "} o;\n"
-            "\n"
-            "uniform vec4 color;\n"
-            "uniform vec4 globalAmbientLight; // alpha must be 1\n"
-            "uniform mat4 projection;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "   // ambient lighting\n"
-            "   o.color=globalAmbientLight*color;\n"
-            "   o.texCoord=texCoord;\n"
-            "\n"
-            "   // vertex position\n"
-            <<(_useARBShaderDrawParameters
-            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-            "   gl_Position=projection*(instancingMatrixBuffer[matrixOffset64]*position);\n"
-            : "   gl_Position=projection*(instancingMatrix*position);\n" // ( and ) are used to perform the same computation and produce exactly the same results in ambient and phong render pass
-            )<<
-            "}\n").str()),
-         make_shared<Shader>(GL_FRAGMENT_SHADER,
-            "#version 330\n"
-            "\n"
-            "in VertexData {\n"
-            "   flat vec4 color;\n"
-            "   vec2 texCoord;\n"
-            "};\n"
-            "\n"
-            "layout(location=0) out vec4 fragColor;\n"
-            "\n"
-            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-            "uniform sampler2D colorTexture;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "   // texturing and final color\n"
-            "   if(colorTexturingMode==0) // no texturing\n"
-            "      fragColor=color;\n"
-            "   else if(colorTexturingMode==1) // modulate\n"
-            "      fragColor=color*texture(colorTexture,texCoord);\n"
-            "   else // replace\n"
-            "      fragColor=texture(colorTexture,texCoord);\n"
-            "}\n"));
+      const_cast<RenderingContext*>(this)->_ambientUniformColorProgram=
+            createProgram(ProgramType::AMBIENT_PASS,true,_useARBShaderDrawParameters);
    }
    return _ambientUniformColorProgram;
 }
@@ -826,127 +985,8 @@ const shared_ptr<Program>& RenderingContext::getAmbientUniformColorProgram() con
 const shared_ptr<Program>& RenderingContext::getPhongProgram() const
 {
    if(!_phongProgram) {
-      const_cast<RenderingContext*>(this)->_phongProgram=make_shared<Program>(
-         make_shared<Shader>(GL_VERTEX_SHADER,
-            static_cast<std::stringstream&>(stringstream()
-            <<(_useARBShaderDrawParameters
-            ? "#version 430\n"
-            "#extension GL_ARB_shader_draw_parameters : enable\n"
-            "\n"
-            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-            "   mat4 instancingMatrixBuffer[];\n"
-            "};\n"
-            : "#version 330\n"
-            )<<
-            "\n"
-            "layout(location=0) in vec4 position;\n"
-            "layout(location=1) in vec3 normal;\n"
-            "layout(location=2) in vec4 color;\n"
-            "layout(location=3) in vec2 texCoord;\n"
-            <<(_useARBShaderDrawParameters
-            ? ""
-            : "layout(location=12) in mat4 instancingMatrix;\n"
-            )<<
-            "\n"
-            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-            "   vec3 eyePosition;\n"
-            "   vec3 eyeNormal;\n"
-            "   vec4 color;\n"
-            "   vec2 texCoord;\n"
-            "} o;\n"
-            "\n"
-            "uniform mat4 projection;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "   o.color=color;\n"
-            "   o.texCoord=texCoord;\n"
-            <<(_useARBShaderDrawParameters
-            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-            "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
-            "   vec4 v=instancingMatrix*position;\n"
-            : "   vec4 v=instancingMatrix*position;\n"
-            )<<
-            "   o.eyePosition=v.xyz;\n"
-            "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
-            "   gl_Position=projection*v;\n"
-            "}\n").str()),
-         make_shared<Shader>(GL_FRAGMENT_SHADER,
-            "#version 330\n"
-            "\n"
-            "in VertexData {\n"
-            "   vec3 eyePosition;\n"
-            "   vec3 eyeNormal;\n"
-            "   vec4 color;\n"
-            "   vec2 texCoord;\n"
-            "};\n"
-            "\n"
-            "layout(location=0) out vec4 fragColor;\n"
-            "\n"
-            "uniform vec4 specularAndShininess; // shininess in alpha\n"
-            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-            "uniform sampler2D colorTexture;\n"
-            "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
-            "uniform vec3 lightColor;\n"
-            "uniform vec3 lightAttenuation;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "   // compute VL - vertex to light vector, in eye coordinates\n"
-            "   vec3 VL=lightPosition.xyz;\n"
-            "   if(lightPosition.w!=0.)\n"
-            "      VL-=eyePosition;\n"
-            "   float VLlen=length(VL);\n"
-            "   vec3 VLdir=VL/VLlen;\n"
-            "\n"
-            "   // invert normals on back facing triangles\n"
-            "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
-            "\n"
-            "   // Lambert's diffuse reflection\n"
-            "   float NdotL=dot(N,VLdir);\n"
-            "\n"
-            "   // fragments facing the light get all the lighting\n"
-            "   // while those not facing the light get only ambient lighting\n"
-            "   if(NdotL<=0.)\n"
-            "   {\n"
-            "      // final sum for light-not-facing fragments\n"
-            "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
-            "      // or we can simply drop the fragment.)\n"
-            "      discard;\n"
-            "   }\n"
-            "   else\n"
-            "   {\n"
-            "      // specular effect\n"
-            "      float specularEffect;\n"
-            "      vec3 R=reflect(-VLdir,N);\n"
-            "      vec3 Vdir=normalize(eyePosition.xyz);\n"
-            "      float RdotV=dot(R,-Vdir);\n"
-            "      if(RdotV>0.)\n"
-            "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
-            "      else\n"
-            "         specularEffect = 0.;\n"
-            "\n"
-            "      // attenuation\n"
-            "      float attenuation=lightAttenuation[0]+\n"
-            "                        lightAttenuation[1]*VLlen+\n"
-            "                        lightAttenuation[2]*VLlen*VLlen;\n"
-            "\n"
-            "      // texturing\n"
-            "      vec4 c;\n;"
-            "      if(colorTexturingMode==0) // no texturing\n"
-            "         c=color;\n"
-            "      else if(colorTexturingMode==1) // modulate\n"
-            "         c=texture(colorTexture,texCoord)*color;\n"
-            "      else // replace\n"
-            "         c=texture(colorTexture,texCoord);\n"
-            "\n"
-            "      // final sum for light-facing fragments\n"
-            "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
-            "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
-            "                      attenuation,\n"
-            "                     c.a);\n"
-            "   }\n"
-            "}\n"));
+      const_cast<RenderingContext*>(this)->_phongProgram=
+            createProgram(ProgramType::LIGHT_PASS,false,_useARBShaderDrawParameters);
    }
    return _phongProgram;
 }
@@ -955,124 +995,8 @@ const shared_ptr<Program>& RenderingContext::getPhongProgram() const
 const shared_ptr<Program>& RenderingContext::getPhongUniformColorProgram() const
 {
    if(!_phongUniformColorProgram) {
-      const_cast<RenderingContext*>(this)->_phongUniformColorProgram=make_shared<Program>(
-         make_shared<Shader>(GL_VERTEX_SHADER,
-            static_cast<std::stringstream&>(stringstream()
-            <<(_useARBShaderDrawParameters
-            ? "#version 430\n"
-            "#extension GL_ARB_shader_draw_parameters : enable\n"
-            "\n"
-            "layout(std430,binding=0) restrict readonly buffer InstancingMatrix {\n"
-            "   mat4 instancingMatrixBuffer[];\n"
-            "};\n"
-            : "#version 330\n"
-            )<<
-            "\n"
-            "layout(location=0) in vec4 position;\n"
-            "layout(location=1) in vec3 normal;\n"
-            "layout(location=3) in vec2 texCoord;\n"
-            <<(_useARBShaderDrawParameters
-            ? ""
-            : "layout(location=12) in mat4 instancingMatrix;\n"
-            )<<
-            "\n"
-            "out VertexData {\n" // interfaces are supported since GLSL 1.5 (OpenGL 3.2)
-            "   vec3 eyePosition;\n"
-            "   vec3 eyeNormal;\n"
-            "   vec2 texCoord;\n"
-            "} o;\n"
-            "\n"
-            "uniform mat4 projection;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "   o.texCoord=texCoord;\n"
-            <<(_useARBShaderDrawParameters
-            ? "   uint matrixOffset64=gl_BaseInstanceARB+gl_InstanceID;\n"
-            "   mat4 instancingMatrix=instancingMatrixBuffer[matrixOffset64];\n"
-            "   vec4 v=instancingMatrix*position;\n"
-            : "   vec4 v=instancingMatrix*position;\n"
-            )<<
-            "   o.eyePosition=v.xyz;\n"
-            "   o.eyeNormal=transpose(inverse(mat3(instancingMatrix)))*normal;\n"
-            "   gl_Position=projection*v;\n"
-            "}\n").str()),
-         make_shared<Shader>(GL_FRAGMENT_SHADER,
-            "#version 330\n"
-            "\n"
-            "in VertexData {\n"
-            "   vec3 eyePosition;\n"
-            "   vec3 eyeNormal;\n"
-            "   vec2 texCoord;\n"
-            "};\n"
-            "\n"
-            "layout(location=0) out vec4 fragColor;\n"
-            "\n"
-            "uniform vec4 color;\n"
-            "uniform vec4 specularAndShininess; // shininess in alpha\n"
-            "uniform int colorTexturingMode; // 0 - no texturing, 1 - modulate, 2 - replace\n"
-            "uniform sampler2D colorTexture;\n"
-            "uniform vec4 lightPosition; // in eye coordinates, w must be 0 or 1\n"
-            "uniform vec3 lightColor;\n"
-            "uniform vec3 lightAttenuation;\n"
-            "\n"
-            "void main()\n"
-            "{\n"
-            "   // compute VL - vertex to light vector, in eye coordinates\n"
-            "   vec3 VL=lightPosition.xyz;\n"
-            "   if(lightPosition.w!=0.)\n"
-            "      VL-=eyePosition;\n"
-            "   float VLlen=length(VL);\n"
-            "   vec3 VLdir=VL/VLlen;\n"
-            "\n"
-            "   // invert normals on back facing triangles\n"
-            "   vec3 N=gl_FrontFacing?eyeNormal:-eyeNormal;\n"
-            "\n"
-            "   // Lambert's diffuse reflection\n"
-            "   float NdotL=dot(N,VLdir);\n"
-            "\n"
-            "   // fragments facing the light get all the lighting\n"
-            "   // while those not facing the light get only ambient lighting\n"
-            "   if(NdotL<=0.)\n"
-            "   {\n"
-            "      // final sum for light-not-facing fragments\n"
-            "      // (This can be computed as fragColor=vec4(0,0,0,diffuse.a)\n"
-            "      // or we can simply drop the fragment.)\n"
-            "      discard;\n"
-            "   }\n"
-            "   else\n"
-            "   {\n"
-            "      // specular effect\n"
-            "      float specularEffect;\n"
-            "      vec3 R=reflect(-VLdir,N);\n"
-            "      vec3 Vdir=normalize(eyePosition.xyz);\n"
-            "      float RdotV=dot(R,-Vdir);\n"
-            "      if(RdotV>0.)\n"
-            "         specularEffect=pow(RdotV,specularAndShininess.a);\n"
-            "      else\n"
-            "         specularEffect = 0.;\n"
-            "\n"
-            "      // attenuation\n"
-            "      float attenuation=lightAttenuation[0]+\n"
-            "                        lightAttenuation[1]*VLlen+\n"
-            "                        lightAttenuation[2]*VLlen*VLlen;\n"
-            "\n"
-            "      // texturing\n"
-            "      vec4 c;\n;"
-            "      if(colorTexturingMode==0) // no texturing\n"
-            "         c=color;\n"
-            "      else if(colorTexturingMode==1) // modulate\n"
-            "         c=texture(colorTexture,texCoord)*color;\n"
-            "      else // replace\n"
-            "         c=texture(colorTexture,texCoord);\n"
-            "\n"
-            "      // final sum for light-facing fragments\n"
-            "      fragColor=vec4((c.rgb*lightColor*NdotL+\n"
-            "                      specularAndShininess.rgb*lightColor*specularEffect)/\n"
-            "                      attenuation,\n"
-            "                     c.a);\n"
-            "   }\n"
-            "}\n"));
+      const_cast<RenderingContext*>(this)->_phongUniformColorProgram=
+            createProgram(ProgramType::LIGHT_PASS,true,_useARBShaderDrawParameters);
    }
    return _phongUniformColorProgram;
 }

@@ -12,9 +12,11 @@ endif()
 
 set(APP_SOURCES
   main.cpp
+  Material.cpp
   )
 
 set(APP_INCLUDES
+  Material.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})

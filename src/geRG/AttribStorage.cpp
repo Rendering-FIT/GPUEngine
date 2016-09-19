@@ -57,7 +57,7 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    }
 
    // append transformation matrix to VAO
-   if(_renderingContext->useARBShaderDrawParameters()==false) {
+   if(_renderingContext->getUseARBShaderDrawParameters()==false) {
       _va->bind();
       _renderingContext->matrixStorage()->buffer()->bind(GL_ARRAY_BUFFER);
       const GLuint index=12;
