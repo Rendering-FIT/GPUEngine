@@ -20,7 +20,7 @@ CompositeResource::CompositeResource(
             ge::core::value2str(std::cerr<<manager->getArraySize(id))+" != "+ge::core::value2str(accessors.size()),manager,id,accessors);
         return;
       }
-      for(auto x:accessors){
+      for(auto const&x:accessors){
         if(manager->getArrayElementTypeId(id)!=x->getId()){
           ge::core::printError(GE_CORE_FCENAME,
               std::string("one of components differs from arrays inner type - ")+
@@ -73,6 +73,33 @@ void const*CompositeResource::getDataAddress()const{
   return this->_components[0]->getDataAddress();
 }
 
+uint8_t CompositeResource::getByte(size_t offset)const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  assert(this->_manager!=nullptr);
+  for(auto const&x:this->_components){
+    assert(x!=nullptr);
+    if(offset<x->byteSize())
+      return x->getByte(offset);
+    offset-=x->byteSize();
+  }
+  assert(false&&"ERROR: offset is out of range!");
+  return 0;
+}
+
+void CompositeResource::setByte(size_t offset,uint8_t byte){
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  assert(this->_manager!=nullptr);
+  for(auto const&x:this->_components){
+    assert(x!=nullptr);
+    if(offset<x->byteSize())
+      x->setByte(offset,byte);
+    offset-=x->byteSize();
+  }
+  assert(false&&"ERROR: offset is out of range!");
+}
+
 std::shared_ptr<Resource> CompositeResource::operator[](size_t elem){
   PRINT_CALL_STACK(elem);
   assert(this!=nullptr);
@@ -83,7 +110,6 @@ std::shared_ptr<Resource> CompositeResource::operator[](size_t elem){
     ++i;
   }
   return this->_components[i]->operator[](elem-offset);
-
 }
 
 size_t CompositeResource::getNofElements()const{

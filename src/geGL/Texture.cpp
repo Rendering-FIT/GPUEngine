@@ -4,6 +4,32 @@
 
 using namespace ge::gl;
 
+Texture::Texture(){}
+
+void Texture::create(
+    GLenum  target        ,
+    GLenum  internalFormat,
+    GLsizei levels        ,
+    GLsizei width         ,
+    GLsizei height        ,
+    GLsizei depth         ){
+  assert(this!=nullptr);
+  assert(width!=0);
+  assert(height!=0&&depth==0);
+  this->_target = target;
+  this->_format = internalFormat;
+  this->_gl.glCreateTextures(this->_target,1,&this->_id);
+  if(levels>0){
+    if     (height == 0)this->_gl.glTextureStorage1D(this->_id,levels,this->_format,width             );
+    else if(depth  == 0)this->_gl.glTextureStorage2D(this->_id,levels,this->_format,width,height      );
+    else                this->_gl.glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
+  }else{
+    if     (height == 0)this->_gl.glTextureImage1DEXT(this->_id,this->_target,0,this->_format,width             ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+    else if(depth  == 0)this->_gl.glTextureImage2DEXT(this->_id,this->_target,0,this->_format,width,height      ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+    else                this->_gl.glTextureImage3DEXT(this->_id,this->_target,0,this->_format,width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+  }
+}
+
 
 /**
  * @brief Creates 1D texture
@@ -29,9 +55,9 @@ Texture::Texture(
 
 
 /*
-glTextureStorage2D(id,levels,internalFormat,width,height);
-glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,pixels);
-*/
+   glTextureStorage2D(id,levels,internalFormat,width,height);
+   glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,pixels);
+   */
 
 /**
  * @brief Creates 2D texture

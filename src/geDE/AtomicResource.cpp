@@ -60,6 +60,18 @@ void*AtomicResource::getData()const{
   return (uint8_t*)&(*this->_data)+this->_offset;
 }
 
+uint8_t AtomicResource::getByte(size_t offset)const{
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  return ((uint8_t*)this->getData())[offset];
+}
+
+void AtomicResource::setByte(size_t offset,uint8_t byte){
+  PRINT_CALL_STACK();
+  assert(this!=nullptr);
+  ((uint8_t*)this->getData())[offset] = byte;
+}
+
 void const*AtomicResource::getDataAddress()const{
   PRINT_CALL_STACK();
   assert(this!=nullptr);

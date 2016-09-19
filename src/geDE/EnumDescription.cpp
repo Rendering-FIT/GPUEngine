@@ -72,6 +72,10 @@ std::string EnumDescription::toStr(TypeRegister const*,TypeId)const{
   return ss.str();
 }
 
+void EnumDescription::copy(void*o,void*i,TypeRegister const*tr,TypeId)const{
+  std::memcpy(o,i,this->byteSize(tr));
+}
+
 void EnumDescription::callConstructor(TypeRegister*,void*ptr)const{
   PRINT_CALL_STACK();
   assert(this->elements.size()>0);

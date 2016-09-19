@@ -14,13 +14,13 @@ namespace ge{
             TypeId                                      id        = TypeRegister::UNREGISTERED,
             std::vector<std::shared_ptr<Resource>>const&accessors = {}                        );
         virtual ~CompositeResource();
-        virtual void*getData()const = 0;
-        virtual void const*getDataAddress()const = 0;
-        virtual std::shared_ptr<Resource> operator[](size_t elem);
-        virtual size_t getNofElements()const=0;
-        virtual std::string data2Str()const=0;
+        virtual void*getData()const override;
+        virtual void const*getDataAddress()const override;
+        virtual uint8_t getByte(size_t offset)const override;
+        virtual void setByte(size_t offset,uint8_t byte)override;
+        virtual std::shared_ptr<Resource> operator[](size_t elem)override;
+        virtual size_t getNofElements()const override;
+        virtual std::string data2Str()const override;
     };
-
-
   }
 }

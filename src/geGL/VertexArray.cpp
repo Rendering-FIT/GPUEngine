@@ -1,6 +1,7 @@
 #include<geGL/VertexArray.h>
 #include<geGL/Buffer.h>
 #include<geGL/OpenGLUtil.h>
+#include<geCore/ErrorPrinter.h>
 #include<sstream>
 #include<cassert>
 
@@ -55,6 +56,10 @@ void VertexArray::addAttrib(
     GLuint                       divisor          ,
     enum AttribPointerType       apt              ){
   assert(this!=nullptr);
+  if(buffer==nullptr){
+    ge::core::printError(GE_CORE_FCENAME,"buffer is nullptr!",buffer,index,nofComponents,type,stride,offset,normalized,divisor,apt);
+    return;
+  }
   //std::cout<<this<<"->addAttrib("<<buffer<<","<<index<<","<<nofComponents<<","<<type<<","<<stride<<","<<offset<<","<<normalized<<","<<divisor<<","<<apt<<")"<<std::endl;
   if(stride==0)
     stride=ge::gl::getTypeSize(type)*nofComponents;

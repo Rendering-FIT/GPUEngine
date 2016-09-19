@@ -9,6 +9,7 @@ namespace ge{
     class GEGL_EXPORT Renderbuffer: public OpenGLObject{
       friend class Framebuffer;
       public:
+        Renderbuffer();
         Renderbuffer(
             GLenum  internalFormat    ,
             GLsizei width             ,

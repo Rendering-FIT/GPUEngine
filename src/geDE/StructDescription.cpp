@@ -85,6 +85,18 @@ std::string StructDescription::toStr(TypeRegister const*tr,TypeId)const{
   return ss.str();
 }
 
+void StructDescription::copy(void*out,void*in,TypeRegister const*tr,TypeId id)const{
+  PRINT_CALL_STACK(out,in,tr,id);
+  assert(this!=nullptr);
+  assert(tr!=nullptr);
+  size_t elems = tr->getNofStructElements(id);
+  for(size_t i=0;i<elems;++i){
+    tr->copy(out,in,tr->getStructElementTypeId(id,i));
+    out = (uint8_t*)out + tr->computeTypeIdSize(tr->getStructElementTypeId(id,i));
+    in  = (uint8_t*)in  + tr->computeTypeIdSize(tr->getStructElementTypeId(id,i));
+  }
+}
+
 void StructDescription::callConstructor(TypeRegister*tr,void*ptr)const{
   PRINT_CALL_STACK(tr,ptr);
   assert(this!=nullptr);

@@ -8,6 +8,7 @@ namespace ge{
       public:
         TypeRegister::TypeType type;
         TypeRegister::ToStr data2StrPtr = nullptr;
+        TypeRegister::Copy copyData = nullptr;
         TypeDescription(TypeRegister::TypeType const&type);
         virtual ~TypeDescription(){}
         virtual bool init(
@@ -16,6 +17,7 @@ namespace ge{
             size_t                     &i          ,
             bool                        exists     ) = 0;
         virtual std::string toStr(TypeRegister const*,TypeId)const = 0;
+        virtual void copy(void*o,void*i,TypeRegister const*,TypeId)const = 0;
         virtual bool equal(TypeDescription const*other)const = 0;
         virtual void callConstructor(TypeRegister*tr,void*ptr)const = 0;
         virtual void callDestructor(TypeRegister*tr,void*ptr)const = 0;

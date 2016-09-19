@@ -12,6 +12,37 @@ namespace ge{
           INT64,
           UINT64
         };
+      public:
+        AsynchronousQuery();
+        void create(
+            GLenum     target,
+            GLenum     waitingType,
+            ResultSize resultSize);
+        AsynchronousQuery(
+            GLenum     target,
+            GLenum     waitingType,
+            ResultSize resultSize);
+        AsynchronousQuery(
+            AsynchronousQuery*existingQuery);
+        AsynchronousQuery(
+            FunctionTablePointer const&table,
+            GLenum     target,
+            GLenum     waitingType,
+            ResultSize resultSize);
+        AsynchronousQuery(
+            FunctionTablePointer const&table,
+            AsynchronousQuery*existingQuery);
+        ~AsynchronousQuery();
+        void begin();
+        void end();
+        void begin(GLuint index);
+        void end(GLuint index);
+        GLuint64 getui64();
+        GLint64  geti64();
+        GLuint   getui();
+        GLint    geti();
+        GLenum   getTarget();
+        GLenum   getWaitingType();
       protected:
         /**
          * @brief 
@@ -35,93 +66,6 @@ namespace ge{
         GLint64    _datai64; ///<obtained data
         GLuint64   _dataui64;///<obtained data
         ResultSize _resultSize;
-      public:
-        /**
-         * @brief Constructor
-         *
-         * @param target type of query
-         * @param waitingType type of waiting for results
-         * @param resultSize size and type of result
-         */
-        AsynchronousQuery(
-            GLenum     target,
-            GLenum     waitingType,
-            ResultSize resultSize);
-        /**
-         * @brief Constructor of query from existing query
-         *
-         * @param existingQuery This query has already been created
-         */
-        AsynchronousQuery(
-            AsynchronousQuery*existingQuery);
-        AsynchronousQuery(
-            FunctionTablePointer const&table,
-            GLenum     target,
-            GLenum     waitingType,
-            ResultSize resultSize);
-        AsynchronousQuery(
-            FunctionTablePointer const&table,
-            AsynchronousQuery*existingQuery);
-        /**
-         * @brief Destructor
-         */
-        ~AsynchronousQuery();
-        /**
-         * @brief Begins query
-         */
-        void begin();
-        /**
-         * @brief Ends query
-         */
-        void end();
-        /**
-         * @brief Begins indexed query
-         *
-         * @param index index of query
-         */
-        void begin(GLuint index);
-        /**
-         * @brief Ends indexed query
-         *
-         * @param index index of query
-         */
-        void end(GLuint index);
-        /**
-         * @brief Gets results
-         *
-         * @return query uint64 results
-         */
-        GLuint64 getui64();
-        /**
-         * @brief Gets result
-         *
-         * @return query int64 results
-         */
-        GLint64  geti64();
-        /**
-         * @brief Gets result
-         *
-         * @return query uint resutls
-         */
-        GLuint   getui();
-        /**
-         * @brief Gets result
-         *
-         * @return query int results
-         */
-        GLint    geti();
-        /**
-         * @brief gets target of query
-         *
-         * @return target
-         */
-        GLenum   getTarget();
-        /**
-         * @brief gets type of waiting
-         *
-         * @return wainting type
-         */
-        GLenum   getWaitingType();
 
     };
   }//gl

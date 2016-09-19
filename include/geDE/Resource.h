@@ -21,45 +21,49 @@ namespace ge{
       friend class Function;
       friend class AtomicFunction;
       public:
-        inline Resource(
-            std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
-            TypeId                             id      = TypeRegister::UNREGISTERED);
-        virtual ~Resource();
-        inline std::shared_ptr<TypeRegister>const&getManager()const;
-        virtual void*getData()const = 0;
-        virtual void const*getDataAddress()const = 0;
-        inline TypeId getId()const;
-        virtual std::shared_ptr<Resource> operator[](size_t elem) = 0;
-        virtual size_t getNofElements()const=0;
-        virtual std::string data2Str()const=0;
-        template<typename T>
-          Resource& operator=(const T&data);
-        template<typename T>
-          operator T&()const;
-        template<typename T>
-          operator T*()const;
-        template<typename T>
-          operator T**()const;
-        Ticks getTicks()const;
-        void updateTicks();
-        template<typename T>
-          void update(T const&value);
-        bool hasSignalingSource(Function*fce)const;
-        bool hasSignalingTarget(Function*fce)const;
-        size_t nofSignalingSources()const;
-        size_t nofSignalingTargets()const;
-        bool isPointer()const;
+      inline Resource(
+          std::shared_ptr<TypeRegister>const&manager = nullptr                   ,
+          TypeId                             id      = TypeRegister::UNREGISTERED);
+      virtual ~Resource();
+      inline std::shared_ptr<TypeRegister>const&getManager()const;
+      virtual void*getData()const = 0;
+      virtual void const*getDataAddress()const = 0;
+      inline TypeId getId()const;
+      virtual std::shared_ptr<Resource> operator[](size_t elem) = 0;
+      virtual size_t getNofElements()const=0;
+      virtual std::string data2Str()const=0;
+      template<typename T,typename std::enable_if<!std::is_same<T,Resource>::value,unsigned>::type = 0>
+        Resource& operator=(const T&data);
+      Resource& operator=(const Resource&data);
+      virtual size_t byteSize()const;
+      virtual uint8_t getByte(size_t offset)const = 0;
+      virtual void setByte(size_t offset,uint8_t byte) = 0;
+      template<typename T>
+        operator T&()const;
+      template<typename T>
+        operator T*()const;
+      template<typename T>
+        operator T**()const;
+      Ticks getTicks()const;
+      void updateTicks();
+      template<typename T>
+        void update(T const&value);
+      bool hasSignalingSource(Function*fce)const;
+      bool hasSignalingTarget(Function*fce)const;
+      size_t nofSignalingSources()const;
+      size_t nofSignalingTargets()const;
+      bool isPointer()const;
       protected:
-        std::set<Function*>_signalingSources;
-        std::set<Function*>_signalingTargets;
-        Ticks _ticks = 1;
-        std::shared_ptr<TypeRegister>_manager = nullptr;
-        TypeId _id = TypeRegister::UNREGISTERED;
-        void _setSignalingDirty();
-        void _addSignalingSource(Function*f);
-        void _removeSignalingSource(Function*f);
-        void _addSignalingTarget(Function*f);
-        void _removeSignalingTarget(Function*f);
+      std::set<Function*>_signalingSources;
+      std::set<Function*>_signalingTargets;
+      Ticks _ticks = 1;
+      std::shared_ptr<TypeRegister>_manager = nullptr;
+      TypeId _id = TypeRegister::UNREGISTERED;
+      void _setSignalingDirty();
+      void _addSignalingSource(Function*f);
+      void _removeSignalingSource(Function*f);
+      void _addSignalingTarget(Function*f);
+      void _removeSignalingTarget(Function*f);
     };
 
     inline Resource::Resource(
@@ -83,14 +87,32 @@ namespace ge{
       return this->_id;
     }
 
-    template<typename T>
+    inline size_t Resource::byteSize()const{
+      PRINT_CALL_STACK();
+      assert(this!=nullptr);
+      assert(this->_manager!=nullptr);
+      return this->_manager->computeTypeIdSize(this->_id);
+    }
+
+    template<typename T,typename std::enable_if<!std::is_same<T,Resource>::value,unsigned>::type>
       Resource& Resource::operator=(const T&data){
         PRINT_CALL_STACK(data);
         assert(this!=nullptr);
         assert(this->getData()!=nullptr);
         *((T*)this->getData()) = data;
+        this->updateTicks();
         return *this;
       }
+
+    inline Resource& Resource::operator=(Resource const&data){
+      PRINT_CALL_STACK(data);
+      assert(this!=nullptr);
+      assert(this->getData()!=nullptr);
+      assert(this->_id == data._id);
+      this->_manager->copy(this->getData(),data.getData(),this->_id);
+      this->updateTicks();
+      return *this;
+    }
 
     template<typename T>
       Resource::operator T&()const{
@@ -108,7 +130,7 @@ namespace ge{
         return *(T**)this->getData();
       }
 
-    
+
     template<typename T>
       Resource::operator T**()const{
         PRINT_CALL_STACK();

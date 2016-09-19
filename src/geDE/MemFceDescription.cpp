@@ -111,6 +111,10 @@ std::string MemFceDescription::toStr(TypeRegister const*tr,TypeId)const{
   return ss.str();
 }
 
+void MemFceDescription::copy(void*,void*,TypeRegister const*,TypeId)const{
+  assert(false&&"ERROR: member function cannot be copied!");
+}
+
 void MemFceDescription::callConstructor(TypeRegister*,void*)const{
   assert(false&&"ERROR: member function is not constructible!");
 }

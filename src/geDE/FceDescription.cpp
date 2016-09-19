@@ -93,6 +93,10 @@ std::string FceDescription::toStr(TypeRegister const*tr,TypeId)const{
   return ss.str();
 }
 
+void FceDescription::copy(void*,void*,TypeRegister const*,TypeId)const{
+  assert(false&&"ERROR: Fce cannot be copied!");
+}
+
 void FceDescription::callConstructor(TypeRegister*,void*)const{
   assert(false&&"ERROR: Fce is not constructible!");
 }
