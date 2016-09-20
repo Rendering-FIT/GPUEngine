@@ -330,84 +330,87 @@ std::string Program::_chopIndexingInPropertyName(std::string name)const{
 
 void Program::set1f(std::string const&name,float v0){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT);
   this->_gl.glProgramUniform1f(this->_id,this->_getUniform(name),v0);
 }
 
 void Program::set2f(std::string const&name,float v0,float v1){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_VEC2);
   this->_gl.glProgramUniform2f(this->_id,this->_getUniform(name),v0,v1);
 }
 
 void Program::set3f(std::string const&name,float v0,float v1,float v2){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_VEC3);
   this->_gl.glProgramUniform3f(this->_id,this->_getUniform(name),v0,v1,v2);
 }
 
 void Program::set4f(std::string const&name,float v0,float v1,float v2,float v3){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_VEC4);
   this->_gl.glProgramUniform4f(this->_id,this->_getUniform(name),v0,v1,v2,v3);
 }
 
 void Program::set1i(std::string const&name,int32_t v0){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT);
+  if(this->_info->uniforms.count(name)==0)return;
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT          || 
+      ge::gl::isSamplerType(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name])));
   this->_gl.glProgramUniform1i(this->_id,this->_getUniform(name),v0);
 }
 
 void Program::set2i(std::string const&name,int32_t v0,int32_t v1){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC2);
   this->_gl.glProgramUniform2i(this->_id,this->_getUniform(name),v0,v1);
 }
 
 void Program::set3i(std::string const&name,int32_t v0,int32_t v1,int32_t v2){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC3);
   this->_gl.glProgramUniform3i(this->_id,this->_getUniform(name),v0,v1,v2);
 }
 
 void Program::set4i(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC4);
   this->_gl.glProgramUniform4i(this->_id,this->_getUniform(name),v0,v1,v2,v3);
 }
 
 void Program::set1ui(std::string const&name,uint32_t v0){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT);
+  if(this->_info->uniforms.count(name)==0)return;
+  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT ||
+      ge::gl::isSamplerType(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name])));
   this->_gl.glProgramUniform1ui(this->_id,this->_getUniform(name),v0);
 }
 
 void Program::set2ui(std::string const&name,uint32_t v0,uint32_t v1){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT_VEC2);
   this->_gl.glProgramUniform2ui(this->_id,this->_getUniform(name),v0,v1);
 }
 
 void Program::set3ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT_VEC3);
   this->_gl.glProgramUniform3ui(this->_id,this->_getUniform(name),v0,v1,v2);
 }
 
 void Program::set4ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT_VEC4);
   this->_gl.glProgramUniform4ui(this->_id,this->_getUniform(name),v0,v1,v2,v3);
 }
@@ -415,7 +418,7 @@ void Program::set4ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,
 
 void Program::set1fv(std::string const&name,float const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform1fv(this->_id,this->_getUniform(name),count,v0);
@@ -423,7 +426,7 @@ void Program::set1fv(std::string const&name,float const*v0,GLsizei count){
 
 void Program::set2fv(std::string const&name,float const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_VEC2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform2fv(this->_id,this->_getUniform(name),count,v0);
@@ -431,7 +434,7 @@ void Program::set2fv(std::string const&name,float const*v0,GLsizei count){
 
 void Program::set3fv(std::string const&name,float const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_VEC3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform3fv(this->_id,this->_getUniform(name),count,v0);
@@ -439,7 +442,7 @@ void Program::set3fv(std::string const&name,float const*v0,GLsizei count){
 
 void Program::set4fv(std::string const&name,float const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_VEC4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform4fv(this->_id,this->_getUniform(name),count,v0);
@@ -447,7 +450,7 @@ void Program::set4fv(std::string const&name,float const*v0,GLsizei count){
 
 void Program::set1iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform1iv(this->_id,this->_getUniform(name),count,v0);
@@ -455,7 +458,7 @@ void Program::set1iv(std::string const&name,int32_t const*v0,GLsizei count){
 
 void Program::set2iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform2iv(this->_id,this->_getUniform(name),count,v0);
@@ -463,7 +466,7 @@ void Program::set2iv(std::string const&name,int32_t const*v0,GLsizei count){
 
 void Program::set3iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform3iv(this->_id,this->_getUniform(name),count,v0);
@@ -471,7 +474,7 @@ void Program::set3iv(std::string const&name,int32_t const*v0,GLsizei count){
 
 void Program::set4iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform4iv(this->_id,this->_getUniform(name),count,v0);
@@ -479,7 +482,7 @@ void Program::set4iv(std::string const&name,int32_t const*v0,GLsizei count){
 
 void Program::set1uiv(std::string const&name,uint32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform1uiv(this->_id,this->_getUniform(name),count,v0);
@@ -487,7 +490,7 @@ void Program::set1uiv(std::string const&name,uint32_t const*v0,GLsizei count){
 
 void Program::set2uiv(std::string const&name,uint32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT_VEC2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform2uiv(this->_id,this->_getUniform(name),count,v0);
@@ -495,7 +498,7 @@ void Program::set2uiv(std::string const&name,uint32_t const*v0,GLsizei count){
 
 void Program::set3uiv(std::string const&name,uint32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT_VEC3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform3uiv(this->_id,this->_getUniform(name),count,v0);
@@ -503,7 +506,7 @@ void Program::set3uiv(std::string const&name,uint32_t const*v0,GLsizei count){
 
 void Program::set4uiv(std::string const&name,uint32_t const*v0,GLsizei count){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_UNSIGNED_INT_VEC4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform4uiv(this->_id,this->_getUniform(name),count,v0);
@@ -511,7 +514,7 @@ void Program::set4uiv(std::string const&name,uint32_t const*v0,GLsizei count){
 
 void Program::setMatrix4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix4fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -519,7 +522,7 @@ void Program::setMatrix4fv(std::string const&name,float const*v0,GLsizei count,G
 
 void Program::setMatrix3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix3fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -527,7 +530,7 @@ void Program::setMatrix3fv(std::string const&name,float const*v0,GLsizei count,G
 
 void Program::setMatrix2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix2fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -535,7 +538,7 @@ void Program::setMatrix2fv(std::string const&name,float const*v0,GLsizei count,G
 
 void Program::setMatrix4x3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT4x3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix4x3fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -543,7 +546,7 @@ void Program::setMatrix4x3fv(std::string const&name,float const*v0,GLsizei count
 
 void Program::setMatrix4x2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT4x2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix4x2fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -551,7 +554,7 @@ void Program::setMatrix4x2fv(std::string const&name,float const*v0,GLsizei count
 
 void Program::setMatrix3x4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT3x4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix3x4fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -559,7 +562,7 @@ void Program::setMatrix3x4fv(std::string const&name,float const*v0,GLsizei count
 
 void Program::setMatrix3x2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT3x2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix3x2fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -567,7 +570,7 @@ void Program::setMatrix3x2fv(std::string const&name,float const*v0,GLsizei count
 
 void Program::setMatrix2x4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT2x4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix2x4fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -575,7 +578,7 @@ void Program::setMatrix2x4fv(std::string const&name,float const*v0,GLsizei count
 
 void Program::setMatrix2x3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_FLOAT_MAT2x3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix2x3fv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -583,7 +586,7 @@ void Program::setMatrix2x3fv(std::string const&name,float const*v0,GLsizei count
 
 void Program::setMatrix4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix4dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -591,7 +594,7 @@ void Program::setMatrix4dv(std::string const&name,double const*v0,GLsizei count,
 
 void Program::setMatrix3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix3dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -599,7 +602,7 @@ void Program::setMatrix3dv(std::string const&name,double const*v0,GLsizei count,
 
 void Program::setMatrix2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix2dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -607,7 +610,7 @@ void Program::setMatrix2dv(std::string const&name,double const*v0,GLsizei count,
 
 void Program::setMatrix4x3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT4x3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix4x3dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -615,7 +618,7 @@ void Program::setMatrix4x3dv(std::string const&name,double const*v0,GLsizei coun
 
 void Program::setMatrix4x2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT4x2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix4x2dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -623,7 +626,7 @@ void Program::setMatrix4x2dv(std::string const&name,double const*v0,GLsizei coun
 
 void Program::setMatrix3x4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT3x4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix3x4dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -631,7 +634,7 @@ void Program::setMatrix3x4dv(std::string const&name,double const*v0,GLsizei coun
 
 void Program::setMatrix3x2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT3x2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix3x2dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -639,7 +642,7 @@ void Program::setMatrix3x2dv(std::string const&name,double const*v0,GLsizei coun
 
 void Program::setMatrix2x4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT2x4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix2x4dv(this->_id,this->_getUniform(name),count,transpose,v0);
@@ -647,7 +650,7 @@ void Program::setMatrix2x4dv(std::string const&name,double const*v0,GLsizei coun
 
 void Program::setMatrix2x3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
   assert(this!=nullptr);
-  assert(this->_info->uniforms.count(name)!=0);
+  if(this->_info->uniforms.count(name)==0)return;
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_DOUBLE_MAT2x3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniformMatrix2x3dv(this->_id,this->_getUniform(name),count,transpose,v0);
