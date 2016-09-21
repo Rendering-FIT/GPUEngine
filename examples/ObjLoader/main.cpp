@@ -2,6 +2,7 @@
 #include <glm/gtx/transform.hpp>
 #include <geGL/geGL.h>
 #include <geGL/Program.h>
+#include <geRG/FlexibleUniform.h>
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
 #include <geUtil/ArgumentObject.h>
@@ -201,8 +202,6 @@ static void init(unsigned windowWidth,unsigned windowHeight)
                                          float(windowWidth)/float(windowHeight),zNear,zFar);
    glProgram->use();
    glProgram->setMatrix4fv("projection",glm::value_ptr(projection));
-   glProgram->set("color",0.8f,0.8f,0.8f,1.f);
-   glProgram->set("specularAndShininess",0.2f,0.2f,0.2f,1.f);
    glProgram->set("colorTexturingMode",int(0));
    glProgram->set("colorTexture",int(0));
    glProgram->set("lightPosition",0.f,0.f,0.f,1.f);
@@ -213,7 +212,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
    glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
    glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-   shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+   shared_ptr<StateSet> rootStateSet=RenderingContext::current()->getOrCreateStateSet(glState);
    delete glState;
 
    // transformation
@@ -227,7 +226,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
 
    // path
    string path;
-#if defined(__WIN32__) or defined(_WIN32)
+#if defined(__WIN32__) || defined(_WIN32)
    string::size_type i=fileName.find_last_of('\\');
 #else
    string::size_type i=fileName.find_last_of('/');
@@ -258,7 +257,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    vector<glm::vec2> texCoordBuffer;
    vector<glm::vec3> normalBuffer;
    map<string,Material> materials;
-   Material *currentMaterial=nullptr;
+   const Material *currentMaterial=defaultMaterial();
 
    // parsing loop
    while(true)
@@ -398,14 +397,30 @@ static void init(unsigned windowWidth,unsigned windowHeight)
                if(it!=materials.end()) {
 
                   // create mesh and drawable for parsed geometry
-                  if(currentMaterial) {
-                     shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
-                     if(m) {
-                        meshList.push_back(m);
+                  shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
+                  if(m) {
+                     meshList.push_back(m);
 
-                        // create drawable
-                        m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
-                     }
+                     auto materialCommandList=make_shared<ge::core::SharedCommandList>();
+                     const glm::vec3& diffuse=currentMaterial->diffuseColor;
+                     auto diffuseUniform=make_shared<FlexibleUniform4f>("color",
+                           diffuse.r,diffuse.g,diffuse.b,1.f-currentMaterial->transparency);
+                     materialCommandList->push_back(diffuseUniform);
+                     const glm::vec3& specular=currentMaterial->specularColor;
+                     auto specularUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+                           specular.r,specular.g,specular.b,currentMaterial->shininess);
+                     materialCommandList->push_back(specularUniform);
+
+                     // state set
+                     StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+                     glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
+                     glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
+                     glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
+                     shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+                     delete glState;
+
+                     // create drawable
+                     m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
                   }
 
                   // prepare buffers for new geometry
@@ -434,6 +449,24 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
    if(m) {
       meshList.push_back(m);
+
+      auto materialCommandList=make_shared<ge::core::SharedCommandList>();
+      const glm::vec3& diffuse=currentMaterial->diffuseColor;
+      auto diffuseUniform=make_shared<FlexibleUniform4f>("color",
+            diffuse.r,diffuse.g,diffuse.b,1.f-currentMaterial->transparency);
+      materialCommandList->push_back(diffuseUniform);
+      const glm::vec3& specular=currentMaterial->specularColor;
+      auto specularUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+            specular.r,specular.g,specular.b,currentMaterial->shininess);
+      materialCommandList->push_back(specularUniform);
+
+      // state set
+      StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+      glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
+      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
+      glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
+      shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+      delete glState;
 
       // create drawable
       m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
