@@ -25,6 +25,7 @@ struct Material {
 
 
 void parseMtl(const std::string& fileName,std::map<std::string,Material>& materials);
+const Material* defaultMaterial();
 
 
 #endif /* GE_EX_MATERIAL_H */

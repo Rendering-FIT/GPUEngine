@@ -6,6 +6,23 @@
 using namespace std;
 
 
+static Material defaultMat = {
+   "",
+   { 1.f,1.f,1.f },
+   { 1.f,1.f,1.f },
+   { 0.f,0.f,0.f },
+   0.f,
+   0.f,
+   "","","","","","","",""
+};
+
+
+const Material* defaultMaterial()
+{
+   return &defaultMat;
+}
+
+
 void parseMtl(const string& fileName,map<string,Material>& materials)
 {
    if(fileName.empty())
@@ -69,6 +86,14 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                case 'a': m->ambientColor=glm::vec3(r,g,b); continue;
                case 'd': m->diffuseColor=glm::vec3(r,g,b); continue;
                case 's': m->specularColor=glm::vec3(r,g,b); continue;
+            }
+            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            continue;
+
+         case 'N':
+            if(s[1]=='s') {
+               line>>m->shininess;
+               continue;
             }
             cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
             continue;
