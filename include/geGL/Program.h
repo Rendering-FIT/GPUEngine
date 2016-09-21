@@ -121,6 +121,8 @@ namespace ge{
         void set4v(std::string const&name,uint32_t const*v0,GLsizei count = 1);
 
         std::shared_ptr<ProgramInfo> const&getInfo()const{return this->_info;}
+        static void setNonexistingUniformWarning(bool enableWarning = true);
+        static bool isNonexistingUniformWarningEnabled();
       public:
         template<typename...ARGS>
           Program(ARGS...shaders);
