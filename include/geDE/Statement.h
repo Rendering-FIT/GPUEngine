@@ -24,14 +24,15 @@ namespace ge{
       public:
         using Ticks = size_t;
         enum Type{
-          FUNCTION,
-          BODY    ,
-          WHILE   ,
-          IF      ,
+          STATEMENT,
+          FUNCTION ,
+          BODY     ,
+          WHILE    ,
+          IF       ,
         };
-        Statement(Type const&type,bool ignoreDirty = false);
+        Statement(Type const&type = STATEMENT,bool ignoreDirty = false);
         virtual ~Statement();
-        virtual void operator()()=0;
+        virtual void operator()();
         void setDirty();
         virtual void setSignalingDirty();
         bool isDirty()const;
@@ -75,6 +76,8 @@ namespace ge{
       for(auto const&x:this->_signalingTargets)
         x->_removeSignalingSource(this);
     }
+
+    inline void Statement::operator()(){}
 
     inline bool Statement::isDirty()const{
       PRINT_CALL_STACK();
