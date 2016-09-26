@@ -39,6 +39,8 @@ namespace ge{
         void setIdleCallback(
             void(*callback)(void*) = nullptr,
             void*data = nullptr);
+        void setIdleCallback(
+            std::function<void()>const&callback);
         bool hasIdleCallback()const;
         void callIdleCallback();
         void setEventHandler(
@@ -46,6 +48,8 @@ namespace ge{
         void setEventHandler(
             bool(*handler)(SDL_Event const&,void*) = nullptr,
             void*data = nullptr);
+        void setEventHandler(
+            std::function<bool(SDL_Event const&)>const&handler);
         bool hasEventHandler()const;
         bool callEventHandler(SDL_Event const&event);
         ConstNameIterator nameBegin()const;

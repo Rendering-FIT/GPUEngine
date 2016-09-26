@@ -11,6 +11,8 @@
 #include<iostream>
 #include<memory>
 #include<cassert>
+#include<typeinfo>
+#include<typeindex>
 
 namespace ge{
   namespace de{
@@ -87,7 +89,6 @@ namespace ge{
             std::string const&name);
         TypeId addAnyType(
             std::string const&name);
-
         TypeId addCompositeType(
             std::string           const&name       ,
             TypeDescriptionVector const&description);
@@ -148,13 +149,14 @@ namespace ge{
           TypeId addType(std::string const&name = keyword<T>());
         template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type = 0>
           TypeId addType(std::string const&name = keyword<T>());
-        template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && std::is_same<T,void>::value,unsigned>::type = 0>
+        template<typename T,typename std::enable_if<std::is_same<T,void>::value,unsigned>::type = 0>
           TypeId addType(std::string const&name = keyword<T>());
         template<typename T,typename std::enable_if<std::is_same<T,Any>::value,unsigned>::type = 0>
           TypeId addType(std::string const&name = keyword<T>());
       protected:
         std::vector<TypeDescription*> _types;
         std::map<TypeId,std::set<std::string>>_typeId2Synonyms;
+        std::map<std::type_index,TypeId>_typeIndex2TypeId;
         std::map<std::string,TypeId>_name2TypeId;
         TypeId _vectorIndex2TypeId(TypeId const&index)const;
         TypeId _typeId2VectorIndex(TypeId const&id   )const;
@@ -215,21 +217,27 @@ namespace ge{
       TypeId TypeRegister::addType(std::string const&name,CDPtr c,CDPtr d){
         PRINT_CALL_STACK(c,d);
         assert(this!=nullptr);
-        return this->addAtomicType(name,sizeof(T),c,d);
+        auto id = this->addAtomicType(name,sizeof(T),c,d);
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_same<T,Any>::value,unsigned>::type>
       TypeId TypeRegister::addType(std::string const&name,CDPtr c,CDPtr d){
         PRINT_CALL_STACK(c,d);
         assert(this!=nullptr);
-        return this->addAtomicType(name,sizeof(T),c,d);
+        auto id = this->addAtomicType(name,sizeof(T),c,d);
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_class<T>::value && !std::is_same<T,Any>::value,unsigned>::type>
       TypeId TypeRegister::addType(CDPtr c,CDPtr d){
         PRINT_CALL_STACK(c,d);
         assert(this!=nullptr);
-        return this->addAtomicType(keyword<T>(),sizeof(T),c,d);
+        auto id = this->addAtomicType(keyword<T>(),sizeof(T),c,d);
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_pointer<T>::value,unsigned>::type>
@@ -237,22 +245,28 @@ namespace ge{
         PRINT_CALL_STACK();
         assert(this!=nullptr);
         using pure = typename std::remove_pointer<T>::type;
-        return this->addPtrType(name,this->getTypeId(keyword<pure>()));
+        auto id = this->addPtrType(name,this->getTypeId(keyword<pure>()));
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_array<T>::value && std::rank<T>::value==1,unsigned>::type>
       TypeId TypeRegister::addType(std::string const&name){
         PRINT_CALL_STACK();
         assert(this!=nullptr);
-        return this->addArrayType(name,this->getTypeId(keyword<typename std::remove_extent<T>::type>()),std::extent<T>::value);
+        auto id =  this->addArrayType(name,this->getTypeId(keyword<typename std::remove_extent<T>::type>()),std::extent<T>::value);
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_array<T>::value && std::rank<T>::value!=1,unsigned>::type>
       TypeId TypeRegister::addType(std::string const&name){
         PRINT_CALL_STACK();
         assert(this!=nullptr);
-        auto id = this->addType<typename std::remove_extent<T>::type>();
-        return this->addArrayType(name,id,std::extent<T>::value);
+        auto innerId = this->addType<typename std::remove_extent<T>::type>();
+        auto id = this->addArrayType(name,innerId,std::extent<T>::value);
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_function<T>::value,unsigned>::type>
@@ -261,7 +275,9 @@ namespace ge{
         assert(this!=nullptr);
         using OUTPUT = typename ge::core::FceReturnType<T>::type;
         using ARGS = typename ge::core::FceArgType<T>::type;
-        return this->addFceType(name,this->getTypeId(keyword<OUTPUT>()),this->_tupleToTypeIds2<ARGS>());
+        auto id = this->addFceType(name,this->getTypeId(keyword<OUTPUT>()),this->_tupleToTypeIds2<ARGS>());
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_member_function_pointer<T>::value,unsigned>::type>
@@ -271,14 +287,18 @@ namespace ge{
         using OUTPUT = typename ge::core::MemFceReturnType<T>::type;
         using CLASS = typename ge::core::MemFceClassType<T>::type;
         using ARGS = typename ge::core::MemFceArgType<T>::type;
-        return this->addMemFceType(name,this->getTypeId(keyword<OUTPUT>()),this->getTypeId(keyword<CLASS>()),this->_tupleToTypeIds2<ARGS>());
+        auto id = this->addMemFceType(name,this->getTypeId(keyword<OUTPUT>()),this->getTypeId(keyword<CLASS>()),this->_tupleToTypeIds2<ARGS>());
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
-    template<typename T,typename std::enable_if<ge::core::is_basic<T>::value && std::is_same<T,void>::value,unsigned>::type>
+    template<typename T,typename std::enable_if<std::is_same<T,void>::value,unsigned>::type>
       TypeId TypeRegister::addType(std::string const&name){
         PRINT_CALL_STACK(name);
         assert(this!=nullptr);
-        return this->addVoidType(name);
+        auto id = this->addVoidType(name);
+        if(id!=UNREGISTERED)this->_typeIndex2TypeId[typeid(T)]=id;
+        return id;
       }
 
     template<typename T,typename std::enable_if<std::is_same<T,Any>::value,unsigned>::type>

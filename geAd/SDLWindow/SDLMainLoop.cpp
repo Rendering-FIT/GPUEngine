@@ -133,6 +133,28 @@ void SDLMainLoop::setIdleCallback(
   this->m_idleCallback = std::make_shared<Idle>(callback,data);
 }
 
+void SDLMainLoop::setIdleCallback(
+    std::function<void()>const&callback){
+  assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_idleCallback = nullptr;
+    return;
+  }
+  class Idle: public SDLCallbackInterface{
+    public:
+      std::function<void()>fce;
+      Idle(std::function<void()>const&f){
+        assert(this!=nullptr);
+        this->fce = f;
+      }
+      virtual void operator()()override{
+        assert(this!=nullptr);
+        assert(this->fce!=nullptr);
+        this->fce();
+      }
+  };
+  this->m_idleCallback = std::make_shared<Idle>(callback);
+}
 
 bool SDLMainLoop::hasIdleCallback()const{
   assert(this!=nullptr);
@@ -176,6 +198,29 @@ void SDLMainLoop::setEventHandler(
       }
   };
   this->m_eventHandler = std::make_shared<Handler>(handler,data);
+}
+
+void SDLMainLoop::setEventHandler(
+    std::function<bool(SDL_Event const&)>const&handler){
+  assert(this!=nullptr);
+  if(handler==nullptr){
+    this->m_eventHandler = nullptr;
+    return;
+  }
+  class Handler: public SDLEventHandlerInterface{
+    public:
+      std::function<bool(SDL_Event const&)>fce;
+      Handler(std::function<bool(SDL_Event const&)>const&f){
+        assert(this!=nullptr);
+        this->fce = f;
+      }
+      virtual bool operator()(SDL_Event const&event)override{
+        assert(this!=nullptr);
+        assert(this->fce!=nullptr);
+        return this->fce(event);
+      }
+  };
+  this->m_eventHandler = std::make_shared<Handler>(handler);
 }
 
 

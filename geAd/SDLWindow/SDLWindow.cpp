@@ -66,8 +66,8 @@ SDLWindow::WindowId SDLWindow::getId()const{
 }
 
 void SDLWindow::setEventCallback(
-    EventType               const&eventType,
-    SDLEventCallbackPointer const&callback ){
+    SDLEventCallbackPointer const&callback ,
+    EventType               const&eventType){
   assert(this!=nullptr);
   if(callback==nullptr){
     this->m_eventCallbacks.erase(eventType);
@@ -103,9 +103,34 @@ void SDLWindow::setEventCallback(
   this->m_eventCallbacks[eventType] = std::make_shared<BasicEventCallback>(callback,data);
 }
 
+void SDLWindow::setEventCallback(
+    EventType const&eventType,
+    std::function<bool(SDL_Event const&)>const&callback){
+  assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_eventCallbacks.erase(eventType);
+    return;
+  }
+  class BasicEventCallback: public SDLEventCallbackInterface{
+    public:
+      std::function<bool(SDL_Event const&)>fce;
+      BasicEventCallback(std::function<bool(SDL_Event const&)>const&f){
+        assert(this!=nullptr);
+        this->fce = f;
+      }
+      virtual bool operator()(SDL_Event const&event)override{
+        assert(this!=nullptr);
+        assert(this->fce!=nullptr);
+        return this->fce(event);
+      }
+  };
+  this->m_eventCallbacks[eventType] = std::make_shared<BasicEventCallback>(callback);
+}
+
+
 void SDLWindow::setWindowEventCallback(
-    uint8_t                 const&eventType,
-    SDLEventCallbackPointer const&callback){
+    SDLEventCallbackPointer const&callback ,
+    uint8_t                 const&eventType){
   assert(this!=nullptr);
   if(callback==nullptr){
     this->m_windowEventCallbacks.erase(eventType);
@@ -141,6 +166,29 @@ void SDLWindow::setWindowEventCallback(
   this->m_windowEventCallbacks[eventType] = std::make_shared<BasicEventCallback>(callback,data);
 }
 
+void SDLWindow::setWindowEventCallback(
+    uint8_t                              const&eventType,
+    std::function<bool(SDL_Event const&)>const&callback ){
+  assert(this!=nullptr);
+  if(callback==nullptr){
+    this->m_windowEventCallbacks.erase(eventType);
+    return;
+  }
+  class BasicEventCallback: public SDLEventCallbackInterface{
+    public:
+      std::function<bool(SDL_Event const&)>fce;
+      BasicEventCallback(std::function<bool(SDL_Event const&)>const&f){
+        assert(this!=nullptr);
+        this->fce = f;
+      }
+      virtual bool operator()(SDL_Event const&event)override{
+        assert(this!=nullptr);
+        assert(this->fce!=nullptr);
+        return this->fce(event);
+      }
+  };
+  this->m_windowEventCallbacks[eventType] = std::make_shared<BasicEventCallback>(callback);
+}
 
 bool SDLWindow::hasEventCallback(
     EventType const&eventType)const{

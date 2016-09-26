@@ -9,7 +9,7 @@ class Application{
     std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
     std::shared_ptr<ge::ad::SDLWindow>  window   = nullptr;
     bool init();
-    static void idle(void*);
+    static void idle(Application*);
 };
 
 int main(int,char*[]){
@@ -19,15 +19,14 @@ int main(int,char*[]){
   return EXIT_SUCCESS;
 }
 
-void Application::idle(void*d){
-  auto app = (Application*)d;
+void Application::idle(Application*app){
   app->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   app->window->swap();
 }
 
 bool Application::init(){
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
-  this->mainLoop->setIdleCallback(Application::idle,this);
+  this->mainLoop->setIdleCallback(std::bind(Application::idle,this));
 
   this->window   = std::make_shared<ge::ad::SDLWindow>();
   if(!this->window->createContext("rendering",330,ge::ad::SDLWindow::CORE)){

@@ -51,19 +51,25 @@ namespace ge{
         WindowId getId()const;
 
         void setEventCallback(
-            EventType               const&eventType          ,
-            SDLEventCallbackPointer const&callback  = nullptr);
+            SDLEventCallbackPointer const&callback ,
+            EventType               const&eventType);
         void setEventCallback(
             EventType const&eventType,
             bool(*callback)(SDL_Event const&,void*),
             void*data);
+        void setEventCallback(
+            EventType const&eventType,
+            std::function<bool(SDL_Event const&)>const&callback = nullptr);
         void setWindowEventCallback(
-            uint8_t                 const&eventType,
-            SDLEventCallbackPointer const&callback = nullptr);
+            SDLEventCallbackPointer const&callback ,
+            uint8_t                 const&eventType);
         void setWindowEventCallback(
             uint8_t const&eventType,
             bool(*callback)(SDL_Event const&,void*) = nullptr,
             void*data = nullptr);
+        void setWindowEventCallback(
+            uint8_t                              const&eventType          ,
+            std::function<bool(SDL_Event const&)>const&callback  = nullptr);
         bool hasEventCallback(
             EventType const&eventType)const;
         bool callEventCallback(
