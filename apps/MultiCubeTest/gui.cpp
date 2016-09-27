@@ -1,4 +1,4 @@
-#include "Gui.h"
+#include "gui.h"
 
 using namespace ImGui;
 
@@ -13,11 +13,11 @@ void label(std::string const & text, int x, int y, int width, int height) {
 		id = 0;
 	}
 
-		Begin(std::to_string(id++).c_str(), 0, ImVec2(width, height), 0,
+		Begin(std::to_string(id++).c_str(), 0, ImVec2(float(width), float(height)), 0.0f,
 			ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
 			ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
-	SetWindowPos(ImVec2(x, y));
+	SetWindowPos(ImVec2(float(x), float(y)));
 	Text(text.c_str());
 	End();
 }
