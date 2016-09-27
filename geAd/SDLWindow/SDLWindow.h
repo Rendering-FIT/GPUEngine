@@ -3,6 +3,7 @@
 #include<iostream>
 #include<map>
 #include<memory>
+#include<functional>
 
 #include<geAd/Export.h>
 #include<SDL2/SDL.h>

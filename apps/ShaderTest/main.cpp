@@ -13,7 +13,7 @@ struct Application{
   std::shared_ptr<ge::gl::Program>    program1 = nullptr;
   std::shared_ptr<ge::gl::VertexArray>emptyVAO = nullptr;
   bool init();
-  static void idle(Application*);
+  void idle();
 };
 
 int main(int,char*[]){
@@ -23,18 +23,18 @@ int main(int,char*[]){
   return EXIT_SUCCESS;
 }
 
-void Application::idle(Application*app){
-  app->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+void Application::idle(){
+  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-  app->emptyVAO->bind();
-  app->program0->use();
-  app->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
-  app->program1->use();
-  app->program1->set4f("color",0,1,1,0);
-  app->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
-  app->emptyVAO->unbind();
+  this->emptyVAO->bind();
+  this->program0->use();
+  this->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
+  this->program1->use();
+  this->program1->set4f("color",0,1,1,0);
+  this->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
+  this->emptyVAO->unbind();
 
-  app->window->swap();
+  this->window->swap();
 }
 
 namespace ge{
@@ -53,7 +53,7 @@ namespace ge{
 
 bool Application::init(){
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
-  this->mainLoop->setIdleCallback(std::bind(Application::idle,this));
+  this->mainLoop->setIdleCallback(std::bind(&Application::idle,this));
 
   this->window   = std::make_shared<ge::ad::SDLWindow>();
   this->window->createContext("rendering",450u,ge::ad::SDLWindow::CORE,ge::ad::SDLWindow::DEBUG);
