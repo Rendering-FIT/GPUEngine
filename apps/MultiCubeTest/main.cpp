@@ -34,7 +34,7 @@ struct DrawArraysIndirectCommand {
 
 class App : Context {
 public:
-	App::App();
+	App();
 	int run();
 	void draw();
 	bool handleEvent(SDL_Event const&e);
@@ -126,7 +126,7 @@ void main() {
 
 	const string fragSrc = R".(
 #version 450
-#extension GL_NV_bindless_texture : require
+#extension GL_ARB_bindless_texture : require
 in vec3 position;
 in vec3 normal;
 in vec2 texCoord;
@@ -199,10 +199,10 @@ void App::createCubes(int count) {
 	vector<GLuint64> texHandleData;
 	texHandleData.reserve(count);
 
-	int side = ceil(cbrt(count));
-	vec3 offset = vec3(side);
+	int side = (int)ceil(cbrt(count));
+	vec3 offset = vec3(float(side));
 	for (int i = 0; i < count; i++) {
-		uint firstVertex = vertexData.size();
+		uint firstVertex = (uint) vertexData.size();
 		quad(vertexData, vec3(0, 1, 1), vec3(0, 0, 1), vec3(1, 0, 1), vec3(1, 1, 1));
 		quad(vertexData, vec3(1, 1, 0), vec3(1, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));
 		quad(vertexData, vec3(1, 1, 1), vec3(1, 0, 1), vec3(1, 0, 0), vec3(1, 1, 0));
@@ -214,8 +214,8 @@ void App::createCubes(int count) {
 
 		if(i<=0x3FF){
 			GLuint tex = generateTexture();
-			GLuint64 handle = glGetTextureHandleNV(tex);
-			glMakeTextureHandleResidentNV(handle);
+			GLuint64 handle = glGetTextureHandleARB(tex);
+			glMakeTextureHandleResidentARB(handle);
 			texHandleData.emplace_back(handle);
 		}
 
@@ -269,6 +269,7 @@ GLuint App::generateTexture() {
 }
 
 void App::draw() {
+	
 	uint ticks = SDL_GetTicks();
 	ImGui_ImplSdlGL3_NewFrame(windowHandle);
 
@@ -276,7 +277,7 @@ void App::draw() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-
+	glEnable(GL_CULL_FACE);
 	view = lookAt(100.0f*vec3(cos(ticks*0.0002), 1, sin(ticks*0.0002)), vec3(0, 0, 0), vec3(0, 1, 0));
 
 	program->use();

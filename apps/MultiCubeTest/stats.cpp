@@ -6,7 +6,7 @@
 Stats::Stats(int history){
 	this->history = history;
 	data = new float[history];
-	std::fill(data,data+history,0);
+	std::fill(data,data+history,0.0f);
 
 	glCreateQueries(GL_TIMESTAMP, 2, queries);
 }
@@ -25,7 +25,7 @@ void Stats::endFrame(){
 	GLuint64 time1, time2;
 	glGetQueryObjectui64v(queries[0], GL_QUERY_RESULT, &time1);
 	glGetQueryObjectui64v(queries[1], GL_QUERY_RESULT, &time2);
-	float dt = (time2 - time1)*1e-6;
+	float dt = float(time2 - time1)*1e-6f;
 
 	for (int i = history - 1; i >0; i--) {
 		data[i] = data[i-1];
@@ -70,7 +70,7 @@ void Stats::draw(){
 	textColor(1, 1, 0, 1);
 	label(msg);
 	
-	float top = ceil(vmax / 20.0) * 20; 
+	float top = ceil(vmax / 20.0f) * 20.0f; 
 	ImGui::Begin("plot", 0, ImVec2(200, 60), 0,
 		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings);
