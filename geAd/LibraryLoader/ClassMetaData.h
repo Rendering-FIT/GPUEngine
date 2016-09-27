@@ -5,7 +5,7 @@
 #include<geDE/TypeRegister.h>
 
 namespace ge{
-  namespace util{
+  namespace ad{
 
     struct ArgMetaData{
       de::TypeDescriptionVector description;

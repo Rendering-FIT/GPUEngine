@@ -7,7 +7,7 @@
 #include <geRG/Transformation.h>
 #include <geUtil/ArgumentObject.h>
 #include <geAd/SDLWindow/SDLWindow.h>
-#include <geAd/SDLWindow/SDLOrbitManipulator.h>
+#include <geAd/SDLOrbitManipulator/SDLOrbitManipulator.h>
 #include <typeinfo> // MSVC 2013 requires this rather at the end of headers to compile successfully
 #include <typeindex>
 #include <fstream>

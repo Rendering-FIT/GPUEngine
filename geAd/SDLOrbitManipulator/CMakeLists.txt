@@ -1,4 +1,4 @@
-set(LIB_NAME SDLWindow)
+set(LIB_NAME SDLOrbitManipulator)
 
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
@@ -22,15 +22,10 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
 set(ADD_INCLUDES
   ${HEADER_PATH}/../Export.h
-  ${HEADER_PATH}/SDLWindow.h
-  ${HEADER_PATH}/SDLMainLoop.h
-  ${HEADER_PATH}/SDLEventHandlerInterface.h
-  ${HEADER_PATH}/SDLEventCallbackInterface.h
-  ${HEADER_PATH}/SDLCallbackInterface.h
+  ${HEADER_PATH}/SDLOrbitManipulator.h
   )
 set(ADD_SOURCES
-  SDLWindow.cpp
-  SDLMainLoop.cpp
+  SDLOrbitManipulator.cpp
   )
 
 
@@ -47,7 +42,7 @@ add_library(${LIB_NAME}
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps)
+set(Internal_deps SDL2 SDLWindow geUtil)
 set(External_deps_Export SDL2)
 set(External_libs SDL2)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})

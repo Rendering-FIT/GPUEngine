@@ -18,7 +18,7 @@ set(APP_INCLUDES
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
-set(Internal_deps geRG geGL geUtil SDLWindow geDE)
+set(Internal_deps geRG geGL geUtil SDLWindow)
 set(External_libs glm SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include

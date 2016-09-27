@@ -1,18 +1,18 @@
 #pragma once
 
-#include<geUtil/Export.h>
-#include<geUtil/LibraryLoader/LibraryLoader.h>
+#include<geAd/Export.h>
+#include<geAd/LibraryLoader/LibraryLoader.h>
 #include<geDE/TypeRegister.h>
-#include<geUtil/LibraryLoader/RuntimeClassInterface.h>
+#include<geAd/LibraryLoader/RuntimeClassInterface.h>
 
 namespace ge{
-  namespace util{
+  namespace ad{
     /**
      * @brief This class loads object that is created by factory function getObject inside
      * dynamic library
      * It can be used for easy runtime creation of new object from dynamic library
      */
-    class GEUTIL_EXPORT ObjectLoader: public LibraryLoader{
+    class GEAD_EXPORT ObjectLoader: public LibraryLoader{
       public:
         /**
          * @brief This function returns object that is created by factory function getObject inside lib

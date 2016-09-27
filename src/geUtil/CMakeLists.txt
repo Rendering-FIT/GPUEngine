@@ -29,21 +29,6 @@ set(ARGUMENTMANAGER_INCLUDES
    ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
 )
 
-set(LIBRARYLOADER_SOURCES
-   LibraryLoader/LibraryLoader.cpp
-   LibraryLoader/LibraryObjectLoader.cpp
-   LibraryLoader/RuntimeClassMetaData.cpp
-   LibraryLoader/RuntimeClassInterface.cpp
-)
-
-set(LIBRARYLOADER_INCLUDES
-   ${HEADER_PATH}/LibraryLoader/LibraryLoader.h
-   ${HEADER_PATH}/LibraryLoader/LibraryObjectLoader.h
-   ${HEADER_PATH}/LibraryLoader/ClassMetaData.h
-   ${HEADER_PATH}/LibraryLoader/RuntimeClassMetaData.h
-   ${HEADER_PATH}/LibraryLoader/RuntimeClassInterface.h
-)
-
 set(UTIL_INCLUDES
    ${HEADER_PATH}/Export.h
    ${HEADER_PATH}/algorithms.h
@@ -60,7 +45,6 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
-   ${HEADER_PATH}/CopyArgumentManager2VariableRegister.h
 )
 
 
@@ -71,14 +55,12 @@ set(GL_SOURCES
    FPSPrinter.cpp
    OrbitManipulator.cpp
    Progress.cpp
-   CopyArgumentManager2VariableRegister.cpp
 )
 
 add_library(${LIB_NAME}
    ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
    ${UTIL_INCLUDES}
    ${ARGUMENTMANAGER_INCLUDES}
-   ${LIBRARYLOADER_INCLUDES}
    ${GL_SOURCES}
    ${ARGUMENTMANAGER_SOURCES}
    ${LIBRARYLOADER_SOURCES}
@@ -96,7 +78,7 @@ find_package(glm REQUIRED)
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps geGL geDE)
+set(Internal_deps)
 set(External_deps_Export glm)
 set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
@@ -116,11 +98,6 @@ set_target_properties(${LIB_NAME} PROPERTIES
 install(FILES
    ${ARGUMENTMANAGER_INCLUDES}
    DESTINATION include/${LIB_NAME}/ArgumentManager
-)
-
-install(FILES
-   ${LIBRARYLOADER_INCLUDES}
-   DESTINATION include/${LIB_NAME}/LibraryLoader
 )
 
 install(FILES

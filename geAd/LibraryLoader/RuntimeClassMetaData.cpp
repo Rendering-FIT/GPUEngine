@@ -1,6 +1,6 @@
-#include<geUtil/LibraryLoader/RuntimeClassMetaData.h>
+#include<geAd/LibraryLoader/RuntimeClassMetaData.h>
 
-using namespace ge::util;
+using namespace ge::ad;
 using namespace ge::de;
 
 RuntimeArgMetaData::RuntimeArgMetaData(

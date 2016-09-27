@@ -4,7 +4,7 @@ project(${APP_NAME})
 
 find_package(SDL2)
 
-if(NOT SDL2_FOUND)
+if(NOT SDL2_FOUND OR NOT TARGET geGL)
    return()
 endif()
 
@@ -22,7 +22,7 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps geGL geUtil SDLWindow)
+set(Internal_deps geGL SDLWindow)
 set(External_libs SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include

@@ -132,7 +132,7 @@ in vec3 normal;
 in vec2 texCoord;
 in flat int drawID;
 
-layout(binding=1) buffer textureBuffer {
+layout(std430,binding=1) buffer textureBuffer {
     sampler2D tex[];
 };
 

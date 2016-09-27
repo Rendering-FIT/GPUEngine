@@ -3,12 +3,12 @@
 #include<iostream>
 #include<vector>
 #include<geDE/TypeRegister.h>
-#include<geUtil/LibraryLoader/ClassMetaData.h>
-#include<geUtil/LibraryLoader/RuntimeClassMetaData.h>
+#include<geAd/LibraryLoader/ClassMetaData.h>
+#include<geAd/LibraryLoader/RuntimeClassMetaData.h>
 
 namespace ge{
-  namespace util{
-    class GEUTIL_EXPORT RuntimeClassInterface{
+  namespace ad{
+    class GEAD_EXPORT RuntimeClassInterface{
       protected:
         RuntimeClassMetaData*_classMetaData = nullptr;
         std::shared_ptr<de::TypeRegister>_typeRegister = nullptr;
@@ -37,10 +37,10 @@ namespace ge{
         std::string dir()const;
         virtual ~RuntimeClassInterface();
         std::string getClassName()const;
-        std::vector<ge::util::RuntimeFceMetaData>::size_type getNofFunctions()const;
+        std::vector<ge::ad::RuntimeFceMetaData>::size_type getNofFunctions()const;
         std::string getFunctionName(unsigned id)const;
         de::TypeId getFunctionReturnTypeId(unsigned id)const;
-        std::vector<ge::util::RuntimeArgMetaData>::size_type getNofFunctionArguments(unsigned id)const;
+        std::vector<ge::ad::RuntimeArgMetaData>::size_type getNofFunctionArguments(unsigned id)const;
         de::TypeId getFunctionArgumentTypeId(unsigned id,unsigned arg)const;
         std::string getFunctionArgumentName(unsigned fce,unsigned arg)const;
         virtual void call(void*instance,std::string fce,std::vector<de::Resource>&args);
@@ -50,8 +50,8 @@ namespace ge{
             this->_argsToResourceVector(this->_typeRegister,a,args...);
             this->call(instance,fce,a);
           }
-        std::vector<ge::util::RuntimeConstructorMetaData>::size_type getNofConstructors()const;
-        std::vector<ge::util::RuntimeArgMetaData>::size_type getNofConstructorArguments(unsigned id)const;
+        std::vector<ge::ad::RuntimeConstructorMetaData>::size_type getNofConstructors()const;
+        std::vector<ge::ad::RuntimeArgMetaData>::size_type getNofConstructorArguments(unsigned id)const;
         de::TypeId getConstructorArgumentTypeId(unsigned id,unsigned arg)const;
         std::string getConstructorArgumentName(unsigned id,unsigned arg)const;
         virtual void*construct(std::vector<de::Resource>&args)const;

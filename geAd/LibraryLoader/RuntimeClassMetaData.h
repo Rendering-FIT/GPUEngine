@@ -1,13 +1,13 @@
 #pragma once
 
-#include<geUtil/LibraryLoader/ClassMetaData.h>
-#include<geUtil/Export.h>
+#include<geAd/LibraryLoader/ClassMetaData.h>
+#include<geAd/Export.h>
 #include<geDE/TypeRegister.h>
 
 namespace ge{
-  namespace util{
+  namespace ad{
 
-    class GEUTIL_EXPORT RuntimeArgMetaData{
+    class GEAD_EXPORT RuntimeArgMetaData{
       protected:
         de::TypeId _type;
         std::string _name;
@@ -19,7 +19,7 @@ namespace ge{
         std::string getName()const;
     };
 
-    class GEUTIL_EXPORT RuntimeFceMetaData{
+    class GEAD_EXPORT RuntimeFceMetaData{
       protected:
         de::TypeId _returnType;
         std::string _name;
@@ -34,7 +34,7 @@ namespace ge{
         RuntimeArgMetaData const&getArg(unsigned i)const;
     };
 
-    class GEUTIL_EXPORT RuntimeConstructorMetaData{
+    class GEAD_EXPORT RuntimeConstructorMetaData{
       protected:
         std::vector<RuntimeArgMetaData>_args;
       public:
@@ -45,7 +45,7 @@ namespace ge{
         RuntimeArgMetaData const&getArg(unsigned i)const;
     };
 
-    class GEUTIL_EXPORT RuntimeClassMetaData{
+    class GEAD_EXPORT RuntimeClassMetaData{
       protected:
         std::string _name;
         std::vector<RuntimeFceMetaData>_fces;

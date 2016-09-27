@@ -24,6 +24,8 @@ SET(GPUENGINE_BUILD_GEUTIL   ON  CACHE BOOL "Build geUtil package.")
 SET(GPUENGINE_BUILD_GEPARSER ON  CACHE BOOL "Build geParser package.")
 SET(GPUENGINE_BUILD_GEDE     ON  CACHE BOOL "Build geDE package.")
 
+SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp application.")
+
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
@@ -133,8 +135,8 @@ if(GPUENGINE_BUILD_geAd)
 endif()
 
 if(GPUENGINE_BUILD_APPS)
-  if(NOT GPUENGINE_BUILD_geAd)
-    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd set to ON.")
+  if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
+    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
   endif()
   add_subdirectory(apps)
 endif()

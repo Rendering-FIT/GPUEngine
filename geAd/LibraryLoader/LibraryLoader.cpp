@@ -1,9 +1,9 @@
-#include<geUtil/LibraryLoader/LibraryLoader.h>
+#include<geAd/LibraryLoader/LibraryLoader.h>
 
 #include<vector>
 #include<map>
 
-using namespace ge::util;
+using namespace ge::ad;
 
 #ifdef __linux__
 #include<dlfcn.h>
@@ -48,7 +48,7 @@ class LinuxLibraryLoader: public LibraryLoader{
 };
 
 
-LibraryLoader*ge::util::getLoader(){
+LibraryLoader*ge::ad::getLoader(){
   return new LinuxLibraryLoader();
 }
 

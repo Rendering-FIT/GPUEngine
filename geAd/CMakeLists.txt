@@ -13,3 +13,6 @@ install(FILES
 
 add_subdirectory(OsgImport)
 add_subdirectory(SDLWindow)
+add_subdirectory(SDLOrbitManipulator)
+add_subdirectory(DEUtil)
+add_subdirectory(LibraryLoader)

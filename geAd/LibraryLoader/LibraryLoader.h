@@ -1,16 +1,16 @@
 #pragma once
 
-#include<geUtil/Export.h>
+#include<geAd/Export.h>
 #include<iostream>
 
 namespace ge{
-  namespace util{
+  namespace ad{
 
     /**
      * @brief This class represents loader of dynamic libraries
      * It can be used for loading libraries at runtime
      */
-    class GEUTIL_EXPORT LibraryLoader{
+    class GEAD_EXPORT LibraryLoader{
       public:
         /**
          * @brief Constructor
@@ -45,6 +45,6 @@ namespace ge{
      *
      * @return LibraryLoader
      */
-    GEUTIL_EXPORT LibraryLoader*getLoader();
+    GEAD_EXPORT LibraryLoader*getLoader();
   }
 }

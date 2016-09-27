@@ -1,5 +1,5 @@
 #include <geAd/SDLWindow/SDLWindow.h>
-#include <geAd/SDLWindow/SDLOrbitManipulator.h>
+#include <geAd/SDLOrbitManipulator/SDLOrbitManipulator.h>
 
 using namespace ge::ad;
 

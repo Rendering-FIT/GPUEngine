@@ -1,8 +1,6 @@
-SET(APPS_BUILD_GEVIEWERASSIMP    OFF CACHE BOOL "Build geViewerAssimp app.")
-
 add_subdirectory(geViewerOSG)
 add_subdirectory(MultiCubeTest)
 
-if(APPS_BUILD_GEVIEWERASSIMP)
+if(GPUENGINE_BUILD_APP_geViewerAssimp)
   add_subdirectory(geViewerAssimp)
 endif()
