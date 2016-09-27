@@ -4,7 +4,7 @@ project(${APP_NAME})
 
 find_package(SDL2)
 
-if(NOT SDL2_FOUND)
+if(NOT SDL2_FOUND OR NOT TARGET geGL)
    return()
 endif()
 
