@@ -33,10 +33,8 @@ public:
    inline void connect(const std::shared_ptr<ge::ad::SDLWindow>& window,unsigned mouseRotationButtonMask)  { connect(window.get(),mouseRotationButtonMask); }
 
 protected:
-
-   static bool mouseButtonCallback(const SDL_Event& event,void* data);
-   static bool mouseMotionCallback(const SDL_Event& event,void* data);
-
+   bool mouseButtonCallback(const SDL_Event& event);
+   bool mouseMotionCallback(const SDL_Event& event);
 };
 
 
