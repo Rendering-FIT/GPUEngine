@@ -25,7 +25,6 @@ set(ADD_INCLUDES
   ${HEADER_PATH}/SDLWindow.h
   ${HEADER_PATH}/SDLMainLoop.h
   ${HEADER_PATH}/SDLEventCallbackInterface.h
-  ${HEADER_PATH}/SDLCallbackInterface.h
   )
 set(ADD_SOURCES
   SDLWindow.cpp

@@ -15,7 +15,7 @@ using namespace ge::rg;
 
 
 static void init(unsigned windowWidth,unsigned windowHeight);
-static void idleCallback(void*);
+static void idleCallback();
 
 static ge::ad::SDLMainLoop mainLoop;
 static shared_ptr<ge::ad::SDLWindow> window;
@@ -55,7 +55,7 @@ int main(int argc,char* argv[])
 }
 
 
-static void idleCallback(void*)
+static void idleCallback()
 {
    RenderingContext::current()->frame();
    window->swap();

@@ -73,7 +73,7 @@ bool bindHandleEvent(SDL_Event const&e, void* app) {
 
 App::App() {
 	mainLoop = make_shared<SDLMainLoop>();
-	mainLoop->setIdleCallback(bindDraw, this);
+	mainLoop->setIdleCallback(std::bind(bindDraw, this));
 	mainLoop->setIdleCallback(std::bind(&App::draw,this));
 	mainLoop->setEventHandler(std::bind(&App::handleEvent, this, std::placeholders::_1));
 

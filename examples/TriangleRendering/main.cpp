@@ -20,7 +20,7 @@ using namespace ge::rg;
 
 
 static void init(unsigned windowWidth,unsigned windowHeight);
-static void idleCallback(void*);
+static void idleCallback();
 
 
 static ge::ad::SDLMainLoop mainLoop;
@@ -53,7 +53,7 @@ int main(int,char*[])
 }
 
 
-static void idleCallback(void*)
+static void idleCallback()
 {
    RenderingContext::current()->frame();
 

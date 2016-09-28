@@ -11,7 +11,6 @@
 
 #include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geAd/SDLWindow/SDLEventCallbackInterface.h>
-#include<geAd/SDLWindow/SDLCallbackInterface.h>
 
 namespace ge{
   namespace ad{

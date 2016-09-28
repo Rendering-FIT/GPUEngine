@@ -1,6 +1,5 @@
 #include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geAd/SDLWindow/SDLWindow.h>
-#include<geAd/SDLWindow/SDLCallbackInterface.h>
 #include<cassert>
 
 using namespace ge::ad;
@@ -101,58 +100,9 @@ void SDLMainLoop::operator()(){
 }
 
 void SDLMainLoop::setIdleCallback(
-    SDLCallbackPointer const&callback){
-  assert(this!=nullptr);
-  this->m_idleCallback = callback;
-}
-
-void SDLMainLoop::setIdleCallback(
-    void(*callback)(void*),
-    void*data){
-  assert(this!=nullptr);
-  if(callback==nullptr){
-    this->m_idleCallback = nullptr;
-    return;
-  }
-  class Idle: public SDLCallbackInterface{
-    public:
-      void(*fce)(void*);
-      void*data;
-      Idle(void(*f)(void*),void*d){
-        assert(this!=nullptr);
-        this->fce = f;
-        this->data = d;
-      }
-      virtual void operator()()override{
-        assert(this!=nullptr);
-        assert(this->fce!=nullptr);
-        this->fce(data);
-      }
-  };
-  this->m_idleCallback = std::make_shared<Idle>(callback,data);
-}
-
-void SDLMainLoop::setIdleCallback(
     std::function<void()>const&callback){
   assert(this!=nullptr);
-  if(callback==nullptr){
-    this->m_idleCallback = nullptr;
-    return;
-  }
-  class Idle: public SDLCallbackInterface{
-    public:
-      std::function<void()>fce;
-      Idle(std::function<void()>const&f){
-        assert(this!=nullptr);
-        this->fce = f;
-      }
-      virtual void operator()()override{
-        assert(this!=nullptr);
-        assert(this->fce!=nullptr);
-        this->fce();
-      }
-  };
-  this->m_idleCallback = std::make_shared<Idle>(callback);
+  this->m_idleCallback = callback;
 }
 
 bool SDLMainLoop::hasIdleCallback()const{
@@ -163,9 +113,8 @@ bool SDLMainLoop::hasIdleCallback()const{
 void SDLMainLoop::callIdleCallback(){
   assert(this!=nullptr);
   assert(this->m_idleCallback != nullptr);
-  (*this->m_idleCallback)();
+  this->m_idleCallback();
 }
-
 
 void SDLMainLoop::setEventHandler(
     std::function<bool(SDL_Event const&)>const&handler){
