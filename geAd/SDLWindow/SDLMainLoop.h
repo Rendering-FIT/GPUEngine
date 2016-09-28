@@ -13,7 +13,6 @@ namespace ge{
   namespace ad{
     class SDLWindow;
     class SDLCallbackInterface;
-    class SDLEventHandlerInterface;
     class GEAD_EXPORT SDLMainLoop{
       public:
         using SharedWindow        = std::shared_ptr<SDLWindow>;
@@ -23,7 +22,6 @@ namespace ge{
         using Id2Name             = std::map<WindowId,std::string>;
         using ConstIdIterator     = Id2Name::const_iterator;
         using SDLCallbackPointer  = std::shared_ptr<SDLCallbackInterface>;
-        using EventHandlerPointer = std::shared_ptr<SDLEventHandlerInterface>;
 
         SDLMainLoop(bool pooling = true);
         ~SDLMainLoop();
@@ -45,11 +43,6 @@ namespace ge{
         bool hasIdleCallback()const;
         void callIdleCallback();
         void setEventHandler(
-            EventHandlerPointer const&handler = nullptr);
-        void setEventHandler(
-            bool(*handler)(SDL_Event const&,void*) = nullptr,
-            void*data = nullptr);
-        void setEventHandler(
             std::function<bool(SDL_Event const&)>const&handler);
         bool hasEventHandler()const;
         bool callEventHandler(SDL_Event const&event);
@@ -59,8 +52,8 @@ namespace ge{
         ConstIdIterator idEnd  ()const;
         size_t getNofWindows()const;
       protected:
+        std::function<bool(SDL_Event const&)>m_eventHandler = nullptr;
         SDLCallbackPointer   m_idleCallback = nullptr;
-        EventHandlerPointer  m_eventHandler = nullptr;
         bool                 m_pooling      = true   ;
         bool                 m_running      = false  ;
         Name2Window          m_name2Window           ;

@@ -1,7 +1,6 @@
 #include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geAd/SDLWindow/SDLCallbackInterface.h>
-#include<geAd/SDLWindow/SDLEventHandlerInterface.h>
 #include<cassert>
 
 using namespace ge::ad;
@@ -169,58 +168,9 @@ void SDLMainLoop::callIdleCallback(){
 
 
 void SDLMainLoop::setEventHandler(
-    EventHandlerPointer const&handler){
-  assert(this!=nullptr);
-  this->m_eventHandler = handler;
-}
-
-void SDLMainLoop::setEventHandler(
-    bool(*handler)(SDL_Event const&,void*),
-    void*data){
-  assert(this!=nullptr);
-  if(handler==nullptr){
-    this->m_eventHandler = nullptr;
-    return;
-  }
-  class Handler: public SDLEventHandlerInterface{
-    public:
-      bool(*fce)(SDL_Event const&,void*);
-      void*data;
-      Handler(bool(*f)(SDL_Event const&,void*),void*d){
-        assert(this!=nullptr);
-        this->fce = f;
-        this->data = d;
-      }
-      virtual bool operator()(SDL_Event const&event)override{
-        assert(this!=nullptr);
-        assert(this->fce!=nullptr);
-        return this->fce(event,this->data);
-      }
-  };
-  this->m_eventHandler = std::make_shared<Handler>(handler,data);
-}
-
-void SDLMainLoop::setEventHandler(
     std::function<bool(SDL_Event const&)>const&handler){
   assert(this!=nullptr);
-  if(handler==nullptr){
-    this->m_eventHandler = nullptr;
-    return;
-  }
-  class Handler: public SDLEventHandlerInterface{
-    public:
-      std::function<bool(SDL_Event const&)>fce;
-      Handler(std::function<bool(SDL_Event const&)>const&f){
-        assert(this!=nullptr);
-        this->fce = f;
-      }
-      virtual bool operator()(SDL_Event const&event)override{
-        assert(this!=nullptr);
-        assert(this->fce!=nullptr);
-        return this->fce(event);
-      }
-  };
-  this->m_eventHandler = std::make_shared<Handler>(handler);
+  this->m_eventHandler = handler;
 }
 
 
@@ -232,7 +182,7 @@ bool SDLMainLoop::hasEventHandler()const{
 bool SDLMainLoop::callEventHandler(SDL_Event const&event){
   assert(this!=nullptr);
   assert(this->m_eventHandler != nullptr);
-  return (*this->m_eventHandler)(event);
+  return this->m_eventHandler(event);
 }
 
 
