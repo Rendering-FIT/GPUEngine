@@ -31,11 +31,12 @@ class CSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Buffer>     _dibo             = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_sidesVao         = nullptr;
     size_t                              _nofEdges         = 0;
+    size_t                              _nofTriangles     = 0;
     int                                 _computeSidesWGS  = 64;
 
     std::shared_ptr<ge::gl::Program>    _drawCaps         = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
-    std::shared_ptr<ge::gl::Program>    _createShadowMask = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _caps             = nullptr;
 
     std::shared_ptr<ge::gl::Program>    _blit             = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_emptyVao         = nullptr;

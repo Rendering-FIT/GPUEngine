@@ -80,6 +80,8 @@ CSSV::CSSV(
 #define WORKGROUP_SIZE_X 64
 #endif//WORKGROUP_SIZE_X
 
+//#define CULL_SIDE
+
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
 layout(std430,binding=0)buffer SInput  {vec4 IBuffer[];};
@@ -314,6 +316,171 @@ void main(){
   this->_blit = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,blitVPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,blitFPSrc));
+
+
+  this->_nofTriangles=adj->getNofTriangles();
+  this->_caps = std::make_shared<ge::gl::Buffer>(sizeof(float)*4*3*this->_nofTriangles);
+  Ptr=(float*)this->_caps->map();
+  for(unsigned t=0;t<this->_nofTriangles;++t){
+    for(unsigned p=0;p<3;++p){
+      for(unsigned i=0;i<3;++i)
+        Ptr[(t*3+p)*4+i]=adj->getVertices()[(t*3+p)*3+i];
+      Ptr[(t*3+p)*4+3]=1;
+    }
+  }
+  this->_caps->unmap();
+  this->_capsVao = std::make_shared<ge::gl::VertexArray>();
+  this->_capsVao->addAttrib(this->_caps,0,4,GL_FLOAT);
+
+  const std::string capsVPSrc = R".(
+#version 450 core
+layout(location=0)in vec4 Position;
+void main(){
+  gl_Position=Position;
+}).";
+  const std::string capsGPSrc = R".(
+#version 450 core
+
+#define SHIFT_TRIANGLE_TO_INFINITY
+
+#ifdef SHIFT_TRIANGLE_TO_INFINITY
+  #define SWIZZLE xyww
+#else
+  #define SWIZZLE xyzw
+#endif
+
+//front cap, light facing
+#define FCLF0 0
+#define FCLF1 1
+#define FCLF2 2
+//back cap, light facing
+#define BCLF0 2
+#define BCLF1 1
+#define BCLF2 0
+//front cap, light back-facing
+#define FCLB0 2
+#define FCLB1 1
+#define FCLB2 0
+//back cap, light back-facing
+#define BCLB0 0
+#define BCLB1 1
+#define BCLB2 2
+
+layout(triangles)in;
+layout(triangle_strip,max_vertices=6)out;
+
+uniform mat4 mvp;
+uniform vec4 LightPosition;
+
+/**
+* @brief Computes greater vector
+*
+* @param a vertex a
+* @param b vertex b
+*
+* @return 1 if a>b, 0 if a==b, -1 if b<a
+*/
+int GreaterVec(in vec3 a,in vec3 b){
+  return int(dot(sign(a-b),vec3(4,2,1)));
+}
+
+/**
+* @brief Function computes multiplicity for one opposite vertex
+*
+* @param A smallest vertex of a triangle
+* @param B middle vertex of a triangle
+* @param C largest vertex of a triangle
+* @param L light position
+*
+* @return 1 ABC (CCW) facing L, -1 ABC (CCW) not-facing L
+*/
+int ComputeMult(in vec3 A,in vec3 B,in vec3 C,in vec4 L){
+  vec3 n=cross(C-A,L.xyz-A*L.w);//normal vector of light plane
+  return int(sign(dot(n,B-A)));//multiplicity
+}
+
+void Swap(inout vec4 A,inout vec4 B){
+  vec4 C=A;A=B;B=C;
+}
+
+void main(){
+  vec4 A=gl_in[0].gl_Position;
+  vec4 B=gl_in[1].gl_Position;
+  vec4 C=gl_in[2].gl_Position;
+  bool Swapped=false;
+  if(GreaterVec(A.xyz,B.xyz)>0){Swap(A,B);Swapped=!Swapped;}
+  if(GreaterVec(B.xyz,C.xyz)>0){Swap(B,C);Swapped=!Swapped;}
+  if(GreaterVec(A.xyz,B.xyz)>0){Swap(A,B);Swapped=!Swapped;}
+  /*
+    000: ABC CCW 
+    100: BAC CW                                                                 
+    010: ACB CW                                                                 
+    110: BCA CCW                                                                
+    001: X                                                                      
+    101: X                                                                      
+    011: CAB CCW                                                                
+    111: CBA CW
+   */
+
+  int Multiplicity;
+
+  if(Swapped)
+    Multiplicity=-ComputeMult(A.xyz,B.xyz,C.xyz,LightPosition);
+  else
+    Multiplicity=+ComputeMult(A.xyz,B.xyz,C.xyz,LightPosition);
+
+  if(Multiplicity==0)return;
+
+  if(Multiplicity>0){
+    gl_Position=(mvp*gl_in[FCLF0].gl_Position).SWIZZLE;EmitVertex(); 
+    gl_Position=(mvp*gl_in[FCLF1].gl_Position).SWIZZLE;EmitVertex(); 
+    gl_Position=(mvp*gl_in[FCLF2].gl_Position).SWIZZLE;EmitVertex(); 
+    EndPrimitive();
+//*
+    if(LightPosition.w>0){
+      gl_Position=(mvp*vec4(gl_in[BCLF0].gl_Position.xyz-LightPosition.xyz,0));
+      EmitVertex();
+      gl_Position=(mvp*vec4(gl_in[BCLF1].gl_Position.xyz-LightPosition.xyz,0));
+      EmitVertex();
+      gl_Position=(mvp*vec4(gl_in[BCLF2].gl_Position.xyz-LightPosition.xyz,0));
+      EmitVertex();
+      EndPrimitive();
+    }// */
+  }else{
+    gl_Position=(mvp*gl_in[FCLB0].gl_Position).SWIZZLE;EmitVertex(); 
+    gl_Position=(mvp*gl_in[FCLB1].gl_Position).SWIZZLE;EmitVertex(); 
+    gl_Position=(mvp*gl_in[FCLB2].gl_Position).SWIZZLE;EmitVertex(); 
+    EndPrimitive();
+//*
+    if(LightPosition.w>0){
+      gl_Position=(mvp*vec4(gl_in[BCLB0].gl_Position.xyz-LightPosition.xyz,0));
+      EmitVertex();
+      gl_Position=(mvp*vec4(gl_in[BCLB1].gl_Position.xyz-LightPosition.xyz,0));
+      EmitVertex();
+      gl_Position=(mvp*vec4(gl_in[BCLB2].gl_Position.xyz-LightPosition.xyz,0));
+      EmitVertex();
+      EndPrimitive();
+    }// */
+  }
+}).";
+  const std::string capsFPSrc = R".(
+#version 450 core
+
+layout(location=0)out vec4 fColor;
+
+void main(){
+  if(gl_FrontFacing)
+    fColor=vec4(0,1,0,1);
+  else
+    fColor=vec4(1,0,0,1);
+}).";
+
+  this->_drawCaps = std::make_shared<ge::gl::Program>(
+      std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,capsVPSrc),
+      std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,capsGPSrc),
+      std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,capsFPSrc));
+
+
 }
 
 CSSV::~CSSV(){
@@ -347,7 +514,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   this->_fbo->bind();
   glEnable(GL_STENCIL_TEST);
   glStencilFunc(GL_ALWAYS,0,0);
-  if(false){
+  if(true){
     glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_INCR_WRAP,GL_KEEP);
     glStencilOpSeparate(GL_BACK,GL_KEEP,GL_DECR_WRAP,GL_KEEP);
   }else{
@@ -364,8 +531,17 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glPatchParameteri(GL_PATCH_VERTICES,4);
   glDrawArraysIndirect(GL_PATCHES,NULL);
   this->_sidesVao->unbind();
-  this->_fbo->unbind();
   this->_timeStamper->stamp("drawSides");
+
+  this->_drawCaps->use();
+  this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
+  this->_drawCaps->set4fv("LightPosition",glm::value_ptr(lightPosition));
+  this->_capsVao->bind();
+  glDrawArrays(GL_TRIANGLES,0,this->_nofTriangles*3);
+  this->_capsVao->unbind();
+
+  this->_fbo->unbind();
+  this->_timeStamper->stamp("drawCaps");
 
   glDisable(GL_DEPTH_TEST);
   this->_maskFbo->bind();

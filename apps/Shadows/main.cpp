@@ -134,7 +134,7 @@ bool Application::init(int argc,char*argv[]){
   else
     this->useShadows = false;
 
-  this->timeStamper = std::make_shared<TimeStamp>();
+  this->timeStamper = std::make_shared<TimeStamp>(nullptr);
   return true;
 }
 
