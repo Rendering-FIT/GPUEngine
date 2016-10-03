@@ -51,6 +51,7 @@ struct Application{
   size_t   cssvMaxMultiplicity = 2;
 
   std::string modelName = "";
+  std::string methodName = "";
   bool useShadows = true;
   bool init(int argc,char*argv[]);
   void draw();
@@ -74,6 +75,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-far"<<" - "<<"shadow map far plane position"<<std::endl;
     std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
+    std::cout<<"--method - name of shadow method: cubeShadowMapping cssv"<<std::endl;
     exit(0);
   }
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/cube/cube.obj");
@@ -87,6 +89,7 @@ bool Application::init(int argc,char*argv[]){
   this->sensitivity         = this->args->getArgf("--camera-sensitivity","0.01f");
   this->orbitZoomSpeed      = this->args->getArgf("--camera-zoomSpeed","0.2f");
   this->useShadows          = !this->args->isPresent("--no-shadows");
+  this->methodName          = this->args->getArg("--method","");
   this->shadowMapResolution = this->args->getArgi("--shadowMap-resolution","1024");
   this->shadowMapNear       = this->args->getArgf("--shadowMap-near","0.1f");
   this->shadowMapFar        = this->args->getArgf("--shadowMap-far","1000.f");
@@ -123,9 +126,12 @@ bool Application::init(int argc,char*argv[]){
 
   this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
-  this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
-
-  auto cssv = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
+  if     (this->methodName=="cubeShadowMapping")
+    this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
+  else if(this->methodName=="cssv")
+    this->shadowMethod = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
+  else
+    this->useShadows = false;
 
   return true;
 }
@@ -133,11 +139,13 @@ bool Application::init(int argc,char*argv[]){
 void Application::draw(){
   this->gl->glEnable(GL_DEPTH_TEST);
   this->gBuffer->begin();
-  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+  this->gl->glClearTexImage(this->shadowMask->getId(),0,GL_RED,GL_FLOAT,NULL);
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
   auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
-  this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
+  if(this->shadowMethod)
+    this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
   this->gl->glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)),this->useShadows);
   this->window->swap();

@@ -11,6 +11,7 @@ CSSV::CSSV(
     std::shared_ptr<Model>const&model,
     std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_computeSidesWGS(computeSidesWGS){
   assert(this!=nullptr);
+
   this->_fbo = std::make_shared<ge::gl::Framebuffer>();
   this->_fbo->attachTexture(GL_DEPTH_ATTACHMENT,depth);
   this->_fbo->attachTexture(GL_STENCIL_ATTACHMENT,depth);
@@ -19,7 +20,7 @@ CSSV::CSSV(
   this->_maskFbo = std::make_shared<ge::gl::Framebuffer>();
   this->_maskFbo->attachTexture(GL_STENCIL_ATTACHMENT,depth);
   this->_maskFbo->attachTexture(GL_COLOR_ATTACHMENT0,shadowMask);
-  this->_maskFbo->drawBuffers(0,GL_COLOR_ATTACHMENT0);
+  this->_maskFbo->drawBuffers(1,GL_COLOR_ATTACHMENT0);
 
   std::vector<float>vertices;
   model->getVertices(vertices);
@@ -80,9 +81,9 @@ CSSV::CSSV(
 
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
-layout(std430,binding=4)buffer SInput  {vec4 IBuffer[];};
-layout(std430,binding=5)buffer SOutput {vec4 OBuffer[];};
-layout(std430,binding=6)buffer SCounter{uint Counter[];};
+layout(std430,binding=0)buffer SInput  {vec4 IBuffer[];};
+layout(std430,binding=1)buffer SOutput {vec4 OBuffer[];};
+layout(std430,binding=2)buffer SCounter{uint Counter[];};
 
 uniform uint NumEdge=0;
 uniform vec4 LightPosition;
@@ -295,6 +296,23 @@ void main(){
       std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER   ,drawCPSrc),
       std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER,drawEPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER       ,drawFPSrc));
+
+
+  this->_emptyVao = std::make_shared<ge::gl::VertexArray>();
+  const std::string blitVPSrc = R".(
+#version 450 core
+void main(){
+  gl_Position = vec4(-1+2*(gl_VertexID/2),-1+2*(gl_VertexID%2),0,1);
+}).";
+  const std::string blitFPSrc = R".(
+#version 450 core
+layout(location=0)out float fColor;
+void main(){
+  fColor = 1;
+}).";
+  this->_blit = std::make_shared<ge::gl::Program>(
+      std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,blitVPSrc),
+      std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,blitFPSrc));
 }
 
 CSSV::~CSSV(){
@@ -306,15 +324,15 @@ void CSSV::create(glm::vec4 const&lightPosition,
   (void)lightPosition;
   (void)view;
   (void)projection;
+  auto mvp = projection*view;
 
   this->_dibo->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
   this->_computeSides->use();
   this->_computeSides->set1ui("NumEdge",this->_nofEdges);
   this->_computeSides->set4fv("LightPosition",glm::value_ptr(lightPosition));
-  //this->_computeSides->setMatrix4fv("mvp",1,GL_FALSE,(const float*)mvp);
+  //this->_computeSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_adjacency->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_sillhouettes->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dibo->getId());
@@ -322,5 +340,47 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDispatchCompute(ge::core::getDispatchSize(this->_nofEdges,this->_computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+  this->_fbo->bind();
+  glEnable(GL_STENCIL_TEST);
+  glStencilFunc(GL_ALWAYS,0,0);
+  if(false){
+    glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_INCR_WRAP,GL_KEEP);
+    glStencilOpSeparate(GL_BACK,GL_KEEP,GL_DECR_WRAP,GL_KEEP);
+  }else{
+    glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_KEEP,GL_INCR_WRAP);
+    glStencilOpSeparate(GL_BACK,GL_KEEP,GL_KEEP,GL_DECR_WRAP);
+  }
+  glDepthFunc(GL_LESS);
+  glDepthMask(GL_FALSE);
+  glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+  this->_drawSides->use();
+  this->_drawSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
+  this->_sidesVao->bind();
+  this->_dibo->bind(GL_DRAW_INDIRECT_BUFFER);
+  glPatchParameteri(GL_PATCH_VERTICES,4);
+  glDrawArraysIndirect(GL_PATCHES,NULL);
+  this->_sidesVao->unbind();
+  this->_fbo->unbind();
+
+
+  glDisable(GL_DEPTH_TEST);
+  this->_maskFbo->bind();
+  glClear(GL_COLOR_BUFFER_BIT);
+  glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+  glStencilFunc(GL_EQUAL,0,0xff);
+  glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+  glDepthFunc(GL_ALWAYS);
+  glDepthMask(GL_FALSE);
+  this->_blit->use();
+  this->_emptyVao->bind();
+  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+  this->_emptyVao->unbind();
+  this->_maskFbo->unbind();
+  glDepthFunc(GL_LESS);
+  glDisable(GL_STENCIL_TEST);
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+
 }
 

@@ -35,4 +35,7 @@ class CSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Program>    _drawCaps         = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
     std::shared_ptr<ge::gl::Program>    _createShadowMask = nullptr;
+
+    std::shared_ptr<ge::gl::Program>    _blit             = nullptr;
+    std::shared_ptr<ge::gl::VertexArray>_emptyVao         = nullptr;
 };
