@@ -4,6 +4,7 @@
 #include<stdarg.h>
 #include<iostream>
 #include<map>
+#include<vector>
 
 namespace ge{
   namespace gl{
@@ -32,6 +33,7 @@ namespace ge{
       void drawBuffer(GLenum buffer)const;
       void drawBuffers(GLsizei n,const GLenum *buffers)const;
       void drawBuffers(GLsizei n,...)const;
+      void drawBuffers(std::vector<GLenum>const buffers)const;
       void clearBuffer(GLenum buffer,GLint drawBuffer,const GLint*   value)const;
       void clearBuffer(GLenum buffer,GLint drawBuffer,const GLfloat* value)const;
       void clearBuffer(GLenum buffer,GLint drawBuffer,const GLuint*  value)const;
