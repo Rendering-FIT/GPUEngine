@@ -3,6 +3,7 @@
 #include<geGL/geGL.h>
 #include"ShadowMethod.h"
 #include"Model.h"
+#include"TimeStamp.h"
 
 class CSSV: public ShadowMethod{
   public:
@@ -38,4 +39,5 @@ class CSSV: public ShadowMethod{
 
     std::shared_ptr<ge::gl::Program>    _blit             = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_emptyVao         = nullptr;
+    std::shared_ptr<TimeStamp>_timeStamper = nullptr;
 };

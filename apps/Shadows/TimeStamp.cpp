@@ -39,10 +39,13 @@ void TimeStamp::end(std::string const&name){
   glQueryCounter(this->_queries.at(this->_currentStamp),GL_TIMESTAMP);
   GLuint64 beginTime = 0;
   glGetQueryObjectui64v(this->_beginQuery,GL_QUERY_RESULT,&beginTime);
+  GLuint64 lastTime = 0;
   for(size_t i=0;i<this->_queries.size();++i){
     GLuint64 time = 0;
     glGetQueryObjectui64v(this->_queries[i], GL_QUERY_RESULT, &time);
-    this->_times[i]=(time-beginTime)*1e-9f;
+    if(i==0)this->_times[i]=(time-beginTime)*1e-9f;
+    else this->_times[i]=(time-lastTime)*1e-9f;
+    lastTime = time;
   }
   if(this->_printer)this->_printer(this->_names,this->_times);
   this->_currentStamp = 0;

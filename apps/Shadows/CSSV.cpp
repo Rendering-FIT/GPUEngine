@@ -11,6 +11,7 @@ CSSV::CSSV(
     std::shared_ptr<Model>const&model,
     std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_computeSidesWGS(computeSidesWGS){
   assert(this!=nullptr);
+  this->_timeStamper = std::make_shared<TimeStamp>();
 
   this->_fbo = std::make_shared<ge::gl::Framebuffer>();
   this->_fbo->attachTexture(GL_DEPTH_ATTACHMENT,depth);
@@ -326,6 +327,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   (void)projection;
   auto mvp = projection*view;
 
+  this->_timeStamper->begin();
   this->_dibo->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -340,6 +342,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDispatchCompute(ge::core::getDispatchSize(this->_nofEdges,this->_computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  this->_timeStamper->stamp("computeSillhouettes");
 
   this->_fbo->bind();
   glEnable(GL_STENCIL_TEST);
@@ -362,7 +365,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDrawArraysIndirect(GL_PATCHES,NULL);
   this->_sidesVao->unbind();
   this->_fbo->unbind();
-
+  this->_timeStamper->stamp("drawSides");
 
   glDisable(GL_DEPTH_TEST);
   this->_maskFbo->bind();
@@ -382,5 +385,6 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
 
+  this->_timeStamper->end("blit");
 }
 
