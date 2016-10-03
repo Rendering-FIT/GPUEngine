@@ -25,6 +25,8 @@ set(APP_SOURCES
   OrbitCamera.cpp
   Shading.cpp
   CubeShadowMapping.cpp
+  FastAdjacency.cpp
+  CSSV.cpp
   )
 
 set(APP_INCLUDES
@@ -36,6 +38,7 @@ set(APP_INCLUDES
   Shading.h
   ShadowMethod.h
   CubeShadowMapping.h
+  FastAdjacency.h
   CSSV.h
   )
 
@@ -47,7 +50,7 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 # Internal_inc - additional include directories
 
 set(Internal_deps geGL SDLWindow geUtil)
-set(External_libs SDL2 Assimp FreeImage FreeImagePlus)
+set(External_libs SDL2 assimp FreeImage FreeImagePlus)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

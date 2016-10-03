@@ -11,6 +11,20 @@ Model::~Model(){
   if(this->model)aiReleaseImport(this->model);
 }
 
+void Model::getVertices(std::vector<float>&vertices){
+  size_t nofVertices = 0;
+  for(size_t i=0;i<model->mNumMeshes;++i)
+    nofVertices+=model->mMeshes[i]->mNumFaces*3;
+  vertices.reserve(nofVertices*3);
+  for(size_t i=0;i<model->mNumMeshes;++i){
+    auto mesh = model->mMeshes[i];
+    for(size_t j=0;j<mesh->mNumFaces;++j)
+      for(size_t k=0;k<3;++k)
+        for(size_t l=0;l<3;++l)
+          vertices.push_back(mesh->mVertices[mesh->mFaces[j].mIndices[k]][l]);
+  }
+}
+
 RenderModel::RenderModel(std::shared_ptr<Model>const&mdl){
   assert(this!=nullptr);
   if(mdl==nullptr)
@@ -22,15 +36,9 @@ RenderModel::RenderModel(std::shared_ptr<Model>const&mdl){
     this->nofVertices+=model->mMeshes[i]->mNumFaces*3;
 
   std::vector<float>vertData;
-  vertData.reserve(this->nofVertices*3);
-  for(size_t i=0;i<model->mNumMeshes;++i){
-    auto mesh = model->mMeshes[i];
-    for(size_t j=0;j<mesh->mNumFaces;++j)
-      for(size_t k=0;k<3;++k)
-        for(size_t l=0;l<3;++l)
-          vertData.push_back(mesh->mVertices[mesh->mFaces[j].mIndices[k]][l]);
-  }
+  mdl->getVertices(vertData);
   this->vertices = std::make_shared<ge::gl::Buffer>(this->nofVertices*sizeof(float)*3,vertData.data());
+
   std::vector<float>normData;
   normData.reserve(this->nofVertices*3);
   for(size_t i=0;i<model->mNumMeshes;++i){

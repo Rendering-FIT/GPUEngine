@@ -20,6 +20,7 @@
 #include"Shading.h"
 #include"ShadowMethod.h"
 #include"CubeShadowMapping.h"
+#include"CSSV.h"
 
 struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
@@ -45,6 +46,10 @@ struct Application{
   uint32_t shadowMapResolution = 1024;
   float    shadowMapNear = .1f;
   float    shadowMapFar  = 1000.f;
+
+  size_t   cssvWGS = 64;
+  size_t   cssvMaxMultiplicity = 2;
+
   std::string modelName = "";
   bool useShadows = true;
   bool init(int argc,char*argv[]);
@@ -67,6 +72,8 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-resolution"<<" - "<<"shadow map resolution"<<std::endl;
     std::cout<<"--shadowMap-near"<<" - "<<"shadow map near plane position"<<std::endl;
     std::cout<<"--shadowMap-far"<<" - "<<"shadow map far plane position"<<std::endl;
+    std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
+    std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
     exit(0);
   }
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/cube/cube.obj");
@@ -83,6 +90,9 @@ bool Application::init(int argc,char*argv[]){
   this->shadowMapResolution = this->args->getArgi("--shadowMap-resolution","1024");
   this->shadowMapNear       = this->args->getArgf("--shadowMap-near","0.1f");
   this->shadowMapFar        = this->args->getArgf("--shadowMap-far","1000.f");
+
+  this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
+  this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
 
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
@@ -114,6 +124,8 @@ bool Application::init(int argc,char*argv[]){
   this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
   this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
+
+  auto cssv = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
 
   return true;
 }

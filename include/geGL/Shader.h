@@ -20,8 +20,8 @@ namespace ge{
         Shader(FunctionTablePointer const&table);
         Shader(
             FunctionTablePointer const&table       ,
-            GLenum                       const&type        ,
-            Sources                      const&sources = {});
+            GLenum               const&type        ,
+            Sources              const&sources = {});
         virtual ~Shader();
         void        create(GLenum type);
         void        setSource(Sources const& sources = {});
@@ -56,8 +56,8 @@ namespace ge{
         template<typename...ARGS>
           Shader(
               FunctionTablePointer const&table  ,
-              GLenum                       const&type   ,
-              ARGS...                            sources);
+              GLenum               const&type   ,
+              ARGS...                    sources);
         template<typename...ARGS>
           void        setSource(ARGS... sources);
         template<typename...ARGS>
