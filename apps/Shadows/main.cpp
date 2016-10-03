@@ -21,6 +21,7 @@
 #include"ShadowMethod.h"
 #include"CubeShadowMapping.h"
 #include"CSSV.h"
+#include"TimeStamp.h"
 
 struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
@@ -49,7 +50,7 @@ struct Application{
 
   size_t   cssvWGS = 64;
   size_t   cssvMaxMultiplicity = 2;
-
+  std::shared_ptr<TimeStamp>timeStamper = nullptr;
   std::string modelName = "";
   std::string methodName = "";
   bool useShadows = true;
@@ -133,10 +134,12 @@ bool Application::init(int argc,char*argv[]){
   else
     this->useShadows = false;
 
+  this->timeStamper = std::make_shared<TimeStamp>();
   return true;
 }
 
 void Application::draw(){
+  this->timeStamper->begin();
   this->gl->glEnable(GL_DEPTH_TEST);
   this->gBuffer->begin();
   this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
@@ -148,6 +151,7 @@ void Application::draw(){
     this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
   this->gl->glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)),this->useShadows);
+  this->timeStamper->end("frame");
   this->window->swap();
 }
 

@@ -26,6 +26,7 @@ set(APP_SOURCES
   Shading.cpp
   CubeShadowMapping.cpp
   FastAdjacency.cpp
+  TimeStamp.cpp
   CSSV.cpp
   )
 
@@ -39,6 +40,7 @@ set(APP_INCLUDES
   ShadowMethod.h
   CubeShadowMapping.h
   FastAdjacency.h
+  TimeStamp.h
   CSSV.h
   )
 
