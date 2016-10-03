@@ -300,9 +300,12 @@ void main(){
 CSSV::~CSSV(){
 }
 
-void CSSV::create(glm::vec4 const&lightPosition,glm::vec3 const&cameraPosition){
+void CSSV::create(glm::vec4 const&lightPosition,
+    glm::mat4 const&view,
+    glm::mat4 const&projection){
   (void)lightPosition;
-  (void)cameraPosition;
+  (void)view;
+  (void)projection;
 
   this->_dibo->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
 

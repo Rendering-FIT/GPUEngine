@@ -118,12 +118,13 @@ CubeShadowMapping::~CubeShadowMapping(){
 
 }
 
-void CubeShadowMapping::create(glm::vec4 const&lightPosition,glm::vec3 const&cameraPosition){
+void CubeShadowMapping::create(glm::vec4 const&lightPosition,
+    glm::mat4 const&,
+    glm::mat4 const&){
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(2.5,10);
   glViewport(0,0,this->_resolution,this->_resolution);
   glEnable(GL_DEPTH_TEST);
-  (void)cameraPosition;
   this->_fbo->bind();
   glClear(GL_DEPTH_BUFFER_BIT);
   this->_vao->bind();

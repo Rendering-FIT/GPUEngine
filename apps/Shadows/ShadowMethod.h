@@ -10,5 +10,8 @@
 class ShadowMethod: public ge::gl::Context{
   public:
     virtual ~ShadowMethod(){}
-    virtual void create(glm::vec4 const&lightPosition,glm::vec3 const&cameraPosition) = 0;
+    virtual void create(
+        glm::vec4 const&lightPosition,
+        glm::mat4 const&view         ,
+        glm::mat4 const&projection   ) = 0;
 };

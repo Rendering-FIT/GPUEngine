@@ -137,7 +137,7 @@ void Application::draw(){
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
   auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
-  this->shadowMethod->create(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)));
+  this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
   this->gl->glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)),this->useShadows);
   this->window->swap();

@@ -14,7 +14,9 @@ class CSSV: public ShadowMethod{
         std::shared_ptr<Model>const&model,
         std::shared_ptr<ge::gl::Texture>const&shadowMask);
     virtual ~CSSV();
-    virtual void create(glm::vec4 const&lightPosition,glm::vec3 const&cameraPosition)override;
+    virtual void create(glm::vec4 const&lightPosition,
+        glm::mat4 const&view,
+        glm::mat4 const&projection)override;
   protected:
     glm::uvec2                          _windowSize;
     std::shared_ptr<ge::gl::Framebuffer>_fbo              = nullptr;
