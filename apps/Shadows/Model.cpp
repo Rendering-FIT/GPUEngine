@@ -50,49 +50,82 @@ RenderModel::RenderModel(std::shared_ptr<Model>const&mdl){
   }
   this->normals = std::make_shared<ge::gl::Buffer>(this->nofVertices*sizeof(float)*3,normData.data());
 
+
+/*
+  {
+    std::vector<float>ver;
+    for(size_t i=0;i<model->mNumMeshes;++i){
+      auto mesh = model->mMeshes[i];
+      for(size_t j=0;j<mesh->mNumVertices;++j){
+        for(size_t k=0;k<3;++k)
+          ver.push_back(mesh->mVertices[j][k]);
+        for(size_t k=0;k<3;++k)
+          ver.push_back(mesh->mNormals[j][k]);
+      }
+    }
+    std::vector<uint32_t>ind;
+    uint32_t offset=0;
+    for(size_t i=0;i<model->mNumMeshes;++i){
+      auto mesh = model->mMeshes[i];
+      for(size_t j=0;j<mesh->mNumFaces;++j)
+        for(size_t k=0;k<3;++k)
+          ind.push_back(offset+mesh->mFaces[j].mIndices[k]);
+      offset+=mesh->mNumFaces*3;
+    }
+    this->indexVertices = std::make_shared<ge::gl::Buffer>(ver.size()*sizeof(float),ver.data());
+    this->indices = std::make_shared<ge::gl::Buffer>(ind.size()*sizeof(uint32_t),ind.data());
+    this->vao = std::make_shared<ge::gl::VertexArray>();
+    this->vao->addAttrib(this->indexVertices,0,3,GL_FLOAT,sizeof(float)*6,0);
+    this->vao->addAttrib(this->indexVertices,1,3,GL_FLOAT,sizeof(float)*6,sizeof(float)*3);
+    this->vao->addElementBuffer(this->indices);
+    this->nofVertices = ind.size();
+  }
+*/
+  //*
   this->vao = std::make_shared<ge::gl::VertexArray>();
   this->vao->addAttrib(this->vertices,0,3,GL_FLOAT);
   this->vao->addAttrib(this->normals,1,3,GL_FLOAT);
+  // */
 
   const std::string vertSrc = R".(
 #version 450
-uniform mat4 projectionView = mat4(1);
+    uniform mat4 projectionView = mat4(1);
 
-layout(location=0)in vec3 position;
-layout(location=1)in vec3 normal;
+  layout(location=0)in vec3 position;
+  layout(location=1)in vec3 normal;
 
-out vec3 vPosition;
-out vec3 vNormal;
+  out vec3 vPosition;
+  out vec3 vNormal;
 
-void main(){
-  gl_Position = projectionView*vec4(position,1);
-  vPosition = position;
-  vNormal   = normal;
-}).";
+  void main(){
+    gl_Position = projectionView*vec4(position,1);
+    vPosition = position;
+    vNormal   = normal;
+  }).";
   const std::string fragSrc = R".(
 #version 450
-layout(location=0)out uvec4 fColor;
-layout(location=1)out vec4  fPosition;
-layout(location=2)out vec4  fNormal; 
+    layout(location=0)out uvec4 fColor;
+  layout(location=1)out vec4  fPosition;
+  layout(location=2)out vec4  fNormal; 
 
-in vec3 vPosition;
-in vec3 vNormal;
+  in vec3 vPosition;
+  in vec3 vNormal;
 
-void main(){
-  vec3  diffuseColor   = vec3(0.5,0.5,0.5);
-  vec3  specularColor  = vec3(1);
-  vec3  normal         = vNormal;
-  float specularFactor = 1;
+  void main(){
+    vec3  diffuseColor   = vec3(0.5,0.5,0.5);
+    vec3  specularColor  = vec3(1);
+    vec3  normal         = vNormal;
+    float specularFactor = 1;
 
-  uvec4 color  = uvec4(0);
-  color.xyz   += uvec3(diffuseColor  *0xff);
-  color.xyz   += uvec3(specularColor *0xff)<<8;
-  color.w      = uint (specularFactor*0xff);
+    uvec4 color  = uvec4(0);
+    color.xyz   += uvec3(diffuseColor  *0xff);
+    color.xyz   += uvec3(specularColor *0xff)<<8;
+    color.w      = uint (specularFactor*0xff);
 
-  fColor    = color;
-  fPosition = vec4(vPosition,1);
-  fNormal   = vec4(normal,-dot(vPosition,normal));
-}).";
+    fColor    = color;
+    fPosition = vec4(vPosition,1);
+    fNormal   = vec4(normal,-dot(vPosition,normal));
+  }).";
   this->program = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,vertSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,fragSrc));
@@ -108,6 +141,7 @@ void RenderModel::draw(glm::mat4 const&projectionView){
   this->vao->bind();
   this->program->use();
   this->program->setMatrix4fv("projectionView",glm::value_ptr(projectionView));
+  //this->glDrawElements(GL_TRIANGLES,this->nofVertices,GL_UNSIGNED_INT,nullptr);
   this->glDrawArrays(GL_TRIANGLES,0,this->nofVertices);
   this->vao->unbind();
 }

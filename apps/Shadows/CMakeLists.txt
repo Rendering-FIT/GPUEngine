@@ -28,6 +28,8 @@ set(APP_SOURCES
   FastAdjacency.cpp
   TimeStamp.cpp
   CSSV.cpp
+  Sintorn.cpp
+  SintornTiles.cpp
   )
 
 set(APP_INCLUDES
@@ -42,6 +44,9 @@ set(APP_INCLUDES
   FastAdjacency.h
   TimeStamp.h
   CSSV.h
+  CSSVShaders.h
+  Sintorn.h
+  SintornTiles.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
