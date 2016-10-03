@@ -71,9 +71,9 @@ bool Application::init(int argc,char*argv[]){
   }
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/cube/cube.obj");
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
-  this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/sponza/sponza.obj");
+  //this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/sponza/sponza.obj");
   this->windowSize.x        = this->args->getArgi("--window-size-x","1024");
-  this->windowSize.y        = this->args->getArgi("--window-size-x","1024");
+  this->windowSize.y        = this->args->getArgi("--window-size-y","1024");
   this->cameraFovy          = this->args->getArgf("--camera-fovy","1.5707963267948966f");
   this->cameraNear          = this->args->getArgf("--camera-near","0.1f");
   this->cameraFar           = this->args->getArgf("--camera-far","1000.f");
@@ -124,13 +124,9 @@ void Application::draw(){
   this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
-
   auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
   this->shadowMethod->create(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)));
-
   this->gl->glDisable(GL_DEPTH_TEST);
-  this->gl->glDisable(GL_CULL_FACE);
-
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)),this->useShadows);
   this->window->swap();
 }

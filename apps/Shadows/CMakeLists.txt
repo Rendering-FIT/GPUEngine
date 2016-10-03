@@ -36,6 +36,7 @@ set(APP_INCLUDES
   Shading.h
   ShadowMethod.h
   CubeShadowMapping.h
+  CSSV.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
