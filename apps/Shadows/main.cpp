@@ -47,6 +47,7 @@ struct Application{
   uint32_t shadowMapResolution = 1024;
   float    shadowMapNear = .1f;
   float    shadowMapFar  = 1000.f;
+  uint32_t shadowMapFaces = 6;
 
   size_t   cssvWGS = 64;
   size_t   cssvMaxMultiplicity = 2;
@@ -74,6 +75,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-resolution"<<" - "<<"shadow map resolution"<<std::endl;
     std::cout<<"--shadowMap-near"<<" - "<<"shadow map near plane position"<<std::endl;
     std::cout<<"--shadowMap-far"<<" - "<<"shadow map far plane position"<<std::endl;
+    std::cout<<"--shadowMap-faces - cube shadow map faces"<<std::endl;
     std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
     std::cout<<"--method - name of shadow method: cubeShadowMapping cssv"<<std::endl;
@@ -94,6 +96,7 @@ bool Application::init(int argc,char*argv[]){
   this->shadowMapResolution = this->args->getArgi("--shadowMap-resolution","1024");
   this->shadowMapNear       = this->args->getArgf("--shadowMap-near","0.1f");
   this->shadowMapFar        = this->args->getArgf("--shadowMap-far","1000.f");
+  this->shadowMapFaces      = this->args->getArgi("--shadowMap-faces","6");
 
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
   this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
@@ -128,7 +131,7 @@ bool Application::init(int argc,char*argv[]){
   this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
   if     (this->methodName=="cubeShadowMapping")
-    this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
+    this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->shadowMapFaces,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
   else

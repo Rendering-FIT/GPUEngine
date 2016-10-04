@@ -10,6 +10,7 @@ class CubeShadowMapping: public ShadowMethod{
         uint32_t resolution,
         float    near,
         float    far,
+        uint32_t faces,
         std::shared_ptr<ge::gl::Texture>const&position,
         uint32_t nofVertices,
         std::shared_ptr<ge::gl::Buffer>const&vertices,
@@ -24,6 +25,7 @@ class CubeShadowMapping: public ShadowMethod{
     uint32_t                            _resolution   = 1024u  ;
     float                               _near         = 0.1f   ;
     float                               _far          = 1000.f ;
+    uint32_t                            _faces        = 6      ;
     std::shared_ptr<ge::gl::Texture>    _position     = nullptr;
     uint32_t                            _nofVertices  = 0      ;
     std::shared_ptr<ge::gl::Texture>    _shadowMap    = nullptr;

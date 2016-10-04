@@ -5,10 +5,11 @@ CubeShadowMapping::CubeShadowMapping(
         uint32_t                              resolution ,
         float                                 near       ,
         float                                 far        ,
+        uint32_t                              faces      ,
         std::shared_ptr<ge::gl::Texture>const&position   ,
         uint32_t                              nofVertices,
         std::shared_ptr<ge::gl::Buffer> const&vertices   ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask ):_windowSize(windowSize),_resolution(resolution),_near(near),_far(far),_position(position),_nofVertices(nofVertices){
+        std::shared_ptr<ge::gl::Texture>const&shadowMask ):_windowSize(windowSize),_resolution(resolution),_near(near),_far(far),_faces(faces),_position(position),_nofVertices(nofVertices){
   assert(this!=nullptr);
   this->_shadowMap = std::make_shared<ge::gl::Texture>(GL_TEXTURE_CUBE_MAP,GL_DEPTH_COMPONENT24,1,resolution,resolution);
   this->_shadowMap->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST);
@@ -132,7 +133,7 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   this->_createShadowMap->set4fv("lightPosition" ,glm::value_ptr(lightPosition ));
   this->_createShadowMap->set1f("near",this->_near);
   this->_createShadowMap->set1f("far",this->_far);
-  glDrawArraysInstanced(GL_TRIANGLES,0,this->_nofVertices,6);
+  glDrawArraysInstanced(GL_TRIANGLES,0,this->_nofVertices,this->_faces);
   this->_vao->unbind();
   this->_fbo->unbind();
 
