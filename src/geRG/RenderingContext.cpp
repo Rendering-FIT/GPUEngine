@@ -292,7 +292,7 @@ void RenderingContext::setCpuTransformationBufferCapacity(unsigned numMatrices)
 
    // realloc buffer
    float *newBuffer=new float[numMatrices*16];
-   unsigned copyNumBytes=((capacity<numMatrices)?capacity:numMatrices)*16*sizeof(float);
+   unsigned copyNumBytes=((capacity<numMatrices)?capacity:numMatrices)*16*unsigned(sizeof(float));
    memcpy(newBuffer,_cpuTransformationBuffer,copyNumBytes);
    delete[] _cpuTransformationBuffer;
    _cpuTransformationBuffer=newBuffer;
@@ -1164,7 +1164,7 @@ void RenderingContext::evaluateTransformationGraph()
    if(totalMatrices>_matrixStorage.capacity()) {
 
       // resize matrix buffer
-      unsigned newSize=unsigned(totalMatrices*1.2f);
+      unsigned newSize=unsigned(float(totalMatrices)*1.2f);
       _matrixStorage.setCapacity(newSize);
       _matrixStorage.buffer()->realloc(newSize*sizeof(float)*16,ge::gl::Buffer::KEEP_ID);
 
@@ -1209,7 +1209,7 @@ void RenderingContext::setupRendering()
    // resize drawIndirectBuffer if necessary
    if(_drawIndirectBuffer->getSize()<bufferPosition()*4)
       _drawIndirectBuffer->realloc(static_cast<decltype(_bufferPosition)>(
-            bufferPosition()*1.2f)*4, // multiply by 1.2 to avoid possibly many reallocations by very small amount
+            float(bufferPosition())*1.2f)*4, // multiply by 1.2 to avoid possibly many reallocations by very small amount
             Buffer::NEW_BUFFER);
 }
 

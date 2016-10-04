@@ -110,7 +110,7 @@ static void idleCallback()
          frameTimePoints.push_back(t);
       else
       {
-         double avgFrameTime=dt/frameTimePoints.size();
+         double avgFrameTime=dt/double(frameTimePoints.size());
          cout<<"Average frame time: "<<avgFrameTime*1000<<"ms  (FPS: "<<1./avgFrameTime<<")"<<endl;
          frameTimePoints.clear();
          frameTimePoints.push_back(t);
@@ -235,7 +235,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    RenderingContext::current()->unmapBuffers();
 
    const glm::vec4 ambientLight(0.2f,0.2f,0.2f,1.f);
-   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(windowWidth)/windowHeight,zNear,zFar);
+   glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),float(windowWidth)/float(windowHeight),zNear,zFar);
    auto ambientProgram=RenderingContext::current()->getAmbientProgram();
    ambientProgram->use();
    ambientProgram->setMatrix4fv("projection",glm::value_ptr(projection),1,GL_FALSE);
