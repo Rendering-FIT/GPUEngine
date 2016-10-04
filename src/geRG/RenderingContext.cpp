@@ -158,7 +158,7 @@ RenderingContext::~RenderingContext()
    cancelAllAllocations();
 
    // delete all AttribStorages attached to this RenderingContext
-   for(AttribConfigList::iterator it=_attribConfigList.begin(),nextIt; it!=_attribConfigList.end(); it=nextIt)
+   for(AttribConfigInstances::iterator it=_attribConfigInstances.begin(),nextIt; it!=_attribConfigInstances.end(); it=nextIt)
    {
       nextIt=it;
       nextIt++;
@@ -183,27 +183,37 @@ RenderingContext::~RenderingContext()
 }
 
 
-AttribConfigRef RenderingContext::getAttribConfig(const AttribConfig::ConfigData &config)
+AttribConfig RenderingContext::getAttribConfig(const AttribConfig::Configuration& config)
 {
-   // find AttribConfig in _attribConfigList (std::map)
-   auto r=_attribConfigList.emplace(config,nullptr);
+   // find AttribConfig in _attribConfigInstances (std::map)
+   auto r=_attribConfigInstances.emplace(config,nullptr);
 
    // if found, return reference to it
    if(r.second==false)
-      return r.first->second->createReference();
-
-   // otherwise create new AttribConfig, put it in _attribConfigList and return reference
-   AttribConfig *ac=AttribConfig::factory()->create(config,this,r.first);
-   r.first->second=ac;
-   return ac->createReference();
+      return r.first->second->createAttribConfig();
+   else
+   {
+      // otherwise create new AttribConfig, put it in _attribConfigList and return reference
+      AttribConfig::Instance *in=new AttribConfig::Instance(this,r.first);
+      r.first->second=in;
+      return in->createAttribConfig();
+   }
 }
 
 
-void RenderingContext::removeAttribConfig(AttribConfigList::iterator it)
+AttribConfig::Instance* RenderingContext::getAttribConfigInstance(const AttribConfig::Configuration& config)
 {
-   if(it->second!=NULL)
-      it->second->detachFromRenderingContext();
-   _attribConfigList.erase(it);
+   auto it=_attribConfigInstances.emplace(config,nullptr).first;
+   if(it->second==nullptr)
+      it->second=new AttribConfig::Instance(this,it);
+   return it->second;
+}
+
+
+void RenderingContext::removeAttribConfigInstance(AttribConfigInstances::iterator it)
+{
+   it->second->renderingContext=nullptr;
+   _attribConfigInstances.erase(it);
 }
 
 
@@ -286,6 +296,63 @@ void RenderingContext::setCpuTransformationBufferCapacity(unsigned numMatrices)
    memcpy(newBuffer,_cpuTransformationBuffer,copyNumBytes);
    delete[] _cpuTransformationBuffer;
    _cpuTransformationBuffer=newBuffer;
+}
+
+
+bool RenderingContext::allocVertexData(Mesh& mesh,const AttribConfig& attribConfig,
+                                       unsigned numVertices,unsigned numIndices)
+{
+   // iterate AttribStorage list inside AttribConfig
+   // and look if there is one with enough empty space
+   auto& attribStorageList=attribConfig.getAttribStorageList();
+   auto storageIt=attribStorageList.end();
+   for(auto it=attribStorageList.begin(); it!=attribStorageList.end(); it++)
+   {
+      if((*it)->vertexAllocationManager().numItemsAvailableAtTheEnd()>=numVertices &&
+         (*it)->indexAllocationManager().numItemsAvailableAtTheEnd()>=numIndices)
+      {
+         storageIt=it;
+         break;
+      }
+   }
+
+   // no suitable AttribStorage
+   if(storageIt==attribStorageList.end())
+   {
+      // create a new AttribStorage
+      auto v=numVertices>_defaultAttribStorageVertexCapacity?numVertices:_defaultAttribStorageVertexCapacity;
+      auto i=attribConfig.ebo()?
+            numIndices>_defaultAttribStorageIndexCapacity?numIndices:_defaultAttribStorageIndexCapacity:
+            0;
+      attribStorageList.emplace_front(AttribStorage::factory()->create(attribConfig,v,i));
+      storageIt=attribStorageList.begin();
+   }
+
+   // perform allocation in the choosen AttribStorage
+   bool r=(*storageIt)->allocData(mesh,numVertices,numIndices);
+   if(!r) {
+      cerr<<"Error: AttribConfig::allocData() failed to allocate space for mesh\n"
+            "   in AttribStorage ("<<numVertices<<" vertices and "<<numIndices
+          <<" indices requested)." << endl;
+      return false;
+   }
+
+   return true;
+}
+
+
+bool RenderingContext::reallocVertexData(Mesh& /*mesh*/,unsigned /*numVertices*/,unsigned /*numIndices*/,bool /*preserveContent*/)
+{
+   // Used strategy:
+   // - if new arrays are smaller, we keep data in place and free the remaning space
+   // - if new arrays are bigger and can be enlarged on the place, we do it
+   // - otherwise we try to allocate new place for the data in the same AttribStorage
+   // - if we do not succeed in the current AttribStorage, we move the data to
+   //   some other AttribStorage
+   // - if no AttribStorage accommodate us, we allocate new AttribStorage
+
+   // FIXME: not implemented yet
+   return false;
 }
 
 
@@ -580,9 +647,9 @@ void RenderingContext::cancelAllAllocations()
    // break references in all AttribStorages
    // (call AttribStorage::cancelAllAllocations() for all AttribStorages,
    // this will cause to set all dependent Mesh::_attribStorage to nullptr)
-   for(auto acIt=_attribConfigList.begin(); acIt!=_attribConfigList.end(); acIt++)
+   for(auto acIt=_attribConfigInstances.begin(); acIt!=_attribConfigInstances.end(); acIt++)
    {
-      const AttribConfig::AttribStorageList &list=acIt->second->getAttribStorageList();
+      auto& list=acIt->second->attribStorageList;
       for(auto asIt=list.begin(); asIt!=list.end(); asIt++)
          (*asIt)->cancelAllAllocations();
    }

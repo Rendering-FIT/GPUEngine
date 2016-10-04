@@ -12,7 +12,7 @@ namespace ge
 {
    namespace rg
    {
-      class AttribConfigRef;
+      class AttribConfig;
       class AttribStorage;
       class MatrixList;
       class StateSet;
@@ -52,7 +52,7 @@ namespace ge
          inline DrawableList& drawables();
          inline bool valid() const;
 
-         inline void allocData(const AttribConfigRef& config,unsigned numVertices,
+         inline void allocData(const AttribConfig& config,unsigned numVertices,
                                unsigned numIndices,unsigned numPrimitives);
          inline void reallocData(unsigned numVertices,unsigned numIndices,
                                  unsigned numPrimitives,bool preserveContent=true);
@@ -148,17 +148,14 @@ namespace ge
       inline const DrawableList& Mesh::drawables() const  { return _drawables; }
       inline DrawableList& Mesh::drawables()  { return _drawables; }
       inline bool Mesh::valid() const  { return _attribStorage!=NULL; }
-      inline void Mesh::allocData(const ge::rg::AttribConfigRef& config,unsigned numVertices,unsigned numIndices,unsigned numPrimitives)
-      { config->allocData(*this,numVertices,numIndices,numPrimitives); }
+      inline void Mesh::allocData(const ge::rg::AttribConfig& attribConfig,unsigned numVertices,unsigned numIndices,unsigned numPrimitives)
+         { attribConfig.renderingContext()->allocVertexData(*this,attribConfig,numVertices,numIndices); attribConfig.renderingContext()->allocPrimitives(*this,numPrimitives); }
       inline void Mesh::reallocData(unsigned numVertices,unsigned numIndices,unsigned numPrimitives,bool preserveContent)
-      {
-         _attribStorage->reallocData(*this,numVertices,numIndices,preserveContent);
-         RenderingContext::current()->reallocPrimitives(*this,numPrimitives,preserveContent);
-      }
+         { _attribStorage->renderingContext()->reallocVertexData(*this,numVertices,numIndices,preserveContent); _attribStorage->renderingContext()->reallocPrimitives(*this,numPrimitives,preserveContent); }
       inline void Mesh::freeData()
       {
          if(_attribStorage) {
-            RenderingContext::current()->freePrimitives(*this);
+            _attribStorage->renderingContext()->freePrimitives(*this);
             _attribStorage->freeData(*this);
          }
       }

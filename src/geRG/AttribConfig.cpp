@@ -4,108 +4,47 @@
 using namespace std;
 using namespace ge::rg;
 
-shared_ptr<AttribConfig::Factory> AttribConfig::_factory=make_shared<AttribConfig::Factory>();
-const AttribConfigRef AttribConfigRef::invalid{};
+
+AttribConfig::Instance AttribConfig::Instance::invalid(1);
+const AttribConfig AttribConfig::invalid;
+
 
 
 AttribConfig::~AttribConfig()
 {
-   if(_referenceCounter!=0)
+   _instance->unref();
+}
+
+
+AttribConfig::Instance::~Instance()
+{
+   if(referenceCounter!=0)
    {
-      if(_referenceCounter>0)
-         cout<<"Error in AttribConfig::~AttribConfig(): Reference counter is not zero.\n"
-               "   Destructing object with references may result in application instability." << endl;
+      if(referenceCounter>0)
+         cout<<"Error in AttribConfig::Instance::~Instance(): Reference counter is not zero.\n"
+               "   Destructing the object with references may result in application instability." << endl;
       else
-         cout<<"Error in AttribConfig::~AttribConfig(): Reference counter underflow." << endl;
+         cout<<"Error in AttribConfig::Instance::~Instance(): Reference counter underflow." << endl;
    }
 }
 
 
-void AttribConfig::destroy()
+void AttribConfig::Instance::destroy()
 {
-   assert(_referenceCounter==0 && "Wrong usage of AttribConfig::destroy.");
-
-   if(_renderingContext!=NULL)
-      _renderingContext->removeAttribConfig(_selfIterator);
+   if(renderingContext)
+      renderingContext->removeAttribConfigInstance(selfIterator);
    delete this;
 }
 
 
-void AttribConfig::detachFromRenderingContext()
-{
-   _renderingContext=NULL;
-}
-
-
-void AttribConfig::deleteAllAttribStorages()
+void AttribConfig::Instance::deleteAllAttribStorages()
 {
    // remove AttribStorages while making reference to itself
    // and release it at the end of our work
    // (AttribConfig may be destroyed at the removeReference())
-   addReference();
-   _attribStorages.clear();
-   removeReference();
-}
-
-
-bool AttribConfig::allocData(Mesh& mesh,unsigned numVertices,unsigned numIndices,unsigned numPrimitives)
-{
-   // iterate AttribStorage list
-   // and look if there is one with enough empty space
-   AttribStorageList::iterator storageIt=_attribStorages.end();
-   for(auto it=_attribStorages.begin(); it!=_attribStorages.end(); it++)
-   {
-      if((*it)->vertexAllocationManager().numItemsAvailableAtTheEnd()>=numVertices &&
-         (*it)->indexAllocationManager().numItemsAvailableAtTheEnd()>=numIndices)
-      {
-         storageIt=it;
-         break;
-      }
-   }
-
-   // is there no suitable AttribStorage?
-   if(storageIt==_attribStorages.end())
-   {
-      // create a new AttribStorage
-      auto v=numVertices>_defaultStorageNumVertices?numVertices:_defaultStorageNumVertices;
-      auto i=this->_configData.ebo?
-            numIndices>_defaultStorageNumIndices?numIndices:_defaultStorageNumIndices:
-            0;
-      _attribStorages.push_front(AttribStorage::factory()->create(this->createReference(),v,i));
-      storageIt=_attribStorages.begin();
-   }
-
-   // perform allocation in the choosen AttribStorage
-   bool r=(*storageIt)->allocData(mesh,numVertices,numIndices);
-   if(!r) {
-      cerr<<"Error: AttribConfig::allocData() failed to allocate space for mesh\n"
-            "   in AttribStorage ("<<numVertices<<" vertices and "<<numIndices
-          <<" indices requested)." << endl;
-      return false;
-   }
-
-   // perform allocation of draw commands
-   r=_renderingContext->allocPrimitives(mesh,numPrimitives);
-   if(!r)
-      cerr<<"Error: AttribConfig::allocData() failed to allocate space for Mesh\n"
-            "   in PrimitiveStorage ("<<numPrimitives<<" primitives requested)." << endl;
-
-   return r;
-}
-
-
-bool AttribConfig::reallocData(Mesh& /*mesh*/,unsigned /*numVertices*/,unsigned /*numIndices*/,unsigned /*numPrimitives*/,bool /*preserveContent*/)
-{
-   // Used strategy:
-   // - if new arrays are smaller, we keep data in place and free the remaning space
-   // - if new arrays are bigger and can be enlarged on the place, we do it
-   // - otherwise we try to allocate new place for the data in the same AttribStorage
-   // - if we do not succeed in the current AttribStorage, we move the data to
-   //   some other AttribStorage
-   // - if no AttribStorage accommodate us, we allocate new AttribStorage
-
-   // FIXME: not implemented yet
-   return false;
+   ref();
+   attribStorageList.clear();
+   unref();
 }
 
 
@@ -201,14 +140,6 @@ AttribConfigId AttribConfig::getId(const std::vector<AttribType>& attribTypes,bo
 }
 
 
-AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attribTypes,bool ebo,
-                                            AttribConfigId id,RenderingContext *manager,
-                                            AttribConfigList::iterator selfIterator)
-{
-   return new AttribConfig(attribTypes,ebo,id,manager,selfIterator);
-}
-
-
 // AttribConfigId type documentation
 // note: brief description is with the variable declaration
 /** \var AttribConfigId
@@ -228,9 +159,9 @@ AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attri
  *  \sa AttribConfig
  */
 
-// AttribConfig::ConfigData::Id documentation
+// AttribConfig::Configuration::Id documentation
 // note: brief description is with the variable declaration
-/** \var AttribConfigId AttribConfig::ConfigData::id
+/** \var AttribConfigId AttribConfig::Configuration::id
  *
  *  If it is non-zero, AttribConfig class contains one of known frequently used
  *  attribute configurations. Thus, optimized routines may be used for
@@ -239,30 +170,30 @@ AttribConfig* AttribConfig::Factory::create(const std::vector<AttribType>& attri
  *
  *  If the value is zero, all operations with attribute configurations
  *  have to be performed using the whole attribute setup described by
- *  AttribConfig::ConfigData structure.
+ *  AttribConfig::Configuration structure.
  *
- *  If one AttribStorage::ConfigData contains id equal to zero and
+ *  If one AttribStorage::Configuration contains id equal to zero and
  *  the second non-zero and updateId() was executed on both of them,
  *  they always contain different attribute configurations.
  */
 
 // AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo) documentation
 // note: brief description is with the variable declaration
-/** \var AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo)
+/** \var AttribConfig::Configuration::Configuration(const std::vector<AttribType>& attribTypes,bool ebo)
  *
- *  Constructor automatically computes id member from given parameters.
+ *  The constructor automatically computes id member from given parameters.
  */
 
 
-// AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id);
+// AttribConfig::Configuration::Configuration(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id);
 // note: brief description is with the variable declaration
-/** \var AttribConfig::ConfigData::ConfigData(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
+/** \var AttribConfig::Configuration::Configuration(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
  */
 
-// void AttribConfig::ConfigData::updateId()
+// void AttribConfig::Configuration::updateId()
 // note: brief description is with the variable declaration
-/** \var void AttribConfig::ConfigData::updateId()
+/** \var void AttribConfig::Configuration::updateId()
  *
- *  The method is expected to be called after each ConfigData structure update
+ *  The method is expected to be called after each Configuration structure update
  *  whenever id member might become invalid.
  */

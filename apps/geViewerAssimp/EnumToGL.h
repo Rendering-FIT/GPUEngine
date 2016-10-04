@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GL/glew.h>
 #include <geSG/AttributeDescriptor.h>
 #include <geSG/Image.h>
 #include <geSG/Mesh.h>

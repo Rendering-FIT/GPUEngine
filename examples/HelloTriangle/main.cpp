@@ -65,7 +65,8 @@ static void idleCallback()
 static void init(unsigned windowWidth,unsigned windowHeight)
 {
    // setup OpenGL
-   auto& gl=RenderingContext::current()->gl;
+   auto rc=RenderingContext::current().get();
+   auto& gl=rc->gl;
    gl.glEnable(GL_DEPTH_TEST);
    gl.glDepthFunc(GL_LEQUAL);
    gl.glDisable(GL_CULL_FACE);
@@ -95,16 +96,16 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    glProgram->setMatrix4fv("mvp",glm::value_ptr(mvp),1,GL_FALSE);
 
    // state set
-   StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+   StateSetManager::GLState *glState=rc->createGLState();
    glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
    glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-   shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+   shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
    delete glState;
 
    // transformation
    shared_ptr<Transformation> transformation=make_shared<Transformation>();
    transformation->uploadMatrix(glm::translate(glm::vec3(0.f,0.f,-10.f)));
-   RenderingContext::current()->addTransformationGraph(transformation);
+   rc->addTransformationGraph(transformation);
 
 
    // triangle vertices
@@ -129,10 +130,9 @@ static void init(unsigned windowWidth,unsigned windowHeight)
 
 
    // attribute configuration
-   AttribConfig::ConfigData config;
-   config.attribTypes.push_back(AttribType::Vec3);
-   config.ebo=true;
-   config.updateId();
+   AttribConfig::AttribTypeList attribTypes;
+   attribTypes.push_back(AttribType::Vec3);
+   AttribConfig attribConfig(attribTypes,true,rc);
 
    // temporary list of attributes
    vector<const void*> attribList;
@@ -140,7 +140,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
 
    // alloc space for vertices and indices in AttribStorage
    // and for primitives in RenderingContext::PrimitiveStorage
-   mesh.allocData(config,3,3,1); // numVertices,numIndices,numPrimitives
+   mesh.allocData(attribConfig,3,3,1); // numVertices,numIndices,numPrimitives
 
    // upload vertices to AttribStorage
    mesh.uploadVertices(attribList.data(),1,3); // attribListSize,numVertices
@@ -157,5 +157,5 @@ static void init(unsigned windowWidth,unsigned windowHeight)
 
    // unmap buffers
    // (it has to be done before rendering)
-   RenderingContext::current()->unmapBuffers();
+   rc->unmapBuffers();
 }

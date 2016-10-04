@@ -11,6 +11,7 @@ static Material defaultMat = {
    { 1.f,1.f,1.f },
    { 1.f,1.f,1.f },
    { 0.f,0.f,0.f },
+   { 0.f,0.f,0.f },
    0.f,
    0.f,
    "","","","","","","",""
@@ -75,7 +76,7 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                usingDissolve=false;
             }
             else
-               cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+               cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
 
          case 'K':
@@ -86,8 +87,9 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                case 'a': m->ambientColor=glm::vec3(r,g,b); continue;
                case 'd': m->diffuseColor=glm::vec3(r,g,b); continue;
                case 's': m->specularColor=glm::vec3(r,g,b); continue;
+               case 'e': m->emissionColor=glm::vec3(r,g,b); continue;
             }
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
 
          case 'N':
@@ -95,7 +97,7 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                line>>m->shininess;
                continue;
             }
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
 
          case 'T':
@@ -128,7 +130,7 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                }
                continue;
             }
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
 
          case 'd':
@@ -161,19 +163,19 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                m->decalMap=name;
                continue;
             }
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             break;
 
          case 'm': {
             string name;
             line>>name;
-            if(token=="map_Ka")  m->ambientTexture=name; continue;
-            if(token=="map_Kd")  m->diffuseTexture=name; continue;
-            if(token=="map_Ks")  m->specularTexture=name; continue;
-            if(token=="map_Ns")  m->shininessTexture=name; continue;
-            if(token=="map_d")   m->alphaTexture=name; continue;
-            if(token=="map_bump")  m->bumpMap=name; continue;
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            if(token=="map_Ka")  { m->ambientTexture=name; continue; }
+            if(token=="map_Kd")  { m->diffuseTexture=name; continue; }
+            if(token=="map_Ks")  { m->specularTexture=name; continue; }
+            if(token=="map_Ns")  { m->shininessTexture=name; continue; }
+            if(token=="map_d")   { m->alphaTexture=name; continue; }
+            if(token=="map_bump")  { m->bumpMap=name; continue; }
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
          }
 
@@ -184,11 +186,11 @@ void parseMtl(const string& fileName,map<string,Material>& materials)
                m->bumpMap=name;
                continue;
             }
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
 
          default:
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
             continue;
       }
    }

@@ -8,8 +8,8 @@ find_package(osg)
 find_package(osgDB)
 find_package(OpenThreads)
 
-if(NOT SDL2_FOUND OR NOT osg_FOUND OR NOT osgDB_FOUND OR NOT OpenThreads_FOUND OR
-   NOT TARGET geRG OR NOT TARGET OsgImport)
+if(NOT TARGET SDL2 OR NOT TARGET osg OR NOT TARGET osgDB OR NOT TARGET OpenThreads OR
+   NOT TARGET geRG OR NOT TARGET OsgImport OR NOT TARGET SDLWindow NOT TARGET SDLOrbitManipulator)
    return()
 endif()
 
@@ -23,7 +23,7 @@ set(APP_INCLUDES
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 
-set(Internal_deps geRG geGL geUtil SDLWindow OsgImport)
+set(Internal_deps geRG geGL geUtil SDLWindow OsgImport SDLOrbitManipulator)
 set(External_libs SDL2 osg osgDB OpenThreads)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include

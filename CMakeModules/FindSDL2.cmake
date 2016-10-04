@@ -73,6 +73,28 @@
 # try config-based find first
 find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 
+# SDL2 (seen on version 2.0.4) does not create target but provides paths.
+# We will adjust the path names and create target.
+# (No SDL version information is present in sdl2-config.cmake, at least on version 2.0.4).
+if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
+   if(${CMAKE_FIND_PACKAGE_NAME}_FOUND AND NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
+
+      # variables
+      set(SDL2_INCLUDE_DIR "${SDL2_INCLUDE_DIRS}")
+      unset(SDL2_INCLUDE_DIRS)
+      set(SDL2_LIBRARY ${SDL2_LIBDIR}/libSDL2.so)
+      unset(SDL2_LIBRARIES)
+
+      # target
+      add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
+      set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
+         INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}"
+         INTERFACE_LINK_LIBRARIES "${SDL2_LIBRARY}"
+      )
+   endif()
+endif()
+
+
 # use regular old-style approach
 if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 

@@ -4,9 +4,11 @@
 #include <typeinfo>
 #include <typeindex>
 #include <geRG/FlexibleUniform.h>
+#include <geRG/RenderingContext.h>
 #include <geRG/StateSet.h>
 #include <geRG/StateSetManager.h>
-#include <geCore/Command.h>
+#include <geGL/OpenGLCommands.h>
+#include <geGL/Texture.h>
 
 using namespace std;
 using namespace ge::rg;
@@ -210,9 +212,21 @@ void StateSetDefaultGLState::init(const std::shared_ptr<StateSet>& ss,StateSetMa
          ss->clearCommands();
          auto t=colorTextureList.front().lock();
          assert(t && "StateSetDefaultGLState error: colorTexture was destroyed.");
-#if 0 // FIXME: this needs geGL improvements (probably), that will be fixed ASAP; until that textures are not working
-         ss->addCommand(ge::gl::sharedBindTexture(GL_TEXTURE_2D,t));
-         ss->addCommand(ge::gl::sharedCommand(&ge::gl::glBindTexture,GL_TEXTURE_2D,t->?));
+#if 1 // FIXME: this needs geGL improvements (probably), that will be fixed ASAP; until that textures are not working
+         //ss->addCommand(ge::gl::sharedBindTexture(GL_TEXTURE_2D,t));
+         //ss->addCommand(ge::gl::createCommand(&ge::gl::Context::glFinish));
+         //ss->addCommand(ge::gl::createCommand(&ge::gl::Context::glBindTexture,0,1));
+         //ss->addCommand(ge::gl::createCommand(ge::gl::Texture::bind,t.get(),0));
+         class BindTexture : public ge::core::Command {
+         protected:
+            shared_ptr<ge::gl::Texture> _texture;
+            unsigned _unit;
+         public:
+            BindTexture(const shared_ptr<ge::gl::Texture>& texture,unsigned textureUnit)
+               : _texture(texture), _unit(textureUnit)  {}
+            virtual void operator()()  { _texture->bind(_unit); };
+         };
+         ss->addCommand(make_shared<BindTexture>(t,0));
 #endif
          ss->addRenderCommand();
       }

@@ -11,6 +11,7 @@ struct Material {
    glm::vec3 ambientColor;  // Ka
    glm::vec3 diffuseColor;  // Kd
    glm::vec3 specularColor; // Ks
+   glm::vec3 emissionColor; // Ke
    float shininess;
    float transparency; // 0 for fully opague, 1 for completely transparent
    std::string ambientTexture;

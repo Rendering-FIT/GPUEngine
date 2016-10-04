@@ -61,7 +61,7 @@ namespace ge
       class GERG_EXPORT RenderingContext {
       public:
 
-         typedef AttribConfig::AttribConfigList AttribConfigList;
+         typedef AttribConfig::InstanceList AttribConfigInstances;
          typedef std::vector<std::shared_ptr<Transformation>> TransformationGraphList;
          enum class MappedBufferAccess : uint8_t { READ=0x1, WRITE=0x2, READ_WRITE=0x3, NO_ACCESS=0x0 };
 
@@ -78,13 +78,15 @@ namespace ge
          float *_cpuTransformationBuffer;
          std::shared_ptr<ge::gl::Buffer> _drawIndirectBuffer;
 
-         AttribConfigList _attribConfigList;
+         AttribConfigInstances _attribConfigInstances;
          unsigned _numAttribStorages;
          std::shared_ptr<StateSetManager> _stateSetManager;
          std::map<std::string,std::weak_ptr<ge::gl::Texture>> _textureCache;
          TransformationGraphList _transformationGraphs;
          std::shared_ptr<MatrixList> _emptyMatrixList;
          bool _useARBShaderDrawParameters;
+         unsigned _defaultAttribStorageVertexCapacity = 1000*1024; // 1M vertices (for just float coordinates ~12MiB, including normals, color and texCoord, ~36MiB)
+         unsigned _defaultAttribStorageIndexCapacity = 4000*1024; // 4M indices (~16MiB)
 
          unsigned _bufferPosition;
          ProgressStamp _progressStamp; ///< Monotonically increasing number wrapping on overflow.
@@ -111,18 +113,24 @@ namespace ge
          RenderingContext();
          virtual ~RenderingContext();
 
-         inline  const AttribConfigList& attribConfigList();
-         virtual AttribConfigRef getAttribConfig(const AttribConfig::ConfigData &config);
-         inline  AttribConfigRef getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo);
-         inline  AttribConfigRef getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
-                                                AttribConfigId id);
-         void removeAttribConfig(AttribConfigList::iterator it);
+         AttribConfig getAttribConfig(const AttribConfig::Configuration& config);
+         inline AttribConfig getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo);
+         inline AttribConfig getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,
+                                             AttribConfigId id);
+
+         inline const AttribConfigInstances& attribConfigInstances();
+         AttribConfig::Instance* getAttribConfigInstance(const AttribConfig::Configuration& config);
+         void removeAttribConfigInstance(AttribConfigInstances::iterator it);
 
          inline bool getUseARBShaderDrawParameters() const;
          void setUseARBShaderDrawParameters(bool value);
          inline unsigned numAttribStorages() const;
          void onAttribStorageInit(AttribStorage *a);
          void onAttribStorageRelease(AttribStorage *a);
+         inline unsigned defaultAttribStorageVertexCapacity() const;
+         inline unsigned defaultAttribStorageIndexCapacity() const;
+         inline void setDefaultAttribStorageVertexCapacity(unsigned capacity);
+         inline void setDefaultAttribStorageIndexCapacity(unsigned capacity);
 
          inline PrimitiveStorage* primitiveStorage() const;                   ///< Returns BufferStorage that contains primitive set data of this graphics context. Any modification to the buffer must be done carefully to not break internal data consistency.
          inline DrawCommandStorage* drawCommandStorage() const;               ///< Returns BufferStorage that contains draw commands. Any modification to the buffer must be done carefully to not break internal data consistency.
@@ -139,6 +147,12 @@ namespace ge
          inline ItemAllocationManager& transformationAllocationManager();
          inline const ItemAllocationManager& transformationAllocationManager() const;
          void setCpuTransformationBufferCapacity(unsigned numMatrices);
+
+         virtual bool allocVertexData(Mesh &mesh,const AttribConfig& attribConfig,
+                                      unsigned numVertices,unsigned numIndices);
+         virtual bool reallocVertexData(Mesh &mesh,unsigned numVertices,
+                                        unsigned numIndices,bool preserveContent=true);
+         inline  void freeVertexData(Mesh &mesh);
 
          virtual bool allocPrimitives(Mesh &mesh,unsigned numPrimitives);
          virtual bool reallocPrimitives(Mesh &mesh,unsigned numPrimitives,
@@ -262,13 +276,17 @@ namespace ge
    {
       inline const std::shared_ptr<MatrixList>& RenderingContext::emptyMatrixList() const
       { if(_emptyMatrixList==nullptr) const_cast<RenderingContext*>(this)->_emptyMatrixList=std::make_shared<MatrixList>(0,0,0); return _emptyMatrixList; }
-      inline const RenderingContext::AttribConfigList& RenderingContext::attribConfigList()  { return _attribConfigList; }
-      inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo)
+      inline const RenderingContext::AttribConfigInstances& RenderingContext::attribConfigInstances()  { return _attribConfigInstances; }
+      inline AttribConfig RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo)
       { return getAttribConfig(attribTypes,ebo,AttribConfig::getId(attribTypes,ebo)); }
-      inline AttribConfigRef RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
-      { return getAttribConfig(AttribConfig::ConfigData(attribTypes,ebo,id)); }
+      inline AttribConfig RenderingContext::getAttribConfig(const std::vector<AttribType>& attribTypes,bool ebo,AttribConfigId id)
+      { return getAttribConfig(AttribConfig::Configuration(attribTypes,ebo,id)); }
       inline bool RenderingContext::getUseARBShaderDrawParameters() const  { return _useARBShaderDrawParameters; }
       inline unsigned RenderingContext::numAttribStorages() const  { return _numAttribStorages; }
+      inline unsigned RenderingContext::defaultAttribStorageVertexCapacity() const  { return _defaultAttribStorageVertexCapacity; }
+      inline unsigned RenderingContext::defaultAttribStorageIndexCapacity() const  { return _defaultAttribStorageIndexCapacity; }
+      inline void RenderingContext::setDefaultAttribStorageVertexCapacity(unsigned capacity)  { _defaultAttribStorageVertexCapacity=capacity; }
+      inline void RenderingContext::setDefaultAttribStorageIndexCapacity(unsigned capacity)  { _defaultAttribStorageIndexCapacity=capacity; }
       inline PrimitiveStorage* RenderingContext::primitiveStorage() const  { return &_primitiveStorage; }
       inline DrawCommandStorage* RenderingContext::drawCommandStorage() const  { return &_drawCommandStorage; }
       inline MatrixStorage* RenderingContext::matrixStorage() const  { return &_matrixStorage; }
@@ -279,6 +297,7 @@ namespace ge
       inline unsigned* RenderingContext::transformationAllocation(unsigned id) const  { return _transformationAllocationManager[id]; }
       inline ItemAllocationManager& RenderingContext::transformationAllocationManager()  { return _transformationAllocationManager; }
       inline const ItemAllocationManager& RenderingContext::transformationAllocationManager() const  { return _transformationAllocationManager; }
+      inline void RenderingContext::freeVertexData(Mesh &mesh)  { if(mesh.attribStorage()) mesh.attribStorage()->freeData(mesh); }
       inline void RenderingContext::setAndUploadPrimitives(ge::rg::Mesh& mesh,ge::rg::PrimitiveGpuData* nonConstBufferData,const unsigned* modesAndOffsets4,unsigned numPrimitives)
       { setAndUploadPrimitives(mesh,nonConstBufferData,generatePrimitiveList(modesAndOffsets4,numPrimitives).data(),numPrimitives); }
       inline void RenderingContext::clearPrimitives(Mesh &mesh)  { setNumPrimitives(mesh,0); }

@@ -8,7 +8,7 @@
 #include <geRG/RenderingContext.h>
 #include <geRG/Transformation.h>
 #include <geAd/OsgImport/OsgImport.h>
-#include <geAd/SDLWindow/SDLOrbitManipulator.h>
+#include <geAd/SDLOrbitManipulator/SDLOrbitManipulator.h>
 #include <geAd/SDLWindow/SDLWindow.h>
 #include <geUtil/ArgumentObject.h>
 #include <osg/ref_ptr>
@@ -25,7 +25,7 @@ using namespace ge::rg;
 
 
 static void init(unsigned windowWidth,unsigned windowHeight);
-static void idleCallback(void*);
+static void idleCallback();
 
 
 static ge::util::ArgumentObject *args;
@@ -89,7 +89,7 @@ int main(int argc,char*argv[])
 }
 
 
-static void idleCallback(void*)
+static void idleCallback()
 {
    // initial frame time point
    if(showFPS && frameTimePoints.empty())

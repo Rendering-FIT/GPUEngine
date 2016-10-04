@@ -78,7 +78,8 @@ static void idleCallback()
 static void init(unsigned windowWidth,unsigned windowHeight)
 {
    // setup OpenGL
-   auto& gl=RenderingContext::current()->gl;
+   auto rc=RenderingContext::current().get();
+   auto& gl=rc->gl;
    gl.glEnable(GL_DEPTH_TEST);
    gl.glDepthFunc(GL_LEQUAL);
    gl.glDisable(GL_CULL_FACE);
@@ -107,22 +108,19 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    glProgram->use();
    glProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
 
-   StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+   StateSetManager::GLState *glState=rc->createGLState();
    glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
    glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-   shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+   shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
    delete glState;
 
 
-   AttribConfig::ConfigData config;
-   config.attribTypes.push_back(AttribType::Vec3);
+   AttribConfig::AttribTypeList attribTypes;
+   attribTypes.push_back(AttribType::Vec3);
 
    // top-left geometry - raw rendering, not using indirect draw optimization
    // (only coordinates in AttribStorage while manual OpenGL setup and draw calls are required)
    // (non-indexed, not indirect draw)
-   config.ebo=false;
-   config.updateId();
-
    constexpr float z=-10.f;
    constexpr float niShiftX=-1.5f;
    constexpr float directShiftY=3.0f;
@@ -138,13 +136,10 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    vector<const void*> attribList;
    attribList.reserve(1);
    attribList.emplace_back(twoTrianglesNI.data());
-   meshDirectNI.allocData(config,6,0,0);
+   meshDirectNI.allocData(AttribConfig(attribTypes,false,rc),6,0,0);
    meshDirectNI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesNI.size());
 
    // top-right geometry - the same as above but using indexing
-   config.ebo=true;
-   config.updateId();
-
    constexpr float iShiftX=1.5f;
    const vector<glm::vec3> twoTrianglesI = {
       glm::vec3(iShiftX+0,directShiftY+0,z),
@@ -157,7 +152,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    const vector<unsigned> indices = { 3, 1, 2, 3, 4, 5 };
 
    attribList[0]=twoTrianglesI.data();
-   meshDirectI.allocData(config,6,6,0);
+   meshDirectI.allocData(AttribConfig(attribTypes,true,rc),6,6,0);
    meshDirectI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesI.size());
    meshDirectI.uploadIndices(indices.data(),(uint32_t)indices.size());
 
@@ -181,10 +176,8 @@ static void init(unsigned windowWidth,unsigned windowHeight)
       GL_TRIANGLES,3,
    };
 
-   config.ebo=false;
-   config.updateId();
    attribList[0]=twoTrianglesIndirectNI.data();
-   meshIndirectNI.allocData(config,6,0,(uint32_t)primitiveDataNI.size());
+   meshIndirectNI.allocData(AttribConfig(attribTypes,false,rc),6,0,(uint32_t)primitiveDataNI.size());
    meshIndirectNI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesIndirectNI.size());
    meshIndirectNI.setAndUploadPrimitives(primitiveDataNI.data(),
                                          modesAndOffsets4.data(),(uint32_t)primitiveDataNI.size());
@@ -210,10 +203,8 @@ static void init(unsigned windowWidth,unsigned windowHeight)
       { 3,3,true }
    };
 
-   config.ebo=true;
-   config.updateId();
    attribList[0]=twoTrianglesIndirectI.data();
-   meshIndirectI.allocData(config,6,6,(uint32_t)primitiveDataI.size());
+   meshIndirectI.allocData(AttribConfig(attribTypes,true,rc),6,6,(uint32_t)primitiveDataI.size());
    meshIndirectI.uploadVertices(attribList.data(),(uint32_t)attribList.size(),(uint32_t)twoTrianglesIndirectI.size());
    meshIndirectI.uploadIndices(indices.data(),(uint32_t)indices.size());
    meshIndirectI.setAndUploadPrimitives(primitiveDataI.data(),
@@ -223,5 +214,5 @@ static void init(unsigned windowWidth,unsigned windowHeight)
 
    // unmap buffers
    // (it has to be done before rendering)
-   RenderingContext::current()->unmapBuffers();
+   rc->unmapBuffers();
 }

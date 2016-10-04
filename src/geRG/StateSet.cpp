@@ -156,7 +156,7 @@ void StateSet::setupRendering()
       // size of increment differs for DrawElements and DrawArrays (EBO in use or not)
       // and it is given as index to unsigned array (to be usable directly as index in shader),
       // thus it is not 20 and 16, but 5 and 4
-      unsigned increment=it1->second.attribStorage->attribConfig()->configData().ebo?5:4;
+      unsigned increment=it1->second.attribStorage->attribConfig().configuration().ebo?5:4;
 
       // iterate through all RenderingData
       for(auto it2=it1->second.renderingData.begin(),e=it1->second.renderingData.end(); it2!=e; it2++)

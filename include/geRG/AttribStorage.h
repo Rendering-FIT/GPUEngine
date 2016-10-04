@@ -35,7 +35,7 @@ namespace ge
          bool _privateFlag;
          ArrayAllocationManager<Mesh> _vertexAllocationManager;  ///< Allocation manager for arrays of vertices.
          ArrayAllocationManager<Mesh> _indexAllocationManager;   ///< Allocation manager for arrays of indices.
-         AttribConfigRef _attribConfig;        ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
+         AttribConfig _attribConfig;           ///< Configuration and formats of OpenGL attributes stored in this AttribStorage.
          RenderingContext* _renderingContext;  ///< Rendering context that the AttribStorage lives in. Rendering context is required particularly from object destructor.
 
          std::shared_ptr<ge::gl::VertexArray> _va;
@@ -45,7 +45,7 @@ namespace ge
       public:
 
          AttribStorage() = delete;
-         AttribStorage(const AttribConfigRef &config,unsigned numVertices,unsigned numIndices);
+         AttribStorage(const AttribConfig& config,unsigned numVertices,unsigned numIndices);
          virtual ~AttribStorage();
 
          virtual void bind() const;
@@ -71,7 +71,7 @@ namespace ge
          inline const ArrayAllocationManager<Mesh>& vertexAllocationManager() const;
          inline const ArrayAllocationManager<Mesh>& indexAllocationManager() const;
 
-         inline const AttribConfigRef& attribConfig() const;
+         inline const AttribConfig& attribConfig() const;
          inline RenderingContext* renderingContext() const;
          inline bool isPrivate() const;
 
@@ -86,7 +86,7 @@ namespace ge
 
          class Factory {
          public:
-            virtual std::shared_ptr<AttribStorage> create(const AttribConfigRef &config,
+            virtual std::shared_ptr<AttribStorage> create(const AttribConfig& config,
                      unsigned numVertices,unsigned numIndices);
          };
          static inline std::shared_ptr<Factory>& factory();
@@ -119,7 +119,7 @@ namespace ge
       inline ArrayAllocationManager<Mesh>& AttribStorage::indexAllocationManager()  { return _indexAllocationManager; }
       inline const ArrayAllocationManager<Mesh>& AttribStorage::vertexAllocationManager() const  { return _vertexAllocationManager; }
       inline const ArrayAllocationManager<Mesh>& AttribStorage::indexAllocationManager() const  { return _indexAllocationManager; }
-      inline const AttribConfigRef& AttribStorage::attribConfig() const  { return _attribConfig; }
+      inline const AttribConfig& AttribStorage::attribConfig() const  { return _attribConfig; }
       inline RenderingContext* AttribStorage::renderingContext() const  { return _renderingContext; }
       inline bool AttribStorage::isPrivate() const  { return _privateFlag; }
       inline const std::shared_ptr<ge::gl::VertexArray>& AttribStorage::vertexArray() const  { return _va; }

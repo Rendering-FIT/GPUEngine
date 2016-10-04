@@ -8,6 +8,7 @@
 #include <geUtil/ArgumentObject.h>
 #include <geAd/SDLWindow/SDLWindow.h>
 #include <geAd/SDLOrbitManipulator/SDLOrbitManipulator.h>
+#include <FreeImagePlus.h>
 #include <typeinfo> // MSVC 2013 requires this rather at the end of headers to compile successfully
 #include <typeindex>
 #include <fstream>
@@ -107,27 +108,30 @@ shared_ptr<Mesh> generateMesh(const vector<glm::vec3>& coordBuffer,
    }
 
    // attribute configuration
-   AttribConfig::ConfigData config;
-   config.attribTypes.push_back(AttribType::Vec3);
+   AttribConfig::AttribTypeList attribTypeList;
+   attribTypeList.push_back(AttribType::Vec3);
    if(normalBuffer.size()!=0)
-      config.attribTypes.push_back(AttribType::Vec3);
-   if(texCoordBuffer.size()!=0)
-      config.attribTypes.push_back(AttribType::Vec2);
-   config.ebo=false;
-   config.updateId();
+      attribTypeList.push_back(AttribType::Vec3);
+   if(texCoordBuffer.size()!=0) {
+      attribTypeList.push_back(AttribType::Empty);
+      attribTypeList.push_back(AttribType::Vec2);
+   }
+   AttribConfig attribConfig(attribTypeList,false,RenderingContext::current().get());
 
    // temporary list of attributes
    vector<const void*> attribList;
    attribList.emplace_back(coordBuffer.data());
    if(normalBuffer.size()!=0)
       attribList.emplace_back(normalBuffer.data());
-   if(texCoordBuffer.size()!=0)
+   if(texCoordBuffer.size()!=0) {
+      attribList.emplace_back(nullptr);
       attribList.emplace_back(texCoordBuffer.data());
+   }
 
    // alloc space for vertices and indices in AttribStorage
    // and for primitives in RenderingContext::PrimitiveStorage
    shared_ptr<Mesh> mesh=make_shared<Mesh>();
-   mesh->allocData(config,unsigned(coordBuffer.size()),0,1); // numVertices,numIndices,numPrimitives
+   mesh->allocData(attribConfig,unsigned(coordBuffer.size()),0,1); // numVertices,numIndices,numPrimitives
 
    // upload vertices to AttribStorage
    mesh->uploadVertices(attribList.data(),
@@ -182,7 +186,8 @@ bool checkDataAndPush(const std::vector<T>& data,std::vector<T>& buffer,const ve
 static void init(unsigned windowWidth,unsigned windowHeight)
 {
    // setup OpenGL
-   auto& gl=RenderingContext::current()->gl;
+   auto& rc=RenderingContext::current();
+   auto& gl=rc->gl;
    gl.glEnable(GL_DEPTH_TEST);
    gl.glDepthFunc(GL_LEQUAL);
    gl.glEnable(GL_CULL_FACE);
@@ -196,28 +201,27 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    cameraManipulator.setEye(center+glm::vec3(0.f,0.f,radius*2.f));
 
    // setup shaders and prepare GLSL program
-   glProgram=RenderingContext::current()->getProgram(
-         RenderingContext::ProgramType::AMBIENT_AND_LIGHT_PASS,true);
+   glProgram=rc->getProgram(RenderingContext::ProgramType::AMBIENT_AND_LIGHT_PASS,true);
    glm::mat4 projection=glm::perspective(float(60.*M_PI/180.),
                                          float(windowWidth)/float(windowHeight),zNear,zFar);
    glProgram->use();
    glProgram->setMatrix4fv("projection",glm::value_ptr(projection));
-   glProgram->set("colorTexturingMode",int(0));
-   glProgram->set("colorTexture",int(0));
+   //glProgram->set("colorTexturingMode",int(0));
+   //glProgram->set("colorTexture",int(0));
    glProgram->set("lightPosition",0.f,0.f,0.f,1.f);
    glProgram->set("lightColor",1.f,1.f,1.f);
    glProgram->set("lightAttenuation",1.f,0.f,0.f);
 
    // state set
-   StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+   StateSetManager::GLState *glState=rc->createGLState();
    glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
    glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-   shared_ptr<StateSet> rootStateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+   shared_ptr<StateSet> rootStateSet=rc->getOrCreateStateSet(glState);
    delete glState;
 
    // transformation
    cameraTransformation=make_shared<Transformation>();
-   RenderingContext::current()->addTransformationGraph(cameraTransformation);
+   rc->addTransformationGraph(cameraTransformation);
 
 
    // empty file name
@@ -225,14 +229,14 @@ static void init(unsigned windowWidth,unsigned windowHeight)
       return;
 
    // path
-   string path;
+   string parentPath;
 #if defined(__WIN32__) || defined(_WIN32)
    string::size_type i=fileName.find_last_of('\\');
 #else
    string::size_type i=fileName.find_last_of('/');
 #endif
    if(i!=string::npos)
-      path=fileName.substr(0,i+1);
+      parentPath=fileName.substr(0,i+1);
 
    // open file
    ifstream f(fileName);
@@ -305,7 +309,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
                }
                // 'p' (e.g. "vp") for parameter space vertices not implemented yet
                default:
-                  cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+                  cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
                   continue;
             }
 
@@ -380,11 +384,11 @@ static void init(unsigned windowWidth,unsigned windowHeight)
             if(token=="mtllib") {
                string fileName;
                line>>fileName;
-               parseMtl(path+fileName,materials);
+               parseMtl(parentPath+fileName,materials);
                continue;
             }
             else {
-               cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+               cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
                continue;
             }
 
@@ -412,11 +416,11 @@ static void init(unsigned windowWidth,unsigned windowHeight)
                      materialCommandList->push_back(specularUniform);
 
                      // state set
-                     StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+                     StateSetManager::GLState *glState=rc->createGLState();
                      glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
                      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
                      glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
-                     shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+                     shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
                      delete glState;
 
                      // create drawable
@@ -436,12 +440,12 @@ static void init(unsigned windowWidth,unsigned windowHeight)
                continue;
             }
             else {
-               cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+               cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
                continue;
             }
 
          default:
-            cout<<"Unknown line content \""<<lineBuf<<"\"\n"<<endl;
+            cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
       }
    }
 
@@ -450,6 +454,7 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    if(m) {
       meshList.push_back(m);
 
+      // material color
       auto materialCommandList=make_shared<ge::core::SharedCommandList>();
       const glm::vec3& diffuse=currentMaterial->diffuseColor;
       auto diffuseUniform=make_shared<FlexibleUniform4f>("color",
@@ -460,12 +465,94 @@ static void init(unsigned windowWidth,unsigned windowHeight)
             specular.r,specular.g,specular.b,currentMaterial->shininess);
       materialCommandList->push_back(specularUniform);
 
+      // material texture
+      shared_ptr<ge::gl::Texture> colorTexture;
+      if(!currentMaterial->diffuseTexture.empty())
+      {
+         // texture file name
+         // FIXME: path should be made canonical for cache lookup
+         string colorTexturePath=parentPath+currentMaterial->diffuseTexture;
+
+         // lookup texture cache
+         colorTexture=rc->cachedTexture(colorTexturePath);
+
+         // create texture if not found in cache
+         if(!colorTexture) {
+
+            // load texture
+            fipImage img;
+            auto r=img.load(colorTexturePath.c_str());
+
+            if(!r) {
+               cout<<"Error: Can not load texture: "<<colorTexturePath<<endl;
+               colorTexture=make_shared<ge::gl::Texture>(); // create dummy texture
+            } else {
+
+               auto w=img.getWidth();
+               auto h=img.getHeight();
+               int internalFormat=0;
+               GLenum format;
+               GLenum type=GL_UNSIGNED_BYTE;
+
+               // standard 1-, 4-, 8-, 16-, 24-, 32-bit image
+               if(img.getImageType()==FIT_BITMAP) {
+                  switch(img.getBitsPerPixel()) {
+                     case 8:  if(!img.getPalette() || img.isGrayscale()) {
+                                 internalFormat=GL_R8; format=GL_RED; break;
+                              } else
+                                 if(img.isTransparent()) {
+                                    img.convertTo32Bits();
+                                    internalFormat=GL_RGBA8; format=GL_RGBA;
+                                    break;
+                                 } else {
+                                    img.convertTo24Bits();
+                                    internalFormat=GL_RGB8; format=GL_RGB;
+                                    break;
+                                 }
+                     case 24: internalFormat=GL_RGB8; format=GL_RGB; break;
+                     case 32: internalFormat=GL_RGBA8; format=GL_RGBA; break;
+                  }
+               }
+
+               if(internalFormat==0) {
+                  cout<<"Error: Unknown image format."<<endl;
+                  colorTexture=make_shared<ge::gl::Texture>(gl.getFunctionTable(),
+                        GL_TEXTURE_2D,GL_RGB8,1,1,1); // create dummy texture
+                  unsigned color=0xffffffff;
+                  colorTexture->setData2D(&color,GL_RGB,GL_UNSIGNED_BYTE,0,0,0,1,1);
+               } else {
+
+                  // create texture
+                  colorTexture=make_shared<ge::gl::Texture>(gl.getFunctionTable(),
+                        GL_TEXTURE_2D,internalFormat,
+                        1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h);
+
+                  // fill texture with data
+                  void *data=img.accessPixels();
+                  if(data) {
+                     colorTexture->setData2D(data,format,type,0,0,0,w,h);
+                     colorTexture->generateMipmap();
+                     //colorTexture->bind(0);
+                     //gl.glTexSubImage2D(GL_TEXTURE_2D,0,0,0,w,h,format,type,data);
+                     //gl.glGenerateMipmap(GL_TEXTURE_2D);
+                  }
+
+               }
+            }
+
+            // update texture cache
+            // FIXME: path should be made canonical for cache lookup
+            rc->addCacheTexture(colorTexturePath,colorTexture);
+         }
+      }
+
       // state set
-      StateSetManager::GLState *glState=RenderingContext::current()->createGLState();
+      StateSetManager::GLState *glState=rc->createGLState();
       glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
       glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
+      glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
       glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
-      shared_ptr<StateSet> stateSet=RenderingContext::current()->getOrCreateStateSet(glState);
+      shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
       delete glState;
 
       // create drawable
@@ -474,10 +561,10 @@ static void init(unsigned windowWidth,unsigned windowHeight)
 
    // unmap buffers
    // (it has to be done before rendering)
-   RenderingContext::current()->unmapBuffers();
+   rc->unmapBuffers();
 
    // check for OpenGL errors
-   int e=RenderingContext::current()->gl.glGetError();
+   int e=rc->gl.glGetError();
    if(e!=GL_NO_ERROR)
-      cout<<"OpenGL errror after init(): "<<e<<endl;
+      cout<<"OpenGL error after init(): "<<e<<endl;
 }

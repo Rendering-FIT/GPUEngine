@@ -14,25 +14,25 @@ shared_ptr<AttribStorage::Factory> AttribStorage::_factory = make_shared<AttribS
 
 
 
-AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
+AttribStorage::AttribStorage(const AttribConfig& attribConfig,unsigned numVertices,
                              unsigned numIndices)
    : _vertexAllocationManager(numVertices)
    , _indexAllocationManager(numIndices)
-   , _attribConfig(config)
-   , _renderingContext(config->renderingContext())
+   , _attribConfig(attribConfig)
+   , _renderingContext(attribConfig.renderingContext())
 {
    _renderingContext->onAttribStorageInit(this);
 
-   // get ConfigData
-   const AttribConfig::ConfigData &configData=config->configData();
+   // get attrib configuration
+   auto& cfg=attribConfig.configuration();
 
    // create VAO
    _va=make_shared<VertexArray>();
 
    // create buffer objects
-   _bufferList.reserve(configData.attribTypes.size());
+   _bufferList.reserve(cfg.attribTypes.size());
    unsigned i=0;
-   for(auto it=configData.attribTypes.begin(); it!=configData.attribTypes.end(); it++,i++)
+   for(auto it=cfg.attribTypes.begin(); it!=cfg.attribTypes.end(); it++,i++)
    {
       AttribType t=*it;
       auto b=make_shared<Buffer>(numVertices*t.elementSize(),nullptr,GL_DYNAMIC_DRAW);
@@ -42,7 +42,7 @@ AttribStorage::AttribStorage(const AttribConfigRef &config,unsigned numVertices,
    }
 
    // create EBO
-   if(configData.ebo)
+   if(cfg.ebo)
    {
       _eb=make_shared<Buffer>(numIndices*4,nullptr,GL_DYNAMIC_DRAW);
       _va->addElementBuffer(_eb);
@@ -210,13 +210,13 @@ void AttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
                                    unsigned attribListSize,
                                    unsigned numVertices,unsigned fromIndex)
 {
-   const AttribConfig::ConfigData &configData=_attribConfig->configData();
-   unsigned c = unsigned(_bufferList.size());
+   auto& cfg=_attribConfig.configuration();
+   unsigned c=unsigned(_bufferList.size());
    assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
                                "AttribStorage must match.");
    for(unsigned i=0; i<c; i++)
    {
-      AttribType t=configData.attribTypes[i];
+      AttribType t=cfg.attribTypes[i];
       unsigned elementSize=t.elementSize();
       unsigned srcOffset=fromIndex*elementSize;
       unsigned dstOffset=(_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex)*elementSize;
@@ -250,7 +250,7 @@ void AttribStorage::render(const std::vector<RenderingCommandData>& renderingDat
 
    // perform indirect draw calls
    auto& gl=_va->getContext();
-   if(attribConfig()->configData().ebo)
+   if(attribConfig().configuration().ebo)
       for(auto it2=renderingDataList.begin(),e=renderingDataList.end(); it2!=e; it2++)
       {
          // call MultiDrawElementsIndirect
@@ -283,7 +283,7 @@ void AttribStorage::cancelAllAllocations()
 }
 
 
-shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfigRef &config,
+shared_ptr<AttribStorage> AttribStorage::Factory::create(const AttribConfig& config,
         unsigned numVertices,unsigned numIndices)
 {
    return make_shared<AttribStorage>(config,numVertices,numIndices);

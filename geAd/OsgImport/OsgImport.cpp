@@ -482,18 +482,18 @@ public:
 
          // create AttribConfig::ConfigData
          // and list of osg arrays
-         AttribConfig::ConfigData configData;
-         configData.attribTypes.reserve(arrayList.size());
+         AttribConfig::Configuration config;
+         config.attribTypes.reserve(arrayList.size());
          vector<const osg::Array*> osgArrays;
          osgArrays.reserve(arrayList.size());
 
          // convert all vertex attrib types
          // and fill configData.attribTypes and osgArrays vectors
-         auto processArrayType=[&configData,&osgArrays](const osg::Array *a)
+         auto processArrayType=[&config,&osgArrays](const osg::Array *a)
          {
             if(a)
             {
-               configData.attribTypes.push_back(convertOsgArrayType2geAttribType(a->getType()));
+               config.attribTypes.push_back(convertOsgArrayType2geAttribType(a->getType()));
                osgArrays.push_back(a);
             }
          };
@@ -509,11 +509,11 @@ public:
 
          // use EBO if there are indices
          // and updateId (for optimization purposes, such as ConfigData comparison, etc.)
-         configData.ebo=useIndices;
-         configData.updateId();
+         config.ebo=useIndices;
+         config.updateId();
 
          // create AttribConfigRef
-         AttribConfigRef attribConfig(configData);
+         AttribConfig attribConfig(config,rc);
 
          // get material
          osg::Material* osgMaterial=static_cast<osg::Material*>(
@@ -556,10 +556,10 @@ public:
 
          // upload vertices
          vector<void*> geArrays;
-         geArrays.reserve(configData.attribTypes.size());
-         for(unsigned i=0,c=unsigned(configData.attribTypes.size()); i<c; i++)
+         geArrays.reserve(config.attribTypes.size());
+         for(unsigned i=0,c=unsigned(config.attribTypes.size()); i<c; i++)
          {
-            AttribType &t=configData.attribTypes[i];
+            AttribType &t=config.attribTypes[i];
             auto attribBufSize=t.elementSize()*numVertices;
             auto osgBufSize=osgArrays[i]->getTotalDataSize();
             void *p=malloc(attribBufSize);
@@ -582,7 +582,7 @@ public:
             geArrays.push_back(p);
          }
          m->uploadVertices(geArrays.data(),geArrays.size(),numVertices);
-         for(unsigned i=0,c=unsigned(configData.attribTypes.size()); i<c; i++)
+         for(unsigned i=0,c=unsigned(config.attribTypes.size()); i<c; i++)
             free(geArrays[i]);
 
          // upload indices
