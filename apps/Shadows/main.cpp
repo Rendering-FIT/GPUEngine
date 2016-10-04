@@ -42,7 +42,7 @@ struct Application{
   float cameraNear = 0.1f;
   float cameraFar = 1000.f;
   float sensitivity = 0.01f;
-  float orbitZoomSpeed = 0.2;
+  float orbitZoomSpeed = 0.2f;
   glm::vec4 lightPosition = glm::vec4(100.f,100.f,100.f,1.f);
   uint32_t shadowMapResolution = 1024;
   float    shadowMapNear = .1f;
@@ -181,8 +181,8 @@ bool Application::mouseMove(SDL_Event const&event){
   }
   if(event.motion.state & SDL_BUTTON_MMASK){
     auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
-    orbitCamera->addXPosition(+orbitCamera->getDistance()*event.motion.xrel/this->windowSize.x*2.);
-    orbitCamera->addYPosition(-orbitCamera->getDistance()*event.motion.yrel/this->windowSize.y*2.);
+    orbitCamera->addXPosition(+orbitCamera->getDistance()*event.motion.xrel/this->windowSize.x*2.f);
+    orbitCamera->addYPosition(-orbitCamera->getDistance()*event.motion.yrel/this->windowSize.y*2.f);
   }
 
   return true;

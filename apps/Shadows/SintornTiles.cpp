@@ -71,7 +71,7 @@ void tileSizeChoises(
 }
 
 size_t computeNofLevels(glm::uvec2 const&windowSize,size_t wavefrontSize){
-  return glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(wavefrontSize));
+  return (size_t)glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(wavefrontSize));
 }
 
 #if 0

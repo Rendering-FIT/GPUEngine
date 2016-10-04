@@ -8,7 +8,7 @@ TimeStamp::TimeStamp(std::function<void(std::vector<std::string>const&,std::vect
 
 TimeStamp::~TimeStamp(){
   assert(this!=nullptr);
-  glDeleteQueries(this->_queries.size(),this->_queries.data());
+  glDeleteQueries((GLsizei)this->_queries.size(),this->_queries.data());
   glDeleteQueries(1,&this->_beginQuery);
 }
 

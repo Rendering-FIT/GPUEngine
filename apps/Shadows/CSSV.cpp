@@ -5,7 +5,7 @@
 
 CSSV::CSSV(
     size_t maxMultiplicity,
-    int computeSidesWGS,
+    size_t computeSidesWGS,
     glm::uvec2 const&windowSize,
     std::shared_ptr<ge::gl::Texture>const&depth,
     std::shared_ptr<Model>const&model,
@@ -36,7 +36,7 @@ CSSV::CSSV(
     //A
     for(int k=0;k<3;++k)
       Ptr[(e*numVer+0)*4+k]=adj->getVertices()[adj->getEdge(e,0)+k];
-    Ptr[(e*numVer+0)*4+3]=adj->getNofOpposite(e);
+    Ptr[(e*numVer+0)*4+3]=(float)adj->getNofOpposite(e);
     //B
     for(int k=0;k<3;++k)
       Ptr[(e*numVer+1)*4+k]=adj->getVertices()[adj->getEdge(e,1)+k];
@@ -47,7 +47,7 @@ CSSV::CSSV(
         Ptr[(e*numVer+2+o)*4+k]=adj->getVertices()[adj->getOpposite(e,o)+k];
       Ptr[(e*numVer+2+o)*4+3]=1;
     }
-    for(unsigned o=adj->getNofOpposite(e);o<adj->getMaxMultiplicity();++o){
+    for(size_t o=adj->getNofOpposite(e);o<adj->getMaxMultiplicity();++o){
       for(int k=0;k<4;++k)
         Ptr[(e*numVer+2+o)*4+k]=0;
     }
@@ -76,7 +76,7 @@ CSSV::CSSV(
   this->_computeSides = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("WORKGROUP_SIZE_X",this->_computeSidesWGS),
+        ge::gl::Shader::define("WORKGROUP_SIZE_X",(int)this->_computeSidesWGS),
         ge::gl::Shader::define("MAX_MULTIPLICITY",(int)adj->getMaxMultiplicity()),
         computeSrc));
 
@@ -131,14 +131,14 @@ void CSSV::create(glm::vec4 const&lightPosition,
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   this->_computeSides->use();
-  this->_computeSides->set1ui("numEdge",this->_nofEdges);
+  this->_computeSides->set1ui("numEdge",(uint32_t)this->_nofEdges);
   this->_computeSides->set4fv("lightPosition",glm::value_ptr(lightPosition));
   //this->_computeSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_adjacency->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_sillhouettes->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dibo->getId());
 
-  glDispatchCompute(ge::core::getDispatchSize(this->_nofEdges,this->_computeSidesWGS),1,1);
+  glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   this->_timeStamper->stamp("computeSillhouettes");
@@ -169,7 +169,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
   this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
   this->_capsVao->bind();
-  glDrawArrays(GL_TRIANGLES,0,this->_nofTriangles*3);
+  glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
   this->_capsVao->unbind();
 
   this->_fbo->unbind();

@@ -21,7 +21,7 @@ void Model::getVertices(std::vector<float>&vertices){
     for(size_t j=0;j<mesh->mNumFaces;++j)
       for(size_t k=0;k<3;++k)
         for(size_t l=0;l<3;++l)
-          vertices.push_back(mesh->mVertices[mesh->mFaces[j].mIndices[k]][l]);
+          vertices.push_back(mesh->mVertices[mesh->mFaces[(uint32_t)j].mIndices[(uint32_t)k]][(uint32_t)l]);
   }
 }
 
@@ -43,9 +43,9 @@ RenderModel::RenderModel(std::shared_ptr<Model>const&mdl){
   normData.reserve(this->nofVertices*3);
   for(size_t i=0;i<model->mNumMeshes;++i){
     auto mesh = model->mMeshes[i];
-    for(size_t j=0;j<mesh->mNumFaces;++j)
-      for(size_t k=0;k<3;++k)
-        for(size_t l=0;l<3;++l)
+    for(uint32_t j=0;j<mesh->mNumFaces;++j)
+      for(uint32_t k=0;k<3;++k)
+        for(uint32_t l=0;l<3;++l)
           normData.push_back(mesh->mNormals[mesh->mFaces[j].mIndices[k]][l]);
   }
   this->normals = std::make_shared<ge::gl::Buffer>(this->nofVertices*sizeof(float)*3,normData.data());

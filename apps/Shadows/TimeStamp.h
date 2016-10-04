@@ -2,6 +2,7 @@
 
 #include<functional>
 #include<geGL/geGL.h>
+#include<string>
 
 class TimeStamp: public ge::gl::Context{
   public:

@@ -9,7 +9,7 @@ class CSSV: public ShadowMethod{
   public:
     CSSV(
         size_t maxMultiplicity,
-        int computeSidesWGS,
+        size_t computeSidesWGS,
         glm::uvec2 const&windowSize,
         std::shared_ptr<ge::gl::Texture>const&depth,
         std::shared_ptr<Model>const&model,
@@ -32,7 +32,7 @@ class CSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::VertexArray>_sidesVao         = nullptr;
     size_t                              _nofEdges         = 0;
     size_t                              _nofTriangles     = 0;
-    int                                 _computeSidesWGS  = 64;
+    size_t                              _computeSidesWGS  = 64;
 
     std::shared_ptr<ge::gl::Program>    _drawCaps         = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
