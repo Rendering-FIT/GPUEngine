@@ -372,7 +372,8 @@ void Program::set1i(std::string const&name,int32_t v0){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
   assert(
-      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT          || 
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT          ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL         ||
       ge::gl::isSamplerType(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name])));
   this->_gl.glProgramUniform1i(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),v0);
 }
@@ -380,21 +381,27 @@ void Program::set1i(std::string const&name,int32_t v0){
 void Program::set2i(std::string const&name,int32_t v0,int32_t v1){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC2);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC2 ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL_VEC2);
   this->_gl.glProgramUniform2i(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),v0,v1);
 }
 
 void Program::set3i(std::string const&name,int32_t v0,int32_t v1,int32_t v2){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC3);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC3 ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL_VEC3);
   this->_gl.glProgramUniform3i(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),v0,v1,v2);
 }
 
 void Program::set4i(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC4);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC4 ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL_VEC4);
   this->_gl.glProgramUniform4i(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),v0,v1,v2,v3);
 }
 
@@ -463,7 +470,9 @@ void Program::set4fv(std::string const&name,float const*v0,GLsizei count){
 void Program::set1iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform1iv(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0);
 }
@@ -471,7 +480,9 @@ void Program::set1iv(std::string const&name,int32_t const*v0,GLsizei count){
 void Program::set2iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC2);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC2 ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL_VEC2);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform2iv(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0);
 }
@@ -479,7 +490,9 @@ void Program::set2iv(std::string const&name,int32_t const*v0,GLsizei count){
 void Program::set3iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC3);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC3 ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL_VEC3);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform3iv(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0);
 }
@@ -487,7 +500,9 @@ void Program::set3iv(std::string const&name,int32_t const*v0,GLsizei count){
 void Program::set4iv(std::string const&name,int32_t const*v0,GLsizei count){
   assert(this!=nullptr);
   auto ii = this->_info->uniforms.find(name);if(ii==this->_info->uniforms.end()){if(printUniformWarnings)ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);return;}
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC4);
+  assert(
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_INT_VEC4 ||
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == GL_BOOL_VEC4);
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));
   this->_gl.glProgramUniform4iv(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0);
 }
