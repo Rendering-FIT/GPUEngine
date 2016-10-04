@@ -48,7 +48,7 @@ class TileDivisibility{
           divRoundUp(windowSize[0],tileSize[l].x)*divRoundUp(windowSize[1],tileSize[l].y);
       }
     }
-    bool operator<(TileDivisibility const&other){
+    bool operator<(TileDivisibility const&other)const{
       assert(this!=nullptr);
       assert(this->divisibility.size()==other.divisibility.size());
       if(this->idle<other.idle)return true;
