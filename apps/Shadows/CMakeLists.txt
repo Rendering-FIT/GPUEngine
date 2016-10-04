@@ -46,6 +46,7 @@ set(APP_INCLUDES
   CSSVShaders.h
   Sintorn.h
   SintornTiles.h
+  SintornShaders.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
