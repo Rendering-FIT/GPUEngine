@@ -17,7 +17,6 @@ if(NOT SDL2_FOUND OR NOT TARGET Assimp OR
 endif()
 
 
-
 set(APP_SOURCES
   main.cpp
   Model.cpp

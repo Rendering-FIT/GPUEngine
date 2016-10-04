@@ -1,4 +1,5 @@
 #include"Sintorn.h"
+#include"SintornTiles.h"
 
 #if 0
 
@@ -45,40 +46,24 @@ Sintorn::Sintorn(
   this->_windowSize = windowSize;
 
   //compute tiles sizes in tiles
-  this->_numLevels=chooseTileSizes(&this->_tileDivisibility,this->_windowSize,this->_wavefrontSize);
-
+  chooseTileSizes(this->_tileDivisibility,this->_windowSize,this->_wavefrontSize);
+  this->_numLevels = this->_tileDivisibility.size();
 
   //compute tile size in pixels
-  this->TileSizeInPixels=new unsigned[this->NumLevels*2];
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(int k=0;k<2;++k)this->TileSizeInPixels[l*2+k]=1;
-
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(unsigned m=l+1;m<this->NumLevels;++m)
-      for(int k=0;k<2;++k)this->TileSizeInPixels[l*2+k]*=this->TileDivisibility[m*2+k];
+  this->_tileSizeInPixels.resize(this->_numLevels,glm::uvec2(1u,1u));
+  for(size_t l=0;l<this->_numLevels;++l)
+    for(size_t m=l+1;m<this->_numLevels;++m)
+      this->_tileSizeInPixels[l]*=this->_tileDivisibility[m];
 
   //compute tiles sizes in clip space
-  this->TileSizeInClipSpace=new float[this->NumLevels*2];
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(int k=0;k<2;++k)this->TileSizeInClipSpace[l*2+k]=2;
-
-  /*
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(unsigned m=l;m<this->NumLevels;++m)
-      for(int k=0;k<2;++k)this->TileSizeInClipSpace[m*2+k]/=this->TileDivisibility[l*2+k];
-      */
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(int k=0;k<2;++k)this->TileSizeInClipSpace[l*2+k]=2./this->WindowSize[k]*this->TileSizeInPixels[l*2+k];
-
-
+  for(auto const&x:this->_tileSizeInPixels)
+    this->_tileSizeInClipSpace.push_back(glm::vec2(2.f)/glm::vec2(windowSize)*glm::vec2(x));
 
   //compute level size
-  this->TileCount=new unsigned[this->NumLevels*2];
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(unsigned k=0;k<2;++k)this->TileCount[l*2+k]=1;
-  for(unsigned l=0;l<this->NumLevels;++l)
-    for(unsigned m=l;m<this->NumLevels;++m)
-      for(unsigned k=0;k<2;++k)this->TileCount[m*2+k]*=this->TileDivisibility[l*2+k];
+  this->_tileCount.resize(this->_numLevels,glm::uvec2(1u,1u));
+  for(size_t l=0;l<this->_numLevels;++l)
+    for(size_t m=l;m<this->_numLevels;++m)
+      this->_tileCount[m]*=this->_tileDivisibility[l];
 
   //compute level offset
   this->HDBOffset=new unsigned[this->NumLevels];

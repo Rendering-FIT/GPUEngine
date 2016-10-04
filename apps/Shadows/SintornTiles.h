@@ -8,14 +8,12 @@
 #include<glm/gtc/matrix_access.hpp>
 
 /**
- * @brief This function finds out the best distribution of size among tiles
+ * @brief This function finds out the best distribution of tileDivisibilities among tiles
  *
- * @param TileSize output tile sizes 
- * @param WindowSize windows size
- * @param WavefrontSize wavefront size usually 32 or 64
- *
- * @return returns number of levels
+ * @param tileDivisibility output tile divisibilities
+ * @param windowSize windows size
+ * @param wgs absolute work-group size = tileDivisibility[i].x*tileDivisibility[i].y
  */
-unsigned chooseTileSizes(std::vector<glm::uvec2>&tileSize,glm::uvec2 const&windowSize,uint32_t wavefrontSize);
+void chooseTileSizes(std::vector<glm::uvec2>&tileDivisibility,glm::uvec2 const&windowSize,size_t wgs);
 
 

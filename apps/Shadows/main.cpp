@@ -22,6 +22,7 @@
 #include"CubeShadowMapping.h"
 #include"CSSV.h"
 #include"TimeStamp.h"
+#include"SintornTiles.h"
 
 struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
@@ -88,7 +89,7 @@ bool Application::init(int argc,char*argv[]){
   this->windowSize.y        = this->args->getArgi("--window-size-y","1024");
   this->cameraFovy          = this->args->getArgf("--camera-fovy","1.5707963267948966f");
   this->cameraNear          = this->args->getArgf("--camera-near","0.1f");
-  this->cameraFar           = this->args->getArgf("--camera-far","1000.f");
+  this->cameraFar           = this->args->getArgf("--camera-far","inf");
   this->sensitivity         = this->args->getArgf("--camera-sensitivity","0.01f");
   this->orbitZoomSpeed      = this->args->getArgf("--camera-zoomSpeed","0.2f");
   this->useShadows          = !this->args->isPresent("--no-shadows");
