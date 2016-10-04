@@ -54,7 +54,7 @@ LibraryLoader*ge::ad::getLoader(){
 
 #else//__linux__
 
-LibraryLoader*ge::util::getLoader(){
+LibraryLoader*ge::ad::getLoader(){
   return nullptr;
 }
 

@@ -118,7 +118,7 @@ void Framebuffer::drawBuffers(GLsizei n,const GLenum *buffers)const{
 
 void Framebuffer::drawBuffers(std::vector<GLenum>const buffers)const{
   assert(this!=nullptr);
-  this->_gl.glNamedFramebufferDrawBuffers(this->_id,buffers.size(),buffers.data());
+  this->_gl.glNamedFramebufferDrawBuffers(this->_id,(GLsizei)buffers.size(),buffers.data());
 }
 
 void Framebuffer::drawBuffers(GLsizei n,...)const{

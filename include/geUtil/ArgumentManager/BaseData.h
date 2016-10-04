@@ -7,14 +7,14 @@
 namespace ge{
   namespace util{
     template<typename TYPE>
-      class GEUTIL_EXPORT BaseData: public ArgData{
+      class BaseData: public ArgData{
         protected:
           TYPE _data;
         public:
           BaseData(TYPE data);
           virtual ~BaseData(){}
-          inline TYPE get(){return this->_data;}
-          inline void set(TYPE data){this->_data = data;}
+          TYPE get(){return this->_data;}
+          void set(TYPE data){this->_data = data;}
           virtual std::string toStr();
       };
 
