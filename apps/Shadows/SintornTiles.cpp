@@ -1,13 +1,19 @@
 #include"SintornTiles.h"
 #include<cassert>
 
-#if 0
+size_t divRoundUp(size_t X,size_t Y){
+  return(X/Y)+(X%Y==0?0:1);
+}
+
+size_t divRoundDown(size_t X,size_t Y){
+  return(X/Y);
+}
 
 class TileDivisibility{
   public:
     std::vector<glm::uvec2>divisibility;
-    uint32_t idle = 0;//number of idle threads
-    uint32_t squareness = 0;//number is smaller if tiles are closer to squares
+    size_t idle = 0;//number of idle threads
+    size_t squareness = 0;//number is smaller if tiles are closer to squares
     void computeSquareness(){
       assert(this!=nullptr);
       this->squareness = 0;
@@ -19,8 +25,27 @@ class TileDivisibility{
         else this->squareness+=curSize.x/curSize.y;
       }
     }
-    void computeIdle(){
+    void computeIdle(glm::uvec2 const&windowSize){
+      size_t branchingFactor = divisibility.at(0).x*divisibility.at(0).y;
+      std::vector<glm::uvec2>tileSize;
+      for(auto const&x:this->divisibility){
+        (void)x;
+        tileSize.push_back(glm::uvec2(1u,1u));
+      }
+      for(size_t k=1;k<this->divisibility.size();++k)
+        for(size_t l=0;l<k;++l)
+          tileSize[l]*=divisibility[k];
 
+      this->idle=0;
+
+      for(size_t l=0;l<divisibility.size();++l){
+        glm::uvec2 prevTileSize;
+        if(l>0)prevTileSize = tileSize[l-1];
+        else prevTileSize = windowSize;
+
+        this->idle+=divRoundUp(windowSize[0],prevTileSize[0])*divRoundUp(windowSize[1],prevTileSize[1])*branchingFactor-
+          divRoundUp(windowSize[0],tileSize[l].x)*divRoundUp(windowSize[1],tileSize[l].y);
+      }
     }
     bool operator<(TileDivisibility const&other){
       assert(this!=nullptr);
@@ -36,56 +61,100 @@ class TileDivisibility{
  *
  * @param Choices possible choices, size is NumChoices*2
  * @param WarpSize size of warp (NVIDIA usually 32) (AMD ussually 64)
- *
- * @return returns number of possible choices - NumChoices
  */
-uint32_t tileSizeChoises(
+void tileSizeChoises(
     std::vector<glm::uvec2>&choices,
-    uint32_t WarpSize){
-  for(uint32_t x=1;x<=WarpSize;++x)//loop over all choices
-    if((WarpSize%x)==0){//is this choice of x possible?
-      choices.push_back(glm::uvec2(x,WarpSize/x));
+    size_t warpSize){
+  for(size_t x=1;x<=warpSize;++x)//loop over all choices
+    if((warpSize%x)==0)//is this choice of x possible?
+      choices.push_back(glm::uvec2(x,warpSize/x));
+}
+
+size_t computeNofLevels(glm::uvec2 const&windowSize,size_t wavefrontSize){
+  return glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(wavefrontSize));
+}
+
+#if 0
+
+void generateSolutions(std::vector<TileDivisibility>&solutions,glm::uvec2 const&windowSize,size_t wavefrontSize){
+  std::vector<glm::uvec2>choices;
+  tileSizeChoises(choices,wavefrontSize);
+  size_t II=0;//index into index
+  std::vector<size_t>index;
+  index.resize()
+  size_t*Index=new size_t[NumLevels];//N-dimensional index
+  for(size_t i=0;i<NumLevels;++i)Index[i]=0;//cleat index
+
+  size_t Index1D=0;//1D version of index
+
+  do{//loop over all solutions
+    for(size_t l=0;l<NumLevels;++l)//loop over levels
+      SolutionIndex[Index1D*NumLevels+l]=Index[l];//write solution index
+
+    //test size requirement
+    size_t Size[2]={1,1};
+    for(size_t l=0;l<NumLevels;++l)//loop over levels
+      for(int k=0;k<2;++k)//loop over dimension of size
+        Size[k]*=TileChoices[Index[l]*2+k];//compute size
+    if(Size[0]>=WindowSize[0]&&Size[1]>=WindowSize[1]){//resolution is ok
+      size_t Active;
+      SolutionIdleInvocations[NumSolutionSizeReq]=ComputeIdleInvocation(
+          &Active,
+          NumLevels,
+          TileChoices,
+          SolutionIndex+Index1D*NumLevels,
+          WindowSize);
+      SolutionActiveInvocations[NumSolutionSizeReq]=Active;
+      SolutionSizeReq[NumSolutionSizeReq]=Index1D;
+      ++NumSolutionSizeReq;
     }
-  return choices.size();
+
+    ++Index1D;//increment 1D version of index
+    //increment index to solutions
+    II=0;
+    do{//loop over levels
+      ++Index[II];//increment index in II level
+      if(Index[II]>=NumTileChoices){//index at II level overflows
+        Index[II]=0;//clear index in II level
+        ++II;//increment level
+      }else break;//we are done incrementing
+    }while(II<NumLevels);
+  }while(II<NumLevels);
+
+
 }
 
-uint32_t divRoundUp(uint32_t X,uint32_t Y){
-  return(X/Y)+(X%Y==0?0:1);
-}
 
-uint32_t divRoundDown(uint32_t X,uint32_t Y){
-  return(X/Y);
-}
 
-uint32_t computeIdleInvocation(
-    uint32_t*Active,
-    uint32_t NumLevels,
-    uint32_t*TileChoices,
-    uint32_t*SolutionIndex,
-    uint32_t*WindowSize){
-  uint32_t*TileSize=new uint32_t[NumLevels*2];
+size_t computeIdleInvocation(
+    size_t*Active,
+    size_t NumLevels,
+    size_t*TileChoices,
+    size_t*SolutionIndex,
+    size_t*WindowSize){
+  size_t*TileSize=new size_t[NumLevels*2];
   for(int l=NumLevels-1;l>=0;--l){
     TileSize[l*2+0]=1;//TileChoices[SolutionIndex[NumLevels-1]*2+0];
     TileSize[l*2+1]=1;//TileChoices[SolutionIndex[NumLevels-1]*2+1];
   }
-  for(uint32_t k=1;k<NumLevels;++k)
-    for(uint32_t l=0;l<k;++l){
+  for(size_t k=1;k<NumLevels;++k)
+    for(size_t l=0;l<k;++l){
       TileSize[l*2+0]*=TileChoices[SolutionIndex[k]*2+0];
       TileSize[l*2+1]*=TileChoices[SolutionIndex[k]*2+1];
     }
 
-  uint32_t NumInvocations=0;
-  uint32_t BrachingFactor=TileChoices[SolutionIndex[0]*2+0]*TileChoices[SolutionIndex[0]*2+1];
+  size_t NumInvocations=0;
+  size_t BrachingFactor=TileChoices[SolutionIndex[0]*2+0]*TileChoices[SolutionIndex[0]*2+1];
   //BF+BF*BF+BF*BF*BF+BF*BF*BF*BF;
-  for(uint32_t l=0;l<NumLevels;++l){
+  for(size_t l=0;l<NumLevels;++l){
     NumInvocations+=1;
     NumInvocations*=BrachingFactor;
   }
-  uint32_t Idle=0;
+  size_t Idle=0;
   *Active=0;
 
-  for(uint32_t l=0;l<NumLevels;++l){
-    uint32_t PrevTileSize[2];
+  for(size_t l=0;l<NumLevels;++l){
+    size_t PrevTileSize[2];
     if(l>0){
       PrevTileSize[0]=TileSize[(l-1)*2+0];
       PrevTileSize[1]=TileSize[(l-1)*2+1];
@@ -111,7 +180,7 @@ uint32_t computeIdleInvocation(
 
   }
 
-  //for(uint32_t l=0;l<NumLevels;++l)
+  //for(size_t l=0;l<NumLevels;++l)
   //	std::cerr<<" "<<TileSize[l*2+0]<<"x"<<TileSize[l*2+1];
   //std::cerr<<" idle:    "<<Idle<<" active: "<<*Active;
   //std::cerr<<std::endl;
@@ -119,50 +188,50 @@ uint32_t computeIdleInvocation(
   return Idle;
 }
 
-uint32_t*SortPtr;
+size_t*SortPtr;
 
 int SortByIdleInvocation(const void*A,const void*B){
-  uint32_t*APtr=(uint32_t*)A;
-  uint32_t*BPtr=(uint32_t*)B;
+  size_t*APtr=(size_t*)A;
+  size_t*BPtr=(size_t*)B;
   if(SortPtr[*APtr]<SortPtr[*BPtr])return-1;
   else if(SortPtr[*APtr]>SortPtr[*BPtr])return 1;
   return 0;
 }
 
 
-uint32_t chooseTileSizes(
+size_t chooseTileSizes(
     std::vector<glm::uvec2>&tileSize,
     glm::uvec2 const&windowSize,
-    uint32_t wavefrontSize){
+    size_t wavefrontSize){
   std::vector<glm::uvec2>tileChoices;
-  uint32_t NumTileChoices=tileSizeChoises(tileChoices,wavefrontSize);//determine
-  uint32_t NumLevels=glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(wavefrontSize));
+  size_t NumTileChoices=tileSizeChoises(tileChoices,wavefrontSize);//determine
+  size_t NumLevels=glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(wavefrontSize));
 
-  uint32_t NumSolutions=glm::pow(NumTileChoices,NumLevels);//total number of sol.
+  size_t NumSolutions=glm::pow(NumTileChoices,NumLevels);//total number of sol.
 
-  uint32_t*SolutionIndex=new uint32_t[NumSolutions*NumLevels];//ind. to choices
-  uint32_t*SolutionSizeReq=new uint32_t[NumSolutions];//pass size requirement
-  uint32_t*SolutionIdleInvocations=new uint32_t[NumSolutions];//num of idle inv.
-  uint32_t*SolutionActiveInvocations=new uint32_t[NumSolutions];//active inv.
-  uint32_t NumSolutionSizeReq=0;
+  size_t*SolutionIndex=new size_t[NumSolutions*NumLevels];//ind. to choices
+  size_t*SolutionSizeReq=new size_t[NumSolutions];//pass size requirement
+  size_t*SolutionIdleInvocations=new size_t[NumSolutions];//num of idle inv.
+  size_t*SolutionActiveInvocations=new size_t[NumSolutions];//active inv.
+  size_t NumSolutionSizeReq=0;
 
-  uint32_t II=0;//index into index
-  uint32_t*Index=new uint32_t[NumLevels];//N-dimensional index
-  for(uint32_t i=0;i<NumLevels;++i)Index[i]=0;//cleat index
+  size_t II=0;//index into index
+  size_t*Index=new size_t[NumLevels];//N-dimensional index
+  for(size_t i=0;i<NumLevels;++i)Index[i]=0;//cleat index
 
-  uint32_t Index1D=0;//1D version of index
+  size_t Index1D=0;//1D version of index
 
   do{//loop over all solutions
-    for(uint32_t l=0;l<NumLevels;++l)//loop over levels
+    for(size_t l=0;l<NumLevels;++l)//loop over levels
       SolutionIndex[Index1D*NumLevels+l]=Index[l];//write solution index
 
     //test size requirement
-    uint32_t Size[2]={1,1};
-    for(uint32_t l=0;l<NumLevels;++l)//loop over levels
+    size_t Size[2]={1,1};
+    for(size_t l=0;l<NumLevels;++l)//loop over levels
       for(int k=0;k<2;++k)//loop over dimension of size
         Size[k]*=TileChoices[Index[l]*2+k];//compute size
     if(Size[0]>=WindowSize[0]&&Size[1]>=WindowSize[1]){//resolution is ok
-      uint32_t Active;
+      size_t Active;
       SolutionIdleInvocations[NumSolutionSizeReq]=ComputeIdleInvocation(
           &Active,
           NumLevels,
@@ -187,29 +256,29 @@ uint32_t chooseTileSizes(
   }while(II<NumLevels);
 
   //sort solutions by number of idle invocations
-  uint32_t*IndexToSolution=new uint32_t	[NumSolutionSizeReq];
-  for(uint32_t i=0;i<NumSolutionSizeReq;++i)IndexToSolution[i]=i;
+  size_t*IndexToSolution=new size_t	[NumSolutionSizeReq];
+  for(size_t i=0;i<NumSolutionSizeReq;++i)IndexToSolution[i]=i;
   SortPtr=SolutionIdleInvocations;
-  qsort(IndexToSolution,NumSolutionSizeReq,sizeof(uint32_t),SortByIdleInvocation);
+  qsort(IndexToSolution,NumSolutionSizeReq,sizeof(size_t),SortByIdleInvocation);
 
   //compute the count of fewest idle solutions
-  uint32_t MinIdle=SolutionIdleInvocations[IndexToSolution[0]];
-  uint32_t NumFewestIdle=0;
-  for(uint32_t i=0;i<NumSolutionSizeReq;++i)
+  size_t MinIdle=SolutionIdleInvocations[IndexToSolution[0]];
+  size_t NumFewestIdle=0;
+  for(size_t i=0;i<NumSolutionSizeReq;++i)
     if(MinIdle!=SolutionIdleInvocations[IndexToSolution[i]])break;
     else NumFewestIdle++;
 
-  uint32_t*FewestIdle=new uint32_t[NumFewestIdle];
-  for(uint32_t i=0;i<NumFewestIdle;++i)
+  size_t*FewestIdle=new size_t[NumFewestIdle];
+  for(size_t i=0;i<NumFewestIdle;++i)
     FewestIdle[i]=SolutionSizeReq[IndexToSolution[i]];
 
-  uint32_t*Squareness=new uint32_t[NumFewestIdle];
-  for(uint32_t i=0;i<NumFewestIdle;++i){
+  size_t*Squareness=new size_t[NumFewestIdle];
+  for(size_t i=0;i<NumFewestIdle;++i){
     Squareness[i]=0;
-    uint32_t ActX=1;
-    uint32_t ActY=1;
+    size_t ActX=1;
+    size_t ActY=1;
     for(int l=NumLevels-1;l>=0;--l){
-      uint32_t SolIndex=SolutionIndex[FewestIdle[i]*NumLevels+l];
+      size_t SolIndex=SolutionIndex[FewestIdle[i]*NumLevels+l];
       ActX*=TileChoices[SolIndex*2+0];//width of tile
       ActY*=TileChoices[SolIndex*2+1];//height of tile
       Squareness[i]*=2;
@@ -218,14 +287,14 @@ uint32_t chooseTileSizes(
     }
   }
 
-  uint32_t*IndexToFewestIdle=new uint32_t[NumFewestIdle];
-  for(uint32_t i=0;i<NumFewestIdle;++i)
+  size_t*IndexToFewestIdle=new size_t[NumFewestIdle];
+  for(size_t i=0;i<NumFewestIdle;++i)
     IndexToFewestIdle[i]=i;
   SortPtr=Squareness;
-  qsort(IndexToFewestIdle,NumFewestIdle,sizeof(uint32_t),SortByIdleInvocation);
+  qsort(IndexToFewestIdle,NumFewestIdle,sizeof(size_t),SortByIdleInvocation);
 
-  for(uint32_t l=0;l<NumLevels;++l){
-    uint32_t SolIndex=SolutionIndex[FewestIdle[IndexToFewestIdle[0]]*NumLevels+l];
+  for(size_t l=0;l<NumLevels;++l){
+    size_t SolIndex=SolutionIndex[FewestIdle[IndexToFewestIdle[0]]*NumLevels+l];
     (*TileSize)[l*2+0]=TileChoices[SolIndex*2+0];
     (*TileSize)[l*2+1]=TileChoices[SolIndex*2+1];
   }
