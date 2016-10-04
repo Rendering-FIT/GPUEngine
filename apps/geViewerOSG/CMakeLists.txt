@@ -9,7 +9,7 @@ find_package(osgDB)
 find_package(OpenThreads)
 
 if(NOT TARGET SDL2 OR NOT TARGET osg OR NOT TARGET osgDB OR NOT TARGET OpenThreads OR
-   NOT TARGET geRG OR NOT TARGET OsgImport OR NOT TARGET SDLWindow NOT TARGET SDLOrbitManipulator)
+   NOT TARGET geRG OR NOT TARGET OsgImport OR NOT TARGET SDLWindow OR NOT TARGET SDLOrbitManipulator)
    return()
 endif()
 
