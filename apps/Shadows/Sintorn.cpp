@@ -143,6 +143,7 @@ Sintorn::Sintorn(
   this->SFProgram=std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
+        "#version 450 core\n",
         ge::gl::Shader::define("BIAS",0.01f)+
         ge::gl::Shader::define("WAVEFRONT_SIZE",this->_wavefrontSize),
         shadowFrustumCompSrc));
@@ -207,7 +208,7 @@ Sintorn::Sintorn(
     this->_HST.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HST.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     uint32_t data = 0;
-    glClearTexImage(this->_HDT.back()->getId(),0,GL_RED_INTEGER,GL_UNSIGNED_INT,&data);
+    glClearTexImage(this->_HDT.back()->getId(),0,GL_RG,GL_UNSIGNED_INT,&data);
   }
 }
 

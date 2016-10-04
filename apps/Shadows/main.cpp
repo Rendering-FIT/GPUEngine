@@ -22,6 +22,7 @@
 #include"CubeShadowMapping.h"
 #include"CSSV.h"
 #include"TimeStamp.h"
+#include"Sintorn.h"
 #include"SintornTiles.h"
 
 struct Application{
@@ -137,6 +138,8 @@ bool Application::init(int argc,char*argv[]){
     this->shadowMethod = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
   else
     this->useShadows = false;
+
+  auto sintorn = std::make_shared<Sintorn>(this->windowSize,this->gBuffer->depth,this->model,64,1);
 
   this->timeStamper = std::make_shared<TimeStamp>();
   return true;
