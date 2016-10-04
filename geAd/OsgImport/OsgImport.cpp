@@ -581,7 +581,7 @@ public:
             }
             geArrays.push_back(p);
          }
-         m->uploadVertices(geArrays.data(),geArrays.size(),numVertices);
+         m->uploadVertices(geArrays.data(),unsigned(geArrays.size()),numVertices);
          for(unsigned i=0,c=unsigned(config.attribTypes.size()); i<c; i++)
             free(geArrays[i]);
 
@@ -613,7 +613,7 @@ public:
                      {
                         osg::DrawArrayLengths *a=static_cast<osg::DrawArrayLengths*>(ps);
                         unsigned i=a->getFirst();
-                        for(unsigned j=0,l=a->size(); j<l; j++)
+                        for(unsigned j=0,l=unsigned(a->size()); j<l; j++)
                         {
                            unsigned count=a->operator[](j);
                            for(unsigned c=i+count; i<c; i++)
@@ -626,7 +626,7 @@ public:
                   }
                }
             }
-            m->uploadIndices(indices.data(),indices.size());
+            m->uploadIndices(indices.data(),unsigned(indices.size()));
          }
 
       }
