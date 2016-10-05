@@ -17,6 +17,7 @@ class Sintorn: public ShadowMethod{
         glm::mat4 const&view,
         glm::mat4 const&projection)override;
   protected:
+  public:
     glm::uvec2 _windowSize;///window size
 		uint32_t   _nofLevels = 0;///number of level
     bool       _useUniformTileSizeInClipSpace;

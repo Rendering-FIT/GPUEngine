@@ -29,6 +29,7 @@ set(APP_SOURCES
   CSSV.cpp
   Sintorn.cpp
   SintornTiles.cpp
+  DrawPrimitive.cpp
   )
 
 set(APP_INCLUDES
@@ -47,6 +48,7 @@ set(APP_INCLUDES
   Sintorn.h
   SintornTiles.h
   SintornShaders.h
+  DrawPrimitive.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})

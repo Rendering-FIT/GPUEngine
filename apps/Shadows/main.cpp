@@ -24,6 +24,7 @@
 #include"TimeStamp.h"
 #include"Sintorn.h"
 #include"SintornTiles.h"
+#include"DrawPrimitive.h"
 
 struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
@@ -39,6 +40,7 @@ struct Application{
   std::shared_ptr<Shading>shading = nullptr;
   std::shared_ptr<ge::gl::Texture>shadowMask = nullptr;
   std::shared_ptr<ShadowMethod>shadowMethod = nullptr;
+  std::shared_ptr<DrawPrimitive>drawPrimitive = nullptr;
   glm::uvec2 windowSize = glm::uvec2(1024u,768u);
   float cameraFovy = glm::radians(90.f);
   float cameraNear = 0.1f;
@@ -136,12 +138,17 @@ bool Application::init(int argc,char*argv[]){
     this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->shadowMapFaces,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
+  else if(this->methodName=="sintorn")
+    this->shadowMethod = std::make_shared<Sintorn>(this->windowSize,this->gBuffer->depth,this->model,64,4);
   else
     this->useShadows = false;
 
-  auto sintorn = std::make_shared<Sintorn>(this->windowSize,this->gBuffer->depth,this->model,64,1);
+  //auto sintorn = std::make_shared<Sintorn>(this->windowSize,this->gBuffer->depth,this->model,64,4);
+  //this->shadowMethod = sintorn;
 
   this->timeStamper = std::make_shared<TimeStamp>();
+
+  this->drawPrimitive = std::make_shared<DrawPrimitive>(this->windowSize);
   return true;
 }
 
@@ -159,6 +166,12 @@ void Application::draw(){
   this->gl->glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)),this->useShadows);
   this->timeStamper->end("frame");
+
+
+
+  //this->drawPrimitive->drawTexture(this->gBuffer->normal);
+  //this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[0]);
+  //this->drawPrimitive->drawDepth(this->gBuffer->depth,0,0,1,1,this->cameraNear,this->cameraFar);
   this->window->swap();
 }
 

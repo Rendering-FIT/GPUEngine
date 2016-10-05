@@ -1,7 +1,7 @@
 #include"Sintorn.h"
 #include"SintornTiles.h"
 #include"FastAdjacency.h"
-
+#include<geCore/Dtemplates.h>
 #include<sstream>
 
 #define VEC4_PER_SHADOWFRUSTUM 6
@@ -287,7 +287,8 @@ void Sintorn::RasterizeTexture(){
   }
 
 
-  this->RasterizeTextureProgram->set2uiv("TileDivisibility",td.data(),this->_nofLevels);
+  if(this->_useUniformTileDivisibility)
+    this->RasterizeTextureProgram->set2uiv("TileDivisibility",td.data(),this->_nofLevels);
   if(this->_useUniformTileSizeInClipSpace)
     this->RasterizeTextureProgram->set2fv("TileSizeInClipSpace",tc.data(),this->_nofLevels);
   this->RasterizeTextureProgram->set1ui("NumberOfTriangles",this->_nofTriangles);
@@ -301,10 +302,7 @@ void Sintorn::RasterizeTexture(){
 
   this->_finalStencilMask->bindImage(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
-  glDispatchCompute(
-      this->_nofTriangles/this->_shadowFrustaPerWorkGroup+
-      (this->_nofTriangles%this->_shadowFrustaPerWorkGroup?1:0)
-      ,1,1);
+  glDispatchCompute(ge::core::getDispatchSize(this->_nofTriangles,this->_shadowFrustaPerWorkGroup),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
@@ -339,7 +337,7 @@ void Sintorn::MergeTexture(){
   this->WriteStencilTextureProgram->use();
   this->WriteStencilTextureProgram->set2uiv("WindowSize",glm::value_ptr(this->_windowSize));
 
-  this->_finalStencilMask->bindImage(WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK ,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_finalStencilMask->bindImage(WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
   this->_HST[this->_nofLevels-1]->bindImage(WRITESTENCILTEXTURE_BINDING_HSTINPUT ,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
 
   glClientWaitSync(Sync,0,GL_TIMEOUT_IGNORED);
@@ -362,8 +360,8 @@ void Sintorn::create(
   (void)view;
   (void)projection;
   this->GenerateHierarchyTexture();
-  this->ComputeShadowFrusta(lightPosition,projection*view);
-  this->RasterizeTexture();
-  this->MergeTexture();
+  //this->ComputeShadowFrusta(lightPosition,projection*view);
+  //this->RasterizeTexture();
+  //this->MergeTexture();
 }
 
