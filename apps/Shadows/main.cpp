@@ -62,6 +62,8 @@ struct Application{
   bool init(int argc,char*argv[]);
   void draw();
   bool mouseMove(SDL_Event const&event);
+  std::map<SDL_Keycode,bool>keyDown;
+  template<bool DOWN>bool keyboard(SDL_Event const&event);
 };
 
 bool Application::init(int argc,char*argv[]){
@@ -108,7 +110,9 @@ bool Application::init(int argc,char*argv[]){
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
   this->window   = std::make_shared<ge::ad::SDLWindow>(this->windowSize.x,this->windowSize.y);
-  this->window->setEventCallback(SDL_MOUSEMOTION,std::bind(&Application::mouseMove,this,std::placeholders::_1));
+  this->window->setEventCallback(SDL_MOUSEMOTION,std::bind(&Application::mouseMove      ,this,std::placeholders::_1));
+  this->window->setEventCallback(SDL_KEYDOWN    ,std::bind(&Application::keyboard<true> ,this,std::placeholders::_1));
+  this->window->setEventCallback(SDL_KEYUP      ,std::bind(&Application::keyboard<false>,this,std::placeholders::_1));
   this->window->createContext("rendering",450u,ge::ad::SDLWindow::CORE,ge::ad::SDLWindow::DEBUG);
   this->mainLoop->addWindow("primaryWindow",this->window);
   this->window->makeCurrent("rendering");
@@ -153,6 +157,7 @@ bool Application::init(int argc,char*argv[]){
 }
 
 void Application::draw(){
+  assert(this!=nullptr);
   this->timeStamper->begin();
   this->gl->glEnable(GL_DEPTH_TEST);
   this->gBuffer->begin();
@@ -170,8 +175,18 @@ void Application::draw(){
 
 
   //this->drawPrimitive->drawTexture(this->gBuffer->normal);
-  //this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[0]);
-  //this->drawPrimitive->drawDepth(this->gBuffer->depth,0,0,1,1,this->cameraNear,this->cameraFar);
+  if(this->keyDown['a'])
+    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[0]);
+  if(this->keyDown['s'])
+    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[1]);
+  if(this->keyDown['d'])
+    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[2]);
+  if(this->keyDown['f'])
+    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[3]);
+
+
+  //this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_finalStencilMask);
+  //this->drawPrimitive->drawDepth(this->gBuffer->depth,0,0,1,1,this->cameraNear,100.f);
   this->window->swap();
 }
 
@@ -180,6 +195,12 @@ int main(int argc,char*argv[]){
   if(!app.init(argc,argv))return EXIT_FAILURE;
   (*app.mainLoop)();
   return EXIT_SUCCESS;
+}
+
+
+template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
+  this->keyDown[event.key.keysym.sym] = DOWN;
+  return true;
 }
 
 bool Application::mouseMove(SDL_Event const&event){

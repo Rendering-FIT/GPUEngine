@@ -193,6 +193,7 @@ Sintorn::Sintorn(
   this->_finalStencilMask->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
   for(size_t l=0;l<this->_nofLevels;++l){
+    std::cout<<"DHT["<<l<<"] "<<this->_tileCount[l].x<<" x "<<this->_tileCount[l].y<<std::endl;
     this->_HDT.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32F,1,this->_tileCount[l].x,this->_tileCount[l].y));
     this->_HDT.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HDT.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
@@ -219,6 +220,7 @@ void Sintorn::GenerateHierarchyTexture(){
   if(this->_nofLevels<2)return;
 
   this->WriteDepthTextureProgram->use();
+  std::cout<<this->_windowSize.x<<" x "<<this->_windowSize.y<<std::endl;
   this->WriteDepthTextureProgram->set2uiv("WindowSize",glm::value_ptr(this->_windowSize));
   this->_depthTexture->bind(WRITEDEPTHTEXTURE_BINDING_DEPTH);
   this->_HDT[this->_nofLevels-1]->bindImage(WRITEDEPTHTEXTURE_BINDING_HDT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
@@ -298,7 +300,7 @@ void Sintorn::RasterizeTexture(){
   for(size_t l=0;l<this->_nofLevels;++l)
     this->_HDT[l]->bindImage(RASTERIZETEXTURE_BINDING_HDT+l,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
   for(size_t l=0;l<this->_nofLevels;++l)
-    this->_HDT[l]->bindImage(RASTERIZETEXTURE_BINDING_HST+l,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
+    this->_HST[l]->bindImage(RASTERIZETEXTURE_BINDING_HST+l,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
 
   this->_finalStencilMask->bindImage(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
