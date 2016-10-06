@@ -183,10 +183,14 @@ void Application::draw(){
     this->drawPrimitive->drawTexture(sintorn->_HDT[0]);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[0].x,(float)this->windowSize.y/sintorn->_tileCount[0].y);
   if(this->keyDown['s'])
     this->drawPrimitive->drawTexture(sintorn->_HDT[1]);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[1].x,(float)this->windowSize.y/sintorn->_tileCount[1].y);
-  if(this->keyDown['d'])
-    this->drawPrimitive->drawTexture(sintorn->_HDT[2]);//,0,0,1,1,(float)sintorn->_usedTiles[2].x/sintorn->_tileCount[2].x,(float)sintorn->_usedTiles[2].y/sintorn->_tileCount[2].y);
-  if(this->keyDown['f'])
-    this->drawPrimitive->drawTexture(sintorn->_HDT[3]);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[3].x,(float)this->windowSize.y/sintorn->_tileCount[3].y);
+  if(this->keyDown['d']){
+    //auto s=glm::vec2(sintorn->_tileDivisibility[2]/*this->windowSize*/)/glm::vec2(/*sintorn->_usedTiles[2]*/sintorn->_tileSizeInPixels[2]);
+    this->drawPrimitive->drawTexture(sintorn->_HDT[2],0,0,1,1);//,s.x,s.y);//,0,0,1,1,(float)sintorn->_usedTiles[2].x/sintorn->_tileCount[2].x,(float)sintorn->_usedTiles[2].y/sintorn->_tileCount[2].y);
+  }
+  if(this->keyDown['f']){
+    auto s=glm::vec2(this->windowSize)/glm::vec2(sintorn->_usedTiles[3]*sintorn->_tileSizeInPixels[3]);
+    this->drawPrimitive->drawTexture(sintorn->_HDT[3],0,0,1,1,s.x,s.y);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[3].x,(float)this->windowSize.y/sintorn->_tileCount[3].y);
+  }
 
 
   //this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_finalStencilMask);

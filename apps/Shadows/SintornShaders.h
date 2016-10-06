@@ -88,29 +88,36 @@ uniform uvec2 TileSizeInPixels[MAX_LEVELS];
 
 shared float Shared[WAVEFRONT_SIZE*2];
 
+#define DO_NOT_COUNT_WITH_INFINITY
+
 void main(){
+  Shared[gl_LocalInvocationID.x                 ] = 10;
+  Shared[gl_LocalInvocationID.x + WAVEFRONT_SIZE] = 10;
 	//skip useless tiles
-	if(any(greaterThanEqual(gl_WorkGroupID.xy*TileSizeInPixels[DstLevel],WindowSize)))return;
+	//if(any(greaterThanEqual(gl_WorkGroupID.xy*TileSizeInPixels[DstLevel],WindowSize)))return;
 
-  uvec2 LocalCoord=uvec2(gl_LocalInvocationID.x%TileDivisibility[DstLevel].x,gl_LocalInvocationID.x/TileDivisibility[DstLevel].x);
+  uvec2 LocalCoord=uvec2(gl_LocalInvocationID.x%TileDivisibility[DstLevel+1].x,gl_LocalInvocationID.x/TileDivisibility[DstLevel+1].x);
 
-  vec2 minmax=imageLoad(HDTInput,ivec2(gl_WorkGroupID.xy*TileDivisibility[DstLevel]+LocalCoord)).xy;
+  vec2 minmax = vec2(10,10);
+  if(all(lessThan(gl_WorkGroupID.xy*TileSizeInPixels[DstLevel]+LocalCoord*TileSizeInPixels[DstLevel+1],WindowSize)))
+    minmax=imageLoad(HDTInput,ivec2(gl_WorkGroupID.xy*TileDivisibility[DstLevel+1]+LocalCoord)).xy;
 
 	Shared[gl_LocalInvocationID.x               ]=minmax.x;
 	Shared[gl_LocalInvocationID.x+WAVEFRONT_SIZE]=minmax.y;
   /*
-	for(uint l=gl_WorkGroupSize.x;l>1;l>>=1){
-		if(gl_LocalInvocationID.x<l){
-      uint doMax = uint(gl_LocalInvocationID.x>=(l>>1));
-			uint BaseIndex=(gl_LocalInvocationID.x&(l>>1))<<1+(doMax*(gl_WorkGroupSize.x>>1));
+	for(uint threadsPerLevel = gl_WorkGroupSize.x;threadsPerLevel>1;threadsPerLevel>>=1){
+		if(gl_LocalInvocationID.x<threadsPerLevel){
+      uint halfThreads = threadsPerLevel>>1;
+      uint doMax = uint(gl_LocalInvocationID.x>=halfThreads);
+			uint BaseIndex=((gl_LocalInvocationID.x&(halfThreads-1))<<1)+(doMax*(gl_WorkGroupSize.x>>1));
 			float a=Shared[BaseIndex];
-			float b=Shared[BaseIndex+1];
+			float b=Shared[BaseIndex+threadsPerLevel];
 #ifdef  DO_NOT_COUNT_WITH_INFINITY
-			//if(a>=1)a=b;
-			//if(b>=1)b=a;
+			if(a>=1)a=b;
+			if(b>=1)b=a;
 
-			//if(a<=-1)a=b;
-			//if(b<=-1)b=a;
+			if(a<=-1)a=b;
+			if(b<=-1)b=a;
 #endif//DO_NOT_COUNT_WITH_INFINITY
 			if((1-2*int(doMax))*(a-b)>=0)Shared[BaseIndex]=b;
 		}

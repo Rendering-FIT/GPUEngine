@@ -71,7 +71,6 @@ Sintorn::Sintorn(
     this->_usedTiles[l].y = divRoundUp(this->_usedTiles[l+1].y,this->_tileDivisibility[l+1].y);
   }
 
-
   //*
   for(size_t l=0;l<this->_nofLevels;++l)
     std::cerr<<"TileCount: "<<this->_tileCount[l].x<<" "<<this->_tileCount[l].y<<std::endl;
@@ -205,7 +204,8 @@ Sintorn::Sintorn(
 
   for(size_t l=0;l<this->_nofLevels;++l){
     std::cout<<"DHT["<<l<<"] "<<this->_tileCount[l].x<<" x "<<this->_tileCount[l].y<<std::endl;
-    this->_HDT.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32F,1,this->_tileCount[l].x,this->_tileCount[l].y));
+    //this->_HDT.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32F,1,this->_tileCount[l].x,this->_tileCount[l].y));
+    this->_HDT.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32F,1,this->_usedTiles[l].x,this->_usedTiles[l].y));
     this->_HDT.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HDT.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     float data[2]={1,-1};
@@ -216,7 +216,8 @@ Sintorn::Sintorn(
   if(RESULT_LENGTH_IN_UINT==0)RESULT_LENGTH_IN_UINT=1;
 
   for(size_t l=0;l<this->_nofLevels;++l){
-    this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32UI,1,this->_tileCount[l].x,this->_tileCount[l].y));
+    //this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32UI,1,this->_tileCount[l].x,this->_tileCount[l].y));
+    this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32UI,1,this->_usedTiles[l].x,this->_usedTiles[l].y));
     this->_HST.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HST.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     uint32_t data = 0;
@@ -263,7 +264,7 @@ void Sintorn::GenerateHierarchyTexture(){
     this->HierarchicalDepthTextureProgram->set1ui("DstLevel",(unsigned)l);
     this->_HDT[l+1]->bindImage(HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT ,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
     this->_HDT[l  ]->bindImage(HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
-    glDispatchCompute(this->_tileCount[l].x,this->_tileCount[l].y,1);
+    glDispatchCompute(this->_usedTiles[l].x,this->_usedTiles[l].y,1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
   }
 }
