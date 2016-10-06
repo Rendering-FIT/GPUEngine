@@ -30,7 +30,7 @@ class DrawPrimitive: protected ge::gl::Context{
     void line(glm::vec3 a,glm::vec3 b);
     void point(glm::vec3 a,float size);
     void plane(glm::vec4 a,float size);
-    void drawTexture(std::shared_ptr<ge::gl::Texture>const&texture,float x = 0,float y = 0,float sx = 1,float sy = 1);
+    void drawTexture(std::shared_ptr<ge::gl::Texture>const&texture,float x = 0,float y = 0,float sx = 1,float sy = 1,float tsx = 1,float tsy = 1);
     void drawDepth  (std::shared_ptr<ge::gl::Texture>const&texture,float x,float y,float sx,float sy,
         float near,float far,LinMet met=STANDARD);
     void drawCubeDepth  (GLuint id,float x,float y,float sx,float sy,

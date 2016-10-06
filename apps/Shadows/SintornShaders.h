@@ -33,11 +33,11 @@ layout(local_size_x=LOCAL_TILE_SIZE_X,local_size_y=LOCAL_TILE_SIZE_Y)in;
 layout(      binding=WRITEDEPTHTEXTURE_BINDING_DEPTH)uniform sampler2DRect Depth;
 layout(rg32f,binding=WRITEDEPTHTEXTURE_BINDING_HDT  )uniform image2D       HDT;
 
-uniform uvec2 WindowSize;
+uniform uvec2 windowSize;
 
 void main(){
   //are we outside of bounds of window?
-  if(any(greaterThanEqual(gl_GlobalInvocationID.xy,WindowSize)))return;
+  if(any(greaterThanEqual(gl_GlobalInvocationID.xy,windowSize)))return;
   imageStore(
     HDT,
     ivec2(gl_GlobalInvocationID.xy),
@@ -73,7 +73,7 @@ const std::string hierarchicalDepthTextureCompSrc = R".(
 */
 
 #define FLOAT_MAX      1000.0f
-#define HALF_WAVEFRONT (WAVEFRONT_SIZE/2)
+#define HALF_WAVEFRONT (WAVEFRONT_SIZE>>1)
 #define NUM_ITERATION  (int(ceil(log(WAVEFRONT_SIZE)/log(2))))
 
 layout(local_size_x=WAVEFRONT_SIZE)in;
@@ -98,7 +98,27 @@ void main(){
 
 	Shared[gl_LocalInvocationID.x               ]=minmax.x;
 	Shared[gl_LocalInvocationID.x+WAVEFRONT_SIZE]=minmax.y;
+  /*
+	for(uint l=gl_WorkGroupSize.x;l>1;l>>=1){
+		if(gl_LocalInvocationID.x<l){
+      uint doMax = uint(gl_LocalInvocationID.x>=(l>>1));
+			uint BaseIndex=(gl_LocalInvocationID.x&(l>>1))<<1+(doMax*(gl_WorkGroupSize.x>>1));
+			float a=Shared[BaseIndex];
+			float b=Shared[BaseIndex+1];
+#ifdef  DO_NOT_COUNT_WITH_INFINITY
+			//if(a>=1)a=b;
+			//if(b>=1)b=a;
 
+			//if(a<=-1)a=b;
+			//if(b<=-1)b=a;
+#endif//DO_NOT_COUNT_WITH_INFINITY
+			if((1-2*int(doMax))*(a-b)>=0)Shared[BaseIndex]=b;
+		}
+	}
+  // */
+
+
+  //*
   uint doMax=gl_LocalInvocationID.x&1;
 	for(uint l=0;l<NUM_ITERATION;++l){
 		if(gl_LocalInvocationID.x<(WAVEFRONT_SIZE>>l)){
@@ -115,6 +135,7 @@ void main(){
 			if((1-2*int(doMax))*(a-b)>=0)Shared[BaseIndex]=b;
 		}
 	}
+  // */
 
 	if(gl_LocalInvocationID.x<1)
     imageStore(HDTOutput,ivec2(gl_WorkGroupID.xy),vec4(Shared[0],Shared[WAVEFRONT_SIZE],0,0));

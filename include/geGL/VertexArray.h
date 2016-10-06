@@ -48,6 +48,7 @@ namespace ge{
         std::string getInfo()const;
         std::shared_ptr<Buffer>const&getElement()const;
         std::shared_ptr<Buffer>const&getBuffer(GLuint index)const;
+        size_t getNofBuffers()const;
       protected:
         std::vector<std::shared_ptr<Buffer>>_buffers;
         std::shared_ptr<Buffer>_elementBuffer = nullptr;

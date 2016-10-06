@@ -63,9 +63,20 @@ Sintorn::Sintorn(
     for(size_t m=l;m<this->_nofLevels;++m)
       this->_tileCount[m]*=this->_tileDivisibility[l];
 
+  auto divRoundUp = [](uint32_t x,uint32_t y)->uint32_t{return (x/y)+((x%y)?1:0);};
+  this->_usedTiles.resize(this->_nofLevels,glm::uvec2(0u,0u));
+  this->_usedTiles.back() = this->_windowSize;
+  for(int l=this->_nofLevels-2;l>=0;--l){
+    this->_usedTiles[l].x = divRoundUp(this->_usedTiles[l+1].x,this->_tileDivisibility[l+1].x);
+    this->_usedTiles[l].y = divRoundUp(this->_usedTiles[l+1].y,this->_tileDivisibility[l+1].y);
+  }
+
+
   //*
   for(size_t l=0;l<this->_nofLevels;++l)
     std::cerr<<"TileCount: "<<this->_tileCount[l].x<<" "<<this->_tileCount[l].y<<std::endl;
+  for(size_t l=0;l<this->_nofLevels;++l)
+    std::cerr<<"UsedTiles: "<<this->_usedTiles[l].x<<" "<<this->_usedTiles[l].y<<std::endl;
   for(size_t l=0;l<this->_nofLevels;++l)
     std::cerr<<"TileDivisibility: "<<this->_tileDivisibility[l].x<<" "<<this->_tileDivisibility[l].y<<std::endl;
   for(size_t l=0;l<this->_nofLevels;++l)
@@ -220,10 +231,11 @@ void Sintorn::GenerateHierarchyTexture(){
   if(this->_nofLevels<2)return;
 
   this->WriteDepthTextureProgram->use();
-  std::cout<<this->_windowSize.x<<" x "<<this->_windowSize.y<<std::endl;
-  this->WriteDepthTextureProgram->set2uiv("WindowSize",glm::value_ptr(this->_windowSize));
+  //std::cout<<this->_windowSize.x<<" x "<<this->_windowSize.y<<std::endl;
+  this->WriteDepthTextureProgram->set2uiv("windowSize",glm::value_ptr(this->_windowSize));
   this->_depthTexture->bind(WRITEDEPTHTEXTURE_BINDING_DEPTH);
   this->_HDT[this->_nofLevels-1]->bindImage(WRITEDEPTHTEXTURE_BINDING_HDT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
+  //std::cout<<this->_tileCount[this->_nofLevels-2].x<<" x "<<this->_tileCount[this->_nofLevels-2].y<<std::endl;
   glDispatchCompute(
       this->_tileCount[this->_nofLevels-2].x,
       this->_tileCount[this->_nofLevels-2].y,
