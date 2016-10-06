@@ -196,6 +196,10 @@ Sintorn::Sintorn(
         ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_SHADOWFRUSTA"    ,(int)RASTERIZETEXTURE_BINDING_SHADOWFRUSTA    ),
         rasterizeTextureCompSrc));
 
+  this->_drawHSTProgram = std::make_shared<ge::gl::Program>(
+      std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER  ,drawHSTVertSrc),
+      std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,drawHSTFragSrc));
+
   this->_emptyVao=std::make_shared<ge::gl::VertexArray>();
 
   this->_finalStencilMask = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32UI,1,this->_windowSize.x,this->_windowSize.y);
@@ -217,7 +221,7 @@ Sintorn::Sintorn(
 
   for(size_t l=0;l<this->_nofLevels;++l){
     //this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32UI,1,this->_tileCount[l].x,this->_tileCount[l].y));
-    this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32UI,1,this->_usedTiles[l].x,this->_usedTiles[l].y));
+    this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32UI,1,this->_usedTiles[l].x*RESULT_LENGTH_IN_UINT,this->_usedTiles[l].y));
     this->_HST.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HST.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     uint32_t data = 0;
@@ -232,11 +236,9 @@ void Sintorn::GenerateHierarchyTexture(){
   if(this->_nofLevels<2)return;
 
   this->WriteDepthTextureProgram->use();
-  //std::cout<<this->_windowSize.x<<" x "<<this->_windowSize.y<<std::endl;
   this->WriteDepthTextureProgram->set2uiv("windowSize",glm::value_ptr(this->_windowSize));
   this->_depthTexture->bind(WRITEDEPTHTEXTURE_BINDING_DEPTH);
   this->_HDT[this->_nofLevels-1]->bindImage(WRITEDEPTHTEXTURE_BINDING_HDT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
-  //std::cout<<this->_tileCount[this->_nofLevels-2].x<<" x "<<this->_tileCount[this->_nofLevels-2].y<<std::endl;
   glDispatchCompute(
       this->_tileCount[this->_nofLevels-2].x,
       this->_tileCount[this->_nofLevels-2].y,
@@ -246,19 +248,9 @@ void Sintorn::GenerateHierarchyTexture(){
 
   this->HierarchicalDepthTextureProgram->use();
   this->HierarchicalDepthTextureProgram->set2uiv("WindowSize",glm::value_ptr(this->_windowSize));
-  std::vector<uint32_t>td;
-  for(auto const&x:this->_tileDivisibility){
-    td.push_back(x.x);
-    td.push_back(x.y);
-  }
-  std::vector<uint32_t>tp;
-  for(auto const&x:this->_tileSizeInPixels){
-    tp.push_back(x.x);
-    tp.push_back(x.y);
-  }
-  this->HierarchicalDepthTextureProgram->set2uiv("TileDivisibility",td.data(),this->_nofLevels);
-  this->HierarchicalDepthTextureProgram->set2uiv("TileSizeInPixels",tp.data(),this->_nofLevels);
 
+  this->HierarchicalDepthTextureProgram->set2uiv("TileDivisibility",glm::value_ptr(this->_tileDivisibility.data()[0]),this->_nofLevels);
+  this->HierarchicalDepthTextureProgram->set2uiv("TileSizeInPixels",glm::value_ptr(this->_tileSizeInPixels.data()[0]),this->_nofLevels);
 
   for(int l=this->_nofLevels-2;l>=0;--l){
     this->HierarchicalDepthTextureProgram->set1ui("DstLevel",(unsigned)l);
@@ -290,22 +282,12 @@ void Sintorn::RasterizeTexture(){
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
   this->RasterizeTextureProgram->use();
-  std::vector<uint32_t>td;
-  for(auto const&x:this->_tileDivisibility){
-    td.push_back(x.x);
-    td.push_back(x.y);
-  }
-  std::vector<float>tc;
-  for(auto const&x:this->_tileSizeInClipSpace){
-    tc.push_back(x.x);
-    tc.push_back(x.y);
-  }
-
 
   if(this->_useUniformTileDivisibility)
-    this->RasterizeTextureProgram->set2uiv("TileDivisibility",td.data(),this->_nofLevels);
+    this->RasterizeTextureProgram->set2uiv("TileDivisibility",glm::value_ptr(this->_tileDivisibility.data()[0]),this->_nofLevels);
   if(this->_useUniformTileSizeInClipSpace)
-    this->RasterizeTextureProgram->set2fv("TileSizeInClipSpace",tc.data(),this->_nofLevels);
+    this->RasterizeTextureProgram->set2fv("TileSizeInClipSpace",glm::value_ptr(this->_tileSizeInClipSpace.data()[0]),this->_nofLevels);
+
   this->RasterizeTextureProgram->set1ui("NumberOfTriangles",this->_nofTriangles);
 
   this->_shadowFrusta->bindBase(GL_SHADER_STORAGE_BUFFER,0);
@@ -313,7 +295,7 @@ void Sintorn::RasterizeTexture(){
   for(size_t l=0;l<this->_nofLevels;++l)
     this->_HDT[l]->bindImage(RASTERIZETEXTURE_BINDING_HDT+l,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
   for(size_t l=0;l<this->_nofLevels;++l)
-    this->_HST[l]->bindImage(RASTERIZETEXTURE_BINDING_HST+l,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
+    this->_HST[l]->bindImage(RASTERIZETEXTURE_BINDING_HST+l,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
   this->_finalStencilMask->bindImage(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
@@ -331,8 +313,8 @@ void Sintorn::MergeTexture(){
     this->MergeTextureProgram->set2uiv("DstTileSizeInPixels",glm::value_ptr(this->_tileSizeInPixels[l]));
     this->MergeTextureProgram->set2uiv("DstTileDivisibility",glm::value_ptr(this->_tileDivisibility[l]));
 
-    this->_HST[l  ]->bindImage(MERGETEXTURE_BINDING_HSTINPUT ,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
-    this->_HST[l+1]->bindImage(MERGETEXTURE_BINDING_HSTOUTPUT,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
+    this->_HST[l  ]->bindImage(MERGETEXTURE_BINDING_HSTINPUT ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+    this->_HST[l+1]->bindImage(MERGETEXTURE_BINDING_HSTOUTPUT,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
     if(l>0){
       glClientWaitSync(Sync,0,GL_TIMEOUT_IGNORED);
       glDeleteSync(Sync);
@@ -353,7 +335,7 @@ void Sintorn::MergeTexture(){
   this->WriteStencilTextureProgram->set2uiv("WindowSize",glm::value_ptr(this->_windowSize));
 
   this->_finalStencilMask->bindImage(WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
-  this->_HST[this->_nofLevels-1]->bindImage(WRITESTENCILTEXTURE_BINDING_HSTINPUT ,0,GL_RG32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_HST[this->_nofLevels-1]->bindImage(WRITESTENCILTEXTURE_BINDING_HSTINPUT ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
   glClientWaitSync(Sync,0,GL_TIMEOUT_IGNORED);
   glDeleteSync(Sync);
@@ -375,8 +357,16 @@ void Sintorn::create(
   (void)view;
   (void)projection;
   this->GenerateHierarchyTexture();
-  //this->ComputeShadowFrusta(lightPosition,projection*view);
-  //this->RasterizeTexture();
-  //this->MergeTexture();
+  this->ComputeShadowFrusta(lightPosition,projection*view);
+  this->RasterizeTexture();
+  this->MergeTexture();
 }
 
+void Sintorn::drawHST(size_t l){
+  assert(this!=nullptr);
+  this->_drawHSTProgram->use();
+  this->_HST[l]->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_emptyVao->bind();
+  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+  this->_emptyVao->unbind();
+}

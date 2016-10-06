@@ -50,6 +50,9 @@ class Sintorn: public ShadowMethod{
     std::shared_ptr<ge::gl::Program>ClearStencilProgram;
 		std::shared_ptr<ge::gl::Program>SFProgram;
 
+		std::shared_ptr<ge::gl::Program>_drawHSTProgram;
+    void drawHST(size_t l);
+
     void GenerateHierarchyTexture();
 		void ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp);
     void RasterizeTexture();
