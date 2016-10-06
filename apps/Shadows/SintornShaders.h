@@ -72,10 +72,6 @@ const std::string hierarchicalDepthTextureCompSrc = R".(
 2D Dispatch
 */
 
-#define FLOAT_MAX      1000.0f
-#define HALF_WAVEFRONT (WAVEFRONT_SIZE>>1)
-#define NUM_ITERATION  (int(ceil(log(WAVEFRONT_SIZE)/log(2))))
-
 layout(local_size_x=WAVEFRONT_SIZE)in;
 
 layout(rg32f,binding=HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT ) readonly uniform image2D HDTInput;
@@ -91,11 +87,6 @@ shared float Shared[WAVEFRONT_SIZE*2];
 #define DO_NOT_COUNT_WITH_INFINITY
 
 void main(){
-  Shared[gl_LocalInvocationID.x                 ] = 10;
-  Shared[gl_LocalInvocationID.x + WAVEFRONT_SIZE] = 10;
-	//skip useless tiles
-	//if(any(greaterThanEqual(gl_WorkGroupID.xy*TileSizeInPixels[DstLevel],WindowSize)))return;
-
   uvec2 LocalCoord=uvec2(gl_LocalInvocationID.x%TileDivisibility[DstLevel+1].x,gl_LocalInvocationID.x/TileDivisibility[DstLevel+1].x);
 
   vec2 minmax = vec2(10,10);
@@ -104,49 +95,24 @@ void main(){
 
 	Shared[gl_LocalInvocationID.x               ]=minmax.x;
 	Shared[gl_LocalInvocationID.x+WAVEFRONT_SIZE]=minmax.y;
-  /*
-	for(uint threadsPerLevel = gl_WorkGroupSize.x;threadsPerLevel>1;threadsPerLevel>>=1){
+	for(uint threadsPerLevel = WAVEFRONT_SIZE;threadsPerLevel>1;threadsPerLevel>>=1){
 		if(gl_LocalInvocationID.x<threadsPerLevel){
       uint halfThreads = threadsPerLevel>>1;
       uint doMax = uint(gl_LocalInvocationID.x>=halfThreads);
-			uint BaseIndex=((gl_LocalInvocationID.x&(halfThreads-1))<<1)+(doMax*(gl_WorkGroupSize.x>>1));
+			uint BaseIndex=(gl_LocalInvocationID.x&(halfThreads-1))+(doMax*(WAVEFRONT_SIZE));
 			float a=Shared[BaseIndex];
-			float b=Shared[BaseIndex+threadsPerLevel];
+			float b=Shared[BaseIndex+halfThreads];
 #ifdef  DO_NOT_COUNT_WITH_INFINITY
 			if(a>=1)a=b;
 			if(b>=1)b=a;
-
 			if(a<=-1)a=b;
 			if(b<=-1)b=a;
 #endif//DO_NOT_COUNT_WITH_INFINITY
 			if((1-2*int(doMax))*(a-b)>=0)Shared[BaseIndex]=b;
 		}
 	}
-  // */
-
-
-  //*
-  uint doMax=gl_LocalInvocationID.x&1;
-	for(uint l=0;l<NUM_ITERATION;++l){
-		if(gl_LocalInvocationID.x<(WAVEFRONT_SIZE>>l)){
-			uint BaseIndex=(gl_LocalInvocationID.x>>1)+(doMax<<NUM_ITERATION);
-			float a=Shared[BaseIndex];
-			float b=Shared[BaseIndex+(WAVEFRONT_SIZE>>(1+l))];
-#ifdef  DO_NOT_COUNT_WITH_INFINITY
-			if(a>=1)a=b;
-			if(b>=1)b=a;
-
-			if(a<=-1)a=b;
-			if(b<=-1)b=a;
-#endif//DO_NOT_COUNT_WITH_INFINITY
-			if((1-2*int(doMax))*(a-b)>=0)Shared[BaseIndex]=b;
-		}
-	}
-  // */
-
 	if(gl_LocalInvocationID.x<1)
     imageStore(HDTOutput,ivec2(gl_WorkGroupID.xy),vec4(Shared[0],Shared[WAVEFRONT_SIZE],0,0));
-
 }).";
 
 
