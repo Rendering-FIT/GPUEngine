@@ -219,6 +219,11 @@ std::shared_ptr<Buffer>const&VertexArray::getBuffer(GLuint index)const{
   return this->_buffers.at(index);
 }
 
+size_t VertexArray::getNofBuffers()const{
+  assert(this!=nullptr);
+  return this->_buffers.size();
+}
+
 //OpenGL 3.3
 //glBindBuffer
 //glBindVertexArray

@@ -166,23 +166,27 @@ void Application::draw(){
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
   auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
+
+  this->timeStamper->stamp("draw gBuffer");
   if(this->shadowMethod)
     this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
+  this->timeStamper->stamp("compute shadows");
   this->gl->glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(orbitCamera->getView())*glm::vec4(0,0,0,1)),this->useShadows);
-  this->timeStamper->end("frame");
+  this->timeStamper->end("shading");
 
 
 
   //this->drawPrimitive->drawTexture(this->gBuffer->normal);
+  auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
   if(this->keyDown['a'])
-    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[0]);
+    this->drawPrimitive->drawTexture(sintorn->_HDT[0]);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[0].x,(float)this->windowSize.y/sintorn->_tileCount[0].y);
   if(this->keyDown['s'])
-    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[1]);
+    this->drawPrimitive->drawTexture(sintorn->_HDT[1]);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[1].x,(float)this->windowSize.y/sintorn->_tileCount[1].y);
   if(this->keyDown['d'])
-    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[2]);
+    this->drawPrimitive->drawTexture(sintorn->_HDT[2]);//,0,0,1,1,(float)sintorn->_usedTiles[2].x/sintorn->_tileCount[2].x,(float)sintorn->_usedTiles[2].y/sintorn->_tileCount[2].y);
   if(this->keyDown['f'])
-    this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_HDT[3]);
+    this->drawPrimitive->drawTexture(sintorn->_HDT[3]);//,0,0,1,1,(float)this->windowSize.x/sintorn->_tileCount[3].x,(float)this->windowSize.y/sintorn->_tileCount[3].y);
 
 
   //this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_finalStencilMask);

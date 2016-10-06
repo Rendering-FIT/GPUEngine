@@ -170,8 +170,9 @@ void main(){
 layout(location=0)out vec4 fColor;
 layout(binding=0)uniform sampler2D tex;
 in vec2 gCoord;
+uniform vec2 texSize = vec2(1);
 void main(){
-  fColor=texture(tex,gCoord);
+  fColor=texture(tex,gCoord*texSize);
 }
 ).";
   const std::string heatSrc = R".(
@@ -479,10 +480,11 @@ void DrawPrimitive::_resetViewPort(){
   glViewport(0,0,this->_windowSize[0],this->_windowSize[1]);
 }
 
-void DrawPrimitive::drawTexture(std::shared_ptr<ge::gl::Texture>const&texture,float x,float y,float sx,float sy){
+void DrawPrimitive::drawTexture(std::shared_ptr<ge::gl::Texture>const&texture,float x,float y,float sx,float sy,float tsx,float tsy){
   this->_setViewPort(x,y,sx,sy);
 
   this->_drawTexture->use();
+  this->_drawTexture->set2f("texSize",tsx,tsy);
   texture->bind(0);
 
   this->_resetViewPort();
