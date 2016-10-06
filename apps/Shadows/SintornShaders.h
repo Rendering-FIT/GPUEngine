@@ -94,8 +94,6 @@ void main(){
 
   uvec2 LocalCoord=uvec2(gl_LocalInvocationID.x%TileDivisibility[DstLevel].x,gl_LocalInvocationID.x/TileDivisibility[DstLevel].x);
 
-
-  //*
   vec2 minmax=imageLoad(HDTInput,ivec2(gl_WorkGroupID.xy*TileDivisibility[DstLevel]+LocalCoord)).xy;
 
 	Shared[gl_LocalInvocationID.x               ]=minmax.x;
@@ -108,11 +106,11 @@ void main(){
 			float a=Shared[BaseIndex];
 			float b=Shared[BaseIndex+(WAVEFRONT_SIZE>>(1+l))];
 #ifdef  DO_NOT_COUNT_WITH_INFINITY
-			//if(a>=1)a=b;
-			//if(b>=1)b=a;
+			if(a>=1)a=b;
+			if(b>=1)b=a;
 
-			//if(a<=-1)a=b;
-			//if(b<=-1)b=a;
+			if(a<=-1)a=b;
+			if(b<=-1)b=a;
 #endif//DO_NOT_COUNT_WITH_INFINITY
 			if((1-2*int(doMax))*(a-b)>=0)Shared[BaseIndex]=b;
 		}
@@ -120,64 +118,6 @@ void main(){
 
 	if(gl_LocalInvocationID.x<1)
     imageStore(HDTOutput,ivec2(gl_WorkGroupID.xy),vec4(Shared[0],Shared[WAVEFRONT_SIZE],0,0));
-
-  return;
-  // */
-	//cooperative read into shared memory
-  vec2 d=imageLoad(HDTInput,ivec2(gl_WorkGroupID.xy*TileDivisibility[DstLevel]+LocalCoord)).xy;
-
-	//Shared[(gl_LocalInvocationID.x<<1)+0]=
-  //  imageLoad(HDTInput,ivec2(gl_WorkGroupID.xy*TileDivisibility[DstLevel]+LocalCoord)).x;
-	//Shared[(gl_LocalInvocationID.x<<1)+1]=
-  //  imageLoad(HDTInput,ivec2(gl_WorkGroupID.xy*TileDivisibility[DstLevel]+LocalCoord)).y;
-	Shared[(gl_LocalInvocationID.x<<1)+0]=d.x;
-	Shared[(gl_LocalInvocationID.x<<1)+1]=d.y;
-
-
-	//min: if(a>b)a:=b if(a-b>0)a:=b if((1-2*(DoMax))*(a-b)>0)a:=b
-	//max: if(a<b)a:=b if(b-a>0)a:=b if((1-2*(DoMax))*(a-b)>0)a:=b
-	//*
-  uint DoMax=gl_LocalInvocationID.x&1;
-	for(uint l=0;l<NUM_ITERATION;++l){
-		if(gl_LocalInvocationID.x<(WAVEFRONT_SIZE>>l)){
-			uint BaseIndex=(gl_LocalInvocationID.x&(~1))<<l;
-			float a=Shared[((BaseIndex       )<<1)+DoMax];
-			float b=Shared[((BaseIndex+(1<<l))<<1)+DoMax];
-#ifdef  DO_NOT_COUNT_WITH_INFINITY
-			//if(a>=1)a=b;
-			//if(b>=1)b=a;
-
-
-			//if(a<=-1)a=b;
-			//if(b<=-1)b=a;
-#endif//DO_NOT_COUNT_WITH_INFINITY
-			if((1-2*int(DoMax))*(a-b)>=0)Shared[(BaseIndex<<1)+DoMax]=b;
-		}
-	}
-  // */
-  /*
-  for(uint s=WAVEFRONT_SIZE;s>1;s>>=1){
-    uint DoMax=uint(gl_LocalInvocationID.x>=(s>>1));
-    if(gl_LocalInvocationID.x<s){
-      uint aind=((gl_LocalInvocationID.x<<1)%s)+DoMax;
-  	  float a=Shared[aind  ];
-			float b=Shared[aind+s];
-  		if((1-2*int(DoMax))*(a-b)>=0)Shared[aind]=b;
-    }
-  }
-  // */
-  /*
-	for(uint l=0;l<NUM_ITERATION;++l){
-  	float a=Shared[(((gl_LocalInvocationID.x       )               )<<1)];
-	  float b=Shared[(((gl_LocalInvocationID.x+(1<<l))%WAVEFRONT_SIZE)<<1)];
-    Shared[(gl_LocalInvocationID.x<<1)  ]=min(a,b);
-  	a=Shared[(((gl_LocalInvocationID.x       )               )<<1)+1];
-	  b=Shared[(((gl_LocalInvocationID.x+(1<<l))%WAVEFRONT_SIZE)<<1)+1];
-    Shared[(gl_LocalInvocationID.x<<1)+1]=max(a,b);
-  }
-  // */
-	if(gl_LocalInvocationID.x<1)
-    imageStore(HDTOutput,ivec2(gl_WorkGroupID.xy),vec4(Shared[0],Shared[1],0,0));
 
 }).";
 
