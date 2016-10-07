@@ -158,7 +158,8 @@ RenderingContext::~RenderingContext()
    cancelAllAllocations();
 
    // delete all AttribStorages attached to this RenderingContext
-   for(AttribConfigInstances::iterator it=_attribConfigInstances.begin(),nextIt; it!=_attribConfigInstances.end(); it=nextIt)
+   for(AttribConfigInstances::iterator it=_attribConfigInstances.begin(),nextIt;
+       it!=_attribConfigInstances.end(); it=nextIt)
    {
       nextIt=it;
       nextIt++;
@@ -194,7 +195,7 @@ AttribConfig RenderingContext::getAttribConfig(const AttribConfig::Configuration
    else
    {
       // otherwise create new AttribConfig, put it in _attribConfigList and return reference
-      AttribConfig::Instance *in=new AttribConfig::Instance(this,r.first);
+      AttribConfig::Instance *in=new AttribConfig::Instance(config,this,r.first);
       r.first->second=in;
       return in->createAttribConfig();
    }
@@ -205,7 +206,7 @@ AttribConfig::Instance* RenderingContext::getAttribConfigInstance(const AttribCo
 {
    auto it=_attribConfigInstances.emplace(config,nullptr).first;
    if(it->second==nullptr)
-      it->second=new AttribConfig::Instance(this,it);
+      it->second=new AttribConfig::Instance(config,this,it);
    return it->second;
 }
 
@@ -213,6 +214,8 @@ AttribConfig::Instance* RenderingContext::getAttribConfigInstance(const AttribCo
 void RenderingContext::removeAttribConfigInstance(AttribConfigInstances::iterator it)
 {
    it->second->renderingContext=nullptr;
+   if(it->second->referenceCounter==0)
+      it->second->destroy();
    _attribConfigInstances.erase(it);
 }
 

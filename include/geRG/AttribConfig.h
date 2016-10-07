@@ -98,7 +98,7 @@ namespace ge
 
             inline Instance();
             inline Instance(int referenceCounter);
-            inline Instance(RenderingContext *rc,InstanceList::iterator it);
+            inline Instance(const Configuration& configuration,RenderingContext *rc,InstanceList::iterator it);
             virtual ~Instance();
 
             static Instance invalid;
@@ -179,7 +179,7 @@ namespace ge
       inline void AttribConfig::Instance::detachFromRenderingContext()  { if(renderingContext) renderingContext->removeAttribConfigInstance(selfIterator); }
       inline AttribConfig::Instance::Instance() : referenceCounter(0), renderingContext(nullptr) {}
       inline AttribConfig::Instance::Instance(int refCounter) : referenceCounter(refCounter), renderingContext(nullptr) {}
-      inline AttribConfig::Instance::Instance(RenderingContext *rc,InstanceList::iterator it) : referenceCounter(0), renderingContext(rc), selfIterator(it) {}
+      inline AttribConfig::Instance::Instance(const Configuration& config,RenderingContext *rc,InstanceList::iterator it) : referenceCounter(0), configuration(config), renderingContext(rc), selfIterator(it) {}
 
       inline AttribConfig::AttribConfig() : _instance(&Instance::invalid) { _instance->ref(); }
       inline AttribConfig::AttribConfig(const AttribConfig& ac)  { _instance=ac._instance; _instance->ref(); }

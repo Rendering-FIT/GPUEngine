@@ -18,22 +18,22 @@ AttribConfig::~AttribConfig()
 
 AttribConfig::Instance::~Instance()
 {
-   if(referenceCounter!=0)
-   {
-      if(referenceCounter>0)
-         cout<<"Error in AttribConfig::Instance::~Instance(): Reference counter is not zero.\n"
-               "   Destructing the object with references may result in application instability." << endl;
-      else
-         cout<<"Error in AttribConfig::Instance::~Instance(): Reference counter underflow." << endl;
-   }
+   assert((referenceCounter==0||this==&invalid) &&
+          "Error in AttribConfig::Instance::~Instance(): Reference counter is not zero.\n"
+          "   Destructing the object with references may result in application instability.");
 }
 
 
 void AttribConfig::Instance::destroy()
 {
    if(renderingContext)
+      // remove AttribConfig::Instance from list inside RenderingContext
+      // (we must not delete object here as
+      // RenderingContext::removeAttribConfigInstance() will take care of it by
+      // calling this method again but with renderingContext set to null)
       renderingContext->removeAttribConfigInstance(selfIterator);
-   delete this;
+   else
+      delete this;
 }
 
 

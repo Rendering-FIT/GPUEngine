@@ -35,6 +35,8 @@ AttribStorage::AttribStorage(const AttribConfig& attribConfig,unsigned numVertic
    for(auto it=cfg.attribTypes.begin(); it!=cfg.attribTypes.end(); it++,i++)
    {
       AttribType t=*it;
+      if(t==AttribType::Empty)
+         continue;
       auto b=make_shared<Buffer>(numVertices*t.elementSize(),nullptr,GL_DYNAMIC_DRAW);
       _va->addAttrib(b,i,t.numComponents(),t.glTypeAsInt(),t.elementSize(),0,
                      t.typeHandling()==AttribType::INTEGER_NORMALIZE,t.divisor());
@@ -211,18 +213,22 @@ void AttribStorage::uploadVertices(Mesh &mesh,const void*const *attribList,
                                    unsigned numVertices,unsigned fromIndex)
 {
    auto& cfg=_attribConfig.configuration();
-   unsigned c=unsigned(_bufferList.size());
+   unsigned c=unsigned(cfg.attribTypes.size());
    assert(c==attribListSize && "Number of attributes passed in parameters and stored inside "
                                "AttribStorage must match.");
-   for(unsigned i=0; i<c; i++)
+   unsigned dstIndex=_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex;
+   for(unsigned i=0,j=0; i<c; i++)
    {
       AttribType t=cfg.attribTypes[i];
+      if(t==AttribType::Empty)
+         continue;
       unsigned elementSize=t.elementSize();
       unsigned srcOffset=fromIndex*elementSize;
-      unsigned dstOffset=(_vertexAllocationManager[mesh.verticesDataId()].startIndex+fromIndex)*elementSize;
+      unsigned dstOffset=dstIndex*elementSize;
       const void *data=attribList[i];
-      _bufferList[i]->setData(((uint8_t*)data)+srcOffset,
+      _bufferList[j]->setData(((uint8_t*)data)+srcOffset,
                               numVertices*elementSize,dstOffset);
+      j++;
    }
 }
 
