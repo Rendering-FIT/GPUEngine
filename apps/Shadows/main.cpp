@@ -55,6 +55,9 @@ struct Application{
 
   size_t   cssvWGS = 64;
   size_t   cssvMaxMultiplicity = 2;
+
+  size_t   sintornShadowFrustumsPerWorkGroup = 1;
+  float    sintornBias = 0.01f;
   std::shared_ptr<TimeStamp>timeStamper = nullptr;
   std::string modelName = "";
   std::string methodName = "";
@@ -84,6 +87,8 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-faces - cube shadow map faces"<<std::endl;
     std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
+    std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
+    std::cout<<"--sintorn-bias - offset of triangle planes"<<std::endl;
     std::cout<<"--method - name of shadow method: cubeShadowMapping cssv"<<std::endl;
     exit(0);
   }
@@ -106,6 +111,9 @@ bool Application::init(int argc,char*argv[]){
 
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
   this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
+
+  this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
+  this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
 
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
@@ -139,11 +147,32 @@ bool Application::init(int argc,char*argv[]){
   this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
   if     (this->methodName=="cubeShadowMapping")
-    this->shadowMethod = std::make_shared<CubeShadowMapping>(this->windowSize,this->shadowMapResolution,this->shadowMapNear,this->shadowMapFar,this->shadowMapFaces,this->gBuffer->position,this->renderModel->nofVertices,this->renderModel->vertices,this->shadowMask);
+    this->shadowMethod = std::make_shared<CubeShadowMapping>(
+        this->windowSize,
+        this->shadowMapResolution,
+        this->shadowMapNear,
+        this->shadowMapFar,
+        this->shadowMapFaces,
+        this->gBuffer->position,
+        this->renderModel->nofVertices,
+        this->renderModel->vertices,
+        this->shadowMask);
   else if(this->methodName=="cssv")
-    this->shadowMethod = std::make_shared<CSSV>(this->cssvMaxMultiplicity,this->cssvWGS,this->windowSize,this->gBuffer->depth,this->model,this->shadowMask);
+    this->shadowMethod = std::make_shared<CSSV>(
+        this->cssvMaxMultiplicity,
+        this->cssvWGS,
+        this->windowSize,
+        this->gBuffer->depth,
+        this->model,
+        this->shadowMask);
   else if(this->methodName=="sintorn")
-    this->shadowMethod = std::make_shared<Sintorn>(this->windowSize,this->gBuffer->depth,this->model,64,4);
+    this->shadowMethod = std::make_shared<Sintorn>(
+        this->windowSize,
+        this->gBuffer->depth,
+        this->model,
+        64,
+        this->sintornShadowFrustumsPerWorkGroup,
+        this->sintornBias);
   else
     this->useShadows = false;
 
@@ -188,7 +217,7 @@ void Application::draw(){
   if(this->keyDown['x'])sintorn->drawHST(1);
   if(this->keyDown['c'])sintorn->drawHST(2);
   if(this->keyDown['v'])sintorn->drawHST(3);
-  if(this->keyDown['b'])this->drawPrimitive->drawTexture(sintorn->_finalStencilMask);
+  if(this->keyDown['b'])sintorn->drawFinalStencilMask();
 
   //this->drawPrimitive->drawTexture(std::dynamic_pointer_cast<Sintorn>(this->shadowMethod)->_finalStencilMask);
   //this->drawPrimitive->drawDepth(this->gBuffer->depth,0,0,1,1,this->cameraNear,100.f);

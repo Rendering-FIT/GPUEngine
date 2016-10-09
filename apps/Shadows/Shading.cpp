@@ -38,7 +38,7 @@ void main(){
   vec3  normal      = texelFetch(normalTexture    ,coord,0).xyz;
   float shadowCoef  = 1;
   if(useShadows)
-    shadowCoef = texelFetch(shadowMaskTexture,coord,0).x;
+    shadowCoef = texelFetch(shadowMaskTexture,coord,0).x+.5;
 
   uvec4 color              = texelFetch(colorTexture,coord,0);
   vec3  Ka                 = vec3((color.xyz>>0)&0xff)/0xff;

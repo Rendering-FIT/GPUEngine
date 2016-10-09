@@ -228,7 +228,7 @@ const std::string shadowFrustumCompSrc = R".(
 //DO NOT EDIT ANYTHING BELOW THIS LINE
 
 #ifndef BIAS
-  #define BIAS 0.00001
+  #define BIAS 0.0001
 #endif//BIAS
 
 #ifndef WAVEFRONT_SIZE
@@ -460,7 +460,7 @@ layout(local_size_x=WAVEFRONT_SIZE,local_size_y=SHADOWFRUSTUMS_PER_WORKGROUP)in;
 
 layout(r32ui ,binding=RASTERIZETEXTURE_BINDING_FINALSTENCILMASK)writeonly uniform uimage2D FinalStencilMask;
 layout(r32ui ,binding=RASTERIZETEXTURE_BINDING_HST             )          uniform uimage2D HST[NUMBER_OF_LEVELS];
-layout(rg32f ,binding=RASTERIZETEXTURE_BINDING_HDT             ) readonly uniform  image2D HDT[NUMBER_OF_LEVELS];
+layout(       binding=RASTERIZETEXTURE_BINDING_HDT             )          uniform  sampler2D HDT[NUMBER_OF_LEVELS];
 layout(std430,binding=RASTERIZETEXTURE_BINDING_SHADOWFRUSTA    ) readonly buffer SFData{float ShadowFrusta[];};
 
 shared vec4 SharedShadowFrusta[SHADOWFRUSTUMS_PER_WORKGROUP][VEC4_PER_SHADOWFRUSTUM];
@@ -495,20 +495,17 @@ vec3 TrivialRejectCorner3D(vec3 Normal){
 
 uint TrivialRejectAcceptAABB(vec3 TileCorner,vec3 TileSize){
   if(TileCorner.z>=MAX_DEPTH)return TRIVIAL_REJECT;//no direct lighting
-  vec3 TR[NOF_PLANES_PER_SF],TA[NOF_PLANES_PER_SF];//trivial reject & accept corners
+  bool accept = true;
   for(int i=0;i<NOF_PLANES_PER_SF;++i){//loop over planes
-    TR[i]=TrivialRejectCorner3D(SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][i].xyz);
-    if(dot(vec4(TileCorner+TR[i]*TileSize,1),SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][i])<0)
+    vec3 tr=TrivialRejectCorner3D(SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][i].xyz);
+    if(dot(vec4(TileCorner+tr*TileSize,1),SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][i])<0)
       return TRIVIAL_REJECT;//trivial reject corner is behind a plane
-    TA[i]=1-TR[i];//compute trivial accept
+    tr=1-tr;//compute trivial accept
+    accept = accept && (dot(vec4(TileCorner+tr*TileSize,1),SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][i])>0);
   }
-  bvec4 Accept;
-  for(int i=0;i<NOF_PLANES_PER_SF;++i)//loop over planes
-    Accept[i]=dot(vec4(TileCorner+TA[i]*TileSize,1),SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][i])>0;
-  if(all(Accept))return TRIVIAL_ACCEPT;
+  if(accept)return TRIVIAL_ACCEPT;
   return INTERSECTS;
 }
-
 
 #define TEST_SHADOW_FRUSTUM_LAST(LEVEL)\
 void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
@@ -517,8 +514,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
   vec2  GlobalClipCoord        = ClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*LocalCoord;\
   vec4  SampleCoordInClipSpace = vec4(\
     GlobalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,\
-    imageLoad(HDT[LEVEL],ivec2(GlobalCoord)).x,\
-    1);\
+    texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).x,1);\
   if(SampleCoordInClipSpace.z>=1)return;\
   vec4 Test;\
   for(int p=0;p<NOF_PLANES_PER_SF;++p)\
@@ -535,7 +531,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
     uvec2 LocalCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT%TILE_DIVISIBILITY ## LEVEL.x,INVOCATION_ID_IN_WAVEFRONT/TILE_DIVISIBILITY ## LEVEL.x);\
     uvec2 GlobalCoord     = Coord*TILE_DIVISIBILITY ## LEVEL+LocalCoord;\
     vec2  GlobalClipCoord = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL*LocalCoord;\
-    vec2  ZMinMax         = imageLoad(HDT[LEVEL],ivec2(GlobalCoord)).xy;\
+    vec2  ZMinMax         = texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).xy;\
     vec3  AABBCorner      = vec3(GlobalClipCoord,ZMinMax.x);\
     vec3  AABBSize        = vec3(TILE_SIZE_IN_CLIP_SPACE ## LEVEL,ZMinMax.y-ZMinMax.x);\
     uint  Result          = TrivialRejectAcceptAABB(AABBCorner,AABBSize);\
@@ -579,7 +575,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
     uvec2 LocalCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT%TILE_DIVISIBILITY ## LEVEL.x,INVOCATION_ID_IN_WAVEFRONT/TILE_DIVISIBILITY ## LEVEL.x);\
     uvec2 GlobalCoord     = Coord*TILE_DIVISIBILITY ## LEVEL+LocalCoord;\
     vec2  GlobalClipCoord = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL * LocalCoord;\
-    vec2  ZMinMax         = imageLoad(HDT[LEVEL],ivec2(GlobalCoord)).xy;\
+    vec2  ZMinMax         = texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).xy;\
     vec3  AABBCorner      = vec3(GlobalClipCoord,ZMinMax.x);\
     vec3  AABBSize        = vec3(TILE_SIZE_IN_CLIP_SPACE ## LEVEL,ZMinMax.y-ZMinMax.x);\
     uint  Result          = TrivialRejectAcceptAABB(AABBCorner,AABBSize);\
@@ -689,12 +685,37 @@ layout(r32ui,binding=0)readonly uniform uimage2D HST;
 
 uvec2 Coord=uvec2(gl_FragCoord.xy);
 
+uniform uvec2 windowSize = uvec2(512,512);
+
 void main(){
+  Coord = uvec2(vec2(Coord)*imageSize(HST)*vec2(0.5,1)/windowSize);
   uvec2 cc=(Coord)%uvec2(8);
   uint invocationId=cc.y*8+cc.x;
   uint stencilValue=imageLoad(HST,ivec2((Coord.x/8)*RESULT_LENGTH_IN_UINT+(invocationId/UINT_BIT_SIZE),(Coord.y/8))).x;
   uint shadow=(stencilValue>>(invocationId%UINT_BIT_SIZE))&1u;
   fColor=vec4(1-shadow,1,0,1);
   return;
+}
+).";
+
+const std::string drawFinalStencilMaskFragSrc = R".(
+#version 450 core
+#define UINT_BIT_SIZE 32
+
+#ifndef WAVEFRONT_SIZE
+#define WAVEFRONT_SIZE 64
+#endif//WAVEFRONT_SIZE
+
+#define RESULT_LENGTH_IN_UINT         (WAVEFRONT_SIZE/UINT_BIT_SIZE)
+
+layout(location=0)out vec4 fColor;
+layout(r32ui,binding=0)readonly uniform uimage2D FinalStencilMask;
+
+uvec2 Coord=uvec2(gl_FragCoord.xy);
+
+void main(){
+  fColor=vec4(1,0,0,1);
+  uint S=imageLoad(FinalStencilMask,ivec2(Coord)).x;
+  fColor=vec4(1-S,1,0,1);
 }
 ).";

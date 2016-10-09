@@ -35,7 +35,8 @@ Sintorn::Sintorn(
     std::shared_ptr<ge::gl::Texture>const&depthTexture,
     std::shared_ptr<Model>const&model,
     uint32_t wavefrontSize,
-    uint32_t shadowFrustumusPerWorkGroup):_windowSize(windowSize),_depthTexture(depthTexture){
+    uint32_t shadowFrustumusPerWorkGroup,
+    float    bias):_windowSize(windowSize),_depthTexture(depthTexture){
   this->_useUniformTileSizeInClipSpace=false;
   this->_useUniformTileDivisibility   =false;
 
@@ -86,7 +87,7 @@ Sintorn::Sintorn(
   
   std::vector<float>vertices;
   model->getVertices(vertices);
-  this->_nofTriangles = vertices.size()/3;
+  this->_nofTriangles = vertices.size()/3/3;
   
   //allocate shadowfrustum buffer
   this->_shadowFrusta=std::make_shared<ge::gl::Buffer>(sizeof(float)*FLOATS_PER_SHADOWFRUSTUM*this->_nofTriangles);
@@ -154,7 +155,7 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("BIAS",0.01f)+
+        ge::gl::Shader::define("BIAS",bias)+
         ge::gl::Shader::define("WAVEFRONT_SIZE",this->_wavefrontSize),
         shadowFrustumCompSrc));
 
@@ -199,6 +200,11 @@ Sintorn::Sintorn(
   this->_drawHSTProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER  ,drawHSTVertSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,drawHSTFragSrc));
+
+  this->_drawFinalStencilMask = std::make_shared<ge::gl::Program>(
+      std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER  ,drawHSTVertSrc),
+      std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,drawFinalStencilMaskFragSrc));
+
 
   this->_emptyVao=std::make_shared<ge::gl::VertexArray>();
 
@@ -293,7 +299,7 @@ void Sintorn::RasterizeTexture(){
   this->_shadowFrusta->bindBase(GL_SHADER_STORAGE_BUFFER,0);
 
   for(size_t l=0;l<this->_nofLevels;++l)
-    this->_HDT[l]->bindImage(RASTERIZETEXTURE_BINDING_HDT+l,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
+    this->_HDT[l]->bind(RASTERIZETEXTURE_BINDING_HDT+l);
   for(size_t l=0;l<this->_nofLevels;++l)
     this->_HST[l]->bindImage(RASTERIZETEXTURE_BINDING_HST+l,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
@@ -359,13 +365,22 @@ void Sintorn::create(
   this->GenerateHierarchyTexture();
   this->ComputeShadowFrusta(lightPosition,projection*view);
   this->RasterizeTexture();
-  this->MergeTexture();
+  //this->MergeTexture();
 }
 
 void Sintorn::drawHST(size_t l){
   assert(this!=nullptr);
   this->_drawHSTProgram->use();
   this->_HST[l]->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_emptyVao->bind();
+  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+  this->_emptyVao->unbind();
+}
+
+void Sintorn::drawFinalStencilMask(){
+  assert(this!=nullptr);
+  this->_drawFinalStencilMask->use();
+  this->_finalStencilMask->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
   this->_emptyVao->bind();
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);
   this->_emptyVao->unbind();
