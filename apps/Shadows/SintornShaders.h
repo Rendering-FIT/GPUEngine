@@ -507,6 +507,7 @@ uint TrivialRejectAcceptAABB(vec3 TileCorner,vec3 TileSize){
   return INTERSECTS;
 }
 
+
 #define TEST_SHADOW_FRUSTUM_LAST(LEVEL)\
 void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
   uvec2 LocalCoord             = uvec2(INVOCATION_ID_IN_WAVEFRONT%JOIN(TILE_DIVISIBILITY,LEVEL).x,INVOCATION_ID_IN_WAVEFRONT/JOIN(TILE_DIVISIBILITY,LEVEL).x);\
@@ -516,10 +517,10 @@ void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
     GlobalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,\
     texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).x,1);\
   if(SampleCoordInClipSpace.z>=1)return;\
-  vec4 Test;\
+  bool inside = true;\
   for(int p=0;p<NOF_PLANES_PER_SF;++p)\
-    Test[p]=dot(SampleCoordInClipSpace,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][p]);\
-  if(all(greaterThanEqual(Test,vec4(0))))\
+    inside=inside && dot(SampleCoordInClipSpace,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][p])>=0;\
+  if(inside)\
     imageStore(FinalStencilMask,ivec2(GlobalCoord),uvec4(SHADOW_VALUE));\
 }
 
