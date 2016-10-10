@@ -3,7 +3,7 @@
 using namespace ImGui;
 
 
-void textColor(float r, float g, float b, float a){
+void textColor(float r, float g, float b, float a) {
 	ImGui::GetStyle().Colors[ImGuiCol_Text] = ImVec4(r, g, b, a);
 }
 
@@ -18,7 +18,7 @@ void label(std::string const & text, int x, int y, int width, int height) {
 			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
 			ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
 	SetWindowPos(ImVec2(float(x), float(y)));
-	Text(text.c_str());
+	TextUnformatted(text.c_str());
 	End();
 }
 

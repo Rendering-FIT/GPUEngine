@@ -16,12 +16,13 @@ Stats::~Stats(){
 }
 
 void Stats::startFrame(){
+	glFinish();
 	glQueryCounter(queries[0], GL_TIMESTAMP);
 }
 
 void Stats::endFrame(){
 	glQueryCounter(queries[1], GL_TIMESTAMP);
-
+	glFinish();
 	GLuint64 time1, time2;
 	glGetQueryObjectui64v(queries[0], GL_QUERY_RESULT, &time1);
 	glGetQueryObjectui64v(queries[1], GL_QUERY_RESULT, &time2);
@@ -34,14 +35,19 @@ void Stats::endFrame(){
 	data[0] = dt;
 }
 
-float Stats::getAvg(){
+
+float Stats::getAvg(int f) {
 	float sum = 0;
 	int i = 0;
-	for (; i < std::min(history, frames); i++) {
+	for (; i < std::min(f,std::min(history, frames)); i++) {
 		sum += data[i];
 	}
 	if (i) sum /= i;
 	return sum;
+}
+
+float Stats::getAvg(){
+	return getAvg(frames);
 }
 
 float Stats::getMax(){
@@ -77,4 +83,8 @@ void Stats::draw(){
 	ImGui::SetWindowPos(ImVec2(0,60));
 	ImGui::PlotLines("", data, history,0,0,0,top,ImVec2(200,40));
 	ImGui::End();
+}
+
+float Stats::getFps(){
+	return 1e3f / data[0];
 }

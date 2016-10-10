@@ -12,10 +12,12 @@ public:
 	void endFrame();
 
 	float getAvg();
+	float getAvg(int frames);
 	float getMax();
 	float getMin();
 	void draw();
-
+	int getFrames() { return frames; }
+	float getFps();
 protected:
 	GLuint queries[2];
 	float* data = 0;
