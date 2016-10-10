@@ -12,6 +12,11 @@ TimeStamp::~TimeStamp(){
   glDeleteQueries(1,&this->_beginQuery);
 }
 
+void TimeStamp::setPrinter(std::function<void(std::vector<std::string>const&,std::vector<float>const&)>const&printer){
+  assert(this!=nullptr);
+  this->_printer = printer;
+}
+
 void TimeStamp::_createQuery(std::string const&name){
   assert(this!=nullptr);
   assert(this->_queries.size()<1000);

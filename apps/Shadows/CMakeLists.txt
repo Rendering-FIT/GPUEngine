@@ -22,6 +22,9 @@ set(APP_SOURCES
   Model.cpp
   PerspectiveCamera.cpp
   OrbitCamera.cpp
+  FreeLookCamera.cpp
+  CameraPath.cpp
+  CSV.cpp
   Shading.cpp
   CubeShadowMapping.cpp
   FastAdjacency.cpp
@@ -36,6 +39,9 @@ set(APP_INCLUDES
   Camera.h
   PerspectiveCamera.h
   OrbitCamera.h
+  FreeLookCamera.h
+  CameraPath.h
+  CSV.h
   Deferred.h
   Model.h
   Shading.h

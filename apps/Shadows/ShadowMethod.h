@@ -7,8 +7,11 @@
 
 #include<geGL/geGL.h>
 
+#include"TimeStamp.h"
+
 class ShadowMethod: public ge::gl::Context{
   public:
+    std::shared_ptr<TimeStamp>timeStamp = nullptr;
     virtual ~ShadowMethod(){}
     virtual void create(
         glm::vec4 const&lightPosition,

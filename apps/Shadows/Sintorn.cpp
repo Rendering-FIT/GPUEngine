@@ -8,8 +8,6 @@
 #define FLOATS_PER_SHADOWFRUSTUM (VEC4_PER_SHADOWFRUSTUM*4)
 #define UINT_BIT_SIZE 32
 
-#define TESTSIZE (5000)
-
 const int DRAWHDB_BINDING_HDBIMAGE = 0;
 const int DRAWHDB_BINDING_HDT      = 1;
 
@@ -213,8 +211,6 @@ Sintorn::Sintorn(
   this->_finalStencilMask->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST);
 
   for(size_t l=0;l<this->_nofLevels;++l){
-    std::cout<<"DHT["<<l<<"] "<<this->_tileCount[l].x<<" x "<<this->_tileCount[l].y<<std::endl;
-    //this->_HDT.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32F,1,this->_tileCount[l].x,this->_tileCount[l].y));
     this->_HDT.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32F,1,this->_usedTiles[l].x,this->_usedTiles[l].y));
     this->_HDT.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HDT.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
@@ -226,7 +222,6 @@ Sintorn::Sintorn(
   if(RESULT_LENGTH_IN_UINT==0)RESULT_LENGTH_IN_UINT=1;
 
   for(size_t l=0;l<this->_nofLevels;++l){
-    //this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RG32UI,1,this->_tileCount[l].x,this->_tileCount[l].y));
     this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32UI,1,this->_usedTiles[l].x*RESULT_LENGTH_IN_UINT,this->_usedTiles[l].y));
     this->_HST.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HST.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
@@ -362,10 +357,17 @@ void Sintorn::create(
   (void)lightPosition;
   (void)view;
   (void)projection;
+  if(this->timeStamp)this->timeStamp->stamp("");
   this->GenerateHierarchyTexture();
+  if(this->timeStamp)this->timeStamp->stamp("computeHDT");
   this->ComputeShadowFrusta(lightPosition,projection*view);
+  if(this->timeStamp)this->timeStamp->stamp("computeShadowFrusta");
   this->RasterizeTexture();
+  if(this->timeStamp)this->timeStamp->stamp("rasterize");
   //this->MergeTexture();
+  if(this->timeStamp)this->timeStamp->stamp("merge");
+  //this->blitTexture();
+  if(this->timeStamp)this->timeStamp->stamp("blit");
 }
 
 void Sintorn::drawHST(size_t l){

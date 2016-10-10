@@ -122,6 +122,7 @@ CubeShadowMapping::~CubeShadowMapping(){
 void CubeShadowMapping::create(glm::vec4 const&lightPosition,
     glm::mat4 const&,
     glm::mat4 const&){
+  if(this->timeStamp)this->timeStamp->stamp("");
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(2.5,10);
   glViewport(0,0,this->_resolution,this->_resolution);
@@ -136,7 +137,8 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   glDrawArraysInstanced(GL_TRIANGLES,0,this->_nofVertices,this->_faces);
   this->_vao->unbind();
   this->_fbo->unbind();
-
+  if(this->timeStamp)this->timeStamp->stamp("createShadowMap");
+  
   glViewport(0,0,this->_windowSize.x,this->_windowSize.y);
   this->_maskFbo->bind();
   this->_maskVao->bind();
@@ -149,5 +151,6 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);
   this->_maskVao->unbind();
   this->_maskFbo->unbind();
+  if(this->timeStamp)this->timeStamp->stamp("createShadowMask");
 }
 

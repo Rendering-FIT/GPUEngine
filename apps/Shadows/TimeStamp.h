@@ -9,6 +9,7 @@ class TimeStamp: public ge::gl::Context{
     TimeStamp(std::function<void(std::vector<std::string>const&,std::vector<float>const&)>const&printer = [](std::vector<std::string>const&names,std::vector<float>const&times){
         for(size_t i=0;i<names.size();++i)std::cout<<names[i]<<": "<<times[i]<<std::endl;});
     ~TimeStamp();
+    void setPrinter(std::function<void(std::vector<std::string>const&,std::vector<float>const&)>const&printer);
     void begin();
     void stamp(std::string const&name);
     void end(std::string const&name);

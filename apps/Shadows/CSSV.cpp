@@ -126,7 +126,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   (void)projection;
   auto mvp = projection*view;
 
-  this->_timeStamper->begin();
+  if(this->timeStamp)this->timeStamp->stamp("");
   this->_dibo->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -141,7 +141,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  this->_timeStamper->stamp("computeSillhouettes");
+  if(this->timeStamp)this->timeStamp->stamp("computeSillhouettes");
 
   this->_fbo->bind();
   glEnable(GL_STENCIL_TEST);
@@ -163,7 +163,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glPatchParameteri(GL_PATCH_VERTICES,4);
   glDrawArraysIndirect(GL_PATCHES,NULL);
   this->_sidesVao->unbind();
-  this->_timeStamper->stamp("drawSides");
+  if(this->timeStamp)this->timeStamp->stamp("drawSides");
 
   this->_drawCaps->use();
   this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
@@ -173,7 +173,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   this->_capsVao->unbind();
 
   this->_fbo->unbind();
-  this->_timeStamper->stamp("drawCaps");
+  if(this->timeStamp)this->timeStamp->stamp("drawCaps");
 
   glDisable(GL_DEPTH_TEST);
   this->_maskFbo->bind();
@@ -193,6 +193,6 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
 
-  this->_timeStamper->end("blit");
+  if(this->timeStamp)this->timeStamp->end("blit");
 }
 
