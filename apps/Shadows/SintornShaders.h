@@ -387,7 +387,7 @@ const std::string rasterizeTextureCompSrc = R".(
 #define NOF_PLANES_PER_SF             4
 #define     FLOATS_PER_SHADOWFRUSTUM  (VEC4_PER_SHADOWFRUSTUM*NOF_COMPONENTS_OF_VEC4)
 
-#define     WORKGROUP_ID_IN_DISPATCH  (uint(gl_WorkGroupID.x      ))
+#define     WORKGROUP_ID_IN_DISPATCH  (uint(gl_WorkGroupID.x + triangleOffset))
 #define    INVOCATION_ID_IN_WAVEFRONT (uint(gl_LocalInvocationID.x))
 #define SHADOWFRUSTUM_ID_IN_WORKGROUP (uint(gl_LocalInvocationID.y))
 #define SHADOWFRUSTUM_ID_IN_DISPATCH  (WORKGROUP_ID_IN_DISPATCH*SHADOWFRUSTUMS_PER_WORKGROUP + SHADOWFRUSTUM_ID_IN_WORKGROUP)
@@ -480,6 +480,7 @@ uniform  vec2 TileSizeInClipSpace [NUMBER_OF_LEVELS];
 #endif//USE_UNIFORM_TILE_SIZE_IN_CLIP_SPACE
 
 uniform uint  NumberOfTriangles;
+uniform uint  triangleOffset = 0;
 
 vec2 TrivialRejectCorner2D(vec2 Normal){
   return vec2((ivec2(sign(Normal))+1)/2);

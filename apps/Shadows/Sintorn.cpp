@@ -310,7 +310,19 @@ void Sintorn::RasterizeTexture(){
 
   this->_finalStencilMask->bindImage(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
 
-  glDispatchCompute(ge::core::getDispatchSize(this->_nofTriangles,this->_shadowFrustaPerWorkGroup),1,1);
+  size_t maxSize = 65536/2;
+  size_t workgroups = ge::core::getDispatchSize(this->_nofTriangles,this->_shadowFrustaPerWorkGroup);
+  size_t offset = 0;
+  while(offset+maxSize<=workgroups){
+    this->RasterizeTextureProgram->set1ui("triangleOffset",offset);
+    glDispatchCompute(maxSize,1,1);
+    offset += maxSize;
+  }
+  if(offset<workgroups){
+    this->RasterizeTextureProgram->set1ui("triangleOffset",offset);
+    glDispatchCompute(workgroups-offset,1,1);
+  }
+
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
