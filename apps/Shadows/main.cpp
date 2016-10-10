@@ -267,20 +267,28 @@ void Application::drawScene(){
   this->gl->glClearTexImage(this->shadowMask->getId(),0,GL_RED,GL_FLOAT,NULL);
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
-
   if(this->timeStamper)this->timeStamper->stamp("gBuffer");
+
+
   if(this->shadowMethod)
     this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
+
+
   if(this->timeStamper)this->timeStamper->stamp("");
   this->gl->glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0,0,0,1)),this->useShadows);
   if(this->timeStamper)this->timeStamper->end("shading");
 }
 
+std::string vec3Tostr(glm::vec3 const&v){
+  std::stringstream ss;
+  ss<<v.x<<","<<v.y<<","<<v.z;
+  return ss.str();
+}
+
 void Application::draw(){
   assert(this!=nullptr);
   if      (this->testName == "fly"){
-    //TODO fly part
     if(this->cameraPathFile==""){
       ge::core::printError(GE_CORE_FCENAME,"camera path file is empty");
       this->mainLoop->removeWindow(this->window->getId());
@@ -302,16 +310,20 @@ void Application::draw(){
       auto flc = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
       flc->setPosition(keypoint.position);
       flc->setRotation(keypoint.viewVector,keypoint.upVector);
-      for(size_t f=0;f<this->testFramesPerMeasurement;++f)
+      for(size_t f=0;f<this->testFramesPerMeasurement;++f){
         this->drawScene();
+        this->window->swap();
+      }
 
       std::vector<std::string>line;
       if(csv.size()==0){
+        line.push_back("frame");
         for(auto const&x:measurement)
           if(x.first!="")line.push_back(x.first);
         csv.push_back(line);
         line.clear();
       }
+      line.push_back(ge::core::value2str(k));
       for(auto const&x:measurement)
         if(x.first!=""){
           std::stringstream ss;
@@ -321,11 +333,12 @@ void Application::draw(){
       csv.push_back(line);
       measurement.clear();
     }
-    std::string output = this->outputName+"_fly_"+this->modelName+".csv";
+    std::string output = this->outputName+"_fly.csv";
     saveCSV(output,csv);
     this->mainLoop->removeWindow(this->window->getId());
     return;
   }else if(this->testName == "grid"){
+    /*
     //TODO grid part
     std::vector<float>vertices;
     this->model->getVertices(vertices);
@@ -383,13 +396,14 @@ void Application::draw(){
     csv.push_back(line);
     std::string output = this->outputName+"_fly_"+this->modelName+".csv";
     saveCSV(output,csv);
+    */
     this->mainLoop->removeWindow(this->window->getId());
     return;
   }
 
   if(this->cameraType == "free"){
     auto freeLook = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
-    for(int a=0;a<3;++a)freeLook->move(a,(this->keyDown["d s"[a]]-this->keyDown["acw"[a]]));
+    for(int a=0;a<3;++a)freeLook->move(a,(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
   }
 
   this->drawScene();
@@ -421,6 +435,18 @@ int main(int argc,char*argv[]){
 
 template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
   this->keyDown[event.key.keysym.sym] = DOWN;
+  if(DOWN && event.key.keysym.sym=='p'){
+    auto flc = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
+    if(flc){
+      auto rv = flc->getRotation();
+      auto pos = flc->getPosition();
+      auto up = glm::normalize(glm::vec3(glm::row(rv,1)));
+      auto view = glm::normalize(-glm::vec3(glm::row(rv,2)));
+      std::cout<<pos.x<<","<<pos.y<<","<<pos.z<<",";
+      std::cout<<view.x<<","<<view.y<<","<<view.z<<",";
+      std::cout<<up.x<<","<<up.y<<","<<up.z<<std::endl;
+    }
+  }
   return true;
 }
 

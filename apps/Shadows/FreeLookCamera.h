@@ -33,11 +33,13 @@ class FreeLookCamera: public CameraTransform{
     void setRotation(glm::vec3 const&viewVector,glm::vec3 const&upVector);
   protected:
     glm::vec3 _angles;
-    bool      _recompute;
+    bool      _recomputeView;
+    bool      _recomputeRotation;
     glm::vec3 _position ;
     glm::mat4 _view     ;
     glm::mat4 _rotation ;
-    void _compute();
+    void _computeView();
+    void _computeRotation();
 };
 
 

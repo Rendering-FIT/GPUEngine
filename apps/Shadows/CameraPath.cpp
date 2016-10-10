@@ -9,7 +9,7 @@ CameraPath::CameraPath(bool looping):_looping(looping){}
 CameraPath::CameraPath(bool looping,std::string const&file):_looping(looping){
   auto grid = loadCSV(file);
   if(grid.size()==0)return;
-  assert(grid.at(0).size()<9);
+  assert(grid.at(0).size()>=9);
   auto filterSpaces = [](std::string const&str){
     std::string ret;
     for(auto const&x:str)if(!std::isspace(x))ret+=x;
@@ -83,8 +83,8 @@ CameraPathKeypoint CameraPath::getKeypoint(float t){
     ub = this->keys[i1+1].upVector  ;
   }
   ret.position   = glm::catmullRom(pa,this->keys[i0].position,this->keys[i1].position,pb,tt);
-  ret.viewVector = glm::normalize(glm::catmullRom(va,this->keys[i0].position,this->keys[i1].position,vb,tt));
-  ret.upVector   = glm::normalize(glm::catmullRom(ua,this->keys[i0].position,this->keys[i1].position,ub,tt));
+  ret.viewVector = glm::normalize(glm::catmullRom(va,this->keys[i0].viewVector,this->keys[i1].viewVector,vb,tt));
+  ret.upVector   = glm::normalize(glm::catmullRom(ua,this->keys[i0].upVector,this->keys[i1].upVector,ub,tt));
   ret.upVector   = glm::normalize(glm::cross(glm::cross(ret.viewVector,ret.upVector),ret.viewVector));
   return ret;
 }

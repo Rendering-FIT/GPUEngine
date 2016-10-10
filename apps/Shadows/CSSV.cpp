@@ -141,7 +141,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  if(this->timeStamp)this->timeStamp->stamp("computeSillhouettes");
+  if(this->timeStamp)this->timeStamp->stamp("compute");
 
   this->_fbo->bind();
   glEnable(GL_STENCIL_TEST);
@@ -193,6 +193,6 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
 
-  if(this->timeStamp)this->timeStamp->end("blit");
+  if(this->timeStamp)this->timeStamp->stamp("blit");
 }
 

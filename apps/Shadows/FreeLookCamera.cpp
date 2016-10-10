@@ -4,26 +4,21 @@
 
 FreeLookCamera::FreeLookCamera():CameraTransform(){
   assert(this!=nullptr);
-  this->_recompute = true;
+  this->_recomputeRotation = true;
+  this->_recomputeView     = true;
 }
 
 FreeLookCamera::~FreeLookCamera(){}
 
 glm::mat4 FreeLookCamera::getView(){
   assert(this!=nullptr);
-  if(this->_recompute){
-    this->_compute();
-    this->_recompute = false;
-  }
+  if(this->_recomputeView)this->_computeView();
   return this->_view;
 }
 
 glm::mat4 FreeLookCamera::getRotation(){
   assert(this!=nullptr);
-  if(this->_recompute){
-    this->_compute();
-    this->_recompute = false;
-  }
+  if(this->_recomputeRotation)this->_computeRotation();
   return this->_rotation;
 }
 
@@ -61,13 +56,13 @@ void FreeLookCamera::move(size_t axis,float d){
   assert(this!=nullptr);
   assert(axis<3);
   this->_position+=d*glm::vec3(glm::row(this->_rotation,axis));
-  this->_recompute = true;
+  this->_recomputeView = true;
 }
 
 void FreeLookCamera::setPosition(glm::vec3 const&p){
   assert(this!=nullptr);
   this->_position = p;
-  this->_recompute = true;
+  this->_recomputeView = true;
 }
 
 glm::vec3 FreeLookCamera::getPosition()const{
@@ -116,16 +111,8 @@ void FreeLookCamera::setAngle(size_t axis,float value){
   assert(axis<3);
   if(axis==0)this->_angles[axis] = glm::clamp(value,-glm::half_pi<float>(),glm::half_pi<float>());
   else this->_angles[axis]=value;
-  this->_recompute = true;
-}
-
-#include<iostream>
-#include<sstream>
-
-std::string glm2str(glm::vec3 const&x){
-  std::stringstream ss;
-  ss<<"("<<x.x<<","<<x.y<<","<<x.z<<")";
-  return ss.str();
+  this->_recomputeRotation = true;
+  this->_recomputeView = true;
 }
 
 void FreeLookCamera::setRotation(glm::vec3 const&viewVector,glm::vec3 const&upVector){
@@ -133,38 +120,25 @@ void FreeLookCamera::setRotation(glm::vec3 const&viewVector,glm::vec3 const&upVe
   glm::vec3 xx = glm::normalize(glm::cross(viewVector,upVector));
   glm::vec3 yy = glm::normalize(glm::cross(xx,viewVector));
   glm::vec3 zz = glm::normalize(glm::cross(xx,yy));
-  if(zz.x!=-1 && zz.x!=+1){
-    float y1 = -glm::asin(zz.x);
-    float y2 = glm::pi<float>()-y1;
-    float x1 = glm::atan(zz.y/glm::cos(y1),zz.z/glm::cos(y1));
-    float x2 = glm::atan(zz.y/glm::cos(y2),zz.z/glm::cos(y2));
-    float z1 = glm::atan(yy.x/glm::cos(y1),xx.x/glm::cos(y1));
-    float z2 = glm::atan(yy.x/glm::cos(y2),xx.x/glm::cos(y2));
-    (void)x2;
-    (void)z2;
-    this->_angles[0]=-x1;
-    this->_angles[1]=-y1;
-    this->_angles[2]=-z1;
-  }else{
-    float z = 0.f;
-    float x;
-    float y;
-    if(xx.z == -1){
-      y = glm::half_pi<float>();
-      x = z + glm::atan(xx.y,xx.z);
-    }else{
-      y = -glm::half_pi<float>();
-      x = -z + glm::atan(-xx.y,-xx.z);
-    }
-    this->_angles[0]=-x;
-    this->_angles[1]=-y;
-    this->_angles[2]=-z;
-  }
-  this->_recompute = true;
+  this->_rotation[0] = glm::vec4(xx,0.f);
+  this->_rotation[1] = glm::vec4(yy,0.f);
+  this->_rotation[2] = glm::vec4(zz,0.f);
+  this->_rotation[3] = glm::vec4(0.f,0.f,0.f,1.f);
+  this->_rotation = glm::transpose(this->_rotation);
+  this->_recomputeRotation = false;
+  this->_recomputeView = true;
 }
 
-void FreeLookCamera::_compute(){
+void FreeLookCamera::_computeRotation(){
+  assert(this!=nullptr);
   this->_rotation=glm::eulerAngleXYZ(this->_angles.x,this->_angles.y,this->_angles.z);
+  this->_recomputeRotation = false;
+}
+
+void FreeLookCamera::_computeView(){
+  assert(this!=nullptr);
+  if(this->_recomputeRotation)this->_computeRotation();
   this->_view = this->_rotation*glm::translate(glm::mat4(1.f),-this->_position);
+  this->_recomputeView = false;
 }
 
