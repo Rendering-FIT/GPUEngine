@@ -12,7 +12,8 @@ class Sintorn: public ShadowMethod{
         std::shared_ptr<Model>const&model,
         uint32_t wavefrontSize,
         uint32_t shadowFrustumusPerWorkGroup,
-        float    bias);
+        float    bias,
+        std::shared_ptr<ge::gl::Texture>const&shadowMask);
     virtual ~Sintorn();
     virtual void create(glm::vec4 const&lightPosition,
         glm::mat4 const&view,
@@ -51,6 +52,9 @@ class Sintorn: public ShadowMethod{
     std::shared_ptr<ge::gl::Program>ClearStencilProgram;
 		std::shared_ptr<ge::gl::Program>SFProgram;
 
+    std::shared_ptr<ge::gl::Texture>_shadowMask;
+    std::shared_ptr<ge::gl::Program>_blitProgram;
+
 		std::shared_ptr<ge::gl::Program>_drawHSTProgram;
     void drawHST(size_t l);
     std::shared_ptr<ge::gl::Program>_drawFinalStencilMask;
@@ -60,4 +64,5 @@ class Sintorn: public ShadowMethod{
 		void ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp);
     void RasterizeTexture();
     void MergeTexture();
+    void blit();
 };

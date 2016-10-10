@@ -664,6 +664,23 @@ void main(){
 
 
 
+const std::string blitCompSrc = R".(
+#version 450 core
+layout(local_size_x=8,local_size_y=8)in;
+
+uniform uvec2 windowSize = uvec2(512,512);
+
+layout(r32ui,binding=0)readonly  uniform uimage2D finalStencilMask;
+layout(r32f ,binding=1)writeonly uniform  image2D shadowMask      ;
+
+void main(){
+  if(any(greaterThanEqual(gl_GlobalInvocationID.xy,windowSize)))return;
+  uint S=imageLoad(finalStencilMask,ivec2(gl_GlobalInvocationID.xy)).x;
+  imageStore(shadowMask,ivec2(gl_GlobalInvocationID.xy),vec4(1-S));
+}
+).";
+
+
 const std::string drawHSTVertSrc = R".(
 #version 450 core
 void main(){

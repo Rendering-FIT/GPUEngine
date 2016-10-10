@@ -34,7 +34,12 @@ Sintorn::Sintorn(
     std::shared_ptr<Model>const&model,
     uint32_t wavefrontSize,
     uint32_t shadowFrustumusPerWorkGroup,
-    float    bias):_windowSize(windowSize),_depthTexture(depthTexture){
+    float    bias,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_depthTexture(depthTexture){
+  assert(this!=nullptr);
+
+  this->_shadowMask = shadowMask;
+
   this->_useUniformTileSizeInClipSpace=false;
   this->_useUniformTileDivisibility   =false;
 
@@ -195,6 +200,9 @@ Sintorn::Sintorn(
         ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_SHADOWFRUSTA"    ,(int)RASTERIZETEXTURE_BINDING_SHADOWFRUSTA    ),
         rasterizeTextureCompSrc));
 
+   this->_blitProgram = std::make_shared<ge::gl::Program>(
+      std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER  ,blitCompSrc));
+
   this->_drawHSTProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER  ,drawHSTVertSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,drawHSTFragSrc));
@@ -202,6 +210,8 @@ Sintorn::Sintorn(
   this->_drawFinalStencilMask = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER  ,drawHSTVertSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,drawFinalStencilMaskFragSrc));
+
+
 
 
   this->_emptyVao=std::make_shared<ge::gl::VertexArray>();
@@ -364,9 +374,9 @@ void Sintorn::create(
   if(this->timeStamp)this->timeStamp->stamp("computeShadowFrusta");
   this->RasterizeTexture();
   if(this->timeStamp)this->timeStamp->stamp("rasterize");
-  //this->MergeTexture();
+  this->MergeTexture();
   if(this->timeStamp)this->timeStamp->stamp("merge");
-  //this->blitTexture();
+  this->blit();
   if(this->timeStamp)this->timeStamp->stamp("blit");
 }
 
@@ -386,4 +396,15 @@ void Sintorn::drawFinalStencilMask(){
   this->_emptyVao->bind();
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);
   this->_emptyVao->unbind();
+}
+
+void Sintorn::blit(){
+  assert(this!=nullptr);
+  this->_blitProgram->use();
+  this->_finalStencilMask->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_shadowMask->bindImage(1,0,GL_R32F,GL_READ_WRITE,GL_FALSE,0);
+  this->_blitProgram->set2uiv("windowSize",glm::value_ptr(this->_windowSize));
+  glDispatchCompute(
+      ge::core::getDispatchSize(this->_windowSize.x,8),
+      ge::core::getDispatchSize(this->_windowSize.y,8),1);
 }

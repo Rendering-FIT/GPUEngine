@@ -242,11 +242,12 @@ bool Application::init(int argc,char*argv[]){
         this->model,
         64,
         this->sintornShadowFrustumsPerWorkGroup,
-        this->sintornBias);
+        this->sintornBias,
+        this->shadowMask);
   else
     this->useShadows = false;
 
-  this->timeStamper = std::make_shared<TimeStamp>(nullptr);
+  this->timeStamper = std::make_shared<TimeStamp>();
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
@@ -261,6 +262,7 @@ bool Application::init(int argc,char*argv[]){
 
 void Application::drawScene(){
   if(this->timeStamper)this->timeStamper->begin();
+  this->gl->glViewport(0,0,this->windowSize.x,this->windowSize.y);
   this->gl->glEnable(GL_DEPTH_TEST);
   this->gBuffer->begin();
   this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
@@ -409,19 +411,19 @@ void Application::draw(){
   this->drawScene();
 
   //this->drawPrimitive->drawTexture(this->gBuffer->normal);
-  /*
+  //*
      auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
-     if(this->keyDown['a'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
-     if(this->keyDown['s'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
-     if(this->keyDown['d'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
-     if(this->keyDown['f'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
+     if(this->keyDown['h'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
+     if(this->keyDown['j'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
+     if(this->keyDown['k'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
+     if(this->keyDown['l'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
 
-     if(this->keyDown['y'])sintorn->drawHST(0);
-     if(this->keyDown['x'])sintorn->drawHST(1);
-     if(this->keyDown['c'])sintorn->drawHST(2);
-     if(this->keyDown['v'])sintorn->drawHST(3);
-     if(this->keyDown['b'])sintorn->drawFinalStencilMask();
-     */
+     if(this->keyDown['v'])sintorn->drawHST(0);
+     if(this->keyDown['b'])sintorn->drawHST(1);
+     if(this->keyDown['n'])sintorn->drawHST(2);
+     if(this->keyDown['m'])sintorn->drawHST(3);
+     if(this->keyDown[','])sintorn->drawFinalStencilMask();
+  // */
   this->window->swap();
 }
 
