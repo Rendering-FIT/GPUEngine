@@ -309,15 +309,17 @@ void Application::draw(){
       if(csv.size()==0){
         for(auto const&x:measurement)
           if(x.first!="")line.push_back(x.first);
-      }else{
-        for(auto const&x:measurement)
-          if(x.first!=""){
-            std::stringstream ss;
-            ss<<x.second/float(this->testFramesPerMeasurement);
-            line.push_back(ss.str());
-          }
+        csv.push_back(line);
+        line.clear();
       }
+      for(auto const&x:measurement)
+        if(x.first!=""){
+          std::stringstream ss;
+          ss<<x.second/float(this->testFramesPerMeasurement);
+          line.push_back(ss.str());
+        }
       csv.push_back(line);
+      measurement.clear();
     }
     std::string output = this->outputName+"_fly_"+this->modelName+".csv";
     saveCSV(output,csv);
@@ -325,15 +327,38 @@ void Application::draw(){
     return;
   }else if(this->testName == "grid"){
     //TODO grid part
+    std::vector<float>vertices;
+    this->model->getVertices(vertices);
+    size_t axis=0;
+    glm::vec3 minBox=glm::vec3(1e10f),maxBox = glm::vec3(-1e10f);
+    for(auto const&x:vertices){
+      minBox[axis] = glm::min(minBox[axis],x);
+      maxBox[axis] = glm::max(maxBox[axis],x);
+      axis = (axis+1)%3;
+    }
+    glm::vec3 boxCorner = minBox;
+    glm::vec3 boxSize = maxBox-minBox;
+   
+    std::map<std::string,float>measurement;
+    this->timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
+        for(size_t i=0;i<names.size();++i)
+          if(names[i]!=""){
+            if(measurement.count(names[i])==0)measurement[names[i]]=0.f;
+            measurement[names[i]]+=values[i];
+          }});
+    std::vector<std::vector<std::string>>csv;
+
+    auto flc = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
     for(size_t zz=0;zz<this->testGridSize;++zz){
       for(size_t yy=0;yy<this->testGridSize;++yy){
         for(size_t xx=0;xx<this->testGridSize;++xx){
+          flc->setPosition(boxCorner + glm::vec3(1.f/float(this->testGridSize-1))*boxSize);
           for(size_t ya=0;ya<this->testGridAngleY;++ya){
             for(size_t xa=0;xa<this->testGridAngleX;++xa){
               float yangle = glm::radians((float)ya/(float)this->testGridAngleY*360);
               float xangle = glm::radians((float)xa/(float)this->testGridAngleX*180);
-              (void)yangle;
-              (void)xangle;
+              flc->setXAngle(xangle);
+              flc->setYAngle(yangle);
               for(size_t f=0;f<this->testFramesPerMeasurement;++f){
                 this->drawScene();
               }
@@ -342,6 +367,22 @@ void Application::draw(){
         }
       }
     }
+    std::vector<std::string>line;
+    if(csv.size()==0){
+      for(auto const&x:measurement)
+        if(x.first!="")line.push_back(x.first);
+      csv.push_back(line);
+      line.clear();
+    }
+    for(auto const&x:measurement)
+      if(x.first!=""){
+        std::stringstream ss;
+        ss<<x.second/float(this->testFramesPerMeasurement*this->testGridSize*this->testGridSize*this->testGridSize*this->testGridAngleX*this->testGridAngleY);
+        line.push_back(ss.str());
+      }
+    csv.push_back(line);
+    std::string output = this->outputName+"_fly_"+this->modelName+".csv";
+    saveCSV(output,csv);
     this->mainLoop->removeWindow(this->window->getId());
     return;
   }
@@ -355,18 +396,18 @@ void Application::draw(){
 
   //this->drawPrimitive->drawTexture(this->gBuffer->normal);
   /*
-  auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
-  if(this->keyDown['a'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
-  if(this->keyDown['s'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
-  if(this->keyDown['d'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
-  if(this->keyDown['f'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
+     auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
+     if(this->keyDown['a'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
+     if(this->keyDown['s'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
+     if(this->keyDown['d'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
+     if(this->keyDown['f'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
 
-  if(this->keyDown['y'])sintorn->drawHST(0);
-  if(this->keyDown['x'])sintorn->drawHST(1);
-  if(this->keyDown['c'])sintorn->drawHST(2);
-  if(this->keyDown['v'])sintorn->drawHST(3);
-  if(this->keyDown['b'])sintorn->drawFinalStencilMask();
-  */
+     if(this->keyDown['y'])sintorn->drawHST(0);
+     if(this->keyDown['x'])sintorn->drawHST(1);
+     if(this->keyDown['c'])sintorn->drawHST(2);
+     if(this->keyDown['v'])sintorn->drawHST(3);
+     if(this->keyDown['b'])sintorn->drawFinalStencilMask();
+     */
   this->window->swap();
 }
 
