@@ -16,7 +16,7 @@ namespace ge
       class AttribStorage;
       class Mesh;
       class RenderingContext;
-      typedef uint16_t AttribConfigId;  ///< \brief Integer-based type for the most frequently used attribute configurations.
+      typedef uint32_t AttribConfigId;  ///< \brief Integer-based type for the most frequently used attribute configurations.
 
 
       /** AttribConfig class represents particular OpenGL attribute configuration.
