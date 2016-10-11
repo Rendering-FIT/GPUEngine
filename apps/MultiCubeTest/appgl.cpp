@@ -9,7 +9,7 @@ using namespace glm;
 const string vertSrcA = R".(
 #version 450
 #extension GL_ARB_shader_draw_parameters : require
-#extension GL_NV_bindless_texture : require
+#extension GL_ARB_bindless_texture : require
 layout(location=0) in vec3 aPosition;
 layout(location=1) in vec3 aNormal;
 layout(location=2) in vec2 aTexCoord;
@@ -81,7 +81,7 @@ void main() {
 
 const string fragSrcA = R".(
 #version 450
-#extension GL_NV_bindless_texture : require
+#extension GL_ARB_bindless_texture : require
 in vec3 position;
 in vec3 normal;
 in vec2 texCoord;
@@ -301,7 +301,7 @@ void AppGL::prepareTextures() {
 	for (int i = 0; i < maxTextures; i++) {
 		GLuint tex = generateTexture(options.textureSize);
 		GLuint64 handle = glGetTextureHandleARB(tex);
-		glMakeTextureHandleResidentNV(handle);
+		glMakeTextureHandleResidentARB(handle);
 		texHandleData.push_back(handle);
 	}
 

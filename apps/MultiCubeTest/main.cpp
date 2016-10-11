@@ -9,8 +9,8 @@ R".(Multiple cube rendering performance test
 -cubeCount n (1000)
 -textureCount n (0)
 -textureSize n (128)
--single|-many|-multi|-instanced
--interactive|-test|-testAll|-calibrate
+-drawMode single|many|multi|instanced
+-interactive|-test|-testAll|-calibrate|-calibrateAll
 ).";
 
 
