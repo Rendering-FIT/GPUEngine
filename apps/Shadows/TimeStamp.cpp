@@ -48,8 +48,8 @@ void TimeStamp::end(std::string const&name){
   for(size_t i=0;i<this->_queries.size();++i){
     GLuint64 time = 0;
     glGetQueryObjectui64v(this->_queries[i], GL_QUERY_RESULT, &time);
-    if(i==0)this->_times[i]=(time-beginTime)*1e-9f;
-    else this->_times[i]=(time-lastTime)*1e-9f;
+    if(i==0)this->_times[i]=float(time-beginTime)*1e-9f;
+    else this->_times[i]=float(time-lastTime)*1e-9f;
     lastTime = time;
   }
   if(this->_printer)this->_printer(this->_names,this->_times);

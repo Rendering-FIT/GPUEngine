@@ -28,6 +28,7 @@
 #include"SintornTiles.h"
 #include"DrawPrimitive.h"
 #include"CSV.h"
+#include"RSSV.h"
 
 struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
@@ -265,6 +266,8 @@ bool Application::init(int argc,char*argv[]){
     }
   }
 
+  auto rssv = std::make_shared<RSSV>(this->windowSize,this->shadowMask,this->gBuffer->depth,this->model,64);
+  (void)rssv;
 
   this->drawPrimitive = std::make_shared<DrawPrimitive>(this->windowSize);
   return true;

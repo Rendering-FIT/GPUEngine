@@ -43,13 +43,13 @@ CameraPathKeypoint CameraPath::getKeypoint(float t){
   size_t i0,i1;
   float tt;
   if(this->_looping){
-    i0 = (size_t)(this->keys.size()*t);
+    i0 = (size_t)(float(this->keys.size())*t);
     i1 = (i0+1)%this->keys.size();
-    tt = this->keys.size()*t-i0;
+    tt = float(this->keys.size())*t-float(i0);
   }else{
-    i0 = (size_t)((this->keys.size()-1)*t);
+    i0 = (size_t)((float(this->keys.size())-1.f)*t);
     i1 = (i0+1)%this->keys.size();
-    tt = (this->keys.size()-1)*t-i0;
+    tt = float(this->keys.size()-1)*t-float(i0);
   }
   glm::vec3 pa,va,ua;
   glm::vec3 pb,vb,ub;

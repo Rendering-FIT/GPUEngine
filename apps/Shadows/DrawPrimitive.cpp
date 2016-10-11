@@ -467,10 +467,10 @@ void DrawPrimitive::plane(glm::vec4 a,float size){
 void DrawPrimitive::_setViewPort(float x,float y,float sx,float sy){
   glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
   glViewport(
-      x *this->_windowSize[0],
-      y *this->_windowSize[1],
-      sx*this->_windowSize[0],
-      sy*this->_windowSize[1]);
+      GLint  (x *float(this->_windowSize[0])),
+      GLint  (y *float(this->_windowSize[1])),
+      GLsizei(sx*float(this->_windowSize[0])),
+      GLsizei(sy*float(this->_windowSize[1])));
   this->_emptyVAO->bind();
 }
 
@@ -525,10 +525,10 @@ void DrawPrimitive::draw1D(GLuint id,float x,float y,float sx,float sy,
   this->_setViewPort(x,y,sx,sy);
 
   this->_draw1DF->use();
-  this->_draw1DF->set1f("size",.8/(sy*this->_windowSize[1]));
+  this->_draw1DF->set1f("size",.8f/(sy*float(this->_windowSize[1])));
   this->_draw1DF->set1f("minValue",min);
   this->_draw1DF->set1f("maxValue",max);
-  this->_draw1DF->set1f("channel",channel);
+  this->_draw1DF->set1f("channel",float(channel));
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_1D,id);
 

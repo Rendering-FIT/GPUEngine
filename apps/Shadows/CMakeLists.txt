@@ -32,6 +32,7 @@ set(APP_SOURCES
   CSSV.cpp
   Sintorn.cpp
   SintornTiles.cpp
+  RSSV.cpp
   DrawPrimitive.cpp
   )
 
@@ -54,6 +55,8 @@ set(APP_INCLUDES
   Sintorn.h
   SintornTiles.h
   SintornShaders.h
+  RSSV.h
+  RSSVShaders.h
   DrawPrimitive.h
   )
 
