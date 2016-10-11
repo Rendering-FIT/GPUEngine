@@ -210,7 +210,7 @@ bool Application::init(int argc,char*argv[]){
     exit(0);
   }
 
-  this->cameraProjection = std::make_shared<PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/this->windowSize.y,this->cameraNear,this->cameraFar);
+  this->cameraProjection = std::make_shared<PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
 
   this->gBuffer = std::make_shared<GBuffer>(this->windowSize.x,this->windowSize.y);
 
@@ -415,7 +415,7 @@ void Application::draw(){
 
   if(this->cameraType == "free"){
     auto freeLook = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
-    for(int a=0;a<3;++a)freeLook->move(a,(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
+    for(int a=0;a<3;++a)freeLook->move(a,float(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
   }
 
   this->drawScene();
@@ -467,27 +467,27 @@ bool Application::mouseMove(SDL_Event const&event){
     if(event.motion.state & SDL_BUTTON_LMASK){
       auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
       if(orbitCamera){
-        orbitCamera->setXAngle(orbitCamera->getXAngle() + event.motion.yrel*this->sensitivity);
-        orbitCamera->setYAngle(orbitCamera->getYAngle() + event.motion.xrel*this->sensitivity);
+        orbitCamera->setXAngle(orbitCamera->getXAngle() + float(event.motion.yrel)*this->sensitivity);
+        orbitCamera->setYAngle(orbitCamera->getYAngle() + float(event.motion.xrel)*this->sensitivity);
       }
     }
     if(event.motion.state & SDL_BUTTON_RMASK){
       auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
       if(orbitCamera){
-        orbitCamera->setDistance(orbitCamera->getDistance() + event.motion.yrel*this->orbitZoomSpeed);
+        orbitCamera->setDistance(orbitCamera->getDistance() + float(event.motion.yrel)*this->orbitZoomSpeed);
       }
     }
     if(event.motion.state & SDL_BUTTON_MMASK){
       auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
-      orbitCamera->addXPosition(+orbitCamera->getDistance()*event.motion.xrel/this->windowSize.x*2.f);
-      orbitCamera->addYPosition(-orbitCamera->getDistance()*event.motion.yrel/this->windowSize.y*2.f);
+      orbitCamera->addXPosition(+orbitCamera->getDistance()*float(event.motion.xrel)/float(this->windowSize.x)*2.f);
+      orbitCamera->addYPosition(-orbitCamera->getDistance()*float(event.motion.yrel)/float(this->windowSize.y)*2.f);
     }
   }
   if(this->cameraType == "free"){
     auto freeCamera = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
     if(event.motion.state & SDL_BUTTON_LMASK){
-      freeCamera->setAngle(1,freeCamera->getAngle(1)+event.motion.xrel*this->sensitivity);
-      freeCamera->setAngle(0,freeCamera->getAngle(0)+event.motion.yrel*this->sensitivity);
+      freeCamera->setAngle(1,freeCamera->getAngle(1)+float(event.motion.xrel)*this->sensitivity);
+      freeCamera->setAngle(0,freeCamera->getAngle(0)+float(event.motion.yrel)*this->sensitivity);
     }
   }
 

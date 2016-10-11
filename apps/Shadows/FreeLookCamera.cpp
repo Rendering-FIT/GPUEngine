@@ -55,7 +55,7 @@ void FreeLookCamera::back(float d){
 void FreeLookCamera::move(size_t axis,float d){
   assert(this!=nullptr);
   assert(axis<3);
-  this->_position+=d*glm::vec3(glm::row(this->_rotation,axis));
+  this->_position+=d*glm::vec3(glm::row(this->_rotation,(glm::length_t)axis));
   this->_recomputeView = true;
 }
 
@@ -88,7 +88,7 @@ float FreeLookCamera::getZAngle  ()const{
 float FreeLookCamera::getAngle(size_t axis)const{
   assert(this!=nullptr);
   assert(axis<3);
-  return this->_angles[axis];
+  return this->_angles[(uint32_t)axis];
 }
 
 void FreeLookCamera::setXAngle  (float value){
@@ -109,8 +109,8 @@ void FreeLookCamera::setZAngle  (float value){
 void FreeLookCamera::setAngle(size_t axis,float value){
   assert(this!=nullptr);
   assert(axis<3);
-  if(axis==0)this->_angles[axis] = glm::clamp(value,-glm::half_pi<float>(),glm::half_pi<float>());
-  else this->_angles[axis]=value;
+  if(axis==0)this->_angles[(uint32_t)axis] = glm::clamp(value,-glm::half_pi<float>(),glm::half_pi<float>());
+  else this->_angles[(uint32_t)axis]=value;
   this->_recomputeRotation = true;
   this->_recomputeView = true;
 }

@@ -78,7 +78,7 @@ std::map<unsigned,std::string>ParseEnumArgs::operator()(const char*args){
 }
 
 
-unsigned ge::core::getDispatchSize(unsigned workSize,unsigned workGroupSize){
+size_t ge::core::getDispatchSize(size_t workSize,size_t workGroupSize){
   return workSize%workGroupSize?workSize/workGroupSize+1:workSize/workGroupSize;
 }
 

@@ -203,7 +203,7 @@ namespace ge{
         printArgs2(tail...);
       }
 
-    GECORE_EXPORT unsigned getDispatchSize(unsigned workSize,unsigned workGroupSize);
+    GECORE_EXPORT size_t getDispatchSize(size_t workSize,size_t workGroupSize);
     GECORE_EXPORT unsigned bitCount(unsigned value);
 
     template<typename TYPE,bool SET,bool GET>

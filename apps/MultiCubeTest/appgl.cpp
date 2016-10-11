@@ -225,6 +225,7 @@ AppGL::AppGL(Options const & o) :App(o) {
 
 		break;
 	}
+  default:{}
 	}
 
 	auto c = glGetString(GL_VENDOR);
@@ -483,5 +484,6 @@ void AppGL::updateState() {
 			}
 		}
 		break;
+  default:{}
 	}
 }
