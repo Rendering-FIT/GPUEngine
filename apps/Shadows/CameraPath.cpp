@@ -3,6 +3,7 @@
 
 #include<glm/gtx/spline.hpp>
 #include<algorithm>
+#include<cctype>
 
 CameraPath::CameraPath(bool looping):_looping(looping){}
 
@@ -42,11 +43,11 @@ CameraPathKeypoint CameraPath::getKeypoint(float t){
   size_t i0,i1;
   float tt;
   if(this->_looping){
-    i0 = this->keys.size()*t;
+    i0 = (size_t)(this->keys.size()*t);
     i1 = (i0+1)%this->keys.size();
     tt = this->keys.size()*t-i0;
   }else{
-    i0 = (this->keys.size()-1)*t;
+    i0 = (size_t)((this->keys.size()-1)*t);
     i1 = (i0+1)%this->keys.size();
     tt = (this->keys.size()-1)*t-i0;
   }

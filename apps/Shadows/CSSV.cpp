@@ -6,10 +6,11 @@
 CSSV::CSSV(
     size_t maxMultiplicity,
     size_t computeSidesWGS,
+    bool   zfail,
     glm::uvec2 const&windowSize,
     std::shared_ptr<ge::gl::Texture>const&depth,
     std::shared_ptr<Model>const&model,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_computeSidesWGS(computeSidesWGS){
+    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_computeSidesWGS(computeSidesWGS),_zfail(zfail){
   assert(this!=nullptr);
   this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
 
@@ -146,7 +147,8 @@ void CSSV::create(glm::vec4 const&lightPosition,
   this->_fbo->bind();
   glEnable(GL_STENCIL_TEST);
   glStencilFunc(GL_ALWAYS,0,0);
-  if(true){
+
+  if(this->_zfail){
     glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_INCR_WRAP,GL_KEEP);
     glStencilOpSeparate(GL_BACK,GL_KEEP,GL_DECR_WRAP,GL_KEEP);
   }else{
@@ -165,15 +167,17 @@ void CSSV::create(glm::vec4 const&lightPosition,
   this->_sidesVao->unbind();
   if(this->timeStamp)this->timeStamp->stamp("drawSides");
 
-  this->_drawCaps->use();
-  this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
-  this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
-  this->_capsVao->bind();
-  glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
-  this->_capsVao->unbind();
+  if(this->_zfail){
+    this->_drawCaps->use();
+    this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
+    this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
+    this->_capsVao->bind();
+    glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
+    this->_capsVao->unbind();
 
-  this->_fbo->unbind();
-  if(this->timeStamp)this->timeStamp->stamp("drawCaps");
+    this->_fbo->unbind();
+    if(this->timeStamp)this->timeStamp->stamp("drawCaps");
+  }
 
   glDisable(GL_DEPTH_TEST);
   this->_maskFbo->bind();

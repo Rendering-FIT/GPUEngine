@@ -63,9 +63,11 @@ struct Application{
 
   size_t   cssvWGS = 64;
   size_t   cssvMaxMultiplicity = 2;
+  bool     cssvZfail = true;
 
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
+  bool     sintornDiscardBackFacing = true;
 
   std::string testName = "";
   std::string testFlyKeyFileName = "";
@@ -109,8 +111,10 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-faces - cube shadow map faces"<<std::endl;
     std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
+    std::cout<<"--cssv-zfail - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
     std::cout<<"--sintorn-bias - offset of triangle planes"<<std::endl;
+    std::cout<<"--sintorn-discardBackFacing - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
     std::cout<<"--wavefrontSize - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
     std::cout<<"--method - name of shadow method: cubeShadowMapping cssv"<<std::endl;
     std::cout<<"--test - name of test - fly,grid or empty"<<std::endl;
@@ -149,9 +153,11 @@ bool Application::init(int argc,char*argv[]){
 
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
   this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
+  this->cssvZfail           = this->args->getArgi("--cssv-zfail","1");
 
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
+  this->sintornDiscardBackFacing          = this->args->getArgi("--sintorn-discardBackFacing"   ,"1"    );
 
   this->testName           = this->args->getArg ("--test"              ,""    );
   this->testFlyKeyFileName = this->args->getArg ("--test-fly-keys"     ,""    );
@@ -204,7 +210,7 @@ bool Application::init(int argc,char*argv[]){
     exit(0);
   }
 
-  this->cameraProjection = std::make_shared<PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/this->windowSize.y,this->cameraNear,this->cameraFar);
+  this->cameraProjection = std::make_shared<PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
 
   this->gBuffer = std::make_shared<GBuffer>(this->windowSize.x,this->windowSize.y);
 
@@ -231,6 +237,7 @@ bool Application::init(int argc,char*argv[]){
     this->shadowMethod = std::make_shared<CSSV>(
         this->cssvMaxMultiplicity,
         this->cssvWGS,
+        this->cssvZfail,
         this->windowSize,
         this->gBuffer->depth,
         this->model,
@@ -239,15 +246,18 @@ bool Application::init(int argc,char*argv[]){
     this->shadowMethod = std::make_shared<Sintorn>(
         this->windowSize,
         this->gBuffer->depth,
+        this->gBuffer->normal,
         this->model,
         64,
         this->sintornShadowFrustumsPerWorkGroup,
         this->sintornBias,
+        this->sintornDiscardBackFacing,
         this->shadowMask);
   else
     this->useShadows = false;
 
   this->timeStamper = std::make_shared<TimeStamp>();
+  //this->shadowMethod->timeStamp = this->timeStamper;
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
@@ -405,7 +415,7 @@ void Application::draw(){
 
   if(this->cameraType == "free"){
     auto freeLook = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
-    for(int a=0;a<3;++a)freeLook->move(a,(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
+    for(int a=0;a<3;++a)freeLook->move(a,float(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
   }
 
   this->drawScene();
@@ -457,27 +467,27 @@ bool Application::mouseMove(SDL_Event const&event){
     if(event.motion.state & SDL_BUTTON_LMASK){
       auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
       if(orbitCamera){
-        orbitCamera->setXAngle(orbitCamera->getXAngle() + event.motion.yrel*this->sensitivity);
-        orbitCamera->setYAngle(orbitCamera->getYAngle() + event.motion.xrel*this->sensitivity);
+        orbitCamera->setXAngle(orbitCamera->getXAngle() + float(event.motion.yrel)*this->sensitivity);
+        orbitCamera->setYAngle(orbitCamera->getYAngle() + float(event.motion.xrel)*this->sensitivity);
       }
     }
     if(event.motion.state & SDL_BUTTON_RMASK){
       auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
       if(orbitCamera){
-        orbitCamera->setDistance(orbitCamera->getDistance() + event.motion.yrel*this->orbitZoomSpeed);
+        orbitCamera->setDistance(orbitCamera->getDistance() + float(event.motion.yrel)*this->orbitZoomSpeed);
       }
     }
     if(event.motion.state & SDL_BUTTON_MMASK){
       auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
-      orbitCamera->addXPosition(+orbitCamera->getDistance()*event.motion.xrel/this->windowSize.x*2.f);
-      orbitCamera->addYPosition(-orbitCamera->getDistance()*event.motion.yrel/this->windowSize.y*2.f);
+      orbitCamera->addXPosition(+orbitCamera->getDistance()*float(event.motion.xrel)/float(this->windowSize.x)*2.f);
+      orbitCamera->addYPosition(-orbitCamera->getDistance()*float(event.motion.yrel)/float(this->windowSize.y)*2.f);
     }
   }
   if(this->cameraType == "free"){
     auto freeCamera = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
     if(event.motion.state & SDL_BUTTON_LMASK){
-      freeCamera->setAngle(1,freeCamera->getAngle(1)+event.motion.xrel*this->sensitivity);
-      freeCamera->setAngle(0,freeCamera->getAngle(0)+event.motion.yrel*this->sensitivity);
+      freeCamera->setAngle(1,freeCamera->getAngle(1)+float(event.motion.xrel)*this->sensitivity);
+      freeCamera->setAngle(0,freeCamera->getAngle(0)+float(event.motion.yrel)*this->sensitivity);
     }
   }
 

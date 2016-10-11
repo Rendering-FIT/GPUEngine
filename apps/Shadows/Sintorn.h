@@ -8,12 +8,14 @@ class Sintorn: public ShadowMethod{
   public:
     Sintorn(
         glm::uvec2 const&windowSize,
-        std::shared_ptr<ge::gl::Texture>const&depthTexture,
-        std::shared_ptr<Model>const&model,
-        uint32_t wavefrontSize,
-        uint32_t shadowFrustumusPerWorkGroup,
-        float    bias,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask);
+        std::shared_ptr<ge::gl::Texture>const&depthTexture               ,
+        std::shared_ptr<ge::gl::Texture>const&normalTexture              ,
+        std::shared_ptr<Model>          const&model                      ,
+        size_t                                wavefrontSize              ,
+        size_t                                shadowFrustumusPerWorkGroup,
+        float                                 bias                       ,
+        bool                                  discardBackFacing          ,
+        std::shared_ptr<ge::gl::Texture>const&shadowMask                 );
     virtual ~Sintorn();
     virtual void create(glm::vec4 const&lightPosition,
         glm::mat4 const&view,
@@ -21,13 +23,14 @@ class Sintorn: public ShadowMethod{
   protected:
   public:
     glm::uvec2 _windowSize;///window size
-		uint32_t   _nofLevels = 0;///number of level
+		size_t     _nofLevels = 0;///number of level
     bool       _useUniformTileSizeInClipSpace;
     bool       _useUniformTileDivisibility;
-    uint32_t   _shadowFrustaPerWorkGroup;
-    uint32_t   _nofTriangles = 0;
-    uint32_t   _shadowFrustaWGS = 64;
-		uint32_t   _wavefrontSize = 64;
+    size_t     _shadowFrustaPerWorkGroup;
+    size_t     _nofTriangles = 0;
+    size_t     _shadowFrustaWGS = 64;
+		size_t     _wavefrontSize = 64;
+    bool       _discardBackFacing = true;
 
     std::shared_ptr<ge::gl::Texture>_finalStencilMask;
     std::shared_ptr<ge::gl::Buffer>_shadowFrusta = nullptr;
@@ -42,6 +45,7 @@ class Sintorn: public ShadowMethod{
     std::vector<glm::uvec2>_tileDivisibility;
     std::vector<glm::vec2>_tileSizeInClipSpace;
     std::shared_ptr<ge::gl::Texture>_depthTexture;
+    std::shared_ptr<ge::gl::Texture>_normalTexture;
 
     std::shared_ptr<ge::gl::Program>WriteDepthTextureProgram;
     std::shared_ptr<ge::gl::Program>HierarchicalDepthTextureProgram;
@@ -60,7 +64,7 @@ class Sintorn: public ShadowMethod{
     std::shared_ptr<ge::gl::Program>_drawFinalStencilMask;
     void drawFinalStencilMask();
 
-    void GenerateHierarchyTexture();
+    void GenerateHierarchyTexture(glm::vec4 const&lightPosition);
 		void ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp);
     void RasterizeTexture();
     void MergeTexture();

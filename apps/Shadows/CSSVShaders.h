@@ -17,7 +17,7 @@ layout(local_size_x=WORKGROUP_SIZE_X)in;
 
 layout(std430,binding=0)buffer SInput  {vec4 IBuffer[];};
 layout(std430,binding=1)buffer SOutput {vec4 OBuffer[];};
-layout(std430,binding=2)buffer SCounter{uint Counter[];};
+layout(std430,binding=2)buffer SCounter{uint Counter[4];};
 
 uniform uint numEdge=0;
 uniform vec4 lightPosition;
@@ -206,16 +206,7 @@ const std::string drawEPSrc = R".(
 #version 450 core
 layout(quads)in;
 void main(){
-  gl_Position=mix(
-      mix(
-        gl_in[0].gl_Position,
-        gl_in[1].gl_Position,
-        gl_TessCoord.x),
-      mix(
-        gl_in[2].gl_Position,
-        gl_in[3].gl_Position,
-        gl_TessCoord.x),
-      gl_TessCoord.y);
+  gl_Position = gl_in[uint(gl_TessCoord.x>.5)+(uint(gl_TessCoord.y>.5)<<1)].gl_Position;
 }).";
 const std::string drawFPSrc = R".(
 #version 450 core
