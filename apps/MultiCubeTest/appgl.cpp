@@ -353,7 +353,7 @@ void AppGL::recomputeMatrices(int count) {
 
 	int side = (int)ceil(cbrtf(float(count)));
 	vec3 offset = vec3(float(side));
-	int end = min(maxCubes, side*side*side);
+	int end = glm::min(maxCubes, side*side*side);
 	matrixData.reserve(end);
 
 	for (int i = 0; i < end; i++) {
@@ -426,19 +426,19 @@ void AppGL::updateState() {
 		float fps = stats->getFps();
 
 		if (fps < 60) {
-			difCounter = max(difCounter - 1, -10);
+			difCounter = glm::max(difCounter - 1, -10);
 			if (difCounter == -10) {
 				cubeCount -= 10;
 			}
 		}
 		if (fps > 60) {
-			difCounter = min(difCounter + 1, 10);
+			difCounter = glm::min(difCounter + 1, 10);
 			if (difCounter == 10) {
 				if (fps > 150 && currentDrawMode != MANY_DRAW)cubeCount *= 2;
 				else if (fps > 75 && currentDrawMode != MANY_DRAW)cubeCount += 1000;
 				else if (fps > 61)cubeCount += 100;
 				else cubeCount += 10;
-				cubeCount = min(cubeCount, maxCubes);
+				cubeCount = glm::min(cubeCount, maxCubes);
 			}
 		}
 
