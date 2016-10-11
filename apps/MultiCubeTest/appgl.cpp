@@ -442,7 +442,6 @@ void AppGL::updateState() {
 				cubeCount = glm::min(cubeCount, maxCubes);
 			}
 		}
-
 		if (difCounter == 0)zeroCounter++;
 		if (zeroCounter == 5) {
 			std::cout << "Calibrate 60 fps, " << textureCount << " textures, " << drawModeToString(currentDrawMode) << " - " << cubeCount << " cubes\n";
@@ -453,7 +452,7 @@ void AppGL::updateState() {
 			currentState = WAIT;
 		}
 
-		if (getSide() != currentSide) {
+		if (getSide() != currentSide &&currentState!=WAIT) {
 			recomputeMatrices(cubeCount);
 			currentSide = getSide();
 			currentState = WAIT;
@@ -463,6 +462,8 @@ void AppGL::updateState() {
 			});
 
 		}
+
+
 		break;
 	}
 	case WAIT_TIME: {
