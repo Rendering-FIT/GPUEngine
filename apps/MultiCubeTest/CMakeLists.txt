@@ -8,31 +8,23 @@ if(NOT SDL2_FOUND OR NOT TARGET geGL OR NOT TARGET geUtil)
    return()
 endif()
 
+add_subdirectory(imgui)
+  
 set(APP_SOURCES
 	main.cpp
 	gui.cpp
 	stats.cpp
-	
-	
-	#imgui
-	imgui.cpp
-	imgui_impl_sdl_gl3.cpp
-	imgui_draw.cpp
+	app.cpp
+	appgl.cpp
+	apprg.cpp
 )
 
 set(APP_INCLUDES
 	gui.h
 	stats.h
-	
-	
-	#imgui
-	imgui.h
-  	imgui_impl_sdl_gl3.h                 
-	imconfig.h  
-	imgui_internal.h
-	stb_rect_pack.h
-	stb_truetype.h
-	stb_textedit.h
+	app.h
+	appgl.h
+	apprg.h
 )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
@@ -42,7 +34,7 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps SDLWindow geGL geUtil)
+set(Internal_deps SDLWindow geGL geUtil imgui)
 set(External_libs SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
