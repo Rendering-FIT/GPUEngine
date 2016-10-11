@@ -11,8 +11,9 @@
 const int DRAWHDB_BINDING_HDBIMAGE = 0;
 const int DRAWHDB_BINDING_HDT      = 1;
 
-const int WRITEDEPTHTEXTURE_BINDING_DEPTH = 0;
-const int WRITEDEPTHTEXTURE_BINDING_HDT   = 1;
+const int WRITEDEPTHTEXTURE_BINDING_DEPTH  = 0;
+const int WRITEDEPTHTEXTURE_BINDING_HDT    = 1;
+const int WRITEDEPTHTEXTURE_BINDING_NORMAL = 2;
 
 const int HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT  = 0;
 const int HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT = 1;
@@ -31,11 +32,13 @@ const int WRITESTENCILTEXTURE_BINDING_HSTINPUT         = 1;
 Sintorn::Sintorn(
     glm::uvec2 const&windowSize,
     std::shared_ptr<ge::gl::Texture>const&depthTexture,
+    std::shared_ptr<ge::gl::Texture>const&normalTexture,
     std::shared_ptr<Model>const&model,
     uint32_t wavefrontSize,
     uint32_t shadowFrustumusPerWorkGroup,
     float    bias,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_depthTexture(depthTexture){
+    bool     discardBackFacing,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_discardBackFacing(discardBackFacing),_depthTexture(depthTexture),_normalTexture(normalTexture){
   assert(this!=nullptr);
 
   this->_shadowMask = shadowMask;
@@ -114,8 +117,10 @@ Sintorn::Sintorn(
         "#version 450 core\n",
         ge::gl::Shader::define("LOCAL_TILE_SIZE_X",(int)this->_tileDivisibility[this->_nofLevels-1].x),
         ge::gl::Shader::define("LOCAL_TILE_SIZE_Y",(int)this->_tileDivisibility[this->_nofLevels-1].y),
-        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_DEPTH",WRITEDEPTHTEXTURE_BINDING_DEPTH),
-        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_HDT"  ,WRITEDEPTHTEXTURE_BINDING_HDT  ),
+        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_DEPTH" ,WRITEDEPTHTEXTURE_BINDING_DEPTH ),
+        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_HDT"   ,WRITEDEPTHTEXTURE_BINDING_HDT   ),
+        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_NORMAL",WRITEDEPTHTEXTURE_BINDING_NORMAL),
+        ge::gl::Shader::define("DISCARD_BACK_FACING"             ,int(this->_discardBackFacing)   ),
         writeDepthTextureCompSrc));
 
   this->HierarchicalDepthTextureProgram=std::make_shared<ge::gl::Program>(
@@ -243,12 +248,16 @@ Sintorn::Sintorn(
 Sintorn::~Sintorn(){
 }
 
-void Sintorn::GenerateHierarchyTexture(){
+void Sintorn::GenerateHierarchyTexture(glm::vec4 const&lightPosition){
   if(this->_nofLevels<2)return;
 
   this->WriteDepthTextureProgram->use();
   this->WriteDepthTextureProgram->set2uiv("windowSize",glm::value_ptr(this->_windowSize));
   this->_depthTexture->bind(WRITEDEPTHTEXTURE_BINDING_DEPTH);
+  if(this->_discardBackFacing){
+    this->_normalTexture->bind(WRITEDEPTHTEXTURE_BINDING_NORMAL);
+    this->WriteDepthTextureProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  }
   this->_HDT[this->_nofLevels-1]->bindImage(WRITEDEPTHTEXTURE_BINDING_HDT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
   glDispatchCompute(
       this->_tileCount[this->_nofLevels-2].x,
@@ -380,7 +389,7 @@ void Sintorn::create(
   (void)view;
   (void)projection;
   if(this->timeStamp)this->timeStamp->stamp("");
-  this->GenerateHierarchyTexture();
+  this->GenerateHierarchyTexture(lightPosition);
   if(this->timeStamp)this->timeStamp->stamp("computeHDT");
   this->ComputeShadowFrusta(lightPosition,projection*view);
   if(this->timeStamp)this->timeStamp->stamp("computeShadowFrusta");
