@@ -1,5 +1,6 @@
 #include"RSSVTiles.h"
-/*
+
+
 class RSSVLevel{
   public:
     RSSVLevel(
@@ -7,10 +8,37 @@ class RSSVLevel{
         glm::uvec2 const&d,
         glm::uvec2 const&s):level(l),divisibility(d),size(s){}
     size_t     level       ;//level number: 0 - the topmost level
-    glm::uvec2 divisibility;//number of element that are grouped together forming one element in higher level
+    glm::uvec2 divisibility;//number of element that are grouped together forming tile - one element in higher level
     glm::uvec2 size        ;//number of elements in this level
+    glm::uvec2 overlap     ;//number of elements that are shared between two neighbor elements
 };
 
+/*
+class RSSVTilesSolution{
+  public:
+    std::vector<RSSVLevel>levels;
+    size_t idle = 0;
+    size_t squareness = 0;
+    void computeSquareness(){
+      assert(this!=nullptr);
+      size_t wgs = this->divisibility.front().x*this->divisibility.front().y;
+      this->squareness = 0;
+      glm::uvec2 curSize = glm::uvec2(1u,1u);
+      auto ii=this->divisibility.rbegin();
+      curSize*=*ii;
+      this->squareness*=2;
+      this->squareness+=wgs/curSize.x;
+      ii++;
+      for(;ii!=this->divisibility.rend();ii++){
+        curSize*=*ii;
+        this->squareness*=2;
+        if(curSize.x<curSize.y)this->squareness+=curSize.y/curSize.x;
+        else this->squareness+=curSize.x/curSize.y;
+      }
+    }
+};
+*/
+/*
 class RSSVTileDivisibility{
   public:
     std::vector<glm::uvec2>divisibility;
@@ -69,5 +97,4 @@ void rssvChooseTileSizes(
     size_t wgs){
 
 }
-
 */

@@ -7,6 +7,7 @@ CSSV::CSSV(
     size_t maxMultiplicity,
     size_t computeSidesWGS,
     bool   zfail,
+    bool   localAtomic,
     glm::uvec2 const&windowSize,
     std::shared_ptr<ge::gl::Texture>const&depth,
     std::shared_ptr<Model>const&model,
@@ -79,6 +80,7 @@ CSSV::CSSV(
         "#version 450 core\n",
         ge::gl::Shader::define("WORKGROUP_SIZE_X",(int)this->_computeSidesWGS),
         ge::gl::Shader::define("MAX_MULTIPLICITY",(int)adj->getMaxMultiplicity()),
+        ge::gl::Shader::define("LOCAL_ATOMIC",(int)localAtomic),
         computeSrc));
 
   this->_drawSides=std::make_shared<ge::gl::Program>(
@@ -142,6 +144,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  glFinish();
   if(this->timeStamp)this->timeStamp->stamp("compute");
 
   this->_fbo->bind();

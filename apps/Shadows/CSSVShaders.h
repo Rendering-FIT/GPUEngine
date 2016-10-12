@@ -13,11 +13,19 @@ const std::string computeSrc = R".(
 
 //#define CULL_SIDE
 
+
+//#define LOCAL_ATOMIC
+
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
 layout(std430,binding=0)buffer SInput  {vec4 IBuffer[];};
 layout(std430,binding=1)buffer SOutput {vec4 OBuffer[];};
+
+#if LOCAL_ATOMIC == 1
+layout(std430,binding=2)volatile buffer SCounter{uint Counter[4];};
+#else
 layout(std430,binding=2)buffer SCounter{uint Counter[4];};
+#endif
 
 uniform uint numEdge=0;
 uniform vec4 lightPosition;
@@ -108,7 +116,29 @@ bool isVisible(in vec4 P[4],in int Diag){
   return false;
 }
 
+
+#if LOCAL_ATOMIC == 1
+shared uint localCounter;
+#endif
+
+#define BARBAR\
+  memoryBarrier();\
+  memoryBarrierAtomicCounter();\
+  memoryBarrierBuffer();\
+  memoryBarrierShared();\
+  memoryBarrierImage();\
+  groupMemoryBarrier();\
+  barrier()
+
+
 void main(){
+
+#if LOCAL_ATOMIC == 1
+  if(gl_LocalInvocationID.x==0)
+    localCounter = 0;
+  BARBAR;
+#endif
+
   uint gid=gl_GlobalInvocationID.x;
   if(gid<numEdge){//compute silhouette
     vec4 P[4];
@@ -155,6 +185,37 @@ void main(){
         }
       }
     }
+#if LOCAL_ATOMIC == 1
+    BARBAR;
+    uint localOffset = atomicAdd(localCounter,uint(4*abs(Multiplicity)));
+    BARBAR;
+    uint globalOffset = atomicAdd(Counter[0],0);
+    BARBAR;
+    uint WH = globalOffset + localOffset;
+    if(Multiplicity>0){
+      for(int m=0;m<Multiplicity;++m){
+        OBuffer[WH++]=P[1];
+        OBuffer[WH++]=P[0];
+        OBuffer[WH++]=P[3];
+        OBuffer[WH++]=P[2];
+      }
+    }
+    if(Multiplicity<0){
+      Multiplicity=-Multiplicity;
+      for(int m=0;m<Multiplicity;++m){
+        OBuffer[WH++]=P[0];
+        OBuffer[WH++]=P[1];
+        OBuffer[WH++]=P[2];
+        OBuffer[WH++]=P[3];
+      }
+    }
+    BARBAR;
+    if(gl_LocalInvocationID.x==0){
+      uint x = atomicAdd(localCounter,0);
+      atomicAdd(Counter[0],x);
+    }
+    BARBAR;
+#else
     if(Multiplicity>0){
       uint WH=atomicAdd(Counter[0],4*Multiplicity);
       for(int m=0;m<Multiplicity;++m){
@@ -174,6 +235,7 @@ void main(){
         OBuffer[WH++]=P[3];
       }
     }
+#endif
   }
 }).";
 

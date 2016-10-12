@@ -65,6 +65,7 @@ struct Application{
   size_t   cssvWGS = 64;
   size_t   cssvMaxMultiplicity = 2;
   bool     cssvZfail = true;
+  bool     cssvLocalAtomic = false;
 
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
@@ -113,6 +114,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
     std::cout<<"--cssv-zfail - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
+    std::cout<<"--cssv-localAtomic - use local atomic instructions"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
     std::cout<<"--sintorn-bias - offset of triangle planes"<<std::endl;
     std::cout<<"--sintorn-discardBackFacing - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
@@ -155,6 +157,7 @@ bool Application::init(int argc,char*argv[]){
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
   this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
   this->cssvZfail           = this->args->getArgi("--cssv-zfail","1");
+  this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","0");
 
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
@@ -239,6 +242,7 @@ bool Application::init(int argc,char*argv[]){
         this->cssvMaxMultiplicity,
         this->cssvWGS,
         this->cssvZfail,
+        this->cssvLocalAtomic,
         this->windowSize,
         this->gBuffer->depth,
         this->model,
@@ -258,7 +262,7 @@ bool Application::init(int argc,char*argv[]){
     this->useShadows = false;
 
   this->timeStamper = std::make_shared<TimeStamp>();
-  //this->shadowMethod->timeStamp = this->timeStamper;
+  this->shadowMethod->timeStamp = this->timeStamper;
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
