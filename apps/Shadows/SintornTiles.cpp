@@ -2,13 +2,7 @@
 #include<cassert>
 #include<algorithm>
 
-size_t divRoundUp(size_t X,size_t Y){
-  return(X/Y)+(X%Y==0?0:1);
-}
-
-size_t divRoundDown(size_t X,size_t Y){
-  return(X/Y);
-}
+#include<geCore/Dtemplates.h>
 
 class TileDivisibility{
   public:
@@ -29,10 +23,7 @@ class TileDivisibility{
     void computeIdle(glm::uvec2 const&windowSize){
       size_t branchingFactor = divisibility.at(0).x*divisibility.at(0).y;
       std::vector<glm::uvec2>tileSize;
-      for(auto const&x:this->divisibility){
-        (void)x;
-        tileSize.push_back(glm::uvec2(1u,1u));
-      }
+      tileSize.resize(this->divisibility.size(),glm::uvec2(1u,1u));
       for(size_t k=1;k<this->divisibility.size();++k)
         for(size_t l=0;l<k;++l)
           tileSize[l]*=divisibility[k];
@@ -44,8 +35,8 @@ class TileDivisibility{
         if(l>0)prevTileSize = tileSize[l-1];
         else prevTileSize = windowSize;
 
-        this->idle+=divRoundUp(windowSize[0],prevTileSize[0])*divRoundUp(windowSize[1],prevTileSize[1])*branchingFactor-
-          divRoundUp(windowSize[0],tileSize[l].x)*divRoundUp(windowSize[1],tileSize[l].y);
+        this->idle+=ge::core::divRoundUp(windowSize[0],prevTileSize[0])*ge::core::divRoundUp(windowSize[1],prevTileSize[1])*branchingFactor-
+          ge::core::divRoundUp(windowSize[0],tileSize[l].x)*ge::core::divRoundUp(windowSize[1],tileSize[l].y);
       }
     }
     bool operator<(TileDivisibility const&other)const{

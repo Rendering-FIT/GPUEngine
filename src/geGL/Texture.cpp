@@ -291,6 +291,16 @@ void Texture::generateMipmap()const{
   this->_gl.glGenerateTextureMipmap(this->_id);
 }
 
+void Texture::clear(
+    GLint        level ,
+    GLenum       format,
+    GLenum       type  ,
+    GLvoid const*data  ){
+  assert(this!=nullptr);
+  this->_gl.glClearTexImage(this->_id,level,format,type,data);
+}
+
+
 /**
  * @brief sets parameters of texture
  *

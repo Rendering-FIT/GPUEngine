@@ -77,6 +77,13 @@ std::map<unsigned,std::string>ParseEnumArgs::operator()(const char*args){
   return this->_id2Name;
 }
 
+size_t ge::core::divRoundUp(size_t x,size_t y){
+  return(x/y)+(x%y==0?0:1);
+}
+
+size_t ge::core::divRoundDown(size_t x,size_t y){
+  return x/y;
+}
 
 size_t ge::core::getDispatchSize(size_t workSize,size_t workGroupSize){
   return workSize%workGroupSize?workSize/workGroupSize+1:workSize/workGroupSize;

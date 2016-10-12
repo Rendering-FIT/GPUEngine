@@ -256,7 +256,7 @@ void AppGL::draw() {
 
 
 	int side = getSide();
-	zoom = side * 2.2f;
+	zoom = float(side) * 2.2f;
 	float a = radians(angle + 45);
 	view = lookAt(zoom*vec3(cos(a), 1, sin(a)), vec3(0, 0, 0), vec3(0, 1, 0));
 	int w = window->getWidth();

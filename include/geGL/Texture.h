@@ -100,6 +100,11 @@ namespace ge{
 
 
         void    generateMipmap()const;
+        void    clear(
+            GLint        level           ,
+            GLenum       format          ,
+            GLenum       type            ,
+            GLvoid const*data   = nullptr);
         void    texParameteri (GLenum pname,GLint    params)const;
         void    texParameterfv(GLenum pname,GLfloat *params)const;
         GLenum  getFormat()const;

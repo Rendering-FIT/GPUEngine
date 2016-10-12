@@ -203,6 +203,8 @@ namespace ge{
         printArgs2(tail...);
       }
 
+    GECORE_EXPORT size_t divRoundUp  (size_t x,size_t y);
+    GECORE_EXPORT size_t divRoundDown(size_t x,size_t y);
     GECORE_EXPORT size_t getDispatchSize(size_t workSize,size_t workGroupSize);
     GECORE_EXPORT unsigned bitCount(unsigned value);
 

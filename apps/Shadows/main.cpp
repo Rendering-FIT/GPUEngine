@@ -279,7 +279,7 @@ void Application::drawScene(){
   this->gl->glEnable(GL_DEPTH_TEST);
   this->gBuffer->begin();
   this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-  this->gl->glClearTexImage(this->shadowMask->getId(),0,GL_RED,GL_FLOAT,NULL);
+  this->shadowMask->clear(0,GL_RED,GL_FLOAT);
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
   if(this->timeStamper)this->timeStamper->stamp("gBuffer");

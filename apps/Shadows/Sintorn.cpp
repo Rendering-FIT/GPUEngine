@@ -230,7 +230,8 @@ Sintorn::Sintorn(
     this->_HDT.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HDT.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     float data[2]={1,-1};
-    glClearTexImage(this->_HDT.back()->getId(),0,GL_RG,GL_FLOAT,data);
+    this->_HDT.back()->clear(0,GL_RG,GL_FLOAT,data);
+    //glClearTexImage(this->_HDT.back()->getId(),0,GL_RG,GL_FLOAT,data);
   }
 
   size_t RESULT_LENGTH_IN_UINT=this->_wavefrontSize/UINT_BIT_SIZE;
@@ -240,8 +241,9 @@ Sintorn::Sintorn(
     this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32UI,1,this->_usedTiles[l].x*RESULT_LENGTH_IN_UINT,this->_usedTiles[l].y));
     this->_HST.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HST.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
-    uint32_t data = 0;
-    glClearTexImage(this->_HDT.back()->getId(),0,GL_RG,GL_UNSIGNED_INT,&data);
+    uint8_t data[2] = {0,0};
+    this->_HST.back()->clear(0,GL_RG_INTEGER,GL_UNSIGNED_BYTE,data);
+    //glClearTexImage(this->_HDT.back()->getId(),0,GL_RG,GL_UNSIGNED_INT,&data);
   }
 }
 
@@ -258,7 +260,7 @@ void Sintorn::GenerateHierarchyTexture(glm::vec4 const&lightPosition){
     this->_normalTexture->bind(WRITEDEPTHTEXTURE_BINDING_NORMAL);
     this->WriteDepthTextureProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
   }
-  this->_HDT[this->_nofLevels-1]->bindImage(WRITEDEPTHTEXTURE_BINDING_HDT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
+  this->_HDT[this->_nofLevels-1]->bindImage(WRITEDEPTHTEXTURE_BINDING_HDT);
   glDispatchCompute(
       this->_tileCount[this->_nofLevels-2].x,
       this->_tileCount[this->_nofLevels-2].y,
@@ -274,8 +276,8 @@ void Sintorn::GenerateHierarchyTexture(glm::vec4 const&lightPosition){
 
   for(int l=(int)this->_nofLevels-2;l>=0;--l){
     this->HierarchicalDepthTextureProgram->set1ui("DstLevel",(unsigned)l);
-    this->_HDT[l+1]->bindImage(HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT ,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
-    this->_HDT[l  ]->bindImage(HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT,0,GL_RG32F,GL_READ_WRITE,GL_FALSE,0);
+    this->_HDT[l+1]->bindImage(HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT );
+    this->_HDT[l  ]->bindImage(HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT);
     glDispatchCompute(this->_usedTiles[l].x,this->_usedTiles[l].y,1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
   }
@@ -295,9 +297,11 @@ void Sintorn::ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp){
 }
 
 void Sintorn::RasterizeTexture(){
-  glClearTexImage(this->_finalStencilMask->getId(),0,GL_RED_INTEGER,GL_UNSIGNED_INT,NULL);
+  this->_finalStencilMask->clear(0,GL_RED_INTEGER,GL_UNSIGNED_INT,nullptr);
+  //glClearTexImage(this->_finalStencilMask->getId(),0,GL_RED_INTEGER,GL_UNSIGNED_INT,NULL);
   for(size_t l=0;l<this->_nofLevels;++l){
-    glClearTexImage(this->_HST[l]->getId(),0,GL_RED_INTEGER,GL_UNSIGNED_INT,NULL);
+    this->_HST[l]->clear(0,GL_RED_INTEGER,GL_UNSIGNED_INT,nullptr);
+    //glClearTexImage(this->_HST[l]->getId(),0,GL_RED_INTEGER,GL_UNSIGNED_INT,NULL);
   }
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
@@ -315,9 +319,9 @@ void Sintorn::RasterizeTexture(){
   for(size_t l=0;l<this->_nofLevels;++l)
     this->_HDT[l]->bind(GLuint(RASTERIZETEXTURE_BINDING_HDT+l));
   for(size_t l=0;l<this->_nofLevels;++l)
-    this->_HST[l]->bindImage(GLuint(RASTERIZETEXTURE_BINDING_HST+l),0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+    this->_HST[l]->bindImage(GLuint(RASTERIZETEXTURE_BINDING_HST+l));
 
-  this->_finalStencilMask->bindImage(GLuint(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK),0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_finalStencilMask->bindImage(GLuint(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK));
 
   size_t maxSize = 65536/2;
   size_t workgroups = ge::core::getDispatchSize(this->_nofTriangles,this->_shadowFrustaPerWorkGroup);
@@ -345,8 +349,8 @@ void Sintorn::MergeTexture(){
     this->MergeTextureProgram->set2uiv("DstTileSizeInPixels",glm::value_ptr(this->_tileSizeInPixels[l]));
     this->MergeTextureProgram->set2uiv("DstTileDivisibility",glm::value_ptr(this->_tileDivisibility[l]));
 
-    this->_HST[l  ]->bindImage(MERGETEXTURE_BINDING_HSTINPUT ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
-    this->_HST[l+1]->bindImage(MERGETEXTURE_BINDING_HSTOUTPUT,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+    this->_HST[l  ]->bindImage(MERGETEXTURE_BINDING_HSTINPUT);
+    this->_HST[l+1]->bindImage(MERGETEXTURE_BINDING_HSTOUTPUT);
     if(l>0){
       glClientWaitSync(Sync,0,GL_TIMEOUT_IGNORED);
       glDeleteSync(Sync);
@@ -366,8 +370,8 @@ void Sintorn::MergeTexture(){
   this->WriteStencilTextureProgram->use();
   this->WriteStencilTextureProgram->set2uiv("WindowSize",glm::value_ptr(this->_windowSize));
 
-  this->_finalStencilMask->bindImage(WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
-  this->_HST[this->_nofLevels-1]->bindImage(WRITESTENCILTEXTURE_BINDING_HSTINPUT ,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_finalStencilMask->bindImage(WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK);
+  this->_HST[this->_nofLevels-1]->bindImage(WRITESTENCILTEXTURE_BINDING_HSTINPUT);
 
   glClientWaitSync(Sync,0,GL_TIMEOUT_IGNORED);
   glDeleteSync(Sync);
@@ -404,7 +408,7 @@ void Sintorn::create(
 void Sintorn::drawHST(size_t l){
   assert(this!=nullptr);
   this->_drawHSTProgram->use();
-  this->_HST[l]->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_HST[l]->bindImage(0);
   this->_emptyVao->bind();
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);
   this->_emptyVao->unbind();
@@ -413,7 +417,7 @@ void Sintorn::drawHST(size_t l){
 void Sintorn::drawFinalStencilMask(){
   assert(this!=nullptr);
   this->_drawFinalStencilMask->use();
-  this->_finalStencilMask->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
+  this->_finalStencilMask->bindImage(0);
   this->_emptyVao->bind();
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);
   this->_emptyVao->unbind();
@@ -422,8 +426,8 @@ void Sintorn::drawFinalStencilMask(){
 void Sintorn::blit(){
   assert(this!=nullptr);
   this->_blitProgram->use();
-  this->_finalStencilMask->bindImage(0,0,GL_R32UI,GL_READ_WRITE,GL_FALSE,0);
-  this->_shadowMask->bindImage(1,0,GL_R32F,GL_READ_WRITE,GL_FALSE,0);
+  this->_finalStencilMask->bindImage(0);
+  this->_shadowMask->bindImage(1);
   this->_blitProgram->set2uiv("windowSize",glm::value_ptr(this->_windowSize));
   glDispatchCompute(
       (GLuint)ge::core::getDispatchSize(this->_windowSize.x,8),
