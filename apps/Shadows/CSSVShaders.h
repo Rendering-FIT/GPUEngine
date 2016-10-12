@@ -11,9 +11,7 @@ const std::string computeSrc = R".(
 #define WORKGROUP_SIZE_X 64
 #endif//WORKGROUP_SIZE_X
 
-//#define CULL_SIDE
-
-
+//#define CULL_SIDES
 //#define LOCAL_ATOMIC
 
 layout(local_size_x=WORKGROUP_SIZE_X)in;
@@ -119,40 +117,39 @@ bool isVisible(in vec4 P[4],in int Diag){
 
 #if LOCAL_ATOMIC == 1
 shared uint localCounter;
+shared uint globalOffset;
 #endif
-
-#define BARBAR\
-  memoryBarrier();\
-  memoryBarrierAtomicCounter();\
-  memoryBarrierBuffer();\
-  memoryBarrierShared();\
-  memoryBarrierImage();\
-  groupMemoryBarrier();\
-  barrier()
-
 
 void main(){
 
 #if LOCAL_ATOMIC == 1
-  if(gl_LocalInvocationID.x==0)
+  if(gl_LocalInvocationID.x==0){
     localCounter = 0;
-  BARBAR;
+    globalOffset = 0;
+  }
+  barrier();
 #endif
 
   uint gid=gl_GlobalInvocationID.x;
   if(gid<numEdge){//compute silhouette
+#if CULL_SIDES == 1
     vec4 P[4];
+#else
+    vec4 P[2];
+#endif
     gid*=2+MAX_MULTIPLICITY;
 
     P[0]=IBuffer[gid+0];
     P[1]=IBuffer[gid+1];
+#if CULL_SIDES == 1
     P[2]=vec4(P[0].xyz*lightPosition.w-lightPosition.xyz,0);
     P[3]=vec4(P[1].xyz*lightPosition.w-lightPosition.xyz,0);
+#endif
 
     int Num=int(P[0].w)+2;
     P[0].w=1;
 
-#ifdef CULL_SIDE
+#if CULL_SIDES == 1
     vec4 ClipP[4];
     for(int i=0;i<4;++i)
       ClipP[i]=mvp*P[i];
@@ -165,7 +162,7 @@ void main(){
     int Diag=Corner.x+(Corner.y<<1)-1;
 
     if(!isVisible(ClipP,Diag))return;
-#endif//CULL_SIDE
+#endif//CULL_SIDES
 
     precise int Multiplicity=0;
     if(Num>20)Num=0;
@@ -186,18 +183,17 @@ void main(){
       }
     }
 #if LOCAL_ATOMIC == 1
-    BARBAR;
-    uint localOffset = atomicAdd(localCounter,uint(4*abs(Multiplicity)));
-    BARBAR;
-    uint globalOffset = atomicAdd(Counter[0],0);
-    BARBAR;
+    uint localOffset = atomicAdd(localCounter,uint(2*abs(Multiplicity)));
+    barrier();
+    if(gl_LocalInvocationID.x==0){
+      globalOffset = atomicAdd(Counter[0],localCounter);
+    }
+    barrier();
     uint WH = globalOffset + localOffset;
     if(Multiplicity>0){
       for(int m=0;m<Multiplicity;++m){
         OBuffer[WH++]=P[1];
         OBuffer[WH++]=P[0];
-        OBuffer[WH++]=P[3];
-        OBuffer[WH++]=P[2];
       }
     }
     if(Multiplicity<0){
@@ -205,34 +201,22 @@ void main(){
       for(int m=0;m<Multiplicity;++m){
         OBuffer[WH++]=P[0];
         OBuffer[WH++]=P[1];
-        OBuffer[WH++]=P[2];
-        OBuffer[WH++]=P[3];
       }
     }
-    BARBAR;
-    if(gl_LocalInvocationID.x==0){
-      uint x = atomicAdd(localCounter,0);
-      atomicAdd(Counter[0],x);
-    }
-    BARBAR;
 #else
     if(Multiplicity>0){
-      uint WH=atomicAdd(Counter[0],4*Multiplicity);
+      uint WH=atomicAdd(Counter[0],2*Multiplicity);
       for(int m=0;m<Multiplicity;++m){
         OBuffer[WH++]=P[1];
         OBuffer[WH++]=P[0];
-        OBuffer[WH++]=P[3];
-        OBuffer[WH++]=P[2];
       }
     }
     if(Multiplicity<0){
       Multiplicity=-Multiplicity;
-      uint WH=atomicAdd(Counter[0],4*Multiplicity);
+      uint WH=atomicAdd(Counter[0],2*Multiplicity);
       for(int m=0;m<Multiplicity;++m){
         OBuffer[WH++]=P[0];
         OBuffer[WH++]=P[1];
-        OBuffer[WH++]=P[2];
-        OBuffer[WH++]=P[3];
       }
     }
 #endif
@@ -246,15 +230,17 @@ void main(){
 const std::string drawVPSrc = R".(
 #version 450 core
 layout(location=0)in vec4 Position;
-uniform mat4 mvp;
 void main(){
-  gl_Position=mvp*Position;
+  gl_Position=Position;
 }).";
 const std::string drawCPSrc = R".(
 #version 450 core
 layout(vertices=4)out;
+uniform mat4 mvp;
+uniform vec4 lightPosition = vec4(100,100,100,1);
 void main(){
-  gl_out[gl_InvocationID].gl_Position=gl_in[gl_InvocationID].gl_Position;
+  //gl_out[gl_InvocationID].gl_Position=mvp*gl_in[gl_InvocationID].gl_Position;
+  gl_out[gl_InvocationID].gl_Position=mvp*(vec4(gl_in[gl_InvocationID&1].gl_Position.xyz-lightPosition.xyz*(gl_InvocationID/2),1-(gl_InvocationID/2)));
   if(gl_InvocationID==0){
     gl_TessLevelOuter[0]=1;
     gl_TessLevelOuter[1]=1;

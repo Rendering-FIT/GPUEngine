@@ -8,6 +8,7 @@ CSSV::CSSV(
     size_t computeSidesWGS,
     bool   zfail,
     bool   localAtomic,
+    bool   cullSides,
     glm::uvec2 const&windowSize,
     std::shared_ptr<ge::gl::Texture>const&depth,
     std::shared_ptr<Model>const&model,
@@ -81,6 +82,7 @@ CSSV::CSSV(
         ge::gl::Shader::define("WORKGROUP_SIZE_X",(int)this->_computeSidesWGS),
         ge::gl::Shader::define("MAX_MULTIPLICITY",(int)adj->getMaxMultiplicity()),
         ge::gl::Shader::define("LOCAL_ATOMIC",(int)localAtomic),
+        ge::gl::Shader::define("CULL_SIDES",(int)cullSides),
         computeSrc));
 
   this->_drawSides=std::make_shared<ge::gl::Program>(
@@ -163,9 +165,10 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
   this->_drawSides->use();
   this->_drawSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
+  this->_drawSides->set4fv("lightPosition",glm::value_ptr(lightPosition));
   this->_sidesVao->bind();
   this->_dibo->bind(GL_DRAW_INDIRECT_BUFFER);
-  glPatchParameteri(GL_PATCH_VERTICES,4);
+  glPatchParameteri(GL_PATCH_VERTICES,2);
   glDrawArraysIndirect(GL_PATCHES,NULL);
   this->_sidesVao->unbind();
   if(this->timeStamp)this->timeStamp->stamp("drawSides");

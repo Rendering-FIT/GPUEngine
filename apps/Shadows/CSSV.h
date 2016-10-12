@@ -12,6 +12,7 @@ class CSSV: public ShadowMethod{
         size_t computeSidesWGS,
         bool   zfail          ,
         bool   localAtomic    ,
+        bool   cullSides      ,
         glm::uvec2 const&windowSize,
         std::shared_ptr<ge::gl::Texture>const&depth,
         std::shared_ptr<Model>const&model,

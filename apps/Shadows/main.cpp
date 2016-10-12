@@ -65,7 +65,8 @@ struct Application{
   size_t   cssvWGS = 64;
   size_t   cssvMaxMultiplicity = 2;
   bool     cssvZfail = true;
-  bool     cssvLocalAtomic = false;
+  bool     cssvLocalAtomic = true;
+  bool     cssvCullSides = false;
 
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
@@ -157,7 +158,8 @@ bool Application::init(int argc,char*argv[]){
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
   this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
   this->cssvZfail           = this->args->getArgi("--cssv-zfail","1");
-  this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","0");
+  this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","1");
+  this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
 
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
@@ -243,6 +245,7 @@ bool Application::init(int argc,char*argv[]){
         this->cssvWGS,
         this->cssvZfail,
         this->cssvLocalAtomic,
+        this->cssvCullSides,
         this->windowSize,
         this->gBuffer->depth,
         this->model,
@@ -262,7 +265,7 @@ bool Application::init(int argc,char*argv[]){
     this->useShadows = false;
 
   this->timeStamper = std::make_shared<TimeStamp>();
-  this->shadowMethod->timeStamp = this->timeStamper;
+  //this->shadowMethod->timeStamp = this->timeStamper;
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
@@ -331,8 +334,8 @@ void Application::draw(){
       flc->setRotation(keypoint.viewVector,keypoint.upVector);
       for(size_t f=0;f<this->testFramesPerMeasurement;++f){
         this->drawScene();
-        this->window->swap();
       }
+      std::cerr<<"frame: "<<k<<std::endl;
 
       std::vector<std::string>line;
       if(csv.size()==0){
@@ -351,8 +354,9 @@ void Application::draw(){
         }
       csv.push_back(line);
       measurement.clear();
+      this->window->swap();
     }
-    std::string output = this->outputName+"_fly.csv";
+    std::string output = this->outputName+".csv";
     saveCSV(output,csv);
     this->mainLoop->removeWindow(this->window->getId());
     return;
