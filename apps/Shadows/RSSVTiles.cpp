@@ -53,11 +53,19 @@ class RSSVTilesSolution{
       auto ii=this->levels.rbegin();
       glm::uvec2 curSize = *ii;
       ii++;
-      if(ii==this->levels.rend())return curSize;
-      curSize = curSize**ii-glm::uvec2(ii->x,0);
-      ii++;
-      for(;ii!=this->levels.rend();ii++)
-        curSize*=*ii;
+      bool joiningLevelHapped = false;
+      for(;ii!=this->levels.rend();ii++){
+        if(joiningLevelHapped){
+          curSize*=*ii;
+        }else{
+          if(ii->x==1){
+            curSize*=*ii;
+          }else{
+            curSize = curSize**ii-glm::uvec2(ii->x,0);
+            joiningLevelHapped = true;
+          }
+        }
+      }
       return curSize;
     }
     bool operator<(RSSVTilesSolution const&other)const{

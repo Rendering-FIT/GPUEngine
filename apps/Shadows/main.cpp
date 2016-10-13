@@ -119,7 +119,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
     std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
     std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
-    std::cout<<"--method                       - name of shadow method: cubeShadowMapping cssv"<<std::endl;
+    std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv"<<std::endl;
     std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
     std::cout<<"--test-fly-keys                - filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz"<<std::endl;
     std::cout<<"--test-fly-length              - number of measurements, 1000"<<std::endl;
@@ -257,20 +257,23 @@ bool Application::init(int argc,char*argv[]){
         this->sintornBias,
         this->sintornDiscardBackFacing,
         this->shadowMask);
+  else if(this->methodName=="rssv")
+    this->shadowMethod = std::make_shared<RSSV>(
+        this->windowSize,
+        this->shadowMask,
+        this->gBuffer->depth,
+        this->model);
   else
     this->useShadows = false;
 
   this->timeStamper = std::make_shared<TimeStamp>();
-  //this->shadowMethod->timeStamp = this->timeStamper;
+  this->shadowMethod->timeStamp = this->timeStamper;
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
       this->shadowMethod->timeStamp = this->timeStamper;
     }
   }
-
-  auto rssv = std::make_shared<RSSV>(this->windowSize,this->shadowMask,this->gBuffer->depth,this->model,64);
-  (void)rssv;
 
   this->drawPrimitive = std::make_shared<DrawPrimitive>(this->windowSize);
   return true;
@@ -366,6 +369,7 @@ void Application::draw(){
 
   //this->drawPrimitive->drawTexture(this->gBuffer->normal);
   //*
+  if(this->methodName == "sintorn"){
      auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
      if(this->keyDown['h'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
      if(this->keyDown['j'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
@@ -377,6 +381,15 @@ void Application::draw(){
      if(this->keyDown['n'])sintorn->drawHST(2);
      if(this->keyDown['m'])sintorn->drawHST(3);
      if(this->keyDown[','])sintorn->drawFinalStencilMask();
+  }
+  if(this->methodName == "rssv"){
+     auto rssv = std::dynamic_pointer_cast<RSSV>(this->shadowMethod);
+     if(this->keyDown['h'])this->drawPrimitive->drawTexture(rssv->_HDT[0]);
+     if(this->keyDown['j'])this->drawPrimitive->drawTexture(rssv->_HDT[1]);
+     if(this->keyDown['k'])this->drawPrimitive->drawTexture(rssv->_HDT[2]);
+     if(this->keyDown['l'])this->drawPrimitive->drawTexture(rssv->_HDT[3]);
+  }
+
   // */
   this->window->swap();
 }
