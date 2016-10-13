@@ -12,8 +12,8 @@
  *
  * @param tileDivisibility output tile divisibilities
  * @param windowSize windows size
- * @param wgs absolute work-group size = tileDivisibility[i].x*tileDivisibility[i].y
+ * @param threadsPerTile absolute work-group size = tileDivisibility[i].x*tileDivisibility[i].y
  */
-void rssvChooseTileSizes(std::vector<glm::uvec2>&tileDivisibility,glm::uvec2 const&windowSize,size_t wgs);
+void rssvChooseTileSizes(std::vector<glm::uvec2>&tileDivisibility,glm::uvec2 const&windowSize,size_t threadsPerTile);
 
 

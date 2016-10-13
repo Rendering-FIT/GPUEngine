@@ -11,8 +11,8 @@ const std::string computeSrc = R".(
 #define WORKGROUP_SIZE_X 64
 #endif//WORKGROUP_SIZE_X
 
-//#define CULL_SIDES
-//#define LOCAL_ATOMIC
+//#define CULL_SIDES 1
+//#define LOCAL_ATOMIC 1
 
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 

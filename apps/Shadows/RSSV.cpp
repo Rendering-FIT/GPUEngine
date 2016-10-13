@@ -2,6 +2,7 @@
 
 #include<geCore/Dtemplates.h>
 #include"ProgramExtension.h"
+#include"RSSVTiles.h"
 
 RSSV::RSSV(
     glm::uvec2                      const&windowSize   ,
@@ -16,6 +17,9 @@ RSSV::RSSV(
   this->_generateHDT0Program = makeComputeProgram(
       defineComputeShaderHeader(this->_generateHDT0WGS,this->_wavefrontSize),
       _generateHDT0Src);
+  rssvChooseTileSizes(this->_divisibility,windowSize,wavefrontSize);
+  for(auto const&x:this->_divisibility)
+    std::cout<<x.x<<" x "<<x.y<<std::endl;
 }
 
 RSSV::~RSSV(){}

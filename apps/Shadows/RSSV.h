@@ -39,5 +39,6 @@ class RSSV: public ShadowMethod{
     glm::uvec2                      _generateHDT0WGS     = glm::uvec2(8,8)    ;
     size_t                          _nofLevels           = 1                  ;
     std::vector<std::shared_ptr<ge::gl::Texture>>_HDT;
+    std::vector<glm::uvec2>_divisibility;
     void _generateHDT();
 };

@@ -1,60 +1,25 @@
 #include"RSSVTiles.h"
+#include<algorithm>
+#include<geCore/Dtemplates.h>
 
-
-class RSSVLevel{
-  public:
-    RSSVLevel(
-        size_t           l,
-        glm::uvec2 const&d,
-        glm::uvec2 const&s):level(l),divisibility(d),size(s){}
-    size_t     level       ;//level number: 0 - the topmost level
-    glm::uvec2 divisibility;//number of element that are grouped together forming tile - one element in higher level
-    glm::uvec2 size        ;//number of elements in this level
-    glm::uvec2 overlap     ;//number of elements that are shared between two neighbor elements
-};
-
-/*
 class RSSVTilesSolution{
   public:
-    std::vector<RSSVLevel>levels;
+    std::vector<glm::uvec2>levels;
     size_t idle = 0;
     size_t squareness = 0;
     void computeSquareness(){
       assert(this!=nullptr);
-      size_t wgs = this->divisibility.front().x*this->divisibility.front().y;
-      this->squareness = 0;
-      glm::uvec2 curSize = glm::uvec2(1u,1u);
-      auto ii=this->divisibility.rbegin();
-      curSize*=*ii;
-      this->squareness*=2;
-      this->squareness+=wgs/curSize.x;
+      size_t wgs = this->levels.front().x*this->levels.front().y;
+      auto ii=this->levels.rbegin();
+      glm::uvec2 curSize = *ii;
+      this->squareness=wgs/curSize.x;
       ii++;
-      for(;ii!=this->divisibility.rend();ii++){
-        curSize*=*ii;
-        this->squareness*=2;
-        if(curSize.x<curSize.y)this->squareness+=curSize.y/curSize.x;
-        else this->squareness+=curSize.x/curSize.y;
-      }
-    }
-};
-*/
-/*
-class RSSVTileDivisibility{
-  public:
-    std::vector<glm::uvec2>divisibility;
-    size_t idle = 0;//number of idle threads
-    size_t squareness = 0;//number is smaller if tiles are closer to squares
-    void computeSquareness(){
-      assert(this!=nullptr);
-      size_t wgs = this->divisibility.front().x*this->divisibility.front().y;
-      this->squareness = 0;
-      glm::uvec2 curSize = glm::uvec2(1u,1u);
-      auto ii=this->divisibility.rbegin();
-      curSize*=*ii;
+      curSize = curSize**ii-glm::uvec2(ii->x,0);
       this->squareness*=2;
-      this->squareness+=wgs/curSize.x;
+      if(curSize.x<curSize.y)this->squareness+=curSize.y/curSize.x;
+      else this->squareness+=curSize.x/curSize.y;
       ii++;
-      for(;ii!=this->divisibility.rend();ii++){
+      for(;ii!=this->levels.rend();ii++){
         curSize*=*ii;
         this->squareness*=2;
         if(curSize.x<curSize.y)this->squareness+=curSize.y/curSize.x;
@@ -62,39 +27,109 @@ class RSSVTileDivisibility{
       }
     }
     void computeIdle(glm::uvec2 const&windowSize){
-      size_t branchingFactor = divisibility.at(0).x*divisibility.at(0).y;
-      std::vector<glm::uvec2>tileSize;
-      tileSize.resize(this->divisibility.size(),glm::uvec2(1u,1u));
-      for(size_t k=1;k<this->divisibility.size();++k)
-        for(size_t l=0;l<k;++l)
-          tileSize[l]*=divisibility[k];
-
-      this->idle=0;
-
-      for(size_t l=0;l<divisibility.size();++l){
-        glm::uvec2 prevTileSize;
-        if(l>0)prevTileSize = tileSize[l-1];
-        else prevTileSize = windowSize;
-
-        this->idle+=ge::core::divRoundUp(windowSize[0],prevTileSize[0])*ge::core::divRoundUp(windowSize[1],prevTileSize[1])*branchingFactor-
-          ge::core::divRoundUp(windowSize[0],tileSize[l].x)*ge::core::divRoundUp(windowSize[1],tileSize[l].y);
+      assert(this!=nullptr);
+      this->idle = 0;
+      glm::uvec2 prevSize = windowSize;
+      int i=int(this->levels.size()-1);
+      this->idle += 
+        ge::core::divRoundUp(prevSize.x,this->levels.at(i).x-1)*(this->levels.at(i).x-1)*
+        ge::core::divRoundUp(prevSize.y,this->levels.at(i).y  )*(this->levels.at(i).y  )-
+        prevSize.x*prevSize.y;
+      prevSize.x = uint32_t(ge::core::divRoundUp(prevSize.x,this->levels.at(i).x-1));
+      prevSize.y = uint32_t(ge::core::divRoundUp(prevSize.y,this->levels.at(i).y  ));
+      i--;
+      for(;i>=0;--i){
+        this->idle += 
+          ge::core::divRoundUp(prevSize.x,this->levels.at(i).x)*(this->levels.at(i).x)*
+          ge::core::divRoundUp(prevSize.y,this->levels.at(i).y)*(this->levels.at(i).y)-
+          prevSize.x*prevSize.y;
+        prevSize.x = uint32_t(ge::core::divRoundUp(prevSize.x,this->levels.at(i).x));
+        prevSize.y = uint32_t(ge::core::divRoundUp(prevSize.y,this->levels.at(i).y));
       }
     }
-    bool operator<(TileDivisibility const&other)const{
+    glm::uvec2 getSize()const{
       assert(this!=nullptr);
-      assert(this->divisibility.size()==other.divisibility.size());
+      if(this->levels.size()==0)return glm::uvec2(0);
+      auto ii=this->levels.rbegin();
+      glm::uvec2 curSize = *ii;
+      ii++;
+      if(ii==this->levels.rend())return curSize;
+      curSize = curSize**ii-glm::uvec2(ii->x,0);
+      ii++;
+      for(;ii!=this->levels.rend();ii++)
+        curSize*=*ii;
+      return curSize;
+    }
+    bool operator<(RSSVTilesSolution const&other)const{
+      assert(this!=nullptr);
+      if(this->levels.size()<other.levels.size())return true;
+      if(this->levels.size()>other.levels.size())return false;
+      if(this->levels.back().x>other.levels.back().x)return true;
+      if(this->levels.back().x<other.levels.back().x)return false;
       if(this->idle<other.idle)return true;
       if(this->idle>other.idle)return false;
       return this->squareness<other.squareness;
     }
 };
 
+void rssvTileSizeChoises(
+    std::vector<glm::uvec2>&choices,
+    size_t threadsPerTile){
+  for(size_t x=1;x<=threadsPerTile;++x)//loop over all choices
+    if((threadsPerTile%x)==0)//is this choice of x possible?
+      choices.push_back(glm::uvec2(x,threadsPerTile/x));
+}
 
+size_t rssvComputeNofLevels(glm::uvec2 const&windowSize,size_t threadsPerTile){
+  return (size_t)glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(threadsPerTile))+1;
+}
+
+void rssvGenerateSolutions(
+    std::vector<RSSVTilesSolution>&solutions,
+    glm::uvec2 const&windowSize,
+    size_t threadsPerTile){
+  std::vector<glm::uvec2>choices;
+  rssvTileSizeChoises(choices,threadsPerTile);
+  size_t nofLevels = rssvComputeNofLevels(windowSize,threadsPerTile);
+  size_t II=0;//index into index
+  std::vector<size_t>index;
+  index.resize(nofLevels,0);
+
+  size_t index1D=0;//1D version of index
+  do{//loop over all solutions
+    RSSVTilesSolution sol;
+    for(size_t i=0;i<nofLevels;++i){
+      if( sol.getSize().x>=windowSize.x &&
+          sol.getSize().y>=windowSize.y)break;
+      sol.levels.push_back(choices[index[i]]);
+    }
+    if(sol.levels.back().x>1){
+      sol.computeIdle(windowSize);
+      sol.computeSquareness();
+      if( sol.getSize().x>=windowSize.x &&
+          sol.getSize().y>=windowSize.y)
+        solutions.push_back(sol);
+    }
+    ++index1D;//increment 1D version of index
+    //increment index to solutions
+    II=0;
+    do{//loop over levels
+      ++index[II];//increment index in II level
+      if(index[II]>=choices.size()){//index at II level overflows
+        index[II]=0;//clear index in II level
+        ++II;//increment level
+      }else break;//we are done incrementing
+    }while(II<nofLevels);
+  }while(II<nofLevels);
+}
 
 void rssvChooseTileSizes(
     std::vector<glm::uvec2>&tileDivisibility,
     glm::uvec2 const&windowSize,
-    size_t wgs){
-
+    size_t threadsPerTile){
+  std::vector<RSSVTilesSolution>solutions;
+  rssvGenerateSolutions(solutions,windowSize,threadsPerTile);
+  std::sort(solutions.begin(),solutions.end());
+  for(auto const&x:solutions.front().levels)
+    tileDivisibility.push_back(x);
 }
-*/

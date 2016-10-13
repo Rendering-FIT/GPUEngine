@@ -54,7 +54,6 @@ struct Application{
   float sensitivity = 0.01f;
   float orbitZoomSpeed = 0.2f;
   float freeCameraSpeed = 1.f;
-  std::string cameraPathFile = "";
   glm::vec4 lightPosition = glm::vec4(100.f,100.f,100.f,1.f);
   size_t   wavefrontSize = 0;
   uint32_t shadowMapResolution = 1024;
@@ -75,10 +74,6 @@ struct Application{
   std::string testName = "";
   std::string testFlyKeyFileName = "";
   size_t      testFlyLength = 0;
-
-  size_t      testGridSize = 10;
-  size_t      testGridAngleY = 10;
-  size_t      testGridAngleX = 10;
   size_t      testFramesPerMeasurement = 5;
 
   std::shared_ptr<TimeStamp>timeStamper = nullptr;
@@ -96,46 +91,51 @@ struct Application{
 bool Application::init(int argc,char*argv[]){
   this->args = std::make_shared<ge::util::ArgumentObject>(argc-1,argv+1);
   if(this->args->isPresent("-h") || this->args->isPresent("--help")){
-    std::cout<<"--model"<<" - "<<"model file name"<<std::endl;
-    std::cout<<"--window-size-x"<<" - "<<"window width"<<std::endl;
-    std::cout<<"--window-size-y"<<" - "<<"window height"<<std::endl;
-    std::cout<<"--camera-fovy"<<" - "<<"camera fovy"<<std::endl;
-    std::cout<<"--camera-near"<<" - "<<"camera near plane position"<<std::endl;
-    std::cout<<"--camera-far"<<" - "<<"camera far plane position"<<std::endl;
-    std::cout<<"--camera-sensitivity"<<" - "<<"camera sensitivity"<<std::endl;
-    std::cout<<"--camera-zoomSpeed - orbit camera zoom speed"<<std::endl;
-    std::cout<<"--camera-speed - free camera speed"<<std::endl;
-    std::cout<<"--camera-type - orbit/free camera type"<<std::endl;
-    std::cout<<"--camera-path - file name of camera path"<<std::endl;
-    std::cout<<"--no-shadows"<<" - "<<"turn off shadows"<<std::endl;
-    std::cout<<"--shadowMap-resolution"<<" - "<<"shadow map resolution"<<std::endl;
-    std::cout<<"--shadowMap-near"<<" - "<<"shadow map near plane position"<<std::endl;
-    std::cout<<"--shadowMap-far"<<" - "<<"shadow map far plane position"<<std::endl;
-    std::cout<<"--shadowMap-faces - cube shadow map faces"<<std::endl;
-    std::cout<<"--cssv-WGS - compute sillhouette shadow volumes work group size"<<std::endl;
-    std::cout<<"--cssv-maxMultiplicity - compute sillhouette shadow volumes max multiplicity"<<std::endl;
-    std::cout<<"--cssv-zfail - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
-    std::cout<<"--cssv-localAtomic - use local atomic instructions"<<std::endl;
+    std::cout<<"--model                        - model file name"<<std::endl;
+    std::cout<<"--window-size-x                - window width"<<std::endl;
+    std::cout<<"--window-size-y                - window height"<<std::endl;
+    std::cout<<"--light-x                      - light position.x"<<std::endl;
+    std::cout<<"--light-y                      - light position.y"<<std::endl;
+    std::cout<<"--light-z                      - light position.z"<<std::endl;
+    std::cout<<"--light-w                      - light position.w"<<std::endl;
+    std::cout<<"--camera-fovy                  - camera fovy"<<std::endl;
+    std::cout<<"--camera-near                  - camera near plane position"<<std::endl;
+    std::cout<<"--camera-far                   - camera far plane position"<<std::endl;
+    std::cout<<"--camera-sensitivity           - camera sensitivity"<<std::endl;
+    std::cout<<"--camera-zoomSpeed             - orbit camera zoom speed"<<std::endl;
+    std::cout<<"--camera-speed                 - free camera speed"<<std::endl;
+    std::cout<<"--camera-type                  - orbit/free camera type"<<std::endl;
+    std::cout<<"--no-shadows                   - turn off shadows"<<std::endl;
+    std::cout<<"--shadowMap-resolution         - shadow map resolution"<<std::endl;
+    std::cout<<"--shadowMap-near               - shadow map near plane position"<<std::endl;
+    std::cout<<"--shadowMap-far                - shadow map far plane position"<<std::endl;
+    std::cout<<"--shadowMap-faces              - cube shadow map faces"<<std::endl;
+    std::cout<<"--cssv-WGS                     - compute sillhouette shadow volumes work group size"<<std::endl;
+    std::cout<<"--cssv-maxMultiplicity         - compute sillhouette shadow volumes max multiplicity"<<std::endl;
+    std::cout<<"--cssv-zfail                   - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
+    std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
+    std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
-    std::cout<<"--sintorn-bias - offset of triangle planes"<<std::endl;
-    std::cout<<"--sintorn-discardBackFacing - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
-    std::cout<<"--wavefrontSize - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
-    std::cout<<"--method - name of shadow method: cubeShadowMapping cssv"<<std::endl;
-    std::cout<<"--test - name of test - fly,grid or empty"<<std::endl;
-    std::cout<<"--test-fly-keys - filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz"<<std::endl;
-    std::cout<<"--test-fly-length - number of measurements, 1000"<<std::endl;
-    std::cout<<"--test-grid-size - size of grid test cube - size^3 is number of measurement camera points"<<std::endl;
-    std::cout<<"--test-grid-angles-y - number of camera direction angles arount Y axis"<<std::endl;
-    std::cout<<"--test-grid-angles-x - number of camera direction angles around X axis"<<std::endl;
-    std::cout<<"--test-framesPerMeasurement - number of frames that is averaged per one measurement point"<<std::endl;
-    std::cout<<"--test-output - name of output file"<<std::endl;
+    std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
+    std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
+    std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
+    std::cout<<"--method                       - name of shadow method: cubeShadowMapping cssv"<<std::endl;
+    std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
+    std::cout<<"--test-fly-keys                - filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz"<<std::endl;
+    std::cout<<"--test-fly-length              - number of measurements, 1000"<<std::endl;
+    std::cout<<"--test-framesPerMeasurement    - number of frames that is averaged per one measurement point"<<std::endl;
+    std::cout<<"--test-output                  - name of output file"<<std::endl;
     exit(0);
   }
-  this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/cube/cube.obj");
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
-  //this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/sponza/sponza.obj");
   this->windowSize.x        = this->args->getArgi("--window-size-x","1024");
   this->windowSize.y        = this->args->getArgi("--window-size-y","1024");
+
+  this->lightPosition.x     = this->args->getArgf("--light-x","100.f");
+  this->lightPosition.y     = this->args->getArgf("--light-y","100.f");
+  this->lightPosition.z     = this->args->getArgf("--light-z","100.f");
+  this->lightPosition.w     = this->args->getArgf("--light-w","1.f");
+
   this->cameraFovy          = this->args->getArgf("--camera-fovy","1.5707963267948966f");
   this->cameraNear          = this->args->getArgf("--camera-near","0.1f");
   this->cameraFar           = this->args->getArgf("--camera-far","inf");
@@ -143,7 +143,6 @@ bool Application::init(int argc,char*argv[]){
   this->orbitZoomSpeed      = this->args->getArgf("--camera-zoomSpeed","0.2f");
   this->freeCameraSpeed     = this->args->getArgf("--camera-speed","1.f");
   this->cameraType          = this->args->getArg ("--camera-type","orbit");
-  this->cameraPathFile      = this->args->getArg ("--camera-path","");
 
   this->useShadows          = !this->args->isPresent("--no-shadows");
   this->methodName          = this->args->getArg("--method","");
@@ -168,9 +167,6 @@ bool Application::init(int argc,char*argv[]){
   this->testName           = this->args->getArg ("--test"              ,""    );
   this->testFlyKeyFileName = this->args->getArg ("--test-fly-keys"     ,""    );
   this->testFlyLength      = this->args->getArgi("--test-fly-length"   ,"1000");
-  this->testGridSize       = this->args->getArgi("--test-grid-size"    ,"10"  );
-  this->testGridAngleX     = this->args->getArgi("--test-grid-angles-x","10"  );
-  this->testGridAngleY     = this->args->getArgi("--test-grid-angles-y","10"  );
   this->testFramesPerMeasurement = this->args->getArgi("--test-framesPerMeasurement","5");
   this->outputName         = this->args->getArg ("--test-output","measurement");
 
@@ -311,12 +307,12 @@ std::string vec3Tostr(glm::vec3 const&v){
 void Application::draw(){
   assert(this!=nullptr);
   if      (this->testName == "fly"){
-    if(this->cameraPathFile==""){
+    if(this->testFlyKeyFileName==""){
       ge::core::printError(GE_CORE_FCENAME,"camera path file is empty");
       this->mainLoop->removeWindow(this->window->getId());
       return;
     }
-    auto cameraPath = std::make_shared<CameraPath>(false,this->cameraPathFile);
+    auto cameraPath = std::make_shared<CameraPath>(false,this->testFlyKeyFileName);
     std::map<std::string,float>measurement;
     this->timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
         for(size_t i=0;i<names.size();++i)
@@ -335,7 +331,6 @@ void Application::draw(){
       for(size_t f=0;f<this->testFramesPerMeasurement;++f){
         this->drawScene();
       }
-      std::cerr<<"frame: "<<k<<std::endl;
 
       std::vector<std::string>line;
       if(csv.size()==0){
@@ -358,68 +353,6 @@ void Application::draw(){
     }
     std::string output = this->outputName+".csv";
     saveCSV(output,csv);
-    this->mainLoop->removeWindow(this->window->getId());
-    return;
-  }else if(this->testName == "grid"){
-    /*
-    //TODO grid part
-    std::vector<float>vertices;
-    this->model->getVertices(vertices);
-    size_t axis=0;
-    glm::vec3 minBox=glm::vec3(1e10f),maxBox = glm::vec3(-1e10f);
-    for(auto const&x:vertices){
-      minBox[axis] = glm::min(minBox[axis],x);
-      maxBox[axis] = glm::max(maxBox[axis],x);
-      axis = (axis+1)%3;
-    }
-    glm::vec3 boxCorner = minBox;
-    glm::vec3 boxSize = maxBox-minBox;
-   
-    std::map<std::string,float>measurement;
-    this->timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
-        for(size_t i=0;i<names.size();++i)
-          if(names[i]!=""){
-            if(measurement.count(names[i])==0)measurement[names[i]]=0.f;
-            measurement[names[i]]+=values[i];
-          }});
-    std::vector<std::vector<std::string>>csv;
-
-    auto flc = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
-    for(size_t zz=0;zz<this->testGridSize;++zz){
-      for(size_t yy=0;yy<this->testGridSize;++yy){
-        for(size_t xx=0;xx<this->testGridSize;++xx){
-          flc->setPosition(boxCorner + glm::vec3(1.f/float(this->testGridSize-1))*boxSize);
-          for(size_t ya=0;ya<this->testGridAngleY;++ya){
-            for(size_t xa=0;xa<this->testGridAngleX;++xa){
-              float yangle = glm::radians((float)ya/(float)this->testGridAngleY*360);
-              float xangle = glm::radians((float)xa/(float)this->testGridAngleX*180);
-              flc->setXAngle(xangle);
-              flc->setYAngle(yangle);
-              for(size_t f=0;f<this->testFramesPerMeasurement;++f){
-                this->drawScene();
-              }
-            }
-          }
-        }
-      }
-    }
-    std::vector<std::string>line;
-    if(csv.size()==0){
-      for(auto const&x:measurement)
-        if(x.first!="")line.push_back(x.first);
-      csv.push_back(line);
-      line.clear();
-    }
-    for(auto const&x:measurement)
-      if(x.first!=""){
-        std::stringstream ss;
-        ss<<x.second/float(this->testFramesPerMeasurement*this->testGridSize*this->testGridSize*this->testGridSize*this->testGridAngleX*this->testGridAngleY);
-        line.push_back(ss.str());
-      }
-    csv.push_back(line);
-    std::string output = this->outputName+"_fly_"+this->modelName+".csv";
-    saveCSV(output,csv);
-    */
     this->mainLoop->removeWindow(this->window->getId());
     return;
   }
