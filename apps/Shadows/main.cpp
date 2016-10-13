@@ -62,7 +62,7 @@ struct Application{
   uint32_t shadowMapFaces = 6;
 
   size_t   cssvWGS = 64;
-  size_t   cssvMaxMultiplicity = 2;
+  size_t   maxMultiplicity = 2;
   bool     cssvZfail = true;
   bool     cssvLocalAtomic = true;
   bool     cssvCullSides = false;
@@ -70,6 +70,10 @@ struct Application{
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
   bool     sintornDiscardBackFacing = true;
+
+  size_t   rssvComputeSilhouetteWGS = 64;
+  bool     rssvLocalAtomic = true;
+  bool     rssvCullSides = false;
 
   std::string testName = "";
   std::string testFlyKeyFileName = "";
@@ -111,13 +115,16 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-far                - shadow map far plane position"<<std::endl;
     std::cout<<"--shadowMap-faces              - cube shadow map faces"<<std::endl;
     std::cout<<"--cssv-WGS                     - compute sillhouette shadow volumes work group size"<<std::endl;
-    std::cout<<"--cssv-maxMultiplicity         - compute sillhouette shadow volumes max multiplicity"<<std::endl;
+    std::cout<<"--maxMultiplicity              - max number of triangles that share the same edge"<<std::endl;
     std::cout<<"--cssv-zfail                   - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
     std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
     std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
     std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
     std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
+    std::cout<<"--rssv-computeSilhouettesWGS   - workgroups size for silhouette computation"<<std::endl;
+    std::cout<<"--rssv-localAtomic             - use local atomic instructions in silhouette computation"<<std::endl;
+    std::cout<<"--rssv-cullSides               - enables frustum culling of silhouettes"<<std::endl;
     std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
     std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv"<<std::endl;
     std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
@@ -155,7 +162,7 @@ bool Application::init(int argc,char*argv[]){
   this->shadowMapFaces      = this->args->getArgi("--shadowMap-faces","6");
 
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
-  this->cssvMaxMultiplicity = this->args->getArgi("--cssv-maxMultiplicity","2");
+  this->maxMultiplicity = this->args->getArgi("--maxMultiplicity","2");
   this->cssvZfail           = this->args->getArgi("--cssv-zfail","1");
   this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","1");
   this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
@@ -163,6 +170,10 @@ bool Application::init(int argc,char*argv[]){
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
   this->sintornDiscardBackFacing          = this->args->getArgi("--sintorn-discardBackFacing"   ,"1"    );
+
+  this->rssvComputeSilhouetteWGS = this->args->getArgi("--rssw-computeSilhouettesWGS","64");
+  this->rssvLocalAtomic          = this->args->getArgi("--rssw-localAtomic"          ,"1" );
+  this->rssvCullSides            = this->args->getArgi("--rssw-cullSides"            ,"0" );
 
   this->testName           = this->args->getArg ("--test"              ,""    );
   this->testFlyKeyFileName = this->args->getArg ("--test-fly-keys"     ,""    );
@@ -237,7 +248,7 @@ bool Application::init(int argc,char*argv[]){
         this->shadowMask);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(
-        this->cssvMaxMultiplicity,
+        this->maxMultiplicity,
         this->cssvWGS,
         this->cssvZfail,
         this->cssvLocalAtomic,
@@ -262,7 +273,11 @@ bool Application::init(int argc,char*argv[]){
         this->windowSize,
         this->shadowMask,
         this->gBuffer->depth,
-        this->model);
+        this->model,
+        this->maxMultiplicity,
+        this->rssvComputeSilhouetteWGS,
+        this->rssvLocalAtomic,
+        this->rssvCullSides);
   else
     this->useShadows = false;
 
