@@ -47,7 +47,7 @@ struct Application{
   std::shared_ptr<DrawPrimitive>drawPrimitive = nullptr;
   std::string cameraType = "orbit";
   std::string outputName = "measurement";
-  glm::uvec2 windowSize = glm::uvec2(1024u,768u);
+  glm::uvec2 windowSize = glm::uvec2(512u,512u);
   float cameraFovy = glm::radians(90.f);
   float cameraNear = 0.1f;
   float cameraFar = 1000.f;
@@ -135,8 +135,8 @@ bool Application::init(int argc,char*argv[]){
     exit(0);
   }
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
-  this->windowSize.x        = this->args->getArgi("--window-size-x","1024");
-  this->windowSize.y        = this->args->getArgi("--window-size-y","1024");
+  this->windowSize.x        = this->args->getArgi("--window-size-x","512");
+  this->windowSize.y        = this->args->getArgi("--window-size-y","512");
 
   this->lightPosition.x     = this->args->getArgf("--light-x","100.f");
   this->lightPosition.y     = this->args->getArgf("--light-y","100.f");

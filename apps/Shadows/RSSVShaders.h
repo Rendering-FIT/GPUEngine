@@ -279,11 +279,11 @@ void main(){
   uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
   uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
   uint localOffset = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
-  uint offset=globalOffset+localOffset;
+  uint offset=(globalOffset+localOffset)*2;
   if(Multiplicity!=0){
     P[0].w=float(-Multiplicity);
     silhouettes[offset++]=P[0];
-    silhouettes[offset++]=P[1];
+    silhouettes[offset  ]=P[1];
   }
 }).";
 
