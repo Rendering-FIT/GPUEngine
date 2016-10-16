@@ -123,21 +123,12 @@ const std::string _computeSilhouettesSrc = R".(
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
 layout(std430,binding=0)buffer Edges                 {vec4 edges                 [ ];};
-layout(std430,binding=1)buffer Silhouettes           {vec4 silhouettes           [ ];};
+layout(std430,binding=1)buffer Silhouettes           {float silhouettes           [ ];};
 layout(std430,binding=2)buffer DispatchIndirectBuffer{uint dispatchIndirectBuffer[3];};
 
 uniform uint numEdge=0;
 uniform vec4 lightPosition;
 uniform mat4 mvp;
-
-int greaterVec(vec3 a,vec3 b){
-  return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
-}
-
-int computeMult(vec3 A,vec3 B,vec3 C,vec4 L){
-  vec3 n=cross(C-A,L.xyz-A*L.w);
-  return int(sign(dot(n,B-A)));
-}
 
 bool isEdgeVisible(in vec4 A,in vec4 B){
   vec3 M=+A.xyz+A.www;
@@ -215,6 +206,15 @@ bool isVisible(in vec4 P[4],in int Diag){
   return false;
 }
 
+int greaterVec(vec3 a,vec3 b){
+  return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
+}
+
+int computeMult(vec3 A,vec3 B,vec3 C,vec4 L){
+  vec3 n=cross(C-A,L.xyz-A*L.w);
+  return int(sign(dot(n,B-A)));
+}
+
 shared uint globalOffset;
 
 void main(){
@@ -279,11 +279,174 @@ void main(){
   uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
   uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
   uint localOffset = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
-  uint offset=(globalOffset+localOffset)*2;
+  uint offset=(globalOffset+localOffset)*7;
   if(Multiplicity!=0){
-    P[0].w=float(-Multiplicity);
-    silhouettes[offset++]=P[0];
-    silhouettes[offset  ]=P[1];
+    if(Multiplicity>0){
+      silhouettes[offset+0]=P[0].x;
+      silhouettes[offset+1]=P[0].y;
+      silhouettes[offset+2]=P[0].z;
+      silhouettes[offset+3]=P[1].x;
+      silhouettes[offset+4]=P[1].y;
+      silhouettes[offset+5]=P[1].z;
+      silhouettes[offset+6]=float(Multiplicity);
+    }else{
+      silhouettes[offset+0]=P[1].x;
+      silhouettes[offset+1]=P[1].y;
+      silhouettes[offset+2]=P[1].z;
+      silhouettes[offset+3]=P[0].x;
+      silhouettes[offset+4]=P[0].y;
+      silhouettes[offset+5]=P[0].z;
+      silhouettes[offset+6]=float(-Multiplicity);
+    }
   }
 }).";
 
+
+const std::string _rasterizeSrc = R".(
+
+#extension GL_AMD_gcn_shader       : enable
+#extension GL_AMD_gpu_shader_int64 : enable
+
+#ifndef WORKGROUP_SIZE_X
+#define WORKGROUP_SIZE_X 8
+#endif//WORKGROUP_SIZE_X
+
+#ifndef WORKGROUP_SIZE_Y
+#define WORKGROUP_SIZE_Y 8
+#endif//WORKGROUP_SIZE_Y
+
+#ifndef WORKGROUP_SIZE_Z
+#define WORKGROUP_SIZE_Z 1
+#endif//WORKGROUP_SIZE_Z
+
+#ifndef WAVEFRONT_SIZE
+#define WAVEFRONT_SIZE 64
+#endif//WAVEFRONT_SIZE
+
+#ifndef SILHOUETTES_PER_WORKGROUP
+#define SILHOUETTES_PER_WORKGROUP 1
+#endif//SILHOUETTES_PER_WORKGROUP
+
+#ifndef NUMBER_OF_LEVELS
+#define NUMBER_OF_LEVELS 3
+#endif//NUMBER_OF_LEVELS
+
+#ifndef NUMBER_OF_LEVELS_MINUS_ONE
+#define NUMBER_OF_LEVELS_MINUS_ONE 2
+#endif//NUMBER_OF_LEVELS_MINUS_ONE
+
+#ifndef RASTERIZE_BINDING_HDT
+#define RASTERIZE_BINDING_HDT 0
+#endif//RASTERIZE_BINDING_HDT
+
+#ifndef RASTERIZE_BINDING_SSM
+#define RASTERIZE_BINDING_SSM 1
+#endif//RASTERIZE_BINDING_SSM
+
+#ifndef RASTERIZE_BINDING_SILHOUETTES
+#define RASTERIZE_BINDING_SILHOUETTES 0
+#endif//RASTERIZE_BINDING_SILHOUETTES
+
+#define  WORKGROUP_ID_IN_DISPATCH  (uint(gl_WorkGroupID.x + triangleOffset))
+#define INVOCATION_ID_IN_WAVEFRONT (uint(gl_LocalInvocationID.x))
+#define SILHOUETTE_ID_IN_WORKGROUP (uint(gl_LocalInvocationID.y))
+#define SILHOUETTE_ID_IN_DISPATCH  (WORKGROUP_ID_IN_DISPATCH*SILHOUETTES_PER_WORKGROUP + SILHOUETTE_ID_IN_WORKGROUP)
+
+
+
+#define NOF_COMPONENTS_OF_VEC4             4
+#define NOF_COMPONENTS_OF_VEC3             3
+#define UINT_BIT_SIZE                      32
+#define POINTS_PER_SILHOUETTE              2
+#define FLOATS_PER_POINT                   3
+#define FLOATS_PER_SILHOUETTE_POINTS       (FLOATS_PER_POINT*POINTS_PER_SILHOUETTE)
+#define FLOATS_PER_SILHOUETTE_MULTIPLICITY 1
+#define FLOATS_PER_SILHOUETTE              (FLOATS_PER_SILHOUETTE_POINTS+FLOATS_PER_SILHOUETTE_MULTIPLICITY)
+#define VEC4_PER_SIDE                      4
+
+layout(local_size_x=WORKGROUP_SIZE_X,local_size_y=WORKGROUP_SIZE_Y,local_size_z=WORKGROUP_SIZE_Z)in;
+layout(       binding=RASTERIZE_BINDING_HDT        )uniform sampler2D HDT[NUMBER_OF_LEVELS];
+layout(r32i  ,binding=RASTERIZE_BINDING_SSM        )uniform iimage2D screenSpaceMultiplicity;
+layout(std430,binding=RASTERIZE_BINDING_SILHOUETTES)buffer Silhouettes{vec4 silhouettes[];};
+uniform uint nofSilhouettes = 0;
+uniform vec4 lightPosition = vec4(100,100,100,1);
+uniform mat4 mvp = mat4(1);
+
+shared vec4 sharedSilhouettes   [SILHOUETTES_PER_WORKGROUP][VEC4_PER_SHADOWFRUSTUM];
+shared int  sharedMultiplicities[SILHOUETTES_PER_WORKGROUP];
+
+/*
+#define TEST_SILHOUETTE_LAST(LEVEL)\
+void TestSilhouetteHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
+  uvec2 LocalCoord             = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);\
+  uvec2 GlobalCoord            = Coord*uvec2(8,8)+LocalCoord;\
+  vec2  GlobalClipCoord        = ClipCoord+vec2(2.f/float(8<<(3*LEVEL)))*LocalCoord;\
+  vec4  SampleCoordInClipSpace = vec4(\
+    GlobalClipCoord+vec2(2.f/float(8<<(3*LEVEL)))*.5,\
+    texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).x,1);\
+    \
+  if(SampleCoordInClipSpace.z>=1)return;\
+  bool inside = true;\
+  for(int p=0;p<NOF_PLANES_PER_SF;++p)\
+    inside=inside && dot(SampleCoordInClipSpace,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][p])>=0;\
+  if(inside)\
+    imageStore(FinalStencilMask,ivec2(GlobalCoord),uvec4(SHADOW_VALUE));\
+}
+
+TEST_SILHOUETTE_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
+
+#if NUMBER_OF_LEVELS > 7
+TEST_SILHOUETTE(6,7)
+#endif
+
+#if NUMBER_OF_LEVELS > 6
+TEST_SILHOUETTE(5,6)
+#endif
+
+#if NUMBER_OF_LEVELS > 5
+TEST_SILHOUETTE(4,5)
+#endif
+
+#if NUMBER_OF_LEVELS > 4
+TEST_SILHOUETTE(3,4)
+#endif
+
+#if NUMBER_OF_LEVELS > 3
+TEST_SILHOUETTE(2,3)
+#endif
+
+#if NUMBER_OF_LEVELS > 2
+TEST_SILHOUETTE(1,2)
+#endif
+
+#if NUMBER_OF_LEVELS > 1
+TEST_SILHOUETTE(0,1)
+#endif
+*/
+
+void main(){
+  if(SILHOUETTE_ID_IN_DISPATCH>=nofSilhouettes)return;
+  if(INVOCATION_ID_IN_WAVEFRONT<FLOATS_PER_SILHOUETTE_POINTS){
+    sharedSilhouettes
+      [SILHOUETTE_ID_IN_WORKGROUP]
+      [INVOCATION_ID_IN_WAVEFRONT/FLOATS_PER_POINT]
+      [INVOCATION_ID_IN_WAVEFRONT%FLOATS_PER_POINT]=
+      silhouettes
+      [SILHOUETTE_ID_IN_DISPATCH*FLOATS_PER_SILHOUETTE
+      +INVOCATION_ID_IN_WAVEFRONT];
+  }
+  if(INVOCATION_ID_IN_WAVEFRONT==0)
+    sharedMultiplicities[SILHOUETTE_ID_IN_WORKGROUP] = int(silhouettes[SILHOUETTE_ID_IN_DISPATCH*FLOATS_PER_SILHOUETTE+FLOATS_PER_SILHOUETTE_POINTS]);
+  if(INVOCATION_ID_IN_WAVEFRONT<POINTS_PER_SILHOUETTE){
+    sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][2+INVOCATION_ID_IN_WAVEFRONT] = mvp*vec4(sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT].xyz*lightPosition.w-lightPosition.xyz,0);
+    sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][0+INVOCATION_ID_IN_WAVEFRONT] = mvp*vec4(sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT].xyz,1);
+  }
+
+
+
+  TestShadowFrustumHDB0(
+      LEFT_DOWN_CORNER_COORD,
+      LEFT_DOWN_CORNER_CLIP_COORD);
+}
+
+).";

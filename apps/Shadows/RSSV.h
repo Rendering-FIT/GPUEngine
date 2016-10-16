@@ -10,14 +10,15 @@
 class RSSV: public ShadowMethod{
   public:
     RSSV(
-        glm::uvec2                      const&windowSize          ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask          ,
-        std::shared_ptr<ge::gl::Texture>const&depthTexture        ,
-        std::shared_ptr<Model>          const&model               ,
-        size_t                          const&maxMultiplicity     ,
-        size_t                          const&computeSilhouetteWGS,
-        bool                            const&localAtomic         ,
-        bool                            const&cullSides           
+        glm::uvec2                      const&windowSize             ,
+        std::shared_ptr<ge::gl::Texture>const&shadowMask             ,
+        std::shared_ptr<ge::gl::Texture>const&depthTexture           ,
+        std::shared_ptr<Model>          const&model                  ,
+        size_t                          const&maxMultiplicity        ,
+        size_t                          const&computeSilhouetteWGS   ,
+        bool                            const&localAtomic            ,
+        bool                            const&cullSides              ,
+        size_t                          const&silhouettesPerWorkgroup
         );
     virtual ~RSSV();
     virtual void create(
@@ -42,6 +43,10 @@ class RSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Program>_generateHDTProgram        = nullptr            ;
     size_t                          _nofLevels                 = 1                  ;
     std::vector<std::shared_ptr<ge::gl::Texture>>_HDT;
+    std::shared_ptr<ge::gl::Texture>_screenSpaceMultiplicity   = nullptr            ;
+    std::shared_ptr<ge::gl::Program>_rasterizeProgram          = nullptr            ;
+    size_t                          _silhouettesPerWorkgroup   = 1                  ;
     void _generateHDT();
     void _computeSilhouettes(glm::vec4 const&lightPosition);
+    void _rasterize(glm::vec4 const&lightPosition,glm::mat4 const&view,glm::mat4 const&projection);
 };

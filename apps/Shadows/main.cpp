@@ -74,6 +74,7 @@ struct Application{
   size_t   rssvComputeSilhouetteWGS = 64;
   bool     rssvLocalAtomic = true;
   bool     rssvCullSides = false;
+  size_t   rssvSilhouettesPerWorkgroup = 1;
 
   std::string testName = "";
   std::string testFlyKeyFileName = "";
@@ -125,6 +126,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--rssv-computeSilhouettesWGS   - workgroups size for silhouette computation"<<std::endl;
     std::cout<<"--rssv-localAtomic             - use local atomic instructions in silhouette computation"<<std::endl;
     std::cout<<"--rssv-cullSides               - enables frustum culling of silhouettes"<<std::endl;
+    std::cout<<"--rssv-silhouettesPerWorkgroup - number of silhouette edges that are compute by one workgroup"<<std::endl;
     std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
     std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv"<<std::endl;
     std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
@@ -171,9 +173,10 @@ bool Application::init(int argc,char*argv[]){
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
   this->sintornDiscardBackFacing          = this->args->getArgi("--sintorn-discardBackFacing"   ,"1"    );
 
-  this->rssvComputeSilhouetteWGS = this->args->getArgi("--rssw-computeSilhouettesWGS","64");
-  this->rssvLocalAtomic          = this->args->getArgi("--rssw-localAtomic"          ,"1" );
-  this->rssvCullSides            = this->args->getArgi("--rssw-cullSides"            ,"0" );
+  this->rssvComputeSilhouetteWGS    = this->args->getArgi("--rssw-computeSilhouettesWGS"  ,"64");
+  this->rssvLocalAtomic             = this->args->getArgi("--rssw-localAtomic"            ,"1" );
+  this->rssvCullSides               = this->args->getArgi("--rssw-cullSides"              ,"0" );
+  this->rssvSilhouettesPerWorkgroup = this->args->getArgi("--rssw-silhouettesPerWorkgroup","1" );
 
   this->testName           = this->args->getArg ("--test"              ,""    );
   this->testFlyKeyFileName = this->args->getArg ("--test-fly-keys"     ,""    );
@@ -277,7 +280,8 @@ bool Application::init(int argc,char*argv[]){
         this->maxMultiplicity,
         this->rssvComputeSilhouetteWGS,
         this->rssvLocalAtomic,
-        this->rssvCullSides);
+        this->rssvCullSides,
+        this->rssvSilhouettesPerWorkgroup);
   else
     this->useShadows = false;
 

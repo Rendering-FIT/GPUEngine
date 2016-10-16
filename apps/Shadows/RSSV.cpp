@@ -10,20 +10,25 @@ const size_t HIERARCHICALDEPTHTEXTURE_BINDING_HDT       = 1;
 const size_t HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT  = 0;
 const size_t HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT = 1;
 
+const size_t RASTERIZE_BINDING_HDT         = 0;
+const size_t RASTERIZE_BINDING_SSM         = 1;
+const size_t RASTERIZE_BINDING_SILHOUETTES = 0;
+
 const size_t     WAVEFRONT_SIZE = 64;
 const size_t     TILE_EDGE_SIZE = size_t(glm::sqrt(WAVEFRONT_SIZE));
 const glm::uvec2 TILE_SIZE      = glm::uvec2(uint32_t(TILE_EDGE_SIZE),uint32_t(TILE_EDGE_SIZE));
 
 RSSV::RSSV(
-    glm::uvec2                      const&windowSize          ,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask          ,
-    std::shared_ptr<ge::gl::Texture>const&depthTexture        ,
-    std::shared_ptr<Model>          const&model               ,
-    size_t                          const&maxMultiplicity     ,
-    size_t                          const&computeSilhouetteWGS,
-    bool                            const&localAtomic         ,
-    bool                            const&cullSides                          
-    ):_windowSize(windowSize),_shadowMask(shadowMask),_depthTexture(depthTexture),_computeSilhouettesWGS(computeSilhouetteWGS){
+    glm::uvec2                      const&windowSize             ,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask             ,
+    std::shared_ptr<ge::gl::Texture>const&depthTexture           ,
+    std::shared_ptr<Model>          const&model                  ,
+    size_t                          const&maxMultiplicity        ,
+    size_t                          const&computeSilhouetteWGS   ,
+    bool                            const&localAtomic            ,
+    bool                            const&cullSides              ,
+    size_t                          const&silhouettesPerWorkgroup
+    ):_windowSize(windowSize),_shadowMask(shadowMask),_depthTexture(depthTexture),_computeSilhouettesWGS(computeSilhouetteWGS),_silhouettesPerWorkgroup(silhouettesPerWorkgroup){
   assert(this!=nullptr);
   assert(
       (windowSize.x==8    && windowSize.y==8   ) ||
@@ -111,7 +116,17 @@ RSSV::RSSV(
   this->_dispatchIndirectBuffer->unmap();
 
 
-
+  /*
+  this->_rasterizeProgram = makeComputeProgram(
+      defineComputeShaderHeader(glm::uvec2(WAVEFRONT_SIZE,this->_silhouettesPerWorkgroup),WAVEFRONT_SIZE),
+      ge::gl::Shader::define("NUMBER_OF_LEVELS"             ,(int)this->_nofLevels               ),
+      ge::gl::Shader::define("NUMBER_OF_LEVELS_MINUS_ONE"   ,(int)this->_nofLevels-1             ),
+      ge::gl::Shader::define("SILHOUETTES_PER_WORKGROUP"    ,(int)this->_silhouettesPerWorkgroup ),
+      ge::gl::Shader::define("RASTERIZE_BINDING_SSM"        ,(int)RASTERIZE_BINDING_SSM          ),
+      ge::gl::Shader::define("RASTERIZE_BINDING_HDT"        ,(int)RASTERIZE_BINDING_HDT          ),
+      ge::gl::Shader::define("RASTERIZE_BINDING_SILHOUETTES",(int)RASTERIZE_BINDING_SILHOUETTES  ),
+      _rasterizeSrc);
+  */
 
 
 }
@@ -131,6 +146,8 @@ void RSSV::create(
   if(this->timeStamp)this->timeStamp->stamp("computeHDT");
   this->_computeSilhouettes(lightPosition);
   if(this->timeStamp)this->timeStamp->stamp("computeSilhouettes");
+  this->_rasterize(lightPosition,view,projection);
+  if(this->timeStamp)this->timeStamp->stamp("rasterize");
 }
 
 void RSSV::_generateHDT(){
@@ -167,4 +184,11 @@ void RSSV::_computeSilhouettes(glm::vec4 const&lightPosition){
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dispatchIndirectBuffer->getId());
   glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSilhouettesWGS),1,1);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+}
+
+void RSSV::_rasterize(glm::vec4 const&lightPosition,glm::mat4 const&view,glm::mat4 const&projection){
+  assert(this!=nullptr);
+  (void)lightPosition;
+  (void)view;
+  (void)projection;
 }
