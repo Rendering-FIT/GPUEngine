@@ -374,6 +374,28 @@ uniform mat4 mvp = mat4(1);
 
 shared vec4 sharedSilhouettes   [SILHOUETTES_PER_WORKGROUP][VEC4_PER_SHADOWFRUSTUM];
 shared int  sharedMultiplicities[SILHOUETTES_PER_WORKGROUP];
+shared vec4 sharedSidePlanes    [SILHOUETTES_PER_WORKGROUP];
+
+shared vec4 sharedSampleCoordInClipSpace[SILHOUETTES_PER_WORKGROUP][WAVEFRONT_SIZE];
+
+void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
+  if(level==NUMBER_OF_LEVELS_MINUS_ONE){
+    uvec2 localCoord             = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);
+    uvec2 globalCoord            = (coord<<3)+localCoord;
+    vec2  globalClipCoord        = clipCoord+vec2(2.f/float(8<<(3*LEVEL)))*localCoord;
+    vec4  sampleCoordInClipSpace = vec4(
+        globalClipCoord+vec2(2.f/float(8<<(3*LEVEL)))*.5,
+        texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).x,1);
+    sharedSampleCoordInClipSpace[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT] = sampleCoordInClipSpace;
+    uint64_t sideTest = ballotAMD(dot(sharedSidePlanes[SILHOUETTE_ID_IN_WORKGROUP],sampleCoordInClipSpace)<0);
+    if(INVOCATION_ID_IN_WAVEFRONT<WAVEFRONT_SIZE-1){
+      int sideCollision = ((sideTest>>INVOCATION_ID_IN_WAVEFRONT+1)&1)-((sideTest>>INVOCATION_ID_IN_WAVEFRONT  )&1);
+
+    }
+  }else{
+
+  }
+}
 
 /*
 #define TEST_SILHOUETTE_LAST(LEVEL)\

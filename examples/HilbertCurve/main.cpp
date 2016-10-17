@@ -72,15 +72,15 @@ bool Application::init(){
 #version 450 core
 uniform uint hilbertLevel = 3;
 void main(){
-  const uint hm = 0x7E2BD481;
-  const uint ho = 0x4B8778B4;
+  const uint hilbertMapping = 0x7E2BD481;
+  const uint hilbertOffset = 0x4B8778B4;
   uint currentSquare = 0;
   uvec2 coord = uvec2(0,0);
   for(int l=int(hilbertLevel)-1;l>=0;l--){
-    coord*=2;
+    coord<<=1;
     uint ii = ((gl_VertexID>>(l<<1))&3)<<1;
-    coord+=uvec2((ho>>(currentSquare+ii))&1,(ho>>(currentSquare+ii+1))&1);
-    currentSquare = ((hm>>(currentSquare+ii))&3)<<3;
+    coord+=uvec2((hilbertOffset>>(currentSquare+ii))&1,(hilbertOffset>>(currentSquare+ii+1))&1);
+    currentSquare = ((hilbertMapping>>(currentSquare+ii))&3)<<3;
   }
   gl_Position = vec4((vec2(coord)/vec2((1<<hilbertLevel)-1)*2-1)*0.9,0,1);
 }
