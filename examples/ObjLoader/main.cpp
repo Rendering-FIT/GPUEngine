@@ -183,6 +183,79 @@ bool checkDataAndPush(const std::vector<T>& data,std::vector<T>& buffer,const ve
 }
 
 
+shared_ptr<ge::gl::Texture> loadTexture(const string& path)
+{
+   auto& rc=RenderingContext::current();
+
+   // lookup texture cache
+   shared_ptr<ge::gl::Texture> t=rc->cachedTexture(path);
+   if(t)
+      return t;
+
+   // load texture
+   fipImage img;
+   auto r=img.load(path.c_str());
+   if(!r) {
+      cout<<"Error: Can not load texture: "<<path<<endl;
+      return make_shared<ge::gl::Texture>(); // return empty texture
+   }
+
+   // get info for OpenGL texture creation
+   auto w=img.getWidth();
+   auto h=img.getHeight();
+   int internalFormat=0;
+   GLenum format;
+   GLenum type=GL_UNSIGNED_BYTE;
+
+   // standard 1-, 4-, 8-, 16-, 24-, 32-bit image
+   if(img.getImageType()==FIT_BITMAP) {
+      switch(img.getBitsPerPixel()) {
+         case 8:  if(!img.getPalette() || img.isGrayscale()) {
+                     internalFormat=GL_R8; format=GL_RED; break;
+                  } else
+                     if(img.isTransparent()) {
+                        img.convertTo32Bits();
+                        internalFormat=GL_RGBA8; format=GL_RGBA;
+                        break;
+                     } else {
+                        img.convertTo24Bits();
+                        internalFormat=GL_RGB8; format=GL_RGB;
+                        break;
+                     }
+         case 24: internalFormat=GL_RGB8; format=GL_RGB; break;
+         case 32: internalFormat=GL_RGBA8; format=GL_RGBA; break;
+      }
+   }
+
+   if(internalFormat==0) {
+      cout<<"Error: Unknown image format."<<endl;
+      t=make_shared<ge::gl::Texture>(rc->gl.getFunctionTable(),
+            GL_TEXTURE_2D,GL_RGB8,1,1,1); // create dummy texture
+      unsigned color=0xffffffff;
+      t->setData2D(&color,GL_RGB,GL_UNSIGNED_BYTE,0,0,0,1,1);
+   } else {
+
+      // create texture
+      t=make_shared<ge::gl::Texture>(rc->gl.getFunctionTable(),
+            GL_TEXTURE_2D,internalFormat,
+            1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h);
+
+      // fill texture with data
+      void *data=img.accessPixels();
+      if(data) {
+         t->setData2D(data,format,type,0,0,0,w,h);
+         t->generateMipmap();
+      }
+   }
+
+   // update texture cache
+   // FIXME: path should be made canonical for cache lookup
+   rc->addCacheTexture(path,t);
+
+   return t;
+}
+
+
 static void init(unsigned windowWidth,unsigned windowHeight)
 {
    // setup OpenGL
@@ -206,18 +279,9 @@ static void init(unsigned windowWidth,unsigned windowHeight)
                                          float(windowWidth)/float(windowHeight),zNear,zFar);
    glProgram->use();
    glProgram->setMatrix4fv("projection",glm::value_ptr(projection));
-   //glProgram->set("colorTexturingMode",int(0));
-   //glProgram->set("colorTexture",int(0));
    glProgram->set("lightPosition",0.f,0.f,0.f,1.f);
    glProgram->set("lightColor",1.f,1.f,1.f);
    glProgram->set("lightAttenuation",1.f,0.f,0.f);
-
-   // state set
-   StateSetManager::GLState *glState=rc->createGLState();
-   glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
-   glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-   shared_ptr<StateSet> rootStateSet=rc->getOrCreateStateSet(glState);
-   delete glState;
 
    // transformation
    cameraTransformation=make_shared<Transformation>();
@@ -249,8 +313,6 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    stringstream line;
    string lineBuf;
    string token;
-   f.imbue(locale("en_US.UTF-8"));
-   line.imbue(locale("en_US.UTF-8"));
    vector<glm::vec3> coords;
    vector<glm::vec2> texCoords;
    vector<glm::vec3> normals;
@@ -268,7 +330,14 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    {
       // read line
       getline(f,lineBuf);
-      if(!f) break;
+      if(!f) {
+         if(!coordBuffer.empty())
+            // processing of fake usemtl will cause pending vertices in coordBuffer to be processed
+            lineBuf="usemtl";
+         else
+            // terminate obj processing
+            break;
+      }
       line.clear();
       line.str(lineBuf);
 
@@ -395,48 +464,64 @@ static void init(unsigned windowWidth,unsigned windowHeight)
          // change material
          case 'u':
             if(token=="usemtl") {
+
+               // parse material name
                string name;
                line>>name;
-               auto it=materials.find(name);
-               if(it!=materials.end()) {
 
-                  // create mesh and drawable for parsed geometry
-                  shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
-                  if(m) {
-                     meshList.push_back(m);
+               // create mesh and drawable for parsed geometry
+               shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
+               if(m) {
+                  meshList.push_back(m);
 
-                     auto materialCommandList=make_shared<ge::core::SharedCommandList>();
-                     const glm::vec3& diffuse=currentMaterial->diffuseColor;
-                     auto diffuseUniform=make_shared<FlexibleUniform4f>("color",
-                           diffuse.r,diffuse.g,diffuse.b,1.f-currentMaterial->transparency);
-                     materialCommandList->push_back(diffuseUniform);
-                     const glm::vec3& specular=currentMaterial->specularColor;
-                     auto specularUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
-                           specular.r,specular.g,specular.b,currentMaterial->shininess);
-                     materialCommandList->push_back(specularUniform);
+                  // material color
+                  auto materialCommandList=make_shared<ge::core::SharedCommandList>();
+                  const glm::vec3& diffuse=currentMaterial->diffuseColor;
+                  auto diffuseUniform=make_shared<FlexibleUniform4f>("color",
+                        diffuse.r,diffuse.g,diffuse.b,1.f-currentMaterial->transparency);
+                  materialCommandList->push_back(diffuseUniform);
+                  const glm::vec3& specular=currentMaterial->specularColor;
+                  auto specularUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
+                        specular.r,specular.g,specular.b,currentMaterial->shininess);
+                  materialCommandList->push_back(specularUniform);
 
-                     // state set
-                     StateSetManager::GLState *glState=rc->createGLState();
-                     glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
-                     glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-                     glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
-                     shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
-                     delete glState;
+                  // material texture
+                  shared_ptr<ge::gl::Texture> colorTexture;
+                  if(!currentMaterial->diffuseTexture.empty())
+                  {
+                     // texture file name
+                     // FIXME: path should be made canonical for cache lookup
+                     string colorTexturePath=parentPath+currentMaterial->diffuseTexture;
 
-                     // create drawable
-                     m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
+                     // load texture
+                     colorTexture=loadTexture(colorTexturePath);
                   }
 
-                  // prepare buffers for new geometry
-                  coordBuffer.clear();
-                  texCoordBuffer.clear();
-                  normalBuffer.clear();
+                  // state set
+                  StateSetManager::GLState *glState=rc->createGLState();
+                  glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
+                  glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
+                  glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
+                  glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
+                  shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
+                  delete glState;
 
-                  // set new material
+                  // create drawable
+                  m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
+               }
+
+               // prepare buffers for new geometry
+               coordBuffer.clear();
+               texCoordBuffer.clear();
+               normalBuffer.clear();
+
+               // set new material
+               auto it=materials.find(name);
+               if(it!=materials.end())
                   currentMaterial=&it->second;
-
-               } else
-                  cout<<"Unknown material \""<<name<<"\"."<<endl;
+               else
+                  if(!name.empty())
+                     cout<<"Unknown material \""<<name<<"\"."<<endl;
                continue;
             }
             else {
@@ -447,116 +532,6 @@ static void init(unsigned windowWidth,unsigned windowHeight)
          default:
             cout<<"Unknown line content \""<<lineBuf<<"\""<<endl;
       }
-   }
-
-   // create mesh and drawable for parsed geometry
-   shared_ptr<Mesh> m=generateMesh(coordBuffer,texCoordBuffer,normalBuffer);
-   if(m) {
-      meshList.push_back(m);
-
-      // material color
-      auto materialCommandList=make_shared<ge::core::SharedCommandList>();
-      const glm::vec3& diffuse=currentMaterial->diffuseColor;
-      auto diffuseUniform=make_shared<FlexibleUniform4f>("color",
-            diffuse.r,diffuse.g,diffuse.b,1.f-currentMaterial->transparency);
-      materialCommandList->push_back(diffuseUniform);
-      const glm::vec3& specular=currentMaterial->specularColor;
-      auto specularUniform=make_shared<FlexibleUniform4f>("specularAndShininess",
-            specular.r,specular.g,specular.b,currentMaterial->shininess);
-      materialCommandList->push_back(specularUniform);
-
-      // material texture
-      shared_ptr<ge::gl::Texture> colorTexture;
-      if(!currentMaterial->diffuseTexture.empty())
-      {
-         // texture file name
-         // FIXME: path should be made canonical for cache lookup
-         string colorTexturePath=parentPath+currentMaterial->diffuseTexture;
-
-         // lookup texture cache
-         colorTexture=rc->cachedTexture(colorTexturePath);
-
-         // create texture if not found in cache
-         if(!colorTexture) {
-
-            // load texture
-            fipImage img;
-            auto r=img.load(colorTexturePath.c_str());
-
-            if(!r) {
-               cout<<"Error: Can not load texture: "<<colorTexturePath<<endl;
-               colorTexture=make_shared<ge::gl::Texture>(); // create dummy texture
-            } else {
-
-               auto w=img.getWidth();
-               auto h=img.getHeight();
-               int internalFormat=0;
-               GLenum format;
-               GLenum type=GL_UNSIGNED_BYTE;
-
-               // standard 1-, 4-, 8-, 16-, 24-, 32-bit image
-               if(img.getImageType()==FIT_BITMAP) {
-                  switch(img.getBitsPerPixel()) {
-                     case 8:  if(!img.getPalette() || img.isGrayscale()) {
-                                 internalFormat=GL_R8; format=GL_RED; break;
-                              } else
-                                 if(img.isTransparent()) {
-                                    img.convertTo32Bits();
-                                    internalFormat=GL_RGBA8; format=GL_RGBA;
-                                    break;
-                                 } else {
-                                    img.convertTo24Bits();
-                                    internalFormat=GL_RGB8; format=GL_RGB;
-                                    break;
-                                 }
-                     case 24: internalFormat=GL_RGB8; format=GL_RGB; break;
-                     case 32: internalFormat=GL_RGBA8; format=GL_RGBA; break;
-                  }
-               }
-
-               if(internalFormat==0) {
-                  cout<<"Error: Unknown image format."<<endl;
-                  colorTexture=make_shared<ge::gl::Texture>(gl.getFunctionTable(),
-                        GL_TEXTURE_2D,GL_RGB8,1,1,1); // create dummy texture
-                  unsigned color=0xffffffff;
-                  colorTexture->setData2D(&color,GL_RGB,GL_UNSIGNED_BYTE,0,0,0,1,1);
-               } else {
-
-                  // create texture
-                  colorTexture=make_shared<ge::gl::Texture>(gl.getFunctionTable(),
-                        GL_TEXTURE_2D,internalFormat,
-                        1+int(floor(logf(float(std::max(w,h)))/logf(2.0f))),w,h);
-
-                  // fill texture with data
-                  void *data=img.accessPixels();
-                  if(data) {
-                     colorTexture->setData2D(data,format,type,0,0,0,w,h);
-                     colorTexture->generateMipmap();
-                     //colorTexture->bind(0);
-                     //gl.glTexSubImage2D(GL_TEXTURE_2D,0,0,0,w,h,format,type,data);
-                     //gl.glGenerateMipmap(GL_TEXTURE_2D);
-                  }
-
-               }
-            }
-
-            // update texture cache
-            // FIXME: path should be made canonical for cache lookup
-            rc->addCacheTexture(colorTexturePath,colorTexture);
-         }
-      }
-
-      // state set
-      StateSetManager::GLState *glState=rc->createGLState();
-      glState->set("bin",type_index(typeid(int)),reinterpret_cast<void*>(0)); // bin 0 is for ambient pass
-      glState->set("glProgram",type_index(typeid(shared_ptr<ge::gl::Program>*)),&glProgram);
-      glState->set("colorTexture",type_index(typeid(&colorTexture)),&colorTexture);
-      glState->set("uniformList",type_index(typeid(shared_ptr<ge::core::Command>*)),&materialCommandList);
-      shared_ptr<StateSet> stateSet=rc->getOrCreateStateSet(glState);
-      delete glState;
-
-      // create drawable
-      m->createDrawable(cameraTransformation->getOrCreateMatrixList().get(),stateSet.get());
    }
 
    // unmap buffers

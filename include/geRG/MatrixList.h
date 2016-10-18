@@ -48,14 +48,10 @@ namespace ge
 
       public:
 
-         inline void downloadMatrixData(float *matrix,    unsigned index,unsigned numMatrices);
-         inline void downloadMatrixData(glm::mat4 *matrix,unsigned index,unsigned numMatrices);
-         inline void uploadMatrixData(const float *matrix,    unsigned index,unsigned numMatrices);
-         inline void uploadMatrixData(const glm::mat4 *matrix,unsigned index,unsigned numMatrices);
-         static        void downloadMatrixDataFromOffset(float     *matrix,unsigned offset64,unsigned numMatrices);
-         static inline void downloadMatrixDataFromOffset(glm::mat4 *matrix,unsigned offset64,unsigned numMatrices);
-         static        void uploadMatrixDataToOffset(const float     *matrix,unsigned offset64,unsigned numMatrices);
-         static inline void uploadMatrixDataToOffset(const glm::mat4 *matrix,unsigned offset64,unsigned numMatrices);
+         inline void downloadMatrixData(float     *matrix,unsigned index,unsigned numMatrices);
+         inline void uploadMatrixData(const float *matrix,unsigned index,unsigned numMatrices);
+         static void downloadMatrixDataFromOffset(float   *matrix,unsigned offset64,unsigned numMatrices);
+         static void uploadMatrixDataToOffset(const float *matrix,unsigned offset64,unsigned numMatrices);
          void downloadListControlData(unsigned &matrixOffset64,unsigned &numMatrices);
          void uploadListControlData(unsigned matrixOffset64,unsigned numMatrices);
          void uploadListControlData();
@@ -100,21 +96,12 @@ namespace ge
 
       inline void MatrixList::downloadMatrixData(float *matrix,unsigned index,unsigned numMatrices)
       { downloadMatrixDataFromOffset(matrix,_startIndex+index,numMatrices); }
-      inline void MatrixList::downloadMatrixData(glm::mat4 *matrix,unsigned index,unsigned numMatrices)
-      { downloadMatrixDataFromOffset(glm::value_ptr(*matrix),_startIndex+index,numMatrices); }
       inline void MatrixList::uploadMatrixData(const float *matrix,unsigned index,unsigned numMatrices)
       { uploadMatrixDataToOffset(matrix,_startIndex+index,numMatrices); }
-      inline void MatrixList::uploadMatrixData(const glm::mat4 *matrix,unsigned index,unsigned numMatrices)
-      { uploadMatrixDataToOffset(glm::value_ptr(*matrix),_startIndex+index,numMatrices); }
-      inline void MatrixList::downloadMatrixDataFromOffset(glm::mat4 *matrix,unsigned offset64,unsigned numMatrices)
-      { downloadMatrixDataFromOffset(glm::value_ptr(*matrix),offset64,numMatrices); }
-      inline void MatrixList::uploadMatrixDataToOffset(const glm::mat4 *matrix,unsigned offset64,unsigned numMatrices)
-      { uploadMatrixDataToOffset(glm::value_ptr(*matrix),offset64,numMatrices); }
 
       inline unsigned MatrixList::listControlId() const  { return _listControlId; }
       inline unsigned MatrixList::listControlOffset4() const  { return _listControlId*2; }
       inline unsigned MatrixList::startIndex() const  { return _startIndex; }
-      //inline unsigned MatrixList::matrixOffset64() const  { return RenderingContext::current()->matrixStorage()->operator[](_arrayId).startIndex; }
       inline void MatrixList::setStartIndex(unsigned value)  { _startIndex=value; }
       inline unsigned MatrixList::numMatrices() const  { return _numMatrices; }
       inline void MatrixList::setNumMatrices(unsigned num)  { _numMatrices=num; }

@@ -24,7 +24,7 @@ set(APP_INCLUDES
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 
 set(Internal_deps geRG geGL geUtil SDLWindow SDLOrbitManipulator)
-set(External_libs glm SDL2 FreeImagePlus)
+set(External_libs glm SDL2 FreeImage FreeImagePlus)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}
