@@ -65,6 +65,9 @@ IF(MSVC)
    # avoid "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
 
+   # avoid MSVC defines of min and max
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DNOMINMAX")
+
    # workarounds for limited C++11 support of MSVC
    IF(MSVC_VERSION LESS 1800)
       MESSAGE(FATAL_ERROR "Microsoft Visual C++ 2012 and earlier are not supported "
