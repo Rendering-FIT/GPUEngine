@@ -431,8 +431,9 @@ GLint Program::getResourceParam(GLenum interface,GLenum pname,GLuint index)const
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
     return;\
   }\
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type0);\
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type1);\
+  assert(\
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type0 ||\
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type1);\
   std::get<ProgramInfo::LOCATION>(ii->second);\
   this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),__VA_ARGS__)
 
@@ -456,8 +457,9 @@ GLint Program::getResourceParam(GLenum interface,GLenum pname,GLuint index)const
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
     return;\
   }\
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type0);\
-  assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type1);\
+  assert(\
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type0 ||\
+      std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type1);\
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));\
   this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0)
 
