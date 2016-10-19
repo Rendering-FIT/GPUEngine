@@ -34,11 +34,9 @@ namespace ge{
         void setIdleCallback(
             std::function<void()>const&callback);
         bool hasIdleCallback()const;
-        void callIdleCallback();
         void setEventHandler(
             std::function<bool(SDL_Event const&)>const&handler);
         bool hasEventHandler()const;
-        bool callEventHandler(SDL_Event const&event);
         ConstNameIterator nameBegin()const;
         ConstNameIterator nameEnd  ()const;
         ConstIdIterator idBegin()const;
@@ -51,6 +49,9 @@ namespace ge{
         bool                 m_running      = false  ;
         Name2Window          m_name2Window           ;
         Id2Name              m_id2Name               ;
+        void m_callIdleCallback();
+        bool m_callEventHandler(SDL_Event const&event);
+
     };
   }
 }
