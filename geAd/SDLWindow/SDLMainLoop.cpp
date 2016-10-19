@@ -1,12 +1,14 @@
 #include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geAd/SDLWindow/SDLWindow.h>
+#include<geCore/ErrorPrinter.h>
 #include<cassert>
 
 using namespace ge::ad;
 
 SDLMainLoop::SDLMainLoop(bool pooling){
   assert(this!=nullptr);
-  SDL_Init(SDL_INIT_VIDEO);
+  if(SDL_Init(SDL_INIT_VIDEO)<0)
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),pooling);
   this->m_pooling = pooling;
 }
 
@@ -60,7 +62,10 @@ void SDLMainLoop::operator()(){
       break;
     }
     if(!this->m_pooling)
-      SDL_WaitEvent(&event);
+      if(SDL_WaitEvent(&event)==0){
+        ge::core::printError(GE_CORE_FCENAME,SDL_GetError());
+        return;
+      }
     while(true){
       if(this->m_pooling)
         if(!SDL_PollEvent(&event))break;

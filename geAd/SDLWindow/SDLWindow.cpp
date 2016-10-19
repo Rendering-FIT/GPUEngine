@@ -1,5 +1,6 @@
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geAd/SDLWindow/SDLMainLoop.h>
+#include<geCore/ErrorPrinter.h>
 
 #include<iostream>
 #include<cassert>
@@ -10,6 +11,9 @@ SDLWindow::SDLWindow(uint32_t width,uint32_t height){
   assert(this!=nullptr);
   Uint32 flags = SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE;
   this->m_window  = SDL_CreateWindow("",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,width,height,flags);
+  if(!this->m_window){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),width,height);
+  }
   this->setWindowEventCallback(SDL_WINDOWEVENT_CLOSE,std::bind(&SDLWindow::m_defaultCloseCallback,this,std::placeholders::_1));
 }
 
@@ -24,16 +28,30 @@ bool SDLWindow::createContext(
     Profile           profile,
     Flag              flags  ){
   assert(this!=nullptr);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version/100    );
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(version%100)/10);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,profile         );
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,flags           );
+  if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version/100    )<0){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),name,version);
+    return false;
+  }
+  if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,(version%100)/10)<0){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),name,version);
+    return false;
+  }
+  if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK ,profile         )<0){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),name,version);
+    return false;
+  }
+  if(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS        ,flags           )<0){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),name,version);
+    return false;
+  }
   SharedSDLContext ctx = std::shared_ptr<SDL_GLContext>(
       new SDL_GLContext,
       [&](SDL_GLContext*ctx){if(*ctx)SDL_GL_DeleteContext(*ctx);delete ctx;});
   *ctx = SDL_GL_CreateContext(this->m_window);
-  if(*ctx == nullptr)
+  if(*ctx == nullptr){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),name,version);
     return false;
+  }
   this->m_contexts[name] = ctx;
   return true;
 }
@@ -51,7 +69,9 @@ void SDLWindow::setContext(
 void SDLWindow::makeCurrent(std::string const&name)const{
   assert(this!=nullptr);
   assert(this->m_contexts.count(name)!=0);
-  SDL_GL_MakeCurrent(this->m_window,*this->m_contexts.find(name)->second);
+  if(SDL_GL_MakeCurrent(this->m_window,*this->m_contexts.find(name)->second)<0){
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError(),name);
+  }
 }
 
 void SDLWindow::swap()const{
@@ -141,7 +161,7 @@ uint32_t SDLWindow::getHeight()const{
 
 void SDLWindow::setFullscreen(Fullscreen const&type){
   if(SDL_SetWindowFullscreen(this->m_window,type))
-    std::cerr<<SDL_GetError()<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,SDL_GetError());
 }
 
 SDLWindow::Fullscreen SDLWindow::getFullscreen(){
