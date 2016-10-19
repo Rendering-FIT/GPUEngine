@@ -438,7 +438,7 @@ void StateSetDefaultGLState::render(StateSet *ambientSs,StateSet *lightPassSs,
          unsigned offset64,num;
          it_light->matrixList()->downloadListControlData(offset64,num);
          unique_ptr<glm::mat4[]> matrices(new glm::mat4[num]);
-         MatrixList::downloadMatrixDataFromOffset(matrices.get(),offset64,num);
+         MatrixList::downloadMatrixDataFromOffset(glm::value_ptr(matrices.get()[0]),offset64,num);
          RenderingContext::current()->matrixListControlStorage()->unmap();
          RenderingContext::current()->matrixStorage()->unmap();
 

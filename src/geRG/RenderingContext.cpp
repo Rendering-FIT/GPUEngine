@@ -1147,7 +1147,7 @@ static void processTransformation(Transformation *t,const glm::mat4& parentMV,Re
          ml->uploadListControlData(); // upload startIndex and numMatrices
          ml->setNumMatrices(0);
       }
-      ml->uploadMatrixData(&mv,ml->numMatrices(),1);
+      ml->uploadMatrixData(glm::value_ptr(mv),ml->numMatrices(),1);
       ml->setNumMatrices(ml->numMatrices()+1);
    }
 
