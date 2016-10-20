@@ -345,13 +345,13 @@ bool Application::init(int argc,char*argv[]){
   cmdList->add(std::bind(&ge::gl::Context::glViewport,this->gl,0,0,this->windowSize.x,this->windowSize.y));
   cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_DEPTH_TEST));
   cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_POLYGON_OFFSET_FILL));
-  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,100));
+  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,10));
   cmdList->add([this]{this->gBuffer->begin();});
   cmdList->add(std::bind(&ge::gl::Context::glClear,this->gl,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
   cmdList->add([this]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
   cmdList->add([this]{this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());});
   cmdList->add([this]{this->gBuffer->end();});
-  //cmdList->add(std::bind(&ge::gl::Context::glDisable,this->gl,GL_POLYGON_OFFSET_FILL));
+  cmdList->add(std::bind(&ge::gl::Context::glDisable,this->gl,GL_POLYGON_OFFSET_FILL));
   return true;
 }
 
@@ -369,7 +369,7 @@ void Application::drawScene(){
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
   this->gl->glDisable(GL_POLYGON_OFFSET_FILL);
-  */
+  // */
   if(this->timeStamper)this->timeStamper->stamp("gBuffer");
 
 
