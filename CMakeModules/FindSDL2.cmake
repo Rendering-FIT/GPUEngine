@@ -1,8 +1,10 @@
 # Locate SDL2 library
 # This module defines
-# SDL2_LIBRARY, the name of the library to link against
 # SDL2_FOUND, if false, do not try to link to SDL2
 # SDL2_INCLUDE_DIR, where to find SDL.h
+# SDL2_LIBRARY, the name of the library to link against
+# SDL2_CORE_LIBRARY, path to the SDL2 library
+# SDL2_MAIN_LIBRARY, path to the SDL2main library
 #
 # This module responds to the the flag:
 # SDL2_BUILDING_LIBRARY
@@ -18,11 +20,11 @@
 # module will automatically add the -framework Cocoa on your behalf.
 #
 #
-# Additional Note: If you see an empty SDL2_LIBRARY_PATH in your configuration
+# Additional Note: If you see an empty SDL2_CORE_LIBRARY in your configuration
 # and no SDL2_LIBRARY, it means CMake did not find your SDL2 library
-# (SDL2.dll, libsdl2.so, SDL2.framework, etc).
-# Set SDL2_LIBRARY_PATH to point to your SDL2 library, and configure again.
-# Similarly, if you see an empty SDL2MAIN_LIBRARY, you should set this value
+# (SDL2.lib, libsdl2.so, SDL2.framework, etc).
+# Set SDL2_CORE_LIBRARY to point to your SDL2 library, and configure again.
+# Similarly, if you see an empty SDL2_MAIN_LIBRARY, you should set this value
 # as appropriate. These values are used to generate the final SDL2_LIBRARY
 # variable, but when these values are unset, SDL2_LIBRARY does not get created.
 #
@@ -116,7 +118,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       PATHS ${SDL2_SEARCH_PATHS}
    )
 
-   find_library(SDL2_LIBRARY_PATH
+   find_library(SDL2_CORE_LIBRARY
       NAMES SDL2
       HINTS
       $ENV{SDL2DIR}
@@ -124,20 +126,21 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       PATHS ${SDL2_SEARCH_PATHS}
    )
 
-   if(NOT SDL2_BUILDING_LIBRARY)
-      if(NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
-         # Non-OS X framework versions expect you to also dynamically link to
-         # SDL2main. This is mainly for Windows and OS X. Other (Unix) platforms
-         # seem to provide SDL2main for compatibility even though they don't
-         # necessarily need it.
-         find_library(SDL2MAIN_LIBRARY
-            NAMES SDL2main
-            HINTS
-            $ENV{SDL2DIR}
-            PATH_SUFFIXES lib64 lib
-            PATHS ${SDL2_SEARCH_PATHS}
-         )
-      endif()
+   # Non-OS X framework versions expect you to also dynamically link to
+   # SDL2main. This is mainly for Windows and OS X. Other (Unix) platforms
+   # seem to provide SDL2main for compatibility even though they don't
+   # necessarily need it.
+   set(NEED_MAIN_LIB NOT SDL2_BUILDING_LIBRARY AND NOT ${SDL2_INCLUDE_DIR} MATCHES ".framework")
+   if(NEED_MAIN_LIB)
+
+      find_library(SDL2_MAIN_LIBRARY
+         NAMES SDL2main
+         HINTS
+         $ENV{SDL2DIR}
+         PATH_SUFFIXES lib64 lib
+         PATHS ${SDL2_SEARCH_PATHS}
+      )
+
    endif()
 
    # SDL2 may require threads on your system.
@@ -148,17 +151,16 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       find_package(Threads)
    endif()
 
-   if(SDL2_LIBRARY_PATH)
+   if(SDL2_CORE_LIBRARY AND
+      (NOT NEED_MAIN_LIB OR SDL2_MAIN_LIBRARY))
 
       # make a copy of the variable before we start to modify it
-      set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_PATH})
+      set(SDL2_LIBRARY_TEMP ${SDL2_CORE_LIBRARY})
 
       # For SDL2main
-      if(NOT SDL2_BUILDING_LIBRARY)
-         if(SDL2MAIN_LIBRARY)
-            set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} ${SDL2MAIN_LIBRARY})
-         endif(SDL2MAIN_LIBRARY)
-      endif(NOT SDL2_BUILDING_LIBRARY)
+      if(NEED_MAIN_LIB)
+         set(SDL2_LIBRARY_TEMP ${SDL2_LIBRARY_TEMP} ${SDL2_MAIN_LIBRARY})
+      endif()
 
       # MinGW needs mingw32
       if(MINGW)
@@ -185,8 +187,10 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       # Set the final string here so the GUI reflects the final state.
       set(SDL2_LIBRARY ${SDL2_LIBRARY_TEMP} CACHE STRING "SDL2 Libraries to be linked against" FORCE)
 
-      # Set the temp variable to INTERNAL so it is not seen in the CMake GUI
-      set(SDL2_LIBRARY_PATH "${SDL2_LIBRARY_PATH}" CACHE FILEPATH "SDL2 library path")
+   else()
+
+      # if SDL2_CORE_LIBRARY and SDL2_MAIN_LIBRARY are not properly set, remove SDL2_LIBRARY variable
+      unset(SDL2_LIBRARY CACHE)
 
    endif()
 
