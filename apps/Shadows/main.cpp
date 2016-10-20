@@ -30,6 +30,42 @@
 #include"CSV.h"
 #include"RSSV.h"
 
+class RenderNode{
+  public:
+    virtual void operator()() = 0;
+    virtual ~RenderNode(){}
+};
+
+class RenderFunction final: public RenderNode{
+  public:
+    RenderFunction(std::function<void()>const&fce):impl(fce){}
+    std::function<void()>impl;
+    virtual void operator()()override{
+      assert(this);
+      assert(this->impl);
+      this->impl();
+    }
+    virtual ~RenderFunction()override{}
+};
+
+class RenderList final: public RenderNode{
+  public:
+    std::vector<std::shared_ptr<RenderNode>>childs;
+    virtual void operator()()override{
+      assert(this);
+      for(auto const&x:this->childs){
+        assert(x);
+        (*x)();
+      }
+    }
+    void add(std::function<void()>const&fce){
+      assert(this);
+      assert(fce);
+      this->childs.emplace_back(std::make_shared<RenderFunction>(fce));
+    }
+    virtual ~RenderList()override{}
+};
+
 struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
@@ -45,8 +81,8 @@ struct Application{
   std::shared_ptr<ge::gl::Texture>shadowMask = nullptr;
   std::shared_ptr<ShadowMethod>shadowMethod = nullptr;
   std::shared_ptr<DrawPrimitive>drawPrimitive = nullptr;
+  std::shared_ptr<RenderNode>drawSceneCmd;
   std::string cameraType = "orbit";
-  std::string outputName = "measurement";
   glm::uvec2 windowSize = glm::uvec2(512u,512u);
   float cameraFovy = glm::radians(90.f);
   float cameraNear = 0.1f;
@@ -80,10 +116,12 @@ struct Application{
   std::string testFlyKeyFileName = "";
   size_t      testFlyLength = 0;
   size_t      testFramesPerMeasurement = 5;
+  std::string testOutputName = "measurement";
 
   std::shared_ptr<TimeStamp>timeStamper = nullptr;
   std::string modelName = "";
   std::string methodName = "";
+  bool verbose = false;
   bool useShadows = true;
   bool init(int argc,char*argv[]);
   void draw();
@@ -134,6 +172,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--test-fly-length              - number of measurements, 1000"<<std::endl;
     std::cout<<"--test-framesPerMeasurement    - number of frames that is averaged per one measurement point"<<std::endl;
     std::cout<<"--test-output                  - name of output file"<<std::endl;
+    std::cout<<"--verbose                      - toggle verbose mode"<<std::endl;
     exit(0);
   }
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
@@ -154,6 +193,7 @@ bool Application::init(int argc,char*argv[]){
   this->cameraType          = this->args->getArg ("--camera-type","orbit");
 
   this->useShadows          = !this->args->isPresent("--no-shadows");
+  this->verbose             = this->args->isPresent("--verbose");
   this->methodName          = this->args->getArg("--method","");
 
   this->wavefrontSize       = this->args->getArgi("-wavefrontSize","0");
@@ -178,11 +218,11 @@ bool Application::init(int argc,char*argv[]){
   this->rssvCullSides               = this->args->getArgi("--rssw-cullSides"              ,"0" );
   this->rssvSilhouettesPerWorkgroup = this->args->getArgi("--rssw-silhouettesPerWorkgroup","1" );
 
-  this->testName           = this->args->getArg ("--test"              ,""    );
-  this->testFlyKeyFileName = this->args->getArg ("--test-fly-keys"     ,""    );
-  this->testFlyLength      = this->args->getArgi("--test-fly-length"   ,"1000");
-  this->testFramesPerMeasurement = this->args->getArgi("--test-framesPerMeasurement","5");
-  this->outputName         = this->args->getArg ("--test-output","measurement");
+  this->testName                 = this->args->getArg ("--test"                     ,""           );
+  this->testFlyKeyFileName       = this->args->getArg ("--test-fly-keys"            ,""           );
+  this->testFlyLength            = this->args->getArgi("--test-fly-length"          ,"1000"       );
+  this->testFramesPerMeasurement = this->args->getArgi("--test-framesPerMeasurement","5"          );
+  this->testOutputName           = this->args->getArg ("--test-output"              ,"measurement");
 
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
@@ -285,8 +325,12 @@ bool Application::init(int argc,char*argv[]){
   else
     this->useShadows = false;
 
-  this->timeStamper = std::make_shared<TimeStamp>();
-  this->shadowMethod->timeStamp = this->timeStamper;
+  if(this->verbose)
+    this->timeStamper = std::make_shared<TimeStamp>();
+  else
+    this->timeStamper = std::make_shared<TimeStamp>(nullptr);
+  if(this->shadowMethod)
+    this->shadowMethod->timeStamp = this->timeStamper;
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
@@ -295,18 +339,37 @@ bool Application::init(int argc,char*argv[]){
   }
 
   this->drawPrimitive = std::make_shared<DrawPrimitive>(this->windowSize);
+
+  this->drawSceneCmd = std::make_shared<RenderList>();
+  auto cmdList = std::dynamic_pointer_cast<RenderList>(this->drawSceneCmd);
+  cmdList->add(std::bind(&ge::gl::Context::glViewport,this->gl,0,0,this->windowSize.x,this->windowSize.y));
+  cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_DEPTH_TEST));
+  cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_POLYGON_OFFSET_FILL));
+  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,100));
+  cmdList->add([this]{this->gBuffer->begin();});
+  cmdList->add(std::bind(&ge::gl::Context::glClear,this->gl,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
+  cmdList->add([this]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
+  cmdList->add([this]{this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());});
+  cmdList->add([this]{this->gBuffer->end();});
+  //cmdList->add(std::bind(&ge::gl::Context::glDisable,this->gl,GL_POLYGON_OFFSET_FILL));
   return true;
 }
 
 void Application::drawScene(){
   if(this->timeStamper)this->timeStamper->begin();
+  (*this->drawSceneCmd)();
+  /*
   this->gl->glViewport(0,0,this->windowSize.x,this->windowSize.y);
   this->gl->glEnable(GL_DEPTH_TEST);
+  this->gl->glEnable(GL_POLYGON_OFFSET_FILL);
+  this->gl->glPolygonOffset(0,100);
   this->gBuffer->begin();
   this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
   this->shadowMask->clear(0,GL_RED,GL_FLOAT);
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
+  this->gl->glDisable(GL_POLYGON_OFFSET_FILL);
+  */
   if(this->timeStamper)this->timeStamper->stamp("gBuffer");
 
 
@@ -373,7 +436,7 @@ void Application::draw(){
       measurement.clear();
       this->window->swap();
     }
-    std::string output = this->outputName+".csv";
+    std::string output = this->testOutputName+".csv";
     saveCSV(output,csv);
     this->mainLoop->removeWindow(this->window->getId());
     return;
@@ -466,6 +529,5 @@ bool Application::mouseMove(SDL_Event const&event){
       freeCamera->setAngle(0,freeCamera->getAngle(0)+float(event.motion.yrel)*this->sensitivity);
     }
   }
-
   return true;
 }
