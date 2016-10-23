@@ -3,6 +3,7 @@
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<algorithm>
+#include<geCore/Dtemplates.h>
 
 const size_t GIGA                  = 1<<30     ;
 const size_t NANOSECONDS_IN_SECOND = 1000000000;
@@ -21,7 +22,7 @@ double median(std::function<double()>const&fce,size_t iteration = 10){
 double basicBufferTest(size_t FLOATS_PER_THREAD = 32){
   const size_t WAVEFRONTS_PER_COMPUTE_UNIT = 2048;
   const size_t WAVEFRONTS_PER_WORKGROUP    = 1   ;
-  const size_t ITERATIONS                  = 50  ;
+  const size_t ITERATIONS                  = 5   ;
   const size_t NOF_THREADS               = WAVEFRONT_SIZE*COMPUTE_UNITS*WAVEFRONTS_PER_COMPUTE_UNIT;
   const size_t READBUFFER_SIZE_IN_FLOATS = NOF_THREADS*FLOATS_PER_THREAD;
   const size_t WORKGROUP_SIZE            = WAVEFRONTS_PER_WORKGROUP*WAVEFRONT_SIZE;
@@ -68,9 +69,8 @@ void main(){
   return throughput/GIGA;
 }
 
-double basicTextureTest(size_t WGSX = 8,size_t WGSY = 8){
-  const size_t ITERATIONS                  = 50  ;
-  const size_t NOF_WORKGROUPS              = 1024;
+double basicTextureTest(size_t WGSX = 8,size_t WGSY = 8,size_t width = 2048, size_t height = 2048){
+  const size_t ITERATIONS = 5    ;
 
   const std::string compSrc = R".(
 layout(r32f,binding=0)uniform image2D readTexture;
@@ -88,7 +88,7 @@ void main(){
         ge::gl::Shader::define("WGSX"   ,int(WGSX)),
         ge::gl::Shader::define("WGSY"   ,int(WGSY)),
         compSrc));
-  auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32F,1,NOF_WORKGROUPS*WGSX,NOF_WORKGROUPS*WGSY);
+  auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32F,1,width,height);
   auto query = std::make_shared<ge::gl::AsynchronousQuery>(GL_TIME_ELAPSED,GL_QUERY_RESULT,ge::gl::AsynchronousQuery::UINT64);
   auto gl = ge::gl::getDefaultContext();
   program->use();
@@ -97,7 +97,10 @@ void main(){
   gl->glFinish();
   query->begin();
   for(size_t i=0;i<ITERATIONS;++i)
-    gl->glDispatchCompute(NOF_WORKGROUPS,NOF_WORKGROUPS,1);
+    gl->glDispatchCompute(
+        GLuint(ge::core::divRoundUp(width ,WGSX)),
+        GLuint(ge::core::divRoundUp(height,WGSY)),
+        1);
   query->end();
   gl->glFinish();
   auto elapsedTime = query->getui64();
@@ -105,7 +108,7 @@ void main(){
   double throughput=
     double(ITERATIONS)*
     double(sizeof(float))*
-    double(WGSX*WGSY*NOF_WORKGROUPS*NOF_WORKGROUPS)/
+    double(width*height)/
     double(elapsedTime)*
     double(NANOSECONDS_IN_SECOND);
   return throughput/GIGA;
@@ -117,10 +120,11 @@ int main(int,char*[]){
   ge::gl::init(SDL_GL_GetProcAddress);
   ge::gl::setHighDebugMessage();
 
-  //for(size_t i=1;i<=32;i<<=1)
-  //  std::cout<<"buffer memory read bandwidth "<<i<<" floats/thread: "<<median(std::bind(basicBufferTest,i))<<" GB/second"<<std::endl;
-  for(size_t x=1;x<=64;x<<=1)
-    std::cout<<"texture image memory read bandwidth "<<x<<" x "<<64/x<<": floats/thread: "<<median(std::bind(basicTextureTest,x,64/x))<<" GB/second"<<std::endl;
+  for(size_t i=1;i<=32;i<<=1)
+    std::cout<<"buffer memory read bandwidth "<<i<<" floats/thread: "<<median(std::bind(basicBufferTest,i))<<" GB/second"<<std::endl;
+  for(size_t maxSize=64;maxSize<=1024;maxSize<<=1)
+    for(size_t x=1;x<=maxSize;x<<=1)
+      std::cout<<"texture image memory read bandwidth "<<x<<" x "<<maxSize/x<<": floats/thread: "<<median(std::bind(basicTextureTest,x,maxSize/x,2048,2048))<<" GB/second"<<std::endl;
   return EXIT_SUCCESS;
 }
 
