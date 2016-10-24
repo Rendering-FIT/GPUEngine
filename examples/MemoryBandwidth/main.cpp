@@ -80,8 +80,15 @@ double basicBufferTest(size_t FLOATS_PER_THREAD = 32){
   return throughput/GIGA;
 }
 
-double basicTextureTest(GLenum internalFormat,size_t WGSX = 8,size_t WGSY = 8,size_t texelsPerThreadX = 4,size_t texelsPerThreadY = 4,size_t width = 2048, size_t height = 2048){
-  const size_t ITERATIONS = 10   ;
+double basicTextureTest(
+    GLenum internalFormat,
+    size_t WGSX = 8,
+    size_t WGSY = 8,
+    size_t texelsPerThreadX = 4,
+    size_t texelsPerThreadY = 4,
+    size_t dispatchSizeX = 2048,
+    size_t dispatchSizeY = 2048){
+  const size_t ITERATIONS = 100;
 
   const std::string compSrc = R".(
 #ifndef BASE_TYPE
@@ -128,43 +135,42 @@ double basicTextureTest(GLenum internalFormat,size_t WGSX = 8,size_t WGSY = 8,si
 #define FULL_VECTOR_TYPE JOIN(TYPE_,JOIN(BASE_TYPE,4)) 
 #define TYPE JOIN(TYPE_,JOIN(BASE_TYPE,NOF_CHANNELS))
 #define FORMAT JOIN(JOIN(CHANNELS_,NOF_CHANNELS),JOIN(BIT_SIZE,JOIN(TYPE_SUFFIX_,BASE_TYPE)))
-    layout(local_size_x=WGSX,local_size_y=WGSY)in;
-  layout(FORMAT,binding=0)uniform JOIN(IMAGE_TYPE_,BASE_TYPE) readTexture;
-  float addComponents(float a){return a              ;}
-  float addComponents(vec2  a){return a.x+a.y        ;}
-  float addComponents(vec3  a){return a.x+a.y+a.z    ;}
-  float addComponents(vec4  a){return a.x+a.y+a.z+a.w;}
-  int   addComponents(int   a){return a              ;}
-  int   addComponents(ivec2 a){return a.x+a.y        ;}
-  int   addComponents(ivec3 a){return a.x+a.y+a.z    ;}
-  int   addComponents(ivec4 a){return a.x+a.y+a.z+a.w;}
-  uint  addComponents(uint  a){return a              ;}
-  uint  addComponents(uvec2 a){return a.x+a.y        ;}
-  uint  addComponents(uvec3 a){return a.x+a.y+a.z    ;}
-  uint  addComponents(uvec4 a){return a.x+a.y+a.z+a.w;}
-  void main(){
-    BASE_TYPE data = 0;
-    for(uint j=0;j<TEXELS_PER_THREAD.y;++j)
-      for(uint i=0;i<TEXELS_PER_THREAD.x;++i)
-        data += addComponents(TYPE(imageLoad(readTexture,ivec2(gl_WorkGroupID.xy*gl_WorkGroupSize.xy*TEXELS_PER_THREAD+gl_LocalInvocationID.xy+gl_WorkGroupSize.xy*uvec2(i,j)))));
-    if(data==123)
-      imageStore(readTexture,ivec2(gl_GlobalInvocationID.xy),FULL_VECTOR_TYPE(1));
-  }).";
+layout(local_size_x=WGSX,local_size_y=WGSY)in;
+layout(FORMAT,binding=0)uniform JOIN(IMAGE_TYPE_,BASE_TYPE) readTexture;
+float addComponents(float a){return a              ;}
+float addComponents(vec2  a){return a.x+a.y        ;}
+float addComponents(vec3  a){return a.x+a.y+a.z    ;}
+float addComponents(vec4  a){return a.x+a.y+a.z+a.w;}
+int   addComponents(int   a){return a              ;}
+int   addComponents(ivec2 a){return a.x+a.y        ;}
+int   addComponents(ivec3 a){return a.x+a.y+a.z    ;}
+int   addComponents(ivec4 a){return a.x+a.y+a.z+a.w;}
+uint  addComponents(uint  a){return a              ;}
+uint  addComponents(uvec2 a){return a.x+a.y        ;}
+uint  addComponents(uvec3 a){return a.x+a.y+a.z    ;}
+uint  addComponents(uvec4 a){return a.x+a.y+a.z+a.w;}
+void main(){
+  BASE_TYPE data = 0;
+  for(uint j=0;j<TEXELS_PER_THREAD.y;++j)
+    for(uint i=0;i<TEXELS_PER_THREAD.x;++i)
+      data += addComponents(TYPE(imageLoad(readTexture,ivec2(gl_WorkGroupID.xy*gl_WorkGroupSize.xy*TEXELS_PER_THREAD+gl_LocalInvocationID.xy+gl_WorkGroupSize.xy*uvec2(i,j)))));
+  if(data==123)
+    imageStore(readTexture,ivec2(gl_GlobalInvocationID.xy),FULL_VECTOR_TYPE(1));
+}).";
 
   std::string baseType = "float";
   size_t nofChannels   = 1;
   size_t bitSize       = 32;
   size_t byteSize      = 8;
-  if(std::set<GLenum>({GL_R32F ,GL_RG32F ,GL_RGB32F ,GL_RGBA32F }).count(internalFormat))baseType = "float";
-  if(std::set<GLenum>({GL_R32I ,GL_RG32I ,GL_RGB32I ,GL_RGBA32I ,GL_R16I ,GL_RG16I ,GL_RGB16I ,GL_RGBA16I ,GL_R8I ,GL_RG8I ,GL_RGB8I ,GL_RGBA8I }).count(internalFormat))baseType = "int"  ;
-  if(std::set<GLenum>({GL_R32UI,GL_RG32UI,GL_RGB32UI,GL_RGBA32UI,GL_R16UI,GL_RG16UI,GL_RGB16UI,GL_RGBA16UI,GL_R8UI,GL_RG8UI,GL_RGB8UI,GL_RGBA8UI}).count(internalFormat))baseType = "uint" ;
+  if(std::set<GLenum>({GL_R32F ,GL_RG32F ,GL_RGBA32F }).count(internalFormat))baseType = "float";
+  if(std::set<GLenum>({GL_R32I ,GL_RG32I ,GL_RGBA32I ,GL_R16I ,GL_RG16I ,GL_RGBA16I ,GL_R8I ,GL_RG8I ,GL_RGBA8I }).count(internalFormat))baseType = "int"  ;
+  if(std::set<GLenum>({GL_R32UI,GL_RG32UI,GL_RGBA32UI,GL_R16UI,GL_RG16UI,GL_RGBA16UI,GL_R8UI,GL_RG8UI,GL_RGBA8UI}).count(internalFormat))baseType = "uint" ;
   if(std::set<GLenum>({GL_R32F   ,GL_R32I   ,GL_R32UI   ,GL_R16I   ,GL_R16UI   ,GL_R8I   ,GL_R8UI   }).count(internalFormat))nofChannels = 1;
   if(std::set<GLenum>({GL_RG32F  ,GL_RG32I  ,GL_RG32UI  ,GL_RG16I  ,GL_RG16UI  ,GL_RG8I  ,GL_RG8UI  }).count(internalFormat))nofChannels = 2;
-  if(std::set<GLenum>({GL_RGB32F ,GL_RGB32I ,GL_RGB32UI ,GL_RGB16I ,GL_RGB16UI ,GL_RGB8I ,GL_RGB8UI }).count(internalFormat))nofChannels = 3;
   if(std::set<GLenum>({GL_RGBA32F,GL_RGBA32I,GL_RGBA32UI,GL_RGBA16I,GL_RGBA16UI,GL_RGBA8I,GL_RGBA8UI}).count(internalFormat))nofChannels = 4;
-  if(std::set<GLenum>({GL_R32F,GL_RG32F,GL_RGB32F,GL_RGBA32F,GL_R32I,GL_RG32I,GL_RGB32I,GL_RGBA32I,GL_R32UI,GL_RG32UI,GL_RGB32UI,GL_RGBA32UI}).count(internalFormat))bitSize = 32;
-  if(std::set<GLenum>({GL_R16I,GL_RG16I,GL_RGB16I,GL_RGBA16I,GL_R16UI,GL_RG16UI,GL_RGB16UI,GL_RGBA16UI}).count(internalFormat))bitSize = 16;
-  if(std::set<GLenum>({GL_R8I,GL_RG8I,GL_RGB8I,GL_RGBA8I,GL_R8UI,GL_RG8UI,GL_RGB8UI,GL_RGBA8UI}).count(internalFormat))bitSize = 8;
+  if(std::set<GLenum>({GL_R32F,GL_RG32F,GL_RGBA32F,GL_R32I,GL_RG32I,GL_RGBA32I,GL_R32UI,GL_RG32UI,GL_RGBA32UI}).count(internalFormat))bitSize = 32;
+  if(std::set<GLenum>({GL_R16F,GL_RG16F,GL_RGBA16F,GL_R16I,GL_RG16I,GL_RGBA16I,GL_R16UI,GL_RG16UI,GL_RGBA16UI}).count(internalFormat))bitSize = 16;
+  if(std::set<GLenum>({GL_R8I ,GL_RG8I ,GL_RGBA8I ,GL_R8UI,GL_RG8UI,GL_RGBA8UI}).count(internalFormat))bitSize = 8;
 
   auto program = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(
@@ -177,7 +183,7 @@ double basicTextureTest(GLenum internalFormat,size_t WGSX = 8,size_t WGSY = 8,si
         ge::gl::Shader::define("BIT_SIZE"         ,int(bitSize)                               ),
         ge::gl::Shader::define("TEXELS_PER_THREAD",int(texelsPerThreadX),int(texelsPerThreadY)),
         compSrc));
-  auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32F,1,width*texelsPerThreadX,height*texelsPerThreadY);
+  auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,internalFormat,1,dispatchSizeX*texelsPerThreadX,dispatchSizeY*texelsPerThreadY);
   auto query = std::make_shared<ge::gl::AsynchronousQuery>(GL_TIME_ELAPSED,GL_QUERY_RESULT,ge::gl::AsynchronousQuery::UINT64);
   auto gl = ge::gl::getDefaultContext();
   program->use();
@@ -185,21 +191,21 @@ double basicTextureTest(GLenum internalFormat,size_t WGSX = 8,size_t WGSY = 8,si
   texture->bindImage(0,0);
   gl->glFinish();
   query->begin();
-  for(size_t i=0;i<ITERATIONS;++i)
+  for(size_t i=0;i<ITERATIONS;++i){
     gl->glDispatchCompute(
-        GLuint(ge::core::divRoundUp(width ,WGSX)),
-        GLuint(ge::core::divRoundUp(height,WGSY)),
+        GLuint(ge::core::divRoundUp(dispatchSizeX,WGSX)),
+        GLuint(ge::core::divRoundUp(dispatchSizeY,WGSY)),
         1);
+  }
   query->end();
-  gl->glFinish();
   auto elapsedTime = query->getui64();
 
   double throughput=
     double(ITERATIONS)*
-    double(texelsPerThreadX*texelsPerThreadY)*
     double(bitSize)/double(byteSize)*
     double(nofChannels)*
-    double(width*height)/
+    double(texelsPerThreadX*texelsPerThreadY)*
+    double(dispatchSizeX*dispatchSizeY)/
     double(elapsedTime)*
     double(NANOSECONDS_IN_SECOND);
   return throughput/GIGA;
@@ -221,9 +227,17 @@ int main(int,char*[]){
   size_t const dispatchSizeX             = 1024;
   size_t const dispatchSizeY             = 1024;
   auto const internalFormats = 
-  {GL_R32UI,GL_RG32UI,GL_RGB32UI,GL_RGBA32UI,
-  GL_R16UI,GL_RG16UI,GL_RGB16UI,GL_RGBA16UI,
-  GL_R8UI,GL_RG8UI,GL_RGB8UI,GL_RGBA8UI};
+  {
+    GL_R16F,
+/*    GL_R32F ,GL_RG32F ,GL_RGBA32F ,
+    GL_R16F ,GL_RG16F ,GL_RGBA16F ,
+    GL_R32I ,GL_RG32I ,GL_RGBA32I ,
+    GL_R16I ,GL_RG16I ,GL_RGBA16I ,
+    GL_R8I  ,GL_RG8I  ,GL_RGBA8I  ,
+    GL_R32UI,GL_RG32UI,GL_RGBA32UI,
+    GL_R16UI,GL_RG16UI,GL_RGBA16UI,
+    GL_R8UI ,GL_RG8UI ,GL_RGBA8UI ,*/
+  };
   //{GL_R32F,GL_RG32F,GL_RGB32F,GL_RGBA32F};
   //{GL_R32F};
   //{GL_R32F,GL_RG32F,GL_RGB32F,GL_RGBA32F,
