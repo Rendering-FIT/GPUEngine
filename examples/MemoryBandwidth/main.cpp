@@ -228,15 +228,14 @@ int main(int,char*[]){
   size_t const dispatchSizeY             = 1024;
   auto const internalFormats = 
   {
-    GL_R16F,
-/*    GL_R32F ,GL_RG32F ,GL_RGBA32F ,
+    GL_R32F ,GL_RG32F ,GL_RGBA32F ,
     GL_R16F ,GL_RG16F ,GL_RGBA16F ,
     GL_R32I ,GL_RG32I ,GL_RGBA32I ,
     GL_R16I ,GL_RG16I ,GL_RGBA16I ,
     GL_R8I  ,GL_RG8I  ,GL_RGBA8I  ,
     GL_R32UI,GL_RG32UI,GL_RGBA32UI,
     GL_R16UI,GL_RG16UI,GL_RGBA16UI,
-    GL_R8UI ,GL_RG8UI ,GL_RGBA8UI ,*/
+    GL_R8UI ,GL_RG8UI ,GL_RGBA8UI ,
   };
   //{GL_R32F,GL_RG32F,GL_RGB32F,GL_RGBA32F};
   //{GL_R32F};
