@@ -7,9 +7,9 @@ struct Application{
   std::shared_ptr<ge::gl::Context>    gl       = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
   std::shared_ptr<ge::ad::SDLWindow>  window   = nullptr;
-  std::shared_ptr<ge::gl::Program>program0 = nullptr;
-  std::shared_ptr<ge::gl::VertexArray>vao = nullptr;
-  std::shared_ptr<ge::gl::Buffer>vbo = nullptr;
+  std::shared_ptr<ge::gl::Program>    program0 = nullptr;
+  std::shared_ptr<ge::gl::VertexArray>vao      = nullptr;
+  std::shared_ptr<ge::gl::Buffer>     vbo      = nullptr;
   bool init();
   void idle();
 };

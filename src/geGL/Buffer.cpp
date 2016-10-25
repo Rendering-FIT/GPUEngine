@@ -205,7 +205,8 @@ void Buffer::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)cons
 void Buffer::_updateVertexArrays(){
   assert(this!=nullptr);
   auto me = this->shared_from_this();
-  for(auto const&x:this->_vertexArrays){
+  auto vertexArrays = this->_vertexArrays;
+  for(auto const&x:vertexArrays){
     if(x->_elementBuffer == me){
       x->addElementBuffer(me);
     }
