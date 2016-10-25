@@ -18,6 +18,7 @@ public:
 	void draw();
 	int getFrames() { return frames; }
 	float getFps();
+	float getMs();
 protected:
 	GLuint queries[2];
 	float* data = 0;

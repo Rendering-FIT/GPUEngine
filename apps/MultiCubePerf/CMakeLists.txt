@@ -1,4 +1,4 @@
-set(APP_NAME MultiCubeTest)
+set(APP_NAME MultiCubePerf)
 
 project(${APP_NAME})
 
@@ -11,20 +11,20 @@ endif()
 add_subdirectory(imgui)
   
 set(APP_SOURCES
-	main.cpp
-	gui.cpp
-	stats.cpp
-	app.cpp
-	appgl.cpp
-	apprg.cpp
+	src/main.cpp
+	src/gui.cpp
+	src/stats.cpp
+	src/app.cpp
+	src/appgl.cpp
+	src/apprg.cpp
 )
 
 set(APP_INCLUDES
-	gui.h
-	stats.h
-	app.h
-	appgl.h
-	apprg.h
+	src/gui.h
+	src/stats.h
+	src/app.h
+	src/appgl.h
+	src/apprg.h
 )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
@@ -34,7 +34,7 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps SDLWindow geGL geUtil imgui)
+set(Internal_deps SDLWindow geGL geRG geUtil imgui)
 set(External_libs SDL2)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include

@@ -40,8 +40,10 @@ float Stats::getAvg(int f) {
 	float sum = 0;
 	int i = 0;
 	for (; i < std::min(f,std::min(history, frames)); i++) {
+		//std::cout << data[i] << ";";
 		sum += data[i];
 	}
+	//std::cout << " : " << i << "\n";
 	if (i) sum /= i;
 	return sum;
 }
@@ -87,4 +89,8 @@ void Stats::draw(){
 
 float Stats::getFps(){
 	return 1e3f / data[0];
+}
+
+float Stats::getMs(){
+	return data[0];
 }

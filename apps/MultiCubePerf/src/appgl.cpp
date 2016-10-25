@@ -120,131 +120,23 @@ DrawMode modes[] = { INSTANCED, SINGLE_DRAW, /*MANY_DRAW,*/  MULTIDRAW_INDIRECT 
 int texCounts[] = { 16,32,64,128,512,1024 };
 
 AppGL::AppGL(Options const & o) :App(o) {
-	maxCubes = o.cubeCount;
-	cubeCount = maxCubes;
-
-	maxTextures = o.textureCount;
-	textureCount = maxTextures;
-	currentDrawMode = o.drawMode;
-
-	switch (options.appMode) {
-	case CALIBRATE:
-		currentState = WAIT;
-		waitCounter = 60;
-		cubeCount = 1000;
-		stateStack.push_back([&]() {
-			currentState = CALIBRATE;
-		});
-		break;
-	case INTERATIVE:
-		currentState = INTERATIVE;
-		break;
-	case TEST:
-		currentState = WAIT_TIME;
-		waitTime = 5000;
-		waitStart = SDL_GetTicks();
-		stateStack.push_back([&]() {
-			currentState = TEST;
-			angle = 0;
-		});
-		break;
-	case CALIBRATE_ALL: {
-		currentState = WAIT_TIME;
-		waitTime = 5000;
-		waitStart = SDL_GetTicks();
-		// calibration tests
-		for (int m = 0; m < 3; m++) {
-			auto mode = modes[m];
-			auto tc = 0;
-			stateStack.push_back([&, mode, tc]() {
-
-				currentDrawMode = mode;
-				textureCount = tc;
-				setCalibrate();
-			});
-			stateStack.push_back([&]() {
-				currentState = WAIT;
-				waitCounter = 60;
-			});
-		}
-
-		for (int t = 0; t < 6; t++) {
-			if (texCounts[t] <= maxTextures) {
-				auto mode = SINGLE_DRAW;
-				auto tc = texCounts[t];
-				stateStack.push_back([&, mode, tc]() {
-					currentDrawMode = mode;
-					textureCount = tc;
-					setCalibrate();
-				});
-				stateStack.push_back([&]() {
-					currentState = WAIT;
-					waitCounter = 60;
-				});
-			}
-		}
-		break;
-	}
-	case TEST_ALL: {
-		currentState = WAIT_TIME;
-		waitTime = 5000;
-		waitStart = SDL_GetTicks();
-
-		// fps tests
-		for (int t = 0; t < 6; t++) {
-			if (texCounts[t] <= maxTextures) {
-				auto mode = SINGLE_DRAW;
-				auto tc = texCounts[t];
-				stateStack.push_back([&, mode, tc]() {
-					setTest();
-					currentDrawMode = mode;
-					textureCount = tc;
-					cubeCount = maxCubes;
-				});
-				stateStack.push_back([&]() {
-					currentState = WAIT;
-					waitCounter = 60;
-				});
-			}
-		}
-
-		for (int m = 0; m < 3; m++) {
-			auto mode = modes[m];
-			auto tc = 0;
-			stateStack.push_back([&, mode, tc]() {
-				setTest();
-				currentDrawMode = mode;
-				textureCount = tc;
-				cubeCount = maxCubes;
-			});
-			stateStack.push_back([&]() {
-				currentState = WAIT;
-				waitCounter = 60;
-			});
-		}
-
-		break;
-	}
-  default:{}
-	}
-
-	auto c = glGetString(GL_VENDOR);
-	std::cout << c << "\n";
-	c = glGetString(GL_VERSION);
-	std::cout << c << "\n";
-	c = glGetString(GL_RENDERER);
-	std::cout << c << "\n";
 }
 
 void AppGL::init() {
+	printOpenGLVersion();
+
 	prepareTextures();
 	prepareGeometry();
 	prepareMatrices();
 	preparePrograms();
+
+	SDL_GL_SetSwapInterval(0);
+	ImGui_ImplSdlGL3_Init(windowHandle);
 }
 
 void AppGL::draw() {
 	updateState();
+	updateCamera();
 
 	ImGui_ImplSdlGL3_NewFrame(windowHandle);
 	stats->startFrame();
@@ -254,38 +146,29 @@ void AppGL::draw() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-
-	int side = getSide();
-	zoom = float(side) * 2.2f;
-	float a = radians(angle + 45);
-	view = lookAt(zoom*vec3(cos(a), 1, sin(a)), vec3(0, 0, 0), vec3(0, 1, 0));
-	int w = window->getWidth();
-	int h = window->getHeight();
-	projection = perspective(radians(60.f), float(w) / float(h), 1.0f, 10000.f);
-
 	auto& p = *programs[getProgramID()].get();
 	p.use();
 	p.setMatrix4fv("v", value_ptr(view));
 	p.setMatrix4fv("p", value_ptr(projection));
-	p.set1i("textureCount", textureCount);
+	p.set1i("textureCount", currentTextures);
 
 	vertexArray->bind();
 
 	switch (currentDrawMode) {
 	case SINGLE_DRAW:
-		glDrawArrays(GL_TRIANGLES, 0, 36 * cubeCount);
+		glDrawArrays(GL_TRIANGLES, 0, 36 * currentCubes);
 		break;
 	case MANY_DRAW:
-		for (int i = 0; i < cubeCount; i++) {
+		for (int i = 0; i < currentCubes; i++) {
 			p.set1i("id", i);
 			glDrawArrays(GL_TRIANGLES, 36 * i, 36);
 		}
 		break;
 	case INSTANCED:
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, cubeCount);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 36, currentCubes);
 		break;
 	case MULTIDRAW_INDIRECT:
-		glMultiDrawArraysIndirect(GL_TRIANGLES, 0, cubeCount, 0);
+		glMultiDrawArraysIndirect(GL_TRIANGLES, 0, currentCubes, 0);
 		break;
 	}
 
@@ -382,109 +265,6 @@ void AppGL::preparePrograms() {
 
 int AppGL::getProgramID() {
 	int id = (int)currentDrawMode;
-	id = (id << 1) | int(textureCount > 0 && options.textureSize > 0);
+	id = (id << 1) | int(currentTextures > 0 && options.textureSize > 0);
 	return id;
-}
-
-int AppGL::getSide() {
-	return (int)ceil(cbrtf(float(cubeCount)));
-}
-
-void AppGL::setCalibrate() {
-	cubeCount = 1000;
-	currentState = CALIBRATE;
-	zeroCounter = 0;
-	difCounter = 0;
-}
-
-void AppGL::setTest() {
-	angle = 0;
-	currentState = TEST;
-}
-
-void AppGL::updateState() {
-	switch (currentState) {
-	case INTERATIVE:
-		break;
-	case TEST: {
-		float fps = stats->getFps();
-		if (angle == 0) {
-			std::cout << "Test " << cubeCount << " cubes, " << textureCount << " textures, " << drawModeToString(currentDrawMode) << ": ";
-			std::cout << "back-front: " << fps;
-		}
-		if (angle == 180) {
-			std::cout << ", front-back: " << fps;
-		}
-		if (angle == 360) {
-			std::cout << ", 360-avg: " << 1e3 / stats->getAvg(120) << "\n";
-			currentState = WAIT;
-		}
-		angle += 3;
-		break;
-	}
-	case CALIBRATE: {
-		//cout << "cubeCount " << cubeCount << " "<< maxCubes<<"\n";
-		float fps = stats->getFps();
-
-		if (fps < 60) {
-			difCounter = glm::max(difCounter - 1, -10);
-			if (difCounter == -10) {
-				cubeCount -= 10;
-			}
-		}
-		if (fps > 60) {
-			difCounter = glm::min(difCounter + 1, 10);
-			if (difCounter == 10) {
-				if (fps > 150 && currentDrawMode != MANY_DRAW)cubeCount *= 2;
-				else if (fps > 75 && currentDrawMode != MANY_DRAW)cubeCount += 1000;
-				else if (fps > 61)cubeCount += 100;
-				else cubeCount += 10;
-				cubeCount = glm::min(cubeCount, maxCubes);
-			}
-		}
-		if (difCounter == 0)zeroCounter++;
-		if (zeroCounter == 5) {
-			std::cout << "Calibrate 60 fps, " << textureCount << " textures, " << drawModeToString(currentDrawMode) << " - " << cubeCount << " cubes\n";
-			currentState = WAIT;
-		}
-		if (cubeCount == maxCubes) {
-			std::cout << "Calibrate reached max, " << textureCount << " textures, " << drawModeToString(currentDrawMode) << " - " << cubeCount << " cubes, " << fps << " fps\n";
-			currentState = WAIT;
-		}
-
-		if (getSide() != currentSide &&currentState!=WAIT) {
-			recomputeMatrices(cubeCount);
-			currentSide = getSide();
-			currentState = WAIT;
-			waitCounter = 10;
-			stateStack.insert(stateStack.begin(), [&]() {
-				currentState = CALIBRATE;
-			});
-
-		}
-
-
-		break;
-	}
-	case WAIT_TIME: {
-		if (SDL_GetTicks() - waitStart > waitTime) {
-			currentState = WAIT;
-			waitCounter = 0;
-		}
-		break;
-	}
-	case WAIT:
-		waitCounter--;
-		if (waitCounter <= 0) {
-			if (stateStack.size() == 0) {
-				quit();
-			}
-			else {
-				stateStack.at(0)();
-				stateStack.erase(stateStack.begin());
-			}
-		}
-		break;
-  default:{}
-	}
 }
