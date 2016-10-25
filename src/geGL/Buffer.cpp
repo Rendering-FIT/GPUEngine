@@ -175,13 +175,13 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
   }else if(flags==KEEP_ID            ){
     this->_bufferData(newSize,nullptr,bufferFlags);
   }else if(flags==KEEP_DATA          ){
-    Buffer*newBuffer=new Buffer(newSize,nullptr,bufferFlags);
+    Buffer*newBuffer = (Buffer*)new uint8_t[sizeof(Buffer)];
     assert(newBuffer!=nullptr);
+    new(newBuffer)Buffer(newSize,nullptr,bufferFlags);
     newBuffer->copy(*this);
     this->_gl.glDeleteBuffers(1,&this->_id);
-    this->~Buffer();
     this->_id = newBuffer->_id;
-    delete(char*)newBuffer;
+    delete[](uint8_t*)newBuffer;
     this->_updateVertexArrays();
   }else if(flags==NEW_BUFFER         ){
     this->_gl.glDeleteBuffers(1,&this->_id);

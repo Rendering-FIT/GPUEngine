@@ -75,14 +75,24 @@ void VertexArray::addAttrib(
 
   this->_gl.glVertexArrayVertexBuffer  (this->_id,index,buffer->getId(),offset,stride);
   this->_gl.glVertexArrayBindingDivisor(this->_id,index,divisor);
-  while(index>this->_buffers.size())this->_buffers.push_back(nullptr);
-  this->_buffers.push_back(buffer);
+  if(index>=this->_buffers.size())this->_buffers.resize(index+1,nullptr);
+  if(this->_buffers.at(index)){
+    size_t nofBufferUsages = this->_getNofBufferUsages(this->_buffers.at(index));
+    if(nofBufferUsages==1)
+      this->_buffers[index]->_vertexArrays.erase(this);
+  }
+  this->_buffers[index] = buffer;
   buffer->_vertexArrays.insert(this);
 }
 
 void VertexArray::addElementBuffer(
     std::shared_ptr<Buffer>const&buffer){
   assert(this!=nullptr);
+  if(this->_elementBuffer){
+    size_t nofBufferUsages = this->_getNofBufferUsages(this->_elementBuffer);
+    if(nofBufferUsages == 1)
+      this->_elementBuffer->_vertexArrays.erase(this);
+  }
   this->_elementBuffer = buffer;
   this->_gl.glVertexArrayElementBuffer(this->_id,buffer->getId());
   buffer->_vertexArrays.insert(this);
@@ -222,6 +232,15 @@ std::shared_ptr<Buffer>const&VertexArray::getBuffer(GLuint index)const{
 size_t VertexArray::getNofBuffers()const{
   assert(this!=nullptr);
   return this->_buffers.size();
+}
+
+
+size_t VertexArray::_getNofBufferUsages(std::shared_ptr<Buffer>const&buffer)const{
+  assert(this!=nullptr);
+  size_t counter = size_t(this->_elementBuffer == buffer);
+  for(auto const&x:this->_buffers)
+    if(x==buffer)++counter;
+  return counter;
 }
 
 //OpenGL 3.3

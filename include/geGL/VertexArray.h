@@ -50,6 +50,7 @@ namespace ge{
         std::shared_ptr<Buffer>const&getBuffer(GLuint index)const;
         size_t getNofBuffers()const;
       protected:
+        size_t _getNofBufferUsages(std::shared_ptr<Buffer>const&buffer)const;
         std::vector<std::shared_ptr<Buffer>>_buffers;
         std::shared_ptr<Buffer>_elementBuffer = nullptr;
         inline GLint _getAttrib(GLuint index,GLenum pname)const;
