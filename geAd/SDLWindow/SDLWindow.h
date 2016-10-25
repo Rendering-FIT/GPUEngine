@@ -32,7 +32,11 @@ namespace ge{
           ROBUST_ACCESS      = SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG     ,
           RESET_ISOLATION    = SDL_GL_CONTEXT_RESET_ISOLATION_FLAG   ,
         };
-
+        enum Fullscreen{
+          WINDOW             = 0                            ,
+          FULLSCREEN         = SDL_WINDOW_FULLSCREEN        ,
+          FULLSCREEN_DESKTOP = SDL_WINDOW_FULLSCREEN_DESKTOP,
+        };
         SDLWindow(uint32_t width = 1024,uint32_t height = 768);
         ~SDLWindow();
         bool createContext(
@@ -47,7 +51,6 @@ namespace ge{
         void makeCurrent(std::string const&name)const;
         void swap()const;
         WindowId getId()const;
-
         void setEventCallback(
             EventType const&eventType,
             std::function<bool(SDL_Event const&)>const&callback = nullptr);
@@ -56,22 +59,11 @@ namespace ge{
             std::function<bool(SDL_Event const&)>const&callback  = nullptr);
         bool hasEventCallback(
             EventType const&eventType)const;
-        bool callEventCallback(
-            EventType const&eventType,
-            SDL_Event const&eventData);
         bool hasWindowEventCallback(
             uint8_t const&eventType)const;
-        bool callWindowEventCallback(
-            uint8_t   const&eventType,
-            SDL_Event const&eventData);
-        void setSize(uint32_t width,uint32_t heght);
+        void setSize(uint32_t width,uint32_t height);
         uint32_t getWidth()const;
         uint32_t getHeight()const;
-        enum Fullscreen{
-          WINDOW             = 0                            ,
-          FULLSCREEN         = SDL_WINDOW_FULLSCREEN        ,
-          FULLSCREEN_DESKTOP = SDL_WINDOW_FULLSCREEN_DESKTOP,
-        };
         void setFullscreen(Fullscreen const&type);
         Fullscreen getFullscreen();
         SDL_Window* getWindow()const;
@@ -83,6 +75,12 @@ namespace ge{
         std::map<uint8_t,std::function<bool(SDL_Event const&)>>m_windowEventCallbacks;
         SDLMainLoop*m_mainLoop;
         bool m_defaultCloseCallback(SDL_Event const&);
+        bool m_callEventCallback(
+            EventType const&eventType,
+            SDL_Event const&eventData);
+        bool m_callWindowEventCallback(
+            uint8_t   const&eventType,
+            SDL_Event const&eventData);
     };
 
     inline SDL_Window* SDLWindow::getWindow()const{

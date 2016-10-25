@@ -13,16 +13,16 @@ SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
-SET(GPUENGINE_BUILD_geAd     ON  CACHE BOOL "Build addons (geAd directory).")
-SET(GPUENGINE_BUILD_APPS     ON  CACHE BOOL "Build applications (apps directory).")
-SET(GPUENGINE_BUILD_EXAMPLES ON  CACHE BOOL "Build examples (examples directory).")
-SET(GPUENGINE_BUILD_TESTS    ON  CACHE BOOL "Build and run tests (tests directory).")
-SET(GPUENGINE_BUILD_GEGL     ON  CACHE BOOL "Build geGL package.")
-SET(GPUENGINE_BUILD_GESG     ON  CACHE BOOL "Build geSG package.")
-SET(GPUENGINE_BUILD_GERG     ON  CACHE BOOL "Build geRG package.")
-SET(GPUENGINE_BUILD_GEUTIL   ON  CACHE BOOL "Build geUtil package.")
-SET(GPUENGINE_BUILD_GEPARSER ON  CACHE BOOL "Build geParser package.")
-SET(GPUENGINE_BUILD_GEDE     ON  CACHE BOOL "Build geDE package.")
+SET(GPUENGINE_BUILD_geAd     OFF  CACHE BOOL "Build addons (geAd directory).")
+SET(GPUENGINE_BUILD_APPS     OFF  CACHE BOOL "Build applications (apps directory).")
+SET(GPUENGINE_BUILD_EXAMPLES OFF  CACHE BOOL "Build examples (examples directory).")
+SET(GPUENGINE_BUILD_TESTS    OFF  CACHE BOOL "Build and run tests (tests directory).")
+SET(GPUENGINE_BUILD_GEGL     ON   CACHE BOOL "Build geGL package.")
+SET(GPUENGINE_BUILD_GESG     OFF  CACHE BOOL "Build geSG package.")
+SET(GPUENGINE_BUILD_GERG     OFF  CACHE BOOL "Build geRG package.")
+SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
+SET(GPUENGINE_BUILD_GEPARSER OFF  CACHE BOOL "Build geParser package.")
+SET(GPUENGINE_BUILD_GEDE     OFF  CACHE BOOL "Build geDE package.")
 
 SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp application.")
 
@@ -64,6 +64,9 @@ IF(MSVC)
 
    # avoid "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
+
+   # avoid MSVC defines of min and max
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DNOMINMAX")
 
    # workarounds for limited C++11 support of MSVC
    IF(MSVC_VERSION LESS 1800)

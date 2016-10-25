@@ -1,6 +1,7 @@
 #include<geGL/Buffer.h>
 #include<geGL/VertexArray.h>
 #include<geGL/OpenGLUtil.h>
+#include<geCore/ErrorPrinter.h>
 #include<cassert>
 #include<vector>
 
@@ -29,11 +30,24 @@ Buffer::Buffer(
   this->alloc(size,data,flags);
 }
 
+/**
+ * @brief creates new empty buffer
+ *
+ * @param table opengl function table
+ */
 Buffer::Buffer(FunctionTablePointer const&table):OpenGLObject(table){
   assert(this!=nullptr);
   this->_id = 0;
 }
 
+/**
+ * @brief create new buffer
+ *
+ * @param table opengl function table
+ * @param size size of buffer in bytes
+ * @param data optional data
+ * @param flags optional flags
+ */
 Buffer::Buffer(
     FunctionTablePointer const&table,
     GLsizeiptr    size ,
@@ -43,19 +57,21 @@ Buffer::Buffer(
   this->alloc(size,data,flags);
 }
 
+/**
+ * @brief destructor
+ */
 Buffer::~Buffer(){
   assert(this!=nullptr);
   this->_gl.glDeleteBuffers(1,&this->_id);
 }
 
-void Buffer::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const{
-  assert(this!=nullptr);
-  if(ge::gl::areBufferFlagsMutable(flags))
-    this->_gl.glNamedBufferData(this->_id,size,data,flags);
-  else
-    this->_gl.glNamedBufferStorage(this->_id,size,data,flags);
-}
-
+/**
+ * @brief allocates buffer, this function can only be used on empty buffer
+ *
+ * @param size size of buffer in bytes
+ * @param data optional data
+ * @param flags optional flags
+ */
 void Buffer::alloc(
     GLsizeiptr    size,
     const GLvoid *data,
@@ -145,7 +161,7 @@ void Buffer::unbindBase(GLenum target,GLuint index)const{
 bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
   assert(this!=nullptr);
   if((flags&KEEP_ID)&&this->isImmutable()){
-    std::cerr<<"ERROR: can't sustain buffer id: "<<this->getId()<<", buffer is immutable"<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,"can't sustain buffer id: "+ge::core::value2str(this->getId())+", buffer is immutable",newSize,flags);
     return false;
   }
   GLbitfield bufferFlags=this->getUsage();
@@ -172,12 +188,19 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
     this->alloc(newSize,nullptr,bufferFlags);
     this->_updateVertexArrays();
   }else{
-    std::cerr<<"ERROR: invalid buffer reallocation flags: "<<flags<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,"invalid buffer reallocation flags: "+ge::core::value2str(flags),newSize,flags);
     return false;
   }
   return true;
 }
 
+void Buffer::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const{
+  assert(this!=nullptr);
+  if(ge::gl::areBufferFlagsMutable(flags))
+    this->_gl.glNamedBufferData(this->_id,size,data,flags);
+  else
+    this->_gl.glNamedBufferStorage(this->_id,size,data,flags);
+}
 
 void Buffer::_updateVertexArrays(){
   assert(this!=nullptr);
@@ -281,6 +304,13 @@ void Buffer::clear(
   this->_gl.glClearNamedBufferSubData(this->_id,internalFormat,offset,size,format,type,data);
 }
 
+/**
+ * @brief maps buffer
+ *
+ * @param access access type
+ *
+ * @return pointer to pinned memory
+ */
 GLvoid*Buffer::map(
     GLbitfield access)const{
   assert(this!=nullptr);
@@ -290,6 +320,15 @@ GLvoid*Buffer::map(
   return this->_gl.glMapNamedBufferRange(this->_id,0,this->getSize(),access);
 }
 
+/**
+ * @brief maps buffer
+ *
+ * @param offset offset in buffer
+ * @param size size of mapping
+ * @param access acccess type
+ *
+ * @return pointer to pinned memory
+ */
 GLvoid*Buffer::map(
     GLintptr   offset,
     GLsizeiptr size,
@@ -298,11 +337,21 @@ GLvoid*Buffer::map(
   return this->_gl.glMapNamedBufferRange(this->_id,offset,size,access);
 }
 
+/**
+ * @brief unmaps buffer
+ */
 void Buffer::unmap()const{
   assert(this!=nullptr);
   this->_gl.glUnmapNamedBuffer(this->_id);
 }
 
+/**
+ * @brief uploads data into buffer
+ *
+ * @param data data pointer
+ * @param size size of data in bytes
+ * @param offset offset into buffer
+ */
 void Buffer::setData(
     const GLvoid* data  ,
     GLsizeiptr    size  ,
@@ -312,6 +361,13 @@ void Buffer::setData(
   this->_gl.glNamedBufferSubData(this->_id,offset,size,data);
 }
 
+/**
+ * @brief gets buffer data
+ *
+ * @param data data pointer
+ * @param size size of obtained data in bytes
+ * @param offset offset into buffer
+ */
 void Buffer::getData(
     GLvoid     *data,
     GLsizeiptr  size,

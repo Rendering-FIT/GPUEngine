@@ -1,6 +1,8 @@
 add_subdirectory(EmptyWindow)
 add_subdirectory(ShaderTest)
 add_subdirectory(VertexArray)
+add_subdirectory(HilbertCurve)
+add_subdirectory(MemoryBandwidth)
 add_subdirectory(HelloTriangle)
 add_subdirectory(TriangleRendering)
 add_subdirectory(ObjLoader)
