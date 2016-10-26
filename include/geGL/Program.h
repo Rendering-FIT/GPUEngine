@@ -50,9 +50,9 @@ namespace ge{
         std::string getInfoLog()const;
         GLint getUniformLocation(std::string const&name)const;
         GLint getAttribLocation (std::string const&name)const;
-        GLint getInterfaceParam(GLenum interface,GLenum pname)const;
-        std::string getResourceName(GLenum interface,GLuint index)const;
-        GLint getResourceParam(GLenum interface,GLenum pname,GLuint index)const;
+        GLint getInterfaceParam(GLenum interf,GLenum pname)const;
+        std::string getResourceName(GLenum interf,GLuint index)const;
+        GLint getResourceParam(GLenum interf,GLenum pname,GLuint index)const;
         void set1f(std::string const&name,float v0                           );
         void set2f(std::string const&name,float v0,float v1                  );
         void set3f(std::string const&name,float v0,float v1,float v2         );

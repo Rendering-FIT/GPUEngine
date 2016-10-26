@@ -1189,7 +1189,7 @@ void m_glWeightsvARB_impl(GLint size,const GLshort* weights)const{this->m_glWeig
 void m_glShadeModel_impl(GLenum mode)const{this->m_glShadeModel(mode);}
 void m_glMapGrid1d_impl(GLint un,GLdouble u1,GLdouble u2)const{this->m_glMapGrid1d(un,u1,u2);}
 void m_glGetHistogramParameterivEXT_impl(GLenum target,GLenum pname,GLint* params)const{this->m_glGetHistogramParameterivEXT(target,pname,params);}
-void m_glMapGrid1f_impl(GLint un,GLfloat u1,GLfloat u2)const{this->m_glMapGrid1f(un,u1,u2);}
+void m_glConservativeRasterParameteriNV_impl(GLenum pname,GLint param)const{this->m_glConservativeRasterParameteriNV(pname,param);}
 void m_glClearNamedBufferData_impl(GLuint buffer,GLenum internalformat,GLenum format,GLenum type,const void* data)const{this->m_glClearNamedBufferData(buffer,internalformat,format,type,data);}
 void m_glClearDepthf_impl(GLfloat d)const{this->m_glClearDepthf(d);}
 void m_glCreatePerfQueryINTEL_impl(GLuint queryId,GLuint* queryHandle)const{this->m_glCreatePerfQueryINTEL(queryId,queryHandle);}
@@ -1403,6 +1403,7 @@ void m_glCompileShaderARB_impl(GLhandleARB shaderObj)const{this->m_glCompileShad
 void m_glWindowPos3dMESA_impl(GLdouble x,GLdouble y,GLdouble z)const{this->m_glWindowPos3dMESA(x,y,z);}
 void m_glNormalStream3fvATI_impl(GLenum stream,const GLfloat* coords)const{this->m_glNormalStream3fvATI(stream,coords);}
 void m_glColor4usv_impl(const GLushort* v)const{this->m_glColor4usv(v);}
+void m_glMapGrid1f_impl(GLint un,GLfloat u1,GLfloat u2)const{this->m_glMapGrid1f(un,u1,u2);}
 void m_glPolygonStipple_impl(const GLubyte* mask)const{this->m_glPolygonStipple(mask);}
 void m_glUniform4ui64ARB_impl(GLint location,GLuint64 x,GLuint64 y,GLuint64 z,GLuint64 w)const{this->m_glUniform4ui64ARB(location,x,y,z,w);}
 void m_glTextureRenderbufferEXT_impl(GLuint texture,GLenum target,GLuint renderbuffer)const{this->m_glTextureRenderbufferEXT(texture,target,renderbuffer);}
@@ -1746,6 +1747,7 @@ void m_glNormalStream3dATI_impl(GLenum stream,GLdouble nx,GLdouble ny,GLdouble n
 void m_glVertexAttribL4i64vNV_impl(GLuint index,const GLint64EXT* v)const{this->m_glVertexAttribL4i64vNV(index,v);}
 void m_glDrawBuffers_impl(GLsizei n,const GLenum* bufs)const{this->m_glDrawBuffers(n,bufs);}
 void m_glCopyTextureSubImage1DEXT_impl(GLuint texture,GLenum target,GLint level,GLint xoffset,GLint x,GLint y,GLsizei width)const{this->m_glCopyTextureSubImage1DEXT(texture,target,level,xoffset,x,y,width);}
+void m_glWindowRectanglesEXT_impl(GLenum mode,GLsizei count,const GLint* box)const{this->m_glWindowRectanglesEXT(mode,count,box);}
 void m_glNamedFramebufferReadBuffer_impl(GLuint framebuffer,GLenum src)const{this->m_glNamedFramebufferReadBuffer(framebuffer,src);}
 void m_glUniform2i64vARB_impl(GLint location,GLsizei count,const GLint64* value)const{this->m_glUniform2i64vARB(location,count,value);}
 void m_glVertexAttribI1uivEXT_impl(GLuint index,const GLuint* v)const{this->m_glVertexAttribI1uivEXT(index,v);}
@@ -1776,6 +1778,7 @@ void m_glColorTableParameterfv_impl(GLenum target,GLenum pname,const GLfloat* pa
 void m_glFragmentCoverageColorNV_impl(GLuint color)const{this->m_glFragmentCoverageColorNV(color);}
 void m_glProgramUniform3ivEXT_impl(GLuint program,GLint location,GLsizei count,const GLint* value)const{this->m_glProgramUniform3ivEXT(program,location,count,value);}
 void m_glVertexArrayVertexOffsetEXT_impl(GLuint vaobj,GLuint buffer,GLint size,GLenum type,GLsizei stride,GLintptr offset)const{this->m_glVertexArrayVertexOffsetEXT(vaobj,buffer,size,type,stride,offset);}
+void m_glViewportPositionWScaleNV_impl(GLuint index,GLfloat xcoeff,GLfloat ycoeff)const{this->m_glViewportPositionWScaleNV(index,xcoeff,ycoeff);}
 void m_glGetProgramLocalParameterIuivNV_impl(GLenum target,GLuint index,GLuint* params)const{this->m_glGetProgramLocalParameterIuivNV(target,index,params);}
 void m_glReplacementCodeuiTexCoord2fVertex3fvSUN_impl(const GLuint* rc,const GLfloat* tc,const GLfloat* v)const{this->m_glReplacementCodeuiTexCoord2fVertex3fvSUN(rc,tc,v);}
 void m_glUniform1uiv_impl(GLint location,GLsizei count,const GLuint* value)const{this->m_glUniform1uiv(location,count,value);}

@@ -17,7 +17,7 @@ void,glGetIntegeri_v,GLenum,target,GLuint,index,GLint*,data
 void,glCompileShader,GLuint,shader
 void,glGetTransformFeedbackVarying,GLuint,program,GLuint,index,GLsizei,bufSize,GLsizei*,length,GLsizei*,size,GLenum*,type,GLchar*,name
 void,glCompressedTextureSubImage3D,GLuint,texture,GLint,level,GLint,xoffset,GLint,yoffset,GLint,zoffset,GLsizei,width,GLsizei,height,GLsizei,depth,GLenum,format,GLsizei,imageSize,const void*,data
-void,glTransformFeedbackBufferRange,GLuint,xfb,GLuint,index,GLuint,buffer,GLintptr,offset,GLsizeiptr,size
+void,glTransformFeedbackBufferRange,GLuint,xfb,GLuint,index,GLuint,buffer,GLintptr,offset,GLsizei,size
 void,glDepthRangef,GLfloat,n,GLfloat,f
 void,glVertexAttribIPointer,GLuint,index,GLint,size,GLenum,type,GLsizei,stride,const void*,pointer
 void,glGetNamedBufferParameteriv,GLuint,buffer,GLenum,pname,GLint*,params
@@ -34,8 +34,7 @@ void,glCompressedTexImage2D,GLenum,target,GLint,level,GLenum,internalformat,GLsi
 void,glVertexAttrib1f,GLuint,index,GLfloat,x
 void,glBlendFuncSeparate,GLenum,sfactorRGB,GLenum,dfactorRGB,GLenum,sfactorAlpha,GLenum,dfactorAlpha
 void,glProgramUniformMatrix4fv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
-void,glClearNamedFramebufferfi,GLuint,framebuffer,GLenum,buffer,GLint,drawbuffer,GLfloat,depth,GLint,stencil
-void,glGetQueryBufferObjectuiv,GLuint,id,GLuint,buffer,GLenum,pname,GLintptr,offset
+void,glClearNamedFramebufferfi,GLuint,framebuffer,GLenum,buffer,const GLfloat,depth,GLint,stencil
 void,glVertexAttrib2s,GLuint,index,GLshort,x,GLshort,y
 void,glClearNamedFramebufferfv,GLuint,framebuffer,GLenum,buffer,GLint,drawbuffer,const GLfloat*,value
 void,glVertexAttrib1s,GLuint,index,GLshort,x
@@ -45,7 +44,7 @@ void,glDebugMessageControl,GLenum,source,GLenum,type,GLenum,severity,GLsizei,cou
 void,glPointSize,GLfloat,size
 void,glBindTextureUnit,GLuint,unit,GLuint,texture
 void,glVertexAttrib2dv,GLuint,index,const GLdouble*,v
-void,glGetQueryBufferObjectiv,GLuint,id,GLuint,buffer,GLenum,pname,GLintptr,offset
+void,glGetTextureParameterIiv,GLuint,texture,GLenum,pname,GLint*,params
 void,glVertexAttrib4Nuiv,GLuint,index,const GLuint*,v
 void,glTexStorage2D,GLenum,target,GLsizei,levels,GLenum,internalformat,GLsizei,width,GLsizei,height
 void,glRenderbufferStorage,GLenum,target,GLenum,internalformat,GLsizei,width,GLsizei,height
@@ -66,21 +65,20 @@ void,glDrawArraysIndirect,GLenum,mode,const void*,indirect
 void,glGenVertexArrays,GLsizei,n,GLuint*,arrays
 void,glEnableVertexArrayAttrib,GLuint,vaobj,GLuint,index
 void,glProgramUniformMatrix3x2dv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLdouble*,value
-void,glCopyNamedBufferSubData,GLuint,readBuffer,GLuint,writeBuffer,GLintptr,readOffset,GLintptr,writeOffset,GLsizeiptr,size
+void,glCopyNamedBufferSubData,GLuint,readBuffer,GLuint,writeBuffer,GLintptr,readOffset,GLintptr,writeOffset,GLsizei,size
 void,glProgramUniform3f,GLuint,program,GLint,location,GLfloat,v0,GLfloat,v1,GLfloat,v2
 void,glGetSamplerParameterIiv,GLuint,sampler,GLenum,pname,GLint*,params
 GLint,glGetFragDataIndex,GLuint,program,const GLchar*,name
 void,glTexStorage3D,GLenum,target,GLsizei,levels,GLenum,internalformat,GLsizei,width,GLsizei,height,GLsizei,depth
 void,glUniformMatrix4x2fv,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
 void,glTextureParameteriv,GLuint,texture,GLenum,pname,const GLint*,param
-void,glGetQueryBufferObjecti64v,GLuint,id,GLuint,buffer,GLenum,pname,GLintptr,offset
 void,glGetVertexAttribdv,GLuint,index,GLenum,pname,GLdouble*,params
 void,glUniformMatrix3x4fv,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
 void,glUniformMatrix3dv,GLint,location,GLsizei,count,GLboolean,transpose,const GLdouble*,value
 void,glProgramUniformMatrix3x4dv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLdouble*,value
 void,glNamedFramebufferTexture,GLuint,framebuffer,GLenum,attachment,GLuint,texture,GLint,level
 void,glBindBuffersRange,GLenum,target,GLuint,first,GLsizei,count,const GLuint*,buffers,const GLintptr*,offsets,const GLsizeiptr*,sizes
-void,glInvalidateBufferSubData,GLuint,buffer,GLintptr,offset,GLsizeiptr,length
+void,glGetVertexArrayIndexediv,GLuint,vaobj,GLuint,index,GLenum,pname,GLint*,param
 void,glResumeTransformFeedback
 void,glProgramUniformMatrix4x3fv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
 void,glViewportArrayv,GLuint,first,GLsizei,count,const GLfloat*,v
@@ -101,9 +99,8 @@ void,glVertexAttribP2ui,GLuint,index,GLenum,type,GLboolean,normalized,GLuint,val
 void,glFramebufferTexture2D,GLenum,target,GLenum,attachment,GLenum,textarget,GLuint,texture,GLint,level
 void,glGetFramebufferAttachmentParameteriv,GLenum,target,GLenum,attachment,GLenum,pname,GLint*,params
 void,glVertexAttrib4Nub,GLuint,index,GLubyte,x,GLubyte,y,GLubyte,z,GLubyte,w
-void*,glMapNamedBufferRange,GLuint,buffer,GLintptr,offset,GLsizeiptr,length,GLbitfield,access
+void*,glMapNamedBufferRange,GLuint,buffer,GLintptr,offset,GLsizei,length,GLbitfield,access
 GLint,glGetFragDataLocation,GLuint,program,const GLchar*,name
-void,glGetTextureParameterIiv,GLuint,texture,GLenum,pname,GLint*,params
 void,glTexImage1D,GLenum,target,GLint,level,GLint,internalformat,GLsizei,width,GLint,border,GLenum,format,GLenum,type,const void*,pixels
 void,glTexParameteriv,GLenum,target,GLenum,pname,const GLint*,params
 void,glVertexArrayAttribIFormat,GLuint,vaobj,GLuint,attribindex,GLint,size,GLenum,type,GLuint,relativeoffset
@@ -118,7 +115,7 @@ GLboolean,glIsRenderbuffer,GLuint,renderbuffer
 void,glProgramUniform3uiv,GLuint,program,GLint,location,GLsizei,count,const GLuint*,value
 void,glBindVertexBuffers,GLuint,first,GLsizei,count,const GLuint*,buffers,const GLintptr*,offsets,const GLsizei*,strides
 void*,glMapBufferRange,GLenum,target,GLintptr,offset,GLsizeiptr,length,GLbitfield,access
-void,glGetNamedBufferSubData,GLuint,buffer,GLintptr,offset,GLsizeiptr,size,void*,data
+void,glGetNamedBufferSubData,GLuint,buffer,GLintptr,offset,GLsizei,size,void*,data
 void,glDisableVertexAttribArray,GLuint,index
 void,glProgramUniform2iv,GLuint,program,GLint,location,GLsizei,count,const GLint*,value
 void,glGetQueryiv,GLenum,target,GLenum,pname,GLint*,params
@@ -149,7 +146,7 @@ void*,glMapNamedBuffer,GLuint,buffer,GLenum,access
 void,glVertexAttrib4d,GLuint,index,GLdouble,x,GLdouble,y,GLdouble,z,GLdouble,w
 void,glVertexAttribP3ui,GLuint,index,GLenum,type,GLboolean,normalized,GLuint,value
 void,glFramebufferTexture1D,GLenum,target,GLenum,attachment,GLenum,textarget,GLuint,texture,GLint,level
-void,glTextureBufferRange,GLuint,texture,GLenum,internalformat,GLuint,buffer,GLintptr,offset,GLsizeiptr,size
+void,glTextureBufferRange,GLuint,texture,GLenum,internalformat,GLuint,buffer,GLintptr,offset,GLsizei,size
 void,glGetnUniformdv,GLuint,program,GLint,location,GLsizei,bufSize,GLdouble*,params
 void,glProgramUniform3ui,GLuint,program,GLint,location,GLuint,v0,GLuint,v1,GLuint,v2
 void,glGetPointerv,GLenum,pname,void**,params
@@ -182,7 +179,6 @@ void,glVertexAttrib3sv,GLuint,index,const GLshort*,v
 void,glVertexAttrib4s,GLuint,index,GLshort,x,GLshort,y,GLshort,z,GLshort,w
 void,glValidateProgramPipeline,GLuint,pipeline
 void,glGetTexLevelParameteriv,GLenum,target,GLint,level,GLenum,pname,GLint*,params
-void,glScissorArrayv,GLuint,first,GLsizei,count,const GLint*,v
 void,glTexStorage3DMultisample,GLenum,target,GLsizei,samples,GLenum,internalformat,GLsizei,width,GLsizei,height,GLsizei,depth,GLboolean,fixedsamplelocations
 void,glStencilFuncSeparate,GLenum,face,GLenum,func,GLint,ref,GLuint,mask
 void,glDisableVertexArrayAttrib,GLuint,vaobj,GLuint,index
@@ -243,8 +239,8 @@ void,glObjectPtrLabel,const void*,ptr,GLsizei,length,const GLchar*,label
 void,glInvalidateFramebuffer,GLenum,target,GLsizei,numAttachments,const GLenum*,attachments
 void,glBindTextures,GLuint,first,GLsizei,count,const GLuint*,textures
 void,glBindFragDataLocation,GLuint,program,GLuint,color,const GLchar*,name
-void,glNamedBufferStorage,GLuint,buffer,GLsizeiptr,size,const void*,data,GLbitfield,flags
-void,glCreateTextures,GLenum,target,GLsizei,n,GLuint*,textures
+void,glNamedBufferStorage,GLuint,buffer,GLsizei,size,const void*,data,GLbitfield,flags
+void,glScissorArrayv,GLuint,first,GLsizei,count,const GLint*,v
 void,glGetUniformfv,GLuint,program,GLint,location,GLfloat*,params
 void,glUniform1dv,GLint,location,GLsizei,count,const GLdouble*,value
 void,glVertexAttrib1d,GLuint,index,GLdouble,x
@@ -280,11 +276,12 @@ void,glUseProgram,GLuint,program
 void,glGetProgramInfoLog,GLuint,program,GLsizei,bufSize,GLsizei*,length,GLchar*,infoLog
 void,glBindTransformFeedback,GLenum,target,GLuint,id
 void,glBindVertexArray,GLuint,array
+void,glPixelStoref,GLenum,pname,GLfloat,param
 void,glDeleteBuffers,GLsizei,n,const GLuint*,buffers
 void,glGenerateTextureMipmap,GLuint,texture
 void,glSamplerParameterIiv,GLuint,sampler,GLenum,pname,const GLint*,param
 void,glMultiDrawElementsBaseVertex,GLenum,mode,const GLsizei*,count,GLenum,type,const void*const*,indices,GLsizei,drawcount,const GLint*,basevertex
-void,glNamedBufferSubData,GLuint,buffer,GLintptr,offset,GLsizeiptr,size,const void*,data
+void,glNamedBufferSubData,GLuint,buffer,GLintptr,offset,GLsizei,size,const void*,data
 void,glUniform2uiv,GLint,location,GLsizei,count,const GLuint*,value
 void,glCompressedTexSubImage1D,GLenum,target,GLint,level,GLint,xoffset,GLsizei,width,GLenum,format,GLsizei,imageSize,const void*,data
 void,glFinish
@@ -314,7 +311,7 @@ void,glGetShaderSource,GLuint,shader,GLsizei,bufSize,GLsizei*,length,GLchar*,sou
 void,glTexBuffer,GLenum,target,GLenum,internalformat,GLuint,buffer
 void,glPixelStorei,GLenum,pname,GLint,param
 void,glValidateProgram,GLuint,program
-void,glPixelStoref,GLenum,pname,GLfloat,param
+void,glCreateTextures,GLenum,target,GLsizei,n,GLuint*,textures
 void,glCreateBuffers,GLsizei,n,GLuint*,buffers
 void,glGetBooleani_v,GLenum,target,GLuint,index,GLboolean*,data
 void,glClipControl,GLenum,origin,GLenum,depth
@@ -403,14 +400,14 @@ void,glTexParameterIuiv,GLenum,target,GLenum,pname,const GLuint*,params
 void,glDrawArraysInstanced,GLenum,mode,GLint,first,GLsizei,count,GLsizei,instancecount
 void,glGenerateMipmap,GLenum,target
 void,glCompressedTextureSubImage2D,GLuint,texture,GLint,level,GLint,xoffset,GLint,yoffset,GLsizei,width,GLsizei,height,GLenum,format,GLsizei,imageSize,const void*,data
-void,glProgramUniformMatrix2fv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
+void,glFlushMappedNamedBufferRange,GLuint,buffer,GLintptr,offset,GLsizei,length
 void,glSamplerParameteriv,GLuint,sampler,GLenum,pname,const GLint*,param
 void,glVertexAttrib3f,GLuint,index,GLfloat,x,GLfloat,y,GLfloat,z
 void,glVertexAttrib4uiv,GLuint,index,const GLuint*,v
 void,glPointParameteri,GLenum,pname,GLint,param
 void,glBlendColor,GLfloat,red,GLfloat,green,GLfloat,blue,GLfloat,alpha
 void,glSamplerParameterIuiv,GLuint,sampler,GLenum,pname,const GLuint*,param
-void,glNamedBufferPageCommitmentEXT,GLuint,buffer,GLintptr,offset,GLsizeiptr,size,GLboolean,commit
+void,glNamedBufferPageCommitmentEXT,GLuint,buffer,GLintptr,offset,GLsizei,size,GLboolean,commit
 GLenum,glCheckNamedFramebufferStatus,GLuint,framebuffer,GLenum,target
 GLboolean,glUnmapBuffer,GLenum,target
 void,glPointParameterf,GLenum,pname,GLfloat,param
@@ -473,7 +470,7 @@ void,glClearNamedFramebufferiv,GLuint,framebuffer,GLenum,buffer,GLint,drawbuffer
 void,glTexImage3D,GLenum,target,GLint,level,GLint,internalformat,GLsizei,width,GLsizei,height,GLsizei,depth,GLint,border,GLenum,format,GLenum,type,const void*,pixels
 GLboolean,glIsFramebuffer,GLuint,framebuffer
 void,glPrimitiveRestartIndex,GLuint,index
-void,glFlushMappedNamedBufferRange,GLuint,buffer,GLintptr,offset,GLsizeiptr,length
+void,glProgramUniformMatrix2fv,GLuint,program,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
 void,glInvalidateTexSubImage,GLuint,texture,GLint,level,GLint,xoffset,GLint,yoffset,GLint,zoffset,GLsizei,width,GLsizei,height,GLsizei,depth
 void,glGetInteger64v,GLenum,pname,GLint64*,data
 void,glBindProgramPipeline,GLuint,pipeline
@@ -490,7 +487,7 @@ void,glGetTextureLevelParameteriv,GLuint,texture,GLint,level,GLenum,pname,GLint*
 void,glGetnUniformiv,GLuint,program,GLint,location,GLsizei,bufSize,GLint*,params
 const GLubyte*,glGetStringi,GLenum,name,GLuint,index
 void,glUniform3ui,GLint,location,GLuint,v0,GLuint,v1,GLuint,v2
-void,glGetVertexArrayIndexediv,GLuint,vaobj,GLuint,index,GLenum,pname,GLint*,param
+void,glInvalidateBufferSubData,GLuint,buffer,GLintptr,offset,GLsizeiptr,length
 void,glPointParameterfv,GLenum,pname,const GLfloat*,params
 void,glUniform2fv,GLint,location,GLsizei,count,const GLfloat*,value
 void,glGetActiveSubroutineUniformName,GLuint,program,GLenum,shadertype,GLuint,index,GLsizei,bufsize,GLsizei*,length,GLchar*,name
@@ -505,7 +502,6 @@ void,glBindBufferRange,GLenum,target,GLuint,index,GLuint,buffer,GLintptr,offset,
 void,glTextureSubImage1D,GLuint,texture,GLint,level,GLint,xoffset,GLsizei,width,GLenum,format,GLenum,type,const void*,pixels
 void,glVertexAttribL3dv,GLuint,index,const GLdouble*,v
 void,glGetUniformdv,GLuint,program,GLint,location,GLdouble*,params
-void,glGetQueryBufferObjectui64v,GLuint,id,GLuint,buffer,GLenum,pname,GLintptr,offset
 void,glClearDepthf,GLfloat,d
 void,glGetVertexAttribIuiv,GLuint,index,GLenum,pname,GLuint*,params
 void,glUniformMatrix2x3fv,GLint,location,GLsizei,count,GLboolean,transpose,const GLfloat*,value
@@ -621,10 +617,10 @@ void,glTexImage2D,GLenum,target,GLint,level,GLint,internalformat,GLsizei,width,G
 void,glStencilMask,GLuint,mask
 void,glSamplerParameterfv,GLuint,sampler,GLenum,pname,const GLfloat*,param
 GLboolean,glIsTexture,GLuint,texture
-void,glNamedBufferData,GLuint,buffer,GLsizeiptr,size,const void*,data,GLenum,usage
+void,glNamedBufferData,GLuint,buffer,GLsizei,size,const void*,data,GLenum,usage
 void,glUniform1fv,GLint,location,GLsizei,count,const GLfloat*,value
 void,glVertexAttrib4Nubv,GLuint,index,const GLubyte*,v
-void,glClearNamedBufferSubData,GLuint,buffer,GLenum,internalformat,GLintptr,offset,GLsizeiptr,size,GLenum,format,GLenum,type,const void*,data
+void,glClearNamedBufferSubData,GLuint,buffer,GLenum,internalformat,GLintptr,offset,GLsizei,size,GLenum,format,GLenum,type,const void*,data
 void,glTexParameterfv,GLenum,target,GLenum,pname,const GLfloat*,params
 void,glScissorIndexedv,GLuint,index,const GLint*,v
 void,glUniform3dv,GLint,location,GLsizei,count,const GLdouble*,value

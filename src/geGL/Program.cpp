@@ -368,25 +368,25 @@ std::string Program::getInfoLog()const{
   return info;
 }
 
-GLint Program::getInterfaceParam(GLenum interface,GLenum pname)const{
+GLint Program::getInterfaceParam(GLenum interf,GLenum pname)const{
   assert(this!=nullptr);
   GLint params;
   this->_gl.glGetProgramInterfaceiv(
       this->_id,
-      interface,
+      interf,
       pname,
       &params);
   return params;
 }
 
-std::string Program::getResourceName(GLenum interface,GLuint index)const{
+std::string Program::getResourceName(GLenum interf,GLuint index)const{
   assert(this!=nullptr);
-  GLuint maxLength = this->getInterfaceParam(interface,GL_MAX_NAME_LENGTH);
+  GLuint maxLength = this->getInterfaceParam(interf,GL_MAX_NAME_LENGTH);
   char*buffer = new char[maxLength];
   assert(buffer!=nullptr);
   this->_gl.glGetProgramResourceName(
       this->_id,
-      interface,
+      interf,
       index,
       maxLength,
       nullptr,
@@ -396,12 +396,12 @@ std::string Program::getResourceName(GLenum interface,GLuint index)const{
   return name;
 }
 
-GLint Program::getResourceParam(GLenum interface,GLenum pname,GLuint index)const{
+GLint Program::getResourceParam(GLenum interf,GLenum pname,GLuint index)const{
   assert(this!=nullptr);
   GLint param;
   this->_gl.glGetProgramResourceiv(
       this->_id,
-      interface,
+      interf,
       index,
       1,
       &pname,
