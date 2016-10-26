@@ -206,39 +206,40 @@ Shader::Source Shader::getSource()const{
   return source;
 }
 
-std::string Shader::define(std::string name){
+std::string Shader::define(std::string const&name){
   return"#define "+name+"\n";
 }
 
-std::string Shader::define(std::string name,unsigned value){
+std::string Shader::define(std::string const&name,uint32_t value){
   std::stringstream result;
   result<<"#define "<<name<<" "<<value<<"u\n";
   return result.str();
 }
 
-std::string Shader::define(std::string name,unsigned value0,unsigned value1){
+std::string Shader::define(std::string const&name,uint32_t value0,uint32_t value1){
   std::stringstream result;
   result<<"#define "<<name<<" uvec2("<<value0<<"u,"<<value1<<"u)\n";
   return result.str();
 }
 
-std::string Shader::define(std::string name,unsigned value0,unsigned value1,unsigned value2){
+std::string Shader::define(std::string const&name,uint32_t value0,uint32_t value1,uint32_t value2){
   std::stringstream result;
   result<<"#define "<<name<<" uvec3("<<value0<<"u,"<<value1<<"u,"<<value2<<"u)\n";
   return result.str();
 }
 
-std::string Shader::define(std::string name,unsigned value0,unsigned value1,unsigned value2,unsigned value3){
+std::string Shader::define(std::string const&name,uint32_t value0,uint32_t value1,uint32_t value2,uint32_t value3){
   std::stringstream result;
   result<<"#define "<<name<<" uvec3("<<value0<<"u,"<<value1<<"u,"<<value2<<"u,"<<value3<<"u)\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,unsigned vectorSize,unsigned*values){
+std::string Shader::define(std::string const&Name,uint32_t vectorSize,uint32_t const*values){
+  assert(vectorSize<4);
   if(vectorSize==1)return define(Name,values[0]);
   std::stringstream result;
   result<<"#define "<<Name<<" uvec"<<vectorSize<<"(";
-  for(unsigned i=0;i<vectorSize;++i){
+  for(uint32_t i=0;i<vectorSize;++i){
     result<<values[i]<<"u";
     if(i==vectorSize-1)result<<")\n";
     else result<<",";
@@ -246,35 +247,36 @@ std::string Shader::define(std::string Name,unsigned vectorSize,unsigned*values)
   return result.str();
 }
 
-std::string Shader::define(std::string Name,int Value){
+std::string Shader::define(std::string const&Name,int32_t Value){
   std::stringstream result;
   result<<"#define "<<Name<<" "<<Value<<"\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,int value0,int value1){
+std::string Shader::define(std::string const&Name,int32_t value0,int32_t value1){
   std::stringstream result;
   result<<"#define "<<Name<<" ivec2("<<value0<<","<<value1<<")\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,int value0,int value1,int value2){
+std::string Shader::define(std::string const&Name,int32_t value0,int32_t value1,int32_t value2){
   std::stringstream result;
   result<<"#define "<<Name<<" ivec3("<<value0<<","<<value1<<","<<value2<<")\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,int value0,int value1,int value2,int value3){
+std::string Shader::define(std::string const&Name,int32_t value0,int32_t value1,int32_t value2,int32_t value3){
   std::stringstream result;
   result<<"#define "<<Name<<" ivec3("<<value0<<","<<value1<<","<<value2<<","<<value3<<")\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,unsigned vectorSize,int*values){
+std::string Shader::define(std::string const&Name,uint32_t vectorSize,int32_t const*values){
+  assert(vectorSize<4);
   if(vectorSize==1)return define(Name,values[0]);
   std::stringstream result;
   result<<"#define "<<Name<<" ivec"<<vectorSize<<"(";
-  for(unsigned i=0;i<vectorSize;++i){
+  for(uint32_t i=0;i<vectorSize;++i){
     result<<values[i];
     if(i==vectorSize-1)result<<")\n";
     else result<<",";
@@ -282,35 +284,36 @@ std::string Shader::define(std::string Name,unsigned vectorSize,int*values){
   return result.str();
 }
 
-std::string Shader::define(std::string Name,float Value){
+std::string Shader::define(std::string const&Name,float Value){
   std::stringstream result;
   result<<"#define "<<Name<<" "<<Value<<"\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,float value0,float value1){
+std::string Shader::define(std::string const&Name,float value0,float value1){
   std::stringstream result;
   result<<"#define "<<Name<<" vec2("<<value0<<","<<value1<<")\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,float value0,float value1,float value2){
+std::string Shader::define(std::string const&Name,float value0,float value1,float value2){
   std::stringstream result;
   result<<"#define "<<Name<<" vec3("<<value0<<","<<value1<<","<<value2<<")\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,float value0,float value1,float value2,float value3){
+std::string Shader::define(std::string const&Name,float value0,float value1,float value2,float value3){
   std::stringstream result;
   result<<"#define "<<Name<<" vec3("<<value0<<","<<value1<<","<<value2<<","<<value3<<")\n";
   return result.str();
 }
 
-std::string Shader::define(std::string Name,unsigned vectorSize,float*values){
+std::string Shader::define(std::string const&Name,uint32_t vectorSize,float const*values){
+  assert(vectorSize<4);
   if(vectorSize==1)return define(Name,values[0]);
   std::stringstream result;
   result<<"#define "<<Name<<" vec"<<vectorSize<<"(";
-  for(unsigned i=0;i<vectorSize;++i){
+  for(uint32_t i=0;i<vectorSize;++i){
     result<<values[i];
     if(i==vectorSize-1)result<<")\n";
     else result<<",";
@@ -318,7 +321,7 @@ std::string Shader::define(std::string Name,unsigned vectorSize,float*values){
   return result.str();
 }
 
-std::string Shader::define(std::string Name,std::string Value){
+std::string Shader::define(std::string const&Name,std::string const&Value){
   return"#define "+Name+" "+Value+"\n";
 }
 
