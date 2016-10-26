@@ -60,7 +60,7 @@ protected:
 	void waitFrames(int frames);
 	void waitTime(int ms);
 
-	virtual void recomputeMatrices(int cubes) {}
+	virtual void recomputeMatrices(int cubes) {(void)cubes;}
 
 	int getSide();
 

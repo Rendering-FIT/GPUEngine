@@ -119,7 +119,8 @@ namespace ge{
 
     template<typename TPtr>
       void deleteSetNull(TPtr&b){
-        if(b)delete b;b=NULL;
+        if(b)delete b;
+        b=NULL;
       }
 
     template<typename TPtr,typename...Args>

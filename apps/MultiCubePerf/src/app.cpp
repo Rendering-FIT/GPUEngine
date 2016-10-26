@@ -47,7 +47,7 @@ App::App(Options const & o) {
 
 
 void App::setupEvents() {
-	window->setEventCallback(SDL_QUIT, [&](const SDL_Event &e) {
+	window->setEventCallback(SDL_QUIT, [&](const SDL_Event &) {
 		quit();
 		return true;
 	});
@@ -138,6 +138,7 @@ void App::setupStateStack() {
 		}
 		break;
 	}
+  default:break;
 	}
 }
 
@@ -148,6 +149,7 @@ void App::updateState() {
 		break;
 	case TEST: {
 		float fps = stats->getFps();
+    (void)fps;
 		float mspf = stats->getMs();
 		if (angle == 0) {
 			backFrontTime = mspf;
@@ -329,7 +331,7 @@ void App::printTestResult() {
 	cout << currentRendererToString() << " test, " << currentCubes << " cubes, "
 		<< currentTextures << " textures, "
 		<< "back-front:" << backFrontTime << "ms, frost-back:" << frontBackTime << "ms, 360-avg: "
-		<< avgTime << "ms, one cube: " << 1000 * avgTime / currentCubes << "us\n";
+		<< avgTime << "ms, one cube: " << 1000 * avgTime / float(currentCubes) << "us\n";
 }
 
 void App::printOpenGLVersion() {
