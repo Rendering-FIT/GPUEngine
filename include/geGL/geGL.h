@@ -3,9 +3,9 @@
  * All are derived from OpenGLObject.
  * OpenGLObject class is derived from FunctionProvider that provides OpenGL.
  *
- *                        ┌────────────────────────┐
- *                        │FunctionProvider│
- *                        └────────────△───────────┘
+ *                             ┌────────────────┐
+ *                             │FunctionProvider│
+ *                             └───────△────────┘
  *                              ┌──────┴─────┐
  *                              │OpenGLObject│
  *                              └──────△─────┘
@@ -50,9 +50,9 @@ namespace ge{
         std::shared_ptr<FunctionLoaderInterface>const&loader = nullptr);
     /**
      * @brief This function initialises geGL library
-     * It requires getProcAddress such as SDL_GL_GetProcAddress or wglGetProcAddress
+     * It requires getProcAddress such as SDL_GL_GetProcAddress or wglGetProcAddress or glxGetProcAddress ...
      *
-     * @param getProcAddress
+     * @param getProcAddress function that takes name of opengl function and returns its address
      */
     GEGL_EXPORT void init(GET_PROC_ADDRESS getProcAddress);
   }
