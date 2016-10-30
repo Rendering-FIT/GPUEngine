@@ -7,7 +7,7 @@ using namespace std;
 using namespace ge::gl;
 using namespace ge::ad;
 
-int main(){
+int main(int,char*[]){
   uint32_t windowWidth = 1024;
   uint32_t windowHeight = 768;
   auto mainLoop = make_shared<SDLMainLoop>();
