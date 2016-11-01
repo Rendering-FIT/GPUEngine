@@ -4,7 +4,7 @@ using namespace ge::sg;
 
 DefaultImage::DefaultImage()
 {
-   _bits = new char[4];
+   _bits = new unsigned char[4];
    *(unsigned*)_bits = 0xffffffff;
    _format = Format::RGBA;
    _dataType = DataType::UNSIGNED_BYTE;
@@ -12,7 +12,7 @@ DefaultImage::DefaultImage()
    _height = 1;
 }
 
-char* DefaultImage::getBits()
+unsigned char* DefaultImage::getBits()
 {
    return _bits;
 }

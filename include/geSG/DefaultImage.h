@@ -11,7 +11,7 @@ namespace ge
       public:
          DefaultImage();
 
-         virtual char* getBits() override;
+         virtual unsigned char* getBits() override;
 
          virtual size_t getSizeInBytes() override;
          virtual Format getFormat() override; //should this function return int or some template type which could be specified as GLenum
@@ -21,7 +21,7 @@ namespace ge
 
          ~DefaultImage();
 
-         char* _bits;
+         unsigned char* _bits;
          Format _format;
          DataType _dataType;
          size_t _width;
