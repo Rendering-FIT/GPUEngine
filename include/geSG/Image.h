@@ -47,7 +47,7 @@ namespace ge{
          ENUM_CLASS_FRIEND_OPERATOR(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, HALF_FLOAT, FLOAT);
 
          //virtual bool loadFile(const char* filePath) = 0;
-         virtual char* getBits() = 0;
+         virtual unsigned char* getBits() = 0;
 
          virtual size_t getSizeInBytes() = 0;
          virtual Format getFormat() = 0; //should this function return int or some template type which could be specified as GLenum
