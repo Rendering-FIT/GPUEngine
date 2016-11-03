@@ -100,6 +100,7 @@ add_library(${LIB_NAME}
 set(Internal_deps geCore)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
+set(External_deps_Export opengl ${External_libs})
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
 set_target_properties(${LIB_NAME} PROPERTIES

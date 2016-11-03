@@ -14,7 +14,7 @@ if(NOT TARGET @LIB_NAME@)
       set_property(TARGET @LIB_NAME@ APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${_dep})
    endforeach()
    
-   foreach(_dep @External_deps@)
+   foreach(_dep @External_deps_Export@)
       Find_Package(${_dep})
       message("neco ${${_dep}_INCLUDE_DIR}")
       if(TARGET ${_dep})
