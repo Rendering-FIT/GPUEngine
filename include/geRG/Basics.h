@@ -9,7 +9,7 @@ namespace ge
 {
    namespace rg
    {
-      using size_t=std::size_t;
+      using std::size_t;
       constexpr const size_t size_max=-1; // do not remove const - it is required by MSVC 2013
 
       extern std::aligned_storage<sizeof(std::shared_ptr<void>),
