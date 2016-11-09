@@ -1,5 +1,6 @@
 #include <geAd/SDLWindow/SDLWindow.h>
 #include <geAd/SDLWindow/SDLMainLoop.h>
+#include <geGL/StaticCalls.h>
 #include <geGL/geGL.h>
 
 using namespace std;
@@ -35,13 +36,11 @@ int main(){
   auto program = make_shared<Program>(vs, fs);
   auto vao = make_shared<VertexArray>();
   
-  auto gl = make_shared<Context>();
-
   mainLoop->setIdleCallback([&]() {
-    gl->glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     program->use();
     vao->bind();
-    gl->glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     window->swap();
   });
 

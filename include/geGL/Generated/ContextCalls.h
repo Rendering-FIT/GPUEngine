@@ -1189,7 +1189,7 @@ void ge::gl::Context::glWeightsvARB(GLint size,const GLshort* weights)const{this
 void ge::gl::Context::glShadeModel(GLenum mode)const{this->getFunctionTable()->glShadeModel(mode);}
 void ge::gl::Context::glMapGrid1d(GLint un,GLdouble u1,GLdouble u2)const{this->getFunctionTable()->glMapGrid1d(un,u1,u2);}
 void ge::gl::Context::glGetHistogramParameterivEXT(GLenum target,GLenum pname,GLint* params)const{this->getFunctionTable()->glGetHistogramParameterivEXT(target,pname,params);}
-void ge::gl::Context::glConservativeRasterParameteriNV(GLenum pname,GLint param)const{this->getFunctionTable()->glConservativeRasterParameteriNV(pname,param);}
+void ge::gl::Context::glMapGrid1f(GLint un,GLfloat u1,GLfloat u2)const{this->getFunctionTable()->glMapGrid1f(un,u1,u2);}
 void ge::gl::Context::glClearNamedBufferData(GLuint buffer,GLenum internalformat,GLenum format,GLenum type,const void* data)const{this->getFunctionTable()->glClearNamedBufferData(buffer,internalformat,format,type,data);}
 void ge::gl::Context::glClearDepthf(GLfloat d)const{this->getFunctionTable()->glClearDepthf(d);}
 void ge::gl::Context::glCreatePerfQueryINTEL(GLuint queryId,GLuint* queryHandle)const{this->getFunctionTable()->glCreatePerfQueryINTEL(queryId,queryHandle);}
@@ -1403,7 +1403,6 @@ void ge::gl::Context::glCompileShaderARB(GLhandleARB shaderObj)const{this->getFu
 void ge::gl::Context::glWindowPos3dMESA(GLdouble x,GLdouble y,GLdouble z)const{this->getFunctionTable()->glWindowPos3dMESA(x,y,z);}
 void ge::gl::Context::glNormalStream3fvATI(GLenum stream,const GLfloat* coords)const{this->getFunctionTable()->glNormalStream3fvATI(stream,coords);}
 void ge::gl::Context::glColor4usv(const GLushort* v)const{this->getFunctionTable()->glColor4usv(v);}
-void ge::gl::Context::glMapGrid1f(GLint un,GLfloat u1,GLfloat u2)const{this->getFunctionTable()->glMapGrid1f(un,u1,u2);}
 void ge::gl::Context::glPolygonStipple(const GLubyte* mask)const{this->getFunctionTable()->glPolygonStipple(mask);}
 void ge::gl::Context::glUniform4ui64ARB(GLint location,GLuint64 x,GLuint64 y,GLuint64 z,GLuint64 w)const{this->getFunctionTable()->glUniform4ui64ARB(location,x,y,z,w);}
 void ge::gl::Context::glTextureRenderbufferEXT(GLuint texture,GLenum target,GLuint renderbuffer)const{this->getFunctionTable()->glTextureRenderbufferEXT(texture,target,renderbuffer);}
@@ -1747,7 +1746,6 @@ void ge::gl::Context::glNormalStream3dATI(GLenum stream,GLdouble nx,GLdouble ny,
 void ge::gl::Context::glVertexAttribL4i64vNV(GLuint index,const GLint64EXT* v)const{this->getFunctionTable()->glVertexAttribL4i64vNV(index,v);}
 void ge::gl::Context::glDrawBuffers(GLsizei n,const GLenum* bufs)const{this->getFunctionTable()->glDrawBuffers(n,bufs);}
 void ge::gl::Context::glCopyTextureSubImage1DEXT(GLuint texture,GLenum target,GLint level,GLint xoffset,GLint x,GLint y,GLsizei width)const{this->getFunctionTable()->glCopyTextureSubImage1DEXT(texture,target,level,xoffset,x,y,width);}
-void ge::gl::Context::glWindowRectanglesEXT(GLenum mode,GLsizei count,const GLint* box)const{this->getFunctionTable()->glWindowRectanglesEXT(mode,count,box);}
 void ge::gl::Context::glNamedFramebufferReadBuffer(GLuint framebuffer,GLenum src)const{this->getFunctionTable()->glNamedFramebufferReadBuffer(framebuffer,src);}
 void ge::gl::Context::glUniform2i64vARB(GLint location,GLsizei count,const GLint64* value)const{this->getFunctionTable()->glUniform2i64vARB(location,count,value);}
 void ge::gl::Context::glVertexAttribI1uivEXT(GLuint index,const GLuint* v)const{this->getFunctionTable()->glVertexAttribI1uivEXT(index,v);}
@@ -1778,7 +1776,6 @@ void ge::gl::Context::glColorTableParameterfv(GLenum target,GLenum pname,const G
 void ge::gl::Context::glFragmentCoverageColorNV(GLuint color)const{this->getFunctionTable()->glFragmentCoverageColorNV(color);}
 void ge::gl::Context::glProgramUniform3ivEXT(GLuint program,GLint location,GLsizei count,const GLint* value)const{this->getFunctionTable()->glProgramUniform3ivEXT(program,location,count,value);}
 void ge::gl::Context::glVertexArrayVertexOffsetEXT(GLuint vaobj,GLuint buffer,GLint size,GLenum type,GLsizei stride,GLintptr offset)const{this->getFunctionTable()->glVertexArrayVertexOffsetEXT(vaobj,buffer,size,type,stride,offset);}
-void ge::gl::Context::glViewportPositionWScaleNV(GLuint index,GLfloat xcoeff,GLfloat ycoeff)const{this->getFunctionTable()->glViewportPositionWScaleNV(index,xcoeff,ycoeff);}
 void ge::gl::Context::glGetProgramLocalParameterIuivNV(GLenum target,GLuint index,GLuint* params)const{this->getFunctionTable()->glGetProgramLocalParameterIuivNV(target,index,params);}
 void ge::gl::Context::glReplacementCodeuiTexCoord2fVertex3fvSUN(const GLuint* rc,const GLfloat* tc,const GLfloat* v)const{this->getFunctionTable()->glReplacementCodeuiTexCoord2fVertex3fvSUN(rc,tc,v);}
 void ge::gl::Context::glUniform1uiv(GLint location,GLsizei count,const GLuint* value)const{this->getFunctionTable()->glUniform1uiv(location,count,value);}

@@ -59,6 +59,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/DSATableDecorator.h
   ${HEADER_PATH}/TrapTableDecorator.h
   ${HEADER_PATH}/CapabilitiesTableDecorator.h
+  ${HEADER_PATH}/StaticCalls.h
   )
 
 set(GL_SOURCES
@@ -78,6 +79,7 @@ set(GL_SOURCES
   OpenGLContext.cpp
   OpenGL.cpp
   OpenGLUtil.cpp
+  StaticCalls.cpp
   )
 
 ################################################

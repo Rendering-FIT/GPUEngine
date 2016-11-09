@@ -79,7 +79,7 @@
 #define GL_ALLOW_DRAW_MEM_HINT_PGI 0x1A211
 #define GL_ALLOW_DRAW_OBJ_HINT_PGI 0x1A20E
 #define GL_ALLOW_DRAW_WIN_HINT_PGI 0x1A20F
-#define GL_ALL_ATTRIB_BITS 0xFFFFFFFF
+#define GL_ALL_ATTRIB_BITS 0x000FFFFF
 #define GL_ALL_BARRIER_BITS 0xFFFFFFFF
 #define GL_ALL_BARRIER_BITS_EXT 0xFFFFFFFF
 #define GL_ALL_CLIENT_ATTRIB_BITS 0xFFFFFFFF
@@ -136,7 +136,6 @@
 #define GL_AMD_depth_clamp_separate 1
 #define GL_AMD_draw_buffers_blend 1
 #define GL_AMD_gcn_shader 1
-#define GL_AMD_gpu_shader_half_float 1
 #define GL_AMD_gpu_shader_int64 1
 #define GL_AMD_interleaved_elements 1
 #define GL_AMD_multi_draw_indirect 1
@@ -148,8 +147,6 @@
 #define GL_AMD_sample_positions 1
 #define GL_AMD_seamless_cubemap_per_texture 1
 #define GL_AMD_shader_atomic_counter_ops 1
-#define GL_AMD_shader_ballot 1
-#define GL_AMD_shader_explicit_vertex_parameter 1
 #define GL_AMD_shader_stencil_export 1
 #define GL_AMD_shader_trinary_minmax 1
 #define GL_AMD_sparse_texture 1
@@ -849,14 +846,10 @@
 #define GL_CONFORMANT_NV 0x9374
 #define GL_CONIC_CURVE_TO_NV 0x1A
 #define GL_CONJOINT_NV 0x9284
-#define GL_CONSERVATIVE_RASTERIZATION_INTEL 0x83FE
 #define GL_CONSERVATIVE_RASTERIZATION_NV 0x9346
 #define GL_CONSERVATIVE_RASTER_DILATE_GRANULARITY_NV 0x937B
 #define GL_CONSERVATIVE_RASTER_DILATE_NV 0x9379
 #define GL_CONSERVATIVE_RASTER_DILATE_RANGE_NV 0x937A
-#define GL_CONSERVATIVE_RASTER_MODE_NV 0x954D
-#define GL_CONSERVATIVE_RASTER_MODE_POST_SNAP_NV 0x954E
-#define GL_CONSERVATIVE_RASTER_MODE_PRE_SNAP_TRIANGLES_NV 0x954F
 #define GL_CONSERVE_MEMORY_HINT_PGI 0x1A1FD
 #define GL_CONSTANT 0x8576
 #define GL_CONSTANT_ALPHA 0x8003
@@ -1366,7 +1359,6 @@
 #define GL_EVAL_VERTEX_ATTRIB9_NV 0x86CF
 #define GL_EXCLUSION_KHR 0x92A0
 #define GL_EXCLUSION_NV 0x92A0
-#define GL_EXCLUSIVE_EXT 0x8F11
 #define GL_EXP 0x0800
 #define GL_EXP2 0x0801
 #define GL_EXPAND_NEGATE_NV 0x8539
@@ -1473,7 +1465,6 @@
 #define GL_EXT_vertex_attrib_64bit 1
 #define GL_EXT_vertex_shader 1
 #define GL_EXT_vertex_weighting 1
-#define GL_EXT_window_rectangles 1
 #define GL_EXT_x11_sync_object 1
 #define GL_EYE_DISTANCE_TO_LINE_SGIS 0x81F2
 #define GL_EYE_DISTANCE_TO_POINT_SGIS 0x81F0
@@ -1514,15 +1505,6 @@
 #define GL_FIXED_ONLY_ARB 0x891D
 #define GL_FLAT 0x1D00
 #define GL_FLOAT 0x1406
-#define GL_FLOAT16_MAT2_AMD 0x91C5
-#define GL_FLOAT16_MAT2x3_AMD 0x91C8
-#define GL_FLOAT16_MAT2x4_AMD 0x91C9
-#define GL_FLOAT16_MAT3_AMD 0x91C6
-#define GL_FLOAT16_MAT3x2_AMD 0x91CA
-#define GL_FLOAT16_MAT3x4_AMD 0x91CB
-#define GL_FLOAT16_MAT4_AMD 0x91C7
-#define GL_FLOAT16_MAT4x2_AMD 0x91CC
-#define GL_FLOAT16_MAT4x3_AMD 0x91CD
 #define GL_FLOAT16_NV 0x8FF8
 #define GL_FLOAT16_VEC2_NV 0x8FF9
 #define GL_FLOAT16_VEC3_NV 0x8FFA
@@ -1720,7 +1702,6 @@
 #define GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT 0x8D56
 #define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER 0x8CDC
 #define GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT 0x8CDC
-#define GL_FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR 0x9633
 #define GL_FRAMEBUFFER_PROGRAMMABLE_SAMPLE_LOCATIONS_ARB 0x9342
 #define GL_FRAMEBUFFER_PROGRAMMABLE_SAMPLE_LOCATIONS_NV 0x9342
 #define GL_FRAMEBUFFER_RENDERABLE 0x8289
@@ -1781,7 +1762,7 @@
 #define GL_GEQUAL 0x0206
 #define GL_GET_TEXTURE_IMAGE_FORMAT 0x8291
 #define GL_GET_TEXTURE_IMAGE_TYPE 0x8292
-#define GL_GLEXT_VERSION 20161024
+#define GL_GLEXT_VERSION 20160419
 #define GL_GLOBAL_ALPHA_FACTOR_SUN 0x81DA
 #define GL_GLOBAL_ALPHA_SUN 0x81D9
 #define GL_GLYPH_HAS_KERNING_BIT_NV 0x100
@@ -1938,7 +1919,6 @@
 #define GL_IMPLEMENTATION_COLOR_READ_FORMAT_OES 0x8B9B
 #define GL_IMPLEMENTATION_COLOR_READ_TYPE 0x8B9A
 #define GL_IMPLEMENTATION_COLOR_READ_TYPE_OES 0x8B9A
-#define GL_INCLUSIVE_EXT 0x8F10
 #define GL_INCR 0x1E02
 #define GL_INCR_WRAP 0x8507
 #define GL_INCR_WRAP_EXT 0x8507
@@ -1997,7 +1977,6 @@
 #define GL_INT8_VEC2_NV 0x8FE1
 #define GL_INT8_VEC3_NV 0x8FE2
 #define GL_INT8_VEC4_NV 0x8FE3
-#define GL_INTEL_conservative_rasterization 1
 #define GL_INTEL_fragment_shader_ordering 1
 #define GL_INTEL_framebuffer_CMAA 1
 #define GL_INTEL_map_texture 1
@@ -2743,7 +2722,6 @@
 #define GL_MAX_VIEWPORT_DIMS 0x0D3A
 #define GL_MAX_VIEWS_OVR 0x9631
 #define GL_MAX_WIDTH 0x827E
-#define GL_MAX_WINDOW_RECTANGLES_EXT 0x8F14
 #define GL_MEDIUM_FLOAT 0x8DF1
 #define GL_MEDIUM_INT 0x8DF4
 #define GL_MESAX_texture_stack 1
@@ -2937,7 +2915,6 @@
 #define GL_NUM_SPARSE_LEVELS_ARB 0x91AA
 #define GL_NUM_VIDEO_CAPTURE_STREAMS_NV 0x9024
 #define GL_NUM_VIRTUAL_PAGE_SIZES_ARB 0x91A8
-#define GL_NUM_WINDOW_RECTANGLES_EXT 0x8F15
 #define GL_NVX_conditional_render 1
 #define GL_NVX_gpu_memory_info 1
 #define GL_NV_bindless_multi_draw_indirect 1
@@ -2946,13 +2923,11 @@
 #define GL_NV_blend_equation_advanced 1
 #define GL_NV_blend_equation_advanced_coherent 1
 #define GL_NV_blend_square 1
-#define GL_NV_clip_space_w_scaling 1
 #define GL_NV_command_list 1
 #define GL_NV_compute_program5 1
 #define GL_NV_conditional_render 1
 #define GL_NV_conservative_raster 1
 #define GL_NV_conservative_raster_dilate 1
-#define GL_NV_conservative_raster_pre_snap_triangles 1
 #define GL_NV_copy_depth_to_color 1
 #define GL_NV_copy_image 1
 #define GL_NV_deep_texture3D 1
@@ -2997,12 +2972,10 @@
 #define GL_NV_primitive_restart 1
 #define GL_NV_register_combiners 1
 #define GL_NV_register_combiners2 1
-#define GL_NV_robustness_video_memory_purge 1
 #define GL_NV_sample_locations 1
 #define GL_NV_sample_mask_override_coverage 1
 #define GL_NV_shader_atomic_counters 1
 #define GL_NV_shader_atomic_float 1
-#define GL_NV_shader_atomic_float64 1
 #define GL_NV_shader_atomic_fp16_vector 1
 #define GL_NV_shader_atomic_int64 1
 #define GL_NV_shader_buffer_load 1
@@ -3010,7 +2983,6 @@
 #define GL_NV_shader_storage_buffer_object 1
 #define GL_NV_shader_thread_group 1
 #define GL_NV_shader_thread_shuffle 1
-#define GL_NV_stereo_view_rendering 1
 #define GL_NV_tessellation_program5 1
 #define GL_NV_texgen_emboss 1
 #define GL_NV_texgen_reflection 1
@@ -3596,7 +3568,6 @@
 #define GL_PROXY_TEXTURE_RECTANGLE_ARB 0x84F7
 #define GL_PROXY_TEXTURE_RECTANGLE_NV 0x84F7
 #define GL_PURGEABLE_APPLE 0x8A1D
-#define GL_PURGED_CONTEXT_RESET_NV 0x92BB
 #define GL_Q 0x2003
 #define GL_QUADRATIC_ATTENUATION 0x1209
 #define GL_QUADRATIC_CURVE_TO_NV 0x0A
@@ -5249,9 +5220,6 @@
 #define GL_VIEWPORT_BOUNDS_RANGE 0x825D
 #define GL_VIEWPORT_COMMAND_NV 0x0010
 #define GL_VIEWPORT_INDEX_PROVOKING_VERTEX 0x825F
-#define GL_VIEWPORT_POSITION_W_SCALE_NV 0x937C
-#define GL_VIEWPORT_POSITION_W_SCALE_X_COEFF_NV 0x937D
-#define GL_VIEWPORT_POSITION_W_SCALE_Y_COEFF_NV 0x937E
 #define GL_VIEWPORT_SUBPIXEL_BITS 0x825C
 #define GL_VIEWPORT_SWIZZLE_NEGATIVE_W_NV 0x9357
 #define GL_VIEWPORT_SWIZZLE_NEGATIVE_X_NV 0x9351
@@ -5304,8 +5272,6 @@
 #define GL_WEIGHT_ARRAY_TYPE_ARB 0x86A9
 #define GL_WEIGHT_SUM_UNITY_ARB 0x86A6
 #define GL_WIDE_LINE_HINT_PGI 0x1A222
-#define GL_WINDOW_RECTANGLE_EXT 0x8F12
-#define GL_WINDOW_RECTANGLE_MODE_EXT 0x8F13
 #define GL_WIN_phong_shading 1
 #define GL_WIN_specular_fog 1
 #define GL_WRAP_BORDER_SUN 0x81D4

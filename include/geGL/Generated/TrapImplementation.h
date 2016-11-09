@@ -1189,7 +1189,7 @@ void m_glWeightsvARB_trap(GLint,const GLshort*)const{this->m_printMissingFunctio
 void m_glShadeModel_trap(GLenum)const{this->m_printMissingFunctionErrorAndExit("glShadeModel");return (void)0;}
 void m_glMapGrid1d_trap(GLint,GLdouble,GLdouble)const{this->m_printMissingFunctionErrorAndExit("glMapGrid1d");return (void)0;}
 void m_glGetHistogramParameterivEXT_trap(GLenum,GLenum,GLint*)const{this->m_printMissingFunctionErrorAndExit("glGetHistogramParameterivEXT");return (void)0;}
-void m_glConservativeRasterParameteriNV_trap(GLenum,GLint)const{this->m_printMissingFunctionErrorAndExit("glConservativeRasterParameteriNV");return (void)0;}
+void m_glMapGrid1f_trap(GLint,GLfloat,GLfloat)const{this->m_printMissingFunctionErrorAndExit("glMapGrid1f");return (void)0;}
 void m_glClearNamedBufferData_trap(GLuint,GLenum,GLenum,GLenum,const void*)const{this->m_printMissingFunctionErrorAndExit("glClearNamedBufferData");return (void)0;}
 void m_glClearDepthf_trap(GLfloat)const{this->m_printMissingFunctionErrorAndExit("glClearDepthf");return (void)0;}
 void m_glCreatePerfQueryINTEL_trap(GLuint,GLuint*)const{this->m_printMissingFunctionErrorAndExit("glCreatePerfQueryINTEL");return (void)0;}
@@ -1403,7 +1403,6 @@ void m_glCompileShaderARB_trap(GLhandleARB)const{this->m_printMissingFunctionErr
 void m_glWindowPos3dMESA_trap(GLdouble,GLdouble,GLdouble)const{this->m_printMissingFunctionErrorAndExit("glWindowPos3dMESA");return (void)0;}
 void m_glNormalStream3fvATI_trap(GLenum,const GLfloat*)const{this->m_printMissingFunctionErrorAndExit("glNormalStream3fvATI");return (void)0;}
 void m_glColor4usv_trap(const GLushort*)const{this->m_printMissingFunctionErrorAndExit("glColor4usv");return (void)0;}
-void m_glMapGrid1f_trap(GLint,GLfloat,GLfloat)const{this->m_printMissingFunctionErrorAndExit("glMapGrid1f");return (void)0;}
 void m_glPolygonStipple_trap(const GLubyte*)const{this->m_printMissingFunctionErrorAndExit("glPolygonStipple");return (void)0;}
 void m_glUniform4ui64ARB_trap(GLint,GLuint64,GLuint64,GLuint64,GLuint64)const{this->m_printMissingFunctionErrorAndExit("glUniform4ui64ARB");return (void)0;}
 void m_glTextureRenderbufferEXT_trap(GLuint,GLenum,GLuint)const{this->m_printMissingFunctionErrorAndExit("glTextureRenderbufferEXT");return (void)0;}
@@ -1747,7 +1746,6 @@ void m_glNormalStream3dATI_trap(GLenum,GLdouble,GLdouble,GLdouble)const{this->m_
 void m_glVertexAttribL4i64vNV_trap(GLuint,const GLint64EXT*)const{this->m_printMissingFunctionErrorAndExit("glVertexAttribL4i64vNV");return (void)0;}
 void m_glDrawBuffers_trap(GLsizei,const GLenum*)const{this->m_printMissingFunctionErrorAndExit("glDrawBuffers");return (void)0;}
 void m_glCopyTextureSubImage1DEXT_trap(GLuint,GLenum,GLint,GLint,GLint,GLint,GLsizei)const{this->m_printMissingFunctionErrorAndExit("glCopyTextureSubImage1DEXT");return (void)0;}
-void m_glWindowRectanglesEXT_trap(GLenum,GLsizei,const GLint*)const{this->m_printMissingFunctionErrorAndExit("glWindowRectanglesEXT");return (void)0;}
 void m_glNamedFramebufferReadBuffer_trap(GLuint,GLenum)const{this->m_printMissingFunctionErrorAndExit("glNamedFramebufferReadBuffer");return (void)0;}
 void m_glUniform2i64vARB_trap(GLint,GLsizei,const GLint64*)const{this->m_printMissingFunctionErrorAndExit("glUniform2i64vARB");return (void)0;}
 void m_glVertexAttribI1uivEXT_trap(GLuint,const GLuint*)const{this->m_printMissingFunctionErrorAndExit("glVertexAttribI1uivEXT");return (void)0;}
@@ -1778,7 +1776,6 @@ void m_glColorTableParameterfv_trap(GLenum,GLenum,const GLfloat*)const{this->m_p
 void m_glFragmentCoverageColorNV_trap(GLuint)const{this->m_printMissingFunctionErrorAndExit("glFragmentCoverageColorNV");return (void)0;}
 void m_glProgramUniform3ivEXT_trap(GLuint,GLint,GLsizei,const GLint*)const{this->m_printMissingFunctionErrorAndExit("glProgramUniform3ivEXT");return (void)0;}
 void m_glVertexArrayVertexOffsetEXT_trap(GLuint,GLuint,GLint,GLenum,GLsizei,GLintptr)const{this->m_printMissingFunctionErrorAndExit("glVertexArrayVertexOffsetEXT");return (void)0;}
-void m_glViewportPositionWScaleNV_trap(GLuint,GLfloat,GLfloat)const{this->m_printMissingFunctionErrorAndExit("glViewportPositionWScaleNV");return (void)0;}
 void m_glGetProgramLocalParameterIuivNV_trap(GLenum,GLuint,GLuint*)const{this->m_printMissingFunctionErrorAndExit("glGetProgramLocalParameterIuivNV");return (void)0;}
 void m_glReplacementCodeuiTexCoord2fVertex3fvSUN_trap(const GLuint*,const GLfloat*,const GLfloat*)const{this->m_printMissingFunctionErrorAndExit("glReplacementCodeuiTexCoord2fVertex3fvSUN");return (void)0;}
 void m_glUniform1uiv_trap(GLint,GLsizei,const GLuint*)const{this->m_printMissingFunctionErrorAndExit("glUniform1uiv");return (void)0;}

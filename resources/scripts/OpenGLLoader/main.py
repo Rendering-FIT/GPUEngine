@@ -6,7 +6,9 @@ glHeader     = "/usr/include/GL/gl.h"
 glextHeader  = "/usr/include/GL/glext.h"
 glcoreHeader = "/usr/include/GL/glcorearb.h"
 
-outputDir = "../../../include/geGL/Generated/"
+geGLIncludeDir = "../../../include/geGL/"
+geGLSrcDir = "../../../src/geGL/"
+outputDir = geGLIncludeDir+"Generated/"
 
 subscriptsDir = "subscripts/"
 
@@ -104,6 +106,18 @@ os.system(
 "./"+subscriptsDir+"extractTypes.py |"+
 "./"+subscriptsDir+"decorateHeader.py >"+
 outputDir+"OpenGLTypes.h")
+
+os.system(
+"cat "+allFormatedFunctions+" |"+
+"./"+subscriptsDir+"generateStaticCalls.py >"+
+geGLSrcDir+"StaticCalls.cpp")
+
+os.system(
+"cat "+allFormatedFunctions+" |"+
+"./"+subscriptsDir+"generateStaticDeclarations.py >"+
+geGLIncludeDir+"StaticCalls.h")
+
+
 
 
 #./printHEADER.py /usr/include/GL/gl.h /usr/include/GL/glext.h | ./decomment.py | ./depreprocess.py | grep "typedef" | grep -v "PFN" | sort | grep "GL" > ~/Desktop/exttypes.txt

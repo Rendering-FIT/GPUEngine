@@ -311,6 +311,17 @@ int main(int argc,char*argv[]){
     size_t const dispatchSizeX             = 1024;
     size_t const dispatchSizeY             = 1024;
     auto const internalFormats = {
+      /*
+      GL_R11F_G11F_B10F,
+      GL_RGB10_A2,
+      GL_RGBA16_SNORM,
+      GL_RGBA8_SNORM,
+      GL_RG16_SNORM,
+      GL_RG8_SNORM,
+      GL_R16_SNORM,
+      GL_R8_SNORM,
+      GL_RGB10_A2UI,*/
+//*
       GL_R32F ,GL_RG32F ,GL_RGBA32F ,
       GL_R16F ,GL_RG16F ,GL_RGBA16F ,
       GL_R32I ,GL_RG32I ,GL_RGBA32I ,
@@ -319,6 +330,7 @@ int main(int argc,char*argv[]){
       GL_R32UI,GL_RG32UI,GL_RGBA32UI,
       GL_R16UI,GL_RG16UI,GL_RGBA16UI,
       GL_R8UI ,GL_RG8UI ,GL_RGBA8UI ,
+      // */
     };
     for(GLenum const&internalFormat:internalFormats)
       for(size_t workgroupSize=minimalWorkgroupSize;workgroupSize<=maximalWorkgroupSize;workgroupSize<<=1)
