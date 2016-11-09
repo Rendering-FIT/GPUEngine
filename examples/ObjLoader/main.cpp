@@ -222,8 +222,8 @@ shared_ptr<ge::gl::Texture> loadTexture(const string& path)
                         internalFormat=GL_RGB8; format=GL_RGB;
                         break;
                      }
-         case 24: internalFormat=GL_RGB8; format=GL_RGB; break;
-         case 32: internalFormat=GL_RGBA8; format=GL_RGBA; break;
+         case 24: internalFormat=GL_RGB8; format=GL_BGR; break;
+         case 32: internalFormat=GL_RGBA8; format=GL_BGRA; break;
       }
    }
 
@@ -280,8 +280,9 @@ static void init(unsigned windowWidth,unsigned windowHeight)
    glProgram->use();
    glProgram->setMatrix4fv("projection",glm::value_ptr(projection));
    glProgram->set("lightPosition",0.f,0.f,0.f,1.f);
-   glProgram->set("lightColor",1.f,1.f,1.f);
+   glProgram->set("lightColor",0.6f,0.6f,0.6f);
    glProgram->set("lightAttenuation",1.f,0.f,0.f);
+   glProgram->set("globalAmbientLight",0.4f,0.4f,0.4f,1.f);
 
    // transformation
    cameraTransformation=make_shared<Transformation>();

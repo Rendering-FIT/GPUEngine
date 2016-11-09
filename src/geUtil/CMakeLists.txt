@@ -79,10 +79,10 @@ find_package(glm REQUIRED)
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps)
-set(External_deps_Export glm)
 set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
+set(External_deps_Export ${External_libs})
 
 if(UNIX)
   set(External_libs ${External_libs} dl)
