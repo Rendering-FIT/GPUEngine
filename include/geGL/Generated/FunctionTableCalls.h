@@ -1189,7 +1189,7 @@ inline void glWeightsvARB(GLint size,const GLshort* weights)const{(this->*(this-
 inline void glShadeModel(GLenum mode)const{(this->*(this->m_ptr_glShadeModel))(mode);}
 inline void glMapGrid1d(GLint un,GLdouble u1,GLdouble u2)const{(this->*(this->m_ptr_glMapGrid1d))(un,u1,u2);}
 inline void glGetHistogramParameterivEXT(GLenum target,GLenum pname,GLint* params)const{(this->*(this->m_ptr_glGetHistogramParameterivEXT))(target,pname,params);}
-inline void glMapGrid1f(GLint un,GLfloat u1,GLfloat u2)const{(this->*(this->m_ptr_glMapGrid1f))(un,u1,u2);}
+inline void glConservativeRasterParameteriNV(GLenum pname,GLint param)const{(this->*(this->m_ptr_glConservativeRasterParameteriNV))(pname,param);}
 inline void glClearNamedBufferData(GLuint buffer,GLenum internalformat,GLenum format,GLenum type,const void* data)const{(this->*(this->m_ptr_glClearNamedBufferData))(buffer,internalformat,format,type,data);}
 inline void glClearDepthf(GLfloat d)const{(this->*(this->m_ptr_glClearDepthf))(d);}
 inline void glCreatePerfQueryINTEL(GLuint queryId,GLuint* queryHandle)const{(this->*(this->m_ptr_glCreatePerfQueryINTEL))(queryId,queryHandle);}
@@ -1403,6 +1403,7 @@ inline void glCompileShaderARB(GLhandleARB shaderObj)const{(this->*(this->m_ptr_
 inline void glWindowPos3dMESA(GLdouble x,GLdouble y,GLdouble z)const{(this->*(this->m_ptr_glWindowPos3dMESA))(x,y,z);}
 inline void glNormalStream3fvATI(GLenum stream,const GLfloat* coords)const{(this->*(this->m_ptr_glNormalStream3fvATI))(stream,coords);}
 inline void glColor4usv(const GLushort* v)const{(this->*(this->m_ptr_glColor4usv))(v);}
+inline void glMapGrid1f(GLint un,GLfloat u1,GLfloat u2)const{(this->*(this->m_ptr_glMapGrid1f))(un,u1,u2);}
 inline void glPolygonStipple(const GLubyte* mask)const{(this->*(this->m_ptr_glPolygonStipple))(mask);}
 inline void glUniform4ui64ARB(GLint location,GLuint64 x,GLuint64 y,GLuint64 z,GLuint64 w)const{(this->*(this->m_ptr_glUniform4ui64ARB))(location,x,y,z,w);}
 inline void glTextureRenderbufferEXT(GLuint texture,GLenum target,GLuint renderbuffer)const{(this->*(this->m_ptr_glTextureRenderbufferEXT))(texture,target,renderbuffer);}
@@ -1746,6 +1747,7 @@ inline void glNormalStream3dATI(GLenum stream,GLdouble nx,GLdouble ny,GLdouble n
 inline void glVertexAttribL4i64vNV(GLuint index,const GLint64EXT* v)const{(this->*(this->m_ptr_glVertexAttribL4i64vNV))(index,v);}
 inline void glDrawBuffers(GLsizei n,const GLenum* bufs)const{(this->*(this->m_ptr_glDrawBuffers))(n,bufs);}
 inline void glCopyTextureSubImage1DEXT(GLuint texture,GLenum target,GLint level,GLint xoffset,GLint x,GLint y,GLsizei width)const{(this->*(this->m_ptr_glCopyTextureSubImage1DEXT))(texture,target,level,xoffset,x,y,width);}
+inline void glWindowRectanglesEXT(GLenum mode,GLsizei count,const GLint* box)const{(this->*(this->m_ptr_glWindowRectanglesEXT))(mode,count,box);}
 inline void glNamedFramebufferReadBuffer(GLuint framebuffer,GLenum src)const{(this->*(this->m_ptr_glNamedFramebufferReadBuffer))(framebuffer,src);}
 inline void glUniform2i64vARB(GLint location,GLsizei count,const GLint64* value)const{(this->*(this->m_ptr_glUniform2i64vARB))(location,count,value);}
 inline void glVertexAttribI1uivEXT(GLuint index,const GLuint* v)const{(this->*(this->m_ptr_glVertexAttribI1uivEXT))(index,v);}
@@ -1776,6 +1778,7 @@ inline void glColorTableParameterfv(GLenum target,GLenum pname,const GLfloat* pa
 inline void glFragmentCoverageColorNV(GLuint color)const{(this->*(this->m_ptr_glFragmentCoverageColorNV))(color);}
 inline void glProgramUniform3ivEXT(GLuint program,GLint location,GLsizei count,const GLint* value)const{(this->*(this->m_ptr_glProgramUniform3ivEXT))(program,location,count,value);}
 inline void glVertexArrayVertexOffsetEXT(GLuint vaobj,GLuint buffer,GLint size,GLenum type,GLsizei stride,GLintptr offset)const{(this->*(this->m_ptr_glVertexArrayVertexOffsetEXT))(vaobj,buffer,size,type,stride,offset);}
+inline void glViewportPositionWScaleNV(GLuint index,GLfloat xcoeff,GLfloat ycoeff)const{(this->*(this->m_ptr_glViewportPositionWScaleNV))(index,xcoeff,ycoeff);}
 inline void glGetProgramLocalParameterIuivNV(GLenum target,GLuint index,GLuint* params)const{(this->*(this->m_ptr_glGetProgramLocalParameterIuivNV))(target,index,params);}
 inline void glReplacementCodeuiTexCoord2fVertex3fvSUN(const GLuint* rc,const GLfloat* tc,const GLfloat* v)const{(this->*(this->m_ptr_glReplacementCodeuiTexCoord2fVertex3fvSUN))(rc,tc,v);}
 inline void glUniform1uiv(GLint location,GLsizei count,const GLuint* value)const{(this->*(this->m_ptr_glUniform1uiv))(location,count,value);}

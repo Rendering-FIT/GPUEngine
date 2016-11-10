@@ -41,18 +41,18 @@ namespace ge{
             Callback                     const&callback   = nullptr);
         void addTransition(
             StateIndex                   const&from                ,
-            char const*                  const&symbol              ,
+            std::string                  const&symbol              ,
             StateIndex                   const&to                  ,
             Callback                     const&callback   = nullptr);
         void addTransition(
             StateIndex                   const&from                ,
-            std::vector<char const*>     const&symbols             ,
+            std::vector<std::string>     const&symbols             ,
             StateIndex                   const&to                  ,
             Callback                     const&callback   = nullptr);
         void addTransition(
             StateIndex                   const&from                ,
-            char const*                  const&symbolFrom          ,
-            char const*                  const&symbloTo            ,
+            std::string                  const&symbolFrom          ,
+            std::string                  const&symbloTo            ,
             StateIndex                   const&to                  ,
             Callback                     const&callback   = nullptr);
         void addElseTransition(
@@ -62,6 +62,7 @@ namespace ge{
         void addEOFTransition(
             StateIndex                   const&from                ,
             Callback                     const&callback   = nullptr);
+        /*
         void addTransition(
             StateIndex                   const&from                ,
             TransitionSymbol             const&symbol              ,
@@ -100,7 +101,7 @@ namespace ge{
             SimpleCallback               const&callback            );
         void addEOFTransition(
             StateIndex                   const&from                ,
-            SimpleCallback               const&callback            );
+            SimpleCallback               const&callback            );*/
 
         virtual void begin();
         virtual bool parse(BasicUnit const*data,size_t size);

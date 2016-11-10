@@ -1191,7 +1191,7 @@ void ge::gl::glWeightsvARB(GLint size,const GLshort* weights){ge::gl::getDefault
 void ge::gl::glShadeModel(GLenum mode){ge::gl::getDefaultContext()->glShadeModel(mode);}
 void ge::gl::glMapGrid1d(GLint un,GLdouble u1,GLdouble u2){ge::gl::getDefaultContext()->glMapGrid1d(un,u1,u2);}
 void ge::gl::glGetHistogramParameterivEXT(GLenum target,GLenum pname,GLint* params){ge::gl::getDefaultContext()->glGetHistogramParameterivEXT(target,pname,params);}
-void ge::gl::glMapGrid1f(GLint un,GLfloat u1,GLfloat u2){ge::gl::getDefaultContext()->glMapGrid1f(un,u1,u2);}
+void ge::gl::glConservativeRasterParameteriNV(GLenum pname,GLint param){ge::gl::getDefaultContext()->glConservativeRasterParameteriNV(pname,param);}
 void ge::gl::glClearNamedBufferData(GLuint buffer,GLenum internalformat,GLenum format,GLenum type,const void* data){ge::gl::getDefaultContext()->glClearNamedBufferData(buffer,internalformat,format,type,data);}
 void ge::gl::glClearDepthf(GLfloat d){ge::gl::getDefaultContext()->glClearDepthf(d);}
 void ge::gl::glCreatePerfQueryINTEL(GLuint queryId,GLuint* queryHandle){ge::gl::getDefaultContext()->glCreatePerfQueryINTEL(queryId,queryHandle);}
@@ -1405,6 +1405,7 @@ void ge::gl::glCompileShaderARB(GLhandleARB shaderObj){ge::gl::getDefaultContext
 void ge::gl::glWindowPos3dMESA(GLdouble x,GLdouble y,GLdouble z){ge::gl::getDefaultContext()->glWindowPos3dMESA(x,y,z);}
 void ge::gl::glNormalStream3fvATI(GLenum stream,const GLfloat* coords){ge::gl::getDefaultContext()->glNormalStream3fvATI(stream,coords);}
 void ge::gl::glColor4usv(const GLushort* v){ge::gl::getDefaultContext()->glColor4usv(v);}
+void ge::gl::glMapGrid1f(GLint un,GLfloat u1,GLfloat u2){ge::gl::getDefaultContext()->glMapGrid1f(un,u1,u2);}
 void ge::gl::glPolygonStipple(const GLubyte* mask){ge::gl::getDefaultContext()->glPolygonStipple(mask);}
 void ge::gl::glUniform4ui64ARB(GLint location,GLuint64 x,GLuint64 y,GLuint64 z,GLuint64 w){ge::gl::getDefaultContext()->glUniform4ui64ARB(location,x,y,z,w);}
 void ge::gl::glTextureRenderbufferEXT(GLuint texture,GLenum target,GLuint renderbuffer){ge::gl::getDefaultContext()->glTextureRenderbufferEXT(texture,target,renderbuffer);}
@@ -1748,6 +1749,7 @@ void ge::gl::glNormalStream3dATI(GLenum stream,GLdouble nx,GLdouble ny,GLdouble 
 void ge::gl::glVertexAttribL4i64vNV(GLuint index,const GLint64EXT* v){ge::gl::getDefaultContext()->glVertexAttribL4i64vNV(index,v);}
 void ge::gl::glDrawBuffers(GLsizei n,const GLenum* bufs){ge::gl::getDefaultContext()->glDrawBuffers(n,bufs);}
 void ge::gl::glCopyTextureSubImage1DEXT(GLuint texture,GLenum target,GLint level,GLint xoffset,GLint x,GLint y,GLsizei width){ge::gl::getDefaultContext()->glCopyTextureSubImage1DEXT(texture,target,level,xoffset,x,y,width);}
+void ge::gl::glWindowRectanglesEXT(GLenum mode,GLsizei count,const GLint* box){ge::gl::getDefaultContext()->glWindowRectanglesEXT(mode,count,box);}
 void ge::gl::glNamedFramebufferReadBuffer(GLuint framebuffer,GLenum src){ge::gl::getDefaultContext()->glNamedFramebufferReadBuffer(framebuffer,src);}
 void ge::gl::glUniform2i64vARB(GLint location,GLsizei count,const GLint64* value){ge::gl::getDefaultContext()->glUniform2i64vARB(location,count,value);}
 void ge::gl::glVertexAttribI1uivEXT(GLuint index,const GLuint* v){ge::gl::getDefaultContext()->glVertexAttribI1uivEXT(index,v);}
@@ -1778,6 +1780,7 @@ void ge::gl::glColorTableParameterfv(GLenum target,GLenum pname,const GLfloat* p
 void ge::gl::glFragmentCoverageColorNV(GLuint color){ge::gl::getDefaultContext()->glFragmentCoverageColorNV(color);}
 void ge::gl::glProgramUniform3ivEXT(GLuint program,GLint location,GLsizei count,const GLint* value){ge::gl::getDefaultContext()->glProgramUniform3ivEXT(program,location,count,value);}
 void ge::gl::glVertexArrayVertexOffsetEXT(GLuint vaobj,GLuint buffer,GLint size,GLenum type,GLsizei stride,GLintptr offset){ge::gl::getDefaultContext()->glVertexArrayVertexOffsetEXT(vaobj,buffer,size,type,stride,offset);}
+void ge::gl::glViewportPositionWScaleNV(GLuint index,GLfloat xcoeff,GLfloat ycoeff){ge::gl::getDefaultContext()->glViewportPositionWScaleNV(index,xcoeff,ycoeff);}
 void ge::gl::glGetProgramLocalParameterIuivNV(GLenum target,GLuint index,GLuint* params){ge::gl::getDefaultContext()->glGetProgramLocalParameterIuivNV(target,index,params);}
 void ge::gl::glReplacementCodeuiTexCoord2fVertex3fvSUN(const GLuint* rc,const GLfloat* tc,const GLfloat* v){ge::gl::getDefaultContext()->glReplacementCodeuiTexCoord2fVertex3fvSUN(rc,tc,v);}
 void ge::gl::glUniform1uiv(GLint location,GLsizei count,const GLuint* value){ge::gl::getDefaultContext()->glUniform1uiv(location,count,value);}

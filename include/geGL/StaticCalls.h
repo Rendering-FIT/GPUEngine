@@ -1192,7 +1192,7 @@ namespace ge{
     void glShadeModel(GLenum mode);
     void glMapGrid1d(GLint un,GLdouble u1,GLdouble u2);
     void glGetHistogramParameterivEXT(GLenum target,GLenum pname,GLint* params);
-    void glMapGrid1f(GLint un,GLfloat u1,GLfloat u2);
+    void glConservativeRasterParameteriNV(GLenum pname,GLint param);
     void glClearNamedBufferData(GLuint buffer,GLenum internalformat,GLenum format,GLenum type,const void* data);
     void glClearDepthf(GLfloat d);
     void glCreatePerfQueryINTEL(GLuint queryId,GLuint* queryHandle);
@@ -1406,6 +1406,7 @@ namespace ge{
     void glWindowPos3dMESA(GLdouble x,GLdouble y,GLdouble z);
     void glNormalStream3fvATI(GLenum stream,const GLfloat* coords);
     void glColor4usv(const GLushort* v);
+    void glMapGrid1f(GLint un,GLfloat u1,GLfloat u2);
     void glPolygonStipple(const GLubyte* mask);
     void glUniform4ui64ARB(GLint location,GLuint64 x,GLuint64 y,GLuint64 z,GLuint64 w);
     void glTextureRenderbufferEXT(GLuint texture,GLenum target,GLuint renderbuffer);
@@ -1749,6 +1750,7 @@ namespace ge{
     void glVertexAttribL4i64vNV(GLuint index,const GLint64EXT* v);
     void glDrawBuffers(GLsizei n,const GLenum* bufs);
     void glCopyTextureSubImage1DEXT(GLuint texture,GLenum target,GLint level,GLint xoffset,GLint x,GLint y,GLsizei width);
+    void glWindowRectanglesEXT(GLenum mode,GLsizei count,const GLint* box);
     void glNamedFramebufferReadBuffer(GLuint framebuffer,GLenum src);
     void glUniform2i64vARB(GLint location,GLsizei count,const GLint64* value);
     void glVertexAttribI1uivEXT(GLuint index,const GLuint* v);
@@ -1779,6 +1781,7 @@ namespace ge{
     void glFragmentCoverageColorNV(GLuint color);
     void glProgramUniform3ivEXT(GLuint program,GLint location,GLsizei count,const GLint* value);
     void glVertexArrayVertexOffsetEXT(GLuint vaobj,GLuint buffer,GLint size,GLenum type,GLsizei stride,GLintptr offset);
+    void glViewportPositionWScaleNV(GLuint index,GLfloat xcoeff,GLfloat ycoeff);
     void glGetProgramLocalParameterIuivNV(GLenum target,GLuint index,GLuint* params);
     void glReplacementCodeuiTexCoord2fVertex3fvSUN(const GLuint* rc,const GLfloat* tc,const GLfloat* v);
     void glUniform1uiv(GLint location,GLsizei count,const GLuint* value);

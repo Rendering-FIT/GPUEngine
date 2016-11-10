@@ -136,17 +136,17 @@ void MealyMachine::addTransition(
 }
 
 void MealyMachine::addTransition(
-    StateIndex const&from    ,
-    char const*const&lex     ,
-    StateIndex const&to      ,
-    Callback   const&callback){
+    StateIndex  const&from    ,
+    std::string const&lex     ,
+    StateIndex  const&to      ,
+    Callback    const&callback){
   assert(this!=nullptr);
-  this->addTransition(from,(TransitionSymbol)lex,to,callback);
+  this->addTransition(from,(TransitionSymbol)lex.c_str(),to,callback);
 }
 
 void MealyMachine::addTransition(
     StateIndex              const&from    ,
-    std::vector<char const*>const&symbols ,
+    std::vector<std::string>const&symbols ,
     StateIndex              const&to      ,
     Callback                const&callback){
   assert(this!=nullptr);
@@ -155,12 +155,12 @@ void MealyMachine::addTransition(
 }
 
 void MealyMachine::addTransition(
-    StateIndex const&from      ,
-    char const*const&symbolFrom,
-    char const*const&symbolTo  ,
-    StateIndex const&to        ,
-    Callback   const&callback  ){
-  this->addTransition(from,(TransitionSymbol)symbolFrom,(TransitionSymbol)symbolTo,to,callback);
+    StateIndex  const&from      ,
+    std::string const&symbolFrom,
+    std::string const&symbolTo  ,
+    StateIndex  const&to        ,
+    Callback    const&callback  ){
+  this->addTransition(from,(TransitionSymbol)symbolFrom.c_str(),(TransitionSymbol)symbolTo.c_str(),to,callback);
 }
 
 void MealyMachine::addElseTransition(
@@ -184,6 +184,7 @@ void MealyMachine::addEOFTransition(
     std::make_shared<Transition>(0,callback);
 }
 
+/*
 void MealyMachine::addTransition(
     StateIndex       const&from    ,
     TransitionSymbol const&symbol  ,
@@ -225,6 +226,7 @@ void MealyMachine::addTransition(
   assert(this!=nullptr);
   this->addTransition(from,(TransitionSymbol)symbol,to,callback);
 }
+*/
 
 void MealyMachine::begin(){
   assert(this!=nullptr);

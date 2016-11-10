@@ -25,21 +25,21 @@ SCENARIO("Basic Mealy Machine tests"){
 
   mm.addTransition    (S,"+",P);
   mm.addTransition    (S,"-",M);
-  mm.addElseTransition(S    ,E,[&](){position = mm.getReadingPosition();length++;});
+  mm.addElseTransition(S    ,E,[&](MealyMachine*){position = mm.getReadingPosition();length++;});
   mm.addEOFTransition (S);
 
-  mm.addTransition    (P,"+",S,[&](){plusPlusCounter++;});
-  mm.addTransition    (P,"-",M,[&](){plusCounter++;});
-  mm.addElseTransition(P,    S,[&](){mm.dontMove();plusCounter++;});
-  mm.addEOFTransition (P,      [&](){plusCounter++;});
+  mm.addTransition    (P,"+",S,[&](MealyMachine*){plusPlusCounter++;});
+  mm.addTransition    (P,"-",M,[&](MealyMachine*){plusCounter++;});
+  mm.addElseTransition(P,    S,[&](MealyMachine*){mm.dontMove();plusCounter++;});
+  mm.addEOFTransition (P,      [&](MealyMachine*){plusCounter++;});
 
-  mm.addTransition    (M,"-",S,[&](){minusMinusCounter++;});
-  mm.addTransition    (M,"+",P,[&](){minusCounter++;});
-  mm.addElseTransition(M,    S,[&](){mm.dontMove();minusCounter++;});
-  mm.addEOFTransition (M,      [&](){minusCounter++;});
+  mm.addTransition    (M,"-",S,[&](MealyMachine*){minusMinusCounter++;});
+  mm.addTransition    (M,"+",P,[&](MealyMachine*){minusCounter++;});
+  mm.addElseTransition(M,    S,[&](MealyMachine*){mm.dontMove();minusCounter++;});
+  mm.addEOFTransition (M,      [&](MealyMachine*){minusCounter++;});
 
   //if there are no other transitions, ElseTransition behaves as AllTransition
-  mm.addElseTransition(E,E,[&](){length++;});
+  mm.addElseTransition(E,E,[&](MealyMachine*){length++;});
   mm.addEOFTransition (E);
 
   auto str0 = "++--+-+-++-a++-+";
