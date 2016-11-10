@@ -4,7 +4,7 @@
 # LIB_NAME - name of the current lib such as geSG
 # Internal_deps - internal dependencies for the current lib, means other packages
 #                 of this project like geCore
-# External_deps - Other dependencies (3rdparties), not all of them are configured
+# External_deps_Export - Other dependencies (3rdparties), not all of them are configured
 #                 as an import target so futher checking is needed. Currently, if 
 #                 the find_package(called for_each External_deps) doesnt produce
 #                 target it then uses ${dep}_LIBRARY and ${dep}_INCLUDE_DIR vars
