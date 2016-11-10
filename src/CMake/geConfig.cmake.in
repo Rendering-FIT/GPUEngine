@@ -4,7 +4,7 @@
 # LIB_NAME - name of the current lib such as geSG
 # Internal_deps - internal dependencies for the current lib, means other packages
 #                 of this project like geCore
-# External_deps - Other dependencies (3rdparties), not all of them are configured
+# External_deps_Export - Other dependencies (3rdparties), not all of them are configured
 #                 as an import target so futher checking is needed. Currently, if 
 #                 the find_package(called for_each External_deps) doesnt produce
 #                 target it then uses ${dep}_LIBRARY and ${dep}_INCLUDE_DIR vars
@@ -18,7 +18,12 @@
 @PACKAGE_INIT@
 
 message(STATUS "@LIB_NAME@ greets downstreamer")
-get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+IF(WIN32)
+   get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+ELSE()
+   #Linux install path differ by one level - maybe - depdends on how you install it
+   get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../" ABSOLUTE)
+ENDIF()
 include(${_@LIB_NAME@_install_prefix}/cmake/CMakeModules/GEMacros.cmake)
 
 if(NOT TARGET @LIB_NAME@)

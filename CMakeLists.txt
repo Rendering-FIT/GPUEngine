@@ -97,6 +97,14 @@ SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}
 # Dynamic vs Static Linkage
 OPTION(GPUENGINE_DYNAMIC_LINKAGE "Build GPUEngine as libs for dynamic linkage. Use OFF for static libs." ON)
 
+IF(WIN32)
+  SET(GPUENGINE_DEPS_CONFIG_FILE CACHE FILEPATH "Optional config file that will setup GPUEngine dependencies.")
+  IF(GPUENGINE_DEPS_CONFIG_FILE)
+    INCLUDE("${GPUENGINE_DEPS_CONFIG_FILE}")
+  ENDIF()
+ENDIF()
+
+
 ##################################################
 # Export Things
 ##################################################
