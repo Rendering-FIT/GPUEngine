@@ -14,4 +14,5 @@ for line in fileinput.input():
 
 for x in data0:
   print x
-
+print "struct _cl_context;"
+print "struct _cl_event;"

@@ -21,7 +21,7 @@ void main(){
 }
 ).";
 
-int main(){
+int main(int,char*[]){
   auto mainLoop = make_shared<SDLMainLoop>();
   auto window = make_shared<SDLWindow>();
 
