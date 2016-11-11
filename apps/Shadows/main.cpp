@@ -15,10 +15,10 @@
 
 #include"Deferred.h"
 #include"Model.h"
-#include"OrbitCamera.h"
-#include"FreeLookCamera.h"
+#include<geUtil/OrbitCamera.h>
+#include<geUtil/FreeLookCamera.h>
 #include"CameraPath.h"
-#include"PerspectiveCamera.h"
+#include<geUtil/PerspectiveCamera.h>
 #include"Shading.h"
 #include"ShadowMethod.h"
 #include"CubeShadowMapping.h"
@@ -75,8 +75,8 @@ struct Application{
   std::shared_ptr<Model>model = nullptr;
   std::shared_ptr<RenderModel>renderModel = nullptr;
   std::shared_ptr<ge::util::ArgumentObject>args = nullptr;
-  std::shared_ptr<CameraTransform>cameraTransform = nullptr;
-  std::shared_ptr<CameraProjection>cameraProjection = nullptr;
+  std::shared_ptr<ge::util::CameraTransform>cameraTransform = nullptr;
+  std::shared_ptr<ge::util::CameraProjection>cameraProjection = nullptr;
   std::shared_ptr<Shading>shading = nullptr;
   std::shared_ptr<ge::gl::Texture>shadowMask = nullptr;
   std::shared_ptr<ShadowMethod>shadowMethod = nullptr;
@@ -258,15 +258,15 @@ bool Application::init(int argc,char*argv[]){
     this->cameraType = "free";
 
   if     (this->cameraType == "orbit")
-    this->cameraTransform = std::make_shared<OrbitCamera>();
+    this->cameraTransform = std::make_shared<ge::util::OrbitCamera>();
   else if(this->cameraType == "free")
-    this->cameraTransform = std::make_shared<FreeLookCamera>();
+    this->cameraTransform = std::make_shared<ge::util::FreeLookCamera>();
   else{
     std::cerr<<"ERROR: --camera-type is incorrect"<<std::endl;
     exit(0);
   }
 
-  this->cameraProjection = std::make_shared<PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
+  this->cameraProjection = std::make_shared<ge::util::PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
 
   this->gBuffer = std::make_shared<GBuffer>(this->windowSize.x,this->windowSize.y);
 
@@ -410,7 +410,7 @@ void Application::draw(){
     std::vector<std::vector<std::string>>csv;
     for(size_t k=0;k<this->testFlyLength;++k){
       auto keypoint = cameraPath->getKeypoint(float(k)/float(this->testFlyLength));
-      auto flc = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
+      auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
       flc->setPosition(keypoint.position);
       flc->setRotation(keypoint.viewVector,keypoint.upVector);
       for(size_t f=0;f<this->testFramesPerMeasurement;++f){
@@ -443,7 +443,7 @@ void Application::draw(){
   }
 
   if(this->cameraType == "free"){
-    auto freeLook = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
+    auto freeLook = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
     for(int a=0;a<3;++a)freeLook->move(a,float(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
   }
 
@@ -487,7 +487,7 @@ int main(int argc,char*argv[]){
 template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
   this->keyDown[event.key.keysym.sym] = DOWN;
   if(DOWN && event.key.keysym.sym=='p'){
-    auto flc = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
+    auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
     if(flc){
       auto rv = flc->getRotation();
       auto pos = flc->getPosition();
@@ -504,26 +504,26 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
 bool Application::mouseMove(SDL_Event const&event){
   if(this->cameraType == "orbit"){
     if(event.motion.state & SDL_BUTTON_LMASK){
-      auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
+      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
       if(orbitCamera){
-        orbitCamera->setXAngle(orbitCamera->getXAngle() + float(event.motion.yrel)*this->sensitivity);
-        orbitCamera->setYAngle(orbitCamera->getYAngle() + float(event.motion.xrel)*this->sensitivity);
+        orbitCamera->addXAngle(float(event.motion.yrel)*this->sensitivity);
+        orbitCamera->addYAngle(float(event.motion.xrel)*this->sensitivity);
       }
     }
     if(event.motion.state & SDL_BUTTON_RMASK){
-      auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
+      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
       if(orbitCamera){
-        orbitCamera->setDistance(orbitCamera->getDistance() + float(event.motion.yrel)*this->orbitZoomSpeed);
+        orbitCamera->addDistance(float(event.motion.yrel)*this->orbitZoomSpeed);
       }
     }
     if(event.motion.state & SDL_BUTTON_MMASK){
-      auto orbitCamera = std::dynamic_pointer_cast<OrbitCamera>(this->cameraTransform);
+      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
       orbitCamera->addXPosition(+orbitCamera->getDistance()*float(event.motion.xrel)/float(this->windowSize.x)*2.f);
       orbitCamera->addYPosition(-orbitCamera->getDistance()*float(event.motion.yrel)/float(this->windowSize.y)*2.f);
     }
   }
   if(this->cameraType == "free"){
-    auto freeCamera = std::dynamic_pointer_cast<FreeLookCamera>(this->cameraTransform);
+    auto freeCamera = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
     if(event.motion.state & SDL_BUTTON_LMASK){
       freeCamera->setAngle(1,freeCamera->getAngle(1)+float(event.motion.xrel)*this->sensitivity);
       freeCamera->setAngle(0,freeCamera->getAngle(0)+float(event.motion.yrel)*this->sensitivity);

@@ -1,4 +1,6 @@
-#include"PerspectiveCamera.h"
+#include<geUtil/PerspectiveCamera.h>
+
+using namespace ge::util;
 
 PerspectiveCamera::PerspectiveCamera(
     float fovy  ,

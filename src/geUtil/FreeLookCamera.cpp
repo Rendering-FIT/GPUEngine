@@ -1,6 +1,8 @@
-#include"FreeLookCamera.h"
+#include<geUtil/FreeLookCamera.h>
 
 #include<glm/gtx/euler_angles.hpp>
+
+using namespace ge::util;
 
 FreeLookCamera::FreeLookCamera():CameraTransform(){
   assert(this!=nullptr);
