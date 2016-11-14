@@ -8,7 +8,7 @@
 #include<sstream>
 #include<iomanip>
 #include<algorithm>
-
+#include<cctype>
 #include<geCore/ErrorPrinter.h>
 #include<geCore/fsa/TransitionChooser.h>
 
