@@ -46,10 +46,12 @@ inline bool MealyMachine::_nextState(State const&state){
   if(transitionIndex == MealyMachine::nonexistingTransition){
     auto trans = std::get<ELSE_TRANSITION>(state);
     if(!trans){
+      if(this->_quiet)return false;
       std::stringstream ss;
       ss<<"there is no suitable transition from state ";
-      ss<<this->_currentState<<" using symbol 0x"<<
+      ss<<this->_currentState<<" using symbol: 0x"<<
         getHexRepresentation(this->_currentSymbol,this->_currentSymbolSize);
+      ss<<" at position: "<<this->_currentSymbol;
       ge::core::printError("MealyMachine::_nextState",ss.str());
       return false;
     }
@@ -61,18 +63,18 @@ inline bool MealyMachine::_nextState(State const&state){
 }
 
 MealyMachine::StateIndex MealyMachine::addState(
-    std::shared_ptr<TransitionChooser>const&chooser){
+    std::shared_ptr<TransitionChooser>const&chooser,std::string const&name){
   assert(this!=nullptr);
   assert(chooser!=nullptr);
   assert(chooser->getSize()<=this->_symbolBuffer.size());
   auto id = this->_states.size();
-  this->_states.push_back(State(TransitionVector(),chooser,nullptr,nullptr));
+  this->_states.push_back(State(TransitionVector(),chooser,nullptr,nullptr,name));
   return id;
 }
 
-MealyMachine::StateIndex MealyMachine::addState(){
+MealyMachine::StateIndex MealyMachine::addState(std::string const&name){
   assert(this);
-  return this->addState(std::make_shared<MapTransitionChooser<1>>());
+  return this->addState(std::make_shared<MapTransitionChooser<1>>(),name);
 }
 
 void MealyMachine::addTransition(
@@ -109,13 +111,8 @@ void MealyMachine::addTransition(
   assert(from<this->_states.size());
   assert(std::get<CHOOSER>(this->_states.at(from))!=nullptr);
   size_t stateSize = std::get<CHOOSER>(this->_states.at(from))->getSize();
-  bool same = true;
-  for(size_t i=1;i<=stateSize;++i){
-    if(symbolFrom[stateSize-i]<symbolTo[stateSize-i])same = false;
+  for(size_t i=1;i<=stateSize;++i)
     if(symbolFrom[stateSize-i]>symbolTo[stateSize-i])return;
-  }
-  this->addTransition(from,symbolTo,to,callback);
-  if(same)return;
   bool running=true;
   std::vector<BasicUnit>currentSymbol;
   currentSymbol.resize(stateSize);
@@ -141,7 +138,17 @@ void MealyMachine::addTransition(
     StateIndex  const&to      ,
     Callback    const&callback){
   assert(this!=nullptr);
-  this->addTransition(from,(TransitionSymbol)lex.c_str(),to,callback);
+  assert(from<this->_states.size());
+  assert(std::get<CHOOSER>(this->_states.at(from))!=nullptr);
+  size_t stateSize = std::get<CHOOSER>(this->_states.at(from))->getSize();
+  if(lex.length()%stateSize!=0){
+    ge::core::printError(
+        GE_CORE_FCENAME,
+        "transition symbol length is not multiplication of state size: "+ge::core::value2str(stateSize),from,lex,to);
+    return;
+  }
+  for(size_t offset=0;offset<lex.length();offset+=stateSize)
+    this->addTransition(from,(TransitionSymbol)lex.c_str()+offset,to,callback);
 }
 
 void MealyMachine::addTransition(
@@ -183,50 +190,6 @@ void MealyMachine::addEOFTransition(
   std::get<EOF_TRANSITION>(this->_states[from]) = 
     std::make_shared<Transition>(0,callback);
 }
-
-/*
-void MealyMachine::addTransition(
-    StateIndex       const&from    ,
-    TransitionSymbol const&symbol  ,
-    StateIndex       const&to      ,
-    SimpleCallback   const&callback){
-  assert(this!=nullptr);
-  if(callback)
-    this->addTransition(from,symbol,to,[callback](MealyMachine*){callback();});
-  else
-    this->addTransition(from,symbol,to);
-}
-
-void MealyMachine::addElseTransition(
-    StateIndex     const&from    ,
-    StateIndex     const&to      ,
-    SimpleCallback const&callback){
-  assert(this!=nullptr);
-  if(callback)
-    this->addElseTransition(from,to,[callback](MealyMachine*){callback();});
-  else
-    this->addElseTransition(from,to);
-}
-
-void MealyMachine::addEOFTransition(
-    StateIndex     const&from    ,
-    SimpleCallback const&callback){
-  assert(this!=nullptr);
-  if(callback)
-    this->addEOFTransition(from,[callback](MealyMachine*){callback();});
-  else
-    this->addEOFTransition(from);
-}
-
-void MealyMachine::addTransition(
-    StateIndex       const&from    ,
-    char const*      const&symbol  ,
-    StateIndex       const&to      ,
-    SimpleCallback   const&callback){
-  assert(this!=nullptr);
-  this->addTransition(from,(TransitionSymbol)symbol,to,callback);
-}
-*/
 
 void MealyMachine::begin(){
   assert(this!=nullptr);
@@ -292,6 +255,7 @@ bool MealyMachine::parse(char const*data){
 bool MealyMachine::end(){
   assert(this!=nullptr);
   if(this->_symbolBufferIndex>0){
+    if(this->_quiet)return false;
     ge::core::printError("MealyMachine::end",
         "there are some unprocess bytes at the end of stream");
     return false;
@@ -301,7 +265,18 @@ bool MealyMachine::end(){
   auto const&transition = std::get<EOF_TRANSITION>(state);
   if(!transition)return false;
   this->_call(*transition);
-  return false;
+  return true;
+}
+
+bool MealyMachine::match(BasicUnit const*data,size_t size){
+  assert(this);
+  this->begin();
+  return this->parse(data,size)&&this->end();
+}
+
+bool MealyMachine::match(char const*data){
+  assert(this);
+  return this->match((BasicUnit const*)data,std::strlen(data));
 }
 
 const MealyMachine::TransitionIndex MealyMachine::nonexistingTransition = 
@@ -310,27 +285,42 @@ std::numeric_limits<MealyMachine::TransitionIndex>::max();
 
 std::string MealyMachine::str()const{
   assert(this!=nullptr);
-  auto printTransition = [](Transition const&t){
+  auto printTransition = [&](Transition const&t){
     std::stringstream ss;
-    ss<<std::get<STATE_INDEX>(t);
+    auto endStateIndex = std::get<STATE_INDEX>(t);
+    assert(endStateIndex<this->_states.size());
+    auto endState = this->_states.at(endStateIndex);
+    if(std::get<NAME>(endState)!="")ss<<std::get<NAME>(endState);
+    else ss<<endStateIndex;
     ss<<std::endl;
+    return ss.str();
+  };
+  auto printSymbol = [](TransitionSymbol symbol,size_t size){
+    std::stringstream ss;
+    if(size==1&&std::isprint(symbol[0])){
+      ss<<"\'"<<(char)symbol[0]<<"\' ";
+      return ss.str();
+    }
+    for(MealyMachine::TransitionIndex i = 0;i<size;++i)
+      ss<<std::setfill('0')<<std::setw(2)<<std::hex<<
+        static_cast<uint32_t>(symbol[i]);
     return ss.str();
   };
 
   std::stringstream ss;
   size_t stateCounter = 0;
   for(auto s:this->_states){
-    ss<<"state "<<stateCounter<<": "<<std::endl;
+    ss<<"state ";
+    if(std::get<NAME>(s)!="")ss<<std::get<NAME>(s);
+    else ss<<stateCounter;
+    ss<<": "<<std::endl;
     auto const&transitions = std::get<TRANSITIONS>(s);
     size_t transitionCounter = 0;
     for(auto t:transitions){
       auto const&chooser = std::get<CHOOSER>(s);
       ss<<"  ";
 
-      auto const&sym = chooser->getSymbol(transitionCounter);
-      for(MealyMachine::TransitionIndex i = 0;i<chooser->getSize();++i)
-        ss<<std::setfill('0')<<std::setw(2)<<std::hex<<
-          static_cast<uint32_t>(sym[i]);
+      ss<<printSymbol(chooser->getSymbol(transitionCounter),chooser->getSize());
       if(chooser->getSize()<2)
         ss<<"  ";
 
@@ -339,16 +329,8 @@ std::string MealyMachine::str()const{
     }
     if(std::get<EOF_TRANSITION>(s)){
       auto const&t = *std::get<EOF_TRANSITION>(s);
-
-      auto const&chooser = std::get<CHOOSER>(s);
       ss<<"  ";
-
-      ss<<"eof ";
-      if(chooser->getSize()>2)
-        for(size_t i=0;i<chooser->getSize()-2;++i)
-          ss<<"  ";
-
-      ss<<" -> "<<std::get<EOF_TRANSITION>(s)<<" "<<printTransition(t);
+      ss<<"eof "<<printTransition(t);
     }
     if(std::get<ELSE_TRANSITION>(s)){
       auto const&t = *std::get<ELSE_TRANSITION>(s);
@@ -367,3 +349,14 @@ std::string MealyMachine::str()const{
   }
   return ss.str();
 }
+
+void MealyMachine::setQuiet(bool quiet){
+  assert(this);
+  this->_quiet = quiet;
+}
+
+bool MealyMachine::isQuiet()const{
+  assert(this);
+  return this->_quiet;
+}
+

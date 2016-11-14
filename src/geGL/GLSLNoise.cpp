@@ -128,3 +128,24 @@ INOISE(3)
 INOISE(4)
 ).";
 }
+
+std::string ge::gl::getGradientSource(){
+  return R".(
+#define BEGINGRADIENT(name)\
+vec4 name(float t){\
+  t=clamp(t,0,1);\
+  const vec4 colors[]={
+
+#define ENDGRADIENT\
+  };\
+  t*=colors.length();\
+  uint i=uint(floor(t));\
+  uint j=i+1;\
+  if(j>=colors.length()){\
+    i=colors.length()-1;\
+    j=i;\
+  }\
+  return mix(colors[i],colors[j],fract(t));\
+}
+).";
+}

@@ -1,4 +1,6 @@
 #pragma once
+#include<cstddef>
+#include<cstdint>
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;

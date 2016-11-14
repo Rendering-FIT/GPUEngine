@@ -125,7 +125,7 @@ std::shared_ptr<ge::rg::Transformation> AppRG::createTransform(int i){
 	return tr;
 }
 
-std::shared_ptr<ge::rg::StateSet> AppRG::createStateSet(int id){
+std::shared_ptr<ge::rg::StateSet> AppRG::createStateSet(int){
 	auto materialCommandList = make_shared<core::SharedCommandList>();
 	auto diffuseUniform = make_shared<rg::FlexibleUniform4f>("color", 1.f, 1.f, 1.f, 1.f);
 	materialCommandList->push_back(diffuseUniform);
@@ -164,7 +164,7 @@ void AppRG::prepareDrawables(){
 	
 }
 
-void AppRG::recomputeMatrices(int count){
+void AppRG::recomputeMatrices(int){
 }
 
 

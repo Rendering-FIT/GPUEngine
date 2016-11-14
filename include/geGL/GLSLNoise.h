@@ -6,5 +6,6 @@
 namespace ge{
   namespace gl{
     GEGL_EXPORT std::string getNoiseSource();
+    GEGL_EXPORT std::string getGradientSource();
   }
 }
