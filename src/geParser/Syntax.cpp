@@ -145,8 +145,7 @@ void Syntax::runStart(){
   this->ctx.tokens.clear();
   this->_range.min() = 0;
   this->_range.max() = 0;//std::min(this->name2Nonterm[this->start]->minLength,this);
-  std::shared_ptr<SyntaxNode>emptyNode=nullptr;
-  this->st_root = std::make_shared<NontermNode>(emptyNode,0,this->_range,this->name2Nonterm[this->start],true);
+  this->st_root = std::make_shared<NontermNode>(nullptr,0,this->_range,this->name2Nonterm[this->start],true);
   this->ctx.setNode(this->st_root);
   this->ctx.setStatus(NodeContext::WAITING_STATUS);
   this->ctx.calledFromChildOrRecheck = false;
@@ -172,10 +171,10 @@ NodeContext::Status Syntax::runContinue(){
   do{
     //std::cout<<"######################################################"<<std::endl;
     //std::cout<<"newEnd: "<<newEnd<<std::endl;
-    auto node = this->ctx.getNode();
+    auto node = &*this->ctx.getNode();
     while(node){
       node->range.max() = newEnd;
-      node = node->parent.lock();
+      node = node->parent;
     }
     this->_range.max() = newEnd;
     this->ctx.getNode()->match(this->ctx);

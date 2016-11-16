@@ -5,9 +5,9 @@
 
 namespace ge{
   namespace parser{
-    class GEPARSER_EXPORT SyntaxNode: public std::enable_shared_from_this<SyntaxNode>{
+    class SyntaxNode: public std::enable_shared_from_this<SyntaxNode>{
       public:
-        using Parent       = std::weak_ptr<SyntaxNode>;
+        using Parent       = SyntaxNode*;
         using SharedSymbol = std::shared_ptr<Symbol>;
         using Node         = std::shared_ptr<SyntaxNode>;
         using ChildList    = std::vector<Node>;
@@ -52,7 +52,7 @@ namespace ge{
 
     inline void SyntaxNode::parentMatch(NodeContext&ctx){
       ctx.calledFromChildOrRecheck = true;
-      auto p=this->parent.lock();
+      auto p=this->parent;//.lock();
       bool moveLevel = ctx.currentLevel!=0;
       if(moveLevel)ctx.currentLevel--;
       if(p)p->match(ctx);

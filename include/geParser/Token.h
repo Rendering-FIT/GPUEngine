@@ -1,10 +1,13 @@
 #pragma once
 
-#include<geCore/Dtemplates.h>
+#include<iostream>
 
 namespace ge{
   namespace parser{
-    class GEPARSER_EXPORT Token{
+    /**
+     * @brief token represents one lexem. Tokens are produced by lexical analysis
+     */
+    class Token{
       public:
         using Type = size_t;
         using Data = std::string;

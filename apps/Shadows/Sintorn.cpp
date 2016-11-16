@@ -238,7 +238,7 @@ Sintorn::Sintorn(
   if(RESULT_LENGTH_IN_UINT==0)RESULT_LENGTH_IN_UINT=1;
 
   for(size_t l=0;l<this->_nofLevels;++l){
-    this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32UI,1,this->_usedTiles[l].x*RESULT_LENGTH_IN_UINT,this->_usedTiles[l].y));
+    this->_HST.push_back(std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32UI,1,GLsizei(this->_usedTiles[l].x*RESULT_LENGTH_IN_UINT),this->_usedTiles[l].y));
     this->_HST.back()->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     this->_HST.back()->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     uint8_t data[2] = {0,0};

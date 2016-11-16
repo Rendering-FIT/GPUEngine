@@ -6,9 +6,8 @@ void SyntaxTreeProcessor::addCallback(
     std::string nonterm ,
     std::string ruleName,
     Callback    pre     ,
-    Callback    post    ,
-    void*       data    ){
-  this->_callbacks[Key(nonterm,ruleName)]=Value(pre,post,data);
+    Callback    post    ){
+  this->_callbacks[Key(nonterm,ruleName)]=Value(pre,post);
 }
 
 void SyntaxTreeProcessor::operator()(SyntaxNode::Node root)const{
@@ -24,9 +23,9 @@ void SyntaxTreeProcessor::operator()(SyntaxNode::Node root)const{
     hasCallback = ii!=this->_callbacks.end();
   }
 
-  if(hasCallback&&std::get<PRE>(ii->second))std::get<PRE>(ii->second)(root,std::get<DATA>(ii->second));
+  if(hasCallback&&std::get<PRE>(ii->second))std::get<PRE>(ii->second)(root);
   for(auto x:n->childs)
     this->operator()(x);
-  if(hasCallback&&std::get<POST>(ii->second))std::get<POST>(ii->second)(root,std::get<DATA>(ii->second));
+  if(hasCallback&&std::get<POST>(ii->second))std::get<POST>(ii->second)(root);
 }
 

@@ -12,7 +12,7 @@ void NontermNode::match(NodeContext&ctx){
   }
 
   if(!ctx.calledFromChildOrRecheck){
-    auto c=this->parent.lock();
+    auto c=this->parent;
     while(c){
       if(c->getNonterm()==this->getNonterm()&&c->range==this->range){
         ctx.setStatus(NodeContext::FALSE_STATUS);
@@ -20,7 +20,7 @@ void NontermNode::match(NodeContext&ctx){
           this->parentMatch(ctx);
         return;
       }
-      c=c->parent.lock();
+      c=c->parent;
     }
   }
 
@@ -136,14 +136,14 @@ void NontermNode::match(NodeContext&ctx){
 #endif
           if(std::dynamic_pointer_cast<Nonterm>(subsym))
             newNode = std::make_shared<NontermNode>(
-                this->shared_from_this(),
+                this,
                 this->childs.size(),
                 this->divisions.back(),
                 subsym,
                 cWait);
           else
             newNode = std::make_shared<TermNode>(
-                this->shared_from_this(),
+                this,
                 this->childs.size(),
                 this->divisions.back(),
                 subsym,
