@@ -104,6 +104,7 @@ namespace ge
          inline bool empty() const;
          iterator insert(const_iterator pos,T *item);
          iterator erase(const_iterator pos);
+         iterator erase_and_dispose(const_iterator pos);
          inline void push_back(T *item);
          inline void push_front(T *item);
          inline void pop_back();
@@ -209,6 +210,13 @@ namespace ge
       }
       template<typename T>
       typename FlexibleArrayList<T>::iterator FlexibleArrayList<T>::erase(const_iterator pos)
+      {
+         pos.node->prev->next=pos.node->next;
+         pos.node->next->prev=pos.node->prev;
+         return static_cast<T*>(pos.node->next);
+      }
+      template<typename T>
+      typename FlexibleArrayList<T>::iterator FlexibleArrayList<T>::erase_and_dispose(const_iterator pos)
       {
          pos.node->prev->next=pos.node->next;
          pos.node->next->prev=pos.node->prev;

@@ -603,8 +603,7 @@ void RenderingContext::deleteDrawable(Mesh &mesh,DrawableId id)
 
    // remove from lists, execute destructors and free memory
    _drawCommandStorage.free(id->items(),id->numItems);
-   id->free();
-   mesh.drawables().erase(id);
+   mesh.drawables().erase_and_dispose(id);
 }
 
 
