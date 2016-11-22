@@ -3,6 +3,7 @@
 #include<iostream>
 #include<string>
 #include<geCore/fsa/Fsa.h>
+#include<geCore/fsa/MealyMachine.h>
 
 using namespace ge::core;
 
@@ -140,4 +141,45 @@ std::string ge::core::processEscapeSequences(std::string data){
   pData.string = "";
   fsa.run(data);
   return pData.string;
+}
+
+bool ge::core::isFloat(std::string text){
+  if(std::set<std::string>({"int","Int","INF","+inf","+Int","+INF","-inf","-Inf","-INF","NAN","Nan","nan"}).count(text))return true;
+  MealyMachine mm;
+
+  auto start            = mm.addState();
+  auto sign             = mm.addState();
+  auto immediateDot     = mm.addState();
+  auto fractionalNumber = mm.addState();
+  auto wholeNumber      = mm.addState();
+  auto exponent         = mm.addState();
+  auto postfix          = mm.addState();
+  auto exponentSign     = mm.addState();
+  auto exponentNumber   = mm.addState();
+
+  mm.addTransition   (start           ,"+-"   ,sign            );
+  mm.addTransition   (start           ,"."    ,immediateDot    );
+  mm.addTransition   (start           ,"0","9",wholeNumber     );
+  mm.addTransition   (sign            ,"."    ,immediateDot    );
+  mm.addTransition   (sign            ,"0","9",wholeNumber     );
+  mm.addTransition   (immediateDot    ,"0","9",fractionalNumber);
+  mm.addTransition   (wholeNumber     ,"0","9",wholeNumber     );
+  mm.addTransition   (wholeNumber     ,"."    ,fractionalNumber);
+  mm.addTransition   (wholeNumber     ,"fF"   ,postfix         );
+  mm.addTransition   (wholeNumber     ,"eE"   ,exponent        );
+  mm.addEOFTransition(wholeNumber                              );
+  mm.addTransition   (fractionalNumber,"0","9",fractionalNumber);
+  mm.addTransition   (fractionalNumber,"fF"   ,postfix         );
+  mm.addTransition   (fractionalNumber,"eE"   ,exponent        );
+  mm.addEOFTransition(fractionalNumber                         );
+  mm.addEOFTransition(postfix                                  );
+  mm.addTransition   (exponent        ,"+-"   ,exponentSign    );
+  mm.addTransition   (exponent        ,"0","9",exponentNumber  );
+  mm.addTransition   (exponentSign    ,"0","9",exponentNumber  );
+  mm.addTransition   (exponentNumber  ,"0","9",exponentNumber  );
+  mm.addTransition   (exponentNumber  ,"fF"   ,postfix         );
+  mm.addEOFTransition(exponentNumber                           );
+  mm.setQuiet(true);
+
+  return mm.match(text.c_str());
 }

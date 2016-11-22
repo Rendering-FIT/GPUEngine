@@ -44,7 +44,7 @@ float Stats::getAvg(int f) {
 		sum += data[i];
 	}
 	//std::cout << " : " << i << "\n";
-	if (i) sum /= i;
+	if (i) sum /= float(i);
 	return sum;
 }
 
@@ -78,7 +78,7 @@ void Stats::draw(){
 	textColor(1, 1, 0, 1);
 	label(msg);
 	
-	float top = ceil(vmax / 20.0f) * 20.0f; 
+	float top = ceilf(vmax / 20.0f) * 20.0f; 
 	ImGui::Begin("plot", 0, ImVec2(200, 60), 0,
 		ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings);

@@ -1,4 +1,6 @@
 #pragma once
+#include<cstddef>
+#include<cstdint>
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
 typedef unsigned int GLbitfield;
@@ -35,3 +37,5 @@ typedef int64_t GLint64EXT;
 typedef unsigned short GLhalfNV;
 typedef GLintptr GLvdpauSurfaceNV;
 typedef void* GLeglImageOES;
+struct _cl_context;
+struct _cl_event;

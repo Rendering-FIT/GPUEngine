@@ -45,6 +45,10 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
+   ${HEADER_PATH}/Camera.h
+   ${HEADER_PATH}/OrbitCamera.h
+   ${HEADER_PATH}/FreeLookCamera.h
+   ${HEADER_PATH}/PerspectiveCamera.h
 )
 
 
@@ -55,6 +59,9 @@ set(GL_SOURCES
    FPSPrinter.cpp
    OrbitManipulator.cpp
    Progress.cpp
+   OrbitCamera.cpp
+   FreeLookCamera.cpp
+   PerspectiveCamera.cpp
 )
 
 add_library(${LIB_NAME}

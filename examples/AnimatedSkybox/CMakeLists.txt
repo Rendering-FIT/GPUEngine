@@ -1,59 +1,19 @@
-set(APP_NAME Shadows)
+set(APP_NAME AnimatedSkybox)
 
 project(${APP_NAME})
 
 find_package(SDL2)
-find_package(Assimp)
-find_package(FreeImage)
-find_package(FreeImagePlus)
 find_package(glm)
 
-if(NOT SDL2_FOUND OR NOT TARGET Assimp OR
-   NOT FreeImage_FOUND OR NOT FreeImagePlus_FOUND OR
-   NOT TARGET geGL OR
-   NOT TARGET glm OR
-   NOT TARGET geUtil)
+if(NOT SDL2_FOUND OR NOT TARGET geGL)
    return()
 endif()
 
-
 set(APP_SOURCES
   main.cpp
-  Model.cpp
-  CameraPath.cpp
-  CSV.cpp
-  Shading.cpp
-  CubeShadowMapping.cpp
-  FastAdjacency.cpp
-  TimeStamp.cpp
-  CSSV.cpp
-  Sintorn.cpp
-  SintornTiles.cpp
-  RSSV.cpp
-  RSSVTiles.cpp
-  DrawPrimitive.cpp
   )
 
 set(APP_INCLUDES
-  CameraPath.h
-  CSV.h
-  Deferred.h
-  Model.h
-  Shading.h
-  ShadowMethod.h
-  CubeShadowMapping.h
-  FastAdjacency.h
-  TimeStamp.h
-  CSSV.h
-  CSSVShaders.h
-  Sintorn.h
-  SintornTiles.h
-  SintornShaders.h
-  RSSV.h
-  RSSVTiles.h
-  RSSVShaders.h
-  DrawPrimitive.h
-  ProgramExtension.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
@@ -64,7 +24,7 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 # Internal_inc - additional include directories
 
 set(Internal_deps geGL SDLWindow geUtil)
-set(External_libs SDL2 Assimp FreeImage FreeImagePlus)
+set(External_libs SDL2 glm)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

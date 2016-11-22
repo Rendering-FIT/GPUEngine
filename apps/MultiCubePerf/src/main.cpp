@@ -11,7 +11,8 @@ R".(Multiple cube rendering performance test
 --textureSize n (128)
 --drawMode single|many|multi|instanced
 --interactive|--test|--testAll|--calibrate|--calibrateAll
---geRG|--geGL|--vk
+--geRG|--geGL
+--verbose|-v 
 --includeManyDraw
 ).";
 
@@ -35,8 +36,8 @@ int main(int argc, char*argv[]) {
 	opt.textureCount = args.getArgi("--textureCount", "0");
 	opt.textureSize = args.getArgi("--textureSize", "128");
 	
-	auto drawMode = args.getArg("--drawMode", "single");
-	opt.drawMode = SINGLE_DRAW;
+	auto drawMode = args.getArg("--drawMode", "instanced");
+	opt.drawMode = INSTANCED;
 	if (drawMode == "single") opt.drawMode = SINGLE_DRAW;
 	if (drawMode == "many") opt.drawMode = MANY_DRAW;
 	if (drawMode == "multi") opt.drawMode = MULTIDRAW_INDIRECT;
@@ -57,7 +58,8 @@ int main(int argc, char*argv[]) {
 	}
 
 	if (args.isPresent("--includeMany")) opt.includeMany = true;
-	
+  if (args.isPresent("--verbose") ||
+    args.isPresent("-v")) opt.verbose = true;
 
 	if (opt.rg) {
 		AppRG app(opt);

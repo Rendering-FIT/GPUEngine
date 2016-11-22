@@ -22,7 +22,7 @@ def printContextDeclaration(data):
     params = data.split(",")
     args = ",".join(map(lambda x:x[0]+" "+x[1],zip(params[2::2],params[3::2])))
     params2 = map(lambda x:re.sub(r"\[.*\]","",x),params);
-    print "    "+params[0]+" "+params[1]+"("+args+");"
+    print "    GEGL_EXPORT "+params[0]+" "+params[1]+"("+args+");"
 
 print "#include<geGL/OpenGL.h>"
 print "namespace ge{"

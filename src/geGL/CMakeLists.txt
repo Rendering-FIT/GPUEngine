@@ -60,6 +60,7 @@ set(GL_INCLUDES
   ${HEADER_PATH}/TrapTableDecorator.h
   ${HEADER_PATH}/CapabilitiesTableDecorator.h
   ${HEADER_PATH}/StaticCalls.h
+  ${HEADER_PATH}/GLSLNoise.h
   )
 
 set(GL_SOURCES
@@ -80,6 +81,7 @@ set(GL_SOURCES
   OpenGL.cpp
   OpenGLUtil.cpp
   StaticCalls.cpp
+  GLSLNoise.cpp
   )
 
 ################################################
