@@ -32,7 +32,12 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+
+SET(GPUENGINE_DEPS_CONFIG_FILE "" CACHE STRING "Optional configuration file that configures the dependencies.")
+IF(GPUENGINE_DEPS_CONFIG_FILE)
+   INCLUDE(${GPUENGINE_DEPS_CONFIG_FILE})
+ENDIF()
 
 ##################################################
 #Set the output to one set of directories lib/ bin/
