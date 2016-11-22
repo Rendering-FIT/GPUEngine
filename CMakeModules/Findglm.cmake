@@ -27,6 +27,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
    if(GLM_INCLUDE_DIR)
       set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
    endif()
+
    # target for cmake 3.0.0 and newer
    if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
@@ -43,4 +44,4 @@ endif()
 
 # message
 include(GEMacros)
-ge_report_find_status("${GLM_INCLUDE_DIR}")
+ge_report_find_status()
