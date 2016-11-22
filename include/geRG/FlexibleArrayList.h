@@ -105,11 +105,14 @@ namespace ge
          iterator insert(const_iterator pos,T *item);
          iterator erase(const_iterator pos);
          iterator erase_and_dispose(const_iterator pos);
-         inline void push_back(T *item);
          inline void push_front(T *item);
-         inline void pop_back();
+         inline void push_back(T *item);
          inline void pop_front();
+         inline void pop_back();
+         inline void pop_front_and_dispose();
+         inline void pop_back_and_dispose();
          void clear();
+         void clear_and_dispose();
          void swap(FlexibleArrayList<T> &other);
 
       };
@@ -180,20 +183,20 @@ namespace ge
       template<typename T>
       inline T* FlexibleArrayList<T>::back()  { return static_cast<T*>(head.prev); }
       template<typename T>
-      inline const T* FlexibleArrayList<T>::front() const  { return static_cast<T*>(head.prev); }
+      inline const T* FlexibleArrayList<T>::front() const  { return static_cast<T*>(head.next); }
       template<typename T>
-      inline const T* FlexibleArrayList<T>::back() const  { return static_cast<T*>(head.next); }
+      inline const T* FlexibleArrayList<T>::back() const  { return static_cast<T*>(head.prev); }
 
       template<typename T>
-      inline typename FlexibleArrayList<T>::iterator FlexibleArrayList<T>::begin()  { return static_cast<T*>(head.prev); }
+      inline typename FlexibleArrayList<T>::iterator FlexibleArrayList<T>::begin()  { return static_cast<T*>(head.next); }
       template<typename T>
       inline typename FlexibleArrayList<T>::iterator FlexibleArrayList<T>::end()  { return static_cast<T*>(&head); }
       template<typename T>
-      inline typename FlexibleArrayList<T>::Iterator const FlexibleArrayList<T>::begin() const  { return static_cast<T*>(head.prev); }
+      inline typename FlexibleArrayList<T>::Iterator const FlexibleArrayList<T>::begin() const  { return static_cast<T*>(head.next); }
       template<typename T>
       inline typename FlexibleArrayList<T>::Iterator const FlexibleArrayList<T>::end() const  { return static_cast<T*>(&head); }
       template<typename T>
-      inline typename FlexibleArrayList<T>::Iterator const FlexibleArrayList<T>::cbegin() const  { return static_cast<T*>(head.prev); }
+      inline typename FlexibleArrayList<T>::Iterator const FlexibleArrayList<T>::cbegin() const  { return static_cast<T*>(head.next); }
       template<typename T>
       inline typename FlexibleArrayList<T>::Iterator const FlexibleArrayList<T>::cend() const  { return static_cast<T*>(&head); }
 
@@ -225,15 +228,25 @@ namespace ge
          return tmp;
       }
       template<typename T>
-      inline void FlexibleArrayList<T>::push_back(T *item)  { insert(static_cast<T*>(&head),item); }
-      template<typename T>
       inline void FlexibleArrayList<T>::push_front(T *item)  { insert(static_cast<T*>(head.next),item); }
       template<typename T>
-      void inline FlexibleArrayList<T>::pop_back()  { erase(static_cast<T*>(head.prev)); }
+      inline void FlexibleArrayList<T>::push_back(T *item)  { insert(static_cast<T*>(&head),item); }
       template<typename T>
       inline void FlexibleArrayList<T>::pop_front()  { erase(static_cast<T*>(head.next)); }
       template<typename T>
+      void inline FlexibleArrayList<T>::pop_back()  { erase(static_cast<T*>(head.prev)); }
+      template<typename T>
+      inline void FlexibleArrayList<T>::pop_front_and_dispose()  { erase_and_dispose(static_cast<T*>(head.next)); }
+      template<typename T>
+      void inline FlexibleArrayList<T>::pop_back_and_dispose()  { erase_and_dispose(static_cast<T*>(head.prev)); }
+      template<typename T>
       void FlexibleArrayList<T>::clear()
+      {
+         head.next=&head;
+         head.prev=&head;
+      }
+      template<typename T>
+      void FlexibleArrayList<T>::clear_and_dispose()
       {
          T *p1=static_cast<T*>(head.next);
          T *p2;
