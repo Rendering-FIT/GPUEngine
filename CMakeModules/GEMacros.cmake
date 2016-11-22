@@ -74,3 +74,52 @@ macro(ge_report_find_status found_where)
       endif()
    endif()
 endmacro()
+
+macro(ge_report_find_status)
+   if(TARGET ${CMAKE_FIND_PACKAGE_NAME})
+      if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+         get_property(ALREADY_REPORTED GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_FOUND_REPORTED)
+         if(NOT ALREADY_REPORTED)
+
+            # try path from the linked library
+            get_target_property(found_where ${CMAKE_FIND_PACKAGE_NAME} INTERFACE_LINK_LIBRARIES)
+
+            # try path from include directory
+            if("${found_where}" STREQUAL "found_where-NOTFOUND")
+               get_target_property(found_where ${CMAKE_FIND_PACKAGE_NAME} INTERFACE_INCLUDE_DIRECTORIES)
+            endif()
+
+            # try config path
+            if("${found_where}" STREQUAL "found_where-NOTFOUND")
+               set(found_where "${${CMAKE_FIND_PACKAGE_NAME}_DIR}")
+            endif()
+
+            # use target name
+            if("${found_where}" STREQUAL "found_where-NOTFOUND")
+               set(found_where "${CMAKE_FIND_PACKAGE_NAME}")
+            endif()
+
+            # print message
+            message(STATUS "Find package ${CMAKE_FIND_PACKAGE_NAME}: ${found_where}")
+            set_property(GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_FOUND_REPORTED True)
+
+         endif()
+      endif()
+   else()
+      if(${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
+         get_property(ALREADY_REPORTED GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_ERROR_REPORTED)
+         if(NOT ALREADY_REPORTED)
+            message(SEND_ERROR "Find package ${CMAKE_FIND_PACKAGE_NAME}: not found")
+            set_property(GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_ERROR_REPORTED True)
+         endif()
+      else()
+         if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+            get_property(ALREADY_REPORTED GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_INFO_REPORTED)
+            if(NOT ALREADY_REPORTED)
+               message(STATUS "Find package ${CMAKE_FIND_PACKAGE_NAME}: not found")
+               set_property(GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_INFO_REPORTED True)
+            endif()
+         endif()
+      endif()
+   endif()
+endmacro()
