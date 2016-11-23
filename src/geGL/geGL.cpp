@@ -17,13 +17,43 @@ namespace ge{
 
 
 #if defined(_MSC_VER)
+#define WIN32_LEAN_AND_MEAN
+#include<Windows.h>
     class GEGL_EXPORT LoaderOpenGLFunction{
+	    protected:
+		    bool _triedToLoadOpenGL = false;
+		    bool _triedToLoadGetProcAddress = false;
+		    HMODULE _openglLib = nullptr;
+		    using PROC = int(*)();
+		    using WGLGETPROCADDRESS = PROC(__stdcall*)(LPCSTR);
+		    WGLGETPROCADDRESS _wglGetProcAddress = nullptr;
       public:
         void*operator()(char const*name){
-          (void)name;
-          assert(false&&"TODO");
-          return nullptr;
+          assert(this != nullptr);
+          const std::string libName = "opengl32.dll";
+          const std::string getProcAddressName = "wglGetProcAddress";
+          if (!this->_triedToLoadOpenGL){
+            this->_triedToLoadOpenGL = true;
+            this->_openglLib = LoadLibrary(TEXT(libName.c_str()));
+          }
+          if (!this->_triedToLoadGetProcAddress){
+            this->_triedToLoadGetProcAddress = true;
+            if (this->_openglLib)
+              this->_wglGetProcAddress = (WGLGETPROCADDRESS)GetProcAddress(this->_openglLib, TEXT(getProcAddressName.c_str()));
+            else ge::core::printError(GE_CORE_FCENAME, "cannot open " + libName);
+          }
+          if (!this->_wglGetProcAddress){
+            ge::core::printError(GE_CORE_FCENAME, "cannot load " + getProcAddressName);
+            return nullptr;
+          }
+          auto ret = (void*)this->_wglGetProcAddress(name);
+          if (ret) return ret;
+          return (void*)GetProcAddress(this->_openglLib, TEXT(name));
         }
+		    ~LoaderOpenGLFunction(){
+		      if (this->_openglLib)FreeLibrary(this->_openglLib);
+		      this->_openglLib = nullptr;
+		    }
     };
 #else
 #include<dlfcn.h>
