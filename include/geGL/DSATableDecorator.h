@@ -182,6 +182,36 @@ namespace ge{
 
             IMPLEMENT0(glCreateProgramPipelines);
 
+            if(!this->m_ptr_glCreateTextures){
+              this->m_ptr_glCreateTextures =(decltype(FunctionTable::m_ptr_glCreateTextures))&DSATableDecorator::m_glCreateTextures_dsa;
+              this->m_ptr_glDeleteTextures =(decltype(FunctionTable::m_ptr_glDeleteTextures))&DSATableDecorator::m_glDeleteTextures_dsa;
+            }
+            IMPLEMENT0(glTextureImage1DEXT          );
+            IMPLEMENT0(glTextureImage2DEXT          );
+            IMPLEMENT0(glTextureImage3DEXT          );
+            IMPLEMENT0(glTextureSubImage2DEXT       );
+            IMPLEMENT0(glTextureSubImage3DEXT       );
+            IMPLEMENT0(glCompressedTextureImage1DEXT);
+            IMPLEMENT0(glCompressedTextureImage2DEXT);
+            IMPLEMENT0(glCompressedTextureImage3DEXT);
+            IMPLEMENT0(glTextureSubImage1D          );
+            IMPLEMENT0(glTextureSubImage2D          );
+            IMPLEMENT0(glTextureSubImage3D          );
+            IMPLEMENT0(glBindTextureUnit            );
+            IMPLEMENT0(glTextureStorage1D           );
+            IMPLEMENT0(glTextureStorage2D           );
+            IMPLEMENT0(glTextureStorage3D           );
+            IMPLEMENT0(glTextureParameteri          );
+            IMPLEMENT0(glTextureParameterf          );
+            IMPLEMENT0(glTextureParameteriv         );
+            IMPLEMENT0(glTextureParameterfv         );
+            IMPLEMENT0(glGetTextureLevelParameteriv );
+            IMPLEMENT0(glGetTextureLevelParameterfv );
+            IMPLEMENT0(glGetTextureParameteriv      );
+            IMPLEMENT0(glGetTextureParameterfv      );
+            IMPLEMENT0(glGetTextureParameterIiv     );
+            IMPLEMENT0(glGetTextureParameterIuiv    );
+
             return true;
           }
           void m_glNamedBufferStorage_dsa(GLuint buffer,GLsizeiptr size,const void*data,GLbitfield flags){
@@ -561,6 +591,20 @@ namespace ge{
             PUSH_TEXTURE(target);
             this->glBindTexture(target,id);
             this->glTexImage3D(target,level,internalFormat,width,height,depth,border,format,type,pixels);
+            POP_TEXTURE(target);
+          }
+
+          void m_glTextureSubImage2DEXT_dsa(GLuint id,GLenum target,GLint level,GLint xoffset,GLint yoffset,GLsizei width,GLsizei height,GLenum format,GLenum type,const GLvoid*pixels){
+            PUSH_TEXTURE(target);
+            this->glBindTexture(target,id);
+            this->glTexSubImage2D(target,level,xoffset,yoffset,width,height,format,type,pixels);
+            POP_TEXTURE(target);
+          }
+
+          void m_glTextureSubImage3DEXT_dsa(GLuint id,GLenum target,GLint level,GLint xoffset,GLint yoffset,GLint zoffset,GLsizei width,GLsizei height,GLsizei depth,GLenum format,GLenum type,const GLvoid*pixels){
+            PUSH_TEXTURE(target);
+            this->glBindTexture(target,id);
+            this->glTexSubImage3D(target,level,xoffset,yoffset,zoffset,width,height,depth,format,type,pixels);
             POP_TEXTURE(target);
           }
 

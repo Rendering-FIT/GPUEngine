@@ -14,8 +14,7 @@ void Texture::create(
     GLsizei height        ,
     GLsizei depth         ){
   assert(this!=nullptr);
-  assert(width!=0);
-  assert(height!=0&&depth==0);
+  assert((width!=0)||(width!=0&&height!=0)||(width!=0&&height!=0&&depth!=0));
   this->_target = target;
   this->_format = internalFormat;
   this->_gl.glCreateTextures(this->_target,1,&this->_id);
@@ -24,12 +23,19 @@ void Texture::create(
     else if(depth  == 0)this->_gl.glTextureStorage2D(this->_id,levels,this->_format,width,height      );
     else                this->_gl.glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
   }else{
-    if     (height == 0)this->_gl.glTextureImage1DEXT(this->_id,this->_target,0,this->_format,width             ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
-    else if(depth  == 0)this->_gl.glTextureImage2DEXT(this->_id,this->_target,0,this->_format,width,height      ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
-    else                this->_gl.glTextureImage3DEXT(this->_id,this->_target,0,this->_format,width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+    if(target == GL_TEXTURE_CUBE_MAP){
+      for(uint32_t i=0;i<6;++i){
+        if     (height == 0)this->_gl.glTextureImage1DEXT(this->_id,GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,this->_format,width             ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+        else if(depth  == 0)this->_gl.glTextureImage2DEXT(this->_id,GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,this->_format,width,height      ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+        else                this->_gl.glTextureImage3DEXT(this->_id,GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,this->_format,width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+      }
+    }else{
+      if     (height == 0)this->_gl.glTextureImage1DEXT(this->_id,this->_target,0,this->_format,width             ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+      else if(depth  == 0)this->_gl.glTextureImage2DEXT(this->_id,this->_target,0,this->_format,width,height      ,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+      else                this->_gl.glTextureImage3DEXT(this->_id,this->_target,0,this->_format,width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,nullptr);
+    }
   }
 }
-
 
 /**
  * @brief Creates 1D texture
@@ -45,19 +51,8 @@ Texture::Texture(
     GLsizei levels,
     GLsizei width){
   assert(this!=nullptr);
-  this->_target = target;
-  this->_format = internalFormat;
-  this->_gl.glCreateTextures(this->_target,1,&this->_id);
-  if(levels>0)this->_gl.glTextureStorage1D(this->_id,levels,this->_format,width);
-  else this->_gl.glTextureImage1DEXT(this->_id,this->_target,0,this->_format,
-      width,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  this->create(target,internalFormat,levels,width);
 }
-
-
-/*
-   glTextureStorage2D(id,levels,internalFormat,width,height);
-   glTexureImage2D(id,target,level,internalFormat,width,height,border,format,type,pixels);
-   */
 
 /**
  * @brief Creates 2D texture
@@ -75,12 +70,7 @@ Texture::Texture(
     GLsizei width,
     GLsizei height){
   assert(this!=nullptr);
-  this->_target = target;
-  this->_format = internalFormat;
-  this->_gl.glCreateTextures(target,1,&this->_id);
-  if(levels>0)this->_gl.glTextureStorage2D(this->_id,levels,this->_format,width,height);
-  else this->_gl.glTextureImage2DEXT(this->_id,this->_target,0,this->_format,
-      width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  this->create(target,internalFormat,levels,width,height);
 }
 
 /**
@@ -101,12 +91,7 @@ Texture::Texture(
     GLsizei height,
     GLsizei depth){
   assert(this!=nullptr);
-  this->_target = target;
-  this->_format = internalFormat;
-  this->_gl.glCreateTextures(target,1,&this->_id);
-  if(levels>0)this->_gl.glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
-  else this->_gl.glTextureImage3DEXT(this->_id,this->_target,0,this->_format,
-      width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  this->create(target,internalFormat,levels,width,height,depth);
 }
 
 
@@ -118,12 +103,7 @@ Texture::Texture(
     GLsizei levels,
     GLsizei width):OpenGLObject(table){
   assert(this!=nullptr);
-  this->_target = target;
-  this->_format = internalFormat;
-  this->_gl.glCreateTextures(this->_target,1,&this->_id);
-  if(levels>0)this->_gl.glTextureStorage1D(this->_id,levels,this->_format,width);
-  else this->_gl.glTextureImage1DEXT(this->_id,this->_target,0,this->_format,
-      width,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  this->create(target,internalFormat,levels,width);
 }
 
 Texture::Texture(
@@ -134,12 +114,7 @@ Texture::Texture(
     GLsizei width,
     GLsizei height):OpenGLObject(table){
   assert(this!=nullptr);
-  this->_target = target;
-  this->_format = internalFormat;
-  this->_gl.glCreateTextures(target,1,&this->_id);
-  if(levels>0)this->_gl.glTextureStorage2D(this->_id,levels,this->_format,width,height);
-  else this->_gl.glTextureImage2DEXT(this->_id,this->_target,0,this->_format,
-      width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  this->create(target,internalFormat,levels,width,height);
 }
 
 Texture::Texture(
@@ -151,12 +126,7 @@ Texture::Texture(
     GLsizei height,
     GLsizei depth):OpenGLObject(table){
   assert(this!=nullptr);
-  this->_target = target;
-  this->_format = internalFormat;
-  this->_gl.glCreateTextures(target,1,&this->_id);
-  if(levels>0)this->_gl.glTextureStorage3D(this->_id,levels,this->_format,width,height,depth);
-  else this->_gl.glTextureImage3DEXT(this->_id,this->_target,0,this->_format,
-      width,height,depth,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  this->create(target,internalFormat,levels,width,height,depth);
 }
 
 
@@ -229,6 +199,7 @@ void Texture::setData2D(
     GLenum       format   ,
     GLenum       type     ,
     GLint        level    ,
+    GLenum       target   ,
     GLint        xoffset  ,
     GLint        yoffset  ,
     GLsizei      width    ,
@@ -245,9 +216,12 @@ void Texture::setData2D(
   }
   if(rowLength==0)rowLength=width;
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH,rowLength);
-  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-  this->_gl.glTextureSubImage2D(this->_id,level,xoffset,yoffset,width,height,format,type,data);
-  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT ,1        );
+  if(target!=0)
+    this->_gl.glTextureSubImage2DEXT(this->_id,target       ,level,xoffset,yoffset,width,height,format,type,data);
+  else
+    this->_gl.glTextureSubImage2DEXT(this->_id,this->_target,level,xoffset,yoffset,width,height,format,type,data);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT ,4);
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
 }
 
@@ -256,6 +230,7 @@ void Texture::setData3D(
     GLenum       format   ,
     GLenum       type     ,
     GLint        level    ,
+    GLenum       target   ,
     GLint        xoffset  ,
     GLint        yoffset  ,
     GLint        zoffset  ,
@@ -279,9 +254,12 @@ void Texture::setData3D(
   if(imgHeight==0)imgHeight=height;
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH  ,rowLength);
   this->_gl.glPixelStorei(GL_UNPACK_IMAGE_HEIGHT,imgHeight);
-  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-  this->_gl.glTextureSubImage3D(this->_id,level,xoffset,yoffset,zoffset,width,height,depth,format,type,data);
-  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT,4);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT   ,1        );
+  if(target!=0)
+    this->_gl.glTextureSubImage3DEXT(this->_id,target       ,level,xoffset,yoffset,zoffset,width,height,depth,format,type,data);
+  else
+    this->_gl.glTextureSubImage3DEXT(this->_id,this->_target,level,xoffset,yoffset,zoffset,width,height,depth,format,type,data);
+  this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT   ,4);
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH  ,0);
   this->_gl.glPixelStorei(GL_UNPACK_IMAGE_HEIGHT,0);
 }
