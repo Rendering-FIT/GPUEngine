@@ -29,3 +29,4 @@ target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})
 set_target_properties(${APP_NAME} PROPERTIES
   INCLUDE_DIRECTORIES "${Internal_inc}"
   )
+set_property(TARGET ${APP_NAME} PROPERTY FOLDER "${examples_folder_name}")

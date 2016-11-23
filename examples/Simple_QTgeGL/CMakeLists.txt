@@ -27,7 +27,7 @@ endif()
 
 set(DEFAULT_RESOERCES_PATH "${CMAKE_CURRENT_LIST_DIR}/resources")
 
-set(APP_RES "${DEFAULT_RESOERCES_PATH}" CACHE PATH "Relative or absolute path to Application resources.")
+set(${APP_NAME}_RESOURCES "${DEFAULT_RESOERCES_PATH}" CACHE PATH "Relative or absolute path to Application resources.")
 
 set(HEADER_PATH src)
 set(SOURCE_PATH src)
@@ -43,5 +43,5 @@ set(SOURCE_FILES
 add_executable(${APP_NAME} ${SOURCE_FILES})
 target_link_libraries(${APP_NAME} Qt5::Quick geGL )
 target_include_directories(${APP_NAME} PUBLIC "src/")
-set_target_properties(${APP_NAME} PROPERTIES COMPILE_DEFINITIONS "APP_RESOURCES=\"${APP_RES}\"")
-set_property(TARGET ${APP_NAME} PROPERTY FOLDER "examples")
+set_target_properties(${APP_NAME} PROPERTIES COMPILE_DEFINITIONS "APP_RESOURCES=\"${${APP_NAME}_RESOURCES}\"")
+set_property(TARGET ${APP_NAME} PROPERTY FOLDER "${examples_folder_name}")

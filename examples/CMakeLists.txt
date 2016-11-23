@@ -1,3 +1,5 @@
+set(examples_folder_name "examples")
+
 add_subdirectory(EmptyWindow)
 add_subdirectory(ShaderTest)
 add_subdirectory(VertexArray)
