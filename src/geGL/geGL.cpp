@@ -19,14 +19,14 @@ namespace ge{
 #if defined(_MSC_VER)
 #define WIN32_LEAN_AND_MEAN
 #include<Windows.h>
-    class GEGL_EXPORT LoaderOpenGLFunction{
-	    protected:
-		    bool _triedToLoadOpenGL = false;
-		    bool _triedToLoadGetProcAddress = false;
-		    HMODULE _openglLib = nullptr;
-		    using PROC = int(*)();
-		    using WGLGETPROCADDRESS = PROC(__stdcall*)(LPCSTR);
-		    WGLGETPROCADDRESS _wglGetProcAddress = nullptr;
+    class GEGL_EXPORT OpenGLFunctionLoader{
+      protected:
+        bool _triedToLoadOpenGL = false;
+        bool _triedToLoadGetProcAddress = false;
+        HMODULE _openglLib = nullptr;
+        using PROC = int(*)();
+        using WGLGETPROCADDRESS = PROC(__stdcall*)(LPCSTR);
+        WGLGETPROCADDRESS _wglGetProcAddress = nullptr;
       public:
         void*operator()(char const*name){
           assert(this != nullptr);
@@ -50,14 +50,14 @@ namespace ge{
           if (ret) return ret;
           return (void*)GetProcAddress(this->_openglLib, TEXT(name));
         }
-		    ~LoaderOpenGLFunction(){
-		      if (this->_openglLib)FreeLibrary(this->_openglLib);
-		      this->_openglLib = nullptr;
-		    }
+        ~OpenGLFunctionLoader(){
+          if (this->_openglLib)FreeLibrary(this->_openglLib);
+          this->_openglLib = nullptr;
+        }
     };
 #else
 #include<dlfcn.h>
-    class GEGL_EXPORT LoaderOpenGLFunction{
+    class GEGL_EXPORT OpenGLFunctionLoader{
       protected:
         bool _triedToLoadOpenGL = false;
         bool _triedToLoadGetProcAddress = false;
@@ -85,7 +85,7 @@ namespace ge{
           }
           return (void*)this->_glXGetProcAddress((uint8_t const*)(name));
         }
-        ~LoaderOpenGLFunction(){
+        ~OpenGLFunctionLoader(){
           if(openglLib)dlclose(this->openglLib);
           this->openglLib = nullptr;
         }
@@ -93,7 +93,7 @@ namespace ge{
 #endif
 
     GEGL_EXPORT void*getProcAddress(char const*name){
-      static LoaderOpenGLFunction loader{};
+      static OpenGLFunctionLoader loader{};
       return loader(name);
     }
   }
