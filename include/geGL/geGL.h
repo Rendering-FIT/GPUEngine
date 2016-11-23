@@ -41,20 +41,30 @@
 namespace ge{
   namespace gl{
     /**
+     * @brief This function returns pointers to opengl functions
+     *
+     * @param name name of opengl function
+     *
+     * @return pointer to opengl function
+     */
+    GEGL_EXPORT void*getProcAddress(char const*name);
+
+    /**
      * @brief This function initialises geGL library.
-     * It requeires FunctionLoader object that can load OpenGL functions
+     * It requires FunctionLoader object that can load OpenGL functions
      *
      * @param loader function loader (see DefaultLoader.h)
      */
     GEGL_EXPORT void init(
-        std::shared_ptr<FunctionLoaderInterface>const&loader = nullptr);
+        std::shared_ptr<FunctionLoaderInterface>const&loader);
     /**
      * @brief This function initialises geGL library
      * It requires getProcAddress such as SDL_GL_GetProcAddress or wglGetProcAddress or glxGetProcAddress ...
      *
-     * @param getProcAddress function that takes name of opengl function and returns its address
+     * @param getProc function that takes name of opengl function and returns its address
      */
-    GEGL_EXPORT void init(GET_PROC_ADDRESS getProcAddress);
+    GEGL_EXPORT void init(GET_PROC_ADDRESS getProc = getProcAddress);
+
   }
 }
 

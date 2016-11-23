@@ -42,7 +42,7 @@ int main(int,char*[]){
   window->createContext("rendering");
   mainLoop->addWindow("mainWindow", window);
 
-  ge::gl::init(SDL_GL_GetProcAddress);
+  ge::gl::init();
   setHighDebugMessage();
 
   auto vs = make_shared<Shader>(GL_VERTEX_SHADER, vSrc);
