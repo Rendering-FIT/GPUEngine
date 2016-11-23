@@ -87,20 +87,20 @@ void App::setupStateStack() {
 	maxTextures = options.textureCount;
 	currentTextures = maxTextures;
 	currentDrawMode = options.drawMode;
-
+  /*
 	waitFrames(1);
-	pushWaitTime(2000);
+	pushWaitTime(2000);*/
 
 	vector<DrawMode> modes({ INSTANCED, SINGLE_DRAW, MULTIDRAW_INDIRECT });
 	if (options.includeMany) modes.push_back(MANY_DRAW);
 	vector<int> texCounts({ 16,32,64,128,512,1024 });
 
+  currentState = IDLE;
 	switch (options.appMode) {
 	case CALIBRATE:
 		pushCalibrate(1000, maxTextures, currentDrawMode);
 		break;
 	case INTERACTIVE:
-		currentState = INTERACTIVE;
 		pushInteractive(maxCubes, maxTextures, currentDrawMode);
 		break;
 	case TEST:
@@ -127,7 +127,7 @@ void App::setupStateStack() {
 		// test different texture counts
 		for (auto &t : texCounts) {
 			if (t <= maxTextures) {
-				pushTest(maxCubes, t, SINGLE_DRAW);
+				pushTest(maxCubes, t, INSTANCED);
 				pushWaitTime(2000);
 			}
 		}
@@ -171,16 +171,16 @@ void App::updateState() {
 		if (fps < 60) {
 			difCounter = glm::max(difCounter - 1, -10);
 			if (difCounter == -10) {
-				currentCubes -= 10;
+        addCubes(-10);
 			}
 		}
 		if (fps > 60) {
 			difCounter = glm::min(difCounter + 1, 10);
 			if (difCounter == 10) {
-				if (fps > 150 && currentDrawMode != MANY_DRAW)currentCubes *= 2;
-				else if (fps > 75 && currentDrawMode != MANY_DRAW)currentCubes += 1000;
-				else if (fps > 61)currentCubes += 100;
-				else currentCubes += 10;
+				if (fps > 150 && currentDrawMode != MANY_DRAW)addCubes(currentCubes);
+				else if (fps > 75 && currentDrawMode != MANY_DRAW)addCubes(1000);
+				else if (fps > 61) addCubes(100);
+				else addCubes(10);
 				currentCubes = glm::min(currentCubes, maxCubes);
 			}
 		}
@@ -284,6 +284,9 @@ void App::interactive(int cubes, int textures, DrawMode mode) {
 	currentCubes = cubes;
 	currentTextures = textures;
 	currentDrawMode = mode;
+  zoom = float(getSide()) * 2.8f;
+  rotx = 45;
+  roty = 45;
 }
 
 void App::calibrate(int cubes, int textures, DrawMode mode) {
@@ -312,6 +315,19 @@ void App::waitTime(int ms) {
 	waitTimeTotal = ms;
 }
 
+void App::addCubes(int count){
+  currentCubes += count;
+}
+
+glm::mat4 App::getMatrix(int id){
+  int side = (int)ceil(cbrtf(float(currentCubes)));
+  vec3 offset = vec3(float(side));
+  int x = id % side;
+  int y = (id / side) % side;
+  int z = id / (side*side);
+  return translate(mat4(), vec3(x, y, z)*2.0f - offset);
+}
+
 int App::getSide() {
 	return (int)ceil(cbrtf(float(currentCubes)));
 }
@@ -330,7 +346,7 @@ void App::printTestResult() {
 	cout.setf(ios_base::fixed);
 	cout << currentRendererToString() << " test, " << currentCubes << " cubes, "
 		<< currentTextures << " textures, "
-		<< "back-front:" << backFrontTime << "ms, frost-back:" << frontBackTime << "ms, 360-avg: "
+		<< "back-front:" << backFrontTime << "ms, front-back:" << frontBackTime << "ms, 360-avg: "
 		<< avgTime << "ms, one cube: " << 1000 * avgTime / float(currentCubes) << "us\n";
 }
 
@@ -375,28 +391,7 @@ std::string App::currentRendererToString() {
 GLuint App::generateTexture(int size) {
 	int width = size;
 	int height = size;
-	uint *data = new uint[width * height];
-	unsigned int colors[] = {
-		0xFF000000,
-		0xFFFF0000,
-		0xFF00FF00,
-		0xFF0000FF,
-		0xFFFFFF00,
-		0xFFFF00FF,
-		0xFF00FFFF,
-		0xFFFFFFFF
-	};
-	int c1 = rand() % 8;
-	int c2 = rand() % 8;
-	if (c2 == c1)c2 = (c2 + 1) % 8;
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			if (((x >> 4) & 1) == ((y >> 4) & 1))
-				data[y * width + x] = colors[c1];
-			else
-				data[y * width + x] = colors[c2];
-		}
-	}
+  uint *data = generateTextureData(size);
 	GLuint tex;
 	glCreateTextures(GL_TEXTURE_2D, 1, &tex);
 	glTextureImage2DEXT(tex, GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -407,6 +402,32 @@ GLuint App::generateTexture(int size) {
 	glTextureParameteri(tex, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	delete[] data;
 	return tex;
+}
+
+uint * App::generateTextureData(int size){
+  uint *data = new uint[size * size];
+  unsigned int colors[] = {
+    0xFF000000,
+    0xFFFF0000,
+    0xFF00FF00,
+    0xFF0000FF,
+    0xFFFFFF00,
+    0xFFFF00FF,
+    0xFF00FFFF,
+    0xFFFFFFFF
+  };
+  int c1 = rand() % 8;
+  int c2 = rand() % 8;
+  if (c2 == c1)c2 = (c2 + 1) % 8;
+  for (int y = 0; y < size; y++) {
+    for (int x = 0; x < size; x++) {
+      if (((x >> 4) & 1) == ((y >> 4) & 1))
+        data[y * size + x] = colors[c1];
+      else
+        data[y * size + x] = colors[c2];
+    }
+  }
+  return data;
 }
 
 void quad(vector<Vertex>& vertexData,

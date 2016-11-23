@@ -31,6 +31,7 @@ struct Options {
 	int cubeCount = 100;
 	int textureCount = 1024;
 	int textureSize = 128;
+  bool verbose = false;
 };
 
 
@@ -60,6 +61,8 @@ protected:
 	void waitFrames(int frames);
 	void waitTime(int ms);
 
+  virtual void addCubes(int count);
+  glm::mat4 getMatrix(int id);
 	virtual void recomputeMatrices(int cubes) {(void)cubes;}
 
 	int getSide();
@@ -71,7 +74,9 @@ protected:
 	std::string drawModeToString(DrawMode mode);
 	std::string currentRendererToString();
 
+  // generator
 	GLuint generateTexture(int size);
+  unsigned int* generateTextureData(int size);
 	void generateCubeVertices(std::vector<Vertex> &vertexData);
 
 	// waitTime vars
