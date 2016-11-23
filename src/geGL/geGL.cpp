@@ -37,18 +37,20 @@ namespace ge{
         GETPROCTYPE _glXGetProcAddress = nullptr;
       public:
         void*operator()(char const*name){
+          const std::string libName = "libGL.so.1";
+          const std::string getProcAddressName = "glXGetProcAddress";
           if(!this->_triedToLoadOpenGL){
             this->_triedToLoadOpenGL = true;
-            this->openglLib = dlopen("libGL.so.1",RTLD_LAZY);
+            this->openglLib = dlopen(libName.c_str(),RTLD_LAZY);
           }
           if(!this->_triedToLoadGetProcAddress){
             this->_triedToLoadGetProcAddress = true;
             if(this->openglLib)
-              reinterpret_cast<void*&>(this->_glXGetProcAddress) = dlsym(this->openglLib,"glXGetProcAddress");
-            else ge::core::printError(GE_CORE_FCENAME,"cannot open libGL.so.1");
+              reinterpret_cast<void*&>(this->_glXGetProcAddress) = dlsym(this->openglLib,getProcAddressName.c_str());
+            else ge::core::printError(GE_CORE_FCENAME,"cannot open "+libName);
           }
           if(!this->_glXGetProcAddress){
-            ge::core::printError(GE_CORE_FCENAME,"cannot load glXGetProcAddress");
+            ge::core::printError(GE_CORE_FCENAME,"cannot load "+getProcAddressName);
             return nullptr;
           }
           return (void*)this->_glXGetProcAddress((uint8_t const*)(name));

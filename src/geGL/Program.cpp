@@ -670,6 +670,15 @@ void Program::_fillUniformInfo(){
     name = this->_chopIndexingInPropertyName(std::string(buffer));
     location = this->getUniformLocation(name);
     this->_info->uniforms[name] = ProgramInfo::Properties(location,type,name,size);
+    //add all variants name[0], name[1], ...
+    for(GLint s=0;s<size;++s){
+      std::string uniformNameWithIndexing = name+"["+ge::core::value2str(s)+"]";
+      this->_info->uniforms[uniformNameWithIndexing] = ProgramInfo::Properties(
+          this->getUniformLocation(uniformNameWithIndexing),
+          type,
+          uniformNameWithIndexing,
+          1);
+    }
   }
   delete[]buffer;
 }

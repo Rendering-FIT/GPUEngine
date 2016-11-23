@@ -230,7 +230,7 @@ void main(){
         ge::gl::Shader::define("BIT_SIZE"         ,int(bitSize)                               ),
         ge::gl::Shader::define("TEXELS_PER_THREAD",int(texelsPerThreadX),int(texelsPerThreadY)),
         compSrc));
-  auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,internalFormat,1,dispatchSizeX*texelsPerThreadX,dispatchSizeY*texelsPerThreadY);
+  auto texture = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,internalFormat,1,GLsizei(dispatchSizeX*texelsPerThreadX),GLsizei(dispatchSizeY*texelsPerThreadY));
   auto query = std::make_shared<ge::gl::AsynchronousQuery>(GL_TIME_ELAPSED,GL_QUERY_RESULT,ge::gl::AsynchronousQuery::UINT64);
   auto gl = ge::gl::getDefaultContext();
   program->use();
