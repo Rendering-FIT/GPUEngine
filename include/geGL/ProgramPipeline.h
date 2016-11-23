@@ -8,6 +8,7 @@ namespace ge{
       public:
         ProgramPipeline();
         ProgramPipeline(FunctionTablePointer const&table);
+        ProgramPipeline(ProgramPipeline const&) = delete;
         ~ProgramPipeline();
         void bind()const;
         void unbind()const;

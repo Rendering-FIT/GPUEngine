@@ -32,6 +32,7 @@ namespace ge{
         AsynchronousQuery(
             FunctionTablePointer const&table,
             AsynchronousQuery*existingQuery);
+        AsynchronousQuery(AsynchronousQuery const&) = delete;
         ~AsynchronousQuery();
         void begin();
         void end();

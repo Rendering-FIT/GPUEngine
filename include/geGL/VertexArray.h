@@ -18,6 +18,7 @@ namespace ge{
         };
         VertexArray ();
         VertexArray (FunctionTablePointer const&table);
+        VertexArray(VertexArray const&) = delete;
         ~VertexArray();
         void addAttrib(
             std::shared_ptr<Buffer>const&buffer                      ,

@@ -21,6 +21,7 @@ namespace ge{
             GLsizei width             ,
             GLsizei height            ,
             GLsizei samples        = 0);
+        Renderbuffer(Renderbuffer const&) = delete;
         ~Renderbuffer();
         void setStorage(
             GLenum  internalFormat    ,

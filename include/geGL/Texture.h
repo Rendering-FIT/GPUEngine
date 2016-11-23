@@ -57,6 +57,7 @@ namespace ge{
             GLsizei width         ,
             GLsizei height        ,
             GLsizei depth         );
+        Texture(Texture const&) = delete;
         ~Texture();
         void bind     (GLuint unit)const;
         void unbind   (GLuint unit)const;

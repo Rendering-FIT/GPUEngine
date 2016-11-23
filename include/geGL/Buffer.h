@@ -28,6 +28,7 @@ namespace ge{
             GLsizeiptr    size                  ,
             const GLvoid* data  = nullptr       ,
             GLbitfield    flags = GL_STATIC_DRAW);
+        Buffer(Buffer const&) = delete;
         virtual ~Buffer();
         void alloc(
             GLsizeiptr    size                  ,

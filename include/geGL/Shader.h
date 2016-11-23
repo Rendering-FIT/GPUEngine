@@ -22,6 +22,7 @@ namespace ge{
             FunctionTablePointer const&table       ,
             GLenum               const&type        ,
             Sources              const&sources = {});
+        Shader(Shader const&) = delete;
         virtual ~Shader();
         void        create(GLenum type);
         void        setSource(Sources const& sources = {});

@@ -15,6 +15,7 @@ namespace ge{
         Sampler (
             FunctionTablePointer const&table,
             Sampler*sampler);
+        Sampler(Sampler const&) = delete;
         ~Sampler();
         void setBorderColor(GLfloat*color    )const;
         void setCompareFunc(GLenum  func     )const;

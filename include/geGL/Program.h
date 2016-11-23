@@ -21,6 +21,7 @@ namespace ge{
         Program(
             FunctionTablePointer const&table       ,
             ShaderPointers       const&shaders = {});
+        Program(Program const&) = delete;
         ~Program();
         void create       ();
         void attachShaders(ShaderPointers const&shaders = {});

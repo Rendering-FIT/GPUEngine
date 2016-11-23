@@ -18,6 +18,7 @@ namespace ge{
       Framebuffer (
           FunctionTablePointer const&table,
           bool defaultFramebuffer = false);
+      Framebuffer(Framebuffer const&) = delete;
       ~Framebuffer();
       void   bind  (GLenum target = GL_DRAW_FRAMEBUFFER)const;
       void   unbind(GLenum target = GL_DRAW_FRAMEBUFFER)const;
