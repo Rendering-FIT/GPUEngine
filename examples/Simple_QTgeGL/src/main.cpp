@@ -1,5 +1,3 @@
-#define WIN32_LEAN_AND_MEAN
-
 #include <BasicQuickRenderer.h>
 
 #include <QGuiApplication>
@@ -10,8 +8,12 @@ int main(int argc, char** argv)
 
    QQuickWindow qw;
    qw.resize(800, 600);
-   fsg::BasicQuickRenderer basicRenderer = new fsg::BasicQuickRenderer(&qw);
-   //QuickRenderer basicRenderer(&qw);
+
+   /* The ownership is transfered to QQuickWindow in the constructor
+    * and to Qt's are responsible for deleting it.
+    * http://doc.qt.io/qt-5/qobject.html#dtor.QObject
+    */
+   new fsg::BasicQuickRenderer(&qw);
 
 
    qw.show();

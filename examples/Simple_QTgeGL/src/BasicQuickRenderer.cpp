@@ -1,4 +1,3 @@
-#define WIN32_LEAN_AND_MEAN
 #include <geGL/geGL.h>
 #include <geCore/Text.h>
 #include <BasicQuickRenderer.h>
@@ -10,7 +9,7 @@ using namespace std;
 
 
 fsg::BasicQuickRenderer::BasicQuickRenderer(QObject* parent)
-   : QuickRenderer(parent)
+   : QuickRendererBase(parent)
    , triagProgram(nullptr)
    , gl(nullptr)
 {
@@ -50,6 +49,10 @@ void fsg::BasicQuickRenderer::draw()
    gl->glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
+/**
+ * This is called with active ogl context so we prep the scene and draw it.
+ * The body of the rendering loop is here.
+ */
 void fsg::BasicQuickRenderer::beforeRendering()
 {
    qDebug() << "before rendering";
@@ -66,13 +69,17 @@ void fsg::BasicQuickRenderer::beforeRendering()
 void fsg::BasicQuickRenderer::onOGLContextCreated(QOpenGLContext* context)
 {
    qDebug() << "onOGLContextCreated";
+   //YOU NEED TO CONTEXT TO BE ACTIVE while using ogl
    context->makeCurrent(_qqw);
 
    
-   //init geGL gl context
+   //init geGL 
+   /* inits the ogl functions */
    ge::gl::init();
+   //creates a defaultcontext object with ogl functions we got from ge::gl::init()
    gl = make_shared<Context>();
 
+   //application specific resource loading
    string shaders_dir(APP_RESOURCES + std::string("/shaders/"));
 
    //load shaders
@@ -83,5 +90,6 @@ void fsg::BasicQuickRenderer::onOGLContextCreated(QOpenGLContext* context)
    //create empty VAO, need because of OGL spec
    dummyVAO = make_shared<ge::gl::VertexArray>();
 
+   //YOU ABSOLUTELY NEED TO RELEASE THIS
    context->doneCurrent();
 }
