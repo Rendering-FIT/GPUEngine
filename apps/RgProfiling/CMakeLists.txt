@@ -1,10 +1,10 @@
-set(APP_NAME MultiCubePerf)
+set(APP_NAME RgProfiling)
 
 project(${APP_NAME})
 
 find_package(SDL2)
 
-if(NOT SDL2_FOUND OR NOT TARGET geGL OR NOT TARGET geUtil)
+if(NOT SDL2_FOUND OR NOT TARGET geGL OR NOT TARGET geUtil OR NOT TARGET geRG)
    return()
 endif()
 
@@ -15,18 +15,16 @@ endif()
 set(APP_SOURCES
 	src/main.cpp
 	src/gui.cpp
-	src/stats.cpp
 	src/app.cpp
-	src/appgl.cpp
 	src/apprg.cpp
+  src/ProfilingContext.cpp
 )
 
 set(APP_INCLUDES
 	src/gui.h
-	src/stats.h
 	src/app.h
-	src/appgl.h
 	src/apprg.h
+  src/ProfilingContext.h
 )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
