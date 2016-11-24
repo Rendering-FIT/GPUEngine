@@ -127,7 +127,7 @@ float cloudDensity(vec2 pos,vec3 view,float time){
   const float height=100;
   uvec3 coord=uvec3(ivec2(pos+view.xz*height/view.y+time),uint(time));
   float gnoise=noise(coord,8u,8u,2.f);
-  return pow(clamp(gnoise,0,1),.4)*smoothstep(0,.1,view.y);
+  return pow(clamp(gnoise,0,1),.4)*smoothstep(0.0,.1,view.y);
 }
 
 vec4 cloudColor(vec3 view,vec3 sun,float time,float day){
@@ -143,7 +143,7 @@ vec3 groundPosition(vec3 view){
 
 vec4 groudColor(vec3 view){
   uvec2 coord=uvec2(ivec2(groundPosition(view).xz));
-  float gnoise=noise(coord,8u,8u,2.f)*smoothstep(0,.1,-view.y)*.5+.5;
+  float gnoise=noise(coord,8u,8u,2.f)*smoothstep(0.0,.1,-view.y)*.5+.5;
   
   float ground=step(view.y,0);
   return vec4(mix(vec3(1),vec3(0,gnoise,0),horizont(view)),ground);
@@ -183,7 +183,7 @@ void main(){
   if(dot(normal,normal)!=0){
     float ambient=0.1;
     float diffuse=clamp(dot(sun,normal),0,1);
-    float shadow=1-(cloudDensity(groundPosition(viewVector).xz,sun,time2))*smoothstep(0,0.1,-viewVector.y);
+    float shadow=1-(cloudDensity(groundPosition(viewVector).xz,sun,time2))*smoothstep(0.0,0.1,-viewVector.y);
     vec4 finalColor;
     finalColor+=ambient*color*skyColors(day);
     finalColor+=shadow*diffuse*color*sunColors(day);
