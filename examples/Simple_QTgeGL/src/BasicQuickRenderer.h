@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QuickRenderer.h>
+#include <QuickRendererBase.h>
 
 #include <memory>
 
@@ -16,7 +16,10 @@ namespace ge
 
 namespace fsg
 {
-   class BasicQuickRenderer : public QuickRenderer
+   /**
+    *  Basic example of renderer class. It loads external shaders and draw simple triangle.
+    */
+   class BasicQuickRenderer : public QuickRendererBase
    {
       Q_OBJECT
    public:
