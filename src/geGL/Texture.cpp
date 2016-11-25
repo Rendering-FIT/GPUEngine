@@ -332,6 +332,8 @@ GLint Texture::_getTexLevelParameter(GLint level,GLenum pname)const{
   GLint param;
 #ifndef USE_DSA
   GLuint oldId=this->_bindSafe();
+  GLenum target = this->getTarget();
+  if(target == GL_TEXTURE_CUBE_MAP)target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
   this->_gl.glGetTexLevelParameteriv(this->getTarget(),level,pname,&param);
   this->_gl.glBindTexture(this->getTarget(),oldId);
 #else //USE_DSA
@@ -963,7 +965,7 @@ std::string Texture::getInfo()const{
   ss<<"GL_DEPTH_STENCIL_TEXTURE_MODE: "<<this->getDepthStencilTextureMode()<<std::endl;
   ss<<"GL_TEXTURE_COMPARE_MODE: "      <<ge::gl::translateTextureCompareMode(this->getCompareMode())<<std::endl;
   ss<<"GL_TEXTURE_COMPARE_FUNC: "      <<ge::gl::translateTextureCompareFunc(this->getCompareFunc())<<std::endl;
-  ss<<"GL_IMAGE_FORMAT_COMPATIBILITY_TYPE: "<<this->getImageFormatCompatibilityType()<<std::endl;
+  ss<<"GL_IMAGE_FORMAT_COMPATIBILITY_TYPE: "<<ge::gl::translateImageFormatCompatibilityType(this->getImageFormatCompatibilityType())<<std::endl;
   ss<<"GL_TEXTURE_IMMUTABLE_FORMAT: "  <<(bool)(0!=this->getImmutableFormat())<<std::endl;
   ss<<"GL_TEXTURE_IMMUTABLE_LEVELS: "  <<this->getImmutableLevels()<<std::endl;
   ss<<"GL_TEXTURE_VIEW_MIN_LEVEL: "    <<this->getViewMinLevel ()<<std::endl;

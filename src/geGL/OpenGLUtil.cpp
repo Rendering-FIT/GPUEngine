@@ -437,8 +437,20 @@ std::string ge::gl::translateInternalFormat(GLenum internalFormat){
     case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:return "GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM";
     case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:return "GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT";
     case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:return "GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT";
+    case GL_RGBA:return "GL_RGBA";
+    case GL_RGB:return "GL_RGB";
+    case GL_RG:return "GL_RG";
     default:return"unknown"              ;
   };
+}
+
+std::string ge::gl::translateImageFormatCompatibilityType(GLenum type){
+  switch(type){
+    case GL_IMAGE_FORMAT_COMPATIBILITY_BY_SIZE :return "GL_IMAGE_FORMAT_COMPATIBILITY_BY_SIZE" ;
+    case GL_IMAGE_FORMAT_COMPATIBILITY_BY_CLASS:return "GL_IMAGE_FORMAT_COMPATIBILITY_BY_CLASS";
+    case GL_NONE                               :return "GL_NONE"                               ;
+    default                                    :return "unknown"                               ;
+  }
 }
 
 

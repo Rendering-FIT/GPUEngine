@@ -33,6 +33,7 @@ namespace ge{
     GEGL_EXPORT std::string translateTextureChannelType(GLenum type   );
     GEGL_EXPORT unsigned internalFormatSize(GLenum internalFormat);
     GEGL_EXPORT std::string translateInternalFormat(GLenum internalFormat);
+    GEGL_EXPORT std::string translateImageFormatCompatibilityType(GLenum type);
 
     GEGL_EXPORT std::string translateAttribType(GLenum    type   );
     GEGL_EXPORT std::string translateBoolean   (GLboolean boolean);
