@@ -18,31 +18,7 @@ namespace ge{
       {
       public:
 
-         /*enum class Format
-         {
-         UNKNOWN,
-         R,
-         RG,
-         RGB,
-         BGR,
-         RGBA,
-         BGRA,
-         };*/
-
          ENUM_CLASS_FRIEND_OPERATOR(Format, UNKNOWN, R, RG, RGB, BGR, RGBA, BGRA);
-
-         /*enum class Type
-         {
-         UNKNOWN,
-         BYTE,
-         UNSIGNED_BYTE,
-         SHORT,
-         UNSIGNED_SHORT,
-         INT,
-         UNSIGNED_INT,
-         HALF_FLOAT,
-         FLOAT,
-         };*/
 
          ENUM_CLASS_FRIEND_OPERATOR(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, HALF_FLOAT, FLOAT);
 

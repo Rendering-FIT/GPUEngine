@@ -160,7 +160,7 @@ namespace ge
 
          MeshTriangleIterator(Mesh* mesh)
          {
-            auto it = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [](std::shared_ptr<AttributeDescriptor>& attr){ return attr->semantic == AttributeDescriptor::Semantic::POSITION; });
+            auto it = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [](std::shared_ptr<AttributeDescriptor>& attr){ return attr->semantic == AttributeDescriptor::Semantic::position; });
             _Ptr = static_cast<float*>((**it).data.get());
             N = (**it).numComponents;
             _triangle.setToContinuous(_Ptr, N);
@@ -215,8 +215,8 @@ namespace ge
 
          MeshIndexedTriangleIterator(Mesh* mesh)
          {
-            auto indices = mesh->getAttribute(ge::core::StandardSemanticNames::indices);
-            auto positions = mesh->getAttribute(ge::core::StandardSemanticNames::position);
+            auto indices = mesh->getAttribute(AttributeDescriptor::Semantic::indices);
+            auto positions = mesh->getAttribute(AttributeDescriptor::Semantic::position);
 
             if(indices && positions)
             {
@@ -293,8 +293,8 @@ namespace ge
        */
       inline MeshIndexedTriangleIterator MeshPositionIteratorBegin(Mesh *mesh)
       {
-         auto indices = mesh->getAttribute(ge::core::StandardSemanticNames::indices);
-         auto positions = mesh->getAttribute(ge::core::StandardSemanticNames::position);
+         auto indices = mesh->getAttribute(AttributeDescriptor::Semantic::indices);
+         auto positions = mesh->getAttribute(AttributeDescriptor::Semantic::position);
 
          if(indices && positions)
          {

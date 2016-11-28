@@ -1,12 +1,12 @@
-#include <EnumToGL.h>
+#include <geSG/EnumToGL.h>
 
 GLuint fsg::semnatic2Attribute(AttributeDescriptor::Semantic semantic)
 {
    switch(semantic)
    {
-      case fsg::AttributeDescriptor::Semantic::POSITION: return 0;
-      case fsg::AttributeDescriptor::Semantic::NORMAL: return 1;
-      case fsg::AttributeDescriptor::Semantic::TEXCOORD: return 2;
+      case fsg::AttributeDescriptor::Semantic::position: return 0;
+      case fsg::AttributeDescriptor::Semantic::normal: return 1;
+      case fsg::AttributeDescriptor::Semantic::texcoord: return 2;
       default:
          return -1;
          break;

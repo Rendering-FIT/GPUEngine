@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include "geCore/idlist.h"
 
 namespace ge{
    namespace sg
@@ -19,13 +20,7 @@ namespace ge{
       class /*GESG_EXPORT*/ MaterialComponent
       {
       public:
-         /*enum class ComponentType
-         {
-         UNKNOWN,
-         SIMPLE,
-         IMAGE,
-         };*/
-
+        
          ENUM_CLASS_FRIEND_OPERATOR(ComponentType, UNKNOWN, SIMPLE, IMAGE);
 
          MaterialComponent() : componentType(ComponentType::UNKNOWN){}
@@ -47,12 +42,11 @@ namespace ge{
       {
       public:
          ENUM_CLASS_FRIEND_OPERATOR(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT, DOUBLE);
-         //ENUM_CLASS_FRIEND_OPERATOR(Semantic, UNKNOWN, AMBIENT, DIFFUSE, SPECULAR, EMISSIVE, SHININESS);
-         GESG_EXPORT static ge::core::EnumRegister semanticRegister;
+         idlist(Semantic, unknown, ambientColor, diffuseColor, specularColor, emissiveColor, shininess)
 
          MaterialSimpleComponent()
             : MaterialComponent()
-            , semantic(ge::core::EnumRegister::notRegistered)
+            , semantic(Semantic::unknown)
             , data(nullptr)
          {
             componentType = ComponentType::SIMPLE;
@@ -60,18 +54,8 @@ namespace ge{
 
          int size;
          DataType dataType;
-         unsigned semantic;
-         char *data;
-      };
-
-      template<typename Deleter = std::default_delete<char[]>>
-      class MaterialSimpleComponentTemplate : public MaterialSimpleComponent
-      {
-      public:
-         virtual ~MaterialSimpleComponentTemplate()
-         {
-            if(data) Deleter(data);
-         }
+         Semantic semantic;
+         std::unique_ptr<unsigned char[]> data;
       };
 
       /**
@@ -80,18 +64,17 @@ namespace ge{
       class /*GESG_EXPORT*/ MaterialImageComponent : public MaterialComponent
       {
       public:
-         //ENUM_CLASS_FRIEND_OPERATOR(Semantic, UNKNOWN, DIFFUSE, SPECULAR, AMBIENT, EMISSIVE, HEIGHT, NORMAL, SHININESS, OPACITY, DISPLACEMENT, LIGHTMAP, REFLECTION, TEXT)
-         GESG_EXPORT static ge::core::EnumRegister semanticRegister;
+         idlist(Semantic, unknown, ambientTexture, diffuseTexture, specularTexture, emissiveTexture, heightTexture, normalTexture, shininessTexture, opacityTexture, displacementTexture, lightmapTexture, reflectionTexture)
 
          MaterialImageComponent()
             : MaterialComponent()
-            , semantic(ge::core::EnumRegister::notRegistered)
+            , semantic(Semantic::unknown)
          {
             componentType = ComponentType::IMAGE;
          }
 
          std::string filePath;
-         unsigned semantic;
+         Semantic semantic;
          std::shared_ptr<Image> image;
       };
 
