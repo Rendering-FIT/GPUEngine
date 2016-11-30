@@ -16,7 +16,7 @@ struct GESG_EXPORT AttributeDescriptor
 {
    idlist(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT, DOUBLE);
 
-   size_t getSize(DataType type)
+   unsigned getSize(DataType type)
    {
       switch(type)
       {

@@ -52,10 +52,27 @@ namespace ge{
             componentType = ComponentType::SIMPLE;
          }
 
+         unsigned getSize(DataType type)
+         {
+            switch(type)
+            {
+               case DataType::UNKNOWN: return 0;
+               case DataType::BYTE:
+               case DataType::UNSIGNED_BYTE: return sizeof(char);
+               case DataType::SHORT:
+               case DataType::UNSIGNED_SHORT: return sizeof(short);
+               case DataType::INT:
+               case DataType::UNSIGNED_INT: return sizeof(int);
+               case DataType::FLOAT: return sizeof(float);
+               case DataType::DOUBLE: return sizeof(double);
+               default: return 0;
+            }
+         }
+
          int size;
          DataType dataType;
          Semantic semantic;
-         std::unique_ptr<unsigned char[]> data;
+         std::unique_ptr<unsigned char[]> data; //shared pointer could be longer than the data itself
       };
 
       /**
@@ -84,6 +101,29 @@ namespace ge{
       class /*GESG_EXPORT*/ Material
       {
       public:
+
+         /**
+          * Finds and returns material component with the given semantic. Automaticaly infers the type
+          * of component from the semantic.
+          */
+         template<typename ComponentType>
+         std::shared_ptr<ComponentType> getComponent(typename ComponentType::Semantic semantic)
+         {
+            auto it = std::find_if(materialComponents.begin(), materialComponents.end(), [semantic](auto& comp)->bool
+            {
+               ComponentType* c = dynamic_cast<ComponentType*>(comp.get());
+               if(c)
+               {
+                  return c->semantic == semantic;
+               }
+
+               return false;
+            });
+
+            if(it != materialComponents.end()) return std::static_pointer_cast<ComponentType>(*it);
+            return std::shared_ptr<ComponentType>(nullptr);
+         }
+
          std::vector<std::shared_ptr<MaterialComponent>> materialComponents;
       };
    } //namespace sg

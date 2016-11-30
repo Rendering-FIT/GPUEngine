@@ -1,1 +1,0 @@
-#include <geSG/AttributeDescriptor.h>
