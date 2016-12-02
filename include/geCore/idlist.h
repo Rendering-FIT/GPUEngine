@@ -1,7 +1,7 @@
 #ifndef GE_CORE_IDLIST_H
 #define GE_CORE_IDLIST_H
 
-#include <map>
+#include <unordered_map>
 #include <ostream>
 #include <string>
 
@@ -14,8 +14,8 @@ namespace core {
  *  (int, unsigned, long long int, etc.). */
 template<typename T>
 struct idlist_register_data {
-   std::map<std::string,T> str2id;  ///< Map from string to enumeration item (id).
-   std::map<T,std::string> id2str;  ///< Map from enumeration item (id) to string.
+   std::unordered_map<std::string,T> str2id;  ///< Map from string to enumeration item (id).
+   std::unordered_map<T,std::string> id2str;  ///< Map from enumeration item (id) to string.
    T next_available_id;             ///< Id that will be assigned upon next allocation request.
    idlist_register_data(const char* s);  ///< Constructor. The parameter s must be non-null,
                                          ///< pointing to idlist initialization string
@@ -92,6 +92,15 @@ idlist_register_data<T>::idlist_register_data(const char* s)
          /* debug line bellow */ \
          /* std::cout<<"idlist: Created entry \""<<s<<"\": "<<id<<std::endl; */ \
          return static_cast<EnumType>(id); \
+      } \
+      static bool str2id(const std::string& s,EnumType &id) \
+      { \
+         auto& reg=get(); \
+         auto it=reg.str2id.find(s); \
+         if(it==reg.str2id.end()) \
+            return false; \
+         id=static_cast<EnumType>(it->second); \
+         return true; \
       } \
    }; \
    \

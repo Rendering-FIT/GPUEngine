@@ -82,7 +82,7 @@ void AppRG::createTextures() {
     auto tex = make_shared<gl::Texture>();
     tex->create(GL_TEXTURE_2D, GL_RGBA, 0, size, size);
     uint* data = generateTextureData(size);
-    tex->setData2D(data, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 0, size, size);
+    tex->setData2D(data, GL_RGBA, GL_UNSIGNED_BYTE);
     tex->generateMipmap();
     tex->texParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     tex->texParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
