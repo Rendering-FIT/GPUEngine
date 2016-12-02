@@ -143,8 +143,8 @@ std::string ge::core::processEscapeSequences(std::string data){
   return pData.string;
 }
 
-bool ge::core::isFloat(std::string text){
-  if(std::set<std::string>({"int","Int","INF","+inf","+Int","+INF","-inf","-Inf","-INF","NAN","Nan","nan"}).count(text))return true;
+bool ge::core::isFloat(std::string const&text){
+  if(std::set<std::string>({"inf","Inf","INF","+inf","+Inf","+INF","-inf","-Inf","-INF","NAN","Nan","nan"}).count(text))return true;
   MealyMachine mm;
 
   auto start            = mm.addState();
@@ -184,7 +184,7 @@ bool ge::core::isFloat(std::string text){
   return mm.match(text.c_str());
 }
 
-bool ge::core::isInt(std::string text){
+bool ge::core::isInt(std::string const&text){
   MealyMachine mm;
 
   auto start = mm.addState();
@@ -203,7 +203,7 @@ bool ge::core::isInt(std::string text){
   return mm.match(text.c_str());
 }
 
-bool ge::core::isUint(std::string text){
+bool ge::core::isUint(std::string const&text){
   MealyMachine mm;
 
   auto start = mm.addState();
@@ -220,4 +220,8 @@ bool ge::core::isUint(std::string text){
   mm.setQuiet(true);
 
   return mm.match(text.c_str());
+}
+
+bool ge::core::isString(std::string const&){
+  return true;
 }

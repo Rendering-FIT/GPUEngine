@@ -3,9 +3,9 @@
  * All are derived from OpenGLObject.
  * OpenGLObject class is derived from FunctionProvider that provides OpenGL.
  *
- *                             ┌────────────────┐
- *                             │FunctionProvider│
- *                             └───────△────────┘
+ *                                ┌───────┐
+ *                                │Context│
+ *                                └────△──┘
  *                              ┌──────┴─────┐
  *                              │OpenGLObject│
  *                              └──────△─────┘
