@@ -31,6 +31,7 @@ set(APP_SOURCES
   SintornTiles.cpp
   RSSV.cpp
   RSSVTiles.cpp
+  VSSV.cpp
   DrawPrimitive.cpp
   )
 
@@ -52,6 +53,7 @@ set(APP_INCLUDES
   RSSV.h
   RSSVTiles.h
   RSSVShaders.h
+  VSSV.h
   DrawPrimitive.h
   ProgramExtension.h
   )
