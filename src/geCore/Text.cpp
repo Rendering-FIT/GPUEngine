@@ -183,3 +183,41 @@ bool ge::core::isFloat(std::string text){
 
   return mm.match(text.c_str());
 }
+
+bool ge::core::isInt(std::string text){
+  MealyMachine mm;
+
+  auto start = mm.addState();
+  auto sign  = mm.addState();
+  auto digs  = mm.addState();
+
+  mm.addTransition(start,"+-"   ,sign);
+  mm.addTransition(start,"0","9",digs);
+
+  mm.addTransition(sign,"0","9",digs);
+
+  mm.addTransition(digs,"0","9",digs);
+  mm.addEOFTransition(digs);
+  mm.setQuiet(true);
+
+  return mm.match(text.c_str());
+}
+
+bool ge::core::isUint(std::string text){
+  MealyMachine mm;
+
+  auto start = mm.addState();
+  auto sign  = mm.addState();
+  auto digs  = mm.addState();
+
+  mm.addTransition(start,"+"    ,sign);
+  mm.addTransition(start,"0","9",digs);
+
+  mm.addTransition(sign,"0","9",digs);
+
+  mm.addTransition(digs,"0","9",digs);
+  mm.addEOFTransition(digs);
+  mm.setQuiet(true);
+
+  return mm.match(text.c_str());
+}

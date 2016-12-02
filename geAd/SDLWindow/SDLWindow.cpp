@@ -28,6 +28,8 @@ SDLWindow::SDLWindow(uint32_t width,uint32_t height){
  */
 SDLWindow::~SDLWindow(){
   assert(this!=nullptr);
+  //free contexts, otherwise it would cause memory leak on gpu (according to CodeXL)
+  this->m_contexts.clear();
   SDL_DestroyWindow(this->m_window);
 }
 
