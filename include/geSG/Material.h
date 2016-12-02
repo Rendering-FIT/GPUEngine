@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include "geCore/idlist.h"
 
 namespace ge{

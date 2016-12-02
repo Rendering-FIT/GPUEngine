@@ -95,7 +95,7 @@ void ProfilingContext::frameEnd(){
   }
   // write new values
   for (int i = 0; i < timestamps - 1; i++) {
-    data[i*history] = 1e-6f*std::chrono::duration_cast<std::chrono::nanoseconds>(times[i + 1] - times[i]).count();
+    data[i*history] = 1e-6f*float(std::chrono::duration_cast<std::chrono::nanoseconds>(times[i + 1] - times[i]).count());
   }
 }
 
