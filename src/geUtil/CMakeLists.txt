@@ -33,6 +33,7 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Export.h
    ${HEADER_PATH}/algorithms.h
    ${HEADER_PATH}/ArgumentObject.h
+   ${HEADER_PATH}/ArgumentViewer.h
    ${HEADER_PATH}/CameraObject.h
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
@@ -54,6 +55,7 @@ set(UTIL_INCLUDES
 
 set(GL_SOURCES
    ArgumentObject.cpp
+   ArgumentViewer.cpp
    CameraObject.cpp
    CameraPath.cpp
    FPSPrinter.cpp
