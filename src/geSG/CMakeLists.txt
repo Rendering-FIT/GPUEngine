@@ -39,12 +39,10 @@ set(SG_INCLUDES
 )
 
 set(SG_SOURCES
-   AttributeDescriptor.cpp
    Animation.cpp
    AnimationChannel.cpp
    AnimationManager.cpp
    DefaultImage.cpp
-   Material.cpp
    MatrixTransform.cpp
    RayMeshIntersector.cpp
    RaySphereIntersector.cpp

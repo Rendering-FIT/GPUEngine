@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include "geCore/idlist.h"
 
 namespace ge{
    namespace sg
@@ -19,13 +20,7 @@ namespace ge{
       class /*GESG_EXPORT*/ MaterialComponent
       {
       public:
-         /*enum class ComponentType
-         {
-         UNKNOWN,
-         SIMPLE,
-         IMAGE,
-         };*/
-
+        
          ENUM_CLASS_FRIEND_OPERATOR(ComponentType, UNKNOWN, SIMPLE, IMAGE);
 
          MaterialComponent() : componentType(ComponentType::UNKNOWN){}
@@ -47,31 +42,37 @@ namespace ge{
       {
       public:
          ENUM_CLASS_FRIEND_OPERATOR(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT, DOUBLE);
-         //ENUM_CLASS_FRIEND_OPERATOR(Semantic, UNKNOWN, AMBIENT, DIFFUSE, SPECULAR, EMISSIVE, SHININESS);
-         GESG_EXPORT static ge::core::EnumRegister semanticRegister;
+         idlist(Semantic, unknown, ambientColor, diffuseColor, specularColor, emissiveColor, shininess)
 
          MaterialSimpleComponent()
             : MaterialComponent()
-            , semantic(ge::core::EnumRegister::notRegistered)
+            , semantic(Semantic::unknown)
             , data(nullptr)
          {
             componentType = ComponentType::SIMPLE;
          }
 
+         unsigned getSize(DataType type)
+         {
+            switch(type)
+            {
+               case DataType::UNKNOWN: return 0;
+               case DataType::BYTE:
+               case DataType::UNSIGNED_BYTE: return sizeof(char);
+               case DataType::SHORT:
+               case DataType::UNSIGNED_SHORT: return sizeof(short);
+               case DataType::INT:
+               case DataType::UNSIGNED_INT: return sizeof(int);
+               case DataType::FLOAT: return sizeof(float);
+               case DataType::DOUBLE: return sizeof(double);
+               default: return 0;
+            }
+         }
+
          int size;
          DataType dataType;
-         unsigned semantic;
-         char *data;
-      };
-
-      template<typename Deleter = std::default_delete<char[]>>
-      class MaterialSimpleComponentTemplate : public MaterialSimpleComponent
-      {
-      public:
-         virtual ~MaterialSimpleComponentTemplate()
-         {
-            if(data) Deleter(data);
-         }
+         Semantic semantic;
+         std::unique_ptr<unsigned char[]> data; //shared pointer could be longer than the data itself
       };
 
       /**
@@ -80,18 +81,17 @@ namespace ge{
       class /*GESG_EXPORT*/ MaterialImageComponent : public MaterialComponent
       {
       public:
-         //ENUM_CLASS_FRIEND_OPERATOR(Semantic, UNKNOWN, DIFFUSE, SPECULAR, AMBIENT, EMISSIVE, HEIGHT, NORMAL, SHININESS, OPACITY, DISPLACEMENT, LIGHTMAP, REFLECTION, TEXT)
-         GESG_EXPORT static ge::core::EnumRegister semanticRegister;
+         idlist(Semantic, unknown, ambientTexture, diffuseTexture, specularTexture, emissiveTexture, heightTexture, normalTexture, shininessTexture, opacityTexture, displacementTexture, lightmapTexture, reflectionTexture)
 
          MaterialImageComponent()
             : MaterialComponent()
-            , semantic(ge::core::EnumRegister::notRegistered)
+            , semantic(Semantic::unknown)
          {
             componentType = ComponentType::IMAGE;
          }
 
          std::string filePath;
-         unsigned semantic;
+         Semantic semantic;
          std::shared_ptr<Image> image;
       };
 
@@ -101,6 +101,29 @@ namespace ge{
       class /*GESG_EXPORT*/ Material
       {
       public:
+
+         /**
+          * Finds and returns material component with the given semantic. Automaticaly infers the type
+          * of component from the semantic.
+          */
+         template<typename ComponentType>
+         std::shared_ptr<ComponentType> getComponent(typename ComponentType::Semantic semantic)
+         {
+            auto it = std::find_if(materialComponents.begin(), materialComponents.end(), [semantic](auto& comp)->bool
+            {
+               ComponentType* c = dynamic_cast<ComponentType*>(comp.get());
+               if(c)
+               {
+                  return c->semantic == semantic;
+               }
+
+               return false;
+            });
+
+            if(it != materialComponents.end()) return std::static_pointer_cast<ComponentType>(*it);
+            return std::shared_ptr<ComponentType>(nullptr);
+         }
+
          std::vector<std::shared_ptr<MaterialComponent>> materialComponents;
       };
    } //namespace sg

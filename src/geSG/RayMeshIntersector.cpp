@@ -1,6 +1,6 @@
-#include <geSG//RayMeshIntersector.h>
-#include <geSG//RayTriangleIntersector.h>
-#include <geSG//MeshPrimitiveIterator.h>
+#include <geSG/RayMeshIntersector.h>
+#include <geSG/RayTriangleIntersector.h>
+#include <geSG/MeshPrimitiveIterator.h>
 
 #include <functional>
 #include <algorithm>

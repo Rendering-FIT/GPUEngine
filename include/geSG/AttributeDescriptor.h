@@ -16,7 +16,7 @@ struct GESG_EXPORT AttributeDescriptor
 {
    idlist(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT, DOUBLE);
 
-   size_t getSize(DataType type)
+   unsigned getSize(DataType type)
    {
       switch(type)
       {
@@ -33,7 +33,7 @@ struct GESG_EXPORT AttributeDescriptor
       }
    }
 
-   idlist(Semantic, UNKNOWN, POSITION, NORMAL, COLOR, TEXCOORD, INDICES, TANGENT, BITANGENT);
+   idlist(Semantic, unknown, position, normal, color, texcoord, indices, tangent, binormal);
 
    int size; ///< size of buffer AttributeDescriptor::data in bytes
    unsigned numComponents; ///< number of vector component
@@ -48,7 +48,7 @@ struct GESG_EXPORT AttributeDescriptor
       , type(DataType::UNKNOWN)
       , stride(0)
       , offset(0)
-      , semantic(Semantic::UNKNOWN)
+      , semantic(Semantic::unknown)
       , data(nullptr)
    {
    }

@@ -41,15 +41,10 @@ void AnimationManager::pauseAnimation(std::shared_ptr<Animation> /*animation*/)
 void AnimationManager::playAnimation(std::shared_ptr<Animation> animation)
 {
    auto it = std::find(playlist.begin(), playlist.end(), animation);
-   //auto ait = std::find(animations.begin(), animations.end(), animation);
    if(it == playlist.end())
    {
       playlist.push_back(animation);
    }
-   /*if(ait == animations.end())
-   {
-      animations.push_back(animation);
-   }*/
 }
 
 /**

@@ -72,8 +72,8 @@ void ProfilingContext::draw(){
 
     top = ceilf(top / 20.0f) * 20.0f;
 
-    ImGui::Text(str[i].c_str());
-    ImGui::SameLine(220); ImGui::Text((to_string(data[i*history])+" ms").c_str());
+    ImGui::TextUnformatted(str[i].c_str());
+    ImGui::SameLine(220); ImGui::TextUnformatted((to_string(data[i*history])+" ms").c_str());
     ImGui::SameLine(340); ImGui::PlotLines("", &data[i*history], history, 0, 0, 0, top, ImVec2(300, 40));
   }
 
