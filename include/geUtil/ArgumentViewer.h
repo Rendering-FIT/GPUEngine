@@ -10,12 +10,10 @@ namespace ge{
     class ArgumentViewer{
       public:
         ArgumentViewer(int argc,char*argv[]);
-        ArgumentViewer(std::vector<std::string>const&args = {});
         ~ArgumentViewer();
-        size_t getNofArguments()const;
         std::string getApplicationName()const;
+        size_t      getNofArguments()const;
         std::string getArgument(size_t const&index)const;
-        std::shared_ptr<ArgumentViewer>getContext(std::string const&name);
         bool                    isPresent(std::string const&argument                                           )const;
         float                   getf32   (std::string const&argument   ,float                   const&def = 0.f)const;
         double                  getf64   (std::string const&argument   ,double                  const&def = 0. )const;
@@ -31,6 +29,7 @@ namespace ge{
         std::vector<uint32_t>   getu32v  (std::string const&argument   ,std::vector<uint32_t>   const&def = {} )const;
         std::vector<uint64_t>   getu64v  (std::string const&argument   ,std::vector<uint64_t>   const&def = {} )const;
         std::vector<std::string>getsv    (std::string const&contextName,std::vector<std::string>const&def = {} )const;
+        std::shared_ptr<ArgumentViewer>getContext(std::string const&name);
         bool validate()const;
       protected:
         std::unique_ptr<ArgumentViewerImpl>_impl;
