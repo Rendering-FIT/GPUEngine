@@ -15,7 +15,7 @@
 namespace ge{
   namespace gl{
     class FunctionTable;
-    using FunctionTablePointer = std::shared_ptr<FunctionTable>;
+    using FunctionTablePointer = std::shared_ptr<FunctionTable const>;
     class Context;
     using ContextPointer = std::shared_ptr<Context>;
     class FunctionLoaderInterface;
