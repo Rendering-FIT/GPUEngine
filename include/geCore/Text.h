@@ -2,6 +2,7 @@
 
 #include<geCore/Export.h>
 #include<iostream>
+#include<cstdint>
 
 namespace ge{
   namespace core{
