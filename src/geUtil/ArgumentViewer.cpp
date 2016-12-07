@@ -12,40 +12,60 @@ class ge::util::ArgumentViewerImpl{
     std::string applicationName = "";
     std::vector<std::string>arguments;
     size_t getArgumentPosition(std::string const&argument)const{
-      assert(this!=nullptr);
-      size_t i=0;
+      assert(this != nullptr);
+      size_t argumentIndex = 0;
       size_t namespaceCounter = 0;
       std::string const namespaceBegin = "{";
       std::string const namespaceEnd   = "}";
+      size_t const notFound = this->arguments.size();
       for(auto x:this->arguments){
-        if(x==namespaceBegin){
-          ++namespaceCounter;
-          ++i;
-          continue;
-        }
-        if(x==namespaceEnd){
-          if(namespaceCounter==0){
+        if(x == argument && namespaceCounter == 0)return argumentIndex;
+        if(x == namespaceBegin)++namespaceCounter;
+        if(x == namespaceEnd){
+          if(namespaceCounter == 0){
             ge::core::printError(GE_CORE_FCENAME,
                 "not matching: "+namespaceBegin+" and "+namespaceEnd,argument);
-            return this->arguments.size()+1;
+            return notFound;
           }
           --namespaceCounter;
-          ++i;
-          continue;
         }
-        if(x!=argument){
-          ++i;
-          continue;
-        }
-        break;
+        ++argumentIndex;
       }
-      return i;
+      return notFound;
     }
+    template<typename TYPE>static std::string typeName();
+    template<typename TYPE>
+      TYPE getArgument(std::string const&argument,TYPE const&def)const{
+        assert(this!=nullptr);
+        //TODO modify format
+        size_t i=this->getArgumentPosition(argument);
+        if(i>=this->arguments.size())return def;
+        if(i+1>=this->arguments.size()){
+          ge::core::printError(GE_CORE_FCENAME,
+              "expected "+this->typeName<TYPE>()+" value after parameter: "+argument+" not end of arguments",argument,def);
+          return def;
+        }
+        auto value = this->arguments.at(i+1);
+        if(!ge::core::isValue<TYPE>(value)){
+          ge::core::printError(GE_CORE_FCENAME,
+              "expected "+this->typeName<TYPE>()+" value after parameter: "+argument+" not: "+value,argument,def);
+          return def;
+        }
+        return ge::core::str2Value<TYPE>(value);
+      }
+
 };
+
+namespace ge{
+  namespace util{
+    template<>std::string ArgumentViewerImpl::typeName<float >(){return "f32";}
+    template<>std::string ArgumentViewerImpl::typeName<double>(){return "f64";}
+  }
+}
 
 ArgumentViewer::ArgumentViewer(int argc,char*argv[]){
   assert(this!=nullptr);
-  if(argc<=0){
+  if(argc <= 0){
     ge::core::printError(
         GE_CORE_FCENAME,
         "number of arguments has to be greater than 0",argc,argv);
