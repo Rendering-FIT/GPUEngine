@@ -590,8 +590,13 @@ void RenderingContext::deleteDrawable(Mesh &mesh,DrawableId id)
    StateSet *stateSet=id->stateSet;
    auto storageDataIterator=stateSet->getOrCreateAttribStorageData(mesh.attribStorage());
    StateSet::AttribStorageData &storageData=storageDataIterator->second;
+   DrawCommandGpuData* drawCommandBufferPtr=_drawCommandStorage.map(BufferStorageAccess::WRITE);
    for(unsigned i=0,c=id->numItems; i<c; i++)
    {
+      // update DrawCommandGpuData
+      DrawCommandGpuData &dcData=drawCommandBufferPtr[id->item(i).index()];
+      dcData.primitiveSetOffset4=0;
+
       // update StateSet counter
       stateSet->decrementDrawCommandModeCounter(1,id->item(i).mode(),storageData);
    }
@@ -713,6 +718,7 @@ const shared_ptr<Program>& RenderingContext::getProcessDrawCommandsProgram() con
             "   // draw command buffer data\n"
             "   uint drawCommandOffset4=gl_GlobalInvocationID.x*3;\n"
             "   uint primitiveOffset4=drawCommandBuffer[drawCommandOffset4+0];\n"
+            "   if(primitiveOffset4==0) return; // skip empty record\n"
             "   uint matrixControlOffset4=drawCommandBuffer[drawCommandOffset4+1];\n"
             "   uint stateSetDataOffset4=drawCommandBuffer[drawCommandOffset4+2];\n"
             "\n"
