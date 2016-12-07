@@ -1,6 +1,7 @@
 set(examples_folder_name "examples")
 
 add_subdirectory(EmptyWindow)
+add_subdirectory(MultiWindow)
 add_subdirectory(ShaderTest)
 add_subdirectory(VertexArray)
 add_subdirectory(HilbertCurve)
