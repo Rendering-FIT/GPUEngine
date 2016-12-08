@@ -54,6 +54,7 @@ set(APP_INCLUDES
   RSSVTiles.h
   RSSVShaders.h
   VSSV.h
+  VSSVShaders.h
   DrawPrimitive.h
   ProgramExtension.h
   )
