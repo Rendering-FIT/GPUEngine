@@ -29,6 +29,7 @@
 #include"DrawPrimitive.h"
 #include"CSV.h"
 #include"RSSV.h"
+#include"VSSV.h"
 
 class RenderNode{
   public:
@@ -99,7 +100,7 @@ struct Application{
 
   size_t   cssvWGS = 64;
   size_t   maxMultiplicity = 2;
-  bool     cssvZfail = true;
+  bool     zfail = true;
   bool     cssvLocalAtomic = true;
   bool     cssvCullSides = false;
 
@@ -155,7 +156,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-faces              - cube shadow map faces"<<std::endl;
     std::cout<<"--cssv-WGS                     - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--maxMultiplicity              - max number of triangles that share the same edge"<<std::endl;
-    std::cout<<"--cssv-zfail                   - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
+    std::cout<<"--zfail                        - shadow volumes zfail 0/1"<<std::endl;
     std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
     std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
@@ -166,7 +167,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--rssv-cullSides               - enables frustum culling of silhouettes"<<std::endl;
     std::cout<<"--rssv-silhouettesPerWorkgroup - number of silhouette edges that are compute by one workgroup"<<std::endl;
     std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
-    std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv"<<std::endl;
+    std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv"<<std::endl;
     std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
     std::cout<<"--test-fly-keys                - filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz"<<std::endl;
     std::cout<<"--test-fly-length              - number of measurements, 1000"<<std::endl;
@@ -204,8 +205,8 @@ bool Application::init(int argc,char*argv[]){
   this->shadowMapFaces      = this->args->getArgi("--shadowMap-faces","6");
 
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
-  this->maxMultiplicity = this->args->getArgi("--maxMultiplicity","2");
-  this->cssvZfail           = this->args->getArgi("--cssv-zfail","1");
+  this->maxMultiplicity     = this->args->getArgi("--maxMultiplicity","2");
+  this->zfail               = this->args->getArgi("--zfail","1");
   this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","1");
   this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
 
@@ -293,7 +294,7 @@ bool Application::init(int argc,char*argv[]){
     this->shadowMethod = std::make_shared<CSSV>(
         this->maxMultiplicity,
         this->cssvWGS,
-        this->cssvZfail,
+        this->zfail,
         this->cssvLocalAtomic,
         this->cssvCullSides,
         this->windowSize,
@@ -322,6 +323,14 @@ bool Application::init(int argc,char*argv[]){
         this->rssvLocalAtomic,
         this->rssvCullSides,
         this->rssvSilhouettesPerWorkgroup);
+  else if(this->methodName=="vssv")
+    this->shadowMethod = std::make_shared<VSSV>(
+        this->maxMultiplicity,
+        this->zfail,
+        this->windowSize,
+        this->gBuffer->depth,
+        this->model,
+        this->shadowMask);
   else
     this->useShadows = false;
 
