@@ -105,6 +105,8 @@ struct Application{
   bool     cssvCullSides = false;
 
   bool     vssvUsePlanes = false;
+  bool     vssvUseStrips = true;
+  bool     vssvUseAll    = false;
 
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
@@ -162,6 +164,8 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
     std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
     std::cout<<"--vssv-usePlanes               - use planes instead of opposite vertices"<<std::endl;
+    std::cout<<"--vssv-useStrips               - use triangle strips for sides of shadow volumes 0/1"<<std::endl;
+    std::cout<<"--vssv-useAll                  - use all opposite vertices (even empty) 0/1"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
     std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
     std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
@@ -214,6 +218,9 @@ bool Application::init(int argc,char*argv[]){
   this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
 
   this->vssvUsePlanes       = this->args->getArgi("--vssv-usePlanes","0");
+  this->vssvUseStrips       = this->args->getArgi("--vssv-useStrips","1");
+  this->vssvUseAll          = this->args->getArgi("--vssv-useAll"   ,"0");
+
 
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
@@ -336,7 +343,9 @@ bool Application::init(int argc,char*argv[]){
         this->gBuffer->depth,
         this->model,
         this->shadowMask,
-        this->vssvUsePlanes);
+        this->vssvUsePlanes,
+        this->vssvUseStrips,
+        this->vssvUseAll);
   else
     this->useShadows = false;
 
