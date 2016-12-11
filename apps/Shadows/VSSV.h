@@ -13,7 +13,8 @@ class VSSV: public ShadowMethod{
         glm::uvec2                      const&windowSize     ,
         std::shared_ptr<ge::gl::Texture>const&depth          ,
         std::shared_ptr<Model>          const&model          ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask     );
+        std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+        bool                            const&usePlanes      );
     virtual ~VSSV();
     virtual void create(
         glm::vec4 const&lightPosition,
@@ -29,6 +30,7 @@ class VSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Buffer>     _adjacency        = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_sidesVao         = nullptr;
     size_t                              _nofEdges         = 0;
+    size_t                              _maxMultiplicity  = 0;
     size_t                              _nofTriangles     = 0;
     bool                                _zfail            = true;
 
@@ -39,4 +41,5 @@ class VSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Program>    _blit             = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_emptyVao         = nullptr;
     std::shared_ptr<TimeStamp>_timeStamper = nullptr;
+    bool                                _usePlanes        = false;
 };

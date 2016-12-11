@@ -104,6 +104,8 @@ struct Application{
   bool     cssvLocalAtomic = true;
   bool     cssvCullSides = false;
 
+  bool     vssvUsePlanes = false;
+
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
   bool     sintornDiscardBackFacing = true;
@@ -159,6 +161,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--zfail                        - shadow volumes zfail 0/1"<<std::endl;
     std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
     std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
+    std::cout<<"--vssv-usePlanes               - use planes instead of opposite vertices"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
     std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
     std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
@@ -209,6 +212,8 @@ bool Application::init(int argc,char*argv[]){
   this->zfail               = this->args->getArgi("--zfail","1");
   this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","1");
   this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
+
+  this->vssvUsePlanes       = this->args->getArgi("--vssv-usePlanes","0");
 
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
@@ -330,7 +335,8 @@ bool Application::init(int argc,char*argv[]){
         this->windowSize,
         this->gBuffer->depth,
         this->model,
-        this->shadowMask);
+        this->shadowMask,
+        this->vssvUsePlanes);
   else
     this->useShadows = false;
 
@@ -354,7 +360,7 @@ bool Application::init(int argc,char*argv[]){
   cmdList->add(std::bind(&ge::gl::Context::glViewport,this->gl,0,0,this->windowSize.x,this->windowSize.y));
   cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_DEPTH_TEST));
   cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_POLYGON_OFFSET_FILL));
-  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,10));
+  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,0));
   cmdList->add([this]{this->gBuffer->begin();});
   cmdList->add(std::bind(&ge::gl::Context::glClear,this->gl,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
   cmdList->add([this]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
