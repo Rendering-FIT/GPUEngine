@@ -34,10 +34,25 @@ class ge::util::ArgumentViewerImpl{
       return notFound;
     }
     template<typename TYPE>static std::string typeName();
+    template<
+      typename TYPE,
+      typename std::enable_if<
+        std::is_same<TYPE,int32_t >::value ||
+        std::is_same<TYPE,int64_t >::value ||
+        std::is_same<TYPE,uint32_t>::value ||
+        std::is_same<TYPE,uint64_t>::value ||
+        std::is_same<TYPE,float   >::value ||
+        std::is_same<TYPE,double  >::value ,unsigned>::type = 0>
+      TYPE str2val(std::string const&value)const{
+        return ge::core::str2Value<TYPE>(value);
+      }
+    template<typename TYPE,typename std::enable_if<std::is_same<TYPE,std::string>::value,unsigned>::type = 0>
+      TYPE str2val(std::string const&value)const{
+        return value;
+      }
     template<typename TYPE>
       TYPE getArgument(std::string const&argument,TYPE const&def)const{
         assert(this!=nullptr);
-        //TODO modify format
         size_t i=this->getArgumentPosition(argument);
         if(i>=this->arguments.size())return def;
         if(i+1>=this->arguments.size()){
@@ -51,15 +66,37 @@ class ge::util::ArgumentViewerImpl{
               "expected "+this->typeName<TYPE>()+" value after parameter: "+argument+" not: "+value,argument,def);
           return def;
         }
-        return ge::core::str2Value<TYPE>(value);
+        return this->str2val<TYPE>(value);
       }
-
+    template<typename TYPE>
+      std::vector<TYPE>getArguments(std::string const&argument,std::vector<TYPE>const&def)const{
+        assert(this!=nullptr);
+        size_t i=this->getArgumentPosition(argument);
+        if(i>=this->arguments.size())return def;
+        if(i+1>=this->arguments.size()){
+          ge::core::printError(GE_CORE_FCENAME,
+              "expected vector of "+this->typeName<TYPE>()+" values after parameter: "+argument+" not end of arguments",argument,def);
+          return def;
+        }
+        ++i;
+        std::vector<TYPE>result;
+        while(i<this->arguments.size()&&ge::core::isValue<TYPE>(this->arguments.at(i)))
+          result.push_back(ge::core::str2Value<TYPE>(this->arguments.at(i++)));
+        while(result.size()<def.size())
+          result.push_back(def.at(result.size()));
+        return result;
+      }
 };
 
 namespace ge{
   namespace util{
-    template<>std::string ArgumentViewerImpl::typeName<float >(){return "f32";}
-    template<>std::string ArgumentViewerImpl::typeName<double>(){return "f64";}
+    template<>std::string ArgumentViewerImpl::typeName<float      >(){return "f32"   ;}
+    template<>std::string ArgumentViewerImpl::typeName<double     >(){return "f64"   ;}
+    template<>std::string ArgumentViewerImpl::typeName<int32_t    >(){return "i32"   ;}
+    template<>std::string ArgumentViewerImpl::typeName<int64_t    >(){return "i64"   ;}
+    template<>std::string ArgumentViewerImpl::typeName<uint32_t   >(){return "u32"   ;}
+    template<>std::string ArgumentViewerImpl::typeName<uint64_t   >(){return "u64"   ;}
+    template<>std::string ArgumentViewerImpl::typeName<std::string>(){return "string";}
   }
 }
 
@@ -107,37 +144,78 @@ bool ArgumentViewer::isPresent(std::string const&argument)const{
 float ArgumentViewer::getf32(std::string const&argument,float const&def)const{
   assert(this!=nullptr);
   //TODO modify format
-  size_t i=this->_impl->getArgumentPosition(argument);
-  if(i>=this->_impl->arguments.size())return def;
-  if(i+1>=this->_impl->arguments.size()){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected f32 value after parameter: "+argument+" not end of arguments",argument,def);
-    return def;
-  }
-  auto value = this->_impl->arguments.at(i+1);
-  if(!ge::core::isValue<float>(value)){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected f32 value after parameter: "+argument+" not: "+value,argument,def);
-    return def;
-  }
-  return ge::core::str2Value<float>(value);
+  return this->_impl->getArgument<float>(argument,def);
 }
 
 double ArgumentViewer::getf64(std::string const&argument,double const&def)const{
   assert(this!=nullptr);
   //TODO modify format
-  size_t i=this->_impl->getArgumentPosition(argument);
-  if(i>=this->_impl->arguments.size())return def;
-  if(i+1>=this->_impl->arguments.size()){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected f64 value after parameter: "+argument+" not end of arguments",argument,def);
-    return def;
-  }
-  auto value = this->_impl->arguments.at(i+1);
-  if(!ge::core::isValue<double>(value)){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected f64 value after parameter: "+argument+" not: "+value,argument,def);
-    return def;
-  }
-  return ge::core::str2Value<double>(value);
+  return this->_impl->getArgument<double>(argument,def);
 }
+
+int32_t ArgumentViewer::geti32(std::string const&argument,int32_t const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArgument<int32_t>(argument,def);
+}
+
+int64_t  ArgumentViewer::geti64(std::string const&argument,int64_t  const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArgument<int64_t>(argument,def);
+}
+
+uint32_t ArgumentViewer::getu32(std::string const&argument,uint32_t const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArgument<uint32_t>(argument,def);
+}
+
+uint64_t ArgumentViewer::getu64(std::string const&argument,uint64_t const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArgument<uint64_t>(argument,def);
+}
+
+std::string ArgumentViewer::gets(std::string const&argument,std::string const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArgument<std::string>(argument,def);
+}
+
+std::vector<float>ArgumentViewer::getf32v(std::string const&argument,std::vector<float>const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArguments<float>(argument,def);
+}
+
+std::vector<double  >ArgumentViewer::getf64v(std::string const&argument,std::vector<double  >const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArguments<double>(argument,def);
+}
+
+std::vector<int32_t >ArgumentViewer::geti32v(std::string const&argument,std::vector<int32_t >const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArguments<int32_t>(argument,def);
+}
+
+std::vector<int64_t >ArgumentViewer::geti64v(std::string const&argument,std::vector<int64_t >const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArguments<int64_t>(argument,def);
+}
+
+std::vector<uint32_t>ArgumentViewer::getu32v(std::string const&argument,std::vector<uint32_t>const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArguments<uint32_t>(argument,def);
+}
+
+std::vector<uint64_t>ArgumentViewer::getu64v(std::string const&argument,std::vector<uint64_t>const&def)const{
+  assert(this!=nullptr);
+  //TODO modify format
+  return this->_impl->getArguments<uint64_t>(argument,def);
+}
+
