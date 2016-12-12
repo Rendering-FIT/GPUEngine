@@ -87,7 +87,7 @@ find_package(glm REQUIRED)
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps)
+set(Internal_deps geCore)
 set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)

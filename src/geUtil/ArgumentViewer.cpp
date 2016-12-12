@@ -111,7 +111,7 @@ ArgumentViewer::ArgumentViewer(int argc,char*argv[]){
         "number of arguments has to be greater than 0",argc,argv);
     return;
   }
-  this->_impl = std::make_unique<ArgumentViewerImpl>();
+  this->_impl = std::unique_ptr<ArgumentViewerImpl>(new ArgumentViewerImpl);
   this->_impl->applicationName = std::string(argv[0]);
   for(int i=1;i<argc;++i)
     this->_impl->arguments.push_back(std::string(argv[i]));
