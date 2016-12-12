@@ -11,12 +11,13 @@ class ge::util::ArgumentViewerImpl{
   public:
     std::string applicationName = "";
     std::vector<std::string>arguments;
+    static std::string const namespaceBegin;
+    static std::string const namespaceEnd  ;
+    ArgumentViewer*parent = nullptr;
     size_t getArgumentPosition(std::string const&argument)const{
       assert(this != nullptr);
       size_t argumentIndex = 0;
       size_t namespaceCounter = 0;
-      std::string const namespaceBegin = "{";
-      std::string const namespaceEnd   = "}";
       size_t const notFound = this->arguments.size();
       for(auto x:this->arguments){
         if(x == argument && namespaceCounter == 0)return argumentIndex;
@@ -97,6 +98,8 @@ namespace ge{
     template<>std::string ArgumentViewerImpl::typeName<uint32_t   >(){return "u32"   ;}
     template<>std::string ArgumentViewerImpl::typeName<uint64_t   >(){return "u64"   ;}
     template<>std::string ArgumentViewerImpl::typeName<std::string>(){return "string";}
+    std::string const ArgumentViewerImpl::namespaceBegin = "{";
+    std::string const ArgumentViewerImpl::namespaceEnd   = "}";
   }
 }
 
@@ -219,3 +222,53 @@ std::vector<uint64_t>ArgumentViewer::getu64v(std::string const&argument,std::vec
   return this->_impl->getArguments<uint64_t>(argument,def);
 }
 
+std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(std::string const&name){
+  assert(this!=nullptr);
+  //TODO modify format
+  size_t i=this->_impl->getArgumentPosition(name);
+  auto createEmptyViewer = [&](){
+    char const*argv[]={this->_impl->applicationName.c_str()};
+    auto result = std::make_shared<ArgumentViewer>(1,(char**)argv);
+    result->_impl->parent = this;
+    return result;
+  };
+  if(i>=this->_impl->arguments.size())return createEmptyViewer();
+  if(i+1>=this->_impl->arguments.size()){
+    ge::core::printError(GE_CORE_FCENAME,
+        "expected \""+ArgumentViewerImpl::namespaceBegin+"\" after namespace: "+name+" not end of arguments",name);
+    return createEmptyViewer();
+  }
+  ++i;
+  if(this->_impl->arguments.at(i)!=ArgumentViewerImpl::namespaceBegin){
+    ge::core::printError(GE_CORE_FCENAME,
+        "expected \""+ArgumentViewerImpl::namespaceBegin+"\" after namespace: "+name+" not: "+this->_impl->arguments.at(i),name);
+    return createEmptyViewer();
+  }
+  ++i;
+  size_t namespaceCounter=0;
+  bool encounteredEnd = false;
+  std::vector<std::string>subArguments;
+
+  while(i<this->_impl->arguments.size()){
+    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::namespaceEnd){
+      if(namespaceCounter==0){
+        encounteredEnd = true;
+        break;
+      }else namespaceCounter--;
+    }
+    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::namespaceEnd)
+      namespaceCounter++;
+    subArguments.push_back(this->_impl->arguments.at(i));
+    ++i;
+  }
+  if(!encounteredEnd){
+    ge::core::printError(GE_CORE_FCENAME,
+        "expected \""+ArgumentViewerImpl::namespaceEnd+"\" at the end of namespace: "+name+" not end of arguments",name);
+    return createEmptyViewer();
+  }
+  char const*appName[]={this->_impl->applicationName.c_str()};
+  auto result = std::make_shared<ArgumentViewer>(1,(char**)appName);
+  result->_impl->parent = this;
+  result->_impl->arguments = subArguments;
+  return result;
+}
