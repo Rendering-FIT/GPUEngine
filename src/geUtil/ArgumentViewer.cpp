@@ -11,42 +11,66 @@ class ge::util::ArgumentViewerImpl{
   public:
     std::string applicationName = "";
     std::vector<std::string>arguments;
-    static std::string const namespaceBegin;
-    static std::string const namespaceEnd  ;
+    static std::string const contextBegin;
+    static std::string const contextEnd  ;
     ArgumentViewer*parent = nullptr;
     size_t getArgumentPosition(std::string const&argument)const{
       assert(this != nullptr);
       size_t argumentIndex = 0;
-      size_t namespaceCounter = 0;
+      size_t contextCounter = 0;
       size_t const notFound = this->arguments.size();
       for(auto x:this->arguments){
-        if(x == argument && namespaceCounter == 0)return argumentIndex;
-        if(x == namespaceBegin)++namespaceCounter;
-        if(x == namespaceEnd){
-          if(namespaceCounter == 0){
+        if(x == argument && contextCounter == 0)return argumentIndex;
+        if(x == contextBegin)++contextCounter;
+        if(x == contextEnd){
+          if(contextCounter == 0){
             ge::core::printError(GE_CORE_FCENAME,
-                "not matching: "+namespaceBegin+" and "+namespaceEnd,argument);
+                "not matching: "+contextBegin+" and "+contextEnd,argument);
             return notFound;
           }
-          --namespaceCounter;
+          --contextCounter;
         }
         ++argumentIndex;
       }
       return notFound;
     }
+    bool getContext(std::vector<std::string>&subArguments,std::string const&argument)const{
+      assert(this!=nullptr);
+      size_t i = this->getArgumentPosition(argument);
+      if(i>=this->arguments.size())return false;
+      ++i;
+      if(i>=this->arguments.size())return false;
+      if(this->arguments.at(i)!=contextBegin)return false;
+      ++i;
+      size_t contextCounter=0;
+      while(i<this->arguments.size()){
+        if(this->arguments.at(i)==ArgumentViewerImpl::contextEnd){
+          if(contextCounter==0){
+            return true;
+          }else contextCounter--;
+        }
+        if(this->arguments.at(i)==ArgumentViewerImpl::contextBegin)
+          contextCounter++;
+        subArguments.push_back(this->arguments.at(i));
+        ++i;
+      }
+      subArguments.clear();
+      return false;
+    }
     template<typename TYPE>static std::string typeName();
+    template<typename TYPE>static bool isValueConvertibleTo(std::string const&text);
     template<
       typename TYPE,
-      typename std::enable_if<
-        std::is_same<TYPE,int32_t >::value ||
-        std::is_same<TYPE,int64_t >::value ||
-        std::is_same<TYPE,uint32_t>::value ||
-        std::is_same<TYPE,uint64_t>::value ||
-        std::is_same<TYPE,float   >::value ||
-        std::is_same<TYPE,double  >::value ,unsigned>::type = 0>
-      TYPE str2val(std::string const&value)const{
-        return ge::core::str2Value<TYPE>(value);
-      }
+               typename std::enable_if<
+                 std::is_same<TYPE,int32_t >::value ||
+                 std::is_same<TYPE,int64_t >::value ||
+                 std::is_same<TYPE,uint32_t>::value ||
+                 std::is_same<TYPE,uint64_t>::value ||
+                 std::is_same<TYPE,float   >::value ||
+                 std::is_same<TYPE,double  >::value ,unsigned>::type = 0>
+                 TYPE str2val(std::string const&value)const{
+                   return ge::core::str2Value<TYPE>(value);
+                 }
     template<typename TYPE,typename std::enable_if<std::is_same<TYPE,std::string>::value,unsigned>::type = 0>
       TYPE str2val(std::string const&value)const{
         return value;
@@ -62,7 +86,7 @@ class ge::util::ArgumentViewerImpl{
           return def;
         }
         auto value = this->arguments.at(i+1);
-        if(!ge::core::isValue<TYPE>(value)){
+        if(!this->isValueConvertibleTo<TYPE>(value)){
           ge::core::printError(GE_CORE_FCENAME,
               "expected "+this->typeName<TYPE>()+" value after parameter: "+argument+" not: "+value,argument,def);
           return def;
@@ -81,7 +105,7 @@ class ge::util::ArgumentViewerImpl{
         }
         ++i;
         std::vector<TYPE>result;
-        while(i<this->arguments.size()&&ge::core::isValue<TYPE>(this->arguments.at(i)))
+        while(i<this->arguments.size()&&this->isValueConvertibleTo<TYPE>(this->arguments.at(i)))
           result.push_back(ge::core::str2Value<TYPE>(this->arguments.at(i++)));
         while(result.size()<def.size())
           result.push_back(def.at(result.size()));
@@ -98,8 +122,29 @@ namespace ge{
     template<>std::string ArgumentViewerImpl::typeName<uint32_t   >(){return "u32"   ;}
     template<>std::string ArgumentViewerImpl::typeName<uint64_t   >(){return "u64"   ;}
     template<>std::string ArgumentViewerImpl::typeName<std::string>(){return "string";}
-    std::string const ArgumentViewerImpl::namespaceBegin = "{";
-    std::string const ArgumentViewerImpl::namespaceEnd   = "}";
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<float>(std::string const&text){
+      return ge::core::isFloatingPoint(text)||ge::core::isIntegral(text);
+    }
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<double>(std::string const&text){
+      return ge::core::isFloatingPoint(text)||ge::core::isIntegral(text);
+    }
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<int32_t>(std::string const&text){
+      return ge::core::isIntegral(text);
+    }
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<int64_t>(std::string const&text){
+      return ge::core::isIntegral(text);
+    }
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<uint32_t>(std::string const&text){
+      return ge::core::isUint(text);
+    }
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<uint64_t>(std::string const&text){
+      return ge::core::isUint(text);
+    }
+    template<>bool ArgumentViewerImpl::isValueConvertibleTo<std::string>(std::string const&text){
+      return ge::core::isString(text);
+    }
+    std::string const ArgumentViewerImpl::contextBegin = "{";
+    std::string const ArgumentViewerImpl::contextEnd   = "}";
   }
 }
 
@@ -139,9 +184,20 @@ std::string ArgumentViewer::getArgument(size_t const&index)const{
 bool ArgumentViewer::isPresent(std::string const&argument)const{
   assert(this!=nullptr);
   //TODO modify format
-  return std::find(
-      this->_impl->arguments.begin(),
-      this->_impl->arguments.end(),argument) != this->_impl->arguments.end();
+  size_t contextCounter = 0;
+  for(auto const&x:this->_impl->arguments){
+    if(x==ArgumentViewerImpl::contextBegin)contextCounter++;
+    if(x==ArgumentViewerImpl::contextEnd){
+      if(contextCounter==0){
+        ge::core::printError(GE_CORE_FCENAME,
+            "not matching: "+ArgumentViewerImpl::contextBegin+" and "+ArgumentViewerImpl::contextEnd,argument);
+        return false;
+      }
+      contextCounter--;
+    }
+    if(x==argument && contextCounter == 0)return true;
+  }
+  return false;
 }
 
 float ArgumentViewer::getf32(std::string const&argument,float const&def)const{
@@ -233,37 +289,37 @@ std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(std::string const&name
     return result;
   };
   if(i>=this->_impl->arguments.size())return createEmptyViewer();
-  if(i+1>=this->_impl->arguments.size()){
+  ++i;
+  if(i>=this->_impl->arguments.size()){
     ge::core::printError(GE_CORE_FCENAME,
-        "expected \""+ArgumentViewerImpl::namespaceBegin+"\" after namespace: "+name+" not end of arguments",name);
+        "expected \""+ArgumentViewerImpl::contextBegin+"\" after context: "+name+" not end of arguments",name);
+    return createEmptyViewer();
+  }
+  if(this->_impl->arguments.at(i)!=ArgumentViewerImpl::contextBegin){
+    ge::core::printError(GE_CORE_FCENAME,
+        "expected \""+ArgumentViewerImpl::contextBegin+"\" after context: "+name+" not: "+this->_impl->arguments.at(i),name);
     return createEmptyViewer();
   }
   ++i;
-  if(this->_impl->arguments.at(i)!=ArgumentViewerImpl::namespaceBegin){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected \""+ArgumentViewerImpl::namespaceBegin+"\" after namespace: "+name+" not: "+this->_impl->arguments.at(i),name);
-    return createEmptyViewer();
-  }
-  ++i;
-  size_t namespaceCounter=0;
+  size_t contextCounter=0;
   bool encounteredEnd = false;
   std::vector<std::string>subArguments;
 
   while(i<this->_impl->arguments.size()){
-    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::namespaceEnd){
-      if(namespaceCounter==0){
+    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::contextEnd){
+      if(contextCounter==0){
         encounteredEnd = true;
         break;
-      }else namespaceCounter--;
+      }else contextCounter--;
     }
-    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::namespaceEnd)
-      namespaceCounter++;
+    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::contextBegin)
+      contextCounter++;
     subArguments.push_back(this->_impl->arguments.at(i));
     ++i;
   }
   if(!encounteredEnd){
     ge::core::printError(GE_CORE_FCENAME,
-        "expected \""+ArgumentViewerImpl::namespaceEnd+"\" at the end of namespace: "+name+" not end of arguments",name);
+        "expected \""+ArgumentViewerImpl::contextEnd+"\" at the end of context: "+name+" not end of arguments",name);
     return createEmptyViewer();
   }
   char const*appName[]={this->_impl->applicationName.c_str()};
@@ -271,4 +327,12 @@ std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(std::string const&name
   result->_impl->parent = this;
   result->_impl->arguments = subArguments;
   return result;
+}
+
+std::vector<std::string>ArgumentViewer::getsv(std::string const&contextName,std::vector<std::string>const&def)const{
+  assert(this!=nullptr);
+  std::vector<std::string>subArguments;
+  if(!this->_impl->getContext(subArguments,contextName))return def;
+  while(def.size()>subArguments.size())subArguments.push_back(def.at(subArguments.size()));
+  return subArguments;
 }
