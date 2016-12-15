@@ -23,38 +23,34 @@ class ge::util::ArgumentViewerImpl{
         if(x == argument && contextCounter == 0)return argumentIndex;
         if(x == contextBegin)++contextCounter;
         if(x == contextEnd){
-          if(contextCounter == 0){
-            ge::core::printError(GE_CORE_FCENAME,
-                "not matching: "+contextBegin+" and "+contextEnd,argument);
-            return notFound;
-          }
+          if(contextCounter == 0)return notFound;
           --contextCounter;
         }
         ++argumentIndex;
       }
       return notFound;
     }
-    bool getContext(std::vector<std::string>&subArguments,std::string const&argument)const{
+    bool getContext(std::vector<std::string>&contextArguments,std::string const&argument)const{
       assert(this!=nullptr);
-      size_t i = this->getArgumentPosition(argument);
-      if(i>=this->arguments.size())return false;
-      ++i;
-      if(i>=this->arguments.size())return false;
-      if(this->arguments.at(i)!=contextBegin)return false;
-      ++i;
+      size_t ArgumentIndex = this->getArgumentPosition(argument);
+      if(ArgumentIndex>=this->arguments.size())return false;
+      ++ArgumentIndex;
+      if(ArgumentIndex>=this->arguments.size())return false;
+      if(this->arguments.at(ArgumentIndex)!=contextBegin)return false;
+      ++ArgumentIndex;
       size_t contextCounter=0;
-      while(i<this->arguments.size()){
-        if(this->arguments.at(i)==ArgumentViewerImpl::contextEnd){
+      while(ArgumentIndex<this->arguments.size()){
+        if(this->arguments.at(ArgumentIndex)==ArgumentViewerImpl::contextEnd){
           if(contextCounter==0){
             return true;
           }else contextCounter--;
         }
-        if(this->arguments.at(i)==ArgumentViewerImpl::contextBegin)
+        if(this->arguments.at(ArgumentIndex)==ArgumentViewerImpl::contextBegin)
           contextCounter++;
-        subArguments.push_back(this->arguments.at(i));
-        ++i;
+        contextArguments.push_back(this->arguments.at(ArgumentIndex));
+        ++ArgumentIndex;
       }
-      subArguments.clear();
+      contextArguments.clear();
       return false;
     }
     template<typename TYPE>static std::string typeName();
@@ -80,33 +76,21 @@ class ge::util::ArgumentViewerImpl{
         assert(this!=nullptr);
         size_t i=this->getArgumentPosition(argument);
         if(i>=this->arguments.size())return def;
-        if(i+1>=this->arguments.size()){
-          ge::core::printError(GE_CORE_FCENAME,
-              "expected "+this->typeName<TYPE>()+" value after parameter: "+argument+" not end of arguments",argument,def);
-          return def;
-        }
+        if(i+1>=this->arguments.size())return def;
         auto value = this->arguments.at(i+1);
-        if(!this->isValueConvertibleTo<TYPE>(value)){
-          ge::core::printError(GE_CORE_FCENAME,
-              "expected "+this->typeName<TYPE>()+" value after parameter: "+argument+" not: "+value,argument,def);
-          return def;
-        }
+        if(!this->isValueConvertibleTo<TYPE>(value))return def;
         return this->str2val<TYPE>(value);
       }
     template<typename TYPE>
       std::vector<TYPE>getArguments(std::string const&argument,std::vector<TYPE>const&def)const{
         assert(this!=nullptr);
-        size_t i=this->getArgumentPosition(argument);
-        if(i>=this->arguments.size())return def;
-        if(i+1>=this->arguments.size()){
-          ge::core::printError(GE_CORE_FCENAME,
-              "expected vector of "+this->typeName<TYPE>()+" values after parameter: "+argument+" not end of arguments",argument,def);
-          return def;
-        }
-        ++i;
+        size_t argumentIndex=this->getArgumentPosition(argument);
+        if(argumentIndex>=this->arguments.size())return def;
+        ++argumentIndex;
+        if(argumentIndex>=this->arguments.size())return def;
         std::vector<TYPE>result;
-        while(i<this->arguments.size()&&this->isValueConvertibleTo<TYPE>(this->arguments.at(i)))
-          result.push_back(ge::core::str2Value<TYPE>(this->arguments.at(i++)));
+        while(argumentIndex<this->arguments.size()&&this->isValueConvertibleTo<TYPE>(this->arguments.at(argumentIndex)))
+          result.push_back(ge::core::str2Value<TYPE>(this->arguments.at(argumentIndex++)));
         while(result.size()<def.size())
           result.push_back(def.at(result.size()));
         return result;
@@ -148,6 +132,16 @@ namespace ge{
   }
 }
 
+/**
+ * @brief Contructor of ArgumentViewer
+ * This class can be used for simple argument manipulations
+ * int main(int argc,char*argv[]){
+ *   auto args = std::make_shared<ArgumentViewer>(argc,argv);
+ * }
+ *
+ * @param argc number of arguments, it should always be one or greater (application name is always first argument)
+ * @param argv list of arguments, it should always contain application name as the first argument
+ */
 ArgumentViewer::ArgumentViewer(int argc,char*argv[]){
   assert(this!=nullptr);
   if(argc <= 0){
@@ -163,18 +157,38 @@ ArgumentViewer::ArgumentViewer(int argc,char*argv[]){
   //this->_format = std::make_shared<ContextFormat>();
 }
 
+/**
+ * @brief Destructor of ArgumentViewer instance
+ */
 ArgumentViewer::~ArgumentViewer(){}
 
+/**
+ * @brief Returns application name (zeroes argument)
+ *
+ * @return application name 
+ */
 std::string ArgumentViewer::getApplicationName()const{
   assert(this!=nullptr);
   return this->_impl->applicationName;
 }
 
+/**
+ * @brief Returns number of arguments without application name - it can be zero
+ *
+ * @return number of arguments without inclusion of application name
+ */
 size_t ArgumentViewer::getNofArguments()const{
   assert(this!=nullptr);
   return this->_impl->arguments.size();
 }
 
+/**
+ * @brief Gets argument on certain index
+ *
+ * @param index index of argument, should always be lesser than getNofArguments()
+ *
+ * @return argument
+ */
 std::string ArgumentViewer::getArgument(size_t const&index)const{
   assert(this!=nullptr);
   assert(index<this->_impl->arguments.size());
@@ -184,20 +198,7 @@ std::string ArgumentViewer::getArgument(size_t const&index)const{
 bool ArgumentViewer::isPresent(std::string const&argument)const{
   assert(this!=nullptr);
   //TODO modify format
-  size_t contextCounter = 0;
-  for(auto const&x:this->_impl->arguments){
-    if(x==ArgumentViewerImpl::contextBegin)contextCounter++;
-    if(x==ArgumentViewerImpl::contextEnd){
-      if(contextCounter==0){
-        ge::core::printError(GE_CORE_FCENAME,
-            "not matching: "+ArgumentViewerImpl::contextBegin+" and "+ArgumentViewerImpl::contextEnd,argument);
-        return false;
-      }
-      contextCounter--;
-    }
-    if(x==argument && contextCounter == 0)return true;
-  }
-  return false;
+  return this->_impl->getArgumentPosition(argument)<this->_impl->arguments.size();
 }
 
 float ArgumentViewer::getf32(std::string const&argument,float const&def)const{
@@ -281,46 +282,12 @@ std::vector<uint64_t>ArgumentViewer::getu64v(std::string const&argument,std::vec
 std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(std::string const&name){
   assert(this!=nullptr);
   //TODO modify format
-  size_t i=this->_impl->getArgumentPosition(name);
-  auto createEmptyViewer = [&](){
+  std::vector<std::string>subArguments;
+  if(!this->_impl->getContext(subArguments,name)){
     char const*argv[]={this->_impl->applicationName.c_str()};
     auto result = std::make_shared<ArgumentViewer>(1,(char**)argv);
     result->_impl->parent = this;
     return result;
-  };
-  if(i>=this->_impl->arguments.size())return createEmptyViewer();
-  ++i;
-  if(i>=this->_impl->arguments.size()){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected \""+ArgumentViewerImpl::contextBegin+"\" after context: "+name+" not end of arguments",name);
-    return createEmptyViewer();
-  }
-  if(this->_impl->arguments.at(i)!=ArgumentViewerImpl::contextBegin){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected \""+ArgumentViewerImpl::contextBegin+"\" after context: "+name+" not: "+this->_impl->arguments.at(i),name);
-    return createEmptyViewer();
-  }
-  ++i;
-  size_t contextCounter=0;
-  bool encounteredEnd = false;
-  std::vector<std::string>subArguments;
-
-  while(i<this->_impl->arguments.size()){
-    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::contextEnd){
-      if(contextCounter==0){
-        encounteredEnd = true;
-        break;
-      }else contextCounter--;
-    }
-    if(this->_impl->arguments.at(i)==ArgumentViewerImpl::contextBegin)
-      contextCounter++;
-    subArguments.push_back(this->_impl->arguments.at(i));
-    ++i;
-  }
-  if(!encounteredEnd){
-    ge::core::printError(GE_CORE_FCENAME,
-        "expected \""+ArgumentViewerImpl::contextEnd+"\" at the end of context: "+name+" not end of arguments",name);
-    return createEmptyViewer();
   }
   char const*appName[]={this->_impl->applicationName.c_str()};
   auto result = std::make_shared<ArgumentViewer>(1,(char**)appName);
@@ -331,6 +298,7 @@ std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(std::string const&name
 
 std::vector<std::string>ArgumentViewer::getsv(std::string const&contextName,std::vector<std::string>const&def)const{
   assert(this!=nullptr);
+  //TODO modify format
   std::vector<std::string>subArguments;
   if(!this->_impl->getContext(subArguments,contextName))return def;
   while(def.size()>subArguments.size())subArguments.push_back(def.at(subArguments.size()));
