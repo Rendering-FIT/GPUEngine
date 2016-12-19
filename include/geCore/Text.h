@@ -5,8 +5,8 @@
 
 namespace ge{
   namespace core{
-    GECORE_EXPORT std::string loadTextFile(std::string fileName);
-    GECORE_EXPORT std::string processEscapeSequences(std::string data);
+    GECORE_EXPORT std::string loadTextFile(std::string const&fileName);
+    GECORE_EXPORT std::string processEscapeSequences(std::string const&data);
     GECORE_EXPORT bool isNan     (std::string const&text);
     GECORE_EXPORT bool isInfinity(std::string const&text);
     GECORE_EXPORT bool isFloat   (std::string const&text);

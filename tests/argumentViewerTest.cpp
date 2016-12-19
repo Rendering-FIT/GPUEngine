@@ -1,4 +1,6 @@
 #include<geUtil/ArgumentViewer.h>
+#include<iostream>
+#include<fstream>
 
 #define CATCH_CONFIG_MAIN
 #include"catch.hpp"
@@ -90,6 +92,24 @@ SCENARIO("Complex ArgumentViewer context tests"){
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("a")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("b")==true);
 }
+
+SCENARIO("ArgumentViewer file tests"){
+  std::ofstream("args0")<<"a b c < args1.txt"<<std::endl;
+  std::ofstream("args1.txt")<<"#ahoj \nposition { a b }\n #dormon\n"<<std::endl;
+  char const*args[] = {"test","a","light","{","<","args0.txt","}","b"};
+  int const nofArgs = sizeof(args)/sizeof(char const*);
+  auto a = make_shared<ArgumentViewer>(nofArgs,(char**)args);
+  REQUIRE(a->getApplicationName()=="test");
+  REQUIRE(a->isPresent("a")==true );
+  REQUIRE(a->isPresent("b")==true );
+  REQUIRE(a->getContext("light")->isPresent("a")==true);
+  REQUIRE(a->getContext("light")->isPresent("b")==true);
+  REQUIRE(a->getContext("light")->isPresent("c")==true);
+  REQUIRE(a->getContext("light")->getContext("position")->isPresent("a")==true);
+  REQUIRE(a->getContext("light")->getContext("position")->isPresent("b")==true);
+}
+
+
 
 
 

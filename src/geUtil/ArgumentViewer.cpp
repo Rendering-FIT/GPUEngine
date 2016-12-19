@@ -1,7 +1,9 @@
 #include<geUtil/ArgumentViewer.h>
 #include<geCore/ErrorPrinter.h>
 #include<geCore/Text.h>
+#include<geCore/fsa/MealyMachine.h>
 
+#include<set>
 #include<algorithm>
 #include<cassert>
 
@@ -13,46 +15,12 @@ class ge::util::ArgumentViewerImpl{
     std::vector<std::string>arguments;
     static std::string const contextBegin;
     static std::string const contextEnd  ;
+    static std::string const fileSymbol  ;
     ArgumentViewer*parent = nullptr;
-    size_t getArgumentPosition(std::string const&argument)const{
-      assert(this != nullptr);
-      size_t argumentIndex = 0;
-      size_t contextCounter = 0;
-      size_t const notFound = this->arguments.size();
-      for(auto x:this->arguments){
-        if(x == argument && contextCounter == 0)return argumentIndex;
-        if(x == contextBegin)++contextCounter;
-        if(x == contextEnd){
-          if(contextCounter == 0)return notFound;
-          --contextCounter;
-        }
-        ++argumentIndex;
-      }
-      return notFound;
-    }
-    bool getContext(std::vector<std::string>&contextArguments,std::string const&argument)const{
-      assert(this!=nullptr);
-      size_t ArgumentIndex = this->getArgumentPosition(argument);
-      if(ArgumentIndex>=this->arguments.size())return false;
-      ++ArgumentIndex;
-      if(ArgumentIndex>=this->arguments.size())return false;
-      if(this->arguments.at(ArgumentIndex)!=contextBegin)return false;
-      ++ArgumentIndex;
-      size_t contextCounter=0;
-      while(ArgumentIndex<this->arguments.size()){
-        if(this->arguments.at(ArgumentIndex)==ArgumentViewerImpl::contextEnd){
-          if(contextCounter==0){
-            return true;
-          }else contextCounter--;
-        }
-        if(this->arguments.at(ArgumentIndex)==ArgumentViewerImpl::contextBegin)
-          contextCounter++;
-        contextArguments.push_back(this->arguments.at(ArgumentIndex));
-        ++ArgumentIndex;
-      }
-      contextArguments.clear();
-      return false;
-    }
+    size_t getArgumentPosition(std::string const&argument)const;
+    bool getContext(std::vector<std::string>&contextArguments,std::string const&argument)const;
+    bool isInRange(size_t index)const{assert(this!=nullptr);return index<this->arguments.size();}
+    std::string getArgument(size_t index)const{assert(this!=nullptr);assert(index<this->arguments.size());return this->arguments.at(index);}
     template<typename TYPE>static std::string typeName();
     template<typename TYPE>static bool isValueConvertibleTo(std::string const&text);
     template<
@@ -75,9 +43,9 @@ class ge::util::ArgumentViewerImpl{
       TYPE getArgument(std::string const&argument,TYPE const&def)const{
         assert(this!=nullptr);
         size_t i=this->getArgumentPosition(argument);
-        if(i>=this->arguments.size())return def;
-        if(i+1>=this->arguments.size())return def;
-        auto value = this->arguments.at(i+1);
+        if(!this->isInRange(i++))return def;
+        if(!this->isInRange(i  ))return def;
+        auto value = this->getArgument(i);
         if(!this->isValueConvertibleTo<TYPE>(value))return def;
         return this->str2val<TYPE>(value);
       }
@@ -85,17 +53,121 @@ class ge::util::ArgumentViewerImpl{
       std::vector<TYPE>getArguments(std::string const&argument,std::vector<TYPE>const&def)const{
         assert(this!=nullptr);
         size_t argumentIndex=this->getArgumentPosition(argument);
-        if(argumentIndex>=this->arguments.size())return def;
-        ++argumentIndex;
-        if(argumentIndex>=this->arguments.size())return def;
+        if(!this->isInRange(argumentIndex++))return def;
+        if(!this->isInRange(argumentIndex  ))return def;
         std::vector<TYPE>result;
-        while(argumentIndex<this->arguments.size()&&this->isValueConvertibleTo<TYPE>(this->arguments.at(argumentIndex)))
-          result.push_back(ge::core::str2Value<TYPE>(this->arguments.at(argumentIndex++)));
+        while(this->isInRange(argumentIndex)&&this->isValueConvertibleTo<TYPE>(this->getArgument(argumentIndex)))
+          result.push_back(ge::core::str2Value<TYPE>(this->getArgument(argumentIndex++)));
         while(result.size()<def.size())
           result.push_back(def.at(result.size()));
         return result;
       }
+    void loadArgumentFiles(std::vector<std::string>&args,std::set<std::string>&alreadyLoaded);
+    void splitFileToArguments(std::vector<std::string>&args,std::string const&fileContent);
 };
+
+size_t ArgumentViewerImpl::getArgumentPosition(std::string const&argument)const{
+  assert(this != nullptr);
+  size_t argumentIndex = 0;
+  size_t contextCounter = 0;
+  size_t const notFound = this->arguments.size();
+  for(auto x:this->arguments){
+    if(x == argument && contextCounter == 0)return argumentIndex;
+    if(x == contextBegin)++contextCounter;
+    if(x == contextEnd){
+      if(contextCounter == 0)return notFound;
+      --contextCounter;
+    }
+    ++argumentIndex;
+  }
+  return notFound;
+}
+
+bool ArgumentViewerImpl::getContext(std::vector<std::string>&contextArguments,std::string const&argument)const{
+  assert(this!=nullptr);
+  size_t argumentIndex = this->getArgumentPosition(argument);
+  if(!this->isInRange(argumentIndex++))return false;
+  if(!this->isInRange(argumentIndex  ))return false;
+  if(this->getArgument(argumentIndex++)!=contextBegin)return false;
+  size_t contextCounter=0;
+  while(this->isInRange(argumentIndex)){
+    if(this->getArgument(argumentIndex)==ArgumentViewerImpl::contextEnd){
+      if(contextCounter==0)return true;
+      else contextCounter--;
+    }
+    if(this->getArgument(argumentIndex)==ArgumentViewerImpl::contextBegin)
+      contextCounter++;
+    contextArguments.push_back(this->getArgument(argumentIndex));
+    ++argumentIndex;
+  }
+  contextArguments.clear();
+  return false;
+}
+
+void ArgumentViewerImpl::loadArgumentFiles(std::vector<std::string>&args,std::set<std::string>&alreadyLoaded){
+  assert(this!=nullptr);
+  size_t argumentIndex = 0;
+  while(argumentIndex<args.size()){
+    if(args.at(argumentIndex)!=fileSymbol){
+      ++argumentIndex;
+      continue;
+    }
+    if(argumentIndex+1>=args.size()){
+      ge::core::printError(GE_CORE_FCENAME,
+          "expected filename after "+fileSymbol+" not end of arguments/file");
+      return;
+    }
+    auto fileName = args.at(argumentIndex+1);
+    if(alreadyLoaded.count(fileName)){
+      ge::core::printError(GE_CORE_FCENAME,
+          "file: "+fileName+" contains file loading loop");
+      return;
+    }
+    std::vector<std::string>newArgs;
+    std::string fileContent = ge::core::loadTextFile(fileName);
+    this->splitFileToArguments(newArgs,fileContent);
+    alreadyLoaded.insert(fileName);
+    this->loadArgumentFiles(newArgs,alreadyLoaded);
+    alreadyLoaded.erase(fileName);
+    std::vector<std::string>withLoadedFile;
+    for(size_t j=0;j<argumentIndex;++j)withLoadedFile.push_back(args.at(j));
+    for(auto const&x:newArgs)withLoadedFile.push_back(x);
+    for(size_t j=argumentIndex+2;j<args.size();++j)withLoadedFile.push_back(args.at(j));
+    args = withLoadedFile;
+    argumentIndex--;
+    argumentIndex+=newArgs.size();
+  }
+}
+
+void ArgumentViewerImpl::splitFileToArguments(std::vector<std::string>&args,std::string const&fileContent){
+  ge::core::MealyMachine mm;
+  auto start   = mm.addState();
+  auto space   = mm.addState();
+  auto word    = mm.addState();
+  auto comment = mm.addState();
+  auto startNewWord = [&](ge::core::MealyMachine*){args.push_back("");args.back()+=*(char*)mm.getCurrentSymbol();};
+  auto addCharToWord = [&](ge::core::MealyMachine*){args.back()+=*(char*)mm.getCurrentSymbol();};
+  mm.addTransition    (start  ," \t\n\r",space                );
+  mm.addTransition    (start  ,"#"      ,comment              );
+  mm.addElseTransition(start            ,word   ,startNewWord );
+  mm.addEOFTransition (start                                  );
+
+  mm.addTransition    (space  ," \t\n\r",space                );
+  mm.addTransition    (space  ,"#"      ,comment              );
+  mm.addElseTransition(space            ,word   ,startNewWord );
+  mm.addEOFTransition (space                                  );
+
+  mm.addTransition    (comment,"\n\r"   ,start                );
+  mm.addElseTransition(comment          ,comment              );
+  mm.addEOFTransition (comment                                );
+
+  mm.addTransition    (word   ," \t\n\r",space                );
+  mm.addTransition    (word   ,"#"      ,comment              );
+  mm.addElseTransition(word             ,word   ,addCharToWord);
+  mm.addEOFTransition (word                                   );
+
+  mm.match(fileContent.c_str());
+}
 
 namespace ge{
   namespace util{
@@ -129,6 +201,7 @@ namespace ge{
     }
     std::string const ArgumentViewerImpl::contextBegin = "{";
     std::string const ArgumentViewerImpl::contextEnd   = "}";
+    std::string const ArgumentViewerImpl::fileSymbol   = "<";
   }
 }
 
@@ -152,8 +225,12 @@ ArgumentViewer::ArgumentViewer(int argc,char*argv[]){
   }
   this->_impl = std::unique_ptr<ArgumentViewerImpl>(new ArgumentViewerImpl);
   this->_impl->applicationName = std::string(argv[0]);
+  std::vector<std::string>args;
   for(int i=1;i<argc;++i)
-    this->_impl->arguments.push_back(std::string(argv[i]));
+    args.push_back(std::string(argv[i]));
+  std::set<std::string>alreadyLoaded;
+  this->_impl->loadArgumentFiles(args,alreadyLoaded);
+  this->_impl->arguments = args;
   //this->_format = std::make_shared<ContextFormat>();
 }
 

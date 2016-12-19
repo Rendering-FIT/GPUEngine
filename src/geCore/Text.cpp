@@ -4,14 +4,14 @@
 #include<string>
 #include<geCore/fsa/Fsa.h>
 #include<geCore/fsa/MealyMachine.h>
+#include<geCore/ErrorPrinter.h>
 
 using namespace ge::core;
 
-std::string ge::core::loadTextFile(std::string fileName){
+std::string ge::core::loadTextFile(std::string const&fileName){
   std::ifstream f(fileName.c_str());
   if(!f.is_open()){
-    std::cerr<<"ERROR: ge::core::loadTextFile("<<fileName;
-    std::cerr<<") - cannot open file"<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,"cannot open file",fileName);
     return "";
   }
   std::string str((std::istreambuf_iterator<char>(f)),std::istreambuf_iterator<char>());
@@ -19,7 +19,7 @@ std::string ge::core::loadTextFile(std::string fileName){
   return str;
 }
 
-std::string ge::core::processEscapeSequences(std::string data){
+std::string ge::core::processEscapeSequences(std::string const&data){
   struct ParserData{
     unsigned    pos   ;
     std::string string;
