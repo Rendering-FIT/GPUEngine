@@ -73,7 +73,7 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 
-set(Internal_deps geGL)
+set(Internal_deps geCore geGL)
 set(External_deps_Export glm)
 set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)

@@ -59,6 +59,7 @@ set(CORE_SOURCES
   Dtemplates.cpp
   Command.cpp
   EnumRegister.cpp
+  InitAndFinalize.cpp
   StandardSemanticsNames.cpp
   Text.cpp
   )

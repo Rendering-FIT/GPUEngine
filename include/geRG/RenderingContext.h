@@ -256,7 +256,8 @@ namespace ge
       };
 
 
-      static ge::core::InitAndFinalize<RenderingContext> renderingContextInitAndFinalize;
+      static ge::core::InitAndFinalize renderingContextInitAndFinalize(
+            &RenderingContext::global_init,&RenderingContext::global_finalize);
 
 
       inline RenderingContext::MappedBufferAccess& operator|=(RenderingContext::MappedBufferAccess &a,RenderingContext::MappedBufferAccess b);
