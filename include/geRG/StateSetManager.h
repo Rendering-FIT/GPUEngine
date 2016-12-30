@@ -71,7 +71,7 @@ namespace ge
          inline void setRoot(std::shared_ptr<StateSet>& root);
          virtual std::shared_ptr<StateSet> getOrCreateStateSet(const GLState* state) = 0;
          virtual std::shared_ptr<StateSet> findStateSet(const GLState* state) = 0;
-         virtual std::shared_ptr<StateSet> getBinStateSet(int bin) = 0;
+         virtual const std::shared_ptr<StateSet>& getBinStateSet(int bin) = 0;
          virtual GLState* createGLState() = 0;
          virtual GLState* createGLState(const GLState* s) = 0;
          virtual GLState* createGLState(const GLState* s,unsigned internalLevel) = 0;
@@ -100,7 +100,7 @@ namespace ge
          std::shared_ptr<StateSet> getOrCreateStateSet_optimized(StateSetManager::GLState* state);
          virtual std::shared_ptr<StateSet> findStateSet(const GLState* state) override;
          inline  std::shared_ptr<StateSet> findStateSet(const StateT* state);
-         virtual std::shared_ptr<StateSet> getBinStateSet(int bin) override;
+         virtual const std::shared_ptr<StateSet>& getBinStateSet(int bin) override;
          virtual GLState* createGLState() override;
          virtual GLState* createGLState(const GLState* s) override;
          virtual GLState* createGLState(const GLState* s,unsigned internalLevel) override;
@@ -207,7 +207,7 @@ namespace ge
          return r;
       }
       template<typename StateT>
-      std::shared_ptr<StateSet> StateSetManagerTemplate<StateT>::getBinStateSet(int bin)
+      const std::shared_ptr<StateSet>& StateSetManagerTemplate<StateT>::getBinStateSet(int bin)
       {
 #if 1
          return (bin<=0)?_root->childList().front():_root->childList().back();

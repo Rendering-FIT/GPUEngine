@@ -31,7 +31,9 @@ void ProfilingContext::frame(){
   // prepare internal structures for rendering
   stateSetStorage()->map(BufferStorageAccess::WRITE);
   setupRendering();
-  stateSetStorage()->unmap();
+
+  // unmap buffers before GPU work
+  unmapBuffers();
 
   timestamp();
 

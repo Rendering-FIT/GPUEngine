@@ -556,7 +556,7 @@ DrawableId RenderingContext::createDrawable(
    auto storageDataIterator=stateSet->getOrCreateAttribStorageData(mesh.attribStorage());
    StateSet::AttribStorageData &storageData=storageDataIterator->second;
    auto listControlOffset4=matrixList->listControlOffset4();
-   DrawCommandGpuData* drawCommandBufferPtr=_drawCommandStorage.map(BufferStorageAccess::WRITE);
+   DrawCommandGpuData* drawCommandBufferPtr=_drawCommandStorage.map(BufferStorageAccess::READ_WRITE);
    for(unsigned i=0; i<numDrawCommands; i++)
    {
       // update DrawCommandGpuData
@@ -1300,7 +1300,9 @@ void RenderingContext::frame()
    // prepare internal structures for rendering
    stateSetStorage()->map(BufferStorageAccess::WRITE);
    setupRendering();
-   stateSetStorage()->unmap();
+
+   // unmap buffers before GPU work
+   unmapBuffers();
 
    // fill indirect buffer with draw commands
    processDrawCommands();

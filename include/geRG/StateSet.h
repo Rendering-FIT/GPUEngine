@@ -28,7 +28,7 @@ namespace ge
          unsigned indirectBufferOffset4;  ///< Offset to draw indirect buffer (RenderingContext::drawIndirectBuffer()) where the draw command will be written. The value might change each frame. The new value is generated during StateSet::setupRendering().
          unsigned stateSetBufferOffset4;  ///< Offset to the state set buffer (RenderingContext::stateSetStorage()) where StateSetGpuData of associated StateSet is stored.
          unsigned glMode;                 ///< Rendering mode of the draw command, such as GL_TRIANGLES, GL_LINE_STRIP, etc.
-         unsigned drawCommandCount;       ///< Number of vertices that will be used for rendering of the draw command.
+         unsigned drawCommandCount;       ///< Number of indirect records that will be used for rendering of the draw command.
 
 #if defined(_MSC_VER) && _MSC_VER<=1900
          // MSVC 2013 (tested with Update 4 and 5) and MSVC 2015 (original release)

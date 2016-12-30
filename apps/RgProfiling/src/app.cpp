@@ -25,7 +25,7 @@ App::App() {
   mainLoop->setEventHandler(std::bind(&App::handleEvent, this, std::placeholders::_1));
 
   window = make_shared<SDLWindow>();
-  window->createContext("rendering", 450u, SDLWindow::CORE, SDLWindow::DEBUG);
+  window->createContext("rendering", 440u, SDLWindow::CORE, SDLWindow::DEBUG);
   mainLoop->addWindow("mainWindow", window);
   window->makeCurrent("rendering");
 
