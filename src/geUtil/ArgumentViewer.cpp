@@ -3,11 +3,21 @@
 #include<geCore/Text.h>
 #include<geCore/fsa/MealyMachine.h>
 
+#include<sstream>
+#include<map>
 #include<set>
 #include<algorithm>
 #include<cassert>
 
 using namespace ge::util;
+
+class Format{
+  public:
+    enum MatchStatus{MATCH_SUCCESS,MATCH_FAILURE,MATCH_ERROR};
+    std::string argumentName;
+    virtual std::string toStr()const = 0;
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const = 0;
+};
 
 class ge::util::ArgumentViewerImpl{
   public:
@@ -169,6 +179,236 @@ void ArgumentViewerImpl::splitFileToArguments(std::vector<std::string>&args,std:
   mm.match(fileContent.c_str());
 }
 
+template<typename TYPE>
+class SingleValueFormat: public Format{
+  public:
+    TYPE defaults;
+    virtual std::string toStr()const override{
+      assert(this!=nullptr);
+      std::stringstream ss;
+      ss<<this->argumentName<<"["<<ArgumentViewerImpl::typeName<TYPE>()<<"] = ";
+      ss<<ge::core::value2str(defaults);
+      return ss.str();
+    }
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
+      assert(this!=nullptr);
+      size_t oldIndex = index;
+      if(index>=args.size())return MATCH_FAILURE;
+      if(args.at(index)!=this->argumentName)return MATCH_FAILURE;
+      ++index;
+      if(index>=args.size()){
+        index = oldIndex;
+        return MATCH_ERROR;
+      }
+      if(!ArgumentViewerImpl::isValueConvertibleTo<TYPE>(args.at(index))){
+        index = oldIndex;
+        return MATCH_ERROR;
+      }
+      ++index;
+      return MATCH_SUCCESS;
+    }
+};
+
+template<typename TYPE>
+class VectorFormat: public Format{
+  public:
+    std::vector<TYPE>defaults;
+    virtual std::string toStr()const override{
+      assert(this!=nullptr);
+      std::stringstream ss;
+      ss<<this->argumentName<<"["<<ArgumentViewerImpl::typeName<TYPE>()<<"*] = ";
+      ss<<ge::core::value2str(defaults);
+      return ss.str();
+    }
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
+      assert(this!=nullptr);
+      if(index>=args.size())return MATCH_FAILURE;
+      if(args.at(index)!=this->argumentName)return MATCH_FAILURE;
+      ++index;
+      while(index<args.size()&&ArgumentViewerImpl::isValueConvertibleTo<TYPE>(args.at(index)))++index;
+      return MATCH_SUCCESS;
+    }
+};
+
+class StringVectorFormat: public Format{
+  public:
+    std::vector<std::string>defaults;
+    virtual std::string toStr()const override{
+      assert(this!=nullptr);
+      std::stringstream ss;
+      ss<<this->argumentName<<ArgumentViewerImpl::contextBegin;
+      ss<<"[string*]";
+      ss<<ArgumentViewerImpl::contextEnd;
+      ss<<" = "<<ge::core::value2str(defaults)<<" ";
+      return ss.str();
+    }
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
+      assert(this!=nullptr);
+      if(index>=args.size())return MATCH_FAILURE;
+      size_t oldIndex = index;
+      if(args.at(index)!=this->argumentName)return MATCH_FAILURE;
+      ++index;
+      if(args.at(index)!=ArgumentViewerImpl::contextBegin){
+        index = oldIndex;
+        std::cerr<<"Argument error:"<<std::endl;
+        std::cerr<<"expected "<<ArgumentViewerImpl::contextBegin<<" after argument: "<<this->argumentName;
+        std::cerr<<" not argument: "<<args.at(index)<<std::endl;
+        return MATCH_ERROR;
+      }
+      ++index;
+      while(index<args.size()&&args.at(index)!=ArgumentViewerImpl::contextEnd)++index;
+      if(index>=args.size()){
+        index = oldIndex;
+        std::cerr<<"Argument error:"<<std::endl;
+        std::cerr<<"expected "<<ArgumentViewerImpl::contextEnd<<" at the end of context argument: "<<this->argumentName;
+        std::cerr<<" not end of arguments";
+        return MATCH_ERROR;
+      }
+      return MATCH_SUCCESS;
+    }
+};
+
+class IsPresentFormat: public Format{
+  public:
+    virtual std::string toStr()const override{
+      assert(this!=nullptr);
+      std::stringstream ss;
+      ss<<this->argumentName<<" ";
+      return ss.str();
+    }
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
+      assert(this!=nullptr);
+      if(index>=args.size())return MATCH_FAILURE;
+      if(args.at(index)!=this->argumentName)return MATCH_FAILURE;
+      index++;
+      return MATCH_SUCCESS;
+    }
+};
+
+class ArgumentListFormat: public Format{
+  public:
+    std::map<std::string,std::shared_ptr<Format>>formats;
+    virtual std::string toStr()const override{
+      assert(this!=nullptr);
+      std::stringstream ss;
+      for(auto const&x:this->formats)
+        ss<<x.second->toStr();
+      return ss.str();
+    }
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
+      assert(this!=nullptr);
+      size_t oldIndex = index;
+      std::set<std::string>unusedFormats;
+      for(auto const&x:this->formats)unusedFormats.insert(x.first);
+      while(index<args.size()){
+        if(unusedFormats.empty()){
+          index = oldIndex;
+          std::cerr<<"Argument error:"<<std::endl;
+          std::cerr<<"following arguments cannot be matched: "<<std::endl;
+          for(size_t i=index;i<args.size();++i)std::cerr<<args.at(i)<<" ";
+          std::cerr<<std::endl;
+          return MATCH_ERROR;
+        }
+        std::string formatForRemoval = "";
+        for(auto const&f:unusedFormats){
+          auto status = this->formats.at(f)->match(args,index);
+          if(status == MATCH_ERROR){
+            index = oldIndex;
+            return MATCH_ERROR;
+          }
+          if(status == MATCH_SUCCESS){
+            formatForRemoval = f;
+            break;
+          }
+        }
+        if(formatForRemoval == ""){
+          std::cerr<<"Argument error:"<<std::endl;
+          std::cerr<<"argument: "<<args.at(index)<<" cannot be matched"<<std::endl;
+          index = oldIndex;
+          return MATCH_ERROR;
+        }
+      }
+      return MATCH_SUCCESS;
+    }
+};
+
+class ContextFormat: public ArgumentListFormat{
+  public:
+    //std::map<std::string,std::shared_ptr<Format>>formats;
+    virtual std::string toStr()const override{
+      assert(this!=nullptr);
+      std::stringstream ss;
+      ss<<this->argumentName;
+      ss<<ArgumentViewerImpl::contextBegin;
+      for(auto const&x:this->formats)
+        ss<<x.second->toStr();
+      ss<<ArgumentViewerImpl::contextEnd;
+      return ss.str();
+    }
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
+      assert(this!=nullptr);
+      size_t oldIndex = index;
+      if(index>=args.size())return MATCH_FAILURE;
+      if(args.at(index)!=this->argumentName)return MATCH_FAILURE;
+      ++index;
+      if(index>=args.size()){
+        index = oldIndex;
+        std::cerr<<"Argument error:"<<std::endl;
+        std::cerr<<"expected "<<ArgumentViewerImpl::contextBegin<<" after context argument: "<<this->argumentName;
+        std::cerr<<" not end of arguments"<<std::endl;
+        return MATCH_ERROR;
+      }
+      if(args.at(index)!=ArgumentViewerImpl::contextBegin){
+        index = oldIndex;
+        std::cerr<<"Argument error:"<<std::endl;
+        std::cerr<<"expected "<<ArgumentViewerImpl::contextBegin<<" after context argument: "<<this->argumentName;
+        std::cerr<<" not: "<<args.at(index)<<std::endl;
+        return MATCH_ERROR;
+      }
+      ++index;
+      std::set<std::string>unusedFormats;
+      for(auto const&x:this->formats)unusedFormats.insert(x.first);
+      while(index<args.size()&&args.at(index)!=ArgumentViewerImpl::contextEnd){
+        if(unusedFormats.empty()){
+          index = oldIndex;
+          std::cerr<<"Argument error:"<<std::endl;
+          std::cerr<<"following arguments do not belong in context: "<<this->argumentName<<": "<<std::endl;
+          for(size_t i=index;i<args.size();++i)std::cerr<<args.at(i)<<" ";
+          std::cerr<<std::endl;
+          return MATCH_ERROR;
+        }
+        std::string formatForRemoval = "";
+        for(auto const&f:unusedFormats){
+          auto status = this->formats.at(f)->match(args,index);
+          if(status == MATCH_ERROR){
+            index = oldIndex;
+            return MATCH_ERROR;
+          }
+          if(status == MATCH_SUCCESS){
+            formatForRemoval = f;
+            break;
+          }
+        }
+        if(formatForRemoval == ""){
+          std::cerr<<"Argument error:"<<std::endl;
+          std::cerr<<"argument: "<<args.at(index)<<" does not belong in context: "<<this->argumentName<<std::endl;
+          index = oldIndex;
+          return MATCH_ERROR;
+        }
+      }
+      if(index>=args.size()){
+        index = oldIndex;
+        std::cerr<<"Argument error:"<<std::endl;
+        std::cerr<<"expected "<<ArgumentViewerImpl::contextEnd<<" at the end of context: "<<this->argumentName;
+        std::cerr<<" not end of arguments"<<std::endl;
+        return MATCH_ERROR;
+      }
+      ++index;
+      return MATCH_SUCCESS;
+    }
+};
+
+
 namespace ge{
   namespace util{
     template<>std::string ArgumentViewerImpl::typeName<float      >(){return "f32"   ;}
@@ -204,6 +444,7 @@ namespace ge{
     std::string const ArgumentViewerImpl::fileSymbol   = "<";
   }
 }
+
 
 /**
  * @brief Contructor of ArgumentViewer
