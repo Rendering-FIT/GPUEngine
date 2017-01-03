@@ -25,9 +25,10 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
-SET(CMAKE_MODULE_PATH "CMakeModules;${CMAKE_MODULE_PATH}")
-
 project(${PROJECT_NAME})
+
+SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
+
 
 find_package(Qt5 COMPONENTS Quick)
 if(NOT TARGET geGL)
