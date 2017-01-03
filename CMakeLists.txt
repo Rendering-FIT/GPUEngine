@@ -23,6 +23,7 @@ SET(GPUENGINE_BUILD_GERG     OFF  CACHE BOOL "Build geRG package.")
 SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
 SET(GPUENGINE_BUILD_GEPARSER OFF  CACHE BOOL "Build geParser package.")
 SET(GPUENGINE_BUILD_GEDE     OFF  CACHE BOOL "Build geDE package.")
+SET(GPUENGINE_BUILD_GEVU     OFF  CACHE BOOL "Build geVu package.")
 
 SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp application.")
 

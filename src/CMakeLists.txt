@@ -30,7 +30,9 @@ if(GPUENGINE_BUILD_GEDE)
   set(PACKAGES ${PACKAGES} geDE)
 endif()
 
-
+if(GPUENGINE_BUILD_GEVU)
+  set(PACKAGES ${PACKAGES} geVu)
+endif()
 
 FOREACH(mylibfolder ${PACKAGES}
     #geGL
