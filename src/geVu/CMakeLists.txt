@@ -17,21 +17,31 @@ find_package(vulkan)
 
 set(GEVU_INCLUDES
   ${HEADER_PATH}/Export.h
+
+  ${HEADER_PATH}/geVu.h
+  ${HEADER_PATH}/geVuClasses.h
   
   ${HEADER_PATH}/Buffer.h
+  ${HEADER_PATH}/Context.h
   ${HEADER_PATH}/DeviceContext.h
+  ${HEADER_PATH}/Debug.h
   ${HEADER_PATH}/Texture.h
   ${HEADER_PATH}/Swapchain.h
   ${HEADER_PATH}/Pipeline.h
+  ${HEADER_PATH}/MemoryManager.h
+  ${HEADER_PATH}/MemoryManagerSimple.h
   
   )
 
 set(GEVU_SOURCES
 	 Buffer.cpp
+	 Context.cpp
 	 DeviceContext.cpp
 	 Texture.cpp
 	 Swapchain.cpp
 	 Pipeline.cpp
+	 MemoryManager.cpp
+	 MemoryManagerSimple.cpp
 )
 
 ################################################

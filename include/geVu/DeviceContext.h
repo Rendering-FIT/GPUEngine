@@ -1,20 +1,27 @@
 #pragma once
-namespace ge {
-  namespace vu {
-    class Context;
-    class ContextOptions;
-  };
+#include <geVu/geVuClasses.h>
+
+class ge::vu::DeviceContextCreateInfo {
+public:
+	ContextShared context;
+	int deviceIndex;
+	vk::Instance instance;
+	bool validation = true;
+	bool verbose = true;
+	int queueCount = 1;
 };
 
-#ifdef WIN32
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
-#include <vulkan/vulkan.hpp>
-
-class ge::vu::ContextOptions {
+class ge::vu::DeviceContext {
 public:
-};
+	DeviceContext(const DeviceContextCreateInfo &o= DeviceContextCreateInfo());
 
-class ge::vu::Context {
-public:
+	bool isLayerSupported(std::string name);
+	bool isExtensionSupported(std::string name);
+private:
+	bool validation;
+	bool verbose;
+	vk::Instance instance;
+	vk::PhysicalDevice physicalDevice;
+	vk::Device device;
+	int universalQueueIndex = -1;
 };
