@@ -12,15 +12,31 @@ namespace ge
        */
       struct AnimationKeyFrame
       {
-         AnimationKeyFrame() : t(0){}
-         AnimationKeyFrame(core::time_unit time){ t = time; }
+         AnimationKeyFrame() : t(){}
+         AnimationKeyFrame(const core::time_point& time){ t = time; }
+
+         template<class Rep, class Period = std::ratio<1>>
+         AnimationKeyFrame(const std::chrono::duration<Rep, Period>& duration)
+         {
+            t = time_point(std::chrono::duration_cast<core::time_point::duration>(duration));
+         }
 
          inline bool operator()(const AnimationKeyFrame& a, const AnimationKeyFrame& b)
          {
             return a.t < b.t;
          }
 
-         core::time_unit t;
+         inline bool operator< (const AnimationKeyFrame& rhs) const
+         {
+            return this->t < rhs.t;
+         }
+
+         core::time_point getTime() const
+         {
+            return t;
+         }
+
+         core::time_point t;
       };
 
       /**
@@ -32,11 +48,23 @@ namespace ge
          typedef _ValueType value_type;
 
          AnimationKeyFrameTemplate() : AnimationKeyFrame(){}
-         AnimationKeyFrameTemplate(core::time_unit time) : AnimationKeyFrame(time){}
-         AnimationKeyFrameTemplate(core::time_unit time, const value_type& value)
+         AnimationKeyFrameTemplate(const core::time_point& time) : AnimationKeyFrame(time){}
+         AnimationKeyFrameTemplate(const core::time_point& time, const value_type& value)
             : AnimationKeyFrame(time)
          {
             val = value;
+         }
+
+         template<class Rep, class Period = std::ratio<1>>
+         AnimationKeyFrameTemplate(const std::chrono::duration<Rep, Period>& duration, const value_type& value)
+            : AnimationKeyFrame(duration)
+         {
+            val = value;
+         }
+
+         virtual value_type getValue() const
+         {
+            return val;
          }
 
          value_type val;

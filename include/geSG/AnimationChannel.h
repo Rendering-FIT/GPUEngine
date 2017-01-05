@@ -5,9 +5,11 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <geUtil/Interpolator.h>
+#include <geSG/KeyframeInterpolator.h>
 #include <geSG/AnimationKeyFrame.h>
 #include <geCore/Updatable.h>
+#include <chrono>
+#include <chrono>
 
 
 namespace ge
@@ -19,13 +21,14 @@ namespace ge
        * or group of values that makes sense together e.g. movement (position, orientation),
        * color.
        */
-      class GESG_EXPORT AnimationChannel //: public ge::core::Updatable
+      class GESG_EXPORT AnimationChannel : public ge::core::Updatable
       {
       public:
          AnimationChannel();
 
 
-         virtual void update(core::time_unit t) = 0;
+         virtual void update(const core::time_point& t) = 0;
+         virtual core::time_unit getDuration() const = 0;
 
          virtual ~AnimationChannel();
       protected:
@@ -53,12 +56,12 @@ namespace ge
 
          MovementAnimationChannel();
 
-         virtual void update(core::time_unit t);
+         virtual void update(const core::time_point& t);
 
          inline void setTarget(std::shared_ptr<glm::mat4>& target){ _target = target; }
          inline std::shared_ptr<glm::mat4>& getTarget(){ return _target; }
-         inline glm::mat4 getMatrixTarget(){ return *_target; }
-
+         inline glm::mat4 getTargetMatrix(){ return *_target; }
+         core::time_unit getDuration() const override;
 
          virtual ~MovementAnimationChannel();
 
@@ -71,7 +74,9 @@ namespace ge
 
       protected:
          std::shared_ptr<glm::mat4> _target;
-         std::unique_ptr<ge::util::Interpolator> _interpolator; ///<not used;
+         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point>> positionInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<QuatKeyFrame>, core::time_point>> orientationInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point>> scaleInterpolator;
 
       };
    }
