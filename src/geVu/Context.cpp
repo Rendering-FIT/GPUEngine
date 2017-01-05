@@ -64,7 +64,7 @@ std::vector<string> Context::listDeviceNames(){
 
 DeviceContextShared Context::createDeviceContext(int index){
 	DeviceContextCreateInfo dcci;
-	dcci.instance = instance;
+	dcci.context = shared_from_this();
 	dcci.deviceIndex = index;
 	dcci.validation = validation;
 	dcci.verbose = true;

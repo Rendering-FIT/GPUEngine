@@ -15,7 +15,7 @@ public:
 	int engineVersion = 0;
 };
 
-class ge::vu::Context : std::enable_shared_from_this<ge::vu::Context> {
+class ge::vu::Context : public std::enable_shared_from_this<ge::vu::Context> {
 public:
 	Context(const ContextCreateInfo &o = ContextCreateInfo());
 	~Context();

@@ -29,13 +29,9 @@ App::App() {
 	setupEvents();
 
 	context = make_shared<Context>();
-	auto devices = context->listDeviceNames();
+	device = context->createDeviceContext(0);
 
-	int i = 0;;
-	for (auto &dev : devices) {
-		std::cout << i++ << " " << dev << "\n";
-	}
-	auto dev = context->createDeviceContext(0);
+	device->createSwapchain();
 }
 
 

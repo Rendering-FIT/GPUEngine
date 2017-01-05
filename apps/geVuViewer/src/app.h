@@ -34,5 +34,7 @@ protected:
 	std::shared_ptr<ge::ad::SDLWindow> window;
 	SDL_Window* windowHandle;
 
-	std::shared_ptr<ge::vu::Context> context;
+	ge::vu::ContextShared context;
+	ge::vu::DeviceContextShared device;
+	ge::vu::SwapchainShared swapchain;
 };

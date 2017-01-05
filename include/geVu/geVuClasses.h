@@ -20,6 +20,7 @@ namespace ge {
 		classShared(Texture);
 		classShared(MemoryManager);
 		classShared(MemoryManagerSimple);
+		classShared(SwapchainCreateInfo);
 		classShared(Swapchain);
 		classShared(Pipeline);
 	};
