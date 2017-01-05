@@ -1,5 +1,6 @@
 #include <geSG/AnimationManager.h>
 #include <algorithm>
+#include <chrono>
 
 using namespace ge::sg;
 using namespace ge::core;
@@ -21,7 +22,7 @@ using namespace ge::core;
 /**
  * Updates each animation to time point t. 
  */
-void AnimationManager::update(time_point t)
+void AnimationManager::update(const time_point& t)
 {
    std::for_each(playlist.begin(), playlist.end(), [t](std::shared_ptr<Animation> animation){animation->update(t); });
    removeFinishedAnimation();
@@ -30,7 +31,8 @@ void AnimationManager::update(time_point t)
 /**
  * Not implemented. 
  */
-void AnimationManager::pauseAnimation(std::shared_ptr<Animation> /*animation*/)
+void AnimationManager::pauseAnimation(std::shared_ptr<Animation>
+   /*animation*/& )
 {
 }
 
@@ -38,13 +40,14 @@ void AnimationManager::pauseAnimation(std::shared_ptr<Animation> /*animation*/)
  * Adds the animation to the play list. It doesn't reset the animation start time
  * or anything.
  */
-void AnimationManager::playAnimation(std::shared_ptr<Animation> animation)
+void AnimationManager::playAnimation(std::shared_ptr<Animation>& animation, const time_point& startTime)
 {
    auto it = std::find(playlist.begin(), playlist.end(), animation);
    if(it == playlist.end())
    {
       playlist.push_back(animation);
    }
+   animation->start(startTime);
 }
 
 /**

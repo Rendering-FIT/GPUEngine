@@ -28,7 +28,7 @@ namespace ge
       class Updatable
       {
       public:
-         virtual void update(time_point t = time_point()) = 0;
+         virtual void update(const time_point& t = time_point()) = 0;
       };
    }
 }

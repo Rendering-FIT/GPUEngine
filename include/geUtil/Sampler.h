@@ -7,13 +7,13 @@ namespace ge
        * Class that resamples the parametr t <0,1>.
        * For use in animation for ease motion.
        */
-      class Interpolator
+      class Sampler
       {
       public:
          virtual double operator()(double t) = 0;
       };
 
-      class LinearInterpolator : public Interpolator
+      class IdentitySampler : public Sampler
       {
          virtual double operator()(double t) override
          {

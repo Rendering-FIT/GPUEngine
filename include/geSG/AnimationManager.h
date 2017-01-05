@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include <memory>
+#include <chrono>
 
 namespace ge
 {
@@ -22,9 +23,9 @@ namespace ge
          //void removeAnimation(std::shared_ptr<Animation>animation);
 
 
-         virtual void update(core::time_point t) override;
-         void pauseAnimation(std::shared_ptr<Animation>animation);
-         void playAnimation(std::shared_ptr<Animation>animation);
+         virtual void update(const core::time_point& t) override;
+         void pauseAnimation(std::shared_ptr<Animation>& animation);
+         void playAnimation(std::shared_ptr<Animation>& animation, const core::time_point& startTime);
 
          virtual ~AnimationManager(){}
 

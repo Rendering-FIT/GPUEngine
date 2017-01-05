@@ -36,8 +36,6 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/CameraObject.h
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
-   ${HEADER_PATH}/Timer.h
-   ${HEADER_PATH}/Interpolator.h
    ${HEADER_PATH}/Intersector.h
    ${HEADER_PATH}/macros.h
    ${HEADER_PATH}/MatrixStack.h
@@ -49,6 +47,8 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/OrbitCamera.h
    ${HEADER_PATH}/FreeLookCamera.h
    ${HEADER_PATH}/PerspectiveCamera.h
+   ${HEADER_PATH}/Sampler.h
+   ${HEADER_PATH}/Timer.h
 )
 
 
