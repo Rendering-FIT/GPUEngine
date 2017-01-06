@@ -69,7 +69,9 @@ DeviceContextShared Context::createDeviceContext(int index) {
   dcci.validation = validation;
   dcci.verbose = true;
 
-  return std::make_shared<DeviceContext>(dcci);
+  auto deviceContext = make_shared<DeviceContext>(dcci);
+  deviceContext->createMemoryManager();
+  return deviceContext;
 }
 
 bool Context::isExtensionSupported(std::string name) {

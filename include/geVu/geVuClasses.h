@@ -18,8 +18,9 @@ namespace ge {
     geVu_class(DeviceContextCreateInfo);
     geVu_class(Buffer);
     geVu_class(Texture);
+    geVu_class(MemoryBlock);
     geVu_class(MemoryManager);
-    geVu_class(MemoryManagerSimple);
+    geVu_class(MemoryManagerAdvanced);
     geVu_class(SwapchainCreateInfo);
     geVu_class(Swapchain);
     geVu_class(Pipeline);

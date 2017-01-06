@@ -4,6 +4,8 @@
 #include <geSG/Image.h>
 #include <geSG/Mesh.h>
 
+#include <geGL/geGL.h>
+
 namespace fsg
 {
    GLuint semnatic2Attribute(ge::sg::AttributeDescriptor::Semantic semantic);

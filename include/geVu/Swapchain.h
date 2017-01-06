@@ -8,7 +8,7 @@ public:
   HWND hwnd;
   HINSTANCE hinstance;
 #endif
-  int depthBufferBits = 24;
+  int depthBufferBits = 32;
   int stencilBufferBits = 0;
   bool vsync = true;
   int imageCount = 2;
@@ -18,10 +18,6 @@ public:
 
 class ge::vu::Swapchain {
 protected:
-  void createSurface();
-  void createSwapchain();
-  void createDepthBuffer();
-
   SwapchainCreateInfo createInfo;
   uint32_t imageCount;
   uint32_t width;
@@ -32,15 +28,34 @@ protected:
   vk::SwapchainKHR swapchain;
   std::vector<vk::Image> swapchainImages;
   std::vector<vk::ImageView> swapchainImageViews;
+  uint32_t currentImage;
 
-  vk::Image depthBufferImage;
-  vk::ImageView depthBufferView;
-  vk::Format depthBufferFormat;
-  vk::DeviceMemory depthBufferMemory;
+  vk::RenderPass renderPass;
+  std::vector<vk::Framebuffer> framebuffers;
+
+  vk::Semaphore semaphore = 0;
+  
+  TextureShared depthBuffer;
 
   DeviceContextShared deviceContext;
 
 public:
   Swapchain(const SwapchainCreateInfo &o = SwapchainCreateInfo());
   ~Swapchain();
+
+  void next();
+  void swap();
+
+  vk::Semaphore getSemaphore() { return semaphore; }
+  vk::RenderPass getRenderPass() { return renderPass; }
+  vk::Framebuffer getCurrentFrameBuffer() { return framebuffers[currentImage]; }
+  vk::Image getCurrentImage() { return swapchainImages[currentImage]; }
+protected:
+  void createSurface();
+  void createSwapchain();
+  void createDepthBuffer();
+  void createRenderPass();
+  void createFramebuffers();
+
+  vk::Format bitsToFormat(int depthBits, int stencilBits);
 };

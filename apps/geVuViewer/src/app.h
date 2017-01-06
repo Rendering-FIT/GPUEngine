@@ -7,18 +7,22 @@
 #include <cmath>
 #include <glm/glm.hpp>
 
+
+#include <geSG/Scene.h>
+
 class App {
 public:
   App();
   int run();
   void quit();
-  virtual void init() {}
-  virtual void draw() {}
+  virtual void init();
+  virtual void draw();
   bool handleEvent(const SDL_Event &e);
 protected:
 
   void setupEvents();
   void updateCamera();
+  void createDrawCommand();
   // camera
   glm::mat4 view;
   glm::mat4 projection;
@@ -35,6 +39,9 @@ protected:
   SDL_Window* windowHandle;
 
   ge::vu::ContextShared context;
-  ge::vu::DeviceContextShared device;
+  ge::vu::DeviceContextShared deviceContext;
   ge::vu::SwapchainShared swapchain;
+
+  vk::CommandBuffer commandBuffer;
+  std::shared_ptr<ge::sg::Scene> scene;
 };

@@ -28,8 +28,9 @@ set(GEVU_INCLUDES
   ${HEADER_PATH}/Texture.h
   ${HEADER_PATH}/Swapchain.h
   ${HEADER_PATH}/Pipeline.h
+  ${HEADER_PATH}/MemoryBlock.h
   ${HEADER_PATH}/MemoryManager.h
-  ${HEADER_PATH}/MemoryManagerSimple.h
+  ${HEADER_PATH}/MemoryManagerAdvanced.h
   
   )
 
@@ -41,7 +42,7 @@ set(GEVU_SOURCES
 	 Swapchain.cpp
 	 Pipeline.cpp
 	 MemoryManager.cpp
-	 MemoryManagerSimple.cpp
+	 MemoryManagerAdvanced.cpp
 )
 
 ################################################

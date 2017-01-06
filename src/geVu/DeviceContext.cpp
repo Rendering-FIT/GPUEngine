@@ -4,6 +4,7 @@
 
 #include <geVu/Context.h>
 #include <geVu/Swapchain.h>
+#include <geVu/MemoryManager.h>
 
 using namespace ge::vu;
 using namespace std;
@@ -18,6 +19,12 @@ DeviceContext::DeviceContext(const DeviceContextCreateInfo & o) {
   createDevice();
   createCommandPool();
   createCommandBuffer();
+
+  //memoryManager = make_shared<MemoryManager>(shared_from_this());
+}
+
+void ge::vu::DeviceContext::createMemoryManager(){
+  memoryManager = make_shared<MemoryManager>(shared_from_this());
 }
 
 bool ge::vu::DeviceContext::isLayerSupported(std::string name) {
@@ -41,7 +48,9 @@ SwapchainShared ge::vu::DeviceContext::createSwapchain(SwapchainCreateInfo & sci
   return make_shared<Swapchain>(sci);
 }
 
-void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlagBits imageAspect, int mipCount, int mipBase, int layerBase, int layerCount) {
+void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect, int mipBase, int mipCount, int layerBase, int layerCount){
+
+
   vk::ImageMemoryBarrier imb;
   imb.oldLayout = oldLayout;
   imb.newLayout = newLayout;
@@ -75,7 +84,11 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
 
   imb.srcAccessMask = layoutToFlags(oldLayout);
   imb.dstAccessMask = layoutToFlags(newLayout);
-
+  /*
+  std::cout << "Change Layout " << image << " " << vk::to_string(oldLayout) << "->" << vk::to_string(newLayout) <<
+    vk::to_string(imageAspect) << mipBase << "," << mipCount << "," << layerBase << "," << layerCount << " "
+    <<vk::to_string(imb.srcAccessMask)<<" "<<vk::to_string(imb.dstAccessMask)<<"\n";
+  */
   buffer.pipelineBarrier(
     vk::PipelineStageFlagBits::eTopOfPipe,
     vk::PipelineStageFlagBits::eTopOfPipe,
@@ -83,6 +96,17 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
 }
 
 void ge::vu::DeviceContext::flushCommandBuffer() {
+  commandBuffer.end();
+  vk::SubmitInfo si;
+  si.commandBufferCount = 1;
+  si.pCommandBuffers = &commandBuffer;
+
+  queue.submit(si, 0);
+  queue.waitIdle();
+
+  //commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+  commandBuffer.reset(vk::CommandBufferResetFlags());
+  commandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse));
 }
 
 void ge::vu::DeviceContext::createPhysicalDevice() {
@@ -148,7 +172,7 @@ void ge::vu::DeviceContext::createCommandBuffer() {
   cbai.level = vk::CommandBufferLevel::ePrimary;
 
   commandBuffer = device.allocateCommandBuffers(cbai)[0];
-  commandBuffer.begin(vk::CommandBufferBeginInfo());
+  commandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse));
 }
 
 void ge::vu::DeviceContext::createPipelineCache() {

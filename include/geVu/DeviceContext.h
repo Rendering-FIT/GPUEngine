@@ -14,12 +14,6 @@ public:
 
 class ge::vu::DeviceContext : public std::enable_shared_from_this<ge::vu::DeviceContext> {
 protected:
-  void createPhysicalDevice();
-  void createDevice();
-  void createCommandPool();
-  void createCommandBuffer();
-  void createPipelineCache();
-
   DeviceContextCreateInfo createInfo;
   bool validation;
   bool verbose;
@@ -33,8 +27,11 @@ protected:
   vk::PipelineCache pipelineCache;
   vk::Queue queue;
 
+  MemoryManagerShared memoryManager;
+
 public:
   DeviceContext(const DeviceContextCreateInfo &o = DeviceContextCreateInfo());
+  void createMemoryManager();
 
   bool isLayerSupported(std::string name);
   bool isExtensionSupported(std::string name);
@@ -48,11 +45,21 @@ public:
 
   void changeImageLayout(vk::CommandBuffer buffer, vk::Image image,
     vk::ImageLayout oldLayout, vk::ImageLayout newLayout,
-    vk::ImageAspectFlagBits imageAspect = vk::ImageAspectFlagBits::eColor,
-    int mipCount = 1, int mipBase = 0,
+    vk::ImageAspectFlags imageAspect = vk::ImageAspectFlagBits::eColor,
+    int mipBase = 0, int mipCount = 1,
     int layerBase = 0, int layerCount = 1);
-
-  vk::CommandBuffer getCommandBuffer() { return commandBuffer; }
   void flushCommandBuffer();
 
+  vk::CommandBuffer getCommandBuffer() { return commandBuffer; }
+  vk::CommandPool getCommandPool() { return commandPool; }
+  vk::Queue getQueue() { return queue; }
+
+  MemoryManagerShared getMemoryManager() { return memoryManager; }
+
+protected:
+  void createPhysicalDevice();
+  void createDevice();
+  void createCommandPool();
+  void createCommandBuffer();
+  void createPipelineCache();
 };

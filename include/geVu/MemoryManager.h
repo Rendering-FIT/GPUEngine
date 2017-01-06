@@ -1,6 +1,15 @@
 #pragma once
 #include <geVu/geVuClasses.h>
 
-class ge::vu::MemoryManager {
+#include <geVu/MemoryBlock.h>
+
+class ge::vu::MemoryManager : public std::enable_shared_from_this<ge::vu::MemoryManager> {
+protected:
+  DeviceContextShared deviceContext;
+
 public:
+  MemoryManager(DeviceContextShared &deviceContext);
+  virtual MemoryBlock allocMemory(vk::Image img, vk::MemoryPropertyFlags memoryFlags);
+
+  uint32_t MemoryManager::memoryTypeBitsToIndex(uint32_t typeBits, vk::MemoryPropertyFlags requirements);
 };

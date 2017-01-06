@@ -7,7 +7,8 @@
 #include <geVu/DeviceContext.h>
 #include <geVu/Buffer.h>
 #include <geVu/Texture.h>
+#include <geVu/MemoryBlock.h>
 #include <geVu/MemoryManager.h>
-#include <geVu/MemoryManagerSimple.h>
+#include <geVu/MemoryManagerAdvanced.h>
 #include <geVu/Swapchain.h>
 #include <geVu/Pipeline.h>
