@@ -40,7 +40,7 @@ namespace ge
 
       };
 
-      /*template<typename KeyFrameContainer, typename T>
+      template<typename KeyFrameContainer, typename T>
       class LinearKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {
       public:
@@ -48,8 +48,18 @@ namespace ge
          {
             if(keyframes.empty()) return Value();
 
+            auto it = std::lower_bound(keyframes.begin(), keyframes.end(), t);
+            if(it == keyframes.begin() || t > it->getTime())
+            {
+               return it->getValue();
+            }
 
+            float dn_t = (float)((t - (it-1)->getTime()).count()) / (it->getTime() - (it-1)->getTime()).count();
+            if((it->getTime() - (it-1)->getTime()).count() == 0) return (it-1)->getValue();
+            Value ret = ((it-1)->getValue())*(1.0f - dn_t) + (it->getValue())*dn_t;
+            return ret;
          }
-      };*/
+      };
+
    }
 }
