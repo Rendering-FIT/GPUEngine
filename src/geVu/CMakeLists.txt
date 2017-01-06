@@ -62,7 +62,7 @@ add_library(${LIB_NAME}
 
 
 set(External_libs vulkan)
-set(Internal_deps geCore)
+#set(Internal_deps geCore)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 set(External_deps_Export ${External_libs})

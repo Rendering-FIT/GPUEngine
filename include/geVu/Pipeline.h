@@ -1,9 +1,6 @@
 #pragma once
-namespace ge {
-  namespace vu {
-    class Pipeline;
-  };
-};
+
+#include <geVu/geVuClasses.h>
 
 class ge::vu::Pipeline {
 public:

@@ -1,10 +1,6 @@
 #pragma once
 
-namespace ge {
-  namespace vu {
-    class Texture;
-  };
-};
+#include <geVu/geVuClasses.h>
 
 class ge::vu::Texture {
 public:

@@ -13,28 +13,7 @@ public:
 };
 
 class ge::vu::DeviceContext : public std::enable_shared_from_this<ge::vu::DeviceContext> {
-public:
-  DeviceContext(const DeviceContextCreateInfo &o = DeviceContextCreateInfo());
-
-  bool isLayerSupported(std::string name);
-  bool isExtensionSupported(std::string name);
-
-  SwapchainShared createSwapchain(SwapchainCreateInfo &sci);
-
-  vk::Instance getInstance() { return context->getInstance(); }
-  vk::PhysicalDevice getPhysicalDevice() { return physicalDevice; }
-  vk::Device getDevice() { return device; }
-  int getUnivesalQueueIndex() { return universalQueueIndex; }
-
-  void changeImageLayout(vk::CommandBuffer buffer, vk::Image image,
-    vk::ImageLayout oldLayout, vk::ImageLayout newLayout,
-    vk::ImageAspectFlagBits imageAspect = vk::ImageAspectFlagBits::eColor,
-    int mipCount = 1, int mipBase = 0,
-    int layerBase = 0, int layerCount = 1);
-  
-  vk::CommandBuffer getCommandBuffer() { return commandBuffer; }
-  void flushCommandBuffer();
-private:
+protected:
   void createPhysicalDevice();
   void createDevice();
   void createCommandPool();
@@ -53,4 +32,27 @@ private:
   vk::CommandPool commandPool;
   vk::PipelineCache pipelineCache;
   vk::Queue queue;
+
+public:
+  DeviceContext(const DeviceContextCreateInfo &o = DeviceContextCreateInfo());
+
+  bool isLayerSupported(std::string name);
+  bool isExtensionSupported(std::string name);
+
+  SwapchainShared createSwapchain(SwapchainCreateInfo &sci);
+
+  vk::Instance getInstance() { return context->getInstance(); }
+  vk::PhysicalDevice getPhysicalDevice() { return physicalDevice; }
+  vk::Device getDevice() { return device; }
+  int getUnivesalQueueIndex() { return universalQueueIndex; }
+
+  void changeImageLayout(vk::CommandBuffer buffer, vk::Image image,
+    vk::ImageLayout oldLayout, vk::ImageLayout newLayout,
+    vk::ImageAspectFlagBits imageAspect = vk::ImageAspectFlagBits::eColor,
+    int mipCount = 1, int mipBase = 0,
+    int layerBase = 0, int layerCount = 1);
+
+  vk::CommandBuffer getCommandBuffer() { return commandBuffer; }
+  void flushCommandBuffer();
+
 };

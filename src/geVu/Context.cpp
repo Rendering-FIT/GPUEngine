@@ -5,85 +5,85 @@
 using namespace ge::vu;
 using namespace std;
 
-Context::Context(const ContextCreateInfo & o){
-	this->validation = o.validation;
-	this->verbose = o.verbose;
+Context::Context(const ContextCreateInfo & o) {
+  this->validation = o.validation;
+  this->verbose = o.verbose;
 
-	vector<const char*> enabledExtensions;
-	vector<const char*> enabledLayers;
+  vector<const char*> enabledExtensions;
+  vector<const char*> enabledLayers;
 
-	enabledExtensions.push_back("VK_KHR_surface");
+  enabledExtensions.push_back("VK_KHR_surface");
 #ifdef WIN32
-	enabledExtensions.push_back("VK_KHR_win32_surface");
+  enabledExtensions.push_back("VK_KHR_win32_surface");
 #endif
-	//@todo linux
+  //@todo linux
 
-	if (validation) {
-		if (isLayerSupported("VK_LAYER_LUNARG_standard_validation")) {
-			enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-		}
-		if (isExtensionSupported("VK_EXT_debug_report")) {
-			enabledExtensions.push_back("VK_EXT_debug_report");
-		}
-	}
-	
-	vk::ApplicationInfo ai;
-	ai.apiVersion = 0;
-	ai.applicationVersion = o.appVersion;
-	ai.engineVersion = o.engineVersion;
-	ai.pApplicationName = o.appName.c_str();
-	ai.pEngineName = o.engineName.c_str();
+  if (validation) {
+    if (isLayerSupported("VK_LAYER_LUNARG_standard_validation")) {
+      enabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+    }
+    if (isExtensionSupported("VK_EXT_debug_report")) {
+      enabledExtensions.push_back("VK_EXT_debug_report");
+    }
+  }
 
-	vk::InstanceCreateInfo ici;
-	ici.enabledExtensionCount = enabledExtensions.size();
-	ici.ppEnabledExtensionNames = enabledExtensions.data();
-	ici.enabledLayerCount = enabledLayers.size();
-	ici.ppEnabledLayerNames = enabledLayers.data();
-	ici.pApplicationInfo = &ai;
+  vk::ApplicationInfo ai;
+  ai.apiVersion = 0;
+  ai.applicationVersion = o.appVersion;
+  ai.engineVersion = o.engineVersion;
+  ai.pApplicationName = o.appName.c_str();
+  ai.pEngineName = o.engineName.c_str();
 
-	instance = vk::createInstance(ici);
+  vk::InstanceCreateInfo ici;
+  ici.enabledExtensionCount = (uint32_t)enabledExtensions.size();
+  ici.ppEnabledExtensionNames = enabledExtensions.data();
+  ici.enabledLayerCount = (uint32_t)enabledLayers.size();
+  ici.ppEnabledLayerNames = enabledLayers.data();
+  ici.pApplicationInfo = &ai;
 
-	if (validation) {
-		enableDebugCallbacks(instance);
-	}
+  instance = vk::createInstance(ici);
+
+  if (validation) {
+    enableDebugCallbacks(instance);
+  }
 }
 
 Context::~Context() {
-	instance.destroy();
+  instance.destroy();
 }
 
-std::vector<string> Context::listDeviceNames(){
-	auto devices = instance.enumeratePhysicalDevices();
-	std::vector<string> names;
-	for (auto &dev : devices) {
-		auto prop = dev.getProperties();
-		names.push_back(prop.deviceName);
-	}
-	return names;
+std::vector<string> Context::listDeviceNames() {
+  auto devices = instance.enumeratePhysicalDevices();
+  std::vector<string> names;
+  for (auto &dev : devices) {
+    auto prop = dev.getProperties();
+    names.push_back(prop.deviceName);
+  }
+  return names;
 }
 
-DeviceContextShared Context::createDeviceContext(int index){
-	DeviceContextCreateInfo dcci;
-	dcci.context = shared_from_this();
-	dcci.deviceIndex = index;
-	dcci.validation = validation;
-	dcci.verbose = true;
+DeviceContextShared Context::createDeviceContext(int index) {
+  DeviceContextCreateInfo dcci;
+  dcci.context = shared_from_this();
+  dcci.deviceIndex = index;
+  dcci.validation = validation;
+  dcci.verbose = true;
 
-	return std::make_shared<DeviceContext>(dcci);
+  return std::make_shared<DeviceContext>(dcci);
 }
 
-bool Context::isExtensionSupported(std::string name){
-	auto n = vk::enumerateInstanceExtensionProperties();
-	for (auto &p : n) {
-		if (p.extensionName == name)return true;
-	}
-	return false;
+bool Context::isExtensionSupported(std::string name) {
+  auto n = vk::enumerateInstanceExtensionProperties();
+  for (auto &p : n) {
+    if (p.extensionName == name)return true;
+  }
+  return false;
 }
 
-bool Context::isLayerSupported(std::string name){
-	auto n = vk::enumerateInstanceLayerProperties();
-	for (auto &p : n) {
-		if (p.layerName == name)return true;
-	}
-	return false;
+bool Context::isLayerSupported(std::string name) {
+  auto n = vk::enumerateInstanceLayerProperties();
+  for (auto &p : n) {
+    if (p.layerName == name)return true;
+  }
+  return false;
 }

@@ -48,9 +48,9 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
   imb.image = image;
   imb.subresourceRange = vk::ImageSubresourceRange(imageAspect, mipBase, mipCount, 0, 1);
 
-  auto layoutToFlags = [&](vk::ImageLayout layout) {
-  vk::AccessFlags ret;
-    switch (newLayout) {
+  auto layoutToFlags = [](vk::ImageLayout layout) {
+    vk::AccessFlags ret;
+    switch (layout) {
     case vk::ImageLayout::eTransferDstOptimal:
       ret = vk::AccessFlagBits::eTransferWrite;
       break;
@@ -80,6 +80,9 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
     vk::PipelineStageFlagBits::eTopOfPipe,
     vk::PipelineStageFlagBits::eTopOfPipe,
     vk::DependencyFlags(), 0, NULL, 0, NULL, 1, &imb);
+}
+
+void ge::vu::DeviceContext::flushCommandBuffer() {
 }
 
 void ge::vu::DeviceContext::createPhysicalDevice() {

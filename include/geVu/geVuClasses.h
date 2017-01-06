@@ -8,21 +8,21 @@
 
 #include "geVu/Export.h"
 
-#define classShared(x) class GEVU_EXPORT x; typedef std::shared_ptr<x> x##Shared; typedef std::weak_ptr<x> x##Weak;
+#define geVu_class(x) class GEVU_EXPORT x; typedef std::shared_ptr<x> x##Shared; typedef std::weak_ptr<x> x##Weak;
 
 namespace ge {
 	namespace vu {
-		classShared(Context);
-		classShared(ContextCreateInfo);
-		classShared(DeviceContext);
-		classShared(DeviceContextCreateInfo);
-		classShared(Buffer);
-		classShared(Texture);
-		classShared(MemoryManager);
-		classShared(MemoryManagerSimple);
-		classShared(SwapchainCreateInfo);
-		classShared(Swapchain);
-		classShared(Pipeline);
+    geVu_class(Context);
+    geVu_class(ContextCreateInfo);
+    geVu_class(DeviceContext);
+    geVu_class(DeviceContextCreateInfo);
+    geVu_class(Buffer);
+    geVu_class(Texture);
+    geVu_class(MemoryManager);
+    geVu_class(MemoryManagerSimple);
+    geVu_class(SwapchainCreateInfo);
+    geVu_class(Swapchain);
+    geVu_class(Pipeline);
 	};
 };
 
