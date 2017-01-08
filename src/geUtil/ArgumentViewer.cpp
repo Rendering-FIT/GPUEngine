@@ -14,7 +14,7 @@ using namespace ge::util;
 class Format{
   public:
     enum MatchStatus{MATCH_SUCCESS,MATCH_FAILURE,MATCH_ERROR};
-    virtual std::string toStr()const = 0;
+    virtual std::string toStr(size_t indent)const = 0;
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const = 0;
 };
 
@@ -25,6 +25,7 @@ class ge::util::ArgumentViewerImpl{
     static std::string const contextBegin;
     static std::string const contextEnd  ;
     static std::string const fileSymbol  ;
+    static size_t      const levelIndent ;
     ArgumentViewer*parent = nullptr;
     std::shared_ptr<Format>format = nullptr;
     size_t getArgumentPosition(std::string const&argument)const;
@@ -199,11 +200,13 @@ class SingleValueFormat: public Format{
     std::string argumentName;
     TYPE defaults;
     SingleValueFormat(std::string const&argument,TYPE const&def):argumentName(argument),defaults(def){}
-    virtual std::string toStr()const override{
+    virtual std::string toStr(size_t indent)const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      ss<<this->argumentName<<"["<<ArgumentViewerImpl::typeName<TYPE>()<<"] = ";
+      for(size_t i=0;i<indent;++i)ss<<" ";
+      ss<<this->argumentName<<" = ";
       ss<<ge::core::value2str(defaults);
+      ss<<" ["<<ArgumentViewerImpl::typeName<TYPE>()<<"]"<<std::endl;;
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -231,11 +234,13 @@ class VectorFormat: public Format{
     std::string argumentName;
     std::vector<TYPE>defaults;
     VectorFormat(std::string const&argument,std::vector<TYPE>const&defs):argumentName(argument),defaults(defs){}
-    virtual std::string toStr()const override{
+    virtual std::string toStr(size_t indent)const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      ss<<this->argumentName<<"["<<ArgumentViewerImpl::typeName<TYPE>()<<"*] = ";
+      for(size_t i=0;i<indent;++i)ss<<" ";
+      ss<<this->argumentName<<" = ";
       ss<<ge::core::value2str(defaults);
+      ss<<" ["<<ArgumentViewerImpl::typeName<TYPE>()<<"*]"<<std::endl;
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -253,13 +258,18 @@ class StringVectorFormat: public Format{
     std::string argumentName;
     std::vector<std::string>defaults;
     StringVectorFormat(std::string const&argument,std::vector<std::string>const&defs):argumentName(argument),defaults(defs){}
-    virtual std::string toStr()const override{
+    virtual std::string toStr(size_t indent)const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      ss<<this->argumentName<<ArgumentViewerImpl::contextBegin;
-      ss<<"[string*]";
-      ss<<ArgumentViewerImpl::contextEnd;
-      ss<<" = "<<ge::core::value2str(defaults)<<" ";
+      for(size_t i=0;i<indent;++i)ss<<" ";
+      ss<<this->argumentName<<" = "<<ArgumentViewerImpl::contextBegin;
+      bool first = true;
+      for(auto const&x:defaults){
+        if(first)first = false;
+        else ss<<", ";
+        ss<<"\""<<x<<"\"";
+      }
+      ss<<ArgumentViewerImpl::contextEnd<<" [string*]"<<std::endl;
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -292,10 +302,11 @@ class IsPresentFormat: public Format{
   public:
     std::string argumentName;
     IsPresentFormat(std::string const&name):argumentName(name){}
-    virtual std::string toStr()const override{
+    virtual std::string toStr(size_t indent)const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      ss<<this->argumentName<<" ";
+      for(size_t i=0;i<indent;++i)ss<<" ";
+      ss<<this->argumentName<<" "<<std::endl;
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -310,11 +321,12 @@ class IsPresentFormat: public Format{
 class ArgumentListFormat: public Format{
   public:
     std::map<std::string,std::shared_ptr<Format>>formats;
-    virtual std::string toStr()const override{
+    virtual std::string toStr(size_t indent)const override{
       assert(this!=nullptr);
       std::stringstream ss;
+      for(size_t i=0;i<indent;++i)ss<<" ";
       for(auto const&x:this->formats)
-        ss<<x.second->toStr();
+        ss<<x.second->toStr(indent);
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -358,14 +370,16 @@ class ContextFormat: public ArgumentListFormat{
   public:
     std::string argumentName;
     ContextFormat(std::string const&argument):argumentName(argument){}
-    virtual std::string toStr()const override{
+    virtual std::string toStr(size_t indent)const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      ss<<this->argumentName;
-      ss<<ArgumentViewerImpl::contextBegin;
+      for(size_t i=0;i<indent;++i)ss<<" ";
+      ss<<this->argumentName<<" ";
+      ss<<ArgumentViewerImpl::contextBegin<<std::endl;
       for(auto const&x:this->formats)
-        ss<<x.second->toStr();
-      ss<<ArgumentViewerImpl::contextEnd;
+        ss<<x.second->toStr(indent+ArgumentViewerImpl::levelIndent);
+      for(size_t i=0;i<indent;++i)ss<<" ";
+      ss<<ArgumentViewerImpl::contextEnd<<std::endl;
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -465,6 +479,7 @@ namespace ge{
     std::string const ArgumentViewerImpl::contextBegin = "{";
     std::string const ArgumentViewerImpl::contextEnd   = "}";
     std::string const ArgumentViewerImpl::fileSymbol   = "<";
+    size_t      const ArgumentViewerImpl::levelIndent  = 2  ;
   }
 }
 
@@ -582,11 +597,19 @@ TYPE ArgumentViewerImpl::getArgumentWithFormat(
   auto subFormatIt = alf->formats.find(argument);
   if(subFormatIt!=alf->formats.end()){
     auto subFormat = subFormatIt->second;
-    if(!this->isTypeOf<SingleValueFormat<TYPE>>(subFormat)){
+    auto singleValueFormat = std::dynamic_pointer_cast<SingleValueFormat<TYPE>>(subFormat);
+    if(!singleValueFormat){
       ge::core::printError(GE_CORE_FCENAME,
           "argument: "+argument+
           " is already defined as something else than single "+
           ArgumentViewerImpl::typeName<TYPE>()+" value",argument,def);
+      return def;
+    }
+    if(singleValueFormat->defaults!=def){
+      ge::core::printError(GE_CORE_FCENAME,
+          "argument: "+argument+
+          " has already been defined with different default value: "+
+          ge::core::value2str(singleValueFormat->defaults),argument,def);
       return def;
     }
   }else
@@ -907,10 +930,18 @@ std::vector<std::string>ArgumentViewer::getsv(
   auto subFormatIt = alf->formats.find(argument);
   if(subFormatIt!=alf->formats.end()){
     auto subFormat = subFormatIt->second;
-    if(!ArgumentViewerImpl::isTypeOf<StringVectorFormat>(subFormat)){
+    auto stringVectorFormat = std::dynamic_pointer_cast<StringVectorFormat>(subFormat);
+    if(!stringVectorFormat){
       ge::core::printError(GE_CORE_FCENAME,"argument: "+argument+
           " is already defined as something else than vector of string values",
           argument,def);
+      return def;
+    }
+    if(stringVectorFormat->defaults!=def){
+      ge::core::printError(GE_CORE_FCENAME,
+          "argument: "+argument+
+          " has already been defined with different default values: "+
+          ge::core::value2str(stringVectorFormat->defaults),argument,def);
       return def;
     }
   }else
@@ -923,4 +954,10 @@ std::vector<std::string>ArgumentViewer::getsv(
   for(size_t i=0;i<subArguments.size();++i)
     subArguments[i] = ArgumentViewerImpl::parseEscapeSequence(subArguments[i]);
   return subArguments;
+}
+
+std::string ArgumentViewer::toStr()const{
+  assert(this!=nullptr);
+  assert(this->_impl!=nullptr);
+  return this->_impl->format->toStr(0);
 }

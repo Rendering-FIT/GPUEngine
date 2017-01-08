@@ -23,6 +23,7 @@ SCENARIO("Basic ArgumentViewer implicit cast tests"){
   REQUIRE(a->getf32("g",0.f)==1.4f);
   REQUIRE(a->getf32("h",0.f)==1.5f);
   REQUIRE(a->getf32("i",0.f)==-1.6f);
+  std::cerr<<a->toStr()<<std::endl;
 }
 
 SCENARIO("ArgumentViewer - default value tests"){
@@ -44,6 +45,7 @@ SCENARIO("ArgumentViewer - default value tests"){
   REQUIRE(a->getu32v("l",{1212})==std::vector<uint32_t   >({1212}));
   REQUIRE(a->getu64v("m",{3212})==std::vector<uint64_t   >({3212}));
   REQUIRE(a->getsv  ("n",{"ah"})==std::vector<std::string>({"ah"}));
+  std::cerr<<a->toStr()<<std::endl;
 }
 
 SCENARIO("Basic ArgumentViewer tests"){
@@ -65,6 +67,7 @@ SCENARIO("Basic ArgumentViewer tests"){
   REQUIRE(a->gets("-p1")=="{");
   REQUIRE(a->gets("-p2")=="}");
   REQUIRE(a->gets("-p3")=="<");
+  std::cerr<<a->toStr()<<std::endl;
 }
 
 SCENARIO("Vector ArgumentViewer tests"){
@@ -122,6 +125,7 @@ SCENARIO("ArgumentViewer file tests"){
   REQUIRE(a->getContext("light")->isPresent("c")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("a")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("b")==true);
+  std::cerr<<a->toStr()<<std::endl;
 }
 
 

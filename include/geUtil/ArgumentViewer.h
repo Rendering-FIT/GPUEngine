@@ -36,6 +36,7 @@ class GEUTIL_EXPORT ge::util::ArgumentViewer{
     std::vector<std::string>getsv    (std::string const&contextName,std::vector<std::string>const&def = {} )const;
     std::shared_ptr<ArgumentViewer>getContext(std::string const&name);
     bool validate()const;
+    std::string toStr()const;
   protected:
     std::unique_ptr<ArgumentViewerImpl>_impl;
     friend class ArgumentViewerImpl;
