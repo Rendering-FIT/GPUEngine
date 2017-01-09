@@ -6,19 +6,6 @@ using namespace ge::sg;
 using namespace ge::core;
 
 
-//void AnimationManager::addAnimation(std::shared_ptr<Animation>& animation)
-//{
-//   animations.push_back(animation);
-//}
-
-//void AnimationManager::removeAnimation(std::shared_ptr<Animation> animation)
-//{
-//   auto it = std::find(animations.begin(), animations.end(), animation);
-//   animations.erase(it);
-//   auto pit = std::find(playlist.begin(), playlist.end(), animation);
-//   playlist.erase(pit);
-//}
-
 /**
  * Updates each animation to time point t. 
  */
@@ -37,8 +24,7 @@ void AnimationManager::pauseAnimation(std::shared_ptr<Animation>
 }
 
 /**
- * Adds the animation to the play list. It doesn't reset the animation start time
- * or anything.
+ * Adds the animation to the play list and starts the animation.
  */
 void AnimationManager::playAnimation(std::shared_ptr<Animation>& animation, const time_point& startTime)
 {
@@ -51,7 +37,7 @@ void AnimationManager::playAnimation(std::shared_ptr<Animation>& animation, cons
 }
 
 /**
- * Removes finished animations from playlist. This method is called at the end
+ * Removes finished animations from manager. This method is called at the end
  * of the update method.
  */
 void AnimationManager::removeFinishedAnimation()

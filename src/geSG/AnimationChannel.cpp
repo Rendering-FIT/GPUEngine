@@ -15,6 +15,9 @@ AnimationChannel::~AnimationChannel()
 
 ///////////////////////////////////////////////////////////////////////////
 
+/**
+ * Sets up NearestKeyframeInterpolator for all key frames.
+ */
 MovementAnimationChannel::MovementAnimationChannel()
    : positionInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point >())
    , orientationInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<QuatKeyFrame>, core::time_point >())
@@ -23,6 +26,11 @@ MovementAnimationChannel::MovementAnimationChannel()
    
 }
 
+
+/**
+ * Updates the target matrix.
+ * \param t Animation relative time.
+ */
 void MovementAnimationChannel::update(const time_point& t)
 {
    glm::vec3 position;
@@ -43,6 +51,12 @@ void MovementAnimationChannel::update(const time_point& t)
       *_target = mat;
 }
 
+
+/**
+ * Computes the duration of this channel. It takes the maximal t from the last key frame of
+ * all containers.
+ * \return Duration in core::time_unit
+ */
 time_unit MovementAnimationChannel::getDuration() const
 {
    std::array<core::time_point, 3> endFrameTimes;

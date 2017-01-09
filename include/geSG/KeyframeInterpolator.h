@@ -7,9 +7,11 @@ namespace ge
    {
 
       /**
-       * Base class for keyframe interpolation. 
+       * Base class for keyframe interpolation. Interpolator is supplied to channels to
+       * manipulate interpolation between key frames. Interpolation is based on parametr t
+       * of type T and interpolates values of type Value.
        * \tparam KeyFrameContainer e.g. vector<AnimationKeyFrameTemplate<glm::vec3>>
-       * \tparam T e.g. core::time_point
+       * \tparam T e.g. core::time_point.
        */
       template<typename KeyFrameContainer, typename T>
       class KeyframeInterpolator
@@ -21,6 +23,13 @@ namespace ge
 
       };
 
+
+      /**
+       * Interpolates between two key frames and returns the value of the closest one.
+       * \tparam KeyFrameContainer e.g. vector<AnimationKeyFrameTemplate<glm::vec3>>
+       * \tparam T e.g. core::time_point. The value returned is not extrapolated,
+       *           its clamped into the key frame container range.
+       */
       template<typename KeyFrameContainer, typename T>
       class NearestKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {
@@ -34,12 +43,21 @@ namespace ge
             {
                return it->getValue();
             }
+            /* if the t is closer to previous frame, than we need to substract 1 if not
+             * then 0. That is what casting bool to int does. 
+             */
             bool closerToPrevFrame = (it->getTime() - t) >= (t - (it - 1)->getTime());
             return (it - int(closerToPrevFrame))->getValue();
          }
 
       };
 
+      /**
+       * Interpolates between two key frames and returns the linear interpolation of theirs values.
+       * \tparam KeyFrameContainer e.g. vector<AnimationKeyFrameTemplate<glm::vec3>>
+       * \tparam T e.g. core::time_point. The value returned is not extrapolated,
+       *           its clamped into the key frame container range.
+       */
       template<typename KeyFrameContainer, typename T>
       class LinearKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {
@@ -61,6 +79,12 @@ namespace ge
          }
       };
 
+      /**
+      * Interpolates between two key frames and returns the spherical linear interpolation of theirs values.
+      * \tparam KeyFrameContainer e.g. vector<AnimationKeyFrameTemplate<glm::quat>>
+      * \tparam T e.g. core::time_point. The value returned is not extrapolated,
+      *           its clamped into the key frame container range.
+      */
       template<typename KeyFrameContainer, typename T>
       class SlerpKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {

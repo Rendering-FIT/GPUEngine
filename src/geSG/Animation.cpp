@@ -13,6 +13,11 @@ Animation::Animation()
 {
 }
 
+/**
+ * Computes duration, sets start time to t and calls update with t.
+ * The duration is computed as maximum time value (t) of all keyframes of all channels.
+ * \param t 
+ */
 void Animation::start(const time_point& t)
 {
    auto it = std::max_element(channels.begin(), channels.end(), [](const std::shared_ptr<AnimationChannel>& a, const std::shared_ptr<AnimationChannel>& b) { return a->getDuration() < b->getDuration(); });
@@ -23,8 +28,10 @@ void Animation::start(const time_point& t)
 
 /**
  * Use to update all animation channels.
- * @param t Is the simulation time,
- *          but time in seconds from the animation beggining.
+ * @param t Is the simulation time resp. aplication gloab time. The start time is then substracted
+ *          from this t and determines the current animation (relative) time. All channels are fed
+ *          this relative time.
+ * 
  */
 void Animation::update(const time_point& t)
 {
