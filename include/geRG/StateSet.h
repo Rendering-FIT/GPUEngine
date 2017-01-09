@@ -30,23 +30,15 @@ namespace ge
          unsigned glMode;                 ///< Rendering mode of the draw command, such as GL_TRIANGLES, GL_LINE_STRIP, etc.
          unsigned drawCommandCount;       ///< Number of indirect records that will be used for rendering of the draw command.
 
-#if defined(_MSC_VER) && _MSC_VER<=1900
-         // MSVC 2013 (tested with Update 4 and 5) and MSVC 2015 (original release)
-         // fails to embed this class into the std::vector
-         // unless there is a copy constructor (this does not meet C++11 standard)
-         // MSVC 2015 (original release) requires even assignment operator.
-         RenderingCommandData(const RenderingCommandData&); // this must be never called
-         RenderingCommandData& operator=(const RenderingCommandData&); // this must be never called
-#else
+         // disable copy constructor and assignment operator
          RenderingCommandData(const RenderingCommandData&) = delete;
          RenderingCommandData& operator=(const RenderingCommandData&) = delete;
-#endif
-         inline RenderingCommandData(RenderingCommandData&& rhs) { *this = std::move(rhs); }
-         RenderingCommandData& operator=(RenderingCommandData&& rhs);
 
          inline RenderingCommandData() = default;
+         inline RenderingCommandData(RenderingCommandData&& rhs) { *this = std::move(rhs); }
          inline RenderingCommandData(unsigned indirectBufferOffset4,
                                      unsigned glMode,unsigned drawCommandCount);
+         RenderingCommandData& operator=(RenderingCommandData&& rhs);
       };
 
 
@@ -67,6 +59,10 @@ namespace ge
             inline void setIndexToRenderingData(unsigned mode,unsigned value)  { numDrawCommandsOfKindAndIndex[mode]=(numDrawCommandsOfKindAndIndex[mode]&0x0fffffff)|(value<<28); }
 
             inline AttribStorageData(AttribStorage *storage);
+
+            // disable copy constructor and assignment operator
+            AttribStorageData(const AttribStorageData&) = delete;
+            AttribStorageData& operator=(const AttribStorageData&) = delete;
          };
 
          typedef ge::core::SharedCommandList CommandList;
