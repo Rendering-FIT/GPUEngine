@@ -16,9 +16,9 @@ namespace ge
    namespace sg{
 
       /**
-       * The part of an animation. Channel is responsible for updating one value
+       * The main part of an animation. Channel is responsible for updating one value
        * or group of values that makes sense together e.g. movement (position, orientation),
-       * color.
+       * color. etc. Implements Updatable interface.
        */
       class GESG_EXPORT AnimationChannel : public ge::core::Updatable
       {
