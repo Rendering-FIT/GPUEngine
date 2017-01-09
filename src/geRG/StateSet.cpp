@@ -13,26 +13,6 @@ static_assert(sizeof(StateSetGpuData)==4,
 
 
 
-#if defined(_MSC_VER) && _MSC_VER<=1900
-// MSVC 2013 (tested with Update 4 and 5) and MSVC 2015 (original release)
-// fails to embed this class into the std::vector
-// unless there is a copy constructor (this does not meet C++11 standard)
-// MSVC 2015 (original release) requires assignment operator as well.
-RenderingCommandData::RenderingCommandData(const RenderingCommandData&) // this must be never called
-{
-   std::cout<<"RenderingCommandData copy constructor fatal error: this constructor should be\n"
-              "   never called. Application will be terminated."<<std::endl;
-   exit(-1);
-}
-RenderingCommandData& RenderingCommandData::operator=(const RenderingCommandData&) // this must be never called
-{
-   std::cout << "RenderingCommandData assigment operator fatal error: this operator should be\n"
-                "   never called. Application will be terminated." << std::endl;
-   exit(-1);
-}
-#endif
-
-
 RenderingCommandData& RenderingCommandData::operator=(RenderingCommandData&& rhs)
 {
    indirectBufferOffset4=rhs.indirectBufferOffset4;
