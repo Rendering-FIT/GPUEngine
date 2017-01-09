@@ -21,11 +21,6 @@ namespace ge
             t = time_point(std::chrono::duration_cast<core::time_point::duration>(duration));
          }
 
-         inline bool operator()(const AnimationKeyFrame& a, const AnimationKeyFrame& b)
-         {
-            return a.t < b.t;
-         }
-
          inline bool operator< (const AnimationKeyFrame& rhs) const
          {
             return this->t < rhs.t;
@@ -40,7 +35,7 @@ namespace ge
       };
 
       /**
-       * Keyframe with target value.
+       * Keyframe with target value. Instantiate this class to create animation keys.
        */
       template<typename _ValueType>
       struct AnimationKeyFrameTemplate : public AnimationKeyFrame
