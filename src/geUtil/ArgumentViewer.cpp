@@ -13,8 +13,10 @@ using namespace ge::util;
 
 class Format{
   public:
+    std::string comment;
+    Format(std::string const&com):comment(com){}
     enum MatchStatus{MATCH_SUCCESS,MATCH_FAILURE,MATCH_ERROR};
-    virtual std::string toStr(size_t indent)const = 0;
+    virtual std::string toStr(size_t indent,size_t maxNameSize,size_t maxDataSize,size_t maxTypeSize)const = 0;
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const = 0;
 };
 
@@ -26,7 +28,7 @@ class ge::util::ArgumentViewerImpl{
     static std::string const contextEnd  ;
     static std::string const fileSymbol  ;
     static size_t      const levelIndent ;
-    ArgumentViewer*parent = nullptr;
+    ArgumentViewer const*parent = nullptr;
     std::shared_ptr<Format>format = nullptr;
     size_t getArgumentPosition(std::string const&argument)const;
     bool getContext(std::vector<std::string>&contextArguments,std::string const&argument)const;
@@ -37,6 +39,13 @@ class ge::util::ArgumentViewerImpl{
       if(text=="\\"+contextEnd  )return contextEnd  ;
       if(text=="\\"+fileSymbol  )return fileSymbol  ;
       return text;
+    }
+    static std::string alignString(std::string const&text,size_t alignment = 0,char filler = ' ',bool fillerLeft = false){
+      std::stringstream ss;
+      if(fillerLeft)for(size_t i=text.length();i<alignment;++i)ss<<filler;
+      ss<<text;
+      if(!fillerLeft)for(size_t i=text.length();i<alignment;++i)ss<<filler;
+      return ss.str();
     }
     template<typename TO,typename FROM>
     static bool isTypeOf(std::shared_ptr<FROM>const&value){
@@ -86,9 +95,9 @@ class ge::util::ArgumentViewerImpl{
     void loadArgumentFiles(std::vector<std::string>&args,std::set<std::string>&alreadyLoaded);
     void splitFileToArguments(std::vector<std::string>&args,std::string const&fileContent);
     template<typename TYPE>
-      TYPE getArgumentWithFormat(std::string const&argument,TYPE const&def)const;
+      TYPE getArgumentWithFormat(std::string const&argument,TYPE const&def,std::string const&com)const;
     template<typename TYPE>
-      std::vector<TYPE>getArgumentsWithFormat(std::string const&argument,std::vector<TYPE>const&def)const;
+      std::vector<TYPE>getArgumentsWithFormat(std::string const&argument,std::vector<TYPE>const&def,std::string const&com)const;
 };
 
 size_t ArgumentViewerImpl::getArgumentPosition(std::string const&argument)const{
@@ -194,20 +203,65 @@ void ArgumentViewerImpl::splitFileToArguments(std::vector<std::string>&args,std:
   mm.match(fileContent.c_str());
 }
 
-template<typename TYPE>
-class SingleValueFormat: public Format{
+class ValueFormat: public Format{
   public:
     std::string argumentName;
-    TYPE defaults;
-    SingleValueFormat(std::string const&argument,TYPE const&def):argumentName(argument),defaults(def){}
-    virtual std::string toStr(size_t indent)const override{
+    ValueFormat(std::string const&argument,std::string const&com):Format(com),argumentName(argument){}
+    std::string getName()const{
+      assert(this!=nullptr);
+      return this->argumentName;
+    }
+    virtual std::string getData()const = 0;
+    virtual size_t      getDataLength()const{assert(this!=nullptr);return this->getData().length();}
+    virtual std::string getType()const = 0;
+    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override = 0;
+    virtual std::string toStr(size_t indent,size_t maxNameSize,size_t maxDataSize,size_t maxTypeSize)const override final{
       assert(this!=nullptr);
       std::stringstream ss;
       for(size_t i=0;i<indent;++i)ss<<" ";
-      ss<<this->argumentName<<" = ";
-      ss<<ge::core::value2str(defaults);
-      ss<<" ["<<ArgumentViewerImpl::typeName<TYPE>()<<"]"<<std::endl;;
+      ss<<ArgumentViewerImpl::alignString(this->getName(),maxNameSize);
+      ss<<" = ";
+      size_t indentation = ss.str().length();
+      auto data = this->getData();
+      bool firstLine = true;
+      size_t lineEnd = 0;
+      size_t lineStart = 0;
+      while((lineEnd = data.find("\n",lineStart))!=std::string::npos){
+        if(firstLine)firstLine = false;
+        else for(size_t i=0;i<indentation;++i)ss<<" ";
+        ss<<data.substr(lineStart,lineEnd - lineStart + 1);
+        lineStart = lineEnd + 1;
+      }
+      if(!firstLine)for(size_t i=0;i<indentation;++i)ss<<" ";
+      ss<<ArgumentViewerImpl::alignString(data.substr(lineStart,data.length() - lineStart + 1),maxDataSize);
+
+      //ss<<ArgumentViewerImpl::alignString(this->getData(),maxDataSize);
+      ss<<" ["<<ArgumentViewerImpl::alignString(this->getType(),maxTypeSize);
+      ss<<"]";
+      if(this->comment!="")ss<<" - "<<this->comment;
+      ss<<std::endl;
       return ss.str();
+    }
+};
+
+template<typename TYPE>
+class SingleValueFormat: public ValueFormat{
+  public:
+    TYPE        defaults    ;
+    SingleValueFormat(std::string const&argument,TYPE const&def,std::string const&com):ValueFormat(argument,com),defaults(def){}
+    virtual std::string getData()const override{
+      assert(this!=nullptr);
+      if(std::is_same<TYPE,std::string>::value){
+        auto x = ge::core::value2str(defaults);
+        x = x.substr(1);
+        x = x.substr(0,x.length()-1);
+        return x;
+      }
+      return ge::core::value2str(defaults);
+    }
+    virtual std::string getType()const override{
+      assert(this!=nullptr);
+      return ArgumentViewerImpl::typeName<TYPE>();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
       assert(this!=nullptr);
@@ -229,19 +283,25 @@ class SingleValueFormat: public Format{
 };
 
 template<typename TYPE>
-class VectorFormat: public Format{
+class VectorFormat: public ValueFormat{
   public:
-    std::string argumentName;
-    std::vector<TYPE>defaults;
-    VectorFormat(std::string const&argument,std::vector<TYPE>const&defs):argumentName(argument),defaults(defs){}
-    virtual std::string toStr(size_t indent)const override{
+    std::vector<TYPE>defaults    ;
+    VectorFormat(std::string const&argument,std::vector<TYPE>const&defs,std::string const&com):ValueFormat(argument,com),defaults(defs){}
+    virtual std::string getData()const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      for(size_t i=0;i<indent;++i)ss<<" ";
-      ss<<this->argumentName<<" = ";
-      ss<<ge::core::value2str(defaults);
-      ss<<" ["<<ArgumentViewerImpl::typeName<TYPE>()<<"*]"<<std::endl;
+      bool first = true;
+      for(auto const&x:defaults){
+        if(first)first = false;
+        else ss<<" ";
+        ss<<x;
+      }
       return ss.str();
+      //return ge::core::value2str(defaults);
+    }
+    virtual std::string getType()const override{
+      assert(this!=nullptr);
+      return ArgumentViewerImpl::typeName<TYPE>()+"*";
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
       assert(this!=nullptr);
@@ -253,24 +313,50 @@ class VectorFormat: public Format{
     }
 };
 
-class StringVectorFormat: public Format{
+class StringVectorFormat: public ValueFormat{
   public:
-    std::string argumentName;
-    std::vector<std::string>defaults;
-    StringVectorFormat(std::string const&argument,std::vector<std::string>const&defs):argumentName(argument),defaults(defs){}
-    virtual std::string toStr(size_t indent)const override{
+    std::vector<std::string>defaults    ;
+    StringVectorFormat(std::string const&argument,std::vector<std::string>const&defs,std::string const&com):ValueFormat(argument,com),defaults(defs){}
+    virtual std::string getData()const override{
       assert(this!=nullptr);
-      std::stringstream ss;
-      for(size_t i=0;i<indent;++i)ss<<" ";
-      ss<<this->argumentName<<" = "<<ArgumentViewerImpl::contextBegin;
+      size_t const maxLineLength = 15;
+      std::stringstream dataStream;
+      size_t lineLength = 0;
+      dataStream<<ArgumentViewerImpl::contextBegin;
+      ++lineLength;
       bool first = true;
       for(auto const&x:defaults){
         if(first)first = false;
-        else ss<<", ";
-        ss<<"\""<<x<<"\"";
+        else{
+          dataStream<<" ";
+          ++lineLength;
+        }
+        if(x.length()+lineLength>maxLineLength){
+          dataStream<<std::endl;
+          lineLength = 0;
+        }
+        dataStream<<x;
+        lineLength += x.length();
       }
-      ss<<ArgumentViewerImpl::contextEnd<<" [string*]"<<std::endl;
-      return ss.str();
+      dataStream<<ArgumentViewerImpl::contextEnd;
+      return dataStream.str();
+    }
+    virtual size_t getDataLength()const override{
+      assert(this!=nullptr);
+      auto data = this->getData();
+      size_t maxLineLength = 0;
+      size_t lineStart = 0;
+      size_t lineEnd;
+      while((lineEnd = data.find("\n",lineStart))!=std::string::npos){
+        maxLineLength = std::max(maxLineLength,lineEnd - lineStart + 1);
+        lineStart = lineEnd+1;
+      }
+      maxLineLength = std::max(maxLineLength,data.length()-lineStart + 1);
+      return maxLineLength;
+    }
+    virtual std::string getType()const override{
+      assert(this!=nullptr);
+      return "string*";
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
       assert(this!=nullptr);
@@ -301,12 +387,18 @@ class StringVectorFormat: public Format{
 class IsPresentFormat: public Format{
   public:
     std::string argumentName;
-    IsPresentFormat(std::string const&name):argumentName(name){}
-    virtual std::string toStr(size_t indent)const override{
+    IsPresentFormat(std::string const&name,std::string const&com):Format(com),argumentName(name){}
+    virtual std::string toStr(size_t indent,size_t maxNameSize,size_t maxDataSize,size_t maxTypeSize)const override final{
       assert(this!=nullptr);
       std::stringstream ss;
       for(size_t i=0;i<indent;++i)ss<<" ";
-      ss<<this->argumentName<<" "<<std::endl;
+      ss<<ArgumentViewerImpl::alignString(this->argumentName,maxNameSize);
+      ss<<"   ";
+      ss<<ArgumentViewerImpl::alignString("",maxDataSize);
+      ss<<"  "<<ArgumentViewerImpl::alignString("",maxTypeSize);
+      ss<<" ";
+      if(this->comment!="")ss<<" - "<<this->comment;
+      ss<<std::endl;
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -318,15 +410,33 @@ class IsPresentFormat: public Format{
     }
 };
 
+class ContextFormat;
+
 class ArgumentListFormat: public Format{
   public:
+    ArgumentListFormat(std::string const&com):Format(com){}
     std::map<std::string,std::shared_ptr<Format>>formats;
-    virtual std::string toStr(size_t indent)const override{
+    virtual std::string toStr(size_t indent,size_t,size_t,size_t)const override{
       assert(this!=nullptr);
       std::stringstream ss;
-      for(size_t i=0;i<indent;++i)ss<<" ";
-      for(auto const&x:this->formats)
-        ss<<x.second->toStr(indent);
+      size_t largestNameLength = 0;
+      size_t largestDataLength = 0;
+      size_t largestTypeLength = 0;
+      for(auto const&x:this->formats){
+        auto vf = std::dynamic_pointer_cast<ValueFormat>(x.second);
+        if(!vf)continue;
+        largestNameLength = std::max(largestNameLength,vf->getName().length());
+        largestDataLength = std::max(largestDataLength,vf->getDataLength());
+        largestTypeLength = std::max(largestTypeLength,vf->getType().length());
+      }
+      for(auto const&x:this->formats){
+        if(ArgumentViewerImpl::isTypeOf<ContextFormat>(x.second))continue;
+        ss<<x.second->toStr(indent,largestNameLength,largestDataLength,largestTypeLength);
+      }
+      for(auto const&x:this->formats){
+        if(!ArgumentViewerImpl::isTypeOf<ContextFormat>(x.second))continue;
+        ss<<x.second->toStr(indent,0,0,0);
+      }
       return ss.str();
     }
     virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const override{
@@ -369,15 +479,14 @@ class ArgumentListFormat: public Format{
 class ContextFormat: public ArgumentListFormat{
   public:
     std::string argumentName;
-    ContextFormat(std::string const&argument):argumentName(argument){}
-    virtual std::string toStr(size_t indent)const override{
+    ContextFormat(std::string const&argument,std::string const&com):ArgumentListFormat(com),argumentName(argument){}
+    virtual std::string toStr(size_t indent,size_t,size_t,size_t)const override{
       assert(this!=nullptr);
       std::stringstream ss;
       for(size_t i=0;i<indent;++i)ss<<" ";
       ss<<this->argumentName<<" ";
-      ss<<ArgumentViewerImpl::contextBegin<<std::endl;
-      for(auto const&x:this->formats)
-        ss<<x.second->toStr(indent+ArgumentViewerImpl::levelIndent);
+      ss<<ArgumentViewerImpl::contextBegin<<" - "<<this->comment<<std::endl;
+      ss<<this->ArgumentListFormat::toStr(indent+2,0,0,0);
       for(size_t i=0;i<indent;++i)ss<<" ";
       ss<<ArgumentViewerImpl::contextEnd<<std::endl;
       return ss.str();
@@ -511,7 +620,7 @@ ArgumentViewer::ArgumentViewer(int argc,char*argv[]){
   std::set<std::string>alreadyLoaded;
   this->_impl->loadArgumentFiles(args,alreadyLoaded);
   this->_impl->arguments = args;
-  this->_impl->format = std::make_shared<ArgumentListFormat>();
+  this->_impl->format = std::make_shared<ArgumentListFormat>("");
 }
 
 /**
@@ -562,7 +671,7 @@ std::string ArgumentViewer::getArgument(size_t const&index)const{
  *
  * @return true if argument is present in arguments
  */
-bool ArgumentViewer::isPresent(std::string const&argument)const{
+bool ArgumentViewer::isPresent(std::string const&argument,std::string const&com)const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
 
@@ -580,7 +689,8 @@ bool ArgumentViewer::isPresent(std::string const&argument)const{
       return false;
     }
   }else
-    alf->formats[argument] = std::make_shared<IsPresentFormat>(argument);
+    alf->formats[argument] = std::make_shared<IsPresentFormat>(argument,com);
+  if(alf->formats[argument]->comment=="")alf->formats[argument]->comment = com;
 
   return this->_impl->getArgumentPosition(argument)<this->_impl->arguments.size();
 }
@@ -588,7 +698,8 @@ bool ArgumentViewer::isPresent(std::string const&argument)const{
 template<typename TYPE>
 TYPE ArgumentViewerImpl::getArgumentWithFormat(
     std::string const&argument,
-    TYPE        const&def     )const{
+    TYPE        const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
 
   auto alf = std::dynamic_pointer_cast<ArgumentListFormat>(this->format);
@@ -613,7 +724,8 @@ TYPE ArgumentViewerImpl::getArgumentWithFormat(
       return def;
     }
   }else
-    alf->formats[argument] = std::make_shared<SingleValueFormat<TYPE>>(argument,def);
+    alf->formats[argument] = std::make_shared<SingleValueFormat<TYPE>>(argument,def,com);
+  if(alf->formats[argument]->comment=="")alf->formats[argument]->comment = com;
 
   return this->getArgument<TYPE>(argument,def);
 }
@@ -621,7 +733,8 @@ TYPE ArgumentViewerImpl::getArgumentWithFormat(
 template<typename TYPE>
 std::vector<TYPE>ArgumentViewerImpl::getArgumentsWithFormat(
     std::string      const&argument,
-    std::vector<TYPE>const&def     )const{
+    std::vector<TYPE>const&def     ,
+    std::string      const&com     )const{
   assert(this!=nullptr);
 
   auto alf = std::dynamic_pointer_cast<ArgumentListFormat>(this->format);
@@ -646,7 +759,8 @@ std::vector<TYPE>ArgumentViewerImpl::getArgumentsWithFormat(
       return def;
     }
   }else
-    alf->formats[argument] = std::make_shared<VectorFormat<TYPE>>(argument,def);
+    alf->formats[argument] = std::make_shared<VectorFormat<TYPE>>(argument,def,com);
+  if(alf->formats[argument]->comment=="")alf->formats[argument]->comment = com;
 
   return this->getArguments<TYPE>(argument,def);
 }
@@ -657,15 +771,17 @@ std::vector<TYPE>ArgumentViewerImpl::getArgumentsWithFormat(
  *
  * @param argument argument name that has to be followed by float
  * @param def default value
+ * @param comment comment
  *
  * @return next value after argument. if argument is not found, it returns def
  */
 float ArgumentViewer::getf32(
     std::string const&argument,
-    float       const&def     )const{
+    float       const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentWithFormat<float>(argument,def);
+  return this->_impl->getArgumentWithFormat<float>(argument,def,com);
 }
 
 /**
@@ -673,15 +789,17 @@ float ArgumentViewer::getf32(
  *
  * @param argument argument name that has to be followed by double
  * @param def default value
+ * @param comment comment
  *
  * @return next value after argument. if argument is not found, it returns def
  */
 double ArgumentViewer::getf64(
     std::string const&argument,
-    double      const&def     )const{
+    double      const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentWithFormat<double>(argument,def);
+  return this->_impl->getArgumentWithFormat<double>(argument,def,com);
 }
 
 /**
@@ -689,15 +807,17 @@ double ArgumentViewer::getf64(
  *
  * @param argument argument name that has to be followed by int32_t
  * @param def default value
+ * @param comment comment
  *
  * @return newxt value after argument. if argument is not found, it returns def
  */
 int32_t ArgumentViewer::geti32(
     std::string const&argument,
-    int32_t     const&def     )const{
+    int32_t     const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentWithFormat<int32_t>(argument,def);
+  return this->_impl->getArgumentWithFormat<int32_t>(argument,def,com);
 }
 
 /**
@@ -705,15 +825,17 @@ int32_t ArgumentViewer::geti32(
  *
  * @param argument argument name that has to be followed by int64_t
  * @param def default value
+ * @param comment comment
  *
  * @return next value after argument. if argument is not found, it returns def
  */
 int64_t  ArgumentViewer::geti64(
     std::string const&argument,
-    int64_t     const&def     )const{
+    int64_t     const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentWithFormat<int64_t>(argument,def);
+  return this->_impl->getArgumentWithFormat<int64_t>(argument,def,com);
 }
 
 /**
@@ -721,15 +843,17 @@ int64_t  ArgumentViewer::geti64(
  *
  * @param argument argument name that has to be followed by uint32_t
  * @param def default value
+ * @param comment comment
  *
  * @return next value after argument. if argument is not found, it returns def
  */
 uint32_t ArgumentViewer::getu32(
     std::string const&argument,
-    uint32_t    const&def     )const{
+    uint32_t    const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentWithFormat<uint32_t>(argument,def);
+  return this->_impl->getArgumentWithFormat<uint32_t>(argument,def,com);
 }
 
 /**
@@ -737,15 +861,17 @@ uint32_t ArgumentViewer::getu32(
  *
  * @param argument argument name that has to be followed by uint64_t
  * @param def default value
+ * @param comment comment
  *
  * @return next value after argument. if argument is not found, it returns def
  */
 uint64_t ArgumentViewer::getu64(
     std::string const&argument,
-    uint64_t    const&def     )const{
+    uint64_t    const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentWithFormat<uint64_t>(argument,def);
+  return this->_impl->getArgumentWithFormat<uint64_t>(argument,def,com);
 }
 
 /**
@@ -753,15 +879,17 @@ uint64_t ArgumentViewer::getu64(
  *
  * @param argument argument name that has to be followed by string
  * @param def default value
+ * @param comment comment
  *
  * @return next value after argument. if argument is not found, it returns def
  */
 std::string ArgumentViewer::gets(
     std::string const&argument,
-    std::string const&def     )const{
+    std::string const&def     ,
+    std::string const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return ArgumentViewerImpl::parseEscapeSequence(this->_impl->getArgumentWithFormat<std::string>(argument,def));
+  return ArgumentViewerImpl::parseEscapeSequence(this->_impl->getArgumentWithFormat<std::string>(argument,def,com));
 }
 
 /**
@@ -769,16 +897,18 @@ std::string ArgumentViewer::gets(
  *
  * @param argument argument name that has to be followed by vector of floats
  * @param def default values
+ * @param comment comment
  *
  * @return next values after argument. if number of next values is less that 
  * number of def values, returned values are extended by def values
  */
 std::vector<float>ArgumentViewer::getf32v(
     std::string       const&argument,
-    std::vector<float>const&def     )const{
+    std::vector<float>const&def     ,
+    std::string       const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentsWithFormat<float>(argument,def);
+  return this->_impl->getArgumentsWithFormat<float>(argument,def,com);
 }
 
 /**
@@ -786,16 +916,18 @@ std::vector<float>ArgumentViewer::getf32v(
  *
  * @param argument argument name that has to be followed by vector of doubles
  * @param def default values
+ * @param comment comment
  *
  * @return next values after argument. if number of next values is less that 
  * number of def values, returned values are extended by def values
  */
 std::vector<double  >ArgumentViewer::getf64v(
     std::string          const&argument,
-    std::vector<double  >const&def     )const{
+    std::vector<double  >const&def     ,
+    std::string          const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentsWithFormat<double>(argument,def);
+  return this->_impl->getArgumentsWithFormat<double>(argument,def,com);
 }
 
 /**
@@ -803,16 +935,18 @@ std::vector<double  >ArgumentViewer::getf64v(
  *
  * @param argument argument name that is followed by vector of int32_t values
  * @param def default values
+ * @param comment comment
  *
  * @return next values after argument. if number of next values is less that 
  * number of def values, returned values are extended by def values
  */
 std::vector<int32_t >ArgumentViewer::geti32v(
     std::string          const&argument,
-    std::vector<int32_t >const&def     )const{
+    std::vector<int32_t >const&def     ,
+    std::string          const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentsWithFormat<int32_t>(argument,def);
+  return this->_impl->getArgumentsWithFormat<int32_t>(argument,def,com);
 }
 
 /**
@@ -820,16 +954,18 @@ std::vector<int32_t >ArgumentViewer::geti32v(
  *
  * @param argument argument name that is followed by vector of int64_t values
  * @param def default values
+ * @param comment comment
  *
  * @return next values after argument. if number of next values is less that 
  * number of def values, returned values are extended by def values
  */
 std::vector<int64_t >ArgumentViewer::geti64v(
     std::string          const&argument,
-    std::vector<int64_t >const&def     )const{
+    std::vector<int64_t >const&def     ,
+    std::string          const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentsWithFormat<int64_t>(argument,def);
+  return this->_impl->getArgumentsWithFormat<int64_t>(argument,def,com);
 }
 
 /**
@@ -837,16 +973,18 @@ std::vector<int64_t >ArgumentViewer::geti64v(
  *
  * @param argument argument name that is followed by vector of uint32_t values
  * @param def default values
+ * @param comment comment
  *
  * @return next values after argument. if number of next values is less that 
  * number of def values, returned values are extended by def values
  */
 std::vector<uint32_t>ArgumentViewer::getu32v(
     std::string          const&argument,
-    std::vector<uint32_t>const&def     )const{
+    std::vector<uint32_t>const&def     ,
+    std::string          const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentsWithFormat<uint32_t>(argument,def);
+  return this->_impl->getArgumentsWithFormat<uint32_t>(argument,def,com);
 }
 
 /**
@@ -854,27 +992,31 @@ std::vector<uint32_t>ArgumentViewer::getu32v(
  *
  * @param argument argument name that is followed by vector of uint64_t values
  * @param def default values
+ * @param comment comment
  *
  * @return next values after argument. if number of next values is less that 
  * number of def values, returned values are extended by def values
  */
 std::vector<uint64_t>ArgumentViewer::getu64v(
     std::string          const&argument,
-    std::vector<uint64_t>const&def     )const{
+    std::vector<uint64_t>const&def     ,
+    std::string          const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->getArgumentsWithFormat<uint64_t>(argument,def);
+  return this->_impl->getArgumentsWithFormat<uint64_t>(argument,def,com);
 }
 
 /**
  * @brief gets context of argument with format: argument { arg0, ... }
  *
  * @param name context name - argument that is followed by { arg0, ... }
+ * @param comment comment
  *
  * @return ArgumentViewer that contains arg*
  */
 std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(
-    std::string const&name){
+    std::string const&name,
+    std::string const&com )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
   auto alf = std::dynamic_pointer_cast<ArgumentListFormat>(this->_impl->format);
@@ -884,6 +1026,7 @@ std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(
     char const*argv[]={this->_impl->applicationName.c_str()};
     auto result = std::make_shared<ArgumentViewer>(1,(char**)argv);
     result->_impl->parent = this;
+    result->_impl->format = alf->formats[name];
     return result;
   };
 
@@ -896,7 +1039,8 @@ std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(
       return constructEmptyContext();
     }
   }else
-    alf->formats[name] = std::make_shared<ContextFormat>(name);
+    alf->formats[name] = std::make_shared<ContextFormat>(name,com);
+  if(alf->formats[name]->comment == "")alf->formats[name]->comment = com;
 
   std::vector<std::string>subArguments;
   if(!this->_impl->getContext(subArguments,name))
@@ -914,13 +1058,15 @@ std::shared_ptr<ArgumentViewer>ArgumentViewer::getContext(
  *
  * @param argument argument that is followed by { arg0, arg1, ... }
  * @param def default values
+ * @param comment comment
  *
  * @return return arg*, if size of args is less that def, it is
  * extended by def
  */
 std::vector<std::string>ArgumentViewer::getsv(
     std::string             const&argument,
-    std::vector<std::string>const&def        )const{
+    std::vector<std::string>const&def     ,
+    std::string             const&com     )const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
 
@@ -945,7 +1091,8 @@ std::vector<std::string>ArgumentViewer::getsv(
       return def;
     }
   }else
-    alf->formats[argument] = std::make_shared<StringVectorFormat>(argument,def);
+    alf->formats[argument] = std::make_shared<StringVectorFormat>(argument,def,com);
+  if(alf->formats[argument]->comment == "")alf->formats[argument]->comment = com;
 
   std::vector<std::string>subArguments;
   if(!this->_impl->getContext(subArguments,argument))return def;
@@ -959,5 +1106,5 @@ std::vector<std::string>ArgumentViewer::getsv(
 std::string ArgumentViewer::toStr()const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->format->toStr(0);
+  return this->_impl->format->toStr(0,0,0,0);
 }
