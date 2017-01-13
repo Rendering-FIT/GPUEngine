@@ -5,11 +5,12 @@
 // temporary solution
 #include <geUtil/macros.h>
 
-class MaterialComponent;
 
 namespace ge{
    namespace sg
    {
+      class MaterialComponent;
+
       /**
        * Simple abstract class representing 2D image. Do NOT inherit.
        * Subclass TemplateImage.
