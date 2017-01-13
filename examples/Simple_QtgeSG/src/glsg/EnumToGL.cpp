@@ -7,16 +7,6 @@ using namespace ge::glsg;
 
 GLuint ge::glsg::semnatic2Attribute(unsigned semantic)
 {
-   /*switch(semantic)
-   {
-      case fsg::AttributeDescriptor::semanticRegister.getValue(fng::StandardSemanticNames::position): return 0;
-      case fsg::AttributeDescriptor::semanticRegister.getValue(fng::StandardSemanticNames::normal): return 1;
-      case fsg::AttributeDescriptor::semanticRegister.getValue(fng::StandardSemanticNames::texcoord): return 2;
-      default:
-         return -1;
-         break;
-   }*/
-
    if(semantic == (unsigned)idofstring(ge::sg::AttributeDescriptor::Semantic, ge::core::StandardSemanticNames::position))
       return 0;
    else if(semantic == (unsigned)idofstring(ge::sg::AttributeDescriptor::Semantic, ge::core::StandardSemanticNames::normal))

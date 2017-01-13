@@ -6,6 +6,16 @@ class QImage;
 class QString;
 class QtImage;
 
+/**
+ * Image loader for Qt.
+ * Use loadImage with path to an image file and options if supported. The funtions return
+ * the pointer to QtImage. The receiver takes ownership of returned image and it is required
+ * to stuff it inside the shared_ptr if you want to use it with the rest of GPUEngine.
+ * The loaded image is converted to either Format_Grayscale8 for grey scale images or
+ * Format_RGBA8888.
+ * 
+ * \example Simple_QtgeSG/main.cpp
+ */
 class QtImageLoader
 {
 public:

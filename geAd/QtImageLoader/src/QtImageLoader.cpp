@@ -2,17 +2,35 @@
 
 #include <QImage>
 
+/**
+ * Loads an Image from given path if Qt supports the format.
+ * \param imageIdentifier Path to image file.
+ * \param options Options are not supported.
+ * \return Loaded image or null.
+ */
 QtImage* QtImageLoader::loadImage(const char* imageIdentifier, int options)
 {
    return loadImage(QString(imageIdentifier), options);
 }
 
+/**
+ * 
+ * \param imageIdentifier Path to image file.
+ * \param options Options are not supported.
+ * \return Loaded image or null.
+ */
 QtImage* QtImageLoader::loadImage(const wchar_t* imageIdentifier, int options)
 {
    //Not implemented yet
    return nullptr;
 }
 
+/**
+ * Loads an Image from given path if Qt supports the format.
+ * \param imageIdentifier Path to image file.
+ * \param options Options are not supported.
+ * \return Loaded image or null.
+ */
 QtImage* QtImageLoader::loadImage(const QString& imageIdentifier, int options)
 {
    QImage *image = new QImage();

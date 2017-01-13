@@ -33,6 +33,11 @@ void SimplegeSGRenderer::setupGLState()
    gl->glViewport(0, 0, 800, 600);
 }
 
+/**
+ * Calls update, then sets up the required OGL state and use Visualization technique (VT) to draw.
+ * Of course the VT can be written in such way that it sets the OGL state completely. Then it needs
+ * to reset the state for Qt to draw its GUI.
+ */
 void fsg::SimplegeSGRenderer::beforeRendering()
 {
    update();
@@ -74,6 +79,10 @@ void fsg::SimplegeSGRenderer::setScene(std::shared_ptr<ge::sg::Scene>& loadedSce
    _needToProcessScene = true;
 }
 
+/**
+ * Checks if there is new scene loaded and process it if need be.
+ * Also sets up Visualization technique so we can render the scene later.
+ */
 void fsg::SimplegeSGRenderer::update()
 {
    if(_needToProcessScene)
