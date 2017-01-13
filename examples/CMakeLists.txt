@@ -1,15 +1,29 @@
 set(examples_folder_name "examples")
 
-add_subdirectory(EmptyWindow)
-add_subdirectory(ShaderTest)
-add_subdirectory(VertexArray)
-add_subdirectory(HilbertCurve)
-add_subdirectory(MemoryBandwidth)
-add_subdirectory(HelloTriangle)
-add_subdirectory(TriangleRendering)
-add_subdirectory(ObjLoader)
-add_subdirectory(HelloGEGL)
-add_subdirectory(AnimatedSkybox)
-add_subdirectory(BlitOpenGL)
-add_subdirectory(TextureTest)
-add_subdirectory(Simple_QTgeGL)
+set(examplesList  EmptyWindow
+                  ShaderTest
+                  VertexArray
+                  HilbertCurve
+                  MemoryBandwidth
+                  HelloTriangle
+                  TriangleRendering
+                  ObjLoader
+                  HelloGEGL
+                  AnimatedSkybox
+                  BlitOpenGL
+                  TextureTest
+                  Simple_QTgeGL
+                  Simple_QTgeSG
+)
+
+foreach(example IN LISTS examplesList)
+   add_subdirectory(${example})
+endforeach()
+
+message(STATUS "Examples configured:")
+
+foreach(example IN LISTS examplesList)
+   if(TARGET ${example})
+      message(STATUS "   ${example}")
+   endif()
+endforeach()

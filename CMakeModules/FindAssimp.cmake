@@ -22,9 +22,11 @@ if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
    # adjust variable names according to GPUEngine customs
    # and clean cache from non-sense stuff (config file is poorly written as of version 3.1.1)
+   #
+   # Yes but others may depend on it so removing the unsets for AssimpModelLoader's sake --forry 11.1.2017
    set(ASSIMP_INCLUDE_DIR "${ASSIMP_INCLUDE_DIRS}" CACHE PATH "Assimp include directory" FORCE)
-   unset(ASSIMP_INCLUDE_DIRS)
-   unset(ASSIMP_LIBRARIES)
+   #unset(ASSIMP_INCLUDE_DIRS)
+   #unset(ASSIMP_LIBRARIES)
    unset(ASSIMP_LIBRARY_SUFFIX CACHE)
 
    # Assimp bug workaround: include path is detected to be /usr/lib/include (wrong) instead
