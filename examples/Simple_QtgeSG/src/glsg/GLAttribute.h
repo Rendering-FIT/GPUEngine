@@ -20,7 +20,7 @@ namespace ge
    namespace glsg
    {
       /**
-       * Class pairing ge::sg::AttributeDescriptor with its ge::gl::BufferObject representation.
+       * Class pairing ge::sg::AttributeDescriptor with its ge::gl::Buffer representation.
        * Used by GLScene class.
        */
       class GLAttribute

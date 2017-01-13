@@ -49,8 +49,8 @@ namespace ge
       };
 
       /**
-       * Class that creates and initializes the GLScene class. It creates BO for every AttributeDescriptor
-       * And TextureObject for every MaterialImageComponent. OpenGL context needs to be ACTIVE before you
+       * Class that creates and initializes the GLScene class. It creates ge::gl::Buffer for every AttributeDescriptor
+       * And Texture for every MaterialImageComponent. OpenGL context needs to be <b>active</b> before you
        * call process(). You can also supply a custom TextureFactory object to supervise texture and sampler
        * creation.
        */
@@ -59,14 +59,10 @@ namespace ge
       public:
          GLSceneProcessor(std::shared_ptr<ge::gl::Context> context = nullptr);
 
-         void process(std::shared_ptr<ge::sg::Scene> scene);
          static std::shared_ptr<ge::glsg::GLScene> processScene(std::shared_ptr<ge::sg::Scene> scene, std::shared_ptr<ge::gl::Context> context, std::shared_ptr<TextureFactory> textureFactory = std::shared_ptr<DefaultTextureFactory>(std::make_shared<DefaultTextureFactory>()));
 
 
-      protected:
-         std::shared_ptr<ge::glsg::GLScene> _glscene;
-         std::shared_ptr<TextureFactory> _textureFactory;
-         std::shared_ptr<ge::gl::Context> _context;
+         std::shared_ptr<TextureFactory> textureFactory;
 
       private:
          static void processMeshes(std::shared_ptr<ge::sg::Scene>& scene, std::shared_ptr<ge::glsg::GLScene>& glscene, std::shared_ptr<ge::gl::Context> context);

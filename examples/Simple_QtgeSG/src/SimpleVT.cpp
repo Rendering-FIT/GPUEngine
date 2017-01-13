@@ -13,11 +13,18 @@ using namespace ge::gl;
 using namespace ge::sg;
 using namespace ge::glsg;
 
+/**
+ * Sets the scene to visualize.
+ * \param scene GLScene to visualize.
+ */
 void fsg::SimpleVT::setScene(std::shared_ptr<ge::glsg::GLScene>& scene)
 {
    glscene = scene;
 }
 
+/**
+ * Creates VAOs, preps uniforms and textures that the VT needs for visualization.
+ */
 void fsg::SimpleVT::processScene()
 {
    for(auto& meshIt: glscene->GLMeshes)
@@ -65,10 +72,16 @@ void fsg::SimpleVT::processScene()
    }
 } 
 
+/**
+ * Currently does nothing.
+ */
 void SimpleVT::drawSetup()
 {
 }
 
+/**
+ * Use provided shader and draws the provided scene.
+ */
 void SimpleVT::draw()
 {
    program->use();
@@ -88,6 +101,10 @@ void SimpleVT::draw()
    }
 }
 
+/**
+ * Internal helper function that returns attribute position for given semantic or -1
+ * if the attrib is not to be used by this VT.
+ */
 int SimpleVT::semantic2Attribute(AttributeDescriptor::Semantic semantic)
 {
    switch (semantic)

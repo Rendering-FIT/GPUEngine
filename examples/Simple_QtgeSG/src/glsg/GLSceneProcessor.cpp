@@ -1,7 +1,6 @@
 #include <glsg/GLSceneProcessor.h>
 
 #include <glsg/GLScene.h>
-#include <glsg/GLAttribute.h>
 #include <glsg/EnumToGL.h>
 #include <geSG/Scene.h>
 #include <geSG/AttributeDescriptor.h>
@@ -16,21 +15,18 @@ using namespace ge::gl;
 using namespace std;
 
 GLSceneProcessor::GLSceneProcessor(std::shared_ptr<ge::gl::Context> context)
-   : _glscene(nullptr)
-   , _textureFactory(make_shared<DefaultTextureFactory>())
-   , _context(context)
+   : textureFactory(make_shared<DefaultTextureFactory>())
 {
-   if(!context) _context = ge::gl::getDefaultContext();
 }
 
-void GLSceneProcessor::process(std::shared_ptr<ge::sg::Scene> scene)
-{
-   _glscene = make_shared<GLScene>();
-   processMeshes(scene, _glscene, _context);
-   createTextures(scene, _glscene, _context, _textureFactory);
-   _glscene->scene = scene;
-}
-
+/**
+ * Processes given scene and creates apropriate geGL objects in given context.
+ * \param scene Scene you want to process
+ * \param context OpenGL context to use
+ * \param textureFactory Factory that is used to create ge::gl::Texture from image. You can suplly your own or use the DefaultTextureFactory. 
+ *                       If you dont suplly this argument the DefaultTextureFactory is used.
+ * \return Returns the GLScene class that holds the dictionaries to map geSG objects to created geGL objects.
+ */
 std::shared_ptr<ge::glsg::GLScene> GLSceneProcessor::processScene(std::shared_ptr<ge::sg::Scene> scene, std::shared_ptr<ge::gl::Context> context, std::shared_ptr<TextureFactory> textureFactory)
 {
    shared_ptr<GLScene> glscene(make_shared<GLScene>());
@@ -41,6 +37,12 @@ std::shared_ptr<ge::glsg::GLScene> GLSceneProcessor::processScene(std::shared_pt
    return glscene;
 }
 
+/**
+ * Processes mesh thus creating collection of GLAttribs that maps AttributeDescriptor onto Buffer.
+ * \param scene 
+ * \param glscene 
+ * \param context 
+ */
 void GLSceneProcessor::processMeshes(std::shared_ptr<ge::sg::Scene>& scene, std::shared_ptr<ge::glsg::GLScene>& glscene, std::shared_ptr<ge::gl::Context> context)
 {
    for(auto model : scene->models)
@@ -59,6 +61,13 @@ void GLSceneProcessor::processMeshes(std::shared_ptr<ge::sg::Scene>& scene, std:
    }
 }
 
+/**
+ * Creates a geGL Texture for every geSG Image found in scene materials. For the texture setup and creation it uses a TextureFactory.
+ * \param scene 
+ * \param glscene 
+ * \param context 
+ * \param textureFactory 
+ */
 void GLSceneProcessor::createTextures(std::shared_ptr<Scene> scene, std::shared_ptr<GLScene> glscene, std::shared_ptr<ge::gl::Context> context, std::shared_ptr<TextureFactory> textureFactory)
 {
    for(auto model : scene->models)
@@ -83,6 +92,13 @@ void GLSceneProcessor::createTextures(std::shared_ptr<Scene> scene, std::shared_
    }
 }
 
+/**
+ * Creates texture (2D) from image with mip-maps and GL_LINEAR_MIPMAP_LINEAR (min), GL_LINEAR (mag) and GL_RGBA8 as internal format.
+ * The texture is initialized with the data from image.
+ * \param img Input image
+ * \param context Context to create texture with.
+ * \return Newly created texture.
+ */
 std::shared_ptr<ge::gl::Texture> DefaultTextureFactory::create(ge::sg::MaterialImageComponent* img, std::shared_ptr<ge::gl::Context>& context)
 {
    int w = (int)img->image->getWidth();

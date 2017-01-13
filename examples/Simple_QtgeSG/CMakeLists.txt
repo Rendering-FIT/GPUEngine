@@ -49,7 +49,6 @@ get_filename_component(src_abs ${SOURCE_PATH} ABSOLUTE)
 set(GLSG_FILES
    src/glsg/EnumToGL.h src/glsg/EnumToGL.cpp
    src/glsg/GLAttribute.h
-   src/glsg/GLCommands.h
    src/glsg/GLScene.h
    src/glsg/GLSceneProcessor.h src/glsg/GLSceneProcessor.cpp
 )
@@ -61,7 +60,7 @@ set(SOURCE_FILES
    src/QuickRendererBase.h src/QuickRendererBase.cpp
    src/SimplegeSGRenderer.h src/SimplegeSGRenderer.cpp
    src/SimpleVT.h src/SimpleVT.cpp
-   src/types.h
+   #src/types.h
    src/VisualizationTechnique.h
 )
 

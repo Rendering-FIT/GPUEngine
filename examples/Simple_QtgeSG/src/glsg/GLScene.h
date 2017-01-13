@@ -35,9 +35,9 @@ namespace ge
 
          GLScene() : scene(nullptr){}
 
-         std::shared_ptr<ge::sg::Scene> scene;
-         std::unordered_map<ge::sg::Mesh*, GLAttribArray> GLMeshes;
-         std::unordered_map<ge::sg::MaterialImageComponent*, std::shared_ptr<gl::Texture>> textures;
+         std::shared_ptr<ge::sg::Scene> scene; ///< The original scene
+         std::unordered_map<ge::sg::Mesh*, GLAttribArray> GLMeshes; ///< Dictionary connecting mesh with its GLAttribArray
+         std::unordered_map<ge::sg::MaterialImageComponent*, std::shared_ptr<gl::Texture>> textures; ///< Dictionary connecting MaterialImageComponent with Texture
       };
    }
 }

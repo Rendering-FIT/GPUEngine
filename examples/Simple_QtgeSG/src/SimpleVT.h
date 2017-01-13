@@ -28,6 +28,13 @@ namespace ge
 
 namespace fsg
 {
+   /**
+    * This VT is used to simply draw a textured object. It only uses positions and normals.
+    * The shaders needs vertices vec3 on 0 and texcoords vec2 on 2 position. You can inspect
+    * the shaders in resource directory of this example.
+    * The usage of the VT is to supply the GLScene, then call the processScene. Once this is done
+    * you can call drawSetup and draw each frame. You need to have OpenGL context <b>active</b>.
+    */
    class SimpleVT : public VisualizationTechnique
    {
    public:
