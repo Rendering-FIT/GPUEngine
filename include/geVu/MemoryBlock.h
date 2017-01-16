@@ -3,7 +3,8 @@
 
 class ge::vu::MemoryBlock {
 public:
-  vk::DeviceMemory memory;
-  vk::DeviceSize size;
-  vk::DeviceSize offset;
+  vk::DeviceMemory memory = 0;
+  vk::DeviceSize size = 0;
+  vk::DeviceSize offset = 0;
+  vk::MemoryPropertyFlags flags;
 };

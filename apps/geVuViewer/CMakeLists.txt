@@ -5,46 +5,26 @@ project(${APP_NAME})
 find_package(SDL2)
 find_package(assimp)
 
-if(NOT SDL2_FOUND OR NOT TARGET geVu OR NOT TARGET geUtil OR NOT TARGET assimp)
-   return()
-endif()
+find_package(AssimpModelLoader HINTS AssimpModelLoader/cmake/)
+
+set(dependencies SDL2 SDLWindow geVu geSG geVuSG geUtil assimp AssimpModelLoader)
+
+foreach(dep ${dependencies})
+  if(NOT TARGET ${dep})
+	return()
+  endif()
+endforeach()
   
 set(APP_SOURCES
 	src/main.cpp
 	src/app.cpp
-
-	src/AssimpModelLoader/AssimpModelLoader.cpp
-	src/AssimpModelLoader/UnicodeIOStream.cpp
-
-	src/AssimpModelLoader/UnicodeIOStream.cpp
-	src/AssimpModelLoader/UnicodeIOStream.cpp
-	src/AssimpModelLoader/UnicodeIOStream.cpp
-	src/AssimpModelLoader/UnicodeIOStream.cpp
 )
-if(WIN32)
-   set(APP_SOURCES ${APP_SOURCES}
-      src/AssimpModelLoader/UnicodeIOSystem_win32.cpp
-   )
-else()
-   set(APP_SOURCES ${APP_SOURCES}
-      src/AssimpModelLoader/UnicodeIOSystem_other.cpp
-   )
-endif(WIN32)
+
 
 
 
 set(APP_INCLUDES
 	src/app.h
-	
-	src/AssimpModelLoader/AssimpModelLoader.h
-	src/AssimpModelLoader/UnicodeIOSystem.h
-	src/AssimpModelLoader/UnicodeIOStream.h
-
-	src/ste/stl_extension.h
-	src/ste/DAG.h
-	src/ste/concepts.h
-	src/ste/concepts_undef.h
-
 )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
@@ -54,8 +34,8 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps SDLWindow geVu geSG geUtil assimp)
-set(External_libs SDL2)
+set(Internal_deps SDLWindow geVu geSG geVuSG geUtil)
+set(External_libs SDL2 assimp AssimpModelLoader)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

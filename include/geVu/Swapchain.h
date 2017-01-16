@@ -45,17 +45,26 @@ public:
 
   void next();
   void swap();
+  void resize(int w, int h);
 
   vk::Semaphore getSemaphore() { return semaphore; }
   vk::RenderPass getRenderPass() { return renderPass; }
   vk::Framebuffer getCurrentFrameBuffer() { return framebuffers[currentImage]; }
   vk::Image getCurrentImage() { return swapchainImages[currentImage]; }
+  int getWidth() { return width; }
+  int getHeight() { return height; }
 protected:
   void createSurface();
   void createSwapchain();
   void createDepthBuffer();
   void createRenderPass();
   void createFramebuffers();
+
+  void destroySurface();
+  void destroySwapchain();
+  void destroyDepthBuffer();
+  void destroyRenderPass();
+  void destroyFramebuffers();
 
   vk::Format bitsToFormat(int depthBits, int stencilBits);
 };

@@ -24,6 +24,7 @@ namespace ge {
     geVu_class(SwapchainCreateInfo);
     geVu_class(Swapchain);
     geVu_class(Pipeline);
+    geVu_class(VertexArray);
 	};
 };
 

@@ -23,7 +23,10 @@ SET(GPUENGINE_BUILD_GERG     OFF  CACHE BOOL "Build geRG package.")
 SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
 SET(GPUENGINE_BUILD_GEPARSER OFF  CACHE BOOL "Build geParser package.")
 SET(GPUENGINE_BUILD_GEDE     OFF  CACHE BOOL "Build geDE package.")
+
 SET(GPUENGINE_BUILD_GEVU     OFF  CACHE BOOL "Build geVu package.")
+SET(GPUENGINE_BUILD_APPS_geVuViewer OFF  CACHE BOOL "Build geVuViewer application.")
+SET(GPUENGINE_BUILD_VuSG     OFF  CACHE BOOL "Build VuSG addon package.")
 
 SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp application.")
 
@@ -152,9 +155,9 @@ if(GPUENGINE_BUILD_geAd)
 endif()
 
 if(GPUENGINE_BUILD_APPS)
-  if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
-    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
-  endif()
+  #if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
+  #  message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
+  #endif()
   add_subdirectory(apps)
 endif()
 

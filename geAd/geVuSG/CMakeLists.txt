@@ -1,4 +1,4 @@
-set(LIB_NAME geVu)
+set(LIB_NAME geVuSG)
 
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
@@ -11,47 +11,33 @@ else()
    add_definitions(-DGE_LIBRARY_STATIC)
 endif()
 
-set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
+set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/${LIB_NAME})
 
-find_package(vulkan)
+find_package(ste)
+set(dependencies geVu geSG ste)
 
-if(NOT TARGET vulkan)
+foreach(dep ${dependencies})
+  if(NOT TARGET ${dep})
 	return()
-endif()
+  endif()
+endforeach()
 
-set(GEVU_INCLUDES
-  ${HEADER_PATH}/Export.h
 
-  ${HEADER_PATH}/geVu.h
-  ${HEADER_PATH}/geVuClasses.h
+set(VUSG_INCLUDES
+  ${HEADER_PATH}/geVuSG.h
+  ${HEADER_PATH}/geVuSGClasses.h
 
-  ${HEADER_PATH}/Logger.h
-  ${HEADER_PATH}/Binary.h
-  
-  ${HEADER_PATH}/Buffer.h
-  ${HEADER_PATH}/Context.h
-  ${HEADER_PATH}/DeviceContext.h
-  ${HEADER_PATH}/Debug.h
-  ${HEADER_PATH}/Texture.h
-  ${HEADER_PATH}/Swapchain.h
-  ${HEADER_PATH}/Pipeline.h
-  ${HEADER_PATH}/MemoryBlock.h
-  ${HEADER_PATH}/MemoryManager.h
-  ${HEADER_PATH}/MemoryManagerAdvanced.h
-${HEADER_PATH}/VertexArray.h
-  
-  )
+  ${HEADER_PATH}/SceneManager.h
+  ${HEADER_PATH}/PhongTechnique.h
+  ${HEADER_PATH}/Drawable.h
+  ${HEADER_PATH}/PipelineFactory.h
+ )
 
-set(GEVU_SOURCES
-	 Buffer.cpp
-	 Context.cpp
-	 DeviceContext.cpp
-	 Texture.cpp
-	 Swapchain.cpp
-	 Pipeline.cpp
-	 MemoryManager.cpp
-	 MemoryManagerAdvanced.cpp
-	VertexArray.cpp
+set(VUSG_SOURCES
+  src/PhongTechnique.cpp
+  src/SceneManager.cpp
+  src/Drawable.cpp
+  src/PipelineFactory.cpp
 )
 
 ################################################
@@ -59,8 +45,8 @@ set(GEVU_SOURCES
 
 add_library(${LIB_NAME}
   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-  ${GEVU_INCLUDES}
-  ${GEVU_SOURCES}
+  ${VUSG_INCLUDES}
+  ${VUSG_SOURCES}
   )
 
 ################################################
@@ -71,21 +57,21 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 
-set(External_libs vulkan)
-#set(Internal_deps geCore)
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
-set(includes_to_export ${GPUEngine_SOURCE_DIR}/include)
+#set(External_libs vulkan)
+set(Internal_deps geSG geVu ste)
+set(Internal_inc ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/)
+set(includes_to_export ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/)
 set(External_deps_Export ${External_libs})
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
 set_target_properties(${LIB_NAME} PROPERTIES
-  INCLUDE_DIRECTORIES "${Internal_inc}"
-  INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
+  INCLUDE_DIRECTORIES ${Internal_inc}
+  INTERFACE_INCLUDE_DIRECTORIES ${includes_to_export}
   )
 
 install(FILES
-  ${GEVU_INCLUDES}
-  DESTINATION include/${LIB_NAME}
+  ${VUSG_INCLUDES}
+  DESTINATION include/geAd/${LIB_NAME}
   )
 
 install(TARGETS ${LIB_NAME}
@@ -102,16 +88,18 @@ install(TARGETS ${LIB_NAME}
 #   INSTALL_DESTINATION lib/cmake/geGL
 #   )
 
+# @TODO fix this?
+
 configure_file(
-  ../CMake/geConfig.cmake.in
+  ../../src/CMake/geConfig.cmake.in
   "${LIB_NAME}Config.cmake"
   @ONLY
   )
 
 
 configure_file(
-  ../CMake/geExport.h.in
-  "${GPUEngine_SOURCE_DIR}/include/${LIB_NAME}/Export.h"
+  ../../src/CMake/geExport.h.in
+  "${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/${LIB_NAME}/Export.h"
   @ONLY
   )
 

@@ -9,7 +9,15 @@ protected:
 
 public:
   MemoryManager(DeviceContextShared &deviceContext);
+
+  virtual MemoryBlock allocMemory(vk::MemoryRequirements req, vk::MemoryPropertyFlags memoryFlags);
   virtual MemoryBlock allocMemory(vk::Image img, vk::MemoryPropertyFlags memoryFlags);
+  virtual MemoryBlock allocMemory(vk::Buffer img, vk::MemoryPropertyFlags memoryFlags);
+
+  virtual void* mapMemory(MemoryBlock &memoryBlock);
+  virtual void unmapMemory(MemoryBlock &memoryBlock);
+
+  virtual void freeMemory(MemoryBlock memoryBlock);
 
   uint32_t MemoryManager::memoryTypeBitsToIndex(uint32_t typeBits, vk::MemoryPropertyFlags requirements);
 };

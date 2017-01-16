@@ -5,10 +5,7 @@
 
 #include <SDL2/SDL_syswm.h>
 
-#include "AssimpModelLoader/AssimpModelLoader.h"
-#include <geSG/MatrixTransform.h>
-#include <geSG/Node.h>
-#include "ste/DAG.h"
+#include <AssimpModelLoader.h>
 
 #include <glm/gtx/string_cast.hpp>
 
@@ -17,6 +14,7 @@ using namespace ge::ad;
 using namespace glm;
 
 using namespace ge::vu;
+using namespace ge::vusg;
 
 struct DrawArraysIndirectCommand {
   uint  count;
@@ -48,80 +46,29 @@ App::App() {
   sci.hinstance = (HINSTANCE)GetModuleHandle(NULL);
   sci.hwnd = (HWND)info.info.win.window;
   swapchain = deviceContext->createSwapchain(sci);
+  deviceContext->flushCommandBuffer();
+
+  renderer = make_shared<PhongTechnique>(deviceContext, swapchain);
 }
 
 void App::init() {
-  scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.obj"));
+  scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.obj"));  
+  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.fbx"));
+  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/sponza3/sponza.fbx"));
+  renderer->setScene(scene);
 
   deviceContext->flushCommandBuffer();
-  deviceContext->getDevice().waitIdle();
-
-  vk::CommandBufferAllocateInfo cbai;
-  cbai.commandPool = deviceContext->getCommandPool();
-  cbai.commandBufferCount = 1;
-  commandBuffer = deviceContext->getDevice().allocateCommandBuffers(cbai)[0];
-}
-
-void App::createDrawCommand() {
-  int width = window->getWidth();
-  int height = window->getHeight();
-
-  commandBuffer.reset(vk::CommandBufferResetFlags());
-  
-  commandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse));
-
-  vk::ClearValue const clearValues[2] = {
-    vk::ClearColorValue(std::array<float, 4>({ 0.2f, 0.2f, 0.2f, 0.2f })),
-    vk::ClearDepthStencilValue(1.0f, 0u) };
-
-  vk::RenderPassBeginInfo rpbi;
-  rpbi.clearValueCount = 2;
-  rpbi.pClearValues = clearValues;
-  rpbi.framebuffer = swapchain->getCurrentFrameBuffer();
-  rpbi.renderArea = vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D((uint32_t)width, (uint32_t)height));
-  rpbi.renderPass = swapchain->getRenderPass();
-  
-  deviceContext->changeImageLayout(commandBuffer, swapchain->getCurrentImage(),
-    vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eColorAttachmentOptimal);
-  
-  commandBuffer.beginRenderPass(rpbi, vk::SubpassContents::eInline);
-  
-  vk::Viewport viewport;
-  viewport.width = (float)width;
-  viewport.height = (float)height;
-  viewport.minDepth = 0.0f;
-  viewport.maxDepth = 1.0f;
-
-  commandBuffer.setViewport(0, 1, &viewport);
-
-  vk::Rect2D scissor;
-  scissor.offset = vk::Offset2D(0, 0);
-  scissor.extent = vk::Extent2D(width, height);
-
-  commandBuffer.setScissor(0, 1, &scissor);
-
-  commandBuffer.endRenderPass();
-  commandBuffer.end();
 }
 
 void App::draw() {
-  swapchain->next();
+  updateCamera();
+  renderer->projection = projection;
+  renderer->view = view;
+  renderer->frame();
+}
 
-  createDrawCommand();
-
-  vk::PipelineStageFlags flags = vk::PipelineStageFlagBits::eBottomOfPipe;
-  vk::SubmitInfo si;
-  si.waitSemaphoreCount = (1);
-  si.pWaitSemaphores = (&swapchain->getSemaphore());
-  si.pWaitDstStageMask = (&flags);
-  si.commandBufferCount = (1);
-  si.pCommandBuffers = (&commandBuffer);
-
-  deviceContext->getQueue().submit(si,0);
-
-  swapchain->swap();
-
-  deviceContext->getQueue().waitIdle();
+void App::resize(int w, int h){
+  swapchain->resize(w, h);  
 }
 
 
@@ -150,10 +97,29 @@ void App::setupEvents() {
       drag = false;
     return true;
   });
+
+  window->setEventCallback(SDL_KEYDOWN, [&](const SDL_Event &e) {
+    switch (e.key.keysym.sym) {
+    case SDLK_ESCAPE:
+      quit();
+      return true;
+    }
+    return false;
+  });
+
   window->setEventCallback(SDL_MOUSEWHEEL, [&](const SDL_Event &e) {
     if (e.wheel.y < 0) zoom *= 1.1f;
     else zoom /= 1.1f;
     return true;
+  });
+
+  window->setEventCallback(SDL_WINDOWEVENT, [&](const SDL_Event &e) {
+    switch (e.window.event) {
+    case SDL_WINDOWEVENT_SIZE_CHANGED:
+      resize(e.window.data1, e.window.data2);
+      return true;
+    }
+    return false;
   });
 }
 

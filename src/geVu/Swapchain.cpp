@@ -11,7 +11,7 @@ using namespace std;
 
 Swapchain::Swapchain(const SwapchainCreateInfo & o) :createInfo(o) {
   deviceContext = o.deviceContext;
-  
+
   createSurface();
   createSwapchain();
   createDepthBuffer();
@@ -20,24 +20,40 @@ Swapchain::Swapchain(const SwapchainCreateInfo & o) :createInfo(o) {
 }
 
 Swapchain::~Swapchain() {
-  deviceContext->getDevice().destroySwapchainKHR(swapchain);
-  deviceContext->getInstance().destroySurfaceKHR(surface);
+  destroyFramebuffers();
+  destroyRenderPass();
+  destroyDepthBuffer();
+  destroySwapchain();
+  destroySurface();
 }
 
-void ge::vu::Swapchain::next(){
-  if(semaphore)
+void ge::vu::Swapchain::next() {
+  if (semaphore)
     deviceContext->getDevice().destroySemaphore(semaphore);
   semaphore = deviceContext->getDevice().createSemaphore(vk::SemaphoreCreateInfo());
   auto i = deviceContext->getDevice().acquireNextImageKHR(swapchain, UINT64_MAX, semaphore, 0);
   currentImage = i.value;
 }
 
-void ge::vu::Swapchain::swap(){
+void ge::vu::Swapchain::swap() {
   vk::PresentInfoKHR pi;
   pi.swapchainCount = (1);
   pi.pSwapchains = &swapchain;
   pi.pImageIndices = &currentImage;
   deviceContext->getQueue().presentKHR(pi);
+}
+
+void ge::vu::Swapchain::resize(int w, int h) {
+  destroyFramebuffers();
+  destroyRenderPass();
+  destroyDepthBuffer();
+  destroySwapchain();
+
+  createSwapchain();
+  createDepthBuffer();
+  createRenderPass();
+  createFramebuffers();
+  deviceContext->flushCommandBuffer();
 }
 
 void Swapchain::createSurface() {
@@ -48,7 +64,7 @@ void Swapchain::createSurface() {
   surface = deviceContext->getInstance().createWin32SurfaceKHR(wsci);
   auto surfaceFormats = deviceContext->getPhysicalDevice().getSurfaceFormatsKHR(surface);
   surfaceFormat = surfaceFormats[0];
-  
+
 
   assert(deviceContext->getPhysicalDevice().getSurfaceSupportKHR(deviceContext->getUnivesalQueueIndex(), surface));
 
@@ -78,8 +94,7 @@ void Swapchain::createSwapchain() {
       presentMode = vk::PresentModeKHR::eFifo;
     if (isModeSupported(vk::PresentModeKHR::eFifoRelaxed))
       presentMode = vk::PresentModeKHR::eFifoRelaxed;
-  }
-  else {
+  } else {
     if (isModeSupported(vk::PresentModeKHR::eMailbox))
       presentMode = vk::PresentModeKHR::eMailbox;
   }
@@ -119,7 +134,6 @@ void Swapchain::createSwapchain() {
     ivci.image = img;
     ivci.subresourceRange = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
     ivci.viewType = vk::ImageViewType::e2D;
-    deviceContext->changeImageLayout(deviceContext->getCommandBuffer(), img, vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR);
     swapchainImageViews.emplace_back(device.createImageView(ivci));
   }
 }
@@ -128,23 +142,66 @@ void Swapchain::createDepthBuffer() {
   auto depthBufferFormat = bitsToFormat(createInfo.depthBufferBits, createInfo.stencilBufferBits);
   depthBuffer = make_shared<Texture>(deviceContext);
   depthBuffer->createDepthBuffer(depthBufferFormat, width, height);
-  depthBuffer->setLayout(deviceContext->getCommandBuffer(), vk::ImageLayout::eDepthStencilAttachmentOptimal);
 }
 
-vk::Format ge::vu::Swapchain::bitsToFormat(int depthBits, int stencilBits){
+void ge::vu::Swapchain::destroySurface() {
+  //std::cout << "destroySurface()\n";
+  auto &instance = deviceContext->getInstance();
+  instance.destroySurfaceKHR(surface);
+}
+
+void ge::vu::Swapchain::destroySwapchain() {
+  //std::cout << "destroySwapchain()\n";
+  auto &dev = deviceContext->getDevice();
+
+  for (auto &view : swapchainImageViews) {
+    dev.destroyImageView(view);
+  }
+  swapchainImageViews.clear();
+
+  dev.destroySwapchainKHR(swapchain);
+  swapchain = 0;
+}
+
+void ge::vu::Swapchain::destroyDepthBuffer() {
+  //std::cout << "destroyDepthBuffer()\n";
+  depthBuffer = nullptr;
+}
+
+void ge::vu::Swapchain::destroyRenderPass() {
+  //std::cout << "destroyRenderPass()\n";
+  auto &dev = deviceContext->getDevice();
+  dev.destroyRenderPass(renderPass);
+  renderPass = 0;
+}
+
+void ge::vu::Swapchain::destroyFramebuffers() {
+  //std::cout << "destroyFramebuffers()\n";
+  auto &dev = deviceContext->getDevice();
+  for (auto &fb : framebuffers) {
+    dev.destroyFramebuffer(fb);
+  }
+  framebuffers.clear();
+}
+
+vk::Format ge::vu::Swapchain::bitsToFormat(int depthBits, int stencilBits) {
   if (depthBits == 32) {
     if (stencilBits == 8)
       return vk::Format::eD32SfloatS8Uint;
     else
       return vk::Format::eD32Sfloat;
-  }else if(depthBits == 24){
+  }
+  else if (depthBits == 24) {
     return vk::Format::eD24UnormS8Uint;
-  } else if (depthBits == 16) {
+  }
+  else if (depthBits == 16) {
     if (stencilBits == 8)
       return vk::Format::eD16UnormS8Uint;
     else
       return vk::Format::eD16Unorm;
   }
+
+  return vk::Format::eD32Sfloat; // default format
 }
 
 void Swapchain::createRenderPass() {
@@ -154,7 +211,7 @@ void Swapchain::createRenderPass() {
   attachments[0].storeOp = vk::AttachmentStoreOp::eStore;
   attachments[0].stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
   attachments[0].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-  attachments[0].initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+  attachments[0].initialLayout = vk::ImageLayout::eUndefined;
   attachments[0].finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
   attachments[1].format = depthBuffer->getFormat();
@@ -162,7 +219,7 @@ void Swapchain::createRenderPass() {
   attachments[1].storeOp = vk::AttachmentStoreOp::eDontCare;
   attachments[1].stencilLoadOp = vk::AttachmentLoadOp::eClear;
   attachments[1].stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-  attachments[1].initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+  attachments[1].initialLayout = vk::ImageLayout::eUndefined;
   attachments[1].finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
   vk::AttachmentReference colorReference(0, vk::ImageLayout::eColorAttachmentOptimal);

@@ -10,6 +10,8 @@
 
 #include <geSG/Scene.h>
 
+#include <geVuSG/geVuSG.h>
+
 class App {
 public:
   App();
@@ -17,12 +19,12 @@ public:
   void quit();
   virtual void init();
   virtual void draw();
+  virtual void resize(int w, int h);
   bool handleEvent(const SDL_Event &e);
 protected:
 
   void setupEvents();
   void updateCamera();
-  void createDrawCommand();
   // camera
   glm::mat4 view;
   glm::mat4 projection;
@@ -42,6 +44,6 @@ protected:
   ge::vu::DeviceContextShared deviceContext;
   ge::vu::SwapchainShared swapchain;
 
-  vk::CommandBuffer commandBuffer;
+  ge::vusg::PhongTechniqueShared renderer;
   std::shared_ptr<ge::sg::Scene> scene;
 };

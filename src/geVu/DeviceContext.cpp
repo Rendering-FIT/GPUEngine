@@ -5,6 +5,7 @@
 #include <geVu/Context.h>
 #include <geVu/Swapchain.h>
 #include <geVu/MemoryManager.h>
+#include <geVu/Binary.h>
 
 using namespace ge::vu;
 using namespace std;
@@ -96,6 +97,7 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
 }
 
 void ge::vu::DeviceContext::flushCommandBuffer() {
+  info("DeviceContext::flushCommandBuffer");
   commandBuffer.end();
   vk::SubmitInfo si;
   si.commandBufferCount = 1;
@@ -107,6 +109,18 @@ void ge::vu::DeviceContext::flushCommandBuffer() {
   //commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
   commandBuffer.reset(vk::CommandBufferResetFlags());
   commandBuffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse));
+}
+
+vk::ShaderModule ge::vu::DeviceContext::createShaderModule(std::string str){
+  auto &data = loadBinary(str);
+  return createShaderModule(data);
+}
+
+vk::ShaderModule ge::vu::DeviceContext::createShaderModule(std::vector<char>& data){
+  vk::ShaderModuleCreateInfo smci;
+  smci.codeSize = (size_t)data.size();
+  smci.pCode = (uint32_t*)data.data();
+  return device.createShaderModule(smci, 0);
 }
 
 void ge::vu::DeviceContext::createPhysicalDevice() {
