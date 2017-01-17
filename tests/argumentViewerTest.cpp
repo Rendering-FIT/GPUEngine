@@ -46,7 +46,33 @@ SCENARIO("ArgumentViewer toStr test"){
   a->getContext("light")->getContext("info")->getu64v("bytesPerPosition",{4,8,4},"number of bytes per position");
   a->getContext("light")->getContext("info")->isPresent("directional","changes omnidirectional light into directional");
   a->getContext("light")->getContext("info")->getsv("attributes",{"castShadows","movable","scriptable","printable"},"additional attributes");
-  std::cerr<<a->toStr()<<std::endl;
+  std::string expectedOutput = 
+R".(length = 10   [f32] - x size of vector
+width  = 11.1 [f64] - y size of vector
+xoff   = 0    [u32] - x offset of window
+xpix   = 1000 [i32] - x size of window in pixels
+yoff   = 0    [u64] - y offset of window
+ypix   = 1331 [i64] - y size of window in pixels
+light { - attributes of light source
+  color    = 1 0 0  [f64*  ] - normalized color
+  name     = light  [string] - name identificator
+  position = 0 0 0  [f32*  ] - world space position
+  info { - additional informations
+    attributes       = {castShadows 
+                       movable 
+                       scriptable 
+                       printable}     [string*] - additional attributes
+    bytesPerColor    = 1 2 1          [u32*   ] - number of bytes per color channel
+    bytesPerPosition = 4 8 4          [u64*   ] - number of bytes per position
+    directional                                 - changes omnidirectional light into directional
+    sampling         = 10 10 0 0 0 0
+                       0 0 0 1 128 1
+                       3              [i32*   ] - sampling of area light sources
+    soffset          = 0 0            [i64*   ] - offset of sampling area
+  }
+}
+).";
+  REQUIRE(a->toStr()==expectedOutput);
 }
 
 
@@ -71,6 +97,7 @@ SCENARIO("ArgumentViewer - default value tests"){
   REQUIRE(a->getu32v("l",{1212})==std::vector<uint32_t   >({1212}));
   REQUIRE(a->getu64v("m",{3212})==std::vector<uint64_t   >({3212}));
   REQUIRE(a->getsv  ("n",{"ah"})==std::vector<std::string>({"ah"}));
+  REQUIRE(a->validate()==true);
   //std::cerr<<a->toStr()<<std::endl;
 }
 
@@ -93,6 +120,7 @@ SCENARIO("Basic ArgumentViewer tests"){
   REQUIRE(a->gets("-p1")=="{");
   REQUIRE(a->gets("-p2")=="}");
   REQUIRE(a->gets("-p3")=="<");
+  REQUIRE(a->validate()==true);
   //std::cerr<<a->toStr()<<std::endl;
 }
 
@@ -105,6 +133,7 @@ SCENARIO("Vector ArgumentViewer tests"){
   REQUIRE(a->getf64v("c")==std::vector<double>({13.3,1e32}));
   REQUIRE(a->geti32v("d")==std::vector<int32_t>({-12,+32,-1}));
   REQUIRE(a->getsv  ("s")==std::vector<std::string>({"a","b","c"}));
+  REQUIRE(a->validate()==true);
 }
 
 
@@ -120,6 +149,7 @@ SCENARIO("Basic ArgumentViewer context tests"){
   REQUIRE(a->getContext("light")->isPresent("a")==true);
   REQUIRE(a->getContext("light")->isPresent("b")==true);
   REQUIRE(a->getContext("light")->isPresent("c")==true);
+  REQUIRE(a->validate()==true);
 }
 
 SCENARIO("Complex ArgumentViewer context tests"){
@@ -135,6 +165,7 @@ SCENARIO("Complex ArgumentViewer context tests"){
   REQUIRE(a->getContext("light")->isPresent("c")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("a")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("b")==true);
+  REQUIRE(a->validate()==true);
 }
 
 SCENARIO("ArgumentViewer file tests"){
@@ -151,6 +182,7 @@ SCENARIO("ArgumentViewer file tests"){
   REQUIRE(a->getContext("light")->isPresent("c")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("a")==true);
   REQUIRE(a->getContext("light")->getContext("position")->isPresent("b")==true);
+  REQUIRE(a->validate()==true);
   //std::cerr<<a->toStr()<<std::endl;
 }
 

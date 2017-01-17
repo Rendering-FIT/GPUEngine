@@ -15,19 +15,32 @@ class Format{
   public:
     std::string comment;
     Format(std::string const&com):comment(com){}
-    enum MatchStatus{MATCH_SUCCESS,MATCH_FAILURE,MATCH_ERROR};
-    virtual std::string toStr(size_t indent,size_t maxNameSize,size_t maxDataSize,size_t maxTypeSize)const = 0;
-    virtual MatchStatus match(std::vector<std::string>const&args,size_t&index)const = 0;
+    enum MatchStatus{
+      //match was successful
+      MATCH_SUCCESS,
+      //match was unsuccessful at the beginning
+      MATCH_FAILURE,
+      //error was encountered in the middle of matching
+      MATCH_ERROR};
+    virtual std::string toStr(
+        size_t indent      = 0,
+        size_t maxNameSize = 0,
+        size_t maxDataSize = 0,
+        size_t maxTypeSize = 0)const = 0;
+    virtual MatchStatus match(
+        std::vector<std::string>const&args ,
+        size_t                       &index)const = 0;
 };
 
 class ge::util::ArgumentViewerImpl{
   public:
     std::string applicationName = "";
     std::vector<std::string>arguments;
-    static std::string const contextBegin;
-    static std::string const contextEnd  ;
-    static std::string const fileSymbol  ;
-    static size_t      const levelIndent ;
+    static std::string const contextBegin     ;
+    static std::string const contextEnd       ;
+    static std::string const fileSymbol       ;
+    static size_t      const levelIndent      ;
+    static size_t      const maxDataLineLength;
     ArgumentViewer const*parent = nullptr;
     std::shared_ptr<Format>format = nullptr;
     size_t getArgumentPosition(std::string const&argument)const;
@@ -282,6 +295,26 @@ class SingleValueFormat: public ValueFormat{
     }
 };
 
+class LineSplitter{
+  public:
+    std::string get()const{
+      assert(this!=nullptr);
+      return this->ss.str();
+    }
+    void addString(std::string const&text){
+      assert(this!=nullptr);
+      if(ss.str().length() - lineStart + 1 + text.length() >= ArgumentViewerImpl::maxDataLineLength){
+        ss<<std::endl;
+        lineStart= ss.str().length();
+        if(text==" ")return;
+      }
+      ss<<text;
+    }
+  protected:
+    size_t lineStart = 0;
+    std::stringstream ss;
+};
+
 template<typename TYPE>
 class VectorFormat: public ValueFormat{
   public:
@@ -290,14 +323,27 @@ class VectorFormat: public ValueFormat{
     virtual std::string getData()const override{
       assert(this!=nullptr);
       std::stringstream ss;
+      LineSplitter splitter;
       bool first = true;
       for(auto const&x:defaults){
         if(first)first = false;
-        else ss<<" ";
-        ss<<x;
+        else splitter.addString(" ");
+        splitter.addString(ge::core::value2str(x));
       }
-      return ss.str();
-      //return ge::core::value2str(defaults);
+      return splitter.get();
+    }
+    virtual size_t getDataLength()const override{
+      assert(this!=nullptr);
+      auto text = this->getData();
+      size_t maxLength = 0;
+      size_t lineStart = 0;
+      size_t lineEnd;
+      while((lineEnd = text.find("\n",lineStart))!=std::string::npos){
+        maxLength = std::max(maxLength,lineEnd - lineStart + 1);
+        lineStart = lineEnd + 1;
+      }
+      maxLength = std::max(maxLength,text.length() - lineStart + 1);
+      return maxLength;
     }
     virtual std::string getType()const override{
       assert(this!=nullptr);
@@ -319,27 +365,16 @@ class StringVectorFormat: public ValueFormat{
     StringVectorFormat(std::string const&argument,std::vector<std::string>const&defs,std::string const&com):ValueFormat(argument,com),defaults(defs){}
     virtual std::string getData()const override{
       assert(this!=nullptr);
-      size_t const maxLineLength = 15;
-      std::stringstream dataStream;
-      size_t lineLength = 0;
-      dataStream<<ArgumentViewerImpl::contextBegin;
-      ++lineLength;
+      LineSplitter splitter;
+      splitter.addString(ArgumentViewerImpl::contextBegin);
       bool first = true;
       for(auto const&x:defaults){
         if(first)first = false;
-        else{
-          dataStream<<" ";
-          ++lineLength;
-        }
-        if(x.length()+lineLength>maxLineLength){
-          dataStream<<std::endl;
-          lineLength = 0;
-        }
-        dataStream<<x;
-        lineLength += x.length();
+        else splitter.addString(" ");
+        splitter.addString(x);
       }
-      dataStream<<ArgumentViewerImpl::contextEnd;
-      return dataStream.str();
+      splitter.addString(ArgumentViewerImpl::contextEnd);
+      return splitter.get();
     }
     virtual size_t getDataLength()const override{
       assert(this!=nullptr);
@@ -380,6 +415,7 @@ class StringVectorFormat: public ValueFormat{
         std::cerr<<" not end of arguments";
         return MATCH_ERROR;
       }
+      ++index;
       return MATCH_SUCCESS;
     }
 };
@@ -416,7 +452,7 @@ class ArgumentListFormat: public Format{
   public:
     ArgumentListFormat(std::string const&com):Format(com){}
     std::map<std::string,std::shared_ptr<Format>>formats;
-    virtual std::string toStr(size_t indent,size_t,size_t,size_t)const override{
+    virtual std::string toStr(size_t indent,size_t=0,size_t=0,size_t=0)const override{
       assert(this!=nullptr);
       std::stringstream ss;
       size_t largestNameLength = 0;
@@ -435,7 +471,7 @@ class ArgumentListFormat: public Format{
       }
       for(auto const&x:this->formats){
         if(!ArgumentViewerImpl::isTypeOf<ContextFormat>(x.second))continue;
-        ss<<x.second->toStr(indent,0,0,0);
+        ss<<x.second->toStr(indent);
       }
       return ss.str();
     }
@@ -467,7 +503,7 @@ class ArgumentListFormat: public Format{
         }
         if(formatForRemoval == ""){
           std::cerr<<"Argument error:"<<std::endl;
-          std::cerr<<"argument: "<<args.at(index)<<" cannot be matched"<<std::endl;
+          std::cerr<<"argument: "<<args.at(index)<<" at index: "<<index<<" cannot be matched"<<std::endl;
           index = oldIndex;
           return MATCH_ERROR;
         }
@@ -480,13 +516,13 @@ class ContextFormat: public ArgumentListFormat{
   public:
     std::string argumentName;
     ContextFormat(std::string const&argument,std::string const&com):ArgumentListFormat(com),argumentName(argument){}
-    virtual std::string toStr(size_t indent,size_t,size_t,size_t)const override{
+    virtual std::string toStr(size_t indent,size_t=0,size_t=0,size_t=0)const override{
       assert(this!=nullptr);
       std::stringstream ss;
       for(size_t i=0;i<indent;++i)ss<<" ";
       ss<<this->argumentName<<" ";
       ss<<ArgumentViewerImpl::contextBegin<<" - "<<this->comment<<std::endl;
-      ss<<this->ArgumentListFormat::toStr(indent+2,0,0,0);
+      ss<<this->ArgumentListFormat::toStr(indent+2);
       for(size_t i=0;i<indent;++i)ss<<" ";
       ss<<ArgumentViewerImpl::contextEnd<<std::endl;
       return ss.str();
@@ -585,10 +621,11 @@ namespace ge{
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<std::string>(std::string const&text){
       return ge::core::isString(text);
     }
-    std::string const ArgumentViewerImpl::contextBegin = "{";
-    std::string const ArgumentViewerImpl::contextEnd   = "}";
-    std::string const ArgumentViewerImpl::fileSymbol   = "<";
-    size_t      const ArgumentViewerImpl::levelIndent  = 2  ;
+    std::string const ArgumentViewerImpl::contextBegin      = "{";
+    std::string const ArgumentViewerImpl::contextEnd        = "}";
+    std::string const ArgumentViewerImpl::fileSymbol        = "<";
+    size_t      const ArgumentViewerImpl::levelIndent       = 2  ;
+    size_t      const ArgumentViewerImpl::maxDataLineLength = 15 ;
   }
 }
 
@@ -1097,14 +1134,25 @@ std::vector<std::string>ArgumentViewer::getsv(
   std::vector<std::string>subArguments;
   if(!this->_impl->getContext(subArguments,argument))return def;
   while(def.size()>subArguments.size())
-    subArguments.push_back(def.at(subArguments.size()));
-  for(size_t i=0;i<subArguments.size();++i)
-    subArguments[i] = ArgumentViewerImpl::parseEscapeSequence(subArguments[i]);
+    subArguments.push_back(def[subArguments.size()]);
+  for(auto&x:subArguments)x=ArgumentViewerImpl::parseEscapeSequence(x);
   return subArguments;
 }
 
 std::string ArgumentViewer::toStr()const{
   assert(this!=nullptr);
   assert(this->_impl!=nullptr);
-  return this->_impl->format->toStr(0,0,0,0);
+  return this->_impl->format->toStr();
+}
+
+bool ArgumentViewer::validate()const{
+  assert(this!=nullptr);
+  assert(this->_impl!=nullptr);
+  assert(this->_impl->format!=nullptr);
+  if(this->_impl->parent!=nullptr){
+    ge::core::printError(GE_CORE_FCENAME,"validation cannot be run on sub ArgumentViewer");
+    return false;
+  }
+ size_t index = 0;
+  return this->_impl->format->match(this->_impl->arguments,index)==Format::MATCH_SUCCESS;
 }
