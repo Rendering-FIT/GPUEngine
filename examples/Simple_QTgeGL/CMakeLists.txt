@@ -11,8 +11,8 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-set(PROJECT_NAME "Simple_QTgeGL")
-set(APP_NAME "Simple_QTgeGL")
+set(PROJECT_NAME "Simple_QtgeGL")
+set(APP_NAME "Simple_QtgeGL")
 
 #You need these for automatic handling of Qt based classes (see Qt documentation).
 #You can also use cmake commands like qt_wrap_cpp or qt_wrap_ui... for by hand approach.

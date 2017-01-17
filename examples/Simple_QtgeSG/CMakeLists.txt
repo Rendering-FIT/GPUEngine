@@ -60,7 +60,6 @@ set(SOURCE_FILES
    src/QuickRendererBase.h src/QuickRendererBase.cpp
    src/SimplegeSGRenderer.h src/SimplegeSGRenderer.cpp
    src/SimpleVT.h src/SimpleVT.cpp
-   #src/types.h
    src/VisualizationTechnique.h
 )
 
