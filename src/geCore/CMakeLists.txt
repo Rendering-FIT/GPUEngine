@@ -51,6 +51,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/idlist.h
   ${HEADER_PATH}/Text.h
   ${HEADER_PATH}/Updatable.h
+  ${HEADER_PATH}/Interval.h
   )
 
 set(CORE_SOURCES

@@ -33,6 +33,7 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/Export.h
    ${HEADER_PATH}/algorithms.h
    ${HEADER_PATH}/ArgumentObject.h
+   ${HEADER_PATH}/ArgumentViewer.h
    ${HEADER_PATH}/CameraObject.h
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
@@ -54,6 +55,7 @@ set(UTIL_INCLUDES
 
 set(GL_SOURCES
    ArgumentObject.cpp
+   ArgumentViewer.cpp
    CameraObject.cpp
    CameraPath.cpp
    FPSPrinter.cpp
@@ -85,7 +87,7 @@ find_package(glm REQUIRED)
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps)
+set(Internal_deps geCore)
 set(External_libs glm)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
 set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
