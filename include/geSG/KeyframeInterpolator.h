@@ -17,7 +17,7 @@ namespace ge
       class KeyframeInterpolator
       {
       public:
-         typedef typename KeyFrameContainer::value_type::value_type Value;
+         using Value = typename KeyFrameContainer::value_type::value_type;
 
          virtual Value interpolate(const KeyFrameContainer& keyframes, const T& t) const = 0;
 
@@ -34,6 +34,7 @@ namespace ge
       class NearestKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {
       public:
+         using Value = typename KeyframeInterpolator<KeyFrameContainer,T>::Value;
          Value interpolate(const KeyFrameContainer& keyframes, const T& t) const override
          {
             if(keyframes.empty()) return Value();
@@ -62,6 +63,7 @@ namespace ge
       class LinearKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {
       public:
+         using Value = typename KeyframeInterpolator<KeyFrameContainer,T>::Value;
          Value interpolate(const KeyFrameContainer& keyframes, const T& t) const override
          {
             if(keyframes.empty()) return Value();
@@ -89,6 +91,7 @@ namespace ge
       class SlerpKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
       {
       public:
+         using Value = typename KeyframeInterpolator<KeyFrameContainer,T>::Value;
          Value interpolate(const KeyFrameContainer& keyframes, const T& t) const override
          {
             if(keyframes.empty()) return Value();

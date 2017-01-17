@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(PROJECT_NAME "Simple_QTgeSG")
-set(APP_NAME "Simple_QTgeSG")
+set(PROJECT_NAME "Simple_QtgeSG")
+set(APP_NAME "Simple_QtgeSG")
 
 set( CMAKE_AUTORCC ON )
 set( CMAKE_AUTOUIC ON )

@@ -63,6 +63,8 @@ namespace ge
             // disable copy constructor and assignment operator
             AttribStorageData(const AttribStorageData&) = delete;
             AttribStorageData& operator=(const AttribStorageData&) = delete;
+            // add move constructor in order to be able to emplace back it into vector
+            inline AttribStorageData(AttribStorageData&&rhs);
          };
 
          typedef ge::core::SharedCommandList CommandList;
@@ -155,6 +157,8 @@ namespace ge
             unsigned glMode,unsigned drawCommandCount)
       { this->indirectBufferOffset4=indirectBufferOffset4; this->glMode=glMode; this->drawCommandCount=drawCommandCount; }
       inline StateSet::AttribStorageData::AttribStorageData(AttribStorage *storage) : attribStorage(storage), numDrawCommands(0)  { numDrawCommandsOfKindAndIndex.fill(0); }
+      inline StateSet::AttribStorageData::AttribStorageData(AttribStorageData&&other):attribStorage(std::move(other.attribStorage)),numDrawCommands(std::move(other.numDrawCommands)),
+        numDrawCommandsOfKindAndIndex(std::move(other.numDrawCommandsOfKindAndIndex)),renderingData(std::move(other.renderingData)){}
 
       inline StateSet::StateSet() : _numDrawCommands(0), _drawableCounter(0) {}
       inline StateSet::AttribStorageData* StateSet::getAttribStorageData(const AttribStorage *storage) const
