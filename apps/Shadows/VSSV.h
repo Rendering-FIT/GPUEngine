@@ -5,6 +5,7 @@
 #include"Model.h"
 #include"TimeStamp.h"
 
+class Adjacency;
 class VSSV: public ShadowMethod{
   public:
     VSSV(
@@ -46,4 +47,8 @@ class VSSV: public ShadowMethod{
     bool                                _usePlanes              = false;
     bool                                _useStrips              = true;
     bool                                _useAllOppositeVertices = false;
+    void                                _createSideDataUsingPoints   (std::shared_ptr<Adjacency>const&adj);
+    void                                _createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj);
+    void                                _createSideDataUsingPlanes   (std::shared_ptr<Adjacency>const&adj);
+    void                                _createCapDataUsingPoints    (std::shared_ptr<Adjacency>const&adj);
 };
