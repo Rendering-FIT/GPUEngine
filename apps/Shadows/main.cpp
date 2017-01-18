@@ -1,5 +1,6 @@
 #include<limits>
 #include<string>
+#include<limits>
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geGL/OpenGLCommands.h>
@@ -17,6 +18,7 @@
 #include"Model.h"
 #include<geUtil/OrbitCamera.h>
 #include<geUtil/FreeLookCamera.h>
+#include<geUtil/ArgumentViewer.h>
 #include"CameraPath.h"
 #include<geUtil/PerspectiveCamera.h>
 #include"Shading.h"
@@ -29,6 +31,7 @@
 #include"DrawPrimitive.h"
 #include"CSV.h"
 #include"RSSV.h"
+#include"VSSV.h"
 
 class RenderNode{
   public:
@@ -99,9 +102,13 @@ struct Application{
 
   size_t   cssvWGS = 64;
   size_t   maxMultiplicity = 2;
-  bool     cssvZfail = true;
+  bool     zfail = true;
   bool     cssvLocalAtomic = true;
   bool     cssvCullSides = false;
+
+  bool     vssvUsePlanes = false;
+  bool     vssvUseStrips = true;
+  bool     vssvUseAll    = false;
 
   size_t   sintornShadowFrustumsPerWorkGroup = 1;
   float    sintornBias = 0.01f;
@@ -132,6 +139,7 @@ struct Application{
 };
 
 bool Application::init(int argc,char*argv[]){
+
   this->args = std::make_shared<ge::util::ArgumentObject>(argc-1,argv+1);
   if(this->args->isPresent("-h") || this->args->isPresent("--help")){
     std::cout<<"--model                        - model file name"<<std::endl;
@@ -155,9 +163,12 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--shadowMap-faces              - cube shadow map faces"<<std::endl;
     std::cout<<"--cssv-WGS                     - compute sillhouette shadow volumes work group size"<<std::endl;
     std::cout<<"--maxMultiplicity              - max number of triangles that share the same edge"<<std::endl;
-    std::cout<<"--cssv-zfail                   - compute sillhouette shadow volumes zfail 0/1"<<std::endl;
+    std::cout<<"--zfail                        - shadow volumes zfail 0/1"<<std::endl;
     std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
     std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
+    std::cout<<"--vssv-usePlanes               - use planes instead of opposite vertices"<<std::endl;
+    std::cout<<"--vssv-useStrips               - use triangle strips for sides of shadow volumes 0/1"<<std::endl;
+    std::cout<<"--vssv-useAll                  - use all opposite vertices (even empty) 0/1"<<std::endl;
     std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
     std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
     std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
@@ -166,7 +177,7 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--rssv-cullSides               - enables frustum culling of silhouettes"<<std::endl;
     std::cout<<"--rssv-silhouettesPerWorkgroup - number of silhouette edges that are compute by one workgroup"<<std::endl;
     std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
-    std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv"<<std::endl;
+    std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv"<<std::endl;
     std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
     std::cout<<"--test-fly-keys                - filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz"<<std::endl;
     std::cout<<"--test-fly-length              - number of measurements, 1000"<<std::endl;
@@ -175,6 +186,25 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--verbose                      - toggle verbose mode"<<std::endl;
     exit(0);
   }
+
+  auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
+  this->modelName = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
+  this->windowSize.x = arg->getu32("--window-size-x",512,"window width" );
+  this->windowSize.y = arg->getu32("--window-size-y",512,"window height");
+
+  this->lightPosition.x     = arg->getf32("--light-x",100.f,"light position x");
+  this->lightPosition.y     = arg->getf32("--light-y",100.f,"light position y");
+  this->lightPosition.z     = arg->getf32("--light-z",100.f,"light position z");
+  this->lightPosition.w     = arg->getf32("--light-w",1.f  ,"light position z");
+
+  this->cameraFovy          = arg->getf32("--camera-fovy"       ,1.5707963267948966f                   ,"camera field of view in y direction");
+  this->cameraNear          = arg->getf32("--camera-near"       ,0.1f                                  ,"camera near plane position"         );
+  this->cameraFar           = arg->getf32("--camera-far"        ,std::numeric_limits<float>::infinity(),"camera far plane position"          );
+  this->sensitivity         = arg->getf32("--camera-sensitivity",0.01f                                 ,"camera sensitivity"                 );
+  this->orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
+  this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
+  this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
+
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
   this->windowSize.x        = this->args->getArgi("--window-size-x","512");
   this->windowSize.y        = this->args->getArgi("--window-size-y","512");
@@ -204,10 +234,15 @@ bool Application::init(int argc,char*argv[]){
   this->shadowMapFaces      = this->args->getArgi("--shadowMap-faces","6");
 
   this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
-  this->maxMultiplicity = this->args->getArgi("--maxMultiplicity","2");
-  this->cssvZfail           = this->args->getArgi("--cssv-zfail","1");
+  this->maxMultiplicity     = this->args->getArgi("--maxMultiplicity","2");
+  this->zfail               = this->args->getArgi("--zfail","1");
   this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","1");
   this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
+
+  this->vssvUsePlanes       = this->args->getArgi("--vssv-usePlanes","0");
+  this->vssvUseStrips       = this->args->getArgi("--vssv-useStrips","1");
+  this->vssvUseAll          = this->args->getArgi("--vssv-useAll"   ,"0");
+
 
   this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
   this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
@@ -293,7 +328,7 @@ bool Application::init(int argc,char*argv[]){
     this->shadowMethod = std::make_shared<CSSV>(
         this->maxMultiplicity,
         this->cssvWGS,
-        this->cssvZfail,
+        this->zfail,
         this->cssvLocalAtomic,
         this->cssvCullSides,
         this->windowSize,
@@ -322,6 +357,17 @@ bool Application::init(int argc,char*argv[]){
         this->rssvLocalAtomic,
         this->rssvCullSides,
         this->rssvSilhouettesPerWorkgroup);
+  else if(this->methodName=="vssv")
+    this->shadowMethod = std::make_shared<VSSV>(
+        this->maxMultiplicity,
+        this->zfail,
+        this->windowSize,
+        this->gBuffer->depth,
+        this->model,
+        this->shadowMask,
+        this->vssvUsePlanes,
+        this->vssvUseStrips,
+        this->vssvUseAll);
   else
     this->useShadows = false;
 
@@ -345,7 +391,7 @@ bool Application::init(int argc,char*argv[]){
   cmdList->add(std::bind(&ge::gl::Context::glViewport,this->gl,0,0,this->windowSize.x,this->windowSize.y));
   cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_DEPTH_TEST));
   cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_POLYGON_OFFSET_FILL));
-  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,10));
+  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,0));
   cmdList->add([this]{this->gBuffer->begin();});
   cmdList->add(std::bind(&ge::gl::Context::glClear,this->gl,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
   cmdList->add([this]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
