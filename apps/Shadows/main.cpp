@@ -187,6 +187,7 @@ bool Application::init(int argc,char*argv[]){
     exit(0);
   }
 
+  /*
   auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
   this->modelName = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
   this->windowSize.x = arg->getu32("--window-size-x",512,"window width" );
@@ -204,6 +205,7 @@ bool Application::init(int argc,char*argv[]){
   this->orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
   this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
   this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
+  */
 
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
   this->windowSize.x        = this->args->getArgi("--window-size-x","512");
