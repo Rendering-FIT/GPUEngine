@@ -142,22 +142,20 @@ void VSSV::_createCapDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   //B - vertex B of an triangle
   //C - vertex C of an triangle
 
-  this->_caps = std::make_shared<ge::gl::Buffer>(adj->getNofTriangles()*sizeofTriangleInBytes);
-  float      *dstPtr = (float*)this->_caps->map();
-  float const*srcPtr = adj->getVertices();
-  size_t const sizeofCapsInBytes = adj->getNofTriangles()*sizeofTriangleInBytes;
-  std::memcpy(dstPtr,srcPtr,sizeofCapsInBytes);
-  this->_caps->unmap();
+  this->_caps = std::make_shared<ge::gl::Buffer>(adj->getNofTriangles()*sizeofTriangleInBytes,adj->getVertices());
 
   this->_capsVao = std::make_shared<ge::gl::VertexArray>();
   GLsizei const stride     = GLsizei(sizeofTriangleInBytes);
   GLenum  const normalized = GL_FALSE;
-  GLuint  const divisor    = GLuint(adj->getMaxMultiplicity());
+  size_t  const nofCapsPerTriangle = 2;
+  GLuint  const divisor    = GLuint(nofCapsPerTriangle);
   for(size_t i=0;i<verticesPerTriangle;++i){
     GLintptr offset = sizeofVertex3DInBytes * i;
     GLuint   index = GLuint(i);
     this->_capsVao->addAttrib(this->_caps,index,floatsPer3DVertex,GL_FLOAT,stride,offset,normalized,divisor);
   }
+
+  this->_nofTriangles = adj->getNofTriangles();
 }
 
 
@@ -383,40 +381,25 @@ void VSSV::create(
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,0,4,GLsizei(this->_nofEdges*this->_maxMultiplicity));
   else
     glDrawArraysInstanced(GL_TRIANGLES,0,6,GLsizei(this->_nofEdges*this->_maxMultiplicity));
-  //glDrawArraysIndirect(GL_PATCHES,NULL);
   this->_sidesVao->unbind();
   if(this->timeStamp)this->timeStamp->stamp("drawSides");
 
   if(this->_zfail){
-    //*
     this->_drawCaps->use();
     this->_drawCaps->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
     this->_drawCaps->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
     this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
     this->_capsVao->bind();
-    size_t  const nofCapsPerShadowVolume = 2;
-    GLuint  const nofInstances = nofCapsPerShadowVolume;
-    GLsizei const nofVertices = GLsizei(this->_nofTriangles * verticesPerTriangle);
+    size_t  const nofCapsPerTriangle = 2;
+    GLuint  const nofInstances = GLuint(nofCapsPerTriangle * this->_nofTriangles);
+    GLsizei const nofVertices = GLsizei(verticesPerTriangle);
     GLint   const firstVertex = 0;
     glDrawArraysInstanced(GL_TRIANGLES,firstVertex,nofVertices,nofInstances);
     this->_capsVao->unbind();
 
     if(this->timeStamp)this->timeStamp->stamp("drawCaps");
-    // */
-
-    /*
-       this->_drawCaps->use();
-       this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
-       this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
-       this->_capsVao->bind();
-       glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
-       this->_capsVao->unbind();
-
-       this->_fbo->unbind();
-       if(this->timeStamp)this->timeStamp->stamp("drawCaps");
-       */
   }
-  //this->_fbo->unbind();
+  this->_fbo->unbind();
 
   glDisable(GL_DEPTH_TEST);
   this->_maskFbo->bind();

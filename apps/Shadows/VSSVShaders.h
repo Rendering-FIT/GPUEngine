@@ -149,15 +149,26 @@ void main(){
   vec3 A=triangleVertexA;
   vec3 B=triangleVertexB;
   vec3 C=triangleVertexC;
+  /*
+  if(gl_InstanceID==0){
+    if((gl_VertexID%3) == 0)gl_Position = (projectionMatrix*viewMatrix*modelMatrix*vec4(B,1)).xyww;
+    if((gl_VertexID%3) == 1)gl_Position = (projectionMatrix*viewMatrix*modelMatrix*vec4(A,1)).xyww;
+    if((gl_VertexID%3) == 2)gl_Position = (projectionMatrix*viewMatrix*modelMatrix*vec4(C,1)).xyww;
+    return;
+  }else{
+    gl_Position = vec4(0,0,0,1);
+    return;
+  }
+  // */
   if(greaterVec(A,B)>0)swap(A,B);
   if(greaterVec(B,C)>0)swap(B,C);
   if(greaterVec(A,B)>0)swap(A,B);
   int multiplicity=computeMult(A,B,C,lightPosition);
   if(multiplicity==0){gl_Position=vec4(0,0,0,1);return;}
-  if(multiplicity<0)swap(A,B);
+  if(multiplicity>0)swap(A,B);
 
-  float farCap = float(gl_InstanceID/2);
-  int   vID    = ((farCap>0)?3-int(gl_VertexID):int(gl_VertexID));
+  float farCap = float(gl_InstanceID&1);
+  int   vID    = ((farCap>0)?2-int(gl_VertexID):int(gl_VertexID));
 
   vec4 P=vec4(A*float(vID==0)+B*float(vID==1)+C*float(vID==2),1.0);
   
