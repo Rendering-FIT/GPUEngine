@@ -1,5 +1,6 @@
 #include<limits>
 #include<string>
+#include<limits>
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geGL/OpenGLCommands.h>
@@ -17,6 +18,7 @@
 #include"Model.h"
 #include<geUtil/OrbitCamera.h>
 #include<geUtil/FreeLookCamera.h>
+#include<geUtil/ArgumentViewer.h>
 #include"CameraPath.h"
 #include<geUtil/PerspectiveCamera.h>
 #include"Shading.h"
@@ -137,6 +139,7 @@ struct Application{
 };
 
 bool Application::init(int argc,char*argv[]){
+
   this->args = std::make_shared<ge::util::ArgumentObject>(argc-1,argv+1);
   if(this->args->isPresent("-h") || this->args->isPresent("--help")){
     std::cout<<"--model                        - model file name"<<std::endl;
@@ -183,6 +186,25 @@ bool Application::init(int argc,char*argv[]){
     std::cout<<"--verbose                      - toggle verbose mode"<<std::endl;
     exit(0);
   }
+
+  auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
+  this->modelName = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
+  this->windowSize.x = arg->getu32("--window-size-x",512,"window width" );
+  this->windowSize.y = arg->getu32("--window-size-y",512,"window height");
+
+  this->lightPosition.x     = arg->getf32("--light-x",100.f,"light position x");
+  this->lightPosition.y     = arg->getf32("--light-y",100.f,"light position y");
+  this->lightPosition.z     = arg->getf32("--light-z",100.f,"light position z");
+  this->lightPosition.w     = arg->getf32("--light-w",1.f  ,"light position z");
+
+  this->cameraFovy          = arg->getf32("--camera-fovy"       ,1.5707963267948966f                   ,"camera field of view in y direction");
+  this->cameraNear          = arg->getf32("--camera-near"       ,0.1f                                  ,"camera near plane position"         );
+  this->cameraFar           = arg->getf32("--camera-far"        ,std::numeric_limits<float>::infinity(),"camera far plane position"          );
+  this->sensitivity         = arg->getf32("--camera-sensitivity",0.01f                                 ,"camera sensitivity"                 );
+  this->orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
+  this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
+  this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
+
   this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
   this->windowSize.x        = this->args->getArgi("--window-size-x","512");
   this->windowSize.y        = this->args->getArgi("--window-size-y","512");
