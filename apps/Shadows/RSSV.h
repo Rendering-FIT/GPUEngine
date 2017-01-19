@@ -6,6 +6,17 @@
 #include"FastAdjacency.h"
 #include"TimeStamp.h"
 
+struct RSSVParams{
+    glm::uvec2                      windowSize              = glm::uvec2(512u,512u);
+    std::shared_ptr<ge::gl::Texture>shadowMask              = nullptr              ;
+    std::shared_ptr<ge::gl::Texture>depthTexture            = nullptr              ;
+    std::shared_ptr<Model>          model                   = nullptr              ;
+    size_t                          maxMultiplicity         = 2                    ;
+    size_t                          computeSilhouetteWGS    = 64                   ;
+    bool                            localAtomic             = true                 ;
+    bool                            cullSides               = false                ;
+    size_t                          silhouettesPerWorkgroup = 1                    ;
+};
 
 class RSSV: public ShadowMethod{
   public:
