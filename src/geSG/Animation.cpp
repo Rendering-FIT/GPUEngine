@@ -8,26 +8,29 @@ using namespace ge::core;
 
 Animation::Animation()
    : mode(Mode::ONCE)
-   , currentTime(0)
-   , startTime()
+   , duration(time_unit(0))
 {
 }
 
 /**
- * Computes duration, sets start time to t and calls update with t.
+ * Computes duration, sets start time to t and calls update with t. If the animation has no channels nothing is done.
  * The duration is computed as maximum time value (t) of all keyframes of all channels.
  * \param t 
  */
 void Animation::start(const time_point& t)
 {
+   startTime = t;
+   if(channels.empty()) {
+      duration = time_unit(0);
+      return;
+   }
    auto it = std::max_element(channels.begin(), channels.end(), [](const std::shared_ptr<AnimationChannel>& a, const std::shared_ptr<AnimationChannel>& b) { return a->getDuration() < b->getDuration(); });
    duration = (**it).getDuration();
-   startTime = t;
    update(t);
 }
 
 /**
- * Use to update all animation channels.
+ * Use to update all animation channels. If the animation has no channels nothing is done.
  * @param t Is the simulation time resp. aplication gloab time. The start time is then substracted
  *          from this t and determines the current animation (relative) time. All channels are fed
  *          this relative time.
@@ -39,7 +42,7 @@ void Animation::update(const time_point& t)
    switch (mode)
    {
       case Mode::LOOP:
-         anim_time = anim_time % duration;
+         anim_time = duration > time_unit(0) ? anim_time % duration : time_unit(0);
          break;
       case Mode::ONCE:
       default:
@@ -47,10 +50,10 @@ void Animation::update(const time_point& t)
          break;
    }
 
-   currentTime = anim_time;
+   currentTime = time_point(anim_time);
 
    for (auto channel : channels)
    {
-      channel->update(time_point(currentTime));
+      channel->update(currentTime);
    }
 }

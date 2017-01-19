@@ -45,7 +45,7 @@ void AnimationManager::removeFinishedAnimation()
    auto it = playlist.begin();
    for(; it != playlist.end(); )
    {
-      if((*it)->getCurrentTime() >= (*it)->duration && (*it)->mode == Animation::Mode::ONCE)
+      if((*it)->getCurrentTime() >= time_point((*it)->duration) && (*it)->mode == Animation::Mode::ONCE)
       {
          auto rm = it;
          ++it;
