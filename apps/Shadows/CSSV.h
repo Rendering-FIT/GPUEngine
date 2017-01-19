@@ -1,9 +1,22 @@
 #pragma once
 
 #include<geGL/geGL.h>
+#include<glm/glm.hpp>
 #include"ShadowMethod.h"
 #include"Model.h"
 #include"TimeStamp.h"
+
+struct CSSVParams{
+  size_t maxMultiplicity                     = 2                    ;
+  size_t computeSidesWGS                     = 64                   ;
+  bool   zfail                               = true                 ;
+  bool   localAtomic                         = true                 ;
+  bool   cullSides                           = false                ;
+  glm::uvec2                      windowSize = glm::uvec2(512u,512u);
+  std::shared_ptr<ge::gl::Texture>depth      = nullptr              ;
+  std::shared_ptr<Model          >model      = nullptr              ;
+  std::shared_ptr<ge::gl::Texture>shadowMask = nullptr              ;
+};
 
 class CSSV: public ShadowMethod{
   public:
