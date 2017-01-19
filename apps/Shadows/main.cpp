@@ -139,55 +139,6 @@ struct Application{
 };
 
 bool Application::init(int argc,char*argv[]){
-
-  this->args = std::make_shared<ge::util::ArgumentObject>(argc-1,argv+1);
-  if(this->args->isPresent("-h") || this->args->isPresent("--help")){
-    std::cout<<"--model                        - model file name"<<std::endl;
-    std::cout<<"--window-size-x                - window width"<<std::endl;
-    std::cout<<"--window-size-y                - window height"<<std::endl;
-    std::cout<<"--light-x                      - light position.x"<<std::endl;
-    std::cout<<"--light-y                      - light position.y"<<std::endl;
-    std::cout<<"--light-z                      - light position.z"<<std::endl;
-    std::cout<<"--light-w                      - light position.w"<<std::endl;
-    std::cout<<"--camera-fovy                  - camera fovy"<<std::endl;
-    std::cout<<"--camera-near                  - camera near plane position"<<std::endl;
-    std::cout<<"--camera-far                   - camera far plane position"<<std::endl;
-    std::cout<<"--camera-sensitivity           - camera sensitivity"<<std::endl;
-    std::cout<<"--camera-zoomSpeed             - orbit camera zoom speed"<<std::endl;
-    std::cout<<"--camera-speed                 - free camera speed"<<std::endl;
-    std::cout<<"--camera-type                  - orbit/free camera type"<<std::endl;
-    std::cout<<"--no-shadows                   - turn off shadows"<<std::endl;
-    std::cout<<"--shadowMap-resolution         - shadow map resolution"<<std::endl;
-    std::cout<<"--shadowMap-near               - shadow map near plane position"<<std::endl;
-    std::cout<<"--shadowMap-far                - shadow map far plane position"<<std::endl;
-    std::cout<<"--shadowMap-faces              - cube shadow map faces"<<std::endl;
-    std::cout<<"--cssv-WGS                     - compute sillhouette shadow volumes work group size"<<std::endl;
-    std::cout<<"--maxMultiplicity              - max number of triangles that share the same edge"<<std::endl;
-    std::cout<<"--zfail                        - shadow volumes zfail 0/1"<<std::endl;
-    std::cout<<"--cssv-localAtomic             - use local atomic instructions"<<std::endl;
-    std::cout<<"--cssv-cullSides               - enables culling of sides that are outside of viewfrustum"<<std::endl;
-    std::cout<<"--vssv-usePlanes               - use planes instead of opposite vertices"<<std::endl;
-    std::cout<<"--vssv-useStrips               - use triangle strips for sides of shadow volumes 0/1"<<std::endl;
-    std::cout<<"--vssv-useAll                  - use all opposite vertices (even empty) 0/1"<<std::endl;
-    std::cout<<"--sintorn-frustumsPerWorkgroup - nof triangles solved by work group"<<std::endl;
-    std::cout<<"--sintorn-bias                 - offset of triangle planes"<<std::endl;
-    std::cout<<"--sintorn-discardBackFacing    - discard light back facing fragments from hierarchical depth texture construction"<<std::endl;
-    std::cout<<"--rssv-computeSilhouettesWGS   - workgroups size for silhouette computation"<<std::endl;
-    std::cout<<"--rssv-localAtomic             - use local atomic instructions in silhouette computation"<<std::endl;
-    std::cout<<"--rssv-cullSides               - enables frustum culling of silhouettes"<<std::endl;
-    std::cout<<"--rssv-silhouettesPerWorkgroup - number of silhouette edges that are compute by one workgroup"<<std::endl;
-    std::cout<<"--wavefrontSize                - warp/wavefrontSize usually 32 for NVidia and 64 for AMD"<<std::endl;
-    std::cout<<"--method                       - name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv"<<std::endl;
-    std::cout<<"--test                         - name of test - fly or empty"<<std::endl;
-    std::cout<<"--test-fly-keys                - filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz"<<std::endl;
-    std::cout<<"--test-fly-length              - number of measurements, 1000"<<std::endl;
-    std::cout<<"--test-framesPerMeasurement    - number of frames that is averaged per one measurement point"<<std::endl;
-    std::cout<<"--test-output                  - name of output file"<<std::endl;
-    std::cout<<"--verbose                      - toggle verbose mode"<<std::endl;
-    exit(0);
-  }
-
-  /*
   auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
   this->modelName = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
   this->windowSize.x = arg->getu32("--window-size-x",512,"window width" );
@@ -205,61 +156,52 @@ bool Application::init(int argc,char*argv[]){
   this->orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
   this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
   this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
-  */
 
-  this->modelName           = this->args->getArg("--model","/media/windata/ft/prace/models/o/o.3ds");
-  this->windowSize.x        = this->args->getArgi("--window-size-x","512");
-  this->windowSize.y        = this->args->getArgi("--window-size-y","512");
+  this->useShadows          = !arg->isPresent("--no-shadows","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
+  this->verbose             =  arg->isPresent("--verbose"   ,"toggle verbose mode"                                            );
+  this->methodName          =  arg->gets     ("--method"    ,"name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
 
-  this->lightPosition.x     = this->args->getArgf("--light-x","100.f");
-  this->lightPosition.y     = this->args->getArgf("--light-y","100.f");
-  this->lightPosition.z     = this->args->getArgf("--light-z","100.f");
-  this->lightPosition.w     = this->args->getArgf("--light-w","1.f");
+  this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
-  this->cameraFovy          = this->args->getArgf("--camera-fovy","1.5707963267948966f");
-  this->cameraNear          = this->args->getArgf("--camera-near","0.1f");
-  this->cameraFar           = this->args->getArgf("--camera-far","inf");
-  this->sensitivity         = this->args->getArgf("--camera-sensitivity","0.01f");
-  this->orbitZoomSpeed      = this->args->getArgf("--camera-zoomSpeed","0.2f");
-  this->freeCameraSpeed     = this->args->getArgf("--camera-speed","1.f");
-  this->cameraType          = this->args->getArg ("--camera-type","orbit");
+  this->shadowMapResolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
+  this->shadowMapNear       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
+  this->shadowMapFar        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
+  this->shadowMapFaces      = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
 
-  this->useShadows          = !this->args->isPresent("--no-shadows");
-  this->verbose             = this->args->isPresent("--verbose");
-  this->methodName          = this->args->getArg("--method","");
+  this->cssvWGS             = arg->getu32("--cssv-WGS"        ,64,"compute sillhouette shadow volumes work group size"      );
+  this->maxMultiplicity     = arg->getu32("--maxMultiplicity" ,2 ,"max number of triangles that share the same edge"        );
+  this->zfail               = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
+  this->cssvLocalAtomic     = arg->getu32("--cssv-localAtomic",1 ,"use local atomic instructions"                           );
+  this->cssvCullSides       = arg->getu32("--cssv-cullSides"  ,0 ,"enables culling of sides that are outside of viewfrustum");
 
-  this->wavefrontSize       = this->args->getArgi("-wavefrontSize","0");
-
-  this->shadowMapResolution = this->args->getArgi("--shadowMap-resolution","1024");
-  this->shadowMapNear       = this->args->getArgf("--shadowMap-near","0.1f");
-  this->shadowMapFar        = this->args->getArgf("--shadowMap-far","1000.f");
-  this->shadowMapFaces      = this->args->getArgi("--shadowMap-faces","6");
-
-  this->cssvWGS             = this->args->getArgi("--cssv-WGS","64");
-  this->maxMultiplicity     = this->args->getArgi("--maxMultiplicity","2");
-  this->zfail               = this->args->getArgi("--zfail","1");
-  this->cssvLocalAtomic     = this->args->getArgi("--cssv-localAtomic","1");
-  this->cssvCullSides       = this->args->getArgi("--cssv-cullSides","0");
-
-  this->vssvUsePlanes       = this->args->getArgi("--vssv-usePlanes","0");
-  this->vssvUseStrips       = this->args->getArgi("--vssv-useStrips","1");
-  this->vssvUseAll          = this->args->getArgi("--vssv-useAll"   ,"0");
+  this->vssvUsePlanes       = arg->geti32("--vssv-usePlanes",0,"use planes instead of opposite vertices"            );
+  this->vssvUseStrips       = arg->geti32("--vssv-useStrips",1,"use triangle strips for sides of shadow volumes 0/1");
+  this->vssvUseAll          = arg->geti32("--vssv-useAll"   ,0,"use all opposite vertices (even empty) 0/1"         );
 
 
-  this->sintornShadowFrustumsPerWorkGroup = this->args->getArgi("--sintorn-frustumsPerWorkgroup","1"    );
-  this->sintornBias                       = this->args->getArgf("--sintorn-bias"                ,"0.01f");
-  this->sintornDiscardBackFacing          = this->args->getArgi("--sintorn-discardBackFacing"   ,"1"    );
+  this->sintornShadowFrustumsPerWorkGroup = arg->geti32("--sintorn-frustumsPerWorkgroup",1    ,"nof triangles solved by work group"                                              );
+  this->sintornBias                       = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
+  this->sintornDiscardBackFacing          = arg->geti32("--sintorn-discardBackFacing"   ,1    ,"discard light back facing fragments from hierarchical depth texture construction");
 
-  this->rssvComputeSilhouetteWGS    = this->args->getArgi("--rssw-computeSilhouettesWGS"  ,"64");
-  this->rssvLocalAtomic             = this->args->getArgi("--rssw-localAtomic"            ,"1" );
-  this->rssvCullSides               = this->args->getArgi("--rssw-cullSides"              ,"0" );
-  this->rssvSilhouettesPerWorkgroup = this->args->getArgi("--rssw-silhouettesPerWorkgroup","1" );
+  this->rssvComputeSilhouetteWGS    = arg->geti32("--rssw-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
+  this->rssvLocalAtomic             = arg->geti32("--rssw-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
+  this->rssvCullSides               = arg->geti32("--rssw-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
+  this->rssvSilhouettesPerWorkgroup = arg->geti32("--rssw-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
 
-  this->testName                 = this->args->getArg ("--test"                     ,""           );
-  this->testFlyKeyFileName       = this->args->getArg ("--test-fly-keys"            ,""           );
-  this->testFlyLength            = this->args->getArgi("--test-fly-length"          ,"1000"       );
-  this->testFramesPerMeasurement = this->args->getArgi("--test-framesPerMeasurement","5"          );
-  this->testOutputName           = this->args->getArg ("--test-output"              ,"measurement");
+  this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
+  this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
+  this->testFlyLength            = arg->geti32("--test-fly-length"          ,1000         ,"number of measurements, 1000"                                   );
+  this->testFramesPerMeasurement = arg->geti32("--test-framesPerMeasurement",5            ,"number of frames that is averaged per one measurement point"    );
+  this->testOutputName           = arg->gets  ("--test-output"              ,"measurement","name of output file"                                            );
+
+  bool printHelp = arg->isPresent("-h","prints this help");
+
+  printHelp = printHelp || !arg->validate();
+  if(printHelp){
+    std::cerr<<arg->toStr();
+    exit(0);
+  }
+
 
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
