@@ -70,66 +70,72 @@ class RenderList final: public RenderNode{
 };
 
 struct Application{
-  std::shared_ptr<ge::gl::Context>    gl       = nullptr;
-  std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
-  std::shared_ptr<ge::ad::SDLWindow>  window   = nullptr;
-  std::shared_ptr<ge::gl::VertexArray>emptyVAO = nullptr;
-  std::shared_ptr<GBuffer>gBuffer = nullptr;
-  std::shared_ptr<Model>model = nullptr;
-  std::shared_ptr<RenderModel>renderModel = nullptr;
-  std::shared_ptr<ge::util::ArgumentObject>args = nullptr;
-  std::shared_ptr<ge::util::CameraTransform>cameraTransform = nullptr;
+  std::shared_ptr<ge::gl::Context           >gl               = nullptr;
+  std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
+  std::shared_ptr<ge::ad::SDLWindow         >window           = nullptr;
+  std::shared_ptr<ge::gl::VertexArray       >emptyVAO         = nullptr;
+  std::shared_ptr<GBuffer                   >gBuffer          = nullptr;
+  std::shared_ptr<Model                     >model            = nullptr;
+  std::shared_ptr<RenderModel               >renderModel      = nullptr;
+  std::shared_ptr<ge::util::ArgumentObject  >args             = nullptr;
+  std::shared_ptr<ge::util::CameraTransform >cameraTransform  = nullptr;
   std::shared_ptr<ge::util::CameraProjection>cameraProjection = nullptr;
-  std::shared_ptr<Shading>shading = nullptr;
-  std::shared_ptr<ge::gl::Texture>shadowMask = nullptr;
-  std::shared_ptr<ShadowMethod>shadowMethod = nullptr;
-  std::shared_ptr<DrawPrimitive>drawPrimitive = nullptr;
-  std::shared_ptr<RenderNode>drawSceneCmd;
-  std::string cameraType = "orbit";
-  glm::uvec2 windowSize = glm::uvec2(512u,512u);
-  float cameraFovy = glm::radians(90.f);
-  float cameraNear = 0.1f;
-  float cameraFar = 1000.f;
-  float sensitivity = 0.01f;
-  float orbitZoomSpeed = 0.2f;
-  float freeCameraSpeed = 1.f;
-  glm::vec4 lightPosition = glm::vec4(100.f,100.f,100.f,1.f);
-  size_t   wavefrontSize = 0;
-  uint32_t shadowMapResolution = 1024;
-  float    shadowMapNear = .1f;
-  float    shadowMapFar  = 1000.f;
-  uint32_t shadowMapFaces = 6;
+  std::shared_ptr<Shading                   >shading          = nullptr;
+  std::shared_ptr<ge::gl::Texture           >shadowMask       = nullptr;
+  std::shared_ptr<ShadowMethod              >shadowMethod     = nullptr;
+  std::shared_ptr<DrawPrimitive             >drawPrimitive    = nullptr;
+  std::shared_ptr<RenderNode                >drawSceneCmd     = nullptr;
+  std::shared_ptr<TimeStamp                 >timeStamper      = nullptr;
+  glm::uvec2  windowSize          = glm::uvec2(512u,512u);
 
-  size_t   cssvWGS = 64;
-  size_t   maxMultiplicity = 2;
-  bool     zfail = true;
-  bool     cssvLocalAtomic = true;
-  bool     cssvCullSides = false;
+  std::string cameraType          = "orbit"           ;
+  float       cameraFovy          = glm::radians(90.f);
+  float       cameraNear          = 0.1f              ;
+  float       cameraFar           = 1000.f            ;
+  float       sensitivity         = 0.01f             ;
+  float       orbitZoomSpeed      = 0.2f              ;
+  float       freeCameraSpeed     = 1.f               ;
 
-  bool     vssvUsePlanes = false;
-  bool     vssvUseStrips = true;
-  bool     vssvUseAll    = false;
+  glm::vec4   lightPosition       = glm::vec4(100.f,100.f,100.f,1.f);
 
-  size_t   sintornShadowFrustumsPerWorkGroup = 1;
-  float    sintornBias = 0.01f;
-  bool     sintornDiscardBackFacing = true;
+  size_t      wavefrontSize       = 0;
 
-  size_t   rssvComputeSilhouetteWGS = 64;
-  bool     rssvLocalAtomic = true;
-  bool     rssvCullSides = false;
-  size_t   rssvSilhouettesPerWorkgroup = 1;
+  uint32_t    shadowMapResolution = 1024  ;
+  float       shadowMapNear       = .1f   ;
+  float       shadowMapFar        = 1000.f;
+  uint32_t    shadowMapFaces      = 6     ;
 
-  std::string testName = "";
-  std::string testFlyKeyFileName = "";
-  size_t      testFlyLength = 0;
-  size_t      testFramesPerMeasurement = 5;
-  std::string testOutputName = "measurement";
+  bool        zfail               = true ;
+  size_t      maxMultiplicity     = 2    ;
 
-  std::shared_ptr<TimeStamp>timeStamper = nullptr;
-  std::string modelName = "";
+  size_t      cssvWGS             = 64   ;
+  bool        cssvLocalAtomic     = true ;
+  bool        cssvCullSides       = false;
+
+  bool        vssvUsePlanes       = false;
+  bool        vssvUseStrips       = true ;
+  bool        vssvUseAll          = false;
+
+  size_t      sintornShadowFrustumsPerWorkGroup = 1    ;
+  float       sintornBias                       = 0.01f;
+  bool        sintornDiscardBackFacing          = true ;
+
+  size_t      rssvComputeSilhouetteWGS    = 64   ;
+  bool        rssvLocalAtomic             = true ;
+  bool        rssvCullSides               = false;
+  size_t      rssvSilhouettesPerWorkgroup = 1    ;
+
+  std::string testName                 = ""           ;
+  std::string testFlyKeyFileName       = ""           ;
+  size_t      testFlyLength            = 0            ;
+  size_t      testFramesPerMeasurement = 5            ;
+  std::string testOutputName           = "measurement";
+
+  std::string modelName  = "";
   std::string methodName = "";
-  bool verbose = false;
+  bool verbose    = false;
   bool useShadows = true;
+
   bool init(int argc,char*argv[]);
   void draw();
   void drawScene();
@@ -138,16 +144,26 @@ struct Application{
   template<bool DOWN>bool keyboard(SDL_Event const&event);
 };
 
+glm::vec2  vector2vec2 (std::vector<float   >const&v){assert(v.size()>=2);return glm::vec2 (v[0],v[1]          );}
+glm::vec3  vector2vec3 (std::vector<float   >const&v){assert(v.size()>=3);return glm::vec3 (v[0],v[1],v[2]     );}
+glm::vec4  vector2vec4 (std::vector<float   >const&v){assert(v.size()>=4);return glm::vec4 (v[0],v[1],v[2],v[3]);}
+glm::ivec2 vector2ivec2(std::vector<int32_t >const&v){assert(v.size()>=2);return glm::ivec2(v[0],v[1]          );}
+glm::ivec3 vector2ivec3(std::vector<int32_t >const&v){assert(v.size()>=3);return glm::ivec3(v[0],v[1],v[2]     );}
+glm::ivec4 vector2ivec4(std::vector<int32_t >const&v){assert(v.size()>=4);return glm::ivec4(v[0],v[1],v[2],v[3]);}
+glm::uvec2 vector2uvec2(std::vector<uint32_t>const&v){assert(v.size()>=2);return glm::uvec2(v[0],v[1]          );}
+glm::uvec3 vector2uvec3(std::vector<uint32_t>const&v){assert(v.size()>=3);return glm::uvec3(v[0],v[1],v[2]     );}
+glm::uvec4 vector2uvec4(std::vector<uint32_t>const&v){assert(v.size()>=4);return glm::uvec4(v[0],v[1],v[2],v[3]);}
+glm::vec2  vector2vec2 (std::vector<double  >const&v){assert(v.size()>=2);return glm::vec2 (v[0],v[1]          );}
+glm::vec3  vector2vec3 (std::vector<double  >const&v){assert(v.size()>=3);return glm::vec3 (v[0],v[1],v[2]     );}
+glm::vec4  vector2vec4 (std::vector<double  >const&v){assert(v.size()>=4);return glm::vec4 (v[0],v[1],v[2],v[3]);}
+
 bool Application::init(int argc,char*argv[]){
   auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
-  this->modelName = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
-  this->windowSize.x = arg->getu32("--window-size-x",512,"window width" );
-  this->windowSize.y = arg->getu32("--window-size-y",512,"window height");
+  this->modelName  = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
 
-  this->lightPosition.x     = arg->getf32("--light-x",100.f,"light position x");
-  this->lightPosition.y     = arg->getf32("--light-y",100.f,"light position y");
-  this->lightPosition.z     = arg->getf32("--light-z",100.f,"light position z");
-  this->lightPosition.w     = arg->getf32("--light-w",1.f  ,"light position z");
+  this->windowSize = vector2uvec2(arg->getu32v("--window-size",{512,512},"window size" ));
+
+  this->lightPosition       = vector2vec4(arg->getf32v("--light",{100.f,100.f,100.f,1.f},"light position"));
 
   this->cameraFovy          = arg->getf32("--camera-fovy"       ,1.5707963267948966f                   ,"camera field of view in y direction");
   this->cameraNear          = arg->getf32("--camera-near"       ,0.1f                                  ,"camera near plane position"         );
@@ -157,9 +173,9 @@ bool Application::init(int argc,char*argv[]){
   this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
   this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
 
-  this->useShadows          = !arg->isPresent("--no-shadows","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
-  this->verbose             =  arg->isPresent("--verbose"   ,"toggle verbose mode"                                            );
-  this->methodName          =  arg->gets     ("--method"    ,"name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
+  this->useShadows          = !arg->isPresent("--no-shadows",   "name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
+  this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                            );
+  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
 
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -483,9 +499,9 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
       auto pos = flc->getPosition();
       auto up = glm::normalize(glm::vec3(glm::row(rv,1)));
       auto view = glm::normalize(-glm::vec3(glm::row(rv,2)));
-      std::cout<<pos.x<<","<<pos.y<<","<<pos.z<<",";
-      std::cout<<view.x<<","<<view.y<<","<<view.z<<",";
-      std::cout<<up.x<<","<<up.y<<","<<up.z<<std::endl;
+      std::cout<< pos .x<<","<<pos .y<<","<<pos .z<<",";
+      std::cout<< view.x<<","<<view.y<<","<<view.z<<",";
+      std::cout<< up  .x<<","<<up  .y<<","<<up  .z<<std::endl;
     }
   }
   return true;
