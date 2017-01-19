@@ -14,17 +14,10 @@ bool greaterVec(glm::vec3 const&a,glm::vec3 const&b){
   return dot(sign(a-b),glm::vec3(4.0f,2.0f,1.0f))>0.f;
 }
 
-/**
- * @brief swaps to vertices
- *
- * @param a vertex a
- * @param b vertex b
- */
-void swapVec3(glm::vec3&a,glm::vec3&b){
-  glm::vec3 z=a;
-  a=b;
-  b=z;
-}
+template<typename TYPE>
+void swapValues(TYPE&a,TYPE&b){TYPE c=a;a=b;b=c;}
+
+glm::vec3 toVec3(float const*ptr){assert(ptr!=nullptr);return glm::vec3(ptr[0],ptr[1],ptr[2]);}
 
 /**
  * @brief Compute plane deterministically
@@ -40,26 +33,22 @@ void swapVec3(glm::vec3&a,glm::vec3&b){
  *
  * @return plane that is formed using A,B,C
  */
-glm::vec4 computePlane(float const*A,float const*B,float const*C){
-  glm::vec3 a=glm::vec3(A[0],A[1],A[2]);
-  glm::vec3 b=glm::vec3(B[0],B[1],B[2]);
-  glm::vec3 c=glm::vec3(C[0],C[1],C[2]);
-  glm::vec3 z;
+glm::vec4 computePlane(glm::vec3 A,glm::vec3 B,glm::vec3 C){
   bool swapped = false;
-  if(greaterVec(a,b)){
+  if(greaterVec(A,B)){
     swapped = !swapped;
-    swapVec3(a,b);
+    swapValues(A,B);
   }
-  if(greaterVec(b,c)){
+  if(greaterVec(B,C)){
     swapped = !swapped;
-    swapVec3(a,b);
+    swapValues(A,B);
   }
-  if(greaterVec(a,b)){
+  if(greaterVec(A,B)){
     swapped = !swapped;
-    swapVec3(a,b);
+    swapValues(A,B);
   }
-  auto n = glm::normalize(glm::cross(b-a,c-a));
-  auto p = glm::vec4(n,-glm::dot(n,a));
+  auto n = glm::normalize(glm::cross(B-A,C-A));
+  auto p = glm::vec4(n,-glm::dot(n,A));
   if(swapped)return -p;
   return p;
 }
@@ -73,7 +62,6 @@ size_t const floatsPerNofOppositeVertices = 1;
 size_t const sizeofVertex3DInBytes = floatsPer3DVertex*sizeof(float);
 size_t const sizeofPlane3DInBytes = floatsPer3DPlane*sizeof(float);
 size_t const sizeofTriangleInBytes = floatsPerTriangle*sizeof(float);
-
 
 void VSSV::_createSideDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   assert(this!=nullptr);
@@ -90,10 +78,10 @@ void VSSV::_createSideDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   this->_adjacency = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
   float*ptr=(float*)this->_adjacency->map();
   for(size_t edgeIndex=0;edgeIndex<adj->getNofEdges();++edgeIndex){
-    auto edgePtr = ptr+edgeIndex*floatsPerEdge;
-    auto edgeVertexAPtr = edgePtr;
-    auto edgeVertexBPtr = edgeVertexAPtr + floatsPer3DVertex;
-    auto edgeNofOppositePtr = edgeVertexBPtr + floatsPer3DVertex;
+    auto edgePtr                 = ptr+edgeIndex*floatsPerEdge;
+    auto edgeVertexAPtr          = edgePtr;
+    auto edgeVertexBPtr          = edgeVertexAPtr + floatsPer3DVertex;
+    auto edgeNofOppositePtr      = edgeVertexBPtr + floatsPer3DVertex;
     auto edgeOppositeVerticesPtr = edgeNofOppositePtr + floatsPerNofOppositeVertices;
     size_t const edgeVertexAIndex = 0;
     size_t const edgeVertexBIndex = 1;
@@ -173,9 +161,9 @@ void VSSV::_createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj){
   this->_adjacency = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
   float*ptr=(float*)this->_adjacency->map();
   for(size_t edgeIndex=0;edgeIndex<adj->getNofEdges();++edgeIndex){
-    auto edgePtr = ptr+edgeIndex*floatsPerEdge;
-    auto edgeVertexAPtr = edgePtr;
-    auto edgeVertexBPtr = edgeVertexAPtr + floatsPer3DVertex;
+    auto edgePtr                 = ptr + edgeIndex*floatsPerEdge;
+    auto edgeVertexAPtr          = edgePtr;
+    auto edgeVertexBPtr          = edgeVertexAPtr + floatsPer3DVertex;
     auto edgeOppositeVerticesPtr = edgeVertexBPtr + floatsPer3DVertex;
     size_t const edgeVertexAIndex = 0;
     size_t const edgeVertexBIndex = 1;
@@ -185,9 +173,9 @@ void VSSV::_createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj){
       std::memcpy(
           edgeOppositeVerticesPtr+oppositeIndex*floatsPer3DPlane,
           glm::value_ptr(computePlane(
-              adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex),
-              adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex),
-              adj->getVertices()+adj->getOpposite(edgeIndex,oppositeIndex)
+              toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex) ),
+              toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex) ),
+              toVec3(adj->getVertices()+adj->getOpposite(edgeIndex,oppositeIndex))
               )),
           sizeofPlane3DInBytes);
     size_t const nofEmptyOppositeVertices = maxNofOppositeVertices-adj->getNofOpposite(edgeIndex);
@@ -244,9 +232,9 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
       std::memcpy(
           edgeOppositeVerticesPtr+oppositeIndex*floatsPer3DPlane,
           glm::value_ptr(computePlane(
-              adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex),
-              adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex),
-              adj->getVertices()+adj->getOpposite(edgeIndex,oppositeIndex)
+              toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex) ),
+              toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex) ),
+              toVec3(adj->getVertices()+adj->getOpposite(edgeIndex,oppositeIndex))
               )),
           sizeofPlane3DInBytes);
     size_t const nofEmptyOppositeVertices = maxNofOppositeVertices-adj->getNofOpposite(edgeIndex);
@@ -324,7 +312,7 @@ VSSV::VSSV(
   }
 
 #include"VSSVShaders.h"
-  this->_drawSides = std::make_shared<ge::gl::Program>(
+  this->_drawSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
         "#version 450\n",
         this->_usePlanes?ge::gl::Shader::define("USE_PLANES_INSTEAD_OF_OPPOSITE_VERTICES"):"",
@@ -334,27 +322,85 @@ VSSV::VSSV(
 
   this->_createCapDataUsingPoints(adj);
 
-  this->_drawCaps = std::make_shared<ge::gl::Program>(
+  this->_drawCapsProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
         "#version 450\n",
         _drawCapsVertexShaderSrc));
 
   this->_emptyVao = std::make_shared<ge::gl::VertexArray>();
 #include"CSSVShaders.h"
-  this->_blit = std::make_shared<ge::gl::Program>(
+  this->_blitProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,blitVPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,blitFPSrc));
 }
 
 VSSV::~VSSV(){}
 
+void VSSV::_drawSides(
+    glm::vec4 const&lightPosition,
+    glm::mat4 const&view         ,
+    glm::mat4 const&projection   ){
+  assert(this!=nullptr);
+  assert(this->_drawSidesProgram!=nullptr);
+  assert(this->_sidesVao!=nullptr);
+  this->_drawSidesProgram->use();
+  this->_drawSidesProgram->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
+  this->_drawSidesProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
+  this->_drawSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_sidesVao->bind();
+  if(this->_useStrips)
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP,0,4,GLsizei(this->_nofEdges*this->_maxMultiplicity));
+  else
+    glDrawArraysInstanced(GL_TRIANGLES,0,6,GLsizei(this->_nofEdges*this->_maxMultiplicity));
+  this->_sidesVao->unbind();
+}
+
+void VSSV::_drawCaps(
+    glm::vec4 const&lightPosition,
+    glm::mat4 const&view         ,
+    glm::mat4 const&projection   ){
+  assert(this!=nullptr);
+  assert(this->_drawCapsProgram!=nullptr);
+  assert(this->_capsVao!=nullptr);
+  this->_drawCapsProgram->use();
+  this->_drawCapsProgram->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
+  this->_drawCapsProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
+  this->_drawCapsProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_capsVao->bind();
+  size_t  const nofCapsPerTriangle = 2;
+  GLuint  const nofInstances = GLuint(nofCapsPerTriangle * this->_nofTriangles);
+  GLsizei const nofVertices = GLsizei(verticesPerTriangle);
+  GLint   const firstVertex = 0;
+  glDrawArraysInstanced(GL_TRIANGLES,firstVertex,nofVertices,nofInstances);
+  this->_capsVao->unbind();
+}
+
+void VSSV::_blit(){
+  assert(this!=nullptr);
+  assert(this->_blitProgram!=nullptr);
+  assert(this->_maskFbo!=nullptr);
+  assert(this->_emptyVao!=nullptr);
+  glDisable(GL_DEPTH_TEST);
+  this->_maskFbo->bind();
+  glClear(GL_COLOR_BUFFER_BIT);
+  glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+  glStencilFunc(GL_EQUAL,0,0xff);
+  glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+  glDepthFunc(GL_ALWAYS);
+  glDepthMask(GL_FALSE);
+  this->_blitProgram->use();
+  this->_emptyVao->bind();
+  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
+  this->_emptyVao->unbind();
+  this->_maskFbo->unbind();
+}
+
 void VSSV::create(
     glm::vec4 const&lightPosition,
     glm::mat4 const&view         ,
     glm::mat4 const&projection   ){
-  (void)lightPosition;
-  (void)view;
-  (void)projection;
+  assert(this!=nullptr);
+  assert(this->_fbo!=nullptr);
 
   if(this->timeStamp)this->timeStamp->stamp("");
 
@@ -372,48 +418,18 @@ void VSSV::create(
   glDepthFunc(GL_LESS);
   glDepthMask(GL_FALSE);
   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-  this->_drawSides->use();
-  this->_drawSides->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
-  this->_drawSides->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
-  this->_drawSides->set4fv("lightPosition",glm::value_ptr(lightPosition));
-  this->_sidesVao->bind();
-  if(this->_useStrips)
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP,0,4,GLsizei(this->_nofEdges*this->_maxMultiplicity));
-  else
-    glDrawArraysInstanced(GL_TRIANGLES,0,6,GLsizei(this->_nofEdges*this->_maxMultiplicity));
-  this->_sidesVao->unbind();
+
+  this->_drawSides(lightPosition,view,projection);
   if(this->timeStamp)this->timeStamp->stamp("drawSides");
 
   if(this->_zfail){
-    this->_drawCaps->use();
-    this->_drawCaps->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
-    this->_drawCaps->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
-    this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
-    this->_capsVao->bind();
-    size_t  const nofCapsPerTriangle = 2;
-    GLuint  const nofInstances = GLuint(nofCapsPerTriangle * this->_nofTriangles);
-    GLsizei const nofVertices = GLsizei(verticesPerTriangle);
-    GLint   const firstVertex = 0;
-    glDrawArraysInstanced(GL_TRIANGLES,firstVertex,nofVertices,nofInstances);
-    this->_capsVao->unbind();
-
+    this->_drawCaps(lightPosition,view,projection);
     if(this->timeStamp)this->timeStamp->stamp("drawCaps");
   }
   this->_fbo->unbind();
 
-  glDisable(GL_DEPTH_TEST);
-  this->_maskFbo->bind();
-  glClear(GL_COLOR_BUFFER_BIT);
-  glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-  glStencilFunc(GL_EQUAL,0,0xff);
-  glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-  glDepthFunc(GL_ALWAYS);
-  glDepthMask(GL_FALSE);
-  this->_blit->use();
-  this->_emptyVao->bind();
-  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
-  this->_emptyVao->unbind();
-  this->_maskFbo->unbind();
+  this->_blit();
+
   glDepthFunc(GL_LESS);
   glDisable(GL_STENCIL_TEST);
   glEnable(GL_DEPTH_TEST);
