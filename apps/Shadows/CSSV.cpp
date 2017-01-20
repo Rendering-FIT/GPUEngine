@@ -4,15 +4,17 @@
 #include<geCore/Dtemplates.h>
 
 CSSV::CSSV(
-    size_t maxMultiplicity,
-    size_t computeSidesWGS,
-    bool   zfail,
-    bool   localAtomic,
-    bool   cullSides,
-    glm::uvec2 const&windowSize,
-    std::shared_ptr<ge::gl::Texture>const&depth,
-    std::shared_ptr<Model>const&model,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_computeSidesWGS(computeSidesWGS),_zfail(zfail){
+    size_t                          const&maxMultiplicity,
+    bool                            const&zfail          ,
+    glm::uvec2                      const&windowSize     ,
+    std::shared_ptr<ge::gl::Texture>const&depth          ,
+    std::shared_ptr<Model>          const&model          ,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+    CSSVParams                      const&params         ):
+  _windowSize(windowSize),
+  _zfail(zfail),
+  _params(params)
+{
   assert(this!=nullptr);
   this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
 
@@ -79,10 +81,10 @@ CSSV::CSSV(
   this->_computeSides = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("WORKGROUP_SIZE_X",(int)this->_computeSidesWGS),
-        ge::gl::Shader::define("MAX_MULTIPLICITY",(int)adj->getMaxMultiplicity()),
-        ge::gl::Shader::define("LOCAL_ATOMIC",(int)localAtomic),
-        ge::gl::Shader::define("CULL_SIDES",(int)cullSides),
+        ge::gl::Shader::define("WORKGROUP_SIZE_X",(int)this->_params.computeSidesWGS),
+        ge::gl::Shader::define("MAX_MULTIPLICITY",(int)adj->getMaxMultiplicity()    ),
+        ge::gl::Shader::define("LOCAL_ATOMIC"    ,(int)this->_params.localAtomic    ),
+        ge::gl::Shader::define("CULL_SIDES"      ,(int)this->_params.cullSides      ),
         computeSrc));
 
   this->_drawSides=std::make_shared<ge::gl::Program>(
@@ -126,9 +128,6 @@ CSSV::~CSSV(){
 void CSSV::create(glm::vec4 const&lightPosition,
     glm::mat4 const&view,
     glm::mat4 const&projection){
-  (void)lightPosition;
-  (void)view;
-  (void)projection;
   auto mvp = projection*view;
 
   if(this->timeStamp)this->timeStamp->stamp("");
@@ -143,7 +142,7 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_sillhouettes->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dibo->getId());
 
-  glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSidesWGS),1,1);
+  glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_params.computeSidesWGS),1,1);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   glFinish();

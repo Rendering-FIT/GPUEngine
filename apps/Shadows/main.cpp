@@ -6,13 +6,10 @@
 #include<geGL/OpenGLCommands.h>
 #include<geGL/OpenGLContext.h>
 
-#include<geUtil/ArgumentObject.h>
-
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtc/matrix_access.hpp>
-
 
 #include"Deferred.h"
 #include"Model.h"
@@ -77,7 +74,6 @@ struct Application{
   std::shared_ptr<GBuffer                   >gBuffer          = nullptr;
   std::shared_ptr<Model                     >model            = nullptr;
   std::shared_ptr<RenderModel               >renderModel      = nullptr;
-  std::shared_ptr<ge::util::ArgumentObject  >args             = nullptr;
   std::shared_ptr<ge::util::CameraTransform >cameraTransform  = nullptr;
   std::shared_ptr<ge::util::CameraProjection>cameraProjection = nullptr;
   std::shared_ptr<Shading                   >shading          = nullptr;
@@ -100,21 +96,12 @@ struct Application{
 
   size_t      wavefrontSize       = 0;
 
-  uint32_t    shadowMapResolution = 1024  ;
-  float       shadowMapNear       = .1f   ;
-  float       shadowMapFar        = 1000.f;
-  uint32_t    shadowMapFaces      = 6     ;
-
   bool        zfail               = true ;
   size_t      maxMultiplicity     = 2    ;
 
-  size_t      cssvWGS             = 64   ;
-  bool        cssvLocalAtomic     = true ;
-  bool        cssvCullSides       = false;
-
-  bool        vssvUsePlanes       = false;
-  bool        vssvUseStrips       = true ;
-  bool        vssvUseAll          = false;
+  CubeShadowMappingParams cubeSMParams;
+  CSSVParams              cssvParams  ;
+  VSSVParams              vssvParams  ;
 
   size_t      sintornShadowFrustumsPerWorkGroup = 1    ;
   float       sintornBias                       = 0.01f;
@@ -137,6 +124,7 @@ struct Application{
   bool useShadows = true;
 
   bool init(int argc,char*argv[]);
+  void parseArguments(int argc,char*argv[]);
   void draw();
   void drawScene();
   bool mouseMove(SDL_Event const&event);
@@ -157,7 +145,8 @@ glm::vec2  vector2vec2 (std::vector<double  >const&v){assert(v.size()>=2);return
 glm::vec3  vector2vec3 (std::vector<double  >const&v){assert(v.size()>=3);return glm::vec3 (v[0],v[1],v[2]     );}
 glm::vec4  vector2vec4 (std::vector<double  >const&v){assert(v.size()>=4);return glm::vec4 (v[0],v[1],v[2],v[3]);}
 
-bool Application::init(int argc,char*argv[]){
+void Application::parseArguments(int argc,char*argv[]){
+  assert(this!=nullptr);
   auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
   this->modelName  = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
 
@@ -179,21 +168,22 @@ bool Application::init(int argc,char*argv[]){
 
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
-  this->shadowMapResolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
-  this->shadowMapNear       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
-  this->shadowMapFar        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
-  this->shadowMapFaces      = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
-
-  this->cssvWGS             = arg->getu32("--cssv-WGS"        ,64,"compute sillhouette shadow volumes work group size"      );
   this->maxMultiplicity     = arg->getu32("--maxMultiplicity" ,2 ,"max number of triangles that share the same edge"        );
   this->zfail               = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
-  this->cssvLocalAtomic     = arg->getu32("--cssv-localAtomic",1 ,"use local atomic instructions"                           );
-  this->cssvCullSides       = arg->getu32("--cssv-cullSides"  ,0 ,"enables culling of sides that are outside of viewfrustum");
 
-  this->vssvUsePlanes       = arg->geti32("--vssv-usePlanes",0,"use planes instead of opposite vertices"            );
-  this->vssvUseStrips       = arg->geti32("--vssv-useStrips",1,"use triangle strips for sides of shadow volumes 0/1");
-  this->vssvUseAll          = arg->geti32("--vssv-useAll"   ,0,"use all opposite vertices (even empty) 0/1"         );
+  this->cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
+  this->cubeSMParams.near       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
+  this->cubeSMParams.far        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
+  this->cubeSMParams.faces      = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
 
+  this->cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"        ,64,"compute sillhouette shadow volumes work group size"      );
+  this->cssvParams.localAtomic     = arg->getu32("--cssv-localAtomic",1 ,"use local atomic instructions"                           );
+  this->cssvParams.cullSides       = arg->getu32("--cssv-cullSides"  ,0 ,"enables culling of sides that are outside of viewfrustum");
+
+  this->vssvParams.usePlanes              = arg->geti32("--vssv-usePlanes"   ,0,"use planes instead of opposite vertices"            );
+  this->vssvParams.useStrips              = arg->geti32("--vssv-useStrips"   ,1,"use triangle strips for sides of shadow volumes 0/1");
+  this->vssvParams.useAllOppositeVertices = arg->geti32("--vssv-useAll"      ,0,"use all opposite vertices (even empty) 0/1"         );
+  this->vssvParams.drawCapsSeparately     = arg->geti32("--vssv-capsSeparate",0,"draw caps using two draw calls"                     );
 
   this->sintornShadowFrustumsPerWorkGroup = arg->geti32("--sintorn-frustumsPerWorkgroup",1    ,"nof triangles solved by work group"                                              );
   this->sintornBias                       = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
@@ -217,7 +207,10 @@ bool Application::init(int argc,char*argv[]){
     std::cerr<<arg->toStr();
     exit(0);
   }
+}
 
+bool Application::init(int argc,char*argv[]){
+  this->parseArguments(argc,argv);
 
   this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
   this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
@@ -276,25 +269,20 @@ bool Application::init(int argc,char*argv[]){
   if     (this->methodName=="cubeShadowMapping")
     this->shadowMethod = std::make_shared<CubeShadowMapping>(
         this->windowSize,
-        this->shadowMapResolution,
-        this->shadowMapNear,
-        this->shadowMapFar,
-        this->shadowMapFaces,
         this->gBuffer->position,
         this->renderModel->nofVertices,
         this->renderModel->vertices,
-        this->shadowMask);
+        this->shadowMask,
+        this->cubeSMParams);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(
         this->maxMultiplicity,
-        this->cssvWGS,
         this->zfail,
-        this->cssvLocalAtomic,
-        this->cssvCullSides,
         this->windowSize,
         this->gBuffer->depth,
         this->model,
-        this->shadowMask);
+        this->shadowMask,
+        this->cssvParams);
   else if(this->methodName=="sintorn")
     this->shadowMethod = std::make_shared<Sintorn>(
         this->windowSize,
@@ -325,9 +313,7 @@ bool Application::init(int argc,char*argv[]){
         this->gBuffer->depth,
         this->model,
         this->shadowMask,
-        this->vssvUsePlanes,
-        this->vssvUseStrips,
-        this->vssvUseAll);
+        this->vssvParams);
   else
     this->useShadows = false;
 

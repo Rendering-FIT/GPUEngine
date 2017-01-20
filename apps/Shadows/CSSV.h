@@ -7,29 +7,21 @@
 #include"TimeStamp.h"
 
 struct CSSVParams{
-  size_t maxMultiplicity                     = 2                    ;
-  size_t computeSidesWGS                     = 64                   ;
-  bool   zfail                               = true                 ;
-  bool   localAtomic                         = true                 ;
-  bool   cullSides                           = false                ;
-  glm::uvec2                      windowSize = glm::uvec2(512u,512u);
-  std::shared_ptr<ge::gl::Texture>depth      = nullptr              ;
-  std::shared_ptr<Model          >model      = nullptr              ;
-  std::shared_ptr<ge::gl::Texture>shadowMask = nullptr              ;
+  size_t computeSidesWGS = 64   ;
+  bool   localAtomic     = true ;
+  bool   cullSides       = false;
 };
 
 class CSSV: public ShadowMethod{
   public:
     CSSV(
-        size_t maxMultiplicity,
-        size_t computeSidesWGS,
-        bool   zfail          ,
-        bool   localAtomic    ,
-        bool   cullSides      ,
-        glm::uvec2 const&windowSize,
-        std::shared_ptr<ge::gl::Texture>const&depth,
-        std::shared_ptr<Model>const&model,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask);
+        size_t                          const&maxMultiplicity,
+        bool                            const&zfail          ,
+        glm::uvec2                      const&windowSize     ,
+        std::shared_ptr<ge::gl::Texture>const&depth          ,
+        std::shared_ptr<Model>          const&model          ,
+        std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+        CSSVParams                      const&params         );
     virtual ~CSSV();
     virtual void create(glm::vec4 const&lightPosition,
         glm::mat4 const&view,
@@ -46,10 +38,10 @@ class CSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Buffer>     _sillhouettes     = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _dibo             = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_sidesVao         = nullptr;
-    size_t                              _nofEdges         = 0;
-    size_t                              _nofTriangles     = 0;
-    size_t                              _computeSidesWGS  = 64;
-    bool                                _zfail            = true;
+    size_t                              _nofEdges         = 0      ;
+    size_t                              _nofTriangles     = 0      ;
+    bool                                _zfail            = true   ;
+    CSSVParams                          _params                    ;
 
     std::shared_ptr<ge::gl::Program>    _drawCaps         = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
