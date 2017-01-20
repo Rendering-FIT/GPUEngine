@@ -266,20 +266,16 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
 }
 
 VSSV::VSSV(
-    size_t                          const&maxMultiplicity  ,
-    bool                            const&zfail            ,
-    glm::uvec2                      const&windowSize       ,
-    std::shared_ptr<ge::gl::Texture>const&depth            ,
-    std::shared_ptr<Model>          const&model            ,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask       ,
-    bool                            const&usePlanes        ,
-    bool                            const&useStrips        ,
-    bool                            const&useAll           ):
+    size_t                          const&maxMultiplicity   ,
+    bool                            const&zfail             ,
+    glm::uvec2                      const&windowSize        ,
+    std::shared_ptr<ge::gl::Texture>const&depth             ,
+    std::shared_ptr<Model>          const&model             ,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask        ,
+    VSSVParams                      const&params            ):
   _windowSize(windowSize),
   _zfail(zfail),
-  _usePlanes(usePlanes),
-  _useStrips(useStrips),
-  _useAllOppositeVertices(useAll)
+  _params(params)
 {
   assert(this!=nullptr);
   this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
@@ -301,8 +297,8 @@ VSSV::VSSV(
   this->_maxMultiplicity = adj->getMaxMultiplicity();
 
   //create and fill adjacency buffer for sides on GPU
-  if(this->_usePlanes){
-    if(this->_useAllOppositeVertices){
+  if(this->_params.usePlanes){
+    if(this->_params.useAllOppositeVertices){
       this->_createSideDataUsingAllPlanes(adj);
     }else{
       this->_createSideDataUsingPlanes(adj);
@@ -315,9 +311,9 @@ VSSV::VSSV(
   this->_drawSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
         "#version 450\n",
-        this->_usePlanes?ge::gl::Shader::define("USE_PLANES_INSTEAD_OF_OPPOSITE_VERTICES"):"",
-        this->_useStrips?ge::gl::Shader::define("USE_TRIANGLE_STRIPS"):"",
-        this->_useAllOppositeVertices   ?ge::gl::Shader::define("USE_ALL_OPPOSITE_VERTICES"):"",
+        this->_params.usePlanes?ge::gl::Shader::define("USE_PLANES_INSTEAD_OF_OPPOSITE_VERTICES"):"",
+        this->_params.useStrips?ge::gl::Shader::define("USE_TRIANGLE_STRIPS"):"",
+        this->_params.useAllOppositeVertices   ?ge::gl::Shader::define("USE_ALL_OPPOSITE_VERTICES"):"",
         _drawSidesVertexShaderSrc));
 
   this->_createCapDataUsingPoints(adj);
@@ -348,7 +344,7 @@ void VSSV::_drawSides(
   this->_drawSidesProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
   this->_drawSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
   this->_sidesVao->bind();
-  if(this->_useStrips)
+  if(this->_params.useStrips)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,0,4,GLsizei(this->_nofEdges*this->_maxMultiplicity));
   else
     glDrawArraysInstanced(GL_TRIANGLES,0,6,GLsizei(this->_nofEdges*this->_maxMultiplicity));
