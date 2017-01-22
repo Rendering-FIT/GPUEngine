@@ -33,6 +33,7 @@ set(APP_SOURCES
   RSSVTiles.cpp
   VSSV.cpp
   DrawPrimitive.cpp
+  ShadowVolumes.cpp
   )
 
 set(APP_INCLUDES
@@ -57,6 +58,8 @@ set(APP_INCLUDES
   VSSVShaders.h
   DrawPrimitive.h
   ProgramExtension.h
+  ShadowVolumes.h
+  ShadowVolumesShaders.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})

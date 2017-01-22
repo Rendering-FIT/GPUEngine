@@ -5,6 +5,7 @@
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geGL/OpenGLCommands.h>
 #include<geGL/OpenGLContext.h>
+#include<geGL/StaticCalls.h>
 
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
@@ -67,7 +68,6 @@ class RenderList final: public RenderNode{
 };
 
 struct Application{
-  std::shared_ptr<ge::gl::Context           >gl               = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
   std::shared_ptr<ge::ad::SDLWindow         >window           = nullptr;
   std::shared_ptr<ge::gl::VertexArray       >emptyVAO         = nullptr;
@@ -99,18 +99,11 @@ struct Application{
   bool        zfail               = true ;
   size_t      maxMultiplicity     = 2    ;
 
-  CubeShadowMappingParams cubeSMParams;
-  CSSVParams              cssvParams  ;
-  VSSVParams              vssvParams  ;
-
-  size_t      sintornShadowFrustumsPerWorkGroup = 1    ;
-  float       sintornBias                       = 0.01f;
-  bool        sintornDiscardBackFacing          = true ;
-
-  size_t      rssvComputeSilhouetteWGS    = 64   ;
-  bool        rssvLocalAtomic             = true ;
-  bool        rssvCullSides               = false;
-  size_t      rssvSilhouettesPerWorkgroup = 1    ;
+  CubeShadowMappingParams cubeSMParams ;
+  CSSVParams              cssvParams   ;
+  VSSVParams              vssvParams   ;
+  SintornParams           sintornParams;
+  RSSVParams              rssvParams   ;
 
   std::string testName                 = ""           ;
   std::string testFlyKeyFileName       = ""           ;
@@ -162,7 +155,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
   this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
 
-  this->useShadows          = !arg->isPresent("--no-shadows",   "name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
+  this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                              );
   this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                            );
   this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
 
@@ -185,14 +178,14 @@ void Application::parseArguments(int argc,char*argv[]){
   this->vssvParams.useAllOppositeVertices = arg->geti32("--vssv-useAll"      ,0,"use all opposite vertices (even empty) 0/1"         );
   this->vssvParams.drawCapsSeparately     = arg->geti32("--vssv-capsSeparate",0,"draw caps using two draw calls"                     );
 
-  this->sintornShadowFrustumsPerWorkGroup = arg->geti32("--sintorn-frustumsPerWorkgroup",1    ,"nof triangles solved by work group"                                              );
-  this->sintornBias                       = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
-  this->sintornDiscardBackFacing          = arg->geti32("--sintorn-discardBackFacing"   ,1    ,"discard light back facing fragments from hierarchical depth texture construction");
+  this->sintornParams.shadowFrustaPerWorkGroup = arg->geti32("--sintorn-frustumsPerWorkgroup",1    ,"nof triangles solved by work group"                                              );
+  this->sintornParams.bias                     = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
+  this->sintornParams.discardBackFacing        = arg->geti32("--sintorn-discardBackFacing"   ,1    ,"discard light back facing fragments from hierarchical depth texture construction");
 
-  this->rssvComputeSilhouetteWGS    = arg->geti32("--rssw-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
-  this->rssvLocalAtomic             = arg->geti32("--rssw-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
-  this->rssvCullSides               = arg->geti32("--rssw-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
-  this->rssvSilhouettesPerWorkgroup = arg->geti32("--rssw-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
+  this->rssvParams.computeSilhouetteWGS    = arg->geti32("--rssw-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
+  this->rssvParams.localAtomic             = arg->geti32("--rssw-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
+  this->rssvParams.cullSides               = arg->geti32("--rssw-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
+  this->rssvParams.silhouettesPerWorkgroup = arg->geti32("--rssw-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -222,16 +215,15 @@ bool Application::init(int argc,char*argv[]){
   this->mainLoop->addWindow("primaryWindow",this->window);
   this->window->makeCurrent("rendering");
   ge::gl::init(SDL_GL_GetProcAddress);
-  this->gl = ge::gl::getDefaultContext();
   ge::gl::setHighDebugMessage();
 
-  this->gl->glEnable(GL_DEPTH_TEST);
-  this->gl->glDepthFunc(GL_LEQUAL);
-  this->gl->glDisable(GL_CULL_FACE);
-  this->gl->glClearColor(0,0,0,1);
+  ge::gl::glEnable(GL_DEPTH_TEST);
+  ge::gl::glDepthFunc(GL_LEQUAL);
+  ge::gl::glDisable(GL_CULL_FACE);
+  ge::gl::glClearColor(0,0,0,1);
 
   if(this->wavefrontSize==0){
-    std::string renderer = std::string((char*)this->gl->glGetString(GL_RENDERER));
+    std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
     if     (renderer.find("AMD")!=std::string::npos)
       this->wavefrontSize = 64;
     else if(renderer.find("NVIDIA")!=std::string::npos)
@@ -289,11 +281,9 @@ bool Application::init(int argc,char*argv[]){
         this->gBuffer->depth,
         this->gBuffer->normal,
         this->model,
-        64,
-        this->sintornShadowFrustumsPerWorkGroup,
-        this->sintornBias,
-        this->sintornDiscardBackFacing,
-        this->shadowMask);
+        this->wavefrontSize,
+        this->shadowMask,
+        this->sintornParams);
   else if(this->methodName=="rssv")
     this->shadowMethod = std::make_shared<RSSV>(
         this->windowSize,
@@ -301,10 +291,7 @@ bool Application::init(int argc,char*argv[]){
         this->gBuffer->depth,
         this->model,
         this->maxMultiplicity,
-        this->rssvComputeSilhouetteWGS,
-        this->rssvLocalAtomic,
-        this->rssvCullSides,
-        this->rssvSilhouettesPerWorkgroup);
+        this->rssvParams);
   else if(this->methodName=="vssv")
     this->shadowMethod = std::make_shared<VSSV>(
         this->maxMultiplicity,
@@ -334,16 +321,17 @@ bool Application::init(int argc,char*argv[]){
 
   this->drawSceneCmd = std::make_shared<RenderList>();
   auto cmdList = std::dynamic_pointer_cast<RenderList>(this->drawSceneCmd);
-  cmdList->add(std::bind(&ge::gl::Context::glViewport,this->gl,0,0,this->windowSize.x,this->windowSize.y));
-  cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_DEPTH_TEST));
-  cmdList->add(std::bind(&ge::gl::Context::glEnable,this->gl,GL_POLYGON_OFFSET_FILL));
-  cmdList->add(std::bind(&ge::gl::Context::glPolygonOffset,this->gl,0,0));
-  cmdList->add([this]{this->gBuffer->begin();});
-  cmdList->add(std::bind(&ge::gl::Context::glClear,this->gl,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
-  cmdList->add([this]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
-  cmdList->add([this]{this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());});
-  cmdList->add([this]{this->gBuffer->end();});
-  cmdList->add(std::bind(&ge::gl::Context::glDisable,this->gl,GL_POLYGON_OFFSET_FILL));
+  cmdList->add(std::bind(&ge::gl::glViewport,0,0,this->windowSize.x,this->windowSize.y));
+  cmdList->add(std::bind(&ge::gl::glEnable,GL_DEPTH_TEST));
+  cmdList->add(std::bind(&ge::gl::glEnable,GL_POLYGON_OFFSET_FILL));
+  cmdList->add(std::bind(&ge::gl::glPolygonOffset,0,0));
+  cmdList->add([&]{this->gBuffer->begin();});
+  cmdList->add(std::bind(&ge::gl::glClear,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
+  cmdList->add([&]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
+  cmdList->add([&]{this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());});
+  cmdList->add([&]{this->gBuffer->end();});
+  cmdList->add(std::bind(&ge::gl::glDisable,GL_POLYGON_OFFSET_FILL));
+
   return true;
 }
 
@@ -370,7 +358,7 @@ void Application::drawScene(){
 
 
   if(this->timeStamper)this->timeStamper->stamp("");
-  this->gl->glDisable(GL_DEPTH_TEST);
+  ge::gl::glDisable(GL_DEPTH_TEST);
   this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0,0,0,1)),this->useShadows);
   if(this->timeStamper)this->timeStamper->end("shading");
 }

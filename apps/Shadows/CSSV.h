@@ -23,7 +23,8 @@ class CSSV: public ShadowMethod{
         std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
         CSSVParams                      const&params         );
     virtual ~CSSV();
-    virtual void create(glm::vec4 const&lightPosition,
+    virtual void create(
+        glm::vec4 const&lightPosition,
         glm::mat4 const&view,
         glm::mat4 const&projection)override;
   protected:
@@ -32,22 +33,32 @@ class CSSV: public ShadowMethod{
     std::shared_ptr<ge::gl::Framebuffer>_maskFbo          = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_maskVao          = nullptr;
 
-    std::shared_ptr<ge::gl::Program>    _computeSides     = nullptr;
-    std::shared_ptr<ge::gl::Program>    _drawSides        = nullptr;
-    std::shared_ptr<ge::gl::Buffer>     _adjacency        = nullptr;
-    std::shared_ptr<ge::gl::Buffer>     _sillhouettes     = nullptr;
-    std::shared_ptr<ge::gl::Buffer>     _dibo             = nullptr;
-    std::shared_ptr<ge::gl::VertexArray>_sidesVao         = nullptr;
-    size_t                              _nofEdges         = 0      ;
-    size_t                              _nofTriangles     = 0      ;
-    bool                                _zfail            = true   ;
+    std::shared_ptr<ge::gl::Program>    _computeSidesProgram = nullptr;
+    std::shared_ptr<ge::gl::Program>    _drawSidesProgram    = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _adjacency           = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _sillhouettes        = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _dibo                = nullptr;
+    std::shared_ptr<ge::gl::VertexArray>_sidesVao            = nullptr;
+    size_t                              _nofEdges            = 0      ;
+    size_t                              _nofTriangles        = 0      ;
+    bool                                _zfail               = true   ;
     CSSVParams                          _params                    ;
 
-    std::shared_ptr<ge::gl::Program>    _drawCaps         = nullptr;
+    std::shared_ptr<ge::gl::Program>    _drawCapsProgram  = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _caps             = nullptr;
 
     std::shared_ptr<ge::gl::Program>    _blit             = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_emptyVao         = nullptr;
     std::shared_ptr<TimeStamp>_timeStamper = nullptr;
+    void _computeSides(glm::vec4 const&lightPosition);
+    void _drawSides(
+        glm::vec4 const&lightPosition,
+        glm::mat4 const&view,
+        glm::mat4 const&projection);
+    void _drawCaps(
+        glm::vec4 const&lightPosition,
+        glm::mat4 const&view,
+        glm::mat4 const&projection);
+
 };
