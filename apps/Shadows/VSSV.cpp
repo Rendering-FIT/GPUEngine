@@ -324,7 +324,7 @@ VSSV::VSSV(
         _drawCapsVertexShaderSrc));
 
   this->_emptyVao = std::make_shared<ge::gl::VertexArray>();
-#include"CSSVShaders.h"
+#include"ShadowVolumesShaders.h"
   this->_blitProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,blitVPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,blitFPSrc));

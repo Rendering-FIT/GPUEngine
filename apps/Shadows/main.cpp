@@ -96,9 +96,9 @@ struct Application{
 
   size_t      wavefrontSize       = 0;
 
-  bool        zfail               = true ;
   size_t      maxMultiplicity     = 2    ;
 
+  ShadowVolumesParams     svParams     ;
   CubeShadowMappingParams cubeSMParams ;
   CSSVParams              cssvParams   ;
   VSSVParams              vssvParams   ;
@@ -162,7 +162,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
   this->maxMultiplicity     = arg->getu32("--maxMultiplicity" ,2 ,"max number of triangles that share the same edge"        );
-  this->zfail               = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
+  this->svParams.zfail      = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
 
   this->cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
   this->cubeSMParams.near       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
@@ -268,12 +268,12 @@ bool Application::init(int argc,char*argv[]){
         this->cubeSMParams);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(
-        this->maxMultiplicity,
-        this->zfail,
         this->windowSize,
-        this->gBuffer->depth,
         this->model,
+        this->gBuffer->depth,
         this->shadowMask,
+        this->svParams,
+        this->maxMultiplicity,
         this->cssvParams);
   else if(this->methodName=="sintorn")
     this->shadowMethod = std::make_shared<Sintorn>(
@@ -295,7 +295,7 @@ bool Application::init(int argc,char*argv[]){
   else if(this->methodName=="vssv")
     this->shadowMethod = std::make_shared<VSSV>(
         this->maxMultiplicity,
-        this->zfail,
+        this->svParams.zfail,
         this->windowSize,
         this->gBuffer->depth,
         this->model,
