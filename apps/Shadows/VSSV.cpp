@@ -266,29 +266,19 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
 }
 
 VSSV::VSSV(
-    size_t                          const&maxMultiplicity   ,
-    bool                            const&zfail             ,
-    glm::uvec2                      const&windowSize        ,
-    std::shared_ptr<ge::gl::Texture>const&depth             ,
-    std::shared_ptr<Model>          const&model             ,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask        ,
-    VSSVParams                      const&params            ):
-  _windowSize(windowSize),
-  _zfail(zfail),
-  _params(params)
+    glm::uvec2                      const&windowSize     ,
+    std::shared_ptr<Model>          const&model          ,
+    std::shared_ptr<ge::gl::Texture>const&depth          ,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+    ShadowVolumesParams             const&svParams       ,
+    size_t                          const&maxMultiplicity,
+    VSSVParams                      const&params         ):
+  ShadowVolumes(depth     ,shadowMask,svParams),
+  _windowSize  (windowSize                    ),
+  _params      (params                        )
 {
   assert(this!=nullptr);
   this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
-
-  this->_fbo = std::make_shared<ge::gl::Framebuffer>();
-  this->_fbo->attachTexture(GL_DEPTH_ATTACHMENT,depth);
-  this->_fbo->attachTexture(GL_STENCIL_ATTACHMENT,depth);
-  assert(this->_fbo->check());
-
-  this->_maskFbo = std::make_shared<ge::gl::Framebuffer>();
-  this->_maskFbo->attachTexture(GL_STENCIL_ATTACHMENT,depth);
-  this->_maskFbo->attachTexture(GL_COLOR_ATTACHMENT0,shadowMask);
-  this->_maskFbo->drawBuffers(1,GL_COLOR_ATTACHMENT0);
 
   //compute adjacency of the model
   std::vector<float>vertices;
@@ -311,9 +301,9 @@ VSSV::VSSV(
   this->_drawSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
         "#version 450\n",
-        this->_params.usePlanes?ge::gl::Shader::define("USE_PLANES_INSTEAD_OF_OPPOSITE_VERTICES"):"",
-        this->_params.useStrips?ge::gl::Shader::define("USE_TRIANGLE_STRIPS"):"",
-        this->_params.useAllOppositeVertices   ?ge::gl::Shader::define("USE_ALL_OPPOSITE_VERTICES"):"",
+        this->_params.usePlanes             ?ge::gl::Shader::define("USE_PLANES_INSTEAD_OF_OPPOSITE_VERTICES"):"",
+        this->_params.useStrips             ?ge::gl::Shader::define("USE_TRIANGLE_STRIPS"                    ):"",
+        this->_params.useAllOppositeVertices?ge::gl::Shader::define("USE_ALL_OPPOSITE_VERTICES"              ):"",
         _drawSidesVertexShaderSrc));
 
   this->_createCapDataUsingPoints(adj);
@@ -322,27 +312,21 @@ VSSV::VSSV(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
         "#version 450\n",
         _drawCapsVertexShaderSrc));
-
-  this->_emptyVao = std::make_shared<ge::gl::VertexArray>();
-#include"ShadowVolumesShaders.h"
-  this->_blitProgram = std::make_shared<ge::gl::Program>(
-      std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,blitVPSrc),
-      std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,blitFPSrc));
 }
 
 VSSV::~VSSV(){}
 
-void VSSV::_drawSides(
-    glm::vec4 const&lightPosition,
-    glm::mat4 const&view         ,
-    glm::mat4 const&projection   ){
+void VSSV::drawSides(
+    glm::vec4 const&lightPosition   ,
+    glm::mat4 const&viewMatrix      ,
+    glm::mat4 const&projectionMatrix){
   assert(this!=nullptr);
   assert(this->_drawSidesProgram!=nullptr);
   assert(this->_sidesVao!=nullptr);
   this->_drawSidesProgram->use();
-  this->_drawSidesProgram->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
-  this->_drawSidesProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
-  this->_drawSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_drawSidesProgram->setMatrix4fv("viewMatrix"      ,glm::value_ptr(viewMatrix      ));
+  this->_drawSidesProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projectionMatrix));
+  this->_drawSidesProgram->set4fv      ("lightPosition"   ,glm::value_ptr(lightPosition   ));
   this->_sidesVao->bind();
   if(this->_params.useStrips)
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,0,4,GLsizei(this->_nofEdges*this->_maxMultiplicity));
@@ -351,17 +335,17 @@ void VSSV::_drawSides(
   this->_sidesVao->unbind();
 }
 
-void VSSV::_drawCaps(
+void VSSV::drawCaps(
     glm::vec4 const&lightPosition,
-    glm::mat4 const&view         ,
-    glm::mat4 const&projection   ){
+    glm::mat4 const&viewMatrix         ,
+    glm::mat4 const&projectionMatrix   ){
   assert(this!=nullptr);
   assert(this->_drawCapsProgram!=nullptr);
   assert(this->_capsVao!=nullptr);
   this->_drawCapsProgram->use();
-  this->_drawCapsProgram->setMatrix4fv("viewMatrix"      ,glm::value_ptr(view      ));
-  this->_drawCapsProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projection));
-  this->_drawCapsProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_drawCapsProgram->setMatrix4fv("viewMatrix"      ,glm::value_ptr(viewMatrix      ));
+  this->_drawCapsProgram->setMatrix4fv("projectionMatrix",glm::value_ptr(projectionMatrix));
+  this->_drawCapsProgram->set4fv      ("lightPosition"   ,glm::value_ptr(lightPosition   ));
   this->_capsVao->bind();
   size_t  const nofCapsPerTriangle = 2;
   GLuint  const nofInstances = GLuint(nofCapsPerTriangle * this->_nofTriangles);
@@ -369,68 +353,5 @@ void VSSV::_drawCaps(
   GLint   const firstVertex = 0;
   glDrawArraysInstanced(GL_TRIANGLES,firstVertex,nofVertices,nofInstances);
   this->_capsVao->unbind();
-}
-
-void VSSV::_blit(){
-  assert(this!=nullptr);
-  assert(this->_blitProgram!=nullptr);
-  assert(this->_maskFbo!=nullptr);
-  assert(this->_emptyVao!=nullptr);
-  glDisable(GL_DEPTH_TEST);
-  this->_maskFbo->bind();
-  glClear(GL_COLOR_BUFFER_BIT);
-  glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-  glStencilFunc(GL_EQUAL,0,0xff);
-  glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-  glDepthFunc(GL_ALWAYS);
-  glDepthMask(GL_FALSE);
-  this->_blitProgram->use();
-  this->_emptyVao->bind();
-  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
-  this->_emptyVao->unbind();
-  this->_maskFbo->unbind();
-}
-
-void VSSV::create(
-    glm::vec4 const&lightPosition,
-    glm::mat4 const&view         ,
-    glm::mat4 const&projection   ){
-  assert(this!=nullptr);
-  assert(this->_fbo!=nullptr);
-
-  if(this->timeStamp)this->timeStamp->stamp("");
-
-  this->_fbo->bind();
-  glEnable(GL_STENCIL_TEST);
-  glStencilFunc(GL_ALWAYS,0,0);
-
-  if(this->_zfail){
-    glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_INCR_WRAP,GL_KEEP);
-    glStencilOpSeparate(GL_BACK,GL_KEEP,GL_DECR_WRAP,GL_KEEP);
-  }else{
-    glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_KEEP,GL_INCR_WRAP);
-    glStencilOpSeparate(GL_BACK,GL_KEEP,GL_KEEP,GL_DECR_WRAP);
-  }
-  glDepthFunc(GL_LESS);
-  glDepthMask(GL_FALSE);
-  glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-
-  this->_drawSides(lightPosition,view,projection);
-  if(this->timeStamp)this->timeStamp->stamp("drawSides");
-
-  if(this->_zfail){
-    this->_drawCaps(lightPosition,view,projection);
-    if(this->timeStamp)this->timeStamp->stamp("drawCaps");
-  }
-  this->_fbo->unbind();
-
-  this->_blit();
-
-  glDepthFunc(GL_LESS);
-  glDisable(GL_STENCIL_TEST);
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-
-  if(this->timeStamp)this->timeStamp->stamp("blit");
 }
 

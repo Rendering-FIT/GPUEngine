@@ -3,7 +3,6 @@
 #include<geGL/geGL.h>
 #include<glm/glm.hpp>
 #include"ShadowVolumes.h"
-#include"ShadowMethod.h"
 #include"Model.h"
 #include"TimeStamp.h"
 
