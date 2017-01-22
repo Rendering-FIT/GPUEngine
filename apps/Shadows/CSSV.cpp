@@ -4,29 +4,19 @@
 #include<geCore/Dtemplates.h>
 
 CSSV::CSSV(
-    size_t                          const&maxMultiplicity,
-    bool                            const&zfail          ,
     glm::uvec2                      const&windowSize     ,
-    std::shared_ptr<ge::gl::Texture>const&depth          ,
     std::shared_ptr<Model>          const&model          ,
+    std::shared_ptr<ge::gl::Texture>const&depth          ,
     std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+    ShadowVolumesParams             const&svParams       ,
+    size_t                          const&maxMultiplicity,
     CSSVParams                      const&params         ):
-  _windowSize(windowSize),
-  _zfail(zfail),
-  _params(params)
+  ShadowVolumes(depth     ,shadowMask,svParams),
+  _windowSize  (windowSize                    ),
+  _params      (params                        )
 {
   assert(this!=nullptr);
   this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
-
-  this->_fbo = std::make_shared<ge::gl::Framebuffer>();
-  this->_fbo->attachTexture(GL_DEPTH_ATTACHMENT,depth);
-  this->_fbo->attachTexture(GL_STENCIL_ATTACHMENT,depth);
-  assert(this->_fbo->check());
-
-  this->_maskFbo = std::make_shared<ge::gl::Framebuffer>();
-  this->_maskFbo->attachTexture(GL_STENCIL_ATTACHMENT,depth);
-  this->_maskFbo->attachTexture(GL_COLOR_ATTACHMENT0,shadowMask);
-  this->_maskFbo->drawBuffers(1,GL_COLOR_ATTACHMENT0);
 
   std::vector<float>vertices;
   model->getVertices(vertices);
@@ -93,13 +83,6 @@ CSSV::CSSV(
       std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER,drawEPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER       ,drawFPSrc));
 
-
-  this->_emptyVao = std::make_shared<ge::gl::VertexArray>();
-  this->_blit = std::make_shared<ge::gl::Program>(
-      std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,blitVPSrc),
-      std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,blitFPSrc));
-
-
   this->_nofTriangles=adj->getNofTriangles();
   this->_caps = std::make_shared<ge::gl::Buffer>(sizeof(float)*4*3*this->_nofTriangles);
   Ptr=(float*)this->_caps->map();
@@ -118,12 +101,9 @@ CSSV::CSSV(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,capsVPSrc),
       std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,capsGPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,capsFPSrc));
-
-
 }
 
-CSSV::~CSSV(){
-}
+CSSV::~CSSV(){}
 
 void CSSV::_computeSides(glm::vec4 const&lightPosition){
   assert(this!=nullptr);
@@ -137,7 +117,6 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
   this->_computeSidesProgram->use();
   this->_computeSidesProgram->set1ui("numEdge",(uint32_t)this->_nofEdges);
   this->_computeSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
-  //this->_computeSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_adjacency->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_sillhouettes->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dibo->getId());
@@ -148,15 +127,19 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
   glFinish();
 }
 
-void CSSV::_drawSides(
-    glm::vec4 const&lightPosition,
-    glm::mat4 const&view,
-    glm::mat4 const&projection){
+void CSSV::drawSides(
+    glm::vec4 const&lightPosition   ,
+    glm::mat4 const&viewMatrix      ,
+    glm::mat4 const&projectionMatrix){
   assert(this!=nullptr);
   assert(this->_drawSidesProgram!=nullptr);
   assert(this->_sidesVao!=nullptr);
   assert(this->_dibo!=nullptr);
-  auto mvp = projection * view;
+
+  this->_computeSides(lightPosition);
+  if(this->timeStamp)this->timeStamp->stamp("compute");
+
+  auto mvp = projectionMatrix * viewMatrix;
   this->_drawSidesProgram->use();
   this->_drawSidesProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
   this->_drawSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
@@ -167,72 +150,19 @@ void CSSV::_drawSides(
   this->_sidesVao->unbind();
 }
 
-void CSSV::_drawCaps(
-    glm::vec4 const&lightPosition,
-    glm::mat4 const&view,
-    glm::mat4 const&projection){
+void CSSV::drawCaps(
+    glm::vec4 const&lightPosition   ,
+    glm::mat4 const&viewMatrix      ,
+    glm::mat4 const&projectionMatrix){
   assert(this!=nullptr);
   assert(this->_drawCapsProgram!=nullptr);
   assert(this->_capsVao!=nullptr);
-  auto mvp = projection * view;
+  auto mvp = projectionMatrix * viewMatrix;
   this->_drawCapsProgram->use();
   this->_drawCapsProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
   this->_drawCapsProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
   this->_capsVao->bind();
   glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
   this->_capsVao->unbind();
-}
-
-
-
-void CSSV::create(glm::vec4 const&lightPosition,
-    glm::mat4 const&view,
-    glm::mat4 const&projection){
-  if(this->timeStamp)this->timeStamp->stamp("");
-  this->_computeSides(lightPosition);
-  if(this->timeStamp)this->timeStamp->stamp("compute");
-
-  this->_fbo->bind();
-  glEnable(GL_STENCIL_TEST);
-  glStencilFunc(GL_ALWAYS,0,0);
-
-  if(this->_zfail){
-    glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_INCR_WRAP,GL_KEEP);
-    glStencilOpSeparate(GL_BACK,GL_KEEP,GL_DECR_WRAP,GL_KEEP);
-  }else{
-    glStencilOpSeparate(GL_FRONT,GL_KEEP,GL_KEEP,GL_INCR_WRAP);
-    glStencilOpSeparate(GL_BACK,GL_KEEP,GL_KEEP,GL_DECR_WRAP);
-  }
-  glDepthFunc(GL_LESS);
-  glDepthMask(GL_FALSE);
-  glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-  this->_drawSides(lightPosition,view,projection);
-  if(this->timeStamp)this->timeStamp->stamp("drawSides");
-
-  if(this->_zfail){
-    this->_drawCaps(lightPosition,view,projection);
-    if(this->timeStamp)this->timeStamp->stamp("drawCaps");
-  }
-  this->_fbo->unbind();
-
-  glDisable(GL_DEPTH_TEST);
-  this->_maskFbo->bind();
-  glClear(GL_COLOR_BUFFER_BIT);
-  glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-  glStencilFunc(GL_EQUAL,0,0xff);
-  glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-  glDepthFunc(GL_ALWAYS);
-  glDepthMask(GL_FALSE);
-  this->_blit->use();
-  this->_emptyVao->bind();
-  glDrawArrays(GL_TRIANGLE_STRIP,0,4);
-  this->_emptyVao->unbind();
-  this->_maskFbo->unbind();
-  glDepthFunc(GL_LESS);
-  glDisable(GL_STENCIL_TEST);
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-
-  if(this->timeStamp)this->timeStamp->stamp("blit");
 }
 
