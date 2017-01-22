@@ -294,12 +294,12 @@ bool Application::init(int argc,char*argv[]){
         this->rssvParams);
   else if(this->methodName=="vssv")
     this->shadowMethod = std::make_shared<VSSV>(
-        this->maxMultiplicity,
-        this->svParams.zfail,
         this->windowSize,
-        this->gBuffer->depth,
         this->model,
+        this->gBuffer->depth,
         this->shadowMask,
+        this->svParams,
+        this->maxMultiplicity,
         this->vssvParams);
   else
     this->useShadows = false;
