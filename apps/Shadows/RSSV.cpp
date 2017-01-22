@@ -19,16 +19,17 @@ const size_t     TILE_EDGE_SIZE = size_t(glm::sqrt(WAVEFRONT_SIZE));
 const glm::uvec2 TILE_SIZE      = glm::uvec2(uint32_t(TILE_EDGE_SIZE),uint32_t(TILE_EDGE_SIZE));
 
 RSSV::RSSV(
-    glm::uvec2                      const&windowSize             ,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask             ,
-    std::shared_ptr<ge::gl::Texture>const&depthTexture           ,
-    std::shared_ptr<Model>          const&model                  ,
-    size_t                          const&maxMultiplicity        ,
-    size_t                          const&computeSilhouetteWGS   ,
-    bool                            const&localAtomic            ,
-    bool                            const&cullSides              ,
-    size_t                          const&silhouettesPerWorkgroup
-    ):_windowSize(windowSize),_shadowMask(shadowMask),_depthTexture(depthTexture),_computeSilhouettesWGS(computeSilhouetteWGS),_silhouettesPerWorkgroup(silhouettesPerWorkgroup){
+    glm::uvec2                      const&windowSize     ,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+    std::shared_ptr<ge::gl::Texture>const&depthTexture   ,
+    std::shared_ptr<Model>          const&model          ,
+    size_t                          const&maxMultiplicity,
+    RSSVParams                      const&params         ):
+  _windowSize  (windowSize  ),
+  _shadowMask  (shadowMask  ),
+  _depthTexture(depthTexture),
+  _params      (params      )
+{
   assert(this!=nullptr);
   assert(
       (windowSize.x==8    && windowSize.y==8   ) ||
@@ -65,10 +66,10 @@ RSSV::RSSV(
 
 
   this->_computeSilhouettesProgram = makeComputeProgram(
-      defineComputeShaderHeader(computeSilhouetteWGS,WAVEFRONT_SIZE),
-      ge::gl::Shader::define("MAX_MULTIPLICITY",(int)maxMultiplicity),
-      ge::gl::Shader::define("LOCAL_ATOMIC"    ,(int)localAtomic    ),
-      ge::gl::Shader::define("CULL_SIDES"      ,(int)cullSides      ),
+      defineComputeShaderHeader(this->_params.computeSilhouetteWGS,WAVEFRONT_SIZE),
+      ge::gl::Shader::define("MAX_MULTIPLICITY",int(maxMultiplicity              )),
+      ge::gl::Shader::define("LOCAL_ATOMIC"    ,int(this->_params.localAtomic    )),
+      ge::gl::Shader::define("CULL_SIDES"      ,int(this->_params.cullSides      )),
       _computeSilhouettesSrc);
 
   std::vector<float>vertices;
@@ -182,7 +183,7 @@ void RSSV::_computeSilhouettes(glm::vec4 const&lightPosition){
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_edges->getId()                 );
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_silhouettes->getId()           );
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dispatchIndirectBuffer->getId());
-  glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_computeSilhouettesWGS),1,1);
+  glDispatchCompute(GLuint(ge::core::getDispatchSize(uint32_t(this->_nofEdges),uint32_t(this->_params.computeSilhouetteWGS))),1,1);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 

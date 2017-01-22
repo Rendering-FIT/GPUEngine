@@ -78,7 +78,7 @@ CSSV::CSSV(
 
 #include"CSSVShaders.h"
 
-  this->_computeSides = std::make_shared<ge::gl::Program>(
+  this->_computeSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
         "#version 450 core\n",
         ge::gl::Shader::define("WORKGROUP_SIZE_X",(int)this->_params.computeSidesWGS),
@@ -87,7 +87,7 @@ CSSV::CSSV(
         ge::gl::Shader::define("CULL_SIDES"      ,(int)this->_params.cullSides      ),
         computeSrc));
 
-  this->_drawSides=std::make_shared<ge::gl::Program>(
+  this->_drawSidesProgram=std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER         ,drawVPSrc),
       std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER   ,drawCPSrc),
       std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER,drawEPSrc),
@@ -114,7 +114,7 @@ CSSV::CSSV(
   this->_capsVao = std::make_shared<ge::gl::VertexArray>();
   this->_capsVao->addAttrib(this->_caps,0,4,GL_FLOAT);
 
-  this->_drawCaps = std::make_shared<ge::gl::Program>(
+  this->_drawCapsProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,capsVPSrc),
       std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,capsGPSrc),
       std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER,capsFPSrc));
@@ -125,18 +125,18 @@ CSSV::CSSV(
 CSSV::~CSSV(){
 }
 
-void CSSV::create(glm::vec4 const&lightPosition,
-    glm::mat4 const&view,
-    glm::mat4 const&projection){
-  auto mvp = projection*view;
-
-  if(this->timeStamp)this->timeStamp->stamp("");
+void CSSV::_computeSides(glm::vec4 const&lightPosition){
+  assert(this!=nullptr);
+  assert(this->_dibo!=nullptr);
+  assert(this->_computeSidesProgram!=nullptr);
+  assert(this->_adjacency!=nullptr);
+  assert(this->_sillhouettes!=nullptr);
   this->_dibo->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  this->_computeSides->use();
-  this->_computeSides->set1ui("numEdge",(uint32_t)this->_nofEdges);
-  this->_computeSides->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_computeSidesProgram->use();
+  this->_computeSidesProgram->set1ui("numEdge",(uint32_t)this->_nofEdges);
+  this->_computeSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
   //this->_computeSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_adjacency->getId());
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_sillhouettes->getId());
@@ -146,6 +146,50 @@ void CSSV::create(glm::vec4 const&lightPosition,
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   glFinish();
+}
+
+void CSSV::_drawSides(
+    glm::vec4 const&lightPosition,
+    glm::mat4 const&view,
+    glm::mat4 const&projection){
+  assert(this!=nullptr);
+  assert(this->_drawSidesProgram!=nullptr);
+  assert(this->_sidesVao!=nullptr);
+  assert(this->_dibo!=nullptr);
+  auto mvp = projection * view;
+  this->_drawSidesProgram->use();
+  this->_drawSidesProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
+  this->_drawSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_sidesVao->bind();
+  this->_dibo->bind(GL_DRAW_INDIRECT_BUFFER);
+  glPatchParameteri(GL_PATCH_VERTICES,2);
+  glDrawArraysIndirect(GL_PATCHES,NULL);
+  this->_sidesVao->unbind();
+}
+
+void CSSV::_drawCaps(
+    glm::vec4 const&lightPosition,
+    glm::mat4 const&view,
+    glm::mat4 const&projection){
+  assert(this!=nullptr);
+  assert(this->_drawCapsProgram!=nullptr);
+  assert(this->_capsVao!=nullptr);
+  auto mvp = projection * view;
+  this->_drawCapsProgram->use();
+  this->_drawCapsProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
+  this->_drawCapsProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
+  this->_capsVao->bind();
+  glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
+  this->_capsVao->unbind();
+}
+
+
+
+void CSSV::create(glm::vec4 const&lightPosition,
+    glm::mat4 const&view,
+    glm::mat4 const&projection){
+  if(this->timeStamp)this->timeStamp->stamp("");
+  this->_computeSides(lightPosition);
   if(this->timeStamp)this->timeStamp->stamp("compute");
 
   this->_fbo->bind();
@@ -162,27 +206,14 @@ void CSSV::create(glm::vec4 const&lightPosition,
   glDepthFunc(GL_LESS);
   glDepthMask(GL_FALSE);
   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
-  this->_drawSides->use();
-  this->_drawSides->setMatrix4fv("mvp",glm::value_ptr(mvp));
-  this->_drawSides->set4fv("lightPosition",glm::value_ptr(lightPosition));
-  this->_sidesVao->bind();
-  this->_dibo->bind(GL_DRAW_INDIRECT_BUFFER);
-  glPatchParameteri(GL_PATCH_VERTICES,2);
-  glDrawArraysIndirect(GL_PATCHES,NULL);
-  this->_sidesVao->unbind();
+  this->_drawSides(lightPosition,view,projection);
   if(this->timeStamp)this->timeStamp->stamp("drawSides");
 
   if(this->_zfail){
-    this->_drawCaps->use();
-    this->_drawCaps->setMatrix4fv("mvp",glm::value_ptr(mvp));
-    this->_drawCaps->set4fv("lightPosition",glm::value_ptr(lightPosition));
-    this->_capsVao->bind();
-    glDrawArrays(GL_TRIANGLES,0,(GLsizei)this->_nofTriangles*3);
-    this->_capsVao->unbind();
-
-    this->_fbo->unbind();
+    this->_drawCaps(lightPosition,view,projection);
     if(this->timeStamp)this->timeStamp->stamp("drawCaps");
   }
+  this->_fbo->unbind();
 
   glDisable(GL_DEPTH_TEST);
   this->_maskFbo->bind();
