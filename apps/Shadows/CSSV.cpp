@@ -145,14 +145,13 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
   this->_dibo->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  this->_computeSidesProgram->use();
-  this->_computeSidesProgram->set1ui("numEdge",(uint32_t)this->_nofEdges);
-  this->_computeSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_adjacency->getId());
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_sillhouettes->getId());
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dibo->getId());
-
-  glDispatchCompute((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_params.computeSidesWGS),1,1);
+  this->_computeSidesProgram
+    ->set1ui    ("numEdge"      ,uint32_t(this->_nofEdges)    )
+    ->set4fv    ("lightPosition",glm::value_ptr(lightPosition))
+    ->bindBuffer("IBuffer"      ,this->_adjacency             )
+    ->bindBuffer("OBuffer"      ,this->_sillhouettes          )
+    ->bindBuffer("Counter"      ,this->_dibo                  )
+    ->dispatch((GLuint)ge::core::getDispatchSize((uint32_t)this->_nofEdges,(uint32_t)this->_params.computeSidesWGS));
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   glFinish();
@@ -170,13 +169,15 @@ void CSSV::drawSides(
   this->_computeSides(lightPosition);
   if(this->timeStamp)this->timeStamp->stamp("compute");
 
-  auto mvp = projectionMatrix * viewMatrix;
-  this->_drawSidesProgram->use();
-  this->_drawSidesProgram->setMatrix4fv("mvp",glm::value_ptr(mvp));
-  this->_drawSidesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
   this->_sidesVao->bind();
+  auto mvp = projectionMatrix * viewMatrix;
+
+  this->_drawSidesProgram
+    ->setMatrix4fv("mvp"          ,glm::value_ptr(mvp          ))
+    ->set4fv      ("lightPosition",glm::value_ptr(lightPosition));
   this->_dibo->bind(GL_DRAW_INDIRECT_BUFFER);
   glPatchParameteri(GL_PATCH_VERTICES,2);
+  this->_drawSidesProgram->use();
   glDrawArraysIndirect(GL_PATCHES,NULL);
   this->_sidesVao->unbind();
 }
