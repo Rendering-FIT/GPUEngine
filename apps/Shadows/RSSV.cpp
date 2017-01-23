@@ -74,48 +74,61 @@ RSSV::RSSV(
 
   std::vector<float>vertices;
   model->getVertices(vertices);
-  auto adj = std::make_shared<Adjacency>(vertices.data(),vertices.size()/9,maxMultiplicity);
+  size_t const nofTriangles = vertices.size()/(verticesPerTriangle*componentsPerVertex3D);
+  auto adj = std::make_shared<Adjacency>(vertices.data(),nofTriangles,maxMultiplicity);
 
-  size_t numVer = 2+adj->getMaxMultiplicity();
-  this->_edges = std::make_shared<ge::gl::Buffer>(sizeof(float)*4*numVer*adj->getNofEdges());
+  size_t const nofVec4PerEdge = verticesPerEdge + adj->getMaxMultiplicity();
+  this->_edges = std::make_shared<ge::gl::Buffer>(sizeof(float)*componentsPerVertex4D*nofVec4PerEdge*adj->getNofEdges());
 
-  float*Ptr=(float*)this->_edges->map();
+  float      *dstPtr = (float      *)this->_edges->map();
+  float const*srcPtr = (float const*)adj->getVertices();
 
-  for(unsigned e=0;e<adj->getNofEdges();++e){
-    //A
-    for(int k=0;k<3;++k)
-      Ptr[(e*numVer+0)*4+k]=adj->getVertices()[adj->getEdge(e,0)+k];
-    Ptr[(e*numVer+0)*4+3]=(float)adj->getNofOpposite(e);
-    //B
-    for(int k=0;k<3;++k)
-      Ptr[(e*numVer+1)*4+k]=adj->getVertices()[adj->getEdge(e,1)+k];
-    Ptr[(e*numVer+1)*4+3]=1;
-    //O
-    for(unsigned o=0;o<adj->getNofOpposite(e);++o){
-      for(int k=0;k<3;++k)
-        Ptr[(e*numVer+2+o)*4+k]=adj->getVertices()[adj->getOpposite(e,o)+k];
-      Ptr[(e*numVer+2+o)*4+3]=1;
+  for(size_t e=0;e<adj->getNofEdges();++e){
+    auto dstEdgePtr             = dstPtr + e*nofVec4PerEdge*componentsPerVertex4D;
+    auto dstVertexAPtr          = dstEdgePtr;
+    auto dstVertexBPtr          = dstVertexAPtr + componentsPerVertex4D;
+    auto dstOppositeVerticesPtr = dstVertexBPtr + componentsPerVertex4D;
+
+    auto srcVertexAPtr          = srcPtr + adj->getEdge(e,0);
+    auto srcVertexBPtr          = srcPtr + adj->getEdge(e,1);
+
+    size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
+
+    std::memcpy(dstVertexAPtr,srcVertexAPtr,sizeofVertex3DInBytes);
+    dstVertexAPtr[3] = (float)adj->getNofOpposite(e);
+
+    std::memcpy(dstVertexBPtr,srcVertexBPtr,sizeofVertex3DInBytes);
+    dstVertexBPtr[3] = 1.f;
+
+    for(size_t o=0;o<adj->getNofOpposite(e);++o){
+      auto dstOppositeVertexPtr = dstOppositeVerticesPtr + o*componentsPerVertex4D;
+      auto srcOppositeVertexPtr = srcPtr + adj->getOpposite(e,o);
+      std::memcpy(dstOppositeVertexPtr,srcOppositeVertexPtr,sizeofVertex3DInBytes);
+      dstOppositeVertexPtr[3] = 1.f;
     }
-    for(size_t o=adj->getNofOpposite(e);o<adj->getMaxMultiplicity();++o){
-      for(int k=0;k<4;++k)
-        Ptr[(e*numVer+2+o)*4+k]=0;
-    }
+
+    size_t const nofEmptyOppositeVertices = adj->getMaxMultiplicity() - adj->getNofOpposite(e);
+    size_t const sizeofEmptyVerticesInBytes = sizeof(float)*componentsPerVertex4D*nofEmptyOppositeVertices;
+    auto dstEmptyOppositeVerticesPtr = dstOppositeVerticesPtr + adj->getNofOpposite(e)*componentsPerVertex4D;
+    std::memset(dstEmptyOppositeVerticesPtr,0,sizeofEmptyVerticesInBytes);
   }
   this->_edges->unmap();
   this->_nofEdges = adj->getNofEdges();
 
   this->_silhouettes=std::make_shared<ge::gl::Buffer>(
-      sizeof(float)*4*2*this->_nofEdges,
+      sizeof(float)*componentsPerVertex4D*2*this->_nofEdges,
       nullptr,GL_DYNAMIC_COPY);
   this->_silhouettes->clear(GL_R32F,GL_RED,GL_FLOAT);
 
-  this->_dispatchIndirectBuffer=std::make_shared<ge::gl::Buffer>(sizeof(uint32_t)*3);
-  unsigned*CPtr=(unsigned*)this->_dispatchIndirectBuffer->map();
-  CPtr[0]=0;
-  CPtr[1]=1;
-  CPtr[2]=1;
-  this->_dispatchIndirectBuffer->unmap();
-
+  struct DispatchIndirectCommand{
+    uint32_t nofWorkGroupsX = 0;
+    uint32_t nofWorkGroupsY = 0;
+    uint32_t nofWorkGroupsZ = 0;
+  };
+  DispatchIndirectCommand cmd;
+  cmd.nofWorkGroupsY = 1;
+  cmd.nofWorkGroupsZ = 1;
+  this->_dispatchIndirectBuffer=std::make_shared<ge::gl::Buffer>(sizeof(DispatchIndirectCommand),&cmd);
 
   /*
   this->_rasterizeProgram = makeComputeProgram(
@@ -177,13 +190,13 @@ void RSSV::_computeSilhouettes(glm::vec4 const&lightPosition){
   assert(this!=nullptr);
   this->_dispatchIndirectBuffer->clear(GL_R32UI,0,sizeof(unsigned),GL_RED_INTEGER,GL_UNSIGNED_INT);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  this->_computeSilhouettesProgram->use();
-  this->_computeSilhouettesProgram->set1ui("numEdge",(uint32_t)this->_nofEdges);
-  this->_computeSilhouettesProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER,0,this->_edges->getId()                 );
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER,1,this->_silhouettes->getId()           );
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER,2,this->_dispatchIndirectBuffer->getId());
-  glDispatchCompute(GLuint(ge::core::getDispatchSize(uint32_t(this->_nofEdges),uint32_t(this->_params.computeSilhouetteWGS))),1,1);
+  this->_computeSilhouettesProgram
+    ->set1ui    ("numEdge"               ,uint32_t(this->_nofEdges)    )
+    ->set4fv    ("lightPosition"         ,glm::value_ptr(lightPosition))
+    ->bindBuffer("edges"                 ,this->_edges                 )
+    ->bindBuffer("silhouettes"           ,this->_silhouettes           )
+    ->bindBuffer("dispatchIndirectBuffer",this->_dispatchIndirectBuffer)
+    ->dispatch(GLuint(ge::core::getDispatchSize(this->_nofEdges,this->_params.computeSilhouetteWGS)));
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 

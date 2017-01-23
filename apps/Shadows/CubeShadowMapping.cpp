@@ -52,9 +52,10 @@ CubeShadowMapping::CubeShadowMapping(
 
 CubeShadowMapping::~CubeShadowMapping(){}
 
-void CubeShadowMapping::create(glm::vec4 const&lightPosition,
-    glm::mat4 const&,
-    glm::mat4 const&){
+void CubeShadowMapping::create(
+    glm::vec4 const&lightPosition,
+    glm::mat4 const&             ,
+    glm::mat4 const&             ){
   if(this->timeStamp)this->timeStamp->stamp("");
   glEnable(GL_POLYGON_OFFSET_FILL);
   glPolygonOffset(2.5,10);

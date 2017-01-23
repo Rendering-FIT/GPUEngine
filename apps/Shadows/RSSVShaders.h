@@ -122,9 +122,9 @@ const std::string _computeSilhouettesSrc = R".(
 
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
-layout(std430,binding=0)buffer Edges                 {vec4 edges                 [ ];};
+layout(std430,binding=0)buffer Edges                 {vec4  edges                 [ ];};
 layout(std430,binding=1)buffer Silhouettes           {float silhouettes           [ ];};
-layout(std430,binding=2)buffer DispatchIndirectBuffer{uint dispatchIndirectBuffer[3];};
+layout(std430,binding=2)buffer DispatchIndirectBuffer{uint  dispatchIndirectBuffer[3];};
 
 uniform uint numEdge=0;
 uniform vec4 lightPosition;

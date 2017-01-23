@@ -31,42 +31,6 @@
 #include"RSSV.h"
 #include"VSSV.h"
 
-class RenderNode{
-  public:
-    virtual void operator()() = 0;
-    virtual ~RenderNode(){}
-};
-
-class RenderFunction final: public RenderNode{
-  public:
-    RenderFunction(std::function<void()>const&fce):impl(fce){}
-    std::function<void()>impl;
-    virtual void operator()()override{
-      assert(this);
-      assert(this->impl);
-      this->impl();
-    }
-    virtual ~RenderFunction()override{}
-};
-
-class RenderList final: public RenderNode{
-  public:
-    std::vector<std::shared_ptr<RenderNode>>childs;
-    virtual void operator()()override{
-      assert(this);
-      for(auto const&x:this->childs){
-        assert(x);
-        (*x)();
-      }
-    }
-    void add(std::function<void()>const&fce){
-      assert(this);
-      assert(fce);
-      this->childs.emplace_back(std::make_shared<RenderFunction>(fce));
-    }
-    virtual ~RenderList()override{}
-};
-
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
   std::shared_ptr<ge::ad::SDLWindow         >window           = nullptr;
@@ -80,7 +44,6 @@ struct Application{
   std::shared_ptr<ge::gl::Texture           >shadowMask       = nullptr;
   std::shared_ptr<ShadowMethod              >shadowMethod     = nullptr;
   std::shared_ptr<DrawPrimitive             >drawPrimitive    = nullptr;
-  std::shared_ptr<RenderNode                >drawSceneCmd     = nullptr;
   std::shared_ptr<TimeStamp                 >timeStamper      = nullptr;
   glm::uvec2  windowSize          = glm::uvec2(512u,512u);
 
@@ -118,7 +81,10 @@ struct Application{
 
   bool init(int argc,char*argv[]);
   void parseArguments(int argc,char*argv[]);
+  void initWavefrontSize();
+  void initCamera();
   void draw();
+  void measure();
   void drawScene();
   bool mouseMove(SDL_Event const&event);
   std::map<SDL_Keycode,bool>keyDown;
@@ -202,6 +168,34 @@ void Application::parseArguments(int argc,char*argv[]){
   }
 }
 
+void Application::initWavefrontSize(){
+  assert(this!=nullptr);
+  if(this->wavefrontSize==0){
+    std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
+    if     (renderer.find("AMD")!=std::string::npos)
+      this->wavefrontSize = 64;
+    else if(renderer.find("NVIDIA")!=std::string::npos)
+      this->wavefrontSize = 32;
+    else{
+      std::cerr<<"WARNING: renderer is not NVIDIA or AMD, setting wavefrontSize to 32"<<std::endl;
+      this->wavefrontSize = 32;
+    }
+  }
+}
+
+void Application::initCamera(){
+  assert(this!=nullptr);
+  if     (this->cameraType == "orbit")
+    this->cameraTransform = std::make_shared<ge::util::OrbitCamera>();
+  else if(this->cameraType == "free")
+    this->cameraTransform = std::make_shared<ge::util::FreeLookCamera>();
+  else{
+    std::cerr<<"ERROR: --camera-type is incorrect"<<std::endl;
+    exit(0);
+  }
+  this->cameraProjection = std::make_shared<ge::util::PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
+}
+
 bool Application::init(int argc,char*argv[]){
   this->parseArguments(argc,argv);
 
@@ -222,31 +216,12 @@ bool Application::init(int argc,char*argv[]){
   ge::gl::glDisable(GL_CULL_FACE);
   ge::gl::glClearColor(0,0,0,1);
 
-  if(this->wavefrontSize==0){
-    std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
-    if     (renderer.find("AMD")!=std::string::npos)
-      this->wavefrontSize = 64;
-    else if(renderer.find("NVIDIA")!=std::string::npos)
-      this->wavefrontSize = 32;
-    else{
-      std::cerr<<"WARNING: renderer is not NVIDIA or AMD, setting wavefrontSize to 32"<<std::endl;
-      this->wavefrontSize = 32;
-    }
-  }
+  this->initWavefrontSize();
 
   if(this->testName == "fly" || this->testName == "grid")
     this->cameraType = "free";
 
-  if     (this->cameraType == "orbit")
-    this->cameraTransform = std::make_shared<ge::util::OrbitCamera>();
-  else if(this->cameraType == "free")
-    this->cameraTransform = std::make_shared<ge::util::FreeLookCamera>();
-  else{
-    std::cerr<<"ERROR: --camera-type is incorrect"<<std::endl;
-    exit(0);
-  }
-
-  this->cameraProjection = std::make_shared<ge::util::PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
+  this->initCamera();
 
   this->gBuffer = std::make_shared<GBuffer>(this->windowSize.x,this->windowSize.y);
 
@@ -260,45 +235,45 @@ bool Application::init(int argc,char*argv[]){
 
   if     (this->methodName=="cubeShadowMapping")
     this->shadowMethod = std::make_shared<CubeShadowMapping>(
-        this->shadowMask,
-        this->windowSize,
-        this->gBuffer->position,
+        this->shadowMask              ,
+        this->windowSize              ,
+        this->gBuffer->position       ,
         this->renderModel->nofVertices,
-        this->renderModel->vertices,
-        this->cubeSMParams);
+        this->renderModel->vertices   ,
+        this->cubeSMParams            );
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(
-        this->shadowMask,
-        this->model,
-        this->gBuffer->depth,
-        this->svParams,
+        this->shadowMask     ,
+        this->model          ,
+        this->gBuffer->depth ,
+        this->svParams       ,
         this->maxMultiplicity,
-        this->cssvParams);
+        this->cssvParams     );
   else if(this->methodName=="sintorn")
     this->shadowMethod = std::make_shared<Sintorn>(
-        this->shadowMask,
-        this->windowSize,
-        this->gBuffer->depth,
+        this->shadowMask     ,
+        this->windowSize     ,
+        this->gBuffer->depth ,
         this->gBuffer->normal,
-        this->model,
-        this->wavefrontSize,
-        this->sintornParams);
+        this->model          ,
+        this->wavefrontSize  ,
+        this->sintornParams  );
   else if(this->methodName=="rssv")
     this->shadowMethod = std::make_shared<RSSV>(
-        this->shadowMask,
-        this->windowSize,
-        this->gBuffer->depth,
-        this->model,
+        this->shadowMask     ,
+        this->windowSize     ,
+        this->gBuffer->depth ,
+        this->model          ,
         this->maxMultiplicity,
-        this->rssvParams);
+        this->rssvParams     );
   else if(this->methodName=="vssv")
     this->shadowMethod = std::make_shared<VSSV>(
-        this->shadowMask,
-        this->model,
-        this->gBuffer->depth,
-        this->svParams,
+        this->shadowMask     ,
+        this->model          ,
+        this->gBuffer->depth ,
+        this->svParams       ,
         this->maxMultiplicity,
-        this->vssvParams);
+        this->vssvParams     );
   else
     this->useShadows = false;
 
@@ -317,43 +292,24 @@ bool Application::init(int argc,char*argv[]){
 
   this->drawPrimitive = std::make_shared<DrawPrimitive>(this->windowSize);
 
-  this->drawSceneCmd = std::make_shared<RenderList>();
-  auto cmdList = std::dynamic_pointer_cast<RenderList>(this->drawSceneCmd);
-  cmdList->add(std::bind(&ge::gl::glViewport,0,0,this->windowSize.x,this->windowSize.y));
-  cmdList->add(std::bind(&ge::gl::glEnable,GL_DEPTH_TEST));
-  cmdList->add(std::bind(&ge::gl::glEnable,GL_POLYGON_OFFSET_FILL));
-  cmdList->add(std::bind(&ge::gl::glPolygonOffset,0,0));
-  cmdList->add([&]{this->gBuffer->begin();});
-  cmdList->add(std::bind(&ge::gl::glClear,GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT));
-  cmdList->add([&]{this->shadowMask->clear(0,GL_RED,GL_FLOAT);});
-  cmdList->add([&]{this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());});
-  cmdList->add([&]{this->gBuffer->end();});
-  cmdList->add(std::bind(&ge::gl::glDisable,GL_POLYGON_OFFSET_FILL));
-
   return true;
 }
 
 void Application::drawScene(){
   if(this->timeStamper)this->timeStamper->begin();
-  (*this->drawSceneCmd)();
-  /*
-  this->gl->glViewport(0,0,this->windowSize.x,this->windowSize.y);
-  this->gl->glEnable(GL_DEPTH_TEST);
-  this->gl->glEnable(GL_POLYGON_OFFSET_FILL);
-  this->gl->glPolygonOffset(0,100);
+
+  ge::gl::glViewport(0,0,this->windowSize.x,this->windowSize.y);
+  ge::gl::glEnable(GL_DEPTH_TEST);
   this->gBuffer->begin();
-  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+  ge::gl::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
   this->shadowMask->clear(0,GL_RED,GL_FLOAT);
   this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
   this->gBuffer->end();
-  this->gl->glDisable(GL_POLYGON_OFFSET_FILL);
-  // */
-  if(this->timeStamper)this->timeStamper->stamp("gBuffer");
 
+  if(this->timeStamper)this->timeStamper->stamp("gBuffer");
 
   if(this->shadowMethod)
     this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
-
 
   if(this->timeStamper)this->timeStamper->stamp("");
   ge::gl::glDisable(GL_DEPTH_TEST);
@@ -361,62 +317,58 @@ void Application::drawScene(){
   if(this->timeStamper)this->timeStamper->end("shading");
 }
 
-std::string vec3Tostr(glm::vec3 const&v){
-  std::stringstream ss;
-  ss<<v.x<<","<<v.y<<","<<v.z;
-  return ss.str();
+void Application::measure(){
+  assert(this!=nullptr);
+  if(this->testFlyKeyFileName==""){
+    ge::core::printError(GE_CORE_FCENAME,"camera path file is empty");
+    this->mainLoop->removeWindow(this->window->getId());
+    return;
+  }
+  auto cameraPath = std::make_shared<CameraPath>(false,this->testFlyKeyFileName);
+  std::map<std::string,float>measurement;
+  this->timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
+      for(size_t i=0;i<names.size();++i)
+      if(names[i]!=""){
+      if(measurement.count(names[i])==0)measurement[names[i]]=0.f;
+      measurement[names[i]]+=values[i];
+      }});
+
+  std::vector<std::vector<std::string>>csv;
+  for(size_t k=0;k<this->testFlyLength;++k){
+    auto keypoint = cameraPath->getKeypoint(float(k)/float(this->testFlyLength));
+    auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
+    flc->setPosition(keypoint.position);
+    flc->setRotation(keypoint.viewVector,keypoint.upVector);
+
+    for(size_t f=0;f<this->testFramesPerMeasurement;++f)
+      this->drawScene();
+
+    std::vector<std::string>line;
+    if(csv.size()==0){
+      line.push_back("frame");
+      for(auto const&x:measurement)
+        if(x.first!="")line.push_back(x.first);
+      csv.push_back(line);
+      line.clear();
+    }
+    line.push_back(ge::core::value2str(k));
+    for(auto const&x:measurement)
+      if(x.first!="")
+        line.push_back(ge::core::value2str(x.second/float(this->testFramesPerMeasurement)));
+    csv.push_back(line);
+    measurement.clear();
+    this->window->swap();
+  }
+  std::string output = this->testOutputName+".csv";
+  saveCSV(output,csv);
+  this->mainLoop->removeWindow(this->window->getId());
 }
 
 void Application::draw(){
   assert(this!=nullptr);
-  if      (this->testName == "fly"){
-    if(this->testFlyKeyFileName==""){
-      ge::core::printError(GE_CORE_FCENAME,"camera path file is empty");
-      this->mainLoop->removeWindow(this->window->getId());
-      return;
-    }
-    auto cameraPath = std::make_shared<CameraPath>(false,this->testFlyKeyFileName);
-    std::map<std::string,float>measurement;
-    this->timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
-        for(size_t i=0;i<names.size();++i)
-          if(names[i]!=""){
-            if(measurement.count(names[i])==0)measurement[names[i]]=0.f;
-            measurement[names[i]]+=values[i];
-          }});
 
-
-    std::vector<std::vector<std::string>>csv;
-    for(size_t k=0;k<this->testFlyLength;++k){
-      auto keypoint = cameraPath->getKeypoint(float(k)/float(this->testFlyLength));
-      auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
-      flc->setPosition(keypoint.position);
-      flc->setRotation(keypoint.viewVector,keypoint.upVector);
-      for(size_t f=0;f<this->testFramesPerMeasurement;++f){
-        this->drawScene();
-      }
-
-      std::vector<std::string>line;
-      if(csv.size()==0){
-        line.push_back("frame");
-        for(auto const&x:measurement)
-          if(x.first!="")line.push_back(x.first);
-        csv.push_back(line);
-        line.clear();
-      }
-      line.push_back(ge::core::value2str(k));
-      for(auto const&x:measurement)
-        if(x.first!=""){
-          std::stringstream ss;
-          ss<<x.second/float(this->testFramesPerMeasurement);
-          line.push_back(ss.str());
-        }
-      csv.push_back(line);
-      measurement.clear();
-      this->window->swap();
-    }
-    std::string output = this->testOutputName+".csv";
-    saveCSV(output,csv);
-    this->mainLoop->removeWindow(this->window->getId());
+  if(this->testName == "fly"){
+    this->measure();
     return;
   }
 
@@ -430,24 +382,24 @@ void Application::draw(){
   //this->drawPrimitive->drawTexture(this->gBuffer->normal);
   //*
   if(this->methodName == "sintorn"){
-     auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
-     if(this->keyDown['h'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
-     if(this->keyDown['j'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
-     if(this->keyDown['k'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
-     if(this->keyDown['l'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
+    auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
+    if(this->keyDown['h'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
+    if(this->keyDown['j'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
+    if(this->keyDown['k'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
+    if(this->keyDown['l'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
 
-     if(this->keyDown['v'])sintorn->drawHST(0);
-     if(this->keyDown['b'])sintorn->drawHST(1);
-     if(this->keyDown['n'])sintorn->drawHST(2);
-     if(this->keyDown['m'])sintorn->drawHST(3);
-     if(this->keyDown[','])sintorn->drawFinalStencilMask();
+    if(this->keyDown['v'])sintorn->drawHST(0);
+    if(this->keyDown['b'])sintorn->drawHST(1);
+    if(this->keyDown['n'])sintorn->drawHST(2);
+    if(this->keyDown['m'])sintorn->drawHST(3);
+    if(this->keyDown[','])sintorn->drawFinalStencilMask();
   }
   if(this->methodName == "rssv"){
-     auto rssv = std::dynamic_pointer_cast<RSSV>(this->shadowMethod);
-     if(this->keyDown['h'])this->drawPrimitive->drawTexture(rssv->_HDT[0]);
-     if(this->keyDown['j'])this->drawPrimitive->drawTexture(rssv->_HDT[1]);
-     if(this->keyDown['k'])this->drawPrimitive->drawTexture(rssv->_HDT[2]);
-     if(this->keyDown['l'])this->drawPrimitive->drawTexture(rssv->_HDT[3]);
+    auto rssv = std::dynamic_pointer_cast<RSSV>(this->shadowMethod);
+    if(this->keyDown['h'])this->drawPrimitive->drawTexture(rssv->_HDT[0]);
+    if(this->keyDown['j'])this->drawPrimitive->drawTexture(rssv->_HDT[1]);
+    if(this->keyDown['k'])this->drawPrimitive->drawTexture(rssv->_HDT[2]);
+    if(this->keyDown['l'])this->drawPrimitive->drawTexture(rssv->_HDT[3]);
   }
 
   // */
@@ -466,15 +418,14 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
   this->keyDown[event.key.keysym.sym] = DOWN;
   if(DOWN && event.key.keysym.sym=='p'){
     auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
-    if(flc){
-      auto rv = flc->getRotation();
-      auto pos = flc->getPosition();
-      auto up = glm::normalize(glm::vec3(glm::row(rv,1)));
-      auto view = glm::normalize(-glm::vec3(glm::row(rv,2)));
-      std::cout<< pos .x<<","<<pos .y<<","<<pos .z<<",";
-      std::cout<< view.x<<","<<view.y<<","<<view.z<<",";
-      std::cout<< up  .x<<","<<up  .y<<","<<up  .z<<std::endl;
-    }
+    if(!flc)return true;
+    auto rv = flc->getRotation();
+    auto pos = flc->getPosition();
+    auto up = glm::normalize(glm::vec3(glm::row(rv,1)));
+    auto view = glm::normalize(-glm::vec3(glm::row(rv,2)));
+    std::cout<< pos .x<<","<<pos .y<<","<<pos .z<<",";
+    std::cout<< view.x<<","<<view.y<<","<<view.z<<",";
+    std::cout<< up  .x<<","<<up  .y<<","<<up  .z<<std::endl;
   }
   return true;
 }
@@ -490,9 +441,8 @@ bool Application::mouseMove(SDL_Event const&event){
     }
     if(event.motion.state & SDL_BUTTON_RMASK){
       auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
-      if(orbitCamera){
+      if(orbitCamera)
         orbitCamera->addDistance(float(event.motion.yrel)*this->orbitZoomSpeed);
-      }
     }
     if(event.motion.state & SDL_BUTTON_MMASK){
       auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
