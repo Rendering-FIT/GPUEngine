@@ -45,6 +45,7 @@ set(APP_INCLUDES
   Shading.h
   ShadowMethod.h
   CubeShadowMapping.h
+  CubeShadowMappingShaders.h
   FastAdjacency.h
   TimeStamp.h
   CSSV.h
