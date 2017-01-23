@@ -12,6 +12,7 @@ struct CSSVParams{
   bool   cullSides       = false;
 };
 
+class Adjacency;
 class CSSV: public ShadowVolumes{
   public:
     CSSV(
@@ -46,4 +47,7 @@ class CSSV: public ShadowVolumes{
     std::shared_ptr<ge::gl::Buffer>     _caps             = nullptr;
 
     void _computeSides(glm::vec4 const&lightPosition);
+
+    void _createSidesData(std::shared_ptr<Adjacency>const&adj);
+    void _createCapsData (std::shared_ptr<Adjacency>const&adj);
 };

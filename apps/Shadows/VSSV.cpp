@@ -53,15 +53,9 @@ glm::vec4 computePlane(glm::vec3 A,glm::vec3 B,glm::vec3 C){
   return p;
 }
 
-size_t const floatsPer3DVertex = 3;
-size_t const floatsPer3DPlane  = 4;
-size_t const verticesPerTriangle = 3;
-size_t const floatsPerTriangle = verticesPerTriangle*floatsPer3DVertex;
-size_t const verticesPerEdge = 2;
 size_t const floatsPerNofOppositeVertices = 1;
-size_t const sizeofVertex3DInBytes = floatsPer3DVertex*sizeof(float);
-size_t const sizeofPlane3DInBytes = floatsPer3DPlane*sizeof(float);
-size_t const sizeofTriangleInBytes = floatsPerTriangle*sizeof(float);
+size_t const sizeofVertex3DInBytes        = componentsPerVertex3D  *sizeof(float);
+size_t const sizeofPlane3DInBytes         = componentsPerPlane3D   *sizeof(float);
 
 void VSSV::_createSideDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   assert(this!=nullptr);
@@ -74,14 +68,14 @@ void VSSV::_createSideDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   //M - multiplicity of an edge
   //On - opposite vertex of an edge
   //n < maxMultiplicity
-  size_t const floatsPerEdge = verticesPerEdge*floatsPer3DVertex + floatsPerNofOppositeVertices + maxNofOppositeVertices*floatsPer3DVertex;
+  size_t const floatsPerEdge = verticesPerEdge*componentsPerVertex3D + floatsPerNofOppositeVertices + maxNofOppositeVertices*componentsPerVertex3D;
   this->_adjacency = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
   float*ptr=(float*)this->_adjacency->map();
   for(size_t edgeIndex=0;edgeIndex<adj->getNofEdges();++edgeIndex){
     auto edgePtr                 = ptr+edgeIndex*floatsPerEdge;
     auto edgeVertexAPtr          = edgePtr;
-    auto edgeVertexBPtr          = edgeVertexAPtr + floatsPer3DVertex;
-    auto edgeNofOppositePtr      = edgeVertexBPtr + floatsPer3DVertex;
+    auto edgeVertexBPtr          = edgeVertexAPtr + componentsPerVertex3D;
+    auto edgeNofOppositePtr      = edgeVertexBPtr + componentsPerVertex3D;
     auto edgeOppositeVerticesPtr = edgeNofOppositePtr + floatsPerNofOppositeVertices;
     size_t const edgeVertexAIndex = 0;
     size_t const edgeVertexBIndex = 1;
@@ -90,12 +84,12 @@ void VSSV::_createSideDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
     *edgeNofOppositePtr = float(adj->getNofOpposite(edgeIndex));
     for(size_t oppositeIndex=0;oppositeIndex<adj->getNofOpposite(edgeIndex);++oppositeIndex)
       std::memcpy(
-          edgeOppositeVerticesPtr+oppositeIndex*floatsPer3DVertex,
+          edgeOppositeVerticesPtr+oppositeIndex*componentsPerVertex3D,
           adj->getVertices()+adj->getOpposite(edgeIndex,oppositeIndex),
           sizeofVertex3DInBytes);
     size_t const nofEmptyOppositeVertices = maxNofOppositeVertices-adj->getNofOpposite(edgeIndex);
     std::memset(
-        edgeOppositeVerticesPtr+adj->getNofOpposite(edgeIndex)*floatsPer3DVertex,
+        edgeOppositeVerticesPtr+adj->getNofOpposite(edgeIndex)*componentsPerVertex3D,
         0,
         sizeofVertex3DInBytes*nofEmptyOppositeVertices);
   }
@@ -109,15 +103,15 @@ void VSSV::_createSideDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   GLuint const divisor = GLuint(adj->getMaxMultiplicity());
   GLintptr offset = 0;
   GLsizei const stride = GLsizei(floatsPerEdge*sizeof(float));
-  this->_sidesVao->addAttrib(this->_adjacency,0,floatsPer3DVertex ,GL_FLOAT,stride,offset,normalized,divisor);
-  offset += floatsPer3DVertex*sizeof(float);
-  this->_sidesVao->addAttrib(this->_adjacency,1,floatsPer3DVertex ,GL_FLOAT,stride,offset,normalized,divisor);
-  offset += floatsPer3DVertex*sizeof(float);
+  this->_sidesVao->addAttrib(this->_adjacency,0,componentsPerVertex3D ,GL_FLOAT,stride,offset,normalized,divisor);
+  offset += componentsPerVertex3D*sizeof(float);
+  this->_sidesVao->addAttrib(this->_adjacency,1,componentsPerVertex3D ,GL_FLOAT,stride,offset,normalized,divisor);
+  offset += componentsPerVertex3D*sizeof(float);
   this->_sidesVao->addAttrib(this->_adjacency,2,floatsPerNofOppositeVertices,GL_FLOAT,stride,offset,normalized,divisor);
   offset += floatsPerNofOppositeVertices*sizeof(float);
   for(GLuint oppositeIndex=0;oppositeIndex<adj->getMaxMultiplicity();++oppositeIndex){
-    this->_sidesVao->addAttrib(this->_adjacency,3+oppositeIndex,floatsPer3DVertex,GL_FLOAT,stride,offset,normalized,divisor);
-    offset += floatsPer3DVertex*sizeof(float);
+    this->_sidesVao->addAttrib(this->_adjacency,3+oppositeIndex,componentsPerVertex3D,GL_FLOAT,stride,offset,normalized,divisor);
+    offset += componentsPerVertex3D*sizeof(float);
   }
 }
 
@@ -130,6 +124,7 @@ void VSSV::_createCapDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   //B - vertex B of an triangle
   //C - vertex C of an triangle
 
+  size_t const sizeofTriangleInBytes = componentsPerVertex3D*verticesPerTriangle*sizeof(float);
   this->_caps = std::make_shared<ge::gl::Buffer>(adj->getNofTriangles()*sizeofTriangleInBytes,adj->getVertices());
 
   this->_capsVao = std::make_shared<ge::gl::VertexArray>();
@@ -140,7 +135,7 @@ void VSSV::_createCapDataUsingPoints(std::shared_ptr<Adjacency>const&adj){
   for(size_t i=0;i<verticesPerTriangle;++i){
     GLintptr offset = sizeofVertex3DInBytes * i;
     GLuint   index = GLuint(i);
-    this->_capsVao->addAttrib(this->_caps,index,floatsPer3DVertex,GL_FLOAT,stride,offset,normalized,divisor);
+    this->_capsVao->addAttrib(this->_caps,index,componentsPerVertex3D,GL_FLOAT,stride,offset,normalized,divisor);
   }
 
   this->_nofTriangles = adj->getNofTriangles();
@@ -157,21 +152,21 @@ void VSSV::_createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj){
   //B - vertex B of an edge 3*float
   //Tn - triangle planes n*4*float
   //n < maxMultiplicity
-  size_t const floatsPerEdge = verticesPerEdge*floatsPer3DVertex + maxNofOppositeVertices*floatsPer3DPlane;
+  size_t const floatsPerEdge = verticesPerEdge*componentsPerVertex3D + maxNofOppositeVertices*componentsPerPlane3D;
   this->_adjacency = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
   float*ptr=(float*)this->_adjacency->map();
   for(size_t edgeIndex=0;edgeIndex<adj->getNofEdges();++edgeIndex){
     auto edgePtr                 = ptr + edgeIndex*floatsPerEdge;
     auto edgeVertexAPtr          = edgePtr;
-    auto edgeVertexBPtr          = edgeVertexAPtr + floatsPer3DVertex;
-    auto edgeOppositeVerticesPtr = edgeVertexBPtr + floatsPer3DVertex;
+    auto edgeVertexBPtr          = edgeVertexAPtr + componentsPerVertex3D;
+    auto edgeOppositeVerticesPtr = edgeVertexBPtr + componentsPerVertex3D;
     size_t const edgeVertexAIndex = 0;
     size_t const edgeVertexBIndex = 1;
     std::memcpy(edgeVertexAPtr,adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex),sizeofVertex3DInBytes);
     std::memcpy(edgeVertexBPtr,adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex),sizeofVertex3DInBytes);
     for(size_t oppositeIndex=0;oppositeIndex<adj->getNofOpposite(edgeIndex);++oppositeIndex)
       std::memcpy(
-          edgeOppositeVerticesPtr+oppositeIndex*floatsPer3DPlane,
+          edgeOppositeVerticesPtr+oppositeIndex*componentsPerPlane3D,
           glm::value_ptr(computePlane(
               toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex) ),
               toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex) ),
@@ -180,7 +175,7 @@ void VSSV::_createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj){
           sizeofPlane3DInBytes);
     size_t const nofEmptyOppositeVertices = maxNofOppositeVertices-adj->getNofOpposite(edgeIndex);
     std::memset(
-        edgeOppositeVerticesPtr+adj->getNofOpposite(edgeIndex)*floatsPer3DPlane,
+        edgeOppositeVerticesPtr+adj->getNofOpposite(edgeIndex)*componentsPerPlane3D,
         0,
         sizeofPlane3DInBytes*nofEmptyOppositeVertices);
   }
@@ -194,13 +189,13 @@ void VSSV::_createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj){
   GLuint const divisor = GLuint(adj->getMaxMultiplicity());
   GLintptr offset = 0;
   GLsizei const stride = GLsizei(floatsPerEdge*sizeof(float));
-  this->_sidesVao->addAttrib(this->_adjacency,0,floatsPer3DVertex ,GL_FLOAT,stride,offset,normalized,divisor);
-  offset += floatsPer3DVertex*sizeof(float);
-  this->_sidesVao->addAttrib(this->_adjacency,1,floatsPer3DVertex ,GL_FLOAT,stride,offset,normalized,divisor);
-  offset += floatsPer3DVertex*sizeof(float);
+  this->_sidesVao->addAttrib(this->_adjacency,0,componentsPerVertex3D ,GL_FLOAT,stride,offset,normalized,divisor);
+  offset += componentsPerVertex3D*sizeof(float);
+  this->_sidesVao->addAttrib(this->_adjacency,1,componentsPerVertex3D ,GL_FLOAT,stride,offset,normalized,divisor);
+  offset += componentsPerVertex3D*sizeof(float);
   for(GLuint oppositeIndex=0;oppositeIndex<adj->getMaxMultiplicity();++oppositeIndex){
-    this->_sidesVao->addAttrib(this->_adjacency,3+oppositeIndex,floatsPer3DPlane,GL_FLOAT,stride,offset,normalized,divisor);
-    offset += floatsPer3DPlane*sizeof(float);
+    this->_sidesVao->addAttrib(this->_adjacency,3+oppositeIndex,componentsPerPlane3D,GL_FLOAT,stride,offset,normalized,divisor);
+    offset += componentsPerPlane3D*sizeof(float);
   }
 }
 
@@ -214,14 +209,14 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
   //M - multiplicity of an edge 1*float
   //Tn - triangle planes n*4*float
   //n < maxMultiplicity
-  size_t const floatsPerEdge = verticesPerEdge*floatsPer3DVertex + floatsPerNofOppositeVertices + maxNofOppositeVertices*floatsPer3DPlane;
+  size_t const floatsPerEdge = verticesPerEdge*componentsPerVertex3D + floatsPerNofOppositeVertices + maxNofOppositeVertices*componentsPerPlane3D;
   this->_adjacency = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
   float*ptr=(float*)this->_adjacency->map();
   for(size_t edgeIndex=0;edgeIndex<adj->getNofEdges();++edgeIndex){
     auto edgePtr = ptr+edgeIndex*floatsPerEdge;
     auto edgeVertexAPtr = edgePtr;
-    auto edgeVertexBPtr = edgeVertexAPtr + floatsPer3DVertex;
-    auto edgeNofOppositePtr = edgeVertexBPtr + floatsPer3DVertex;
+    auto edgeVertexBPtr = edgeVertexAPtr + componentsPerVertex3D;
+    auto edgeNofOppositePtr = edgeVertexBPtr + componentsPerVertex3D;
     auto edgeOppositeVerticesPtr = edgeNofOppositePtr + floatsPerNofOppositeVertices;
     size_t const edgeVertexAIndex = 0;
     size_t const edgeVertexBIndex = 1;
@@ -230,7 +225,7 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
     *edgeNofOppositePtr = float(adj->getNofOpposite(edgeIndex));
     for(size_t oppositeIndex=0;oppositeIndex<adj->getNofOpposite(edgeIndex);++oppositeIndex)
       std::memcpy(
-          edgeOppositeVerticesPtr+oppositeIndex*floatsPer3DPlane,
+          edgeOppositeVerticesPtr+oppositeIndex*componentsPerPlane3D,
           glm::value_ptr(computePlane(
               toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexAIndex) ),
               toVec3(adj->getVertices()+adj->getEdge(edgeIndex,edgeVertexBIndex) ),
@@ -239,7 +234,7 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
           sizeofPlane3DInBytes);
     size_t const nofEmptyOppositeVertices = maxNofOppositeVertices-adj->getNofOpposite(edgeIndex);
     std::memset(
-        edgeOppositeVerticesPtr+adj->getNofOpposite(edgeIndex)*floatsPer3DPlane,
+        edgeOppositeVerticesPtr+adj->getNofOpposite(edgeIndex)*componentsPerPlane3D,
         0,
         sizeofPlane3DInBytes*nofEmptyOppositeVertices);
   }
@@ -253,15 +248,15 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
   GLuint const divisor = GLuint(adj->getMaxMultiplicity());
   GLintptr offset = 0;
   GLsizei const stride = GLsizei(floatsPerEdge*sizeof(float));
-  this->_sidesVao->addAttrib(this->_adjacency,0,floatsPer3DVertex ,GL_FLOAT,stride,offset,normalized,divisor);
-  offset += floatsPer3DVertex*sizeof(float);
-  this->_sidesVao->addAttrib(this->_adjacency,1,floatsPer3DVertex ,GL_FLOAT,stride,offset,normalized,divisor);
-  offset += floatsPer3DVertex*sizeof(float);
+  this->_sidesVao->addAttrib(this->_adjacency,0,componentsPerVertex3D ,GL_FLOAT,stride,offset,normalized,divisor);
+  offset += componentsPerVertex3D*sizeof(float);
+  this->_sidesVao->addAttrib(this->_adjacency,1,componentsPerVertex3D ,GL_FLOAT,stride,offset,normalized,divisor);
+  offset += componentsPerVertex3D*sizeof(float);
   this->_sidesVao->addAttrib(this->_adjacency,2,floatsPerNofOppositeVertices,GL_FLOAT,stride,offset,normalized,divisor);
   offset += floatsPerNofOppositeVertices*sizeof(float);
   for(GLuint oppositeIndex=0;oppositeIndex<adj->getMaxMultiplicity();++oppositeIndex){
-    this->_sidesVao->addAttrib(this->_adjacency,3+oppositeIndex,floatsPer3DPlane,GL_FLOAT,stride,offset,normalized,divisor);
-    offset += floatsPer3DPlane*sizeof(float);
+    this->_sidesVao->addAttrib(this->_adjacency,3+oppositeIndex,componentsPerPlane3D,GL_FLOAT,stride,offset,normalized,divisor);
+    offset += componentsPerPlane3D*sizeof(float);
   }
 }
 
@@ -272,7 +267,7 @@ VSSV::VSSV(
     ShadowVolumesParams             const&svParams       ,
     size_t                          const&maxMultiplicity,
     VSSVParams                      const&params         ):
-  ShadowVolumes(depth ,shadowMask,svParams),
+  ShadowVolumes(shadowMask,depth,svParams),
   _params      (params                    )
 {
   assert(this!=nullptr);
@@ -280,7 +275,8 @@ VSSV::VSSV(
   //compute adjacency of the model
   std::vector<float>vertices;
   model->getVertices(vertices);
-  auto adj = std::make_shared<Adjacency>(vertices.data(),vertices.size()/floatsPerTriangle,maxMultiplicity);
+  size_t const nofTriangles = vertices.size()/(componentsPerVertex3D*verticesPerTriangle);
+  auto adj = std::make_shared<Adjacency>(vertices.data(),nofTriangles,maxMultiplicity);
   this->_maxMultiplicity = adj->getMaxMultiplicity();
 
   //create and fill adjacency buffer for sides on GPU
