@@ -266,9 +266,9 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
 }
 
 VSSV::VSSV(
+    std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
     std::shared_ptr<Model>          const&model          ,
     std::shared_ptr<ge::gl::Texture>const&depth          ,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
     ShadowVolumesParams             const&svParams       ,
     size_t                          const&maxMultiplicity,
     VSSVParams                      const&params         ):

@@ -14,12 +14,12 @@ struct SintornParams{
 class Sintorn: public ShadowMethod{
   public:
     Sintorn(
+        std::shared_ptr<ge::gl::Texture>const&shadowMask   ,
         glm::uvec2                      const&windowSize   ,
         std::shared_ptr<ge::gl::Texture>const&depth        ,
         std::shared_ptr<ge::gl::Texture>const&normalTexture,
         std::shared_ptr<Model>          const&model        ,
         size_t                          const&wavefrontSize,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask   ,
         SintornParams                   const&params       );
     virtual ~Sintorn();
     virtual void create(

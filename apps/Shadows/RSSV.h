@@ -16,8 +16,8 @@ struct RSSVParams{
 class RSSV: public ShadowMethod{
   public:
     RSSV(
-        glm::uvec2                      const&windowSize     ,
         std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+        glm::uvec2                      const&windowSize     ,
         std::shared_ptr<ge::gl::Texture>const&depthTexture   ,
         std::shared_ptr<Model>          const&model          ,
         size_t                          const&maxMultiplicity,

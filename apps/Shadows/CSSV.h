@@ -15,9 +15,9 @@ struct CSSVParams{
 class CSSV: public ShadowVolumes{
   public:
     CSSV(
+        std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
         std::shared_ptr<Model>          const&model          ,
         std::shared_ptr<ge::gl::Texture>const&depth          ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
         ShadowVolumesParams             const&svParams       ,
         size_t                          const&maxMultiplicity,
         CSSVParams                      const&params         );

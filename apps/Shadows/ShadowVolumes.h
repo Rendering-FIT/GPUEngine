@@ -10,8 +10,8 @@ struct ShadowVolumesParams{
 class ShadowVolumes: public ShadowMethod{
   public:
     ShadowVolumes(
-        std::shared_ptr<ge::gl::Texture>const&depth     ,
         std::shared_ptr<ge::gl::Texture>const&shadowMask,
+        std::shared_ptr<ge::gl::Texture>const&depth     ,
         ShadowVolumesParams             const&params    );
     virtual ~ShadowVolumes();
     virtual void create(
