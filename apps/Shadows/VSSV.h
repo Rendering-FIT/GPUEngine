@@ -16,7 +16,6 @@ class Adjacency;
 class VSSV: public ShadowVolumes{
   public:
     VSSV(
-        glm::uvec2                      const&windowSize     ,
         std::shared_ptr<Model>          const&model          ,
         std::shared_ptr<ge::gl::Texture>const&depth          ,
         std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
@@ -33,8 +32,6 @@ class VSSV: public ShadowVolumes{
         glm::mat4 const&viewMatirx      ,
         glm::mat4 const&projectionMatrix)override;
   protected:
-    glm::uvec2                          _windowSize;
-
     std::shared_ptr<ge::gl::Program>    _drawSidesProgram       = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _adjacency              = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_sidesVao               = nullptr;
@@ -47,7 +44,6 @@ class VSSV: public ShadowVolumes{
     std::shared_ptr<ge::gl::VertexArray>_capsVao                = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _caps                   = nullptr;
 
-    std::shared_ptr<TimeStamp>          _timeStamper            = nullptr;
     void                                _createSideDataUsingPoints   (std::shared_ptr<Adjacency>const&adj);
     void                                _createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj);
     void                                _createSideDataUsingPlanes   (std::shared_ptr<Adjacency>const&adj);

@@ -266,19 +266,16 @@ void VSSV::_createSideDataUsingPlanes(std::shared_ptr<Adjacency>const&adj){
 }
 
 VSSV::VSSV(
-    glm::uvec2                      const&windowSize     ,
     std::shared_ptr<Model>          const&model          ,
     std::shared_ptr<ge::gl::Texture>const&depth          ,
     std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
     ShadowVolumesParams             const&svParams       ,
     size_t                          const&maxMultiplicity,
     VSSVParams                      const&params         ):
-  ShadowVolumes(depth     ,shadowMask,svParams),
-  _windowSize  (windowSize                    ),
-  _params      (params                        )
+  ShadowVolumes(depth ,shadowMask,svParams),
+  _params      (params                    )
 {
   assert(this!=nullptr);
-  this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
 
   //compute adjacency of the model
   std::vector<float>vertices;

@@ -12,9 +12,10 @@
 class ShadowMethod: public ge::gl::Context{
   public:
     std::shared_ptr<TimeStamp>timeStamp = nullptr;
+    ShadowMethod();
     virtual ~ShadowMethod(){}
     virtual void create(
-        glm::vec4 const&lightPosition,
-        glm::mat4 const&view         ,
-        glm::mat4 const&projection   ) = 0;
+        glm::vec4 const&lightPosition   ,
+        glm::mat4 const&viewMatrix      ,
+        glm::mat4 const&projectionMatrix) = 0;
 };

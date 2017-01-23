@@ -4,19 +4,16 @@
 #include<geCore/Dtemplates.h>
 
 CSSV::CSSV(
-    glm::uvec2                      const&windowSize     ,
     std::shared_ptr<Model>          const&model          ,
     std::shared_ptr<ge::gl::Texture>const&depth          ,
     std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
     ShadowVolumesParams             const&svParams       ,
     size_t                          const&maxMultiplicity,
     CSSVParams                      const&params         ):
-  ShadowVolumes(depth     ,shadowMask,svParams),
-  _windowSize  (windowSize                    ),
-  _params      (params                        )
+  ShadowVolumes(depth ,shadowMask,svParams),
+  _params      (params                    )
 {
   assert(this!=nullptr);
-  this->_timeStamper = std::make_shared<TimeStamp>(nullptr);
 
   std::vector<float>vertices;
   model->getVertices(vertices);

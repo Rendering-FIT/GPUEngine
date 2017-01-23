@@ -268,7 +268,6 @@ bool Application::init(int argc,char*argv[]){
         this->cubeSMParams);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(
-        this->windowSize,
         this->model,
         this->gBuffer->depth,
         this->shadowMask,
@@ -294,7 +293,6 @@ bool Application::init(int argc,char*argv[]){
         this->rssvParams);
   else if(this->methodName=="vssv")
     this->shadowMethod = std::make_shared<VSSV>(
-        this->windowSize,
         this->model,
         this->gBuffer->depth,
         this->shadowMask,

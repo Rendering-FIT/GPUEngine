@@ -23,6 +23,7 @@ set(APP_SOURCES
   CameraPath.cpp
   CSV.cpp
   Shading.cpp
+  ShadowMethod.cpp
   CubeShadowMapping.cpp
   FastAdjacency.cpp
   TimeStamp.cpp

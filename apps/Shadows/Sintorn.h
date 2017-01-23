@@ -14,17 +14,18 @@ struct SintornParams{
 class Sintorn: public ShadowMethod{
   public:
     Sintorn(
-        glm::uvec2 const&windowSize,
-        std::shared_ptr<ge::gl::Texture>const&depthTexture ,
+        glm::uvec2                      const&windowSize   ,
+        std::shared_ptr<ge::gl::Texture>const&depth        ,
         std::shared_ptr<ge::gl::Texture>const&normalTexture,
         std::shared_ptr<Model>          const&model        ,
         size_t                          const&wavefrontSize,
         std::shared_ptr<ge::gl::Texture>const&shadowMask   ,
         SintornParams                   const&params       );
     virtual ~Sintorn();
-    virtual void create(glm::vec4 const&lightPosition,
-        glm::mat4 const&view,
-        glm::mat4 const&projection)override;
+    virtual void create(
+        glm::vec4 const&lightPosition   ,
+        glm::mat4 const&viewMatrix      ,
+        glm::mat4 const&projectionMatrix)override;
   protected:
   public:
     glm::uvec2 _windowSize;///window size
