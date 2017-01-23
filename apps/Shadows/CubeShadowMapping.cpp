@@ -63,10 +63,11 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   this->_fbo->bind();
   glClear(GL_DEPTH_BUFFER_BIT);
   this->_vao->bind();
-  this->_createShadowMap->use();
-  this->_createShadowMap->set4fv("lightPosition" ,glm::value_ptr(lightPosition));
-  this->_createShadowMap->set1f ("near"          ,this->_params.near           );
-  this->_createShadowMap->set1f ("far"           ,this->_params.far            );
+  this->_createShadowMap
+    ->set4fv("lightPosition",glm::value_ptr(lightPosition))
+    ->set1f ("near"         ,this->_params.near           )
+    ->set1f ("far"          ,this->_params.far            )
+    ->use();
   glDrawArraysInstanced(GL_TRIANGLES,0,this->_nofVertices,this->_params.faces);
   this->_vao->unbind();
   this->_fbo->unbind();
@@ -75,10 +76,11 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   glViewport(0,0,this->_windowSize.x,this->_windowSize.y);
   this->_maskFbo->bind();
   this->_maskVao->bind();
-  this->_createShadowMask->use();
-  this->_createShadowMask->set4fv("lightPosition" ,glm::value_ptr(lightPosition));
-  this->_createShadowMask->set1f ("near"          ,this->_params.near           );
-  this->_createShadowMask->set1f ("far"           ,this->_params.far            );
+  this->_createShadowMask
+    ->set4fv("lightPosition",glm::value_ptr(lightPosition))
+    ->set1f ("near"         ,this->_params.near           )
+    ->set1f ("far"          ,this->_params.far            )
+    ->use();
   this->_position->bind(0);
   this->_shadowMap->bind(1);
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);
