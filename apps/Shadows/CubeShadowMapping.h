@@ -13,17 +13,17 @@ struct CubeShadowMappingParams{
 class CubeShadowMapping: public ShadowMethod{
   public:
     CubeShadowMapping(
+        std::shared_ptr<ge::gl::Texture>const&shadowMask ,
         glm::uvec2                      const&windowSize ,
         std::shared_ptr<ge::gl::Texture>const&position   ,
         uint32_t                        const&nofVertices,
         std::shared_ptr<ge::gl::Buffer> const&vertices   ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask ,
         CubeShadowMappingParams         const&params     );
     virtual ~CubeShadowMapping();
     virtual void create(
-        glm::vec4 const&lightPosition,
-        glm::mat4 const&view         ,
-        glm::mat4 const&projection   )override;
+        glm::vec4 const&lightPosition   ,
+        glm::mat4 const&viewMatrix      ,
+        glm::mat4 const&projectionMatrix)override;
   protected:
     glm::uvec2                          _windowSize                ;
     std::shared_ptr<ge::gl::Texture>    _position         = nullptr;

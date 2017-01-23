@@ -11,7 +11,7 @@
 
 class ShadowMethod: public ge::gl::Context{
   public:
-    std::shared_ptr<TimeStamp>timeStamp = nullptr;
+    std::shared_ptr<TimeStamp      >timeStamp  = nullptr;
     ShadowMethod();
     virtual ~ShadowMethod(){}
     virtual void create(

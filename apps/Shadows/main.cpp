@@ -260,42 +260,42 @@ bool Application::init(int argc,char*argv[]){
 
   if     (this->methodName=="cubeShadowMapping")
     this->shadowMethod = std::make_shared<CubeShadowMapping>(
+        this->shadowMask,
         this->windowSize,
         this->gBuffer->position,
         this->renderModel->nofVertices,
         this->renderModel->vertices,
-        this->shadowMask,
         this->cubeSMParams);
   else if(this->methodName=="cssv")
     this->shadowMethod = std::make_shared<CSSV>(
+        this->shadowMask,
         this->model,
         this->gBuffer->depth,
-        this->shadowMask,
         this->svParams,
         this->maxMultiplicity,
         this->cssvParams);
   else if(this->methodName=="sintorn")
     this->shadowMethod = std::make_shared<Sintorn>(
+        this->shadowMask,
         this->windowSize,
         this->gBuffer->depth,
         this->gBuffer->normal,
         this->model,
         this->wavefrontSize,
-        this->shadowMask,
         this->sintornParams);
   else if(this->methodName=="rssv")
     this->shadowMethod = std::make_shared<RSSV>(
-        this->windowSize,
         this->shadowMask,
+        this->windowSize,
         this->gBuffer->depth,
         this->model,
         this->maxMultiplicity,
         this->rssvParams);
   else if(this->methodName=="vssv")
     this->shadowMethod = std::make_shared<VSSV>(
+        this->shadowMask,
         this->model,
         this->gBuffer->depth,
-        this->shadowMask,
         this->svParams,
         this->maxMultiplicity,
         this->vssvParams);

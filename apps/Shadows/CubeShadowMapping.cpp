@@ -1,11 +1,11 @@
 #include"CubeShadowMapping.h"
 
 CubeShadowMapping::CubeShadowMapping(
+        std::shared_ptr<ge::gl::Texture>const&shadowMask ,
         glm::uvec2                      const&windowSize ,
         std::shared_ptr<ge::gl::Texture>const&position   ,
         uint32_t                        const&nofVertices,
         std::shared_ptr<ge::gl::Buffer> const&vertices   ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask ,
         CubeShadowMappingParams         const&params     ):
   _windowSize (windowSize ),
   _position   (position   ),
@@ -14,11 +14,11 @@ CubeShadowMapping::CubeShadowMapping(
 {
   assert(this!=nullptr);
   this->_shadowMap = std::make_shared<ge::gl::Texture>(GL_TEXTURE_CUBE_MAP,GL_DEPTH_COMPONENT24,1,this->_params.resolution,this->_params.resolution);
-  this->_shadowMap->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-  this->_shadowMap->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-  this->_shadowMap->texParameteri(GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-  this->_shadowMap->texParameteri(GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-  this->_shadowMap->texParameteri(GL_TEXTURE_COMPARE_FUNC,GL_LEQUAL);
+  this->_shadowMap->texParameteri(GL_TEXTURE_MIN_FILTER  ,GL_NEAREST             );
+  this->_shadowMap->texParameteri(GL_TEXTURE_MAG_FILTER  ,GL_NEAREST             );
+  this->_shadowMap->texParameteri(GL_TEXTURE_WRAP_S      ,GL_CLAMP_TO_EDGE       );
+  this->_shadowMap->texParameteri(GL_TEXTURE_WRAP_T      ,GL_CLAMP_TO_EDGE       );
+  this->_shadowMap->texParameteri(GL_TEXTURE_COMPARE_FUNC,GL_LEQUAL              );
   this->_shadowMap->texParameteri(GL_TEXTURE_COMPARE_MODE,GL_COMPARE_R_TO_TEXTURE);
   this->_fbo = std::make_shared<ge::gl::Framebuffer>();
   this->_fbo->attachTexture(GL_DEPTH_ATTACHMENT,this->_shadowMap);
@@ -50,10 +50,7 @@ CubeShadowMapping::CubeShadowMapping(
         createShadowMaskFragmentShaderSource));
 }
 
-
-CubeShadowMapping::~CubeShadowMapping(){
-
-}
+CubeShadowMapping::~CubeShadowMapping(){}
 
 void CubeShadowMapping::create(glm::vec4 const&lightPosition,
     glm::mat4 const&,
@@ -67,9 +64,9 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   glClear(GL_DEPTH_BUFFER_BIT);
   this->_vao->bind();
   this->_createShadowMap->use();
-  this->_createShadowMap->set4fv("lightPosition" ,glm::value_ptr(lightPosition ));
-  this->_createShadowMap->set1f("near",this->_params.near);
-  this->_createShadowMap->set1f("far",this->_params.far);
+  this->_createShadowMap->set4fv("lightPosition" ,glm::value_ptr(lightPosition));
+  this->_createShadowMap->set1f ("near"          ,this->_params.near           );
+  this->_createShadowMap->set1f ("far"           ,this->_params.far            );
   glDrawArraysInstanced(GL_TRIANGLES,0,this->_nofVertices,this->_params.faces);
   this->_vao->unbind();
   this->_fbo->unbind();
@@ -79,9 +76,9 @@ void CubeShadowMapping::create(glm::vec4 const&lightPosition,
   this->_maskFbo->bind();
   this->_maskVao->bind();
   this->_createShadowMask->use();
-  this->_createShadowMask->set4fv("lightPosition" ,glm::value_ptr(lightPosition ));
-  this->_createShadowMask->set1f("near",this->_params.near);
-  this->_createShadowMask->set1f("far",this->_params.far);
+  this->_createShadowMask->set4fv("lightPosition" ,glm::value_ptr(lightPosition));
+  this->_createShadowMask->set1f ("near"          ,this->_params.near           );
+  this->_createShadowMask->set1f ("far"           ,this->_params.far            );
   this->_position->bind(0);
   this->_shadowMap->bind(1);
   glDrawArrays(GL_TRIANGLE_STRIP,0,4);

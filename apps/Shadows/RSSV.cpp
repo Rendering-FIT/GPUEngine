@@ -19,8 +19,8 @@ const size_t     TILE_EDGE_SIZE = size_t(glm::sqrt(WAVEFRONT_SIZE));
 const glm::uvec2 TILE_SIZE      = glm::uvec2(uint32_t(TILE_EDGE_SIZE),uint32_t(TILE_EDGE_SIZE));
 
 RSSV::RSSV(
-    glm::uvec2                      const&windowSize     ,
     std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+    glm::uvec2                      const&windowSize     ,
     std::shared_ptr<ge::gl::Texture>const&depthTexture   ,
     std::shared_ptr<Model>          const&model          ,
     size_t                          const&maxMultiplicity,

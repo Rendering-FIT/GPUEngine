@@ -30,12 +30,12 @@ const size_t WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK = 0;
 const size_t WRITESTENCILTEXTURE_BINDING_HSTINPUT         = 1;
 
 Sintorn::Sintorn(
+    std::shared_ptr<ge::gl::Texture>const&shadowMask   ,
     glm::uvec2                      const&windowSize   ,
     std::shared_ptr<ge::gl::Texture>const&depthTexture ,
     std::shared_ptr<ge::gl::Texture>const&normalTexture,
     std::shared_ptr<Model>          const&model        ,
     size_t                          const&wavefrontSize,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask   ,
     SintornParams                   const&params       ):
   _windowSize       (windowSize       ),
   _depthTexture     (depthTexture     ),

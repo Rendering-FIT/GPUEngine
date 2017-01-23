@@ -1,8 +1,8 @@
 #include"ShadowVolumes.h"
 
 ShadowVolumes::ShadowVolumes(
-    std::shared_ptr<ge::gl::Texture>const&depth     ,
     std::shared_ptr<ge::gl::Texture>const&shadowMask,
+    std::shared_ptr<ge::gl::Texture>const&depth     ,
     ShadowVolumesParams             const&params    ):
   _params(params)
 {
