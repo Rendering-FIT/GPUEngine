@@ -9,6 +9,14 @@
 
 #include"TimeStamp.h"
 
+size_t const componentsPerVertex2D   = 2;
+size_t const componentsPerVertex3D   = 3;
+size_t const componentsPerVertex4D   = 4;
+size_t const componentsPerPlane3D    = 4;
+size_t const verticesPerEdge         = 2;
+size_t const verticesPerTriangle     = 3;
+size_t const verticesPerQuad         = 4;
+
 class ShadowMethod: public ge::gl::Context{
   public:
     std::shared_ptr<TimeStamp      >timeStamp  = nullptr;
