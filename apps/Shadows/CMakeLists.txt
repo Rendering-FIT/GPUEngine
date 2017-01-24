@@ -62,6 +62,7 @@ set(APP_INCLUDES
   ProgramExtension.h
   ShadowVolumes.h
   ShadowVolumesShaders.h
+  SilhouetteShaders.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})

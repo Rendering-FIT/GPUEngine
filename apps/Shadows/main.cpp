@@ -138,6 +138,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"        ,64,"compute sillhouette shadow volumes work group size"      );
   this->cssvParams.localAtomic     = arg->getu32("--cssv-localAtomic",1 ,"use local atomic instructions"                           );
   this->cssvParams.cullSides       = arg->getu32("--cssv-cullSides"  ,0 ,"enables culling of sides that are outside of viewfrustum");
+  this->cssvParams.usePlanes       = arg->getu32("--cssv-usePlanes"  ,0 ,"use triangle planes instead of opposite vertices"        );
 
   this->vssvParams.usePlanes              = arg->geti32("--vssv-usePlanes"   ,0,"use planes instead of opposite vertices"            );
   this->vssvParams.useStrips              = arg->geti32("--vssv-useStrips"   ,1,"use triangle strips for sides of shadow volumes 0/1");
