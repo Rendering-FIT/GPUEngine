@@ -18,25 +18,6 @@ uniform mat4 modelMatrix      = mat4(1.f);
 uniform mat4 viewMatrix       = mat4(1.f);
 uniform mat4 projectionMatrix = mat4(1.f);
 
-int greaterVec(vec3 a,vec3 b){
-  return int(dot(sign(a-b),vec3(4.0,2.0,1.0)));
-}
-
-int computeMult(vec3 A,vec3 B,vec3 C,vec4 L){
-  vec3 n=cross(C-A,L.xyz-A*L.w);
-  return int(sign(dot(n,B-A)));
-}
-
-int currentMultiplicity(vec3 A,vec3 B,vec3 O,vec4 L){
-  return int(sign(dot(cross(B-A,L.xyz-A),O-A)));
-  if(greaterVec(A,O)>0)
-    return computeMult(O,A,B,L);
-  else if(greaterVec(B,O)>0)
-    return -computeMult(A,O,B,L);
-  else
-    return computeMult(A,B,O,L);
-}
-
 void main(){
   mat4 mvp = projectionMatrix*viewMatrix*modelMatrix;
 #ifdef USE_TRIANGLE_STRIPS
@@ -111,10 +92,6 @@ void main(){
 ).";
 
 std::string const _drawCapsVertexShaderSrc = R".(
-#ifndef MAX_MULTIPLICITY
-#define MAX_MULTIPLICITY 2
-#endif//MAX_MULTIPLICITY
-
 layout(location=0)in vec3 triangleVertexA;
 layout(location=1)in vec3 triangleVertexB;
 layout(location=2)in vec3 triangleVertexC;
@@ -124,48 +101,10 @@ uniform mat4 modelMatrix      = mat4(1.f);
 uniform mat4 viewMatrix       = mat4(1.f);
 uniform mat4 projectionMatrix = mat4(1.f);
 
-int greaterVec(vec3 a,vec3 b){
-  return int(dot(sign(a-b),vec3(4.0,2.0,1.0)));
-}
-
-int computeMult(vec3 A,vec3 B,vec3 C,vec4 L){
-  vec3 n=cross(C-A,L.xyz-A*L.w);
-  return int(sign(dot(n,B-A)));
-}
-
-int currentMultiplicity(vec3 A,vec3 B,vec3 O,vec4 L){
-  return int(sign(dot(cross(B-A,L.xyz-A),O-A)));
-  if(greaterVec(A,O)>0)
-    return computeMult(O,A,B,L);
-  else if(greaterVec(B,O)>0)
-    return -computeMult(A,O,B,L);
-  else
-    return computeMult(A,B,O,L);
-}
-
-void swap(inout vec3 A,inout vec3 B){vec3 C=A;A=B;B=C;}
-
 void main(){
-  vec3 A=triangleVertexA;
-  vec3 B=triangleVertexB;
-  vec3 C=triangleVertexC;
-  /*
-  if(gl_InstanceID==0){
-    if((gl_VertexID%3) == 0)gl_Position = (projectionMatrix*viewMatrix*modelMatrix*vec4(B,1)).xyww;
-    if((gl_VertexID%3) == 1)gl_Position = (projectionMatrix*viewMatrix*modelMatrix*vec4(A,1)).xyww;
-    if((gl_VertexID%3) == 2)gl_Position = (projectionMatrix*viewMatrix*modelMatrix*vec4(C,1)).xyww;
-    return;
-  }else{
-    gl_Position = vec4(0,0,0,1);
-    return;
-  }
-  // */
-  if(greaterVec(A,B)>0)swap(A,B);
-  if(greaterVec(B,C)>0)swap(B,C);
-  if(greaterVec(A,B)>0)swap(A,B);
-  int multiplicity=computeMult(A,B,C,lightPosition);
+  int multiplicity = currentMultiplicity(triangleVertexA,triangleVertexB,triangleVertexC,lightPosition);
   if(multiplicity==0){gl_Position=vec4(0,0,0,1);return;}
-  if(multiplicity>0)swap(A,B);
+  if(multiplicity<0)swap(A,B);
 
   float farCap = float(gl_InstanceID&1);
   int   vID    = ((farCap>0)?2-int(gl_VertexID):int(gl_VertexID));

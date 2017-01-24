@@ -10,6 +10,7 @@ struct CSSVParams{
   size_t computeSidesWGS = 64   ;
   bool   localAtomic     = true ;
   bool   cullSides       = false;
+  bool   usePlanes       = false;
 };
 
 class Adjacency;
@@ -34,13 +35,13 @@ class CSSV: public ShadowVolumes{
   protected:
     std::shared_ptr<ge::gl::Program>    _computeSidesProgram = nullptr;
     std::shared_ptr<ge::gl::Program>    _drawSidesProgram    = nullptr;
-    std::shared_ptr<ge::gl::Buffer>     _adjacency           = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _edges               = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _sillhouettes        = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _dibo                = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_sidesVao            = nullptr;
     size_t                              _nofEdges            = 0      ;
     size_t                              _nofTriangles        = 0      ;
-    CSSVParams                          _params                    ;
+    CSSVParams                          _params                       ;
 
     std::shared_ptr<ge::gl::Program>    _drawCapsProgram  = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
@@ -48,6 +49,7 @@ class CSSV: public ShadowVolumes{
 
     void _computeSides(glm::vec4 const&lightPosition);
 
-    void _createSidesData(std::shared_ptr<Adjacency>const&adj);
+    void _createSidesData           (std::shared_ptr<Adjacency>const&adj);
+    void _createSidesDataUsingPlanes(std::shared_ptr<Adjacency>const&adj);
     void _createCapsData (std::shared_ptr<Adjacency>const&adj);
 };
