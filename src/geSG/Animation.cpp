@@ -42,7 +42,7 @@ void Animation::update(const time_point& t)
    switch (mode)
    {
       case Mode::LOOP:
-         anim_time = duration > time_unit(0) ? anim_time % duration : time_unit(0);
+         anim_time = duration > time_unit(0) ? time_unit(fmod(anim_time.count(),duration.count())) : time_unit(0);
          break;
       case Mode::ONCE:
       default:

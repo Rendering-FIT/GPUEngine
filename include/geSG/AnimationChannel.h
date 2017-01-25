@@ -70,9 +70,9 @@ namespace ge
          std::vector<Vec3KeyFrame> positionKF;
          std::vector<QuatKeyFrame> orientationKF;
          std::vector<Vec3KeyFrame> scaleKF;
-         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point>> positionInterpolator;
-         std::unique_ptr<KeyframeInterpolator<std::vector<QuatKeyFrame>, core::time_point>> orientationInterpolator;
-         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point>> scaleInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>>> positionInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<QuatKeyFrame>>> orientationInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>>> scaleInterpolator;
 
       protected:
          std::shared_ptr<glm::mat4> _target;

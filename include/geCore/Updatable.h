@@ -8,17 +8,27 @@ namespace ge
    {
       /*This alias does not work when you need - time_point t = time_point::clock::now() - type conversion error!!!! (maybe a bug)*/
       //using time_point = std::chrono::time_point<std::chrono::steady_clock, std::chrono::steady_clock::duration>;
-      using time_point = std::chrono::steady_clock::time_point;
-      using time_unit = std::chrono::milliseconds; ///< time unit is ms
-
-      template<typename Duration>
-      inline time_unit toTimeUnit(Duration tp){ return std::chrono::duration_cast<time_unit>(tp); }
+      using time_unit = std::chrono::duration<double>; ///< Basic duration used in GE. Time unit doubles of seconds.
+      using time_point = std::chrono::time_point<std::chrono::steady_clock, time_unit>; ///< Time point on steady clock of time_unit
 
       /**
-       * Takes time in milliseconds and returns time_unit representation of this value.
+       * Simple convenient class to convert an arbitrary duration to our time_unit. Wrapper of duration_cast<>.
        */
-      template<typename ratio = std::milli>
-      inline time_unit toTimeUnit(double tp){ return std::chrono::duration_cast<time_unit>(std::chrono::duration<double, ratio>(tp)); }
+      //template<typename Duration>
+      //inline time_unit toTimeUnit(const Duration& tp){ return std::chrono::duration_cast<time_unit>(tp); }
+
+      /**
+       * Takes time in _Rep (e.g. doubles) of time_units (seconds by default) and returns time_unit representation of this value.
+       */
+      template<typename _Rep = double,typename ratio = time_unit::period>
+      inline time_unit toTimeUnit(const _Rep& tp){ return std::chrono::duration_cast<time_unit>(std::chrono::duration<_Rep, ratio>(tp)); }
+
+      /**
+       * Convenience function to convert time_point to type FP that could be staticaly casted from time_point's duration::period
+       * for Animation key frame interpolation purposes.
+       */
+      template<typename FP = float>
+      inline FP TPtoFP(const time_point& tp) { return static_cast<FP>(tp.time_since_epoch().count()); }
 
       /**
        * Pure virtual interface for "updatable" classes such as animations.
