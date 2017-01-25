@@ -11,6 +11,7 @@ struct CSSVParams{
   bool   localAtomic     = true ;
   bool   cullSides       = false;
   bool   usePlanes       = false;
+  bool   useInterleaving = false;
 };
 
 class Adjacency;
@@ -49,7 +50,8 @@ class CSSV: public ShadowVolumes{
 
     void _computeSides(glm::vec4 const&lightPosition);
 
-    void _createSidesData           (std::shared_ptr<Adjacency const>const&adj);
-    void _createSidesDataUsingPlanes(std::shared_ptr<Adjacency const>const&adj);
-    void _createCapsData            (std::shared_ptr<Adjacency const>const&adj);
+    void _createSidesData                           (std::shared_ptr<Adjacency const>const&adj);
+    void _createSidesDataUsingPlanes                (std::shared_ptr<Adjacency const>const&adj);
+    void _createSidesDataUsingPlanesWithInterleaving(std::shared_ptr<Adjacency const>const&adj);
+    void _createCapsData                            (std::shared_ptr<Adjacency const>const&adj);
 };
