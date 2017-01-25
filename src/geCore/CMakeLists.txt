@@ -33,24 +33,26 @@ set(FSA_INCLUDES
 
 set(CORE_INCLUDES
   ${HEADER_PATH}/Export.h
-  ${HEADER_PATH}/Object.h
   ${HEADER_PATH}/geCore.h
+  ${HEADER_PATH}/CallStackPrinter.h
   ${HEADER_PATH}/Command.h
   ${HEADER_PATH}/CopyOp.h
   ${HEADER_PATH}/Defines.h
-  ${HEADER_PATH}/Dtemplates.h
-  ${HEADER_PATH}/TypeTraits.h
-  ${HEADER_PATH}/ValuePrinter.h
-  ${HEADER_PATH}/ErrorPrinter.h
-  ${HEADER_PATH}/CallStackPrinter.h
-  ${HEADER_PATH}/EnumRegister.h
-  ${HEADER_PATH}/Functor.h
-  ${HEADER_PATH}/InitAndFinalize.h
-  ${HEADER_PATH}/StandardSemanticsNames.h
   ${HEADER_PATH}/DisjointSet.h
+  ${HEADER_PATH}/Dtemplates.h
+  ${HEADER_PATH}/EnumRegister.h
+  ${HEADER_PATH}/ErrorPrinter.h
+  ${HEADER_PATH}/Functor.h
   ${HEADER_PATH}/idlist.h
+  ${HEADER_PATH}/InitAndFinalize.h
+  ${HEADER_PATH}/Interval.h
+  ${HEADER_PATH}/KeyPoint.h
+  ${HEADER_PATH}/Object.h
+  ${HEADER_PATH}/StandardSemanticsNames.h
   ${HEADER_PATH}/Text.h
+  ${HEADER_PATH}/TypeTraits.h
   ${HEADER_PATH}/Updatable.h
+  ${HEADER_PATH}/ValuePrinter.h
   )
 
 set(CORE_SOURCES

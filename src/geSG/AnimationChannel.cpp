@@ -19,9 +19,9 @@ AnimationChannel::~AnimationChannel()
  * Sets up NearestKeyframeInterpolator for all key frames.
  */
 MovementAnimationChannel::MovementAnimationChannel()
-   : positionInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point >())
-   , orientationInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<QuatKeyFrame>, core::time_point >())
-   , scaleInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point >())
+   : positionInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>>())
+   , orientationInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<QuatKeyFrame>>())
+   , scaleInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>>())
 {
    
 }
@@ -37,10 +37,10 @@ void MovementAnimationChannel::update(const time_point& t)
    glm::vec3 scale(1, 1, 1);
    glm::quat oriantation;
 
-   position = positionInterpolator->interpolate(positionKF, t);
+   position = positionInterpolator->interpolate(positionKF, TPtoFP(t));
    if(!scaleKF.empty())
-      scale = scaleInterpolator->interpolate(scaleKF, t);   
-   oriantation = orientationInterpolator->interpolate(orientationKF, t);
+      scale = scaleInterpolator->interpolate(scaleKF, TPtoFP(t));
+   oriantation = orientationInterpolator->interpolate(orientationKF, TPtoFP(t));
 
 
    glm::mat4 mat = glm::mat4_cast(oriantation);

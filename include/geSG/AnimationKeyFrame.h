@@ -1,6 +1,7 @@
 #pragma once
 
 #include <geCore/Updatable.h>
+#include <geCore/KeyPoint.h>
 
 namespace ge
 {
@@ -10,12 +11,15 @@ namespace ge
        * Keyframe base class containing time stamp and ability to be compared on the 
        * time basis.
        */
-      struct AnimationKeyFrame
+      struct AnimationKeyFrame : public core::KeyPointInterface<float>
       {
+         using T = core::time_point; ///< Parameter of interpolation. The parameter is used for ordering and as interpolation parameter.
+         using parameter_type = parameter_type;
+
          AnimationKeyFrame() : t(){}
          AnimationKeyFrame(const core::time_point& time){ t = time; }
 
-         template<class Rep, class Period = std::ratio<1>>
+         template<class Rep, class Period = core::time_unit::period>
          AnimationKeyFrame(const std::chrono::duration<Rep, Period>& duration)
          {
             t = time_point(std::chrono::duration_cast<core::time_point::duration>(duration));
@@ -26,12 +30,22 @@ namespace ge
             return this->t < rhs.t;
          }
 
-         core::time_point getTime() const
+         parameter_type getT() const override
+         {
+            return core::TPtoFP<parameter_type>(t);
+         }
+
+         static T convertToT(parameter_type const & t)
+         {
+            return core::time_point(core::toTimeUnit<parameter_type>(t));
+         }
+
+         T getTime() const
          {
             return t;
          }
 
-         core::time_point t;
+         T t;
       };
 
       /**
@@ -40,7 +54,8 @@ namespace ge
       template<typename _ValueType>
       struct AnimationKeyFrameTemplate : public AnimationKeyFrame
       {
-         typedef _ValueType value_type;
+         using value_type = _ValueType; ///< Type of the value.
+         using T = core::time_point; ///< Parameter of interpolation. The parameter is used for ordering and as interpolation parameter.
 
          AnimationKeyFrameTemplate() : AnimationKeyFrame(){}
          AnimationKeyFrameTemplate(const core::time_point& time) : AnimationKeyFrame(time){}

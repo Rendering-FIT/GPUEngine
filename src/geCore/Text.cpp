@@ -4,14 +4,14 @@
 #include<string>
 #include<geCore/fsa/Fsa.h>
 #include<geCore/fsa/MealyMachine.h>
+#include<geCore/ErrorPrinter.h>
 
 using namespace ge::core;
 
-std::string ge::core::loadTextFile(std::string fileName){
+std::string ge::core::loadTextFile(std::string const&fileName){
   std::ifstream f(fileName.c_str());
   if(!f.is_open()){
-    std::cerr<<"ERROR: ge::core::loadTextFile("<<fileName;
-    std::cerr<<") - cannot open file"<<std::endl;
+    ge::core::printError(GE_CORE_FCENAME,"cannot open file",fileName);
     return "";
   }
   std::string str((std::istreambuf_iterator<char>(f)),std::istreambuf_iterator<char>());
@@ -19,7 +19,7 @@ std::string ge::core::loadTextFile(std::string fileName){
   return str;
 }
 
-std::string ge::core::processEscapeSequences(std::string data){
+std::string ge::core::processEscapeSequences(std::string const&data){
   struct ParserData{
     unsigned    pos   ;
     std::string string;
@@ -143,8 +143,18 @@ std::string ge::core::processEscapeSequences(std::string data){
   return pData.string;
 }
 
+bool ge::core::isNan(std::string const&text){
+  return std::set<std::string>({"NAN","Nan","nan"}).count(text)>0;
+}
+
+bool ge::core::isInfinity(std::string const&text){
+  return std::set<std::string>({"inf","Inf","INF","+inf","+Inf","+INF","-inf","-Inf","-INF"}).count(text)>0;
+}
+
+
 bool ge::core::isFloat(std::string const&text){
-  if(std::set<std::string>({"inf","Inf","INF","+inf","+Inf","+INF","-inf","-Inf","-INF","NAN","Nan","nan"}).count(text))return true;
+  if(isNan(text))return true;
+  if(isInfinity(text))return true;
   MealyMachine mm;
 
   auto start            = mm.addState();
@@ -167,21 +177,64 @@ bool ge::core::isFloat(std::string const&text){
   mm.addTransition   (wholeNumber     ,"."    ,fractionalNumber);
   mm.addTransition   (wholeNumber     ,"fF"   ,postfix         );
   mm.addTransition   (wholeNumber     ,"eE"   ,exponent        );
-  mm.addEOFTransition(wholeNumber                              );
   mm.addTransition   (fractionalNumber,"0","9",fractionalNumber);
   mm.addTransition   (fractionalNumber,"fF"   ,postfix         );
   mm.addTransition   (fractionalNumber,"eE"   ,exponent        );
-  mm.addEOFTransition(fractionalNumber                         );
   mm.addEOFTransition(postfix                                  );
   mm.addTransition   (exponent        ,"+-"   ,exponentSign    );
   mm.addTransition   (exponent        ,"0","9",exponentNumber  );
   mm.addTransition   (exponentSign    ,"0","9",exponentNumber  );
   mm.addTransition   (exponentNumber  ,"0","9",exponentNumber  );
   mm.addTransition   (exponentNumber  ,"fF"   ,postfix         );
+  mm.setQuiet(true);
+
+  return mm.match(text.c_str());
+}
+
+bool ge::core::isDouble(std::string const&text){
+  if(isNan(text))return true;
+  if(isInfinity(text))return true;
+  MealyMachine mm;
+
+  auto start            = mm.addState();
+  auto sign             = mm.addState();
+  auto immediateDot     = mm.addState();
+  auto fractionalNumber = mm.addState();
+  auto wholeNumber      = mm.addState();
+  auto exponent         = mm.addState();
+  auto exponentSign     = mm.addState();
+  auto exponentNumber   = mm.addState();
+
+  mm.addTransition   (start           ,"+-"   ,sign            );
+  mm.addTransition   (start           ,"."    ,immediateDot    );
+  mm.addTransition   (start           ,"0","9",wholeNumber     );
+  mm.addTransition   (sign            ,"."    ,immediateDot    );
+  mm.addTransition   (sign            ,"0","9",wholeNumber     );
+  mm.addTransition   (immediateDot    ,"0","9",fractionalNumber);
+  mm.addTransition   (wholeNumber     ,"0","9",wholeNumber     );
+  mm.addTransition   (wholeNumber     ,"."    ,fractionalNumber);
+  mm.addTransition   (wholeNumber     ,"eE"   ,exponent        );
+  mm.addEOFTransition(wholeNumber                              );
+  mm.addTransition   (fractionalNumber,"0","9",fractionalNumber);
+  mm.addTransition   (fractionalNumber,"eE"   ,exponent        );
+  mm.addEOFTransition(fractionalNumber                         );
+  mm.addTransition   (exponent        ,"+-"   ,exponentSign    );
+  mm.addTransition   (exponent        ,"0","9",exponentNumber  );
+  mm.addTransition   (exponentSign    ,"0","9",exponentNumber  );
+  mm.addTransition   (exponentNumber  ,"0","9",exponentNumber  );
   mm.addEOFTransition(exponentNumber                           );
   mm.setQuiet(true);
 
   return mm.match(text.c_str());
+
+}
+
+bool ge::core::isFloatingPoint(std::string const&text){
+  return isFloat(text) || isDouble(text);
+}
+
+bool ge::core::isIntegral(std::string const&text){
+  return isInt(text) || isUint(text);
 }
 
 bool ge::core::isInt(std::string const&text){

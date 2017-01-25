@@ -309,7 +309,7 @@ std::string MealyMachine::str()const{
 
   std::stringstream ss;
   size_t stateCounter = 0;
-  for(auto s:this->_states){
+  for(auto const&s:this->_states){
     ss<<"state ";
     if(std::get<NAME>(s)!="")ss<<std::get<NAME>(s);
     else ss<<stateCounter;

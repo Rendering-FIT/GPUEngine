@@ -349,15 +349,15 @@ ge::sg::Material* AssimpModelLoader::createMaterial(aiMaterial* aimat, const aiS
       }
       else //textures (images)
       {
-         //std::unique_ptr<MaterialImageComponent> imgComp(new MaterialImageComponent);
-         
          aiString aistring;
          aiGetMaterialString(aimat, (matprop->mKey.data), matprop->mSemantic, matprop->mIndex, &aistring);
-         if (strlen(aistring.C_Str()) == 0)continue;
-         ge::sg::MaterialImageComponent *imgComp = new ge::sg::MaterialImageComponent;
-         imgComp->filePath = aistring.C_Str(); //copy constructor of std::string
-         imgComp->semantic = getImageComponentSemantic(matprop->mSemantic);
-         mat->materialComponents.push_back(std::unique_ptr<ge::sg::MaterialImageComponent>(imgComp));
+         if(aistring.length > 0)
+         {
+            ge::sg::MaterialImageComponent *imgComp = new ge::sg::MaterialImageComponent;
+            imgComp->filePath = aistring.C_Str(); //copy constructor of std::string
+            imgComp->semantic = getImageComponentSemantic(matprop->mSemantic);
+            mat->materialComponents.push_back(std::unique_ptr<ge::sg::MaterialImageComponent>(imgComp));
+         }
       }
    }
 

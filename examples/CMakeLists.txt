@@ -13,7 +13,7 @@ set(examplesList  EmptyWindow
                   BlitOpenGL
                   TextureTest
                   Simple_QTgeGL
-                  Simple_QTgeSG
+                  Simple_QtgeSG
 )
 
 foreach(example IN LISTS examplesList)
