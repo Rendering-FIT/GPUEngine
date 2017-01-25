@@ -22,7 +22,7 @@ class Vertex{
       }
       return 0;
     }
-    std::string toStr(){
+    std::string toStr()const{
       std::stringstream ss;
       for(size_t d=0;d<dim;++d){
         ss<<this->data[this->index+d];
@@ -70,7 +70,7 @@ class EdgeToTriangle{
 };
 
 
-Adjacency::Adjacency(const float*vertices,size_t nofTriangles,size_t maxMult){
+Adjacency::Adjacency(float const*vertices,size_t const&nofTriangles,size_t const&maxMult){
   this->_vertices        = vertices;
   this->_maxMultiplicity = maxMult;
   this->_nofTriangles    = nofTriangles;
@@ -115,28 +115,36 @@ Adjacency::Adjacency(const float*vertices,size_t nofTriangles,size_t maxMult){
   }
 }
 
-size_t Adjacency::getNofEdges(){
+size_t Adjacency::getNofEdges()const{
+  assert(this!=nullptr);
   return this->_edges.size();
 }
 
-size_t Adjacency::getEdge(size_t e,size_t i){
+size_t Adjacency::getEdge(size_t e,size_t i)const{
+  assert(this!=nullptr);
+  assert(i<2);
   return this->_edges[e].ab[i];
 }
 
-size_t Adjacency::getNofOpposite(size_t e){
+size_t Adjacency::getNofOpposite(size_t e)const{
+  assert(this!=nullptr);
   return this->_edges[e].count;
 }
 
-size_t Adjacency::getOpposite(size_t e,size_t i){
+size_t Adjacency::getOpposite(size_t e,size_t i)const{
+  assert(this!=nullptr);
   return this->_opposite[this->_edges[e].offset+i];
 }
-size_t Adjacency::getMaxMultiplicity(){
+size_t Adjacency::getMaxMultiplicity()const{
+  assert(this!=nullptr);
   return this->_maxMultiplicity;
 }
-const float*Adjacency::getVertices(){
+const float*Adjacency::getVertices()const{
+  assert(this!=nullptr);
   return this->_vertices;
 }
-size_t Adjacency::getNofTriangles(){
+size_t Adjacency::getNofTriangles()const{
+  assert(this!=nullptr);
   return this->_nofTriangles;
 }
 
