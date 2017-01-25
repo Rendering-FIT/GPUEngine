@@ -31,7 +31,7 @@ namespace ge
          template<class Rep, class Period = std::ratio<1>>
             void update(const std::chrono::duration<Rep, Period>& duration)
          {
-            update(time_point(std::chrono::duration_cast<core::time_point::duration>(duration)));
+            update(core::time_point(std::chrono::duration_cast<core::time_point::duration>(duration)));
          }
 
          void update(const core::time_point& t = core::time_point()) override;
