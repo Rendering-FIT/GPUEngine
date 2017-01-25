@@ -3,6 +3,7 @@
 #include<iostream>
 
 const std::string computeSrc = R".(
+#line 6
 #ifndef MAX_MULTIPLICITY
 #define MAX_MULTIPLICITY 2
 #endif//MAX_MULTIPLICITY
@@ -57,10 +58,20 @@ void main(){
 #else
     vec4 P[2];
 #endif
+#if     USE_PLANES == 1
+    gid*=3+3+4*MAX_MULTIPLICITY;
+#else //USE_PLANES == 1
     gid*=2+MAX_MULTIPLICITY;
+#endif//USE_PLANES == 1
 
+#if     USE_PLANES == 1
+    P[0] = vec4(edges[gid+0],edges[gid+1],edges[gid+2],1);
+    P[1] = vec4(edges[gid+3],edges[gid+4],edges[gid+5],1);
+#else //USE_PLANES == 1
     P[0]=edges[gid+0];
     P[1]=edges[gid+1];
+#endif//USE_PLANES == 1
+
 #if CULL_SIDES == 1
     P[2]=vec4(P[0].xyz*lightPosition.w-lightPosition.xyz,0);
     P[3]=vec4(P[1].xyz*lightPosition.w-lightPosition.xyz,0);
@@ -90,7 +101,7 @@ void main(){
 
 #if     USE_PLANES == 1
     for(uint m=0;m<MAX_MULTIPLICITY;++m)
-      Multiplicity += int(sign(dot(vec4(edges[6+m*4+0],edges[6+m*4+1],edges[6+m*4+2],edges[6+m*4+3]),lightPosition)));
+      Multiplicity += int(sign(dot(vec4(edges[gid+6+m*4+0],edges[gid+6+m*4+1],edges[gid+6+m*4+2],edges[gid+6+m*4+3]),lightPosition)));
 #else //USE_PLANES == 1
     for(int i=2;i<Num;++i)
       Multiplicity += currentMultiplicity(P[0].xyz,P[1].xyz,edges[gid+i].xyz,lightPosition);
