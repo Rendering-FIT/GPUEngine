@@ -19,11 +19,13 @@ public:
 
   void createVertexBuffer(vk::DeviceSize size);
   void createIndexBuffer(vk::DeviceSize size);
+  void createStaggingBuffer(vk::DeviceSize size);
+  void createShaderStorage(vk::DeviceSize size, bool deviceLocal);
 
-  void setSubData(void* data, vk::DeviceSize size, vk::DeviceSize offset);
+  void setSubData(void* data, vk::DeviceSize size, vk::DeviceSize offset = 0);
 
   void* map();
   void unmap();
 
-  operator vk::Buffer() { return buffer;}
+  operator vk::Buffer() { return buffer; }
 };

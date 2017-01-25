@@ -20,7 +20,6 @@ public:
   virtual void init();
   virtual void draw();
   virtual void resize(int w, int h);
-  bool handleEvent(const SDL_Event &e);
 protected:
 
   void setupEvents();
@@ -36,10 +35,10 @@ protected:
   int roty = 0;
   bool drag = false;
 
+  //
+  bool stop = false;
+
   std::string path;
-  std::shared_ptr<ge::ad::SDLMainLoop> mainLoop;
-  std::shared_ptr<ge::ad::SDLWindow> window;
-  SDL_Window* windowHandle;
 
   ge::vu::ContextShared context;
   ge::vu::DeviceContextShared deviceContext;

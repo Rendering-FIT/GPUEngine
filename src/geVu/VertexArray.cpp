@@ -12,7 +12,7 @@ VertexArray::VertexArray() {
 
 void ge::vu::VertexArray::bind(vk::CommandBuffer cmd){
   for (auto &vbo : vertexBuffers) {
-    //std::cout << get<0>(vbo) << (vk::Buffer)*get<1>(vbo)<<"\n";
+    //std::cout << get<0>(vbo)<<" " << (vk::Buffer)*get<1>(vbo)<<"\n";
     cmd.bindVertexBuffers(get<0>(vbo), { *get<1>(vbo) }, { get<2>(vbo) });
   }
   

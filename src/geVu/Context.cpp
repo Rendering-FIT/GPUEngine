@@ -67,7 +67,7 @@ DeviceContextShared Context::createDeviceContext(int index) {
   dcci.context = shared_from_this();
   dcci.deviceIndex = index;
   dcci.validation = validation;
-  dcci.verbose = true;
+  dcci.verbose = verbose;
 
   auto deviceContext = make_shared<DeviceContext>(dcci);
   deviceContext->createMemoryManager();

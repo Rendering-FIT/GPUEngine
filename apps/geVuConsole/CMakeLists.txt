@@ -1,17 +1,14 @@
-set(APP_NAME geVuViewer)
+set(APP_NAME geVuConsole)
 
 project(${APP_NAME})
 
-find_package(SDL2)
 find_package(assimp)
-find_package(FreeImage)
-find_package(FreeImagePlus)
 
 find_package(AssimpModelLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAD/AssimpModelLoader/cmake)
 find_package(FreeImageImageLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAD/FreeImageImageLoader/cmake)
 
 
-set(dependencies SDL2 SDLWindow geVu geSG geVuSG geUtil assimp AssimpModelLoader FreeImageImageLoader FreeImage FreeImagePlus)
+set(dependencies geVu geSG geVuSG geUtil assimp AssimpModelLoader FreeImageImageLoader FreeImage FreeImagePlus)
 
 foreach(dep ${dependencies})
   if(NOT TARGET ${dep})
@@ -22,6 +19,7 @@ endforeach()
 set(APP_SOURCES
 	src/main.cpp
 	src/app.cpp
+	src/ConsoleSwapchain.cpp
 )
 
 
@@ -29,6 +27,7 @@ set(APP_SOURCES
 
 set(APP_INCLUDES
 	src/app.h
+	src/ConsoleSwapchain.h
 )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
@@ -38,8 +37,8 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps SDLWindow geVu geSG geVuSG geUtil AssimpModelLoader FreeImageImageLoader)
-set(External_libs SDL2 assimp FreeImage FreeImagePlus)
+set(Internal_deps geVu geSG geVuSG geUtil AssimpModelLoader FreeImageImageLoader)
+set(External_libs assimp FreeImage FreeImagePlus)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

@@ -14,6 +14,7 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/${LIB_NAME})
 
 find_package(ste)
+
 set(dependencies geVu geSG ste)
 
 foreach(dep ${dependencies})
@@ -57,7 +58,7 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 
-#set(External_libs vulkan)
+#set(External_libs )
 set(Internal_deps geSG geVu ste)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/)
 set(includes_to_export ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/include/)

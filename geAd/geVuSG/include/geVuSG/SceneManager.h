@@ -16,7 +16,9 @@ protected:
 
   std::unordered_map<ge::sg::Mesh*, ge::vusg::DrawableShared> drawables;
 
-  std::unordered_map<std::tuple<vk::PipelineLayout, ge::sg::MaterialImageComponent*>, vk::DescriptorSet> descriptors;
+  std::map<std::tuple<vk::DescriptorSetLayout, ge::sg::MaterialImageComponent*>, vk::DescriptorSet> descriptors;
+
+  std::unordered_map<ge::sg::MaterialImageComponent*, ge::vu::TextureShared> textures;
 
 
   ge::vu::DeviceContextShared deviceContext;
@@ -24,7 +26,7 @@ public:
   SceneManager(ge::vu::DeviceContextShared &deviceContext);
 
   DrawableShared getDrawable(ge::sg::Mesh* mesh);
-  vk::DescriptorSet getDescriptor(vk::PipelineLayout pipelineLayout, ge::sg::MaterialImageComponent* img);
+  vk::DescriptorSet getDescriptor(vk::DescriptorSetLayout descriptorSetLayout, ge::sg::MaterialImageComponent* img);
 
 protected:
   void processMesh(ge::sg::Mesh* mesh);

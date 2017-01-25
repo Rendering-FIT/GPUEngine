@@ -11,5 +11,6 @@
 #include <geVu/MemoryManager.h>
 #include <geVu/MemoryManagerAdvanced.h>
 #include <geVu/Swapchain.h>
+#include <geVu/WindowSwapchain.h>
 #include <geVu/Pipeline.h>
 #include <geVu/VertexArray.h>

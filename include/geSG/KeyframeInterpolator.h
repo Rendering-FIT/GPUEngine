@@ -66,7 +66,7 @@ namespace ge
          {
             if(keyframes.empty()) return Value();
 
-            auto it = std::lower_bound(keyframes.begin(), keyframes.end(), t);
+            auto it = std::lower_bound(keyframes.begin(), keyframes.end()-1, t);
             if(it == keyframes.begin() || t > it->getTime())
             {
                return it->getValue();
@@ -93,7 +93,7 @@ namespace ge
          {
             if(keyframes.empty()) return Value();
 
-            auto it = std::lower_bound(keyframes.begin(), keyframes.end(), t);
+            auto it = std::lower_bound(keyframes.begin(), keyframes.end()-1, t);
             if(it == keyframes.begin() || t > it->getTime())
             {
                return it->getValue();

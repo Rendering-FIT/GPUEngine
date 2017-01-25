@@ -38,7 +38,7 @@ public:
   bool isLayerSupported(std::string name);
   bool isExtensionSupported(std::string name);
 
-  SwapchainShared createSwapchain(SwapchainCreateInfo &sci);
+  WindowSwapchainShared createSwapchain(WindowSwapchainCreateInfo &sci);
 
   vk::Instance getInstance() { return context->getInstance(); }
   vk::PhysicalDevice getPhysicalDevice() { return physicalDevice; }
@@ -53,8 +53,8 @@ public:
   MemoryManagerShared getMemoryManager() { return memoryManager; }
   vk::PipelineCache getPipelineCache() { return pipelineCache; }
 
-  bool isVerbose() { return verbose; }
-  bool isValidation() { return validation; }
+  bool isVerbose() const { return verbose; }
+  bool isValidation() const { return validation; }
 
 
   template<class...Args>

@@ -27,6 +27,7 @@ set(GEVU_INCLUDES
 
   ${HEADER_PATH}/Logger.h
   ${HEADER_PATH}/Binary.h
+  ${HEADER_PATH}/Conversions.h
   
   ${HEADER_PATH}/Buffer.h
   ${HEADER_PATH}/Context.h
@@ -34,24 +35,27 @@ set(GEVU_INCLUDES
   ${HEADER_PATH}/Debug.h
   ${HEADER_PATH}/Texture.h
   ${HEADER_PATH}/Swapchain.h
+  ${HEADER_PATH}/WindowSwapchain.h
   ${HEADER_PATH}/Pipeline.h
   ${HEADER_PATH}/MemoryBlock.h
   ${HEADER_PATH}/MemoryManager.h
   ${HEADER_PATH}/MemoryManagerAdvanced.h
-${HEADER_PATH}/VertexArray.h
+  ${HEADER_PATH}/VertexArray.h
   
   )
 
 set(GEVU_SOURCES
-	 Buffer.cpp
-	 Context.cpp
-	 DeviceContext.cpp
-	 Texture.cpp
-	 Swapchain.cpp
-	 Pipeline.cpp
-	 MemoryManager.cpp
-	 MemoryManagerAdvanced.cpp
-	VertexArray.cpp
+  Buffer.cpp
+  Conversions.cpp
+  Context.cpp
+  DeviceContext.cpp
+  Texture.cpp
+  Swapchain.cpp
+  WindowSwapchain.cpp
+  Pipeline.cpp
+  MemoryManager.cpp
+  MemoryManagerAdvanced.cpp
+  VertexArray.cpp
 )
 
 ################################################

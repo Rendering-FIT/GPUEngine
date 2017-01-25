@@ -1,11 +1,16 @@
-add_subdirectory(geViewerOSG)
-add_subdirectory(MultiCubePerf)
-add_subdirectory(RgProfiling)
-add_subdirectory(Shadows)
+set(apps 
+  geViewerAssimp
+  geViewerOSG
+  geVuConsole
+  geVuViewer
+  MultiCubePerf
+  RgProfiling
+  Shadows
+)
 
-add_subdirectory(geVuViewer)
-
-
-if(GPUENGINE_BUILD_APP_geViewerAssimp)
-  add_subdirectory(geViewerAssimp)
-endif()
+foreach(app ${apps})
+	set(GPUENGINE_BUILD_APP_${app} OFF  CACHE BOOL "Build ${app} application.")
+	if(GPUENGINE_BUILD_APP_${app})
+		add_subdirectory(${app})
+	endif()
+endforeach()

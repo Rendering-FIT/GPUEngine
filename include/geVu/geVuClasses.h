@@ -21,8 +21,9 @@ namespace ge {
     geVu_class(MemoryBlock);
     geVu_class(MemoryManager);
     geVu_class(MemoryManagerAdvanced);
-    geVu_class(SwapchainCreateInfo);
     geVu_class(Swapchain);
+    geVu_class(WindowSwapchain);
+    geVu_class(WindowSwapchainCreateInfo);
     geVu_class(Pipeline);
     geVu_class(VertexArray);
 	};

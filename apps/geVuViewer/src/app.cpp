@@ -9,6 +9,13 @@
 
 #include <glm/gtx/string_cast.hpp>
 
+#include <geSG/Animation.h>
+#include <geSG/AnimationChannel.h>
+#include <regex>
+#include "FreeImageImageLoader.h"
+
+#include <FreeImagePlus.h>
+
 using namespace std;
 using namespace ge::ad;
 using namespace glm;
@@ -35,14 +42,18 @@ App::App() {
 
   setupEvents();
 
-  context = make_shared<Context>();
+  ContextCreateInfo cci;
+  cci.validation = false;
+  cci.verbose = false;
+
+  context = make_shared<Context>(cci);
   deviceContext = context->createDeviceContext(0);
 
   SDL_SysWMinfo info;
   SDL_VERSION(&info.version);
   SDL_GetWindowWMInfo(window->getWindow(), &info);
 
-  SwapchainCreateInfo sci;
+  WindowSwapchainCreateInfo sci;
   sci.hinstance = (HINSTANCE)GetModuleHandle(NULL);
   sci.hwnd = (HWND)info.info.win.window;
   swapchain = deviceContext->createSwapchain(sci);
@@ -52,23 +63,88 @@ App::App() {
 }
 
 void App::init() {
-  scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.obj"));  
+  string model = "D:/prac/modely/sponza3/sponza.fbx";
+  //string model = "D:/prac/modely/texCube/texCube.obj";
+  //string model = "D:/prac/modely/Excavator/bagrOld.fbx";
+  //string model = "D:/prac/modely/Anim/anim.fbx";
+
+  path = std::regex_replace(model, std::regex("[^/]+$"), "");
+  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.obj"));  
+  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/Excavator/bagrOld.fbx"));
+  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/Anim/anim.fbx"));
   //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.fbx"));
-  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/sponza3/sponza.fbx"));
+  scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene(model.c_str()));
   renderer->setScene(scene);
 
   deviceContext->flushCommandBuffer();
+
+  int i = 0;
+  for (auto &mod : scene->models) {
+    for (auto &mat : mod->materials) {
+      cout << "MATERIAL " << i++ << "\n";
+      int c = 0;
+      for (auto &comp : mat->materialComponents) {
+        cout << " COMPONENT " << c++ << "\n";
+        if (comp->getType() == ge::sg::MaterialComponent::ComponentType::IMAGE) {
+          auto imgComp = static_pointer_cast<ge::sg::MaterialImageComponent>(comp);
+          std::string texPath = path + imgComp->filePath;
+          cout << "  " << imgComp->semantic << " " << imgComp->filePath << "\n";
+
+          texPath = std::regex_replace(texPath, std::regex("\\\\"), "/");
+          auto fimg = FreeImageImageLoader::loadImage(texPath.c_str());
+          if (!fimg)cout << "img null " << texPath << "\n";
+          auto fip = fimg->getImageImpl();
+          assert(fimg);
+          cout << "converting\n";
+          fip->convertTo32Bits();
+          imgComp->image = shared_ptr<FreeImageImage>(fimg);
+
+          std::cout << "image loaded " << imgComp->filePath << "\n";
+        }
+        else {
+          auto simp = static_pointer_cast<ge::sg::MaterialSimpleComponent>(comp);
+          std::cout << "  " << simp->semantic << "\n";
+        }
+      }
+    }
+  }
+
+  for (auto &a : scene->animations) {
+    a->mode = ge::sg::Animation::Mode::LOOP;
+
+    for (auto&c : a->channels) {
+      if (auto cc = std::dynamic_pointer_cast<ge::sg::MovementAnimationChannel>(c)) {
+        cc->positionInterpolator.reset(new ge::sg::LinearKeyframeInterpolator<std::vector<ge::sg::MovementAnimationChannel::Vec3KeyFrame>, ge::core::time_point >());
+        cc->orientationInterpolator.reset(new ge::sg::SlerpKeyframeInterpolator<vector<ge::sg::MovementAnimationChannel::QuatKeyFrame>, ge::core::time_point>());
+        cc->scaleInterpolator.reset(new ge::sg::LinearKeyframeInterpolator<std::vector<ge::sg::MovementAnimationChannel::Vec3KeyFrame>, ge::core::time_point >());
+
+      }
+    }
+  }
 }
+
+
+int last = 0;
 
 void App::draw() {
   updateCamera();
+
+  auto time = std::chrono::milliseconds(SDL_GetTicks());
+  //auto time = std::chrono::milliseconds(time);
+  for (auto &a : scene->animations) {
+    a->update(time);
+
+  }
+
   renderer->projection = projection;
   renderer->view = view;
   renderer->frame();
+
+  //quit();
 }
 
-void App::resize(int w, int h){
-  swapchain->resize(w, h);  
+void App::resize(int w, int h) {
+  swapchain->resize(w, h);
 }
 
 
@@ -132,7 +208,7 @@ void App::updateCamera() {
   view = lookAt(eye, vec3(0, 0, 0), vec3(0, 1, 0));
   int w = window->getWidth();
   int h = window->getHeight();
-  projection = perspective(radians(60.f), float(w) / float(h), 1.0f, 10000.f);
+  projection = perspective(radians(60.f), float(w) / float(h), 0.1f, 1000.f);
 }
 
 

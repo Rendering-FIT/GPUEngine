@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <geVu/Context.h>
-#include <geVu/Swapchain.h>
+#include <geVu/WindowSwapchain.h>
 #include <geVu/MemoryManager.h>
 #include <geVu/Binary.h>
 
@@ -44,9 +44,11 @@ bool ge::vu::DeviceContext::isExtensionSupported(std::string name) {
   return false;
 }
 
-SwapchainShared ge::vu::DeviceContext::createSwapchain(SwapchainCreateInfo & sci) {
+WindowSwapchainShared ge::vu::DeviceContext::createSwapchain(WindowSwapchainCreateInfo & sci) {
   sci.deviceContext = shared_from_this();
-  return make_shared<Swapchain>(sci);
+  auto sw = make_shared<WindowSwapchain>(sci);
+  sw->init();
+  return sw;
 }
 
 void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Image image, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, vk::ImageAspectFlags imageAspect, int mipBase, int mipCount, int layerBase, int layerCount){
@@ -61,6 +63,9 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
   auto layoutToFlags = [](vk::ImageLayout layout) {
     vk::AccessFlags ret;
     switch (layout) {
+    case vk::ImageLayout::ePreinitialized:
+      ret = vk::AccessFlagBits::eHostWrite;
+      break;
     case vk::ImageLayout::eTransferDstOptimal:
       ret = vk::AccessFlagBits::eTransferWrite;
       break;
@@ -93,7 +98,7 @@ void ge::vu::DeviceContext::changeImageLayout(vk::CommandBuffer buffer, vk::Imag
   buffer.pipelineBarrier(
     vk::PipelineStageFlagBits::eTopOfPipe,
     vk::PipelineStageFlagBits::eTopOfPipe,
-    vk::DependencyFlags(), 0, NULL, 0, NULL, 1, &imb);
+    vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &imb);
 }
 
 void ge::vu::DeviceContext::flushCommandBuffer() {

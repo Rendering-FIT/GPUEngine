@@ -8,13 +8,15 @@
 #include <geSG/Node.h>
 #include <ste/DAG.h>
 
+#include <glm/gtx/string_cast.hpp>
+
 using namespace ge::vu;
 using namespace ge::vusg;
 using namespace ge::sg;
 using namespace std;
 
-ge::vusg::PhongTechnique::PhongTechnique(ge::vu::DeviceContextShared & deviceContext, ge::vu::SwapchainShared &swapchain):
-deviceContext(deviceContext), swapchain(swapchain){
+ge::vusg::PhongTechnique::PhongTechnique(ge::vu::DeviceContextShared & deviceContext, ge::vu::SwapchainShared &swapchain) :
+  swapchain(swapchain), deviceContext(deviceContext) {
   sceneManager = make_shared<SceneManager>(deviceContext);
 
   vk::CommandBufferAllocateInfo cbai;
@@ -22,14 +24,14 @@ deviceContext(deviceContext), swapchain(swapchain){
   cbai.commandBufferCount = 1;
   commandBuffer = deviceContext->getDevice().allocateCommandBuffers(cbai)[0];
 
-  createPipelineLayout(); 
-  createPipeline();  
-
+  createPipelineLayout();
+  createPipeline();
+  
   deviceContext->flushCommandBuffer();
 }
 
 
-void ge::vusg::PhongTechnique::createDrawCommand(){
+void ge::vusg::PhongTechnique::createDrawCommand() {
   int width = swapchain->getWidth();
   int height = swapchain->getHeight();
 
@@ -47,12 +49,12 @@ void ge::vusg::PhongTechnique::createDrawCommand(){
   rpbi.framebuffer = swapchain->getCurrentFrameBuffer();
   rpbi.renderArea = vk::Rect2D(vk::Offset2D(0, 0), vk::Extent2D((uint32_t)width, (uint32_t)height));
   rpbi.renderPass = swapchain->getRenderPass();
-  
+
   commandBuffer.beginRenderPass(rpbi, vk::SubpassContents::eInline);
 
   commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
 
-  commandBuffer.pushConstants<glm::mat4>(pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, { projection,view});
+  commandBuffer.pushConstants<glm::mat4>(pipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, { projection,view });
 
   vk::Viewport viewport;
   viewport.width = (float)width;
@@ -65,65 +67,37 @@ void ge::vusg::PhongTechnique::createDrawCommand(){
   vk::Rect2D scissor;
   scissor.offset = vk::Offset2D(0, 0);
   scissor.extent = vk::Extent2D(width, height);
-  
+
   commandBuffer.setScissor(0, 1, &scissor);
-  
+
   processNode(scene->rootNode);
 
   commandBuffer.endRenderPass();
   commandBuffer.end();
 }
 
-void ge::vusg::PhongTechnique::processNode(std::shared_ptr<ge::sg::MatrixTransformNode> node, glm::mat4 parentMatrix){
+void ge::vusg::PhongTechnique::processNode(std::shared_ptr<ge::sg::MatrixTransformNode> node, glm::mat4 parentMatrix) {
 
   glm::mat4 currentMatrix = parentMatrix *(***node).getMatrix();
 
-  commandBuffer.pushConstants<glm::mat4>(pipelineLayout, vk::ShaderStageFlagBits::eVertex, sizeof(glm::mat4)*2, { currentMatrix });
-  
+  commandBuffer.pushConstants<glm::mat4>(pipelineLayout, vk::ShaderStageFlagBits::eVertex, sizeof(glm::mat4) * 2, { currentMatrix });
+
+  //std::cout << glm::to_string(currentMatrix)<<"\n";
   for (auto &mesh : (***node).meshes) {
 
 
 
-    auto &drawable = sceneManager->getDrawable(mesh.get());
-    
-    auto &material = mesh->material;
-    auto &diff = material->getComponent<MaterialImageComponent>(MaterialImageComponent::Semantic::diffuseTexture);
-    auto desc = sceneManager->getDescriptor(pipelineLayout,diff.get());
+    auto drawable = sceneManager->getDrawable(mesh.get());
 
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, { desc }, { 0 });
+    auto &material = mesh->material;
+    auto diff = material->getComponent<MaterialImageComponent>(MaterialImageComponent::Semantic::diffuseTexture);
+    auto desc = sceneManager->getDescriptor(descriptorSetLayout,diff.get());
+
+    //auto desc = set;
+
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, { desc }, {});
 
     drawable->draw(commandBuffer);
-
-    /*
-    auto &material = mesh->material;
-    std::cout << material->materialComponents.size() << "\n";
-
-    auto comp = material->getComponent<MaterialImageComponent>(MaterialImageComponent::Semantic::diffuseTexture);
-    std::cout << "diffuse texture " << comp->filePath << "\n";
-
-    for (auto &c : material->materialComponents) {
-      std::cout <<" "<< c->getType() << "\n";
-      if (c->getType() == MaterialComponent::ComponentType::SIMPLE) {
-        auto &simple = std::static_pointer_cast<MaterialSimpleComponent>(c);
-
-        std::cout << "  " << simple->semantic <<  "\n";      
-        if (simple->dataType == MaterialSimpleComponent::DataType::FLOAT) {
-          float *f = reinterpret_cast<float*>(simple->data.get());
-          std::cout << "    ";
-          for (int i = 0; i < simple->size; i++) {
-            std::cout << f[i] << " ";
-          }
-          std::cout << "\n";
-        }
-      }
-      if (c->getType() == MaterialComponent::ComponentType::IMAGE) {
-        auto &image = std::static_pointer_cast<MaterialImageComponent>(c);
-        std::cout << "  " << image->semantic << "\n";
-        std::cout << "    " << image->filePath << "\n";
-      }
-    }
-    */
-    //auto &drawable = sceneManager->getDrawable(mesh);
   }
 
   for (auto &c : node->children) {
@@ -131,7 +105,7 @@ void ge::vusg::PhongTechnique::processNode(std::shared_ptr<ge::sg::MatrixTransfo
   }
 }
 
-void ge::vusg::PhongTechnique::createPipeline(){
+void ge::vusg::PhongTechnique::createPipeline() {
   pipeline = make_shared<Pipeline>(deviceContext);
 
   pipeline->addStage(vk::ShaderStageFlagBits::eVertex,
@@ -151,11 +125,11 @@ void ge::vusg::PhongTechnique::createPipeline(){
   pipeline->create();
 }
 
-void ge::vusg::PhongTechnique::createPipelineLayout(){
-  auto &device = deviceContext->getDevice();
-  
+void ge::vusg::PhongTechnique::createPipelineLayout() {
+  auto device = deviceContext->getDevice();
+
   vk::DescriptorSetLayoutBinding dslb;
-  dslb.binding = 1;
+  dslb.binding = 0;
   dslb.descriptorCount = 1;
   dslb.descriptorType = vk::DescriptorType::eCombinedImageSampler;
   dslb.stageFlags = vk::ShaderStageFlagBits::eFragment;
@@ -178,7 +152,7 @@ void ge::vusg::PhongTechnique::createPipelineLayout(){
   pipelineLayout = device.createPipelineLayout(plci);
 }
 
-void ge::vusg::PhongTechnique::frame(){
+void ge::vusg::PhongTechnique::frame() {
   auto &queue = deviceContext->getQueue();
 
   swapchain->next();
@@ -201,6 +175,6 @@ void ge::vusg::PhongTechnique::frame(){
   queue.waitIdle();
 }
 
-void ge::vusg::PhongTechnique::setScene(std::shared_ptr<ge::sg::Scene> &scene){
+void ge::vusg::PhongTechnique::setScene(std::shared_ptr<ge::sg::Scene> &scene) {
   this->scene = scene;
 }

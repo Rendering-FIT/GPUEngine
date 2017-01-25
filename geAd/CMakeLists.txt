@@ -16,4 +16,7 @@ add_subdirectory(SDLWindow)
 add_subdirectory(SDLOrbitManipulator)
 add_subdirectory(DEUtil)
 add_subdirectory(LibraryLoader)
-add_subdirectory(geVuSG)
+
+if(GPUENGINE_BUILD_geVuSG)
+	add_subdirectory(geVuSG)
+endif()
