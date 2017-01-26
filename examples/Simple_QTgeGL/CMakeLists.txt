@@ -13,6 +13,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(PROJECT_NAME "Simple_QtgeGL")
 set(APP_NAME "Simple_QtgeGL")
+project(${PROJECT_NAME})
 
 #You need these for automatic handling of Qt based classes (see Qt documentation).
 #You can also use cmake commands like qt_wrap_cpp or qt_wrap_ui... for by hand approach.
@@ -25,7 +26,6 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
-project(${PROJECT_NAME})
 
 SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
