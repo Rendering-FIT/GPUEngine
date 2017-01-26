@@ -38,7 +38,7 @@ glm::vec4 computePlane(glm::vec3 A,glm::vec3 B,glm::vec3 C){
   }
   if(greaterVec(B,C)){
     swapped = !swapped;
-    swapValues(A,B);
+    swapValues(B,C);
   }
   if(greaterVec(A,B)){
     swapped = !swapped;
