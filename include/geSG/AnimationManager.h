@@ -21,6 +21,18 @@ namespace ge
       {
       public:
 
+         template<class Rep, class Period = std::ratio<1>>
+         void playAnimation(std::shared_ptr<Animation>& animation, const std::chrono::duration<Rep, Period>& duration)
+         {
+            playAnimation(animation, core::time_point(std::chrono::duration_cast<core::time_point::duration>(duration)));
+         }
+
+         template<class Rep, class Period = std::ratio<1>>
+         void update(const std::chrono::duration<Rep, Period>& duration)
+         {
+            update(core::time_point(std::chrono::duration_cast<core::time_point::duration>(duration)));
+         }
+
          virtual void update(const core::time_point& t) override;
          void pauseAnimation(std::shared_ptr<Animation>& animation);
          void playAnimation(std::shared_ptr<Animation>& animation, const core::time_point& startTime);
