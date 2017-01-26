@@ -42,6 +42,7 @@ RSSV::RSSV(
   if(windowSize.x == 512 )this->_nofLevels = 3;
   if(windowSize.x == 4096)this->_nofLevels = 4;
 
+#include"SilhouetteShaders.h"
 #include"RSSVShaders.h"
 
   this->_generateHDT0Program = makeComputeProgram(
@@ -70,6 +71,8 @@ RSSV::RSSV(
       ge::gl::Shader::define("MAX_MULTIPLICITY",int(maxMultiplicity              )),
       ge::gl::Shader::define("LOCAL_ATOMIC"    ,int(this->_params.localAtomic    )),
       ge::gl::Shader::define("CULL_SIDES"      ,int(this->_params.cullSides      )),
+      ge::gl::Shader::define("USE_PLANES"      ,int(this->_params.usePlanes      )),
+      silhouetteFunctions,
       _computeSilhouettesSrc);
 
   std::vector<float>vertices;
@@ -102,9 +105,14 @@ RSSV::RSSV(
 
     for(size_t o=0;o<adj->getNofOpposite(e);++o){
       auto dstOppositeVertexPtr = dstOppositeVerticesPtr + o*componentsPerVertex4D;
-      auto srcOppositeVertexPtr = srcPtr + adj->getOpposite(e,o);
-      std::memcpy(dstOppositeVertexPtr,srcOppositeVertexPtr,sizeofVertex3DInBytes);
-      dstOppositeVertexPtr[3] = 1.f;
+      if(this->_params.usePlanes){
+        auto const plane = computePlane(toVec3(srcPtr+adj->getEdgeVertexA(e)),toVec3(srcPtr+adj->getEdgeVertexB(e)),toVec3(srcPtr+adj->getOpposite(e,o)));
+        std::memcpy(dstOppositeVertexPtr,&plane,sizeof(plane));
+      }else{
+        auto srcOppositeVertexPtr = srcPtr + adj->getOpposite(e,o);
+        std::memcpy(dstOppositeVertexPtr,srcOppositeVertexPtr,sizeofVertex3DInBytes);
+        dstOppositeVertexPtr[3] = 1.f;
+      }
     }
 
     size_t const nofEmptyOppositeVertices = adj->getMaxMultiplicity() - adj->getNofOpposite(e);
@@ -198,6 +206,28 @@ void RSSV::_computeSilhouettes(glm::vec4 const&lightPosition){
     ->bindBuffer("dispatchIndirectBuffer",this->_dispatchIndirectBuffer)
     ->dispatch(GLuint(ge::core::getDispatchSize(this->_nofEdges,this->_params.computeSilhouetteWGS)));
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  /*
+  auto ptr = (float*)this->_silhouettes->map();
+  for(size_t i=0;i<10;++i){
+    std::cout<<ptr[i*7+0]<<" "<<ptr[i*7+1]<<" "<<ptr[i*7+2]<<std::endl;
+    std::cout<<ptr[i*7+3]<<" "<<ptr[i*7+4]<<" "<<ptr[i*7+5]<<std::endl;
+    std::cout<<ptr[i*7+6]<<std::endl;
+  }
+  this->_silhouettes->unmap();
+  // */
+  /*
+  auto ptr = (float*)this->_edges->map();
+  for(size_t i=0;i<10;++i){
+    for(size_t k=0;k<4;++k){
+      for(size_t l=0;l<4;++l)
+        std::cout<<ptr[(i*4+k)*4+l]<<" ";
+      std::cout<<std::endl;
+    }
+    std::cout<<std::endl;
+  }
+  this->_edges->unmap();
+  // */
+
 }
 
 void RSSV::_rasterize(glm::vec4 const&lightPosition,glm::mat4 const&view,glm::mat4 const&projection){

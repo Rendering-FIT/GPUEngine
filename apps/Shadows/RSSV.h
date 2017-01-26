@@ -11,6 +11,7 @@ struct RSSVParams{
     bool   localAtomic             = true ;
     bool   cullSides               = false;
     size_t silhouettesPerWorkgroup = 1    ;
+    bool   usePlanes               = 0    ;
 };
 
 class RSSV: public ShadowMethod{

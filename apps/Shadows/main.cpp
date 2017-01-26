@@ -150,10 +150,11 @@ void Application::parseArguments(int argc,char*argv[]){
   this->sintornParams.bias                     = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
   this->sintornParams.discardBackFacing        = arg->geti32("--sintorn-discardBackFacing"   ,1    ,"discard light back facing fragments from hierarchical depth texture construction");
 
-  this->rssvParams.computeSilhouetteWGS    = arg->geti32("--rssw-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
-  this->rssvParams.localAtomic             = arg->geti32("--rssw-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
-  this->rssvParams.cullSides               = arg->geti32("--rssw-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
-  this->rssvParams.silhouettesPerWorkgroup = arg->geti32("--rssw-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
+  this->rssvParams.computeSilhouetteWGS    = arg->geti32("--rssv-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
+  this->rssvParams.localAtomic             = arg->geti32("--rssv-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
+  this->rssvParams.cullSides               = arg->geti32("--rssv-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
+  this->rssvParams.silhouettesPerWorkgroup = arg->geti32("--rssv-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
+  this->rssvParams.usePlanes               = arg->geti32("--rssv-usePlanes"              ,0 ,"use triangle planes instead of opposite vertices"            );
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
