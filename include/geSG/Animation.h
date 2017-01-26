@@ -26,6 +26,12 @@ namespace ge
 
          Animation();
 
+         template<class Rep, class Period = std::ratio<1>>
+         void start(const std::chrono::duration<Rep, Period>& duration)
+         {
+            start(core::time_point(std::chrono::duration_cast<core::time_point::duration>(duration)));
+         }
+
          virtual void start(const core::time_point& t = core::time_point());
 
          template<class Rep, class Period = std::ratio<1>>
