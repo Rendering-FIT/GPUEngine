@@ -241,11 +241,11 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   this->_computeSidesProgram
-    ->set1ui    ("numEdge"      ,uint32_t(this->_nofEdges)    )
-    ->set4fv    ("lightPosition",glm::value_ptr(lightPosition))
-    ->bindBuffer("edges"        ,this->_edges                 )
-    ->bindBuffer("silhouettes"  ,this->_sillhouettes          )
-    ->bindBuffer("Counter"      ,this->_dibo                  )
+    ->set1ui    ("numEdge"           ,uint32_t(this->_nofEdges)    )
+    ->set4fv    ("lightPosition"     ,glm::value_ptr(lightPosition))
+    ->bindBuffer("edges"             ,this->_edges                 )
+    ->bindBuffer("silhouettes"       ,this->_sillhouettes          )
+    ->bindBuffer("drawIndirectBuffer",this->_dibo                  )
     ->dispatch((GLuint)ge::core::getDispatchSize(this->_nofEdges,this->_params.computeSidesWGS));
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

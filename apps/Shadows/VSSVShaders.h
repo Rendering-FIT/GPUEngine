@@ -92,6 +92,7 @@ void main(){
 ).";
 
 std::string const _drawCapsVertexShaderSrc = R".(
+#line 95
 layout(location=0)in vec3 triangleVertexA;
 layout(location=1)in vec3 triangleVertexB;
 layout(location=2)in vec3 triangleVertexC;
@@ -104,7 +105,7 @@ uniform mat4 projectionMatrix = mat4(1.f);
 void main(){
   int multiplicity = currentMultiplicity(triangleVertexA,triangleVertexB,triangleVertexC,lightPosition);
   if(multiplicity==0){gl_Position=vec4(0,0,0,1);return;}
-  if(multiplicity<0) // this has to be swapped if using strips
+  if(multiplicity<0){ // this has to be swapped if using strips
     float farCap = float(gl_InstanceID&1);
     int   vID    = ((farCap>0)?2-int(gl_VertexID):int(gl_VertexID));
 

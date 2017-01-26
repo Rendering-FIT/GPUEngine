@@ -18,22 +18,22 @@ const std::string computeSrc = R".(
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
 #if     USE_PLANES == 1
-layout(std430,binding=0)         buffer Edges       {float edges      [];};
+layout(std430,binding=0)readonly buffer Edges              {float edges      [];};
 #else //USE_PLANES == 1
-layout(std430,binding=0)         buffer Edges       {vec4  edges      [];};
+layout(std430,binding=0)readonly buffer Edges              {vec4  edges      [];};
 #endif//USE_PLANES == 1
 
-layout(std430,binding=1)         buffer Silhouettes {vec4  silhouettes[];};
+layout(std430,binding=1)         buffer Silhouettes        {vec4  silhouettes[];};
 
 #if LOCAL_ATOMIC == 1
-layout(std430,binding=2)volatile buffer SCounter    {uint Counter[4];};
+layout(std430,binding=2)volatile buffer DrawIndirectCommand{uint drawIndirectBuffer[4];};
 #else
-layout(std430,binding=2)         buffer SCounter    {uint Counter[4];};
+layout(std430,binding=2)         buffer DrawIndirectCommand{uint drawIndirectBuffer[4];};
 #endif
 
-uniform uint numEdge=0;
-uniform vec4 lightPosition;
-uniform mat4 mvp;
+uniform uint numEdge       = 0                  ;
+uniform vec4 lightPosition = vec4(100,100,100,1);
+uniform mat4 mvp           = mat4(1)            ;
 
 #if LOCAL_ATOMIC == 1
 shared uint localCounter;
@@ -137,7 +137,7 @@ void main(){
   uint localOffset = atomicAdd(localCounter,uint(2*abs(Multiplicity)));
   barrier();
   if(gl_LocalInvocationID.x==0){
-    globalOffset = atomicAdd(Counter[0],localCounter);
+    globalOffset = atomicAdd(drawIndirectBuffer[0],localCounter);
   }
   barrier();
   uint WH = globalOffset + localOffset;
@@ -156,7 +156,7 @@ void main(){
   }
 #else
   if(Multiplicity>0){
-    uint WH=atomicAdd(Counter[0],2*Multiplicity);
+    uint WH=atomicAdd(drawIndirectBuffer[0],2*Multiplicity);
     for(int m=0;m<Multiplicity;++m){
       silhouettes[WH++]=P[1];
       silhouettes[WH++]=P[0];
@@ -164,7 +164,7 @@ void main(){
   }
   if(Multiplicity<0){
     Multiplicity=-Multiplicity;
-    uint WH=atomicAdd(Counter[0],2*Multiplicity);
+    uint WH=atomicAdd(drawIndirectBuffer[0],2*Multiplicity);
     for(int m=0;m<Multiplicity;++m){
       silhouettes[WH++]=P[0];
       silhouettes[WH++]=P[1];
@@ -187,7 +187,7 @@ void main(){
 std::string const drawCPSrc = R".(
 #version 450 core
 layout(vertices=4)out;
-uniform mat4 mvp;
+uniform mat4 mvp           = mat4(1)            ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
 void main(){
   //gl_out[gl_InvocationID].gl_Position=mvp*gl_in[gl_InvocationID].gl_Position;
@@ -249,8 +249,8 @@ std::string const capsGPSrc = R".(
 layout(triangles)in;
 layout(triangle_strip,max_vertices=6)out;
 
-uniform mat4 mvp;
-uniform vec4 lightPosition;
+uniform mat4 mvp           = mat4(1.f);
+uniform vec4 lightPosition = vec4(100,100,100,1);
 
 void main(){
   int Multiplicity = currentMultiplicity(gl_in[0].gl_Position.xyz,gl_in[1].gl_Position.xyz,gl_in[2].gl_Position.xyz,lightPosition);
