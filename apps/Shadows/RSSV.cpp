@@ -236,3 +236,4 @@ void RSSV::_rasterize(glm::vec4 const&lightPosition,glm::mat4 const&view,glm::ma
   (void)view;
   (void)projection;
 }
+
