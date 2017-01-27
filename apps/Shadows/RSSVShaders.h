@@ -180,6 +180,7 @@ void main(){
 #endif//USE_PLANES == 1
 
   }
+
   uint64_t isSilhouette = ballotAMD(Multiplicity!=0);
   if(gl_LocalInvocationID.x==0){
     uint nofSilhouettes = bitCount(uint(isSilhouette&0xffffffffu))+bitCount(uint(isSilhouette>>32));
@@ -189,6 +190,7 @@ void main(){
   uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
   uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
   uint offset         = (globalOffset+localOffset)*7;
+
   if(Multiplicity==0)return;
   if(Multiplicity>0){
     silhouettes[offset+0]=P[0].x;
@@ -271,6 +273,7 @@ const std::string _rasterizeSrc = R".(
 #define FLOATS_PER_SILHOUETTE_MULTIPLICITY 1
 #define FLOATS_PER_SILHOUETTE              (FLOATS_PER_SILHOUETTE_POINTS+FLOATS_PER_SILHOUETTE_MULTIPLICITY)
 #define VEC4_PER_SIDE                      4
+#define RESULT_LENGTH_IN_UINT              (WAVEFRONT_SIZE/UINT_BIT_SIZE)
 
 layout(local_size_x=WORKGROUP_SIZE_X,local_size_y=WORKGROUP_SIZE_Y,local_size_z=WORKGROUP_SIZE_Z)in;
 layout(       binding=RASTERIZE_BINDING_HDT        )uniform sampler2D HDT[NUMBER_OF_LEVELS];
@@ -304,6 +307,40 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 
   }
 }
+
+#define NO_INTERSECTION 0x00000000u
+#define INTERSECTS      0x00000001u
+
+uint doesSilhouetteIntersectsAABB(in vec3 aabbCorner,in vec3 aabbSize){
+  return NO_INTERSECTION;
+}
+
+#define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                   \
+void testSSilhouetteHDT##LEVEL(                                                             \
+    uvec2 coord    ,                                                                        \
+    vec2  clipCoord){                                                                       \
+  uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);\
+  uvec2 globalCoord     = (coord<<3)+localCoord;                                            \
+  vec2  globalClipCoord = clipCoord+vec2(2.f/float(8<<(3*LEVEL)))*localCoord;               \
+  vec2  zMinMax         = texelFetch(HDT[LEVEL],ivec2(globalCoord),0).xy;                   \
+  vec3  aabbCorner      = vec3(globalClipCoord,zMinMax.x);                                  \
+  vec3  aabbSize        = vec3(vec2(2.f/float(8<<(3*LEVEL))),zMinMax.y-zMinMax.x);          \
+  uint  result          = doesSilhouetteIntersectsAABB(aabbCorner,aabbSize);                \
+  uint64_t intersectsBallot = ballotAMD(result==INTERSECTS);                                \
+  for(int i=0;i<RESULT_LENGTH_IN_UINT;++i){                                                 \
+    uint unresolvedIntersections = uint((IntersectsBallot>>(UINT_BIT_SIZE*i))&0xffffffffu); \
+    while(unresolvedIntersections != 0u){                                                   \
+      int   currentBit         = findMSB(unresolvedIntersections);                          \
+      int   currentTile        = currentBit + i*UINT_BIT_SIZE;                              \
+      uvec2 currentLocalCoord  = uvec2(currentTile&3,currentTile>>3);                       \
+      uvec2 currentGlobalCoord = coord*8 + currentLocalCoord;                               \
+      vec2  CurrentClipCoord   = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL*CurrentLocalCoord;\
+      TestShadowFrustumHDB ## NEXT_LEVEL (CurrentGlobalCoord,CurrentClipCoord);\
+      UnresolvedIntersects    &= ~(1u<<CurrentBit);\
+    }\
+  }\
+}
+
 
 /*
 #define TEST_SILHOUETTE_LAST(LEVEL)\
