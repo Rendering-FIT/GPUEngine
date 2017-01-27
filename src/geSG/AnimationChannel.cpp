@@ -16,7 +16,8 @@ AnimationChannel::~AnimationChannel()
 ///////////////////////////////////////////////////////////////////////////
 
 /**
- * Sets up LinearKeyframeInterpolator for orientation and scale and spherical linear interpolation for the orientation.
+ * Sets up linear interpolator (LinearKeyframeInterpolator) for orientation and scale and
+ * spherical linear interpolation (SlerpKeyframeInterpolator) for the orientation.
  */
 MovementAnimationChannel::MovementAnimationChannel()
    : positionInterpolator(new ge::sg::LinearKeyframeInterpolator<std::vector<Vec3KeyFrame>>())

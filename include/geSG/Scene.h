@@ -11,8 +11,6 @@ namespace ge
 
       /**
        * Class holding the information about the scene you want to visualize.
-       * 
-       * \example Simple_QtgeSG/main.cpp
        */
       class Scene
       {
@@ -24,5 +22,11 @@ namespace ge
          std::shared_ptr<MatrixTransformNode> rootNode; ///< root node of the scene
       protected:
       };
+
+      /**
+       * Example of loading and visualizing model.
+       * 
+       * \example Simple_QtgeSG/src/main.cpp
+       */
    }
 }
