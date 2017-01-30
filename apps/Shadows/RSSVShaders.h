@@ -362,7 +362,7 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 // P'w =                                    -Pz
 //
 // P'x = 2az/(Ax*(1-Jx)+Bx*(Jx)-Ax*(1-Ix)-Bx*(Ix))Px+(Ax*(1-Jx)+Bx*(Jx)+Ax*(1-Ix)+Bx*(Ix))/(Ax*(1-Jx)+Bx*(Jx)-Ax*(1-Ix)-Bx*(Ix))Pz
-// P'x = 2az/(Ax*(1-Jx)+Bx*Jx-Ax*(1-Ix)-Bx*Ix)Px+(Ax*(1-Jx)+Bx*Jx+Ax*(1-Ix)+Bx*Ix)/(Ax*(1-Jx)+Bx*Jx-Ax*(1-Ix)-Bx*Ix)Pz
+// P'x = 2az/(Ax*(1-Jx)+Bx* Jx -Ax*(1-Ix)-Bx* Ix )Px+(Ax*(1-Jx)+Bx* Jx +Ax*(1-Ix)+Bx* Ix )/(Ax*(1-Jx)+Bx* Jx -Ax*(1-Ix)-Bx* Ix )Pz
 // P'x = 2az/(Ax*(1-Jx)+Bx*(Jx-Ix)-Ax*(1-Ix))Px+(Ax*(1-Jx)+Bx*(Jx+Ix)+Ax*(1-Ix))/(Ax*(1-Jx)+Bx*(Jx-Ix)-Ax*(1-Ix))Pz
 // P'x = 2az/(Ax*(-Jx+Ix)+Bx*(Jx-Ix))Px+(Ax*(2-Jx-Ix)+Bx*(Jx+Ix))/(Ax*(-Jx+Ix)+Bx*(Jx-Ix))Pz
 // P'x = 2az/(-Ax*(Jx-Ix)+Bx*(Jx-Ix))Px+(Ax*(2-Jx-Ix)+Bx*(Jx+Ix))/(-Ax*(Jx-Ix)+Bx*(Jx-Ix))Pz
@@ -388,7 +388,10 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 // clip-space point X = [Xx,Xy,Xz,Xw]^T lies inside frustum if and only if:
 // foreach i in {x,y,z} : -Xw < Xi < +Xw
 //
-///////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
 // light position: L=(Lx,Ly,Lz,Lw), Lw in {0,1}, Lw==0 -> light in infinity = direction light
 // omnidirectional light source:
 //
@@ -396,7 +399,7 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 // shadow volume side: A->B, C = (Ax-Lx,Ay-Ly,Az-Lz,0), D = (Bx-Lx,By-Ly,Bz-Lz,0)
 //
 // shadow volume side lies inside frustum if:
-// 1) adge A->B or A->C or B->D intersects frustum
+// 1) edge A->B or A->C or B->D intersects frustum
 // or
 // 2) one of main diagonals of frustum intersects shadow volume side
 //
@@ -434,24 +437,96 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 //
 // if(Aw-Bw-Ai+Bi == 0) -> A == B
 //
-// 
-// tMin = 1
-// tMax = 0
-// foreach i in {x,y,z}:
-//   if(Aw-Bw+Ai-Bi > 0):
-//     tMax = min(tMax,(+Ai+Aw)/(Aw-Bw+Ai-Bi))
-//   else:
-//     tMin = max(tMin,(+Ai+Aw)/(Aw-Bw+Ai-Bi))
-//   if(Aw-Bw-Ai+Bi > 0):
-//     tMax = min(tMax,(-Ai+Aw)/(Aw-Bw-Ai+Bi))
-//   else:
-//     tMin = max(tMin,(-Ai+Aw)/(Aw-Bw-Ai+Bi))
+// Algorithm0(A,B):
+//   tMin = 0
+//   tMax = 1
+//   foreach i in {x,y,z}:
+//     if(Aw-Bw+Ai-Bi > 0):
+//       tMax = min(tMax,(+Ai+Aw)/(Aw-Bw+Ai-Bi))
 //
-//  return tMin <= tMax;
+//     if(Aw-Bw+Ai-Bi < 0):
+//       tMin = max(tMin,(+Ai+Aw)/(Aw-Bw+Ai-Bi))
+//
+//     if(Aw-Bw+Ai-Bi == 0):
+//       if(+Ai+Aw < 0):return false
+//
+//     if(Aw-Bw-Ai+Bi > 0):
+//       tMax = min(tMax,(-Ai+Aw)/(Aw-Bw-Ai+Bi))
+//
+//     if(Aw-Bw-Ai+Bi < 0):
+//       tMin = max(tMin,(-Ai+Aw)/(Aw-Bw-Ai+Bi))
+//
+//     if(Aw-Bw-Ai+Bi == 0):
+//       if(-Ai+Aw < 0):return false
+//   return tMin <= tMax;
+//
+// Algorithm0(A,A):
+//   tMin = 0
+//   tMax = 1
+//   foreach i in {x,y,z}:
+//     if(+Ai+Aw < 0):return false
+//     if(-Ai+Aw < 0):return false
+//   return tMin <= tMax;
+//
+// Algorithm0(A,0):
+//   return true
+//
+//
+// 2) one of main diagonals of frustum intersects shadow volume side
+// corners of frustum in clip-space:
+// C0 = (-1,-1,-1,1)
+// C1 = (+1,-1,-1,1)
+// C2 = (-1,+1,-1,1)
+// C3 = (+1,+1,-1,1)
+// C4 = (-1,-1,-1,1)
+// C5 = (+1,-1,-1,1)
+// C6 = (-1,+1,-1,1)
+// C7 = (+1,+1,-1,1)
+//
+// C(i) = (-1+2*((i>>0)&1),-1+2*((i>>1)&1),-1+2*((i>>2)&1),1)
+//
+// If main diagonal intersect shadow volume side in point X than:
+// X.x ==  X.y ==  X.z   C0->C7
+// X.x == -X.y == -X.z   C1->C6
+// X.x == -X.y ==  X.z   C2->C5
+// X.x ==  X.y == -X.z   C3->C4
+//
+// edge: A->B, A=(Ax,Ay,Az,1), B=(Bx,By,Bz,1)
+// shadow volume side: A->B, C = (Ax-Lx,Ay-Ly,Az-Lz,0), D = (Bx-Lx,By-Ly,Bz-Lz,0)
+//
+// M(t) = (1-t)*A+t*B
+// O(t) = (1-t)*C+t*D
+// X(t,l) = (1-l)*M(t) + l*O(t)
+// X(t,l) = (1-l)*(1-t)*A + (1-l)*t*B + l*(1-t)*C + l*t*D
+// X(t,l) = A -l*A -t*A + t*l*A + t*B - t*l*B + l*C - t*l*C + t*l*D
+// X(t,l) = A + l*(C-A) + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A + l*((Ax-Lx,Ay-Ly,Az-Lz,0)-(Ax,Ay,Az,1)) + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A + l*((-Lx,-Ly,-Lz,-1)) + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A - l*L + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A - l*L + t*(B-A) + t*l*((Ax,Ay,Az,1)-(Bx,By,Bz,1)-(Ax-Lx,Ay-Ly,Az-Lz,0)+(Bx-Lx,By-Ly,Bz-Lz,0))
+// X(t,l) = A - l*L + t*(B-A) + t*l*((Ax-Bx,Ay-By,Az-Bz,0)-(Ax-Lx,Ay-Ly,Az-Lz,0)+(Bx-Lx,By-Ly,Bz-Lz,0))
+// X(t,l) = A - l*L + t*(B-A) + t*l*((Lx-Bx,Ly-By,Lz-Bz,0)+(Bx-Lx,By-Ly,Bz-Lz,0))
+// X(t,l) = A - l*L + t*(B-A) + t*l*0
+// X(t,l) = A - l*L + t*(B-A)
+//
+// X(t,l)x == X(t,l)y
+//
+// X(t,l)x ==  X(t,l)y && X(t,l)x ==  X(t,l)z
+// X(t,l)x == -X(t,l)y && X(t,l)x == -X(t,l)z
+// X(t,l)x == -X(t,l)y && X(t,l)x ==  X(t,l)z
+// X(t,l)x ==  X(t,l)y && X(t,l)x == -X(t,l)z
+//
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
 
 /**
  * @brief tests if edge intersect frustum
- * edge (A->B) is assumed to be in clip space and not degenerated: A!=B
+ * edge (A->B) is assumed to be in clip space
  * requires at least 5 registers
  *
  * @param A edge starting point
@@ -467,14 +542,18 @@ bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
     float divisor  = divident - B[i] - B[3];//register R4
     if(divisor > 0.f)
       tMax = min(tMax,dividend/divisor);
-    else
+    if(divisor < 0.f)
       tMin = max(tMin,divident/divisor);
+    if(divisor == 0.f && dividend < 0.f)
+      return false;
     divident = -A[i]+A[3];
     divisor = divident + B[i] - B[3];
     if(divisor > 0.f)
       tMax = min(tMax,dividend/divisor);
-    else
+    if(divisor < 0.f)
       tMin = max(tMin,divident/divisor);
+    if(divisor == 0.f && dividend < 0.f)
+      return false;
   }
   return tMin <= tMax;
 }
