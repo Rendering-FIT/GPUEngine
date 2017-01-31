@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include <array>
-#include <glm/gtc/matrix_transform.inl>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace ge::sg;
 using namespace ge::core;
@@ -16,19 +16,21 @@ AnimationChannel::~AnimationChannel()
 ///////////////////////////////////////////////////////////////////////////
 
 /**
- * Sets up NearestKeyframeInterpolator for all key frames.
+ * Sets up linear interpolator (LinearKeyframeInterpolator) for orientation and scale and
+ * spherical linear interpolation (SlerpKeyframeInterpolator) for the orientation.
  */
 MovementAnimationChannel::MovementAnimationChannel()
-   : positionInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point >())
-   , orientationInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<QuatKeyFrame>, core::time_point >())
-   , scaleInterpolator(new ge::sg::NearestKeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point >())
+   : positionInterpolator(new ge::sg::LinearKeyframeInterpolator<std::vector<Vec3KeyFrame>>())
+   , orientationInterpolator(new ge::sg::SlerpKeyframeInterpolator<std::vector<QuatKeyFrame>>())
+   , scaleInterpolator(new ge::sg::LinearKeyframeInterpolator<std::vector<Vec3KeyFrame>>())
 {
    
 }
 
 
 /**
- * Updates the target matrix.
+ * Updates the target matrix. This function should not be called directly from the end user code.
+ * It is better to use channels through Animation.
  * \param t Animation relative time.
  */
 void MovementAnimationChannel::update(const time_point& t)
@@ -37,10 +39,10 @@ void MovementAnimationChannel::update(const time_point& t)
    glm::vec3 scale(1, 1, 1);
    glm::quat oriantation;
 
-   position = positionInterpolator->interpolate(positionKF, t);
+   position = positionInterpolator->interpolate(positionKF, TPtoFP(t));
    if(!scaleKF.empty())
-      scale = scaleInterpolator->interpolate(scaleKF, t);   
-   oriantation = orientationInterpolator->interpolate(orientationKF, t);
+      scale = scaleInterpolator->interpolate(scaleKF, TPtoFP(t));
+   oriantation = orientationInterpolator->interpolate(orientationKF, TPtoFP(t));
 
 
    glm::mat4 mat = glm::mat4_cast(oriantation);
@@ -55,7 +57,7 @@ void MovementAnimationChannel::update(const time_point& t)
 /**
  * Computes the duration of this channel. It takes the maximal t from the last key frame of
  * all containers.
- * \return Duration in core::time_unit
+ * \return Duration in core::time_unit.
  */
 time_unit MovementAnimationChannel::getDuration() const
 {

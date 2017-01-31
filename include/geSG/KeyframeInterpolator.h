@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <geCore/Updatable.h>
 
 namespace ge
 {
@@ -10,16 +11,20 @@ namespace ge
        * Base class for keyframe interpolation. Interpolator is supplied to channels to
        * manipulate interpolation between key frames. Interpolation is based on parametr t
        * of type T and interpolates values of type Value.
-       * \tparam KeyFrameContainer e.g. vector<AnimationKeyFrameTemplate<glm::vec3>>
+       * \tparam KeyFrameContainer Collection of partially ordered, operator< comaparable elements. Elements must have T getT() method
+       *         and V getValue() method. T must have implmentet TDiff operator- such that TDiff has defined basic arithmetical operations (+,-,*,/).
+       *         This is important for any non-nearest interpolation (from linear interpolation onward).
+       *         e.g. vector<AnimationKeyFrameTemplate<glm::vec3>>
        * \tparam T e.g. core::time_point.
        */
-      template<typename KeyFrameContainer, typename T>
+      template<typename KeyFrameContainer>
       class KeyframeInterpolator
       {
       public:
          using Value = typename KeyFrameContainer::value_type::value_type;
+         using parameter_type = typename KeyFrameContainer::value_type::parameter_type;
 
-         virtual Value interpolate(const KeyFrameContainer& keyframes, const T& t) const = 0;
+         virtual Value interpolate(const KeyFrameContainer& keyframes, const parameter_type & t) const = 0;
 
       };
 
@@ -30,16 +35,19 @@ namespace ge
        * \tparam T e.g. core::time_point. The value returned is not extrapolated,
        *           its clamped into the key frame container range.
        */
-      template<typename KeyFrameContainer, typename T>
-      class NearestKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
+      template<typename KeyFrameContainer>
+      class NearestKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer>
       {
       public:
-         using Value = typename KeyframeInterpolator<KeyFrameContainer,T>::Value;
-         Value interpolate(const KeyFrameContainer& keyframes, const T& t) const override
+         using Value = typename KeyframeInterpolator<KeyFrameContainer>::Value;
+         using T = typename KeyFrameContainer::value_type::T;
+         using Keyframe = typename KeyFrameContainer::value_type;
+
+         Value interpolate(const KeyFrameContainer& keyframes, const parameter_type& t) const override
          {
             if(keyframes.empty()) return Value();
 
-            auto it = std::lower_bound(keyframes.begin(), keyframes.end() - 1, t);
+            auto it = std::lower_bound(keyframes.begin(), keyframes.end() - 1, Keyframe::convertToT(t));
             if(it == keyframes.begin())
             {
                return it->getValue();
@@ -47,7 +55,10 @@ namespace ge
             /* if the t is closer to previous frame, than we need to substract 1 if not
              * then 0. That is what casting bool to int does. 
              */
-            bool closerToPrevFrame = (it->getTime() - t) >= (t - (it - 1)->getTime());
+
+            parameter_type t1 = (it - 1)->getT();
+            parameter_type t2 = it->getT();
+            bool closerToPrevFrame = (t2 - t) >= (t - t1);
             return (it - int(closerToPrevFrame))->getValue();
          }
 
@@ -59,24 +70,31 @@ namespace ge
        * \tparam T e.g. core::time_point. The value returned is not extrapolated,
        *           its clamped into the key frame container range.
        */
-      template<typename KeyFrameContainer, typename T>
-      class LinearKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
+      template<typename KeyFrameContainer>
+      class LinearKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer>
       {
       public:
-         using Value = typename KeyframeInterpolator<KeyFrameContainer,T>::Value;
-         Value interpolate(const KeyFrameContainer& keyframes, const T& t) const override
+         using Value = typename KeyframeInterpolator<KeyFrameContainer>::Value;
+         using T = typename KeyFrameContainer::value_type::T;
+         using Keyframe = typename KeyFrameContainer::value_type;
+
+         Value interpolate(const KeyFrameContainer& keyframes, const parameter_type& t) const override
          {
             if(keyframes.empty()) return Value();
 
-            auto it = std::lower_bound(keyframes.begin(), keyframes.end() - 1, t);
-            if(it == keyframes.begin() || t > it->getTime())
+            auto it = std::lower_bound(keyframes.begin(), keyframes.end() - 1, Keyframe::convertToT(t));
+            if(it == keyframes.begin() || t > it->getT())
             {
                return it->getValue();
             }
 
-            float dn_t = (float)((t - (it-1)->getTime()).count()) / (it->getTime() - (it-1)->getTime()).count();
-            if((it->getTime() - (it-1)->getTime()).count() == 0) return (it-1)->getValue();
-            Value ret = ((it-1)->getValue())*(1.0f - dn_t) + (it->getValue())*dn_t;
+            parameter_type t1 = (it - 1)->getT();
+            parameter_type t2 = it->getT();
+            Value v1 = (it - 1)->getValue();
+            Value v2 = it->getValue();
+
+            Value ret = ((t2 - t) * v1 + (t - t1) * v2) / (t2 - t1);
+
             return ret;
          }
       };
@@ -87,24 +105,33 @@ namespace ge
       * \tparam T e.g. core::time_point. The value returned is not extrapolated,
       *           its clamped into the key frame container range.
       */
-      template<typename KeyFrameContainer, typename T>
-      class SlerpKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer, T>
+      template<typename KeyFrameContainer>
+      class SlerpKeyframeInterpolator : public KeyframeInterpolator<KeyFrameContainer>
       {
       public:
-         using Value = typename KeyframeInterpolator<KeyFrameContainer,T>::Value;
-         Value interpolate(const KeyFrameContainer& keyframes, const T& t) const override
+         using Value = typename KeyframeInterpolator<KeyFrameContainer>::Value;
+         using T = typename KeyFrameContainer::value_type::T;
+         using Keyframe = typename KeyFrameContainer::value_type;
+
+         Value interpolate(const KeyFrameContainer& keyframes, const parameter_type& t) const override
          {
             if(keyframes.empty()) return Value();
 
-            auto it = std::lower_bound(keyframes.begin(), keyframes.end() - 1, t);
-            if(it == keyframes.begin() || t > it->getTime())
+            auto it = std::lower_bound(keyframes.begin(), keyframes.end() - 1, Keyframe::convertToT(t));
+            if(it == keyframes.begin() || t > it->getT())
             {
                return it->getValue();
             }
 
-            float dn_t = (float)((t - (it - 1)->getTime()).count()) / (it->getTime() - (it - 1)->getTime()).count();
-            if((it->getTime() - (it - 1)->getTime()).count() == 0) return (it - 1)->getValue();
-            Value ret = glm::slerp((it-1)->getValue(),it->getValue(),dn_t);
+            parameter_type t1 = (it - 1)->getT();
+            parameter_type t2 = it->getT();
+            Value v1 = (it - 1)->getValue();
+            Value v2 = it->getValue();
+
+            parameter_type dn_t = (t - t1) / (t2 - t1);
+            if((t2 - t1) < std::numeric_limits<parameter_type>::epsilon()) return v1;
+
+            Value ret = glm::slerp(v1,v2,dn_t);
             return ret;
          }
       };

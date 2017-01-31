@@ -12,8 +12,9 @@ set(examplesList  EmptyWindow
                   AnimatedSkybox
                   BlitOpenGL
                   TextureTest
-                  Simple_QTgeGL
+                  Simple_QtgeGL
                   Simple_QtgeSG
+                  Simple_Animation
 )
 
 foreach(example IN LISTS examplesList)

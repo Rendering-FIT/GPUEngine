@@ -26,7 +26,19 @@ namespace ge
          AnimationChannel();
 
 
+         /**
+          * Updates the channe. This function should not be called directly from the end user code.
+          * It is better to use channels through Animation.
+          * \param t Animation relative time. This means that the time is related to animation start time or to 0, not to the real time clock. 
+          */
          virtual void update(const core::time_point& t) = 0;
+
+
+         /**
+          * This function should compute and return the duration of this channel, this usualy equals the time of the last key frame.
+          * Even if the first key frame doesn't beggins at 0s the animation always does.
+          * \return Last time the channel can change its target. In another wors there should be no change to target after time_point(getDuration).
+          */
          virtual core::time_unit getDuration() const = 0;
 
          virtual ~AnimationChannel();
@@ -43,8 +55,7 @@ namespace ge
 
       /**
        * Channel for animating model matrix via translation, oriantation and scale keyframes.
-       * There is currently no interpolation between keyframes (due to assimp animation not working
-       * properly).
+       * The default interpolation is linear \see MovementAnimationChannel::MovementAnimationChannel
        */
       class GESG_EXPORT MovementAnimationChannel : public AnimationChannel
       {
@@ -70,9 +81,9 @@ namespace ge
          std::vector<Vec3KeyFrame> positionKF;
          std::vector<QuatKeyFrame> orientationKF;
          std::vector<Vec3KeyFrame> scaleKF;
-         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point>> positionInterpolator;
-         std::unique_ptr<KeyframeInterpolator<std::vector<QuatKeyFrame>, core::time_point>> orientationInterpolator;
-         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>, core::time_point>> scaleInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>>> positionInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<QuatKeyFrame>>> orientationInterpolator;
+         std::unique_ptr<KeyframeInterpolator<std::vector<Vec3KeyFrame>>> scaleInterpolator;
 
       protected:
          std::shared_ptr<glm::mat4> _target;

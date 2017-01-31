@@ -20,3 +20,7 @@ endif()
 if(GPUENGINE_BUILD_GEUTIL)
 add_tests("argumentViewerTest" "geUtil")
 endif()
+
+if(GPUENGINE_BUILD_GESG)
+add_tests("animationTest" "geSG")
+endif()

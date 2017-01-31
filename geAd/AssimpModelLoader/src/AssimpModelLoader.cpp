@@ -349,13 +349,15 @@ ge::sg::Material* AssimpModelLoader::createMaterial(aiMaterial* aimat, const aiS
       }
       else //textures (images)
       {
-         //std::unique_ptr<MaterialImageComponent> imgComp(new MaterialImageComponent);
-         ge::sg::MaterialImageComponent *imgComp = new ge::sg::MaterialImageComponent;
          aiString aistring;
          aiGetMaterialString(aimat, (matprop->mKey.data), matprop->mSemantic, matprop->mIndex, &aistring);
-         imgComp->filePath = aistring.C_Str(); //copy constructor of std::string
-         imgComp->semantic = getImageComponentSemantic(matprop->mSemantic);
-         mat->materialComponents.push_back(std::unique_ptr<ge::sg::MaterialImageComponent>(imgComp));
+         if(aistring.length > 0)
+         {
+            ge::sg::MaterialImageComponent *imgComp = new ge::sg::MaterialImageComponent;
+            imgComp->filePath = aistring.C_Str(); //copy constructor of std::string
+            imgComp->semantic = getImageComponentSemantic(matprop->mSemantic);
+            mat->materialComponents.push_back(std::unique_ptr<ge::sg::MaterialImageComponent>(imgComp));
+         }
       }
    }
 
@@ -458,9 +460,9 @@ ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNo
       return channel;
    }
    channel->setTarget(it->second.second->data->getRefMatrix());
-   ste::transform_copy(ai_node_anim->mPositionKeys, ai_node_anim->mPositionKeys + ai_node_anim->mNumPositionKeys, std::back_inserter(channel->positionKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
-   ste::transform_copy(ai_node_anim->mScalingKeys, ai_node_anim->mScalingKeys + ai_node_anim->mNumScalingKeys, std::back_inserter(channel->scaleKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
-   ste::transform_copy(ai_node_anim->mRotationKeys, ai_node_anim->mRotationKeys + ai_node_anim->mNumRotationKeys, std::back_inserter(channel->orientationKF), [frame_time](aiQuatKey key){ return ge::sg::MovementAnimationChannel::QuatKeyFrame(ge::core::toTimeUnit(key.mTime*frame_time), glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)); });
+   ste::transform_copy(ai_node_anim->mPositionKeys, ai_node_anim->mPositionKeys + ai_node_anim->mNumPositionKeys, std::back_inserter(channel->positionKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit<double,ratio<1>>(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
+   ste::transform_copy(ai_node_anim->mScalingKeys, ai_node_anim->mScalingKeys + ai_node_anim->mNumScalingKeys, std::back_inserter(channel->scaleKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit<double, ratio<1>>(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
+   ste::transform_copy(ai_node_anim->mRotationKeys, ai_node_anim->mRotationKeys + ai_node_anim->mNumRotationKeys, std::back_inserter(channel->orientationKF), [frame_time](aiQuatKey key){ return ge::sg::MovementAnimationChannel::QuatKeyFrame(ge::core::toTimeUnit<double, ratio<1>>(key.mTime*frame_time), glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)); });
 
 
    return channel;
@@ -468,9 +470,9 @@ ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNo
 
 ge::sg::Animation * AssimpModelLoader::createAnimation(aiAnimation& m_animation, ge::sg::Scene& scene, AssimpModelLoader::AnimationMap& animationMap)
 {
-   double frameTime = 1000.0 / m_animation.mTicksPerSecond; //one anim tick in ms
+   double frameTime = 1.0 / m_animation.mTicksPerSecond; //one anim tick in s
    ge::sg::Animation* animation = new ge::sg::Animation;
-   animation->duration = ge::core::toTimeUnit((m_animation.mDuration) / m_animation.mTicksPerSecond * 1000.);
+   animation->duration = ge::core::toTimeUnit<double,std::ratio<1>>((m_animation.mDuration) / m_animation.mTicksPerSecond * 1000.);
    for (unsigned i = 0; i < m_animation.mNumChannels; ++i)
    {
       animation->channels.emplace_back(createMovementAnimationChannel(m_animation.mChannels[i],scene,frameTime, animationMap));
