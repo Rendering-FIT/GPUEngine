@@ -22,7 +22,7 @@ namespace ge
          template<class Rep, class Period = core::time_unit::period>
          AnimationKeyFrame(const std::chrono::duration<Rep, Period>& duration)
          {
-            t = time_point(std::chrono::duration_cast<core::time_point::duration>(duration));
+            t = core::time_point(std::chrono::duration_cast<core::time_point::duration>(duration));
          }
 
          inline bool operator< (const AnimationKeyFrame& rhs) const

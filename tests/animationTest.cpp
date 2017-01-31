@@ -64,7 +64,7 @@ SCENARIO("Aniamtion Movement channel interpolation test","[Animation]")
       {
          //tests
          curr_tr = glm::vec3((*matrix.get())[3]);
-         glm::mat4 rot = glm::mat4_cast(r0);
+         //glm::mat4 rot = glm::mat4_cast(r0);
          THEN("translation should be tr0")
          {
             REQUIRE(tr0 == curr_tr);

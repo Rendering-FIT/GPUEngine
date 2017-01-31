@@ -42,6 +42,7 @@ namespace ge
          using Value = typename KeyframeInterpolator<KeyFrameContainer>::Value;
          using T = typename KeyFrameContainer::value_type::T;
          using Keyframe = typename KeyFrameContainer::value_type;
+         using parameter_type = typename KeyframeInterpolator<KeyFrameContainer>::parameter_type;
 
          Value interpolate(const KeyFrameContainer& keyframes, const parameter_type& t) const override
          {
@@ -77,6 +78,7 @@ namespace ge
          using Value = typename KeyframeInterpolator<KeyFrameContainer>::Value;
          using T = typename KeyFrameContainer::value_type::T;
          using Keyframe = typename KeyFrameContainer::value_type;
+         using parameter_type = typename KeyframeInterpolator<KeyFrameContainer>::parameter_type;
 
          Value interpolate(const KeyFrameContainer& keyframes, const parameter_type& t) const override
          {
@@ -112,6 +114,7 @@ namespace ge
          using Value = typename KeyframeInterpolator<KeyFrameContainer>::Value;
          using T = typename KeyFrameContainer::value_type::T;
          using Keyframe = typename KeyFrameContainer::value_type;
+         using parameter_type = typename KeyframeInterpolator<KeyFrameContainer>::parameter_type;
 
          Value interpolate(const KeyFrameContainer& keyframes, const parameter_type& t) const override
          {
