@@ -511,12 +511,31 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 //
 // X(t,l)x == X(t,l)y
 //
-// X(t,l)x ==  X(t,l)y && X(t,l)x ==  X(t,l)z
-// X(t,l)x == -X(t,l)y && X(t,l)x == -X(t,l)z
-// X(t,l)x == -X(t,l)y && X(t,l)x ==  X(t,l)z
-// X(t,l)x ==  X(t,l)y && X(t,l)x == -X(t,l)z
+// X(t,l)x ==  X(t,l)y && X(t,l)x ==  X(t,l)z    C0->C7
+// X(t,l)x == -X(t,l)y && X(t,l)x == -X(t,l)z    C1->C6
+// X(t,l)x == -X(t,l)y && X(t,l)x ==  X(t,l)z    C2->C5
+// X(t,l)x ==  X(t,l)y && X(t,l)x == -X(t,l)z    C3->C4
 //
+// X(t,l)x == aX(t,l)y && X(t,l)x == bX(t,l)z, a,b in {-1,1}
 //
+// Ax - l*Lx + t*(Bx-Ax) == aAy - al*Ly + at*(By-Ay)
+// (Ax-aAy) + l*(aLy-Lx) + t*(Bx-Ay-aBy+aAy) = 0
+// t*(Bx-Ay-aBy+aAy) + l*(aLy-Lx) = (aAy-Ax)
+//
+// Ax - l*Lx + t*(Bx-Ax) == bAz - bl*Lz + bt*(Bz-Az)
+// t*(Bx-Ay-bBz+bAz) + l*(bLz-Lx) = (bAz-Ax)
+//
+// t*(Bx-Ay-aBy+aAy) + l*(aLy-Lx) = (aAy-Ax)
+// t*(Bx-Ay-bBz+bAz) + l*(bLz-Lx) = (bAz-Ax)
+//
+// t*u + l*v = w
+// t*x + l*y = z
+//
+//     |w v|  / |u v|
+// t = |z y| /  |x y|
+//  
+//     |u w|  / |u v|
+// l = |x z| /  |x y|
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,7 +565,7 @@ bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
       tMin = max(tMin,divident/divisor);
     if(divisor == 0.f && dividend < 0.f)
       return false;
-    divident = -A[i]+A[3];
+    dividend = -A[i]+A[3];
     divisor = divident + B[i] - B[3];
     if(divisor > 0.f)
       tMax = min(tMax,dividend/divisor);
