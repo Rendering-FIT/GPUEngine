@@ -14,9 +14,12 @@
 
 #include <FreeImagePlus.h>
 
+#include "ConsoleSwapchain.h"
+
+
 using namespace std;
-using namespace ge::ad;
 using namespace glm;
+
 
 using namespace ge::vu;
 using namespace ge::vusg;
@@ -29,26 +32,31 @@ struct DrawArraysIndirectCommand {
 };
 
 App::App() {
-  setupEvents();
-
   ContextCreateInfo cci;
-  cci.validation = false;
+  cci.validation = true;
   cci.verbose = false;
 
   context = make_shared<Context>(cci);
   deviceContext = context->createDeviceContext(0);
 
-  SwapchainCreateInfo sci;
-  swapchain = make_shared<ConsoleSwapchain>(sci);
+  ConsoleSwapchainCreateInfo csci;
+  csci.deviceContext = deviceContext;
+  swapchain = make_shared<ConsoleSwapchain>(csci);
+  swapchain->init();
 
   deviceContext->flushCommandBuffer();
 
   renderer = make_shared<PhongTechnique>(deviceContext, swapchain);
+
+  roty = 45;
+  zoom = 15;
 }
 
 void App::init() {
-  string model = "D:/prac/modely/sponza3/sponza.fbx";
+  //string model = "D:/prac/modely/sponza3/sponza.fbx";
   //string model = "D:/prac/modely/texCube/texCube.obj";
+  //string model = "D:/prac/modely/Excavator/bagrOld.fbx";
+  string model = "D:/prac/modely/Excavator/bagr.fbx";
 
   path = std::regex_replace(model, std::regex("[^/]+$"), "");
   //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.obj"));  
@@ -77,17 +85,11 @@ void App::init() {
     }
   }
 
+  manager = make_shared<ge::sg::AnimationManager>();
   for (auto& a : scene->animations) {
     a->mode = ge::sg::Animation::Mode::LOOP;
 
-    for (auto& c : a->channels) {
-      if (auto cc = std::dynamic_pointer_cast<ge::sg::MovementAnimationChannel>(c)) {
-        cc->positionInterpolator.reset(new ge::sg::LinearKeyframeInterpolator<std::vector<ge::sg::MovementAnimationChannel::Vec3KeyFrame>, ge::core::time_point>());
-        cc->orientationInterpolator.reset(new ge::sg::SlerpKeyframeInterpolator<vector<ge::sg::MovementAnimationChannel::QuatKeyFrame>, ge::core::time_point>());
-        cc->scaleInterpolator.reset(new ge::sg::LinearKeyframeInterpolator<std::vector<ge::sg::MovementAnimationChannel::Vec3KeyFrame>, ge::core::time_point>());
-
-      }
-    }
+    manager->playAnimation(a, chrono::steady_clock::now());
   }
 }
 
@@ -96,17 +98,16 @@ int last = 0;
 
 void App::draw() {
   updateCamera();
-
-  auto time = std::chrono::milliseconds(10);
-  for (auto& a : scene->animations) {
-    a->update(time);
-  }
+  
+  manager->update(chrono::steady_clock::now());
 
   renderer->projection = projection;
   renderer->view = view;
+  std::cout << "frame\n";
   renderer->frame();
+  std::cout << "frame end\n";
 
-  quit();
+  //quit();
 }
 
 void App::resize(int w, int h) {
@@ -115,6 +116,7 @@ void App::resize(int w, int h) {
 
 
 void App::updateCamera() {
+  rotx++;
   vec3 eye;
   eye = vec3(-zoom, 0, 0);
   eye = rotate(eye, -radians(float(roty)), vec3(0, 0, 1));

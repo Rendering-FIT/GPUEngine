@@ -18,9 +18,14 @@ vec3 lambert(vec3 pos, vec3 norm, vec3 color,
   return A + D;
 }
 
+layout(push_constant) uniform fragmentConstants {
+  layout(offset = 192)vec4 Ka;
+} u;
+
 void main() {
-  vec3 color = texture(tex, texCoord).xyz;
+  //vec3 color = texture(tex, texCoord).xyz;
   //vec3 color = vec3(1,1,1);
+  vec3 color = u.Ka.rgb;
   fragColor = vec4(lambert(position,normal,color,vec3(50,500,50),vec3(0.6),vec3(0.6)), 1);
   //fragColor = vec4(texCoord,0,1);
 }

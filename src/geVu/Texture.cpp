@@ -94,14 +94,14 @@ void Texture::createDepthAttachment(vk::Format format, int width, int height) {
 
 void Texture::createColorAttachment(vk::Format format, int width, int height) {
   create(format, vk::ImageType::e2D, vk::Extent3D(width, height, 1), 1, 1,
-    vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled,
+    vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage,
     vk::ImageAspectFlagBits::eColor, true);
 }
 
 void ge::vu::Texture::createColorSampled(vk::Format format, int width, int height, bool mipMap) {
   int mipMapLevels = 1;
   if (mipMap)mipMapLevels = 1 + floor(log2(max(width, height)));
-  create(format, vk::ImageType::e2D, vk::Extent3D(width, height, 1), 1, mipMapLevels, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled, vk::ImageAspectFlagBits::eColor, true);
+  create(format, vk::ImageType::e2D, vk::Extent3D(width, height, 1), 1, mipMapLevels, vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled |vk::ImageUsageFlagBits::eStorage, vk::ImageAspectFlagBits::eColor, true);
   //create(format, vk::ImageType::e2D, vk::Extent3D(width, height, 1), 1, 1, vk::ImageUsageFlagBits::eSampled, vk::ImageAspectFlagBits::eColor, false);
 }
 

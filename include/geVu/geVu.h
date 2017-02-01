@@ -3,6 +3,8 @@
 
 #include <geVu/geVuClasses.h>
 
+#include <geVu/Conversions.h>
+
 #include <geVu/Context.h>
 #include <geVu/DeviceContext.h>
 #include <geVu/Buffer.h>

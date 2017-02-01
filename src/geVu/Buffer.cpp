@@ -53,8 +53,9 @@ void ge::vu::Buffer::createStaggingBuffer(vk::DeviceSize size) {
 
 void Buffer::createShaderStorage(vk::DeviceSize size, bool deviceLocal) {
   create(size, vk::BufferUsageFlagBits::eStorageBuffer,
-         deviceLocal ? vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent :
-    vk::MemoryPropertyFlagBits::eDeviceLocal);
+         deviceLocal ? vk::MemoryPropertyFlagBits::eDeviceLocal :
+           vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+  );
 }
 
 void ge::vu::Buffer::setSubData(void* data, vk::DeviceSize size, vk::DeviceSize offset) {

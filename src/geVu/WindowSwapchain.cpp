@@ -218,7 +218,7 @@ void WindowSwapchain::createRenderPass() {
   rpci.subpassCount = 1;
   rpci.pSubpasses = &subpass;
 
-  renderPass = deviceContext->getDevice().createRenderPass(rpci, 0);
+  renderPass = deviceContext->getDevice().createRenderPass(rpci);
 }
 
 void WindowSwapchain::createFramebuffers() {
@@ -232,7 +232,7 @@ void WindowSwapchain::createFramebuffers() {
   fbci.width = width;
   fbci.height = height;
   fbci.layers = 1;
-
+  
   for (int i = 0; i < swapchainImages.size(); i++) {
     attachments[0] = swapchainImageViews[i];
     framebuffers.emplace_back(deviceContext->getDevice().createFramebuffer(fbci));

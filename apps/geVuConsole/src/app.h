@@ -2,7 +2,6 @@
 
 #include <geVu/geVu.h>
 
-#include <geAd/SDLWindow/SDLWindow.h>
 #include <functional>
 #include <cmath>
 #include <glm/glm.hpp>
@@ -11,6 +10,9 @@
 #include <geSG/Scene.h>
 
 #include <geVuSG/geVuSG.h>
+
+
+#include <geSG/AnimationManager.h>
 
 class App {
 public:
@@ -22,7 +24,6 @@ public:
   virtual void resize(int w, int h);
 protected:
 
-  void setupEvents();
   void updateCamera();
   // camera
   glm::mat4 view;
@@ -46,4 +47,6 @@ protected:
 
   ge::vusg::PhongTechniqueShared renderer;
   std::shared_ptr<ge::sg::Scene> scene;
+
+  std::shared_ptr<ge::sg::AnimationManager> manager;
 };

@@ -28,4 +28,5 @@ public:
   void unmap();
 
   operator vk::Buffer() { return buffer; }
+  vk::DeviceSize getSize() { return size; }
 };

@@ -91,11 +91,16 @@ void ge::vusg::PhongTechnique::processNode(std::shared_ptr<ge::sg::MatrixTransfo
 
     auto &material = mesh->material;
     auto diff = material->getComponent<MaterialImageComponent>(MaterialImageComponent::Semantic::diffuseTexture);
-    auto desc = sceneManager->getDescriptor(descriptorSetLayout,diff.get());
-
-    //auto desc = set;
-
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, { desc }, {});
+    glm::vec4 color;
+    if(diff==nullptr) {
+      auto comp = material->getComponent<MaterialSimpleComponent>(MaterialSimpleComponent::Semantic::diffuseColor);
+      memcpy(&color[0], comp->data.get(), sizeof(float) * 3);
+    }else {
+      color = glm::vec4(0);
+      auto desc = sceneManager->getDescriptor(descriptorSetLayout, diff.get());
+      commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, { desc }, {});
+    }    
+    commandBuffer.pushConstants<glm::vec4>(pipelineLayout, vk::ShaderStageFlagBits::eFragment, 192, { color });
 
     drawable->draw(commandBuffer);
   }
@@ -116,10 +121,10 @@ void ge::vusg::PhongTechnique::createPipeline() {
   pipeline->layout = pipelineLayout;
   pipeline->addAttribute(0, 0, vk::Format::eR32G32B32Sfloat, 0);
   pipeline->addAttribute(1, 1, vk::Format::eR32G32B32Sfloat, 0);
-  pipeline->addAttribute(2, 2, vk::Format::eR32G32Sfloat, 0);
+  //pipeline->addAttribute(2, 2, vk::Format::eR32G32Sfloat, 0);
   pipeline->addVertexBuffer(0, sizeof(float) * 3);
   pipeline->addVertexBuffer(1, sizeof(float) * 3);
-  pipeline->addVertexBuffer(2, sizeof(float) * 2);
+  //pipeline->addVertexBuffer(2, sizeof(float) * 2);
 
 
   pipeline->create();
@@ -139,21 +144,25 @@ void ge::vusg::PhongTechnique::createPipelineLayout() {
   dslci.pBindings = &dslb;
   descriptorSetLayout = device.createDescriptorSetLayout(dslci);
 
-  vk::PushConstantRange pc;
-  pc.offset = 0;
-  pc.size = sizeof(glm::mat4) * 3;
-  pc.stageFlags = vk::ShaderStageFlagBits::eVertex;
+  vk::PushConstantRange pc[2];
+  pc[0].offset = 0;
+  pc[0].size = sizeof(glm::mat4) * 3;
+  pc[0].stageFlags = vk::ShaderStageFlagBits::eVertex;
+  pc[1].offset = 192;
+  pc[1].size = sizeof(glm::vec4);
+  pc[1].stageFlags = vk::ShaderStageFlagBits::eFragment;
 
   vk::PipelineLayoutCreateInfo plci;
   plci.setLayoutCount = 1;
   plci.pSetLayouts = &descriptorSetLayout;
-  plci.pushConstantRangeCount = 1;
-  plci.pPushConstantRanges = &pc;
+  plci.pushConstantRangeCount = 2;
+  plci.pPushConstantRanges = pc;
   pipelineLayout = device.createPipelineLayout(plci);
 }
 
 void ge::vusg::PhongTechnique::frame() {
-  auto &queue = deviceContext->getQueue();
+
+  auto queue = deviceContext->getQueue();
 
   swapchain->next();
 

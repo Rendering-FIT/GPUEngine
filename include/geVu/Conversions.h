@@ -5,7 +5,7 @@
 
 namespace ge {
   namespace vu {
-    size_t formatToSize(vk::Format format);
-    vk::Format depthStencilBitsToFormat(int depthBits, int stencilBits);
+    size_t GEVU_EXPORT formatToSize(vk::Format format);
+    vk::Format GEVU_EXPORT depthStencilBitsToFormat(int depthBits, int stencilBits);
   }
 }

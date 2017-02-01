@@ -2,6 +2,7 @@
 
 #include <geVu/geVuClasses.h>
 #include <geVu/Swapchain.h>
+#include "geVu/Buffer.h"
 
 class ConsoleSwapchainCreateInfo {
 public:
@@ -19,10 +20,23 @@ public:
 
 class ConsoleSwapchain : public ge::vu::Swapchain {
 protected:
+  ge::vu::TextureShared fontTexture;
+  //vk::DescriptorSet fontDescriptor;
+
   ge::vu::TextureShared colorBuffer;
+  //vk::DescriptorSet colorBufferDescriptor;
+
   ge::vu::TextureShared depthBuffer;
 
+  vk::DescriptorSetLayout descriptorSetLayout;
+  vk::PipelineLayout pipelineLayout;
   vk::Pipeline computePipeline;
+
+  ge::vu::BufferShared buffer;
+  //vk::DescriptorSet bufferDescriptor;
+
+  vk::DescriptorSet descriptor;
+  
 
   ConsoleSwapchainCreateInfo createInfo;
 public:
@@ -40,7 +54,11 @@ protected:
   void createRenderPass();
   void createFramebuffers();
   void createPipeline();
+  void createBuffer();
+  void createFont();
+  void createDescriptors();
 
+  void destroyBuffer();
   void destroyPipeline();
   void destroyDepthBuffer();
   void destroyColorBuffer();

@@ -1,12 +1,100 @@
 #version 430
-layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 8, local_size_y = 12, local_size_z = 1) in;
 
-layout(std430, binding = 0) readonly buffer readBuffer{
-    int inVertices[];
+layout(std430, binding = 0) buffer charBuffer {
+  uint chars[];
 };
 
-void main(){
-	uint id = gl_GlobalInvocationID.x;
+layout(binding = 1, rgba8ui) uniform uimage2D img;
+layout(binding = 2, rgba8ui) uniform uimage2D font;
 
-  inVertices[id] = 100 + id;
+shared uint sum;
+shared uint avgsumr;
+shared uint avgsumg;
+shared uint avgsumb;
+
+int minDiff;
+int minIndex;
+
+const ivec2 charSize = ivec2(8, 12);
+
+const ivec3 colors[] = {
+  ivec3(0,0,0),
+  ivec3(0,0,128),
+  ivec3(0,128,0),
+  ivec3(0,128,128),
+  ivec3(128,0,0),
+  ivec3(128,0,128),
+  ivec3(128,128,0),
+  ivec3(192,192,192),
+
+  ivec3(128,128,128),
+  ivec3(0,0,256),
+  ivec3(0,256,0),
+  ivec3(0,256,256),
+  ivec3(256,0,0),
+  ivec3(256,0,256),
+  ivec3(256,256,0),
+  ivec3(256,256,256),
+};
+
+void main() {
+  uint wx = gl_WorkGroupID.x;
+  uint wy = gl_WorkGroupID.y;
+
+  uint gx = gl_GlobalInvocationID.x;
+  uint gy = gl_GlobalInvocationID.y;
+
+  uint lx = gl_LocalInvocationID.x;
+  uint ly = gl_LocalInvocationID.y;
+
+  uvec3 c = imageLoad(img, ivec2(gx, gy)).rgb;
+  uint i = uint(0.299*c.r + .587*c.g + 0.114*c.b);
+  /*
+  avgsumr = 0;
+  avgsumg = 0;
+  avgsumb = 0;
+  barrier();
+  atomicAdd(avgsumr, c.r);
+  atomicAdd(avgsumg, c.g);
+  atomicAdd(avgsumb, c.b);
+  barrier();
+  ivec3 avgc = ivec3(avgsumr, avgsumg, avgsumb) / (8 * 12);
+
+  uint mincindex = -1;
+  uint mincdiff = 999999;
+
+  for(int j = 0;j<16;j++) {
+  int diff = int(length(avgc - colors[j]));
+  if(diff<mincdiff) {
+  mincdiff = diff;
+  mincindex = j;
+  }
+  }*/
+
+  minDiff = 12 * 8 * 256 * 256;
+  minIndex = -1;
+  for (int c = 0; c<16; c++) {
+    for (int r = 0; r < 16; r++) {
+      sum = 0;
+      barrier();
+      ivec2 tc = ivec2(lx, ly) + ivec2(r, c)*charSize;
+      tc.y = 192 - 1 - tc.y;
+      uint f = int((255 - imageLoad(font, tc).x));
+
+      int diff = abs(int(i*i) - int(f*f));
+
+
+      atomicAdd(sum, diff);
+      barrier();
+      if (sum <= minDiff) {
+        minIndex = r + c * 16;
+        minDiff = int(sum);
+      }
+      //chars[wx * 9 + r + c * 100] = sum;
+      
+      barrier();
+    }
+  }
+  chars[wx + wy * 100] = minIndex/*+ (mincindex<<16)*/;
 }

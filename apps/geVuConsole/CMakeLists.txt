@@ -20,6 +20,7 @@ set(APP_SOURCES
 	src/main.cpp
 	src/app.cpp
 	src/ConsoleSwapchain.cpp
+	src/img.cpp
 )
 
 
@@ -28,6 +29,7 @@ set(APP_SOURCES
 set(APP_INCLUDES
 	src/app.h
 	src/ConsoleSwapchain.h
+	src/img.h
 )
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
