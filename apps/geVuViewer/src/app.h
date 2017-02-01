@@ -11,6 +11,7 @@
 #include <geSG/Scene.h>
 
 #include <geVuSG/geVuSG.h>
+#include <geSG/AnimationManager.h>
 
 class App {
 public:
@@ -47,4 +48,6 @@ protected:
 
   ge::vusg::PhongTechniqueShared renderer;
   std::shared_ptr<ge::sg::Scene> scene;
+
+  std::shared_ptr<ge::sg::AnimationManager> manager;
 };

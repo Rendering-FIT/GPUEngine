@@ -15,6 +15,7 @@
 #include "FreeImageImageLoader.h"
 
 #include <FreeImagePlus.h>
+#include "geSG/AnimationManager.h"
 
 using namespace std;
 using namespace ge::ad;
@@ -63,16 +64,12 @@ App::App() {
 }
 
 void App::init() {
-  string model = "D:/prac/modely/sponza3/sponza.fbx";
+  //string model = "D:/prac/modely/sponza3/sponza.fbx";
   //string model = "D:/prac/modely/texCube/texCube.obj";
-  //string model = "D:/prac/modely/Excavator/bagrOld.fbx";
+  string model = "D:/prac/modely/Excavator/bagr.fbx";
   //string model = "D:/prac/modely/Anim/anim.fbx";
 
   path = std::regex_replace(model, std::regex("[^/]+$"), "");
-  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.obj"));  
-  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/Excavator/bagrOld.fbx"));
-  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/Anim/anim.fbx"));
-  //scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene("D:/prac/modely/texCube/texCube.fbx"));
   scene = std::shared_ptr<ge::sg::Scene>(AssimpModelLoader::loadScene(model.c_str()));
   renderer->setScene(scene);
 
@@ -108,18 +105,14 @@ void App::init() {
       }
     }
   }
+  
+  manager = make_shared<ge::sg::AnimationManager>();
 
   for (auto &a : scene->animations) {
     a->mode = ge::sg::Animation::Mode::LOOP;
-
-    for (auto&c : a->channels) {
-      if (auto cc = std::dynamic_pointer_cast<ge::sg::MovementAnimationChannel>(c)) {
-        cc->positionInterpolator.reset(new ge::sg::LinearKeyframeInterpolator<std::vector<ge::sg::MovementAnimationChannel::Vec3KeyFrame>, ge::core::time_point >());
-        cc->orientationInterpolator.reset(new ge::sg::SlerpKeyframeInterpolator<vector<ge::sg::MovementAnimationChannel::QuatKeyFrame>, ge::core::time_point>());
-        cc->scaleInterpolator.reset(new ge::sg::LinearKeyframeInterpolator<std::vector<ge::sg::MovementAnimationChannel::Vec3KeyFrame>, ge::core::time_point >());
-
-      }
-    }
+    
+    //manager->playAnimation(a,ge::core::time_point(std::chrono::milliseconds(0)));
+    manager->playAnimation(a, chrono::steady_clock::now());
   }
 }
 
@@ -129,12 +122,10 @@ int last = 0;
 void App::draw() {
   updateCamera();
 
-  auto time = std::chrono::milliseconds(SDL_GetTicks());
-  //auto time = std::chrono::milliseconds(time);
-  for (auto &a : scene->animations) {
-    a->update(time);
+  //auto time = std::chrono::milliseconds(SDL_GetTicks());
+  auto time = std::chrono::steady_clock::now();
 
-  }
+  manager->update(time);
 
   renderer->projection = projection;
   renderer->view = view;
