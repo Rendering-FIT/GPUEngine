@@ -169,7 +169,7 @@ SCENARIO("Complex ArgumentViewer context tests"){
 }
 
 SCENARIO("ArgumentViewer file tests"){
-  std::ofstream("args0")<<"a b c < args1.txt"<<std::endl;
+  std::ofstream("args0.txt")<<"a b c < args1.txt"<<std::endl;
   std::ofstream("args1.txt")<<"#ahoj \nposition { a b }\n #dormon\n"<<std::endl;
   char const*args[] = {"test","a","light","{","<","args0.txt","}","b"};
   int const nofArgs = sizeof(args)/sizeof(char const*);
