@@ -3,7 +3,7 @@
 #include<cassert>
 #include<geGL/OpenGL.h>
 
-#define GE_GL_NOF_OPENGL_FUNCTIONS 2855
+#include<geGL/Generated/NumberOfFunctions.h>
 
 namespace ge{
   namespace gl{
@@ -20,7 +20,7 @@ namespace ge{
         virtual bool m_init(){return true;}
 #include<geGL/Generated/FunctionTableCalls.h>
 #include<geGL/Generated/OpenGLPFN.h>
-        //DUE TO MSVS2013 and its slow compilation, this has to be done this way...
+        //Deu to MSVS2013 and its slow compilation, this has to be done this way...
         union{
           FUNCTION_POINTER baseFunctions[GE_GL_NOF_OPENGL_FUNCTIONS];
           struct {
@@ -28,7 +28,7 @@ namespace ge{
           };//functionsStruct;
         };//functionsUnion;
 #include<geGL/Generated/MemberOpenGLPFN.h>
-        //DUE TO MSVS2013 and its slow compilation this has to be done this way...
+        //Due to MSVS2013 and its slow compilation, this has to be done this way...
         union{
           MEMBER_FUNCTION_POINTER memberFunctions[GE_GL_NOF_OPENGL_FUNCTIONS];
           struct {
