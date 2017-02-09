@@ -3,10 +3,14 @@
 #include<cassert>
 #include<geGL/OpenGL.h>
 
+#define GE_GL_NOF_OPENGL_FUNCTIONS 2855
+
 namespace ge{
   namespace gl{
     class FunctionTable{
       public:
+        using FUNCTION_POINTER = void(*)();
+        using MEMBER_FUNCTION_POINTER = void(FunctionTable::*)();
         FunctionTable(){}
         virtual ~FunctionTable(){}
         bool construct(){
@@ -16,9 +20,21 @@ namespace ge{
         virtual bool m_init(){return true;}
 #include<geGL/Generated/FunctionTableCalls.h>
 #include<geGL/Generated/OpenGLPFN.h>
-#include<geGL/Generated/OpenGLFunctions.h>
+        //DUE TO MSVS2013 and its slow compilation, this has to be done this way...
+        union{
+          FUNCTION_POINTER baseFunctions[GE_GL_NOF_OPENGL_FUNCTIONS];
+          struct {
+            #include<geGL/Generated/OpenGLFunctions.h>
+          };//functionsStruct;
+        };//functionsUnion;
 #include<geGL/Generated/MemberOpenGLPFN.h>
-#include<geGL/Generated/MemberOpenGLFunctions.h>
+        //DUE TO MSVS2013 and its slow compilation this has to be done this way...
+        union{
+          MEMBER_FUNCTION_POINTER memberFunctions[GE_GL_NOF_OPENGL_FUNCTIONS];
+          struct {
+            #include<geGL/Generated/MemberOpenGLFunctions.h>
+          };//memberFunctionsStruct;
+        };//memberFunctionsUnion;
     };
   }
 }
