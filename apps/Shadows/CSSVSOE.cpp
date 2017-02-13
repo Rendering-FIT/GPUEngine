@@ -3,50 +3,77 @@
 
 #include<geCore/Dtemplates.h>
 
+struct DrawArraysIndirectCommand{
+  uint32_t nofVertices  = 0;
+  uint32_t nofInstances = 0;
+  uint32_t firstVertex  = 0;
+  uint32_t baseInstance = 0;
+};
+
 void CSSVSOE::_createSidesData(std::shared_ptr<Adjacency const>const&adj){
   assert(this!=nullptr);
   assert(adj!=nullptr);
-  size_t const maxNofOppositeVertices = adj->getMaxMultiplicity();
-  size_t const floatsPerEdge = verticesPerEdge*componentsPerVertex3D + maxNofOppositeVertices*componentsPerPlane3D;
-  this->_edges = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
+
+  size_t const nofVec4PerEdge = verticesPerEdge + adj->getMaxMultiplicity();
+  this->_edges = std::make_shared<ge::gl::Buffer>(sizeof(float)*componentsPerVertex4D*nofVec4PerEdge*adj->getNofEdges());
 
   auto const dstPtr = static_cast<float      *>(this->_edges->map());
   auto const srcPtr = static_cast<float const*>(adj->getVertices() );
 
-  size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
-  for(size_t edgeIndex=0;edgeIndex<adj->getNofEdges();++edgeIndex){
-    auto const edgeDstPtr    = dstPtr + edgeIndex*floatsPerEdge;
-    auto const vertexADstPtr = edgeDstPtr;
-    auto const vertexBDstPtr = vertexADstPtr + componentsPerVertex3D;
-    auto const planesDstPtr  = vertexBDstPtr + componentsPerVertex3D;
+  std::vector<size_t>cardinality;
+  cardinality.resize(adj->getMaxMultiplicity());
 
-    auto const vertexASrcPtr = srcPtr + adj->getEdgeVertexA(edgeIndex);
-    auto const vertexBSrcPtr = srcPtr + adj->getEdgeVertexB(edgeIndex);
+  for(size_t e=0;e<adj->getNofEdges();++e){
+    cardinality.at(adj->getNofOpposite(e)-1)++;
 
-    std::memcpy(vertexADstPtr,vertexASrcPtr,sizeofVertex3DInBytes);
-    std::memcpy(vertexBDstPtr,vertexBSrcPtr,sizeofVertex3DInBytes);
-    size_t const sizeofPlane3DInBytes = componentsPerPlane3D*sizeof(float);
-    for(size_t oppositeIndex=0;oppositeIndex<adj->getNofOpposite(edgeIndex);++oppositeIndex){
-      auto const planeDstPtr          = planesDstPtr + oppositeIndex*componentsPerPlane3D;
-      auto const oppositeVertexSrcPtr = srcPtr + adj->getOpposite(edgeIndex,oppositeIndex);
-      auto const plane                = computePlane(toVec3(vertexASrcPtr),toVec3(vertexBSrcPtr),toVec3(oppositeVertexSrcPtr));
-      std::memcpy(planeDstPtr,glm::value_ptr(plane),sizeofPlane3DInBytes);
+    auto const dstEdgePtr             = dstPtr + e*nofVec4PerEdge*componentsPerVertex4D;
+    auto const dstVertexAPtr          = dstEdgePtr;
+    auto const dstVertexBPtr          = dstVertexAPtr + componentsPerVertex4D;
+    auto const dstOppositeVerticesPtr = dstVertexBPtr + componentsPerVertex4D;
+
+    auto const srcVertexAPtr          = srcPtr + adj->getEdge(e,0);
+    auto const srcVertexBPtr          = srcPtr + adj->getEdge(e,1);
+
+    size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
+
+    std::memcpy(dstVertexAPtr,srcVertexAPtr,sizeofVertex3DInBytes);
+    dstVertexAPtr[3] = 1.f;
+
+    std::memcpy(dstVertexBPtr,srcVertexBPtr,sizeofVertex3DInBytes);
+    dstVertexBPtr[3] = 1.f;
+
+    for(size_t o=0;o<adj->getNofOpposite(e);++o){
+      auto const dstOppositeVertexPtr = dstOppositeVerticesPtr + o*componentsPerVertex4D;
+      auto const plane = computePlane(toVec3(srcPtr+adj->getEdgeVertexA(e)),toVec3(srcPtr+adj->getEdgeVertexB(e)),toVec3(srcPtr+adj->getOpposite(e,o)));
+      std::memcpy(dstOppositeVertexPtr,&plane,sizeof(plane));
     }
-    size_t  const nofEmptyPlanes    = maxNofOppositeVertices - adj->getNofOpposite(edgeIndex);
-    auto    const emptyPlanesDstPtr = planesDstPtr + componentsPerPlane3D*adj->getNofOpposite(edgeIndex);
-    uint8_t const value             = 0;
-    std::memset(emptyPlanesDstPtr,value,sizeofPlane3DInBytes*nofEmptyPlanes);
+
+    size_t const nofEmptyOppositeVertices = adj->getMaxMultiplicity() - adj->getNofOpposite(e);
+    size_t const sizeofEmptyVerticesInBytes = sizeof(float)*componentsPerVertex4D*nofEmptyOppositeVertices;
+    auto dstEmptyOppositeVerticesPtr = dstOppositeVerticesPtr + adj->getNofOpposite(e)*componentsPerVertex4D;
+    std::memset(dstEmptyOppositeVerticesPtr,0,sizeofEmptyVerticesInBytes);
   }
   this->_edges->unmap();
   this->_nofEdges = adj->getNofEdges();
+  this->_maxMultiplicity = adj->getMaxMultiplicity();
 
-  this->_sillhouettes=std::make_shared<ge::gl::Buffer>(
-      sizeof(float)*componentsPerVertex4D*verticesPerQuad*this->_nofEdges*adj->getMaxMultiplicity(),
-      nullptr,GL_DYNAMIC_COPY);
-  this->_sillhouettes->clear(GL_R32F,GL_RED,GL_FLOAT);
+  this->_silhouettes = std::make_shared<ge::gl::Buffer>(
+        sizeof(float)*componentsPerVertex3D*2*this->_nofEdges,
+        nullptr,GL_DYNAMIC_COPY);
 
   this->_sidesVao = std::make_shared<ge::gl::VertexArray>();
-  this->_sidesVao->addAttrib(this->_sillhouettes,0,componentsPerVertex4D,GL_FLOAT);
+  this->_sidesVao->addAttrib(this->_silhouettes,0,componentsPerVertex3D,GL_FLOAT);
+
+  std::vector<DrawArraysIndirectCommand>cmds;
+  cmds.resize(this->_maxMultiplicity);
+  size_t multiplicityOffset = 0;
+  for(size_t m=0;m<this->_maxMultiplicity;++m){
+    cmds.at(m).nofInstances = 1;
+    cmds.at(m).firstVertex  = static_cast<uint32_t>(multiplicityOffset*verticesPerEdge);
+    multiplicityOffset += cardinality.at(m);
+  }
+
+  this->_dibo=std::make_shared<ge::gl::Buffer>(sizeof(DrawArraysIndirectCommand)*cmds.size(),cmds.data());
 }
 
 void CSSVSOE::_createCapsData (std::shared_ptr<Adjacency const>const&adj){
@@ -97,17 +124,6 @@ CSSVSOE::CSSVSOE(
 
   this->_createCapsData(adj);
 
-  struct DrawArraysIndirectCommand{
-    uint32_t nofVertices  = 0;
-    uint32_t nofInstances = 0;
-    uint32_t firstVertex  = 0;
-    uint32_t baseInstance = 0;
-  };
-  DrawArraysIndirectCommand cmd[2];
-  cmd[0].nofInstances = 1;
-  cmd[1].nofInstances = 1;
-  this->_dibo=std::make_shared<ge::gl::Buffer>(sizeof(DrawArraysIndirectCommand),&cmd);
-
 #include"CSSVSOEShaders.h"
 #include"SilhouetteShaders.h"
 
@@ -115,7 +131,7 @@ CSSVSOE::CSSVSOE(
       std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
         "#version 450 core\n",
         ge::gl::Shader::define("WORKGROUP_SIZE_X",int32_t(this->_params.computeSidesWGS)),
-        ge::gl::Shader::define("MAX_MULTIPLICITY",int32_t(adj->getMaxMultiplicity()    )),
+        ge::gl::Shader::define("MAX_MULTIPLICITY",int32_t(this->_maxMultiplicity       )),
         silhouetteFunctions,
         computeSrc));
 
@@ -139,20 +155,46 @@ void CSSVSOE::_computeSides(glm::vec4 const&lightPosition){
   assert(this->_dibo               !=nullptr);
   assert(this->_computeSidesProgram!=nullptr);
   assert(this->_edges              !=nullptr);
-  assert(this->_sillhouettes       !=nullptr);
-  this->_dibo->clear(GL_R32UI,0,sizeof(uint32_t),GL_RED_INTEGER,GL_UNSIGNED_INT);
+  assert(this->_silhouettes        !=nullptr);
+
+  for(size_t m=0;m<this->_maxMultiplicity;++m)
+    this->_dibo->clear(GL_R32UI,m*sizeof(DrawArraysIndirectCommand),sizeof(uint32_t),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   this->_computeSidesProgram
     ->set1ui    ("numEdge"           ,uint32_t(this->_nofEdges)    )
     ->set4fv    ("lightPosition"     ,glm::value_ptr(lightPosition))
     ->bindBuffer("edges"             ,this->_edges                 )
-    ->bindBuffer("silhouettes"       ,this->_sillhouettes          )
+    ->bindBuffer("silhouettes"       ,this->_silhouettes           )
     ->bindBuffer("drawIndirectBuffer",this->_dibo                  )
     ->dispatch((GLuint)ge::core::getDispatchSize(this->_nofEdges,this->_params.computeSidesWGS));
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   glFinish();
+
+#if 1
+  auto dptr = static_cast<DrawArraysIndirectCommand const*>(this->_dibo->map());
+  for(size_t i=0;i<this->_maxMultiplicity;++i){
+    std::cout<<dptr->nofVertices<<" "<<dptr->nofInstances<<" "<<dptr->firstVertex<<" "<<dptr->baseInstance<<std::endl;
+    dptr++;
+  }
+  this->_dibo->unmap();
+
+
+  auto ptr = static_cast<glm::vec4*>(this->_edges->map());
+  for(size_t i=0;i<this->_nofEdges*4;++i){
+    std::cout<<ptr->x<<" "<<ptr->y<<" "<<ptr->z<<" "<<ptr->w<<std::endl;
+    ptr++;
+  }
+  this->_edges->unmap();
+
+  auto ptr3 = static_cast<glm::vec3*>(this->_silhouettes->map());
+  for(size_t i=0;i<this->_nofEdges*2;++i){
+    std::cout<<ptr3->x<<" "<<ptr3->y<<" "<<ptr3->z<<std::endl;
+    ptr3++;
+  }
+  this->_silhouettes->unmap();
+#endif
 }
 
 void CSSVSOE::drawSides(
@@ -176,7 +218,13 @@ void CSSVSOE::drawSides(
   this->_dibo->bind(GL_DRAW_INDIRECT_BUFFER);
   glPatchParameteri(GL_PATCH_VERTICES,2);
   this->_drawSidesProgram->use();
-  glDrawArraysIndirect(GL_PATCHES,NULL);
+
+  for(size_t m=0;m<this->_maxMultiplicity;++m){
+    glStencilOpValueAMD(GL_FRONT_AND_BACK,static_cast<GLuint>(m+1));
+    glDrawArraysIndirect(GL_PATCHES,reinterpret_cast<void const*>(m*sizeof(DrawArraysIndirectCommand)));
+  }
+  glStencilOpValueAMD(GL_FRONT_AND_BACK,1);
+
   this->_sidesVao->unbind();
 }
 

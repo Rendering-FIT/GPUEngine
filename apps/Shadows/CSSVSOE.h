@@ -35,16 +35,17 @@ class CSSVSOE: public ShadowVolumes{
     std::shared_ptr<ge::gl::Program>    _computeSidesProgram = nullptr;
     std::shared_ptr<ge::gl::Program>    _drawSidesProgram    = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _edges               = nullptr;
-    std::shared_ptr<ge::gl::Buffer>     _sillhouettes        = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _silhouettes                  ;
     std::shared_ptr<ge::gl::Buffer>     _dibo                = nullptr;
-    std::shared_ptr<ge::gl::VertexArray>_sidesVao            = nullptr;
-    size_t                              _nofEdges            = 0      ;
+    std::shared_ptr<ge::gl::VertexArray>_sidesVao                     ;
+    size_t                              _nofEdges                     ;
     size_t                              _nofTriangles        = 0      ;
+    size_t                              _maxMultiplicity     = 0      ;
     CSSVSOEParams                       _params                       ;
 
-    std::shared_ptr<ge::gl::Program>    _drawCapsProgram  = nullptr;
-    std::shared_ptr<ge::gl::VertexArray>_capsVao          = nullptr;
-    std::shared_ptr<ge::gl::Buffer>     _caps             = nullptr;
+    std::shared_ptr<ge::gl::Program>    _drawCapsProgram     = nullptr;
+    std::shared_ptr<ge::gl::VertexArray>_capsVao             = nullptr;
+    std::shared_ptr<ge::gl::Buffer>     _caps                = nullptr;
 
     void _computeSides(glm::vec4 const&lightPosition);
 

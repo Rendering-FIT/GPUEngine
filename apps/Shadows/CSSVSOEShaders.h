@@ -4,6 +4,10 @@
 
 const std::string computeSrc = R".(
 #line 6
+
+#extension GL_AMD_gcn_shader       : enable
+#extension GL_AMD_gpu_shader_int64 : enable
+
 #ifndef MAX_MULTIPLICITY
 #define MAX_MULTIPLICITY 2
 #endif//MAX_MULTIPLICITY
@@ -12,98 +16,61 @@ const std::string computeSrc = R".(
 #define WORKGROUP_SIZE_X 64
 #endif//WORKGROUP_SIZE_X
 
-//#define CULL_SIDES 1
-//#define LOCAL_ATOMIC 1
-
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
-layout(std430,binding=0)readonly buffer Edges              {float edges      [];};
-
-layout(std430,binding=1)         buffer Silhouettes        {vec4  silhouettes[];};
-
-#if LOCAL_ATOMIC == 1
-layout(std430,binding=2)volatile buffer DrawIndirectCommand{uint drawIndirectBuffer[4];};
-#else
-layout(std430,binding=2)         buffer DrawIndirectCommand{uint drawIndirectBuffer[4];};
-#endif
+layout(std430,binding=0)readonly buffer Edges              {vec4  edges             [];};
+layout(std430,binding=1)         buffer Silhouettes        {float silhouettes       [];};
+layout(std430,binding=2)         buffer DrawIndirectCommand{uint  drawIndirectBuffer[];};
 
 uniform uint numEdge       = 0                  ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
 uniform mat4 mvp           = mat4(1)            ;
 
-#if LOCAL_ATOMIC == 1
-shared uint localCounter;
 shared uint globalOffset;
-#endif
 
 void main(){
-
-#if LOCAL_ATOMIC == 1
-  if(gl_LocalInvocationID.x==0){
-    localCounter = 0;
-    globalOffset = 0;
-  }
-  barrier();
-#endif
 
   uint gid=gl_GlobalInvocationID.x;
 
   if(gid>=numEdge)return;
+
+  gid*=2+MAX_MULTIPLICITY;
+
   vec4 P[2];
-  gid*=3+3+4*MAX_MULTIPLICITY;
+  P[0]=edges[gid+0];
+  P[1]=edges[gid+1];
 
-
-  P[0] = vec4(edges[gid+0],edges[gid+1],edges[gid+2],1);
-  P[1] = vec4(edges[gid+3],edges[gid+4],edges[gid+5],1);
-
-  int Num=int(P[0].w)+2;
-  P[0].w=1;
-
-  precise int Multiplicity=0;
-  if(Num>20)Num=0;
-  if(Num<0)Num=0;
+  int multiplicity=0;
 
   for(uint m=0;m<MAX_MULTIPLICITY;++m)
-    Multiplicity += int(sign(dot(vec4(edges[gid+6+m*4+0],edges[gid+6+m*4+1],edges[gid+6+m*4+2],edges[gid+6+m*4+3]),lightPosition)));
+    multiplicity += int(sign(dot(edges[gid+2+m],lightPosition)));
 
-#if LOCAL_ATOMIC == 1
-  uint localOffset = atomicAdd(localCounter,uint(2*abs(Multiplicity)));
-  barrier();
-  if(gl_LocalInvocationID.x==0){
-    globalOffset = atomicAdd(drawIndirectBuffer[0],localCounter);
-  }
-  barrier();
-  uint WH = globalOffset + localOffset;
-  if(Multiplicity>0){
-    for(int m=0;m<Multiplicity;++m){
-      silhouettes[WH++]=P[1];
-      silhouettes[WH++]=P[0];
+  for(uint m=0;m<MAX_MULTIPLICITY;++m){
+    uint64_t isSilhouette = ballotAMD(abs(multiplicity) == m+1);
+    if(gl_LocalInvocationID.x==0){
+      uint nofSilhouettes = bitCount(uint(isSilhouette&0xffffffffu))+bitCount(uint(isSilhouette>>32));
+      globalOffset = atomicAdd(drawIndirectBuffer[m*4],nofSilhouettes*2);
+    }
+    uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
+    uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
+    uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
+    uint offset         = (drawIndirectBuffer[m*4+2]+globalOffset+localOffset*2)*3;
+    if(multiplicity<0){
+      silhouettes[offset+0]=0*abs(1<<((multiplicity-1)*4));//P[0].x;
+      silhouettes[offset+1]=1*abs(1<<((multiplicity-1)*4));//P[0].y;
+      silhouettes[offset+2]=2*abs(1<<((multiplicity-1)*4));//P[0].z;
+      silhouettes[offset+3]=3*abs(1<<((multiplicity-1)*4));//P[1].x;
+      silhouettes[offset+4]=4*abs(1<<((multiplicity-1)*4));//P[1].y;
+      silhouettes[offset+5]=5*abs(1<<((multiplicity-1)*4));//P[1].z;
+    }else{
+      silhouettes[offset+0]=0*abs(1<<((multiplicity-1)*4));//P[1].x;
+      silhouettes[offset+1]=1*abs(1<<((multiplicity-1)*4));//P[1].y;
+      silhouettes[offset+2]=2*abs(1<<((multiplicity-1)*4));//P[1].z;
+      silhouettes[offset+3]=3*abs(1<<((multiplicity-1)*4));//P[0].x;
+      silhouettes[offset+4]=4*abs(1<<((multiplicity-1)*4));//P[0].y;
+      silhouettes[offset+5]=5*abs(1<<((multiplicity-1)*4));//P[0].z;
     }
   }
-  if(Multiplicity<0){
-    Multiplicity=-Multiplicity;
-    for(int m=0;m<Multiplicity;++m){
-      silhouettes[WH++]=P[0];
-      silhouettes[WH++]=P[1];
-    }
-  }
-#else
-  if(Multiplicity>0){
-    uint WH=atomicAdd(drawIndirectBuffer[0],2*Multiplicity);
-    for(int m=0;m<Multiplicity;++m){
-      silhouettes[WH++]=P[1];
-      silhouettes[WH++]=P[0];
-    }
-  }
-  if(Multiplicity<0){
-    Multiplicity=-Multiplicity;
-    uint WH=atomicAdd(drawIndirectBuffer[0],2*Multiplicity);
-    for(int m=0;m<Multiplicity;++m){
-      silhouettes[WH++]=P[0];
-      silhouettes[WH++]=P[1];
-    }
-  }
-#endif
 }).";
 
 
@@ -112,9 +79,9 @@ void main(){
 
 std::string const drawVPSrc = R".(
 #version 450 core
-layout(location=0)in vec4 Position;
+layout(location=0)in vec3 Position;
 void main(){
-  gl_Position=Position;
+  gl_Position=vec4(Position,1);
 }).";
 
 std::string const drawCPSrc = R".(
