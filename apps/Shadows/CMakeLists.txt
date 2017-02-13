@@ -28,6 +28,7 @@ set(APP_SOURCES
   FastAdjacency.cpp
   TimeStamp.cpp
   CSSV.cpp
+  CSSVSOE.cpp
   Sintorn.cpp
   SintornTiles.cpp
   RSSV.cpp
@@ -50,6 +51,7 @@ set(APP_INCLUDES
   TimeStamp.h
   CSSV.h
   CSSVShaders.h
+  CSSVSOE.h
   Sintorn.h
   SintornTiles.h
   SintornShaders.h

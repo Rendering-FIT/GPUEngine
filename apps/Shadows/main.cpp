@@ -30,6 +30,7 @@
 #include"CSV.h"
 #include"RSSV.h"
 #include"VSSV.h"
+#include"CSSVSOE.h"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -64,6 +65,7 @@ struct Application{
   ShadowVolumesParams     svParams     ;
   CubeShadowMappingParams cubeSMParams ;
   CSSVParams              cssvParams   ;
+  CSSVSOEParams           cssvsoeParams;
   VSSVParams              vssvParams   ;
   SintornParams           sintornParams;
   RSSVParams              rssvParams   ;
@@ -121,9 +123,9 @@ void Application::parseArguments(int argc,char*argv[]){
   this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
   this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
 
-  this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                              );
-  this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                            );
-  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv");
+  this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
+  this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
+  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe");
 
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -135,11 +137,13 @@ void Application::parseArguments(int argc,char*argv[]){
   this->cubeSMParams.far        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
   this->cubeSMParams.faces      = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
 
-  this->cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"            ,64,"compute sillhouette shadow volumes work group size"      );
+  this->cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"            ,64,"compute silhouette shadow volumes work group size"      );
   this->cssvParams.localAtomic     = arg->getu32("--cssv-localAtomic"    ,1 ,"use local atomic instructions"                           );
   this->cssvParams.cullSides       = arg->getu32("--cssv-cullSides"      ,0 ,"enables culling of sides that are outside of viewfrustum");
   this->cssvParams.usePlanes       = arg->getu32("--cssv-usePlanes"      ,0 ,"use triangle planes instead of opposite vertices"        );
   this->cssvParams.useInterleaving = arg->getu32("--cssv-useInterleaving",0 ,"reorder edge that so it is struct of arrays"             );
+
+  this->cssvsoeParams.computeSidesWGS = arg->getu32("--cssvsoe-WGS",64,"compute silhouette shadow volumes work group size");
 
   this->vssvParams.usePlanes              = arg->geti32("--vssv-usePlanes"   ,0,"use planes instead of opposite vertices"            );
   this->vssvParams.useStrips              = arg->geti32("--vssv-useStrips"   ,1,"use triangle strips for sides of shadow volumes 0/1");
@@ -252,6 +256,14 @@ bool Application::init(int argc,char*argv[]){
         this->svParams       ,
         this->maxMultiplicity,
         this->cssvParams     );
+  else if(this->methodName=="cssvsoe")
+    this->shadowMethod = std::make_shared<CSSVSOE>(
+        this->shadowMask     ,
+        this->model          ,
+        this->gBuffer->depth ,
+        this->svParams       ,
+        this->maxMultiplicity,
+        this->cssvsoeParams  );
   else if(this->methodName=="sintorn")
     this->shadowMethod = std::make_shared<Sintorn>(
         this->shadowMask     ,
