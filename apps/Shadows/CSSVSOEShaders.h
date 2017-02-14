@@ -70,6 +70,7 @@ void main(){
       silhouettes[offset+4]=4*abs(1<<((multiplicity-1)*4));//P[0].y;
       silhouettes[offset+5]=5*abs(1<<((multiplicity-1)*4));//P[0].z;
     }
+    //test commit
   }
 }).";
 
