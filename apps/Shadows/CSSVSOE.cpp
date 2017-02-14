@@ -172,6 +172,7 @@ void CSSVSOE::_computeSides(glm::vec4 const&lightPosition){
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   glFinish();
 
+#if 1
   auto dptr = static_cast<DrawArraysIndirectCommand const*>(this->_dibo->map());
   for(size_t i=0;i<this->_maxMultiplicity;++i){
     std::cout<<dptr->nofVertices<<" "<<dptr->nofInstances<<" "<<dptr->firstVertex<<" "<<dptr->baseInstance<<std::endl;
@@ -179,7 +180,6 @@ void CSSVSOE::_computeSides(glm::vec4 const&lightPosition){
   }
   this->_dibo->unmap();
 
-#if 1
 
   auto ptr = static_cast<glm::vec4*>(this->_edges->map());
   for(size_t i=0;i<this->_nofEdges*4;++i){
@@ -194,8 +194,9 @@ void CSSVSOE::_computeSides(glm::vec4 const&lightPosition){
     ptr3++;
   }
   this->_silhouettes->unmap();
-#endif
+
   exit(0);
+#endif
 }
 
 void CSSVSOE::drawSides(
