@@ -33,6 +33,12 @@ void main(){
   uint gid=gl_GlobalInvocationID.x;
 
   if(gid>=numEdge)return;
+  silhouettes[gl_GlobalInvocationID.x*6+0]=42;
+  silhouettes[gl_GlobalInvocationID.x*6+1]=42;
+  silhouettes[gl_GlobalInvocationID.x*6+2]=42;
+  silhouettes[gl_GlobalInvocationID.x*6+3]=42;
+  silhouettes[gl_GlobalInvocationID.x*6+4]=42;
+  silhouettes[gl_GlobalInvocationID.x*6+5]=42;
 
   gid*=2+MAX_MULTIPLICITY;
 
@@ -55,20 +61,20 @@ void main(){
     uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
     uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
     uint offset         = (drawIndirectBuffer[m*4+2]+globalOffset+localOffset*2)*3;
-    if(multiplicity<0){
-      silhouettes[offset+0]=0*abs(1<<((multiplicity-1)*4));//P[0].x;
-      silhouettes[offset+1]=1*abs(1<<((multiplicity-1)*4));//P[0].y;
-      silhouettes[offset+2]=2*abs(1<<((multiplicity-1)*4));//P[0].z;
-      silhouettes[offset+3]=3*abs(1<<((multiplicity-1)*4));//P[1].x;
-      silhouettes[offset+4]=4*abs(1<<((multiplicity-1)*4));//P[1].y;
-      silhouettes[offset+5]=5*abs(1<<((multiplicity-1)*4));//P[1].z;
-    }else{
-      silhouettes[offset+0]=0*abs(1<<((multiplicity-1)*4));//P[1].x;
-      silhouettes[offset+1]=1*abs(1<<((multiplicity-1)*4));//P[1].y;
-      silhouettes[offset+2]=2*abs(1<<((multiplicity-1)*4));//P[1].z;
-      silhouettes[offset+3]=3*abs(1<<((multiplicity-1)*4));//P[0].x;
-      silhouettes[offset+4]=4*abs(1<<((multiplicity-1)*4));//P[0].y;
-      silhouettes[offset+5]=5*abs(1<<((multiplicity-1)*4));//P[0].z;
+    if(multiplicity == -m-1){
+      silhouettes[offset+0]=P[0].x;
+      silhouettes[offset+1]=P[0].y;
+      silhouettes[offset+2]=P[0].z;
+      silhouettes[offset+3]=P[1].x;
+      silhouettes[offset+4]=P[1].y;
+      silhouettes[offset+5]=P[1].z;
+    }else if(multiplicity == m+1){
+      silhouettes[offset+0]=P[1].x;
+      silhouettes[offset+1]=P[1].y;
+      silhouettes[offset+2]=P[1].z;
+      silhouettes[offset+3]=P[0].x;
+      silhouettes[offset+4]=P[0].y;
+      silhouettes[offset+5]=P[0].z;
     }
     //test commit
   }
