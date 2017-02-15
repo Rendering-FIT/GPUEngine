@@ -23,43 +23,48 @@ void CSSVSOE::_createSidesData(std::shared_ptr<Adjacency const>const&adj){
   std::vector<size_t>cardinality;
   cardinality.resize(adj->getMaxMultiplicity());
 
-  for(size_t e=0;e<adj->getNofEdges();++e){
-    cardinality.at(adj->getNofOpposite(e)-1)++;
+  this->_maxMultiplicity = adj->getMaxMultiplicity();
+  size_t dstEdgeIndex = 0;
+  for(size_t m=0;m<this->_maxMultiplicity;++m){
+    for(size_t e=0;e<adj->getNofEdges();++e){
+      if(adj->getNofOpposite(e)!=m+1)continue;
+      cardinality.at(adj->getNofOpposite(e)-1)++;
 
-    auto const dstEdgePtr             = dstPtr + e*nofVec4PerEdge*componentsPerVertex4D;
-    auto const dstVertexAPtr          = dstEdgePtr;
-    auto const dstVertexBPtr          = dstVertexAPtr + componentsPerVertex4D;
-    auto const dstOppositeVerticesPtr = dstVertexBPtr + componentsPerVertex4D;
+      auto const dstEdgePtr             = dstPtr + dstEdgeIndex*nofVec4PerEdge*componentsPerVertex4D;
+      auto const dstVertexAPtr          = dstEdgePtr;
+      auto const dstVertexBPtr          = dstVertexAPtr + componentsPerVertex4D;
+      auto const dstOppositeVerticesPtr = dstVertexBPtr + componentsPerVertex4D;
 
-    auto const srcVertexAPtr          = srcPtr + adj->getEdge(e,0);
-    auto const srcVertexBPtr          = srcPtr + adj->getEdge(e,1);
+      auto const srcVertexAPtr          = srcPtr + adj->getEdge(e,0);
+      auto const srcVertexBPtr          = srcPtr + adj->getEdge(e,1);
 
-    size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
+      size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
 
-    std::memcpy(dstVertexAPtr,srcVertexAPtr,sizeofVertex3DInBytes);
-    dstVertexAPtr[3] = 1.f;
+      std::memcpy(dstVertexAPtr,srcVertexAPtr,sizeofVertex3DInBytes);
+      dstVertexAPtr[3] = 1.f;
 
-    std::memcpy(dstVertexBPtr,srcVertexBPtr,sizeofVertex3DInBytes);
-    dstVertexBPtr[3] = 1.f;
+      std::memcpy(dstVertexBPtr,srcVertexBPtr,sizeofVertex3DInBytes);
+      dstVertexBPtr[3] = 1.f;
 
-    for(size_t o=0;o<adj->getNofOpposite(e);++o){
-      auto const dstOppositeVertexPtr = dstOppositeVerticesPtr + o*componentsPerVertex4D;
-      auto const plane = computePlane(toVec3(srcPtr+adj->getEdgeVertexA(e)),toVec3(srcPtr+adj->getEdgeVertexB(e)),toVec3(srcPtr+adj->getOpposite(e,o)));
-      std::memcpy(dstOppositeVertexPtr,&plane,sizeof(plane));
+      for(size_t o=0;o<adj->getNofOpposite(e);++o){
+        auto const dstOppositeVertexPtr = dstOppositeVerticesPtr + o*componentsPerVertex4D;
+        auto const plane = computePlane(toVec3(srcPtr+adj->getEdgeVertexA(e)),toVec3(srcPtr+adj->getEdgeVertexB(e)),toVec3(srcPtr+adj->getOpposite(e,o)));
+        std::memcpy(dstOppositeVertexPtr,&plane,sizeof(plane));
+      }
+
+      size_t const nofEmptyOppositeVertices = adj->getMaxMultiplicity() - adj->getNofOpposite(e);
+      size_t const sizeofEmptyVerticesInBytes = sizeof(float)*componentsPerVertex4D*nofEmptyOppositeVertices;
+      auto dstEmptyOppositeVerticesPtr = dstOppositeVerticesPtr + adj->getNofOpposite(e)*componentsPerVertex4D;
+      std::memset(dstEmptyOppositeVerticesPtr,0,sizeofEmptyVerticesInBytes);
+      dstEdgeIndex++;
     }
-
-    size_t const nofEmptyOppositeVertices = adj->getMaxMultiplicity() - adj->getNofOpposite(e);
-    size_t const sizeofEmptyVerticesInBytes = sizeof(float)*componentsPerVertex4D*nofEmptyOppositeVertices;
-    auto dstEmptyOppositeVerticesPtr = dstOppositeVerticesPtr + adj->getNofOpposite(e)*componentsPerVertex4D;
-    std::memset(dstEmptyOppositeVerticesPtr,0,sizeofEmptyVerticesInBytes);
   }
   this->_edges->unmap();
   this->_nofEdges = adj->getNofEdges();
-  this->_maxMultiplicity = adj->getMaxMultiplicity();
 
   this->_silhouettes = std::make_shared<ge::gl::Buffer>(
-        sizeof(float)*componentsPerVertex3D*2*this->_nofEdges,
-        nullptr,GL_DYNAMIC_COPY);
+      sizeof(float)*componentsPerVertex3D*2*this->_nofEdges,
+      nullptr,GL_DYNAMIC_COPY);
 
   this->_sidesVao = std::make_shared<ge::gl::VertexArray>();
   this->_sidesVao->addAttrib(this->_silhouettes,0,componentsPerVertex3D,GL_FLOAT);
@@ -172,7 +177,7 @@ void CSSVSOE::_computeSides(glm::vec4 const&lightPosition){
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   glFinish();
 
-#if 1
+#if 0
   auto dptr = static_cast<DrawArraysIndirectCommand const*>(this->_dibo->map());
   for(size_t i=0;i<this->_maxMultiplicity;++i){
     std::cout<<dptr->nofVertices<<" "<<dptr->nofInstances<<" "<<dptr->firstVertex<<" "<<dptr->baseInstance<<std::endl;
@@ -190,6 +195,7 @@ void CSSVSOE::_computeSides(glm::vec4 const&lightPosition){
 
   auto ptr3 = static_cast<glm::vec3*>(this->_silhouettes->map());
   for(size_t i=0;i<this->_nofEdges*2;++i){
+
     std::cout<<ptr3->x<<" "<<ptr3->y<<" "<<ptr3->z<<std::endl;
     ptr3++;
   }

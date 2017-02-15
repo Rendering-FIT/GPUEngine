@@ -33,13 +33,6 @@ void main(){
   uint gid=gl_GlobalInvocationID.x;
 
   if(gid>=numEdge)return;
-  silhouettes[gl_GlobalInvocationID.x*6+0]=0;
-  silhouettes[gl_GlobalInvocationID.x*6+1]=0;
-  silhouettes[gl_GlobalInvocationID.x*6+2]=0;
-  silhouettes[gl_GlobalInvocationID.x*6+3]=0;
-  silhouettes[gl_GlobalInvocationID.x*6+4]=0;
-  silhouettes[gl_GlobalInvocationID.x*6+5]=0;
-
   gid*=2+MAX_MULTIPLICITY;
 
   vec4 P[2];
@@ -51,62 +44,34 @@ void main(){
   for(uint m=0;m<MAX_MULTIPLICITY;++m)
     multiplicity += int(sign(dot(edges[gid+2+m],lightPosition)));
 
-/*
-  uint64_t isSilhouette = ballotAMD(Multiplicity!=0);
-  if(gl_LocalInvocationID.x==0){
-    uint nofSilhouettes = bitCount(uint(isSilhouette&0xffffffffu))+bitCount(uint(isSilhouette>>32));
-    globalOffset = atomicAdd(dispatchIndirectBuffer[0],nofSilhouettes);
-  }
-  uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
-  uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
-  uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
-  uint offset         = (globalOffset+localOffset)*6;
-
-  if(multiplicity==0)return;
-  if(multiplicity>0){
-    silhouettes[offset+0]=P[0].x;
-    silhouettes[offset+1]=P[0].y;
-    silhouettes[offset+2]=P[0].z;
-    silhouettes[offset+3]=P[1].x;
-    silhouettes[offset+4]=P[1].y;
-    silhouettes[offset+5]=P[1].z;
-  }else{
-    silhouettes[offset+0]=P[1].x;
-    silhouettes[offset+1]=P[1].y;
-    silhouettes[offset+2]=P[1].z;
-    silhouettes[offset+3]=P[0].x;
-    silhouettes[offset+4]=P[0].y;
-    silhouettes[offset+5]=P[0].z;
-  }
-*/
-  //*
   for(uint m=0;m<MAX_MULTIPLICITY;++m){
-    uint64_t isSilhouette = ballotAMD(abs(multiplicity) == m+1);
+    uint64_t isSilhouetteLong = ballotAMD(abs(multiplicity) == m+1);
+    uvec2 isSilhouette = unpackUint2x32(isSilhouetteLong);
     if(gl_LocalInvocationID.x==0){
-      uint nofSilhouettes = bitCount(uint(isSilhouette&0xffffffffu))+bitCount(uint(isSilhouette>>32));
+      uint nofSilhouettes = bitCount(isSilhouette.x) + bitCount(isSilhouette.y);
       globalOffset = atomicAdd(drawIndirectBuffer[m*4],nofSilhouettes*2);
     }
-    uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
-    uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
-    uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
-    uint offset         = (drawIndirectBuffer[m*4+2]+globalOffset+localOffset*2)*3;
+
+    uint threadMaskLow  = gl_LocalInvocationID.x>=32 ? 0xffffffffu : uint(1u<<(gl_LocalInvocationID.x   ))-1u;
+    uint threadMaskHigh = gl_LocalInvocationID.x< 32 ? 0x00000000u : uint(1u<<(gl_LocalInvocationID.x-32))-1u;
+    uint localOffset    = bitCount(isSilhouette.x&threadMaskLow) + bitCount(isSilhouette.y&threadMaskHigh);
+    uint offset         = (drawIndirectBuffer[m*4+2] + globalOffset + localOffset*2)*3;
     if(multiplicity == -m-1){
-      silhouettes[offset+0]=333333;//P[0].x;
-      silhouettes[offset+1]=333333;//P[0].y;
-      silhouettes[offset+2]=333333;//P[0].z;
-      silhouettes[offset+3]=333333;//P[1].x;
-      silhouettes[offset+4]=333333;//P[1].y;
-      silhouettes[offset+5]=333333;//P[1].z;
+      silhouettes[offset+0]=P[0].x;
+      silhouettes[offset+1]=P[0].y;
+      silhouettes[offset+2]=P[0].z;
+      silhouettes[offset+3]=P[1].x;
+      silhouettes[offset+4]=P[1].y;
+      silhouettes[offset+5]=P[1].z;
     }else if(multiplicity == m+1){
-      silhouettes[offset+0]=333333;//P[1].x;
-      silhouettes[offset+1]=333333;//P[1].y;
-      silhouettes[offset+2]=333333;//P[1].z;
-      silhouettes[offset+3]=333333;//P[0].x;
-      silhouettes[offset+4]=333333;//P[0].y;
-      silhouettes[offset+5]=333333;//P[0].z;
+      silhouettes[offset+0]=P[1].x;
+      silhouettes[offset+1]=P[1].y;
+      silhouettes[offset+2]=P[1].z;
+      silhouettes[offset+3]=P[0].x;
+      silhouettes[offset+4]=P[0].y;
+      silhouettes[offset+5]=P[0].z;
     }
   }
-  // */
 }).";
 
 
