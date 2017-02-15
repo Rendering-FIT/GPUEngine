@@ -122,98 +122,13 @@ const std::string _computeSilhouettesSrc = R".(
 
 layout(local_size_x=WORKGROUP_SIZE_X)in;
 
-layout(std430,binding=0)buffer Edges                 {vec4 edges                 [ ];};
+layout(std430,binding=0)buffer Edges                 {vec4  edges                 [ ];};
 layout(std430,binding=1)buffer Silhouettes           {float silhouettes           [ ];};
-layout(std430,binding=2)buffer DispatchIndirectBuffer{uint dispatchIndirectBuffer[3];};
+layout(std430,binding=2)buffer DispatchIndirectBuffer{uint  dispatchIndirectBuffer[3];};
 
-uniform uint numEdge=0;
-uniform vec4 lightPosition;
-uniform mat4 mvp;
-
-bool isEdgeVisible(in vec4 A,in vec4 B){
-  vec3 M=+A.xyz+A.www;
-  vec3 N=+B.xyz+B.www;
-  vec3 O=-A.xyz+A.www;
-  vec3 P=-B.xyz+B.www;
-  vec3 NM=N-M;
-  vec3 PO=P-O;
-  float Left=0;
-  float Right=1;
-  for(int i=0;i<3;++i){
-    if(NM[i]==0){
-      if(M[i]<0)return false;
-    }else{
-      if(NM[i]>0)Left=max(Left,-M[i]/NM[i]);
-      else Right=min(Right,-M[i]/NM[i]);
-    }
-
-    if(PO[i]==0){
-      if(O[i]<0)return false;
-    }else{
-      if(PO[i]>0)Left=max(Left,-O[i]/PO[i]);
-      else Right=min(Right,-O[i]/PO[i]);
-    }
-  }
-  return Left<=Right;
-}
-
-bool isFullVisible(in vec4 A,in vec4 B,in vec4 C,int Diag){
-  vec3 a=A.xyz;
-  vec3 b=B.xyz;
-  vec3 c=C.xyz;
-  if(Diag>=0){
-    a[Diag]=-a[Diag];
-    b[Diag]=-b[Diag];
-    c[Diag]=-c[Diag];
-  }
-  float m=(a.x-a.y);
-  float n=(b.x-b.y);
-  float o=(c.x-c.y);
-  float p=(a.x-a.z);
-  float q=(b.x-b.z);
-  float r=(c.x-c.z);
-  float d=(q*o-n*r);
-  float t=(m*r-p*o)/d;
-  float l=-(m*q-p*n)/d;
-  vec4 X=A+t*B+l*C;
-  return (t>0)&&(t<1)&&(l>0)&&(l<1)&&
-    all(greaterThan(X.xyz,-X.www))&&all(lessThan(X.xyz,X.www));
-}
-
-bool isVisible(in vec4 a,in vec4 b,in vec4 c,in vec4 d,vec4 l){
-  vec4 A=mvp*a;
-  vec4 B=mvp*b;
-  vec4 C=mvp*c;
-  vec4 D=mvp*d;
-  vec3 n=(mvp*vec4(cross(b.xyz-a.xyz,l.xyz-a.xyz*l.w),0)).xyz;
-  ivec3 Corner=ivec3(1+sign(n))>>1;
-  if(Corner.z==1)Corner=ivec3(1)-Corner;
-  int Diag=Corner.x+(Corner.y<<1)-1;
-  if(isFullVisible(A,B-A,C-A,Diag))return true;
-  if(isEdgeVisible(A,B))return true;
-  if(isEdgeVisible(A,C))return true;
-  if(isEdgeVisible(B,D))return true;
-  if(isEdgeVisible(C,D))return true;
-  return false;
-}
-
-bool isVisible(in vec4 P[4],in int Diag){
-  if(isFullVisible(P[0],P[1]-P[0],P[2]-P[0],Diag))return true;
-  if(isEdgeVisible(P[0],P[1]))return true;
-  if(isEdgeVisible(P[0],P[2]))return true;
-  if(isEdgeVisible(P[1],P[3]))return true;
-  if(isEdgeVisible(P[2],P[3]))return true;
-  return false;
-}
-
-int greaterVec(vec3 a,vec3 b){
-  return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
-}
-
-int computeMult(vec3 A,vec3 B,vec3 C,vec4 L){
-  vec3 n=cross(C-A,L.xyz-A*L.w);
-  return int(sign(dot(n,B-A)));
-}
+uniform uint numEdge       = 0;
+uniform vec4 lightPosition = vec4(10,10,10,1);
+uniform mat4 mvp           = mat4(1);
 
 shared uint globalOffset;
 
@@ -256,21 +171,16 @@ void main(){
     if(Num>20)Num=0;
     if(Num<0)Num=0;
 
-    for(int i=2;i<Num;++i){
-#define T0 P[0].xyz
-#define T1 P[1].xyz
-#define T2 edges[gid+i].xyz
-      if(greaterVec(T0,T2)>0){//T[2] T[0] T[1]?
-        Multiplicity+=computeMult(T2,T0,T1,lightPosition);
-      }else{
-        if(greaterVec(T1,T2)>0){//T[0] T[2] T[1]?
-          Multiplicity-=computeMult(T0,T2,T1,lightPosition);
-        }else{//T[0] T[1] T[2]?
-          Multiplicity+=computeMult(T0,T1,T2,lightPosition);
-        }
-      }
-    }
+#if     USE_PLANES == 1
+    for(int o=0;o<MAX_MULTIPLICITY;++o)
+      Multiplicity += int(sign(dot(edges[gid+2+o],lightPosition)));
+#else //USE_PLANES == 1
+    for(int o=2;o<Num;++o)
+      Multiplicity += currentMultiplicity(P[0].xyz,P[1].xyz,edges[gid+o].xyz,lightPosition);
+#endif//USE_PLANES == 1
+
   }
+
   uint64_t isSilhouette = ballotAMD(Multiplicity!=0);
   if(gl_LocalInvocationID.x==0){
     uint nofSilhouettes = bitCount(uint(isSilhouette&0xffffffffu))+bitCount(uint(isSilhouette>>32));
@@ -278,26 +188,26 @@ void main(){
   }
   uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
   uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
-  uint localOffset = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
-  uint offset=(globalOffset+localOffset)*7;
-  if(Multiplicity!=0){
-    if(Multiplicity>0){
-      silhouettes[offset+0]=P[0].x;
-      silhouettes[offset+1]=P[0].y;
-      silhouettes[offset+2]=P[0].z;
-      silhouettes[offset+3]=P[1].x;
-      silhouettes[offset+4]=P[1].y;
-      silhouettes[offset+5]=P[1].z;
-      silhouettes[offset+6]=float(Multiplicity);
-    }else{
-      silhouettes[offset+0]=P[1].x;
-      silhouettes[offset+1]=P[1].y;
-      silhouettes[offset+2]=P[1].z;
-      silhouettes[offset+3]=P[0].x;
-      silhouettes[offset+4]=P[0].y;
-      silhouettes[offset+5]=P[0].z;
-      silhouettes[offset+6]=float(-Multiplicity);
-    }
+  uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
+  uint offset         = (globalOffset+localOffset)*7;
+
+  if(Multiplicity==0)return;
+  if(Multiplicity>0){
+    silhouettes[offset+0]=P[0].x;
+    silhouettes[offset+1]=P[0].y;
+    silhouettes[offset+2]=P[0].z;
+    silhouettes[offset+3]=P[1].x;
+    silhouettes[offset+4]=P[1].y;
+    silhouettes[offset+5]=P[1].z;
+    silhouettes[offset+6]=float(Multiplicity);
+  }else{
+    silhouettes[offset+0]=P[1].x;
+    silhouettes[offset+1]=P[1].y;
+    silhouettes[offset+2]=P[1].z;
+    silhouettes[offset+3]=P[0].x;
+    silhouettes[offset+4]=P[0].y;
+    silhouettes[offset+5]=P[0].z;
+    silhouettes[offset+6]=float(-Multiplicity);
   }
 }).";
 
@@ -363,6 +273,7 @@ const std::string _rasterizeSrc = R".(
 #define FLOATS_PER_SILHOUETTE_MULTIPLICITY 1
 #define FLOATS_PER_SILHOUETTE              (FLOATS_PER_SILHOUETTE_POINTS+FLOATS_PER_SILHOUETTE_MULTIPLICITY)
 #define VEC4_PER_SIDE                      4
+#define RESULT_LENGTH_IN_UINT              (WAVEFRONT_SIZE/UINT_BIT_SIZE)
 
 layout(local_size_x=WORKGROUP_SIZE_X,local_size_y=WORKGROUP_SIZE_Y,local_size_z=WORKGROUP_SIZE_Z)in;
 layout(       binding=RASTERIZE_BINDING_HDT        )uniform sampler2D HDT[NUMBER_OF_LEVELS];
@@ -397,22 +308,329 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
   }
 }
 
-/*
-#define TEST_SILHOUETTE_LAST(LEVEL)\
-void TestSilhouetteHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
-  uvec2 LocalCoord             = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);\
-  uvec2 GlobalCoord            = Coord*uvec2(8,8)+LocalCoord;\
-  vec2  GlobalClipCoord        = ClipCoord+vec2(2.f/float(8<<(3*LEVEL)))*LocalCoord;\
-  vec4  SampleCoordInClipSpace = vec4(\
-    GlobalClipCoord+vec2(2.f/float(8<<(3*LEVEL)))*.5,\
-    texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).x,1);\
-    \
-  if(SampleCoordInClipSpace.z>=1)return;\
-  bool inside = true;\
-  for(int p=0;p<NOF_PLANES_PER_SF;++p)\
-    inside=inside && dot(SampleCoordInClipSpace,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][p])>=0;\
-  if(inside)\
-    imageStore(FinalStencilMask,ivec2(GlobalCoord),uvec4(SHADOW_VALUE));\
+#define NO_INTERSECTION 0x00000000u
+#define INTERSECTS      0x00000001u
+
+// P = [Px,Py,Pz,1]^T //point
+//
+// Ax = L //left   of frustum
+// Ay = B //bottom of frustum
+// Az = N //near   of frustum
+// Bx = R //right  of frustum
+// By = T //top    of frustum
+// Bz = F //far    of frustum
+//
+// M = frustum(Ax,Bx,Ay,By,Az,Bz)
+//
+// Q' = M * P //point in clip space of frustum
+//      [ 2Az/(Bx-Ax)            0   (Bx+Ax)/(Bx-Ax)               0 ]   [Px]
+// Q' = [           0  2Az/(By-Ay)   (By+Ay)/(By-Ay)               0 ] * [Py]
+//      [           0            0  -(Bz+Az)/(Bz-Az)  -2AzBz/(Bz-Az) ]   [Pz]
+//      [           0            0                -1               0 ]   [ 1]
+//
+// Q'x =    2Az/(Bx-Ax)Px +  (Bx+Ax)/(Bx-Ax) Pz
+// Q'y =    2Az/(By-Ay)Py +  (By+Ay)/(By-Ay) Pz
+// Q'z = -2AzBz/(Bz-Az)   + -(Bz+Az)/(Bz-Az) Pz
+// Q'w =                                    -Pz
+//
+//
+// Ix //weight of Ax,Bx for left   side of sub-tile 
+// Jx //weight of Ax,Bx for right  side of sub-tile
+// Iy //weight of Ay,By for bottom side of sub-tile
+// Jy //weight of Ay,By for top    side of sub-tile
+//
+// ax = Ax*(1-Ix) + Bx*(Ix)
+// bx = Ax*(1-Jx) + Bx*(Jx)
+//
+// ay = Ay*(1-Iy) + By*(Iy)
+// by = Ax*(1-Iy) + By*(Iy)
+//
+// az = zMinMax.x //minimum depth of tile
+// bz = zMinMax.y //maximum depth of tile
+//
+// N = frustum(ax,bx,ay,by,az,bz)
+//
+// P' = N * P //point in clip space of sub-frustum
+//      [ 2az/(bx-ax)            0   (bx+ax)/(bx-ax)               0 ]   [Px]
+// P' = [           0  2az/(by-ay)   (by+ay)/(by-ay)               0 ] * [Py]
+//      [           0            0  -(bz+az)/(bz-az)  -2azbz/(bz-az) ]   [Pz]
+//      [           0            0                -1               0 ]   [ 1]
+//
+// P'x =    2az/(bx-ax)Px +  (bx+ax)/(bx-ax) Pz
+// P'y =    2az/(by-ay)Py +  (by+ay)/(by-ay) Pz
+// P'z = -2azbz/(bz-az)   + -(bz+az)/(bz-az) Pz
+// P'w =                                    -Pz
+//
+// P'x = 2az/(Ax*(1-Jx)+Bx*(Jx)-Ax*(1-Ix)-Bx*(Ix))Px+(Ax*(1-Jx)+Bx*(Jx)+Ax*(1-Ix)+Bx*(Ix))/(Ax*(1-Jx)+Bx*(Jx)-Ax*(1-Ix)-Bx*(Ix))Pz
+// P'x = 2az/(Ax*(1-Jx)+Bx* Jx -Ax*(1-Ix)-Bx* Ix )Px+(Ax*(1-Jx)+Bx* Jx +Ax*(1-Ix)+Bx* Ix )/(Ax*(1-Jx)+Bx* Jx -Ax*(1-Ix)-Bx* Ix )Pz
+// P'x = 2az/(Ax*(1-Jx)+Bx*(Jx-Ix)-Ax*(1-Ix))Px+(Ax*(1-Jx)+Bx*(Jx+Ix)+Ax*(1-Ix))/(Ax*(1-Jx)+Bx*(Jx-Ix)-Ax*(1-Ix))Pz
+// P'x = 2az/(Ax*(-Jx+Ix)+Bx*(Jx-Ix))Px+(Ax*(2-Jx-Ix)+Bx*(Jx+Ix))/(Ax*(-Jx+Ix)+Bx*(Jx-Ix))Pz
+// P'x = 2az/(-Ax*(Jx-Ix)+Bx*(Jx-Ix))Px+(Ax*(2-Jx-Ix)+Bx*(Jx+Ix))/(-Ax*(Jx-Ix)+Bx*(Jx-Ix))Pz
+// P'x = 2az/((Bx-Ax)*(Jx-Ix))Px+(Ax*(2-Jx-Ix)+Bx*(Jx+Ix))/((Bx-Ax)*(Jx-Ix))Pz
+// P'x = (2az/(Bx-Ax)Px+(Ax*(2-Jx-Ix)+Bx*(Jx+Ix))/(Bx-Ax)Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(2Ax+Ax(-Jx-Ix)+Bx*(Jx+Ix))/(Bx-Ax)Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(2Ax-Ax(Jx+Ix)+Bx*(Jx+Ix))/(Bx-Ax)Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(2Ax+(Bx-Ax)(Jx+Ix))/(Bx-Ax)Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(2Ax/(Bx-Ax)+(Jx+Ix))Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(2Ax/(Bx-Ax)+1-1+(Jx+Ix))Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(2Ax/(Bx-Ax)+(Bx-Ax)/(Bx-Ax)-1+(Jx+Ix))Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+((Bx+Ax)/(Bx-Ax)-1+(Jx+Ix))Pz)/(Jx-Ix)
+// P'x = (2az/(Bx-Ax)Px+(Bx+Ax)/(Bx-Ax)Pz+(-1+(Jx+Ix))Pz)/(Jx-Ix)
+// P'x = ( 2az/(Bx-Ax)Px + (Bx+Ax)/(Bx-Ax)Pz + (-1+(Jx+Ix))Pz )/(Jx-Ix)
+// P'x = ( 2az/(Bx-Ax)Px + (Bx+Ax)/(Bx-Ax)Pz ) * (1/(Jx-Ix)) + (-1+Jx+Ix)Pz/(Jx-Ix)
+// P'x = ( Q'x ) * (1/(Jx-Ix)) + ( -Q'w ) * (-1+Jx+Ix)/(Jx-Ix)
+//
+// P'x = ( Q'x ) * (1/(Jx-Ix)) + ( -Q'w ) * (-1+Jx+Ix)/(Jx-Ix)
+// P'y = ( Q'y ) * (1/(Jy-Iy)) + ( -Q'w ) * (-1+Jy+Iy)/(Jy-Iy)
+// P'z = ( Q'w ) * (zMinMax.y+zMinMax.x)/(zMinMax.y-zMinMax.x) - 2*zMinMax.x*zMinMax.y/(zMinMax.y-zMinMax.x)
+// P'w = ( Q'w )
+//
+// clip-space point X = [Xx,Xy,Xz,Xw]^T lies inside frustum if and only if:
+// foreach i in {x,y,z} : -Xw < Xi < +Xw
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+// light position: L=(Lx,Ly,Lz,Lw), Lw in {0,1}, Lw==0 -> light in infinity = direction light
+// omnidirectional light source:
+//
+// edge: A->B, A=(Ax,Ay,Az,1), B=(Bx,By,Bz,1)
+// shadow volume side: A->B, C = (Ax-Lx,Ay-Ly,Az-Lz,0), D = (Bx-Lx,By-Ly,Bz-Lz,0)
+//
+// shadow volume side lies inside frustum if:
+// 1) edge A->B or A->C or B->D intersects frustum
+// or
+// 2) one of main diagonals of frustum intersects shadow volume side
+//
+// 1) edge A->B vs frustum intersection:
+// X(t) = (1-t)A + tB, t in [0,1]
+//
+// foreach i in {x,y,z} : -X(t)w < W(t)i < +X(t)w
+//
+// -X(t)w < W(t)i
+// -(1-t)Aw - tBw < (1-t)Ai + tBi
+// -Aw + tAw - tBw < Ai - tAi + tBi
+// tAw - tBw + tAi - tBi < Ai + Aw
+// t(Aw - Bw + Ai - Bi) < Ai + Aw
+//
+// if(Aw-Bw+Ai-Bi > 0):
+//   t < (Ai+Aw)/(Aw-Bw+Ai-Bi)
+// 
+// if(Aw-Bw+Ai-Bi > 0):
+//   t > (Ai+Aw)/(Aw-Bw+Ai-Bi)
+//
+// if(Aw-Bw+Ai-Bi == 0) -> A == B
+//
+// W(t)i < W(t)w
+// (1-t)Ai + tBi < (1-t)Aw + tBw
+// Ai - tAi + tBi < Aw - tAw + tBw
+// -tAi + tBi + tAw - tBw < Aw - Ai
+//
+// t(Aw - Bw - Ai + Bi) < -Ai + Aw
+// 
+// if(Aw-Bw-Ai+Bi > 0):
+//   t < (-Ai+Aw)/(Aw-Bw-Ai+Bi)
+//
+// if(Aw-Bw-Ai+Bi > 0):
+//   t > (-Ai+Aw)/(Aw-Bw-Ai+Bi)
+//
+// if(Aw-Bw-Ai+Bi == 0) -> A == B
+//
+// Algorithm0(A,B):
+//   tMin = 0
+//   tMax = 1
+//   foreach i in {x,y,z}:
+//     if(Aw-Bw+Ai-Bi > 0):
+//       tMax = min(tMax,(+Ai+Aw)/(Aw-Bw+Ai-Bi))
+//
+//     if(Aw-Bw+Ai-Bi < 0):
+//       tMin = max(tMin,(+Ai+Aw)/(Aw-Bw+Ai-Bi))
+//
+//     if(Aw-Bw+Ai-Bi == 0):
+//       if(+Ai+Aw < 0):return false
+//
+//     if(Aw-Bw-Ai+Bi > 0):
+//       tMax = min(tMax,(-Ai+Aw)/(Aw-Bw-Ai+Bi))
+//
+//     if(Aw-Bw-Ai+Bi < 0):
+//       tMin = max(tMin,(-Ai+Aw)/(Aw-Bw-Ai+Bi))
+//
+//     if(Aw-Bw-Ai+Bi == 0):
+//       if(-Ai+Aw < 0):return false
+//   return tMin <= tMax;
+//
+// Algorithm0(A,A):
+//   tMin = 0
+//   tMax = 1
+//   foreach i in {x,y,z}:
+//     if(+Ai+Aw < 0):return false
+//     if(-Ai+Aw < 0):return false
+//   return tMin <= tMax;
+//
+// Algorithm0(A,0):
+//   return true
+//
+//
+// 2) one of main diagonals of frustum intersects shadow volume side
+// corners of frustum in clip-space:
+// C0 = (-1,-1,-1,1)
+// C1 = (+1,-1,-1,1)
+// C2 = (-1,+1,-1,1)
+// C3 = (+1,+1,-1,1)
+// C4 = (-1,-1,-1,1)
+// C5 = (+1,-1,-1,1)
+// C6 = (-1,+1,-1,1)
+// C7 = (+1,+1,-1,1)
+//
+// C(i) = (-1+2*((i>>0)&1),-1+2*((i>>1)&1),-1+2*((i>>2)&1),1)
+//
+// If main diagonal intersect shadow volume side in point X than:
+// X.x ==  X.y ==  X.z   C0->C7
+// X.x == -X.y == -X.z   C1->C6
+// X.x == -X.y ==  X.z   C2->C5
+// X.x ==  X.y == -X.z   C3->C4
+//
+// edge: A->B, A=(Ax,Ay,Az,1), B=(Bx,By,Bz,1)
+// shadow volume side: A->B, C = (Ax-Lx,Ay-Ly,Az-Lz,0), D = (Bx-Lx,By-Ly,Bz-Lz,0)
+//
+// M(t) = (1-t)*A+t*B
+// O(t) = (1-t)*C+t*D
+// X(t,l) = (1-l)*M(t) + l*O(t)
+// X(t,l) = (1-l)*(1-t)*A + (1-l)*t*B + l*(1-t)*C + l*t*D
+// X(t,l) = A -l*A -t*A + t*l*A + t*B - t*l*B + l*C - t*l*C + t*l*D
+// X(t,l) = A + l*(C-A) + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A + l*((Ax-Lx,Ay-Ly,Az-Lz,0)-(Ax,Ay,Az,1)) + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A + l*((-Lx,-Ly,-Lz,-1)) + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A - l*L + t*(B-A) + t*l*(A-B-C+D)
+// X(t,l) = A - l*L + t*(B-A) + t*l*((Ax,Ay,Az,1)-(Bx,By,Bz,1)-(Ax-Lx,Ay-Ly,Az-Lz,0)+(Bx-Lx,By-Ly,Bz-Lz,0))
+// X(t,l) = A - l*L + t*(B-A) + t*l*((Ax-Bx,Ay-By,Az-Bz,0)-(Ax-Lx,Ay-Ly,Az-Lz,0)+(Bx-Lx,By-Ly,Bz-Lz,0))
+// X(t,l) = A - l*L + t*(B-A) + t*l*((Lx-Bx,Ly-By,Lz-Bz,0)+(Bx-Lx,By-Ly,Bz-Lz,0))
+// X(t,l) = A - l*L + t*(B-A) + t*l*0
+// X(t,l) = A - l*L + t*(B-A)
+//
+// X(t,l)x == X(t,l)y
+//
+// X(t,l)x ==  X(t,l)y && X(t,l)x ==  X(t,l)z    C0->C7
+// X(t,l)x == -X(t,l)y && X(t,l)x == -X(t,l)z    C1->C6
+// X(t,l)x == -X(t,l)y && X(t,l)x ==  X(t,l)z    C2->C5
+// X(t,l)x ==  X(t,l)y && X(t,l)x == -X(t,l)z    C3->C4
+//
+// X(t,l)x == aX(t,l)y && X(t,l)x == bX(t,l)z, a,b in {-1,1}
+//
+// Ax - l*Lx + t*(Bx-Ax) == aAy - al*Ly + at*(By-Ay)
+// (Ax-aAy) + l*(aLy-Lx) + t*(Bx-Ay-aBy+aAy) = 0
+// t*(Bx-Ay-aBy+aAy) + l*(aLy-Lx) = (aAy-Ax)
+//
+// Ax - l*Lx + t*(Bx-Ax) == bAz - bl*Lz + bt*(Bz-Az)
+// t*(Bx-Ay-bBz+bAz) + l*(bLz-Lx) = (bAz-Ax)
+//
+// t*(Bx-Ay-aBy+aAy) + l*(aLy-Lx) = (aAy-Ax)
+// t*(Bx-Ay-bBz+bAz) + l*(bLz-Lx) = (bAz-Ax)
+//
+// t*u + l*v = w
+// t*x + l*y = z
+//
+//     |w v|  / |u v|
+// t = |z y| /  |x y|
+//  
+//     |u w|  / |u v|
+// l = |x z| /  |x y|
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+
+/**
+ * @brief tests if edge intersect frustum
+ * edge (A->B) is assumed to be in clip space
+ * requires at least 5 registers
+ *
+ * @param A edge starting point
+ * @param B edge ending point
+ *
+ * @return return true if edge intersect frustum i.e. is visible
+ */
+bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
+  float tMin = 0.f;                         //register R0
+  float tMax = 1.f;                         //register R1
+  for(uint i=0u;i<3u;++i){                  //register R2
+    float dividend = A[i]+A[3];             //register R3
+    float divisor  = divident - B[i] - B[3];//register R4
+    if(divisor > 0.f)
+      tMax = min(tMax,dividend/divisor);
+    if(divisor < 0.f)
+      tMin = max(tMin,divident/divisor);
+    if(divisor == 0.f && dividend < 0.f)
+      return false;
+    dividend = -A[i]+A[3];
+    divisor = divident + B[i] - B[3];
+    if(divisor > 0.f)
+      tMax = min(tMax,dividend/divisor);
+    if(divisor < 0.f)
+      tMin = max(tMin,divident/divisor);
+    if(divisor == 0.f && dividend < 0.f)
+      return false;
+  }
+  return tMin <= tMax;
+}
+
+
+uint doesSilhouetteIntersectsAABB(in vec3 aabbCorner,in vec3 aabbSize){
+  return NO_INTERSECTION;
+}
+
+#define TILE_SIZE_IN_CLIP_SPACE0 vec2(2.f/float(8<<(3*0)))
+#define TILE_SIZE_IN_CLIP_SPACE1 vec2(2.f/float(8<<(3*1)))
+#define TILE_SIZE_IN_CLIP_SPACE1 vec2(2.f/float(8<<(3*2)))
+#define TILE_SIZE_IN_CLIP_SPACE2 vec2(2.f/float(8<<(3*3)))
+#define TILE_SIZE_IN_CLIP_SPACE3 vec2(2.f/float(8<<(3*4)))
+
+#define TEST_SILHOUETTE_LAST(LEVEL)                                                         \
+void TestSilhouette ## LEVEL(                                                               \
+    uvec2 coord    ,                                                                        \
+    vec2  clipCoord){                                                                       \
+  uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);\
+  uvec2 globalCoord     = (coord<<3)+ localCoord;                                           \
+  vec2  globalClipCoord = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*localCoord;       \
+  vec4  sampleCoordInClipSpace = vec4(                                                      \
+    globalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,                                 \
+    texelFetch(HDT[LEVEL],ivec2(globalCoord),0).x,1);                                       \
+  bool inside       = false;                                                                \
+  int  multiplicity = 0    ;                                                                \
+  /*TODO*/                                                                                  \
+  if(inside)                                                                                \
+    imageAtomicAdd(multiplicityTexture,ivec2(globalCoord),ivec4(multiplicity));             \
+}
+
+
+
+#define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                          \
+void testSilhouette ## LEVEL(                                                                      \
+    uvec2 coord    ,                                                                               \
+    vec2  clipCoord){                                                                              \
+  uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);       \
+  uvec2 globalCoord     = (coord<<3)+localCoord;                                                   \
+  vec2  globalClipCoord = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*localCoord;              \
+  vec2  zMinMax         = texelFetch(HDT[LEVEL],ivec2(globalCoord),0).xy;                          \
+  vec3  aabbCorner      = vec3(globalClipCoord,zMinMax.x);                                         \
+  vec3  aabbSize        = vec3(JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL),zMinMax.y-zMinMax.x);           \
+  uint  result          = doesSilhouetteIntersectsAABB(aabbCorner,aabbSize);                       \
+  uint64_t intersectsBallot = ballotAMD(result==INTERSECTS);                                       \
+  for(int i=0;i<RESULT_LENGTH_IN_UINT;++i){                                                        \
+    uint unresolvedIntersections = uint((IntersectsBallot>>(UINT_BIT_SIZE*i))&0xffffffffu);        \
+    while(unresolvedIntersections != 0u){                                                          \
+      int   currentBit         = findMSB(unresolvedIntersections);                                 \
+      int   currentTile        = currentBit + i*UINT_BIT_SIZE;                                     \
+      uvec2 currentLocalCoord  = uvec2(currentTile&3,currentTile>>3);                              \
+      uvec2 currentGlobalCoord = (coord<<3) + currentLocalCoord;                                   \
+      vec2  currentClipCoord   = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*CurrentLocalCoord;\
+      testSilhouette ## NEXT_LEVEL (currentGlobalCoord,currentClipCoord);                          \
+      unresolvedIntersections &= ~(1u<<currentBit);                                                \
+    }                                                                                              \
+  }                                                                                                \
 }
 
 TEST_SILHOUETTE_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
@@ -444,7 +662,6 @@ TEST_SILHOUETTE(1,2)
 #if NUMBER_OF_LEVELS > 1
 TEST_SILHOUETTE(0,1)
 #endif
-*/
 
 void main(){
   if(SILHOUETTE_ID_IN_DISPATCH>=nofSilhouettes)return;

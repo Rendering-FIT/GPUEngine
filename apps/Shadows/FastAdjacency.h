@@ -2,6 +2,7 @@
 
 #include<cstddef>
 #include<vector>
+#include<cassert>
 
 class Adjacency{
   public:
@@ -12,13 +13,16 @@ class Adjacency{
      * @param numTriangles number of triangles
      * @param maxMultiplicity edges with larger nof opposite vertices will be split
      */
-    Adjacency(const float*vertices,size_t nofTriangles,size_t maxMultiplicity);
+    Adjacency(
+        float  const*vertices       ,
+        size_t const&nofTriangles   ,
+        size_t const&maxMultiplicity);
     /**
      * @brief gets number of edges
      *
      * @return 
      */
-    size_t getNofEdges();
+    size_t getNofEdges()const;
     /**
      * @brief gets indices of edge vertices
      *
@@ -27,7 +31,23 @@ class Adjacency{
      *
      * @return index of vertex a or b of edge e
      */
-    size_t getEdge       (size_t e,size_t i);
+    size_t getEdge(size_t e,size_t i)const;
+    /**
+     * @brief gets index of edge vertex A
+     *
+     * @param e edge index
+     *
+     * @return index of vertex A of an edge e
+     */
+    size_t getEdgeVertexA(size_t e)const{assert(this!=nullptr);return this->getEdge(e,0);}
+    /**
+     * @brief gets index of vertex B of edge
+     *
+     * @param e
+     *
+     * @return 
+     */
+    size_t getEdgeVertexB(size_t e)const{assert(this!=nullptr);return this->getEdge(e,1);}
     /**
      * @brief gets number of opposite vertices of edge e
      *
@@ -35,7 +55,7 @@ class Adjacency{
      *
      * @return number of opposite vertice of edge e
      */
-    size_t getNofOpposite(size_t e);
+    size_t getNofOpposite(size_t e)const;
     /**
      * @brief gets index of opposite vertex
      *
@@ -44,25 +64,25 @@ class Adjacency{
      *
      * @return index of ith opposite vertex of edge e
      */
-    size_t getOpposite   (size_t e,size_t i);
+    size_t getOpposite   (size_t e,size_t i)const;
     /**
      * @brief gets maximal multiplicity
      *
      * @return maximal multiplicity
      */
-    size_t getMaxMultiplicity();
+    size_t getMaxMultiplicity()const;
     /**
      * @brief gets array of vertices
      *
      * @return array of vertices
      */
-    const float*getVertices();
+    float const*getVertices()const;
     /**
      * @brief gets nof triangles
      *
      * @return number of triangles
      */
-    size_t getNofTriangles();
+    size_t getNofTriangles()const;
   protected:
     class EdgeAdjacency{
       public:
@@ -76,9 +96,9 @@ class Adjacency{
           this->count  = count;
         }
     };
-    std::vector<EdgeAdjacency>_edges;
-    std::vector<size_t>_opposite                 ;///< list of all indices to opposite vertices
-    size_t             _maxMultiplicity = 0      ;///<max allowed multiplicity
-    const float*         _vertices        = nullptr;///<all vertices, with redundancies
-    size_t             _nofTriangles    = 0      ;///<number of triangles
+    std::vector<EdgeAdjacency>_edges                    ;
+    std::vector<size_t>       _opposite                 ;///< list of all indices to opposite vertices
+    size_t                    _maxMultiplicity = 0      ;///<max allowed multiplicity
+    float const*              _vertices        = nullptr;///<all vertices, with redundancies
+    size_t                    _nofTriangles    = 0      ;///<number of triangles
 };

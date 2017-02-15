@@ -30,15 +30,18 @@ const size_t WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK = 0;
 const size_t WRITESTENCILTEXTURE_BINDING_HSTINPUT         = 1;
 
 Sintorn::Sintorn(
-    glm::uvec2                      const&windowSize,
-    std::shared_ptr<ge::gl::Texture>const&depthTexture,
+    std::shared_ptr<ge::gl::Texture>const&shadowMask   ,
+    glm::uvec2                      const&windowSize   ,
+    std::shared_ptr<ge::gl::Texture>const&depthTexture ,
     std::shared_ptr<ge::gl::Texture>const&normalTexture,
-    std::shared_ptr<Model>          const&model,
-    size_t                                wavefrontSize,
-    size_t                                shadowFrustumusPerWorkGroup,
-    float                                 bias,
-    bool                                  discardBackFacing,
-    std::shared_ptr<ge::gl::Texture>const&shadowMask):_windowSize(windowSize),_discardBackFacing(discardBackFacing),_depthTexture(depthTexture),_normalTexture(normalTexture){
+    std::shared_ptr<Model>          const&model        ,
+    size_t                          const&wavefrontSize,
+    SintornParams                   const&params       ):
+  _windowSize       (windowSize       ),
+  _depthTexture     (depthTexture     ),
+  _normalTexture    (normalTexture    ),
+  _params           (params           )
+{
   assert(this!=nullptr);
 
   this->_shadowMask = shadowMask;
@@ -48,7 +51,6 @@ Sintorn::Sintorn(
 
   //set wavefront size
   this->_wavefrontSize=wavefrontSize;
-  this->_shadowFrustaPerWorkGroup=shadowFrustumusPerWorkGroup;
 
   //compute tiles sizes in tiles
   chooseTileSizes(this->_tileDivisibility,this->_windowSize,this->_wavefrontSize);
@@ -115,22 +117,22 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("LOCAL_TILE_SIZE_X",(int)this->_tileDivisibility[this->_nofLevels-1].x),
-        ge::gl::Shader::define("LOCAL_TILE_SIZE_Y",(int)this->_tileDivisibility[this->_nofLevels-1].y),
-        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_DEPTH" ,(int)WRITEDEPTHTEXTURE_BINDING_DEPTH ),
-        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_HDT"   ,(int)WRITEDEPTHTEXTURE_BINDING_HDT   ),
-        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_NORMAL",(int)WRITEDEPTHTEXTURE_BINDING_NORMAL),
-        ge::gl::Shader::define("DISCARD_BACK_FACING"             ,int(this->_discardBackFacing)   ),
+        ge::gl::Shader::define("LOCAL_TILE_SIZE_X"               ,int(this->_tileDivisibility[this->_nofLevels-1].x)),
+        ge::gl::Shader::define("LOCAL_TILE_SIZE_Y"               ,int(this->_tileDivisibility[this->_nofLevels-1].y)),
+        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_DEPTH" ,int(WRITEDEPTHTEXTURE_BINDING_DEPTH              )),
+        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_HDT"   ,int(WRITEDEPTHTEXTURE_BINDING_HDT                )),
+        ge::gl::Shader::define("WRITEDEPTHTEXTURE_BINDING_NORMAL",int(WRITEDEPTHTEXTURE_BINDING_NORMAL             )),
+        ge::gl::Shader::define("DISCARD_BACK_FACING"             ,int(this->_params.discardBackFacing              )),
         writeDepthTextureCompSrc));
 
   this->HierarchicalDepthTextureProgram=std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("WAVEFRONT_SIZE",(uint32_t)this->_wavefrontSize),
-        ge::gl::Shader::define("DO_NOT_COUNT_WITH_INFINITY"),
-        ge::gl::Shader::define("HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT" ,(int)HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT ),
-        ge::gl::Shader::define("HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT",(int)HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT),
+        ge::gl::Shader::define("DO_NOT_COUNT_WITH_INFINITY"                                                                     ),
+        ge::gl::Shader::define("WAVEFRONT_SIZE"                            ,uint32_t(this->_wavefrontSize                      )),
+        ge::gl::Shader::define("HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT" ,int     (HIERARCHICALDEPTHTEXTURE_BINDING_HDTINPUT )),
+        ge::gl::Shader::define("HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT",int     (HIERARCHICALDEPTHTEXTURE_BINDING_HDTOUTPUT)),
         hierarchicalDepthTextureCompSrc));
 
 
@@ -138,10 +140,10 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("LOCAL_TILE_SIZE_X",(int)this->_tileDivisibility[this->_nofLevels-1].x),
-        ge::gl::Shader::define("LOCAL_TILE_SIZE_Y",(int)this->_tileDivisibility[this->_nofLevels-1].y),
-        ge::gl::Shader::define("WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK",(int)WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK),
-        ge::gl::Shader::define("WRITESTENCILTEXTURE_BINDING_HSTINPUT"        ,(int)WRITESTENCILTEXTURE_BINDING_HSTINPUT        ),
+        ge::gl::Shader::define("LOCAL_TILE_SIZE_X"                           ,int(this->_tileDivisibility[this->_nofLevels-1].x)),
+        ge::gl::Shader::define("LOCAL_TILE_SIZE_Y"                           ,int(this->_tileDivisibility[this->_nofLevels-1].y)),
+        ge::gl::Shader::define("WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK",int(WRITESTENCILTEXTURE_BINDING_FINALSTENCILMASK )),
+        ge::gl::Shader::define("WRITESTENCILTEXTURE_BINDING_HSTINPUT"        ,int(WRITESTENCILTEXTURE_BINDING_HSTINPUT         )),
         writeStencilTextureCompSrc));
 
 
@@ -149,9 +151,9 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("WAVEFRONT_SIZE"                ,(uint32_t)this->_wavefrontSize),
-        ge::gl::Shader::define("MERGETEXTURE_BINDING_HSTINPUT" ,(int)MERGETEXTURE_BINDING_HSTINPUT ),
-        ge::gl::Shader::define("MERGETEXTURE_BINDING_HSTOUTPUT",(int)MERGETEXTURE_BINDING_HSTOUTPUT),
+        ge::gl::Shader::define("WAVEFRONT_SIZE"                ,uint32_t(this->_wavefrontSize          )),
+        ge::gl::Shader::define("MERGETEXTURE_BINDING_HSTINPUT" ,int     (MERGETEXTURE_BINDING_HSTINPUT )),
+        ge::gl::Shader::define("MERGETEXTURE_BINDING_HSTOUTPUT",int     (MERGETEXTURE_BINDING_HSTOUTPUT)),
         mergeTextureCompSrc));
 
   this->ClearStencilProgram=std::make_shared<ge::gl::Program>(
@@ -163,8 +165,8 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("BIAS",bias)+
-        ge::gl::Shader::define("WAVEFRONT_SIZE",(uint32_t)this->_wavefrontSize),
+        ge::gl::Shader::define("BIAS"          ,float   (this->_params.bias  )),
+        ge::gl::Shader::define("WAVEFRONT_SIZE",uint32_t(this->_wavefrontSize)),
         shadowFrustumCompSrc));
 
   RASTERIZETEXTURE_BINDING_HDT=RASTERIZETEXTURE_BINDING_HST+this->_nofLevels;
@@ -193,16 +195,16 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("NUMBER_OF_LEVELS"            ,(int)this->_nofLevels               ),
-        ge::gl::Shader::define("NUMBER_OF_LEVELS_MINUS_ONE"  ,(int)this->_nofLevels-1             ),
-        ge::gl::Shader::define("WAVEFRONT_SIZE"              ,(int)this->_wavefrontSize           ),
-        ge::gl::Shader::define("SHADOWFRUSTUMS_PER_WORKGROUP",(int)this->_shadowFrustaPerWorkGroup),
+        ge::gl::Shader::define("NUMBER_OF_LEVELS"            ,int(this->_nofLevels                      )),
+        ge::gl::Shader::define("NUMBER_OF_LEVELS_MINUS_ONE"  ,int(this->_nofLevels-1                    )),
+        ge::gl::Shader::define("WAVEFRONT_SIZE"              ,int(this->_wavefrontSize                  )),
+        ge::gl::Shader::define("SHADOWFRUSTUMS_PER_WORKGROUP",int(this->_params.shadowFrustaPerWorkGroup)),
         TileSizeInClipSpaceDefines,
         TileDivisibilityDefines,
-        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_FINALSTENCILMASK",(int)RASTERIZETEXTURE_BINDING_FINALSTENCILMASK),
-        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_HST"             ,(int)RASTERIZETEXTURE_BINDING_HST             ),
-        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_HDT"             ,(int)RASTERIZETEXTURE_BINDING_HDT             ),
-        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_SHADOWFRUSTA"    ,(int)RASTERIZETEXTURE_BINDING_SHADOWFRUSTA    ),
+        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_FINALSTENCILMASK",int(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK)),
+        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_HST"             ,int(RASTERIZETEXTURE_BINDING_HST             )),
+        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_HDT"             ,int(RASTERIZETEXTURE_BINDING_HDT             )),
+        ge::gl::Shader::define("RASTERIZETEXTURE_BINDING_SHADOWFRUSTA"    ,int(RASTERIZETEXTURE_BINDING_SHADOWFRUSTA    )),
         rasterizeTextureCompSrc));
 
    this->_blitProgram = std::make_shared<ge::gl::Program>(
@@ -256,7 +258,7 @@ void Sintorn::GenerateHierarchyTexture(glm::vec4 const&lightPosition){
   this->WriteDepthTextureProgram->use();
   this->WriteDepthTextureProgram->set2uiv("windowSize",glm::value_ptr(this->_windowSize));
   this->_depthTexture->bind(WRITEDEPTHTEXTURE_BINDING_DEPTH);
-  if(this->_discardBackFacing){
+  if(this->_params.discardBackFacing){
     this->_normalTexture->bind(WRITEDEPTHTEXTURE_BINDING_NORMAL);
     this->WriteDepthTextureProgram->set4fv("lightPosition",glm::value_ptr(lightPosition));
   }
@@ -292,7 +294,7 @@ void Sintorn::ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp){
   this->SFProgram->setMatrix4fv("TransposeInverseModelViewProjection",glm::value_ptr(glm::inverse(glm::transpose(mvp))));
   this->_triangles->bindBase(GL_SHADER_STORAGE_BUFFER,0);
   this->_shadowFrusta->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-  glDispatchCompute(GLuint(this->_nofTriangles/this->_shadowFrustaWGS+1),1,1);
+  glDispatchCompute(GLuint(this->_nofTriangles/this->_params.shadowFrustaWGS+1),1,1);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
@@ -324,7 +326,7 @@ void Sintorn::RasterizeTexture(){
   this->_finalStencilMask->bindImage(GLuint(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK));
 
   size_t maxSize = 65536/2;
-  size_t workgroups = ge::core::getDispatchSize(this->_nofTriangles,this->_shadowFrustaPerWorkGroup);
+  size_t workgroups = ge::core::getDispatchSize(this->_nofTriangles,this->_params.shadowFrustaPerWorkGroup);
   size_t offset = 0;
   while(offset+maxSize<=workgroups){
     this->RasterizeTextureProgram->set1ui("triangleOffset",(uint32_t)offset);
@@ -389,9 +391,6 @@ void Sintorn::create(
     glm::mat4 const&view      ,
     glm::mat4 const&projection){
   assert(this!=nullptr);
-  (void)lightPosition;
-  (void)view;
-  (void)projection;
   if(this->timeStamp)this->timeStamp->stamp("");
   this->GenerateHierarchyTexture(lightPosition);
   if(this->timeStamp)this->timeStamp->stamp("computeHDT");
@@ -416,6 +415,9 @@ void Sintorn::drawHST(size_t l){
 
 void Sintorn::drawFinalStencilMask(){
   assert(this!=nullptr);
+  assert(this->_drawFinalStencilMask!=nullptr);
+  assert(this->_drawFinalStencilMask!=nullptr);
+  assert(this->_emptyVao!=nullptr);
   this->_drawFinalStencilMask->use();
   this->_finalStencilMask->bindImage(0);
   this->_emptyVao->bind();
@@ -425,6 +427,9 @@ void Sintorn::drawFinalStencilMask(){
 
 void Sintorn::blit(){
   assert(this!=nullptr);
+  assert(this->_blitProgram!=nullptr);
+  assert(this->_finalStencilMask!=nullptr);
+  assert(this->_shadowMask!=nullptr);
   this->_blitProgram->use();
   this->_finalStencilMask->bindImage(0);
   this->_shadowMask->bindImage(1);

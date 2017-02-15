@@ -1,5 +1,6 @@
 #include<geGL/Program.h>
 #include<geGL/OpenGLUtil.h>
+#include<geGL/Buffer.h>
 #include<iostream>
 #include<string>
 #include<geCore/ErrorPrinter.h>
@@ -289,7 +290,7 @@ GLuint    Program::getBinaryLength()const{
  *
  * @param x returned work group size (x,y,z)
  */
-void      Program::getComputeWorkGroupSize(GLint*x){
+void      Program::getComputeWorkGroupSize(GLint*x)const{
   assert(this!=nullptr);
   this->_gl.glGetProgramiv(this->getId(),GL_COMPUTE_WORK_GROUP_SIZE,x);
 }
@@ -417,11 +418,12 @@ GLint Program::getResourceParam(GLenum interf,GLenum pname,GLuint index)const{
   if(ii==this->_info->uniforms.end()){\
     if(printUniformWarnings)\
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
-    return;\
+    return this;\
   }\
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type);\
   std::get<ProgramInfo::LOCATION>(ii->second);\
-  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),__VA_ARGS__)
+  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),__VA_ARGS__);\
+  return this
 
 #define GE_GL_PROGRAM_SETI(fce,type0,type1,...)\
   assert(this!=nullptr);\
@@ -429,13 +431,14 @@ GLint Program::getResourceParam(GLenum interf,GLenum pname,GLuint index)const{
   if(ii==this->_info->uniforms.end()){\
     if(printUniformWarnings)\
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
-    return;\
+    return this;\
   }\
   assert(\
       std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type0 ||\
       std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type1);\
   std::get<ProgramInfo::LOCATION>(ii->second);\
-  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),__VA_ARGS__)
+  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),__VA_ARGS__);\
+  return this
 
 #define GE_GL_PROGRAM_SETV(fce,type)\
   assert(this!=nullptr);\
@@ -443,11 +446,12 @@ GLint Program::getResourceParam(GLenum interf,GLenum pname,GLuint index)const{
   if(ii==this->_info->uniforms.end()){\
     if(printUniformWarnings)\
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
-    return;\
+    return this;\
   }\
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type);\
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));\
-  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0)
+  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0);\
+  return this
 
 #define GE_GL_PROGRAM_SETIV(fce,type0,type1)\
   assert(this!=nullptr);\
@@ -455,13 +459,14 @@ GLint Program::getResourceParam(GLenum interf,GLenum pname,GLuint index)const{
   if(ii==this->_info->uniforms.end()){\
     if(printUniformWarnings)\
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
-    return;\
+    return this;\
   }\
   assert(\
       std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type0 ||\
       std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type1);\
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));\
-  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0)
+  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,v0);\
+  return this
 
 
 #define GE_GL_PROGRAM_SETMATRIX(fce,type)\
@@ -470,179 +475,181 @@ GLint Program::getResourceParam(GLenum interf,GLenum pname,GLuint index)const{
   if(ii==this->_info->uniforms.end()){\
     if(printUniformWarnings)\
       ge::core::printError(GE_CORE_FCENAME,"there is no such uniform",name);\
-    return;\
+    return this;\
   }\
   assert(std::get<ProgramInfo::TYPE>(this->_info->uniforms[name]) == type);\
   assert(count<=std::get<ProgramInfo::SIZE>(this->_info->uniforms[name]));\
-  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,transpose,v0)
+  this->_gl.fce(this->_id,std::get<ProgramInfo::LOCATION>(ii->second),count,transpose,v0);\
+  return this
 
 
-void Program::set1f(std::string const&name,float v0){
+
+Program const* Program::set1f(std::string const&name,float v0)const{
   GE_GL_PROGRAM_SET(glProgramUniform1f,GL_FLOAT,v0);
 }
 
-void Program::set2f(std::string const&name,float v0,float v1){
+Program const* Program::set2f(std::string const&name,float v0,float v1)const{
   GE_GL_PROGRAM_SET(glProgramUniform2f,GL_FLOAT_VEC2,v0,v1);
 }
 
-void Program::set3f(std::string const&name,float v0,float v1,float v2){
+Program const* Program::set3f(std::string const&name,float v0,float v1,float v2)const{
   GE_GL_PROGRAM_SET(glProgramUniform3f,GL_FLOAT_VEC3,v0,v1,v2);
 }
 
-void Program::set4f(std::string const&name,float v0,float v1,float v2,float v3){
+Program const* Program::set4f(std::string const&name,float v0,float v1,float v2,float v3)const{
   GE_GL_PROGRAM_SET(glProgramUniform4f,GL_FLOAT_VEC4,v0,v1,v2,v3);
 }
 
-void Program::set1i(std::string const&name,int32_t v0){
+Program const* Program::set1i(std::string const&name,int32_t v0)const{
   GE_GL_PROGRAM_SETI(glProgramUniform1i,GL_INT,GL_BOOL,v0);
 }
 
-void Program::set2i(std::string const&name,int32_t v0,int32_t v1){
+Program const* Program::set2i(std::string const&name,int32_t v0,int32_t v1)const{
   GE_GL_PROGRAM_SETI(glProgramUniform2i,GL_INT_VEC2,GL_BOOL_VEC2,v0,v1);
 }
 
-void Program::set3i(std::string const&name,int32_t v0,int32_t v1,int32_t v2){
+Program const* Program::set3i(std::string const&name,int32_t v0,int32_t v1,int32_t v2)const{
   GE_GL_PROGRAM_SETI(glProgramUniform3i,GL_INT_VEC3,GL_BOOL_VEC3,v0,v1,v2);
 }
 
-void Program::set4i(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3){
+Program const* Program::set4i(std::string const&name,int32_t v0,int32_t v1,int32_t v2,int32_t v3)const{
   GE_GL_PROGRAM_SETI(glProgramUniform4i,GL_INT_VEC4,GL_BOOL_VEC4,v0,v1,v2,v3);
 }
 
-void Program::set1ui(std::string const&name,uint32_t v0){
+Program const* Program::set1ui(std::string const&name,uint32_t v0)const{
   GE_GL_PROGRAM_SET(glProgramUniform1ui,GL_UNSIGNED_INT,v0);
 }
 
-void Program::set2ui(std::string const&name,uint32_t v0,uint32_t v1){
+Program const* Program::set2ui(std::string const&name,uint32_t v0,uint32_t v1)const{
   GE_GL_PROGRAM_SET(glProgramUniform2ui,GL_UNSIGNED_INT_VEC2,v0,v1);
 }
 
-void Program::set3ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2){
+Program const* Program::set3ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2)const{
   GE_GL_PROGRAM_SET(glProgramUniform3ui,GL_UNSIGNED_INT_VEC3,v0,v1,v2);
 }
 
-void Program::set4ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3){
+Program const* Program::set4ui(std::string const&name,uint32_t v0,uint32_t v1,uint32_t v2,uint32_t v3)const{
   GE_GL_PROGRAM_SET(glProgramUniform4ui,GL_UNSIGNED_INT_VEC4,v0,v1,v2,v3);
 }
 
 
-void Program::set1fv(std::string const&name,float const*v0,GLsizei count){
+Program const* Program::set1fv(std::string const&name,float const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform1fv,GL_FLOAT);
 }
 
-void Program::set2fv(std::string const&name,float const*v0,GLsizei count){
+Program const* Program::set2fv(std::string const&name,float const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform2fv,GL_FLOAT_VEC2);
 }
 
-void Program::set3fv(std::string const&name,float const*v0,GLsizei count){
+Program const* Program::set3fv(std::string const&name,float const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform3fv,GL_FLOAT_VEC3);
 }
 
-void Program::set4fv(std::string const&name,float const*v0,GLsizei count){
+Program const* Program::set4fv(std::string const&name,float const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform4fv,GL_FLOAT_VEC4);
 }
 
-void Program::set1iv(std::string const&name,int32_t const*v0,GLsizei count){
+Program const* Program::set1iv(std::string const&name,int32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETIV(glProgramUniform1iv,GL_INT,GL_BOOL);
 }
 
-void Program::set2iv(std::string const&name,int32_t const*v0,GLsizei count){
+Program const* Program::set2iv(std::string const&name,int32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETIV(glProgramUniform2iv,GL_INT_VEC2,GL_BOOL_VEC2);
 }
 
-void Program::set3iv(std::string const&name,int32_t const*v0,GLsizei count){
+Program const* Program::set3iv(std::string const&name,int32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETIV(glProgramUniform3iv,GL_INT_VEC3,GL_BOOL_VEC3);
 }
 
-void Program::set4iv(std::string const&name,int32_t const*v0,GLsizei count){
+Program const* Program::set4iv(std::string const&name,int32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETIV(glProgramUniform4iv,GL_INT_VEC4,GL_BOOL_VEC4);
 }
 
-void Program::set1uiv(std::string const&name,uint32_t const*v0,GLsizei count){
+Program const* Program::set1uiv(std::string const&name,uint32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform1uiv,GL_UNSIGNED_INT);
 }
 
-void Program::set2uiv(std::string const&name,uint32_t const*v0,GLsizei count){
+Program const* Program::set2uiv(std::string const&name,uint32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform2uiv,GL_UNSIGNED_INT_VEC2);
 }
 
-void Program::set3uiv(std::string const&name,uint32_t const*v0,GLsizei count){
+Program const* Program::set3uiv(std::string const&name,uint32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform3uiv,GL_UNSIGNED_INT_VEC3);
 }
 
-void Program::set4uiv(std::string const&name,uint32_t const*v0,GLsizei count){
+Program const* Program::set4uiv(std::string const&name,uint32_t const*v0,GLsizei count)const{
   GE_GL_PROGRAM_SETV(glProgramUniform4uiv,GL_UNSIGNED_INT_VEC4);
 }
 
-void Program::setMatrix4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix4fv,GL_FLOAT_MAT4);
 }
 
-void Program::setMatrix3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix3fv,GL_FLOAT_MAT3);
 }
 
-void Program::setMatrix2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix2fv,GL_FLOAT_MAT2);
 }
 
-void Program::setMatrix4x3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix4x3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix4x3fv,GL_FLOAT_MAT4x3);
 }
 
-void Program::setMatrix4x2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix4x2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix4x2fv,GL_FLOAT_MAT4x2);
 }
 
-void Program::setMatrix3x4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix3x4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix3x4fv,GL_FLOAT_MAT3x4);
 }
 
-void Program::setMatrix3x2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix3x2fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix3x2fv,GL_FLOAT_MAT3x2);
 }
 
-void Program::setMatrix2x4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix2x4fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix2x4fv,GL_FLOAT_MAT2x4);
 }
 
-void Program::setMatrix2x3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix2x3fv(std::string const&name,float const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix2x3fv,GL_FLOAT_MAT2x3);
 }
 
-void Program::setMatrix4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix4dv,GL_DOUBLE_MAT4);
 }
 
-void Program::setMatrix3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix3dv,GL_DOUBLE_MAT3);
 }
 
-void Program::setMatrix2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix2dv,GL_DOUBLE_MAT2);
 }
 
-void Program::setMatrix4x3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix4x3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix4x3dv,GL_DOUBLE_MAT4x3);
 }
 
-void Program::setMatrix4x2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix4x2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix4x2dv,GL_DOUBLE_MAT4x2);
 }
 
-void Program::setMatrix3x4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix3x4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix3x4dv,GL_DOUBLE_MAT3x4);
 }
 
-void Program::setMatrix3x2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix3x2dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix3x2dv,GL_DOUBLE_MAT3x2);
 }
 
-void Program::setMatrix2x4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix2x4dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix2x4dv,GL_DOUBLE_MAT2x4);
 }
 
-void Program::setMatrix2x3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose){
+Program const* Program::setMatrix2x3dv(std::string const&name,double const*v0,GLsizei count,GLboolean transpose)const{
   GE_GL_PROGRAM_SETMATRIX(glProgramUniformMatrix2x3dv,GL_DOUBLE_MAT2x3);
 }
 
@@ -746,3 +753,21 @@ std::string Program::_chopIndexingInPropertyName(std::string name)const{
 }
 
 
+Program const*Program::bindBuffer(std::string const&name,std::shared_ptr<Buffer>const&buffer)const{
+  assert(this!=nullptr);
+  assert(buffer!=nullptr);
+  auto ii = this->_info->buffers.find(name);
+  if(ii==this->_info->buffers.end()){
+    ge::core::printError(GE_CORE_FCENAME,"there is no such buffer: "+name,name,buffer);
+    return this;
+  }
+  buffer->bindBase(GL_SHADER_STORAGE_BUFFER,std::get<ProgramInfo::BUFFER_BINDING>(ii->second));
+  return this;
+}
+
+Program const*Program::dispatch(GLuint nofWorkGroupsX,GLuint nofWorkGroupsY,GLuint nofWorkGroupsZ)const{
+  assert(this!=nullptr);
+  this->use();
+  this->_gl.glDispatchCompute(nofWorkGroupsX,nofWorkGroupsY,nofWorkGroupsZ);
+  return this;
+}
