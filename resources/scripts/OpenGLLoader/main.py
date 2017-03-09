@@ -75,6 +75,11 @@ outputDir+"ContextCalls.h")
 
 os.system(
 "cat "+allFormatedFunctions+" |"+
+"./"+subscriptsDir+"generateNumberOfFunctions.py >"+
+outputDir+"NumberOfFunctions.h")
+
+os.system(
+"cat "+allFormatedFunctions+" |"+
 "./"+subscriptsDir+"generateLoaderLoadingCalls.py >"+
 outputDir+"LoaderLoadingCalls.h")
 

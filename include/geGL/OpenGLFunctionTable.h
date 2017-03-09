@@ -3,10 +3,14 @@
 #include<cassert>
 #include<geGL/OpenGL.h>
 
+#include<geGL/Generated/NumberOfFunctions.h>
+
 namespace ge{
   namespace gl{
     class FunctionTable{
       public:
+        using FUNCTION_POINTER = void(*)();
+        using MEMBER_FUNCTION_POINTER = void(FunctionTable::*)();
         FunctionTable(){}
         virtual ~FunctionTable(){}
         bool construct(){

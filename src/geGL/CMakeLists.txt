@@ -19,6 +19,7 @@ set(GENERATED_INCLUDES
   ${HEADER_PATH}/Generated/FunctionTableCalls.h
   ${HEADER_PATH}/Generated/LoaderImplementation.h
   ${HEADER_PATH}/Generated/LoaderLoadingCalls.h
+  ${HEADER_PATH}/Generated/NumberOfFunctions.h
   ${HEADER_PATH}/Generated/MemberOpenGLFunctions.h
   ${HEADER_PATH}/Generated/MemberOpenGLPFN.h
   ${HEADER_PATH}/Generated/OpenGLConstants.h

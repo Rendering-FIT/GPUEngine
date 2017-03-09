@@ -17,7 +17,7 @@ def printMemberFunction(data):
     params = data.split(",")
     pfn = ("memberpfn"+params[1]+"proc").upper()
     #print "#if !defined("+pfn+")"
-    print pfn+" "+"m_ptr_"+params[1]+" = nullptr;"
+    print pfn+" "+"m_ptr_"+params[1]+";"#" = nullptr;"
     #print "#endif"
 
 for x in data0:
