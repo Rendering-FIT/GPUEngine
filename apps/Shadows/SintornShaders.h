@@ -527,45 +527,47 @@ uint TrivialRejectAcceptAABB(vec3 TileCorner,vec3 TileSize){
   return INTERSECTS;
 }
 
+#define getLocalCoords(LEVEL)\
+  uvec2(INVOCATION_ID_IN_WAVEFRONT % JOIN(TILE_DIVISIBILITY,LEVEL).x , INVOCATION_ID_IN_WAVEFRONT/JOIN(TILE_DIVISIBILITY,LEVEL).x)
 
 #define TEST_SHADOW_FRUSTUM_LAST(LEVEL)\
-void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
-  uvec2 LocalCoord             = uvec2(INVOCATION_ID_IN_WAVEFRONT%JOIN(TILE_DIVISIBILITY,LEVEL).x,INVOCATION_ID_IN_WAVEFRONT/JOIN(TILE_DIVISIBILITY,LEVEL).x);\
-  uvec2 GlobalCoord            = Coord*JOIN(TILE_DIVISIBILITY,LEVEL)+LocalCoord;\
-  vec2  GlobalClipCoord        = ClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*LocalCoord;\
+void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
+  uvec2 localCoord             = getLocalCoords(LEVEL);\
+  uvec2 globalCoord            = coord * JOIN(TILE_DIVISIBILITY,LEVEL) + localCoord;\
+  vec2  globalClipCoord        = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL) * localCoord;\
   vec4  SampleCoordInClipSpace = vec4(\
-    GlobalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,\
-    texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).x,1);\
-  if(SampleCoordInClipSpace.z>=1)return;\
+    globalClipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,\
+    texelFetch(HDT[LEVEL],ivec2(globalCoord),0).x,1);\
+  if(SampleCoordInClipSpace.z >= 1)return;\
   bool inside = true;\
-  for(int p=0;p<NOF_PLANES_PER_SF;++p)\
+  for(int p = 0; p < NOF_PLANES_PER_SF; ++p)\
     inside=inside && dot(SampleCoordInClipSpace,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][p])>=0;\
   if(inside)\
-    imageStore(FinalStencilMask,ivec2(GlobalCoord),uvec4(SHADOW_VALUE));\
+    imageStore(FinalStencilMask,ivec2(globalCoord),uvec4(SHADOW_VALUE));\
 }
 
 #ifdef USE_BALLOT
   #define TEST_SHADOW_FRUSTUM(LEVEL,NEXT_LEVEL)\
   void TestShadowFrustumHDB##LEVEL(\
-      uvec2    Coord,\
+      uvec2    coord,\
       vec2 ClipCoord){\
-    uvec2 LocalCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT%TILE_DIVISIBILITY ## LEVEL.x,INVOCATION_ID_IN_WAVEFRONT/TILE_DIVISIBILITY ## LEVEL.x);\
-    uvec2 GlobalCoord     = Coord*TILE_DIVISIBILITY ## LEVEL+LocalCoord;\
-    vec2  GlobalClipCoord = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL*LocalCoord;\
-    vec2  ZMinMax         = texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).xy;\
-    vec3  AABBCorner      = vec3(GlobalClipCoord,ZMinMax.x);\
+    uvec2 localCoord      = getLocalCoords(LEVEL);\
+    uvec2 globalCoord     = coord * TILE_DIVISIBILITY ## LEVEL + localCoord;\
+    vec2  globalClipCoord = ClipCoord + TILE_SIZE_IN_CLIP_SPACE ## LEVEL * localCoord;\
+    vec2  ZMinMax         = texelFetch(HDT[LEVEL],ivec2(globalCoord),0).xy;\
+    vec3  AABBCorner      = vec3(globalClipCoord,ZMinMax.x);\
     vec3  AABBSize        = vec3(TILE_SIZE_IN_CLIP_SPACE ## LEVEL,ZMinMax.y-ZMinMax.x);\
     uint  Result          = TrivialRejectAcceptAABB(AABBCorner,AABBSize);\
     if(Result==INTERSECTS){\
-      for(uint i=0;i<uint(SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF].w);++i){\
-        vec2 tr=GlobalClipCoord+TrivialRejectCorner2D(SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF+i].xy)*TILE_SIZE_IN_CLIP_SPACE ## LEVEL;\
+      for(uint i = 0; i < uint(SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF].w); ++i){\
+        vec2 tr = globalClipCoord+TrivialRejectCorner2D(SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF+i].xy)*TILE_SIZE_IN_CLIP_SPACE ## LEVEL;\
         if(SampleInsideEdge(tr,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF+i].xyz))Result=TRIVIAL_REJECT;\
       }\
     }\
     uint64_t AcceptBallot     = ballotAMD(Result==TRIVIAL_ACCEPT);\
     uint64_t IntersectsBallot = ballotAMD(Result==INTERSECTS    );\
     if(INVOCATION_ID_IN_WAVEFRONT<RESULT_LENGTH_IN_UINT){\
-      ivec2 hstGlobalCoord=ivec2(Coord.x*RESULT_LENGTH_IN_UINT+INVOCATION_ID_IN_WAVEFRONT,Coord.y);\
+      ivec2 hstGlobalCoord=ivec2(coord.x*RESULT_LENGTH_IN_UINT+INVOCATION_ID_IN_WAVEFRONT,coord.y);\
       imageAtomicOr(HST[LEVEL],hstGlobalCoord,uint((AcceptBallot>>(UINT_BIT_SIZE*INVOCATION_ID_IN_WAVEFRONT))&0xffffffffu));\
     }\
     for(int i=0;i<RESULT_LENGTH_IN_UINT;++i){\
@@ -574,7 +576,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
         int   CurrentBit         = findMSB(UnresolvedIntersects);\
         int   CurrentTile        = CurrentBit+i*UINT_BIT_SIZE;\
         uvec2 CurrentLocalCoord  = uvec2(CurrentTile%TILE_DIVISIBILITY ## LEVEL.x,CurrentTile/TILE_DIVISIBILITY ## LEVEL.x);\
-        uvec2 CurrentGlobalCoord = Coord*TILE_DIVISIBILITY ## LEVEL+CurrentLocalCoord;\
+        uvec2 CurrentGlobalCoord = coord * TILE_DIVISIBILITY ## LEVEL + CurrentLocalCoord;\
         vec2  CurrentClipCoord   = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL*CurrentLocalCoord;\
         TestShadowFrustumHDB ## NEXT_LEVEL (CurrentGlobalCoord,CurrentClipCoord);\
         UnresolvedIntersects    &= ~(1u<<CurrentBit);\
@@ -593,7 +595,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 Coord,vec2 ClipCoord){\
     if(INVOCATION_ID_IN_WAVEFRONT<RESULT_LENGTH_IN_UINT)\
       ResIntersects ## LEVEL [SHADOWFRUSTUM_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT]=0u;\
     barrier();\
-    uvec2 LocalCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT%TILE_DIVISIBILITY ## LEVEL.x,INVOCATION_ID_IN_WAVEFRONT/TILE_DIVISIBILITY ## LEVEL.x);\
+    uvec2 LocalCoord      = getLocalCoords(LEVEL);\
     uvec2 GlobalCoord     = Coord*TILE_DIVISIBILITY ## LEVEL+LocalCoord;\
     vec2  GlobalClipCoord = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL * LocalCoord;\
     vec2  ZMinMax         = texelFetch(HDT[LEVEL],ivec2(GlobalCoord),0).xy;\
