@@ -262,20 +262,20 @@ const std::string shadowFrustumCompSrc = R".(
 
 layout(local_size_x=WAVEFRONT_SIZE)in;
 
-layout(std430,binding=0)buffer Input{vec4 IBuffer[];};
-layout(std430,binding=1)buffer Output{vec4 OBuffer[];};
+layout(std430,binding=0)buffer Triangles   {vec4 triangles   [];};
+layout(std430,binding=1)buffer ShadowFrusta{vec4 shadowFrusta[];};
 
-uniform uint NumTriangles;
-uniform vec4 LightPosition;
-uniform mat4 ModelViewProjection;
-uniform mat4 TransposeInverseModelViewProjection;
+uniform uint nofTriangles                       ;
+uniform vec4 lightPosition                      ;
+uniform mat4 modelViewProjection                ;
+uniform mat4 transposeInverseModelViewProjection;
 
-int GreaterVec(vec3 a,vec3 b){
+int greaterVec(vec3 a,vec3 b){
 	return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
 }
 
-vec4 GetOrderedPlane(vec3 A,vec3 B,vec4 L){
-	if(GreaterVec(A,B)>0){
+vec4 getOrderedPlane(vec3 A,vec3 B,vec4 L){
+	if(greaterVec(A,B)>0){
 		vec3 n=normalize(cross(A-B,L.xyz-B*L.w));
 		return vec4(-n,dot(n,B));
 	}else{
@@ -284,59 +284,59 @@ vec4 GetOrderedPlane(vec3 A,vec3 B,vec4 L){
 	}
 }
 
-vec4 GetPlane(vec3 A,vec3 B,vec4 L){
-	return TransposeInverseModelViewProjection*GetOrderedPlane(A,B,L);
+vec4 getPlane(vec3 A,vec3 B,vec4 L){
+	return transposeInverseModelViewProjection*getOrderedPlane(A,B,L);
 }
 
-vec4 GetPlane(vec3 A,vec3 B,vec3 C){
+vec4 getPlane(vec3 A,vec3 B,vec3 C){
 	vec3 n=normalize(cross(B-A,C-A));
 	return vec4(n,-dot(n,A));
 }
 
 void main(){
 	uint gid=gl_GlobalInvocationID.x;
-  if(gid>=NumTriangles)return;
-	vec3 V0=IBuffer[gid*3+0].xyz;
-	vec3 V1=IBuffer[gid*3+1].xyz;
-	vec3 V2=IBuffer[gid*3+2].xyz;
+  if(gid >= nofTriangles)return;
+	vec3 v0=triangles[gid*3+0].xyz;
+	vec3 v1=triangles[gid*3+1].xyz;
+	vec3 v2=triangles[gid*3+2].xyz;
 
-	vec4 e0 = GetPlane(V0,V1,LightPosition);
-	vec4 e1 = GetPlane(V1,V2,LightPosition);
-	vec4 e2 = GetPlane(V2,V0,LightPosition);
-	vec4 e3 = GetPlane(
-			V0+BIAS*normalize(V0*LightPosition.w-LightPosition.xyz),
-			V1+BIAS*normalize(V1*LightPosition.w-LightPosition.xyz),
-			V2+BIAS*normalize(V2*LightPosition.w-LightPosition.xyz));
-	bool BackFacing=false;
-	if(dot(e3,LightPosition)>0){
-		BackFacing=true;
+	vec4 e0 = getPlane(v0,v1,lightPosition);
+	vec4 e1 = getPlane(v1,v2,lightPosition);
+	vec4 e2 = getPlane(v2,v0,lightPosition);
+	vec4 e3 = getPlane(
+			v0 + BIAS*normalize(v0*lightPosition.w-lightPosition.xyz),
+			v1 + BIAS*normalize(v1*lightPosition.w-lightPosition.xyz),
+			v2 + BIAS*normalize(v2*lightPosition.w-lightPosition.xyz));
+	bool backFacing=false;
+	if(dot(e3,lightPosition)>0){
+		backFacing=true;
 		e0=-e0;
 		e1=-e1;
 		e2=-e2;
 		e3=-e3;
 	}
-	e3=TransposeInverseModelViewProjection*e3;
+	e3=transposeInverseModelViewProjection*e3;
 	
-	vec4 LP=ModelViewProjection*LightPosition;
-	vec4 V0CS=ModelViewProjection*vec4(V0,1);
-	vec4 V1CS=ModelViewProjection*vec4(V1,1);
-	vec4 V2CS=ModelViewProjection*vec4(V2,1);
+	vec4 LP   = modelViewProjection*lightPosition;
+	vec4 V0CS = modelViewProjection*vec4(v0,1);
+	vec4 V1CS = modelViewProjection*vec4(v1,1);
+	vec4 V2CS = modelViewProjection*vec4(v2,1);
 	vec3 sqedges[4];
 	int nof_sqedges=0;
 	if(sign(e0.z)!=sign(e2.z))sqedges[nof_sqedges++]=(e0.z<0?-1:1)*-cross(LP.xyw,V0CS.xyw);
 	if(sign(e0.z)!=sign(e1.z))sqedges[nof_sqedges++]=(e0.z<0?-1:1)* cross(LP.xyw,V1CS.xyw);
 	if(sign(e1.z)!=sign(e2.z))sqedges[nof_sqedges++]=(e1.z<0?-1:1)* cross(LP.xyw,V2CS.xyw);
 	// If not backfacing culling
-	if(BackFacing)
+	if(backFacing)
 		for(int i=0;i<nof_sqedges;i++) 
 			sqedges[i]=-sqedges[i]; 
 		
-	OBuffer[gid*VEC4_PER_SHADOWFRUSTUM+0]=e0;
-	OBuffer[gid*VEC4_PER_SHADOWFRUSTUM+1]=e1;
-	OBuffer[gid*VEC4_PER_SHADOWFRUSTUM+2]=e2;
-	OBuffer[gid*VEC4_PER_SHADOWFRUSTUM+3]=e3;
-	OBuffer[gid*VEC4_PER_SHADOWFRUSTUM+4]=vec4(sqedges[0],nof_sqedges);
-	OBuffer[gid*VEC4_PER_SHADOWFRUSTUM+5]=vec4(sqedges[1],1);
+	shadowFrusta[gid*VEC4_PER_SHADOWFRUSTUM+0]=e0;
+	shadowFrusta[gid*VEC4_PER_SHADOWFRUSTUM+1]=e1;
+	shadowFrusta[gid*VEC4_PER_SHADOWFRUSTUM+2]=e2;
+	shadowFrusta[gid*VEC4_PER_SHADOWFRUSTUM+3]=e3;
+	shadowFrusta[gid*VEC4_PER_SHADOWFRUSTUM+4]=vec4(sqedges[0],nof_sqedges);
+	shadowFrusta[gid*VEC4_PER_SHADOWFRUSTUM+5]=vec4(sqedges[1],1);
 }).";
 
 

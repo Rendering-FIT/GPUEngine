@@ -3,6 +3,7 @@
 #include<geGL/Buffer.h>
 #include<iostream>
 #include<string>
+#include<limits>
 #include<geCore/ErrorPrinter.h>
 
 using namespace ge::gl;
@@ -746,22 +747,32 @@ void Program::_fillInfo(){
 }
 
 std::string Program::_chopIndexingInPropertyName(std::string name)const{
-  assert(this!=nullptr);
-  std::size_t pos=name.find("[0]");
-  if(pos!=std::string::npos)return name.substr(0,pos);
+  assert(this != nullptr);
+  std::size_t pos = name.find("[0]");
+  if(pos != std::string::npos)return name.substr(0,pos);
   return name;
 }
 
+GLuint const Program::nonExistingBufferBinding = std::numeric_limits<GLuint>::max();
 
-Program const*Program::bindBuffer(std::string const&name,std::shared_ptr<Buffer>const&buffer)const{
-  assert(this!=nullptr);
-  assert(buffer!=nullptr);
+GLuint Program::getBufferBinding(std::string const&name)const{
+  assert(this != nullptr);
   auto ii = this->_info->buffers.find(name);
-  if(ii==this->_info->buffers.end()){
-    ge::core::printError(GE_CORE_FCENAME,"there is no such buffer: "+name,name,buffer);
-    return this;
+  if(ii == this->_info->buffers.end()){
+    ge::core::printError(GE_CORE_FCENAME,"there is no such buffer",name);
+    return Program::nonExistingBufferBinding;;
   }
-  buffer->bindBase(GL_SHADER_STORAGE_BUFFER,std::get<ProgramInfo::BUFFER_BINDING>(ii->second));
+  return std::get<ProgramInfo::BUFFER_BINDING>(ii->second);
+}
+
+Program const*Program::bindBuffer(
+    std::string            const&name  ,
+    std::shared_ptr<Buffer>const&buffer)const{
+  assert(this   != nullptr);
+  assert(buffer != nullptr);
+  auto const& binding = this->getBufferBinding(name);
+  if(binding != Program::nonExistingBufferBinding)
+    buffer->bindBase(GL_SHADER_STORAGE_BUFFER,binding);
   return this;
 }
 

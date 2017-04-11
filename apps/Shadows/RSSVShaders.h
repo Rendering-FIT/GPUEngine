@@ -134,80 +134,83 @@ shared uint globalOffset;
 
 void main(){
   uint gid=gl_GlobalInvocationID.x;
-  precise int Multiplicity=0;
+  if(gid >= numEdge)return;
+  precise int multiplicity=0;
+
 #if CULL_SIDES == 1
-    vec4 P[4];
+  vec4 P[4];
 #else
-    vec4 P[2];
-#endif
-  if(gid<numEdge){//compute silhouette
-    gid*=2+MAX_MULTIPLICITY;
-
-    P[0]=edges[gid+0];
-    P[1]=edges[gid+1];
-#if CULL_SIDES == 1
-    P[2]=vec4(P[0].xyz*lightPosition.w-lightPosition.xyz,0);
-    P[3]=vec4(P[1].xyz*lightPosition.w-lightPosition.xyz,0);
+  vec4 P[2];
 #endif
 
-    int Num=int(P[0].w)+2;
-    P[0].w=1;
+  gid*=2+MAX_MULTIPLICITY;
+
+  P[0]=edges[gid+0];
+  P[1]=edges[gid+1];
 
 #if CULL_SIDES == 1
-    vec4 ClipP[4];
-    for(int i=0;i<4;++i)
-      ClipP[i]=mvp*P[i];
+  P[2]=vec4(P[0].xyz*lightPosition.w-lightPosition.xyz,0);
+  P[3]=vec4(P[1].xyz*lightPosition.w-lightPosition.xyz,0);
+#endif
 
-    vec3 Normal=(mvp*vec4(cross(
-            P[1].xyz-P[0].xyz,
-            lightPosition.xyz-P[0].xyz*lightPosition.w),0)).xyz;
-    ivec3 Corner=ivec3(1+sign(Normal))>>1;
-    if(Corner.z==1);Corner=ivec3(1)-Corner;
-    int Diag=Corner.x+(Corner.y<<1)-1;
+  int Num=int(P[0].w)+2;
+  P[0].w=1;
 
-    if(!isVisible(ClipP,Diag))return;
+#if CULL_SIDES == 1
+  vec4 ClipP[4];
+  for(int i=0;i<4;++i)
+    ClipP[i]=mvp*P[i];
+
+  vec3 Normal=(mvp*vec4(cross(
+          P[1].xyz-P[0].xyz,
+          lightPosition.xyz-P[0].xyz*lightPosition.w),0)).xyz;
+  ivec3 Corner=ivec3(1+sign(Normal))>>1;
+  if(Corner.z==1);Corner=ivec3(1)-Corner;
+  int Diag=Corner.x+(Corner.y<<1)-1;
+
+  if(!isVisible(ClipP,Diag))return;
 #endif//CULL_SIDES
 
-    if(Num>20)Num=0;
-    if(Num<0)Num=0;
+  if(Num>20)Num=0;
+  if(Num<0)Num=0;
 
 #if     USE_PLANES == 1
-    for(int o=0;o<MAX_MULTIPLICITY;++o)
-      Multiplicity += int(sign(dot(edges[gid+2+o],lightPosition)));
+  for(int o = 0; o < MAX_MULTIPLICITY; ++o)
+    multiplicity += int(sign(dot(edges[gid+2+o],lightPosition)));
 #else //USE_PLANES == 1
-    for(int o=2;o<Num;++o)
-      Multiplicity += currentMultiplicity(P[0].xyz,P[1].xyz,edges[gid+o].xyz,lightPosition);
+  for(int o = 2; o < Num; ++o)
+    multiplicity += currentMultiplicity(P[0].xyz,P[1].xyz,edges[gid+o].xyz,lightPosition);
 #endif//USE_PLANES == 1
 
-  }
-
-  uint64_t isSilhouette = ballotAMD(Multiplicity!=0);
-  if(gl_LocalInvocationID.x==0){
-    uint nofSilhouettes = bitCount(uint(isSilhouette&0xffffffffu))+bitCount(uint(isSilhouette>>32));
+  uint64_t isSilhouetteLong = ballotAMD(abs(multiplicity) != 0);
+  uvec2 isSilhouette = unpackUint2x32(isSilhouetteLong);
+  if(gl_LocalInvocationID.x == 0){
+    uint nofSilhouettes = bitCount(isSilhouette.x) + bitCount(isSilhouette.y);
     globalOffset = atomicAdd(dispatchIndirectBuffer[0],nofSilhouettes);
   }
-  uint threadMaskLow  = uint(1u<<(gl_LocalInvocationID.x                               ))-1u;
-  uint threadMaskHigh = uint(1u<<(gl_LocalInvocationID.x<32?0:gl_LocalInvocationID.x-32))-1u;
-  uint localOffset    = bitCount(uint(isSilhouette&0xffffffffu)&threadMaskLow)+bitCount(uint(isSilhouette>>32)&threadMaskHigh);
-  uint offset         = (globalOffset+localOffset)*7;
 
-  if(Multiplicity==0)return;
-  if(Multiplicity>0){
-    silhouettes[offset+0]=P[0].x;
-    silhouettes[offset+1]=P[0].y;
-    silhouettes[offset+2]=P[0].z;
-    silhouettes[offset+3]=P[1].x;
-    silhouettes[offset+4]=P[1].y;
-    silhouettes[offset+5]=P[1].z;
-    silhouettes[offset+6]=float(Multiplicity);
+  uint threadMaskLow  = gl_LocalInvocationID.x>=32 ? 0xffffffffu : uint(1u<<(gl_LocalInvocationID.x   ))-1u;
+  uint threadMaskHigh = gl_LocalInvocationID.x< 32 ? 0x00000000u : uint(1u<<(gl_LocalInvocationID.x-32))-1u;
+  uint localOffset    = bitCount(isSilhouette.x & threadMaskLow) + bitCount(isSilhouette.y & threadMaskHigh);
+  uint offset         = (globalOffset + localOffset) * 7;
+
+  if(multiplicity == 0)return;
+  if(multiplicity > 0){
+    silhouettes[offset + 0] = P[0].x;
+    silhouettes[offset + 1] = P[0].y;
+    silhouettes[offset + 2] = P[0].z;
+    silhouettes[offset + 3] = P[1].x;
+    silhouettes[offset + 4] = P[1].y;
+    silhouettes[offset + 5] = P[1].z;
+    silhouettes[offset + 6] = float(+multiplicity);
   }else{
-    silhouettes[offset+0]=P[1].x;
-    silhouettes[offset+1]=P[1].y;
-    silhouettes[offset+2]=P[1].z;
-    silhouettes[offset+3]=P[0].x;
-    silhouettes[offset+4]=P[0].y;
-    silhouettes[offset+5]=P[0].z;
-    silhouettes[offset+6]=float(-Multiplicity);
+    silhouettes[offset + 0] = P[1].x;
+    silhouettes[offset + 1] = P[1].y;
+    silhouettes[offset + 2] = P[1].z;
+    silhouettes[offset + 3] = P[0].x;
+    silhouettes[offset + 4] = P[0].y;
+    silhouettes[offset + 5] = P[0].z;
+    silhouettes[offset + 6] = float(-multiplicity);
   }
 }).";
 
@@ -387,6 +390,30 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 //
 // clip-space point X = [Xx,Xy,Xz,Xw]^T lies inside frustum if and only if:
 // foreach i in {x,y,z} : -Xw < Xi < +Xw
+
+/**
+ * @brief This function moves point in clip-space into clip-space of subfrustum
+ *
+ * @param point input point in clip-space
+ * @param leftRightInterpolation interpolation parameters for left and right side of sub frustum
+ * @param bottomTopInterpolation interpolation parameters for bottom and top side of sub frustum
+ * @param nearFar near and far planes of sub frustum computed using minima and maxima of z
+ *
+ * @return point in clip-space of sub frustum
+ */
+vec4 movePointToSubfrustum(
+    in vec4 point    ,
+    in vec2 leftRight,
+    in vec2 bottomTop,
+    in vec2 nearFar  ){
+  vec4 result;
+  result.x = (point.x + -point.w * ( -1 + leftRight.y + leftRight.x)) / (leftRight.y - leftRight.x);
+  result.y = (point.y + -point.w * ( -1 + bottomTop.y + bottomTop.x)) / (bottomTop.y - bottomTop.x);
+  result.z = (point.w * (nearFar.y + nearFar.x) - 2 * nearFar.x * nearFar.y ) / (nearFar.y - nearFar.x);
+  result.w = point.w;
+  return result;
+}
+
 //
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -398,7 +425,7 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 // edge: A->B, A=(Ax,Ay,Az,1), B=(Bx,By,Bz,1)
 // shadow volume side: A->B, C = (Ax-Lx,Ay-Ly,Az-Lz,0), D = (Bx-Lx,By-Ly,Bz-Lz,0)
 //
-// shadow volume side lies inside frustum if:
+// Shadow volume side intersects inside frustum if:
 // 1) edge A->B or A->C or B->D intersects frustum
 // or
 // 2) one of main diagonals of frustum intersects shadow volume side
@@ -471,6 +498,41 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 // Algorithm0(A,0):
 //   return true
 //
+
+/**
+ * @brief This function tests if edge intersects frustum
+ * edge (A->B) is assumed to be in clip space
+ * requires at least 5 registers
+ *
+ * @param A edge starting point
+ * @param B edge ending point
+ *
+ * @return return true if edge intersect frustum i.e. is visible
+ */
+bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
+  float tMin = 0.f;                         //register R0
+  float tMax = 1.f;                         //register R1
+  for(uint i=0u;i<3u;++i){                  //register R2
+    float dividend = A[i]+A[3];             //register R3
+    float divisor  = divident - B[i] - B[3];//register R4
+    if(divisor > 0.f)
+      tMax = min(tMax,dividend/divisor);
+    if(divisor < 0.f)
+      tMin = max(tMin,divident/divisor);
+    if(divisor == 0.f && dividend < 0.f)
+      return false;
+    dividend = -A[i]+A[3];
+    divisor = divident + B[i] - B[3];
+    if(divisor > 0.f)
+      tMax = min(tMax,dividend/divisor);
+    if(divisor < 0.f)
+      tMin = max(tMin,divident/divisor);
+    if(divisor == 0.f && dividend < 0.f)
+      return false;
+  }
+  return tMin <= tMax;
+}
+
 //
 // 2) one of main diagonals of frustum intersects shadow volume side
 // corners of frustum in clip-space:
@@ -485,7 +547,7 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 //
 // C(i) = (-1+2*((i>>0)&1),-1+2*((i>>1)&1),-1+2*((i>>2)&1),1)
 //
-// If main diagonal intersect shadow volume side in point X than:
+// If main diagonal intersect shadow volume side in point X then:
 // X.x ==  X.y ==  X.z   C0->C7
 // X.x == -X.y == -X.z   C1->C6
 // X.x == -X.y ==  X.z   C2->C5
@@ -533,10 +595,9 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 //
 //     |w v|  / |u v|
 // t = |z y| /  |x y|
-//  
-//     |u w|  / |u v|
-// l = |x z| /  |x y|
 //
+// l = (w-t*u)/v
+//  
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -544,42 +605,134 @@ void testSilhouetteHDT(uvec2 coord,vec2 clipCoord,uint level){
 //
 
 /**
- * @brief tests if edge intersect frustum
- * edge (A->B) is assumed to be in clip space
- * requires at least 5 registers
+ * @brief This function tests if diagonal of frustum intersects shadow volume side
  *
- * @param A edge starting point
- * @param B edge ending point
+ * @param A edge point in clip-space
+ * @param B edge point in clip-space
+ * @param L light position in clip-space
+ * @param D diagonal index
  *
- * @return return true if edge intersect frustum i.e. is visible
+ * @return This function returns true if diagonal intersects shadow volume side.
  */
-bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
-  float tMin = 0.f;                         //register R0
-  float tMax = 1.f;                         //register R1
-  for(uint i=0u;i<3u;++i){                  //register R2
-    float dividend = A[i]+A[3];             //register R3
-    float divisor  = divident - B[i] - B[3];//register R4
-    if(divisor > 0.f)
-      tMax = min(tMax,dividend/divisor);
-    if(divisor < 0.f)
-      tMin = max(tMin,divident/divisor);
-    if(divisor == 0.f && dividend < 0.f)
-      return false;
-    dividend = -A[i]+A[3];
-    divisor = divident + B[i] - B[3];
-    if(divisor > 0.f)
-      tMax = min(tMax,dividend/divisor);
-    if(divisor < 0.f)
-      tMin = max(tMin,divident/divisor);
-    if(divisor == 0.f && dividend < 0.f)
-      return false;
-  }
-  return tMin <= tMax;
+bool doesDiagonalIntersectShadowVolumeSide(in vec4 A,in vec4 B,in vec4 L,in uint D){
+  float a = -1.f + 2.f*float(d/2);
+  float b = -1.f + 2.f*float(d&1);
+  float u = B.x - A.y - a*B.y + a*A.y;
+  float v = a*L.y - L.x;
+  float w = a*A.y - A.x;
+  float x = B.x - A.y - b*B.z + b*A.z;
+  float y = b*L.z - L.x;
+  float z = b*A.z - A.x;
+  float divisor  = u*y - x*v;
+  float dividend = w*y - z*v;
+  if(divisor == 0.f)return false;
+  float t = (w*y - z*v) / (u*y - x*v);
+  if(t < 0.f || t > 1.f)return false;
+  if(v == 0.f)return false;
+  float l = (w-t*u)/v;
+  if(l < 0.f || l > 1.f)return false;
+  return true;
 }
 
+/**
+ * @brief This function tests if shadow volume side intersects frustum.
+ *
+ * @param A edge point in clip-space
+ * @param B edge point in clip-space
+ * @param L light position in clip-space
+ *
+ * @return This function returns true if shadow volume side intersects frustum 
+ */
+bool doesShadowVolumeSideIntersectsFrustum(in vec4 A,in vec4 B,in vec4 L){
+  for(uint d=0;d<4;++d)
+    if(doesDiagonalIntersectShadowVolumeSide(A,B,L,d))return true;
+  if(doesEdgeIntersectFrustum(A,B))return true;
+  if(doesEdgeIntersectFrustum(A,A-L))return true;
+  return doesEdgeIntersectFrustum(B,B-L);
+}
 
-uint doesSilhouetteIntersectsAABB(in vec3 aabbCorner,in vec3 aabbSize){
-  return NO_INTERSECTION;
+// PxAx + PyAy + PzAz = 0
+// PxBx + PyBy + PzBz = 0
+// Pz = 1
+//
+//
+// Px = |Ay -AzPz|  / |Ax Ay|
+//      |By -BzPz| /  |Bx By|
+//
+// Py = |Ax -AzPz|  / |Ax Ay|
+//      |Bx -BzPz| /  |Bx By|
+//
+// Px = (ByAz-AyBz)/(AxBy-BxAy)*Pz
+// Py = (BxAz-AxBz)/(AxBy-BxAy)*Pz
+//
+// Px = (ByAz-AyBz)/(AxBy-BxAy)
+// Py = (BxAz-AxBz)/(AxBy-BxAy)
+//
+// 
+
+/**
+ * @brief This function tests if edge formed by two pixels intersects shadow volume side.
+ *
+ * @param A point of edge of shadow volume side in clip-space
+ * @param B point of edge of shadow volume side in clip-space
+ * @param L light position in clip-space
+ * @param PA pixel position in clip-space
+ * @param PB pixel position in clip-space
+ *
+ * @return This function returns -1,0,1: 0 - no intersection, 1 - intersection and PA is in front of shadow volume side.
+ */
+int doesScreenEdgeIntersectsShadowVolumeSide(
+    in vec4 A           ,
+    in vec4 B           ,
+    in vec4 L           ,
+    in vec4 PA          ,
+    in vec4 PB          ,
+    in int  multiplicity){
+  vec3 LL  = L .xyz/L .w;
+  vec3 PPA = PA.xyz/PA.w;
+  vec3 PPB = PB.xyz/PB.w;
+  vec3 BB  = B .xyz/B .w;
+  vec3 AA  = A .xyz/A .w;
+  vec3 pixelPlaneNormal     = cross(PPB - PPA,LL  - PPA);
+  vec3 sidePlaneNormal      = cross(BB  - AA ,LL  - AA );
+  vec3 sidePixelPlaneNormal = cross(BB  - AA ,PPB - PPA);
+  vec4 pixelPlane           = vec4(pixelPlaneNormal    ,-dot(PA.xyz,pixelPlaneNormal    )/PA.w);
+  vec4 sidePlane            = vec4(sidePlaneNormal     ,-dot(A .xyz,sidePlaneNormal     )/A .w);
+  vec4 sidePixelPlane       = vec4(sidePixelPlaneNormal,-dot(A .xyz,sidePixelPlaneNormal),A .w);
+
+  float spa = dot(sidePlane,PA);
+  float spb = dot(sidePlane,PB);
+
+  float ppa = dot(pixelPlane,A);
+  float ppb = dot(pixelPlane,B);
+
+  if(multiplicity < 0){
+    if(ppa >  0 && ppb >  0)return 0;
+    if(ppa <= 0 && ppb <= 0)return 0;
+
+    if(spa >= 0 && spb >= 0)return 0;
+    if(spa <  0 && spb <  0)return 0;
+
+    if(dot(sidePixelPlane,PA) > 0)return 0;
+  }
+
+  if(multiplicity > 0{
+    if(ppa  < 0 && ppb <  0)return 0;
+    if(ppa >= 0 && ppb >= 0)return 0;
+
+    if(spa <= 0 && spb <= 0)return 0;
+    if(spa >  0 && spb >  0)return 0;
+
+    if(dot(sidePixelPlane,PA) >= 0)return 0;
+  }
+
+
+  if(multiplicity < 0){
+    if(spa >= 0 && spb < 0)return multiplicity;
+    return -multiplicity;
+  }
+
+  //TODO
 }
 
 #define TILE_SIZE_IN_CLIP_SPACE0 vec2(2.f/float(8<<(3*0)))
@@ -589,49 +742,49 @@ uint doesSilhouetteIntersectsAABB(in vec3 aabbCorner,in vec3 aabbSize){
 #define TILE_SIZE_IN_CLIP_SPACE3 vec2(2.f/float(8<<(3*4)))
 
 #define TEST_SILHOUETTE_LAST(LEVEL)                                                         \
-void TestSilhouette ## LEVEL(                                                               \
-    uvec2 coord    ,                                                                        \
-    vec2  clipCoord){                                                                       \
-  uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);\
-  uvec2 globalCoord     = (coord<<3)+ localCoord;                                           \
-  vec2  globalClipCoord = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*localCoord;       \
-  vec4  sampleCoordInClipSpace = vec4(                                                      \
-    globalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,                                 \
-    texelFetch(HDT[LEVEL],ivec2(globalCoord),0).x,1);                                       \
-  bool inside       = false;                                                                \
-  int  multiplicity = 0    ;                                                                \
-  /*TODO*/                                                                                  \
-  if(inside)                                                                                \
+  void TestSilhouette ## LEVEL(                                                               \
+      uvec2 coord    ,                                                                        \
+      vec2  clipCoord){                                                                       \
+    uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);\
+    uvec2 globalCoord     = (coord<<3)+ localCoord;                                           \
+    vec2  globalClipCoord = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*localCoord;       \
+    vec4  sampleCoordInClipSpace = vec4(                                                      \
+        globalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,                                 \
+        texelFetch(HDT[LEVEL],ivec2(globalCoord),0).x,1);                                       \
+    bool inside       = false;                                                                \
+    int  multiplicity = 0    ;                                                                \
+    /*TODO*/                                                                                  \
+    if(inside)                                                                                \
     imageAtomicAdd(multiplicityTexture,ivec2(globalCoord),ivec4(multiplicity));             \
-}
+  }
 
 
 
 #define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                          \
-void testSilhouette ## LEVEL(                                                                      \
-    uvec2 coord    ,                                                                               \
-    vec2  clipCoord){                                                                              \
-  uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);       \
-  uvec2 globalCoord     = (coord<<3)+localCoord;                                                   \
-  vec2  globalClipCoord = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*localCoord;              \
-  vec2  zMinMax         = texelFetch(HDT[LEVEL],ivec2(globalCoord),0).xy;                          \
-  vec3  aabbCorner      = vec3(globalClipCoord,zMinMax.x);                                         \
-  vec3  aabbSize        = vec3(JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL),zMinMax.y-zMinMax.x);           \
-  uint  result          = doesSilhouetteIntersectsAABB(aabbCorner,aabbSize);                       \
-  uint64_t intersectsBallot = ballotAMD(result==INTERSECTS);                                       \
-  for(int i=0;i<RESULT_LENGTH_IN_UINT;++i){                                                        \
-    uint unresolvedIntersections = uint((IntersectsBallot>>(UINT_BIT_SIZE*i))&0xffffffffu);        \
-    while(unresolvedIntersections != 0u){                                                          \
-      int   currentBit         = findMSB(unresolvedIntersections);                                 \
-      int   currentTile        = currentBit + i*UINT_BIT_SIZE;                                     \
-      uvec2 currentLocalCoord  = uvec2(currentTile&3,currentTile>>3);                              \
-      uvec2 currentGlobalCoord = (coord<<3) + currentLocalCoord;                                   \
-      vec2  currentClipCoord   = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*CurrentLocalCoord;\
-      testSilhouette ## NEXT_LEVEL (currentGlobalCoord,currentClipCoord);                          \
-      unresolvedIntersections &= ~(1u<<currentBit);                                                \
-    }                                                                                              \
-  }                                                                                                \
-}
+  void testSilhouette ## LEVEL(                                                                      \
+      uvec2 coord    ,                                                                               \
+      vec2  clipCoord){                                                                              \
+    uvec2 localCoord      = uvec2(INVOCATION_ID_IN_WAVEFRONT&3,INVOCATION_ID_IN_WAVEFRONT>>3);       \
+    uvec2 globalCoord     = (coord<<3)+localCoord;                                                   \
+    vec2  globalClipCoord = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*localCoord;              \
+    vec2  zMinMax         = texelFetch(HDT[LEVEL],ivec2(globalCoord),0).xy;                          \
+    vec3  aabbCorner      = vec3(globalClipCoord,zMinMax.x);                                         \
+    vec3  aabbSize        = vec3(JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL),zMinMax.y-zMinMax.x);           \
+    uint  result          = doesSilhouetteIntersectsAABB(aabbCorner,aabbSize);                       \
+    uint64_t intersectsBallot = ballotAMD(result==INTERSECTS);                                       \
+    for(int i=0;i<RESULT_LENGTH_IN_UINT;++i){                                                        \
+      uint unresolvedIntersections = uint((IntersectsBallot>>(UINT_BIT_SIZE*i))&0xffffffffu);        \
+      while(unresolvedIntersections != 0u){                                                          \
+        int   currentBit         = findMSB(unresolvedIntersections);                                 \
+        int   currentTile        = currentBit + i*UINT_BIT_SIZE;                                     \
+        uvec2 currentLocalCoord  = uvec2(currentTile&3,currentTile>>3);                              \
+        uvec2 currentGlobalCoord = (coord<<3) + currentLocalCoord;                                   \
+        vec2  currentClipCoord   = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*CurrentLocalCoord;\
+        testSilhouette ## NEXT_LEVEL (currentGlobalCoord,currentClipCoord);                          \
+        unresolvedIntersections &= ~(1u<<currentBit);                                                \
+      }                                                                                              \
+    }                                                                                                \
+  }
 
 TEST_SILHOUETTE_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
 
@@ -663,29 +816,29 @@ TEST_SILHOUETTE(1,2)
 TEST_SILHOUETTE(0,1)
 #endif
 
-void main(){
-  if(SILHOUETTE_ID_IN_DISPATCH>=nofSilhouettes)return;
-  if(INVOCATION_ID_IN_WAVEFRONT<FLOATS_PER_SILHOUETTE_POINTS){
-    sharedSilhouettes
-      [SILHOUETTE_ID_IN_WORKGROUP]
-      [INVOCATION_ID_IN_WAVEFRONT/FLOATS_PER_POINT]
-      [INVOCATION_ID_IN_WAVEFRONT%FLOATS_PER_POINT]=
-      silhouettes
-      [SILHOUETTE_ID_IN_DISPATCH*FLOATS_PER_SILHOUETTE
-      +INVOCATION_ID_IN_WAVEFRONT];
+  void main(){
+    if(SILHOUETTE_ID_IN_DISPATCH>=nofSilhouettes)return;
+    if(INVOCATION_ID_IN_WAVEFRONT<FLOATS_PER_SILHOUETTE_POINTS){
+      sharedSilhouettes
+        [SILHOUETTE_ID_IN_WORKGROUP]
+        [INVOCATION_ID_IN_WAVEFRONT/FLOATS_PER_POINT]
+        [INVOCATION_ID_IN_WAVEFRONT%FLOATS_PER_POINT]=
+        silhouettes
+        [SILHOUETTE_ID_IN_DISPATCH*FLOATS_PER_SILHOUETTE
+        +INVOCATION_ID_IN_WAVEFRONT];
+    }
+    if(INVOCATION_ID_IN_WAVEFRONT==0)
+      sharedMultiplicities[SILHOUETTE_ID_IN_WORKGROUP] = int(silhouettes[SILHOUETTE_ID_IN_DISPATCH*FLOATS_PER_SILHOUETTE+FLOATS_PER_SILHOUETTE_POINTS]);
+    if(INVOCATION_ID_IN_WAVEFRONT<POINTS_PER_SILHOUETTE){
+      sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][2+INVOCATION_ID_IN_WAVEFRONT] = mvp*vec4(sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT].xyz*lightPosition.w-lightPosition.xyz,0);
+      sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][0+INVOCATION_ID_IN_WAVEFRONT] = mvp*vec4(sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT].xyz,1);
+    }
+
+
+
+    TestShadowFrustumHDB0(
+        LEFT_DOWN_CORNER_COORD,
+        LEFT_DOWN_CORNER_CLIP_COORD);
   }
-  if(INVOCATION_ID_IN_WAVEFRONT==0)
-    sharedMultiplicities[SILHOUETTE_ID_IN_WORKGROUP] = int(silhouettes[SILHOUETTE_ID_IN_DISPATCH*FLOATS_PER_SILHOUETTE+FLOATS_PER_SILHOUETTE_POINTS]);
-  if(INVOCATION_ID_IN_WAVEFRONT<POINTS_PER_SILHOUETTE){
-    sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][2+INVOCATION_ID_IN_WAVEFRONT] = mvp*vec4(sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT].xyz*lightPosition.w-lightPosition.xyz,0);
-    sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][0+INVOCATION_ID_IN_WAVEFRONT] = mvp*vec4(sharedSilhouettes[SILHOUETTE_ID_IN_WORKGROUP][INVOCATION_ID_IN_WAVEFRONT].xyz,1);
-  }
-
-
-
-  TestShadowFrustumHDB0(
-      LEFT_DOWN_CORNER_COORD,
-      LEFT_DOWN_CORNER_CLIP_COORD);
-}
 
 ).";

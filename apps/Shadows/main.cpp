@@ -1,3 +1,4 @@
+#include<geDE/TypeRegister.h>
 #include<limits>
 #include<string>
 #include<limits>

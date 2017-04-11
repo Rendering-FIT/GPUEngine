@@ -285,16 +285,62 @@ void Sintorn::GenerateHierarchyTexture(glm::vec4 const&lightPosition){
   }
 }
 
+class ComputePipeline{
+  public:
+    void operator()(){
+      assert(this != nullptr);
+      this->_program->use();
+      for(auto const&x:this->_ssboBinding)
+        std::get<BUFFER>(x)->bindRange(
+            GL_SHADER_STORAGE_BUFFER,
+            std::get<INDEX> (x)     ,
+            std::get<OFFSET>(x)     ,
+            std::get<SIZE>  (x)     );
+      this->_program->dispatch(
+          this->_nofGroups[0],
+          this->_nofGroups[1],
+          this->_nofGroups[2]);
+    }
+    ComputePipeline*setSSBO(
+        std::string                    const&name  ,
+        std::shared_ptr<ge::gl::Buffer>const&buffer){
+      return this->setSSBO(name,buffer,0,buffer->getSize());
+    }
+    ComputePipeline*setSSBO(
+        std::string                    const&name  ,
+        std::shared_ptr<ge::gl::Buffer>const&buffer,
+        GLintptr                       const&offset,
+        GLsizei                        const&size  ){
+      auto const&binding = this->_program->getBufferBinding(name);
+      if(binding == ge::gl::Program::nonExistingBufferBinding)
+        return this;
+      while(binding > this->_ssboBinding.size())
+        this->_ssboBinding.push_back(SSBOBinding(nullptr,0,0,0));
+      this->_ssboBinding.push_back(SSBOBinding(buffer,binding,offset,size));
+      return this;
+    }
+  protected:
+    using SSBOBinding = std::tuple<std::shared_ptr<ge::gl::Buffer>,GLuint,GLintptr,GLsizei>;
+    enum SSBOBindingParts{
+      BUFFER = 0,
+      INDEX  = 1,
+      OFFSET = 2,
+      SIZE   = 3,
+    };
+    std::shared_ptr<ge::gl::Program> _program      = nullptr;
+    GLuint                           _nofGroups[3] = {1,1,1};
+    std::vector<SSBOBinding>         _ssboBinding           ;
+};
 
 void Sintorn::ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp){
-  this->SFProgram->use();
-  this->SFProgram->set1ui("NumTriangles",(uint32_t)this->_nofTriangles);
-  this->SFProgram->setMatrix4fv("ModelViewProjection",glm::value_ptr(mvp));
-  this->SFProgram->set4fv("LightPosition",glm::value_ptr(lightPosition));
-  this->SFProgram->setMatrix4fv("TransposeInverseModelViewProjection",glm::value_ptr(glm::inverse(glm::transpose(mvp))));
-  this->_triangles->bindBase(GL_SHADER_STORAGE_BUFFER,0);
-  this->_shadowFrusta->bindBase(GL_SHADER_STORAGE_BUFFER,1);
-  glDispatchCompute(GLuint(this->_nofTriangles/this->_params.shadowFrustaWGS+1),1,1);
+  this->SFProgram
+    ->set1ui      ("nofTriangles"                       ,this->_nofTriangles                              )
+    ->setMatrix4fv("modelViewProjection"                ,glm::value_ptr(mvp)                              )
+    ->set4fv      ("lightPosition"                      ,glm::value_ptr(lightPosition)                    )
+    ->setMatrix4fv("transposeInverseModelViewProjection",glm::value_ptr(glm::inverse(glm::transpose(mvp))))
+    ->bindBuffer  ("triangles"                          ,this->_triangles                                 )
+    ->bindBuffer  ("shadowFrusta"                       ,this->_shadowFrusta                              )
+    ->dispatch    (ge::core::getDispatchSize(this->_nofTriangles,this->_params.shadowFrustaWGS));
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 

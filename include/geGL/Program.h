@@ -128,6 +128,9 @@ class GEGL_EXPORT ge::gl::Program: public OpenGLObject, public std::enable_share
     std::shared_ptr<ProgramInfo> const&getInfo()const{return this->_info;}
     static void setNonexistingUniformWarning(bool enableWarning = true);
     static bool isNonexistingUniformWarningEnabled();
+
+    GLuint static const nonExistingBufferBinding;
+    GLuint getBufferBinding(std::string const&name)const;
   public:
     template<typename...ARGS>
       Program(ARGS...shaders);
