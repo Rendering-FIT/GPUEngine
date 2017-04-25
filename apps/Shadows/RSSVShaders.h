@@ -706,10 +706,10 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
   float ppa = dot(pixelPlane,A);
   float ppb = dot(pixelPlane,B);
 
-  if(multiplicity < 0){
-    if(ppa >  0 && ppb >  0)return 0;
-    if(ppa <= 0 && ppb <= 0)return 0;
+  if(ppa >  0 && ppb >  0)return 0;
+  if(ppa <= 0 && ppb <= 0)return 0;
 
+  if(multiplicity < 0){
     if(spa >= 0 && spb >= 0)return 0;
     if(spa <  0 && spb <  0)return 0;
 
@@ -717,9 +717,6 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
   }
 
   if(multiplicity > 0{
-    if(ppa  < 0 && ppb <  0)return 0;
-    if(ppa >= 0 && ppb >= 0)return 0;
-
     if(spa <= 0 && spb <= 0)return 0;
     if(spa >  0 && spb >  0)return 0;
 
@@ -731,6 +728,9 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
     if(spa >= 0 && spb < 0)return multiplicity;
     return -multiplicity;
   }
+
+  if(spa > 0 && spb <= 0)return multiplicity;
+  return -multiplicity;
 
   //TODO
 }
