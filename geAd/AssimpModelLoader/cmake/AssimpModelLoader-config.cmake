@@ -31,9 +31,13 @@ else()
    )
 endif(WIN32)
 
-find_package(assimp)
+find_package(assimp QUIET)
 #find_package(GPUEngine COMPONENTS geSG)
-find_package(glm)
+find_package(glm QUIET)
+
+if(NOT assimp_FOUND OR NOT glm_FOUND)
+   return()
+endif()
 
 add_library(${MODULE_NAME} INTERFACE )
 
