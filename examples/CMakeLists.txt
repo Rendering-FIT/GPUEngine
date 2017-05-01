@@ -10,6 +10,7 @@ set(examplesList  EmptyWindow
                   ObjLoader
                   HelloGEGL
                   AnimatedSkybox
+                  Minecraft
                   BlitOpenGL
                   TextureTest
                   Simple_QtgeGL

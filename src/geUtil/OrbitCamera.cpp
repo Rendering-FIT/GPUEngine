@@ -41,7 +41,7 @@ float OrbitCamera::getDistance()const{
   return this->_distance;
 }
 
-glm::vec3 OrbitCamera::getPosition()const{
+glm::vec3 OrbitCamera::getFocus()const{
   assert(this);
   return this->_position;
 }
@@ -70,7 +70,7 @@ void OrbitCamera::setDistance(float value){
   this->_recompute = true;
 }
 
-void OrbitCamera::setPosition(glm::vec3 const&value){
+void OrbitCamera::setFocus(glm::vec3 const&value){
   assert(this);
   this->_position = value;
   this->_recompute = true;

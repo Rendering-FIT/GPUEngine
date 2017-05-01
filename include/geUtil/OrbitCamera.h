@@ -19,12 +19,12 @@ namespace ge{
         float getXAngle  ()const;
         float getYAngle  ()const;
         float getDistance()const;
-        glm::vec3 getPosition()const;
+        glm::vec3 getFocus()const;
         void setXAngle  (float value);
         void setYAngle  (float value);
         void setAngles  (glm::vec2 const&angles);
         void setDistance(float value);
-        void setPosition(glm::vec3 const&value);
+        void setFocus(glm::vec3 const&value);
         void addXPosition(float dx);
         void addYPosition(float dy);
         void addXYPosition(glm::vec2 const&value);

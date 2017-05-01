@@ -222,9 +222,9 @@ int main(int,char*[]){
   mainLoop->setIdleCallback([&]() {
     glClear(GL_COLOR_BUFFER_BIT);
     program->use();
-    program->setMatrix4fv("viewMatrix",glm::value_ptr(orbitCamera.getView()));
+    program->setMatrix4fv("viewMatrix"      ,glm::value_ptr(orbitCamera.getView())            );
     program->setMatrix4fv("projectionMatrix",glm::value_ptr(perspectiveCamera.getProjection()));
-    program->set1f("time",timer.elapsedFromStart());
+    program->set1f       ("time"            ,timer.elapsedFromStart()                         );
     vao->bind();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     window->swap();
