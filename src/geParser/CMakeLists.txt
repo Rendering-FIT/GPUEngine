@@ -15,6 +15,7 @@ set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
 set(PARSER_INCLUDES
   ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/Range.h
   ${HEADER_PATH}/Token.h
   ${HEADER_PATH}/NodeContext.h
   ${HEADER_PATH}/Grammar.h

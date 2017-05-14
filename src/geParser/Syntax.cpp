@@ -4,16 +4,16 @@
 using namespace ge::parser;
 using namespace ge::core;
 
-Syntax::Syntax(std::string start){
+Syntax::Syntax(std::string const&start){
   this->start = start;
 }
 
-Syntax::Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization){
+Syntax::Syntax(std::string const&start,std::shared_ptr<Tokenization>const&tokenization){
   this->start = start;
   this->_tokenization = tokenization;
 }
 
-Syntax::Syntax(std::string lexSource,std::string synSource){
+Syntax::Syntax(std::string const&lexSource,std::string const&synSource){
   this->_tokenization = std::make_shared<Tokenization>();
   this->_tokenization->load(lexSource);
   auto syn=std::make_shared<Tokenization>("START");
@@ -110,7 +110,7 @@ void Syntax::begin(){
   this->_tokenization->begin();
 }
 
-std::pair<NodeContext::Status,SyntaxNode::Node>Syntax::parse(std::string data){
+std::pair<NodeContext::Status,SyntaxNode::Node>Syntax::parse(std::string const&data){
   this->_tokenization->parse(data);
   do{
     if(this->_tokenization->empty())break;
@@ -189,7 +189,7 @@ NodeContext::Status Syntax::runContinue(){
 }
 
 
-std::shared_ptr<Symbol>const&Syntax::_addNonterm(std::string name){
+std::shared_ptr<Symbol>const&Syntax::_addNonterm(std::string const&name){
   auto ii=this->name2Nonterm.find(name);
   if(ii!=this->name2Nonterm.end())
     return ii->second;

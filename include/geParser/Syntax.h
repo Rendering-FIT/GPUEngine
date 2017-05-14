@@ -26,19 +26,19 @@ namespace ge{
         std::shared_ptr<SyntaxNode>root = nullptr;
         std::shared_ptr<SyntaxNode>currentNode = nullptr;
 
-        std::shared_ptr<Symbol>const&_addNonterm(std::string    name);
+        std::shared_ptr<Symbol>const&_addNonterm(std::string const&name);
         std::shared_ptr<Symbol>const&_addTerm   (Token::Type const&type);
 
         Range<TokenIndex> _range;
         std::shared_ptr<Tokenization>_tokenization;
       public:
-        Syntax(std::string start);
-        Syntax(std::string start,std::shared_ptr<Tokenization>const&tokenization);
-        Syntax(std::string lexSource,std::string synSource);
+        Syntax(std::string const&start);
+        Syntax(std::string const&start,std::shared_ptr<Tokenization>const&tokenization);
+        Syntax(std::string const&lexSource,std::string const&synSource);
         void addRule(std::vector<std::string>params);
         ~Syntax();
         void begin();
-        std::pair<NodeContext::Status,SyntaxNode::Node>parse(std::string data);
+        std::pair<NodeContext::Status,SyntaxNode::Node>parse(std::string const&data);
         void end();
 
         SyntaxNode::Node getSyntaxTree()const;
