@@ -1,5 +1,5 @@
 #include<geUtil/FreeLookCamera.h>
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include<glm/gtx/euler_angles.hpp>
 
 using namespace ge::util;

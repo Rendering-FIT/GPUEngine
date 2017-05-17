@@ -3,6 +3,7 @@
 #include <geSG/Export.h>
 #include <geUtil/Intersector.h>
 #include <geUtil/Ray.h>
+#define GLM_ENABLE_EXPERIMENTAL
 
 namespace ge{
    namespace sg

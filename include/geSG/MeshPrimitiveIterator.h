@@ -2,6 +2,7 @@
 
 #include <iterator>
 #include <array>
+#define GLM_ENABLE EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
