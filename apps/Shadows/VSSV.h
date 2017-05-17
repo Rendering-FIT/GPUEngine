@@ -1,49 +1,51 @@
 #pragma once
 
 #include<geGL/geGL.h>
-#include"ShadowMethod.h"
+#include"ShadowVolumes.h"
 #include"Model.h"
 #include"TimeStamp.h"
 
-class VSSV: public ShadowMethod{
+struct VSSVParams{
+  bool usePlanes              = false;
+  bool useStrips              = false;
+  bool useAllOppositeVertices = false;
+  bool drawCapsSeparately     = false;
+};
+
+class Adjacency;
+class VSSV: public ShadowVolumes{
   public:
     VSSV(
-        size_t                          const&maxMultiplicity       ,
-        bool                            const&zfail                 ,
-        glm::uvec2                      const&windowSize            ,
-        std::shared_ptr<ge::gl::Texture>const&depth                 ,
-        std::shared_ptr<Model>          const&model                 ,
-        std::shared_ptr<ge::gl::Texture>const&shadowMask            ,
-        bool                            const&usePlanes             ,
-        bool                            const&useStrips             ,
-        bool                            const&useAllOppositeVertices);
+        std::shared_ptr<ge::gl::Texture>const&shadowMask     ,
+        std::shared_ptr<Model>          const&model          ,
+        std::shared_ptr<ge::gl::Texture>const&depth          ,
+        ShadowVolumesParams             const&svParams       ,
+        size_t                          const&maxMultiplicity,
+        VSSVParams                      const&param          );
     virtual ~VSSV();
-    virtual void create(
-        glm::vec4 const&lightPosition,
-        glm::mat4 const&view         ,
-        glm::mat4 const&projection   )override;
+    virtual void drawSides(
+        glm::vec4 const&lightPosition   ,
+        glm::mat4 const&viewMatrix      ,
+        glm::mat4 const&projectionMatrix)override;
+    virtual void drawCaps(
+        glm::vec4 const&lightPosition   ,
+        glm::mat4 const&viewMatirx      ,
+        glm::mat4 const&projectionMatrix)override;
   protected:
-    glm::uvec2                          _windowSize;
-    std::shared_ptr<ge::gl::Framebuffer>_fbo                    = nullptr;
-    std::shared_ptr<ge::gl::Framebuffer>_maskFbo                = nullptr;
-    std::shared_ptr<ge::gl::VertexArray>_maskVao                = nullptr;
-
-    std::shared_ptr<ge::gl::Program>    _drawSides              = nullptr;
+    std::shared_ptr<ge::gl::Program>    _drawSidesProgram       = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _adjacency              = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_sidesVao               = nullptr;
-    size_t                              _nofEdges               = 0;
-    size_t                              _maxMultiplicity        = 0;
-    size_t                              _nofTriangles           = 0;
-    bool                                _zfail                  = true;
+    size_t                              _nofEdges               = 0      ;
+    size_t                              _maxMultiplicity        = 0      ;
+    size_t                              _nofTriangles           = 0      ;
+    VSSVParams                          _params                          ;
 
-    std::shared_ptr<ge::gl::Program>    _drawCaps               = nullptr;
+    std::shared_ptr<ge::gl::Program>    _drawCapsProgram        = nullptr;
     std::shared_ptr<ge::gl::VertexArray>_capsVao                = nullptr;
     std::shared_ptr<ge::gl::Buffer>     _caps                   = nullptr;
 
-    std::shared_ptr<ge::gl::Program>    _blit                   = nullptr;
-    std::shared_ptr<ge::gl::VertexArray>_emptyVao               = nullptr;
-    std::shared_ptr<TimeStamp>          _timeStamper            = nullptr;
-    bool                                _usePlanes              = false;
-    bool                                _useStrips              = true;
-    bool                                _useAllOppositeVertices = false;
+    void                                _createSideDataUsingPoints   (std::shared_ptr<Adjacency>const&adj);
+    void                                _createSideDataUsingAllPlanes(std::shared_ptr<Adjacency>const&adj);
+    void                                _createSideDataUsingPlanes   (std::shared_ptr<Adjacency>const&adj);
+    void                                _createCapDataUsingPoints    (std::shared_ptr<Adjacency>const&adj);
 };

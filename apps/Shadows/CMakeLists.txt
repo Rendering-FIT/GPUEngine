@@ -23,16 +23,19 @@ set(APP_SOURCES
   CameraPath.cpp
   CSV.cpp
   Shading.cpp
+  ShadowMethod.cpp
   CubeShadowMapping.cpp
   FastAdjacency.cpp
   TimeStamp.cpp
   CSSV.cpp
+  CSSVSOE.cpp
   Sintorn.cpp
   SintornTiles.cpp
   RSSV.cpp
   RSSVTiles.cpp
   VSSV.cpp
   DrawPrimitive.cpp
+  ShadowVolumes.cpp
   )
 
 set(APP_INCLUDES
@@ -43,10 +46,12 @@ set(APP_INCLUDES
   Shading.h
   ShadowMethod.h
   CubeShadowMapping.h
+  CubeShadowMappingShaders.h
   FastAdjacency.h
   TimeStamp.h
   CSSV.h
   CSSVShaders.h
+  CSSVSOE.h
   Sintorn.h
   SintornTiles.h
   SintornShaders.h
@@ -57,6 +62,9 @@ set(APP_INCLUDES
   VSSVShaders.h
   DrawPrimitive.h
   ProgramExtension.h
+  ShadowVolumes.h
+  ShadowVolumesShaders.h
+  SilhouetteShaders.h
   )
 
 add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
@@ -66,7 +74,7 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps geGL SDLWindow geUtil)
+set(Internal_deps geGL geDE SDLWindow geUtil)
 set(External_libs SDL2 Assimp FreeImage FreeImagePlus)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
