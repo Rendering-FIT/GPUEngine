@@ -10,9 +10,9 @@ AsynchronousQuery::AsynchronousQuery(){
 }
 
 void AsynchronousQuery::create(
-    GLenum     target,
-    GLenum     waitingType,
-    ResultSize resultSize){
+    GLenum     const&target     ,
+    GLenum     const&waitingType,
+    ResultSize const&resultSize ){
   assert(this!=nullptr);
   this->_target      = target;
   this->_waitingType = waitingType;
@@ -27,9 +27,9 @@ void AsynchronousQuery::create(
  * @param resultSize size and type of result
  */
 AsynchronousQuery::AsynchronousQuery(
-    GLenum     target,
-    GLenum     waitingType,
-    ResultSize resultSize){
+    GLenum     const&target     ,
+    GLenum     const&waitingType,
+    ResultSize const&resultSize ){
   assert(this!=nullptr);
   this->_gl.glGenQueries(1,&this->_id);
   this->_target      = target;
@@ -43,7 +43,7 @@ AsynchronousQuery::AsynchronousQuery(
  * @param existingQuery This query has already been created
  */
 AsynchronousQuery::AsynchronousQuery(
-    AsynchronousQuery*existingQuery){
+    AsynchronousQuery const*const&existingQuery){
   assert(this!=nullptr);
   this->_gl.glGenQueries(1,&this->_id);
   this->_target      = existingQuery->_target;
@@ -52,10 +52,10 @@ AsynchronousQuery::AsynchronousQuery(
 }
 
 AsynchronousQuery::AsynchronousQuery(
-    FunctionTablePointer const&table,
-    GLenum     target,
-    GLenum     waitingType,
-    ResultSize resultSize):OpenGLObject(table){
+    FunctionTablePointer const&table      ,
+    GLenum               const&target     ,
+    GLenum               const&waitingType,
+    ResultSize           const&resultSize ):OpenGLObject(table){
   assert(this!=nullptr);
   this->_gl.glGenQueries(1,&this->_id);
   this->_target      = target;
@@ -64,8 +64,8 @@ AsynchronousQuery::AsynchronousQuery(
 }
 
 AsynchronousQuery::AsynchronousQuery(
-    FunctionTablePointer const&table,
-    AsynchronousQuery*existingQuery):OpenGLObject(table){
+    FunctionTablePointer       const&table        ,
+    AsynchronousQuery    const*const&existingQuery):OpenGLObject(table){
   assert(this!=nullptr);
   this->_gl.glGenQueries(1,&this->_id);
   this->_target      = existingQuery->_target;
@@ -116,7 +116,7 @@ void AsynchronousQuery::end(){
  *
  * @param index index of query
  */
-void AsynchronousQuery::begin(GLuint index){
+void AsynchronousQuery::begin(GLuint const&index){
   assert(this!=nullptr);
   this->_gl.glBeginQueryIndexed(this->_target,index,this->_id);
 }
@@ -126,7 +126,7 @@ void AsynchronousQuery::begin(GLuint index){
  *
  * @param index index of query
  */
-void AsynchronousQuery::end(GLuint index){
+void AsynchronousQuery::end(GLuint const&index){
   assert(this!=nullptr);
   this->_gl.glEndQueryIndexed(this->_target,index);
 }
@@ -136,7 +136,7 @@ void AsynchronousQuery::end(GLuint index){
  *
  * @return query uint64 results
  */
-GLuint64 AsynchronousQuery::getui64(){
+GLuint64 AsynchronousQuery::getui64()const{
   assert(this!=nullptr);
   return this->_dataui64;
 }
@@ -146,7 +146,7 @@ GLuint64 AsynchronousQuery::getui64(){
  *
  * @return query int64 results
  */
-GLint64  AsynchronousQuery::geti64(){
+GLint64  AsynchronousQuery::geti64()const{
   assert(this!=nullptr);
   return this->_datai64;
 }
@@ -156,7 +156,7 @@ GLint64  AsynchronousQuery::geti64(){
  *
  * @return query uint resutls
  */
-GLuint   AsynchronousQuery::getui(){
+GLuint   AsynchronousQuery::getui()const{
   assert(this!=nullptr);
   return this->_dataui32;
 }
@@ -166,7 +166,7 @@ GLuint   AsynchronousQuery::getui(){
  *
  * @return query int results
  */
-GLint    AsynchronousQuery::geti(){
+GLint    AsynchronousQuery::geti()const{
   assert(this!=nullptr);
   return this->_datai32;
 }
@@ -176,7 +176,7 @@ GLint    AsynchronousQuery::geti(){
  *
  * @return target
  */
-GLenum   AsynchronousQuery::getTarget(){
+GLenum   AsynchronousQuery::getTarget()const{
   assert(this!=nullptr);
   return this->_target;
 }
@@ -186,7 +186,7 @@ GLenum   AsynchronousQuery::getTarget(){
  *
  * @return wainting type
  */
-GLenum   AsynchronousQuery::getWaitingType(){
+GLenum   AsynchronousQuery::getWaitingType()const{
   assert(this!=nullptr);
   return this->_waitingType;
 }

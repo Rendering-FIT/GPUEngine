@@ -97,62 +97,62 @@ Sampler::~Sampler(){
   this->_gl.glDeleteSamplers(1,&this->_id);
 }
 
-void Sampler::setBorderColor(GLfloat*color    )const{
+void Sampler::setBorderColor(GLfloat const*const&color    )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameterfv(this->_id,GL_TEXTURE_BORDER_COLOR,color);
 }
 
-void Sampler::setCompareFunc(GLenum  func     )const{
+void Sampler::setCompareFunc(GLenum  const&func     )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_COMPARE_FUNC,func);
 }
 
-void Sampler::setCompareMode(GLenum  mode     )const{
+void Sampler::setCompareMode(GLenum  const&mode     )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_COMPARE_MODE,mode);
 }
 
-void Sampler::setLodBias    (GLfloat lodBias  )const{
+void Sampler::setLodBias    (GLfloat const&lodBias  )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameterf(this->_id,GL_TEXTURE_LOD_BIAS,lodBias);
 }
 
-void Sampler::setMinLod     (GLfloat minLod   )const{
+void Sampler::setMinLod     (GLfloat const&minLod   )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameterf(this->_id,GL_TEXTURE_MIN_LOD,minLod);
 }
 
-void Sampler::setMaxLod     (GLfloat maxLod   )const{
+void Sampler::setMaxLod     (GLfloat const&maxLod   )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameterf(this->_id,GL_TEXTURE_MAX_LOD,maxLod);
 }
 
-void Sampler::setMinFilter  (GLenum  minFilter)const{
+void Sampler::setMinFilter  (GLenum  const&minFilter)const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_MIN_FILTER,minFilter);
 }
 
-void Sampler::setMagFilter  (GLenum  magFilter)const{
+void Sampler::setMagFilter  (GLenum  const&magFilter)const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_MAG_FILTER,magFilter);
 }
 
-void Sampler::setWrapS      (GLenum  wrapS    )const{
+void Sampler::setWrapS      (GLenum  const&wrapS    )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_WRAP_S,wrapS);
 }
 
-void Sampler::setWrapT      (GLenum  wrapT    )const{
+void Sampler::setWrapT      (GLenum  const&wrapT    )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_WRAP_T,wrapT);
 }
 
-void Sampler::setWrapR      (GLenum  wrapR    )const{
+void Sampler::setWrapR      (GLenum  const&wrapR    )const{
   assert(this!=nullptr);
   this->_gl.glSamplerParameteri(this->_id,GL_TEXTURE_WRAP_R,wrapR);
 }
 
-void Sampler::getBorderColor(GLfloat*color    )const{
+void Sampler::getBorderColor(GLfloat*const&color    )const{
   assert(this!=nullptr);
   this->_gl.glGetSamplerParameterfv(this->_id,GL_TEXTURE_BORDER_COLOR,color);
 }
@@ -227,12 +227,12 @@ GLenum Sampler::getWrapR()const{
   return wrapR;
 }
 
-void Sampler::bind(GLuint unit)const{
+void Sampler::bind(GLuint const&unit)const{
   assert(this!=nullptr);
   this->_gl.glBindSampler(unit,this->_id);
 }
 
-void Sampler::unbind(GLuint unit)const{
+void Sampler::unbind(GLuint const&unit)const{
   assert(this!=nullptr);
   this->_gl.glBindSampler(unit,0);
 }

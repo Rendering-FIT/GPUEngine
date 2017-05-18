@@ -19,11 +19,11 @@ Renderbuffer::Renderbuffer(){
  * @param samples number of samples per pixel of renderbuffer (multisampling)
  */
 Renderbuffer::Renderbuffer(
-    FunctionTablePointer const&table,
-    GLenum                     internalFormat,
-    GLsizei                    width,
-    GLsizei                    height,
-    GLsizei                    samples):OpenGLObject(table){
+    FunctionTablePointer const&table         ,
+    GLenum               const&internalFormat,
+    GLsizei              const&width         ,
+    GLsizei              const&height        ,
+    GLsizei              const&samples       ):OpenGLObject(table){
   assert(this!=nullptr);
   this->_gl.glCreateRenderbuffers(1,&this->_id);
   this->setStorage(internalFormat,width,height,samples);
@@ -38,10 +38,10 @@ Renderbuffer::Renderbuffer(
  * @param samples number of samples per pixel of renderbuffer (more than one means multisampling)
  */
 Renderbuffer::Renderbuffer( 
-    GLenum  internalFormat,
-    GLsizei width,
-    GLsizei height,
-    GLsizei samples):Renderbuffer(nullptr,internalFormat,width,height,samples){
+    GLenum  const&internalFormat,
+    GLsizei const&width         ,
+    GLsizei const&height        ,
+    GLsizei const&samples       ):Renderbuffer(nullptr,internalFormat,width,height,samples){
 }
 
 /**
@@ -53,10 +53,10 @@ Renderbuffer::Renderbuffer(
  * @param samples number of samples per pixel of renderbuffer (more than one means multisampling)
  */
 void Renderbuffer::setStorage(
-    GLenum  internalFormat,
-    GLsizei width,
-    GLsizei height,
-    GLsizei samples)const{
+    GLenum  const&internalFormat,
+    GLsizei const&width         ,
+    GLsizei const&height        ,
+    GLsizei const&samples       )const{
   assert(this!=nullptr);
   this->_gl.glNamedRenderbufferStorageMultisample(this->_id,internalFormat,samples,width,height);
 }

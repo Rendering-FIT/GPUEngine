@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 Stats::Stats(int history){
 	this->history = history;
@@ -72,7 +73,7 @@ void Stats::draw(){
 	std::string msg;
 	float vmax = getMax();
 	float vmin = getMin();
-	msg += "fps: " + std::to_string(1e3f/data[0]) + "(" + std::to_string((int)roundf(ImGui::GetIO().Framerate))+ ")\n";
+	msg += "fps: " + std::to_string(1e3f/data[0]) + "(" + std::to_string((int)std::roundf(ImGui::GetIO().Framerate))+ ")\n";
 	msg += "avg: " + std::to_string(getAvg()) + " ms\nmin: " + std::to_string(vmin) + " ms\nmax: " + std::to_string(vmax) + " ms\n";
 
 	textColor(1, 1, 0, 1);

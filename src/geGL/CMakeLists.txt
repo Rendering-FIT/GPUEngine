@@ -32,6 +32,7 @@ set(GENERATED_INCLUDES
 
 set(GL_INCLUDES
   ${HEADER_PATH}/Export.h
+  ${HEADER_PATH}/Fwd.h
   ${HEADER_PATH}/Definitions.h
   ${HEADER_PATH}/Buffer.h
   ${HEADER_PATH}/VertexArray.h

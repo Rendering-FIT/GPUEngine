@@ -8,13 +8,6 @@
 #include<geGL/Shader.h>
 #include<geGL/ProgramInfo.h>
 
-namespace ge{
-  namespace gl{
-    class Buffer;
-    class GEGL_EXPORT Program;
-  }
-}
-
 class GEGL_EXPORT ge::gl::Program: public OpenGLObject, public std::enable_shared_from_this<Program>{
   public:
     using ShaderPointer  = std::shared_ptr<Shader>;
