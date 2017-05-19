@@ -23,9 +23,9 @@ Buffer::Buffer(){
  * @param flags optional flags, right flags can make buffer immutable
  */
 Buffer::Buffer(
-    GLsizeiptr    size,
-    const GLvoid *data,
-    GLbitfield    flags){
+    GLsizeiptr       const&size,
+    GLvoid     const*const&data,
+    GLbitfield       const&flags){
   assert(this!=nullptr);
   this->alloc(size,data,flags);
 }
@@ -35,7 +35,10 @@ Buffer::Buffer(
  *
  * @param table opengl function table
  */
-Buffer::Buffer(FunctionTablePointer const&table):OpenGLObject(table){
+Buffer::Buffer(
+    FunctionTablePointer const&table):
+  OpenGLObject(table)
+{
   assert(this!=nullptr);
   this->_id = 0;
 }
@@ -49,10 +52,12 @@ Buffer::Buffer(FunctionTablePointer const&table):OpenGLObject(table){
  * @param flags optional flags
  */
 Buffer::Buffer(
-    FunctionTablePointer const&table,
-    GLsizeiptr    size ,
-    const GLvoid* data ,
-    GLbitfield    flags):OpenGLObject(table){
+    FunctionTablePointer       const&table,
+    GLsizeiptr                 const&size ,
+    GLvoid               const*const&data ,
+    GLbitfield                 const&flags):
+  OpenGLObject(table)
+{
   assert(this!=nullptr);
   this->alloc(size,data,flags);
 }
@@ -73,9 +78,9 @@ Buffer::~Buffer(){
  * @param flags optional flags
  */
 void Buffer::alloc(
-    GLsizeiptr    size,
-    const GLvoid *data,
-    GLbitfield    flags){
+    GLsizeiptr       const&size,
+    GLvoid     const*const&data,
+    GLbitfield       const&flags){
   assert(this!=nullptr);
   this->_gl.glCreateBuffers(1,&this->_id);
   this->_bufferData(size,data,flags);
@@ -87,7 +92,7 @@ void Buffer::alloc(
  * @param target target
  */
 void Buffer::bind(
-    GLenum target)const{
+    GLenum const&target)const{
   assert(this!=nullptr);
   this->_gl.glBindBuffer(target,this->_id);
 }
@@ -101,10 +106,10 @@ void Buffer::bind(
  * @param size size of buffer
  */
 void Buffer::bindRange(
-    GLenum     target,
-    GLuint     index,
-    GLintptr   offset,
-    GLsizeiptr size)const{
+    GLenum     const&target,
+    GLuint     const&index ,
+    GLintptr   const&offset,
+    GLsizeiptr const&size  )const{
   assert(this!=nullptr);
   this->_gl.glBindBufferRange(target,index,this->_id,offset,size);
 }
@@ -115,7 +120,9 @@ void Buffer::bindRange(
  * @param target target
  * @param index index
  */
-void Buffer::bindBase(GLenum target,GLuint index)const{
+void Buffer::bindBase(
+    GLenum const&target,
+    GLuint const&index )const{
   assert(this!=nullptr);
   this->_gl.glBindBufferBase(target,index,this->_id);
 }
@@ -125,7 +132,8 @@ void Buffer::bindBase(GLenum target,GLuint index)const{
  *
  * @param target target
  */
-void Buffer::unbind(GLenum target)const{
+void Buffer::unbind(
+    GLenum const&target)const{
   assert(this!=nullptr);
   this->_gl.glBindBuffer(target,0);
 }
@@ -136,7 +144,9 @@ void Buffer::unbind(GLenum target)const{
  * @param target target
  * @param index  index
  */
-void Buffer::unbindRange(GLenum target,GLuint index)const{
+void Buffer::unbindRange(
+    GLenum const&target,
+    GLuint const&index )const{
   assert(this!=nullptr);
   this->_gl.glBindBufferBase(target,index,0);
 }
@@ -147,7 +157,9 @@ void Buffer::unbindRange(GLenum target,GLuint index)const{
  * @param target target
  * @param index  index
  */
-void Buffer::unbindBase(GLenum target,GLuint index)const{
+void Buffer::unbindBase(
+    GLenum const&target,
+    GLuint const&index )const{
   assert(this!=nullptr);
   this->_gl.glBindBufferBase(target,index,0);
 }
@@ -158,10 +170,15 @@ void Buffer::unbindBase(GLenum target,GLuint index)const{
  * @param newSize new size
  * @param flags KEEP_ID|KEEP_DATA
  */
-bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
+bool Buffer::realloc(
+    GLsizeiptr   const&newSize,
+    ReallocFlags const&flags  ){
   assert(this!=nullptr);
   if((flags&KEEP_ID)&&this->isImmutable()){
-    ge::core::printError(GE_CORE_FCENAME,"can't sustain buffer id: "+ge::core::value2str(this->getId())+", buffer is immutable",newSize,flags);
+    ge::core::printError(
+        GE_CORE_FCENAME,
+        "can't sustain buffer id: "+ge::core::value2str(this->getId())+
+        ", buffer is immutable",newSize,flags);
     return false;
   }
   GLbitfield bufferFlags=this->getUsage();
@@ -188,13 +205,19 @@ bool Buffer::realloc(GLsizeiptr newSize,ReallocFlags flags){
     this->alloc(newSize,nullptr,bufferFlags);
     this->_updateVertexArrays();
   }else{
-    ge::core::printError(GE_CORE_FCENAME,"invalid buffer reallocation flags: "+ge::core::value2str(flags),newSize,flags);
+    ge::core::printError(
+        GE_CORE_FCENAME,
+        "invalid buffer reallocation flags: "+
+        ge::core::value2str(flags),newSize,flags);
     return false;
   }
   return true;
 }
 
-void Buffer::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)const{
+void Buffer::_bufferData(
+    GLsizeiptr       const&size,
+    GLvoid     const*const&data,
+    GLbitfield       const&flags)const{
   assert(this!=nullptr);
   if(ge::gl::areBufferFlagsMutable(flags))
     this->_gl.glNamedBufferData(this->_id,size,data,flags);
@@ -204,29 +227,31 @@ void Buffer::_bufferData(GLsizeiptr size,const GLvoid*data,GLbitfield flags)cons
 
 void Buffer::_updateVertexArrays(){
   assert(this!=nullptr);
-  auto me = this->shared_from_this();
-  auto vertexArrays = this->_vertexArrays;
-  for(auto const&x:vertexArrays){
-    if(x->_elementBuffer == me){
-      x->addElementBuffer(me);
+  auto const me = this->shared_from_this();
+  for(auto const&vao:this->_vertexArrays){
+    if(vao->_elementBuffer == me){
+      vao->addElementBuffer(me);
     }
     std::vector<GLuint>attribs;
     GLuint attribId = 0;
-    for(auto const&y:x->_buffers){
+    for(auto const&y:vao->_buffers){
       if(y == me)attribs.push_back(attribId);
       attribId++;
     }
-    for(auto const&y:attribs){
-      x->addAttrib(
+    for(auto const&attribIndex:attribs){
+      auto                                 type = VertexArray::NONE;
+      if(vao->isAttribInteger(attribIndex))type = VertexArray::I   ;
+      if(vao->isAttribLong   (attribIndex))type = VertexArray::L   ;
+      vao->addAttrib(
           me,
-          y,
-          x->getAttribSize(y),
-          x->getAttribType(y),
-          x->getAttribStride(y),
-          x->getAttribRelativeOffset(y),
-          x->isAttribNormalized(y),
-          x->getAttribDivisor(y),
-          x->isAttribInteger(y)?VertexArray::I:(x->isAttribLong(y)?VertexArray::L:VertexArray::NONE));
+          attribIndex,
+          vao->getAttribSize          (attribIndex),
+          vao->getAttribType          (attribIndex),
+          vao->getAttribStride        (attribIndex),
+          vao->getAttribRelativeOffset(attribIndex),
+          vao->isAttribNormalized     (attribIndex),
+          vao->getAttribDivisor       (attribIndex),
+          type);
     }
   }
 }
@@ -239,7 +264,11 @@ void Buffer::_updateVertexArrays(){
 void Buffer::copy(
     Buffer const&buffer)const{
   assert(this!=nullptr);
-  GLsizeiptr maxSize=(this->getSize()>buffer.getSize())?buffer.getSize():this->getSize();
+  GLsizeiptr maxSize;
+  if(this->getSize()>buffer.getSize())
+    maxSize = buffer.getSize();
+  else
+    maxSize = this->getSize();
   this->_gl.glCopyNamedBufferSubData(buffer._id,this->_id,0,0,maxSize);
 }
 
@@ -250,9 +279,15 @@ void Buffer::copy(
  * @param offset offset into buffer in bytes
  * @param size   length of data in bytes
  */
-void Buffer::flushMapped(GLsizeiptr size,GLintptr offset)const{
+void Buffer::flushMapped(
+    GLsizeiptr const&size  ,
+    GLintptr   const&offset)const{
   assert(this!=nullptr);
-  if(size==0)size=this->getSize();
+  if(size==0){
+    this->_gl.glFlushMappedNamedBufferRange(this->_id,offset,
+        this->getSize());
+    return;
+  }
   this->_gl.glFlushMappedNamedBufferRange(this->_id,offset,size);
 }
 
@@ -262,7 +297,9 @@ void Buffer::flushMapped(GLsizeiptr size,GLintptr offset)const{
  * @param offset offset of region in bytes
  * @param size   length of region in bytes
  */
-void Buffer::invalidate(GLsizeiptr size,GLintptr offset)const{
+void Buffer::invalidate(
+    GLsizeiptr const&size  ,
+    GLintptr   const&offset)const{
   assert(this!=nullptr);
   this->_gl.glInvalidateBufferSubData(this->_id,offset,size);
 }
@@ -276,12 +313,13 @@ void Buffer::invalidate(GLsizeiptr size,GLintptr offset)const{
  * @param data optional data
  */
 void Buffer::clear(
-    GLenum        internalFormat,
-    GLenum        format,
-    GLenum        type,
-    const GLvoid *data)const{
+    GLenum       const&internalFormat,
+    GLenum       const&format        ,
+    GLenum       const&type          ,
+    GLvoid const*const&data          )const{
   assert(this!=nullptr);
-  this->_gl.glClearNamedBufferData(this->_id,internalFormat,format,type,data);
+  this->_gl.glClearNamedBufferData(this->_id,
+      internalFormat,format,type,data);
 }
 
 /**
@@ -295,14 +333,15 @@ void Buffer::clear(
  * @param data   data
  */
 void Buffer::clear(
-    GLenum        internalFormat,
-    GLintptr      offset,
-    GLsizeiptr    size,
-    GLenum        format,
-    GLenum        type,
-    const GLvoid *data)const{
+    GLenum           const&internalFormat,
+    GLintptr         const&offset        ,
+    GLsizeiptr       const&size          ,
+    GLenum           const&format        ,
+    GLenum           const&type          ,
+    GLvoid     const*const&data          )const{
   assert(this!=nullptr);
-  this->_gl.glClearNamedBufferSubData(this->_id,internalFormat,offset,size,format,type,data);
+  this->_gl.glClearNamedBufferSubData(this->_id,
+      internalFormat,offset,size,format,type,data);
 }
 
 /**
@@ -313,12 +352,13 @@ void Buffer::clear(
  * @return pointer to pinned memory
  */
 GLvoid*Buffer::map(
-    GLbitfield access)const{
+    GLbitfield const&access)const{
   assert(this!=nullptr);
-  if(access==GL_READ_ONLY )access=GL_MAP_READ_BIT ;
-  if(access==GL_WRITE_ONLY)access=GL_MAP_WRITE_BIT;
-  if(access==GL_READ_WRITE)access=GL_MAP_READ_BIT|GL_MAP_WRITE_BIT;
-  return this->_gl.glMapNamedBufferRange(this->_id,0,this->getSize(),access);
+  GLbitfield a = access;
+  if(access==GL_READ_ONLY )a=GL_MAP_READ_BIT ;
+  if(access==GL_WRITE_ONLY)a=GL_MAP_WRITE_BIT;
+  if(access==GL_READ_WRITE)a=GL_MAP_READ_BIT|GL_MAP_WRITE_BIT;
+  return this->_gl.glMapNamedBufferRange(this->_id,0,this->getSize(),a);
 }
 
 /**
@@ -331,9 +371,9 @@ GLvoid*Buffer::map(
  * @return pointer to pinned memory
  */
 GLvoid*Buffer::map(
-    GLintptr   offset,
-    GLsizeiptr size,
-    GLbitfield access)const{
+    GLintptr   const&offset,
+    GLsizeiptr const&size  ,
+    GLbitfield const&access)const{
   assert(this!=nullptr);
   return this->_gl.glMapNamedBufferRange(this->_id,offset,size,access);
 }
@@ -354,12 +394,13 @@ void Buffer::unmap()const{
  * @param offset offset into buffer
  */
 void Buffer::setData(
-    const GLvoid* data  ,
-    GLsizeiptr    size  ,
-    GLintptr      offset)const{
+    GLvoid     const*const&data  ,
+    GLsizeiptr       const&size  ,
+    GLintptr         const&offset)const{
   assert(this!=nullptr);
-  if(size==0)size=this->getSize();
-  this->_gl.glNamedBufferSubData(this->_id,offset,size,data);
+  GLsizeiptr s = size;
+  if(s==0)s = this->getSize();
+  this->_gl.glNamedBufferSubData(this->_id,offset,s,data);
 }
 
 /**
@@ -370,22 +411,25 @@ void Buffer::setData(
  * @param offset offset into buffer
  */
 void Buffer::getData(
-    GLvoid     *data,
-    GLsizeiptr  size,
-    GLintptr    offset)const{
+    GLvoid     *const&data,
+    GLsizeiptr  const&size,
+    GLintptr    const&offset)const{
   assert(this!=nullptr);
-  if(size==0)size=this->getSize();
-  this->_gl.glGetNamedBufferSubData(this->_id,offset,size,data);
+  GLsizeiptr s = size;
+  if(s==0)s=this->getSize();
+  this->_gl.glGetNamedBufferSubData(this->_id,offset,s,data);
 }
 
-GLint Buffer::_getBufferParameter(GLenum pname)const{
+GLint Buffer::_getBufferParameter(
+    GLenum const&pname)const{
   assert(this!=nullptr);
   GLint param;
   this->_gl.glGetNamedBufferParameteriv(this->_id,pname,&param);
   return param;
 }
 
-GLvoid*Buffer::_getBufferPointer(GLenum pname)const{
+GLvoid*Buffer::_getBufferPointer(
+    GLenum const&pname)const{
   assert(this!=nullptr);
   GLvoid *param;
   this->_gl.glGetNamedBufferPointerv(this->_id,pname,&param);
