@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <iostream>
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <geUtil/OrbitManipulator.h>
