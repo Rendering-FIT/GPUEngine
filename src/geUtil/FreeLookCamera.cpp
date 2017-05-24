@@ -67,6 +67,12 @@ void FreeLookCamera::setPosition(glm::vec3 const&p){
   this->_recomputeView = true;
 }
 
+void FreeLookCamera::addPosition(glm::vec3 const&delta){
+  assert(this!=nullptr);
+  this->_position += delta;
+  this->_recomputeView = true;
+}
+
 glm::vec3 FreeLookCamera::getPosition()const{
   assert(this!=nullptr);
   return this->_position;
@@ -95,17 +101,17 @@ float FreeLookCamera::getAngle(size_t axis)const{
 
 void FreeLookCamera::setXAngle  (float value){
   assert(this!=nullptr);
-  return this->setAngle(0,value);
+  this->setAngle(0,value);
 }
 
 void FreeLookCamera::setYAngle  (float value){
   assert(this!=nullptr);
-  return this->setAngle(1,value);
+  this->setAngle(1,value);
 }
 
 void FreeLookCamera::setZAngle  (float value){
   assert(this!=nullptr);
-  return this->setAngle(2,value);
+  this->setAngle(2,value);
 }
 
 void FreeLookCamera::setAngle(size_t axis,float value){
@@ -115,6 +121,27 @@ void FreeLookCamera::setAngle(size_t axis,float value){
   else this->_angles[(uint32_t)axis]=value;
   this->_recomputeRotation = true;
   this->_recomputeView = true;
+}
+
+void FreeLookCamera::addXAngle  (float delta){
+  assert(this!=nullptr);
+  this->setAngle(0,this->getAngle(0)+delta);
+}
+
+void FreeLookCamera::addYAngle  (float delta){
+  assert(this!=nullptr);
+  this->setAngle(1,this->getAngle(1)+delta);
+}
+
+void FreeLookCamera::addZAngle  (float delta){
+  assert(this!=nullptr);
+  this->setAngle(2,this->getAngle(2)+delta);
+}
+
+void FreeLookCamera::addAngle(size_t axis,float delta){
+  assert(this!=nullptr);
+  assert(axis < 3);
+  this->setAngle(axis,this->getAngle(axis)+delta);
 }
 
 void FreeLookCamera::setRotation(glm::vec3 const&viewVector,glm::vec3 const&upVector){
