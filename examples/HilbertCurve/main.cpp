@@ -1,10 +1,10 @@
 #include<limits>
 #include<string>
 #include<geGL/geGL.h>
+#include<geGL/StaticCalls.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 
 struct Application{
-  std::shared_ptr<ge::gl::Context>    gl             = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop>mainLoop       = nullptr;
   std::shared_ptr<ge::ad::SDLWindow>  window         = nullptr;
   std::shared_ptr<ge::gl::Program>    hilbertProgram = nullptr;
@@ -25,12 +25,12 @@ int main(int,char*[]){
 
 void Application::idle(){
   assert(this);
-  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  ge::gl::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
   this->vao->bind();
   this->hilbertProgram->use();
   this->hilbertProgram->set1ui("hilbertLevel",this->hilbertLevel);
-  this->gl->glDrawArrays(GL_LINE_STRIP,0,1<<(2*this->hilbertLevel));
+  ge::gl::glDrawArrays(GL_LINE_STRIP,0,1<<(2*this->hilbertLevel));
   this->vao->unbind();
 
   this->window->swap();
@@ -60,14 +60,13 @@ bool Application::init(){
 
   this->window->makeCurrent("rendering");
 
-  ge::gl::init(SDL_GL_GetProcAddress);
-  this->gl = ge::gl::getDefaultContext();
+  ge::gl::init();
   ge::gl::setHighDebugMessage();
 
-  this->gl->glEnable(GL_DEPTH_TEST);
-  this->gl->glDepthFunc(GL_LEQUAL);
-  this->gl->glDisable(GL_CULL_FACE);
-  this->gl->glClearColor(0,0,0,1);
+  ge::gl::glEnable(GL_DEPTH_TEST);
+  ge::gl::glDepthFunc(GL_LEQUAL);
+  ge::gl::glDisable(GL_CULL_FACE);
+  ge::gl::glClearColor(0,0,0,1);
   auto vp0 = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,R".(
 #version 450 core
 uniform uint hilbertLevel = 3;

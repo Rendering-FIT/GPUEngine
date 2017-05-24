@@ -2,10 +2,10 @@
 #include<string>
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
+#include<geGL/StaticCalls.h>
 
 class Application{
   public:
-    std::shared_ptr<ge::gl::Context>    gl       = nullptr;
     std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
     std::shared_ptr<ge::ad::SDLWindow>  window   = nullptr;
     bool init();
@@ -20,7 +20,7 @@ int main(int,char*[]){
 }
 
 void Application::idle(){
-  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  ge::gl::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   this->window->swap();
 }
 
@@ -36,12 +36,11 @@ bool Application::init(){
   this->mainLoop->addWindow("primaryWindow",this->window);
 
   this->window->makeCurrent("rendering");
-  ge::gl::init(SDL_GL_GetProcAddress);
-  this->gl = ge::gl::getDefaultContext();
+  ge::gl::init();
 
-  this->gl->glEnable(GL_DEPTH_TEST);
-  this->gl->glDepthFunc(GL_LEQUAL);
-  this->gl->glDisable(GL_CULL_FACE);
-  this->gl->glClearColor(0,1,0,1);
+  ge::gl::glEnable(GL_DEPTH_TEST);
+  ge::gl::glDepthFunc(GL_LEQUAL);
+  ge::gl::glDisable(GL_CULL_FACE);
+  ge::gl::glClearColor(0,1,0,1);
   return true;
 }

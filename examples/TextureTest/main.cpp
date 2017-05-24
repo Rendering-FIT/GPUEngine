@@ -50,7 +50,7 @@ int main(int,char*[]){
   auto program = make_shared<Program>(vs, fs);
   auto vao = make_shared<VertexArray>();
 
-  auto tex = std::make_shared<ge::gl::Texture>(GL_TEXTURE_CUBE_MAP,GL_RGBA,1,1,1);
+  auto tex = make_shared<Texture>(GL_TEXTURE_CUBE_MAP,GL_RGBA,1,1,1);
   for(uint32_t i=0;i<6;++i){
     uint32_t color = 0xff000000+0xff*(((i+1)>>0)&1)+0xff00*(((i+1)>>1)&1)+0xff0000*(((i+1)>>2)&1);
     tex->setData2D(&color,GL_RGBA,GL_UNSIGNED_BYTE,0,GL_TEXTURE_CUBE_MAP_POSITIVE_X+i);

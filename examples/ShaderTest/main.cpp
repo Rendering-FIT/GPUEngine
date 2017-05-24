@@ -1,12 +1,12 @@
 #include<limits>
 #include<string>
 #include<geGL/geGL.h>
+#include<geGL/StaticCalls.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geGL/OpenGLCommands.h>
 #include<geGL/OpenGLContext.h>
 
 struct Application{
-  std::shared_ptr<ge::gl::Context>    gl       = nullptr;
   std::shared_ptr<ge::ad::SDLMainLoop>mainLoop = nullptr;
   std::shared_ptr<ge::ad::SDLWindow>  window   = nullptr;
   std::shared_ptr<ge::gl::Program>    program0 = nullptr;
@@ -24,14 +24,14 @@ int main(int,char*[]){
 }
 
 void Application::idle(){
-  this->gl->glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+  ge::gl::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
   this->emptyVAO->bind();
   this->program0->use();
-  this->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
+  ge::gl::glDrawArrays(GL_TRIANGLE_STRIP,0,3);
   this->program1->use();
   this->program1->set4f("color",0,1,1,0);
-  this->gl->glDrawArrays(GL_TRIANGLE_STRIP,0,3);
+  ge::gl::glDrawArrays(GL_TRIANGLE_STRIP,0,3);
   this->emptyVAO->unbind();
 
   this->window->swap();
@@ -61,14 +61,13 @@ bool Application::init(){
 
   this->window->makeCurrent("rendering");
 
-  ge::gl::init(SDL_GL_GetProcAddress);
-  this->gl = ge::gl::getDefaultContext();
+  ge::gl::init();
   ge::gl::setHighDebugMessage();
 
-  this->gl->glEnable(GL_DEPTH_TEST);
-  this->gl->glDepthFunc(GL_LEQUAL);
-  this->gl->glDisable(GL_CULL_FACE);
-  this->gl->glClearColor(0,1,0,1);
+  ge::gl::glEnable(GL_DEPTH_TEST);
+  ge::gl::glDepthFunc(GL_LEQUAL);
+  ge::gl::glDisable(GL_CULL_FACE);
+  ge::gl::glClearColor(0,1,0,1);
 
   auto vp0 = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,
       "#version 450\n",
