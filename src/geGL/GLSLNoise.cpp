@@ -27,74 +27,72 @@ std::string ge::gl::getNoiseSource(){
 #define VECI3(i) [i]
 #define VECI4(i) [i]
 
-const uint UINT_NULA                   = 0u;
-const uint UINT_JEDNA                  = 1u;
-const uint UINT_DVA                    = 2u;
-const uint UINT_DESET                  = 10u;
-const uint UINT_DVACETTISICDVACETCTYRI = 20024u;
-const uint UINT_MAXDELENODVEMA         = 0x7fffffffu;
-const uint UINT_MAX                    = 0xffffffffu;
+const uint UINT_0       = 0u         ;
+const uint UINT_1       = 1u         ;
+const uint UINT_2       = 2u         ;
+const uint UINT_MAXDIV2 = 0x7fffffffu;
+const uint UINT_MAX     = 0xffffffffu;
 
 uint poly(in uint x,in uint c){
   //return x*(x*(x+c)+c);
   return x*(x*(x*(x*(x+c)+c)+c)+c);
 }
 
-#define BASE(DIM) \
-float bnoise(in JOIN(UVEC,DIM) x){\
-  uint last=UINT_DESET;\
-  for(uint i=UINT_NULA;i<DIM##u;++i)\
-    last=poly(VECXI(x,DIM,i)+(UINT_DVACETTISICDVACETCTYRI<<i),last);\
-  return -1.+float(last)/float(UINT_MAXDELENODVEMA);\
+#define BASE(DIMENSION)                                     \
+float baseIntegerNoise(in JOIN(UVEC,DIMENSION) x){          \
+  uint last = 10u;                                          \
+  for(uint i = 0u; i < DIMENSION##u; ++i)                   \
+    last = poly( VECXI(x,DIMENSION,i) + (20024u << i),last);\
+  return -1. + float(last)/float(UINT_MAXDIV2);             \
 }
 
 
-#define SMOOTH(DIM)\
-float snoise(in uint d,in JOIN(UVEC,DIM) x){\
-  if(d==UINT_NULA)return bnoise(x);\
-  uint dd=UINT_JEDNA<<d;\
-  uint mm=(UINT_MAX>>d)+UINT_JEDNA;\
-  JOIN(UVEC,DIM) xx=x>>d;\
-  JOIN(VEC,DIM) t=JOIN(VEC,DIM)(x%dd)/JOIN(VEC,DIM)(dd);\
-  float ret=0.;\
-  for(uint i=UINT_NULA;i<(UINT_JEDNA<<DIM);++i){\
-    float coef=1.;\
-    JOIN(UVEC,DIM) o;\
-    for(uint j=UINT_NULA;j<DIM##u;++j){\
-      VECXI(o,DIM,j)=(i>>j)&UINT_JEDNA;\
-      coef*=smoothstep(0,1,float(UINT_JEDNA-((i>>j)&UINT_JEDNA))*(1.-2.*VECXI(t,DIM,j))+VECXI(t,DIM,j));\
-    }\
-    ret+=bnoise((xx+o)%mm)*(coef);\
-  }\
-  return ret;\
+#define SMOOTH(DIMENSION)                                                     \
+float smoothNoise(in uint d,in JOIN(UVEC,DIMENSION) x){                       \
+  if(d == 0u)return baseIntegerNoise(x);                                      \
+  uint dd = 1u << d;                                                          \
+  JOIN(UVEC,DIMENSION) xx = x >> d;                                           \
+  JOIN(VEC,DIMENSION) t = JOIN(VEC,DIMENSION)(x%dd) / JOIN(VEC,DIMENSION)(dd);\
+  float ret = 0.f;                                                            \
+  for(uint i = 0u; i < (1u << DIMENSION); ++i){                               \
+    float coef = 1.f;                                                         \
+    JOIN(UVEC,DIMENSION) o;                                                   \
+    for(uint j = 0u; j < DIMENSION##u; ++j){                                  \
+      VECXI(o,DIMENSION,j) = (i >> j) & 1u;                                   \
+      coef *= smoothstep(0.f,1.f,float(1u - ((i >> j)&1u))*(1. - 2.*VECXI(t,DIMENSION,j)) + VECXI(t,DIMENSION,j));\
+    }                                                                         \
+    uint modulo = (UINT_MAX >> d) + 1u;                                       \
+    ret += baseIntegerNoise((xx + o)%modulo) * coef;                          \
+  }                                                                           \
+  return ret;                                                                 \
 }
 
-#define OCTAVE(DIM)\
-float noise(in JOIN(UVEC,DIM) x,in uint M,in uint N,float p){\
-  float ret=0.;\
-  float sum=0.;\
-  for(uint k=UINT_NULA;k<=N;++k){\
-    sum*=p;\
-    sum+=1;\
-    ret*=p;\
-    ret+=snoise(M-k,x);\
-  }\
-  return ret/sum;\
+#define OCTAVE(DIMENSION)                                          \
+float noise(in JOIN(UVEC,DIMENSION) x,in uint M,in uint N,float p){\
+  float ret = 0.f;                                                 \
+  float sum = 0.f;                                                 \
+  for(uint k = 0u; k <= N; ++k){                                   \
+    sum *= p;                                                      \
+    sum += 1.f;                                                    \
+    ret *= p;                                                      \
+    ret += smoothNoise(M-k,x);                                     \
+  }                                                                \
+  return ret/sum;                                                  \
 }
 
-#define OCTAVE_SIMPLIFIED(DIM)\
-float noise(in JOIN(UVEC,DIM) x,in uint M){\
-  return noise(x,M,M,2.);\
+#define OCTAVE_SIMPLIFIED(DIMENSION)             \
+float noise(in JOIN(UVEC,DIMENSION) x,in uint M){\
+  return noise(x,M,M,2.f);                       \
 }
 
-#define FNOISE(DIM)\
-float noise(in JOIN(VEC,DIM) x,in uint M){\
-  return noise(JOIN(UVEC,DIM)(JOIN(IVEC,DIM)(x)),M);\
+#define FNOISE(DIMENSION)                                       \
+float noise(in JOIN(VEC,DIMENSION) x,in uint M){                \
+  return noise(JOIN(UVEC,DIMENSION)(JOIN(IVEC,DIMENSION)(x)),M);\
 }
 
-#define INOISE(DIM)\
-float noise(in JOIN(IVEC,DIM) x,in uint M,in uint N,float p){\
-  return noise(JOIN(UVEC,DIM)(x),M,N,p);\
+#define INOISE(DIMENSION)                                          \
+float noise(in JOIN(IVEC,DIMENSION) x,in uint M,in uint N,float p){\
+  return noise(JOIN(UVEC,DIMENSION)(x),M,N,p);                     \
 }
 
 BASE(1)
@@ -132,19 +130,19 @@ INOISE(4)
 std::string ge::gl::getGradientSource(){
   return R".(
 #define BEGINGRADIENT(name)\
-vec4 name(float t){\
-  t=clamp(t,0,1);\
+vec4 name(float t){        \
+  t=clamp(t,0.f,1.f);      \
   const vec4 colors[]={
 
-#define ENDGRADIENT\
-  };\
-  t*=colors.length();\
-  uint i=uint(floor(t));\
-  uint j=i+1;\
-  if(j>=colors.length()){\
-    i=colors.length()-1;\
-    j=i;\
-  }\
+#define ENDGRADIENT                        \
+  };                                       \
+  t *= colors.length();                    \
+  uint i = uint(floor(t));                 \
+  uint j = i + 1u;                         \
+  if(j >= colors.length()){                \
+    i = colors.length() - 1u;              \
+    j = i;                                 \
+  }                                        \
   return mix(colors[i],colors[j],fract(t));\
 }
 ).";
