@@ -1,7 +1,6 @@
 #include"CameraPath.h"
 #include"CSV.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
 #include<glm/gtx/spline.hpp>
 #include<algorithm>
 #include<cctype>
