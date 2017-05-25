@@ -13,6 +13,7 @@ set(examplesList  EmptyWindow
                   Minecraft
                   BlitOpenGL
                   TextureTest
+                  NoiseTest
                   Simple_QtgeGL
                   Simple_QtgeSG
                   Simple_Animation

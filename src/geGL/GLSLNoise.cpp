@@ -34,8 +34,14 @@ const uint UINT_MAXDIV2 = 0x7fffffffu;
 const uint UINT_MAX     = 0xffffffffu;
 
 uint poly(in uint x,in uint c){
+  //return x;
+  //return x*(x+c);
   //return x*(x*(x+c)+c);
+  //return x*(x*(x*(x+c)+c)+c);
   return x*(x*(x*(x*(x+c)+c)+c)+c);
+  //return x*(x*(x*(x*(x*(x+c)+c)+c)+c)+c);
+  //return x*(x*(x*(x*(x*(x*(x+c)+c)+c)+c)+c)+c);
+  //return x*(x*(x*(x*(x*(x*(x*(x+c)+c)+c)+c)+c)+c)+c);
 }
 
 #define BASE(DIMENSION)                                     \
@@ -47,24 +53,26 @@ float baseIntegerNoise(in JOIN(UVEC,DIMENSION) x){          \
 }
 
 
-#define SMOOTH(DIMENSION)                                                     \
-float smoothNoise(in uint d,in JOIN(UVEC,DIMENSION) x){                       \
-  if(d == 0u)return baseIntegerNoise(x);                                      \
-  uint dd = 1u << d;                                                          \
-  JOIN(UVEC,DIMENSION) xx = x >> d;                                           \
-  JOIN(VEC,DIMENSION) t = JOIN(VEC,DIMENSION)(x%dd) / JOIN(VEC,DIMENSION)(dd);\
-  float ret = 0.f;                                                            \
-  for(uint i = 0u; i < (1u << DIMENSION); ++i){                               \
-    float coef = 1.f;                                                         \
-    JOIN(UVEC,DIMENSION) o;                                                   \
-    for(uint j = 0u; j < DIMENSION##u; ++j){                                  \
-      VECXI(o,DIMENSION,j) = (i >> j) & 1u;                                   \
+#define SMOOTH(DIMENSION)                                                          \
+float smoothNoise(in uint d,in JOIN(UVEC,DIMENSION) x){                            \
+  if(d == 0u)return baseIntegerNoise(x);                                           \
+  uint dd = 1u << d;                                                               \
+  JOIN(UVEC,DIMENSION) xx = x >> d;                                                \
+  /*JOIN(VEC,DIMENSION) t = JOIN(VEC,DIMENSION)(x%dd) / JOIN(VEC,DIMENSION)(dd);*/ \
+  JOIN(VEC,DIMENSION) t = JOIN(VEC,DIMENSION)(x&(dd-1u)) / JOIN(VEC,DIMENSION)(dd);\
+  float ret = 0.f;                                                                 \
+  for(uint i = 0u; i < (1u << DIMENSION); ++i){                                    \
+    float coef = 1.f;                                                              \
+    JOIN(UVEC,DIMENSION) o;                                                        \
+    for(uint j = 0u; j < DIMENSION##u; ++j){                                       \
+      VECXI(o,DIMENSION,j) = (i >> j) & 1u;                                        \
       coef *= smoothstep(0.f,1.f,float(1u - ((i >> j)&1u))*(1. - 2.*VECXI(t,DIMENSION,j)) + VECXI(t,DIMENSION,j));\
-    }                                                                         \
-    uint modulo = (UINT_MAX >> d) + 1u;                                       \
-    ret += baseIntegerNoise((xx + o)%modulo) * coef;                          \
-  }                                                                           \
-  return ret;                                                                 \
+    }                                                                              \
+    /*uint modulo = (UINT_MAX >> d) + 1u;*/                                        \
+    /*ret += baseIntegerNoise((xx + o)%modulo) * coef;*/                           \
+    ret += baseIntegerNoise((xx + o)&(0xffffffff>>d)) * coef;                      \
+  }                                                                                \
+  return ret;                                                                      \
 }
 
 #define OCTAVE(DIMENSION)                                          \
