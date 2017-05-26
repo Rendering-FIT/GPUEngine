@@ -2,6 +2,8 @@
 #include<geGL/OpenGLUtil.h>
 #include<sstream>
 
+#include<geCore/Dtemplates.h>
+
 using namespace ge::gl;
 
 Texture::Texture(){}
@@ -209,6 +211,7 @@ void Texture::setData2D(
   if(width==0){
     width  = this->getWidth (0);
     height = this->getHeight(0);
+    height = this->getHeight(0);
     for(GLint l=0;l<level;++l){
       width /=2;
       height/=2;
@@ -216,11 +219,13 @@ void Texture::setData2D(
   }
   if(rowLength==0)rowLength=width;
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH,rowLength);
+    
   this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT ,1        );
-  if(target!=0)
+  if(target!=0){
     this->_gl.glTextureSubImage2DEXT(this->_id,target       ,level,xoffset,yoffset,width,height,format,type,data);
-  else
+  }else{
     this->_gl.glTextureSubImage2DEXT(this->_id,this->_target,level,xoffset,yoffset,width,height,format,type,data);
+  }
   this->_gl.glPixelStorei(GL_UNPACK_ALIGNMENT ,4);
   this->_gl.glPixelStorei(GL_UNPACK_ROW_LENGTH,0);
 }
@@ -334,7 +339,7 @@ GLint Texture::_getTexLevelParameter(GLint level,GLenum pname)const{
   GLuint oldId=this->_bindSafe();
   GLenum target = this->getTarget();
   if(target == GL_TEXTURE_CUBE_MAP)target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-  this->_gl.glGetTexLevelParameteriv(this->getTarget(),level,pname,&param);
+  this->_gl.glGetTexLevelParameteriv(target,level,pname,&param);
   this->_gl.glBindTexture(this->getTarget(),oldId);
 #else //USE_DSA
   this->_gl.glGetTextureLevelParameteriv(this->_id,level,pname,&param);
@@ -376,6 +381,7 @@ void Texture::_getTexParameterf(GLfloat*data,GLenum pname)const{
 GLuint Texture::getWidth(GLint level)const{
   assert(this!=nullptr);
   return this->_getTexLevelParameter(level,GL_TEXTURE_WIDTH);
+
 }
 
 /**
