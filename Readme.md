@@ -1,11 +1,12 @@
+# GPUEngine
+[![Build Status](http://pcmilet.fit.vutbr.cz:8080/buildStatus/icon?job=GPUE/GPUEngine-main&style=plastic)](http://pcmilet.fit.vutbr.cz:8080/job/GPUE/job/GPUEngine-main/)
+
 GPUEngine is gpu-optimized library for 3D graphics scene processing and rendering.
 
+## Compile
 
-===============================================================================
-Compile
--------------------------------------------------------------------------------
 
-Prerequisities:
+**Prerequisities**:
 - Windows: Microsoft Visual C++ 2013 (Update 4, previous not tested),
            Microsoft Visual C++ 2015 (Update 3, previous updates: it is known to fail on update 1)
 - Linux: gcc 4.8 (<=4.7 not tested)
@@ -13,7 +14,7 @@ Prerequisities:
 - glm 0.9.7.0 or newer
 - glew (not required since 2016-08)
 
-Optional:
+**Optional**:
 - SDL 2.0.0 or newer
 - Assimp
 - FreeImage
@@ -21,23 +22,21 @@ Optional:
 - OpenSceneGraph
 
 
-===============================================================================
-Tools and External Libraries Info
--------------------------------------------------------------------------------
+## Tools and External Libraries Info
 
-gcc:
+**gcc**:
 - Ubuntu 16.04: version 5.3.1 (section: devel)
 - Ubuntu 15.04: version 4.9.2 (main)
 - Ubuntu 14.04: version 4.8.4 (main)
 - CentOS 7.1: version 4.8.3 (repository: ?)
 
-CMake:
+**CMake**:
 - Ubuntu 16.04: version 3.5.1 (section devel)
 - Ubuntu 15.04: distribution provided version is 3.0.2 (main)
 - Ubuntu 14.04: distribution provided version is 2.8.12.2 (main), even on 14.04.3
 - CentOS 7.1: distribution provided version is 2.8.11 (repository: ?)
 
-GLM:
+**GLM**:
 - import targets are supported since version 0.9.7.0 (released 2015-08-02),
   target name: "glm"
 - GLM_FORCE_RADIANS define was required in version 0.9.5.x (otherwise warning appeared),
@@ -47,7 +46,7 @@ GLM:
 - Ubuntu 14.04: version 0.9.5.1 (main)
 - CentOS: no rpm (seems that no rpm is available for Fedora)
 
-GLEW:
+**GLEW**:
 - version 1.9.0 was seen to generate GL_INVALID_ENUM after glewInit()
 - it is recommended to update to the latest version otherwise you may encounter compilation problems
 - Windows: publicly available precompiled libs works fine since version 1.11.0,
@@ -59,38 +58,38 @@ GLEW:
 - Ubuntu 14.04: version 1.10.0 (main)
 - CentOS 7.1: version 1.9.0 (base repository)
 
-glfw3:
+**glfw3**:
 - import targets: in version 3.1.2, config file is provided but no targets are created
 - Ubuntu 15.04: version 3.0.4 (universe)
 - Ubuntu 14.04: glfw2 version 2.7.2 (universe)
 - CentOS: no rpm (Fedora: seems yes)
 
-SDL2:
+**SDL2**:
 - Ubuntu 16.04: version 2.0.4 (section: universe/libs)
 - Ubuntu 15.04: version 2.0.2 (universe)
 - Ubuntu 14.04: version 2.0.2 (universe)
 - CentOS 7.1: no (only version 1.2.15 is available, Fedora: seems yes)
 
-AntTweakBar:
+**AntTweakBar**:
 - Ubuntu 16.04: no package available
 - Ubuntu 15.04: no package available
 - Ubuntu 14.04: no package available
 - CentOS 7.1: yes (epel repository), version 1.16, Fedora: seems yes
 
-Assimp:
+**Assimp**:
 - import targets: version 3.1.1 has config file but it does not create import target
 - Ubuntu 16.04: version 3.2 (section: universe/libdevel), bugs: include path is wrongly detected to be /usr/lib/include instead of /usr/include
 - Ubuntu 15.04: version 3.0 (universe)
 - Ubuntu 14.04: version 3.0 (universe)
 - CentOS 7.1: yes (epel repository), version 3.1.1, Fedora: seems yes
 
-FreeImage and FreeImagePlus:
+**FreeImage and FreeImagePlus**:
 - Ubuntu 16.04: version 3.17.0 (section: universe/libs)
 - Ubuntu 15.04: version 3.15.4 (universe)
 - Ubuntu 14.04: version 3.15.4 (universe)
 - CentOS 7.1: yes (epel repository), version 3.10.0, Fedora: seems yes
 
-OpenSceneGraph:
+**OpenSceneGraph**:
 - Ubuntu 16.04: version 3.2.1 (universe)
 - Ubuntu 15.04: version 3.2.1 (universe)
 - Ubuntu 14.04: version 3.2.0 (universe)
