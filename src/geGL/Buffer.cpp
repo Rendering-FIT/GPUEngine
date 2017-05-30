@@ -165,7 +165,7 @@ void Buffer::unbindBase(
 }
 
 /**
- * @brief Reallocates buffer
+ * @brief This function reallocates buffer.
  *
  * @param newSize new size
  * @param flags KEEP_ID|KEEP_DATA
