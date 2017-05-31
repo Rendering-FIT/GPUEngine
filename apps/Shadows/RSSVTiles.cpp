@@ -2,6 +2,33 @@
 #include<algorithm>
 #include<geCore/Dtemplates.h>
 
+size_t rssvGetNofLevels(
+    glm::uvec2 const&windowSize    ,
+    size_t     const&threadsPerTile){
+  auto const widthExponent = log2RoundUp(windowSize.x);
+  auto const heightExpornt = log2RoundUp(windowSize.y);
+  return divRoundUp<size_t>(widthExponent + heightExpornt,threadsPerTile);
+}
+
+/*
+std::vector<glm::uvec2>rssvGetLevelDivisibility(
+    glm::uvec2 const&windowSize    ,
+    size_t     const&threadsPerTile){
+  size_t const nofLevels = rssvGetNofLevels(windowSize,threadsPerTile);
+  auto const threadsExponent = log2RoundUp(threadsPerTile);
+  std::vector<glm::uvec2>result;
+  result.resize(nofLevels);
+
+  size_t const threadsExponentPart[2] = {
+                      log2RoundUp<size_t>(threadsExponent,2lu),
+    threadsExponent - log2RoundUp<size_t>(threadsExponent,2lu),
+  };
+
+
+  return result;
+}
+*/
+
 class RSSVTilesSolution{
   public:
     std::vector<glm::uvec2>levels;
