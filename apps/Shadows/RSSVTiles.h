@@ -16,4 +16,30 @@
  */
 void rssvChooseTileSizes(std::vector<glm::uvec2>&tileDivisibility,glm::uvec2 const&windowSize,size_t threadsPerTile);
 
+size_t rssvGetNofLevels(
+    glm::uvec2 const&windowSize    ,
+    size_t     const&threadsPerTile);
 
+std::vector<glm::uvec2>rssvGetLevelDivisibility(
+    glm::uvec2 const&windowSize    ,
+    size_t     const&threadsPerTile);
+
+template<typename T>
+T setMasterBit(){
+  return ~((~0)>>1);
+}
+
+template<typename T>
+T log2RoundUp(T const&v){
+  if(v >= setMasterBit<T>())return 0;
+  T result = 1;
+  while(result < v)result <<= 1;
+  return result;
+}
+
+template<typename T>
+T divRoundUp(T const&dividend,T const&divisor){
+  if(dividend%divisor != 0)
+    return (dividend/divisor)+1;
+  return dividend/divisor;
+}
