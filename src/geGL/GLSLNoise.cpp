@@ -50,6 +50,12 @@ float baseIntegerNoise(in JOIN(UVEC,DIMENSION) x){          \
   for(uint i = 0u; i < DIMENSION##u; ++i)                   \
     last = poly( VECXI(x,DIMENSION,i) + (20024u << i),last);\
   return -1. + float(last)/float(UINT_MAXDIV2);             \
+}                                                           \
+uint baseIntegerNoiseU(in JOIN(UVEC,DIMENSION) x){          \
+  uint last = 10u;                                          \
+  for(uint i = 0u; i < DIMENSION##u; ++i)                   \
+    last = poly( VECXI(x,DIMENSION,i) + (20024u << i),last);\
+  return last;                                              \
 }
 
 
@@ -67,10 +73,11 @@ float smoothNoise(in uint d,in JOIN(UVEC,DIMENSION) x){                         
       VECXI(o,DIMENSION,j) = (i >> j) & 1u;                                        \
       coef *= smoothstep(0.f,1.f,float(1u - ((i >> j)&1u))*(1. - 2.*VECXI(t,DIMENSION,j)) + VECXI(t,DIMENSION,j));\
     }                                                                              \
-    ret += baseIntegerNoise((xx + o)&(0xffffffff>>d)) * coef;                      \
+    ret += baseIntegerNoise((xx + o<<d)&(0xffffffff>>d)) * coef;                   \
   }                                                                                \
   return ret;                                                                      \
 }
+
 
 #define OCTAVE(DIMENSION)                                          \
 float noise(in JOIN(UVEC,DIMENSION) x,in uint M,in uint N,float p){\
@@ -129,6 +136,44 @@ INOISE(1)
 INOISE(2)
 INOISE(3)
 INOISE(4)
+
+float smoothSimplexNoise(in uint controlPointDistanceExponent,in uvec2 x){
+  if(controlPointDistanceExponent == 0u)return baseIntegerNoise(x);
+  uint controlPointDistance = 1u << controlPointDistanceExponent;
+  uvec2 smallestControlPoint = x >> controlPointDistanceExponent;
+  vec2  delta       = vec2(x&(controlPointDistance-1u)) / vec2(controlPointDistance);
+  float result = 0.f;
+  uint simplexId = uint(delta.y > delta.x);
+  // dx <= dy
+  // 0: 1-x
+  // 1: x-y
+  // 3: y
+  // dy > dx
+  // 0: 1-y
+  // 2: y-x
+  // 3: x
+  //
+  //
+  result += baseIntegerNoise((smallestControlPoint+uvec2(0          ,0        )<<controlPointDistanceExponent)&(0xffffffff>>controlPointDistanceExponent)) * (1-delta.y*simplexId-delta.x*(1-simplexId));
+  result += baseIntegerNoise((smallestControlPoint+uvec2(1          ,1        )<<controlPointDistanceExponent)&(0xffffffff>>controlPointDistanceExponent)) * (delta.x*simplexId + delta.y*(1-simplexId));
+  result += baseIntegerNoise((smallestControlPoint+uvec2(1-simplexId,simplexId)<<controlPointDistanceExponent)&(0xffffffff>>controlPointDistanceExponent)) * abs(delta.y-delta.x);//*(-1+2*simplexId);
+  return result;
+}
+
+float simplexNoise(in uvec2 x,in uint M,in uint N,float p){
+  float ret = 0.f;
+  float sum = 0.f;
+  for(uint k = 0u; k <= N; ++k){
+    sum *= p;
+    sum += 1.f;
+    ret *= p;
+    ret += smoothSimplexNoise(M-k,x);
+  }
+  return ret/sum;
+}
+
+
+
 ).";
 }
 
