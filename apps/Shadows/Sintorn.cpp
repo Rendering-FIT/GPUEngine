@@ -4,9 +4,9 @@
 #include<geCore/Dtemplates.h>
 #include<sstream>
 
-#define VEC4_PER_SHADOWFRUSTUM 6
-#define FLOATS_PER_SHADOWFRUSTUM (VEC4_PER_SHADOWFRUSTUM*4)
-#define UINT_BIT_SIZE 32
+size_t const VEC4_PER_SHADOWFRUSTUM   = 6;
+size_t const FLOATS_PER_SHADOWFRUSTUM = VEC4_PER_SHADOWFRUSTUM*4;
+size_t const UINT_BIT_SIZE            = 32;
 
 const size_t DRAWHDB_BINDING_HDBIMAGE = 0;
 const size_t DRAWHDB_BINDING_HDT      = 1;
