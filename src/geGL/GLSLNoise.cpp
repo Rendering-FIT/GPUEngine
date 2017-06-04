@@ -172,6 +172,86 @@ float simplexNoise(in uvec2 x,in uint M,in uint N,float p){
   return ret/sum;
 }
 
+uint umix(uint a,uint b,uint delta,uint dd,uint d){
+  return (a>>d)*(dd-delta) + (b>>d)*delta;
+}
+
+uint smoothNoiseU(in uint d,in uvec2 x){
+  if(d == 0u)return baseIntegerNoiseU(x);
+
+  uint dd = 1u << d;
+  uvec2 xx = x >> d;
+  uvec2  delta       = uvec2(x&(dd-1u));
+  uint result0 = 0u;
+  uint result1 = 0u;
+
+  result0 = umix(
+      baseIntegerNoiseU(xx+uvec2(0,0)<<d),
+      baseIntegerNoiseU(xx+uvec2(1,0)<<d),
+      delta.x,dd,d);
+  result1 = umix(
+      baseIntegerNoiseU(xx+uvec2(0,1)<<d),
+      baseIntegerNoiseU(xx+uvec2(1,1)<<d),
+      delta.x,dd,d);
+
+  return umix(
+      result0,
+      result1,
+      delta.y,dd,d);
+}
+
+float noiseU(in uvec2 x){
+  uint res = 0;
+  uint m = 8;
+
+
+  for(uint k=0;k<m;++k)
+    res += smoothNoiseU(k,x)>>(m-k) ;
+
+  res = 0;
+  res += uint(smoothNoiseU(7,x)>0x7fffffffu)<<31;
+  res += uint(smoothNoiseU(6,x)>0x7fffffffu)<<30;
+  res += uint(smoothNoiseU(5,x)>0x7fffffffu)<<29;
+  res += uint(smoothNoiseU(4,x)>0x7fffffffu)<<28;
+  res += uint(smoothNoiseU(3,x)>0x7fffffffu)<<27;
+  res += uint(smoothNoiseU(2,x)>0x7fffffffu)<<26;
+  res += uint(smoothNoiseU(1,x)>0x7fffffffu)<<25;
+  res += uint(smoothNoiseU(0,x)>0x7fffffffu)<<24;
+
+
+  res = 0;
+  res ^= smoothNoiseU(7,x)>>0;
+  res ^= smoothNoiseU(6,x)>>1;
+  res ^= smoothNoiseU(5,x)>>2;
+  res ^= smoothNoiseU(4,x)>>3;
+  res ^= smoothNoiseU(3,x)>>4;
+  res ^= smoothNoiseU(2,x)>>5;
+  res ^= smoothNoiseU(1,x)>>6;
+  res ^= smoothNoiseU(0,x)>>7;
+
+  res = 
+    umix(
+      umix(
+        umix(
+          umix(
+            umix(
+              umix(
+                smoothNoiseU(7,x),
+                smoothNoiseU(6,x),22,32,5),
+              smoothNoiseU(5,x),18,32,5),
+            smoothNoiseU(4,x),14,32,5),
+          smoothNoiseU(3,x),10,32,5),
+        smoothNoiseU(2,x),6,32,5),
+      smoothNoiseU(1,x),2,32,5);
+
+  //res += smoothNoiseU(2,x)&0x00ff0000;
+  //res += smoothNoiseU(1,x)&0x0000ff00;
+  //res += smoothNoiseU(2,x)&0x000000ff;
+
+  return -1.f + float(res)*(1.f/float(0x7fffffffu));
+
+}
+
 
 
 ).";

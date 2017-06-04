@@ -93,7 +93,7 @@ void main(){
 R".(
 out vec4 fColor;
 void main(){
-  fColor = vec4(simplexNoise(uvec2(gl_FragCoord.xy),8,8,2.f)*.5+.5);
+  fColor = vec4(noiseU(uvec2(gl_FragCoord.xy))*.5+.5);
 }
 ).");
   this->hilbertProgram = std::make_shared<ge::gl::Program>(vp0,fp0);
