@@ -5,29 +5,72 @@
 size_t rssvGetNofLevels(
     glm::uvec2 const&windowSize    ,
     size_t     const&threadsPerTile){
-  auto const widthExponent = log2RoundUp(windowSize.x);
-  auto const heightExpornt = log2RoundUp(windowSize.y);
-  return divRoundUp<size_t>(widthExponent + heightExpornt,threadsPerTile);
+  auto const widthExponent   = log2RoundUp(windowSize.x  );
+  auto const heightExponet   = log2RoundUp(windowSize.y  );
+  auto const threadsExponent = log2RoundUp(threadsPerTile);
+  return divRoundUp<size_t>(widthExponent + heightExponet,threadsExponent);
 }
 
-/*
-std::vector<glm::uvec2>rssvGetLevelDivisibility(
+// N - number of levels
+// N-1 - last level
+//
+// MaxUpperTileDivisibility[n] - maximal divisibility of tile at level n-1
+// LevelSize[n] - number of tiles at level n
+// LevelSize[N-1] - window size
+//
+//
+//
+//
+//
+//
+//
+
+std::vector<glm::uvec2>rssvGetMaxUpperTileDivisibility(
     glm::uvec2 const&windowSize    ,
     size_t     const&threadsPerTile){
   size_t const nofLevels = rssvGetNofLevels(windowSize,threadsPerTile);
   auto const threadsExponent = log2RoundUp(threadsPerTile);
   std::vector<glm::uvec2>result;
-  result.resize(nofLevels);
-
+  result.resize(nofLevels,glm::uvec2(0));
+  //NVIDIA has WARP = 32 threads
+  //8x4 for every even level
+  //4x8 for every odd level
+  //
+  //AMD has WARP = 64 threads
+  //8x8 for every level
   size_t const threadsExponentPart[2] = {
-                      log2RoundUp<size_t>(threadsExponent,2lu),
-    threadsExponent - log2RoundUp<size_t>(threadsExponent,2lu),
+                      divRoundUp(threadsExponent,2lu),
+    threadsExponent - divRoundUp(threadsExponent,2lu),
   };
+  auto const windowExponent = glm::uvec2(
+      log2RoundUp(windowSize.x),
+      log2RoundUp(windowSize.y));
 
+  auto exponentCounter = glm::uvec2(0u);
 
+  bool oddLevel = false;
+  for(auto&x:result){
+    glm::uvec2 currentExponent;
+    currentExponent.x = threadsExponentPart[  oddLevel];
+    currentExponent.y = threadsExponentPart[1-oddLevel];
+
+    for(size_t i=0;i<2;++i)
+      if(exponentCounter[i] + currentExponent[i] > windowExponent[i]){
+        currentExponent[  i] = windowExponent[i] - exponentCounter[i];
+        currentExponent[1-i] = threadsExponent - currentExponent[i];
+        if(exponentCounter[1-i] + currentExponent[1-i] > windowExponent[1-i])
+          currentExponent[1-i] = windowExponent[1-i] - exponentCounter[1-i];
+      }
+
+    x.x = 1 << currentExponent.x;
+    x.y = 1 << currentExponent.y;
+
+    exponentCounter += currentExponent;
+    oddLevel = !oddLevel;
+  }
+  std::reverse(result.begin(),result.end());
   return result;
 }
-*/
 
 class RSSVTilesSolution{
   public:

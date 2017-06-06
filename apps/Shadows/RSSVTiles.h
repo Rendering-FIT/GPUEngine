@@ -20,21 +20,25 @@ size_t rssvGetNofLevels(
     glm::uvec2 const&windowSize    ,
     size_t     const&threadsPerTile);
 
-std::vector<glm::uvec2>rssvGetLevelDivisibility(
+std::vector<glm::uvec2>rssvGetMaxUpperTileDivisibility(
     glm::uvec2 const&windowSize    ,
     size_t     const&threadsPerTile);
 
 template<typename T>
 T setMasterBit(){
-  return ~((~0)>>1);
+  return ~((~static_cast<T>(0))>>1);
 }
 
 template<typename T>
 T log2RoundUp(T const&v){
   if(v >= setMasterBit<T>())return 0;
   T result = 1;
-  while(result < v)result <<= 1;
-  return result;
+  T counter = 0;
+  while(result < v){
+    result <<= 1;
+    counter++;
+  }
+  return counter;
 }
 
 template<typename T>
