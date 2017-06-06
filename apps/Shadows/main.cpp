@@ -32,6 +32,7 @@
 #include"RSSV.h"
 #include"VSSV.h"
 #include"CSSVSOE.h"
+#include"RSSVTiles.h"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -422,7 +423,31 @@ void Application::draw(){
   this->window->swap();
 }
 
+void testRSSVTiler(size_t w,size_t h,size_t warp){
+  auto win  = glm::uvec2(w,h);
+  std::cout << "window: " << win.x << "x" << win.y << "warp: " << warp << std::endl;
+  auto d = rssvGetMaxUpperTileDivisibility(win,warp);
+  for(auto const&x:d)
+    std::cout << x.x << "x" << x.y <<std::endl;
+  auto dd = d;
+  for(size_t i=1;i<dd.size();++i)
+    dd[dd.size()-1-i]*=dd[dd.size()-i];
+  for(auto const&x:dd)
+    std::cout << "pix: " << x.x << "x" << x.y <<std::endl;
+  std::cout << std::endl;
+}
+
 int main(int argc,char*argv[]){
+  testRSSVTiler(1024,768,32);
+  testRSSVTiler(64,2,32);
+  testRSSVTiler(512,512,64);
+  testRSSVTiler(1366,768,64);
+  testRSSVTiler(1920,768,64);
+  testRSSVTiler(1366,768,32);
+  testRSSVTiler(1920,1080,32);
+  testRSSVTiler(1920,1,32);
+  testRSSVTiler(512,512,64);
+  return 0;
   Application app;
   if(!app.init(argc,argv))return EXIT_FAILURE;
   (*app.mainLoop)();
