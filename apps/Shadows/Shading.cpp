@@ -60,6 +60,13 @@ void main(){
   sum+=Ks*Ls*specularFactor;
 
   fColor=vec4(sum,1);//output color
+
+  float yrot = float(mod(degrees(atan(L.x,L.z         ))/360*64,2)>1);
+  float xrot = float(mod(degrees(atan(L.y,length(L.xz)))/360*64,2)>1);
+  float dist = length(position-lightPosition.xyz);
+
+  fColor = vec4(yrot!=xrot);
+  fColor = vec4(mod(dist,2)>1);
 }).";
   this->_program = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,vertSrc),
