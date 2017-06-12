@@ -16,6 +16,7 @@ struct Application{
   size_t                              framesPerEvaluation = 60     ;
   float                               timeAccumulator     = 0.f    ;
   size_t                              elapsedFrames       = 0      ;
+  uint32_t                            method              = 0      ;
   bool init();
   void idle();
   template<bool DOWN>
@@ -35,6 +36,7 @@ void Application::idle(){
 
   this->vao->bind();
   this->hilbertProgram->use();
+  this->hilbertProgram->set1ui("method",this->method);
   ge::gl::glFinish();
   this->timer.reset();
   ge::gl::glDrawArrays(GL_TRIANGLE_STRIP,0,4);
@@ -52,6 +54,8 @@ void Application::idle(){
 
 template<bool DOWN>bool Application::key(SDL_Event const&event){
   if(DOWN){
+    if(event.key.keysym.sym=='x')this->method++;
+    if(this->method>1)this->method=0;
     if(event.key.keysym.sym=='a')this->hilbertLevel++;
     if(event.key.keysym.sym=='d')this->hilbertLevel--;
     uint32_t maxLevel = 10;
@@ -91,9 +95,13 @@ void main(){
       "#version 450 core\n",
       ge::gl::getNoiseSource(),
 R".(
+uniform uint method;
 out vec4 fColor;
 void main(){
-  fColor = vec4(noiseU(uvec2(gl_FragCoord.xy))*.5+.5);
+  if(method == 0)
+    fColor = vec4(noiseU(uvec2(gl_FragCoord.xy))*.5+.5);
+  if(method == 1)
+    fColor = vec4(noise(uvec2(gl_FragCoord.xy),8,8,2.f)*.5+.5);
 }
 ).");
   this->hilbertProgram = std::make_shared<ge::gl::Program>(vp0,fp0);

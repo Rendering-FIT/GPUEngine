@@ -160,6 +160,22 @@ float smoothSimplexNoise(in uint controlPointDistanceExponent,in uvec2 x){
   return result;
 }
 
+//float smoothSimplexNoise(in uint controlPointDistanceExponent,in uvec3 x){
+//  if(controlPointDistanceExponent == 0u)return baseIntegerNoise(x);
+//  uint controlPointDistance = 1u << controlPointDistanceExponent;
+//  uvec3 smallestControlPoint = x >> controlPointDistanceExponent;
+//  vec3  delta       = vec3(x&(controlPointDistance-1u)) / vec3(controlPointDistance);
+//  float result = 0.f;
+//  uint simplexId = uint(delta.y > delta.x);
+//  // dx <= dy
+//  // dx <= dz
+//  // dy <= dz
+//  //
+//  //
+//  //
+//
+//}
+
 float simplexNoise(in uvec2 x,in uint M,in uint N,float p){
   float ret = 0.f;
   float sum = 0.f;
@@ -209,40 +225,43 @@ float noiseU(in uvec2 x){
     res += smoothNoiseU(k,x)>>(m-k) ;
 
   res = 0;
-  res += uint(smoothNoiseU(7,x)>0x7fffffffu)<<31;
-  res += uint(smoothNoiseU(6,x)>0x7fffffffu)<<30;
-  res += uint(smoothNoiseU(5,x)>0x7fffffffu)<<29;
-  res += uint(smoothNoiseU(4,x)>0x7fffffffu)<<28;
-  res += uint(smoothNoiseU(3,x)>0x7fffffffu)<<27;
-  res += uint(smoothNoiseU(2,x)>0x7fffffffu)<<26;
-  res += uint(smoothNoiseU(1,x)>0x7fffffffu)<<25;
-  res += uint(smoothNoiseU(0,x)>0x7fffffffu)<<24;
+  res += uint((smoothNoiseU(7,x)&0x80000000)>0)<<31;
+  res += uint((smoothNoiseU(6,x)&0xB0000000)>0)<<30;
+  res += uint((smoothNoiseU(5,x)&0xE0000000)>0)<<29;
+  res += uint((smoothNoiseU(4,x)&0xF0000000)>0)<<28;
+  res += uint((smoothNoiseU(3,x)&0xF8000000)>0)<<27;
+  res += uint((smoothNoiseU(2,x)&0xFB000000)>0)<<26;
+  res += uint((smoothNoiseU(1,x)&0xFE000000)>0)<<25;
+  res += uint((smoothNoiseU(0,x)&0xFF000000)>0)<<24;
 
+  res = (smoothNoiseU(8,x)>>1)+(smoothNoiseU(7,x)>>2)+(smoothNoiseU(6,x)>>3)+(smoothNoiseU(5,x)>>4)+(smoothNoiseU(4,x)>>5)+(smoothNoiseU(3,x)>>6)+(smoothNoiseU(2,x)>>7)+(smoothNoiseU(1,x)>>7);
+  res = smoothNoiseU(6,x);
+  //return noise(x,6,0,2.f);
 
-  res = 0;
-  res ^= smoothNoiseU(7,x)>>0;
-  res ^= smoothNoiseU(6,x)>>1;
-  res ^= smoothNoiseU(5,x)>>2;
-  res ^= smoothNoiseU(4,x)>>3;
-  res ^= smoothNoiseU(3,x)>>4;
-  res ^= smoothNoiseU(2,x)>>5;
-  res ^= smoothNoiseU(1,x)>>6;
-  res ^= smoothNoiseU(0,x)>>7;
+  //res = 0;
+  //res ^= smoothNoiseU(7,x)>>0;
+  //res ^= smoothNoiseU(6,x)>>1;
+  //res ^= smoothNoiseU(5,x)>>2;
+  //res ^= smoothNoiseU(4,x)>>3;
+  //res ^= smoothNoiseU(3,x)>>4;
+  //res ^= smoothNoiseU(2,x)>>5;
+  //res ^= smoothNoiseU(1,x)>>6;
+  //res ^= smoothNoiseU(0,x)>>7;
 
-  res = 
-    umix(
-      umix(
-        umix(
-          umix(
-            umix(
-              umix(
-                smoothNoiseU(7,x),
-                smoothNoiseU(6,x),22,32,5),
-              smoothNoiseU(5,x),18,32,5),
-            smoothNoiseU(4,x),14,32,5),
-          smoothNoiseU(3,x),10,32,5),
-        smoothNoiseU(2,x),6,32,5),
-      smoothNoiseU(1,x),2,32,5);
+  //res = 
+  //  umix(
+  //    umix(
+  //      umix(
+  //        umix(
+  //          umix(
+  //            umix(
+  //              smoothNoiseU(7,x),
+  //              smoothNoiseU(6,x),22,32,5),
+  //            smoothNoiseU(5,x),18,32,5),
+  //          smoothNoiseU(4,x),14,32,5),
+  //        smoothNoiseU(3,x),10,32,5),
+  //      smoothNoiseU(2,x),6,32,5),
+  //    smoothNoiseU(1,x),2,32,5);
 
   //res += smoothNoiseU(2,x)&0x00ff0000;
   //res += smoothNoiseU(1,x)&0x0000ff00;
