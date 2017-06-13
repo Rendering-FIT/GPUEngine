@@ -111,11 +111,12 @@ glm::vec4  vector2vec4 (std::vector<double  >const&v){assert(v.size()>=4);return
 void Application::parseArguments(int argc,char*argv[]){
   assert(this!=nullptr);
   auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
-  this->modelName  = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
+  //this->modelName  = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
+  this->modelName  = arg->gets("--model","/media/windata/ft/prace/models/2tri/2tri.3ds","model file name");
 
   this->windowSize = vector2uvec2(arg->getu32v("--window-size",{512,512},"window size" ));
 
-  this->lightPosition       = vector2vec4(arg->getf32v("--light",{100.f,100.f,100.f,1.f},"light position"));
+  this->lightPosition       = vector2vec4(arg->getf32v("--light",{0.f,1000.f,0.f,1.f},"light position"));
 
   this->cameraFovy          = arg->getf32("--camera-fovy"       ,1.5707963267948966f                   ,"camera field of view in y direction");
   this->cameraNear          = arg->getf32("--camera-near"       ,0.1f                                  ,"camera near plane position"         );
@@ -123,7 +124,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->sensitivity         = arg->getf32("--camera-sensitivity",0.01f                                 ,"camera sensitivity"                 );
   this->orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
   this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
-  this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
+  this->cameraType          = arg->gets  ("--camera-type"       ,"free"                                ,"orbit/free camera type"             );
 
   this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
   this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
