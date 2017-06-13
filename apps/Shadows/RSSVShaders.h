@@ -698,7 +698,7 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
   vec3 sidePixelPlaneNormal = cross(BB  - AA ,PPB - PPA);
   vec4 pixelPlane           = vec4(pixelPlaneNormal    ,-dot(PA.xyz,pixelPlaneNormal    )/PA.w);
   vec4 sidePlane            = vec4(sidePlaneNormal     ,-dot(A .xyz,sidePlaneNormal     )/A .w);
-  vec4 sidePixelPlane       = vec4(sidePixelPlaneNormal,-dot(A .xyz,sidePixelPlaneNormal),A .w);
+  vec4 sidePixelPlane       = vec4(sidePixelPlaneNormal,-dot(A .xyz,sidePixelPlaneNormal)/A .w);
 
   float spa = dot(sidePlane,PA);
   float spb = dot(sidePlane,PB);
@@ -732,7 +732,6 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
   if(spa > 0 && spb <= 0)return multiplicity;
   return -multiplicity;
 
-  //TODO
 }
 
 #define TILE_SIZE_IN_CLIP_SPACE0 vec2(2.f/float(8<<(3*0)))
@@ -740,6 +739,64 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
 #define TILE_SIZE_IN_CLIP_SPACE1 vec2(2.f/float(8<<(3*2)))
 #define TILE_SIZE_IN_CLIP_SPACE2 vec2(2.f/float(8<<(3*3)))
 #define TILE_SIZE_IN_CLIP_SPACE3 vec2(2.f/float(8<<(3*4)))
+
+#define TILE_BOTTOM_LEFT_TO_RIGHT 0u
+#define TILE_BOTTOM_LEFT_TO_TOP   1u
+#define TILE_TOP_RIGHT_TO_LEFT    2u
+#define TILE_TOP_RIGHT_TO_BOTTOM  3u
+
+#define TILE_TRANSPOSE(tile) (tile^0xfffffffeu) // inverse lsb
+#define TILE_INVERSE(tile)   (tile^0xfffffffdu) // inverse second lsb
+
+#define TILE_TRANSPOSE_CONDITION(tile,condition)         (tile ^ (~(uint(condition)<<0)) )
+#define TILE_INVERSE_CONDITION(tile,condition)           (tile ^ (~(uint(condition)<<1)) )
+#define TILE_TRANSPOSE_INVERSE_CONDITION(tile,condition) (tile ^ (~(uint(condition)* 3)) )
+
+#define IS_ODD(x)  bool(x&1)
+#define IS_EVEN(x) (!IS_ODD(x))
+
+#define IS_LESS_THAN_SIZE_MINUS_ONE(x,size) (x<(size-1))
+
+#define IS_ON_OPPOSITE_LINE(id,size,orientation)\
+  (id[orientation&1] == ((size[orientation&1]-1)*(1-(orientation>>1)&1))
+
+#define IS_ON_EVEN_LINE(id,size,orientation)\
+  IS_EVEN((id[tileOrientation&1] + ((tileOrientation>>1)&1) + tileOrientation>>1))
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation == TILE_BOTTOM_LEFT_TO_RIGHT ? ( IS_LESS_THAN_SIZE_MINUS_ONE(        id[1]  ,size[1]) ? TILE_INVERSE(TILE_BOTTOM_LEFT_TO_TOP  ,IS_EVEN(        id[0]  )) : TILE_BOTTOM_LEFT_TO_RIGHT ) : (\
+  tileOrientation == TILE_BOTTOM_LEFT_TO_TOP   ? ( IS_LESS_THAN_SIZE_MINUS_ONE(        id[0]  ,size[0]) ? TILE_INVERSE(TILE_BOTTOM_LEFT_TO_RIGHT,IS_EVEN(        id[1]  )) : TILE_BOTTOM_LEFT_TO_TOP   ) : (\
+  tileOrientation == TILE_TOP_RIGHT_TO_LEFT    ? ( IS_LESS_THAN_SIZE_MINUS_ONE(size[1]-id[1]-1,size[1]) ? TILE_INVERSE(TILE_TOP_RIGHT_TO_BOTTOM ,IS_EVEN(size[0]-id[0]-1)) : TILE_TOP_RIGHT_TO_LEFT    ) : (\
+                                                 ( IS_LESS_THAN_SIZE_MINUS_ONE(size[0]-id[0]-1,size[0]) ? TILE_INVERSE(TILE_TOP_RIGHT_TO_LEFT   ,IS_EVEN(size[1]-id[1]-1)) : TILE_TOP_RIGHT_TO_BOTTOM  )    \
+  ))))
+*/
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation == 0 ? (         id[1]  <size[1]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(        id[0]  )) : tileOrientation ) : (\
+  tileOrientation == 1 ? (         id[0]  <size[0]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(        id[1]  )) : tileOrientation ) : (\
+  tileOrientation == 2 ? ( size[1]-id[1]-1<size[1]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[0]-id[0]-1)) : tileOrientation ) : (\
+                         ( size[0]-id[0]-1<size[0]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[1]-id[1]-1)) : tileOrientation )    \
+  ))))
+*/
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation==0?(                             id[1-(tileOrientation&1)]  <size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==1?(                             id[1-(tileOrientation&1)]  <size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==2?( size[1-(tileOrientation&1)]-id[1-(tileOrientation&1)]-1<size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
+                     ( size[1-(tileOrientation&1)]-id[1-(tileOrientation&1)]-1<size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
+  ))))
+*/
+
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation==0?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==1?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==2?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
+                     (IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
+  ))))
+shared vec4 viewSamples[WAVEFRONT_SIZE];
 
 #define TEST_SILHOUETTE_LAST(LEVEL)                                                           \
   void TestSilhouette ## LEVEL(                                                               \
@@ -751,6 +808,9 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
     vec4  sampleCoordInClipSpace = vec4(                                                      \
         globalClipCoord+JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*.5,                               \
         texelFetch(HDT[LEVEL],ivec2(globalCoord),0).x,1);                                     \
+    viewSamples[INVOCATION_ID_IN_WAVEFRONT] = sampleCoordInClipSpace;                         \
+    if(INVOCATION_ID_IN_WAVEFRONT == WAVEFRONT_SIZE-1)return;                                 \
+    vec4 nextSample = viewSamples[INVOCATION_ID_IN_WAVEFRONT+1];                              \
     bool inside       = false;                                                                \
     int  multiplicity = 0    ;                                                                \
     /*TODO*/                                                                                  \
