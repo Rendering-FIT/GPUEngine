@@ -347,11 +347,6 @@ const std::string rasterizeTextureCompSrc = R".(
 
 //DO NOT EDIT ANYTHING BELOW THIS COMMENT
 
-#ifdef USE_BALLOT
-  #extension GL_AMD_gcn_shader       : enable
-  #extension GL_AMD_gpu_shader_int64 : enable
-#endif
-
 #define JOIN__(x,y) x##y
 #define JOIN_(x,y) JOIN__(x,y)
 #define JOIN(x,y) JOIN_(x,y)
@@ -399,6 +394,25 @@ const std::string rasterizeTextureCompSrc = R".(
   #error WAVEFRONT_SIZE is incommensurable by\
   UINT_BIT_SIZE
 #endif
+
+#ifdef USE_BALLOT
+  #if WAVEFRONT_SIZE == 64
+    #extension GL_AMD_gcn_shader       : enable
+    #extension GL_AMD_gpu_shader_int64 : enable
+    #define BALLOT(x) ballotAMD(x)
+    #define TRANSFORM_WAVEFRONT_RESULT_TO_UINTS(result) unpackUint2x32(result)
+    #define UINT_RESULT_ARRAY uvec2
+    #define GET_UINT_FROM_UINT_ARRAY(array,i) array[i]
+  #else
+    #extension GL_NV_shader_thread_group : enable
+    #define BALLOT(x) ballotThreadNV(x)
+    #define TRANSFORM_WAVEFRONT_RESULT_TO_UINTS(result) result
+    #define UINT_RESULT_ARRAY uint
+    #define GET_UINT_FROM_UINT_ARRAY(array,i) array
+  #endif
+#endif
+
+
 
 #define RESULT_LENGTH_IN_UINT         (WAVEFRONT_SIZE/UINT_BIT_SIZE)
 
@@ -564,14 +578,15 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
         if(SampleInsideEdge(tr,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF+i].xyz))Result=TRIVIAL_REJECT;\
       }\
     }\
-    uint64_t AcceptBallot     = ballotAMD(Result==TRIVIAL_ACCEPT);\
-    uint64_t IntersectsBallot = ballotAMD(Result==INTERSECTS    );\
+    UINT_RESULT_ARRAY AcceptBallot     = TRANSFORM_WAVEFRONT_RESULT_TO_UINTS(BALLOT(Result==TRIVIAL_ACCEPT));\
+    UINT_RESULT_ARRAY IntersectsBallot = TRANSFORM_WAVEFRONT_RESULT_TO_UINTS(BALLOT(Result==INTERSECTS    ));\
     if(INVOCATION_ID_IN_WAVEFRONT<RESULT_LENGTH_IN_UINT){\
       ivec2 hstGlobalCoord=ivec2(coord.x*RESULT_LENGTH_IN_UINT+INVOCATION_ID_IN_WAVEFRONT,coord.y);\
-      imageAtomicOr(HST[LEVEL],hstGlobalCoord,uint((AcceptBallot>>(UINT_BIT_SIZE*INVOCATION_ID_IN_WAVEFRONT))&0xffffffffu));\
+      imageAtomicOr(HST[LEVEL],hstGlobalCoord,GET_UINT_FROM_UINT_ARRAY(AcceptBallot,INVOCATION_ID_IN_WAVEFRONT));\
     }\
+    \
     for(int i=0;i<RESULT_LENGTH_IN_UINT;++i){\
-      uint UnresolvedIntersects=uint((IntersectsBallot>>(UINT_BIT_SIZE*i))&0xffffffffu);\
+      uint UnresolvedIntersects = GET_UINT_FROM_UINT_ARRAY(IntersectsBallot,i);\
       while(UnresolvedIntersects!=0u){\
         int   CurrentBit         = findMSB(UnresolvedIntersects);\
         int   CurrentTile        = CurrentBit+i*UINT_BIT_SIZE;\
@@ -636,35 +651,39 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
   }
 #endif//USE_BALLOT
 
-TEST_SHADOW_FRUSTUM_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
-
-#if NUMBER_OF_LEVELS > 7
-TEST_SHADOW_FRUSTUM(6,7)
-#endif
-
-#if NUMBER_OF_LEVELS > 6
-TEST_SHADOW_FRUSTUM(5,6)
-#endif
-
-#if NUMBER_OF_LEVELS > 5
-TEST_SHADOW_FRUSTUM(4,5)
-#endif
-
-#if NUMBER_OF_LEVELS > 4
-TEST_SHADOW_FRUSTUM(3,4)
-#endif
-
-#if NUMBER_OF_LEVELS > 3
+//TEST_SHADOW_FRUSTUM_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
+TEST_SHADOW_FRUSTUM_LAST(3)
 TEST_SHADOW_FRUSTUM(2,3)
-#endif
-
-#if NUMBER_OF_LEVELS > 2
 TEST_SHADOW_FRUSTUM(1,2)
-#endif
-
-#if NUMBER_OF_LEVELS > 1
 TEST_SHADOW_FRUSTUM(0,1)
-#endif
+
+//#if NUMBER_OF_LEVELS > 7
+//TEST_SHADOW_FRUSTUM(6,7)
+//#endif
+//
+//#if NUMBER_OF_LEVELS > 6
+//TEST_SHADOW_FRUSTUM(5,6)
+//#endif
+//
+//#if NUMBER_OF_LEVELS > 5
+//TEST_SHADOW_FRUSTUM(4,5)
+//#endif
+//
+//#if NUMBER_OF_LEVELS > 4
+//TEST_SHADOW_FRUSTUM(3,4)
+//#endif
+//
+//#if NUMBER_OF_LEVELS > 3
+//TEST_SHADOW_FRUSTUM(2,3)
+//#endif
+//
+//#if NUMBER_OF_LEVELS > 2
+//TEST_SHADOW_FRUSTUM(1,2)
+//#endif
+//
+//#if NUMBER_OF_LEVELS > 1
+//TEST_SHADOW_FRUSTUM(0,1)
+//#endif
 
 
 void main(){
