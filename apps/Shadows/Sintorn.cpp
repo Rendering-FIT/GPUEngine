@@ -3,6 +3,7 @@
 #include"FastAdjacency.h"
 #include<geCore/Dtemplates.h>
 #include<sstream>
+#include<iomanip>
 
 size_t const VEC4_PER_SHADOWFRUSTUM   = 6;
 size_t const FLOATS_PER_SHADOWFRUSTUM = VEC4_PER_SHADOWFRUSTUM*4;
@@ -165,8 +166,8 @@ Sintorn::Sintorn(
       std::make_shared<ge::gl::Shader>(
         GL_COMPUTE_SHADER,
         "#version 450 core\n",
-        ge::gl::Shader::define("BIAS"          ,float   (this->_params.bias  )),
-        ge::gl::Shader::define("WAVEFRONT_SIZE",uint32_t(this->_wavefrontSize)),
+        ge::gl::Shader::define("BIAS"          ,float   (this->_params.bias           )),
+        ge::gl::Shader::define("WAVEFRONT_SIZE",uint32_t(this->_params.shadowFrustaWGS)),
         shadowFrustumCompSrc));
 
   RASTERIZETEXTURE_BINDING_HDT=RASTERIZETEXTURE_BINDING_HST+this->_nofLevels;
@@ -342,6 +343,24 @@ void Sintorn::ComputeShadowFrusta(glm::vec4 const&lightPosition,glm::mat4 mvp){
     ->bindBuffer  ("shadowFrusta"                       ,this->_shadowFrusta                              )
     ->dispatch    (ge::core::getDispatchSize(this->_nofTriangles,this->_params.shadowFrustaWGS));
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+  //auto ptr = static_cast<float*>(this->_shadowFrusta->map());
+  //for(size_t j=0;j<this->_nofTriangles;++j){
+  //  for(size_t i=0;i<FLOATS_PER_SHADOWFRUSTUM;++i)
+  //    std::cout << std::setprecision(10) <<  ptr[j*FLOATS_PER_SHADOWFRUSTUM+i]<< std::endl;
+  //  std::cout << std::endl;
+  //}
+  //this->_shadowFrusta->unmap();
+
+  //ptr = static_cast<float*>(this->_triangles->map());
+  //for(size_t j=0;j<this->_nofTriangles;++j){
+  //  for(size_t i=0;i<9;++i)
+  //    std::cout << std::setprecision(10) <<  ptr[j*9+i]<< std::endl;
+  //  std::cout << std::endl;
+  //}
+  //this->_triangles->unmap();
+  //exit(0);
+
 }
 
 void Sintorn::RasterizeTexture(){
@@ -371,6 +390,7 @@ void Sintorn::RasterizeTexture(){
 
   this->_finalStencilMask->bindImage(GLuint(RASTERIZETEXTURE_BINDING_FINALSTENCILMASK));
 
+  
   size_t maxSize = 65536/2;
   size_t workgroups = ge::core::getDispatchSize(this->_nofTriangles,this->_params.shadowFrustaPerWorkGroup);
   size_t offset = 0;
@@ -383,7 +403,6 @@ void Sintorn::RasterizeTexture(){
     this->RasterizeTextureProgram->set1ui("triangleOffset",(uint32_t)offset);
     glDispatchCompute(GLuint(workgroups-offset),1,1);
   }
-
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }

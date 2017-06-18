@@ -545,7 +545,7 @@ uint TrivialRejectAcceptAABB(vec3 TileCorner,vec3 TileSize){
   uvec2(INVOCATION_ID_IN_WAVEFRONT % JOIN(TILE_DIVISIBILITY,LEVEL).x , INVOCATION_ID_IN_WAVEFRONT/JOIN(TILE_DIVISIBILITY,LEVEL).x)
 
 #define TEST_SHADOW_FRUSTUM_LAST(LEVEL)\
-void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
+void JOIN(TestShadowFrustumHDB,LEVEL)(uvec2 coord,vec2 clipCoord){\
   uvec2 localCoord             = getLocalCoords(LEVEL);\
   uvec2 globalCoord            = coord * JOIN(TILE_DIVISIBILITY,LEVEL) + localCoord;\
   vec2  globalClipCoord        = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL) * localCoord;\
@@ -562,7 +562,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
 
 #ifdef USE_BALLOT
   #define TEST_SHADOW_FRUSTUM(LEVEL,NEXT_LEVEL)\
-  void TestShadowFrustumHDB##LEVEL(\
+  void JOIN(TestShadowFrustumHDB,LEVEL)(\
       uvec2    coord,\
       vec2 ClipCoord){\
     uvec2 localCoord      = getLocalCoords(LEVEL);\
@@ -593,7 +593,7 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
         uvec2 CurrentLocalCoord  = uvec2(CurrentTile%TILE_DIVISIBILITY ## LEVEL.x,CurrentTile/TILE_DIVISIBILITY ## LEVEL.x);\
         uvec2 CurrentGlobalCoord = coord * TILE_DIVISIBILITY ## LEVEL + CurrentLocalCoord;\
         vec2  CurrentClipCoord   = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL*CurrentLocalCoord;\
-        TestShadowFrustumHDB ## NEXT_LEVEL (CurrentGlobalCoord,CurrentClipCoord);\
+        JOIN(TestShadowFrustumHDB,NEXT_LEVEL) (CurrentGlobalCoord,CurrentClipCoord);\
         UnresolvedIntersects    &= ~(1u<<CurrentBit);\
       }\
     }\
@@ -603,8 +603,8 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
   shared uint ResAcc2 [SHADOWFRUSTUMS_PER_WORKGROUP][WAVEFRONT_SIZE];
   shared uint ResInt2 [SHADOWFRUSTUMS_PER_WORKGROUP][WAVEFRONT_SIZE];
   #define TEST_SHADOW_FRUSTUM(LEVEL,NEXT_LEVEL)\
-  shared uint ResIntersects  ## LEVEL [SHADOWFRUSTUMS_PER_WORKGROUP][RESULT_LENGTH_IN_UINT];\
-  void TestShadowFrustumHDB ## LEVEL(\
+  shared uint JOIN(ResIntersects,LEVEL) [SHADOWFRUSTUMS_PER_WORKGROUP][RESULT_LENGTH_IN_UINT];\
+  void JOIN(TestShadowFrustumHDB,LEVEL)(\
       uvec2    Coord,\
       vec2 ClipCoord){\
     if(INVOCATION_ID_IN_WAVEFRONT<RESULT_LENGTH_IN_UINT)\
@@ -644,46 +644,46 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
         uvec2 CurrentLocalCoord  = uvec2(CurrentTile%TILE_DIVISIBILITY ## LEVEL.x,CurrentTile/TILE_DIVISIBILITY ## LEVEL.x);\
         uvec2 CurrentGlobalCoord = Coord*TILE_DIVISIBILITY ## LEVEL+CurrentLocalCoord;\
         vec2  CurrentClipCoord   = ClipCoord+TILE_SIZE_IN_CLIP_SPACE ## LEVEL*CurrentLocalCoord;\
-        TestShadowFrustumHDB ## NEXT_LEVEL (CurrentGlobalCoord,CurrentClipCoord);\
+        JOIN(TestShadowFrustumHDB,NEXT_LEVEL) (CurrentGlobalCoord,CurrentClipCoord);\
         UnresolvedIntersects    &= ~(1u<<CurrentBit);\
       }\
     }\
   }
 #endif//USE_BALLOT
 
-//TEST_SHADOW_FRUSTUM_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
-TEST_SHADOW_FRUSTUM_LAST(3)
-TEST_SHADOW_FRUSTUM(2,3)
-TEST_SHADOW_FRUSTUM(1,2)
-TEST_SHADOW_FRUSTUM(0,1)
-
-//#if NUMBER_OF_LEVELS > 7
-//TEST_SHADOW_FRUSTUM(6,7)
-//#endif
-//
-//#if NUMBER_OF_LEVELS > 6
-//TEST_SHADOW_FRUSTUM(5,6)
-//#endif
-//
-//#if NUMBER_OF_LEVELS > 5
-//TEST_SHADOW_FRUSTUM(4,5)
-//#endif
-//
-//#if NUMBER_OF_LEVELS > 4
-//TEST_SHADOW_FRUSTUM(3,4)
-//#endif
-//
-//#if NUMBER_OF_LEVELS > 3
+TEST_SHADOW_FRUSTUM_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
+//TEST_SHADOW_FRUSTUM_LAST(3)
 //TEST_SHADOW_FRUSTUM(2,3)
-//#endif
-//
-//#if NUMBER_OF_LEVELS > 2
 //TEST_SHADOW_FRUSTUM(1,2)
-//#endif
-//
-//#if NUMBER_OF_LEVELS > 1
 //TEST_SHADOW_FRUSTUM(0,1)
-//#endif
+
+#if NUMBER_OF_LEVELS > 7
+TEST_SHADOW_FRUSTUM(6,7)
+#endif
+
+#if NUMBER_OF_LEVELS > 6
+TEST_SHADOW_FRUSTUM(5,6)
+#endif
+
+#if NUMBER_OF_LEVELS > 5
+TEST_SHADOW_FRUSTUM(4,5)
+#endif
+
+#if NUMBER_OF_LEVELS > 4
+TEST_SHADOW_FRUSTUM(3,4)
+#endif
+
+#if NUMBER_OF_LEVELS > 3
+TEST_SHADOW_FRUSTUM(2,3)
+#endif
+
+#if NUMBER_OF_LEVELS > 2
+TEST_SHADOW_FRUSTUM(1,2)
+#endif
+
+#if NUMBER_OF_LEVELS > 1
+TEST_SHADOW_FRUSTUM(0,1)
+#endif
 
 
 void main(){
