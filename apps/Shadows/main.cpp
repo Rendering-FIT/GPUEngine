@@ -183,9 +183,11 @@ void Application::initWavefrontSize(){
   if(this->wavefrontSize==0){
     std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
     std::string vendor   = std::string((char*)ge::gl::glGetString(GL_VENDOR  ));
-    if     (vendor.find("AMD")!=std::string::npos)
+    std::cout << renderer << std::endl;
+    std::cout << vendor   << std::endl;
+    if     (vendor.find("AMD"   ) != std::string::npos || renderer.find("AMD"   ) != std::string::npos)
       this->wavefrontSize = 64;
-    else if(vendor.find("NVIDIA")!=std::string::npos)
+    else if(vendor.find("NVIDIA") != std::string::npos || renderer.find("NVIDIA") != std::string::npos)
       this->wavefrontSize = 32;
     else{
       std::cerr<<"WARNING: renderer is not NVIDIA or AMD, setting wavefrontSize to 32"<<std::endl;
