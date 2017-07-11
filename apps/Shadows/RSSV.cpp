@@ -138,17 +138,15 @@ RSSV::RSSV(
   cmd.nofWorkGroupsZ = 1;
   this->_dispatchIndirectBuffer=std::make_shared<ge::gl::Buffer>(sizeof(DispatchIndirectCommand),&cmd);
 
-  /*
   this->_rasterizeProgram = makeComputeProgram(
-      defineComputeShaderHeader(glm::uvec2(WAVEFRONT_SIZE,this->_silhouettesPerWorkgroup),WAVEFRONT_SIZE),
+      defineComputeShaderHeader(glm::uvec2(WAVEFRONT_SIZE,this->_params.silhouettesPerWorkgroup),WAVEFRONT_SIZE),
       ge::gl::Shader::define("NUMBER_OF_LEVELS"             ,(int)this->_nofLevels               ),
       ge::gl::Shader::define("NUMBER_OF_LEVELS_MINUS_ONE"   ,(int)this->_nofLevels-1             ),
-      ge::gl::Shader::define("SILHOUETTES_PER_WORKGROUP"    ,(int)this->_silhouettesPerWorkgroup ),
+      ge::gl::Shader::define("SILHOUETTES_PER_WORKGROUP"    ,(int)this->_params.silhouettesPerWorkgroup ),
       ge::gl::Shader::define("RASTERIZE_BINDING_SSM"        ,(int)RASTERIZE_BINDING_SSM          ),
       ge::gl::Shader::define("RASTERIZE_BINDING_HDT"        ,(int)RASTERIZE_BINDING_HDT          ),
       ge::gl::Shader::define("RASTERIZE_BINDING_SILHOUETTES",(int)RASTERIZE_BINDING_SILHOUETTES  ),
       _rasterizeSrc);
-  */
 
 
 }
