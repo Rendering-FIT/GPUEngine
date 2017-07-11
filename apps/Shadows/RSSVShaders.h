@@ -216,7 +216,7 @@ void main(){
 
 
 const std::string _rasterizeSrc = R".(
-
+#line 219
 #extension GL_AMD_gcn_shader       : enable
 #extension GL_AMD_gpu_shader_int64 : enable
 
@@ -260,12 +260,9 @@ const std::string _rasterizeSrc = R".(
 #define RASTERIZE_BINDING_SILHOUETTES 0
 #endif//RASTERIZE_BINDING_SILHOUETTES
 
-#define  WORKGROUP_ID_IN_DISPATCH  (uint(gl_WorkGroupID.x + triangleOffset))
-#define INVOCATION_ID_IN_WAVEFRONT (uint(gl_LocalInvocationID.x))
-#define SILHOUETTE_ID_IN_WORKGROUP (uint(gl_LocalInvocationID.y))
-#define SILHOUETTE_ID_IN_DISPATCH  (WORKGROUP_ID_IN_DISPATCH*SILHOUETTES_PER_WORKGROUP + SILHOUETTE_ID_IN_WORKGROUP)
-
-
+#define JOIN__(x,y) x##y
+#define JOIN_(x,y) JOIN__(x,y)
+#define JOIN(x,y) JOIN_(x,y)
 
 #define NOF_COMPONENTS_OF_VEC4             4
 #define NOF_COMPONENTS_OF_VEC3             3
@@ -281,19 +278,27 @@ const std::string _rasterizeSrc = R".(
 layout(local_size_x=WORKGROUP_SIZE_X,local_size_y=WORKGROUP_SIZE_Y,local_size_z=WORKGROUP_SIZE_Z)in;
 
 layout(       binding=RASTERIZE_BINDING_HDT        )uniform sampler2D HDT[NUMBER_OF_LEVELS];
-layout(r32i  ,binding=RASTERIZE_BINDING_SSM        )uniform iimage2D screenSpaceMultiplicity;
+layout(r32i  ,binding=RASTERIZE_BINDING_SSM        )uniform iimage2D multiplicityTexture;
 layout(std430,binding=RASTERIZE_BINDING_SILHOUETTES)buffer Silhouettes{float silhouettes[];};
 
-uniform uint nofSilhouettes = 0;
-uniform vec4 lightPosition = vec4(100,100,100,1);
-uniform mat4 mvp = mat4(1);
+uniform uint nofSilhouettes   = 0                  ;
+uniform vec4 lightPosition    = vec4(100,100,100,1);
+uniform mat4 mvp              = mat4(1)            ;
+uniform uint silhouetteOffset = 0                  ;
 
 shared vec4 sharedSilhouettePoints        [SILHOUETTES_PER_WORKGROUP][POINTS_PER_SILHOUETTE];
 shared int  sharedSilhouetteMultiplicities[SILHOUETTES_PER_WORKGROUP]                       ;
 
-shared vec4 sharedSilhouettes   [SILHOUETTES_PER_WORKGROUP][VEC4_PER_SHADOWFRUSTUM];
+shared vec4 sharedSilhouettes   [SILHOUETTES_PER_WORKGROUP][POINTS_PER_SILHOUETTE];
 shared int  sharedMultiplicities[SILHOUETTES_PER_WORKGROUP];
 shared vec4 sharedSidePlanes    [SILHOUETTES_PER_WORKGROUP];
+
+
+#define  WORKGROUP_ID_IN_DISPATCH  (uint(gl_WorkGroupID.x + silhouetteOffset))
+#define INVOCATION_ID_IN_WAVEFRONT (uint(gl_LocalInvocationID.x))
+#define SILHOUETTE_ID_IN_WORKGROUP (uint(gl_LocalInvocationID.y))
+#define SILHOUETTE_ID_IN_DISPATCH  (WORKGROUP_ID_IN_DISPATCH*SILHOUETTES_PER_WORKGROUP + SILHOUETTE_ID_IN_WORKGROUP)
+
 
 #define NO_INTERSECTION 0x00000000u
 #define INTERSECTS      0x00000001u
@@ -495,21 +500,21 @@ vec4 movePointToSubfrustum(
 bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
   float tMin = 0.f;                         //register R0
   float tMax = 1.f;                         //register R1
-  for(uint i=0u;i<3u;++i){                  //register R2
+  for(uint i = 0u; i < 3u; ++i){            //register R2
     float dividend = A[i]+A[3];             //register R3
-    float divisor  = divident - B[i] - B[3];//register R4
+    float divisor  = dividend - B[i] - B[3];//register R4
     if(divisor > 0.f)
       tMax = min(tMax,dividend/divisor);
     if(divisor < 0.f)
-      tMin = max(tMin,divident/divisor);
+      tMin = max(tMin,dividend/divisor);
     if(divisor == 0.f && dividend < 0.f)
       return false;
     dividend = -A[i]+A[3];
-    divisor = divident + B[i] - B[3];
+    divisor = dividend + B[i] - B[3];
     if(divisor > 0.f)
       tMax = min(tMax,dividend/divisor);
     if(divisor < 0.f)
-      tMin = max(tMin,divident/divisor);
+      tMin = max(tMin,dividend/divisor);
     if(divisor == 0.f && dividend < 0.f)
       return false;
   }
@@ -593,11 +598,11 @@ bool doesEdgeIntersectFrustum(in vec4 A,in vec4 B){
  * @param A edge point in clip-space
  * @param B edge point in clip-space
  * @param L light position in clip-space
- * @param D diagonal index
+ * @param d diagonal index
  *
  * @return This function returns true if diagonal intersects shadow volume side.
  */
-bool doesDiagonalIntersectShadowVolumeSide(in vec4 A,in vec4 B,in vec4 L,in uint D){
+bool doesDiagonalIntersectShadowVolumeSide(in vec4 A,in vec4 B,in vec4 L,in uint d){
   float a = -1.f + 2.f*float(d/2);
   float b = -1.f + 2.f*float(d&1);
   float u = B.x - A.y - a*B.y + a*A.y;
@@ -699,7 +704,7 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
     if(dot(sidePixelPlane,PA) > 0)return 0;
   }
 
-  if(multiplicity > 0{
+  if(multiplicity > 0){
     if(spa <= 0 && spb <= 0)return 0;
     if(spa >  0 && spb >  0)return 0;
 
@@ -719,9 +724,9 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
 
 #define TILE_SIZE_IN_CLIP_SPACE0 vec2(2.f/float(8<<(3*0)))
 #define TILE_SIZE_IN_CLIP_SPACE1 vec2(2.f/float(8<<(3*1)))
-#define TILE_SIZE_IN_CLIP_SPACE1 vec2(2.f/float(8<<(3*2)))
-#define TILE_SIZE_IN_CLIP_SPACE2 vec2(2.f/float(8<<(3*3)))
-#define TILE_SIZE_IN_CLIP_SPACE3 vec2(2.f/float(8<<(3*4)))
+#define TILE_SIZE_IN_CLIP_SPACE2 vec2(2.f/float(8<<(3*2)))
+#define TILE_SIZE_IN_CLIP_SPACE3 vec2(2.f/float(8<<(3*3)))
+#define TILE_SIZE_IN_CLIP_SPACE4 vec2(2.f/float(8<<(3*4)))
 
 #define TILE_BOTTOM_LEFT_TO_RIGHT 0u
 #define TILE_BOTTOM_LEFT_TO_TOP   1u
@@ -740,11 +745,13 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
 
 #define IS_LESS_THAN_SIZE_MINUS_ONE(x,size) (x<(size-1))
 
+/*
 #define IS_ON_OPPOSITE_LINE(id,size,orientation)\
   (id[orientation&1] == ((size[orientation&1]-1)*(1-(orientation>>1)&1))
 
 #define IS_ON_EVEN_LINE(id,size,orientation)\
   IS_EVEN((id[tileOrientation&1] + ((tileOrientation>>1)&1) + tileOrientation>>1))
+*/
 
 /*
 #define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
@@ -773,12 +780,14 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
   ))))
 */
 
+/*
 #define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
   tileOrientation==0?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
   tileOrientation==1?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
   tileOrientation==2?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
                      (IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
   ))))
+*/
 
 #define TRANSFORM_BALLOT_RESULT_TO_UINTS(result)\
   unpackUint2x32(result)
@@ -788,16 +797,29 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
 #define GET_UINT_FROM_UINT_ARRAY(array,i)\
   array[i]
 
-#define BALLOT(x) ballotAMD(x)
+#if WAVEFRONT_SIZE == 64
+  #extension GL_AMD_gcn_shader       : enable
+  #extension GL_AMD_gpu_shader_int64 : enable
+  #define BALLOT(x) ballotAMD(x)
+  #define TRANSFORM_WAVEFRONT_RESULT_TO_UINTS(result) unpackUint2x32(result)
+  #define UINT_RESULT_ARRAY uvec2
+  #define GET_UINT_FROM_UINT_ARRAY(array,i) array[i]
+#else
+  #extension GL_NV_shader_thread_group : enable
+  #define BALLOT(x) ballotThreadNV(x)
+  #define TRANSFORM_WAVEFRONT_RESULT_TO_UINTS(result) result
+  #define UINT_RESULT_ARRAY uint
+  #define GET_UINT_FROM_UINT_ARRAY(array,i) array
+#endif
 
 #define UPPER_TILE_DIVISIBILITY_MASK(level)\
   uvec2(7u,7u)
 
 #define UPPER_TILE_DIVISIBILITY_EXPONENT(level)\
-  uvec2(3u,3u);
+  uvec2(3u,3u)
 
 #define TILE_INDEX_TO_TILE_COORD(invocation,level)\
-  uvec2(invocation&UPPER_TILE_DIVISIBILITY_MASK(level).x,invocation>>UPPER_TILE_DIVISIBILITY_EXPONENT(level).x)
+  uvec2(invocation&UPPER_TILE_DIVISIBILITY_MASK(level).x,invocation>>(UPPER_TILE_DIVISIBILITY_EXPONENT(level).x))
 
 #define GET_GLOBAL_COORD(coord,localCoord,level)\
   ((coord<<UPPER_TILE_DIVISIBILITY_EXPONENT(level)) + localCoord)
@@ -812,59 +834,61 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
   GET_TILE_MINMAX_DEPTH(level,coord).x
 
 #define GET_TILE_SIZE_IN_CLIP_SPACE(level)\
-  JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)
+  JOIN(TILE_SIZE_IN_CLIP_SPACE,level)
 
-
-#define TEST_SILHOUETTE_LAST(LEVEL)                                                                                  \
-  shared vec4 viewSamples[WAVEFRONT_SIZE];                                                                           \
-  void JOIN(testSilhouette,LEVEL)(                                                                                   \
-      uvec2 leftBottomCoord    ,                                                                                     \
-      vec2  leftBottomClipCoord){                                                                                    \
-    uvec2 localCoord      = TILE_INDEX_TO_TILE_COORD(INVOCATION_ID_IN_WAVEFRONT,LEVEL);                              \
-    uvec2 globalCoord     = GET_GLOBAL_COORD(leftBottomCoord,localCoord,LEVEL);                                      \
-    vec2  globalClipCoord = leftBottomClipCoord + GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*localCoord;                     \
-    vec2  minmax          = GET_TILE_MINMAX_DEPTH(level,coord);                                                      \
-    vec4  viewSample = vec4(                                                                                         \
-        globalClipCoord+GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*.5,                                                       \
-        minmax.x,1);                                                                                                 \
-    viewSamples[INVOCATION_ID_IN_WAVEFRONT] = viewSample;                                                            \
-    if(INVOCATION_ID_IN_WAVEFRONT == WAVEFRONT_SIZE-1)return;                                                        \
-    vec4 nextViewSample = viewSamples[INVOCATION_ID_IN_WAVEFRONT+1];                                                 \
-    int  multiplicity = sharedMultiplicities[SILHOUETTE_ID_IN_WORKGROUP];                                            \
-    vec2 leftRight = (globalClipCoord.xx + vec2(0,GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL).x))*.5+.5;                      \
-    vec2 bottomTop = (globalClipCoord.yy + vec2(0,GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL).y))*.5+.5;                      \
-    vec4 A = movePointToSubfrustum(sharedSilhouettePoints[SILHOUETTE_ID_IN_WORKGROUP][0],leftRight,bottomTop,minmax);\
-    vec4 B = movePointToSubfrustum(sharedSilhouettePoints[SILHOUETTE_ID_IN_WORKGROUP][1],leftRight,bottomTop,minmax);\
-    vec4 L = movePointToSubfrustum(lightPosition                                        ,leftRight,bottomTop,minmax);\
-    int resultMultiplicity = doesScreenEdgeIntersectsShadowVolumeSide(A,B,L,viewSample,nextViewSample,multiplicity); \
-    if(resultMultiplicity != 0)                                                                                      \
-      imageAtomicAdd(multiplicityTexture,ivec2(globalCoord),ivec4(resultMultiplicity));                              \
+#define TEST_SILHOUETTE_LAST(LEVEL)                                                                                   \
+  shared vec4 viewSamples[WAVEFRONT_SIZE];                                                                            \
+  void JOIN(testSilhouette,LEVEL)(                                                                                    \
+      uvec2 leftBottomCoord    ,                                                                                      \
+      vec2  leftBottomClipCoord){                                                                                     \
+    uvec2 localCoord      = TILE_INDEX_TO_TILE_COORD(INVOCATION_ID_IN_WAVEFRONT,LEVEL);                               \
+    uvec2 globalCoord     = GET_GLOBAL_COORD(leftBottomCoord,localCoord,LEVEL);                                       \
+    vec2  globalClipCoord = leftBottomClipCoord + GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*localCoord;                      \
+    vec2  zMinMax          = GET_TILE_MINMAX_DEPTH(LEVEL,globalCoord);                                                \
+    vec4  viewSample = vec4(                                                                                          \
+        globalClipCoord+GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*.5,                                                        \
+        zMinMax.x,1);                                                                                                 \
+    viewSamples[INVOCATION_ID_IN_WAVEFRONT] = viewSample;                                                             \
+    if(INVOCATION_ID_IN_WAVEFRONT == WAVEFRONT_SIZE-1)return;                                                         \
+    vec4 nextViewSample = viewSamples[INVOCATION_ID_IN_WAVEFRONT+1];                                                  \
+    int  multiplicity = sharedMultiplicities[SILHOUETTE_ID_IN_WORKGROUP];                                             \
+    vec2 leftRight = (globalClipCoord.xx + vec2(0,GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL).x))*.5+.5;                       \
+    vec2 bottomTop = (globalClipCoord.yy + vec2(0,GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL).y))*.5+.5;                       \
+    vec4 A = movePointToSubfrustum(sharedSilhouettePoints[SILHOUETTE_ID_IN_WORKGROUP][0],leftRight,bottomTop,zMinMax);\
+    vec4 B = movePointToSubfrustum(sharedSilhouettePoints[SILHOUETTE_ID_IN_WORKGROUP][1],leftRight,bottomTop,zMinMax);\
+    vec4 L = movePointToSubfrustum(lightPosition                                        ,leftRight,bottomTop,zMinMax);\
+    int resultMultiplicity = doesScreenEdgeIntersectsShadowVolumeSide(A,B,L,viewSample,nextViewSample,multiplicity);  \
+    if(resultMultiplicity != 0)                                                                                       \
+      imageAtomicAdd(multiplicityTexture,ivec2(globalCoord),resultMultiplicity);                                      \
   }
 
-#define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                                      \
-  void JOIN(testSilhouette,LEVEL)(                                                                             \
-      uvec2 leftBottomCoord    ,                                                                               \
-      vec2  leftBottomClipCoord){                                                                              \
-    uvec2             localCoord       = TILE_INDEX_TO_TILE_COORD(INVOCATION_ID_IN_WAVEFRONT,LEVEL);           \
-    uvec2             globalCoord      = GET_GLOBAL_COORD(leftBottomCoord,localCoord,LEVEL);                   \
-    vec2              globalClipCoord  = leftBottomClipCoord + GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*localCoord;  \
-    vec2              zMinMax          = GET_TILE_MINMAX_DEPTH(LEVEL,globalCoord);                             \
-    vec3              aabbCorner       = vec3(globalClipCoord,zMinMax.x);                                      \
-    vec3              aabbSize         = vec3(JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL),zMinMax.y-zMinMax.x);        \
-    uint              result           = doesSilhouetteIntersectsAABB(aabbCorner,aabbSize);                    \
-    UINT_RESULT_ARRAY intersectsBallot = TRANSFORM_BALLOT_RESULT_TO_UINTS(BALLOT(result==INTERSECTS));         \
-    for(int i = 0; i < RESULT_LENGTH_IN_UINT; ++i){                                                            \
-      uint unresolvedIntersections = GET_UINT_FROM_UNIT_ARRAY(intersectsBallot,i);                             \
-      while(unresolvedIntersections != 0u){                                                                    \
-        int   currentBit         = findMSB(unresolvedIntersections);                                           \
-        int   currentTile        = currentBit + i*UINT_BIT_SIZE;                                               \
-        uvec2 currentLocalCoord  = TILE_INDEX_TO_TILE_COORD(currentTile,level);                                \
-        uvec2 currentGlobalCoord = GET_GLOBAL_COORD(leftBottomCoord,currentLocalCoord,LEVEL);                  \
-        vec2  currentClipCoord   = leftBottomClipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*CurrentLocalCoord;\
-        JOIN(testSilhouette,NEXT_LEVEL)(currentGlobalCoord,currentClipCoord);                                  \
-        MARK_BIT_AS_SOLVED(unresolvedIntersections,currentBit);                                                \
-      }                                                                                                        \
-    }                                                                                                          \
+#define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                                                                         \
+  void JOIN(testSilhouette,LEVEL)(                                                                                                                \
+      uvec2 leftBottomCoord    ,                                                                                                                  \
+      vec2  leftBottomClipCoord){                                                                                                                 \
+    uvec2             localCoord       = TILE_INDEX_TO_TILE_COORD(INVOCATION_ID_IN_WAVEFRONT,LEVEL);                                              \
+    uvec2             globalCoord      = GET_GLOBAL_COORD(leftBottomCoord,localCoord,LEVEL);                                                      \
+    vec2              globalClipCoord  = leftBottomClipCoord + GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*localCoord;                                     \
+    vec2              zMinMax          = GET_TILE_MINMAX_DEPTH(LEVEL,globalCoord);                                                                \
+    vec2              leftRight        = (globalClipCoord.xx + vec2(0,GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL).x))*.5+.5;                               \
+    vec2              bottomTop        = (globalClipCoord.yy + vec2(0,GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL).y))*.5+.5;                               \
+    vec4              A                = movePointToSubfrustum(sharedSilhouettePoints[SILHOUETTE_ID_IN_WORKGROUP][0],leftRight,bottomTop,zMinMax);\
+    vec4              B                = movePointToSubfrustum(sharedSilhouettePoints[SILHOUETTE_ID_IN_WORKGROUP][1],leftRight,bottomTop,zMinMax);\
+    vec4              L                = movePointToSubfrustum(lightPosition                                        ,leftRight,bottomTop,zMinMax);\
+    bool              intersect        = doesShadowVolumeSideIntersectsFrustum(A,B,L);                                                            \
+    UINT_RESULT_ARRAY intersectsBallot = TRANSFORM_BALLOT_RESULT_TO_UINTS(BALLOT(intersect));                                                     \
+    for(int i = 0; i < RESULT_LENGTH_IN_UINT; ++i){                                                                                               \
+      uint unresolvedIntersections = GET_UINT_FROM_UINT_ARRAY(intersectsBallot,i);                                                                \
+      while(unresolvedIntersections != 0u){                                                                                                       \
+        int   currentBit         = findMSB(unresolvedIntersections);                                                                              \
+        int   currentTile        = currentBit + i*UINT_BIT_SIZE;                                                                                  \
+        uvec2 currentLocalCoord  = TILE_INDEX_TO_TILE_COORD(currentTile,level);                                                                   \
+        uvec2 currentGlobalCoord = GET_GLOBAL_COORD(leftBottomCoord,currentLocalCoord,LEVEL);                                                     \
+        vec2  currentClipCoord   = leftBottomClipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*currentLocalCoord;                                   \
+        JOIN(testSilhouette,NEXT_LEVEL)(currentGlobalCoord,currentClipCoord);                                                                     \
+        MARK_BIT_AS_SOLVED(unresolvedIntersections,currentBit);                                                                                   \
+      }                                                                                                                                           \
+    }                                                                                                                                             \
   }
 
 TEST_SILHOUETTE_LAST(NUMBER_OF_LEVELS_MINUS_ONE)
