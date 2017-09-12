@@ -33,11 +33,144 @@ layout(rg32f,binding=HIERARCHICALDEPTHTEXTURE_BINDING_HDT  )uniform image2D     
 
 uniform uvec2 windowSize = uvec2(512,512);
 
+//  _____
+// |  2  |
+// |1   3|
+// |__0__|
+//
+// 
+//      BBBB       TTTL       LRLR       RTTT
+//      LRLR       BBBL       LRLR       RBBB 
+//      LRLR       TTTL       LRLR       RTTT
+// B -> LRLR  L -> BBBL  T -> TTTT  R -> RBBB  
+//                                                       
+// ┌┄┄┄┄┄┬┄┄┄┄┄┬┄┄┄┄┄┬┄┄┄┄┄┐
+// ┊     ┊     ┊     ┊     ┊
+// ┊     ┊     ┊     ┊     ┊
+// ├┄┄┄┄┄┼┄┄┄┄┄┼┄┄┄┄┄┼┄┄┄┄┄┤
+// ┊     ┊     ┊     ┊     ┊
+// ┊     ┊     ┊     ┊     ┊
+// ├┄┄┄┄┄┼┄┄┄┄┄┼┄┄┄┄┄┼┄┄┄┄┄┤
+// ┊     ┊     ┊     ┊     ┊
+// ┊     ┊     ┊     ┊     ┊
+// ├┄┄┄┄┄┼┄┄┄┄┄┼┄┄┄┄┄┼┄┄┄┄┄┤
+// ┊     ┊     ┊     ┊     ┊
+// ┢━━━━━┿━━━━━┿━━┓  ┊     ┊
+// ┠     ┼     ┼  ╂┄┄┼┄┄┄┄┄┤
+// ┃              ┃  ┊     ┊
+// ┃              ┃  ┊     ┊
+// ┠     ┼     ┼  ╂┄┄┼┄┄┄┄┄┤
+// ┃              ┃  ┊     ┊
+// ┃              ┃  ┊     ┊
+// ┠     ┼     ┼  ╂┄┄┼┄┄┄┄┄┤
+// ┃              ┃  ┊     ┊
+// ┃              ┃  ┊     ┊
+// ┠     ┼     ┼  ╂┄┄┼┄┄┄┄┄┤
+// ┃              ┃  ┊     ┊
+// ┃              ┃  ┊     ┊
+// ┗━━━━━┷━━━━━┷━━┹┄┄┴┄┄┄┄┄┘
+//
+// Tile divisibility  = (3,5)
+// Level divisibility = (4,8)
+//
+//
+// i - coord x,y
+// s - size x,y
+// o - orientation B,L,T,R
+//
+// def isOnOppositeLine(i,s,o):
+//   return i[1-(o&1)] == (s[o&1]-1)*(1-((o>>1)&1))
+//
+// def isOnEvenLine(i,s,o):
+//   return ((i[o&1]&1)<<1) ^ (o&1);
+//
+// def getSubtileOrientation(i,s,o):
+//   if isOnOppositeLine(i,s,o):
+//     return o
+//   return isOnEvenLine(i,s,o)
+
+bool isOnOppositeLine(uvec2 i,uvec2 s,uint o){
+  return i[1-(o&1)] == (s[o&1]-1)*(1-((o>>1)&1));
+}
+
+uint getSubtileOrientation(uvec2 i,uvec2 s,uint o){
+  if(isOnOppositeLine(i,s,o))return o;
+  return ((i[o&1]&1)<<1) ^ (o&1);
+}
+
+//uvec2 getTileIndex(uvec2 coord,uint level){
+//  uvec2 exponentOfTileSizeInPixels = getExponentOfTileSizeInPixels(level);
+//  return coord>>exponentOfTileSizeInPixels
+//}
+
+#define TILE_BOTTOM_LEFT_TO_RIGHT 0u
+#define TILE_BOTTOM_LEFT_TO_TOP   1u
+#define TILE_TOP_RIGHT_TO_LEFT    2u
+#define TILE_TOP_RIGHT_TO_BOTTOM  3u
+
+#define TILE_TRANSPOSE(tile) (tile^0xfffffffeu) // inverse lsb
+#define TILE_INVERSE(tile)   (tile^0xfffffffdu) // inverse second lsb
+
+#define TILE_TRANSPOSE_CONDITION(tile,condition)         (tile ^ (~(uint(condition)<<0)) )
+#define TILE_INVERSE_CONDITION(tile,condition)           (tile ^ (~(uint(condition)<<1)) )
+#define TILE_TRANSPOSE_INVERSE_CONDITION(tile,condition) (tile ^ (~(uint(condition)* 3)) )
+
+#define IS_ODD(x)  bool(x&1)
+#define IS_EVEN(x) (!IS_ODD(x))
+
+#define IS_LESS_THAN_SIZE_MINUS_ONE(x,size) (x<(size-1))
+
+/*
+#define IS_ON_OPPOSITE_LINE(id,size,orientation)\
+  (id[orientation&1] == ((size[orientation&1]-1)*(1-(orientation>>1)&1))
+
+#define IS_ON_EVEN_LINE(id,size,orientation)\
+  IS_EVEN((id[tileOrientation&1] + ((tileOrientation>>1)&1) + tileOrientation>>1))
+*/
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation == TILE_BOTTOM_LEFT_TO_RIGHT ? ( IS_LESS_THAN_SIZE_MINUS_ONE(        id[1]  ,size[1]) ? TILE_INVERSE(TILE_BOTTOM_LEFT_TO_TOP  ,IS_EVEN(        id[0]  )) : TILE_BOTTOM_LEFT_TO_RIGHT ) : (\
+  tileOrientation == TILE_BOTTOM_LEFT_TO_TOP   ? ( IS_LESS_THAN_SIZE_MINUS_ONE(        id[0]  ,size[0]) ? TILE_INVERSE(TILE_BOTTOM_LEFT_TO_RIGHT,IS_EVEN(        id[1]  )) : TILE_BOTTOM_LEFT_TO_TOP   ) : (\
+  tileOrientation == TILE_TOP_RIGHT_TO_LEFT    ? ( IS_LESS_THAN_SIZE_MINUS_ONE(size[1]-id[1]-1,size[1]) ? TILE_INVERSE(TILE_TOP_RIGHT_TO_BOTTOM ,IS_EVEN(size[0]-id[0]-1)) : TILE_TOP_RIGHT_TO_LEFT    ) : (\
+                                                 ( IS_LESS_THAN_SIZE_MINUS_ONE(size[0]-id[0]-1,size[0]) ? TILE_INVERSE(TILE_TOP_RIGHT_TO_LEFT   ,IS_EVEN(size[1]-id[1]-1)) : TILE_TOP_RIGHT_TO_BOTTOM  )    \
+  ))))
+*/
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation == 0 ? (         id[1]  <size[1]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(        id[0]  )) : tileOrientation ) : (\
+  tileOrientation == 1 ? (         id[0]  <size[0]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(        id[1]  )) : tileOrientation ) : (\
+  tileOrientation == 2 ? ( size[1]-id[1]-1<size[1]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[0]-id[0]-1)) : tileOrientation ) : (\
+                         ( size[0]-id[0]-1<size[0]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[1]-id[1]-1)) : tileOrientation )    \
+  ))))
+*/
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation==0?(                             id[1-(tileOrientation&1)]  <size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==1?(                             id[1-(tileOrientation&1)]  <size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==2?( size[1-(tileOrientation&1)]-id[1-(tileOrientation&1)]-1<size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
+                     ( size[1-(tileOrientation&1)]-id[1-(tileOrientation&1)]-1<size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
+  ))))
+*/
+
+/*
+#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
+  tileOrientation==0?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==1?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
+  tileOrientation==2?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
+                     (IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
+  ))))
+*/
+
+
 void main(){
   uvec2 pixelCoords = gl_GlobalInvocationID.xy;
   if(any(greaterThanEqual(pixelCoords,windowSize)))return;
   float depth = texelFetch(depthTexture,ivec2(pixelCoords)).r;
   float clipSpaceDepth = depth*2.f-1.f;
+  //TODO swap pixels in tile in order to abide hilbert curve
   imageStore(lowestLevelOfHierarchicalDepthTexture,ivec2(pixelCoords),vec4(clipSpaceDepth));
 }
 ).";
@@ -728,67 +861,6 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
 #define TILE_SIZE_IN_CLIP_SPACE3 vec2(2.f/float(8<<(3*3)))
 #define TILE_SIZE_IN_CLIP_SPACE4 vec2(2.f/float(8<<(3*4)))
 
-#define TILE_BOTTOM_LEFT_TO_RIGHT 0u
-#define TILE_BOTTOM_LEFT_TO_TOP   1u
-#define TILE_TOP_RIGHT_TO_LEFT    2u
-#define TILE_TOP_RIGHT_TO_BOTTOM  3u
-
-#define TILE_TRANSPOSE(tile) (tile^0xfffffffeu) // inverse lsb
-#define TILE_INVERSE(tile)   (tile^0xfffffffdu) // inverse second lsb
-
-#define TILE_TRANSPOSE_CONDITION(tile,condition)         (tile ^ (~(uint(condition)<<0)) )
-#define TILE_INVERSE_CONDITION(tile,condition)           (tile ^ (~(uint(condition)<<1)) )
-#define TILE_TRANSPOSE_INVERSE_CONDITION(tile,condition) (tile ^ (~(uint(condition)* 3)) )
-
-#define IS_ODD(x)  bool(x&1)
-#define IS_EVEN(x) (!IS_ODD(x))
-
-#define IS_LESS_THAN_SIZE_MINUS_ONE(x,size) (x<(size-1))
-
-/*
-#define IS_ON_OPPOSITE_LINE(id,size,orientation)\
-  (id[orientation&1] == ((size[orientation&1]-1)*(1-(orientation>>1)&1))
-
-#define IS_ON_EVEN_LINE(id,size,orientation)\
-  IS_EVEN((id[tileOrientation&1] + ((tileOrientation>>1)&1) + tileOrientation>>1))
-*/
-
-/*
-#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
-  tileOrientation == TILE_BOTTOM_LEFT_TO_RIGHT ? ( IS_LESS_THAN_SIZE_MINUS_ONE(        id[1]  ,size[1]) ? TILE_INVERSE(TILE_BOTTOM_LEFT_TO_TOP  ,IS_EVEN(        id[0]  )) : TILE_BOTTOM_LEFT_TO_RIGHT ) : (\
-  tileOrientation == TILE_BOTTOM_LEFT_TO_TOP   ? ( IS_LESS_THAN_SIZE_MINUS_ONE(        id[0]  ,size[0]) ? TILE_INVERSE(TILE_BOTTOM_LEFT_TO_RIGHT,IS_EVEN(        id[1]  )) : TILE_BOTTOM_LEFT_TO_TOP   ) : (\
-  tileOrientation == TILE_TOP_RIGHT_TO_LEFT    ? ( IS_LESS_THAN_SIZE_MINUS_ONE(size[1]-id[1]-1,size[1]) ? TILE_INVERSE(TILE_TOP_RIGHT_TO_BOTTOM ,IS_EVEN(size[0]-id[0]-1)) : TILE_TOP_RIGHT_TO_LEFT    ) : (\
-                                                 ( IS_LESS_THAN_SIZE_MINUS_ONE(size[0]-id[0]-1,size[0]) ? TILE_INVERSE(TILE_TOP_RIGHT_TO_LEFT   ,IS_EVEN(size[1]-id[1]-1)) : TILE_TOP_RIGHT_TO_BOTTOM  )    \
-  ))))
-*/
-
-/*
-#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
-  tileOrientation == 0 ? (         id[1]  <size[1]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(        id[0]  )) : tileOrientation ) : (\
-  tileOrientation == 1 ? (         id[0]  <size[0]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(        id[1]  )) : tileOrientation ) : (\
-  tileOrientation == 2 ? ( size[1]-id[1]-1<size[1]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[0]-id[0]-1)) : tileOrientation ) : (\
-                         ( size[0]-id[0]-1<size[0]-1 ? TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[1]-id[1]-1)) : tileOrientation )    \
-  ))))
-*/
-
-/*
-#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
-  tileOrientation==0?(                             id[1-(tileOrientation&1)]  <size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
-  tileOrientation==1?(                             id[1-(tileOrientation&1)]  <size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
-  tileOrientation==2?( size[1-(tileOrientation&1)]-id[1-(tileOrientation&1)]-1<size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
-                     ( size[1-(tileOrientation&1)]-id[1-(tileOrientation&1)]-1<size[1-(tileOrientation&1)]-1?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
-  ))))
-*/
-
-/*
-#define GET_SUBTILE_ORIENTATION(tileOrientation,id,size)(\
-  tileOrientation==0?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
-  tileOrientation==1?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(                        id[tileOrientation&1]  )):tileOrientation ):(\
-  tileOrientation==2?(IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation ):(\
-                     (IS_ON_OPPOSITE_LINE(id,size,tileOrientation)?TILE_INVERSE(TILE_TRASPOSE(tileOrientation),IS_EVEN(size[tileOrientation&1]-id[tileOrientation&1]-1)):tileOrientation )  \
-  ))))
-*/
-
 #define TRANSFORM_BALLOT_RESULT_TO_UINTS(result)\
   unpackUint2x32(result)
 
@@ -824,8 +896,22 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
 #define GET_GLOBAL_COORD(coord,localCoord,level)\
   ((coord<<UPPER_TILE_DIVISIBILITY_EXPONENT(level)) + localCoord)
 
+
+
+#define SET_BIT(data,bit,value)\
+  data = bitfieldInsert(data,value,bit,1)
+
+#define SET_BIT_TO_ONE(data,bit)\
+  SET_BIT(data,bit,1)
+
+#define SET_BIT_TO_ZERO(data,bit)\
+  SET_BIT(data,bit,0)
+
 #define MARK_BIT_AS_SOLVED(mask,bit)\
-  mask &= ~(1u<<bit)
+  SET_BIT_TO_ZERO(mask,bit)
+
+#define MARK_TASK_AS_SOLVED(tasks,taskIndex)\
+  SET_BIT_TO_ZERO(tasks,taskIndex)
 
 #define GET_TILE_MINMAX_DEPTH(level,coord)\
   vec2(texelFetch(HDT[level],ivec2(coord),0).xy)
@@ -844,7 +930,7 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
     uvec2 localCoord      = TILE_INDEX_TO_TILE_COORD(INVOCATION_ID_IN_WAVEFRONT,LEVEL);                               \
     uvec2 globalCoord     = GET_GLOBAL_COORD(leftBottomCoord,localCoord,LEVEL);                                       \
     vec2  globalClipCoord = leftBottomClipCoord + GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*localCoord;                      \
-    vec2  zMinMax          = GET_TILE_MINMAX_DEPTH(LEVEL,globalCoord);                                                \
+    vec2  zMinMax         = GET_TILE_MINMAX_DEPTH(LEVEL,globalCoord);                                                 \
     vec4  viewSample = vec4(                                                                                          \
         globalClipCoord+GET_TILE_SIZE_IN_CLIP_SPACE(LEVEL)*.5,                                                        \
         zMinMax.x,1);                                                                                                 \
@@ -862,6 +948,14 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
       imageAtomicAdd(multiplicityTexture,ivec2(globalCoord),resultMultiplicity);                                      \
   }
 
+#define ARE_TASKS_EMPTY(tasks)\
+  (tasks != 0)
+
+#define GET_CURRENT_TASK(tasks)\
+  findMSB(tasks)
+
+#define TASK_GROUP_SIZE UINT_BIT_SIZE
+
 #define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                                                                         \
   void JOIN(testSilhouette,LEVEL)(                                                                                                                \
       uvec2 leftBottomCoord    ,                                                                                                                  \
@@ -877,16 +971,16 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
     vec4              L                = movePointToSubfrustum(lightPosition                                        ,leftRight,bottomTop,zMinMax);\
     bool              intersect        = doesShadowVolumeSideIntersectsFrustum(A,B,L);                                                            \
     UINT_RESULT_ARRAY intersectsBallot = TRANSFORM_BALLOT_RESULT_TO_UINTS(BALLOT(intersect));                                                     \
-    for(int i = 0; i < RESULT_LENGTH_IN_UINT; ++i){                                                                                               \
-      uint unresolvedIntersections = GET_UINT_FROM_UINT_ARRAY(intersectsBallot,i);                                                                \
-      while(unresolvedIntersections != 0u){                                                                                                       \
-        int   currentBit         = findMSB(unresolvedIntersections);                                                                              \
-        int   currentTile        = currentBit + i*UINT_BIT_SIZE;                                                                                  \
+    for(int taskGroupId = 0; taskGroupId < RESULT_LENGTH_IN_UINT; ++taskGroupId){                                                                 \
+      uint taskGroup = GET_UINT_FROM_UINT_ARRAY(intersectsBallot,taskGroupId);                                                                    \
+      while(ARE_TASKS_EMPTY(taskGroup)){                                                                                                          \
+        int   currentTask        = GET_CURRENT_TASK(taskGroup);                                                                                   \
+        int   currentTile        = currentTask + taskGroupId*TASK_GROUP_SIZE;                                                                     \
         uvec2 currentLocalCoord  = TILE_INDEX_TO_TILE_COORD(currentTile,level);                                                                   \
         uvec2 currentGlobalCoord = GET_GLOBAL_COORD(leftBottomCoord,currentLocalCoord,LEVEL);                                                     \
         vec2  currentClipCoord   = leftBottomClipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL)*currentLocalCoord;                                   \
         JOIN(testSilhouette,NEXT_LEVEL)(currentGlobalCoord,currentClipCoord);                                                                     \
-        MARK_BIT_AS_SOLVED(unresolvedIntersections,currentBit);                                                                                   \
+        MARK_TASK_AS_SOLVED(taskGroup,currentTask);                                                                                               \
       }                                                                                                                                           \
     }                                                                                                                                             \
   }
