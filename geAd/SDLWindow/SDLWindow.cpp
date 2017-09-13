@@ -244,6 +244,12 @@ SDLWindow::Fullscreen SDLWindow::getFullscreen(){
   return WINDOW;
 }
 
+SDL_GLContext SDLWindow::getContext(std::string const&name)const{
+  auto const it = this->m_contexts.find(name);
+  if(it == this->m_contexts.end())return nullptr;
+  return *it->second;
+}
+
 /**
  * @brief gets window object as implemented by SDL
  *

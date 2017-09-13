@@ -67,12 +67,13 @@ namespace ge{
         void setFullscreen(Fullscreen const&type);
         Fullscreen getFullscreen();
         SDL_Window* getWindow()const;
+        SDL_GLContext getContext(std::string const&name)const;
       protected:
         using SharedSDLContext = std::shared_ptr<SDL_GLContext>           ;
         SDL_Window*                             m_window         = nullptr;
         std::map<std::string,SharedSDLContext>  m_contexts                ;
-        std::map<EventType,std::function<bool(SDL_Event const&)>>m_eventCallbacks       ;
-        std::map<uint8_t,std::function<bool(SDL_Event const&)>>m_windowEventCallbacks;
+        std::map<EventType,std::function<bool(SDL_Event const&)>>m_eventCallbacks      ;
+        std::map<uint8_t  ,std::function<bool(SDL_Event const&)>>m_windowEventCallbacks;
         SDLMainLoop*m_mainLoop;
         bool m_defaultCloseCallback(SDL_Event const&);
         bool m_callEventCallback(
