@@ -2,6 +2,119 @@
 #include<algorithm>
 #include<geCore/Dtemplates.h>
 
+// threadsPerTile         - number of threads per tile - warp/wavefront size
+// threadsExponent        - threadsPerTile = 2^threadsExponent
+// windowSize             - size of window in pixels
+// windowExponent         - 2^windowExponent <= windowSize < 2^(windowExponent+1)
+// compoundWindowExponent - windowExponent.x + windowExponent.y
+// nofLevels              - number of levels of image pyramid
+//                          nofLevels = roundUp( compoundWindowExponent / threadsExponent )
+//
+// Each level decreases compoundWindowExponent by threadsExponent.
+// threadsExponent is divided into two nonzero numbers:
+// threadsExponentX(level) + threadsExponentY(level) = threadsExponent
+// threadsExponentX(level) decreases widthExponent
+// threadsExponentY(level) decreases heightExponent
+//
+// accumulatedExponentX(level) = threadsExponentX(level) + ... + threadsExponentX(nofLevels-1)
+// accumulatedExponentY(level) = threadsExponentY(level) + ... + threadsExponentY(nofLevels-1)
+//
+// threadsExponentX(level) and threadsExponentY(level) is chosen as follows:
+//
+// 1. accumulatedExponentX(level) and accumulatedExponentY(level) differes 
+//    from each other for all levels that are no zero level by 1 at most.
+// 2. accumulatedExponentX(0) == widthExponent ||
+//    accumulatedExponentY(0) == heightExponent
+//    One axis has to have accumulatedExponent(0) == windowExponent
+//
+// 
+// LEVEL_DIVISIBILITY                (level) (3,1) no zero possible
+// LEVEL_DIVISIBILITY_INTO_FULL_TILES(level) (2,0) zero possible
+// LEVEL_CONFIGURATION               (level)
+// FULL_TILE_SIZE_IN_TILES           (level) (4,8) multiplication of components has to be warp
+// BORDER_TILE_SIZE_IN_TILES         (level) (3,5) 
+// FULL_TILE_SIZE_IN_PIXELS          (level) (512,512)
+// BORDER_TILE_SIZE_IN_PIXELS        (level) (387,277)
+//
+
+class RSSVTilingImpl{
+  public:
+    RSSVTilingImpl(size_t windowWidth,size_t windowHeight,size_t threadsPerTile){
+      windowSize.x = windowWidth ;
+      windowSize.y = windowHeight;
+
+      windowExponent.x = log2RoundUp(windowSize.x  );
+      windowExponent.y = log2RoundUp(windowSize.y  );
+      threadsExponent  = log2RoundUp(threadsPerTile);
+
+      compoundWindowExponent = windowExponent.x + windowExponent.y;
+
+      nofLevels = divRoundUp<size_t>(compoundWindowExponent,threadsExponent);
+
+      fullTileSizeInTiles.resize(nofLevels,glm::uvec2(0));
+
+      auto exponentCounter = glm::uvec2(0u);
+
+      size_t const threadsExponentPart[2] = {
+        divRoundUp(threadsExponent,2lu),
+        threadsExponent - divRoundUp(threadsExponent,2lu),
+      };
+
+      bool oddLevel = false;
+      for(auto&x:fullTileSizeInTiles){
+        glm::uvec2 currentExponent;
+        currentExponent.x = threadsExponentPart[  oddLevel];
+        currentExponent.y = threadsExponentPart[1-oddLevel];
+
+        if      (exponentCounter[0] + currentExponent[0] > windowExponent[0]){
+          currentExponent[0] = windowExponent[0] - exponentCounter[0];
+          currentExponent[1] = threadsExponent   - currentExponent[0];
+        }else if(exponentCounter[1] + currentExponent[1] > windowExponent[1]){
+          currentExponent[1] = windowExponent[1] - exponentCounter[1];
+          currentExponent[0] = threadsExponent   - currentExponent[1];
+        }
+
+        x.x = 1 << currentExponent.x;
+        x.y = 1 << currentExponent.y;
+
+        exponentCounter += currentExponent;
+        oddLevel = !oddLevel;
+      }
+      std::reverse(fullTileSizeInTiles.begin(),fullTileSizeInTiles.end());
+    }
+    size_t     nofLevels             ;
+    size_t     threadsExponent       ;
+    size_t     compoundWindowExponent;
+    glm::uvec2 windowSize            ;
+    glm::uvec2 windowExponent        ;
+    std::vector<glm::uvec2>fullTileSizeInTiles;
+};
+
+RSSVTiling::RSSVTiling(size_t windowWidth,size_t windowHeight,size_t threadsPerTile){
+  _impl = std::unique_ptr<RSSVTilingImpl>(new RSSVTilingImpl(windowWidth,windowHeight,threadsPerTile));
+}
+
+
+size_t                 RSSVTiling::getNofLevels()const{
+  return _impl->nofLevels;
+}
+
+glm::uvec2             RSSVTiling::getWindowSize()const{
+  return _impl->windowSize;
+}
+
+
+glm::uvec2             RSSVTiling::getWindowExponent                ()const{
+  return _impl->windowExponent;
+}
+/*
+   std::vector<glm::uvec2>RSSVTilin::getLevelDivisibility             ()const;
+   std::vector<glm::uvec2>RSSVTilin::getLevelDivisibilityIntoFullTiles()const;
+   std::vector<glm::uvec2>RSSVTilin::getFullTileSizeInTiles           ()const;
+   std::vector<glm::uvec2>RSSVTilin::getFullTileSizeInPixels          ()const;
+   std::vector<glm::uvec2>RSSVTilin::getBorderTileSizeInTiles         ()const;
+   std::vector<glm::uvec2>RSSVTilin::getBorderTileSizeInPixels        ()const;
+   */
 size_t rssvGetNofLevels(
     glm::uvec2 const&windowSize    ,
     size_t     const&threadsPerTile){
@@ -11,19 +124,6 @@ size_t rssvGetNofLevels(
   return divRoundUp<size_t>(widthExponent + heightExponet,threadsExponent);
 }
 
-// N - number of levels
-// N-1 - last level
-//
-// MaxUpperTileDivisibility[n] - maximal divisibility of tile at level n-1
-// LevelSize[n] - number of tiles at level n
-// LevelSize[N-1] - window size
-//
-//
-//
-//
-//
-//
-//
 
 std::vector<glm::uvec2>rssvGetMaxUpperTileDivisibility(
     glm::uvec2 const&windowSize    ,
@@ -39,7 +139,7 @@ std::vector<glm::uvec2>rssvGetMaxUpperTileDivisibility(
   //AMD has WARP = 64 threads
   //8x8 for every level
   size_t const threadsExponentPart[2] = {
-                      divRoundUp(threadsExponent,2lu),
+    divRoundUp(threadsExponent,2lu),
     threadsExponent - divRoundUp(threadsExponent,2lu),
   };
   auto const windowExponent = glm::uvec2(

@@ -1,11 +1,31 @@
 #pragma once
 
 #include<vector>
+#include<memory>
 
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtc/matrix_access.hpp>
+
+class RSSVTilingImpl;
+class RSSVTiling{
+  public:
+    RSSVTiling(size_t windowWidth,size_t windowHeight,size_t threadsPerTile);
+    size_t                 getNofLevels                     ()const;
+    glm::uvec2             getWindowSize                    ()const;
+    glm::uvec2             getWindowExponent                ()const;
+    std::vector<glm::uvec2>getLevelDivisibility             ()const;
+    std::vector<glm::uvec2>getLevelDivisibilityIntoFullTiles()const;
+    std::vector<glm::uvec2>getFullTileSizeInTiles           ()const;
+    std::vector<glm::uvec2>getFullTileSizeInPixels          ()const;
+    std::vector<glm::uvec2>getBorderTileSizeInTiles         ()const;
+    std::vector<glm::uvec2>getBorderTileSizeInPixels        ()const;
+  protected:
+    friend class RSSVTilingImpl;
+    std::unique_ptr<RSSVTilingImpl>_impl;
+};
+
 
 /**
  * @brief This function finds out the best distribution of tileDivisibilities among tiles
