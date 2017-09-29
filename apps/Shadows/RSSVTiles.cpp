@@ -56,7 +56,7 @@ class RSSVTilingImpl{
       auto exponentCounter = glm::uvec2(0u);
 
       size_t const threadsExponentPart[2] = {
-        divRoundUp(threadsExponent,2lu),
+                          divRoundUp(threadsExponent,2lu),
         threadsExponent - divRoundUp(threadsExponent,2lu),
       };
 
