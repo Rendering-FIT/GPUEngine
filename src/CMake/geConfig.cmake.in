@@ -18,12 +18,9 @@
 @PACKAGE_INIT@
 
 message(STATUS "@LIB_NAME@ greets downstreamer")
-IF(WIN32)
-   get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
-ELSE()
-   #Linux install path differ by one level - maybe - depdends on how you install it
-   get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../" ABSOLUTE)
-ENDIF()
+
+get_filename_component(_@LIB_NAME@_install_prefix "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+
 include(${_@LIB_NAME@_install_prefix}/cmake/CMakeModules/GEMacros.cmake)
 
 if(NOT TARGET @LIB_NAME@)
