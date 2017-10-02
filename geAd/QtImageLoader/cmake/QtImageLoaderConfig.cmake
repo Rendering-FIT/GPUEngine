@@ -15,9 +15,11 @@ set(${MODULE_NAME}_SOURCE_FILES
    ${MODULE_DIR}/src/QtImageLoader.cpp
 )
 
+IF(NOT TARGET geSG)
+  find_package(GPUEngine COMPONENTS geSG)
+ENDIF()
 
 find_package(Qt5 COMPONENTS Gui)
-#find_package(GPUEngine COMPONENTS geSG)
 
 add_library(${MODULE_NAME} INTERFACE)
 

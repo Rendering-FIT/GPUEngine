@@ -18,7 +18,10 @@ set(${MODULE_NAME}_SOURCE_FILES
 
 find_package(FreeImage)
 find_package(FreeImagePlus)
-#find_package(GPUEngine COMPONENTS geSG)
+
+IF(NOT TARGET geSG)
+  find_package(GPUEngine COMPONENTS geSG)
+ENDIF()
 
 add_library(${MODULE_NAME} INTERFACE)
 

@@ -18,16 +18,16 @@ if(NOT SDL2_FOUND)
    return()
 endif()
 
-set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
+set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME}/src)
 
 set(ADD_INCLUDES
-  ${HEADER_PATH}/../Export.h
+  ${HEADER_PATH}/../../Export.h
   ${HEADER_PATH}/SDLWindow.h
   ${HEADER_PATH}/SDLMainLoop.h
   )
 set(ADD_SOURCES
-  SDLWindow.cpp
-  SDLMainLoop.cpp
+  src/SDLWindow.cpp
+  src/SDLMainLoop.cpp
   )
 
 

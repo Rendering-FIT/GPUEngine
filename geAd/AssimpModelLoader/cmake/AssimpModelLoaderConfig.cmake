@@ -32,7 +32,11 @@ else()
 endif(WIN32)
 
 find_package(assimp QUIET)
-#find_package(GPUEngine COMPONENTS geSG)
+
+IF(NOT TARGET geSG)
+  find_package(GPUEngine COMPONENTS geSG)
+ENDIF()
+
 find_package(glm QUIET)
 
 if(NOT assimp_FOUND OR NOT glm_FOUND)
