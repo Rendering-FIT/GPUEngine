@@ -22,8 +22,8 @@ find_package(Qt5 COMPONENTS Quick )
 if(NOT TARGET geGL)
    find_package(GPUEngine COMPONENTS geGL)
 endif()
-find_package(AssimpModelLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAD/AssimpModelLoader/cmake)
-find_package(QtImageLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAD/QtImageLoader/cmake)
+find_package(AssimpModelLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAd/AssimpModelLoader/cmake)
+find_package(QtImageLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAd/QtImageLoader/cmake)
 
 # We need some special treatment here inside the GE build system. There are some libraries that the
 # targets exports only when used via config. For example the geSG needs ste when compiled in aplication
