@@ -1,3 +1,5 @@
+#include<string>
+
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geAd/SDLWindow/SDLMainLoop.h>
 #include<geGL/StaticCalls.h>

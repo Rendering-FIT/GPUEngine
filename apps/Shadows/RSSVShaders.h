@@ -498,7 +498,7 @@ vec4 movePointToSubfrustum(
 // Algorithm0(A,0):
 //   return true
 //
-
+)." R".(
 /**
  * @brief This function tests if edge intersects frustum
  * edge (A->B) is assumed to be in clip space
@@ -758,7 +758,7 @@ int doesScreenEdgeIntersectsShadowVolumeSide(
     imageAtomicAdd(multiplicityTexture,ivec2(globalCoord),ivec4(multiplicity));             \
   }
 
-
+)." R".(
 
 #define TEST_SILHOUETTE(LEVEL,NEXT_LEVEL)                                                          \
   void testSilhouette ## LEVEL(                                                                      \
@@ -815,7 +815,7 @@ TEST_SILHOUETTE(1,2)
 #if NUMBER_OF_LEVELS > 1
 TEST_SILHOUETTE(0,1)
 #endif
-
+)." R".(
   void main(){
     if(SILHOUETTE_ID_IN_DISPATCH>=nofSilhouettes)return;
     if(INVOCATION_ID_IN_WAVEFRONT<FLOATS_PER_SILHOUETTE_POINTS){

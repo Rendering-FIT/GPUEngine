@@ -12,7 +12,7 @@ else()
 endif()
 
 set(SDL2_BUILDING_LIBRARY ON)
-find_package(SDL2        QUIET)
+find_package(SDL2 CONFIG QUIET)
 
 if(NOT SDL2_FOUND)
    return()
@@ -42,9 +42,9 @@ add_library(${LIB_NAME}
 # Internal_inc - additional include directories
 # Includes_to_export - includes to be exported from this target to application
 
-set(Internal_deps SDL2 SDLWindow geUtil)
-set(External_deps_Export SDL2)
-set(External_libs SDL2)
+set(Internal_deps SDLWindow geUtil)
+set(External_deps_Export)
+set(External_libs)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
 set(includes_to_export)
 

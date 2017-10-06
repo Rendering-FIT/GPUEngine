@@ -13,7 +13,9 @@ set(src
 	imgui_draw.cpp
 	imgui_impl_sdl_gl3.cpp
 )
+                   
+find_package(SDL2 CONFIG QUIET)
 
 add_library(imgui ${src} ${include})
-target_link_libraries(imgui geGL SDL2)
+target_link_libraries(imgui geGL SDL2::SDL2)
 target_include_directories(imgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
