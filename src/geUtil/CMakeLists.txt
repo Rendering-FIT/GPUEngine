@@ -84,6 +84,8 @@ add_library(${LIB_NAME}
 )
 add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
+target_compile_definitions(${LIB_NAME} PUBLIC GLM_ENABLE_EXPERIMENTAL)
+
 target_link_libraries(${LIB_NAME} PUBLIC geCore glm)
 
 if(UNIX)

@@ -70,22 +70,27 @@ IF(MSVC)
    # 4800 - forcing value to bool
    # 4503 - 'identifier' : decorated name length exceeded, name was truncated, due to a template hell
    # 4996 - This function or variable may be unsafe. Due to using pointer instead of iterators (MatrixTransformBase)
-   # 4275 - on – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier' - Due to Intersector class which is defined only in header file.
-   set(ignored_wrn "/wd4800 /wd4503 /wd4996 /wd4275")
+   # 4275 - on – DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier' - Due to Intersector class which is defined only in header file. 
+   add_compile_options(/wd4800 /wd4503 /wd4996 /wd4275)
 
    # enable multithreaded compilation
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP ${ignored_wrn}")
+   add_compile_options(/MP)
+   
+   #//http://msdn.microsoft.com/cs-cz/library/esew7y1w.aspx  http://support.microsoft.com/default.aspx?scid=KB;EN-US;168958
+   # I'm advising to only hide this warning. Because if we would do the work there are STL containers that can't be exported correctly by design.
+   add_compile_options(/wd4251)
+
 
    # disable MSVC warning "LNK4221: This object file does not define any previously undefined public symbols,
    # so it will not be used by any link operation that consumes this library"
-   SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
-
+   add_compile_options(/wd4221)
+   
    # avoid "warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc"
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
-
+   add_compile_options(/D_HAS_EXCEPTIONS=0)
+  
    # avoid MSVC defines of min and max
-   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DNOMINMAX")
-
+   add_compile_options(/DNOMINMAX)
+  
    # workarounds for limited C++11 support of MSVC
    IF(MSVC_VERSION LESS 1800)
       MESSAGE(FATAL_ERROR "Microsoft Visual C++ 2012 and earlier are not supported "
@@ -94,12 +99,9 @@ IF(MSVC)
       # MSVC 2013 Update 4:
       # - no constexpr support
       # - no local_thread storage
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS")
+      add_compile_options(/Dconstexpr= /Dthread_local= /D_ALLOW_KEYWORD_MACROS)
    ELSE()
       # MSVC 2015 workarounds to be placed here (currently none)
-   ENDIF()
-   IF(GPUENGINE_REPLACE_GLEW)
-     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DREPLACE_GLEW")
    ENDIF()
 ENDIF()
 
@@ -111,7 +113,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   add_compile_options(-Wall)
   add_compile_options(-Wconversion)
   add_compile_options(-pedantic)
-  add_compile_options(-DGLM_ENABLE_EXPERIMENTAL)
 ENDIF()
 
 IF(CMAKE_COMPILER_IS_GNUCC)
