@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geCore/Export.h>
+#include<geCore/gecore_export.h>
 #include<geCore/Functor.h>
 #include<vector>
 #include<memory>

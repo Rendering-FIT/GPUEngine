@@ -6,7 +6,7 @@
 #include<memory>
 #include<functional>
 
-#include<geAd/Export.h>
+#include<geAd/SDLWindow/sdlwindow_export.h>
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_video.h>
 
@@ -15,7 +15,7 @@
 namespace ge{
   namespace ad{
     class SDLMainLoop;
-    class GEAD_EXPORT SDLWindow{
+    class SDLWINDOW_EXPORT SDLWindow{
       friend class SDLMainLoop;
       public:
         using WindowId             = uint32_t;

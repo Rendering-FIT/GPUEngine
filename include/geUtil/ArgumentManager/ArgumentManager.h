@@ -4,7 +4,7 @@
 #include<vector>
 #include<map>
 
-#include<geUtil/Export.h>
+#include<geUtil/geutil_export.h>
 #include<geUtil/ArgumentManager/ArgData.h>
 #include<geUtil/ArgumentManager/BaseData.h>
 #include<geUtil/ArgumentManager/ArrayData.h>

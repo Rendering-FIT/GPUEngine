@@ -1,7 +1,7 @@
 #pragma once
 
 #include<iostream>
-#include<geCore/Export.h>
+#include<geCore/gecore_export.h>
 #include<geCore/fsa/FusedCallbackData.h>
 
 namespace ge{

@@ -6,7 +6,7 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtc/matrix_access.hpp>
 
-#include <geUtil/Export.h>
+#include <geUtil/geutil_export.h>
 #include <iostream>
 
 namespace ge{

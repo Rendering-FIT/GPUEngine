@@ -1,7 +1,13 @@
 set(LIB_NAME geCore)
 
+set(Upstream_VERSION 1.0.0)
+
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
+
+set(LIB_NAME_LOWER)
+string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
+
 
 if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
@@ -32,7 +38,6 @@ set(FSA_INCLUDES
   )
 
 set(CORE_INCLUDES
-  ${HEADER_PATH}/Export.h
   ${HEADER_PATH}/geCore.h
   ${HEADER_PATH}/CallStackPrinter.h
   ${HEADER_PATH}/Command.h
@@ -73,63 +78,77 @@ add_library(${LIB_NAME}
   ${CORE_SOURCES}
   ${FSA_SOURCES}
   )
+add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
+include(GenerateExportHeader)
 
-################################################
-# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
-# External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
-# External_libs - external libs or targets to link with
-# Internal_inc - additional include directories
-# Includes_to_export - includes to be exported from this target to application
-
-set(Internal_deps )
-set(External_deps_Export )
-set(External_libs )
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
-set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
-
-target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_deps} )
-
-set_target_properties(${LIB_NAME} PROPERTIES
-  INCLUDE_DIRECTORIES "${Internal_inc}"
-  INTERFACE_INCLUDE_DIRECTORIES "${Includes_to_export}"
+generate_export_header(${LIB_NAME})
+set_property(TARGET ${LIB_NAME} APPEND PROPERTY
+  COMPATIBLE_INTERFACE_STRING ${LIB_NAME}_MAJOR_VERSION
   )
 
+target_include_directories(${LIB_NAME} PUBLIC  
+  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}/include/>  
+  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}/src/>  
+  $<BUILD_INTERFACE:${GPUEngine_SOURCE_DIR}/include/>  
+  $<INSTALL_INTERFACE:include/> 
+)
+
+install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
 install(FILES
   ${FSA_INCLUDES}
   DESTINATION include/${LIB_NAME}/fsa
   )
-
 install(FILES
   ${CORE_INCLUDES}
   DESTINATION include/${LIB_NAME}
   )
-
-
-install(TARGETS ${LIB_NAME}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
+install(
+  FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME_LOWER}_export.h"
+  DESTINATION
+  include/${LIB_NAME}
+  COMPONENT
+  Devel
   )
 
-#########################################
-#Export
-
-configure_file(
-  ../CMake/geConfig.cmake.in
-  "${LIB_NAME}Config.cmake"
-  @ONLY
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
+  VERSION ${Upstream_VERSION}
+  COMPATIBILITY AnyNewerVersion
   )
 
-
-configure_file(
-  ../CMake/geExport.h.in
-  "${GPUEngine_SOURCE_DIR}/include/${LIB_NAME}/Export.h"
-  @ONLY
+export(EXPORT ${LIB_NAME}Targets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Targets.cmake"
+  NAMESPACE ${LIB_NAME}::
+  )
+configure_file(cmake/${LIB_NAME}Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake"
+  COPYONLY
   )
 
-# INSTALL_CM_DIR is defined in master CMakeLists file
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-  DESTINATION "${INSTALL_CM_DIR}/${LIB_NAME}"
+set(ConfigPackageLocation lib/cmake/${LIB_NAME})
+install(EXPORT ${LIB_NAME}Targets
+  FILE
+  ${LIB_NAME}Targets.cmake
+  NAMESPACE
+  ${LIB_NAME}::
+  DESTINATION
+  ${ConfigPackageLocation}
   )
+install(
+  FILES
+  cmake/${LIB_NAME}Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
+  DESTINATION
+  ${ConfigPackageLocation}
+  COMPONENT
+  Devel
+  )
+

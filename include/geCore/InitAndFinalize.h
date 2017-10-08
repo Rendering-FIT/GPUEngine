@@ -1,7 +1,7 @@
 #ifndef GE_INIT_AND_FINALIZE_H
 #define GE_INIT_AND_FINALIZE_H
 
-#include <geCore/Export.h>
+#include <geCore/gecore_export.h>
 
 namespace ge
 {

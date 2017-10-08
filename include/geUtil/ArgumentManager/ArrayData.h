@@ -1,7 +1,7 @@
 #pragma once
 
 #include<vector>
-#include<geUtil/Export.h>
+#include<geUtil/geutil_export.h>
 #include<geUtil/ArgumentManager/ArgData.h>
 
 namespace ge{

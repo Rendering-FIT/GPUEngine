@@ -5,7 +5,7 @@
 #include<memory>
 #include<limits>
 #include<functional>
-#include<geCore/Export.h>
+#include<geCore/gecore_export.h>
 
 namespace ge{
   namespace core{

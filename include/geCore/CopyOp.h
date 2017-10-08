@@ -1,7 +1,7 @@
 #ifndef GE_COPYOP
 #define GE_COPYOP
 
-#include <geCore/Export.h>
+#include <geCore/gecore_export.h>
 
 namespace ge
 {

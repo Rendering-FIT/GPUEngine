@@ -1,45 +1,26 @@
-SET(PACKAGES 
-  geCore
-  #geGL
-  #geRG
-  #geSG
-  #geUtil
-  )
+add_subdirectory(geCore)
 
 if(GPUENGINE_BUILD_GEGL)
-  set(PACKAGES ${PACKAGES} geGL)
+  add_subdirectory(geGL)
 endif()
 
 if(GPUENGINE_BUILD_GESG)
-  set(PACKAGES ${PACKAGES} geSG)
+  add_subdirectory(geSG)
 endif()
 
 if(GPUENGINE_BUILD_GERG)
-  set(PACKAGES ${PACKAGES} geRG)
+  add_subdirectory(geRG)
 endif()
 
 if(GPUENGINE_BUILD_GEUTIL)
-  set(PACKAGES ${PACKAGES} geUtil)
+  add_subdirectory(geUtil)
 endif()
 
 if(GPUENGINE_BUILD_GEPARSER)
-  set(PACKAGES ${PACKAGES} geParser)
+  add_subdirectory(geParser)
 endif()
 
 if(GPUENGINE_BUILD_GEDE)
-  set(PACKAGES ${PACKAGES} geDE)
+  add_subdirectory(geDE)
 endif()
 
-
-
-FOREACH(mylibfolder ${PACKAGES}
-    #geGL
-    #geCore
-    #geRG
-    #geSG
-    #geUtil
-    )
-
-  ADD_SUBDIRECTORY(${mylibfolder})
-
-ENDFOREACH()

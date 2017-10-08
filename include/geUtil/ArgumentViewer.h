@@ -3,7 +3,7 @@
 #include<iostream>
 #include<vector>
 #include<memory>
-#include<geUtil/Export.h>
+#include<geUtil/geutil_export.h>
 
 namespace ge{
   namespace util{

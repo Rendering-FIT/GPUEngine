@@ -1,7 +1,7 @@
 #pragma once
 
 #include<iostream>
-#include<geUtil/Export.h>
+#include<geUtil/geutil_export.h>
 
 namespace ge{
   namespace util{

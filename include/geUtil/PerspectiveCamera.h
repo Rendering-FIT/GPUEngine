@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geUtil/Export.h>
+#include<geUtil/geutil_export.h>
 #include<geUtil/Camera.h>
 
 namespace ge{

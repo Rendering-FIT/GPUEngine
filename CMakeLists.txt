@@ -3,6 +3,18 @@ cmake_minimum_required(VERSION 3.1.0)
 PROJECT(GPUEngine)
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 
+#IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
+cmake_policy(SET CMP0057 NEW)
+
+list(APPEND as_subproject GPUEngine geCore geGL geUtil SDLWindow)
+
+macro(find_package name)
+  if(NOT "${name}" IN_LIST as_subproject)
+    _find_package(${ARGV})
+  endif()
+endmacro()
+
+
 SET(GPUENGINE_MAJOR_VERSION 0)
 SET(GPUENGINE_MINOR_VERSION 0)
 SET(GPUENGINE_PATCH_VERSION 0)
@@ -18,10 +30,10 @@ SET(GPUENGINE_BUILD_geAd     OFF  CACHE BOOL "Build addons (geAd directory).")
 SET(GPUENGINE_BUILD_APPS     OFF  CACHE BOOL "Build applications (apps directory).")
 SET(GPUENGINE_BUILD_EXAMPLES OFF  CACHE BOOL "Build examples (examples directory).")
 SET(GPUENGINE_BUILD_TESTS    OFF  CACHE BOOL "Build and run tests (tests directory).")
-SET(GPUENGINE_BUILD_GEGL     ON   CACHE BOOL "Build geGL package.")
+SET(GPUENGINE_BUILD_GEGL     OFF  CACHE BOOL "Build geGL package.")
 SET(GPUENGINE_BUILD_GESG     OFF  CACHE BOOL "Build geSG package.")
 SET(GPUENGINE_BUILD_GERG     OFF  CACHE BOOL "Build geRG package.")
-SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
+SET(GPUENGINE_BUILD_GEUTIL   OFF  CACHE BOOL "Build geUtil package.")
 SET(GPUENGINE_BUILD_GEPARSER OFF  CACHE BOOL "Build geParser package.")
 SET(GPUENGINE_BUILD_GEDE     OFF  CACHE BOOL "Build geDE package.")
 
@@ -99,6 +111,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   add_compile_options(-Wall)
   add_compile_options(-Wconversion)
   add_compile_options(-pedantic)
+  add_compile_options(-DGLM_ENABLE_EXPERIMENTAL)
 ENDIF()
 
 IF(CMAKE_COMPILER_IS_GNUCC)
@@ -121,39 +134,7 @@ IF(WIN32)
 ENDIF()
 
 
-##################################################
-# Export Things
-##################################################
-
-SET(INSTALL_CM_DIR cmake)
-
-configure_file(version.h.in "include/version.h" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
-  DESTINATION include
-  )
-
-configure_file(
-  GPUEngineConfig.cmake.in
-  GPUEngineConfig.cmake
-  @ONLY
-  )
-
-configure_file(
-  GPUEngineConfigVersion.cmake.in
-  GPUEngineConfigVersion.cmake
-  @ONLY
-  )
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
-  #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
-  DESTINATION ${INSTALL_CM_DIR}
-  )
-
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
-  DESTINATION "${INSTALL_CM_DIR}/CMakeModules"
-  )
-
+list(INSERT gpuengine_components 0 geCore)
 
 add_subdirectory(src)
 
@@ -161,17 +142,63 @@ if(GPUENGINE_BUILD_geAd)
   add_subdirectory(geAd)
 endif()
 
-if(GPUENGINE_BUILD_APPS)
-  if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
-    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
-  endif()
-  add_subdirectory(apps)
+if(TARGET geGL)
+  list(APPEND gpuengine_components geGL)
 endif()
 
-if(GPUENGINE_BUILD_EXAMPLES)
-  add_subdirectory(examples)
+if(TARGET geUtil)
+  list(APPEND gpuengine_components geUtil)
 endif()
 
-if(GPUENGINE_BUILD_TESTS)
-  add_subdirectory(tests)
+if(TARGET SDLWindow)
+  list(APPEND gpuengine_components SDLWindow)
 endif()
+
+
+#if(GPUENGINE_BUILD_APPS)
+#  if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
+#    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
+#  endif()
+#  add_subdirectory(apps)
+#endif()
+#
+#if(GPUENGINE_BUILD_EXAMPLES)
+#  add_subdirectory(examples)
+#endif()
+#
+#if(GPUENGINE_BUILD_TESTS)
+#  add_subdirectory(tests)
+#endif()
+
+##################################################
+# Export Things
+##################################################
+
+configure_file(version.h.in "include/version.h" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
+  DESTINATION include
+  )
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+  VERSION ${GPUENGINE_VERSION}
+  COMPATIBILITY AnyNewerVersion
+  )
+
+configure_file(GPUEngineConfig.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
+  @ONLY
+  )
+
+set(ConfigPackageLocation lib/cmake/GPUEngine)
+install(
+  FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+  DESTINATION
+  ${ConfigPackageLocation}
+  COMPONENT
+  Devel
+  )
+

@@ -4,7 +4,7 @@
 #include<vector>
 #include<map>
 #include<set>
-#include<geCore/Export.h>
+#include<geCore/gecore_export.h>
 #include<geCore/geCore.h>
 #include<geCore/fsa/Transition.h>
 #include<geCore/fsa/State.h>

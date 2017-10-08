@@ -1,7 +1,13 @@
 set(LIB_NAME SDLWindow)
 
+set(Upstream_VERSION 1.0.0)
+
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
+
+set(LIB_NAME_LOWER)
+string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
+
 
 if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
@@ -11,79 +17,101 @@ else()
    add_definitions(-DGE_LIBRARY_STATIC)
 endif()
 
-set(SDL2_BUILDING_LIBRARY ON)
-find_package(SDL2 CONFIG QUIET)
-
-if(NOT SDL2_FOUND)
-   return()
-endif()
-
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/geAd/${LIB_NAME})
 
-set(ADD_INCLUDES
-  ${HEADER_PATH}/../Export.h
+set(INCLUDES
   ${HEADER_PATH}/SDLWindow.h
   ${HEADER_PATH}/SDLMainLoop.h
   )
-set(ADD_SOURCES
+set(SOURCES
   SDLWindow.cpp
   SDLMainLoop.cpp
   )
 
+find_package(SDL2 CONFIG REQUIRED)
+find_package(geCore CONFIG REQUIRED)
 
 add_library(${LIB_NAME}
   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-  ${ADD_INCLUDES}
-  ${ADD_SOURCES}
+  ${INCLUDES}
+  ${SOURCES}
+  )
+add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
+
+target_link_libraries(${LIB_NAME} 
+  PUBLIC 
+    SDL2::SDL2
+    SDL2::SDL2main
+    geCore
+    )
+
+include(GenerateExportHeader)
+
+generate_export_header(${LIB_NAME})
+set_property(TARGET ${LIB_NAME} APPEND PROPERTY
+  COMPATIBLE_INTERFACE_STRING ${LIB_NAME}_MAJOR_VERSION
   )
 
-################################################
-# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
-# External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
-# External_libs - external libs or targets to link with
-# Internal_inc - additional include directories
-# Includes_to_export - includes to be exported from this target to application
+target_include_directories(${LIB_NAME} PUBLIC  
+  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}/include/>  
+  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}/src/>  
+  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}>  
+  $<BUILD_INTERFACE:${GPUEngine_SOURCE_DIR}/include/>  
+  $<BUILD_INTERFACE:${GPUEngine_SOURCE_DIR}>  
+  $<INSTALL_INTERFACE:include/> 
+)
 
-set(Internal_deps)
-set(External_deps_Export SDL2::SDL2 SDL2::SDL2main)
-set(External_libs SDL2::SDL2 SDL2::SDL2main)
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
-set(includes_to_export)
-
-target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_libs} )
-set_target_properties(${LIB_NAME} PROPERTIES
-  INCLUDE_DIRECTORIES "${Internal_inc}"
-  INTERFACE_INCLUDE_DIRECTORIES "${includes_to_export}"
-  )
-
-install(FILES
-  ${ADD_INCLUDES}
-  DESTINATION include/geAd/${LIB_NAME}
-  )
-
-install(TARGETS ${LIB_NAME}
+install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+  )
+install(FILES
+  ${INCLUDES}
+  DESTINATION include/geAd/${LIB_NAME}
+  )
+install(
+  FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME_LOWER}_export.h"
+  DESTINATION
+  include/geAd/${LIB_NAME}
+  COMPONENT
+  Devel
   )
 
-#########################################
-#Export
-#configure_package_config_file( 
-#   geGLConfig.cmake.in
-#   geGLConfig.cmake
-#   INSTALL_DESTINATION lib/cmake/geGL
-#)
-
-configure_file(
-  ../../src/CMake/geConfig.cmake.in
-  "${LIB_NAME}Config.cmake"
-  @ONLY
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
+  VERSION ${Upstream_VERSION}
+  COMPATIBILITY AnyNewerVersion
   )
 
-
-# INSTALL_CM_DIR is defined in master CMakeLists file
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-  DESTINATION "${INSTALL_CM_DIR}/${LIB_NAME}"
+export(EXPORT ${LIB_NAME}Targets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Targets.cmake"
+  NAMESPACE ${LIB_NAME}::
   )
+configure_file(cmake/${LIB_NAME}Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake"
+  COPYONLY
+  )
+
+set(ConfigPackageLocation lib/cmake/${LIB_NAME})
+install(EXPORT ${LIB_NAME}Targets
+  FILE
+  ${LIB_NAME}Targets.cmake
+  NAMESPACE
+  ${LIB_NAME}::
+  DESTINATION
+  ${ConfigPackageLocation}
+  )
+install(
+  FILES
+  cmake/${LIB_NAME}Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
+  DESTINATION
+  ${ConfigPackageLocation}
+  COMPONENT
+  Devel
+  )
+

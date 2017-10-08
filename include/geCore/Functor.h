@@ -1,5 +1,5 @@
 #pragma once
-#include <geCore/Export.h>
+#include <geCore/gecore_export.h>
 
 namespace ge
 {

@@ -5,14 +5,14 @@
 #include<memory>
 #include<functional>
 
-#include<geAd/Export.h>
+#include<geAd/SDLWindow/sdlwindow_export.h>
 #include<SDL2/SDL.h>
 
 
 namespace ge{
   namespace ad{
     class SDLWindow;
-    class GEAD_EXPORT SDLMainLoop{
+    class SDLWINDOW_EXPORT SDLMainLoop{
       public:
         using SharedWindow        = std::shared_ptr<SDLWindow>;
         using WindowId            = uint32_t;

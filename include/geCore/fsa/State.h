@@ -1,7 +1,7 @@
 #pragma once
 
 #include<map>
-#include<geCore/Export.h>
+#include<geCore/gecore_export.h>
 #include<geCore/fsa/Transition.h>
 
 namespace ge{
