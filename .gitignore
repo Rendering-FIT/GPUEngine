@@ -37,3 +37,4 @@ include/geDE/Export.h
 include/geParser/Export.h
 geAd/SDLWindow/Export.h
 geAd/Export.h
+build/

@@ -1,6 +1,3 @@
-#include<geCore/fsa/MealyMachine.h>
-#include<geCore/fsa/MapTransitionChooser.h>
-
 #include<limits>
 #include<iostream>
 #include<cassert>
@@ -9,8 +6,12 @@
 #include<iomanip>
 #include<algorithm>
 #include<cctype>
-#include<geCore/ErrorPrinter.h>
-#include<geCore/fsa/TransitionChooser.h>
+
+#include<GPUEngine/geCore/ErrorPrinter/ErrorPrinter.h>
+
+#include<GPUEngine/geCore/MealyMachine/MealyMachine.h>
+#include<GPUEngine/geCore/MealyMachine/MapTransitionChooser.h>
+#include<GPUEngine/geCore/MealyMachine/TransitionChooser.h>
 
 using namespace ge::core;
 

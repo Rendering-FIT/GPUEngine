@@ -8,87 +8,76 @@ string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 set(LIB_NAME_LOWER)
 string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
 
-
-if(GPUENGINE_DYNAMIC_LINKAGE)
-   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-   add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
-else()
-   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-   add_definitions(-DGE_LIBRARY_STATIC)
-endif()
-
-set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
-
 set(GENERATED_INCLUDES
-  ${HEADER_PATH}/Generated/ContextCalls.h
-  ${HEADER_PATH}/Generated/ContextDeclarations.h
-  ${HEADER_PATH}/Generated/FunctionTableCalls.h
-  ${HEADER_PATH}/Generated/LoaderImplementation.h
-  ${HEADER_PATH}/Generated/LoaderLoadingCalls.h
-  ${HEADER_PATH}/Generated/NumberOfFunctions.h
-  ${HEADER_PATH}/Generated/MemberOpenGLFunctions.h
-  ${HEADER_PATH}/Generated/MemberOpenGLPFN.h
-  ${HEADER_PATH}/Generated/OpenGLConstants.h
-  ${HEADER_PATH}/Generated/OpenGLFunctions.h
-  ${HEADER_PATH}/Generated/OpenGLPFN.h
-  ${HEADER_PATH}/Generated/OpenGLTypes.h
-  ${HEADER_PATH}/Generated/TrapCalls.h
-  ${HEADER_PATH}/Generated/TrapImplementation.h
+  include/Generated/ContextCalls.h
+  include/Generated/ContextDeclarations.h
+  include/Generated/FunctionTableCalls.h
+  include/Generated/LoaderImplementation.h
+  include/Generated/LoaderLoadingCalls.h
+  include/Generated/NumberOfFunctions.h
+  include/Generated/MemberOpenGLFunctions.h
+  include/Generated/MemberOpenGLPFN.h
+  include/Generated/OpenGLConstants.h
+  include/Generated/OpenGLFunctions.h
+  include/Generated/OpenGLPFN.h
+  include/Generated/OpenGLTypes.h
+  include/Generated/TrapCalls.h
+  include/Generated/TrapImplementation.h
   )
 
 set(GL_INCLUDES
-  ${HEADER_PATH}/Fwd.h
-  ${HEADER_PATH}/Definitions.h
-  ${HEADER_PATH}/Buffer.h
-  ${HEADER_PATH}/VertexArray.h
-  ${HEADER_PATH}/Framebuffer.h
-  ${HEADER_PATH}/Texture.h
-  ${HEADER_PATH}/Sampler.h
-  ${HEADER_PATH}/ProgramPipeline.h
-  ${HEADER_PATH}/Shader.h
-  ${HEADER_PATH}/Program.h
-  ${HEADER_PATH}/ProgramInfo.h
-  ${HEADER_PATH}/Renderbuffer.h
-  ${HEADER_PATH}/OpenGL.h
-  ${HEADER_PATH}/OpenGLUtil.h
-  ${HEADER_PATH}/AsynchronousQuery.h
-  ${HEADER_PATH}/DebugMessage.h
-  ${HEADER_PATH}/OpenGLObject.h
-  ${HEADER_PATH}/geGL.h
-  ${HEADER_PATH}/ConvertTo.h
-  ${HEADER_PATH}/OpenGLCommands.h
-  ${HEADER_PATH}/OpenGLFunctionTable.h
-  ${HEADER_PATH}/OpenGLContext.h
-  ${HEADER_PATH}/OpenGLCapabilities.h
-  ${HEADER_PATH}/FunctionLoaderInterface.h
-  ${HEADER_PATH}/DefaultLoader.h
-  ${HEADER_PATH}/LoaderTableDecorator.h
-  ${HEADER_PATH}/DSATableDecorator.h
-  ${HEADER_PATH}/TrapTableDecorator.h
-  ${HEADER_PATH}/CapabilitiesTableDecorator.h
-  ${HEADER_PATH}/StaticCalls.h
-  ${HEADER_PATH}/GLSLNoise.h
+  include/Fwd.h
+  include/Definitions.h
+  include/Buffer.h
+  include/VertexArray.h
+  include/Framebuffer.h
+  include/Texture.h
+  include/Sampler.h
+  include/ProgramPipeline.h
+  include/Shader.h
+  include/Program.h
+  include/ProgramInfo.h
+  include/Renderbuffer.h
+  include/OpenGL.h
+  include/OpenGLUtil.h
+  include/AsynchronousQuery.h
+  include/DebugMessage.h
+  include/OpenGLObject.h
+  include/geGL.h
+  include/ConvertTo.h
+  include/OpenGLCommands.h
+  include/OpenGLFunctionTable.h
+  include/OpenGLContext.h
+  include/OpenGLCapabilities.h
+  include/FunctionLoaderInterface.h
+  include/DefaultLoader.h
+  include/LoaderTableDecorator.h
+  include/DSATableDecorator.h
+  include/TrapTableDecorator.h
+  include/CapabilitiesTableDecorator.h
+  include/StaticCalls.h
+  include/GLSLNoise.h
   )
 
 set(GL_SOURCES
-  Buffer.cpp
-  VertexArray.cpp
-  Framebuffer.cpp
-  Texture.cpp
-  Sampler.cpp
-  ProgramPipeline.cpp
-  Shader.cpp
-  Program.cpp
-  Renderbuffer.cpp
-  AsynchronousQuery.cpp
-  DebugMessage.cpp
-  OpenGLObject.cpp
-  geGL.cpp
-  OpenGLContext.cpp
-  OpenGL.cpp
-  OpenGLUtil.cpp
-  StaticCalls.cpp
-  GLSLNoise.cpp
+  src/Buffer.cpp
+  src/VertexArray.cpp
+  src/Framebuffer.cpp
+  src/Texture.cpp
+  src/Sampler.cpp
+  src/ProgramPipeline.cpp
+  src/Shader.cpp
+  src/Program.cpp
+  src/Renderbuffer.cpp
+  src/AsynchronousQuery.cpp
+  src/DebugMessage.cpp
+  src/OpenGLObject.cpp
+  src/geGL.cpp
+  src/OpenGLContext.cpp
+  src/OpenGL.cpp
+  src/OpenGLUtil.cpp
+  src/StaticCalls.cpp
+  src/GLSLNoise.cpp
   )
 
 find_package(geCore CONFIG REQUIRED)

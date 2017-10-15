@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geCore/fsa/MealyMachine.h>
+#include<GPUEngine/geCore/MealyMachine/MealyMachine.h>
 
 namespace ge{
   namespace core{

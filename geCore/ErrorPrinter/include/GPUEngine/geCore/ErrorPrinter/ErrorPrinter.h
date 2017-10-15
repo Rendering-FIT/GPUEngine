@@ -1,7 +1,7 @@
 #pragma once
 
-#include<geCore/Defines.h>
-#include<geCore/ValuePrinter.h>
+#include<GPUEngine/geCore/PrettyFunctionName/PrettyFunctionName.h>
+#include<GPUEngine/geCore/ValuePrinter/ValuePrinter.h>
 
 namespace ge{
   namespace core{

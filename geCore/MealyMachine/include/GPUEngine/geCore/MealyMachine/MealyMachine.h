@@ -5,13 +5,13 @@
 #include<memory>
 #include<limits>
 #include<functional>
-#include<geCore/gecore_export.h>
+#include<GPUEngine/geCore/MealyMachine/mealymachine_export.h>
 
 namespace ge{
   namespace core{
     class TransitionChooser;
 
-    class GECORE_EXPORT MealyMachine{
+    class MEALYMACHINE_EXPORT MealyMachine{
       public:
         using StateIndex       = size_t;
         using BasicUnit        = uint8_t;

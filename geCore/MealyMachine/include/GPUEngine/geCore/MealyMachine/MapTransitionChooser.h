@@ -1,6 +1,6 @@
 #pragma once
 
-#include<geCore/fsa/TransitionChooser.h>
+#include<GPUEngine/geCore/MealyMachine/TransitionChooser.h>
 #include<map>
 #include<cstring>
 
