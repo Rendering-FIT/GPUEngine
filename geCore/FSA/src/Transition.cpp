@@ -1,9 +1,9 @@
-#include<geCore/fsa/Transition.h>
-#include<geCore/fsa/State.h>
-
 #include<sstream>
 
-#include<geCore/fsa/FusedCallbackData.h>
+#include<GPUEngine/geCore/FSA/Transition.h>
+#include<GPUEngine/geCore/FSA/State.h>
+#include<GPUEngine/geCore/FSA/FusedCallbackData.h>
+
 
 using namespace ge::core;
 

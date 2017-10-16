@@ -1,4 +1,4 @@
-#include<geGL/AsynchronousQuery.h>
+#include<GPUEngine/geGL/AsynchronousQuery.h>
 
 #include<cassert>
 

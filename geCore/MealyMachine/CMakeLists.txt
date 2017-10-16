@@ -5,6 +5,9 @@ project(MealyMachine LANGUAGES CXX)
 
 set(LIB_NAME MealyMachine)
 
+set(LIB_NAME_UPPER)
+string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
+
 set(${LIB_NAME}_MAJOR_VERSION    1)
 set(${LIB_NAME}_MINOR_VERSION    0)
 set(${LIB_NAME}_PATH_VERSION     0)
@@ -23,7 +26,14 @@ set(SOURCES
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_C_STANDARD   99)
 
-add_library(${LIB_NAME} ${INCLUDES} ${SOURCES})
+set(${LIB_NAME_UPPER}_DYNAMIC TRUE CACHE BOOL "Build dynamic library (dll,so,...). Use OFF for static lib.")
+if(${LIB_NAME_UPPER}_DYNAMIC)
+  set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "SHARED")
+else()
+  set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "STATIC")
+endif()
+
+add_library(${LIB_NAME} ${${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC} ${INCLUDES} ${SOURCES})
 add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
 target_include_directories(${LIB_NAME} PUBLIC
@@ -36,11 +46,23 @@ find_package(ErrorPrinter CONFIG)
 target_link_libraries(${LIB_NAME} ErrorPrinter::ErrorPrinter)
 
 
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  if(${LIB_NAME_UPPER}_DYNAMIC)
+  else()
+    target_compile_options(${LIB_NAME} PUBLIC -fPIC)
+  endif()
+endif()
+
 
 
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
+SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
+SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
+SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
   target_compile_options(${LIB_NAME} PRIVATE -W)

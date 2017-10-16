@@ -1,4 +1,4 @@
-#include <geCore/Object.h>
+#include <GPUEngine/geCore/Object.h>
 
 using namespace ge::core;
 

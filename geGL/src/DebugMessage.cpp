@@ -1,5 +1,5 @@
-#include<geGL/DebugMessage.h>
-#include<geGL/OpenGLUtil.h>
+#include<GPUEngine/geGL/DebugMessage.h>
+#include<GPUEngine/geGL/OpenGLUtil.h>
 #include<string>
 #include<cassert>
 

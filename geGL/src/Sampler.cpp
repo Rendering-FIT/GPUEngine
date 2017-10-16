@@ -1,4 +1,4 @@
-#include<geGL/Sampler.h>
+#include<GPUEngine/geGL/Sampler.h>
 
 using namespace ge::gl;
 

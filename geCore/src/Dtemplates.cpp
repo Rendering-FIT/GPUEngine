@@ -1,5 +1,5 @@
-#include<geCore/Dtemplates.h>
-#include<geCore/fsa/Fsa.h>
+#include<GPUEngine/geCore/Dtemplates.h>
+#include<GPUEngine/geCore/FSA/FSA.h>
 
 using namespace ge::core;
 

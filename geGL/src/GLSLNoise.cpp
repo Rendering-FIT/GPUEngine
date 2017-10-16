@@ -1,4 +1,4 @@
-#include<geGL/GLSLNoise.h>
+#include<GPUEngine/geGL/GLSLNoise.h>
 
 std::string ge::gl::getNoiseSource(){
   return R".(

@@ -1,7 +1,7 @@
-#include<geGL/Framebuffer.h>
-#include<geGL/OpenGLUtil.h>
-#include<geGL/Texture.h>
-#include<geGL/Renderbuffer.h>
+#include<GPUEngine/geGL/Framebuffer.h>
+#include<GPUEngine/geGL/OpenGLUtil.h>
+#include<GPUEngine/geGL/Texture.h>
+#include<GPUEngine/geGL/Renderbuffer.h>
 #include<iostream>
 #include<sstream>
 #include<cassert>

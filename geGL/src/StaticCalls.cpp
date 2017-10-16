@@ -1,5 +1,5 @@
-#include<geGL/StaticCalls.h>
-#include<geGL/OpenGLContext.h>
+#include<GPUEngine/geGL/StaticCalls.h>
+#include<GPUEngine/geGL/OpenGLContext.h>
 void ge::gl::glMultiDrawArraysIndirectBindlessCountNV(GLenum mode,const void* indirect,GLsizei drawCount,GLsizei maxDrawCount,GLsizei stride,GLint vertexBufferCount){ge::gl::getDefaultContext()->glMultiDrawArraysIndirectBindlessCountNV(mode,indirect,drawCount,maxDrawCount,stride,vertexBufferCount);}
 void ge::gl::glTextureParameterfv(GLuint texture,GLenum pname,const GLfloat* param){ge::gl::getDefaultContext()->glTextureParameterfv(texture,pname,param);}
 void ge::gl::glGetListParameterivSGIX(GLuint list,GLenum pname,GLint* params){ge::gl::getDefaultContext()->glGetListParameterivSGIX(list,pname,params);}

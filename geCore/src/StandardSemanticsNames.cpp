@@ -1,4 +1,4 @@
-#include <geCore/StandardSemanticsNames.h>
+#include <GPUEngine/geCore/StandardSemanticsNames.h>
 
 using namespace ge::core;
 

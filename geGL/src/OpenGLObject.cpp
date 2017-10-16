@@ -1,4 +1,4 @@
-#include <geGL/OpenGLObject.h>
+#include<GPUEngine/geGL/OpenGLObject.h>
 #include<cassert>
 
 using namespace ge::gl;

@@ -1,5 +1,5 @@
-#include<geGL/OpenGLContext.h>
-#include<geGL/OpenGLFunctionTable.h>
+#include<GPUEngine/geGL/OpenGLContext.h>
+#include<GPUEngine/geGL/OpenGLFunctionTable.h>
 
 using namespace ge::gl;
 
@@ -9,4 +9,4 @@ Context::Context(FunctionTablePointer const&table){
   else this->m_table = table;
 }
 
-#include<geGL/Generated/ContextCalls.h>
+#include<GPUEngine/geGL/Generated/ContextCalls.h>

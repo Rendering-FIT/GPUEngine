@@ -1,10 +1,10 @@
-#include<geGL/Program.h>
-#include<geGL/OpenGLUtil.h>
-#include<geGL/Buffer.h>
+#include<GPUEngine/geGL/Program.h>
+#include<GPUEngine/geGL/OpenGLUtil.h>
+#include<GPUEngine/geGL/Buffer.h>
 #include<iostream>
 #include<string>
 #include<limits>
-#include<geCore/ErrorPrinter.h>
+#include<GPUEngine/geCore/ErrorPrinter/ErrorPrinter.h>
 
 using namespace ge::gl;
 

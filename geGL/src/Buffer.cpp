@@ -1,7 +1,7 @@
-#include<geGL/Buffer.h>
-#include<geGL/VertexArray.h>
-#include<geGL/OpenGLUtil.h>
-#include<geCore/ErrorPrinter.h>
+#include<GPUEngine/geGL/Buffer.h>
+#include<GPUEngine/geGL/VertexArray.h>
+#include<GPUEngine/geGL/OpenGLUtil.h>
+#include<GPUEngine/geCore/ErrorPrinter/ErrorPrinter.h>
 #include<cassert>
 #include<vector>
 

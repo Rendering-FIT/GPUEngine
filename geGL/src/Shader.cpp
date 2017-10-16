@@ -1,5 +1,5 @@
-#include<geGL/Shader.h>
-#include<geGL/Program.h>
+#include<GPUEngine/geGL/Shader.h>
+#include<GPUEngine/geGL/Program.h>
 #include<sstream>
 
 using namespace ge::gl;

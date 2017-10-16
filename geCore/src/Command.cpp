@@ -1,5 +1,5 @@
-#include<geCore/Command.h>
-#include<geCore/Dtemplates.h>
+#include<GPUEngine/geCore/Command.h>
+#include<GPUEngine/geCore/Dtemplates.h>
 
 using namespace ge::core;
 

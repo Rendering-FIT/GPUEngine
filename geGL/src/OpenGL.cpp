@@ -1,12 +1,12 @@
-#include<geGL/OpenGL.h>
+#include<GPUEngine/geGL/OpenGL.h>
 
-#include<geGL/OpenGLFunctionTable.h>
-#include<geGL/LoaderTableDecorator.h>
-#include<geGL/DSATableDecorator.h>
-#include<geGL/CapabilitiesTableDecorator.h>
-#include<geGL/TrapTableDecorator.h>
-#include<geGL/OpenGLCapabilities.h>
-#include<geGL/OpenGLContext.h>
+#include<GPUEngine/geGL/OpenGLFunctionTable.h>
+#include<GPUEngine/geGL/LoaderTableDecorator.h>
+#include<GPUEngine/geGL/DSATableDecorator.h>
+#include<GPUEngine/geGL/CapabilitiesTableDecorator.h>
+#include<GPUEngine/geGL/TrapTableDecorator.h>
+#include<GPUEngine/geGL/OpenGLCapabilities.h>
+#include<GPUEngine/geGL/OpenGLContext.h>
 
 thread_local ge::gl::FunctionTablePointer _defaultOpenGLFunctionTable = nullptr;
 thread_local ge::gl::ContextPointer       _defaultOpenGLContext       = nullptr;

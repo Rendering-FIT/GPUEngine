@@ -1,5 +1,6 @@
 #include <unordered_set>
-#include <geCore/InitAndFinalize.h>
+
+#include <GPUEngine/geCore/InitAndFinalize.h>
 
 using namespace ge::core;
 

@@ -1,8 +1,8 @@
-#include<geGL/Texture.h>
-#include<geGL/OpenGLUtil.h>
+#include<GPUEngine/geGL/Texture.h>
+#include<GPUEngine/geGL/OpenGLUtil.h>
 #include<sstream>
 
-#include<geCore/Dtemplates.h>
+#include<GPUEngine/geCore/Dtemplates.h>
 
 using namespace ge::gl;
 
