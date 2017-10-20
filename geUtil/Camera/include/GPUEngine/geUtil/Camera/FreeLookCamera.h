@@ -5,8 +5,8 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtc/matrix_access.hpp>
 
-#include<geUtil/geutil_export.h>
-#include<geUtil/Camera.h>
+#include<GPUEngine/geUtil/Camera/camera_export.h>
+#include<GPUEngine/geUtil/Camera/Camera.h>
 
 namespace ge{
   namespace util{
@@ -14,7 +14,7 @@ namespace ge{
   }
 }
 
-class GEUTIL_EXPORT ge::util::FreeLookCamera: public CameraTransform{
+class CAMERA_EXPORT ge::util::FreeLookCamera: public CameraTransform{
   public:
     FreeLookCamera();
     virtual ~FreeLookCamera();

@@ -1,7 +1,7 @@
-#include<geUtil/ArgumentViewer.h>
-#include<geCore/ErrorPrinter.h>
-#include<geCore/Text.h>
-#include<geCore/fsa/MealyMachine.h>
+#include<GPUEngine/geUtil/ArgumentViewer/ArgumentViewer.h>
+#include<GPUEngine/geCore/ErrorPrinter/ErrorPrinter.h>
+#include<GPUEngine/geCore/Text/Text.h>
+#include<GPUEngine/geCore/MealyMachine/MealyMachine.h>
 
 #include<sstream>
 #include<map>

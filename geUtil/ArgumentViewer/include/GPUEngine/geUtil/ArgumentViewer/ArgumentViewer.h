@@ -3,7 +3,7 @@
 #include<iostream>
 #include<vector>
 #include<memory>
-#include<geUtil/geutil_export.h>
+#include<GPUEngine/geUtil/ArgumentViewer/argumentviewer_export.h>
 
 namespace ge{
   namespace util{
@@ -12,7 +12,7 @@ namespace ge{
   }
 }
 
-class GEUTIL_EXPORT ge::util::ArgumentViewer{
+class ARGUMENTVIEWER_EXPORT ge::util::ArgumentViewer{
   public:
     ArgumentViewer(int argc,char*argv[]);
     ~ArgumentViewer();

@@ -5,12 +5,12 @@
 #include<glm/gtc/type_ptr.hpp>
 #include<glm/gtc/matrix_access.hpp>
 
-#include<geUtil/geutil_export.h>
-#include<geUtil/Camera.h>
+#include<GPUEngine/geUtil/Camera/camera_export.h>
+#include<GPUEngine/geUtil/Camera/Camera.h>
 
 namespace ge{
   namespace util{
-    class GEUTIL_EXPORT OrbitCamera: public CameraTransform{
+    class CAMERA_EXPORT OrbitCamera: public CameraTransform{
       public:
         OrbitCamera(float distance = 1);
         virtual ~OrbitCamera();

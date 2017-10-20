@@ -1,4 +1,4 @@
-#include<geUtil/CameraPath.h>
+#include<GPUEngine/geUtil/CameraPath/CameraPath.h>
 #include<math.h>
 #include<fstream>
 #include<sstream>

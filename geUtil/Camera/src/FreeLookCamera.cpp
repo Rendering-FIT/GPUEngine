@@ -1,4 +1,4 @@
-#include<geUtil/FreeLookCamera.h>
+#include<GPUEngine/geUtil/Camera/FreeLookCamera.h>
 #include<glm/gtx/euler_angles.hpp>
 
 using namespace ge::util;
