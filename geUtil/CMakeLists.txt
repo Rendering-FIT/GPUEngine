@@ -57,8 +57,8 @@ endmacro()
 set(ARGUMENTVIEWER_DYNAMIC FALSE CACHE BOOL "")
 set(CAMERA_DYNAMIC FALSE CACHE BOOL "")
 
-#add_subdirectory(ArgumentViewer)
-#add_subdirectory(Camera)
+add_subdirectory(ArgumentViewer)
+add_subdirectory(Camera)
 
 add_library(${LIB_NAME} ${${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC} ${INCLUDES} ${SOURCES})
 add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
@@ -80,10 +80,9 @@ find_package(geCore CONFIG)
 find_package(glm    CONFIG)
 target_link_libraries(${LIB_NAME} 
   PRIVATE
-  #ArgumentViewer::ArgumentViewer
-  #Camera::Camera
+  ArgumentViewer::ArgumentViewer
+  Camera::Camera
   PUBLIC
-  geCore::geCore
   glm
   )
 

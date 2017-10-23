@@ -1,6 +1,6 @@
-#include<geAd/SDLWindow/SDLMainLoop.h>
-#include<geAd/SDLWindow/SDLWindow.h>
-#include<geCore/ErrorPrinter.h>
+#include<GPUEngine/geAd/SDLWindow/SDLMainLoop.h>
+#include<GPUEngine/geAd/SDLWindow/SDLWindow.h>
+#include<GPUEngine/geCore/ErrorPrinter/ErrorPrinter.h>
 #include<cassert>
 
 using namespace ge::ad;

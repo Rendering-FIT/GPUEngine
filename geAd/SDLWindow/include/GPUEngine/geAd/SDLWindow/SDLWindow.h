@@ -6,11 +6,11 @@
 #include<memory>
 #include<functional>
 
-#include<geAd/SDLWindow/sdlwindow_export.h>
+#include<GPUEngine/geAd/SDLWindow/SDLMainLoop.h>
+#include<GPUEngine/geAd/SDLWindow/sdlwindow_export.h>
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_video.h>
 
-#include<geAd/SDLWindow/SDLMainLoop.h>
 
 namespace ge{
   namespace ad{

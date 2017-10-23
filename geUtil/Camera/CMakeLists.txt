@@ -89,13 +89,13 @@ ENDIF()
 
 
 #IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
-cmake_policy(SET CMP0057 NEW)
-list(APPEND as_subproject)
-macro(find_package name)
-  if(NOT "${name}" IN_LIST as_subproject)
-    _find_package(${ARGV})
-  endif()
-endmacro()
+#cmake_policy(SET CMP0057 NEW)
+#list(APPEND as_subproject)
+#macro(find_package name)
+#  if(NOT "${name}" IN_LIST as_subproject)
+#    _find_package(${ARGV})
+#  endif()
+#endmacro()
 
 set(${LIB_NAME}_VERSION ${${LIB_NAME}_MAJOR_VERSION}.${${LIB_NAME}_MINOR_VERSION}.${${LIB_NAME}_PATH_VERSION}.${${LIB_NAME}_REVISION_VERSION})
 

@@ -1,6 +1,6 @@
-#include<geAd/SDLWindow/SDLWindow.h>
-#include<geAd/SDLWindow/SDLMainLoop.h>
-#include<geCore/ErrorPrinter.h>
+#include<GPUEngine/geAd/SDLWindow/SDLWindow.h>
+#include<GPUEngine/geAd/SDLWindow/SDLMainLoop.h>
+#include<GPUEngine/geCore/ErrorPrinter/ErrorPrinter.h>
 
 #include<iostream>
 #include<cassert>

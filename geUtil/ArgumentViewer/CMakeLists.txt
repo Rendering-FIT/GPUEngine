@@ -31,6 +31,7 @@ else()
   set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "STATIC")
 endif()
 
+
 add_library(${LIB_NAME} ${${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC} ${INCLUDES} ${SOURCES})
 add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
@@ -78,15 +79,14 @@ IF(CMAKE_COMPILER_IS_GNUCC)
   target_compile_options(${LIB_NAME} PRIVATE -pedantic)
 ENDIF()
 
-
 #IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
-cmake_policy(SET CMP0057 NEW)
-list(APPEND as_subproject)
-macro(find_package name)
-  if(NOT "${name}" IN_LIST as_subproject)
-    _find_package(${ARGV})
-  endif()
-endmacro()
+#cmake_policy(SET CMP0057 NEW)
+#list(APPEND as_subproject)
+#macro(find_package name)
+#  if(NOT "${name}" IN_LIST as_subproject)
+#    _find_package(${ARGV})
+#  endif()
+#endmacro()
 
 set(${LIB_NAME}_VERSION ${${LIB_NAME}_MAJOR_VERSION}.${${LIB_NAME}_MINOR_VERSION}.${${LIB_NAME}_PATH_VERSION}.${${LIB_NAME}_REVISION_VERSION})
 
