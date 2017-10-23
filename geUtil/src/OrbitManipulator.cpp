@@ -2,7 +2,7 @@
 #include <iostream>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <geUtil/OrbitManipulator.h>
+#include <GPUEngine/geUtil/OrbitManipulator.h>
 
 using namespace std;
 using namespace ge::util;

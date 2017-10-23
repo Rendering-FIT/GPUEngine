@@ -1,152 +1,163 @@
-set(LIB_NAME geUtil)
+cmake_minimum_required(VERSION 3.1.0)
+cmake_policy(VERSION 3.1)
 
-set(Upstream_VERSION 1.0.0)
+project(geUtil LANGUAGES CXX)
+
+set(LIB_NAME geUtil)
 
 set(LIB_NAME_UPPER)
 string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 
-set(LIB_NAME_LOWER)
-string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
+set(${LIB_NAME}_MAJOR_VERSION    1)
+set(${LIB_NAME}_MINOR_VERSION    0)
+set(${LIB_NAME}_PATH_VERSION     0)
+set(${LIB_NAME}_REVISION_VERSION 0)
+
+set(INCLUDES
+  include/GPUEngine/${LIB_NAME}/algorithms.h
+  include/GPUEngine/${LIB_NAME}/FPSPrinter.h
+  include/GPUEngine/${LIB_NAME}/Intersector.h
+  include/GPUEngine/${LIB_NAME}/macros.h
+  include/GPUEngine/${LIB_NAME}/MatrixStack.h
+  include/GPUEngine/${LIB_NAME}/OrbitManipulator.h
+  include/GPUEngine/${LIB_NAME}/Progress.h
+  include/GPUEngine/${LIB_NAME}/Ray.h
+  include/GPUEngine/${LIB_NAME}/geUtil.h
+  include/GPUEngine/${LIB_NAME}/Sampler.h
+  include/GPUEngine/${LIB_NAME}/Timer.h
+)
+
+set(SOURCES
+   src/FPSPrinter.cpp
+   src/OrbitManipulator.cpp
+   src/Progress.cpp
+)
 
 
-if(GPUENGINE_DYNAMIC_LINKAGE)
-   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-   add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_C_STANDARD   99)
+
+OPTION(${LIB_NAME_UPPER}_DYNAMIC "Build dynamic library (dll,so,...). Use OFF for static lib." ON)
+if(${LIB_NAME_UPPER}_DYNAMIC)
+  set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "SHARED")
 else()
-   set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-   add_definitions(-DGE_LIBRARY_STATIC)
+  set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "STATIC")
 endif()
 
-set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
-set(ARGUMENTMANAGER_SOURCES
-   ArgumentManager/ArgData.cpp
-   ArgumentManager/BaseData.cpp
-   ArgumentManager/ArrayData.cpp
-   ArgumentManager/StructData.cpp
-   ArgumentManager/ArgumentManager.cpp
-)
+#IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
+cmake_policy(SET CMP0057 NEW)
+list(APPEND as_subproject ArgumentViewer Camera)
+macro(find_package name)
+  if(NOT "${name}" IN_LIST as_subproject)
+    _find_package(${ARGV})
+  endif()
+endmacro()
 
-set(ARGUMENTMANAGER_INCLUDES
-   ${HEADER_PATH}/ArgumentManager/ArgData.h
-   ${HEADER_PATH}/ArgumentManager/BaseData.h
-   ${HEADER_PATH}/ArgumentManager/ArrayData.h
-   ${HEADER_PATH}/ArgumentManager/StructData.h
-   ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
-)
+set(ARGUMENTVIEWER_DYNAMIC FALSE CACHE BOOL "")
+set(CAMERA_DYNAMIC FALSE CACHE BOOL "")
 
-set(UTIL_INCLUDES
-   ${HEADER_PATH}/algorithms.h
-   ${HEADER_PATH}/ArgumentObject.h
-   ${HEADER_PATH}/ArgumentViewer.h
-   ${HEADER_PATH}/CameraObject.h
-   ${HEADER_PATH}/CameraPath.h
-   ${HEADER_PATH}/FPSPrinter.h
-   ${HEADER_PATH}/Intersector.h
-   ${HEADER_PATH}/macros.h
-   ${HEADER_PATH}/MatrixStack.h
-   ${HEADER_PATH}/OrbitManipulator.h
-   ${HEADER_PATH}/Progress.h
-   ${HEADER_PATH}/Ray.h
-   ${HEADER_PATH}/geUtil.h
-   ${HEADER_PATH}/Camera.h
-   ${HEADER_PATH}/OrbitCamera.h
-   ${HEADER_PATH}/FreeLookCamera.h
-   ${HEADER_PATH}/PerspectiveCamera.h
-   ${HEADER_PATH}/Sampler.h
-   ${HEADER_PATH}/Timer.h
-)
+#add_subdirectory(ArgumentViewer)
+#add_subdirectory(Camera)
 
-
-set(GL_SOURCES
-   ArgumentObject.cpp
-   ArgumentViewer.cpp
-   CameraObject.cpp
-   CameraPath.cpp
-   FPSPrinter.cpp
-   OrbitManipulator.cpp
-   Progress.cpp
-   OrbitCamera.cpp
-   FreeLookCamera.cpp
-   PerspectiveCamera.cpp
-)
-
-find_package(geCore CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-
-add_library(${LIB_NAME}
-   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
-   ${UTIL_INCLUDES}
-   ${ARGUMENTMANAGER_INCLUDES}
-   ${GL_SOURCES}
-   ${ARGUMENTMANAGER_SOURCES}
-   ${LIBRARYLOADER_SOURCES}
-)
+add_library(${LIB_NAME} ${${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC} ${INCLUDES} ${SOURCES})
 add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  if(${LIB_NAME_UPPER}_DYNAMIC)
+  else()
+    target_compile_options(${LIB_NAME} PUBLIC -fPIC)
+  endif()
+endif()
+
+target_include_directories(${LIB_NAME} PUBLIC
+  $<INSTALL_INTERFACE:include/>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  )
+
+find_package(geCore CONFIG)
+find_package(glm    CONFIG)
+target_link_libraries(${LIB_NAME} 
+  PRIVATE
+  #ArgumentViewer::ArgumentViewer
+  #Camera::Camera
+  PUBLIC
+  geCore::geCore
+  glm
+  )
 
 target_compile_definitions(${LIB_NAME} PUBLIC GLM_ENABLE_EXPERIMENTAL)
 
-target_link_libraries(${LIB_NAME} PUBLIC geCore glm)
-
-if(UNIX)
-  target_link_libraries(${LIB_NAME} PUBLIC dl)
-endif()
 
 
-include(GenerateExportHeader)
 
-generate_export_header(${LIB_NAME})
-set_property(TARGET ${LIB_NAME} APPEND PROPERTY
-  COMPATIBLE_INTERFACE_STRING ${LIB_NAME}_MAJOR_VERSION
-  )
 
-target_include_directories(${LIB_NAME} PUBLIC  
-  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}/include/>  
-  $<BUILD_INTERFACE:${GPUEngine_BINARY_DIR}/src/>  
-  $<BUILD_INTERFACE:${GPUEngine_SOURCE_DIR}/include/>  
-  $<INSTALL_INTERFACE:include/> 
-)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
+SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
+SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
+SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
+SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+  target_compile_options(${LIB_NAME} PRIVATE -W)
+  target_compile_options(${LIB_NAME} PRIVATE -Wall)
+  target_compile_options(${LIB_NAME} PRIVATE -Wconversion)
+  target_compile_options(${LIB_NAME} PRIVATE -pedantic)
+ENDIF()
+
+IF(CMAKE_COMPILER_IS_GNUCC)
+  target_compile_options(${LIB_NAME} PRIVATE -W)
+  target_compile_options(${LIB_NAME} PRIVATE -Wall)
+  target_compile_options(${LIB_NAME} PRIVATE -Wconversion)
+  target_compile_options(${LIB_NAME} PRIVATE -pedantic)
+ENDIF()
+
+
+set(${LIB_NAME}_VERSION ${${LIB_NAME}_MAJOR_VERSION}.${${LIB_NAME}_MINOR_VERSION}.${${LIB_NAME}_PATH_VERSION}.${${LIB_NAME}_REVISION_VERSION})
+
+set(LIB_NAME_LOWER)
+string(TOLOWER ${LIB_NAME} LIB_NAME_LOWER)
+
+set_property(TARGET ${LIB_NAME}        PROPERTY VERSION                             ${${LIB_NAME}_VERSION}      )
+set_property(TARGET ${LIB_NAME}        PROPERTY SOVERSION                           ${${LIB_NAME}_MAJOR_VERSION})
+set_property(TARGET ${LIB_NAME}        PROPERTY INTERFACE_${LIB_NAME}_MAJOR_VERSION ${${LIB_NAME}_MAJOR_VERSION})
+set_property(TARGET ${LIB_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING         ${LIB_NAME}_MAJOR_VERSION   )
 
 install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
+  LIBRARY  DESTINATION lib
+  ARCHIVE  DESTINATION lib
+  RUNTIME  DESTINATION bin
   INCLUDES DESTINATION include
   )
+include(GenerateExportHeader)
+generate_export_header(${LIB_NAME} EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/GPUEngine/${LIB_NAME}/${LIB_NAME_LOWER}_export.h)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngine/${LIB_NAME}/${LIB_NAME_LOWER}_export.h" DESTINATION include/GPUEngine/${LIB_NAME}/ COMPONENT Devel)
+
+
 install(FILES
-   ${ARGUMENTMANAGER_INCLUDES}
-   DESTINATION include/${LIB_NAME}/ArgumentManager
-)
-install(FILES
-   ${UTIL_INCLUDES}
-   DESTINATION include/${LIB_NAME}
-)
-install(
-  FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME_LOWER}_export.h"
-  DESTINATION
-  include/${LIB_NAME}
-  COMPONENT
-  Devel
+  ${INCLUDES}
+  DESTINATION include/GPUEngine/${LIB_NAME}/
   )
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
-  VERSION ${Upstream_VERSION}
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngine/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
+  VERSION ${${LIB_NAME}_VERSION}
   COMPATIBILITY AnyNewerVersion
   )
 
 export(EXPORT ${LIB_NAME}Targets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Targets.cmake"
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/GPUEngine/${LIB_NAME}/${LIB_NAME}Targets.cmake"
   NAMESPACE ${LIB_NAME}::
   )
 configure_file(cmake/${LIB_NAME}Config.cmake
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}Config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngine/${LIB_NAME}/${LIB_NAME}Config.cmake"
   COPYONLY
   )
 
-set(ConfigPackageLocation lib/cmake/${LIB_NAME})
+set(ConfigPackageLocation lib/cmake/GPUEngine/${LIB_NAME})
 install(EXPORT ${LIB_NAME}Targets
   FILE
   ${LIB_NAME}Targets.cmake
@@ -158,7 +169,7 @@ install(EXPORT ${LIB_NAME}Targets
 install(
   FILES
   cmake/${LIB_NAME}Config.cmake
-  "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngine/${LIB_NAME}/${LIB_NAME}ConfigVersion.cmake"
   DESTINATION
   ${ConfigPackageLocation}
   COMPONENT

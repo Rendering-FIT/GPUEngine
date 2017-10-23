@@ -4,7 +4,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <geUtil/geutil_export.h>
+#include <GPUEngine/geUtil/geutil_export.h>
 
 namespace ge {
 namespace util {

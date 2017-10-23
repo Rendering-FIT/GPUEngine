@@ -1,7 +1,7 @@
 #pragma once
 
-#include<geUtil/geutil_export.h>
-#include<geUtil/Timer.h>
+#include<GPUEngine/geUtil/geutil_export.h>
+#include<GPUEngine/geUtil/Timer.h>
 
 namespace ge{
   namespace util{
