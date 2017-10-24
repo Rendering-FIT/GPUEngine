@@ -24,19 +24,19 @@
 
 #pragma once
 
-#include<geGL/AsynchronousQuery.h>
-#include<geGL/Buffer.h>
-#include<geGL/Framebuffer.h>
-#include<geGL/Shader.h>
-#include<geGL/Program.h>
-#include<geGL/VertexArray.h>
-#include<geGL/ProgramPipeline.h>
-#include<geGL/Texture.h>
-#include<geGL/Sampler.h>
-#include<geGL/Renderbuffer.h>
-#include<geGL/DebugMessage.h>
-#include<geGL/FunctionLoaderInterface.h>
-#include<geGL/DefaultLoader.h>
+#include<GPUEngine/geGL/AsynchronousQuery.h>
+#include<GPUEngine/geGL/Buffer.h>
+#include<GPUEngine/geGL/Framebuffer.h>
+#include<GPUEngine/geGL/Shader.h>
+#include<GPUEngine/geGL/Program.h>
+#include<GPUEngine/geGL/VertexArray.h>
+#include<GPUEngine/geGL/ProgramPipeline.h>
+#include<GPUEngine/geGL/Texture.h>
+#include<GPUEngine/geGL/Sampler.h>
+#include<GPUEngine/geGL/Renderbuffer.h>
+#include<GPUEngine/geGL/DebugMessage.h>
+#include<GPUEngine/geGL/FunctionLoaderInterface.h>
+#include<GPUEngine/geGL/DefaultLoader.h>
 
 namespace ge{
   namespace gl{
