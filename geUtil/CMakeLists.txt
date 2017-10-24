@@ -44,16 +44,22 @@ else()
   set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "STATIC")
 endif()
 
+list(APPEND this_project_subprojects ArgumentViewer Camera)
+if("${as_subproject}" STREQUAL "")
+  #IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
+  cmake_policy(SET CMP0057 NEW)
+  list(APPEND as_subproject ${this_project_subprojects})
+  macro(find_package name)
+    if(NOT "${name}" IN_LIST as_subproject)
+      _find_package(${ARGV})
+    endif()
+  endmacro()
+else()
+  list(APPEND as_subproject ${this_project_subprojects})
+endif()
+unset(this_project_subprojects)
 
-#IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
-cmake_policy(SET CMP0057 NEW)
-list(APPEND as_subproject ArgumentViewer Camera)
-macro(find_package name)
-  if(NOT "${name}" IN_LIST as_subproject)
-    _find_package(${ARGV})
-  endif()
-endmacro()
-
+#build sub projects as static libs
 set(ARGUMENTVIEWER_DYNAMIC FALSE CACHE BOOL "")
 set(CAMERA_DYNAMIC FALSE CACHE BOOL "")
 

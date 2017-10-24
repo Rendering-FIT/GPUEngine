@@ -13,11 +13,26 @@ set(INCLUDES
   include/GPUEngine/geCore/${LIB_NAME}/DisjointSet.h
   )
 
-add_library(${LIB_NAME} INTERFACE)
-add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
-
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_C_STANDARD   99)
+
+list(APPEND this_project_subprojects)
+if("${as_subproject}" STREQUAL "")
+  #IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
+  cmake_policy(SET CMP0057 NEW)
+  list(APPEND as_subproject ${this_project_subprojects})
+  macro(find_package name)
+    if(NOT "${name}" IN_LIST as_subproject)
+      _find_package(${ARGV})
+    endif()
+  endmacro()
+else()
+  list(APPEND as_subproject ${this_project_subprojects})
+endif()
+unset(this_project_subprojects)
+
+add_library(${LIB_NAME} INTERFACE)
+add_library(${LIB_NAME}::${LIB_NAME} ALIAS ${LIB_NAME})
 
 target_include_directories(${LIB_NAME} INTERFACE
   $<INSTALL_INTERFACE:include/>
@@ -55,16 +70,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 #  target_compile_options(${LIB_NAME} PRIVATE -Wconversion)
 #  target_compile_options(${LIB_NAME} PRIVATE -pedantic)
 #ENDIF()
-
-#IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
-cmake_policy(SET CMP0057 NEW)
-
-list(APPEND as_subproject)
-macro(find_package name)
-  if(NOT "${name}" IN_LIST as_subproject)
-    _find_package(${ARGV})
-  endif()
-endmacro()
 
 set(${LIB_NAME}_VERSION ${${LIB_NAME}_MAJOR_VERSION}.${${LIB_NAME}_MINOR_VERSION}.${${LIB_NAME}_PATH_VERSION}.${${LIB_NAME}_REVISION_VERSION})
 

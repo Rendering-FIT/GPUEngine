@@ -50,16 +50,22 @@ else()
   set(${LIB_NAME_UPPER}_DYNAMIC_OR_STATIC "STATIC")
 endif()
 
+list(APPEND this_project_subprojects PrettyFunctionName DisjointSet ValuePrinter ErrorPrinter FSA MealyMachine Text)
+if("${as_subproject}" STREQUAL "")
+  #IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
+  cmake_policy(SET CMP0057 NEW)
+  list(APPEND as_subproject ${this_project_subprojects})
+  macro(find_package name)
+    if(NOT "${name}" IN_LIST as_subproject)
+      _find_package(${ARGV})
+    endif()
+  endmacro()
+else()
+  list(APPEND as_subproject ${this_project_subprojects})
+endif()
+unset(this_project_subprojects)
 
-#IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
-cmake_policy(SET CMP0057 NEW)
-list(APPEND as_subproject PrettyFunctionName DisjointSet ValuePrinter ErrorPrinter FSA MealyMachine)
-macro(find_package name)
-  if(NOT "${name}" IN_LIST as_subproject)
-    _find_package(${ARGV})
-  endif()
-endmacro()
-
+#build sub projects as static libs
 set(MEALYMACHINE_DYNAMIC FALSE CACHE BOOL "")
 set(FSA_DYNAMIC FALSE CACHE BOOL "")
 set(TEXT_DYNAMIC FALSE CACHE BOOL "")
@@ -85,10 +91,22 @@ endif()
 
 target_include_directories(${LIB_NAME} PUBLIC
   $<INSTALL_INTERFACE:include/>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/FSA/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/FSA>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/FSA/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/ErrorPrinter>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ErrorPrinter/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/PrettyFunctionName>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/PrettyFunctionName/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/ValuePrinter>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ValuePrinter/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/Text>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Text/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/MealyMachine>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MealyMachine/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/DisjointSet>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DisjointSet/include>
   )
 
 #find_package(ErrorPrinter CONFIG)

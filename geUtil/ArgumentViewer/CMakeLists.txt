@@ -41,6 +41,21 @@ target_include_directories(${LIB_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   )
 
+list(APPEND this_project_subprojects)
+if("${as_subproject}" STREQUAL "")
+  #IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
+  cmake_policy(SET CMP0057 NEW)
+  list(APPEND as_subproject ${this_project_subprojects})
+  macro(find_package name)
+    if(NOT "${name}" IN_LIST as_subproject)
+      _find_package(${ARGV})
+    endif()
+  endmacro()
+else()
+  list(APPEND as_subproject ${this_project_subprojects})
+endif()
+unset(this_project_subprojects)
+
 find_package(geCore 1.0 CONFIG)
 target_link_libraries(${LIB_NAME} 
   geCore::geCore
@@ -78,15 +93,6 @@ IF(CMAKE_COMPILER_IS_GNUCC)
   target_compile_options(${LIB_NAME} PRIVATE -Wconversion)
   target_compile_options(${LIB_NAME} PRIVATE -pedantic)
 ENDIF()
-
-#IN_LIST is operator in CMake 3.3, CMake 3.8.1 warns 
-#cmake_policy(SET CMP0057 NEW)
-#list(APPEND as_subproject)
-#macro(find_package name)
-#  if(NOT "${name}" IN_LIST as_subproject)
-#    _find_package(${ARGV})
-#  endif()
-#endmacro()
 
 set(${LIB_NAME}_VERSION ${${LIB_NAME}_MAJOR_VERSION}.${${LIB_NAME}_MINOR_VERSION}.${${LIB_NAME}_PATH_VERSION}.${${LIB_NAME}_REVISION_VERSION})
 
