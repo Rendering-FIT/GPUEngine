@@ -90,6 +90,7 @@ target_link_libraries(${LIB_NAME}
   Camera::Camera
   PUBLIC
   glm
+  geCore::geCore
   )
 
 target_compile_definitions(${LIB_NAME} PUBLIC GLM_ENABLE_EXPERIMENTAL)
