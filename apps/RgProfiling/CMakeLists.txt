@@ -35,7 +35,7 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES})
 # Internal_inc - additional include directories
 
 set(Internal_deps SDLWindow geGL geRG geUtil imgui)
-set(External_libs SDL2)
+set(External_libs )
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

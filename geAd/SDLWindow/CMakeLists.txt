@@ -45,8 +45,8 @@ add_library(${LIB_NAME}
 # Includes_to_export - includes to be exported from this target to application
 
 set(Internal_deps)
-set(External_deps_Export SDL2)
-set(External_libs SDL2)
+set(External_deps_Export SDL2::SDL2 SDL2::SDL2main)
+set(External_libs SDL2::SDL2 SDL2::SDL2main)
 set(Internal_inc ${GPUEngine_SOURCE_DIR}/include ${GPUEngine_SOURCE_DIR})
 set(includes_to_export)
 
