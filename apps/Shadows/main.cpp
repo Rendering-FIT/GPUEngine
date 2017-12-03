@@ -442,7 +442,7 @@ void testRSSVTiler(size_t w,size_t h,size_t warp){
 }
 
 int main(int argc,char*argv[]){
-  /*
+  //*
   testRSSVTiler(1024,768,32);
   testRSSVTiler(64,2,32);
   testRSSVTiler(512,512,64);
@@ -453,7 +453,7 @@ int main(int argc,char*argv[]){
   testRSSVTiler(1920,1,32);
   testRSSVTiler(512,512,64);
   return 0;
-  */
+  // */
   Application app;
   if(!app.init(argc,argv))return EXIT_FAILURE;
   (*app.mainLoop)();

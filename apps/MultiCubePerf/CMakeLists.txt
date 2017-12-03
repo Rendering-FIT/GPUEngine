@@ -5,6 +5,7 @@ project(${APP_NAME})
 if(
     NOT TARGET SDLWindow OR 
     NOT TARGET geGL      OR 
+    NOT TARGET geRG      OR
     NOT TARGET geUtil
     )
    return()
