@@ -2,11 +2,13 @@
 #include<limits>
 #include<string>
 #include<limits>
+#include<cmath>
 #include<geGL/geGL.h>
 #include<geAd/SDLWindow/SDLWindow.h>
 #include<geGL/OpenGLCommands.h>
 #include<geGL/OpenGLContext.h>
 #include<geGL/StaticCalls.h>
+#include<geGL/VertexArray.h>
 
 #include<glm/glm.hpp>
 #include<glm/gtc/matrix_transform.hpp>
@@ -441,8 +443,30 @@ void testRSSVTiler(size_t w,size_t h,size_t warp){
   std::cout << std::endl;
 }
 
+std::string uvec2ToStr(glm::uvec2 const&v){
+  std::stringstream ss;
+  ss << v.x << "," << v.y;
+  return ss.str();
+}
+
+void printTiling(size_t w,size_t h,size_t t){
+  RSSVTilingSizes tiling(glm::uvec2(w,h),t);
+  for(size_t i=0;i<tiling.borderTileDivisibilityIntoTiles.size();++i){
+    std::cout << "FULL___TILE_DIVISIBILITY_INTO_PIXELS    (" <<  uvec2ToStr(tiling.full__TileDivisibilityIntoPixels   .at(i)) << ")" << std::endl;
+    std::cout << "FULL___TILE_DIVISIBILITY_INTO_TILES     (" <<  uvec2ToStr(tiling.full__TileDivisibilityIntoTiles    .at(i)) << ")" << std::endl;
+    std::cout << "BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (" <<  uvec2ToStr(tiling.borderTileDivisibilityIntoPixels   .at(i)) << ")" << std::endl;
+    std::cout << "BORDER_TILE_DIVISIBILITY_INTO_TILES     (" <<  uvec2ToStr(tiling.borderTileDivisibilityIntoTiles    .at(i)) << ")" << std::endl;
+    std::cout << "BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(" <<  uvec2ToStr(tiling.borderTileDivisibilityIntoFullTiles.at(i)) << ")" << std::endl;
+    std::cout << std::endl;
+  }
+}
+
 int main(int argc,char*argv[]){
-  //*
+#if 0
+  printTiling(1011,511,32);
+  return 0;
+#endif
+  /*
   testRSSVTiler(1024,768,32);
   testRSSVTiler(64,2,32);
   testRSSVTiler(512,512,64);

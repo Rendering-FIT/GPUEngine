@@ -27,12 +27,116 @@
 //    accumulatedExponentY(0) == heightExponent
 //    One axis has to have accumulatedExponent(0) == windowExponent
 //
+// FULL___TILE_SIZE_IN__TILES
+// FULL___TILE_SIZE_IN_PIXELS
+// BORDER_TILE_SIZE_IN__TILES
+// BORDER_TILE_SIZE_IN_PIXELS
+//
+// NOF______TILES_PER_LEVEL(level)
+// NOF_FULL_TILES_PER_LEVEL(level) 
+//
+// 1011 x 511, 32
+//
+// 4x8 1024 x 1024   
+// 8x4  256 x  128
+// 4x8   32 x   32
+// 8x4    8 x    4 
+//
+// An image is a tile.
+// A tile has resolution in pixels.
+// A tile is composed of full tiles and border tiles.
+// An image with resolution 1011 x 511 and threads 32:
+// Image tile size in pixel is 1011 x 511.
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (0) uvec2(1024,1024) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (0) uvec2(4   ,8   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (0) uvec2(1011,511 )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (0) uvec2(4   ,4   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(0) uvec2(3   ,3   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (1) uvec2(256 ,128 )
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (1) uvec2(8   ,4   )
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (1) uvec2(243 ,127 )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (1) uvec2(8   ,4   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(1) uvec2(7   ,3   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (2) uvec2(32  ,32  )
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (2) uvec2(4   ,8   )
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (2) uvec2(19  ,31  )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (2) uvec2(3   ,8   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(2) uvec2(2   ,7   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (3) uvec2(8   ,4   )
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (3) uvec2(8   ,4   )
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (3) uvec2(3   ,3   )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (3) uvec2(3   ,3   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(3) uvec2(3   ,3   )
+//
+// Image tile size in pixels is 1037 x 111, 32 threads
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (0) uvec2(8192,128 ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (0) uvec2(32  ,1   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (0) uvec2(1037,111 )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (0) uvec2(5   ,1   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(0) uvec2(4   ,0   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (1) uvec2(256 ,128 ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (1) uvec2(8   ,4   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (1) uvec2(13  ,111 )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (1) uvec2(1   ,4   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(1) uvec2(0   ,3   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (2) uvec2(32  ,32  ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (2) uvec2(4   ,8   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (2) uvec2(13  ,15  )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (2) uvec2(2   ,4   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(2) uvec2(1   ,3   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (3) uvec2(8   ,4   ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (3) uvec2(8   ,4   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (3) uvec2(5   ,3   )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (3) uvec2(5   ,3   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(3) uvec2(5   ,3   )
+//
+// Image tile size in pixels is 1024 x 1024, 32 threads
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (0) uvec2(1024,1024) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (0) uvec2(4   ,8   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (0) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (0) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(0) uvec2(0   ,0   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (1) uvec2(256 ,128 ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (1) uvec2(8   ,4   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (1) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (1) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(1) uvec2(0   ,0   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (2) uvec2(32  ,32  ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (2) uvec2(4   ,8   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (2) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (2) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(2) uvec2(0   ,0   )
+//
+// FULL___TILE_DIVISIBILITY_INTO_PIXELS    (3) uvec2(8   ,4   ) 
+// FULL___TILE_DIVISIBILITY_INTO_TILES     (3) uvec2(8   ,4   ) 
+// BORDER_TILE_DIVISIBILITY_INTO_PIXELS    (3) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_TILES     (3) uvec2(0   ,0   )
+// BORDER_TILE_DIVISIBILITY_INTO_FULL_TILES(3) uvec2(0   ,0   )
+//
+//
+//
+// FULL_TILE_SIZE_IN_PIXELS(1)   uvec2(256,128)
+// BORDER_TILE_SIZE_IN_PIXELS(1) uvec2(243,127)
+// TILE_SIZE_IN_TILES (0) 
+//
+//
 // 
 // LEVEL_DIVISIBILITY                (level) (3,1) no zero possible
 // LEVEL_DIVISIBILITY_INTO_FULL_TILES(level) (2,0) zero possible
 // LEVEL_CONFIGURATION               (level)
 // FULL_TILE_SIZE_IN_TILES           (level) (4,8) multiplication of components has to be warp
-// BORDER_TILE_SIZE_IN_TILES         (level) (3,5) 
+// BORDER_TILE_SIZE_IN_TILES         (level) (3,5) multiplication of components has to be <= warp
 // FULL_TILE_SIZE_IN_PIXELS          (level) (512,512)
 // BORDER_TILE_SIZE_IN_PIXELS        (level) (387,277)
 //
@@ -88,6 +192,7 @@ class RSSVTilingImpl{
     glm::uvec2 windowSize            ;
     glm::uvec2 windowExponent        ;
     std::vector<glm::uvec2>fullTileSizeInTiles;
+
 };
 
 RSSVTiling::RSSVTiling(size_t windowWidth,size_t windowHeight,size_t threadsPerTile){
@@ -259,7 +364,7 @@ void rssvTileSizeChoises(
 }
 
 size_t rssvComputeNofLevels(glm::uvec2 const&windowSize,size_t threadsPerTile){
-  return (size_t)glm::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(threadsPerTile))+1;
+  return (size_t)std::ceil(glm::log(windowSize[0]*windowSize[1])/glm::log(threadsPerTile))+1;
 }
 
 void rssvGenerateSolutions(
@@ -310,4 +415,80 @@ void rssvChooseTileSizes(
   std::sort(solutions.begin(),solutions.end());
   for(auto const&x:solutions.front().levels)
     tileDivisibility.push_back(x);
+}
+
+
+RSSVTilingSizes::RSSVTilingSizes(
+    glm::uvec2 const&windowSize    ,
+    size_t     const&threadsPerTile){
+  auto const nofLevels       = rssvGetNofLevels(windowSize,threadsPerTile);
+  auto const threadsExponent = log2RoundUp     (threadsPerTile);
+
+  size_t const threadsExponentPart[2] = {
+                      divRoundUp(threadsExponent,2lu),
+    threadsExponent - divRoundUp(threadsExponent,2lu),
+  };
+
+  auto const windowExponent = glm::uvec2(
+      log2RoundUp(windowSize.x),
+      log2RoundUp(windowSize.y));
+
+
+  full__TileDivisibilityIntoPixels   .resize(nofLevels);
+  full__TileDivisibilityIntoTiles    .resize(nofLevels);
+  borderTileDivisibilityIntoPixels   .resize(nofLevels);
+  borderTileDivisibilityIntoTiles    .resize(nofLevels);
+  borderTileDivisibilityIntoFullTiles.resize(nofLevels);
+
+
+  ssize_t const lastLevel  = nofLevels - 1;
+  ssize_t const firstLevel = 0            ;
+
+
+  auto exponentCounter = glm::uvec2(0u);
+  bool oddLevel = false;
+  for(ssize_t level = lastLevel; level >= firstLevel; --level){
+
+    glm::uvec2 currentExponent;
+    currentExponent.x = threadsExponentPart[  static_cast<size_t>(oddLevel)];
+    currentExponent.y = threadsExponentPart[1-static_cast<size_t>(oddLevel)];
+
+    if(exponentCounter[0] + currentExponent[0] > windowExponent[0]){
+      currentExponent[0] = windowExponent[0] - exponentCounter[0];
+      currentExponent[1] = threadsExponent - currentExponent[0];
+    }else{
+      if(exponentCounter[1] + currentExponent[1] > windowExponent[1]){
+        currentExponent[1] = windowExponent[1] - exponentCounter[1];
+        currentExponent[0] = threadsExponent - currentExponent[1];
+      }
+    }
+
+    full__TileDivisibilityIntoTiles[level].x = 1 << currentExponent.x;
+    full__TileDivisibilityIntoTiles[level].y = 1 << currentExponent.y;
+
+    auto lastFullTileDivisibilityIntoPixels = glm::uvec2(1,1);
+    auto lastFullTileDivisibilityIntoTiles  = glm::uvec2(1,1);
+
+    if(level + 1 <= lastLevel){
+      lastFullTileDivisibilityIntoPixels = full__TileDivisibilityIntoPixels[level+1];
+      lastFullTileDivisibilityIntoTiles  = full__TileDivisibilityIntoTiles [level+1];
+    }
+    
+    full__TileDivisibilityIntoPixels[level] =
+      lastFullTileDivisibilityIntoPixels * full__TileDivisibilityIntoTiles[level];
+
+    borderTileDivisibilityIntoPixels[level] = windowSize % full__TileDivisibilityIntoPixels[level];
+
+    borderTileDivisibilityIntoTiles[level].x = 
+      divRoundUp(borderTileDivisibilityIntoPixels[level].x,lastFullTileDivisibilityIntoPixels.x);
+    borderTileDivisibilityIntoTiles[level].y = 
+      divRoundUp(borderTileDivisibilityIntoPixels[level].y,lastFullTileDivisibilityIntoPixels.y);
+
+    borderTileDivisibilityIntoFullTiles[level] = 
+      borderTileDivisibilityIntoPixels[level] / lastFullTileDivisibilityIntoPixels;
+
+    exponentCounter += currentExponent;
+    oddLevel = !oddLevel;
+
+  }
 }

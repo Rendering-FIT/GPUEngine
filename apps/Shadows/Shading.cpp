@@ -35,6 +35,10 @@ void main(){
   vec3 sum=vec3(0);
 
   vec3  position    = texelFetch(positionTexture  ,coord,0).xyz;
+
+  vec3  position2   = texelFetch(positionTexture  ,coord+ivec2(1,0),0).xyz;
+  float angleDifference = 1-clamp(acos(clamp(dot(normalize(position - lightPosition.xyz),normalize(position2 -lightPosition.xyz)),0,1))/0.01,0,1);
+
   vec3  normal      = texelFetch(normalTexture    ,coord,0).xyz;
   float shadowCoef  = 1;
   if(useShadows)
@@ -60,6 +64,7 @@ void main(){
   sum+=Ks*Ls*specularFactor;
 
   fColor=vec4(sum,1);//output color
+  //fColor = vec4(angleDifference)+vec4(sum,1)*0;
   return;
   float yrot = float(mod(degrees(atan(L.x,L.z         ))/360*64,2)>1);
   float xrot = float(mod(degrees(atan(L.y,length(L.xz)))/360*64,2)>1);

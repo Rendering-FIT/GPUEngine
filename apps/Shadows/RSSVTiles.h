@@ -67,3 +67,13 @@ T divRoundUp(T const&dividend,T const&divisor){
     return (dividend/divisor)+1;
   return dividend/divisor;
 }
+
+class RSSVTilingSizes{
+  public:
+    RSSVTilingSizes(glm::uvec2 const&windowsSize,size_t const&threadsPerTile);
+    std::vector<glm::uvec2>full__TileDivisibilityIntoPixels   ;
+    std::vector<glm::uvec2>full__TileDivisibilityIntoTiles    ;
+    std::vector<glm::uvec2>borderTileDivisibilityIntoPixels   ;
+    std::vector<glm::uvec2>borderTileDivisibilityIntoTiles    ;
+    std::vector<glm::uvec2>borderTileDivisibilityIntoFullTiles;
+};
