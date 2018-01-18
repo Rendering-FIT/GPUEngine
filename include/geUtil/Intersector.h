@@ -8,7 +8,7 @@ namespace ge
    {
       struct /*GEUTIL_EXPORT*/ Intersector
       {
-         virtual bool intersects() = 0;
+         virtual bool intersects() const = 0;
 
          virtual ~Intersector()
          {}

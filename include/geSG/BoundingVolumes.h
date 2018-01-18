@@ -15,9 +15,11 @@ namespace ge
        * Base class for general bounding volume.
        * Class is currently empty.
        */   
+
       class BoundingVolume
       {
       public:
+         virtual void expand(const BoundingVolume* BV) = 0;
       };
 
       /**
@@ -113,5 +115,58 @@ namespace ge
 
          std::shared_ptr<Insides> insideThing;
       };
-   }
-}
+
+      class AABB : public BoundingVolume
+      {
+      public:
+         AABB(){}
+
+         AABB(const AABB& other)
+            : min(other.min)
+            , max(other.max)
+         {}
+
+         void expand(const glm::vec3& p)
+         {
+            min.x = min.x <= p.x ? min.x : p.x;
+            min.y = min.y <= p.y ? min.y : p.y;
+            min.z = min.z <= p.z ? min.z : p.z;
+
+            max.x = max.x >= p.x ? max.x : p.x;
+            max.y = max.y >= p.y ? max.y : p.y;
+            max.z = max.z >= p.z ? max.z : p.z;
+         }
+
+         void expand(const AABB& aabb)
+         {
+            min.x = min.x <= aabb.min.x ? min.x : aabb.min.x;
+            min.y = min.y <= aabb.min.y ? min.y : aabb.min.y;
+            min.z = min.z <= aabb.min.z ? min.z : aabb.min.z;
+
+            max.x = max.x >= aabb.max.x ? max.x : aabb.max.x;
+            max.y = max.y >= aabb.max.y ? max.y : aabb.max.y;
+            max.z = max.z >= aabb.max.z ? max.z : aabb.max.z;
+         }
+
+      protected:
+         glm::vec3 min;
+         glm::vec3 max;
+      };
+
+      template<typename Inside>
+      class AABBTemplate: public AABB
+      {
+      public:
+         AABBTemplate()
+            :AABB()
+         {}
+
+         AABBTemplate(const AABBTemplate& other)
+            : AABB(other)
+            , insideThing(other.insideThing)
+         {}
+
+         std::shared_ptr<Insides> insideThing;         
+      };
+   }//namesace sg
+}//namespace ge

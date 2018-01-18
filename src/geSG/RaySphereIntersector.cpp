@@ -24,7 +24,7 @@ bool RaySphereIntersector::intersects(const ge::util::Ray & ray, const ge::sg::B
    return false;
 }
 
-float RaySphereIntersector::computeIntersection(ge::util::Ray ray, ge::sg::BoundingSphere bs)
+float RaySphereIntersector::computeIntersection(const ge::util::Ray& ray, ge::sg::BoundingSphere bs)
 {
    float r2 = bs.radius * bs.radius;
    float a = glm::dot(ray.direction, ray.direction);
@@ -48,7 +48,7 @@ float RaySphereIntersector::computeIntersection(ge::util::Ray ray, ge::sg::Bound
    return t1;
 }
 
-bool RaySphereIntersector::intersects()
+bool RaySphereIntersector::intersects() const
 {
    return intersects(ray, *bs);
 }
