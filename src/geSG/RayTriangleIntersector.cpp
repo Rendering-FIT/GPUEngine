@@ -9,7 +9,7 @@ using namespace glm;
 /**
  * Not implemented yet. Use the static version.
  */
-bool RayTriangleIntersector::intersects()
+bool RayTriangleIntersector::intersects() const
 {
    return false;
 }

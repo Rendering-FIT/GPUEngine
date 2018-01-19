@@ -4,12 +4,15 @@
 #include <geUtil/Intersector.h>
 
 #include <geUtil/Ray.h>
-#include <geSG/BoundingVolumes.h>
+#include <geSG/BoundingVolume.h>
+#include <memory>
 
 namespace ge
 {
    namespace sg
    {
+      class BoundingSphere;
+
       struct GESG_EXPORT RaySphereIntersector : public ge::util::Intersector
       {
          static bool intersects(const ge::util::Ray & ray, const ge::sg::BoundingSphere & bs);

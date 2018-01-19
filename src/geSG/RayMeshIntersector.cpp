@@ -20,7 +20,7 @@ using namespace std::placeholders;
 /**
  * Not implemented, returns always false. Use the static methods.
  */
-bool RayMeshIntersector::intersects()
+bool RayMeshIntersector::intersects() const
 {
    return false;
 }

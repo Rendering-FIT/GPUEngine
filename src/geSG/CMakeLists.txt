@@ -14,13 +14,15 @@ endif()
 set(HEADER_PATH ${GPUEngine_SOURCE_DIR}/include/${LIB_NAME})
 
 set(SG_INCLUDES
+   ${HEADER_PATH}/AABB.h
    ${HEADER_PATH}/Export.h
    ${HEADER_PATH}/Animation.h
    ${HEADER_PATH}/AnimationChannel.h
    ${HEADER_PATH}/AnimationKeyFrame.h
    ${HEADER_PATH}/AnimationManager.h
    ${HEADER_PATH}/AttributeDescriptor.h
-   ${HEADER_PATH}/BoundingVolumes.h
+   ${HEADER_PATH}/BoundingSphere.h
+   ${HEADER_PATH}/BoundingVolume.h
    ${HEADER_PATH}/DefaultImage.h
    ${HEADER_PATH}/Drawable.h
    ${HEADER_PATH}/KeyframeInterpolator.h
@@ -40,9 +42,11 @@ set(SG_INCLUDES
 )
 
 set(SG_SOURCES
+   AABB.cpp
    Animation.cpp
    AnimationChannel.cpp
    AnimationManager.cpp
+   BoundingSphere.cpp
    DefaultImage.cpp
    MatrixTransform.cpp
    RayMeshIntersector.cpp

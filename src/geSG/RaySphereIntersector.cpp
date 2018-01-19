@@ -1,5 +1,7 @@
 #include <geSG/RaySphereIntersector.h>
 
+#include <geSG/BoundingSphere.h>
+
 using namespace ge::sg;
 
 /**
