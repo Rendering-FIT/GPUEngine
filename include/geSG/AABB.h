@@ -1,10 +1,13 @@
+#pragma once
+
 #include <geSG/BoundingVolume.h>
+#include <geSG/Export.h>
 
 namespace ge
 {
    namespace sg
    {
-      class AABB : public BoundingVolume
+      class GESG_EXPORT AABB : public BoundingVolume
       {
       public:
          AABB();

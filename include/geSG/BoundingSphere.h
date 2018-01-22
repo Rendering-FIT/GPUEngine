@@ -1,4 +1,7 @@
+#pragma once
+
 #include <geSG/BoundingVolume.h>
+#include <geSG/Export.h>
 
 namespace ge
 {
@@ -7,7 +10,7 @@ namespace ge
       /**
       * Class representing Bounding Sphere.
       */
-      class BoundingSphere : public BoundingVolume
+      class GESG_EXPORT BoundingSphere : public BoundingVolume
       {
       public:
          BoundingSphere();
