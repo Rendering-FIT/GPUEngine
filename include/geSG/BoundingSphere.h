@@ -3,6 +3,9 @@
 #include <geSG/BoundingVolume.h>
 #include <geSG/Export.h>
 
+#include <glm/glm.hpp>
+#include <memory>
+
 namespace ge
 {
    namespace sg

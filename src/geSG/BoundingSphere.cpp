@@ -1,5 +1,7 @@
 #include <geSG/BoundingSphere.h>
 
+#include <algorithm>
+
 using namespace ge::sg;
 
 BoundingSphere::BoundingSphere(): center(glm::vec3())

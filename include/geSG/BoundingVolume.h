@@ -1,11 +1,6 @@
 #pragma once
 //#include <geSG/Export.h>
 
-#include <geUtil/Ray.h>
-
-#include <glm/glm.hpp>
-#include <memory>
-#include <algorithm>
 
 namespace ge
 {

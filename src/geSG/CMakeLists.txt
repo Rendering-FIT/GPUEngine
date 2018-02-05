@@ -34,6 +34,7 @@ set(SG_INCLUDES
    ${HEADER_PATH}/MeshPrimitiveIterator.h
    ${HEADER_PATH}/Model.h
    ${HEADER_PATH}/Node.h
+   ${HEADER_PATH}/RayAABBIntersector.h
    ${HEADER_PATH}/RayMeshIntersector.h
    ${HEADER_PATH}/RaySphereIntersector.h
    ${HEADER_PATH}/RayTriangleIntersector.h
@@ -49,6 +50,7 @@ set(SG_SOURCES
    BoundingSphere.cpp
    DefaultImage.cpp
    MatrixTransform.cpp
+   RayAABBIntersector.cpp
    RayMeshIntersector.cpp
    RaySphereIntersector.cpp
    RayTriangleIntersector.cpp

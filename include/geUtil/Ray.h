@@ -1,12 +1,13 @@
 #pragma once
 
-#include  <glm/glm.hpp>
+#include <glm/glm.hpp>
+#include <geUtil/IntersectPrimitive.h>
 
 namespace ge
 {
    namespace util
    {
-      struct Ray
+      struct Ray: public IntersectPrimitive
       {
          //Ray(){}
 

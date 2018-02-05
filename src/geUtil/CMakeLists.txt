@@ -38,6 +38,7 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
    ${HEADER_PATH}/Intersector.h
+   ${HEADER_PATH}/IntersectPrimitive.h
    ${HEADER_PATH}/macros.h
    ${HEADER_PATH}/MatrixStack.h
    ${HEADER_PATH}/OrbitManipulator.h
