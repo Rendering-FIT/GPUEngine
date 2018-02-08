@@ -32,6 +32,7 @@ set(SG_INCLUDES
    ${HEADER_PATH}/MatrixTransform.h
    ${HEADER_PATH}/Mesh.h
    ${HEADER_PATH}/MeshPrimitiveIterator.h
+   ${HEADER_PATH}/MeshTriangleIterators.h
    ${HEADER_PATH}/Model.h
    ${HEADER_PATH}/Node.h
    ${HEADER_PATH}/RayAABBIntersector.h

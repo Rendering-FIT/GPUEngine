@@ -1,6 +1,6 @@
 #include <geSG/RayMeshIntersector.h>
 #include <geSG/RayTriangleIntersector.h>
-#include <geSG/MeshPrimitiveIterator.h>
+#include <geSG/MeshTriangleIterators.h>
 
 #include <functional>
 #include <algorithm>
@@ -72,9 +72,9 @@ float RayMeshIntersector::computeIntersection(const Ray & ray, Mesh& mesh)
       return false;
    }
 
-   MeshIndexedTriangleIterator beg = MeshPositionIteratorBegin(&mesh);
-   MeshIndexedTriangleIterator end = MeshPositionIteratorEnd(&mesh);
-   MeshIndexedTriangleIterator it(beg);
+   IndexedTriangleIterator beg = MeshPositionIteratorBegin(&mesh);
+   IndexedTriangleIterator end = MeshPositionIteratorEnd(&mesh);
+   IndexedTriangleIterator it(beg);
 
    /**
     * When c++17 is defined this is what it does -> whole function could be

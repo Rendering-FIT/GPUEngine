@@ -1,15 +1,9 @@
 #pragma once
 
 #include <iterator>
-#include <array>
 #define GLM_ENABLE EXPERIMENTAL
 #include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <iostream>
 
-#include <geSG/Mesh.h>
-#include <geSG/AttributeDescriptor.h>
-#include <geCore/StandardSemanticsNames.h>
 
 #include <algorithm>
 
@@ -92,6 +86,15 @@ namespace ge
             t.v2 += numComponents*3;
          }*/
 
+         /**
+          *
+          */
+         float* operator[](const unsigned i) const
+         {
+            assert(i >= 0 && i < 3);
+            return (&v0)[i];
+         }
+
          float *v0, *v1, *v2;
       };
 
@@ -100,10 +103,10 @@ namespace ge
        * increment, equality, addition, dereference and arrow. It is tagged as
        * a forward iterator even though it might not satisfy all the requirements yet.
        */
-      class MeshTriangleIteratorBasis : public std::iterator<std::forward_iterator_tag, Triangle>
+      class TriangleIteratorBasis : public std::iterator<std::forward_iterator_tag, Triangle>
       {
       public:
-         typedef MeshTriangleIteratorBasis self_type;
+         typedef TriangleIteratorBasis self_type;
 
          virtual self_type& operator++()
          {
@@ -145,29 +148,19 @@ namespace ge
       };
 
       /**
-       * Triangle iterator which iterates over position Attribute descriptor.
-       * It is not to be used right now! It assumes the standard semantic names
-       * from geCore StandardSemanticsNames.
+       * Triangle Iterator that iteratex over a plain float array with a set N component vertices.
        */
-      class MeshTriangleIterator : public MeshTriangleIteratorBasis
+      class TriangleIterator : public TriangleIteratorBasis
       {
       public:
-         typedef MeshTriangleIterator self_type;
+         typedef TriangleIterator self_type;
 
-         MeshTriangleIterator()
+         TriangleIterator()
             : _Ptr(nullptr)
             , N(0)
          {}
 
-         MeshTriangleIterator(Mesh* mesh)
-         {
-            auto it = std::find_if(mesh->attributes.begin(), mesh->attributes.end(), [](std::shared_ptr<AttributeDescriptor>& attr){ return attr->semantic == AttributeDescriptor::Semantic::position; });
-            _Ptr = static_cast<float*>((**it).data.get());
-            N = (**it).numComponents;
-            _triangle.setToContinuous(_Ptr, N);
-         }
-
-         MeshTriangleIterator(float* ptr, unsigned numComponents)
+         TriangleIterator(float* ptr, unsigned numComponents)
             : _Ptr(ptr)
             , N(numComponents)
          {
@@ -188,54 +181,28 @@ namespace ge
          
          unsigned getN(){ return N; }
          
-      private:
+      protected:
          float* _Ptr;
          unsigned N;
       };
 
-
       /**
-       * Triangle iterator which iterates along the position Attribute descriptor but
-       * tries to find indices descriptor at construction time. If it can find the
-       * indices it advances the triangle via indices array, if not if advances only in
-       * position array. It assumes the standard semantic names from geCore
-       * StandardSemanticsNames.
-       * In future it should be extended towards other Attributes. At least the float ones.
+       * Triangle iterator that iterates over an indexed geometry with unsigned as index type
+       * and float array as the actual vertex array with N as a number of floats per vertex.
        */
-      class MeshIndexedTriangleIterator : public MeshTriangleIteratorBasis
+      class IndexedTriangleIterator : public TriangleIteratorBasis
       {
       public:
-         typedef MeshIndexedTriangleIterator self_type;
+         typedef IndexedTriangleIterator self_type;
 
-         MeshIndexedTriangleIterator()
-            : MeshTriangleIteratorBasis()
+         IndexedTriangleIterator()
+            : TriangleIteratorBasis()
             , _Ptr(nullptr)
             , _Ind(nullptr)
             , N(0)
          {}
 
-         MeshIndexedTriangleIterator(Mesh* mesh)
-         {
-            auto indices = mesh->getAttribute(AttributeDescriptor::Semantic::indices);
-            auto positions = mesh->getAttribute(AttributeDescriptor::Semantic::position);
-
-            if(indices && positions)
-            {
-               unsigned* _Ind = static_cast<unsigned*>(indices->data.get());
-               float* _Ptr = static_cast<float*>(positions->data.get());
-               unsigned N = positions->numComponents;
-               _triangle.setToIndexed(_Ptr, _Ind, N);
-            }
-            else if(positions)
-            {
-               float* _Ptr = static_cast<float*>(positions->data.get());
-               unsigned N = positions->numComponents;
-               _triangle.setToContinuous(_Ptr, N);
-            }
-
-         }
-
-         MeshIndexedTriangleIterator(float* ptr, unsigned* ind, unsigned numComponents)
+         IndexedTriangleIterator(float* ptr, unsigned* ind, unsigned numComponents)
             : _Ptr(ptr)
             , _Ind(ind)
             , N(numComponents)
@@ -244,8 +211,8 @@ namespace ge
             else _triangle.setToContinuous(_Ptr, N);
          }
 
-         MeshIndexedTriangleIterator(const self_type& other)
-            : MeshTriangleIteratorBasis(other)
+         IndexedTriangleIterator(const self_type& other)
+            : TriangleIteratorBasis(other)
             , _Ptr(other._Ptr)
             , _Ind(other._Ind)
             , N(other.N)
@@ -285,51 +252,5 @@ namespace ge
          unsigned* _Ind;
          unsigned N;
       };
-
-      /**
-       * Constructs the triangle iterator to beginning of position attribute. If it
-       * finds the indices array the iterator will be indexed. The position or index
-       * array is found by querying the semantic. It assumes the standard semantic names
-       * from geCore StandardSemanticsNames.
-       */
-      inline MeshIndexedTriangleIterator MeshPositionIteratorBegin(Mesh *mesh)
-      {
-         auto indices = mesh->getAttribute(AttributeDescriptor::Semantic::indices);
-         auto positions = mesh->getAttribute(AttributeDescriptor::Semantic::position);
-
-         if(indices && positions)
-         {
-            unsigned* ind = static_cast<unsigned*>(indices->data.get());
-            float* ptr = static_cast<float*>(positions->data.get());
-            unsigned N = positions->numComponents;
-            return MeshIndexedTriangleIterator(ptr,ind,N);
-         } 
-         else if(positions)
-         {
-            float* ptr = static_cast<float*>(positions->data.get());
-            unsigned N = positions->numComponents;
-            return MeshIndexedTriangleIterator(ptr, nullptr, N);
-         }
-
-         return MeshIndexedTriangleIterator();
-      }
-
-      /**
-       * Returns iterator that points after the last triangle of mesh. It creates
-       * iterator via MeshPositionIteratorBegin() and then uses mesh->count to updates
-       * its position.
-       */
-      inline MeshIndexedTriangleIterator MeshPositionIteratorEnd(Mesh *mesh)
-      {
-         MeshIndexedTriangleIterator ret = MeshPositionIteratorBegin(mesh);
-         if(ret.getN() == 0)
-            return ret;
-         
-
-         ret = ret + static_cast<unsigned>(mesh->count) / 3;
-
-         return ret;
-      }
-
    }
 }
