@@ -119,20 +119,20 @@ namespace ge
             return tmp;
          }
 
-         virtual bool operator==(const self_type& rhs)
+         virtual bool operator==(const self_type& rhs) const
          {
             return this->_triangle.v0 == rhs._triangle.v0;
          }
 
-         virtual bool operator!=(const self_type& rhs)
+         virtual bool operator!=(const self_type& rhs) const
          {
             return !operator==(rhs);
          }
 
-         virtual self_type& operator+(int )
+         /*self_type operator+(int ) const
          {
-            return *this;
-         }
+            return{*this};
+         }*/
 
          virtual reference operator*()
          {
@@ -173,10 +173,22 @@ namespace ge
             return *this;
          }
 
-         virtual self_type& operator+(int shift)
+         self_type operator+(int shift) const
+         {
+            self_type ret{*this};
+            ret->add(shift*N);
+            return ret;
+         }
+
+         virtual self_type& operator+=(int shift)
          {
             _triangle.add(shift*N);
             return *this;
+         }
+
+         friend size_t operator-(const self_type& lhs, const self_type& rhs)
+         {
+            return (lhs._triangle.v0 - rhs._triangle.v0) / (lhs.N);
          }
          
          unsigned getN(){ return N; }
@@ -232,7 +244,21 @@ namespace ge
             return *this;
          }
 
-         virtual self_type& operator+(int shift)
+         self_type operator+(int shift) const
+         {
+            self_type ret{*this};
+            if(ret._Ind) {
+               ret._Ind += 3 * shift;
+               ret._triangle.setToIndexed(ret._Ptr, ret._Ind, ret.N);
+            }
+            else
+            {
+               ret._triangle.add(shift*N);
+            }
+            return ret;
+         }
+
+         virtual self_type& operator+=(int shift)
          {
             if(_Ind){
                _Ind += 3 * shift;
@@ -244,10 +270,17 @@ namespace ge
             }
             return *this;
          }
+         
+         friend size_t operator-(const self_type& lhs, const self_type& rhs)
+         {
+            if(lhs._Ind && rhs._Ind)
+               return (lhs._Ind - rhs._Ind)/3;
+            return (lhs._triangle.v0 - rhs._triangle.v0) / (3 * lhs.getN());
+         }
 
-         unsigned getN(){ return N; }
+         unsigned getN() const { return N; }
 
-      private:
+      protected:
          float* _Ptr;
          unsigned* _Ind;
          unsigned N;
