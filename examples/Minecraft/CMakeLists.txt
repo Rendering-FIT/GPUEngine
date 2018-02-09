@@ -2,7 +2,7 @@ set(APP_NAME Minecraft)
 
 project(${APP_NAME})
 
-if(NOT TARGET geUtil OR NOT TARGET geGL)
+if(NOT TARGET geUtil OR NOT TARGET geGL OR NOT TARGET SDLWindow)
    return()
 endif()
 
