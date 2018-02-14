@@ -19,7 +19,7 @@ bool RayTriangleIntersector::intersects() const
  * Muller-Trumbore algorithm.The algorithm has epsilon defined as 1e-6.
  * Bear in mind that this could be a source of future problems.
  */
-bool RayTriangleIntersector::intersects(const Ray & ray, ge::sg::Triangle& triag)
+bool RayTriangleIntersector::intersects(const Ray & ray, const ge::sg::Triangle& triag)
 {
    const float eps = 0.000001f;
    vec3& v0 = *reinterpret_cast<vec3*>(triag.v0);
@@ -54,12 +54,7 @@ bool RayTriangleIntersector::intersects(const Ray & ray, ge::sg::Triangle& triag
    }
 
    float t = dot(e1, q)*inv_det;
-   if (t > eps)
-   {
-      return true;
-   }
-
-   return false;
+   return t > eps;
 }
 
 /**
@@ -68,7 +63,7 @@ bool RayTriangleIntersector::intersects(const Ray & ray, ge::sg::Triangle& triag
  * Implements the Muller-Trumbore algorithm. The algorithm has epsilon defined as 1e-6.
  * Bear in mind that this could be a source of future problems.
  */
-float RayTriangleIntersector::computeIntersection(const Ray & ray, Triangle& triag)
+float RayTriangleIntersector::computeIntersection(const Ray & ray, const Triangle& triag)
 {
    const float eps = 0.000001f;
    vec3& v0 = *reinterpret_cast<vec3*>(triag.v0);

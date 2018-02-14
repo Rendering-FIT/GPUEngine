@@ -38,7 +38,7 @@ bool RayMeshIntersector::intersects(const Ray & ray, Mesh& mesh)
       return false;
    }
 
-   return std::any_of(MeshPositionIteratorBegin(&mesh), MeshPositionIteratorEnd(&mesh), std::bind((bool(*)(const Ray &, ge::sg::Triangle&))RayTriangleIntersector::intersects, ray, _1));
+   return std::any_of(MeshPositionIteratorBegin(&mesh), MeshPositionIteratorEnd(&mesh), std::bind((bool(*)(const Ray &, const ge::sg::Triangle&))RayTriangleIntersector::intersects, ray, _1));
 
    /**
     * the above line should implement the algorithm below
