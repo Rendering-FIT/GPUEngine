@@ -460,9 +460,9 @@ ge::sg::AnimationChannel* AssimpModelLoader::createMovementAnimationChannel(aiNo
       return channel;
    }
    channel->setTarget(it->second.second->data->getRefMatrix());
-   ste::transform_copy(ai_node_anim->mPositionKeys, ai_node_anim->mPositionKeys + ai_node_anim->mNumPositionKeys, std::back_inserter(channel->positionKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit<double,ratio<1>>(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
-   ste::transform_copy(ai_node_anim->mScalingKeys, ai_node_anim->mScalingKeys + ai_node_anim->mNumScalingKeys, std::back_inserter(channel->scaleKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit<double, ratio<1>>(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
-   ste::transform_copy(ai_node_anim->mRotationKeys, ai_node_anim->mRotationKeys + ai_node_anim->mNumRotationKeys, std::back_inserter(channel->orientationKF), [frame_time](aiQuatKey key){ return ge::sg::MovementAnimationChannel::QuatKeyFrame(ge::core::toTimeUnit<double, ratio<1>>(key.mTime*frame_time), glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)); });
+   std::transform(ai_node_anim->mPositionKeys, ai_node_anim->mPositionKeys + ai_node_anim->mNumPositionKeys, std::back_inserter(channel->positionKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit<double,ratio<1>>(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
+   std::transform(ai_node_anim->mScalingKeys, ai_node_anim->mScalingKeys + ai_node_anim->mNumScalingKeys, std::back_inserter(channel->scaleKF), [frame_time](aiVectorKey key){ return ge::sg::MovementAnimationChannel::Vec3KeyFrame(ge::core::toTimeUnit<double, ratio<1>>(key.mTime*frame_time), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)); });
+   std::transform(ai_node_anim->mRotationKeys, ai_node_anim->mRotationKeys + ai_node_anim->mNumRotationKeys, std::back_inserter(channel->orientationKF), [frame_time](aiQuatKey key){ return ge::sg::MovementAnimationChannel::QuatKeyFrame(ge::core::toTimeUnit<double, ratio<1>>(key.mTime*frame_time), glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)); });
 
 
    return channel;
