@@ -23,7 +23,7 @@ namespace ge
          static bool intersects(const util::Ray & ray, sg::Mesh& mesh);
          static float computeIntersection(const util::Ray & ray, sg::Mesh& mesh);
 
-         virtual bool intersects() override;
+         virtual bool intersects() const override;
 
          util::Ray ray;
          std::shared_ptr<sg::Mesh> mesh;

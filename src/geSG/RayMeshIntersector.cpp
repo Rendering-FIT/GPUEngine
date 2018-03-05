@@ -1,6 +1,6 @@
 #include <geSG/RayMeshIntersector.h>
 #include <geSG/RayTriangleIntersector.h>
-#include <geSG/MeshPrimitiveIterator.h>
+#include <geSG/MeshTriangleIterators.h>
 
 #include <functional>
 #include <algorithm>
@@ -20,7 +20,7 @@ using namespace std::placeholders;
 /**
  * Not implemented, returns always false. Use the static methods.
  */
-bool RayMeshIntersector::intersects()
+bool RayMeshIntersector::intersects() const
 {
    return false;
 }
@@ -38,7 +38,7 @@ bool RayMeshIntersector::intersects(const Ray & ray, Mesh& mesh)
       return false;
    }
 
-   return std::any_of(MeshPositionIteratorBegin(&mesh), MeshPositionIteratorEnd(&mesh), std::bind((bool(*)(const Ray &, ge::sg::Triangle&))RayTriangleIntersector::intersects, ray, _1));
+   return std::any_of(MeshPositionIteratorBegin(&mesh), MeshPositionIteratorEnd(&mesh), std::bind((bool(*)(const Ray &, const ge::sg::Triangle&))RayTriangleIntersector::intersects, ray, _1));
 
    /**
     * the above line should implement the algorithm below
@@ -72,9 +72,9 @@ float RayMeshIntersector::computeIntersection(const Ray & ray, Mesh& mesh)
       return false;
    }
 
-   MeshIndexedTriangleIterator beg = MeshPositionIteratorBegin(&mesh);
-   MeshIndexedTriangleIterator end = MeshPositionIteratorEnd(&mesh);
-   MeshIndexedTriangleIterator it(beg);
+   IndexedTriangleIterator beg = MeshPositionIteratorBegin(&mesh);
+   IndexedTriangleIterator end = MeshPositionIteratorEnd(&mesh);
+   IndexedTriangleIterator it(beg);
 
    /**
     * When c++17 is defined this is what it does -> whole function could be

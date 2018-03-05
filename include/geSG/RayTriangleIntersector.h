@@ -17,10 +17,10 @@ namespace ge{
       struct GESG_EXPORT RayTriangleIntersector : public util::Intersector
       {
          //static bool intersects(const Ray & ray, const glm::vec3 & v0, const glm::vec3 & v1, const glm::vec3 & v2);
-         static bool intersects(const util::Ray & ray, ge::sg::Triangle& triag);
-         static float computeIntersection(const util::Ray & ray, ge::sg::Triangle& triag);
+         static bool intersects(const util::Ray & ray, const ge::sg::Triangle& triag);
+         static float computeIntersection(const util::Ray & ray, const Triangle& triag);
 
-         virtual bool intersects() override;
+         virtual bool intersects() const override;
 
          util::Ray ray;
          glm::vec3 v0, v1, v2;
