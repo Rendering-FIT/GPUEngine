@@ -32,6 +32,7 @@
 #include"RSSV.h"
 #include"VSSV.h"
 #include"CSSVSOE.h"
+#include "TSSV/TSSV.hpp"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -70,6 +71,7 @@ struct Application{
   VSSVParams              vssvParams   ;
   SintornParams           sintornParams;
   RSSVParams              rssvParams   ;
+  TSSVParams              tssvParams;
 
   std::string testName                 = ""           ;
   std::string testFlyKeyFileName       = ""           ;
@@ -126,7 +128,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
   this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
-  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe");
+  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe/tssv");
 
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -160,6 +162,10 @@ void Application::parseArguments(int argc,char*argv[]){
   this->rssvParams.cullSides               = arg->geti32("--rssv-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
   this->rssvParams.silhouettesPerWorkgroup = arg->geti32("--rssv-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
   this->rssvParams.usePlanes               = arg->geti32("--rssv-usePlanes"              ,0 ,"use triangle planes instead of opposite vertices"            );
+
+  this->tssvParams.UseReferenceEdge      = arg->isPresent("--tssv-useRefEdge", "Use Reference Edge");
+  this->tssvParams.CullSides             = arg->isPresent("--tssv-cullSides", "Cull Sides");
+  this->tssvParams.UseStencilValueExport = arg->isPresent("--tssv-useStencilExport" "Use stencil value export");
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -241,55 +247,65 @@ bool Application::init(int argc,char*argv[]){
 
   this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
-  if     (this->methodName=="cubeShadowMapping")
-    this->shadowMethod = std::make_shared<CubeShadowMapping>(
-        this->shadowMask              ,
-        this->windowSize              ,
-        this->gBuffer->position       ,
-        this->renderModel->nofVertices,
-        this->renderModel->vertices   ,
-        this->cubeSMParams            );
-  else if(this->methodName=="cssv")
-    this->shadowMethod = std::make_shared<CSSV>(
-        this->shadowMask     ,
-        this->model          ,
-        this->gBuffer->depth ,
-        this->svParams       ,
-        this->maxMultiplicity,
-        this->cssvParams     );
-  else if(this->methodName=="cssvsoe")
-    this->shadowMethod = std::make_shared<CSSVSOE>(
-        this->shadowMask     ,
-        this->model          ,
-        this->gBuffer->depth ,
-        this->svParams       ,
-        this->maxMultiplicity,
-        this->cssvsoeParams  );
-  else if(this->methodName=="sintorn")
-    this->shadowMethod = std::make_shared<Sintorn>(
-        this->shadowMask     ,
-        this->windowSize     ,
-        this->gBuffer->depth ,
-        this->gBuffer->normal,
-        this->model          ,
-        this->wavefrontSize  ,
-        this->sintornParams  );
-  else if(this->methodName=="rssv")
-    this->shadowMethod = std::make_shared<RSSV>(
-        this->shadowMask     ,
-        this->windowSize     ,
-        this->gBuffer->depth ,
-        this->model          ,
-        this->maxMultiplicity,
-        this->rssvParams     );
-  else if(this->methodName=="vssv")
-    this->shadowMethod = std::make_shared<VSSV>(
-        this->shadowMask     ,
-        this->model          ,
-        this->gBuffer->depth ,
-        this->svParams       ,
-        this->maxMultiplicity,
-        this->vssvParams     );
+  if (this->methodName == "cubeShadowMapping")
+	  this->shadowMethod = std::make_shared<CubeShadowMapping>(
+		  this->shadowMask,
+		  this->windowSize,
+		  this->gBuffer->position,
+		  this->renderModel->nofVertices,
+		  this->renderModel->vertices,
+		  this->cubeSMParams);
+  else if (this->methodName == "cssv")
+	  this->shadowMethod = std::make_shared<CSSV>(
+		  this->shadowMask,
+		  this->model,
+		  this->gBuffer->depth,
+		  this->svParams,
+		  this->maxMultiplicity,
+		  this->cssvParams);
+  else if (this->methodName == "cssvsoe")
+	  this->shadowMethod = std::make_shared<CSSVSOE>(
+		  this->shadowMask,
+		  this->model,
+		  this->gBuffer->depth,
+		  this->svParams,
+		  this->maxMultiplicity,
+		  this->cssvsoeParams);
+  else if (this->methodName == "sintorn")
+	  this->shadowMethod = std::make_shared<Sintorn>(
+		  this->shadowMask,
+		  this->windowSize,
+		  this->gBuffer->depth,
+		  this->gBuffer->normal,
+		  this->model,
+		  this->wavefrontSize,
+		  this->sintornParams);
+  else if (this->methodName == "rssv")
+	  this->shadowMethod = std::make_shared<RSSV>(
+		  this->shadowMask,
+		  this->windowSize,
+		  this->gBuffer->depth,
+		  this->model,
+		  this->maxMultiplicity,
+		  this->rssvParams);
+  else if (this->methodName == "vssv")
+	  this->shadowMethod = std::make_shared<VSSV>(
+		  this->shadowMask,
+		  this->model,
+		  this->gBuffer->depth,
+		  this->svParams,
+		  this->maxMultiplicity,
+		  this->vssvParams);
+  else if (this->methodName == "tssv")
+	  this->shadowMethod = std::make_shared<TSSV>(
+		  model,
+		  tssvParams.UseReferenceEdge,
+		  tssvParams.CullSides,
+		  tssvParams.UseStencilValueExport,
+		  maxMultiplicity,
+		  shadowMask,
+		  gBuffer->depth,
+		  svParams);
   else
     this->useShadows = false;
 

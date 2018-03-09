@@ -2,18 +2,20 @@ set(APP_NAME Shadows)
 
 project(${APP_NAME})
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 find_package(Assimp)
 find_package(FreeImage)
 find_package(FreeImagePlus)
 
 if(NOT TARGET SDLWindow OR 
    NOT TARGET Assimp OR
-   NOT FreeImage_FOUND OR 
-   NOT FreeImagePlus_FOUND OR
    NOT TARGET geGL OR
    NOT TARGET geUtil)
    return()
 endif()
+
+add_subdirectory(TSSV)
 
 
 set(APP_SOURCES
@@ -66,15 +68,17 @@ set(APP_INCLUDES
   SilhouetteShaders.h
   )
 
-add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES})
+source_group("TSSV" FILES ${TSSV_FILES})
+
+add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
 # External_libs - external libs or targets to link with
 # Internal_inc - additional include directories
 
-set(Internal_deps geGL geDE SDLWindow geUtil)
-set(External_libs Assimp FreeImage FreeImagePlus)
+set(Internal_deps geGL SDLWindow geUtil)
+set(External_libs Assimp)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}
