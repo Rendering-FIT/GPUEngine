@@ -5,8 +5,9 @@
 #include <geGL/Buffer.h>
 
 #include "../FastAdjacency.h"
-#include "apps/Shadows/ShadowVolumes.h"
-#include "apps/Shadows/Model.h"
+#include "../ShadowVolumes.h"
+#include "../Model.h"
+#include "../GSCaps.h"
 
 struct TSSVParams
 {
@@ -34,10 +35,6 @@ class TSSV : public ShadowVolumes
 	void drawCaps(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 
 private:
-
-	void _initCapsBuffers(std::shared_ptr<Adjacency const> ad);
-	void _initCapsProgram();
-
 	void _initSidesBuffers(const std::shared_ptr<Adjacency const> ad);
 	void _initSidesProgram(bool UseReferenceEdge, bool CullSides, bool UseStencilValueExport, unsigned int maxMultiplicity);
 
@@ -46,11 +43,9 @@ private:
 	std::shared_ptr<ge::gl::VertexArray> _sidesVAO;
 	std::shared_ptr<ge::gl::Program> _sidesProgram;
 
-	std::shared_ptr<ge::gl::Buffer> _capsVBO;
-	std::shared_ptr<ge::gl::VertexArray> _capsVAO;
-	std::shared_ptr<ge::gl::Program> _capsProgram;
+	std::shared_ptr<GSCaps> _capsDrawer;
 
 	size_t	_patchVertices;
-    size_t		_nofEdges;
-	size_t		_nofCapsTriangles;
+    size_t	_nofEdges;
+
 };

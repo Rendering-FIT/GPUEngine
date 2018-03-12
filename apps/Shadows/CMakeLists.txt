@@ -7,18 +7,26 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 find_package(Assimp)
 find_package(FreeImage)
 find_package(FreeImagePlus)
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 if(NOT TARGET SDLWindow OR 
    NOT TARGET Assimp OR
    NOT TARGET geGL OR
-   NOT TARGET geUtil)
+   NOT TARGET geUtil OR
+   NOT TARGET FreeImage)
    return()
 endif()
 
 add_subdirectory(TSSV)
-
+add_subdirectory(HSSV)
 
 set(APP_SOURCES
+  AABB.cpp
   main.cpp
   Model.cpp
   CameraPath.cpp
@@ -37,9 +45,11 @@ set(APP_SOURCES
   VSSV.cpp
   DrawPrimitive.cpp
   ShadowVolumes.cpp
+  GSCaps.cpp
   )
 
 set(APP_INCLUDES
+  AABB.hpp
   CameraPath.h
   CSV.h
   Deferred.h
@@ -66,11 +76,16 @@ set(APP_INCLUDES
   ShadowVolumes.h
   ShadowVolumesShaders.h
   SilhouetteShaders.h
+  Material.h
+  Texture.h
+  GSCaps.h
+  GSCapsShaders.h
   )
 
 source_group("TSSV" FILES ${TSSV_FILES})
+source_group("HSSV" FILES ${HSSV_FILES})
 
-add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES})
+add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
@@ -78,7 +93,7 @@ add_executable(${APP_NAME} WIN32 ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES})
 # Internal_inc - additional include directories
 
 set(Internal_deps geGL SDLWindow geUtil)
-set(External_libs Assimp)
+set(External_libs Assimp FreeImage)
 set(Internal_inc
   ${GPUEngine_SOURCE_DIR}/include
   ${GPUEngine_SOURCE_DIR}

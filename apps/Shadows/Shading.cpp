@@ -52,8 +52,8 @@ void main(){
   vec3 R = reflect(-L,normal);//reflected light vector
 
   float ambientFactor  = 1;
-  float diffuseFactor  = max(dot(L,normal),0)*shadowCoef;
-  float specularFactor = pow(max(dot(R,V),0),Shininess)*specularFactorCoef*shadowCoef;
+  float diffuseFactor  = max(dot(L,normal),0)*float(shadowCoef>=1);
+  float specularFactor = pow(max(dot(R,V),0),Shininess)*specularFactorCoef*float(shadowCoef>=1);
 
   sum+=Ka*La*ambientFactor;
   sum+=Kd*Ld*diffuseFactor;

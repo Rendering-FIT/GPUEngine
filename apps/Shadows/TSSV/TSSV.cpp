@@ -1,6 +1,6 @@
 #include"TSSV.hpp"
 #include"SidesShaderGenerator.hpp"
-#include "capsShaders.hpp"
+
 
 TSSV::TSSV(
     std::shared_ptr<Model> model,
@@ -21,8 +21,7 @@ TSSV::TSSV(
 	_initSidesBuffers(ad);
 	_initSidesProgram(UseReferenceEdge, CullSides, UseStencilValueExport, ad->getMaxMultiplicity());
 	
-	_initCapsBuffers(ad);
-	_initCapsProgram();
+	_capsDrawer = std::make_shared<GSCaps>(ad);
 }
 
 TSSV::~TSSV(){}
@@ -44,38 +43,7 @@ void TSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 
 void TSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
-	const glm::mat4 mvp = projectionMatrix * viewMatrix;
-
-	_capsVAO->bind();
-	_capsProgram->use();
-	_capsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp), 1, GL_FALSE);
-	_capsProgram->set4fv("LightPosition", glm::value_ptr(lightPosition), 1);
-	glDrawArrays(GL_TRIANGLES, 0, _nofCapsTriangles * 3);
-
-	_capsVAO->unbind();
-}
-
-void TSSV::_initCapsBuffers(std::shared_ptr<Adjacency const> ad)
-{
-	_capsVAO = std::make_shared<ge::gl::VertexArray>();
-
-	_nofCapsTriangles = ad->getNofTriangles();
-
-	_capsVBO = std::make_shared<ge::gl::Buffer>(sizeof(float) * 4 * 3 * _nofCapsTriangles, nullptr, GL_STATIC_DRAW);
-
-	float*Ptr = (float*)_capsVBO->map();
-	for (unsigned t = 0; t<_nofCapsTriangles; ++t)
-	{
-		for (unsigned p = 0; p<3; ++p) {
-			for (unsigned i = 0; i<3; ++i)
-				Ptr[(t * 3 + p) * 4 + i] = ad->getVertices()[(t * 3 + p) * 3 + i];
-			Ptr[(t * 3 + p) * 4 + 3] = 1;
-		}
-	}
-
-	_capsVBO->unmap();
-
-	_capsVAO->addAttrib(_capsVBO, 0, 4, GL_FLOAT);
+	_capsDrawer->drawCaps(lightPosition, viewMatrix, projectionMatrix);
 }
 
 void TSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
@@ -120,15 +88,6 @@ void TSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	this->_sidesVAO = std::make_shared<ge::gl::VertexArray>();
 	this->_sidesVAO->addAttrib(_sidesVBO, 0, 4, GL_FLOAT);
 	this->_sidesVAO->addElementBuffer(_sidesEBO);
-}
-
-void TSSV::_initCapsProgram()
-{
-	std::shared_ptr<ge::gl::Shader> vs = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, vsSource);
-	std::shared_ptr<ge::gl::Shader> gs = std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, gsSource);
-	std::shared_ptr<ge::gl::Shader> fs = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER, fsSource);
-
-	_capsProgram = std::make_shared<ge::gl::Program>(vs, gs, fs);
 }
 
 void TSSV::_initSidesProgram(bool UseReferenceEdge, bool CullSides, bool UseStencilValueExport, unsigned int maxMultiplicity)

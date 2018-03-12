@@ -3,7 +3,11 @@
 #include<string>
 #include<limits>
 #include<geGL/geGL.h>
+
+//#define SDL_MAIN_HANDLED
 #include<geAd/SDLWindow/SDLWindow.h>
+#undef main
+
 #include<geGL/OpenGLCommands.h>
 #include<geGL/OpenGLContext.h>
 #include<geGL/StaticCalls.h>

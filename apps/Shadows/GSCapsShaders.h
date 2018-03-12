@@ -11,6 +11,7 @@ void main(){
 )";
 
 const char* gsSource = R"(
+#version 430 core
 #define SHIFT_TRIANGLE_TO_INFINITY
 
 #ifdef SHIFT_TRIANGLE_TO_INFINITY
@@ -35,8 +36,6 @@ const char* gsSource = R"(
 #define BCLB0 0
 #define BCLB1 1
 #define BCLB2 2
-
-#version 430 core
 
 layout(triangles)in;
 layout(triangle_strip,max_vertices=6)out;
