@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-
+#include <vector>
 
 //Axis-aligned bounding box
 struct AABB
@@ -22,6 +22,8 @@ struct AABB
 	void updateWithVertex(const glm::vec3& vertex);
 
 	void updateWithVertex(const glm::vec4& vertex);
+
+	void updateWithVerticesVec3(const std::vector<float>& vertices);
 
 	void updateWithAABB(const AABB& bbox);
 

@@ -26,7 +26,6 @@ add_subdirectory(TSSV)
 add_subdirectory(HSSV)
 
 set(APP_SOURCES
-  AABB.cpp
   main.cpp
   Model.cpp
   CameraPath.cpp
@@ -49,7 +48,6 @@ set(APP_SOURCES
   )
 
 set(APP_INCLUDES
-  AABB.hpp
   CameraPath.h
   CSV.h
   Deferred.h

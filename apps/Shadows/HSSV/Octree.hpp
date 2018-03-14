@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../AABB.hpp"
-#include "Edge.hpp"
+#include "AABB.hpp"
 #include <vector>
 #include <algorithm>
 

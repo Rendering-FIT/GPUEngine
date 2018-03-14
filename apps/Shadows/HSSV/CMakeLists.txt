@@ -1,11 +1,20 @@
 
 set(HSSV_FILES
+	HSSV/AdjacencyEdgeWrapper.hpp
 	HSSV/HSSV.cpp
 	HSSV/HSSV.hpp
 	HSSV/Octree.hpp
 	HSSV/Octree.cpp
 	HSSV/OctreeVisitor.hpp
 	HSSV/OctreeVisitor.cpp
+	HSSV/Plane.hpp
+	HSSV/Plane.cpp
+	HSSV/HighResolutionTimer.cpp
+	HSSV/HighResolutionTimer.hpp
+	HSSV/AABB.hpp
+	HSSV/AABB.cpp
+	HSSV/GeometryOperations.hpp
+	HSSV/SidesProgram.hpp
 	
 	PARENT_SCOPE
 )

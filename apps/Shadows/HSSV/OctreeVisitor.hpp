@@ -1,18 +1,19 @@
 #pragma once
 
 #include "Octree.hpp"
-#include "Edge.hpp"
 #include "GeometryOperations.hpp"
 #include <memory>
 #include <set>
+
+#include "AdjacencyEdgeWrapper.hpp"
 
 class OctreeVisitor
 {
 public:
 	OctreeVisitor(std::shared_ptr<Octree> octree);
 
-	void addEdge(const EDGE_TYPE& edgeInfo, int edgeID);
-	void addEdges(const EDGE_CONTAINER_TYPE& _edges);
+	//void addEdge(const EDGE_TYPE& edgeInfo, int edgeID);
+	void addEdges(const AdjacencyType _edges);
 
 	void processPotentialEdges();
 
@@ -55,9 +56,9 @@ private:
 	void _processEmptyNodesInLevel(unsigned int level);
 		void _processEmptyNodesSyblingsParent(unsigned int first);
 
-	void _addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, const EDGE_CONTAINER_TYPE& edges);
-		void _addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, const EDGE_CONTAINER_TYPE& edges, unsigned int startingID);
-		void _generateEdgePlanes(const EDGE_CONTAINER_TYPE& edges, std::vector< std::vector<Plane> >& planes) const;
+	void _addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges);
+		void _addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID);
+		void _generateEdgePlanes(const AdjacencyType edges, std::vector< std::vector<Plane> >& planes) const;
 		bool _doAllSilhouetteFaceTheSame(const int (&indices)[OCTREE_NUM_CHILDREN]) const;
 
 	bool _isPointInsideNode(unsigned int nodeID, const glm::vec3& point) const;

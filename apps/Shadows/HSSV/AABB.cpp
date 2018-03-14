@@ -1,4 +1,5 @@
 #include "AABB.hpp"
+#include <glm/gtc/type_ptr.hpp>
 
 AABB::AABB()
 {
@@ -57,6 +58,17 @@ void AABB::updateWithVertex(const glm::vec4& vertex)
 
 	_updateExtents();
 }
+
+void AABB::updateWithVerticesVec3(const std::vector<float>& vertices)
+{
+	const size_t indices = vertices.size();
+
+	for (size_t i = 0; i < indices; i += 3)
+		_updateWithVertexInternal(glm::make_vec3(vertices.data() + i));
+
+	_updateExtents();
+}
+
 
 void AABB::updateWithAABB(const AABB& bbox)
 {

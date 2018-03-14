@@ -12,7 +12,7 @@ OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
 	_octree = octree;
 }
-
+/*
 void OctreeVisitor::addEdge(const EDGE_TYPE& edgeInfo, int edgeID)
 {
 	Plane p1, p2;
@@ -61,8 +61,9 @@ void OctreeVisitor::addEdge(const EDGE_TYPE& edgeInfo, int edgeID)
 		}
 	}
 }
+*/
 
-void OctreeVisitor::addEdges(const EDGE_CONTAINER_TYPE& edges)
+void OctreeVisitor::addEdges(const AdjacencyType edges)
 {
 	_expandWholeOctree();
 
@@ -90,19 +91,26 @@ void OctreeVisitor::addEdges(const EDGE_CONTAINER_TYPE& edges)
 	std::cout << "Propagate Silhouette edges took " << dt / 1000.0f << " sec\n";
 }
 
-void OctreeVisitor::_generateEdgePlanes(const EDGE_CONTAINER_TYPE& edges, std::vector< std::vector<Plane> >& planes) const
+void OctreeVisitor::_generateEdgePlanes(const AdjacencyType edges, std::vector< std::vector<Plane> >& planes) const
 {
-	const auto numEdges = edges.size();
+	const auto numEdges = edges->getNofEdges();
 
 	planes.resize(numEdges);
 
 	unsigned int index = 0;
-	for(const auto edgeInfo : edges)
+
+	for(size_t i = 0; i<numEdges; ++i)
 	{
-		for (const auto oppositeVertex : edgeInfo.second)
+		const auto nofOpposites = getNofOppositeVertices(edges, i);
+		planes[index].reserve(nofOpposites);
+
+		glm::vec3 v1, v2;
+		getEdgeVertices(edges, i, v1, v2);
+
+		for (unsigned int j = 0; j<nofOpposites; ++j)
 		{
 			Plane p;
-			GeometryOps::buildEdgeTrianglePlane(edgeInfo.first, oppositeVertex, p);
+			p.createFromPointsCCW(v1, getOppositeVertex(edges, i, j), v2);
 
 			planes[index].push_back(p);
 		}
@@ -111,7 +119,7 @@ void OctreeVisitor::_generateEdgePlanes(const EDGE_CONTAINER_TYPE& edges, std::v
 	}
 }
 
-void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, const EDGE_CONTAINER_TYPE& edges)
+void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, const AdjacencyType edges)
 {
 	const int deepestLevel = _octree->getDeepestLevel();
 	const int levelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
@@ -130,13 +138,15 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 	}
 }
 
-void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, const EDGE_CONTAINER_TYPE& edges, unsigned int startingID)
+void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
 {
+
 	unsigned int edgeIndex = 0;
 
 	const int parent = _octree->getNodeParent(startingID);
 
-	for (const auto edge : edges)
+	const size_t nofEdges = edges->getNofEdges();
+	for (size_t edgeIndex = 0; edgeIndex < nofEdges; ++edgeIndex)
 	{
 		unsigned int numPotential = 0;
 		unsigned int numSilhouette = 0;
@@ -144,12 +154,13 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		int potentialIndices[OCTREE_NUM_CHILDREN];
 		int silhouetteIndices[OCTREE_NUM_CHILDREN];
 
-		const auto numOppositeVertices = edge.second.size();
+		const auto numOppositeVertices = edges->getNofOpposite(edgeIndex);
 
 		if(numOppositeVertices!=2)
 		{
 			if (numOppositeVertices == 1 && parent >= 0)
-				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
+				_storeEdgeIsPotentiallySilhouette(0, edgeIndex);
+				//_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
 
 			edgeIndex++;
 			continue;
@@ -157,7 +168,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 
 		for (unsigned int index = startingID; index<(startingID + OCTREE_NUM_CHILDREN); index++)
 		{
-			EdgeSilhouetness testResult = GeometryOps::testEdgeSpaceAabb(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], edge, _octree->getNodeVolume(index));
+			EdgeSilhouetness testResult = GeometryOps::testEdgeSpaceAabb(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], edges, edgeIndex, _octree->getNodeVolume(index));
 
 			if (testResult== EdgeSilhouetness::EDGE_IS_SILHOUETTE_PLUS)
 				silhouetteIndices[numSilhouette++] = index;

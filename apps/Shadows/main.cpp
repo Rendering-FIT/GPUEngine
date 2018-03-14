@@ -4,7 +4,6 @@
 #include<limits>
 #include<geGL/geGL.h>
 
-//#define SDL_MAIN_HANDLED
 #include<geAd/SDLWindow/SDLWindow.h>
 #undef main
 
@@ -37,6 +36,7 @@
 #include"VSSV.h"
 #include"CSSVSOE.h"
 #include "TSSV/TSSV.hpp"
+#include "HSSV/HSSV.hpp"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -75,7 +75,8 @@ struct Application{
   VSSVParams              vssvParams   ;
   SintornParams           sintornParams;
   RSSVParams              rssvParams   ;
-  TSSVParams              tssvParams;
+  TSSVParams              tssvParams   ;
+  HSSVParams			  hssvParams   ;
 
   std::string testName                 = ""           ;
   std::string testFlyKeyFileName       = ""           ;
@@ -132,7 +133,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
   this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
-  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe/tssv");
+  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe/tssv/hssv");
 
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -170,6 +171,9 @@ void Application::parseArguments(int argc,char*argv[]){
   this->tssvParams.UseReferenceEdge      = arg->isPresent("--tssv-useRefEdge", "Use Reference Edge");
   this->tssvParams.CullSides             = arg->isPresent("--tssv-cullSides", "Cull Sides");
   this->tssvParams.UseStencilValueExport = arg->isPresent("--tssv-useStencilExport" "Use stencil value export");
+
+  this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
+  this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 5.f,5.f,5.f}, "Defines octree volume in terms of scene AABB scaling"));
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -307,6 +311,14 @@ bool Application::init(int argc,char*argv[]){
 		  tssvParams.CullSides,
 		  tssvParams.UseStencilValueExport,
 		  maxMultiplicity,
+		  shadowMask,
+		  gBuffer->depth,
+		  svParams);
+  else if (this->methodName == "hssv")
+	  this->shadowMethod = std::make_shared<HSSV>(
+		  model,
+		  hssvParams.sceneAABBscale,
+		  hssvParams.maxOctreeLevel,
 		  shadowMask,
 		  gBuffer->depth,
 		  svParams);
