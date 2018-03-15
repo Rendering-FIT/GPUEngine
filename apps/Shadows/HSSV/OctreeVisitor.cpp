@@ -12,56 +12,6 @@ OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
 	_octree = octree;
 }
-/*
-void OctreeVisitor::addEdge(const EDGE_TYPE& edgeInfo, int edgeID)
-{
-	Plane p1, p2;
-
-	const auto sz = edgeInfo.second.size();
-
-	assert(sz <= 2);
-
-	if (sz == 0)
-		return;
-	if(sz==1)
-	{
-		_storeEdgeIsPotentiallySilhouette(0, edgeID);
-		return;
-	}
-
-	GeometryOps::buildEdgeTrianglePlane(edgeInfo.first, edgeInfo.second[0], p1);
-	GeometryOps::buildEdgeTrianglePlane(edgeInfo.first, edgeInfo.second[1], p2);
-
-	std::stack<unsigned int> nodeStack;
-	nodeStack.push(0);
-
-	while(!nodeStack.empty())
-	{
-		int node = nodeStack.top();
-		nodeStack.pop();
-
-		if (!_octree->nodeExists(node))
-			_octree->splitNode(_octree->getNodeParent(node));
-
-		EdgeSilhouetness testResult = GeometryOps::testEdgeSpaceAabb(p1, p2, edgeInfo, _octree->getNodeVolume(node));
-
-		if (EDGE_IS_SILHOUETTE(testResult))
-			_storeEdgeIsAlwaysSilhouette(testResult, node, edgeID);
-		else if (testResult == EdgeSilhouetness::EDGE_POTENTIALLY_SILHOUETTE)
-		{
-			const int childrenStart = _octree->getChildrenStartingId(node);
-
-			if (childrenStart >= 0)
-			{
-				for (int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
-					nodeStack.push(childrenStart + i);
-			}
-			else
-				_storeEdgeIsPotentiallySilhouette(node, edgeID);
-		}
-	}
-}
-*/
 
 void OctreeVisitor::addEdges(const AdjacencyType edges)
 {
@@ -159,10 +109,9 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		if(numOppositeVertices!=2)
 		{
 			if (numOppositeVertices == 1 && parent >= 0)
-				_storeEdgeIsPotentiallySilhouette(0, edgeIndex);
+				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
 				//_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
 
-			edgeIndex++;
 			continue;
 		}
 
@@ -205,8 +154,6 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 
 		for (unsigned int i = 0; i<numSilhouette; ++i)
 			_storeEdgeIsAlwaysSilhouette(abs(silhouetteIndices[i]), -int(edgeIndex)*(silhouetteIndices[i]<0) + edgeIndex * (silhouetteIndices[i]>=0));
-
-		++edgeIndex;
 	}
 	
 	for(auto i = startingID; i<(startingID+OCTREE_NUM_CHILDREN); ++i)
@@ -571,6 +518,8 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<int>& poten
 {
 	int currentNodeID = nodeID;
 
+	static bool printOnce = false;
+
 	while(currentNodeID>=0)
 	{
 		const auto node = _octree->getNode(currentNodeID);
@@ -580,8 +529,11 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<int>& poten
 		silhouette.insert(silhouette.end(), node->edgesAlwaysCast.begin(), node->edgesAlwaysCast.end());
 		potential.insert(potential.end(), node->edgesMayCast.begin(), node->edgesMayCast.end());
 
-		std::cout << "Getting " << node->edgesAlwaysCast.size() << " silhouette and " << node->edgesMayCast.size() << " potential from node " << currentNodeID << std::endl;
+		if(!printOnce)
+			std::cout << "Getting " << node->edgesAlwaysCast.size() << " silhouette and " << node->edgesMayCast.size() << " potential from node " << currentNodeID << std::endl;
 
 		currentNodeID = _octree->getNodeParent(currentNodeID);
 	}
+
+	printOnce = true;
 }

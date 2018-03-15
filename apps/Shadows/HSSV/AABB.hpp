@@ -23,7 +23,7 @@ struct AABB
 
 	void updateWithVertex(const glm::vec4& vertex);
 
-	void updateWithVerticesVec3(const std::vector<float>& vertices);
+	void updateWithVerticesVec3(const float* vertices, size_t numFloats);
 
 	void updateWithAABB(const AABB& bbox);
 
