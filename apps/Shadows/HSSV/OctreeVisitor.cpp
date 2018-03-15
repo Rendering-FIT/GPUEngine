@@ -7,6 +7,7 @@
 
 #include <omp.h>
 #include "HighResolutionTimer.hpp"
+#include "MultiplicityCoding.hpp"
 
 OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
@@ -99,7 +100,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 	for (size_t edgeIndex = 0; edgeIndex < nofEdges; ++edgeIndex)
 	{
 		unsigned int numPotential = 0;
-		unsigned int numSilhouette = 0;
+		unsigned int silhouetteMask = 0;
 
 		int potentialIndices[OCTREE_NUM_CHILDREN];
 		int silhouetteIndices[OCTREE_NUM_CHILDREN];
@@ -110,13 +111,13 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		{
 			if (numOppositeVertices == 1 && parent >= 0)
 				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
-				//_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
 
 			continue;
 		}
 
 		for (unsigned int index = startingID; index<(startingID + OCTREE_NUM_CHILDREN); index++)
 		{
+			/*
 			EdgeSilhouetness testResult = GeometryOps::testEdgeSpaceAabb(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], edges, edgeIndex, _octree->getNodeVolume(index));
 
 			if (testResult== EdgeSilhouetness::EDGE_IS_SILHOUETTE_PLUS)
@@ -125,6 +126,21 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 				silhouetteIndices[numSilhouette++] = -int(index);
 			else if (testResult == EdgeSilhouetness::EDGE_POTENTIALLY_SILHOUETTE)
 				potentialIndices[numPotential++] = index;
+			*/
+
+			const bool isPotentiallySilhouette = GeometryOps::isEdgeSpaceAaabbIntersecting(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], _octree->getNodeVolume(index));
+
+			if(isPotentiallySilhouette)
+				potentialIndices[numPotential++] = index;
+			else
+			{
+				const int multiplicity = GeometryOps::calcEdgeMultiplicity(edges, edgeIndex, _octree->getNodeVolume(index).getMinPoint());
+				if (multiplicity != 0)
+				{
+					silhouetteIndices[index-startingID] = encodeEdgeMultiplicityToId(edgeIndex, multiplicity);
+					silhouetteMask |= 1 << (index - startingID);
+				}
+			}
 		}
 
 		if (parent >= 0)
@@ -135,8 +151,9 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 				numPotential = 0;
 			}
 
-			if (numSilhouette == OCTREE_NUM_CHILDREN)
+			if (silhouetteMask == (ipow(2, OCTREE_NUM_CHILDREN)-1))
 			{
+				/*
 				const bool sameFacing = _doAllSilhouetteFaceTheSame(silhouetteIndices);
 
 				if (sameFacing)
@@ -146,14 +163,31 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 					_storeEdgeIsAlwaysSilhouette(parent, sign * int(edgeIndex));
 					numSilhouette = 0;
 				}
+				
+				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
+				numPotential = 0;
+				*/
+				bool areAllSame = _doAllSilhouetteFaceTheSame(silhouetteIndices);
+
+				if (areAllSame)
+				{
+					_storeEdgeIsAlwaysSilhouette(parent, silhouetteIndices[0]);
+					silhouetteMask = 0;
+				}
+
+				numPotential = 0;
 			}
 		}
 
 		for(unsigned int i = 0; i<numPotential; ++i)
 			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], edgeIndex);
 
-		for (unsigned int i = 0; i<numSilhouette; ++i)
-			_storeEdgeIsAlwaysSilhouette(abs(silhouetteIndices[i]), -int(edgeIndex)*(silhouetteIndices[i]<0) + edgeIndex * (silhouetteIndices[i]>=0));
+		if(silhouetteMask)
+			for (unsigned int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
+			{
+				if(silhouetteMask & (1 << i))
+					_storeEdgeIsAlwaysSilhouette(startingID + i, silhouetteIndices[i]);
+			}
 	}
 	
 	for(auto i = startingID; i<(startingID+OCTREE_NUM_CHILDREN); ++i)
@@ -171,26 +205,15 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 
 bool OctreeVisitor::_doAllSilhouetteFaceTheSame(const int(&indices)[OCTREE_NUM_CHILDREN]) const
 {
-	const bool isFirst = indices[0]>0;
+	const int first = indices[0];
 
 	for(unsigned int i = 1; i<OCTREE_NUM_CHILDREN; ++i)
 	{
-		const bool current = indices[i] > 0;
-
-		if (isFirst != current)
+		if (indices[i] != first)
 			return false;
 	}
 
-	return isFirst;
-}
-
-
-void OctreeVisitor::_storeEdgeIsAlwaysSilhouette(EdgeSilhouetness testResult, unsigned int nodeId, unsigned int edgeID)
-{
-	if (testResult == EdgeSilhouetness::EDGE_IS_SILHOUETTE_PLUS)
-		_storeEdgeIsAlwaysSilhouette(nodeId, edgeID);
-	else if (testResult == EdgeSilhouetness::EDGE_IS_SILHOUETTE_MINUS)
-		_storeEdgeIsAlwaysSilhouette(nodeId, -int(edgeID));
+	return true;
 }
 
 void OctreeVisitor::_storeEdgeIsAlwaysSilhouette(unsigned int nodeId, int augmentedEdgeIdWithResult)

@@ -109,26 +109,12 @@ namespace GeometryOps
 
 		return multiplicity;
 	}
-
-	inline EdgeSilhouetness testEdgeSpaceAabb(const Plane& p1, const Plane& p2, AdjacencyType edges, size_t edgeIndex, const AABB& voxel)
+	
+	inline bool isEdgeSpaceAaabbIntersecting(const Plane& p1, const Plane& p2, const AABB& voxel)
 	{
 		auto result1 = testAabbPlane(voxel, p1);
 		auto result2 = testAabbPlane(voxel, p2);
 
-		EdgeSilhouetness result = EdgeSilhouetness::EDGE_NOT_SILHOUETTE;
-
-		if (result1 == TestResult::INTERSECTS_ON || result2 == TestResult::INTERSECTS_ON)
-			result = EdgeSilhouetness::EDGE_POTENTIALLY_SILHOUETTE;
-		else
-		{
-			int multiplicity = calcEdgeMultiplicity(edges, edgeIndex, voxel.getMinPoint());
-
-			if (multiplicity > 0)
-				result = EdgeSilhouetness::EDGE_IS_SILHOUETTE_PLUS;
-			else if (multiplicity < 0)
-				result = EdgeSilhouetness::EDGE_IS_SILHOUETTE_MINUS;
-		}
-
-		return result;
+		return (result1 == TestResult::INTERSECTS_ON || result2 == TestResult::INTERSECTS_ON);
 	}
 };

@@ -3,6 +3,7 @@
 
 #include <glm/gtx/transform.hpp>
 #include "geGL/StaticCalls.h"
+#include "MultiplicityCoding.hpp"
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -180,22 +181,11 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 
 	for(const auto edge : silhouetteEdges)
 	{
-		/*
-		const int multiplicitySign = edge >= 0 ? 1 : -1;
+		const int multiplicity = decodeEdgeMultiplicityFromId(edge);
 		glm::vec3 lowerPoint, higherPoint;
-		getEdgeVertices(_edges, abs(edge), lowerPoint, higherPoint);
+		getEdgeVertices(_edges, getEdgeFromEncoded(edge), lowerPoint, higherPoint);
 
-		_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicitySign, sidesVertices);
-		*/
-		const int multiplicity = GeometryOps::calcEdgeMultiplicity(_edges, abs(edge), lightPos);
-		if (multiplicity != 0)
-		{
-			glm::vec3 lowerPoint, higherPoint;
-			getEdgeVertices(_edges, abs(edge), lowerPoint, higherPoint);
-
-			_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
-			ed.push_back(edge);
-		}
+		_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
 	}
 
 	for(const auto edge : potentialEdges)

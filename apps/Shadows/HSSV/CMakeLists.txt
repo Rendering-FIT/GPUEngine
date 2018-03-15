@@ -15,6 +15,7 @@ set(HSSV_FILES
 	HSSV/AABB.cpp
 	HSSV/GeometryOperations.hpp
 	HSSV/SidesProgram.hpp
+	HSSV/MultiplicityCoding.hpp
 	
 	PARENT_SCOPE
 )

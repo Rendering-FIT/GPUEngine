@@ -12,7 +12,6 @@ class OctreeVisitor
 public:
 	OctreeVisitor(std::shared_ptr<Octree> octree);
 
-	//void addEdge(const EDGE_TYPE& edgeInfo, int edgeID);
 	void addEdges(const AdjacencyType _edges);
 
 	void processPotentialEdges();
@@ -24,13 +23,9 @@ public:
 
 private:
 	void _expandWholeOctree();
-	void _storeEdgeIsAlwaysSilhouette(EdgeSilhouetness testResult, unsigned int nodeId, unsigned int edgeID);
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, int augmentedEdgeIdWithResult);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID);
 
-	//void _unmarkEdgeAsPotentiallySilhouetteFromNodeUp(unsigned int edgeID, unsigned int nodeID);
-	//void _removePotentiallySilhouetteEdgeFromNode(unsigned int edgeID, unsigned int nodeID);
-	
 	int	 _getFirstNodeIdInLevel(unsigned int level) const;
 
 	void _propagatePotentiallySilhouetteEdgesUpFromLevel(unsigned int startingLevel);
