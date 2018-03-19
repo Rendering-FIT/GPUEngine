@@ -13,7 +13,7 @@ public:
 	OctreeVisitor(std::shared_ptr<Octree> octree);
 
 	void addEdges(const AdjacencyType edges);
-	void addEdgesGPU(const AdjacencyType edges);
+	void addEdgesGPU(const AdjacencyType edges, unsigned int subgroupSize);
 
 	void processPotentialEdges();
 
@@ -28,8 +28,6 @@ private:
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID);
 
 	void _getEdgesOneOpposite(AdjacencyType edges, std::vector<unsigned int>& edgesWithSingleOV);
-
-	//int	 _getFirstNodeIdInLevel(unsigned int level) const;
 
 	void _propagatePotentiallySilhouetteEdgesUpFromLevel(unsigned int startingLevel);
 		enum class TestResult

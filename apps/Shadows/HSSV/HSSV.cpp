@@ -11,7 +11,8 @@
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
 	const glm::vec3& sceneAABBscale, 
-	unsigned maxOctreeLevel, 
+	unsigned maxOctreeLevel,
+	unsigned int subgroupSize,
 	std::shared_ptr<ge::gl::Texture> const& shadowMask, 
 	std::shared_ptr<ge::gl::Texture> const& depth, 
 	ShadowVolumesParams const& params) : ShadowVolumes(shadowMask, depth, params)
@@ -26,6 +27,8 @@ HSSV::HSSV(
 
 	size_t const nofTriangles = nofVertexFloats / (verticesPerTriangle*componentsPerVertex3D);
 	_edges = std::make_shared<Adjacency const>(_vertices, nofTriangles, 2);
+
+	std::cout << "NoF Edges: " << _edges->getNofEdges() << std::endl;
 
 	_capsDrawer = std::make_shared<GSCaps>(_edges);
 
@@ -48,7 +51,7 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	t.reset();
 	//_visitor->addEdges(_edges);
-	_visitor->addEdgesGPU(_edges);
+	_visitor->addEdgesGPU(_edges, subgroupSize);
 	const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 	std::cout << "Building octree took " << dt << " seconds\n";

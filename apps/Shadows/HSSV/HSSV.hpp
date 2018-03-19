@@ -17,6 +17,7 @@ public:
 	HSSV(std::shared_ptr<Model> model,
 		const glm::vec3& sceneAABBscale,
 		unsigned int maxOctreeLevel,
+		unsigned int subgroupSize,
 		std::shared_ptr<ge::gl::Texture>const& shadowMask,
 		std::shared_ptr<ge::gl::Texture>const& depth,
 		ShadowVolumesParams const& params);
@@ -36,7 +37,6 @@ protected:
 	void _updateSidesVBO(const std::vector<float>& vertices);
 
 	void _getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<float>& silhouetteVertices);
-		void _generateSilhouetteGeometry();
 		void _generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3& lowerPoint, const glm::vec3& higherPoint, int multiplicitySign, std::vector<float>& sides);
 
 	std::shared_ptr<ge::gl::Buffer> _sidesVBO = nullptr;

@@ -212,8 +212,7 @@ void main()
 		//for all cached
 	
 			//test intersect
-			//if not intersect
-				//calc multiplicity
+			//calc multiplicity
 			
 			//broadcast potential of first thread in syblings
 			//ballot potential

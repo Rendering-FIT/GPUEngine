@@ -5,16 +5,124 @@
 #include <geGL/StaticCalls.h>
 #include "MultiplicityCoding.hpp"
 
-bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree)
+#include <iostream>
+#include <fstream>
+bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, unsigned int subgroupSize)
 {
 	_octree = octree;
 	
-	if (!_createProgram(4, 32, 2048))
+	if (!_createProgram(4, subgroupSize, 2048))
 		return false;
 
 	_createBuffers();
 
 	return true;
+}
+
+void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
+{
+	_loadEdges(edges);
+
+	std::vector<glm::vec3> voxels;
+	_serializeDeepestLevelVoxels(voxels);
+
+	const auto nofEdges = edges->getNofEdges();
+	const int deepestLevel = _octree->getDeepestLevel();
+	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
+	const int deepestLevelSizeAndParents = (9 * deepestLevelSize) / 8;
+
+	const size_t bufferSizeStart = 256ul * 1024ul * 1024ul;
+	const size_t bufferSizeStep = 256ul * 1024ul * 1024ul;
+	const size_t bufferSizeLimit = 2ul * 1024ul * 1024ul * 1024ul;
+
+	const unsigned int numSubgroupsStart = 2;
+	const unsigned int numSubgroupsStep = 2;
+	const unsigned int numSubgroupsLimit = 32;
+
+	const unsigned int cacheSizeStart = 512;
+	const unsigned int cacheSizeStep = 512;
+	const unsigned int cacheSizeLimit = 8192;
+
+	//const unsigned int numWGsStart = 2;
+	//const unsigned int numWGsStep = 2;
+	//const unsigned int numWGsLimit = 32;
+
+	const unsigned int bottomTestRepetitions = 3;
+
+	HighResolutionTimer timer;
+
+	std::ofstream file;
+	file.open("testResults.txt");
+
+	for(size_t bufferSize = bufferSizeStart; bufferSize<= bufferSizeLimit; bufferSize += bufferSizeStep)
+	{
+		const auto allocatedSizeEdgeIndices = std::min(bufferSize, size_t(deepestLevelSizeAndParents) * size_t(nofEdges) * sizeof(uint32_t));
+		auto voxelBatchSize = (8ul * allocatedSizeEdgeIndices) / (9ul * nofEdges * sizeof(uint32_t));
+		voxelBatchSize = voxelBatchSize - (voxelBatchSize % 8ul);
+		const unsigned int numBatches = (unsigned int)(ceil(float(deepestLevelSize) / voxelBatchSize));
+
+		const auto nofVoxelsWithParents = (voxelBatchSize * 9) / 8;
+
+		_voxelPotentialEdges.reset();
+		_voxelSilhouetteEdges.reset();
+		_nofPotentialEdges.reset();
+		_nofSilhouetteEdges.reset();
+		_voxels.reset();
+
+		_voxelPotentialEdges = std::make_shared<ge::gl::Buffer>(nofVoxelsWithParents * nofEdges * sizeof(uint32_t));
+		_voxelSilhouetteEdges = std::make_shared<ge::gl::Buffer>(nofVoxelsWithParents * nofEdges * sizeof(uint32_t));
+		_nofPotentialEdges = std::make_shared<ge::gl::Buffer>(nofVoxelsWithParents * sizeof(uint32_t));
+		_nofSilhouetteEdges = std::make_shared<ge::gl::Buffer>(nofVoxelsWithParents * sizeof(uint32_t));
+		_voxels = std::make_shared<ge::gl::Buffer>(voxelBatchSize * 6 * sizeof(float));
+		
+		for(unsigned int numSG = numSubgroupsStart; numSG<=numSubgroupsLimit; numSG += numSubgroupsStep)
+		{
+			for(unsigned int cacheSize = cacheSizeStart; cacheSize <= cacheSizeLimit; cacheSize += cacheSizeStep)
+			{
+				if ((numSG * cacheSize) > (64 * 1024 * 1024))
+					continue;
+
+				_program.reset();
+				_program = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, buildComputeShader(numSG, subgroupSize, cacheSize)));
+
+				_program->use();
+				_program->set1ui("nofEdges", nofEdges);
+
+				_bindBuffers();
+
+				double time = 0;
+
+				for(unsigned int test=0; test<bottomTestRepetitions; ++test)
+				{
+					timer.reset();
+
+					for(unsigned int batch = 0; batch < numBatches; ++batch)
+					{
+						const auto batchSize = std::min(voxelBatchSize, deepestLevelSize - (batch*voxelBatchSize));
+						_loadVoxels(voxels, batch*voxelBatchSize, batchSize);
+						_clearAtomicCounter();
+						_program->set1ui("nofVoxels", batchSize);
+
+						ge::gl::glDispatchCompute(1, 1, 1);
+						ge::gl::glFinish();
+					}
+					
+					time += timer.getElapsedTimeFromLastQuerySeconds();
+				}
+
+				time /= bottomTestRepetitions;
+
+				std::string msg;
+				msg = std::to_string(bufferSize / 1024ul / 1024ul) + " " + std::to_string(numSG) + " " + std::to_string(cacheSize) + std::to_string(time) + "\n";
+				std::cout << msg;
+				file << msg;
+			}
+		}
+	}
+
+	file.close();
+
+	exit(0);
 }
 
 void GpuOctreeLoader::_createBuffers()
@@ -108,8 +216,8 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
-
-	const auto allocatedSizeEdgeIndices = std::min((size_t)MAX_BUFFER_SIZE, deepestLevelSizeAndParents * nofEdges * sizeof(uint32_t));
+	const uint64_t a = MAX_BUFFER_SIZE;
+	const auto allocatedSizeEdgeIndices = std::min(size_t(MAX_BUFFER_SIZE), size_t(deepestLevelSizeAndParents) * size_t(nofEdges) * sizeof(uint32_t));
 	
 	//Parents are taken into consideration, as they will also need output buffers
 	//TODO TU extra pozor - zkrokovat
@@ -239,9 +347,9 @@ void GpuOctreeLoader::_allocateOutputBuffersAndVoxels(unsigned voxelsPerBatch, u
 
 	_bufferNofPotential.resize(nofVoxelsWithParents);
 	_bufferNofSilhouette.resize(nofVoxelsWithParents);
-	_clearBuffer.resize(nofVoxelsWithParents);
-
-	memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
+	
+	//_clearBuffer.resize(nofVoxelsWithParents);
+	//memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
 }
 
 
@@ -313,7 +421,7 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 
 	const uint32_t* bPotential =  reinterpret_cast<uint32_t*>(_voxelPotentialEdges->map(GL_READ_ONLY));
 	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
-
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	std::vector<unsigned int> tmp;
 	for(unsigned int i=0; i<batchSize; ++i)
 	{

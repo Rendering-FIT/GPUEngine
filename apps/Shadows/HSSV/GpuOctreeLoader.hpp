@@ -6,7 +6,7 @@
 #include "AdjacencyEdgeWrapper.hpp"
 #include "Octree.hpp"
 
-#define MAX_BUFFER_SIZE (1536*1024*1024)
+#define MAX_BUFFER_SIZE (1024ul*1024ul*1024ul)
 
 class GpuOctreeLoader
 {
@@ -14,7 +14,9 @@ public:
 	
 	void addEdgesOnLowestLevelGPU(AdjacencyType edges);
 	
-	bool init(std::shared_ptr<Octree> octree);
+	bool init(std::shared_ptr<Octree> octree, unsigned int subgroupSize);
+
+	void profile(AdjacencyType edges, unsigned int subgroupSize);
 
 protected:
 

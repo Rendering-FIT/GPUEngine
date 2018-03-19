@@ -194,9 +194,10 @@ void Application::initWavefrontSize(){
   assert(this!=nullptr);
   if(this->wavefrontSize==0){
     std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
-    if     (renderer.find("AMD")!=std::string::npos)
+	std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
+    if     (renderer.find("amd")!=std::string::npos || renderer.find("radeon") != std::string::npos || renderer.find("firegl") != std::string::npos || renderer.find("firepro") != std::string::npos)
       this->wavefrontSize = 64;
-    else if(renderer.find("NVIDIA")!=std::string::npos)
+    else if(renderer.find("nvidia")!=std::string::npos || renderer.find("geforce") != std::string::npos || renderer.find("titan") != std::string::npos || renderer.find("quadro") != std::string::npos)
       this->wavefrontSize = 32;
     else{
       std::cerr<<"WARNING: renderer is not NVIDIA or AMD, setting wavefrontSize to 32"<<std::endl;
@@ -319,6 +320,7 @@ bool Application::init(int argc,char*argv[]){
 		  model,
 		  hssvParams.sceneAABBscale,
 		  hssvParams.maxOctreeLevel,
+		  static_cast<unsigned int>(wavefrontSize),
 		  shadowMask,
 		  gBuffer->depth,
 		  svParams);
