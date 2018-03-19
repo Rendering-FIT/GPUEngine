@@ -16,6 +16,9 @@ set(HSSV_FILES
 	HSSV/GeometryOperations.hpp
 	HSSV/SidesProgram.hpp
 	HSSV/MultiplicityCoding.hpp
+	HSSV/VoxelTestingShader.hpp
+	HSSV/GpuOctreeLoader.hpp
+	HSSV/GpuOctreeLoader.cpp
 	
 	PARENT_SCOPE
 )

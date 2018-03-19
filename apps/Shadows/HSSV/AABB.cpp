@@ -61,8 +61,11 @@ void AABB::updateWithVertex(const glm::vec4& vertex)
 
 void AABB::updateWithVerticesVec3(const float* vertices, size_t numFloats)
 {
-	for (size_t i = 0; i < numFloats; i += 3)
-		_updateWithVertexInternal(glm::make_vec3(vertices + i));
+	const glm::vec3* v = reinterpret_cast<const glm::vec3*>(vertices);
+	const auto numVertices = numFloats / 3;
+
+	for (size_t i = 0; i < numVertices; ++i)
+		_updateWithVertexInternal(v[i]);
 
 	_updateExtents();
 }

@@ -12,7 +12,8 @@ class OctreeVisitor
 public:
 	OctreeVisitor(std::shared_ptr<Octree> octree);
 
-	void addEdges(const AdjacencyType _edges);
+	void addEdges(const AdjacencyType edges);
+	void addEdgesGPU(const AdjacencyType edges);
 
 	void processPotentialEdges();
 
@@ -26,7 +27,9 @@ private:
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, int augmentedEdgeIdWithResult);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID);
 
-	int	 _getFirstNodeIdInLevel(unsigned int level) const;
+	void _getEdgesOneOpposite(AdjacencyType edges, std::vector<unsigned int>& edgesWithSingleOV);
+
+	//int	 _getFirstNodeIdInLevel(unsigned int level) const;
 
 	void _propagatePotentiallySilhouetteEdgesUpFromLevel(unsigned int startingLevel);
 		enum class TestResult
@@ -55,7 +58,7 @@ private:
 		void _addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID);
 		void _generateEdgePlanes(const AdjacencyType edges, std::vector< std::vector<Plane> >& planes) const;
 		bool _doAllSilhouetteFaceTheSame(const int (&indices)[OCTREE_NUM_CHILDREN]) const;
-
+	
 	bool _isPointInsideNode(unsigned int nodeID, const glm::vec3& point) const;
 
 	int _getChildNodeContainingPoint(unsigned int parent, const glm::vec3& point) const;

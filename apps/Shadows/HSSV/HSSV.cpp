@@ -4,6 +4,7 @@
 #include <glm/gtx/transform.hpp>
 #include "geGL/StaticCalls.h"
 #include "MultiplicityCoding.hpp"
+#include "HighResolutionTimer.hpp"
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -42,7 +43,13 @@ HSSV::HSSV(
 	_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
 	_visitor = std::make_shared<OctreeVisitor>(_octree);
 
-	_visitor->addEdges(_edges);
+	HighResolutionTimer t;
+	t.reset();
+	//_visitor->addEdges(_edges);
+	_visitor->addEdgesGPU(_edges);
+	const auto dt = t.getElapsedTimeFromLastQuerySeconds();
+
+	std::cout << "Building octree took " << dt << " seconds\n";
 
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();
@@ -182,8 +189,8 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 	for(const auto edge : silhouetteEdges)
 	{
 		const int multiplicity = decodeEdgeMultiplicityFromId(edge);
-		glm::vec3 lowerPoint, higherPoint;
-		getEdgeVertices(_edges, getEdgeFromEncoded(edge), lowerPoint, higherPoint);
+		const glm::vec3& lowerPoint = getEdgeVertexLow(_edges, decodeEdgeFromEncoded(edge));
+		const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, decodeEdgeFromEncoded(edge));;
 
 		_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
 	}
@@ -193,8 +200,8 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		const int multiplicity = GeometryOps::calcEdgeMultiplicity(_edges, edge, lightPos);
 		if (multiplicity != 0)
 		{
-			glm::vec3 lowerPoint, higherPoint;
-			getEdgeVertices(_edges, edge, lowerPoint, higherPoint);
+			const glm::vec3& lowerPoint = getEdgeVertexLow(_edges, edge);
+			const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, edge);;
 
 			_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
 			ed.push_back(edge);
@@ -204,6 +211,8 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 	static bool printOnce = false;
 	if (!printOnce)
 	{
+		std::cout << "Light node: " << lowestNode << std::endl;
+		std::cout << "Light " << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << std::endl;
 		const auto n = _octree->getNode(lowestNode);
 		auto minP = n->volume.getMinPoint();
 		auto maxP = n->volume.getMaxPoint();
@@ -211,8 +220,24 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		minP = n->volume.getCenterPoint();
 		n->volume.getExtents(maxP.x, maxP.y, maxP.z);
 		std::cout << "Center " << minP.x << ", " << minP.y << ", " << minP.z << " Extents: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
-
+		
+		std::cout << "Num potential: " << potentialEdges.size() << ", numSilhouette: " << silhouetteEdges.size() << std::endl;
 		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
+
+		std::sort(potentialEdges.begin(), potentialEdges.end());
+		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
+		/*
+		std::cout << "Potential:\n";
+		for (const auto e : potentialEdges)
+			std::cout << e << std::endl;
+
+		std::cout << "\nSilhouette:\n";
+		for (const auto e : potentialEdges)
+			std::cout << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
+		*/
+		//for (const auto e : silhouetteEdges)
+		//	if (std::binary_search(potentialEdges.begin(), potentialEdges.end(), decodeEdgeFromEncoded(e)))
+		//		std::cout << "Edge " << decodeEdgeFromEncoded(e) << " is both in potential and silhouette!\n";
 
 		printOnce = true;
 	}

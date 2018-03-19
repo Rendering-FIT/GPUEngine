@@ -26,7 +26,7 @@ inline int decodeEdgeMultiplicityFromId(int edgeWithEncodedMultiplicity)
 	return (val + isTwo)*sign;
 }
 
-inline int getEdgeFromEncoded(int edgeWithEncodedMultiplicity)
+inline int decodeEdgeFromEncoded(int edgeWithEncodedMultiplicity)
 {
 	return edgeWithEncodedMultiplicity & 0x3FFFFFFF;
 }

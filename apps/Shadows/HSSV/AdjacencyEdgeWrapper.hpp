@@ -14,10 +14,14 @@ inline const float* getVertex3v(AdjacencyType ad, size_t vertexID)
 	return ad->getVertices() + vertexID;
 }
 
-inline void getEdgeVertices(AdjacencyType ad, size_t edgeId, glm::vec3& v1, glm::vec3& v2)
+inline const glm::vec3& getEdgeVertexLow(AdjacencyType ad, size_t edgeId)
 {
-	v1 = glm::make_vec3(ad->getVertices() + ad->getEdgeVertexA(edgeId));
-	v2 = glm::make_vec3(ad->getVertices() + ad->getEdgeVertexB(edgeId));
+	return *(reinterpret_cast<const glm::vec3*>(ad->getVertices() + ad->getEdgeVertexA(edgeId)));
+}
+
+inline const glm::vec3& getEdgeVertexHigh(AdjacencyType ad, size_t edgeId)
+{
+	return *(reinterpret_cast<const glm::vec3*>(ad->getVertices() + ad->getEdgeVertexB(edgeId)));
 }
 
 inline size_t getNofOppositeVertices(AdjacencyType ad, size_t edgeId)
@@ -25,9 +29,9 @@ inline size_t getNofOppositeVertices(AdjacencyType ad, size_t edgeId)
 	return ad->getNofOpposite(edgeId);
 }
 
-inline glm::vec3 getOppositeVertex(AdjacencyType ad, size_t edgeId, size_t oppositeVertexID)
+inline const glm::vec3& getOppositeVertex(AdjacencyType ad, size_t edgeId, size_t oppositeVertexID)
 {
-	return glm::make_vec3(getVertex3v(ad, ad->getOpposite(edgeId, oppositeVertexID)));
+	return *(reinterpret_cast<const glm::vec3*>(getVertex3v(ad, ad->getOpposite(edgeId, oppositeVertexID))));
 }
 
 inline void getEdgeOppositeVertices(AdjacencyType ad, size_t edgeId, std::vector<glm::vec3>& vertices)
@@ -36,6 +40,6 @@ inline void getEdgeOppositeVertices(AdjacencyType ad, size_t edgeId, std::vector
 	vertices.reserve(nofOpposite);
 
 	for(unsigned int i = 0; i<nofOpposite; ++i)
-		vertices.push_back(glm::make_vec3(ad->getVertices() + ad->getOpposite(edgeId, i)));
+		vertices.push_back(*(reinterpret_cast<const glm::vec3*>(ad->getVertices() + ad->getOpposite(edgeId, i))));
 }
 

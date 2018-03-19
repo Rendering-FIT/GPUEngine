@@ -97,8 +97,8 @@ namespace GeometryOps
 
 	inline int calcEdgeMultiplicity(AdjacencyType edges, size_t edgeIndex, const glm::vec3& lightPos)
 	{
-		glm::vec3 lowerPoint, higherPoint;
-		getEdgeVertices(edges, edgeIndex, lowerPoint, higherPoint);
+		const glm::vec3& lowerPoint = getEdgeVertexLow(edges, edgeIndex);
+		const glm::vec3& higherPoint = getEdgeVertexHigh(edges, edgeIndex);
 
 		const size_t nofOpposites = getNofOppositeVertices(edges, edgeIndex);
 		int multiplicity = 0;
