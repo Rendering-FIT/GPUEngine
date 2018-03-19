@@ -29,10 +29,10 @@ layout(std430, binding=4) buffer _silhouette{
 	uint voxelEdgesSilhouette[];};
 
 layout(std430, binding=5) buffer _outputNofPotentialEdges{
-	uint nofPotentialEdgesPerVoxel[];};
+	volatile uint nofPotentialEdgesPerVoxel[];};
 
 layout(std430, binding=6) buffer _outputNofSilhouetteEdges{
-	uint nofSilhouetteEdgesPerVoxel[];};
+	volatile uint nofSilhouetteEdgesPerVoxel[];};
 	
 layout(std430, binding=7) buffer _atomicCounter{
 	uint voxelAtomicCounter;};
@@ -231,7 +231,6 @@ void main()
 				//store in voxel
 	
 	//Identifiers & constants
-	#define numSubgroupsPerWG (gl_WorkGroupSize.x/gl_SubGroupSizeARB)
 	#define subgroupIdWithinWG (gl_LocalInvocationIndex/gl_SubGroupSizeARB)
 	#define syblingGroup (gl_SubGroupInvocationARB/8)
 	#define syblingInvocationId (gl_SubGroupInvocationARB%8)
@@ -254,17 +253,22 @@ void main()
 		if(currentVoxel>=nofVoxels)
 			return;
 		
+		//Get voxel AABB
+		vec3 aabbLow, aabbHigh;
+		getVoxel(currentVoxel, aabbLow, aabbHigh);
+
 		const uint currentParent = currentVoxel/8;
-		const uvec2 aliveThreads = uvec2(ballotARB(true));
+		const uvec2 aliveThreads = unpackUint2x32(ballotARB(true));
 		const uint numAlive = bitCount(aliveThreads.x) + bitCount(aliveThreads.y);
 		uint currentStartingEdge = 0;
-		
+
 		while(currentStartingEdge < nofEdges)
 		{
 			//Cache edges
 			const uint numCachedEdges = min(shmEdgeCapacityPerSubgroup, nofEdges - currentStartingEdge);
 			const uint numIters = numCachedEdges / numAlive;
-			
+			const uint numLeftover = numCachedEdges % numAlive;
+
 			for(unsigned int i=0; i<numIters; ++i)
 			{
 				const uint offset = (i * numAlive + gl_SubGroupInvocationARB) * EDGE_NUM_FLOATS;
@@ -279,7 +283,6 @@ void main()
 			}
 			
 			//Cache leftover edges
-			const uint numLeftover = numCachedEdges - (numIters * numAlive);
 			if(gl_SubGroupInvocationARB < numLeftover)
 			{
 				const uint offset = (numIters * numAlive + gl_SubGroupInvocationARB) * EDGE_NUM_FLOATS;
@@ -292,7 +295,7 @@ void main()
 				wgSharedMemory[shmBaseOffset + offset + 6] = edges[currentStartingEdge*EDGE_NUM_FLOATS + offset + 6];
 				wgSharedMemory[shmBaseOffset + offset + 7] = edges[currentStartingEdge*EDGE_NUM_FLOATS + offset + 7];
 			}
-			
+			//*/
 			for(uint cachedEdgeIndex = 0; cachedEdgeIndex < numCachedEdges; ++cachedEdgeIndex)
 			{
 				//Get edge
@@ -320,10 +323,6 @@ void main()
 				
 				vec4 p1 = createFromPointsCCW(edgeLower, opposite1, edgeHigher);
 				vec4 p2 = createFromPointsCCW(edgeLower, opposite2, edgeHigher);
-				
-				//Get voxel AABB
-				vec3 aabbLow, aabbHigh;
-				getVoxel(currentVoxel, aabbLow, aabbHigh);
 				
 				const bool isPotentiallySilhouette = isEdgeSpaceAaabbIntersecting(p1, p2, aabbLow, aabbHigh);
 

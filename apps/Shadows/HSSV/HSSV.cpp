@@ -224,21 +224,23 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		std::cout << "Num potential: " << potentialEdges.size() << ", numSilhouette: " << silhouetteEdges.size() << std::endl;
 		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
 
+		/*
 		std::sort(potentialEdges.begin(), potentialEdges.end());
 		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
-		/*
+		
 		std::cout << "Potential:\n";
 		for (const auto e : potentialEdges)
 			std::cout << e << std::endl;
 
 		std::cout << "\nSilhouette:\n";
-		for (const auto e : potentialEdges)
+		for (const auto e : silhouetteEdges)
 			std::cout << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
-		*/
-		//for (const auto e : silhouetteEdges)
-		//	if (std::binary_search(potentialEdges.begin(), potentialEdges.end(), decodeEdgeFromEncoded(e)))
-		//		std::cout << "Edge " << decodeEdgeFromEncoded(e) << " is both in potential and silhouette!\n";
-
+		//*/
+		/*
+		for (const auto e : silhouetteEdges)
+			if (std::binary_search(potentialEdges.begin(), potentialEdges.end(), decodeEdgeFromEncoded(e)))
+				std::cout << "Edge " << decodeEdgeFromEncoded(e) << " is both in potential and silhouette!\n";
+		//*/
 		printOnce = true;
 	}
 }

@@ -35,8 +35,11 @@ protected:
 	void _bindBuffers();
 	void _unbindBuffers();
 
-	void _acquireGpuData(unsigned int startingRelativeIndex, unsigned int batchSize, unsigned int numEdges);
+	void _acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges);
 		void _copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size);
+
+	
+	void _testParticularVoxel(AdjacencyType edges, unsigned int voxelId);
 
 	std::shared_ptr<Octree> _octree;
 

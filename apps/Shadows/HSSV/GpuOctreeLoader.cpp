@@ -8,7 +8,7 @@ bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree)
 {
 	_octree = octree;
 	
-	if (!_createProgram(4, 32, 1024))
+	if (!_createProgram(4, 32, 2048))
 		return false;
 
 	_createBuffers();
@@ -26,6 +26,7 @@ void GpuOctreeLoader::_createBuffers()
 	_nofPotentialEdges = std::make_shared<ge::gl::Buffer>();
 	_nofSilhouetteEdges = std::make_shared<ge::gl::Buffer>();
 	_atomicCounter = std::make_shared<ge::gl::Buffer>();
+	_atomicCounter->alloc(sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 }
 
 void GpuOctreeLoader::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEdges, std::vector<glm::vec3>& serializedOppositeVertices)
@@ -83,6 +84,11 @@ bool GpuOctreeLoader::_createProgram(unsigned int numSubgroupsPerWG, unsigned in
 
 void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 {
+	//--
+	//_testParticularVoxel(edges, 8776);
+	//return;
+	//--
+	
 	const int deepestLevel = _octree->getDeepestLevel();
 	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
 	const int deepestLevelSizeAndParents = (9 * deepestLevelSize) / 8;
@@ -91,8 +97,6 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 	const int stopIndex = _octree->getTotalNumNodes();
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
-
-	_atomicCounter->alloc(sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 
 	_loadEdges(edges);
 
@@ -137,6 +141,48 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 	}
 
 	_unbindBuffers();
+
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+}
+
+void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int voxelId)
+{
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+
+	const auto nofEdges = edges->getNofEdges();
+
+	//Load edges
+	_loadEdges(edges);
+
+	//Alloc
+	glm::vec3 voxelData[2] = {_octree->getNode(voxelId)->volume.getMinPoint(), _octree->getNode(voxelId)->volume.getMaxPoint()};
+	_voxels->alloc(6 * sizeof(float));
+	_voxels->setData(voxelData, 6 * sizeof(float));
+
+	_voxelPotentialEdges->alloc(nofEdges * sizeof(uint32_t));
+	_voxelSilhouetteEdges->alloc(nofEdges * sizeof(uint32_t));
+
+	_nofPotentialEdges->alloc(sizeof(uint32_t));
+	_nofSilhouetteEdges->alloc(sizeof(uint32_t));
+
+	_bufferNofPotential.resize(1);
+	_bufferNofSilhouette.resize(1);
+	_clearBuffer.resize(1);
+	memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
+
+	_clearAtomicCounter();
+	_clearCountingBuffers();
+
+	_bindBuffers();
+	_program->use();
+	_program->set1ui("nofEdges", nofEdges);
+	_program->set1ui("nofVoxels", 1);
+
+	ge::gl::glDispatchCompute(1, 1, 1);
+
+	ge::gl::glFinish();
+
+	_acquireGpuData(voxelId, 1, nofEdges);
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
