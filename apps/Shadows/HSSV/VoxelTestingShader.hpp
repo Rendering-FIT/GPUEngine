@@ -44,16 +44,14 @@ uniform uint nofVoxels;
 
 //------------------SETTER/STORE FUNCTIONS------------------
 
-void storePotentialEdge(uint edgeId, uint voxelId)
+void storePotentialEdge(uint edgeId, uint voxelId, uint position)
 {
-	voxelEdgesPotential[nofEdges * voxelId + nofPotentialEdgesPerVoxel[voxelId]] = edgeId;
-	nofPotentialEdgesPerVoxel[voxelId]+=1;
+	voxelEdgesPotential[nofEdges * voxelId + position] = edgeId;
 }
 
-void storeSilhouetteEdge(uint edgeId, uint voxelId)
+void storeSilhouetteEdge(uint edgeId, uint voxelId, uint position)
 {
-	voxelEdgesSilhouette[nofEdges * voxelId + nofSilhouetteEdgesPerVoxel[voxelId]] = edgeId;
-	nofSilhouetteEdgesPerVoxel[voxelId]+=1;
+	voxelEdgesSilhouette[nofEdges * voxelId + position] = edgeId;
 }
 
 //------------------MULTIPLICITY FUNCTIONS------------------
@@ -101,12 +99,12 @@ void getAabbPoints(
 	
 	points[0] = minPoint;
 	points[1] = vec3(minPoint.x + extents.x, minPoint.y, minPoint.z);
-	points[2] = vec3(minPoint.x, minPoint.y, minPoint.z + extents.z);
-	points[3] = vec3(minPoint.x + extents.y, minPoint.y, minPoint.z + extents.z);
+	points[2] = vec3(minPoint.x,             minPoint.y, minPoint.z + extents.z);
+	points[3] = vec3(minPoint.x + extents.x, minPoint.y, minPoint.z + extents.z);
 
-	points[4] = vec3(minPoint.x, minPoint.y + extents.y, minPoint.z);
+	points[4] = vec3(minPoint.x,             minPoint.y + extents.y, minPoint.z);
 	points[5] = vec3(minPoint.x + extents.x, minPoint.y + extents.y, minPoint.z);
-	points[6] = vec3(minPoint.x, minPoint.y + extents.y, minPoint.z + extents.z);
+	points[6] = vec3(minPoint.x,             minPoint.y + extents.y, minPoint.z + extents.z);
 	points[7] = maxPoint;
 }
 
@@ -117,11 +115,11 @@ float testPlanePoint(in vec4 plane, in vec3 point)
 
 bool isPlaneIntersectingAabb(inout vec3 points[8], in vec4 plane)
 {
-	int result = int(sign(testPlanePoint(plane, points[0])));
+	const int result = int(sign(testPlanePoint(plane, points[0])));
 	
 	for(unsigned int i=1; i<8; ++i)
 	{
-		int r = int(sign(testPlanePoint(plane, points[i])));
+		const int r = int(sign(testPlanePoint(plane, points[i])));
 		
 		if(r!=result)
 			return true;
@@ -202,6 +200,7 @@ uint getEdgeOppositeVerticesStartingIndex(in uint shmBaseOffset, in uint edgeId)
 
 void main()
 {
+	//---THE PROGRAM---
 	//Get thread identifiers
 	
 	//Acquire work chunk voxels
@@ -216,15 +215,15 @@ void main()
 			//if not intersect
 				//calc multiplicity
 			
-			//broadcast potential of first thread in syblings 4x ()
+			//broadcast potential of first thread in syblings
 			//ballot potential
 			//if potential ballot all in group of 8
 				//store in parent
 			//else
 				//store in voxel
 			
-			//broadcast silhouette of first thread in syblings 4x ()
-			//ballot is equal
+			//broadcast silhouette of first thread in syblings
+			//ballot is equal to first sybling
 			//if is equal to all in syblings
 				//store in parent
 			//else
@@ -260,8 +259,14 @@ void main()
 		const uint currentParent = currentVoxel/8;
 		const uvec2 aliveThreads = unpackUint2x32(ballotARB(true));
 		const uint numAlive = bitCount(aliveThreads.x) + bitCount(aliveThreads.y);
+		
 		uint currentStartingEdge = 0;
-
+			
+		uint currentNumPotential = 0;
+		uint currentNumSilhouette = 0;
+		uint parentNumPotential = 0;
+		uint parentNumSilhouette = 0;
+		
 		while(currentStartingEdge < nofEdges)
 		{
 			//Cache edges
@@ -295,7 +300,7 @@ void main()
 				wgSharedMemory[shmBaseOffset + offset + 6] = edges[currentStartingEdge*EDGE_NUM_FLOATS + offset + 6];
 				wgSharedMemory[shmBaseOffset + offset + 7] = edges[currentStartingEdge*EDGE_NUM_FLOATS + offset + 7];
 			}
-			//*/
+			
 			for(uint cachedEdgeIndex = 0; cachedEdgeIndex < numCachedEdges; ++cachedEdgeIndex)
 			{
 				//Get edge
@@ -307,13 +312,7 @@ void main()
 				uint currentEdge = currentStartingEdge + cachedEdgeIndex;
 				
 				if(numOpposite==1)
-				{
-					//Store in parent
-					//if(syblingInvocationId==0)
-					//	storePotentialEdge(currentEdge, nofVoxels + currentParent);
-					
 					continue;
-				}
 				
 				const uint oppositeVerticesStartingIndex = getEdgeOppositeVerticesStartingIndex(shmBaseOffset, cachedEdgeIndex);
 				
@@ -346,10 +345,10 @@ void main()
 					if(isPotentialInAllSyblings)
 					{
 						if(syblingInvocationId==0)
-							storePotentialEdge(currentEdge, nofVoxels + currentParent);
+							storePotentialEdge(currentEdge, nofVoxels + currentParent, parentNumPotential++);
 					}
 					else
-						storePotentialEdge(currentEdge, currentVoxel);
+						storePotentialEdge(currentEdge, currentVoxel, currentNumPotential++);
 					
 				}
 				else if(isSilhouette)
@@ -360,135 +359,27 @@ void main()
 						const uint64_t result = ballotARB(reference==currentEdge);
 						
 						if(haveSyblingsAgreed(result, syblingGroup) && syblingInvocationId==0)
-							storeSilhouetteEdge(currentEdge, nofVoxels + currentParent);
+							storeSilhouetteEdge(currentEdge, nofVoxels + currentParent, parentNumSilhouette++);
 					}
 					else
-						storeSilhouetteEdge(currentEdge, currentVoxel);
+						storeSilhouetteEdge(currentEdge, currentVoxel, currentNumSilhouette++);
 				}
 			}
 			
 			//Finish
 			currentStartingEdge += numCachedEdges;
 		}
-	}
-}
-
-/*
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-uint getEdgeNofOppositeVertices(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 6]);
-}
-
-uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 7]);
-}
-
-
-void main()
-{
-	//Identifiers & constants
-	#define subgroupIdWithinWG (gl_LocalInvocationIndex/gl_SubGroupSizeARB)
-	#define syblingGroup (gl_SubGroupInvocationARB/8)
-	#define syblingInvocationId (gl_SubGroupInvocationARB%8)
-	
-	while(true)
-	{
-		//Acquire voxels
-		uint startingIndex = 0;
 		
-		if(gl_SubGroupInvocationARB==0)
-			startingIndex = atomicAdd(voxelAtomicCounter, gl_SubGroupSizeARB);
-			
-		startingIndex = readFirstInvocationARB(startingIndex);
-		const uint currentVoxel = startingIndex + gl_SubGroupInvocationARB;
-		
-		if(currentVoxel>=nofVoxels)
-			return;
-		
-		const uint currentParent = currentVoxel/8;
-		const uvec2 aliveThreads = uvec2(ballotARB(true));
-		const uint numAlive = bitCount(aliveThreads.x) + bitCount(aliveThreads.y);
-		
-		//Get voxel AABB
-		vec3 aabbLow, aabbHigh;
-		getVoxel(currentVoxel, aabbLow, aabbHigh);
+		nofPotentialEdgesPerVoxel[currentVoxel] = currentNumPotential;
+		nofSilhouetteEdgesPerVoxel[currentVoxel] = currentNumSilhouette;
 
-		for(uint currentEdge=0; currentEdge < nofEdges; ++currentEdge)
+		if(syblingInvocationId==0)
 		{
-			//Get edge
-			vec3 edgeLower = vec3(0);
-			vec3 edgeHigher = vec3(0);
-			uint workingEdge = currentEdge;				
-
-			getEdge(workingEdge, edgeLower, edgeHigher);
-			const uint numOpposite = getEdgeNofOppositeVertices(workingEdge);
-				
-			if(numOpposite==1)
-				continue;
-				
-			const uint oppositeVerticesStartingIndex = getEdgeOppositeVerticesStartingIndex(workingEdge);
-				
-			//Build edge planes
-			const vec3 opposite1 = getOppositeVertex(oppositeVerticesStartingIndex, 0);
-			const vec3 opposite2 = getOppositeVertex(oppositeVerticesStartingIndex, 1);
-				
-			vec4 p1 = createFromPointsCCW(edgeLower, opposite1, edgeHigher);
-			vec4 p2 = createFromPointsCCW(edgeLower, opposite2, edgeHigher);
-								
-			const bool isPotentiallySilhouette = isEdgeSpaceAaabbIntersecting(p1, p2, aabbLow, aabbHigh);
-
-			//TODO - in the future, here loop over all opposite vertices, here just fixed 2
-			int multiplicity = currentMultiplicity(edgeLower, edgeHigher, opposite1, aabbLow);
-			multiplicity += currentMultiplicity(edgeLower, edgeHigher, opposite2, aabbLow);
-				
-			const bool isSilhouette = (!isPotentiallySilhouette) && (multiplicity!=0);
-
-			if(isSilhouette)
-				workingEdge = encodeEdgeMultiplicityToId(workingEdge, multiplicity);
-				
-			const uint64_t potential = ballotARB(isPotentiallySilhouette);
-			const uint64_t silhouette = ballotARB(isSilhouette);
-			
-			const bool isPotentialInAllSyblings =  haveSyblingsAgreed(potential,  syblingGroup);
-			const bool isSilhouetteInAllSyblings = haveSyblingsAgreed(silhouette, syblingGroup);
-				
-			if(isPotentiallySilhouette)
-			{
-				if(isPotentialInAllSyblings)
-				{
-					if(syblingInvocationId==0)
-						storePotentialEdge(workingEdge, nofVoxels + currentParent);
-				}
-				else
-					storePotentialEdge(workingEdge, currentVoxel);
-					
-			}
-			else if(isSilhouette)
-			{
-				if(isSilhouetteInAllSyblings)
-				{
-					const uint reference = readInvocationARB(workingEdge, syblingGroup*8);
-					const uint64_t result = ballotARB(reference==workingEdge);
-					
-					if(haveSyblingsAgreed(result, syblingGroup) && syblingInvocationId==0)
-						storeSilhouetteEdge(workingEdge, nofVoxels + currentParent);
-				}
-				else
-					storeSilhouetteEdge(workingEdge, currentVoxel);
-			}
+			nofPotentialEdgesPerVoxel[nofVoxels + currentParent] = parentNumPotential;
+			nofSilhouetteEdgesPerVoxel[nofVoxels + currentParent] = parentNumSilhouette;
 		}
 	}
-
-}
-//*/
-).";
+}).";
 
 inline const std::string buildComputeShader(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmPerSubgroup)
 {

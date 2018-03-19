@@ -6,6 +6,8 @@
 #include "MultiplicityCoding.hpp"
 #include "HighResolutionTimer.hpp"
 
+#include <fstream>
+
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
 	const glm::vec3& sceneAABBscale, 
@@ -173,8 +175,8 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 
 	isLightOut = false;
 
-	std::vector<int> silhouetteEdges;
-	std::vector<int> potentialEdges;
+	std::vector<unsigned int> silhouetteEdges;
+	std::vector<unsigned int> potentialEdges;
 
 	_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
 
@@ -223,18 +225,20 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		
 		std::cout << "Num potential: " << potentialEdges.size() << ", numSilhouette: " << silhouetteEdges.size() << std::endl;
 		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
-
-		/*
+		
+		std::ofstream of;
+		of.open("edges.txt");
 		std::sort(potentialEdges.begin(), potentialEdges.end());
 		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
 		
-		std::cout << "Potential:\n";
+		of << "Potential:\n";
 		for (const auto e : potentialEdges)
-			std::cout << e << std::endl;
+			of << e << std::endl;
 
-		std::cout << "\nSilhouette:\n";
+		of << "\nSilhouette:\n";
 		for (const auto e : silhouetteEdges)
-			std::cout << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
+			of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
+		of.close();
 		//*/
 		/*
 		for (const auto e : silhouetteEdges)

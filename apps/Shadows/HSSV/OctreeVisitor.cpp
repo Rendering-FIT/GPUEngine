@@ -557,7 +557,7 @@ int OctreeVisitor::_getChildNodeContainingPoint(unsigned int parent, const glm::
 	return -1;
 }
 
-void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<int>& potential, std::vector<int>& silhouette, unsigned int nodeID) const
+void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
 {
 	int currentNodeID = nodeID;
 

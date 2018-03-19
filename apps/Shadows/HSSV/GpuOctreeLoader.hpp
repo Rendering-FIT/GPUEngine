@@ -39,7 +39,7 @@ protected:
 		void _copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size);
 
 	
-	void _testParticularVoxel(AdjacencyType edges, unsigned int voxelId);
+	void _testParticularVoxel(AdjacencyType edges, unsigned int voxelId, std::vector<unsigned int>& particularEdgeIndices);
 
 	std::shared_ptr<Octree> _octree;
 

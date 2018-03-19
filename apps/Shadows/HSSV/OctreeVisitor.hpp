@@ -20,7 +20,7 @@ public:
 	void cleanEmptyNodes();
 
 	int getLowestNodeIndexFromPoint(const glm::vec3& point) const;
-	void getSilhouttePotentialEdgesFromNodeUp(std::vector<int>& potential, std::vector<int>& silhouette, unsigned int nodeID) const;
+	void getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
 
 private:
 	void _expandWholeOctree();

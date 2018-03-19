@@ -110,12 +110,12 @@ void AABB::getAllVertices(glm::vec3(&points)[8]) const
 {
 	points[0] = _minPoint;
 	points[1] = glm::vec3(_minPoint.x + _extentX, _minPoint.y, _minPoint.z);
-	points[2] = glm::vec3(_minPoint.x, _minPoint.y, _minPoint.z + _extentZ);
+	points[2] = glm::vec3(_minPoint.x,            _minPoint.y, _minPoint.z + _extentZ);
 	points[3] = glm::vec3(_minPoint.x + _extentX, _minPoint.y, _minPoint.z + _extentZ);
 
-	points[4] = glm::vec3(_minPoint.x, _minPoint.y + _extentY, _minPoint.z);
+	points[4] = glm::vec3(_minPoint.x,            _minPoint.y + _extentY, _minPoint.z);
 	points[5] = glm::vec3(_minPoint.x + _extentX, _minPoint.y + _extentY, _minPoint.z);
-	points[6] = glm::vec3(_minPoint.x, _minPoint.y + _extentY, _minPoint.z + _extentZ);
+	points[6] = glm::vec3(_minPoint.x,            _minPoint.y + _extentY, _minPoint.z + _extentZ);
 	points[7] = _maxPoint;
 }
 

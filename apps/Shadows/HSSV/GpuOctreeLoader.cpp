@@ -3,6 +3,7 @@
 #include "VoxelTestingShader.hpp"
 
 #include <geGL/StaticCalls.h>
+#include "MultiplicityCoding.hpp"
 
 bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree)
 {
@@ -85,8 +86,11 @@ bool GpuOctreeLoader::_createProgram(unsigned int numSubgroupsPerWG, unsigned in
 void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 {
 	//--
-	//_testParticularVoxel(edges, 8776);
-	//return;
+	/*
+	std::vector<unsigned int> selected;
+	_testParticularVoxel(edges, 16838, selected);
+	return;
+	//*/
 	//--
 	
 	const int deepestLevel = _octree->getDeepestLevel();
@@ -130,7 +134,7 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 		_loadVoxels(voxels, i*voxelBatchSize, batchSize);
 
 		_clearAtomicCounter();
-		_clearCountingBuffers();
+		//_clearCountingBuffers();
 
 		_program->set1ui("nofVoxels", batchSize);
 		ge::gl::glDispatchCompute(16, 1, 1);
@@ -145,14 +149,45 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
 
-void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int voxelId)
+void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int voxelId, std::vector<unsigned int>& particularEdgeIndices)
 {
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 
-	const auto nofEdges = edges->getNofEdges();
+	auto nofEdges = edges->getNofEdges();
+	const bool loadParticularEdges = !particularEdgeIndices.empty();
 
-	//Load edges
-	_loadEdges(edges);
+	if(loadParticularEdges)
+	{
+		nofEdges = particularEdgeIndices.size();
+
+		const glm::vec3* vertices = reinterpret_cast<const glm::vec3*>(edges->getVertices());
+
+		std::vector<float> serializedEdges;
+		std::vector<glm::vec3> serializedOppositeVertices;
+
+		for (size_t edgeIndex : particularEdgeIndices)
+		{
+			glm::vec3 v1 = vertices[edges->getEdgeVertexA(edgeIndex) / 3];
+			glm::vec3 v2 = vertices[edges->getEdgeVertexB(edgeIndex) / 3];
+
+			const unsigned int nofOpposite = edges->getNofOpposite(edgeIndex);
+			const unsigned int starting_index = serializedOppositeVertices.size() * 3;
+
+			serializedEdges.push_back(v1.x); serializedEdges.push_back(v1.y); serializedEdges.push_back(v1.z);
+			serializedEdges.push_back(v2.x); serializedEdges.push_back(v2.y); serializedEdges.push_back(v2.z);
+			serializedEdges.push_back(*((float*)&nofOpposite));
+			serializedEdges.push_back(*((float*)&starting_index));
+
+			for (unsigned int i = 0; i<nofOpposite; ++i)
+				serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);
+		}
+
+		_edges->alloc(serializedEdges.size() * sizeof(float), serializedEdges.data(), GL_STATIC_READ);
+		_oppositeVertices->alloc(serializedOppositeVertices.size() * 3 * sizeof(float), serializedOppositeVertices.data(), GL_STATIC_READ);
+	}
+	else
+		_loadEdges(edges);
+	
 
 	//Alloc
 	glm::vec3 voxelData[2] = {_octree->getNode(voxelId)->volume.getMinPoint(), _octree->getNode(voxelId)->volume.getMaxPoint()};
@@ -162,11 +197,12 @@ void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int vox
 	_voxelPotentialEdges->alloc(nofEdges * sizeof(uint32_t));
 	_voxelSilhouetteEdges->alloc(nofEdges * sizeof(uint32_t));
 
-	_nofPotentialEdges->alloc(sizeof(uint32_t));
-	_nofSilhouetteEdges->alloc(sizeof(uint32_t));
+	//2 - for parent as well, just in case 
+	_nofPotentialEdges->alloc(2*sizeof(uint32_t));
+	_nofSilhouetteEdges->alloc(2*sizeof(uint32_t));
 
-	_bufferNofPotential.resize(1);
-	_bufferNofSilhouette.resize(1);
+	_bufferNofPotential.resize(2);
+	_bufferNofSilhouette.resize(2);
 	_clearBuffer.resize(1);
 	memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
 
@@ -278,6 +314,7 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 	const uint32_t* bPotential =  reinterpret_cast<uint32_t*>(_voxelPotentialEdges->map(GL_READ_ONLY));
 	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
 
+	std::vector<unsigned int> tmp;
 	for(unsigned int i=0; i<batchSize; ++i)
 	{
 		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
@@ -289,7 +326,17 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 		node->edgesAlwaysCast.resize(_bufferNofSilhouette[i]);
 		if(!node->edgesAlwaysCast.empty())
 			memcpy(node->edgesAlwaysCast.data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
+
+		//--
+		/*		
+		tmp.resize(node->edgesAlwaysCast.size());
+		for (unsigned int j = 0; j < node->edgesAlwaysCast.size(); ++j)
+			tmp[j] = decodeEdgeFromEncoded(node->edgesAlwaysCast[j]);
+		//*/
+		//--
 	}
+
+	
 
 	//Process parents
 	const unsigned int startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
