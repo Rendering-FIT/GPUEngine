@@ -24,7 +24,7 @@ public:
 
 private:
 	void _expandWholeOctree();
-	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, int augmentedEdgeIdWithResult);
+	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID);
 
 	enum class TestResult
@@ -38,19 +38,12 @@ private:
 
 	void _shrinkOctree();
 
-	void _propagatePotentiallySilhouetteEdgesUpFromLevel(unsigned int startingLevel);
-		TestResult _haveAllSyblingsEdgeAsPotential(unsigned int startingNodeID, unsigned int edgeID) const;
-		void _processPotentialEdgesInLevel(unsigned int levelNum);
-		void _getAllPotentialEdgesSyblings(unsigned int startingID, std::vector<unsigned int>& edges) const;
-		void _assignPotentialEdgeToNodeParent(unsigned int node, unsigned int edge);
-		void _removePotentialEdgeFromSyblings(unsigned int startingID, unsigned int edge);
-	
-	void _propagateSilhouetteEdgesUpFromLevel(unsigned int startingLevel);
-		TestResult _haveAllSyblingsEdgeAsSilhouette(unsigned int startingNodeID, unsigned int edgeID) const;
-		void _processSilhouetteEdgesInLevel(unsigned int level);
-		void _assignSilhouetteEdgeToNodeParent(unsigned int node, int edge);
-		void _getAllSilhouetteEdgesSyblings(unsigned int startingID, std::vector<unsigned int>& edges) const;
-		void _removeSilhouetteEdgeFromSyblings(unsigned int startingID, unsigned int edge);
+
+	void _propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential);
+		TestResult _haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential) const;
+		void _processEdgesInLevel(unsigned int levelNum, bool propagatePotential);
+		void _assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential);
+		void _removeEdgeFromSyblings(unsigned int startingID, unsigned int edge, bool propagatePotential);
 
 	void _processEmptyNodesInLevel(unsigned int level);
 		void _processEmptyNodesSyblingsParent(unsigned int first);

@@ -19,6 +19,9 @@ set(HSSV_FILES
 	HSSV/VoxelTestingShader.hpp
 	HSSV/GpuOctreeLoader.hpp
 	HSSV/GpuOctreeLoader.cpp
+	HSSV/PropagateIndicesShader.hpp
+	HSSV/GpuOctreeEdgePropagator.hpp
+	HSSV/GpuOctreeEdgePropagator.cpp
 	
 	PARENT_SCOPE
 )

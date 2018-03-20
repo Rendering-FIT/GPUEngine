@@ -21,7 +21,7 @@ public:
 protected:
 
 	void _createBuffers();
-	bool _createProgram(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmSizePerSubgroup);
+	bool _createBottomFillProgram(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmSizePerSubgroup);
 
 	void _serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxels);
 
@@ -53,7 +53,7 @@ protected:
 	std::shared_ptr<ge::gl::Buffer> _nofSilhouetteEdges;
 	std::shared_ptr<ge::gl::Buffer> _atomicCounter;
 
-	std::shared_ptr<ge::gl::Program> _program;
+	std::shared_ptr<ge::gl::Program> _fillProgram;
 
 	std::vector<uint32_t> _bufferNofPotential;
 	std::vector<uint32_t> _bufferNofSilhouette;

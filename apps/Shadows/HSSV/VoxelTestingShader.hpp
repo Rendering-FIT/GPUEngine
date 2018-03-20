@@ -362,7 +362,7 @@ void main()
 	}
 }).";
 
-inline const std::string buildComputeShader(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmPerSubgroup)
+inline const std::string buildComputeShaderFillBottomLevel(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmPerSubgroup)
 {
 	return voxelComputeShaderPrologue + 
 		"#define SHARED_MEMORY_PER_SUBGROUP_FLOATS " + std::to_string(shmPerSubgroup/sizeof(float)) + "\n" +
