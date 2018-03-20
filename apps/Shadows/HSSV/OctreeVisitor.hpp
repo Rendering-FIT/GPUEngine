@@ -27,27 +27,30 @@ private:
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, int augmentedEdgeIdWithResult);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID);
 
-	void _getEdgesOneOpposite(AdjacencyType edges, std::vector<unsigned int>& edgesWithSingleOV);
+	enum class TestResult
+	{
+		TRUE,
+		FALSE,
+		NON_EXISTING
+	};
+
+	void _sortLevel(unsigned int level);
+
+	void _shrinkOctree();
 
 	void _propagatePotentiallySilhouetteEdgesUpFromLevel(unsigned int startingLevel);
-		enum class TestResult
-		{
-			TRUE,
-			FALSE,
-			NON_EXISTING
-		};
-
 		TestResult _haveAllSyblingsEdgeAsPotential(unsigned int startingNodeID, unsigned int edgeID) const;
 		void _processPotentialEdgesInLevel(unsigned int levelNum);
-		void _getAllPotentialEdgesSyblings(unsigned int startingID, std::set<unsigned int>& edges) const;
+		void _getAllPotentialEdgesSyblings(unsigned int startingID, std::vector<unsigned int>& edges) const;
 		void _assignPotentialEdgeToNodeParent(unsigned int node, unsigned int edge);
 		void _removePotentialEdgeFromSyblings(unsigned int startingID, unsigned int edge);
 	
 	void _propagateSilhouetteEdgesUpFromLevel(unsigned int startingLevel);
+		TestResult _haveAllSyblingsEdgeAsSilhouette(unsigned int startingNodeID, unsigned int edgeID) const;
 		void _processSilhouetteEdgesInLevel(unsigned int level);
 		void _assignSilhouetteEdgeToNodeParent(unsigned int node, int edge);
-		void _getAllSilhouetteEdgesSyblings(unsigned int startingID, std::set<int>& edges) const;
-		void _removeSilhouetteEdgeFromSyblings(unsigned int startingID, int edge);
+		void _getAllSilhouetteEdgesSyblings(unsigned int startingID, std::vector<unsigned int>& edges) const;
+		void _removeSilhouetteEdgeFromSyblings(unsigned int startingID, unsigned int edge);
 
 	void _processEmptyNodesInLevel(unsigned int level);
 		void _processEmptyNodesSyblingsParent(unsigned int first);

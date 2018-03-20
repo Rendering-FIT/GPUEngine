@@ -6,7 +6,7 @@
 #include "AdjacencyEdgeWrapper.hpp"
 #include "Octree.hpp"
 
-#define MAX_BUFFER_SIZE (1024ul*1024ul*1024ul)
+#define MAX_BUFFER_SIZE (2048ul*1024ul*1024ul)
 
 class GpuOctreeLoader
 {
@@ -30,7 +30,6 @@ protected:
 	
 	void _allocateOutputBuffersAndVoxels(unsigned int voxelsPerBatch, unsigned int numEdges);
 	void _clearAtomicCounter();
-	void _clearCountingBuffers();
 
 	void _loadVoxels(const std::vector<glm::vec3>& voxels, unsigned int startingIndex, unsigned int batchSize);
 

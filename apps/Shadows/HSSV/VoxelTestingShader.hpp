@@ -128,21 +128,6 @@ bool isPlaneIntersectingAabb(inout vec3 points[8], in vec4 plane)
 	return false;
 }
 
- bool isEdgeSpaceAaabbIntersecting(
-	in vec4 p1, 
-	in vec4 p2, 
-	in vec3 aabbLow,
-	in vec3 aabbHigh)
-{
-	vec3 points[8];
-	getAabbPoints(aabbLow, aabbHigh, points);
-		
-	bool result1 = isPlaneIntersectingAabb(points, p1);
-	bool result2 = isPlaneIntersectingAabb(points, p2);
-
-	return result1 || result2;
-}
-
 vec4 createFromPointsCCW(in vec3 v1, in vec3 v2, in vec3 v3)
 {
 	vec3 normal = normalize(cross(normalize(v3 - v2), normalize(v1 - v2)));
@@ -254,6 +239,8 @@ void main()
 		//Get voxel AABB
 		vec3 aabbLow, aabbHigh;
 		getVoxel(currentVoxel, aabbLow, aabbHigh);
+		vec3 aabbPoints[8];
+		getAabbPoints(aabbLow, aabbHigh, aabbPoints);
 
 		const uint currentParent = currentVoxel/8;
 		const uvec2 aliveThreads = unpackUint2x32(ballotARB(true));
@@ -309,26 +296,21 @@ void main()
 				getEdge(shmBaseOffset, cachedEdgeIndex, edgeLower, edgeHigher);
 				const uint numOpposite = getEdgeNofOppositeVertices(shmBaseOffset, cachedEdgeIndex);
 				uint currentEdge = currentStartingEdge + cachedEdgeIndex;
-				
-				if(numOpposite==1)
-					continue;
-				
 				const uint oppositeVerticesStartingIndex = getEdgeOppositeVerticesStartingIndex(shmBaseOffset, cachedEdgeIndex);
 				
-				//Build edge planes
-				const vec3 opposite1 = getOppositeVertex(oppositeVerticesStartingIndex, 0);
-				const vec3 opposite2 = getOppositeVertex(oppositeVerticesStartingIndex, 1);
-				
-				vec4 p1 = createFromPointsCCW(edgeLower, opposite1, edgeHigher);
-				vec4 p2 = createFromPointsCCW(edgeLower, opposite2, edgeHigher);
-				
-				const bool isPotentiallySilhouette = isEdgeSpaceAaabbIntersecting(p1, p2, aabbLow, aabbHigh);
+				bool isIntersectingPlanes = false;
+				int multiplicity = 0;
+				for(uint oppositeIndex = 0; oppositeIndex < numOpposite; ++oppositeIndex)
+				{
+					const vec3 opposite = getOppositeVertex(oppositeVerticesStartingIndex, oppositeIndex);
+					vec4 p = createFromPointsCCW(edgeLower, opposite, edgeHigher);
 
-				//TODO - in the future, here loop over all opposite vertices, here just fixed 2
-				int multiplicity = currentMultiplicity(edgeLower, edgeHigher, opposite1, aabbLow);
-				multiplicity += currentMultiplicity(edgeLower, edgeHigher, opposite2, aabbLow);
+					isIntersectingPlanes = isIntersectingPlanes || isPlaneIntersectingAabb(aabbPoints, p);
+					multiplicity += currentMultiplicity(edgeLower, edgeHigher, opposite, aabbPoints[0]);
+				}
 				
-				const bool isSilhouette = (!isPotentiallySilhouette) && (multiplicity!=0);
+				const bool isPotentiallySilhouette = isIntersectingPlanes;
+				const bool isSilhouette = (!isPotentiallySilhouette) && (multiplicity!=0);				
 
 				if(isSilhouette)
 					currentEdge = encodeEdgeMultiplicityToId(currentEdge, multiplicity);

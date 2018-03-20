@@ -11,7 +11,7 @@ bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, unsigned int subgroup
 {
 	_octree = octree;
 	
-	if (!_createProgram(4, subgroupSize, 2048))
+	if (!_createProgram(8, subgroupSize, 4096))
 		return false;
 
 	_createBuffers();
@@ -31,16 +31,16 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
 	const int deepestLevelSizeAndParents = (9 * deepestLevelSize) / 8;
 
-	const size_t bufferSizeStart = 256ul * 1024ul * 1024ul;
-	const size_t bufferSizeStep = 256ul * 1024ul * 1024ul;
+	const size_t bufferSizeStart = 512ul * 1024ul * 1024ul;
+	const size_t bufferSizeStep = 512ul * 1024ul * 1024ul;
 	const size_t bufferSizeLimit = 2ul * 1024ul * 1024ul * 1024ul;
 
-	const unsigned int numSubgroupsStart = 2;
-	const unsigned int numSubgroupsStep = 2;
+	const unsigned int numSubgroupsStart = 4;
+	const unsigned int numSubgroupsStep = 4;
 	const unsigned int numSubgroupsLimit = 32;
 
-	const unsigned int cacheSizeStart = 512;
-	const unsigned int cacheSizeStep = 512;
+	const unsigned int cacheSizeStart = 1024;
+	const unsigned int cacheSizeStep = 1024;
 	const unsigned int cacheSizeLimit = 8192;
 
 	//const unsigned int numWGsStart = 2;
@@ -50,9 +50,6 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 	const unsigned int bottomTestRepetitions = 3;
 
 	HighResolutionTimer timer;
-
-	std::ofstream file;
-	file.open("testResults.txt");
 
 	for(size_t bufferSize = bufferSizeStart; bufferSize<= bufferSizeLimit; bufferSize += bufferSizeStep)
 	{
@@ -79,7 +76,7 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 		{
 			for(unsigned int cacheSize = cacheSizeStart; cacheSize <= cacheSizeLimit; cacheSize += cacheSizeStep)
 			{
-				if ((numSG * cacheSize) > (64 * 1024 * 1024))
+				if ((numSG * cacheSize) > (32 * 1024 * 1024))
 					continue;
 
 				_program.reset();
@@ -92,9 +89,11 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 
 				double time = 0;
 
-				for(unsigned int test=0; test<bottomTestRepetitions; ++test)
+				for (unsigned int test=0; test<bottomTestRepetitions; ++test)
 				{
 					timer.reset();
+
+					std::cout << "Round " << test << std::endl;
 
 					for(unsigned int batch = 0; batch < numBatches; ++batch)
 					{
@@ -113,14 +112,15 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 				time /= bottomTestRepetitions;
 
 				std::string msg;
-				msg = std::to_string(bufferSize / 1024ul / 1024ul) + " " + std::to_string(numSG) + " " + std::to_string(cacheSize) + std::to_string(time) + "\n";
+				msg = std::to_string(bufferSize / 1024ul / 1024ul) + " " + std::to_string(numSG) + " " + std::to_string(cacheSize) + " " +std::to_string(time) + "\n";
 				std::cout << msg;
+				std::ofstream file;
+				file.open("testResults.txt", std::ios_base::app);
 				file << msg;
+				file.close();
 			}
 		}
 	}
-
-	file.close();
 
 	exit(0);
 }
@@ -240,9 +240,7 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 		std::cout << "Batch " << i << " size " << batchSize << std::endl;
 
 		_loadVoxels(voxels, i*voxelBatchSize, batchSize);
-
 		_clearAtomicCounter();
-		//_clearCountingBuffers();
 
 		_program->set1ui("nofVoxels", batchSize);
 		ge::gl::glDispatchCompute(16, 1, 1);
@@ -315,7 +313,6 @@ void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int vox
 	memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
 
 	_clearAtomicCounter();
-	_clearCountingBuffers();
 
 	_bindBuffers();
 	_program->use();
@@ -444,8 +441,6 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 		//--
 	}
 
-	
-
 	//Process parents
 	const unsigned int startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
 	for(unsigned int i = 0; i<numParents; ++i)
@@ -475,15 +470,5 @@ void GpuOctreeLoader::_copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* 
 	memcpy(destination, source, size);
 
 	buffer->unmap();
-	assert(ge::gl::glGetError() == GL_NO_ERROR);
-}
-
-void GpuOctreeLoader::_clearCountingBuffers()
-{
-	assert(ge::gl::glGetError() == GL_NO_ERROR);
-	
-	_nofPotentialEdges->setData(_clearBuffer.data(), _clearBuffer.size() * sizeof(uint32_t));
-	_nofSilhouetteEdges->setData(_clearBuffer.data(), _clearBuffer.size() * sizeof(uint32_t));
-
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }

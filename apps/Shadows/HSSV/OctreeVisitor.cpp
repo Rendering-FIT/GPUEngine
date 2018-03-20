@@ -11,9 +11,6 @@
 #include "VoxelTestingShader.hpp"
 #include "GpuOctreeLoader.hpp"
 
-#include <geGL/Shader.h>
-
-
 OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
 	_octree = octree;
@@ -22,8 +19,6 @@ OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 void OctreeVisitor::addEdges(const AdjacencyType edges)
 {
 	_expandWholeOctree();
-
-	_getEdgesOneOpposite(edges, _octree->getNode(0)->edgesMayCast);
 
 	std::cout << "NoF edges: " << edges->getNofEdges() << "\n";
 
@@ -68,29 +63,36 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, unsigned int subgroup
 	//gpuLoader->profile(edges, subgroupSize);
 	//--
 
-	_getEdgesOneOpposite(edges, _octree->getNode(0)->edgesMayCast);
-
 	HighResolutionTimer t;
-	t.reset();
 
+	t.reset();
 	gpuLoader->addEdgesOnLowestLevelGPU(edges);
-
-	auto dt = t.getElapsedTimeFromLastQueryMilliseconds();
-
-	std::cout << "Adding edges on GPU took " << dt / 1000.0f << " sec\n";
+	auto dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Adding edges on GPU took " << dt << " sec\n";
+	
 	t.reset();
+	const auto dl = _octree->getDeepestLevel();
+	_sortLevel(dl);
+	_sortLevel(dl-1);
+	dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Sorting lowest and second lowest level took " << dt << "sec\n";
+
 	const auto startingLevel = _octree->getDeepestLevel() - 1;
 	_propagatePotentiallySilhouetteEdgesUpFromLevel(startingLevel);
-	dt = t.getElapsedTimeFromLastQueryMilliseconds();
-
-	std::cout << "Propagate Potential edges took " << dt / 1000.0f << " sec\n";
+	dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Propagate Potential edges took " << dt << " sec\n";
+	
 	t.reset();
-
 	_propagateSilhouetteEdgesUpFromLevel(startingLevel);
+	dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
 
-	dt = t.getElapsedTimeFromLastQueryMilliseconds();
+	t.reset();
+	_shrinkOctree();
+	dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Shrinking octree took " << dt << " sec\n";
 
-	std::cout << "Propagate Silhouette edges took " << dt / 1000.0f << " sec\n";
+	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB\n";
 }
 
 
@@ -224,7 +226,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		if (node)
 		{
 			node->shrinkEdgeVectors();
-			//node->sortEdgeVectors();
+			node->sortEdgeVectors();
 		}
 	}
 	//*/
@@ -291,9 +293,29 @@ OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeAsPotential(unsigne
 		if (!node)
 			continue;
 
-		if (std::find(node->edgesMayCast.begin(), node->edgesMayCast.end(), edgeID) == node->edgesMayCast.end())
+		if(!std::binary_search(node->edgesMayCast.begin(), node->edgesMayCast.end(), edgeID))
 			return TestResult::FALSE;
 		
+		retval = TestResult::TRUE;
+	}
+
+	return retval;
+}
+
+OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeAsSilhouette(unsigned int startingNodeID, unsigned int edgeID) const
+{
+	TestResult retval = TestResult::NON_EXISTING;
+
+	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	{
+		const auto node = _octree->getNode(startingNodeID + i);
+
+		if (!node)
+			continue;
+
+		if (!std::binary_search(node->edgesAlwaysCast.begin(), node->edgesAlwaysCast.end(), edgeID))
+			return TestResult::FALSE;
+
 		retval = TestResult::TRUE;
 	}
 
@@ -314,7 +336,7 @@ void OctreeVisitor::_processPotentialEdgesInLevel(unsigned int level)
 	#pragma omp parallel for
 	for (currentID = startingID; currentID<stopId; currentID += OCTREE_NUM_CHILDREN)
 	{
-		std::set<unsigned int> potentialEdgesSyblings;
+		std::vector<unsigned int> potentialEdgesSyblings;
 		_getAllPotentialEdgesSyblings(currentID, potentialEdgesSyblings);
 
 		for(auto edge : potentialEdgesSyblings)
@@ -344,12 +366,12 @@ void OctreeVisitor::_processSilhouetteEdgesInLevel(unsigned int level)
 	#pragma omp parallel for
 	for (currentID = startingID; currentID<stopId; currentID += OCTREE_NUM_CHILDREN)
 	{
-		std::set<int> silhouetteEdgesSyblings;
+		std::vector<unsigned int> silhouetteEdgesSyblings;
 		_getAllSilhouetteEdgesSyblings(currentID, silhouetteEdgesSyblings);
 
 		for (auto edge : silhouetteEdgesSyblings)
 		{
-			auto result = _haveAllSyblingsEdgeAsPotential(currentID, edge);
+			auto result = _haveAllSyblingsEdgeAsSilhouette(currentID, edge);
 
 			if (result == TestResult::TRUE)
 			{
@@ -359,32 +381,33 @@ void OctreeVisitor::_processSilhouetteEdgesInLevel(unsigned int level)
 		}
 	}
 }
-/*
-int	OctreeVisitor::_getFirstNodeIdInLevel(unsigned int level) const
-{
-	return _octree->getNumNodesInPreviousLevels(level);
-}
-*/
-void OctreeVisitor::_getAllPotentialEdgesSyblings(unsigned int startingID, std::set<unsigned int>& edges) const
+
+void OctreeVisitor::_getAllPotentialEdgesSyblings(unsigned int startingID, std::vector<unsigned int>& edges) const
 {
 	for(unsigned int i=0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		const auto node = _octree->getNode(startingID + i);
 
 		if(node!=nullptr)
-			edges.insert(node->edgesMayCast.begin(), node->edgesMayCast.end());
+			edges.insert(edges.end(), node->edgesMayCast.begin(), node->edgesMayCast.end());
 	}
+
+	std::sort(edges.begin(), edges.end());
+	edges.erase(std::unique(edges.begin(), edges.end()), edges.end());
 }
 
-void OctreeVisitor::_getAllSilhouetteEdgesSyblings(unsigned int startingID, std::set<int>& edges) const
+void OctreeVisitor::_getAllSilhouetteEdgesSyblings(unsigned int startingID, std::vector<unsigned int>& edges) const
 {
 	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		const auto node = _octree->getNode(startingID + i);
 
 		if (node != nullptr)
-			edges.insert(node->edgesAlwaysCast.begin(), node->edgesAlwaysCast.end());
+			edges.insert(edges.end(), node->edgesAlwaysCast.begin(), node->edgesAlwaysCast.end());
 	}
+
+	std::sort(edges.begin(), edges.end());
+	edges.erase(std::unique(edges.begin(), edges.end()), edges.end());
 }
 
 void OctreeVisitor::_removePotentialEdgeFromSyblings(unsigned int startingID, unsigned int edge)
@@ -394,18 +417,18 @@ void OctreeVisitor::_removePotentialEdgeFromSyblings(unsigned int startingID, un
 		auto node = _octree->getNode(startingID + i);
 
 		if(node)
-			node->edgesMayCast.erase(std::find(node->edgesMayCast.begin(), node->edgesMayCast.end(), edge));
+			node->edgesMayCast.erase(std::lower_bound(node->edgesMayCast.begin(), node->edgesMayCast.end(), edge));
 	}
 }
 
-void OctreeVisitor::_removeSilhouetteEdgeFromSyblings(unsigned int startingID, int edge)
+void OctreeVisitor::_removeSilhouetteEdgeFromSyblings(unsigned int startingID, unsigned int edge)
 {
 	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		auto node = _octree->getNode(startingID + i);
 
 		if (node)
-			node->edgesAlwaysCast.erase(std::find(node->edgesAlwaysCast.begin(), node->edgesAlwaysCast.end(), edge));
+			node->edgesAlwaysCast.erase(std::lower_bound(node->edgesAlwaysCast.begin(), node->edgesAlwaysCast.end(), edge));
 	}
 }
 
@@ -430,7 +453,7 @@ void OctreeVisitor::_assignSilhouetteEdgeToNodeParent(unsigned int node, int edg
 	auto n = _octree->getNode(parent);
 
 	if (n)
-		n->edgesAlwaysCast. push_back(edge);
+		n->edgesAlwaysCast.push_back(edge);
 }
 
 //NEVOLAT!
@@ -504,7 +527,7 @@ void OctreeVisitor::_processEmptyNodesSyblingsParent(unsigned int first)
 void OctreeVisitor::_expandWholeOctree()
 {
 	std::stack<unsigned int> nodeStack;
-
+	
 	nodeStack.push(0);
 
 	const int deepestLevel = _octree->getDeepestLevel();
@@ -586,15 +609,37 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 	printOnce = true;
 }
 
-void OctreeVisitor::_getEdgesOneOpposite(AdjacencyType edges, std::vector<unsigned int>& edgesWithSingleOV)
+void OctreeVisitor::_sortLevel(unsigned int level)
 {
-	const unsigned int nofEdges = edges->getNofEdges();
+	if (level > _octree->getDeepestLevel())
+		return;
 
-	for(unsigned int i=0; i<nofEdges; ++i)
+	const int startingID = _octree->getLevelFirstNodeID(level);
+	const auto size = ipow(OCTREE_NUM_CHILDREN, level);
+
+	#pragma omp parallel for
+	for(int i = startingID; i<(startingID+size); ++i)
 	{
-		const auto nofOpposite = edges->getNofOpposite(i);
+		auto n = _octree->getNode(i);
 
-		if (nofOpposite == 1)
-			edgesWithSingleOV.push_back(i);
+		std::sort(n->edgesAlwaysCast.begin(), n->edgesAlwaysCast.end());
+		std::sort(n->edgesMayCast.begin(), n->edgesMayCast.end());
+	}
+}
+
+void OctreeVisitor::_shrinkOctree()
+{
+	const auto numNodes = _octree->getTotalNumNodes();
+
+	#pragma omp parallel for
+	for(int i = 0; i<numNodes; ++i)
+	{
+		auto node = _octree->getNode(i);
+
+		if(node)
+		{
+			node->edgesAlwaysCast.shrink_to_fit();
+			node->edgesMayCast.shrink_to_fit();
+		}
 	}
 }
