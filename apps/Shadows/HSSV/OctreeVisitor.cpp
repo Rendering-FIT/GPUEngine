@@ -8,8 +8,8 @@
 #include <omp.h>
 #include "HighResolutionTimer.hpp"
 #include "MultiplicityCoding.hpp"
-#include "VoxelTestingShader.hpp"
 #include "GpuOctreeLoader.hpp"
+#include "GpuOctreeEdgePropagator.hpp"
 
 OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
@@ -272,8 +272,22 @@ void OctreeVisitor::processPotentialEdges()
 
 void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential)
 {
-	for(int i = startingLevel; i>0; --i)
-		_processEdgesInLevel(i, propagatePotential);
+	if (propagatePotential)
+	{
+		for (int i = startingLevel; i > 0; --i)
+			_processEdgesInLevel(i, propagatePotential);
+	}
+	
+	else
+	{
+		std::shared_ptr<GpuOctreeEdgePropagator> propagator = std::make_shared<GpuOctreeEdgePropagator>();
+
+		propagator->init(_octree, 32);
+
+		for (int i = startingLevel; i > 0; --i)
+			propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
+	}
+	//*/
 }
 
 OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential) const
@@ -317,16 +331,19 @@ void OctreeVisitor::_processEdgesInLevel(unsigned int level, bool propagatePoten
 	for (currentID = startingID; currentID<stopId; currentID += OCTREE_NUM_CHILDREN)
 	{
 		auto firstNode = _octree->getNode(currentID);
-		std::vector<unsigned int>& edges = propagatePotential ? firstNode->edgesMayCast : firstNode->edgesAlwaysCast;
+		const auto edges = propagatePotential ? firstNode->edgesMayCast : firstNode->edgesAlwaysCast;
 
-		for(auto edge : edges)
+		if (!edges.empty())
 		{
-			auto result = _haveAllSyblingsEdgeInCommon(currentID, edge, propagatePotential);
-
-			if (result == TestResult::TRUE)
+			for (const auto edge : edges)
 			{
-				_assignEdgeToNodeParent(currentID, edge, propagatePotential);
-				_removeEdgeFromSyblings(currentID, edge, propagatePotential);
+				auto result = _haveAllSyblingsEdgeInCommon(currentID, edge, propagatePotential);
+
+				if (result == TestResult::TRUE)
+				{
+					_assignEdgeToNodeParent(currentID, edge, propagatePotential);
+					_removeEdgeFromSyblings(currentID, edge, propagatePotential);
+				}
 			}
 		}
 	}

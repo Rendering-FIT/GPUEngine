@@ -16,24 +16,21 @@ layout(std430, binding=0) readonly buffer _indices{
 	uint voxelEdgeIndicesSorted[];};
 
 layout(std430, binding=1) readonly buffer _numIndices{
-	uint voxelNumIndices[];};
+	uint voxelNumIndicesExclusivePrefixSum[];};
 
-layout(std430, binding=2) readonly buffer _startingIndices{
-	uint startingIndices[];};
-
-layout(std430, binding=3) buffer _outputIndices{
+layout(std430, binding=2) buffer _outputIndices{
 	uint outputIndices[];};
 
-layout(std430, binding=4) buffer _outputNumIndices{
+layout(std430, binding=3) buffer _outputNumIndices{
 	uint outputNumIndices[];};
 
-layout(std430, binding=5) buffer _parentIndices{
+layout(std430, binding=4) buffer _parentIndices{
 	uint parentIndices[];};
 
-layout(std430, binding=6) buffer _numParentIndices{
+layout(std430, binding=5) buffer _numParentIndices{
 	uint parentNumIndices[];};
 
-layout(std430, binding=7) buffer _atomicCounter{
+layout(std430, binding=6) buffer _atomicCounter{
 	uint atomicCounter;};
 
 uniform uint nofVoxels;
@@ -73,7 +70,6 @@ void main()
 
 	while(true)
 	{
-		//Acquire voxels
 		uint startingVoxel = 0;
 		
 		if(gl_SubGroupInvocationARB==0)
@@ -84,9 +80,9 @@ void main()
 
 		if(currentVoxel>=nofVoxels)
 			return;
-
-		const uint numEdgesInVoxel = voxelNumIndices[currentVoxel];
-		const uint startingIndex = startingIndices[currentVoxel];
+	
+		const uint startingIndex = voxelNumIndicesExclusivePrefixSum[currentVoxel];
+		const uint numEdgesInVoxel = voxelNumIndicesExclusivePrefixSum[currentVoxel+1] - startingIndex;
 		const uint parentId = currentVoxel/8;
 		const uint numEdgesInFirst = readInvocationARB(numEdgesInVoxel, syblingGroup*8);				
 

@@ -57,5 +57,4 @@ protected:
 
 	std::vector<uint32_t> _bufferNofPotential;
 	std::vector<uint32_t> _bufferNofSilhouette;
-	std::vector<uint32_t> _clearBuffer;
 };

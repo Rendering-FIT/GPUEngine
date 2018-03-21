@@ -12,8 +12,8 @@ struct Node
 {
 	AABB volume;
 
-	std::vector<unsigned int> edgesAlwaysCast; //edge sign = winding
-	std::vector<unsigned int> edgesMayCast;
+	std::vector<uint32_t> edgesAlwaysCast;
+	std::vector<uint32_t> edgesMayCast;
 
 	bool isValid() const
 	{

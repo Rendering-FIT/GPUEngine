@@ -311,8 +311,6 @@ void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int vox
 
 	_bufferNofPotential.resize(2);
 	_bufferNofSilhouette.resize(2);
-	_clearBuffer.resize(1);
-	memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
 
 	_clearAtomicCounter();
 
