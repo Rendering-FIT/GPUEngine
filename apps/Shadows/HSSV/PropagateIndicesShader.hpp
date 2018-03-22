@@ -33,35 +33,19 @@ layout(std430, binding=5) buffer _numParentIndices{
 layout(std430, binding=6) buffer _atomicCounter{
 	uint atomicCounter;};
 
-uniform uint nofVoxels;
-uniform uint maxNofEdges;
-
-bool isEdgePresent(uint startingIndex, uint numEdges, uint edgeId)
-{
-	int L = 0;
-	int R = int(numEdges)-1;
-
-	while(L<=R)
-	{
-		const int middle = int(floor(float(L + R)/2.0f));
-		
-		const uint val = voxelEdgeIndicesSorted[startingIndex + uint(middle)];
-
-		if(edgeId==val)
-			return true;
-		else if(val<edgeId)
-			L = middle+1;
-		else
-			R = middle-1;
-	}
-
-	return false;
-}
-
 bool haveSyblingsAgreed(uint64_t ballotResult, uint syblingGroup)
 {
 	return ((ballotResult >> (syblingGroup*8)) & 0xFF) == 255;
 }
+
+bool atLeastOne(uint64_t ballotResult, uint syblingGroup)
+{
+	return ((ballotResult >> (syblingGroup*8)) & 0xFF) != 0;
+}
+
+
+uniform uint nofVoxels;
+uniform uint maxNofEdges;
 
 void main()
 {
@@ -80,36 +64,64 @@ void main()
 
 		if(currentVoxel>=nofVoxels)
 			return;
-	
-		const uint startingIndex = voxelNumIndicesExclusivePrefixSum[currentVoxel];
-		const uint numEdgesInVoxel = voxelNumIndicesExclusivePrefixSum[currentVoxel+1] - startingIndex;
+
+		//TODO - toto ziskanie prace dat do while, proste na spodnu smycku az ked maju vsetky sybling grupy nejaku pracu alokovanu
+		const uint startingOutputIndex = voxelNumIndicesExclusivePrefixSum[currentVoxel];
+		const uint numEdgesInVoxel = voxelNumIndicesExclusivePrefixSum[currentVoxel+1] - startingOutputIndex;
 		const uint parentId = currentVoxel/8;
 		const uint numEdgesInFirst = readInvocationARB(numEdgesInVoxel, syblingGroup*8);				
 
 		uint numOutputEdges = 0;
 		uint numParentOutputEdges = 0;
 		
+		uint cachedValue = 0;
+		bool isCacheValid = false;
+		uint positionInEdgeBuffer = 0;
+
 		for(unsigned int i = 0; i<numEdgesInFirst; ++i)
 		{
-			uint edgeIndex = 0;
-			if(syblingInvocationId==0)
-				edgeIndex = voxelEdgeIndicesSorted[startingIndex + i];
+			//Cache a value
+			if((!isCacheValid) && (positionInEdgeBuffer<numEdgesInVoxel))
+			{
+				cachedValue = voxelEdgeIndicesSorted[startingOutputIndex + positionInEdgeBuffer++];
+				isCacheValid = true;
+			}
 			
-			edgeIndex = readInvocationARB(edgeIndex, syblingGroup*8);
+			const uint referenceValue = readInvocationARB(cachedValue, syblingGroup * 8);
 			
-			bool found = true;
-			if(syblingInvocationId!=0)
-				found = isEdgePresent(startingIndex, numEdgesInVoxel, edgeIndex);
+			//Write to output all indices less than reference value
+			while(isCacheValid && (cachedValue<referenceValue))
+			{
+				outputIndices[startingOutputIndex + numOutputEdges++] = cachedValue;
+				if(positionInEdgeBuffer<numEdgesInVoxel)
+					cachedValue = voxelEdgeIndicesSorted[startingOutputIndex + positionInEdgeBuffer++];
+				else
+					isCacheValid = false;
+			}
 			
-			uint64_t allResults = ballotARB(found);
-			
-			if(haveSyblingsAgreed(allResults, syblingGroup))
+			const uint64_t refCompare = ballotARB(isCacheValid && (cachedValue == referenceValue));
+
+			if(haveSyblingsAgreed(refCompare, syblingGroup))
+			{
 				if(syblingInvocationId==0)
-					parentIndices[maxNofEdges*(parentId) + numParentOutputEdges++] = edgeIndex;
-			else
-				outputIndices[startingIndex + numOutputEdges++] = edgeIndex;
+					parentIndices[(maxNofEdges*parentId)+numParentOutputEdges++] = referenceValue;
+				
+				isCacheValid = false;
+			}
+			else if((cachedValue <= referenceValue) && isCacheValid)
+			{
+				outputIndices[startingOutputIndex + numOutputEdges++] = cachedValue;
+				isCacheValid = false;
+			}
 		}
 		
+		if(isCacheValid)
+			outputIndices[startingOutputIndex + numOutputEdges++] = cachedValue;
+
+		//Write leftover edges
+		for(unsigned int i = positionInEdgeBuffer; i<numEdgesInVoxel; ++i)
+			outputIndices[startingOutputIndex + numOutputEdges++] = voxelEdgeIndicesSorted[startingOutputIndex + i];
+
 		outputNumIndices[currentVoxel] = numOutputEdges;
 		
 		if(syblingInvocationId==0)

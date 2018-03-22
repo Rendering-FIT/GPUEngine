@@ -67,8 +67,7 @@ void GpuOctreeEdgePropagator::_allocateBuffers()
 
 void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferType type)
 {
-	if (level > _octree->getDeepestLevel())
-		return;
+	assert(level <= _octree->getDeepestLevel());
 	
 	const auto levelSize = ipow(OCTREE_NUM_CHILDREN, level);
 	const auto startingIndex = _octree->getLevelFirstNodeID(level);
@@ -83,7 +82,7 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 	{
 		unsigned int maxEdgesPerVoxel = 0;
 		
-		_loadVoxelEdgesStartingFrom_returnNofLoaded(startingIndex+numProcessed, levelSize, type, maxEdgesPerVoxel, sizePrefixSum);
+		_loadVoxelEdgesStartingFrom_returnNofLoaded(startingIndex+numProcessed, startingIndex + levelSize, type, maxEdgesPerVoxel, sizePrefixSum);
 		const auto numLoaded = sizePrefixSum.size() - 1;
 
 		_clearAtomicCounter();
@@ -104,16 +103,16 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 
 void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom_returnNofLoaded(
 	unsigned int startingVoxel, 
-	unsigned int levelSize, 
+	unsigned int endVoxel, 
 	BufferType type, 
 	unsigned int& outMaxEdges, 
-	std::vector<unsigned int>& sizesPrefixSum)
+	std::vector<uint32_t>& sizesPrefixSum)
 {
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	
 	size_t usedCapacity = 0;
-	const unsigned int stopIndex = startingVoxel + levelSize;
-	
+	const unsigned int stopIndex = endVoxel;// startingVoxel + levelSize;
+	const unsigned int remainingSize = endVoxel - startingVoxel;
 	unsigned int currentIndex = startingVoxel;
 
 	sizesPrefixSum.clear();
@@ -123,7 +122,7 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom_returnNofLoaded(
 
 	outMaxEdges = 0;
 	unsigned int numLoaded = 0;
-	while(numLoaded<levelSize)
+	while(numLoaded<remainingSize)
 	{
 		const unsigned int currentIndex = startingVoxel + numLoaded;
 
@@ -139,7 +138,8 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom_returnNofLoaded(
 		{
 			auto node = _octree->getNode(currentIndex + i);
 			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
-			memcpy(indicesPtr + usedCapacity, edges.data(), edges.size() * sizeof(uint32_t));
+			if(!edges.empty())
+				memcpy(indicesPtr + usedCapacity, edges.data(), edges.size() * sizeof(uint32_t));
 			usedCapacity += edges.size()*sizeof(uint32_t);
 
 			sizesPrefixSum.push_back(sizesPrefixSum[sizesPrefixSum.size() - 1] + edges.size());
@@ -173,7 +173,7 @@ size_t GpuOctreeEdgePropagator::_getSyblingsBufferSizeAndMaximum(unsigned int st
 	return sz;
 }
 
-void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned batchSize, unsigned maxEdgesPerVoxel, BufferType type, const std::vector<unsigned int>& sizePrefixSum)
+void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned batchSize, unsigned maxEdgesPerVoxel, BufferType type, const std::vector<uint32_t>& sizePrefixSum)
 {
 	std::vector<uint32_t> numIndices;
 	numIndices.resize(batchSize);
@@ -187,14 +187,14 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	//Process children
 	for(unsigned int i = 0; i<batchSize; ++i)
 	{
-		if(numIndices[i]!=0)
-		{
-			auto node = _octree->getNode(startingIndex + i);
-			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		auto node = _octree->getNode(startingIndex + i);
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		edges.resize(numIndices[i]);
 
-			edges.resize(numIndices[i]);
+		if (numIndices[i] != 0)
 			memcpy(edges.data(), indices + sizePrefixSum[i], numIndices[i]*sizeof(uint32_t));
-		}
+
+		i += 0;
 	}
 	_outputIndices->unmap();
 
@@ -211,15 +211,28 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 
 	for(unsigned int i=0; i<nofParents; ++i)
 	{
-		if(numIndices[i]!=0)
-		{
-			auto node = _octree->getNode(startingParent + i);
-			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		auto node = _octree->getNode(startingParent + i);
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		edges.resize(numIndices[i]);
 
-			edges.resize(numIndices[i]);
+		if (numIndices[i] != 0)
 			memcpy(edges.data(), parentIndices + i*maxEdgesPerVoxel, numIndices[i] * sizeof(uint32_t));
-			i += 0;
-		}
+
+		i += 0;
+	}
+
+	{
+		const unsigned int ls = ipow(OCTREE_NUM_CHILDREN, 3);
+		const unsigned int st = _octree->getLevelFirstNodeID(3);
+		for (unsigned int i = st; i < (st + ls); ++i)
+			std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
+	}
+	std::cout << "\n\n-------------------------------------------------------------------------\n";
+	{
+		const unsigned int ls = ipow(OCTREE_NUM_CHILDREN, 4);
+		const unsigned int st = _octree->getLevelFirstNodeID(4);
+		for (unsigned int i = st; i < (st + ls); ++i)
+			std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
 	}
 
 	_parentIndices->unmap();

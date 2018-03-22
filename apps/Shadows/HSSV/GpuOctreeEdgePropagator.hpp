@@ -5,7 +5,7 @@
 
 #include "Octree.hpp"
 
-#define MAX_BUFFER_SIZE_PROPAGATE (1024ul*1024ul*1024ul)
+#define MAX_BUFFER_SIZE_PROPAGATE (768ul*1024ul*1024ul)
 
 enum class BufferType
 {
@@ -35,7 +35,7 @@ protected:
 	void _bindBuffers();
 	void _unbindBuffers();
 
-	void _loadVoxelEdgesStartingFrom_returnNofLoaded(unsigned int startingVoxel, unsigned int levelSize, BufferType type, unsigned int& outMaxEdges, std::vector<unsigned int>& sizes);
+	void _loadVoxelEdgesStartingFrom_returnNofLoaded(unsigned int startingVoxel, unsigned int endVoxel, BufferType type, unsigned int& outMaxEdges, std::vector<uint32_t>& sizes);
 		size_t _getSyblingsBufferSizeAndMaximum(unsigned int startingId, BufferType type, unsigned int& maxSize);
 
 	void _updateCpuData(unsigned int startingIndex, unsigned int batchSize, unsigned int maxEdgesPerVoxel, BufferType type, const std::vector<unsigned int>& sizePrefixSum);
