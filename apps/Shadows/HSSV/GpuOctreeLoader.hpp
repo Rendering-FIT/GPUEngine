@@ -6,7 +6,7 @@
 #include "AdjacencyEdgeWrapper.hpp"
 #include "Octree.hpp"
 
-#define MAX_BUFFER_SIZE (2048ul*1024ul*1024ul)
+#define MAX_BUFFER_SIZE (768ul*1024ul*1024ul)
 
 class GpuOctreeLoader
 {

@@ -162,12 +162,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		const auto numOppositeVertices = edges->getNofOpposite(edgeIndex);
 
 		if(numOppositeVertices!=2)
-		{
-			//if (numOppositeVertices == 1 && parent >= 0)
-			//	_storeEdgeIsPotentiallySilhouette(parent, edgeIndex);
-
 			continue;
-		}
 
 		for (unsigned int index = startingID; index<(startingID + OCTREE_NUM_CHILDREN); index++)
 		{
@@ -275,27 +270,7 @@ void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool 
 	if (propagatePotential)
 	{
 		for (int i = startingLevel; i > 0; --i)
-		{
 			_processEdgesInLevel(i, propagatePotential);
-			
-			if (!propagatePotential && startingLevel == 4)
-			{
-				{
-					const unsigned int levelSize = ipow(OCTREE_NUM_CHILDREN, 3);
-					const unsigned int startingIndex = _octree->getLevelFirstNodeID(3);
-					for (unsigned int i = startingIndex; i < (startingIndex + levelSize); ++i)
-						std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
-				}
-				std::cout << "\n\n-------------------------------------------------------\n";
-				{
-					const unsigned int levelSize = ipow(OCTREE_NUM_CHILDREN, 4);
-					const unsigned int startingIndex = _octree->getLevelFirstNodeID(4);
-					for (unsigned int i = startingIndex; i < (startingIndex + levelSize); ++i)
-						std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
-				}
-			}
-			//*/
-		}
 	}
 	
 	else
@@ -305,10 +280,8 @@ void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool 
 		propagator->init(_octree, 32);
 
 		for (int i = startingLevel; i > 0; --i)
-		{
 			propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
-			//if(i==4)break;
-		}
+
 	}
 	//*/
 }

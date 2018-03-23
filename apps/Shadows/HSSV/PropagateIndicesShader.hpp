@@ -28,7 +28,7 @@ layout(std430, binding=4) buffer _parentIndices{
 	uint parentIndices[];};
 
 layout(std430, binding=5) buffer _numParentIndices{
-	uint parentNumIndices[];};
+	uint numParentIndices[];};
 
 layout(std430, binding=6) buffer _atomicCounter{
 	uint atomicCounter;};
@@ -42,7 +42,6 @@ bool atLeastOne(uint64_t ballotResult, uint syblingGroup)
 {
 	return ((ballotResult >> (syblingGroup*8)) & 0xFF) != 0;
 }
-
 
 uniform uint nofVoxels;
 uniform uint maxNofEdges;
@@ -125,7 +124,7 @@ void main()
 		outputNumIndices[currentVoxel] = numOutputEdges;
 		
 		if(syblingInvocationId==0)
-			parentNumIndices[parentId] = numParentOutputEdges;
+			numParentIndices[parentId] = numParentOutputEdges;
 	}
 }
 ).";

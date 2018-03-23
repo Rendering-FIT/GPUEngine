@@ -2,11 +2,12 @@
 #include "PropagateIndicesShader.hpp"
 
 #include <geGL/StaticCalls.h>
+#include "HighResolutionTimer.hpp"
 
 
 bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned subgroupSize)
 {
-	if (!_createPropagateProgram(1, subgroupSize))
+	if (!_createPropagateProgram(2, subgroupSize))
 		return false;
 
 	_octree = octree;
@@ -60,7 +61,7 @@ void GpuOctreeEdgePropagator::_allocateBuffers()
 	_outputIndices->alloc(MAX_BUFFER_SIZE_PROPAGATE, nullptr);
 	_outputNumIndices->alloc((secondDeepestLevelSize + 1) * sizeof(uint32_t), nullptr); //+1 cos its exclusive sum, last item has to know it's range
 	_parentIndices->alloc(MAX_BUFFER_SIZE_PROPAGATE/8ul, nullptr);
-	_parentNumIndices->alloc(secondDeepestLevelSize /8ul, nullptr);
+	_parentNumIndices->alloc((secondDeepestLevelSize /8ul)*sizeof(uint32_t), nullptr);
 
 	std::cout << "Total allocated size (Edge Propagator): " << (2 * MAX_BUFFER_SIZE_PROPAGATE + 2 * (secondDeepestLevelSize + 1) * sizeof(uint32_t) + MAX_BUFFER_SIZE_PROPAGATE / 8ul + secondDeepestLevelSize / 8ul) / 1024ul / 1024ul << "MB\n";
 }
@@ -81,15 +82,16 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 	while(numProcessed<levelSize)
 	{
 		unsigned int maxEdgesPerVoxel = 0;
-		
+
 		_loadVoxelEdgesStartingFrom_returnNofLoaded(startingIndex+numProcessed, startingIndex + levelSize, type, maxEdgesPerVoxel, sizePrefixSum);
+
 		const auto numLoaded = sizePrefixSum.size() - 1;
 
 		_clearAtomicCounter();
 		_propagateProgram->set1ui("nofVoxels", numLoaded);
 		_propagateProgram->set1ui("maxNofEdges", maxEdgesPerVoxel);
 
-		ge::gl::glDispatchCompute(1, 1, 1);
+		ge::gl::glDispatchCompute(16, 1, 1);
 		ge::gl::glFinish();
 
 		_updateCpuData(startingIndex + numProcessed, numLoaded, maxEdgesPerVoxel, type, sizePrefixSum);
@@ -177,7 +179,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 {
 	std::vector<uint32_t> numIndices;
 	numIndices.resize(batchSize);
-	
+
 	auto ni = _outputNumIndices->map(GL_READ_ONLY);
 	memcpy(numIndices.data(), ni, numIndices.size() * sizeof(uint32_t));
 	_outputNumIndices->unmap();
@@ -197,6 +199,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 		i += 0;
 	}
 	_outputIndices->unmap();
+
 
 	//Process parents
 	const auto nofParents = batchSize / 8;
@@ -220,7 +223,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 
 		i += 0;
 	}
-
+	/*
 	{
 		const unsigned int ls = ipow(OCTREE_NUM_CHILDREN, 3);
 		const unsigned int st = _octree->getLevelFirstNodeID(3);
@@ -234,7 +237,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 		for (unsigned int i = st; i < (st + ls); ++i)
 			std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
 	}
-
+	*/
 	_parentIndices->unmap();
 }
 
