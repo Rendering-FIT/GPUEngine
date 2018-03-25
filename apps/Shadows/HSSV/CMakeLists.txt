@@ -22,6 +22,10 @@ set(HSSV_FILES
 	HSSV/PropagateIndicesShader.hpp
 	HSSV/GpuOctreeEdgePropagator.hpp
 	HSSV/GpuOctreeEdgePropagator.cpp
+	HSSV/OctreeSidesDrawer.hpp
+	HSSV/OctreeSidesDrawer.cpp
+	HSSV/GenerateSidesProgram.hpp
+	HSSV/GpuEdges.hpp
 	
 	PARENT_SCOPE
 )

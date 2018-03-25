@@ -5,7 +5,7 @@
 
 #include "Octree.hpp"
 
-#define MAX_BUFFER_SIZE_PROPAGATE (768ul*1024ul*1024ul)
+#define MAX_BUFFER_SIZE_PROPAGATE (1024ul*1024ul*1024ul)
 
 enum class BufferType
 {
@@ -22,8 +22,6 @@ public:
 	bool init(std::shared_ptr<Octree> octree, unsigned int subgroupSize);
 
 	void profile(unsigned int subgroupSize);
-
-	
 
 protected:
 

@@ -7,8 +7,14 @@
 
 #include <iostream>
 #include <fstream>
-bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, unsigned int subgroupSize)
+bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize)
 {
+	assert(octree);
+	assert(gpuEdges);
+
+	_edges = gpuEdges->_edges;
+	_oppositeVertices = gpuEdges->_oppositeVertices;
+
 	_octree = octree;
 	
 	if (!_createBottomFillProgram(8, subgroupSize, 4096))
@@ -21,7 +27,7 @@ bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, unsigned int subgroup
 
 void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 {
-	_loadEdges(edges);
+	//_loadEdges(edges);
 
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
@@ -128,8 +134,8 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 
 void GpuOctreeLoader::_createBuffers()
 {
-	_edges = std::make_shared<ge::gl::Buffer>();
-	_oppositeVertices = std::make_shared<ge::gl::Buffer>();
+	//_edges = std::make_shared<ge::gl::Buffer>();
+	//_oppositeVertices = std::make_shared<ge::gl::Buffer>();
 	_voxels = std::make_shared<ge::gl::Buffer>();
 	_voxelPotentialEdges = std::make_shared<ge::gl::Buffer>();
 	_voxelSilhouetteEdges = std::make_shared<ge::gl::Buffer>();
@@ -139,6 +145,7 @@ void GpuOctreeLoader::_createBuffers()
 	_atomicCounter->alloc(sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 }
 
+/*
 void GpuOctreeLoader::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEdges, std::vector<glm::vec3>& serializedOppositeVertices)
 {
 	const auto nofEdges = edges->getNofEdges();
@@ -162,6 +169,7 @@ void GpuOctreeLoader::_serializeEdges(AdjacencyType edges, std::vector<float>& s
 			serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);
 	}
 }
+*/
 
 void GpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxels)
 {
@@ -212,7 +220,7 @@ void GpuOctreeLoader::addEdgesOnLowestLevelGPU(AdjacencyType edges)
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 
-	_loadEdges(edges);
+	//_loadEdges(edges);
 
 	const auto nofEdges = edges->getNofEdges();
 
@@ -293,8 +301,8 @@ void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, unsigned int vox
 		_edges->alloc(serializedEdges.size() * sizeof(float), serializedEdges.data(), GL_STATIC_READ);
 		_oppositeVertices->alloc(serializedOppositeVertices.size() * 3 * sizeof(float), serializedOppositeVertices.data(), GL_STATIC_READ);
 	}
-	else
-		_loadEdges(edges);
+	//else
+		//_loadEdges(edges);
 	
 
 	//Alloc
@@ -344,12 +352,9 @@ void GpuOctreeLoader::_allocateOutputBuffersAndVoxels(unsigned voxelsPerBatch, u
 
 	_bufferNofPotential.resize(nofVoxelsWithParents);
 	_bufferNofSilhouette.resize(nofVoxelsWithParents);
-	
-	//_clearBuffer.resize(nofVoxelsWithParents);
-	//memset(_clearBuffer.data(), int(0), _clearBuffer.size() * sizeof(uint32_t));
 }
 
-
+/*
 void GpuOctreeLoader::_loadEdges(AdjacencyType edges)
 {
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
@@ -362,6 +367,7 @@ void GpuOctreeLoader::_loadEdges(AdjacencyType edges)
 	_oppositeVertices->alloc(serializedOppositeVertices.size() * 3 * sizeof(float), serializedOppositeVertices.data(), GL_STATIC_READ);
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
+*/
 
 void GpuOctreeLoader::_clearAtomicCounter()
 {
@@ -431,14 +437,6 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 		node->edgesAlwaysCast.resize(_bufferNofSilhouette[i]);
 		if(!node->edgesAlwaysCast.empty())
 			memcpy(node->edgesAlwaysCast.data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
-
-		//--
-		/*		
-		tmp.resize(node->edgesAlwaysCast.size());
-		for (unsigned int j = 0; j < node->edgesAlwaysCast.size(); ++j)
-			tmp[j] = decodeEdgeFromEncoded(node->edgesAlwaysCast[j]);
-		//*/
-		//--
 	}
 
 	//Process parents

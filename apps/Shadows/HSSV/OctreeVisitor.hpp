@@ -1,11 +1,11 @@
 #pragma once
 
+#include <memory>
+
 #include "Octree.hpp"
 #include "GeometryOperations.hpp"
-#include <memory>
-#include <set>
-
 #include "AdjacencyEdgeWrapper.hpp"
+#include "GpuEdges.hpp"
 
 class OctreeVisitor
 {
@@ -13,7 +13,7 @@ public:
 	OctreeVisitor(std::shared_ptr<Octree> octree);
 
 	void addEdges(const AdjacencyType edges);
-	void addEdgesGPU(const AdjacencyType edges, unsigned int subgroupSize);
+	void addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize);
 
 	void processPotentialEdges();
 
@@ -21,6 +21,8 @@ public:
 
 	int getLowestNodeIndexFromPoint(const glm::vec3& point) const;
 	void getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
+
+	std::shared_ptr<Octree> getOctree() { return _octree; }
 
 private:
 	void _expandWholeOctree();

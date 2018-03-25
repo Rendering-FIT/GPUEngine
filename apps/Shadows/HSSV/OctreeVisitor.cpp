@@ -46,11 +46,11 @@ void OctreeVisitor::addEdges(const AdjacencyType edges)
 	std::cout << "Propagate Silhouette edges took " << dt / 1000.0f << " sec\n";
 }
 
-void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, unsigned int subgroupSize)
+void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize)
 {
 	std::shared_ptr<GpuOctreeLoader> gpuLoader = std::make_shared<GpuOctreeLoader>();
 
-	if (!gpuLoader->init(_octree, subgroupSize))
+	if (!gpuLoader->init(_octree, gpuEdges, subgroupSize))
 	{
 		std::cerr << "Failed to init GPU octree loader, switching to CPU (very slow)\n";
 		addEdges(edges);

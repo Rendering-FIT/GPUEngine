@@ -174,6 +174,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
   this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 5.f,5.f,5.f}, "Defines octree volume in terms of scene AABB scaling"));
+  this->hssvParams.maxGpuMemoryToUseMB = arg->geti32("--hssv-gpuMemMax", 1024, "Amount of GPU memory to use during octree build, default 1024MB");
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");

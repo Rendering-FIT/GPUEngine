@@ -5,8 +5,9 @@
 
 #include "AdjacencyEdgeWrapper.hpp"
 #include "Octree.hpp"
+#include "GpuEdges.hpp"
 
-#define MAX_BUFFER_SIZE (768ul*1024ul*1024ul)
+#define MAX_BUFFER_SIZE (1024ul*1024ul*1024ul)
 
 class GpuOctreeLoader
 {
@@ -14,7 +15,7 @@ public:
 	
 	void addEdgesOnLowestLevelGPU(AdjacencyType edges);
 	
-	bool init(std::shared_ptr<Octree> octree, unsigned int subgroupSize);
+	bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize);
 
 	void profile(AdjacencyType edges, unsigned int subgroupSize);
 
@@ -25,9 +26,6 @@ protected:
 
 	void _serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxels);
 
-	void _loadEdges(AdjacencyType edges);
-		void _serializeEdges(AdjacencyType edges, std::vector<float>& serializedEdges, std::vector<glm::vec3>& serializedOppositeVertices);
-	
 	void _allocateOutputBuffersAndVoxels(unsigned int voxelsPerBatch, unsigned int numEdges);
 	void _clearAtomicCounter();
 

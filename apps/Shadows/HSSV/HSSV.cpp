@@ -48,13 +48,18 @@ HSSV::HSSV(
 	_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
 	_visitor = std::make_shared<OctreeVisitor>(_octree);
 
+	_loadGpuEdges(_edges);
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, subgroupSize);
+
 	HighResolutionTimer t;
 	t.reset();
 	//_visitor->addEdges(_edges);
-	_visitor->addEdgesGPU(_edges, subgroupSize);
+	_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
 	const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 	std::cout << "Building octree took " << dt << " seconds\n";
+
+	_octreeSidesDrawer->init(_gpuEdges);
 
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();
@@ -242,12 +247,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		for (const auto e : silhouetteEdges)
 			of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
 		of.close();
-		//*/
-		/*
-		for (const auto e : silhouetteEdges)
-			if (std::binary_search(potentialEdges.begin(), potentialEdges.end(), decodeEdgeFromEncoded(e)))
-				std::cout << "Edge " << decodeEdgeFromEncoded(e) << " is both in potential and silhouette!\n";
-		//*/
+		
 		printOnce = true;
 	}
 }
@@ -286,3 +286,43 @@ void HSSV::_generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3&
 		}
 	}
 }
+
+void HSSV::_loadGpuEdges(AdjacencyType edges)
+{
+	_gpuEdges = std::make_shared<GpuEdges>();
+	_gpuEdges->_edges = std::make_shared<ge::gl::Buffer>();
+	_gpuEdges->_oppositeVertices = std::make_shared<ge::gl::Buffer>();
+
+	std::vector<float> serializedEdges;
+	std::vector<glm::vec3> serializedOppositeVertices;
+
+	_serializeEdges(edges, serializedEdges, serializedOppositeVertices);
+
+	_gpuEdges->_edges->alloc(serializedEdges.size() * sizeof(float), serializedEdges.data(), GL_STATIC_READ);
+	_gpuEdges->_oppositeVertices->alloc(serializedOppositeVertices.size() * 3 * sizeof(float), serializedOppositeVertices.data(), GL_STATIC_READ);
+}
+
+void HSSV::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEdges, std::vector<glm::vec3>& serializedOppositeVertices)
+{
+	const auto nofEdges = edges->getNofEdges();
+
+	const glm::vec3* vertices = reinterpret_cast<const glm::vec3*>(edges->getVertices());
+
+	for (size_t edgeIndex = 0; edgeIndex<nofEdges; ++edgeIndex)
+	{
+		glm::vec3 v1 = vertices[edges->getEdgeVertexA(edgeIndex) / 3];
+		glm::vec3 v2 = vertices[edges->getEdgeVertexB(edgeIndex) / 3];
+
+		const unsigned int nofOpposite = edges->getNofOpposite(edgeIndex);
+		const unsigned int starting_index = serializedOppositeVertices.size() * 3;
+
+		serializedEdges.push_back(v1.x); serializedEdges.push_back(v1.y); serializedEdges.push_back(v1.z);
+		serializedEdges.push_back(v2.x); serializedEdges.push_back(v2.y); serializedEdges.push_back(v2.z);
+		serializedEdges.push_back(*((float*)&nofOpposite));
+		serializedEdges.push_back(*((float*)&starting_index));
+
+		for (unsigned int i = 0; i<nofOpposite; ++i)
+			serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);
+	}
+}
+
