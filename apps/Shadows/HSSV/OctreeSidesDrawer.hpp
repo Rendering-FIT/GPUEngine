@@ -18,7 +18,7 @@ public:
 
 protected:
 
-	void _drawSidesFromSilhouetteEdges(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
+	void _drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	//void _genSidesFromSilhouetteEdges(unsigned int cellContainingLightId);
 	//TODO nahradit bool enumom

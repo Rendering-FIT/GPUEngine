@@ -232,12 +232,6 @@ layout(std430, binding=0) readonly buffer _edges{
 layout(std430, binding=1) readonly buffer _edgeIdsToGenerate{
 	uint edgesIdToGenerate[]; };
 
-layout(std430, binding=2) buffer _dumpEdges{
-	vec4 outEdges[]; };
-
-layout(std430, binding=3) buffer _counter{
-	uint atomicCounter; };
-
 #define EDGE_NUM_FLOATS 8
 void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
 {
@@ -277,36 +271,22 @@ void main()
 	edgeVertices[1] = vec3(0);
 
 	getEdge(edgeId, edgeVertices[0], edgeVertices[1]);
-	
-	vec4 lo = vec4(edgeVertices[0], mult);
-	vec4 ho = vec4(edgeVertices[1], mult);
-	//vec4 lo = vec4(edgeId, mult, 0, 0);
-	//vec4 ho = vec4(0);	
-
-	if((gl_TessCoord.x + gl_TessCoord.y) < 0.5f)
-	{
-		const uint index = atomicAdd(atomicCounter, 2);
-
-		outEdges[index + 0] = lo;
-		outEdges[index + 1] = ho;
-	}
-
-	if(mult<0)
+	/*
+	if(mult>0)
 	{
 		vec3 tmp;
 		tmp = edgeVertices[0];
 		edgeVertices[0] = edgeVertices[1];
 		edgeVertices[1] = tmp;
 	}
-	
+	*/
+	const uint swapVertices = uint(mult>0);
+
 	vec4 outPos;
-	outPos.xyz = edgeVertices[uint(gl_TessCoord.x>.5)]-lightPosition.xyz*(float(gl_TessCoord.y<.5));
-	outPos.w = gl_TessCoord.y>.5 ? 1 : 0;
-	//outEdges[index+0] = outPos;
-	//outEdges[index+1] = vec4(gl_PrimitiveID, gl_TessCoord.x, gl_TessCoord.y, 0);
+	outPos.xyz = edgeVertices[uint(gl_TessCoord.x<0.5f) ^ swapVertices]-lightPosition.xyz*float(gl_TessCoord.y<0.5f);
+	outPos.w = float(gl_TessCoord.y>0.5f);
 
 	gl_Position = mvp * outPos;
-    //gl_Position = vec4(gl_TessCoord.xy,0,1);
 }).";
 
 
@@ -321,12 +301,11 @@ void main()
 	uint i = 0;
 	for(i=0; i<multiplicity[0]; ++i) 
 	{
-        vec4 offset = vec4(float(i)/5.0f-1,0,0,0)*0;
-		gl_Position = gl_in[0].gl_Position+offset;
+		gl_Position = gl_in[0].gl_Position;
 		EmitVertex();					  
-		gl_Position = gl_in[1].gl_Position+offset;
+		gl_Position = gl_in[1].gl_Position;
 		EmitVertex();					  
-		gl_Position = gl_in[2].gl_Position+offset;
+		gl_Position = gl_in[2].gl_Position;
 		EmitVertex();
 		EndPrimitive();
 	}

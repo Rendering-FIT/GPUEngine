@@ -128,7 +128,7 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 	const auto cellIndex = _octreeVisitor->getLowestNodeIndexFromPoint(glm::vec3(light));
 
 	//_drawSidesFromSilhouetteEdges(mvp, light, cellIndex);
-	_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex);
+	_drawSidesFromSilhouetteEdgesTS(mvp, light, cellIndex);
 }
 
 /*
@@ -188,69 +188,23 @@ unsigned int OctreeSidesDrawer::_loadEdgesFromIdUpGetNof(unsigned cellContaining
 	return numLoaded;
 }
 
-void OctreeSidesDrawer::_drawSidesFromSilhouetteEdges(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId)
+void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId)
 {
 	const auto nofEdgesToGenerate = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
 	
 	_generateAndDrawSidesProgram->use();
 	_generateAndDrawSidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
-	const uint32_t zero = 0;
-	_atomicCounter->setData(&zero, sizeof(uint32_t));
 
 	_sidesVaoSilhouette->bind();
 	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	_edgeDump->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	_atomicCounter->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 
 	ge::gl::glPatchParameteri(GL_PATCH_VERTICES, 1);
 	ge::gl::glDrawArrays(GL_PATCHES, 0, nofEdgesToGenerate);
-
-	ge::gl::glFinish();
-	/*
-	const auto ptr = _edgeDump->map(GL_READ_ONLY);
-	std::vector<glm::vec4> vec;
-	vec.resize(4*2*nofEdgesToGenerate);
-	memcpy(vec.data(), ptr, 4*nofEdgesToGenerate * 2 * 4 * sizeof(float));
-	_edgeDump->unmap();
-
 	
+	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
-	const auto edgePtr = _gpuEdges->_edges->map(GL_READ_ONLY);
-	std::vector<float> ee;
-	const auto sz = _gpuEdges->_edges->getSize() / (sizeof(float));
-	ee.resize(sz);
-	memcpy(ee.data(), edgePtr, _gpuEdges->_edges->getSize());
-	_gpuEdges->_edges->unmap();
-
-
-	std::vector<uint32_t> vvv;
-	vvv.resize(nofEdgesToGenerate);
-	_edgesIdsToGenerate->getData(vvv.data());
-
-	for (auto d : vvv)
-	{
-		const auto real = decodeEdgeFromEncoded(d);
-		std::cout << ee[8 * real + 0] << ", " << ee[8 * real + 1] << ", " << ee[8 * real + 2] << std::endl;
-		std::cout << ee[8 * real + 3] << ", " << ee[8 * real + 4] << ", " << ee[8 * real + 5] << std::endl << std::endl;
-	}
-
-	std::cout << "--------------\n";
-
-	int node = cellContainingLightId;
-
-	while (node > 0)
-	{
-		const auto nn = _octreeVisitor->getOctree()->getNode(node);
-		
-		for (auto const& d : nn->edgesAlwaysCast)
-		{
-			std::cout << decodeEdgeMultiplicityFromId(d) << std::endl;
-		}
-
-		node = _octreeVisitor->getOctree()->getNodeParent(node);
-	}
-	*/
 	_sidesVaoSilhouette->unbind();	
 }
 
