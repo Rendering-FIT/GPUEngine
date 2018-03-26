@@ -48,7 +48,9 @@ void OctreeVisitor::addEdges(const AdjacencyType edges)
 
 void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize)
 {
-	std::shared_ptr<GpuOctreeLoader> gpuLoader = std::make_shared<GpuOctreeLoader>();
+	_expandWholeOctree();
+	
+	GpuOctreeLoader* gpuLoader = new GpuOctreeLoader();
 
 	if (!gpuLoader->init(_octree, gpuEdges, subgroupSize))
 	{
@@ -57,8 +59,6 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 		return;
 	}
 
-	_expandWholeOctree();
-	
 	//--
 	//gpuLoader->profile(edges, subgroupSize);
 	//--
@@ -69,7 +69,8 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	gpuLoader->addEdgesOnLowestLevelGPU(edges);
 	auto dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Adding edges on GPU took " << dt << " sec\n";
-	
+	delete gpuLoader;
+
 	t.reset();
 	const auto dl = _octree->getDeepestLevel();
 	_sortLevel(dl);
@@ -275,7 +276,7 @@ void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool 
 	
 	else
 	{
-		std::shared_ptr<GpuOctreeEdgePropagator> propagator = std::make_shared<GpuOctreeEdgePropagator>();
+		std::unique_ptr<GpuOctreeEdgePropagator> propagator = std::make_unique<GpuOctreeEdgePropagator>();
 
 		propagator->init(_octree, 32);
 

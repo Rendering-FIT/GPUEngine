@@ -10,7 +10,8 @@ struct AABB
 	AABB(const glm::vec3& minPoint, const glm::vec3& maxPoint);
 
 	void setMinMaxPoints(const glm::vec3& minPoint, const glm::vec3& maxPoint);
-	
+	void setCenterExtents(const glm::vec3& center, const glm::vec3& extents);
+
 	glm::vec3 getMinPoint() const;
 	glm::vec3 getMaxPoint() const;
 	glm::vec3 getCenterPoint() const;
@@ -32,6 +33,8 @@ struct AABB
 	void getAllVertices(glm::vec3(&points)[8]) const;
 
 	void getExtents(float& x, float& y, float& z) const;
+
+	glm::vec3 getExtents();
 
 	void applyTransform(const glm::mat4& matrix);
 

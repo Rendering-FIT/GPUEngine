@@ -36,6 +36,16 @@ void AABB::setMinMaxPoints(const glm::vec3& minPoint, const glm::vec3& maxPoint)
 	_updateExtents();
 }
 
+void AABB::setCenterExtents(const glm::vec3& center, const glm::vec3& extents)
+{
+	_minPoint = center - 0.5f*extents;
+	_maxPoint = center + 0.5f*extents;
+	
+	_extentX = extents.x;
+	_extentY = extents.y;
+	_extentZ = extents.z;
+}
+
 void AABB::updateWithTriangle(const glm::vec4* triangleVertices)
 {
 	_updateWithVertexInternal(triangleVertices[0]);
@@ -124,6 +134,11 @@ void AABB::getExtents(float& x, float& y, float& z) const
 	x = _extentX;
 	y = _extentY;
 	z = _extentZ;
+}
+
+glm::vec3 AABB::getExtents()
+{
+	return glm::vec3(_extentX, _extentY, _extentZ);
 }
 
 glm::vec3 AABB::getMinPoint() const

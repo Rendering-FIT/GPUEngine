@@ -428,6 +428,14 @@ GLint Buffer::_getBufferParameter(
   return param;
 }
 
+GLint64 Buffer::_getBufferParameter64(
+	GLenum const&pname)const {
+	assert(this != nullptr);
+	GLint64 param;
+	this->_gl.glGetNamedBufferParameteri64v(this->_id, pname, &param);
+	return param;
+}
+
 GLvoid*Buffer::_getBufferPointer(
     GLenum const&pname)const{
   assert(this!=nullptr);
@@ -443,7 +451,7 @@ GLvoid*Buffer::_getBufferPointer(
  */
 GLsizeiptr Buffer::getSize()const{
   assert(this!=nullptr);
-  return this->_getBufferParameter(GL_BUFFER_SIZE);
+  return this->_getBufferParameter64(GL_BUFFER_SIZE);
 }
 
 /**

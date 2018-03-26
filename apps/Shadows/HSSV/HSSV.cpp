@@ -39,7 +39,7 @@ HSSV::HSSV(
 	auto maxP = sceneBbox.getMaxPoint();
 	std::cout << "Scene AABB " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
-	sceneBbox.applyTransform(glm::scale(sceneAABBscale));
+	sceneBbox.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*sceneAABBscale);
 
 	minP = sceneBbox.getMinPoint();
 	maxP = sceneBbox.getMaxPoint();
@@ -81,7 +81,7 @@ void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;
 	
 	std::vector<float> sidesGeometry;
-
+	
 	_getSilhouetteFromLightPos(lightPosition, sidesGeometry);
 	_updateSidesVBO(sidesGeometry);
 
@@ -92,6 +92,8 @@ void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	ge::gl::glDrawArrays(GL_TRIANGLES, 0, sidesGeometry.size() / 4);
 
 	_sidesVAO->unbind();
+	//*/
+	_octreeSidesDrawer->drawSides(mvp, lightPosition);
 }
 
 AABB HSSV::_getSceneAabb(float* vertices3fv, size_t numVerticesFloats)
@@ -109,7 +111,7 @@ void HSSV::_fixSceneAABB(AABB& bbox)
 
 	const float minSize = 0.01f;
 
-	if(ex==0)
+	if(ex<minSize)
 	{
 		auto min = bbox.getMinPoint();
 		auto max = bbox.getMaxPoint();
@@ -119,7 +121,7 @@ void HSSV::_fixSceneAABB(AABB& bbox)
 		std::cout << "Fixing X AABB dimension\n";
 	}
 
-	if(ey==0)
+	if(ey<minSize)
 	{
 		auto min = bbox.getMinPoint();
 		auto max = bbox.getMaxPoint();
@@ -129,7 +131,7 @@ void HSSV::_fixSceneAABB(AABB& bbox)
 		std::cout << "Fixing Y AABB dimension\n";
 	}
 
-	if(ez==0)
+	if(ez<minSize)
 	{
 		auto min = bbox.getMinPoint();
 		auto max = bbox.getMaxPoint();
@@ -187,7 +189,13 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 	std::vector<unsigned int> potentialEdges;
 
 	_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
-
+	/*
+	for(auto se : silhouetteEdges)
+	{
+		std::cout << decodeEdgeFromEncoded(se) << std::endl;
+	}
+	std::cout << "------------------\n";
+	*/
 	sidesVertices.clear();
 	sidesVertices.reserve((potentialEdges.size() + silhouetteEdges.size()) * 4);
 
@@ -195,7 +203,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 	std::vector<int> ed;
 	ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
 	//--
-
+	/*
 	for(const auto edge : silhouetteEdges)
 	{
 		const int multiplicity = decodeEdgeMultiplicityFromId(edge);
@@ -204,7 +212,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 
 		_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
 	}
-
+	//*/
 	for(const auto edge : potentialEdges)
 	{
 		const int multiplicity = GeometryOps::calcEdgeMultiplicity(_edges, edge, lightPos);

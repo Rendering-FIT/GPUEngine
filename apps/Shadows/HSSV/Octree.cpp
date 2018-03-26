@@ -118,30 +118,6 @@ int Octree::getNodeIdInLevel(unsigned int nodeID, unsigned int level) const
 	return nodeID - getNumNodesInPreviousLevels(level);
 }
 
-int Octree::getLowestLevelCellIndexFromPointInSpace(const glm::vec3& point)
-{
-	if (!_isPointInsideOctree(point))
-		return -1;
-
-	unsigned int currentLevel = 0;
-	unsigned int currentNode = 0;
-	
-	while(currentLevel <= _deepestLevel)
-	{
-		const int startingChild = getChildrenStartingId(currentNode);
-
-		if (!nodeExists(startingChild))
-			break;
-
-		const int childIndex = _getCorrespondingChildIndexFromPoint(currentNode, point);
-
-		currentNode = startingChild + childIndex;
-		++currentLevel;
-	}
-
-	return currentNode;
-}
-
 int Octree::_getCorrespondingChildIndexFromPoint(unsigned int nodeID, const glm::vec3& point) const
 {
 	const glm::vec3 centerPoint = getNodeVolume(nodeID).getCenterPoint();

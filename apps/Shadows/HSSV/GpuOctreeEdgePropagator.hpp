@@ -5,7 +5,7 @@
 
 #include "Octree.hpp"
 
-#define MAX_BUFFER_SIZE_PROPAGATE (1024ul*1024ul*1024ul)
+#define MAX_BUFFER_SIZE_PROPAGATE (1536ull*1024ull*1024ull)
 
 enum class BufferType
 {

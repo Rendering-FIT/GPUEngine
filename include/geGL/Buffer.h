@@ -99,6 +99,8 @@ class GEGL_EXPORT ge::gl::Buffer:
   private:
     GLint   _getBufferParameter(
         GLenum const&pname)const;
+	GLint64 _getBufferParameter64(
+		GLenum const&pname)const;
     GLvoid* _getBufferPointer  (
         GLenum const&pname)const;
     void    _bufferData(

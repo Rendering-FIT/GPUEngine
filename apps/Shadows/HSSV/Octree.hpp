@@ -58,8 +58,6 @@ public:
 
 	int getChildrenStartingId(unsigned int nodeID) const;
 
-	int getLowestLevelCellIndexFromPointInSpace(const glm::vec3& point);
-
 	void getEdgeIndicesFromPointInSpace(const glm::vec3& lightPos, std::vector<unsigned int>& edges);
 
 	void splitNode(unsigned int nodeID);
