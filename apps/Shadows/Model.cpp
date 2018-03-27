@@ -312,7 +312,8 @@ void main()
   const std::string fragSrc = R".(
 #version 450
 #extension GL_ARB_bindless_texture : require
-#extension GL_ARB_gpu_shader_int64 : require
+#extension GL_ARB_gpu_shader_int64 : enable
+#extension GL_AMD_gpu_shader_int64 : enable
 
 layout(location=0)out uvec4 fColor;
 layout(location=1)out vec4  fPosition;
@@ -349,8 +350,14 @@ void main()
 	Material mat = materials[materialIndex];
 	vec3 diffuse = mat.diffuseColor.xyz;
 	if(mat.textureIndex>=0)
-		diffuse *= texture(sampler2D(texHandles[mat.textureIndex]), vTexCoords).xyz;
-	
+	{
+#ifdef GL_ARB_gpu_shader_int64
+		sampler2D s = sampler2D(texHandles[mat.textureIndex]);
+#else
+		sampler2D s = sampler2D(unpackUint2x32(texHandles[mat.textureIndex]));
+#endif
+		diffuse *= texture(s, vTexCoords).xyz;
+	}
 	uvec4 color  = uvec4(0);
     color.xyz   += uvec3(diffuse.xyz  *0xff);
 	color.xyz   += uvec3(mat.specularColor.xyz *0xff)<<8;

@@ -18,15 +18,6 @@ bool OctreeSidesDrawer::_initShaders(unsigned int subgroupSize)
 		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, drawEPSrc)
 		);
 
-	/*
-	_generateSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
-			"#version 450 core\n",
-			ge::gl::Shader::define("WORKGROUP_SIZE_X", int32_t(_subgroupSize * 4)),
-			generateSidesCS)
-		);
-	*/
-
 	_generateAndDrawSidesProgram = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, silhouetteSidesVS),
 		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, silhouetteSidesTCS),
@@ -70,24 +61,14 @@ void OctreeSidesDrawer::_initBuffers()
 
 	_getMaxPossibleEdgeCountInTraversal(maxPotentialEdges, maxSilhouetteEdges);
 	
-	_vboPotential = std::make_shared<ge::gl::Buffer>(maxPotentialEdges * size_t(MAX_MULTIPLICITY)  * (16ul * sizeof(float)), nullptr);
-	//_vboSilhouette = std::make_shared<ge::gl::Buffer>(maxSilhouetteEdges * size_t(MAX_MULTIPLICITY)  * (16ul * sizeof(float)), nullptr);
-	
 	_edgesIdsToGenerate = std::make_shared<ge::gl::Buffer>(maxSilhouetteEdges * sizeof(uint32_t), nullptr);
 	_edgesIdsToTestAndGenerate = std::make_shared<ge::gl::Buffer>(maxPotentialEdges*sizeof(uint32_t), nullptr);
 
 	_sidesVaoPotential = std::make_shared<ge::gl::VertexArray>();
-	_sidesVaoPotential->addAttrib(_vboPotential, 0, 4, GL_FLOAT);
-
 	_sidesVaoSilhouette = std::make_shared<ge::gl::VertexArray>();
-	//_sidesVaoSilhouette->addAttrib(_vboSilhouette, 0, 4, GL_FLOAT);
 
-	uint32_t indirectBuffer[4] = { 0, 1, 0, 0 };
-	_indirectDrawBufferPotential = std::make_shared<ge::gl::Buffer>(4 * sizeof(uint32_t), indirectBuffer);
-	//_indirectDrawBufferSilhouette = std::make_shared<ge::gl::Buffer>(4 * sizeof(uint32_t), indirectBuffer);
-
-
-	_atomicCounter = std::make_shared<ge::gl::Buffer>(sizeof(uint32_t), &indirectBuffer[0]);
+	const uint32_t zero = 0;
+	_atomicCounter = std::make_shared<ge::gl::Buffer>(sizeof(uint32_t), &zero);
 	_edgeDump = std::make_shared<ge::gl::Buffer>(4*maxSilhouetteEdges*2*4*sizeof(float), nullptr);
 }
 
@@ -127,8 +108,7 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 {
 	const auto cellIndex = _octreeVisitor->getLowestNodeIndexFromPoint(glm::vec3(light));
 
-	//_drawSidesFromSilhouetteEdges(mvp, light, cellIndex);
-	_drawSidesFromSilhouetteEdgesTS(mvp, light, cellIndex);
+	_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex);
 }
 
 /*

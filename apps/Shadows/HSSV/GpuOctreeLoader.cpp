@@ -17,7 +17,7 @@ bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEd
 
 	_octree = octree;
 	
-	if (!_createBottomFillProgram(8, subgroupSize, 4096))
+	if (!_createBottomFillProgram(4, subgroupSize, 4096))
 		return false;
 
 	_createBuffers();

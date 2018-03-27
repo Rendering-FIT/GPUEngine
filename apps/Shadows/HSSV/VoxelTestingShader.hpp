@@ -4,8 +4,6 @@
 
 const std::string voxelComputeShaderPrologue = R".(
 #version 450 core
-#extension GL_ARB_gpu_shader_int64: require
-#extension GL_ARB_shader_ballot: require
 
 ).";
 
@@ -366,6 +364,8 @@ inline const std::string buildComputeShaderFillBottomLevel(unsigned int numSubgr
 {
 	return voxelComputeShaderPrologue + 
 		"#define SHARED_MEMORY_PER_SUBGROUP_FLOATS " + std::to_string(shmPerSubgroup/sizeof(float)) + "\n" +
+		(subgroupSize==32 ? "#extension GL_ARB_gpu_shader_int64 : require\n" : "#extension GL_AMD_gpu_shader_int64 : require\n") + 
+		"#extension GL_ARB_shader_ballot : require\n"+
 		"#define SHM_SIZE_FLOATS " + std::to_string(numSubgroupsPerWG * shmPerSubgroup / sizeof(float)) + "\n" +
 		"layout(local_size_x = " + std::to_string(numSubgroupsPerWG * subgroupSize) + ") in;\n\n" +
 		voxelComputeShaderBody;

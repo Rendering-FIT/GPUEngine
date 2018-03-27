@@ -33,13 +33,13 @@ void OctreeVisitor::addEdges(const AdjacencyType edges)
 	std::cout << "Adding edges took " << dt / 1000.0f << " sec\n";
 	t.reset();
 	const auto startingLevel = _octree->getDeepestLevel() - 1;
-	_propagateEdgesUpFromLevel(startingLevel, true);
+	_propagateEdgesUpFromLevel(startingLevel, true, 32);
 	dt = t.getElapsedTimeFromLastQueryMilliseconds();
 
 	std::cout << "Propagate Potential edges took " << dt / 1000.0f << " sec\n";
 	t.reset();
 
-	_propagateEdgesUpFromLevel(startingLevel, false);
+	_propagateEdgesUpFromLevel(startingLevel, false, 32);
 
 	dt = t.getElapsedTimeFromLastQueryMilliseconds();
 
@@ -79,12 +79,12 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	std::cout << "Sorting lowest and second lowest level took " << dt << "sec\n";
 
 	const auto startingLevel = _octree->getDeepestLevel() - 1;
-	_propagateEdgesUpFromLevel(startingLevel, true);
+	_propagateEdgesUpFromLevel(startingLevel, true, subgroupSize);
 	dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Propagate Potential edges took " << dt << " sec\n";
 	
 	t.reset();
-	_propagateEdgesUpFromLevel(startingLevel, false);
+	_propagateEdgesUpFromLevel(startingLevel, false, subgroupSize);
 	dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
 
@@ -137,11 +137,7 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 
 	#pragma omp parallel for
 	for (int i = startingIndex; i < stopIndex; i += OCTREE_NUM_CHILDREN)
-	{
 		_addEdgesSyblingsParent(edgePlanes, edges, i);
-		//static int a = 0;
-		//std::cout << "Iter " << a++ << " Added edges to node " << i << " current tree size " << float(_octree->getOctreeSizeBytes()) / 1024.0 / 1024.0 << "MB" << std::endl;
-	}
 }
 
 void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
@@ -259,14 +255,7 @@ void OctreeVisitor::_storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsig
 	node->edgesMayCast.push_back(edgeID);
 }
 
-void OctreeVisitor::processPotentialEdges()
-{
-	const unsigned int maxLevel = _octree->getDeepestLevel();
-
-	_propagateEdgesUpFromLevel(maxLevel, true);
-}
-
-void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential)
+void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential, unsigned int subgroupSize)
 {
 	if (propagatePotential)
 	{
@@ -278,13 +267,11 @@ void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool 
 	{
 		std::unique_ptr<GpuOctreeEdgePropagator> propagator = std::make_unique<GpuOctreeEdgePropagator>();
 
-		propagator->init(_octree, 32);
+		propagator->init(_octree, subgroupSize);
 
 		for (int i = startingLevel; i > 0; --i)
 			propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
-
 	}
-	//*/
 }
 
 OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential) const

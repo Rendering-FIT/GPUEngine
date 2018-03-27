@@ -271,15 +271,7 @@ void main()
 	edgeVertices[1] = vec3(0);
 
 	getEdge(edgeId, edgeVertices[0], edgeVertices[1]);
-	/*
-	if(mult>0)
-	{
-		vec3 tmp;
-		tmp = edgeVertices[0];
-		edgeVertices[0] = edgeVertices[1];
-		edgeVertices[1] = tmp;
-	}
-	*/
+	
 	const uint swapVertices = uint(mult>0);
 
 	vec4 outPos;

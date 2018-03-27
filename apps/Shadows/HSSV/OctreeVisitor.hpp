@@ -15,8 +15,6 @@ public:
 	void addEdges(const AdjacencyType edges);
 	void addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize);
 
-	void processPotentialEdges();
-
 	void cleanEmptyNodes();
 
 	int getLowestNodeIndexFromPoint(const glm::vec3& point) const;
@@ -41,7 +39,7 @@ private:
 	void _shrinkOctree();
 
 
-	void _propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential);
+	void _propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential, unsigned int subgroupSize);
 		TestResult _haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential) const;
 		void _processEdgesInLevel(unsigned int levelNum, bool propagatePotential);
 		void _assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential);

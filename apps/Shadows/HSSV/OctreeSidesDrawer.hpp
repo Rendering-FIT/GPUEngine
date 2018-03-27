@@ -38,14 +38,8 @@ protected:
 	std::shared_ptr<ge::gl::Program> _drawSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _genDrawSidesGS = nullptr;
 	
-	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferPotential = nullptr;
-	//std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferSilhouette = nullptr;
-
 	std::shared_ptr<ge::gl::VertexArray>_sidesVaoPotential = nullptr;
 	std::shared_ptr<ge::gl::VertexArray>_sidesVaoSilhouette = nullptr;
-
-	std::shared_ptr<ge::gl::Buffer> _vboPotential = nullptr;
-	//std::shared_ptr<ge::gl::Buffer> _vboSilhouette = nullptr;
 
 	std::shared_ptr<ge::gl::Buffer> _edgesIdsToGenerate = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _edgesIdsToTestAndGenerate = nullptr;
