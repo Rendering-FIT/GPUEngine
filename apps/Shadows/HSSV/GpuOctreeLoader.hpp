@@ -7,7 +7,7 @@
 #include "Octree.hpp"
 #include "GpuEdges.hpp"
 
-#define MAX_BUFFER_SIZE (2048ull*1024ull*1024ull)
+#define MAX_BUFFER_SIZE (1024ull*1024ull*1024ull)
 
 class GpuOctreeLoader
 {

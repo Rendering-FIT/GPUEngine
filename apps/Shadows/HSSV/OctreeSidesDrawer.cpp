@@ -1,5 +1,4 @@
 #include "OctreeSidesDrawer.hpp"
-#include "../CSSVShaders.h"
 #include "GenerateSidesProgram.hpp"
 #include <geGL/StaticCalls.h>
 #include "MultiplicityCoding.hpp"
@@ -12,35 +11,43 @@ OctreeSidesDrawer::OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> visitor, uns
 
 bool OctreeSidesDrawer::_initShaders(unsigned int subgroupSize)
 {
-	_drawSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, drawVPSrc),
-		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, drawCPSrc),
-		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, drawEPSrc)
-		);
-
-	_generateAndDrawSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, silhouetteSidesVS),
-		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, silhouetteSidesTCS),
+	_silhouetteSidesTsProgram = std::make_shared<ge::gl::Program>(
+		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, sidesTCS),
 		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, silhouetteSidesTES),
 		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, 
 			"#version 450 core\n",
 			ge::gl::Shader::define("MAX_VERTICES", int32_t(3*MAX_MULTIPLICITY)),
+			sidesGS)
+		);
+
+	_silhouetteSidesGsProgram = std::make_shared<ge::gl::Program>(
+		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, 
+			"#version 450 core\n",
+			ge::gl::Shader::define("MAX_VERTICES", int32_t(3 * MAX_MULTIPLICITY)),
 			silhouetteSidesGS)
 		);
 
-	_testAndGenerateSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
+	_potentialTsProgram = std::make_shared<ge::gl::Program>(
+		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, sidesTCS),
+		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, potentialSidesTES),
+		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,
 			"#version 450 core\n",
-			ge::gl::Shader::define("WORKGROUP_SIZE_X", int32_t(_subgroupSize * 4)),
-			testAndGenerateSidesCS)
+			ge::gl::Shader::define("MAX_VERTICES", int32_t(3 * MAX_MULTIPLICITY)),
+			sidesGS)
 		);
 
-	_genDrawSidesGS = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, silhouetteSidesVS),
-		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, silhouetteSidesGS2)
+	_potentialGsProgram = std::make_shared<ge::gl::Program>(
+		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,
+			"#version 450 core\n",
+			ge::gl::Shader::define("MAX_VERTICES", int32_t(3 * MAX_MULTIPLICITY)),
+			potentialSidesGS)
 		);
 
-	return _drawSidesProgram->isProgram() && _generateAndDrawSidesProgram->isProgram() && _testAndGenerateSidesProgram->isProgram();
+	return _silhouetteSidesTsProgram->isProgram() && _silhouetteSidesGsProgram->isProgram() && _potentialTsProgram->isProgram() && _potentialGsProgram->isProgram();
 }
 
 bool OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
@@ -61,15 +68,14 @@ void OctreeSidesDrawer::_initBuffers()
 
 	_getMaxPossibleEdgeCountInTraversal(maxPotentialEdges, maxSilhouetteEdges);
 	
-	_edgesIdsToGenerate = std::make_shared<ge::gl::Buffer>(maxSilhouetteEdges * sizeof(uint32_t), nullptr);
+	_edgesIdsToGenerate =        std::make_shared<ge::gl::Buffer>(maxSilhouetteEdges * sizeof(uint32_t), nullptr);
 	_edgesIdsToTestAndGenerate = std::make_shared<ge::gl::Buffer>(maxPotentialEdges*sizeof(uint32_t), nullptr);
 
-	_sidesVaoPotential = std::make_shared<ge::gl::VertexArray>();
-	_sidesVaoSilhouette = std::make_shared<ge::gl::VertexArray>();
+	_dummyVAO = std::make_shared<ge::gl::VertexArray>();
 
-	const uint32_t zero = 0;
-	_atomicCounter = std::make_shared<ge::gl::Buffer>(sizeof(uint32_t), &zero);
-	_edgeDump = std::make_shared<ge::gl::Buffer>(4*maxSilhouetteEdges*2*4*sizeof(float), nullptr);
+	//const uint32_t zero = 0;
+	//_atomicCounter = std::make_shared<ge::gl::Buffer>(sizeof(uint32_t), &zero);
+	//_edgeDump = std::make_shared<ge::gl::Buffer>(4*maxSilhouetteEdges*2*4*sizeof(float), nullptr);
 }
 
 
@@ -79,7 +85,7 @@ void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, s
 	silhouette = 0;
 
 	const unsigned int maxLevel = _octreeVisitor->getOctree()->getDeepestLevel();
-	for (unsigned int i = 0; i < maxLevel; ++i)
+	for (unsigned int i = 0; i <= maxLevel; ++i)
 	{
 		size_t pot=0, silh=0;
 		_getMaximumNofEdgesInLevel(i, pot, silh);
@@ -108,34 +114,24 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 {
 	const auto cellIndex = _octreeVisitor->getLowestNodeIndexFromPoint(glm::vec3(light));
 
-	_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex);
+	if(cellIndex<0)
+	{
+		static bool printOnce = false;
+
+		if(!printOnce)
+		{
+			std::cout << "Light " << light.x << ", " << light.y << ", " << light.z << " is out of range\n";
+			printOnce = true;
+		}
+	}
+	else
+	{
+		_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex);
+		_drawSidesFromPotentialEdgesTS(mvp, light, cellIndex);
+	}
+
+	_lastFrameCellIndex = cellIndex;
 }
-
-/*
-void OctreeSidesDrawer::_genSidesFromSilhouetteEdgesCS(unsigned int cellContainingLightId)
-{	
-	const auto nofEdgesToGenerate = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
-	const uint32_t zero = 0;
-	
-	_indirectDrawBufferSilhouette->setData(&zero, sizeof(uint32_t));
-
-	_generateSidesProgram->use();
-	_generateSidesProgram->set1ui("nofEdgesToGenerate", nofEdgesToGenerate);
-
-	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	_vboSilhouette->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	_indirectDrawBufferSilhouette->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
-
-	//TODO - upravit tie pocty grup nejak
-	ge::gl::glDispatchCompute(ceil(nofEdgesToGenerate/(4.0f*_subgroupSize)), 1, 1);
-
-	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
-	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	_vboSilhouette->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	_indirectDrawBufferSilhouette->unbindBase(GL_SHADER_STORAGE_BUFFER, 3);
-}
-*/
 
 unsigned int OctreeSidesDrawer::_loadEdgesFromIdUpGetNof(unsigned cellContainingLightId, bool loadSilhouette)
 {
@@ -170,39 +166,137 @@ unsigned int OctreeSidesDrawer::_loadEdgesFromIdUpGetNof(unsigned cellContaining
 
 void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId)
 {
-	const auto nofEdgesToGenerate = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
-	
-	_generateAndDrawSidesProgram->use();
-	_generateAndDrawSidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+	if (_lastFrameCellIndex != int(cellContainingLightId))
+	{
+		_nofSilhouetteEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
+		std::cout << "Acquiring " << _nofSilhouetteEdgesToDraw << " silhouette edges\n";
+	}
 
-	_sidesVaoSilhouette->bind();
+	if (!_nofSilhouetteEdgesToDraw)
+		return;
+
+	auto err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
+
+	_silhouetteSidesTsProgram->use();
+	_silhouetteSidesTsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+
+	_dummyVAO->bind();
+
 	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
 	ge::gl::glPatchParameteri(GL_PATCH_VERTICES, 1);
-	ge::gl::glDrawArrays(GL_PATCHES, 0, nofEdgesToGenerate);
+	ge::gl::glDrawArrays(GL_PATCHES, 0, _nofSilhouetteEdgesToDraw);
 	
 	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
 
-	_sidesVaoSilhouette->unbind();	
+	_dummyVAO->unbind();
+
+	err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
 }
 
 void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)
 {
-	const auto nofEdgesToGenerate = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
+	if (_lastFrameCellIndex != int(cellContainingLightId))
+	{
+		_nofSilhouetteEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
+		std::cout << "Acquiring " << _nofSilhouetteEdgesToDraw << " silhouette edges\n";
+	}
 
-	_genDrawSidesGS->use();
-	_genDrawSidesGS->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+	if (!_nofSilhouetteEdgesToDraw)
+		return;
 
-	_sidesVaoSilhouette->bind();
+	auto err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
+
+	_silhouetteSidesGsProgram->use();
+	_silhouetteSidesGsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+
+	_dummyVAO->bind();
+
 	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	
-	ge::gl::glDrawArrays(GL_POINTS, 0, nofEdgesToGenerate);
+
+	ge::gl::glDrawArrays(GL_POINTS, 0, _nofSilhouetteEdgesToDraw);
 
 	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
 	
-	_sidesVaoSilhouette->unbind();
+	_dummyVAO->unbind();
+
+	err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
+}
+
+void OctreeSidesDrawer::_drawSidesFromPotentialEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)
+{
+	if (_lastFrameCellIndex != int(cellContainingLightId))
+	{
+		_nofPotentialEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, false);
+		std::cout << "Acquiring " << _nofPotentialEdgesToDraw << " potential edges\n";
+	}
+
+	if (!_nofPotentialEdgesToDraw)
+		return;
+	auto err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
+
+	_potentialTsProgram->use();
+	_potentialTsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+
+	_dummyVAO->bind();
+
+	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_gpuEdges->_oppositeVertices->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+
+	ge::gl::glPatchParameteri(GL_PATCH_VERTICES, 1);
+	ge::gl::glDrawArrays(GL_PATCHES, 0, _nofPotentialEdgesToDraw);
+
+	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_gpuEdges->_oppositeVertices->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
+
+	_dummyVAO->unbind();
+
+	err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
+}
+
+void OctreeSidesDrawer::_drawSidesFromPotentialEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)
+{
+	if (_lastFrameCellIndex != int(cellContainingLightId))
+	{
+		_nofPotentialEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, false);
+		std::cout << "Acquiring " << _nofPotentialEdgesToDraw << " potential edges\n";
+	}
+
+	if (!_nofPotentialEdgesToDraw)
+		return;
+
+	auto err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
+
+	_potentialGsProgram->use();
+	_potentialGsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+
+	_dummyVAO->bind();
+
+	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_gpuEdges->_oppositeVertices->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+
+	ge::gl::glDrawArrays(GL_POINTS, 0, _nofPotentialEdgesToDraw);
+
+	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_gpuEdges->_oppositeVertices->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
+
+	_dummyVAO->unbind();
+
+	err = ge::gl::glGetError();
+	assert(err == GL_NO_ERROR);
 }

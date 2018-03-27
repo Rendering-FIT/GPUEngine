@@ -232,6 +232,8 @@ bool Application::init(int argc,char*argv[]){
   this->window->createContext("rendering",450u,ge::ad::SDLWindow::CORE,ge::ad::SDLWindow::DEBUG);
   this->mainLoop->addWindow("primaryWindow",this->window);
   this->window->makeCurrent("rendering");
+  SDL_GL_SetSwapInterval(0); //disable vsync
+
   ge::gl::init(SDL_GL_GetProcAddress);
   ge::gl::setHighDebugMessage();
 

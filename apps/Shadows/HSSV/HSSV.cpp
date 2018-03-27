@@ -79,7 +79,7 @@ void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix,
 void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;
-	
+	/*
 	std::vector<float> sidesGeometry;
 	
 	_getSilhouetteFromLightPos(lightPosition, sidesGeometry);
