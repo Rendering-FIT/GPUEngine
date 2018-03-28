@@ -12,11 +12,11 @@
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
-	const glm::vec3& sceneAABBscale, 
+	const glm::vec3& sceneAABBscale,
 	unsigned maxOctreeLevel,
 	unsigned int subgroupSize,
-	std::shared_ptr<ge::gl::Texture> const& shadowMask, 
-	std::shared_ptr<ge::gl::Texture> const& depth, 
+	std::shared_ptr<ge::gl::Texture> const& shadowMask,
+	std::shared_ptr<ge::gl::Texture> const& depth,
 	ShadowVolumesParams const& params) : ShadowVolumes(shadowMask, depth, params)
 {
 	std::vector<float>vertices;
@@ -73,7 +73,7 @@ HSSV::HSSV(
 		std::cout << "Loading model from file took " << t.getElapsedTimeSeconds() << "s\n";
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
-	
+
 	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, subgroupSize);
 	_octreeSidesDrawer->init(_gpuEdges);
 

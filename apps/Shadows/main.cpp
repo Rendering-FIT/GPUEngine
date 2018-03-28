@@ -259,76 +259,79 @@ bool Application::init(int argc,char*argv[]){
 
   this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
-  if (this->methodName == "cubeShadowMapping")
-	  this->shadowMethod = std::make_shared<CubeShadowMapping>(
-		  this->shadowMask,
-		  this->windowSize,
-		  this->gBuffer->position,
-		  this->renderModel->nofVertices,
-		  this->renderModel->vertices,
-		  this->cubeSMParams);
-  else if (this->methodName == "cssv")
-	  this->shadowMethod = std::make_shared<CSSV>(
-		  this->shadowMask,
-		  this->model,
-		  this->gBuffer->depth,
-		  this->svParams,
-		  this->maxMultiplicity,
-		  this->cssvParams);
-  else if (this->methodName == "cssvsoe")
-	  this->shadowMethod = std::make_shared<CSSVSOE>(
-		  this->shadowMask,
-		  this->model,
-		  this->gBuffer->depth,
-		  this->svParams,
-		  this->maxMultiplicity,
-		  this->cssvsoeParams);
-  else if (this->methodName == "sintorn")
-	  this->shadowMethod = std::make_shared<Sintorn>(
-		  this->shadowMask,
-		  this->windowSize,
-		  this->gBuffer->depth,
-		  this->gBuffer->normal,
-		  this->model,
-		  this->wavefrontSize,
-		  this->sintornParams);
-  else if (this->methodName == "rssv")
-	  this->shadowMethod = std::make_shared<RSSV>(
-		  this->shadowMask,
-		  this->windowSize,
-		  this->gBuffer->depth,
-		  this->model,
-		  this->maxMultiplicity,
-		  this->rssvParams);
-  else if (this->methodName == "vssv")
-	  this->shadowMethod = std::make_shared<VSSV>(
-		  this->shadowMask,
-		  this->model,
-		  this->gBuffer->depth,
-		  this->svParams,
-		  this->maxMultiplicity,
-		  this->vssvParams);
-  else if (this->methodName == "tssv")
-	  this->shadowMethod = std::make_shared<TSSV>(
-		  model,
-		  tssvParams.UseReferenceEdge,
-		  tssvParams.CullSides,
-		  tssvParams.UseStencilValueExport,
-		  maxMultiplicity,
-		  shadowMask,
-		  gBuffer->depth,
-		  svParams);
-  else if (this->methodName == "hssv")
-	  this->shadowMethod = std::make_shared<HSSV>(
-		  model,
-		  hssvParams.sceneAABBscale,
-		  hssvParams.maxOctreeLevel,
-		  static_cast<unsigned int>(wavefrontSize),
-		  shadowMask,
-		  gBuffer->depth,
-		  svParams);
-  else
-    this->useShadows = false;
+  if (useShadows)
+  {
+	  if (this->methodName == "cubeShadowMapping")
+		  this->shadowMethod = std::make_shared<CubeShadowMapping>(
+			  this->shadowMask,
+			  this->windowSize,
+			  this->gBuffer->position,
+			  this->renderModel->nofVertices,
+			  this->renderModel->vertices,
+			  this->cubeSMParams);
+	  else if (this->methodName == "cssv")
+		  this->shadowMethod = std::make_shared<CSSV>(
+			  this->shadowMask,
+			  this->model,
+			  this->gBuffer->depth,
+			  this->svParams,
+			  this->maxMultiplicity,
+			  this->cssvParams);
+	  else if (this->methodName == "cssvsoe")
+		  this->shadowMethod = std::make_shared<CSSVSOE>(
+			  this->shadowMask,
+			  this->model,
+			  this->gBuffer->depth,
+			  this->svParams,
+			  this->maxMultiplicity,
+			  this->cssvsoeParams);
+	  else if (this->methodName == "sintorn")
+		  this->shadowMethod = std::make_shared<Sintorn>(
+			  this->shadowMask,
+			  this->windowSize,
+			  this->gBuffer->depth,
+			  this->gBuffer->normal,
+			  this->model,
+			  this->wavefrontSize,
+			  this->sintornParams);
+	  else if (this->methodName == "rssv")
+		  this->shadowMethod = std::make_shared<RSSV>(
+			  this->shadowMask,
+			  this->windowSize,
+			  this->gBuffer->depth,
+			  this->model,
+			  this->maxMultiplicity,
+			  this->rssvParams);
+	  else if (this->methodName == "vssv")
+		  this->shadowMethod = std::make_shared<VSSV>(
+			  this->shadowMask,
+			  this->model,
+			  this->gBuffer->depth,
+			  this->svParams,
+			  this->maxMultiplicity,
+			  this->vssvParams);
+	  else if (this->methodName == "tssv")
+		  this->shadowMethod = std::make_shared<TSSV>(
+			  model,
+			  tssvParams.UseReferenceEdge,
+			  tssvParams.CullSides,
+			  tssvParams.UseStencilValueExport,
+			  maxMultiplicity,
+			  shadowMask,
+			  gBuffer->depth,
+			  svParams);
+	  else if (this->methodName == "hssv")
+		  this->shadowMethod = std::make_shared<HSSV>(
+			  model,
+			  hssvParams.sceneAABBscale,
+			  hssvParams.maxOctreeLevel,
+			  static_cast<unsigned int>(wavefrontSize),
+			  shadowMask,
+			  gBuffer->depth,
+			  svParams);
+	  else
+		  this->useShadows = false;
+  }
 
   if(this->verbose)
     this->timeStamper = std::make_shared<TimeStamp>();
@@ -361,7 +364,7 @@ void Application::drawScene(){
 
   if(this->timeStamper)this->timeStamper->stamp("gBuffer");
 
-  if(this->shadowMethod)
+  if(this->useShadows)
     this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
 
   if(this->timeStamper)this->timeStamper->stamp("");
@@ -392,9 +395,12 @@ void Application::measure(){
     auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
     flc->setPosition(keypoint.position);
     flc->setRotation(keypoint.viewVector,keypoint.upVector);
-
-    for(size_t f=0;f<this->testFramesPerMeasurement;++f)
-      this->drawScene();
+	SDL_Event event;
+	for (size_t f = 0; f < this->testFramesPerMeasurement; ++f)
+	{
+		while(SDL_PollEvent(&event));
+		this->drawScene();
+	}
 
     std::vector<std::string>line;
     if(csv.size()==0){
