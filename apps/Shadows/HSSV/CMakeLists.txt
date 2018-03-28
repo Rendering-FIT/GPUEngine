@@ -26,6 +26,8 @@ set(HSSV_FILES
 	HSSV/OctreeSidesDrawer.cpp
 	HSSV/GenerateSidesProgram.hpp
 	HSSV/GpuEdges.hpp
+	HSSV/OctreeSerializer.hpp
+	HSSV/OctreeSerializer.cpp
 	
 	PARENT_SCOPE
 )

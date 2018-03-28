@@ -18,8 +18,6 @@ OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 
 void OctreeVisitor::addEdges(const AdjacencyType edges)
 {
-	_expandWholeOctree();
-
 	std::cout << "NoF edges: " << edges->getNofEdges() << "\n";
 
 	std::vector< std::vector<Plane> > edgePlanes;
@@ -48,8 +46,6 @@ void OctreeVisitor::addEdges(const AdjacencyType edges)
 
 void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize)
 {
-	_expandWholeOctree();
-	
 	GpuOctreeLoader* gpuLoader = new GpuOctreeLoader();
 
 	if (!gpuLoader->init(_octree, gpuEdges, subgroupSize))
@@ -432,34 +428,6 @@ void OctreeVisitor::_processEmptyNodesSyblingsParent(unsigned int first)
 		if (parent && !parent->edgesMayCast.size() && !parent->edgesAlwaysCast.size())
 			_octree->deleteNode(parentID);
 	}
-}
-
-void OctreeVisitor::_expandWholeOctree()
-{
-	std::stack<unsigned int> nodeStack;
-	
-	nodeStack.push(0);
-
-	const int deepestLevel = _octree->getDeepestLevel();
-
-	while(!nodeStack.empty())
-	{
-		const auto node = nodeStack.top();
-		nodeStack.pop();
-
-		_octree->splitNode(node);
-
-		const auto level = _octree->getNodeRecursionLevel(node);
-
-		if (level < (deepestLevel-1))
-		{
-			const auto startingChild = _octree->getChildrenStartingId(node);
-			for (int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
-				nodeStack.push(startingChild + i);
-		}
-	}
-
-	_octree->makeNodesFit();
 }
 
 int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const

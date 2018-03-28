@@ -8,6 +8,8 @@
 
 #include <fstream>
 
+#include "OctreeSerializer.hpp"
+
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
 	const glm::vec3& sceneAABBscale, 
@@ -23,7 +25,7 @@ HSSV::HSSV(
 
 	_vertices = new float[vertices.size()];
 	memcpy(_vertices, vertices.data(), vertices.size() * sizeof(float));
-	vertices.swap(std::vector<float>());
+	vertices.clear();
 
 	size_t const nofTriangles = nofVertexFloats / (verticesPerTriangle*componentsPerVertex3D);
 	_edges = std::make_shared<Adjacency const>(_vertices, nofTriangles, 2);
@@ -45,20 +47,34 @@ HSSV::HSSV(
 	maxP = sceneBbox.getMaxPoint();
 	std::cout << "Octree working space: " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
-	_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
-	_visitor = std::make_shared<OctreeVisitor>(_octree);
-
 	_loadGpuEdges(_edges);
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, subgroupSize);
 
 	HighResolutionTimer t;
+	OctreeSerializer serializer;
 	t.reset();
-	//_visitor->addEdges(_edges);
-	_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
-	const auto dt = t.getElapsedTimeFromLastQuerySeconds();
+	_octree = serializer.loadFromFile(model->modelFilename);
+	if (!_octree)
+	{
+		_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
+		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
-	std::cout << "Building octree took " << dt << " seconds\n";
+		t.reset();
+		_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
+		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
+		std::cout << "Building octree took " << dt << " seconds\n";
+
+		t.reset();
+		serializer.storeToFile(model->modelFilename, _octree);
+		std::cout << "Storing model to file took " << t.getElapsedTimeSeconds() << "s\n";
+	}
+	else
+	{
+		std::cout << "Loading model from file took " << t.getElapsedTimeSeconds() << "s\n";
+		_visitor = std::make_shared<OctreeVisitor>(_octree);
+	}
+	
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, subgroupSize);
 	_octreeSidesDrawer->init(_gpuEdges);
 
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));

@@ -1,19 +1,27 @@
 #include"Model.h"
 
 #include <FreeImage.h>
+#include <filesystem>
 
 Model::Model(std::string const&name){
   this->model = aiImportFile(name.c_str(),aiProcess_Triangulate|aiProcess_GenNormals|aiProcess_SortByPType|aiProcess_GenUVCoords|aiProcess_RemoveRedundantMaterials);
   if (this->model == nullptr)
 	  ge::core::printError(GE_CORE_FCENAME, "Can't open file", name);
-#ifdef USE_FULL_SHADING  
   else
   {
-	  std::string filepath = name;
-  	  std::size_t found = filepath.find_last_of("/\\");
-      modelDirectory = filepath.substr(0, found);
-  }
+	  std::experimental::filesystem::path p = name;
+	  modelFilename = p.filename().string();
+	  modelDirectory = p.remove_filename().string();
+
+#ifdef _WIN32
+	  const std::string separator = "\\";
+#else
+	  const std::string separator = "/";
 #endif
+
+	  if (!modelDirectory.empty())
+		  modelDirectory += separator;
+  }
 }
 
 Model::~Model(){

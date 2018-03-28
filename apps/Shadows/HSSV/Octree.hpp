@@ -85,6 +85,7 @@ private:
 
 	void _generateLevelSizes();
 	void _init(const AABB& volume);
+	void _expandWholeOctree();
 
 	void _createChild(const AABB& parentSpace, unsigned int childID, unsigned int indexWithinParent);
 	int _getCorrespondingChildIndexFromPoint(unsigned int nodeID, const glm::vec3& point) const;

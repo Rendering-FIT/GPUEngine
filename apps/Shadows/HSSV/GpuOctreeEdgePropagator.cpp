@@ -4,6 +4,7 @@
 #include <geGL/StaticCalls.h>
 #include "HighResolutionTimer.hpp"
 
+#include <cstring>
 
 bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned subgroupSize)
 {

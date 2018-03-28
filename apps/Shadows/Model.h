@@ -32,9 +32,10 @@ class Model{
     void getVertices(std::vector<float>&vertices);
 	void getNormals(std::vector<float>&normals);
 	void getTcoords(std::vector<float>&tcoords);
+	std::string modelDirectory;
+	std::string modelFilename;
 #ifdef USE_FULL_SHADING
 	void getMaterialsTextures(std::vector<Material>& materials, std::vector<Texture>& textures);
-	std::string modelDirectory;
 protected:
 	void _loadTextures(const std::vector<std::string>& texNames, std::vector<Texture>& textures);
 #endif

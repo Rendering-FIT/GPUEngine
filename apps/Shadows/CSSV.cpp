@@ -249,7 +249,7 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
     ->dispatch((GLuint)ge::core::getDispatchSize(this->_nofEdges,this->_params.computeSidesWGS));
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  glFinish();
+  //glFinish();
 }
 
 void CSSV::drawSides(

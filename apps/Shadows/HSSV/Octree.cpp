@@ -1,6 +1,7 @@
 #include "Octree.hpp"
 
 #include "GeometryOperations.hpp"
+#include <stack>
 
 int ipow(int base, int exp)
 {
@@ -46,6 +47,8 @@ void Octree::_init(const AABB& volume)
 
 	_nodes.resize(getTotalNumNodes());
 	_nodes[0] = n;
+
+	_expandWholeOctree();
 }
 
 Node* Octree::getNode(unsigned int nodeID)
@@ -298,4 +301,32 @@ uint64_t Octree::getOctreeSizeBytes() const
 void Octree::makeNodesFit()
 {
 	_nodes.shrink_to_fit();
+}
+
+void Octree::_expandWholeOctree()
+{
+	std::stack<unsigned int> nodeStack;
+
+	nodeStack.push(0);
+
+	const int deepestLevel = getDeepestLevel();
+
+	while (!nodeStack.empty())
+	{
+		const auto node = nodeStack.top();
+		nodeStack.pop();
+
+		splitNode(node);
+
+		const auto level = getNodeRecursionLevel(node);
+
+		if (level < (deepestLevel - 1))
+		{
+			const auto startingChild = getChildrenStartingId(node);
+			for (int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
+				nodeStack.push(startingChild + i);
+		}
+	}
+
+	makeNodesFit();
 }

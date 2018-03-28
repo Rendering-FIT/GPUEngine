@@ -23,7 +23,7 @@ public:
 	std::shared_ptr<Octree> getOctree() { return _octree; }
 
 private:
-	void _expandWholeOctree();
+	
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID);
 

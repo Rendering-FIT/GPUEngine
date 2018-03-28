@@ -126,7 +126,7 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 	}
 	else
 	{
-		_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex);
+		_drawSidesFromSilhouetteEdgesTS(mvp, light, cellIndex);
 		_drawSidesFromPotentialEdgesTS(mvp, light, cellIndex);
 	}
 
