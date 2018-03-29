@@ -11,107 +11,111 @@ OctreeSidesDrawer::OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> visitor, uns
 {
 }
 
-bool OctreeSidesDrawer::_initShaders()
+void OctreeSidesDrawer::_initShaders()
 {
-	_silhouetteSidesTsProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
-		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, sidesTCS),
-		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, silhouetteSidesTES),
-		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, 
+	if(_silhouetteDrawingMethod==DrawingMethod::TS)
+		_silhouetteSidesTsProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+			std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, sidesTCS),
+			std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, silhouetteSidesTES),
+			std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, 
 			"#version 450 core\n",
 			ge::gl::Shader::define("MAX_VERTICES", int32_t(3*MAX_MULTIPLICITY)),
 			sidesGS)
 		);
 
-	_silhouetteSidesGsProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
-		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, 
+	if (_silhouetteDrawingMethod == DrawingMethod::GS)
+		_silhouetteSidesGsProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+			std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER, 
 			"#version 450 core\n",
 			ge::gl::Shader::define("MAX_VERTICES", int32_t(3 * MAX_MULTIPLICITY)),
 			silhouetteSidesGS)
 		);
 
-	_potentialTsProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
-		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, sidesTCS),
-		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, potentialSidesTES),
-		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,
+	if(_potentialDrawingMethod == DrawingMethod::TS)
+		_potentialTsProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+			std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, sidesTCS),
+			std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, potentialSidesTES),
+			std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,
 			"#version 450 core\n",
 			ge::gl::Shader::define("MAX_VERTICES", int32_t(3 * MAX_MULTIPLICITY)),
 			sidesGS)
 		);
 
-	_potentialGsProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
-		std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,
+	if (_potentialDrawingMethod == DrawingMethod::GS)
+		_potentialGsProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, sidesVS),
+			std::make_shared<ge::gl::Shader>(GL_GEOMETRY_SHADER,
 			"#version 450 core\n",
 			ge::gl::Shader::define("MAX_VERTICES", int32_t(3 * MAX_MULTIPLICITY)),
 			potentialSidesGS)
 		);
 
-	_drawSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, drawVPSrc),
-		std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, drawCPSrc),
-		std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, drawEPSrc)
-		);
+	if(_silhouetteDrawingMethod == DrawingMethod::CS || _potentialDrawingMethod == DrawingMethod::CS)
+		_drawSidesProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, drawVPSrc),
+			std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, drawCPSrc),
+			std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, drawEPSrc)
+			);
 
-	_testAndGenerateSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
+	if(_potentialDrawingMethod == DrawingMethod::CS)
+		_testAndGenerateSidesProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
 			"#version 450 core\n",
 			ge::gl::Shader::define("WORKGROUP_SIZE_X", _workgroupSize),
 			testAndGenerateSidesCS)
 		);
 
-	_generateSidesProgram = std::make_shared<ge::gl::Program>(
-		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
+	if (_silhouetteDrawingMethod == DrawingMethod::CS)
+		_generateSidesProgram = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
 			"#version 450 core\n",
 			ge::gl::Shader::define("WORKGROUP_SIZE_X", _workgroupSize),
 			generateSidesCS)
 		);
-
-	return _silhouetteSidesTsProgram->isProgram() && 
-		_silhouetteSidesGsProgram->isProgram() && 
-		_potentialTsProgram->isProgram() && 
-		_potentialGsProgram->isProgram() && 
-		_drawSidesProgram->isProgram() &&
-		_testAndGenerateSidesProgram->isProgram();
 }
 
-bool OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
+void OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
 {
-	if (!_initShaders())
-		return false;
+	_initShaders();
 
 	_initBuffers();
 
 	_gpuEdges = gpuEdges;
-
-	return true;
 }
 
 void OctreeSidesDrawer::_initBuffers()
 {
 	size_t maxPotentialEdges, maxSilhouetteEdges;
-
 	_getMaxPossibleEdgeCountInTraversal(maxPotentialEdges, maxSilhouetteEdges);
 	
 	_edgesIdsToGenerate =        std::make_shared<ge::gl::Buffer>(maxSilhouetteEdges* sizeof(uint32_t), nullptr);
 	_edgesIdsToTestAndGenerate = std::make_shared<ge::gl::Buffer>(maxPotentialEdges * sizeof(uint32_t), nullptr);
 
-	_dummyVAO = std::make_shared<ge::gl::VertexArray>();
+	if(_potentialDrawingMethod!=DrawingMethod::CS || _silhouetteDrawingMethod!=DrawingMethod::CS)
+		_dummyVAO = std::make_shared<ge::gl::VertexArray>();
 
-	uint32_t indirectBuffer[4] = { 0, 1, 0, 0 };
-	_indirectDrawBufferPotentialCS = std::make_shared<ge::gl::Buffer>(4 * sizeof(uint32_t), indirectBuffer);
-	_indirectDrawBufferSilhouetteCS = std::make_shared<ge::gl::Buffer>(4 * sizeof(uint32_t), indirectBuffer);
+	const uint32_t indirectBuffer[4] = { 0, 1, 0, 0 };
 
-	_potentialEdgeCsVBO = std::make_shared<ge::gl::Buffer>(MAX_MULTIPLICITY * maxPotentialEdges * 4 * sizeof(float), nullptr);
-	_silhouetteEdgeCsVBO = std::make_shared<ge::gl::Buffer>(MAX_MULTIPLICITY * maxSilhouetteEdges * 4 * sizeof(float), nullptr);
+	if (_potentialDrawingMethod == DrawingMethod::CS)
+	{
+		_indirectDrawBufferPotentialCS = std::make_shared<ge::gl::Buffer>(4 * sizeof(uint32_t), indirectBuffer);
+		_potentialEdgeCsVBO = std::make_shared<ge::gl::Buffer>(MAX_MULTIPLICITY * maxPotentialEdges * 4 * sizeof(float), nullptr);
 
-	_potentialSidesCsVAO = std::make_shared<ge::gl::VertexArray>();
-	_potentialSidesCsVAO->addAttrib(_potentialEdgeCsVBO, 0, 4, GL_FLOAT);
+		_potentialSidesCsVAO = std::make_shared<ge::gl::VertexArray>();
+		_potentialSidesCsVAO->addAttrib(_potentialEdgeCsVBO, 0, 4, GL_FLOAT);
+	}
 
-	_silhouetteSidesCsVAO = std::make_shared<ge::gl::VertexArray>();
-	_silhouetteSidesCsVAO->addAttrib(_silhouetteEdgeCsVBO, 0, 4, GL_FLOAT);
+	if (_silhouetteDrawingMethod == DrawingMethod::CS)
+	{
+		_indirectDrawBufferSilhouetteCS = std::make_shared<ge::gl::Buffer>(4 * sizeof(uint32_t), indirectBuffer);
+		_silhouetteEdgeCsVBO = std::make_shared<ge::gl::Buffer>(MAX_MULTIPLICITY * maxSilhouetteEdges * 4 * sizeof(float), nullptr);
+
+		_silhouetteSidesCsVAO = std::make_shared<ge::gl::VertexArray>();
+		_silhouetteSidesCsVAO->addAttrib(_silhouetteEdgeCsVBO, 0, 4, GL_FLOAT);
+	}
 }
 
 void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, size_t& silhouette) const
@@ -161,8 +165,25 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 	}
 	else
 	{
-		_drawSidesFromSilhouetteEdgesCS(mvp, light, cellIndex);
-		_drawSidesFromPotentialEdgesCS(mvp, light, cellIndex);
+		switch (_silhouetteDrawingMethod)
+		{
+			case DrawingMethod::GS:
+				_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex); break;
+			case DrawingMethod::TS:
+				_drawSidesFromSilhouetteEdgesTS(mvp, light, cellIndex); break;
+			case DrawingMethod::CS:
+				_drawSidesFromSilhouetteEdgesCS(mvp, light, cellIndex); break;
+		}
+
+		switch (_potentialDrawingMethod)
+		{
+			case DrawingMethod::GS:
+				_drawSidesFromPotentialEdgesGS(mvp, light, cellIndex); break;
+			case DrawingMethod::TS:
+				_drawSidesFromPotentialEdgesTS(mvp, light, cellIndex); break;
+			case DrawingMethod::CS:
+				_drawSidesFromPotentialEdgesCS(mvp, light, cellIndex); break;
+		}
 	}
 
 	_lastFrameCellIndex = cellIndex;
@@ -271,7 +292,7 @@ void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesCS(const glm::mat4& mvp, co
 	if (_lastFrameCellIndex != int(cellContainingLightId))
 	{
 		_nofSilhouetteEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
-		std::cout << "Acquiring " << _nofPotentialEdgesToDraw << " silhouette edges\n";
+		std::cout << "Acquiring " << _nofSilhouetteEdgesToDraw << " silhouette edges\n";
 	}
 
 	if (!_nofSilhouetteEdgesToDraw)

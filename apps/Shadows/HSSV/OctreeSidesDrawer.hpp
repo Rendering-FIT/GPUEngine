@@ -7,11 +7,11 @@
 #include "OctreeVisitor.hpp"
 #include "GpuEdges.hpp"
 
-enum class DrawingMethod
+enum class DrawingMethod : unsigned char
 {
-	GS,
-	TS,
-	CS
+	GS = 0,
+	TS = 1,
+	CS = 2
 };
 
 class OctreeSidesDrawer
@@ -19,7 +19,7 @@ class OctreeSidesDrawer
 public:
 	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, unsigned int subgroupSize, DrawingMethod potential, DrawingMethod silhouette);
 
-	bool init(std::shared_ptr<GpuEdges> gpuEdges);
+	void init(std::shared_ptr<GpuEdges> gpuEdges);
 
 	void drawSides(const glm::mat4& mvp,const glm::vec4& light);
 
@@ -33,10 +33,15 @@ protected:
 	void _drawSidesFromPotentialEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 
+	void _drawSidesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
+
+	void _generateSidesFromPotential();
+	void _generateSidesFromSilhouette();
+
 	//TODO nahradit bool enumom
 	unsigned int _loadEdgesFromIdUpGetNof(unsigned int cellContainingLightId, bool loadSilhouette);
 
-	bool _initShaders();
+	void _initShaders();
 	void _initBuffers();
 		void _getMaxPossibleEdgeCountInTraversal(size_t& potential, size_t& silhouette) const;
 		void _getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const;

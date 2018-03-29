@@ -15,6 +15,8 @@ HSSV::HSSV(
 	const glm::vec3& sceneAABBscale,
 	unsigned maxOctreeLevel,
 	unsigned int subgroupSize,
+	unsigned char potentialMethod,
+	unsigned char silhouetteMethod,
 	std::shared_ptr<ge::gl::Texture> const& shadowMask,
 	std::shared_ptr<ge::gl::Texture> const& depth,
 	ShadowVolumesParams const& params) : ShadowVolumes(shadowMask, depth, params)
@@ -74,7 +76,7 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
 
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, 16*subgroupSize, DrawingMethod::CS, DrawingMethod::CS);
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, 16*subgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
 	_octreeSidesDrawer->init(_gpuEdges);
 
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
