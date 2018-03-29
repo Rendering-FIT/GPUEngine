@@ -387,3 +387,112 @@ void main()
 		}
 	}
 }).";
+
+
+const std::string testAndGenerateSidesCS = R".(
+layout(local_size_x=WORKGROUP_SIZE_X) in;
+
+//vec3 lowerPoint, vec3 higherPoint, uint numOpposite, uint oppositeStartingIndex
+layout(std430, binding=0) readonly buffer _edges{
+	float edges[]; };
+
+layout(std430, binding=1) readonly buffer _oppositeVertices{
+	float oppositeVertices[];};
+
+layout(std430, binding=2) readonly buffer _edgeIdsToGenerate{
+	uint edgesIdToTest[]; };
+
+layout(std430, binding=3) buffer _generatedSideEdges{
+	vec4 sideEdges[]; };
+
+layout(std430, binding=4) buffer _drawIndirectBuffer{
+	uint drawIndirect[4]; };
+
+//------------------MULTIPLICITY------------------
+int greaterVec(vec3 a,vec3 b)
+{
+	return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
+}
+
+int computeMult(vec3 A,vec3 B,vec3 C,vec3 L)
+{
+	vec3 n=cross(C-A,L-A);
+	return int(sign(dot(n,B-A)));
+}
+
+int currentMultiplicity(vec3 A, vec3 B, vec3 O, vec3 L)
+{
+	if(greaterVec(A,O)>0)
+		return computeMult(O,A,B,L);
+	
+	if(greaterVec(B,O)>0)
+		return -computeMult(A,O,B,L);
+	
+	return computeMult(A,B,O,L);
+}
+
+//------------------EDGE------------------
+//6x vertex, 2x uint - count and start of opposite vertices
+#define EDGE_NUM_FLOATS 8
+
+void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
+{
+	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
+	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
+}
+
+uint getEdgeNofOppositeVertices(in uint edgeId)
+{
+	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 6]);
+}
+
+uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
+{
+	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 7]);
+}
+
+vec3 getOppositeVertex(uint startingIndex, uint vertexId)
+{
+	return vec3(oppositeVertices[startingIndex + 3*vertexId + 0], oppositeVertices[startingIndex + 3*vertexId + 1], oppositeVertices[startingIndex + 3*vertexId + 2]);
+}
+
+void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
+{
+	for(uint i = 0; i<absMultiplicity; ++i)
+	{
+		sideEdges[startingIndex + 2*i + 0] = vec4(L, 1);
+		sideEdges[startingIndex + 2*i + 1] = vec4(H, 1);
+	}
+}
+
+uniform uint nofEdgesToTest;
+uniform vec4 lightPosition;
+
+void main()
+{
+	const uint gid = gl_GlobalInvocationID.x;
+	if(gid>=nofEdgesToTest)
+		return;
+
+	const uint edgeID = edgesIdToTest[gid];
+	vec3 edgeVertices[2];
+	edgeVertices[0] = vec3(0);
+	edgeVertices[1] = vec3(0);
+	getEdge(edgeID, edgeVertices[0], edgeVertices[1]);
+
+	const uint nofOpposite = getEdgeNofOppositeVertices(edgeID);
+	const uint oppositeStartingIndex = getEdgeOppositeVerticesStartingIndex(edgeID);
+
+	int multiplicity = 0;
+
+	for(uint i=0; i<nofOpposite; ++i)
+		multiplicity += currentMultiplicity(edgeVertices[0], edgeVertices[1], getOppositeVertex(oppositeStartingIndex, i), vec3(lightPosition));
+
+	const uint swapVertices = uint(multiplicity>0);
+	const uint absMultiplicity = abs(multiplicity);
+
+	const uint startingPos = atomicAdd(drawIndirect[0], 2*absMultiplicity);
+
+	pushEdge(absMultiplicity, startingPos, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
+}
+).";

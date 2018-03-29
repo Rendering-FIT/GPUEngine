@@ -74,7 +74,7 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
 
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, subgroupSize);
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, 16*subgroupSize);
 	_octreeSidesDrawer->init(_gpuEdges);
 
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
@@ -205,13 +205,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 	std::vector<unsigned int> potentialEdges;
 
 	_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
-	/*
-	for(auto se : silhouetteEdges)
-	{
-		std::cout << decodeEdgeFromEncoded(se) << std::endl;
-	}
-	std::cout << "------------------\n";
-	*/
+
 	sidesVertices.clear();
 	sidesVertices.reserve((potentialEdges.size() + silhouetteEdges.size()) * 4);
 
