@@ -165,24 +165,29 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 	}
 	else
 	{
-		switch (_silhouetteDrawingMethod)
+		if (_silhouetteDrawingMethod == DrawingMethod::CS && _potentialDrawingMethod == DrawingMethod::CS)
+			_drawSidesCS(mvp, light, cellIndex);
+		else
 		{
+			switch (_silhouetteDrawingMethod)
+			{
 			case DrawingMethod::GS:
 				_drawSidesFromSilhouetteEdgesGS(mvp, light, cellIndex); break;
 			case DrawingMethod::TS:
 				_drawSidesFromSilhouetteEdgesTS(mvp, light, cellIndex); break;
 			case DrawingMethod::CS:
 				_drawSidesFromSilhouetteEdgesCS(mvp, light, cellIndex); break;
-		}
+			}
 
-		switch (_potentialDrawingMethod)
-		{
+			switch (_potentialDrawingMethod)
+			{
 			case DrawingMethod::GS:
 				_drawSidesFromPotentialEdgesGS(mvp, light, cellIndex); break;
 			case DrawingMethod::TS:
 				_drawSidesFromPotentialEdgesTS(mvp, light, cellIndex); break;
 			case DrawingMethod::CS:
 				_drawSidesFromPotentialEdgesCS(mvp, light, cellIndex); break;
+			}
 		}
 	}
 
@@ -289,32 +294,7 @@ void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, co
 
 void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId)
 {
-	if (_lastFrameCellIndex != int(cellContainingLightId))
-	{
-		_nofSilhouetteEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
-		std::cout << "Acquiring " << _nofSilhouetteEdgesToDraw << " silhouette edges\n";
-	}
-
-	if (!_nofSilhouetteEdgesToDraw)
-		return;
-
-	const uint32_t zero = 0;
-	_indirectDrawBufferSilhouetteCS->setData(&zero, sizeof(uint32_t));
-
-	_generateSidesProgram->use();
-	_generateSidesProgram->set1ui("nofEdgesToGenerate", _nofSilhouetteEdgesToDraw);
-
-	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
-
-	ge::gl::glDispatchCompute(ceil(float(_nofSilhouetteEdgesToDraw) / (_workgroupSize)), 1, 1);
-
-	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
+	_generateSidesFromSilhouetteCS(lightPos, cellContainingLightId);
 
 	_drawSidesProgram->use();
 	_drawSidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
@@ -401,6 +381,25 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesGS(const glm::mat4& mvp, con
 
 void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)
 {
+	_generateSidesFromPotentialCS(lightPos, cellContainingLightId);
+
+	_drawSidesProgram->use();
+	_drawSidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
+
+	_potentialSidesCsVAO->bind();
+	_indirectDrawBufferPotentialCS->bind(GL_DRAW_INDIRECT_BUFFER);
+
+	ge::gl::glPatchParameteri(GL_PATCH_VERTICES, 2);
+	ge::gl::glDrawArraysIndirect(GL_PATCHES, nullptr);
+
+	_indirectDrawBufferPotentialCS->unbind(GL_DRAW_INDIRECT_BUFFER);
+	_potentialSidesCsVAO->unbind();
+
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+}
+
+void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos, unsigned cellContainingLightId)
+{
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 
 	if (_lastFrameCellIndex != int(cellContainingLightId))
@@ -423,7 +422,7 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, con
 	_potentialEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 	_indirectDrawBufferPotentialCS->bindBase(GL_SHADER_STORAGE_BUFFER, 4);
 
-	ge::gl::glDispatchCompute(ceil(float(_nofPotentialEdgesToDraw)/(_workgroupSize)), 1, 1);
+	ge::gl::glDispatchCompute(ceil(float(_nofPotentialEdgesToDraw) / (_workgroupSize)), 1, 1);
 	//ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
@@ -431,6 +430,44 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, con
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
 	_potentialEdgeCsVBO->unbindBase(GL_SHADER_STORAGE_BUFFER, 3);
 	_indirectDrawBufferPotentialCS->unbindBase(GL_SHADER_STORAGE_BUFFER, 4);
+
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+}
+
+void OctreeSidesDrawer::_generateSidesFromSilhouetteCS(const glm::vec4& lightPos, unsigned cellContainingLightId)
+{
+	if (_lastFrameCellIndex != int(cellContainingLightId))
+	{
+		_nofSilhouetteEdgesToDraw = _loadEdgesFromIdUpGetNof(cellContainingLightId, true);
+		std::cout << "Acquiring " << _nofSilhouetteEdgesToDraw << " silhouette edges\n";
+	}
+
+	if (!_nofSilhouetteEdgesToDraw)
+		return;
+
+	const uint32_t zero = 0;
+	_indirectDrawBufferSilhouetteCS->setData(&zero, sizeof(uint32_t));
+
+	_generateSidesProgram->use();
+	_generateSidesProgram->set1ui("nofEdgesToGenerate", _nofSilhouetteEdgesToDraw);
+
+	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
+
+	ge::gl::glDispatchCompute(ceil(float(_nofSilhouetteEdgesToDraw) / (_workgroupSize)), 1, 1);
+
+	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
+}
+
+void OctreeSidesDrawer::_drawSidesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)
+{
+	_generateSidesFromPotentialCS(lightPos, cellContainingLightId);
+	_generateSidesFromSilhouetteCS(lightPos, cellContainingLightId);
 
 	_drawSidesProgram->use();
 	_drawSidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
@@ -441,8 +478,10 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, con
 	ge::gl::glPatchParameteri(GL_PATCH_VERTICES, 2);
 	ge::gl::glDrawArraysIndirect(GL_PATCHES, nullptr);
 
-	_indirectDrawBufferPotentialCS->unbind(GL_DRAW_INDIRECT_BUFFER);
-	_potentialSidesCsVAO->unbind();
+	_silhouetteSidesCsVAO->bind();
+	_indirectDrawBufferSilhouetteCS->bind(GL_DRAW_INDIRECT_BUFFER);
+	ge::gl::glDrawArraysIndirect(GL_PATCHES, nullptr);
 
-	assert(ge::gl::glGetError() == GL_NO_ERROR);
+	_silhouetteSidesCsVAO->unbind();
+	_indirectDrawBufferSilhouetteCS->unbind(GL_DRAW_INDIRECT_BUFFER);
 }

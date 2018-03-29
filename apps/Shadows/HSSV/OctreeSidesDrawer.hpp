@@ -35,8 +35,8 @@ protected:
 
 	void _drawSidesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 
-	void _generateSidesFromPotential();
-	void _generateSidesFromSilhouette();
+	void _generateSidesFromPotentialCS(const glm::vec4& lightPos, unsigned cellContainingLightId);
+	void _generateSidesFromSilhouetteCS(const glm::vec4& lightPos, unsigned cellContainingLightId);
 
 	//TODO nahradit bool enumom
 	unsigned int _loadEdgesFromIdUpGetNof(unsigned int cellContainingLightId, bool loadSilhouette);
