@@ -7,10 +7,17 @@
 #include "OctreeVisitor.hpp"
 #include "GpuEdges.hpp"
 
+enum class DrawingMethod
+{
+	GS,
+	TS,
+	CS
+};
+
 class OctreeSidesDrawer
 {
 public:
-	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, unsigned int subgroupSize);
+	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, unsigned int subgroupSize, DrawingMethod potential, DrawingMethod silhouette);
 
 	bool init(std::shared_ptr<GpuEdges> gpuEdges);
 
@@ -20,6 +27,8 @@ protected:
 
 	void _drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
+	void _drawSidesFromSilhouetteEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
+
 	void _drawSidesFromPotentialEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromPotentialEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
@@ -38,17 +47,22 @@ protected:
 	std::shared_ptr<ge::gl::Program> _potentialTsProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _silhouetteSidesTsProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _silhouetteSidesGsProgram = nullptr;
-	std::shared_ptr<ge::gl::Program> _drawPotentialSidesProgram = nullptr;
+	std::shared_ptr<ge::gl::Program> _drawSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _testAndGenerateSidesProgram = nullptr;
+	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
 	std::shared_ptr<ge::gl::VertexArray>_potentialSidesCsVAO = nullptr;
+	std::shared_ptr<ge::gl::VertexArray>_silhouetteSidesCsVAO = nullptr;
 
 	std::shared_ptr<ge::gl::Buffer> _edgesIdsToGenerate = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _edgesIdsToTestAndGenerate = nullptr;
 
-	std::shared_ptr<ge::gl::Buffer> _edgeCsVBO = nullptr;
-	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferCS = nullptr;
+	std::shared_ptr<ge::gl::Buffer> _potentialEdgeCsVBO = nullptr;
+	std::shared_ptr<ge::gl::Buffer> _silhouetteEdgeCsVBO = nullptr;
+
+	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferPotentialCS = nullptr;
+	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferSilhouetteCS = nullptr;
 
 	std::shared_ptr<GpuEdges> _gpuEdges;
 
@@ -58,4 +72,7 @@ protected:
 	uint32_t _nofSilhouetteEdgesToDraw = 0;
 
 	uint32_t _workgroupSize = 0;
+
+	DrawingMethod _potentialDrawingMethod;
+	DrawingMethod _silhouetteDrawingMethod;
 };

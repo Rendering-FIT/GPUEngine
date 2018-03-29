@@ -496,3 +496,77 @@ void main()
 	pushEdge(absMultiplicity, startingPos, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
 }
 ).";
+
+const std::string generateSidesCS = R".(
+layout(local_size_x=WORKGROUP_SIZE_X) in;
+
+//vec3 lowerPoint, vec3 higherPoint, uint numOpposite, uint oppositeStartingIndex
+layout(std430, binding=0) readonly buffer _edges{
+	float edges[]; };
+
+layout(std430, binding=1) readonly buffer _edgeIdsToGenerate{
+	uint edgesIdToGenerate[]; };
+
+layout(std430, binding=2) buffer _generatedSideEdges{
+	vec4 sideEdges[]; };
+
+layout(std430, binding=3) buffer _drawIndirectBuffer{
+	uint drawIndirect[4]; };
+
+//6x vertex, 2x uint - count and start of opposite vertices
+#define EDGE_NUM_FLOATS 8
+
+void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
+{
+	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
+	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
+}
+
+int decodeEdgeMultiplicityFromId(uint edgeWithEncodedMultiplicity)
+{
+	int val = 1;
+
+	const int sign = (int(edgeWithEncodedMultiplicity) & (1<<31)) != 0 ? -1 : 1;
+	const int isTwo = (int(edgeWithEncodedMultiplicity) & (1<<30)) != 0 ? 1 : 0;
+
+	return (val + isTwo)*sign;
+}
+
+uint decodeEdgeFromEncoded(uint edgeWithEncodedMultiplicity)
+{
+	return (edgeWithEncodedMultiplicity & 0x3FFFFFFF);
+}
+
+void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
+{
+	for(uint i = 0; i<absMultiplicity; ++i)
+	{
+		sideEdges[startingIndex + 2*i + 0] = vec4(L, 1);
+		sideEdges[startingIndex + 2*i + 1] = vec4(H, 1);
+	}
+}
+
+uniform uint nofEdgesToGenerate;
+
+void main()
+{
+	const uint gid = gl_GlobalInvocationID.x;
+	if(gid>=nofEdgesToGenerate) return;
+	
+	const uint encodedEdge = edgesIdToGenerate[gid];
+	const int multiplicity = decodeEdgeMultiplicityFromId(encodedEdge);
+	const uint edgeID = decodeEdgeFromEncoded(encodedEdge);
+	
+	vec3 edgeVertices[2];
+	edgeVertices[0] = vec3(0);
+	edgeVertices[1] = vec3(0);
+	getEdge(edgeID, edgeVertices[0], edgeVertices[1]);
+	
+	const uint swapVertices = uint(multiplicity>0);
+	const uint absMultiplicity = abs(multiplicity);
+	const uint outputStartingPos = atomicAdd(drawIndirect[0], 2*abs(multiplicity));
+
+	pushEdge(absMultiplicity, outputStartingPos, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
+}
+
+).";
