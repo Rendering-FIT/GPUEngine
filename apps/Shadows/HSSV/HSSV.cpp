@@ -101,6 +101,7 @@ void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	std::vector<float> sidesGeometry;
 	
 	_getSilhouetteFromLightPos(lightPosition, sidesGeometry);
+	
 	_updateSidesVBO(sidesGeometry);
 
 	_sidesVAO->bind();

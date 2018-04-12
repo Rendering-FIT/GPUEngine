@@ -24,6 +24,8 @@ public:
 	void drawSides(const glm::mat4& mvp,const glm::vec4& light);
 
 protected:
+	void _loadOctreeToGpu();
+	void _loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int voxelId);
 
 	void _drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
@@ -43,7 +45,7 @@ protected:
 
 	void _initShaders();
 	void _initBuffers();
-		void _getMaxPossibleEdgeCountInTraversal(size_t& potential, size_t& silhouette) const;
+		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel) const;
 		void _getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const;
 
 	int _lastFrameCellIndex = -1;
@@ -55,6 +57,7 @@ protected:
 	std::shared_ptr<ge::gl::Program> _drawSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _testAndGenerateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
+	std::shared_ptr<ge::gl::Program> _getPotentialSilhouetteEdges = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
 	std::shared_ptr<ge::gl::VertexArray>_potentialSidesCsVAO = nullptr;
@@ -69,12 +72,17 @@ protected:
 	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferPotentialCS = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferSilhouetteCS = nullptr;
 
+	std::shared_ptr<ge::gl::Buffer> _voxelEdgeIndices = nullptr;
+	std::shared_ptr<ge::gl::Buffer> _voxelNofPotentialSilhouetteEdgesPrefixSum = nullptr;
+
 	std::shared_ptr<GpuEdges> _gpuEdges;
 
 	std::shared_ptr<OctreeVisitor> _octreeVisitor = nullptr;
 
 	uint32_t _nofPotentialEdgesToDraw = 0;
 	uint32_t _nofSilhouetteEdgesToDraw = 0;
+
+	uint32_t _maxNofEdgesInVoxel;
 
 	uint32_t _workgroupSize = 0;
 

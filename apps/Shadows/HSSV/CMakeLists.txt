@@ -28,6 +28,7 @@ set(HSSV_FILES
 	HSSV/GpuEdges.hpp
 	HSSV/OctreeSerializer.hpp
 	HSSV/OctreeSerializer.cpp
+	HSSV/OctreeTraversalShader.hpp
 	
 	PARENT_SCOPE
 )

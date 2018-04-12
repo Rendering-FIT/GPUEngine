@@ -341,7 +341,7 @@ uniform vec4 lightPosition = vec4(100,100,100,1);
 
 void main()
 {
-	const uint edgeID = edgesIdToTest[gl_PrimitiveID];
+	const uint edgeID = edgesIdToTest[gl_PrimitiveIDIn];
 	const uint nofOpposite = getEdgeNofOppositeVertices(edgeID);
 	const uint oppositeStartingIndex = getEdgeOppositeVerticesStartingIndex(edgeID);
 
@@ -567,6 +567,4 @@ void main()
 	const uint outputStartingPos = atomicAdd(drawIndirect[0], 2*abs(multiplicity));
 
 	pushEdge(absMultiplicity, outputStartingPos, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
-}
-
-).";
+}).";
