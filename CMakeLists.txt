@@ -1,13 +1,24 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-PROJECT(GPUEngine)
-set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
+###########################
+# Policies
+###########################
+cmake_policy(VERSION 3.11.1)
 
-SET(GPUENGINE_MAJOR_VERSION 0)
-SET(GPUENGINE_MINOR_VERSION 0)
-SET(GPUENGINE_PATCH_VERSION 0)
-SET(GPUENGINE_REVISION_VERSION 0)
-SET(GPUENGINE_VERSION ${GPUENGINE_MAJOR_VERSION}.${GPUENGINE_MINOR_VERSION}.${GPUENGINE_PATCH_VERSION}.${GPUENGINE_REVISION_VERSION})
+
+include(GNUInstallDirs)
+
+
+PROJECT(GPUEngine
+   VERSION 0.0.0.0
+   DESCRIPTION "Toolkit for general rendering."
+   LANGUAGES CXX
+)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+include(GNUInstallDirs)
+
+set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 
 SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 
@@ -30,8 +41,8 @@ SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp appl
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
-SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
-SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
+#SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
+#SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -125,7 +136,7 @@ ENDIF()
 # Export Things
 ##################################################
 
-SET(INSTALL_CM_DIR cmake)
+SET(INSTALL_CM_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 configure_file(version.h.in "include/version.h" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
@@ -155,7 +166,9 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
   )
 
 
-add_subdirectory(src)
+#add_subdirectory(src)
+
+add_subdirectory(geCore)
 
 if(GPUENGINE_BUILD_geAd)
   add_subdirectory(geAd)
