@@ -14,7 +14,8 @@ PROJECT(GPUEngine
    DESCRIPTION "Toolkit for general rendering."
    LANGUAGES CXX
 )
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+#set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include(GNUInstallDirs)
 
@@ -166,9 +167,20 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
   )
 
 
-#add_subdirectory(src)
 
 add_subdirectory(geCore)
+
+if(GPUENGINE_BUILD_GEUTIL)
+  add_subdirectory(geUtil)
+endif()
+
+if(GPUENGINE_BUILD_GESG)
+  add_subdirectory(geSG)
+endif()
+
+if(GPUENGINE_BUILD_GERG)
+  add_subdirectory(geRG)
+endif()
 
 if(GPUENGINE_BUILD_geAd)
   add_subdirectory(geAd)

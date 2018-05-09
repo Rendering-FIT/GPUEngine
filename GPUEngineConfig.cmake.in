@@ -1,22 +1,13 @@
 # - Config file for the GPUEngine package
 # Additional variables:
 # GPUEngine_modules - list of all found GPUEngine modules including the dependencies
-
 @INIT_PACKAGE@
-
-message(STATUS "Greetings! GPUEngine downstreamer.")
+include(CMakeFindDependencyMacro)
 
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
-list(APPEND GPUEngine_modules )
-
-set(FIND_QUIETLY "")
-if(${GPUEngine_FIND_QUIETLY})
-  set(FIND_QUIETLY "QUIET")
-endif()
-
 foreach(module ${GPUEngine_FIND_COMPONENTS})
-   find_package(${module} ${FIND_QUIETLY}
+   find_dependency(${module}
       HINTS "${CMAKE_CURRENT_LIST_DIR}/../" NO_DEFAULT_PATH
    )
 endforeach()

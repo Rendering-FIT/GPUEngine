@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+
+if(NOT TARGET @PROJECT_NAME@)
+
+   foreach(_dep @Dependencies@)
+      if(NOT TARGET ${_dep})
+         find_dependency(${_dep} HINTS "${CMAKE_CURRENT_LIST_DIR}/../")
+      endif()
+   endforeach()
+
+   include(${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake)
+
+endif(NOT TARGET @PROJECT_NAME@)

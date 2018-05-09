@@ -6,13 +6,10 @@ string(TOUPPER ${LIB_NAME} LIB_NAME_UPPER)
 include(GenerateExportHeader)
 include(GNUInstallDirs)
 
-
 if(GPUENGINE_DYNAMIC_LINKAGE)
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "SHARED")
-   #add_definitions(-D"${LIB_NAME_UPPER}"_LIBRARY)
 else()
    set(GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC "STATIC")
-   #add_definitions(-DGE_LIBRARY_STATIC)
 endif()
 
 set(HEADER_PATH ${CMAKE_CURRENT_LIST_DIR}/src/geCore)
@@ -37,7 +34,7 @@ set(FSA_INCLUDES
   )
 
 set(CORE_INCLUDES
-  ${CMAKE_CURRENT_BINARY_DIR}/geCore/Export.h
+  ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/Export.h
   ${HEADER_PATH}/geCore.h
   ${HEADER_PATH}/CallStackPrinter.h
   ${HEADER_PATH}/Command.h
@@ -71,6 +68,10 @@ set(CORE_SOURCES
   ${SRC_PATH}/Text.cpp
   )
 
+  
+#########################################
+# Target
+
 add_library(${LIB_NAME}
   ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
   ${CORE_INCLUDES}
@@ -81,28 +82,19 @@ add_library(${LIB_NAME}
 
   
 GENERATE_EXPORT_HEADER(${LIB_NAME}
-   EXPORT_FILE_NAME "geCore/Export.h"
+   EXPORT_FILE_NAME "${LIB_NAME}/Export.h"
 )
-
-################################################
-# Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
-# External_deps_Export - other than 'ge' packages goes here (e.g. glew), it configures this package extra project dependencies and also configures the config file
-# External_libs - external libs or targets to link with
-# Internal_inc - additional include directories
-# Includes_to_export - includes to be exported from this target to application
-
-set(Internal_deps )
-set(External_deps_Export )
-set(External_libs )
-set(Internal_inc ${GPUEngine_SOURCE_DIR}/include)
-set(Includes_to_export ${GPUEngine_SOURCE_DIR}/include)
 
 target_link_libraries(${LIB_NAME} ${Internal_deps} ${External_deps} )
 
 target_include_directories(${LIB_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/${LIB_NAME}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
+#########################################
+# Install
 
 install(FILES
   ${FSA_INCLUDES}
@@ -113,8 +105,6 @@ install(FILES
   ${CORE_INCLUDES}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
   )
-
-message("install dir  ${CMAKE_INSTALL_LIBDIR}")
   
 install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -123,28 +113,9 @@ install(TARGETS ${LIB_NAME} EXPORT ${LIB_NAME}Targets
   )
 
 #########################################
-#Export
+# Export
 
 install(EXPORT ${LIB_NAME}Targets
    FILE ${LIB_NAME}Config.cmake
    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
 )
-
-#configure_file(
-#  ../CMake/geConfig.cmake.in
-#  "${LIB_NAME}Config.cmake"
-#  @ONLY
-#  )
-#
-#
-#configure_file(
-#  ../CMake/geExport.h.in
-#  "${GPUEngine_SOURCE_DIR}/include/${LIB_NAME}/Export.h"
-#  @ONLY
-#  )
-#
-## INSTALL_CM_DIR is defined in master CMakeLists file
-#
-#install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}Config.cmake"
-#  DESTINATION "${INSTALL_CM_DIR}/${LIB_NAME}"
-#  )
