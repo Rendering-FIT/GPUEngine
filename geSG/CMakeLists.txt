@@ -117,7 +117,6 @@ install(EXPORT ${PROJECT_NAME}Targets
 
 #Dependencies to find in config
 set(Dependencies geUtil ste)
-
 configure_file(
    ${PROJECT_NAME}Config.cmake.in
    "${PROJECT_NAME}Config.cmake"

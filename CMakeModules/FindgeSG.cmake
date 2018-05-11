@@ -1,5 +1,5 @@
 #
-# Internal Find geUtil module
+# Internal Find for GPUE module
 #
 
 if(TARGET ${CMAKE_FIND_PACKAGE_NAME})

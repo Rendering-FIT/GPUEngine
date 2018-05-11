@@ -64,7 +64,7 @@ set(RG_SOURCES
 # PACKAGES
 
 find_package(glm REQUIRED)
-find_package(GPUEngine COMPONENTS geGL)
+find_package(GPUEngine COMPONENTS geGL geCore)
 
 add_library(${PROJECT_NAME}
     ${GPUENGINE_USER_DEFINED_DYNAMIC_OR_STATIC}
@@ -76,7 +76,7 @@ GENERATE_EXPORT_HEADER(${PROJECT_NAME}
    EXPORT_FILE_NAME "${PROJECT_NAME}/Export.h"
 )
  
-target_link_libraries(${PROJECT_NAME} glm geGL)
+target_link_libraries(${PROJECT_NAME} glm geGL geCore)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
@@ -107,7 +107,7 @@ install(EXPORT ${PROJECT_NAME}Targets
 )
 
 #Dependencies to find in config
-set(Dependencies glm geGL)
+set(Dependencies glm geGL geCore)
 
 configure_file(
    ${PROJECT_NAME}Config.cmake.in

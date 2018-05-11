@@ -174,6 +174,10 @@ if(GPUENGINE_BUILD_GEUTIL)
   add_subdirectory(geUtil)
 endif()
 
+if(GPUENGINE_BUILD_GEGL)
+  add_subdirectory(geGL)
+endif()
+
 if(GPUENGINE_BUILD_GESG)
   add_subdirectory(geSG)
 endif()
