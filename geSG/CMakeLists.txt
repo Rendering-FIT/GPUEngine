@@ -60,7 +60,7 @@ set(SG_SOURCES
 ################################################
 # PACKAGES
 
-find_package(GPUEngine COMPONENTS geUtil)
+find_package(GPUEngine COMPONENTS geUtil) #uses custom module to report if the util is not added as subdir from GPUE master CMake
 
 #########################################
 # Target
