@@ -7,6 +7,7 @@ cmake_policy(VERSION 3.11.1)
 
 
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 
 PROJECT(GPUEngine
@@ -97,27 +98,18 @@ IF(MSVC)
    ELSE()
       # MSVC 2015 workarounds to be placed here (currently none)
    ENDIF()
-   IF(GPUENGINE_REPLACE_GLEW)
-     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DREPLACE_GLEW")
-   ENDIF()
 ENDIF()
 
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_C_STANDARD 99)
 
-IF(CMAKE_COMPILER_IS_GNUCXX)
+IF(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
   add_compile_options(-W)
   add_compile_options(-Wall)
   add_compile_options(-Wconversion)
   add_compile_options(-pedantic)
 ENDIF()
 
-IF(CMAKE_COMPILER_IS_GNUCC)
-  add_compile_options(-W)
-  add_compile_options(-Wall)
-  add_compile_options(-Wconversion)
-  add_compile_options(-pedantic)
-ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
@@ -139,8 +131,8 @@ ENDIF()
 SET(INSTALL_CM_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 configure_file(version.h.in "include/version.h" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
-  DESTINATION include
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h" 
+  DESTINATION include/geCore #installing the GPUE version header to geCore
   )
 
 configure_file(
@@ -149,15 +141,14 @@ configure_file(
   @ONLY
   )
 
-configure_file(
-  GPUEngineConfigVersion.cmake.in
-  GPUEngineConfigVersion.cmake
-  @ONLY
-  )
+write_basic_package_version_file(
+   ${PROJECT_NAME}ConfigVersion.cmake
+   COMPATIBILITY ExactVersion
+)
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
-  #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
+install(FILES
+   "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
+   "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
   DESTINATION ${INSTALL_CM_DIR}
   )
 
