@@ -25,9 +25,7 @@ HSSV::HSSV(
 	model->getVertices(vertices);
 	const auto nofVertexFloats = vertices.size();
 
-	const auto vendor = glGetString(GL_VENDOR);
-	const auto renderer = glGetString(GL_RENDERER);
-	printf("Renderer: %s %s\n", vendor, renderer);
+	printf("Renderer: %s %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
 
 	_vertices = new float[vertices.size()];
 	memcpy(_vertices, vertices.data(), vertices.size() * sizeof(float));

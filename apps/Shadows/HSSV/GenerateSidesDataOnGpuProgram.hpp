@@ -35,6 +35,25 @@ int getNodeParent(unsigned int nodeID, uint nodeLevel)
 }
 ).";
 
+//In iterative manner
+//Not expecting to have a lot of buffers
+const std::string genGetNodeFromBuffer(unsigned int numBuffers)
+{
+	std::stringstream str;
+
+	str << "uint getNodeFromBuffer(uint nodeIndex, uint bufferId)\n";
+	str << "{\n";
+
+	for(unsigned int i = 0; i<numBuffers; ++i)
+	{
+		str << "\tif(bufferId==" << i << ") return edges" << i << "[nodeIndex];\n";
+	}
+	str << "\treturn 0\n;";
+	str << "}\n\n";
+
+	return str.str();
+}
+
 std::string genBuffer(unsigned int i)
 {
 	std::stringstream str;
@@ -45,10 +64,10 @@ std::string genBuffer(unsigned int i)
 std::string genFindBufferFunc()
 {
 	std::stringstream str;
-	str << "uint getNodeBufferIndex(uint nodeId)\n{";
-	str << "uint index = 0;\n";
-	str << "while(nodeId<=edgeBuffersMapping[index]) ++index;\n";
-	str << "return index-1;\n}\n";
+	str << "uint getNodeBufferIndex(uint nodeId)\n{\n";
+	str << "\tuint index = 0;\n";
+	str << "\twhile(nodeId>edgeBuffersMapping[index]) ++index;\n";
+	str << "\treturn index;\n}\n";
 
 	return str.str();
 }
@@ -96,8 +115,35 @@ std::string genMain(unsigned int numBuffers)
 	}
 	else
 	{
-		str << "const uint bufferNum = getNodeBufferIndex(currentNode)\n";
+		str << "const uint bufferNum = getNodeBufferIndex(currentNode);\n";
+		str << "const uint startPotential = nofEdgesPrefixSum[2 * currentNode + bufferNum + 0];\n";
+		str << "const uint startSilhouette = nofEdgesPrefixSum[2 * currentNode + bufferNum + 1];\n";
+		str << "const uint endSilhouette = nofEdgesPrefixSum[2 * currentNode + bufferNum + 2];\n";
 
+		str << "const uint numPotential = startSilhouette - startPotential;\n";
+		str << "const uint numSilhouette = endSilhouette - startSilhouette;\n";
+
+		//Potential edges
+		str << "const uvec2 participThreadsPot = unpackUint2x32(ballotARB(gl_GlobalInvocationID.x<numPotential));\n";
+		str << "const uint numParticipatingPotential = bitCount(participThreadsPot.x) + bitCount(participThreadsPot.y);\n";
+
+		str << "uint currentStartPotential = 0;\n";
+		str << "if (gl_SubGroupInvocationARB == 0) currentStartPotential = atomicAdd(nofPotential[0], numParticipatingPotential);\n";
+		str << "currentStartPotential = readFirstInvocationARB(currentStartPotential);\n";
+
+		str << "if(gl_GlobalInvocationID.x<numPotential) potentialEdges[currentStartPotential + gl_SubGroupInvocationARB] = getNodeFromBuffer(startPotential + gl_GlobalInvocationID.x, bufferNum);\n";
+
+		//Silhouette edges
+		str << "const uvec2 participThreadsSil = unpackUint2x32(ballotARB(gl_GlobalInvocationID.x<numSilhouette));\n";
+		str << "const uint numParticipatingSil = bitCount(participThreadsSil.x) + bitCount(participThreadsSil.y);\n";
+
+		str << "uint currentStartSilhouette = 0;\n";
+		str << "if (gl_SubGroupInvocationARB == 0) currentStartSilhouette = atomicAdd(nofSilhouette[0], numParticipatingSil);\n";
+		str << "currentStartSilhouette = readFirstInvocationARB(currentStartSilhouette);\n";
+
+		str << "if(gl_GlobalInvocationID.x<numSilhouette) silhouetteEdges[currentStartSilhouette + gl_SubGroupInvocationARB] = getNodeFromBuffer(startSilhouette + gl_GlobalInvocationID.x, bufferNum);\n";
+
+		str << "currentNode = getNodeParent(currentNode, currentLevel--);\n";
 	}
 
 	str << "}\n"; //end while
@@ -147,8 +193,11 @@ std::string genTraversalComputeShader(unsigned int numBuffers, std::shared_ptr<O
 
 	str << traversalSupportFunctions;
 
-	if(numBuffers>1)
+	if (numBuffers > 1)
+	{
 		str << genFindBufferFunc();
+		str << genGetNodeFromBuffer(numBuffers);
+	}
 	
 	str << genMain(numBuffers);
 
