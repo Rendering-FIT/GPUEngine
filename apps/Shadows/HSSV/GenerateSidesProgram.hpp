@@ -1,6 +1,86 @@
 #pragma once
 #include <string>
 
+const std::string edgeFunctions = R".(
+#define EDGE_NUM_FLOATS 8
+void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
+{
+	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
+	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
+}
+
+int decodeEdgeMultiplicityFromId(uint edgeWithEncodedMultiplicity)
+{
+	int val = 1;
+
+	const int sign = (int(edgeWithEncodedMultiplicity) & (1<<31)) != 0 ? -1 : 1;
+	const int isTwo = (int(edgeWithEncodedMultiplicity) & (1<<30)) != 0 ? 1 : 0;
+
+	return (val + isTwo)*sign;
+}
+
+uint decodeEdgeFromEncoded(uint edgeWithEncodedMultiplicity)
+{
+	return (edgeWithEncodedMultiplicity & 0x3FFFFFFF);
+}
+
+).";
+
+const std::string oppositeVertexFunctions = R".(
+uint getEdgeNofOppositeVertices(in uint edgeId)
+{
+	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 6]);
+}
+
+uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
+{
+	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 7]);
+}
+
+vec3 getOppositeVertex(uint startingIndex, uint vertexId)
+{
+	return vec3(oppositeVertices[startingIndex + 3*vertexId + 0], oppositeVertices[startingIndex + 3*vertexId + 1], oppositeVertices[startingIndex + 3*vertexId + 2]);
+}
+
+).";
+
+const std::string multiplicityFunctions = R".(
+//------------------MULTIPLICITY------------------
+int greaterVec(vec3 a,vec3 b)
+{
+	return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
+}
+
+int computeMult(vec3 A,vec3 B,vec3 C,vec3 L)
+{
+	vec3 n=cross(C-A,L-A);
+	return int(sign(dot(n,B-A)));
+}
+
+int currentMultiplicity(vec3 A, vec3 B, vec3 O, vec3 L)
+{
+	if(greaterVec(A,O)>0)
+		return computeMult(O,A,B,L);
+	
+	if(greaterVec(B,O)>0)
+		return -computeMult(A,O,B,L);
+	
+	return computeMult(A,B,O,L);
+}
+
+).";
+
+const std::string pushEdgeFunction = R".(
+void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
+{
+	for(uint i = 0; i<absMultiplicity; ++i)
+	{
+		sideEdges[startingIndex + 2*i + 0] = vec4(L, 1);
+		sideEdges[startingIndex + 2*i + 1] = vec4(H, 1);
+	}
+}
+).";
+
 const std::string sidesVS = R".(
 #version 450 core
 void main(){
@@ -28,29 +108,9 @@ layout(std430, binding=0) readonly buffer _edges{
 
 layout(std430, binding=1) readonly buffer _edgeIdsToGenerate{
 	uint edgesIdToGenerate[]; };
-
-#define EDGE_NUM_FLOATS 8
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-int decodeEdgeMultiplicityFromId(uint edgeWithEncodedMultiplicity)
-{
-	int val = 1;
-
-	const int sign = (int(edgeWithEncodedMultiplicity) & (1<<31)) != 0 ? -1 : 1;
-	const int isTwo = (int(edgeWithEncodedMultiplicity) & (1<<30)) != 0 ? 1 : 0;
-
-	return (val + isTwo)*sign;
-}
-
-uint decodeEdgeFromEncoded(uint edgeWithEncodedMultiplicity)
-{
-	return (edgeWithEncodedMultiplicity & 0x3FFFFFFF);
-}
-
+)."
++ edgeFunctions + 
+R".(
 uniform mat4 mvp           = mat4(1)            ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
 
@@ -112,28 +172,9 @@ layout(std430, binding=0) readonly buffer _edges{
 layout(std430, binding=1) readonly buffer _edgeIdsToGenerate{
 	uint edgesIdToGenerate[]; };
 
-#define EDGE_NUM_FLOATS 8
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-int decodeEdgeMultiplicityFromId(uint edgeWithEncodedMultiplicity)
-{
-	int val = 1;
-
-	const int sign = (int(edgeWithEncodedMultiplicity) & (1<<31)) != 0 ? -1 : 1;
-	const int isTwo = (int(edgeWithEncodedMultiplicity) & (1<<30)) != 0 ? 1 : 0;
-
-	return (val + isTwo)*sign;
-}
-
-uint decodeEdgeFromEncoded(uint edgeWithEncodedMultiplicity)
-{
-	return (edgeWithEncodedMultiplicity & 0x3FFFFFFF);
-}
-
+)."
++ edgeFunctions +
+R".(
 uniform mat4 mvp           = mat4(1)            ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
 
@@ -198,51 +239,9 @@ layout(std430, binding=1) readonly buffer _oppositeVertices{
 layout(std430, binding=2) readonly buffer _edgeIdsToTest{
 	uint edgesIdToTest[]; };
 
-#define EDGE_NUM_FLOATS 8
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-uint getEdgeNofOppositeVertices(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 6]);
-}
-
-uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 7]);
-}
-
-vec3 getOppositeVertex(uint startingIndex, uint vertexId)
-{
-	return vec3(oppositeVertices[startingIndex + 3*vertexId + 0], oppositeVertices[startingIndex + 3*vertexId + 1], oppositeVertices[startingIndex + 3*vertexId + 2]);
-}
-
-//------------------MULTIPLICITY------------------
-int greaterVec(vec3 a,vec3 b)
-{
-	return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
-}
-
-int computeMult(vec3 A,vec3 B,vec3 C,vec3 L)
-{
-	vec3 n=cross(C-A,L-A);
-	return int(sign(dot(n,B-A)));
-}
-
-int currentMultiplicity(vec3 A, vec3 B, vec3 O, vec3 L)
-{
-	if(greaterVec(A,O)>0)
-		return computeMult(O,A,B,L);
-	
-	if(greaterVec(B,O)>0)
-		return -computeMult(A,O,B,L);
-	
-	return computeMult(A,B,O,L);
-}
-
+)."
++ edgeFunctions + oppositeVertexFunctions + multiplicityFunctions + 
+R".(
 uniform mat4 mvp           = mat4(1)            ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
 
@@ -291,51 +290,9 @@ layout(std430, binding=1) readonly buffer _oppositeVertices{
 layout(std430, binding=2) readonly buffer _edgeIdsToTest{
 	uint edgesIdToTest[]; };
 
-#define EDGE_NUM_FLOATS 8
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-uint getEdgeNofOppositeVertices(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 6]);
-}
-
-uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 7]);
-}
-
-vec3 getOppositeVertex(uint startingIndex, uint vertexId)
-{
-	return vec3(oppositeVertices[startingIndex + 3*vertexId + 0], oppositeVertices[startingIndex + 3*vertexId + 1], oppositeVertices[startingIndex + 3*vertexId + 2]);
-}
-
-//------------------MULTIPLICITY------------------
-int greaterVec(vec3 a,vec3 b)
-{
-	return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
-}
-
-int computeMult(vec3 A,vec3 B,vec3 C,vec3 L)
-{
-	vec3 n=cross(C-A,L-A);
-	return int(sign(dot(n,B-A)));
-}
-
-int currentMultiplicity(vec3 A, vec3 B, vec3 O, vec3 L)
-{
-	if(greaterVec(A,O)>0)
-		return computeMult(O,A,B,L);
-	
-	if(greaterVec(B,O)>0)
-		return -computeMult(A,O,B,L);
-	
-	return computeMult(A,B,O,L);
-}
-
+)."
++ edgeFunctions + oppositeVertexFunctions + multiplicityFunctions +
+R".(
 uniform mat4 mvp           = mat4(1)            ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
 
@@ -392,7 +349,6 @@ void main()
 const std::string testAndGenerateSidesCS = R".(
 layout(local_size_x=WORKGROUP_SIZE_X) in;
 
-//vec3 lowerPoint, vec3 higherPoint, uint numOpposite, uint oppositeStartingIndex
 layout(std430, binding=0) readonly buffer _edges{
 	float edges[]; };
 
@@ -408,64 +364,14 @@ layout(std430, binding=3) buffer _generatedSideEdges{
 layout(std430, binding=4) buffer _drawIndirectBuffer{
 	uint drawIndirect[4]; };
 
-//------------------MULTIPLICITY------------------
-int greaterVec(vec3 a,vec3 b)
-{
-	return int(dot(ivec3(sign(a-b)),ivec3(4,2,1)));
-}
+//TODO - previezt na UBO
+layout(std430, binding=5) readonly buffer _nofEdgesToTest{
+	uint nofEdgesToTest; };
 
-int computeMult(vec3 A,vec3 B,vec3 C,vec3 L)
-{
-	vec3 n=cross(C-A,L-A);
-	return int(sign(dot(n,B-A)));
-}
+)."
++ edgeFunctions + oppositeVertexFunctions + multiplicityFunctions + pushEdgeFunction + 
+R".(
 
-int currentMultiplicity(vec3 A, vec3 B, vec3 O, vec3 L)
-{
-	if(greaterVec(A,O)>0)
-		return computeMult(O,A,B,L);
-	
-	if(greaterVec(B,O)>0)
-		return -computeMult(A,O,B,L);
-	
-	return computeMult(A,B,O,L);
-}
-
-//------------------EDGE------------------
-//6x vertex, 2x uint - count and start of opposite vertices
-#define EDGE_NUM_FLOATS 8
-
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-uint getEdgeNofOppositeVertices(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 6]);
-}
-
-uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
-{
-	return floatBitsToUint(edges[EDGE_NUM_FLOATS*edgeId + 7]);
-}
-
-vec3 getOppositeVertex(uint startingIndex, uint vertexId)
-{
-	return vec3(oppositeVertices[startingIndex + 3*vertexId + 0], oppositeVertices[startingIndex + 3*vertexId + 1], oppositeVertices[startingIndex + 3*vertexId + 2]);
-}
-
-void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
-{
-	for(uint i = 0; i<absMultiplicity; ++i)
-	{
-		sideEdges[startingIndex + 2*i + 0] = vec4(L, 1);
-		sideEdges[startingIndex + 2*i + 1] = vec4(H, 1);
-	}
-}
-
-uniform uint nofEdgesToTest;
 uniform vec4 lightPosition;
 
 void main()
@@ -500,7 +406,6 @@ void main()
 const std::string generateSidesCS = R".(
 layout(local_size_x=WORKGROUP_SIZE_X) in;
 
-//vec3 lowerPoint, vec3 higherPoint, uint numOpposite, uint oppositeStartingIndex
 layout(std430, binding=0) readonly buffer _edges{
 	float edges[]; };
 
@@ -513,40 +418,12 @@ layout(std430, binding=2) buffer _generatedSideEdges{
 layout(std430, binding=3) buffer _drawIndirectBuffer{
 	uint drawIndirect[4]; };
 
-//6x vertex, 2x uint - count and start of opposite vertices
-#define EDGE_NUM_FLOATS 8
+layout(std430, binding=5) readonly buffer _nofEdgesToGenerate{
+	uint nofEdgesToGenerate; };
 
-void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
-{
-	lowerPoint =  vec3(edges[EDGE_NUM_FLOATS*edgeId + 0], edges[EDGE_NUM_FLOATS*edgeId + 1], edges[EDGE_NUM_FLOATS*edgeId + 2]);
-	higherPoint = vec3(edges[EDGE_NUM_FLOATS*edgeId + 3], edges[EDGE_NUM_FLOATS*edgeId + 4], edges[EDGE_NUM_FLOATS*edgeId + 5]);
-}
-
-int decodeEdgeMultiplicityFromId(uint edgeWithEncodedMultiplicity)
-{
-	int val = 1;
-
-	const int sign = (int(edgeWithEncodedMultiplicity) & (1<<31)) != 0 ? -1 : 1;
-	const int isTwo = (int(edgeWithEncodedMultiplicity) & (1<<30)) != 0 ? 1 : 0;
-
-	return (val + isTwo)*sign;
-}
-
-uint decodeEdgeFromEncoded(uint edgeWithEncodedMultiplicity)
-{
-	return (edgeWithEncodedMultiplicity & 0x3FFFFFFF);
-}
-
-void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
-{
-	for(uint i = 0; i<absMultiplicity; ++i)
-	{
-		sideEdges[startingIndex + 2*i + 0] = vec4(L, 1);
-		sideEdges[startingIndex + 2*i + 1] = vec4(H, 1);
-	}
-}
-
-uniform uint nofEdgesToGenerate;
+)."
++ edgeFunctions + pushEdgeFunction + 
+R".(
 
 void main()
 {

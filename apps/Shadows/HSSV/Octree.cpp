@@ -284,7 +284,7 @@ uint64_t Octree::getOctreeSizeBytes() const
 {
 	uint64_t sz = 0;
 
-	sz += _nodes.size() * sizeof(AABB);
+	//sz += _nodes.size() * sizeof(AABB);
 
 	uint64_t numIndices = 0;
 	for(const auto& node : _nodes)
@@ -293,7 +293,7 @@ uint64_t Octree::getOctreeSizeBytes() const
 		numIndices += node.edgesMayCast.size();
 	}
 
-	sz += sizeof(int) * numIndices;
+	sz += sizeof(uint32_t) * numIndices;
 
 	return sz;
 }

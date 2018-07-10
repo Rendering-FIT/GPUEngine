@@ -55,10 +55,9 @@ public:
 	int getNodeIdInLevel(unsigned int nodeID, unsigned int level) const;
 	int getNodeIndexWithinParent(unsigned int nodeID) const;
 	int getNodeIndexWithinParent(unsigned int nodeID, unsigned int parent) const;
-
 	int getChildrenStartingId(unsigned int nodeID) const;
 
-	void getEdgeIndicesFromPointInSpace(const glm::vec3& lightPos, std::vector<unsigned int>& edges);
+	std::vector<unsigned int> getLevelSizeInclusiveSum() const { return _levelSizesInclusiveSum; }
 
 	void splitNode(unsigned int nodeID);
 	void deleteNode(unsigned int nodeID);

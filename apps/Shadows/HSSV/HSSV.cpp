@@ -25,6 +25,10 @@ HSSV::HSSV(
 	model->getVertices(vertices);
 	const auto nofVertexFloats = vertices.size();
 
+	const auto vendor = glGetString(GL_VENDOR);
+	const auto renderer = glGetString(GL_RENDERER);
+	printf("Renderer: %s %s\n", vendor, renderer);
+
 	_vertices = new float[vertices.size()];
 	memcpy(_vertices, vertices.data(), vertices.size() * sizeof(float));
 	vertices.clear();
@@ -101,7 +105,7 @@ void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	std::vector<float> sidesGeometry;
 	
 	_getSilhouetteFromLightPos(lightPosition, sidesGeometry);
-	
+	/*
 	_updateSidesVBO(sidesGeometry);
 
 	_sidesVAO->bind();
