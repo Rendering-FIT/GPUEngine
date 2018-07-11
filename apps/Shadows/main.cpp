@@ -177,6 +177,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->hssvParams.maxGpuMemoryToUseMB = arg->geti32("--hssv-gpuMemMax", 1024, "Amount of GPU memory to use during octree build, default 1024MB");
   this->hssvParams.potentialDrawingMethod = arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
   this->hssvParams.silhouetteDrawingMethod = arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
+  this->hssvParams.workgroupSize = arg->getu32("--hssv-wg", 128, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -328,6 +329,7 @@ bool Application::init(int argc,char*argv[]){
 			  hssvParams.sceneAABBscale,
 			  hssvParams.maxOctreeLevel,
 			  static_cast<unsigned int>(wavefrontSize),
+			  hssvParams.workgroupSize,
 			  hssvParams.potentialDrawingMethod,
 			  hssvParams.silhouetteDrawingMethod,
 			  shadowMask,

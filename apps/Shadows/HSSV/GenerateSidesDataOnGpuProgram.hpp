@@ -48,7 +48,7 @@ const std::string genGetNodeFromBuffer(unsigned int numBuffers)
 	{
 		str << "\tif(bufferId==" << i << ") return edges" << i << "[nodeIndex];\n";
 	}
-	str << "\treturn 0\n;";
+	str << "\treturn 0;\n";
 	str << "}\n\n";
 
 	return str.str();
@@ -152,8 +152,9 @@ std::string genMain(unsigned int numBuffers)
 	return str.str();
 }
 
-std::string genTraversalComputeShader(unsigned int numBuffers, std::shared_ptr<Octree> octree)
+std::string genTraversalComputeShader(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, unsigned int workgroupSize)
 {
+	const unsigned int numBuffers = lastNodePerEdgeBuffer.size();
 	assert(numBuffers > 0);
 	
 	std::stringstream str;
@@ -161,7 +162,7 @@ std::string genTraversalComputeShader(unsigned int numBuffers, std::shared_ptr<O
 	str << "#extension GL_ARB_shader_ballot : enable\n";
 	str << "#extension GL_ARB_gpu_shader_int64 : enable\n";
 	str << "#extension GL_AMD_gpu_shader_int64 : enable\n\n";
-	str << "layout(local_size_x=128) in;\n";
+	str << "layout(local_size_x=" << workgroupSize << ") in;\n";
 
 	for (unsigned int i = 0; i < numBuffers; ++i)
 		str << genBuffer(i);
@@ -170,7 +171,6 @@ std::string genTraversalComputeShader(unsigned int numBuffers, std::shared_ptr<O
 
 	unsigned int currentIndex = numBuffers;
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
-	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _edgeBuffersMapping{uint edgeBuffersMapping[]; };\n";
 
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotential{ uint nofPotential[]; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilhouette{ uint nofSilhouette[]; };\n";
@@ -181,6 +181,7 @@ std::string genTraversalComputeShader(unsigned int numBuffers, std::shared_ptr<O
 
 	str << "const uint treeDepth = " << octree->getDeepestLevel() << ";\n";
 
+	
 	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
 	const std::vector<unsigned int> ls = octree->getLevelSizeInclusiveSum();
 	for (unsigned int i = 0; i < ls.size(); ++i)
@@ -190,6 +191,18 @@ std::string genTraversalComputeShader(unsigned int numBuffers, std::shared_ptr<O
 			str << ", ";
 	}
 	str << ");\n";
+
+	if (numBuffers > 1)
+	{
+		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
+		for (unsigned int i = 0; i < numBuffers; ++i)
+		{
+			str << lastNodePerEdgeBuffer[i];
+			if (i != (numBuffers - 1))
+				str << ", ";
+		}
+		str << ");\n";
+	}
 
 	str << traversalSupportFunctions;
 

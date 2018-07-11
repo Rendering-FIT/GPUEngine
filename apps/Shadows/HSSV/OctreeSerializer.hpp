@@ -3,8 +3,6 @@
 #include <memory>
 #include "Octree.hpp"
 
-#include <cstdio>
-
 class OctreeSerializer
 {
 public:

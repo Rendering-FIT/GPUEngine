@@ -14,6 +14,7 @@ struct HSSVParams
 	unsigned int maxGpuMemoryToUseMB;
 	unsigned char potentialDrawingMethod;
 	unsigned char silhouetteDrawingMethod;
+	unsigned int workgroupSize;
 };
 
 class HSSV : public ShadowVolumes
@@ -23,13 +24,14 @@ public:
 		const glm::vec3& sceneAABBscale,
 		unsigned int maxOctreeLevel,
 		unsigned int subgroupSize,
+		unsigned int workgroupSize,
 		unsigned char potentialMethod,
 		unsigned char silhouetteMethod,
 		std::shared_ptr<ge::gl::Texture>const& shadowMask,
 		std::shared_ptr<ge::gl::Texture>const& depth,
 		ShadowVolumesParams const& params);
 
-	~HSSV();
+	virtual ~HSSV();
 
 	void drawSides(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 	void drawCaps(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;

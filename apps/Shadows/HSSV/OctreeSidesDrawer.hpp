@@ -80,9 +80,6 @@ private:
 	std::shared_ptr<ge::gl::Buffer> _voxelEdgeIndices = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _voxelNofPotentialSilhouetteEdgesPrefixSum = nullptr;
 
-	//std::shared_ptr<ge::gl::Buffer> _nofPotentialEdgesSSBO = nullptr;
-	//std::shared_ptr<ge::gl::Buffer> _nofSilhouetteEdgesSSBO = nullptr;
-
 	std::shared_ptr<ge::gl::Buffer> _indirectDispatchCsPotential = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _indirectDispatchCsSilhouette = nullptr;
 
@@ -91,7 +88,7 @@ private:
 	std::shared_ptr<OctreeVisitor> _octreeVisitor = nullptr;
 
 	std::vector<std::shared_ptr<ge::gl::Buffer>> _gpuOctreeBuffers;
-	std::shared_ptr<ge::gl::Buffer> _bufferIndexing;
+	std::vector<uint32_t> _lastNodePerEdgeBuffer;
 
 	uint32_t _nofPotentialEdgesToDraw = 0;
 	uint32_t _nofSilhouetteEdgesToDraw = 0;
