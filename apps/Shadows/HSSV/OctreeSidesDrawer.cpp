@@ -5,6 +5,7 @@
 #include "../CSSVShaders.h"
 #include "OctreeTraversalShader.hpp"
 #include "GenerateSidesDataOnGpuProgram.hpp"
+#include "GenerateSidesDataOnGpuProgram2.hpp"
 
 #define MAX_MULTIPLICITY 2
 
@@ -89,9 +90,14 @@ void OctreeSidesDrawer::_initShaders()
 		);
 }
 
+//#define USE_VERSION_1
 bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 {
+#ifdef USE_VERSION_1
 	std::string shaderBody = genTraversalComputeShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
+#else
+	std::string shaderBody = genTraversalComputeShader2(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
+#endif
 
 	_gpuOctreeTraversalProgramMultipleBuffers = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody) );
@@ -116,9 +122,10 @@ void OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
 
 void OctreeSidesDrawer::_initBuffers()
 {
-	size_t maxPotentialEdges, maxSilhouetteEdges, maxEdges;
-	_getMaxPossibleEdgeCountInTraversal(maxPotentialEdges, maxSilhouetteEdges, maxEdges);
+	size_t maxPotentialEdges, maxSilhouetteEdges, maxEdges, maxPath;
+	_getMaxPossibleEdgeCountInTraversal(maxPotentialEdges, maxSilhouetteEdges, maxEdges, maxPath);
 	_maxNofEdgesInVoxel = maxEdges;
+	_maxNofEdgesPath = maxPath;
 
 	_edgesIdsToGenerate = std::make_shared<ge::gl::Buffer>(maxSilhouetteEdges * sizeof(uint32_t), nullptr);
 	_edgesIdsToTestAndGenerate = std::make_shared<ge::gl::Buffer>(maxPotentialEdges * sizeof(uint32_t), nullptr);
@@ -212,11 +219,12 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 	_voxelNofPotentialSilhouetteEdgesPrefixSum = std::make_shared<ge::gl::Buffer>(nofEdgesPrefixSums.size() * sizeof(uint32_t), nofEdgesPrefixSums.data());
 }
 
-void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, size_t& silhouette, size_t& maxInVoxel) const
+void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, size_t& silhouette, size_t& maxInVoxel, size_t& maxPath) const
 {
 	potential = 0;
 	silhouette = 0;
 	maxInVoxel = 0;
+	maxPath = 0;
 
 	const unsigned int maxLevel = _octreeVisitor->getOctree()->getDeepestLevel();
 	for (unsigned int i = 0; i <= maxLevel; ++i)
@@ -226,6 +234,9 @@ void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, s
 
 		maxInVoxel = std::max(pot, maxInVoxel);
 		maxInVoxel = std::max(silh, maxInVoxel);
+
+		maxPath += pot;
+		maxPath += silh;
 
 		potential += pot;
 		silhouette += silh;
@@ -662,10 +673,9 @@ void OctreeSidesDrawer::_loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int v
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
 
-//#include <fstream>
+#include <fstream>
 void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight)
 {
-
 	_gpuOctreeTraversalProgramMultipleBuffers->use();
 	_gpuOctreeTraversalProgramMultipleBuffers->set1ui("cellContainingLight", lowestNodeContainingLight);
 
@@ -698,8 +708,11 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
-	ge::gl::glDispatchCompute(ceil(float(_maxNofEdgesInVoxel) / 128.0f), 1, 1);
-
+#ifdef USE_VERSION_1
+	ge::gl::glDispatchCompute(ceil(float(_maxNofEdgesInVoxel) / float(_workgroupSize)), 1, 1);
+#else
+	ge::gl::glDispatchCompute(ceil(float(_maxNofEdgesPath) /float(_workgroupSize)), 1, 1);
+#endif
 	bindingPoint = 0;
 	for (const auto b : _gpuOctreeBuffers)
 		b->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);

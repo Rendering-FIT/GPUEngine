@@ -96,7 +96,7 @@ std::string genMain(unsigned int numBuffers)
 		str << "const uint numParticipatingPotential = bitCount(participThreadsPot.x) + bitCount(participThreadsPot.y);\n";
 
 		str << "uint currentStartPotential = 0;\n";
-		str << "if (gl_SubGroupInvocationARB == 0) currentStartPotential = atomicAdd(nofPotential[0], numParticipatingPotential);\n";
+		str << "if (gl_SubGroupInvocationARB == 0) currentStartPotential = atomicAdd(nofPotential, numParticipatingPotential);\n";
 		str << "currentStartPotential = readFirstInvocationARB(currentStartPotential);\n";
 
 		str << "if(gl_GlobalInvocationID.x<numPotential) potentialEdges[currentStartPotential + gl_SubGroupInvocationARB] = edges0[startPotential + gl_GlobalInvocationID.x];\n";
@@ -106,7 +106,7 @@ std::string genMain(unsigned int numBuffers)
 		str << "const uint numParticipatingSil = bitCount(participThreadsSil.x) + bitCount(participThreadsSil.y);\n";
 
 		str << "uint currentStartSilhouette = 0;\n";
-		str << "if (gl_SubGroupInvocationARB == 0) currentStartSilhouette = atomicAdd(nofSilhouette[0], numParticipatingSil);\n";
+		str << "if (gl_SubGroupInvocationARB == 0) currentStartSilhouette = atomicAdd(nofSilhouette, numParticipatingSil);\n";
 		str << "currentStartSilhouette = readFirstInvocationARB(currentStartSilhouette);\n";
 
 		str << "if(gl_GlobalInvocationID.x<numSilhouette) silhouetteEdges[currentStartSilhouette + gl_SubGroupInvocationARB] = edges0[startSilhouette + gl_GlobalInvocationID.x];\n";
@@ -128,7 +128,7 @@ std::string genMain(unsigned int numBuffers)
 		str << "const uint numParticipatingPotential = bitCount(participThreadsPot.x) + bitCount(participThreadsPot.y);\n";
 
 		str << "uint currentStartPotential = 0;\n";
-		str << "if (gl_SubGroupInvocationARB == 0) currentStartPotential = atomicAdd(nofPotential[0], numParticipatingPotential);\n";
+		str << "if (gl_SubGroupInvocationARB == 0) currentStartPotential = atomicAdd(nofPotential, numParticipatingPotential);\n";
 		str << "currentStartPotential = readFirstInvocationARB(currentStartPotential);\n";
 
 		str << "if(gl_GlobalInvocationID.x<numPotential) potentialEdges[currentStartPotential + gl_SubGroupInvocationARB] = getNodeFromBuffer(startPotential + gl_GlobalInvocationID.x, bufferNum);\n";
@@ -138,7 +138,7 @@ std::string genMain(unsigned int numBuffers)
 		str << "const uint numParticipatingSil = bitCount(participThreadsSil.x) + bitCount(participThreadsSil.y);\n";
 
 		str << "uint currentStartSilhouette = 0;\n";
-		str << "if (gl_SubGroupInvocationARB == 0) currentStartSilhouette = atomicAdd(nofSilhouette[0], numParticipatingSil);\n";
+		str << "if (gl_SubGroupInvocationARB == 0) currentStartSilhouette = atomicAdd(nofSilhouette, numParticipatingSil);\n";
 		str << "currentStartSilhouette = readFirstInvocationARB(currentStartSilhouette);\n";
 
 		str << "if(gl_GlobalInvocationID.x<numSilhouette) silhouetteEdges[currentStartSilhouette + gl_SubGroupInvocationARB] = getNodeFromBuffer(startSilhouette + gl_GlobalInvocationID.x, bufferNum);\n";
@@ -172,8 +172,8 @@ std::string genTraversalComputeShader(const std::vector<uint32_t>& lastNodePerEd
 	unsigned int currentIndex = numBuffers;
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
 
-	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotential{ uint nofPotential[]; };\n";
-	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilhouette{ uint nofSilhouette[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotential{ uint nofPotential; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilhouette{ uint nofSilhouette; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialEdges[]; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _silhouette{ uint silhouetteEdges[]; };\n\n";
 

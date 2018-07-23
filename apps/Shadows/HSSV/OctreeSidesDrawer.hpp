@@ -45,7 +45,7 @@ protected:
 
 	void _initShaders();
 	void _initBuffers();
-		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel) const;
+		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel, size_t& maxPath) const;
 		void _getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const;
 	
 	bool _generateLoadGpuTraversalShader();
@@ -94,6 +94,7 @@ private:
 	uint32_t _nofSilhouetteEdgesToDraw = 0;
 
 	uint32_t _maxNofEdgesInVoxel;
+	uint32_t _maxNofEdgesPath;
 
 	uint32_t _workgroupSize = 0;
 
