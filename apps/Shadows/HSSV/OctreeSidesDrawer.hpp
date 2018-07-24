@@ -25,7 +25,7 @@ public:
 
 protected:
 	void _loadOctreeToGpu();
-	void _loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int voxelId);
+	//void _loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int voxelId);
 
 	void _drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);

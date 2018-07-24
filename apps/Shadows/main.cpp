@@ -199,7 +199,7 @@ void Application::initWavefrontSize(){
   if(this->wavefrontSize==0){
     std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
 	std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
-    if     (renderer.find("amd")!=std::string::npos || renderer.find("radeon") != std::string::npos || renderer.find("firegl") != std::string::npos || renderer.find("firepro") != std::string::npos)
+    if     (renderer.find("amd")!=std::string::npos || renderer.find("ati") != std::string::npos || renderer.find("radeon") != std::string::npos || renderer.find("firegl") != std::string::npos || renderer.find("firepro") != std::string::npos)
       this->wavefrontSize = 64;
     else if(renderer.find("nvidia")!=std::string::npos || renderer.find("geforce") != std::string::npos || renderer.find("titan") != std::string::npos || renderer.find("quadro") != std::string::npos)
       this->wavefrontSize = 32;

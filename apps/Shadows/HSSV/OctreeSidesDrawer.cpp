@@ -6,6 +6,8 @@
 #include "OctreeTraversalShader.hpp"
 #include "GenerateSidesDataOnGpuProgram.hpp"
 #include "GenerateSidesDataOnGpuProgram2.hpp"
+#include "../TimeStamp.h"
+
 
 #define MAX_MULTIPLICITY 2
 
@@ -91,6 +93,7 @@ void OctreeSidesDrawer::_initShaders()
 }
 
 //#define USE_VERSION_1
+//Version 1 has been proven slower
 bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 {
 #ifdef USE_VERSION_1
@@ -280,7 +283,10 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 		//if(once)
 		//_loadPotentialSilhouetteEdgesFromVoxelGPU(cellIndex);
 		//once = false;
+		//static TimeStamp ts;
+		//ts.begin();
 		_getPotentialSilhouetteEdgesGpu(cellIndex);
+		//ts.stamp("octreeGpuTraversal");
 #endif
 		if (_silhouetteDrawingMethod == DrawingMethod::CS && _potentialDrawingMethod == DrawingMethod::CS)
 			_drawSidesCS(mvp, light, cellIndex);
@@ -306,6 +312,7 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 				_drawSidesFromPotentialEdgesCS(mvp, light, cellIndex); break;
 			}
 		}
+		//ts.end("sidesDraw");
 	}
 
 	_lastFrameCellIndex = cellIndex;
@@ -405,9 +412,7 @@ void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, co
 	if (!_nofSilhouetteEdgesToDraw)
 		return;
 #endif
-	auto err = ge::gl::glGetError();
-	assert(err == GL_NO_ERROR);
-
+	
 	_silhouetteSidesGsProgram->use();
 	_silhouetteSidesGsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp))->set4fv("lightPosition", glm::value_ptr(lightPos));
 
@@ -432,9 +437,6 @@ void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, co
 	//ts.stamp("DrawSidesSilhouetteGS");
 	//ts.end("GS SIL");
 	//ge::gl::glDisable(GL_RASTERIZER_DISCARD);
-
-	err = ge::gl::glGetError();
-	assert(err == GL_NO_ERROR);
 }
 
 void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId)
@@ -570,7 +572,8 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, con
 void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos, unsigned cellContainingLightId)
 {
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
-	
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 	const uint32_t zero = 0;
 	_indirectDrawBufferPotentialCS->setData(&zero, sizeof(uint32_t));
 
@@ -594,11 +597,14 @@ void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos,
 	_indirectDrawBufferPotentialCS->unbindBase(GL_SHADER_STORAGE_BUFFER, 4);
 	_indirectDispatchCsPotential->unbindRange(GL_SHADER_STORAGE_BUFFER, 5);
 
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
 
 void OctreeSidesDrawer::_generateSidesFromSilhouetteCS(const glm::vec4& lightPos, unsigned cellContainingLightId)
 {
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	
 	const uint32_t zero = 0;
 	_indirectDrawBufferSilhouetteCS->setData(&zero, sizeof(uint32_t));
 
@@ -619,6 +625,8 @@ void OctreeSidesDrawer::_generateSidesFromSilhouetteCS(const glm::vec4& lightPos
 	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
 	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 	_indirectDispatchCsSilhouette->unbindRange(GL_SHADER_STORAGE_BUFFER, 5);
+
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 }
 
 void OctreeSidesDrawer::_drawSidesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)
@@ -642,7 +650,7 @@ void OctreeSidesDrawer::_drawSidesCS(const glm::mat4& mvp, const glm::vec4& ligh
 	_silhouetteSidesCsVAO->unbind();
 	_indirectDrawBufferSilhouetteCS->unbind(GL_DRAW_INDIRECT_BUFFER);
 }
-
+/*
 void OctreeSidesDrawer::_loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int voxelId)
 {
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
@@ -672,10 +680,12 @@ void OctreeSidesDrawer::_loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int v
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
-
+*/
 #include <fstream>
 void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight)
 {
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 	_gpuOctreeTraversalProgramMultipleBuffers->use();
 	_gpuOctreeTraversalProgramMultipleBuffers->set1ui("cellContainingLight", lowestNodeContainingLight);
 
@@ -723,6 +733,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 	//DEBUG
 	//Get data
 	/*
