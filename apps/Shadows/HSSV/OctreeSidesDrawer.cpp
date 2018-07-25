@@ -571,9 +571,6 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, con
 
 void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos, unsigned cellContainingLightId)
 {
-	assert(ge::gl::glGetError() == GL_NO_ERROR);
-	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
 	const uint32_t zero = 0;
 	_indirectDrawBufferPotentialCS->setData(&zero, sizeof(uint32_t));
 
@@ -597,14 +594,11 @@ void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos,
 	_indirectDrawBufferPotentialCS->unbindBase(GL_SHADER_STORAGE_BUFFER, 4);
 	_indirectDispatchCsPotential->unbindRange(GL_SHADER_STORAGE_BUFFER, 5);
 
-	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	assert(ge::gl::glGetError() == GL_NO_ERROR);
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 }
 
 void OctreeSidesDrawer::_generateSidesFromSilhouetteCS(const glm::vec4& lightPos, unsigned cellContainingLightId)
 {
-	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	
 	const uint32_t zero = 0;
 	_indirectDrawBufferSilhouetteCS->setData(&zero, sizeof(uint32_t));
 
@@ -626,7 +620,7 @@ void OctreeSidesDrawer::_generateSidesFromSilhouetteCS(const glm::vec4& lightPos
 	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 	_indirectDispatchCsSilhouette->unbindRange(GL_SHADER_STORAGE_BUFFER, 5);
 
-	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 }
 
 void OctreeSidesDrawer::_drawSidesCS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned cellContainingLightId)

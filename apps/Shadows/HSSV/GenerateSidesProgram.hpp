@@ -11,12 +11,10 @@ void getEdge(in uint edgeId, inout vec3 lowerPoint, inout vec3 higherPoint)
 
 int decodeEdgeMultiplicityFromId(uint edgeWithEncodedMultiplicity)
 {
-	int val = 1;
+	const int sign = (edgeWithEncodedMultiplicity & (1u<<31)) != 0 ? -1 : 1;
+	const int isTwo = (edgeWithEncodedMultiplicity & (1u<<30)) != 0 ? 1 : 0;
 
-	const int sign = (int(edgeWithEncodedMultiplicity) & (1<<31)) != 0 ? -1 : 1;
-	const int isTwo = (int(edgeWithEncodedMultiplicity) & (1<<30)) != 0 ? 1 : 0;
-
-	return (val + isTwo)*sign;
+	return (1 + isTwo)*sign;
 }
 
 uint decodeEdgeFromEncoded(uint edgeWithEncodedMultiplicity)
@@ -109,7 +107,7 @@ layout(std430, binding=0) readonly buffer _edges{
 layout(std430, binding=1) readonly buffer _edgeIdsToGenerate{
 	uint edgesIdToGenerate[]; };
 )."
-+ edgeFunctions + 
++ edgeFunctions +
 R".(
 uniform mat4 mvp           = mat4(1)            ;
 uniform vec4 lightPosition = vec4(100,100,100,1);
@@ -120,7 +118,7 @@ void main()
 {
 	const uint encodedEdge = edgesIdToGenerate[gl_PrimitiveID];
 	const uint edgeId = decodeEdgeFromEncoded(encodedEdge);
-	const int mult = decodeEdgeMultiplicityFromId(encodedEdge);
+	const int mult = -4;//decodeEdgeMultiplicityFromId(encodedEdge);
 	multiplicity = abs(mult);
 
 	vec3 edgeVertices[2];
@@ -147,8 +145,7 @@ in flat uint multiplicity[];
 
 void main()
 {
-	uint i = 0;
-	for(i=0; i<multiplicity[0]; ++i) 
+	for(uint i=0; i<multiplicity[0]; ++i) 
 	{
 		gl_Position = gl_in[0].gl_Position;
 		EmitVertex();					  
@@ -156,6 +153,7 @@ void main()
 		EmitVertex();					  
 		gl_Position = gl_in[2].gl_Position;
 		EmitVertex();
+
 		EndPrimitive();
 	}
 }).";
