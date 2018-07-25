@@ -118,7 +118,7 @@ void main()
 {
 	const uint encodedEdge = edgesIdToGenerate[gl_PrimitiveID];
 	const uint edgeId = decodeEdgeFromEncoded(encodedEdge);
-	const int mult = -4;//decodeEdgeMultiplicityFromId(encodedEdge);
+	const int mult = decodeEdgeMultiplicityFromId(encodedEdge);
 	multiplicity = abs(mult);
 
 	vec3 edgeVertices[2];
@@ -153,7 +153,6 @@ void main()
 		EmitVertex();					  
 		gl_Position = gl_in[2].gl_Position;
 		EmitVertex();
-
 		EndPrimitive();
 	}
 }).";
