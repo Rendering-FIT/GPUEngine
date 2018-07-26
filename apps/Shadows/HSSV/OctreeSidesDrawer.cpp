@@ -678,8 +678,6 @@ void OctreeSidesDrawer::_loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int v
 #include <fstream>
 void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight)
 {
-	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
 	_gpuOctreeTraversalProgramMultipleBuffers->use();
 	_gpuOctreeTraversalProgramMultipleBuffers->set1ui("cellContainingLight", lowestNodeContainingLight);
 
@@ -727,7 +725,8 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
-	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
+
 	//DEBUG
 	//Get data
 	/*
