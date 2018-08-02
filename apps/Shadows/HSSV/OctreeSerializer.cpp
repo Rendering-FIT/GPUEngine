@@ -1,10 +1,20 @@
 #include "OctreeSerializer.hpp"
 #include <glm/gtc/type_ptr.inl>
 
+#include <iostream>
+#include <sstream>
 
-std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelFilename)
+std::string OctreeSerializer::_generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel) const
 {
-	FILE* input = fopen((modelFilename + ".hssv").c_str(), "rb");
+	std::stringstream str;
+	str << modelFilename << "_" << sceneScale[0] << "_" << sceneScale[1] << "_" << sceneScale[2] << "-" << deepestLevel << ".hssv";
+
+	return str.str();
+}
+
+std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel)
+{
+	FILE* input = fopen(_generateFileName(modelFilename, sceneScale, deepestLevel).c_str(), "rb");
 	if (!input)
 		return nullptr;
 
@@ -65,9 +75,9 @@ void OctreeSerializer::_readUintBuffer(FILE* f, unsigned int nofUints, std::vect
 	fread(buffer.data(), sizeof(uint32_t), nofUints, f);
 }
 
-void OctreeSerializer::storeToFile(const std::string& modelFilename, std::shared_ptr<Octree> octree)
+void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::vec3& sceneScale, std::shared_ptr<Octree> octree)
 {
-	FILE* output = fopen((modelFilename + ".hssv").c_str(), "wb");
+	FILE* output = fopen(_generateFileName(modelFilename, sceneScale, octree->getDeepestLevel()).c_str(), "wb");
 	if (!output)
 		return;
 

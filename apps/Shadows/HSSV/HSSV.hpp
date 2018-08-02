@@ -36,6 +36,8 @@ public:
 	void drawSides(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 	void drawCaps(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 
+	virtual void setTimeStamper(std::shared_ptr<TimeStamp> stamper) override;
+
 protected:
 
 	AABB _getSceneAabb(float* vertices3fv, size_t numVertices);

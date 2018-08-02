@@ -343,12 +343,12 @@ bool Application::init(int argc,char*argv[]){
     this->timeStamper = std::make_shared<TimeStamp>();
   else
     this->timeStamper = std::make_shared<TimeStamp>(nullptr);
-  if(this->shadowMethod)
-    this->shadowMethod->timeStamp = this->timeStamper;
+  if (this->shadowMethod)
+	  this->shadowMethod->setTimeStamper(this->timeStamper);
 
   if(this->testName == "fly" || this->testName == "grid"){
     if(this->shadowMethod!=nullptr){
-      this->shadowMethod->timeStamp = this->timeStamper;
+      this->shadowMethod->setTimeStamper(this->timeStamper);
     }
   }
 

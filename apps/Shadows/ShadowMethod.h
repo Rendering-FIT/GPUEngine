@@ -28,11 +28,13 @@ glm::vec4 computePlane(glm::vec3 A,glm::vec3 B,glm::vec3 C);
 
 class ShadowMethod: public ge::gl::Context{
   public:
-    std::shared_ptr<TimeStamp      >timeStamp  = nullptr;
     ShadowMethod();
     virtual ~ShadowMethod(){}
     virtual void create(
         glm::vec4 const&lightPosition   ,
         glm::mat4 const&viewMatrix      ,
         glm::mat4 const&projectionMatrix) = 0;
+	virtual void setTimeStamper(std::shared_ptr<TimeStamp> stamper) { timeStamp = stamper; }
+protected:
+	std::shared_ptr<TimeStamp      >timeStamp = nullptr;
 };

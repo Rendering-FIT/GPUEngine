@@ -6,6 +6,7 @@
 
 #include "OctreeVisitor.hpp"
 #include "GpuEdges.hpp"
+#include "../TimeStamp.h"
 
 enum class DrawingMethod : unsigned char
 {
@@ -22,6 +23,8 @@ public:
 	void init(std::shared_ptr<GpuEdges> gpuEdges);
 
 	void drawSides(const glm::mat4& mvp,const glm::vec4& light);
+
+	void setStamper(std::shared_ptr<TimeStamp> stamper);
 
 protected:
 	void _loadOctreeToGpu();
@@ -100,4 +103,6 @@ private:
 
 	DrawingMethod _potentialDrawingMethod;
 	DrawingMethod _silhouetteDrawingMethod;
+
+	std::shared_ptr<TimeStamp> _timer;
 };

@@ -57,7 +57,7 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
 	t.reset();
-	_octree = serializer.loadFromFile(model->modelFilename);
+	_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel);
 	if (!_octree)
 	{
 		_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
@@ -70,7 +70,7 @@ HSSV::HSSV(
 		std::cout << "Building octree took " << dt << " seconds\n";
 
 		t.reset();
-		serializer.storeToFile(model->modelFilename, _octree);
+		serializer.storeToFile(model->modelFilename, sceneAABBscale, _octree);
 		std::cout << "Storing model to file took " << t.getElapsedTimeSeconds() << "s\n";
 	}
 	else
@@ -351,5 +351,11 @@ void HSSV::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEd
 		for (unsigned int i = 0; i<nofOpposite; ++i)
 			serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);
 	}
+}
+
+void HSSV::setTimeStamper(std::shared_ptr<TimeStamp> stamper)
+{
+	timeStamp = stamper;
+	if (_octreeSidesDrawer) _octreeSidesDrawer->setStamper(stamper);
 }
 

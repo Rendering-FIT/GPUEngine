@@ -348,8 +348,9 @@ const std::string rasterizeTextureCompSrc = R".(
 //DO NOT EDIT ANYTHING BELOW THIS COMMENT
 
 #ifdef USE_BALLOT
-  #extension GL_AMD_gcn_shader       : enable
+  #extension GL_ARB_shader_ballot    : enable
   #extension GL_AMD_gpu_shader_int64 : enable
+  #extension GL_ARB_gpu_shader_int64 : enable
 #endif
 
 #define JOIN__(x,y) x##y
@@ -490,6 +491,7 @@ shared vec4 SharedShadowFrusta[SHADOWFRUSTUMS_PER_WORKGROUP][VEC4_PER_SHADOWFRUS
   TileSizeInClipSpace returns x,y size of AABB in clip-space
 */
 
+
 #ifdef  USE_UNIFORM_TILE_DIVISIBILITY
 uniform uvec2 TileDivisibility    [NUMBER_OF_LEVELS];
 #endif//USE_UNIFORM_TILE_DIVISIBILITY
@@ -531,7 +533,7 @@ uint TrivialRejectAcceptAABB(vec3 TileCorner,vec3 TileSize){
   uvec2(INVOCATION_ID_IN_WAVEFRONT % JOIN(TILE_DIVISIBILITY,LEVEL).x , INVOCATION_ID_IN_WAVEFRONT/JOIN(TILE_DIVISIBILITY,LEVEL).x)
 
 #define TEST_SHADOW_FRUSTUM_LAST(LEVEL)\
-void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
+void JOIN(TestShadowFrustumHDB,LEVEL)(uvec2 coord,vec2 clipCoord){\
   uvec2 localCoord             = getLocalCoords(LEVEL);\
   uvec2 globalCoord            = coord * JOIN(TILE_DIVISIBILITY,LEVEL) + localCoord;\
   vec2  globalClipCoord        = clipCoord + JOIN(TILE_SIZE_IN_CLIP_SPACE,LEVEL) * localCoord;\
@@ -564,8 +566,8 @@ void TestShadowFrustumHDB##LEVEL(uvec2 coord,vec2 clipCoord){\
         if(SampleInsideEdge(tr,SharedShadowFrusta[SHADOWFRUSTUM_ID_IN_WORKGROUP][NOF_PLANES_PER_SF+i].xyz))Result=TRIVIAL_REJECT;\
       }\
     }\
-    uint64_t AcceptBallot     = ballotAMD(Result==TRIVIAL_ACCEPT);\
-    uint64_t IntersectsBallot = ballotAMD(Result==INTERSECTS    );\
+    uint64_t AcceptBallot     = ballotARB(Result==TRIVIAL_ACCEPT);\
+    uint64_t IntersectsBallot = ballotARB(Result==INTERSECTS    );\
     if(INVOCATION_ID_IN_WAVEFRONT<RESULT_LENGTH_IN_UINT){\
       ivec2 hstGlobalCoord=ivec2(coord.x*RESULT_LENGTH_IN_UINT+INVOCATION_ID_IN_WAVEFRONT,coord.y);\
       imageAtomicOr(HST[LEVEL],hstGlobalCoord,uint((AcceptBallot>>(UINT_BIT_SIZE*INVOCATION_ID_IN_WAVEFRONT))&0xffffffffu));\
