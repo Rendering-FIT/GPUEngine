@@ -88,6 +88,14 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 
 		const auto numLoaded = sizePrefixSum.size() - 1;
 
+		const uint64_t parentIdicesRequiredSize = maxEdgesPerVoxel * (numLoaded / 8) * sizeof(uint32_t);
+		if(_parentIndices->getSize() < parentIdicesRequiredSize)
+		{
+			_parentIndices.reset();
+			_parentIndices = std::make_shared<ge::gl::Buffer>();
+			_parentIndices->alloc(parentIdicesRequiredSize);
+		}
+
 		_clearAtomicCounter();
 		_propagateProgram->set1ui("nofVoxels", numLoaded);
 		_propagateProgram->set1ui("maxNofEdges", maxEdgesPerVoxel);
