@@ -73,9 +73,16 @@ void ShadowVolumes::create(
   glDepthMask(GL_FALSE);
   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
 
+#define SIDES_RASTER_DISCARD
+
+#ifdef SIDES_RASTER_DISCARD
+  glEnable(GL_RASTERIZER_DISCARD);
+#endif
   this->drawSides(lightPosition,viewMatrix,projectionMatrix);
   if(this->timeStamp)this->timeStamp->stamp("drawSides");
-
+#ifdef SIDES_RASTER_DISCARD
+  glDisable(GL_RASTERIZER_DISCARD);
+#endif
   if(this->_params.zfail){
     this->drawCaps(lightPosition,viewMatrix,projectionMatrix);
     if(this->timeStamp)this->timeStamp->stamp("drawCaps");
