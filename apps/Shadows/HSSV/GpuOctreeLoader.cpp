@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+
 bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int subgroupSize)
 {
 	assert(octree);
@@ -416,6 +417,7 @@ void GpuOctreeLoader::_unbindBuffers()
 
 void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges)
 {
+	/*
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	const unsigned int numParents = batchSize / 8;
 	
@@ -458,6 +460,7 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 	_voxelSilhouetteEdges->unmap();
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
+	*/
 }
 
 void GpuOctreeLoader::_copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size)

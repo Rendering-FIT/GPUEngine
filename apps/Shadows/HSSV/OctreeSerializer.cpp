@@ -7,7 +7,7 @@
 std::string OctreeSerializer::_generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel) const
 {
 	std::stringstream str;
-	str << modelFilename << "_" << sceneScale[0] << "_" << sceneScale[1] << "_" << sceneScale[2] << "-" << deepestLevel << ".hssv";
+	str << modelFilename << "_" << sceneScale[0] << "_" << sceneScale[1] << "_" << sceneScale[2] << "-" << deepestLevel << ".hssvc";
 
 	return str.str();
 }
@@ -31,15 +31,45 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 	//Read node data
 	const unsigned int numNodes = octree->getTotalNumNodes();
 
-	for(unsigned int i=0; i<numNodes; ++i)
+	for (unsigned int i = 0; i < numNodes; ++i)
 	{
-		const unsigned int numPotential = _readUint(input);
-		const unsigned int numSilhouette = _readUint(input);
+		{
+			//Read number of potential subbuffers
+			const unsigned int numSubbuffersPotential = _readUint(input);
 
-		auto node = octree->getNode(i);
+			auto node = octree->getNode(i);
 
-		_readUintBuffer(input, numPotential, node->edgesMayCast);
-		_readUintBuffer(input, numSilhouette, node->edgesAlwaysCast);
+			for (unsigned int bufferId = 0; bufferId < numSubbuffersPotential; ++bufferId)
+			{
+				//Read subbuffer id
+				const unsigned int subbufferId = _readUint(input);
+
+				//Read subbuffer size
+				const unsigned int subbufferSize = _readUint(input);
+
+				//Read subbuffer data
+				_readUintBuffer(input, subbufferSize, node->edgesMayCastMap[subbufferId]);
+			}
+		}
+
+		{
+			//Read number of silhouette subbuffers
+			const unsigned int numSubbuffersSilhouette = _readUint(input);
+
+			auto node = octree->getNode(i);
+
+			for (unsigned int bufferId = 0; bufferId < numSubbuffersSilhouette; ++bufferId)
+			{
+				//Read subbuffer id
+				const unsigned int subbufferId = _readUint(input);
+
+				//Read subbuffer size
+				const unsigned int subbufferSize = _readUint(input);
+
+				//Read subbuffer data
+				_readUintBuffer(input, subbufferSize, node->edgesAlwaysCastMap[subbufferId]);
+			}
+		}
 	}
 
 	fclose(input);
@@ -47,6 +77,63 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 	return octree;
 }
 
+void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::vec3& sceneScale, std::shared_ptr<Octree> octree)
+{
+	FILE* output = fopen(_generateFileName(modelFilename, sceneScale, octree->getDeepestLevel()).c_str(), "wb");
+	if (!output)
+		return;
+
+	//Write octree level
+	_writeUint(output, octree->getDeepestLevel());
+
+	//Write top level AABB
+	_writeAabb(output, octree->getNode(0)->volume);
+
+	//Write nodes
+	const unsigned int nofNodes = octree->getTotalNumNodes();
+	for (unsigned int i = 0; i<nofNodes; ++i)
+	{
+		auto node = octree->getNode(i);
+
+		{
+			//Write nof potential subbuffers
+			_writeUint(output, node->edgesMayCastMap.size());
+
+			for(const auto subBuffer : node->edgesMayCastMap)
+			{
+				//Write subbuffer Id (bitmask)
+				_writeUint(output, subBuffer.first);
+
+				//write subbuffer size
+				_writeUint(output, subBuffer.second.size());
+
+				//write data
+				_writeUintBuffer(output, subBuffer.second);
+			}
+		}
+
+		{
+			//Write nof silhouette subbuffers
+			_writeUint(output, node->edgesAlwaysCastMap.size());
+
+			for (const auto subBuffer : node->edgesAlwaysCastMap)
+			{
+				//Write subbuffer Id (bitmask)
+				_writeUint(output, subBuffer.first);
+
+				//write subbuffer size
+				_writeUint(output, subBuffer.second.size());
+
+				//write data
+				_writeUintBuffer(output, subBuffer.second);
+			}
+		}
+
+	}
+
+	//Finish
+	fclose(output);
+}
 
 uint32_t OctreeSerializer::_readUint(FILE* f)
 {
@@ -75,34 +162,6 @@ void OctreeSerializer::_readUintBuffer(FILE* f, unsigned int nofUints, std::vect
 	fread(buffer.data(), sizeof(uint32_t), nofUints, f);
 }
 
-void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::vec3& sceneScale, std::shared_ptr<Octree> octree)
-{
-	FILE* output = fopen(_generateFileName(modelFilename, sceneScale, octree->getDeepestLevel()).c_str(), "wb");
-	if (!output)
-		return;
-
-	//Write octree level
-	_writeUint(output, octree->getDeepestLevel());
-
-	//Write top level AABB
-	_writeAabb(output, octree->getNode(0)->volume);
-
-	//Write nodes
-	const unsigned int nofNodes = octree->getTotalNumNodes();
-	for(unsigned int i=0; i<nofNodes; ++i)
-	{
-		auto node = octree->getNode(i);
-		_writeUint(output, node->edgesMayCast.size());
-		_writeUint(output, node->edgesAlwaysCast.size());
-
-		_writeUintBuffer(output, node->edgesMayCast);
-		_writeUintBuffer(output, node->edgesAlwaysCast);
-	}
-
-	//Finish
-	fclose(output);
-}
-
 void OctreeSerializer::_writeUint(FILE* output, uint32_t value)
 {
 	fwrite(&value, sizeof(uint32_t), 1, output);
@@ -114,7 +173,7 @@ void OctreeSerializer::_writeAabb(FILE* output, const AABB& bbox)
 	fwrite(glm::value_ptr(bbox.getMaxPoint()), sizeof(float), 3, output);
 }
 
-void OctreeSerializer::_writeUintBuffer(FILE* output, std::vector<uint32_t>& buffer)
+void OctreeSerializer::_writeUintBuffer(FILE* output, const std::vector<uint32_t>& buffer)
 {
 	if (buffer.size() == 0)
 		return;

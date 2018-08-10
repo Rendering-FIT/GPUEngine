@@ -2,9 +2,12 @@
 
 #include "AABB.hpp"
 #include <vector>
+#include <map>
 #include <algorithm>
 
 #define OCTREE_NUM_CHILDREN 8
+
+typedef uint32_t BitmaskType;
 
 int ipow(int base, int exp);
 
@@ -12,8 +15,8 @@ struct Node
 {
 	AABB volume;
 
-	std::vector<uint32_t> edgesAlwaysCast;
-	std::vector<uint32_t> edgesMayCast;
+	std::map<BitmaskType, std::vector<uint32_t>> edgesAlwaysCastMap;
+	std::map<BitmaskType, std::vector<uint32_t>> edgesMayCastMap;
 
 	bool isValid() const
 	{
@@ -22,21 +25,27 @@ struct Node
 
 	void clear()
 	{
-		edgesMayCast.clear();
-		edgesAlwaysCast.clear();
+		edgesMayCastMap.clear();
+		edgesAlwaysCastMap.clear();
 		volume = AABB();
 	}
 
 	void shrinkEdgeVectors()
 	{
-		edgesMayCast.shrink_to_fit();
-		edgesAlwaysCast.shrink_to_fit();
+		for(auto e : edgesMayCastMap)
+			e.second.shrink_to_fit();
+
+		for(auto e : edgesAlwaysCastMap)
+			e.second.shrink_to_fit();
 	}
 
 	void sortEdgeVectors()
 	{
-		std::sort(edgesMayCast.begin(), edgesMayCast.end());
-		std::sort(edgesAlwaysCast.begin(), edgesAlwaysCast.end());
+		for (auto e : edgesMayCastMap)
+			std::sort(e.second.begin(), e.second.end());
+
+		for (auto e : edgesAlwaysCastMap)
+			std::sort(e.second.begin(), e.second.end());
 	}
 };
 

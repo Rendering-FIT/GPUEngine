@@ -6,6 +6,7 @@
 
 #include <cstring>
 
+/*
 bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned subgroupSize)
 {
 	if (!_createPropagateProgram(2, subgroupSize))
@@ -232,21 +233,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 
 		i += 0;
 	}
-	/*
-	{
-		const unsigned int ls = ipow(OCTREE_NUM_CHILDREN, 3);
-		const unsigned int st = _octree->getLevelFirstNodeID(3);
-		for (unsigned int i = st; i < (st + ls); ++i)
-			std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
-	}
-	std::cout << "\n\n-------------------------------------------------------------------------\n";
-	{
-		const unsigned int ls = ipow(OCTREE_NUM_CHILDREN, 4);
-		const unsigned int st = _octree->getLevelFirstNodeID(4);
-		for (unsigned int i = st; i < (st + ls); ++i)
-			std::cout << _octree->getNode(i)->edgesAlwaysCast.size() << std::endl;
-	}
-	*/
+
 	_parentIndices->unmap();
 }
 
@@ -276,3 +263,5 @@ void GpuOctreeEdgePropagator::_unbindBuffers()
 	_atomicCounter->unbindBase(GL_SHADER_STORAGE_BUFFER, 6);
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
+
+*/

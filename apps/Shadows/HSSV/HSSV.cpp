@@ -64,7 +64,8 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
-		_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
+		//_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
+		_visitor->addEdges(_edges);
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 		std::cout << "Building octree took " << dt << " seconds\n";
@@ -79,11 +80,11 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
 
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
-	_octreeSidesDrawer->init(_gpuEdges);
+	//_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
+	//_octreeSidesDrawer->init(_gpuEdges);
 	
-	//_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
-	//_prepareProgram();
+	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
+	_prepareProgram();
 	//_octree.reset();
 	//_edges.reset();
 	//delete[] _vertices;
@@ -103,11 +104,11 @@ void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix,
 void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;
-	/*
+	
 	std::vector<float> sidesGeometry;
 	
 	_getSilhouetteFromLightPos(lightPosition, sidesGeometry);
-	/*
+	
 	_updateSidesVBO(sidesGeometry);
 
 	_sidesVAO->bind();
@@ -118,7 +119,7 @@ void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 
 	_sidesVAO->unbind();
 	//*/
-	_octreeSidesDrawer->drawSides(mvp, lightPosition);
+	//_octreeSidesDrawer->drawSides(mvp, lightPosition);
 }
 
 AABB HSSV::_getSceneAabb(float* vertices3fv, size_t numVerticesFloats)
@@ -222,7 +223,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 	std::vector<int> ed;
 	ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
 	//--
-	/*
+	
 	for(const auto edge : silhouetteEdges)
 	{
 		const int multiplicity = decodeEdgeMultiplicityFromId(edge);
@@ -262,7 +263,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
 		
 		std::ofstream of;
-		of.open("edges.txt");
+		of.open("edges_compress.txt");
 		std::sort(potentialEdges.begin(), potentialEdges.end());
 		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
 		

@@ -18,5 +18,5 @@ protected:
 
 	void	 _writeUint(FILE* output, uint32_t value);
 	void     _writeAabb(FILE* output, const AABB& bbox);
-	void	 _writeUintBuffer(FILE* output, std::vector<uint32_t>& buffer);
+	void	 _writeUintBuffer(FILE* output, const std::vector<uint32_t>& buffer);
 };

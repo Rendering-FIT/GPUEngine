@@ -113,14 +113,14 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 
 	return _gpuOctreeTraversalProgramMultipleBuffers->getValidateStatus();
 }
-
+/*
 void OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
 {
 	_initShaders();
 
 	_initBuffers();
 #ifdef USE_GPU_OCTREE
-	_loadOctreeToGpu();
+	//_loadOctreeToGpu();
 	if (!_generateLoadGpuTraversalShader())
 		return;
 
@@ -350,7 +350,7 @@ unsigned int OctreeSidesDrawer::_loadEdgesFromIdUpGetNof(unsigned cellContaining
 	
 	return numLoaded;
 }
-
+*/
 void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId)
 {
 	if (_timer) _timer->stamp("");
