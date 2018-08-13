@@ -57,7 +57,7 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
 	t.reset();
-	_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel);
+	//_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel);
 	if (!_octree)
 	{
 		_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);

@@ -30,6 +30,7 @@ void OctreeVisitor::addEdges(const AdjacencyType edges)
 	auto dt = t.getElapsedTimeFromLastQueryMilliseconds();
 
 	std::cout << "Adding edges took " << dt / 1000.0f << " sec\n";
+
 	t.reset();
 	const auto startingLevel = _octree->getDeepestLevel() - 1;
 	_propagateEdgesUpFromLevel(startingLevel, true, 32);
@@ -132,9 +133,13 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 	
 	std::cout << "Total iterations: " << (stopIndex - startingIndex) / OCTREE_NUM_CHILDREN << "\n";
 
-	//#pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = startingIndex; i < stopIndex; i += OCTREE_NUM_CHILDREN)
+	{
+		static int a = 0;
 		_addEdgesSyblingsParent(edgePlanes, edges, i);
+		std::cout << a++ << std::endl;
+	}
 }
 
 void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
@@ -155,12 +160,9 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 
 		const auto numOppositeVertices = edges->getNofOpposite(edgeIndex);
 
-		if(numOppositeVertices!=2)
-			continue;
-
 		for (unsigned int index = startingID; index<(startingID + OCTREE_NUM_CHILDREN); index++)
 		{
-			const bool isPotentiallySilhouette = GeometryOps::isEdgeSpaceAaabbIntersecting(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], _octree->getNodeVolume(index));
+			const bool isPotentiallySilhouette = numOppositeVertices>1 && GeometryOps::isEdgeSpaceAaabbIntersecting(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], _octree->getNodeVolume(index));
 
 			if (isPotentiallySilhouette)
 			{
@@ -293,11 +295,11 @@ OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeInCommon(unsigned i
 
 		if (propagatePotential)
 		{
-			if (!std::binary_search(node->edgesMayCastMap[subBufferId].begin(), node->edgesMayCastMap[subBufferId].end(), edgeID))
+			if (node->edgesMayCastMap.find(subBufferId) == node->edgesMayCastMap.end() || !std::binary_search(node->edgesMayCastMap[subBufferId].begin(), node->edgesMayCastMap[subBufferId].end(), edgeID))
 				return TestResult::FALSE;
 		}
 		else
-			if (!std::binary_search(node->edgesAlwaysCastMap[subBufferId].begin(), node->edgesAlwaysCastMap[subBufferId].end(), edgeID))
+			if (node->edgesAlwaysCastMap.find(subBufferId) == node->edgesAlwaysCastMap.end() || !std::binary_search(node->edgesAlwaysCastMap[subBufferId].begin(), node->edgesAlwaysCastMap[subBufferId].end(), edgeID))
 				return TestResult::FALSE;
 		
 		retval = TestResult::TRUE;
@@ -325,8 +327,11 @@ void OctreeVisitor::_processEdgesInLevel(unsigned int level, bool propagatePoten
 
 		if (!edgesMap.empty())
 		{
-			for (const auto edgeSubBuffer : edgesMap)
+			auto it = edgesMap.find(255);
+			if (it != edgesMap.end())
+			//for (const auto edgeSubBuffer : edgesMap)
 			{
+				auto edgeSubBuffer = *it;
 				for (const auto edge : edgeSubBuffer.second)
 				{
 					auto result = _haveAllSyblingsEdgeInCommon(currentID, edge, propagatePotential, edgeSubBuffer.first);
