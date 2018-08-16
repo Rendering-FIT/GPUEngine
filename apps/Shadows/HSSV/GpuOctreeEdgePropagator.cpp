@@ -6,7 +6,7 @@
 
 #include <cstring>
 
-/*
+
 bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned subgroupSize)
 {
 	if (!_createPropagateProgram(2, subgroupSize))
@@ -149,7 +149,7 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom_returnNofLoaded(
 		for (unsigned int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
 		{
 			auto node = _octree->getNode(currentIndex + i);
-			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
 			if(!edges.empty())
 				memcpy(indicesPtr + usedCapacity, edges.data(), edges.size() * sizeof(uint32_t));
 			usedCapacity += edges.size()*sizeof(uint32_t);
@@ -176,7 +176,7 @@ size_t GpuOctreeEdgePropagator::_getSyblingsBufferSizeAndMaximum(unsigned int st
 	for(unsigned int i=0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		auto node = _octree->getNode(startingID+i);
-		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
 
 		sz += edges.size();
 		maxSize = std::max(maxSize, (unsigned int)edges.size());
@@ -200,7 +200,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	for(unsigned int i = 0; i<batchSize; ++i)
 	{
 		auto node = _octree->getNode(startingIndex + i);
-		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
 		edges.resize(numIndices[i]);
 
 		if (numIndices[i] != 0)
@@ -225,13 +225,11 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	for(unsigned int i=0; i<nofParents; ++i)
 	{
 		auto node = _octree->getNode(startingParent + i);
-		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCast : node->edgesAlwaysCast;
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
 		edges.resize(numIndices[i]);
 
 		if (numIndices[i] != 0)
 			memcpy(edges.data(), parentIndices + i*maxEdgesPerVoxel, numIndices[i] * sizeof(uint32_t));
-
-		i += 0;
 	}
 
 	_parentIndices->unmap();
@@ -263,5 +261,3 @@ void GpuOctreeEdgePropagator::_unbindBuffers()
 	_atomicCounter->unbindBase(GL_SHADER_STORAGE_BUFFER, 6);
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
-
-*/

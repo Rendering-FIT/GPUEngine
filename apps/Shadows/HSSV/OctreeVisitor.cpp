@@ -5,12 +5,14 @@
 #include <stack>
 #include <iostream>
 #include <bitset>
+#include <set>
 
 #include <omp.h>
 #include "HighResolutionTimer.hpp"
 #include "MultiplicityCoding.hpp"
 #include "GpuOctreeLoader.hpp"
 #include "GpuOctreeEdgePropagator.hpp"
+#include <iterator>
 
 OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
@@ -87,11 +89,16 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
 
 	t.reset();
+	_compressTree();
+	dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Tree compression took " << dt << " sec\n";
+
+	t.reset();
 	_shrinkOctree();
 	dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Shrinking octree took " << dt << " sec\n";
 
-	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB\n";
+	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB. Compressing...\n";
 }
 
 
@@ -132,7 +139,17 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 	const int stopIndex = _octree->getTotalNumNodes();
 	
 	std::cout << "Total iterations: " << (stopIndex - startingIndex) / OCTREE_NUM_CHILDREN << "\n";
-
+	
+	/*
+	//#pragma omp parallel for
+	for (int i = 15881; i < 15944; i += OCTREE_NUM_CHILDREN)
+	{
+		static int a = 0;
+		_addEdgesSyblingsParent(edgePlanes, edges, i);
+		std::cout << a++ << std::endl;
+	}
+	//*/
+	
 	#pragma omp parallel for
 	for (int i = startingIndex; i < stopIndex; i += OCTREE_NUM_CHILDREN)
 	{
@@ -140,6 +157,7 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 		_addEdgesSyblingsParent(edgePlanes, edges, i);
 		std::cout << a++ << std::endl;
 	}
+	//*/
 }
 
 void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
@@ -266,11 +284,11 @@ void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool 
 {
 	//if (propagatePotential)
 	//{
-		for (int i = startingLevel; i > 0; --i)
-			_processEdgesInLevel(i, propagatePotential);
+		//for (int i = startingLevel; i > 0; --i)
+		//	_processEdgesInLevel(i, propagatePotential);
 	//}
-	/*
-	else
+	
+	//else
 	{
 		std::unique_ptr<GpuOctreeEdgePropagator> propagator = std::make_unique<GpuOctreeEdgePropagator>();
 
@@ -279,7 +297,7 @@ void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool 
 		for (int i = startingLevel; i > 0; --i)
 			propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
 	}
-	*/
+	//*/
 }
 
 OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential, BitmaskType subBufferId) const
@@ -481,21 +499,92 @@ void OctreeVisitor::_shrinkOctree()
 
 		if(node)
 		{
-			for (auto edges : node->edgesAlwaysCastMap)
+			for (auto edges = node->edgesAlwaysCastMap.begin(); edges != node->edgesAlwaysCastMap.end(); )
 			{
-				if (edges.second.size())
-					edges.second.shrink_to_fit();
+				if (edges->second.size())
+					(edges++)->second.shrink_to_fit();
 				else
-					node->edgesAlwaysCastMap.erase(edges.first);
+					node->edgesAlwaysCastMap.erase((edges++)->first);
 			}
 
-			for (auto edges : node->edgesMayCastMap)
+			for (auto edges = node->edgesMayCastMap.begin(); edges != node->edgesMayCastMap.end(); )
 			{
-				if (edges.second.size())
-					edges.second.shrink_to_fit();
+				if (edges->second.size())
+					(edges++)->second.shrink_to_fit();
 				else
-					node->edgesMayCastMap.erase(edges.first);
+					node->edgesMayCastMap.erase((edges++)->first);
 			}
+		}
+	}
+}
+
+void OctreeVisitor::_compressTree()
+{
+	const int deepestLevel = _octree->getDeepestLevel();
+	const int levelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
+
+	const int startingIndex = _octree->getNumNodesInPreviousLevels(deepestLevel);
+	const int stopIndex = _octree->getTotalNumNodes();
+
+	#pragma omp parallel for
+	for(int index = startingIndex; index < stopIndex; index += OCTREE_NUM_CHILDREN)
+	{
+		_compressSyblings(index, true);
+		_compressSyblings(index, false);
+	}
+}
+
+std::bitset<8> OctreeVisitor::checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential) const
+{
+	std::bitset<OCTREE_NUM_CHILDREN> retval(0);
+
+	for(unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	{
+		const auto node = _octree->getNode(i + startingId);
+		const auto& buffer = checkPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		if (std::binary_search(buffer.begin(), buffer.end(), edge))
+			retval[i] = true;
+	}
+
+	return retval;
+}
+
+void OctreeVisitor::_compressSyblings(unsigned int startingID, bool processPotential)
+{
+	std::set<unsigned int> allEdgesSet;
+	for (unsigned int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
+	{
+		const auto node = _octree->getNode(startingID + i);
+		auto& buffer = processPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		std::copy(buffer.begin(), buffer.end(), std::inserter(allEdgesSet, allEdgesSet.end()));
+	}
+
+	for (const auto e : allEdgesSet)
+	{
+		const auto bitmask = checkEdgePresence(e, startingID, processPotential);
+		if (bitmask.count()>3)
+		{
+			_assignEdgeToNodeParent(startingID, e, processPotential, bitmask.to_ulong());
+			_removeEdgeFromSyblingsSparse(startingID, e, processPotential, bitmask);
+		}
+	}
+}
+
+void OctreeVisitor::_removeEdgeFromSyblingsSparse(unsigned int startingID, unsigned int edge, bool checkPotential, const std::bitset<OCTREE_NUM_CHILDREN>& bitmask)
+{
+	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	{
+		if (!bitmask[i])
+			continue;
+
+		auto node = _octree->getNode(startingID + i);
+
+		if (node)
+		{
+			if (checkPotential)
+				node->edgesMayCastMap[255].erase(std::lower_bound(node->edgesMayCastMap[255].begin(), node->edgesMayCastMap[255].end(), edge));
+			else
+				node->edgesAlwaysCastMap[255].erase(std::lower_bound(node->edgesAlwaysCastMap[255].begin(), node->edgesAlwaysCastMap[255].end(), edge));
 		}
 	}
 }

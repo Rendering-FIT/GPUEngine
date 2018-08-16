@@ -64,8 +64,8 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
-		//_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
-		_visitor->addEdges(_edges);
+		_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
+		//_visitor->addEdges(_edges);
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 		std::cout << "Building octree took " << dt << " seconds\n";
@@ -221,7 +221,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 
 	//--
 	std::vector<int> ed;
-	ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
+	//ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
 	//--
 	
 	for(const auto edge : silhouetteEdges)
@@ -242,10 +242,10 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 			const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, edge);;
 
 			_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
-			ed.push_back(edge);
+			ed.push_back(encodeEdgeMultiplicityToId(edge, multiplicity));
 		}
 	}
-
+	
 	static bool printOnce = false;
 	if (!printOnce)
 	{
@@ -276,8 +276,20 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 			of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
 		of.close();
 		
+		std::ofstream sof;
+		sof.open("silhouette.txt");
+		sof << "SIL\n";
+		for (const auto e : silhouetteEdges)
+			sof << decodeEdgeFromEncoded(e) << "(" << decodeEdgeMultiplicityFromId(e) << ")" << std::endl;
+		
+		sof << "POT\n";
+		for (const auto e : ed)
+			sof << decodeEdgeFromEncoded(e) << "(" << decodeEdgeMultiplicityFromId(e) << ")" << std::endl;
+		//*/
+		sof.close();
 		printOnce = true;
 	}
+	//*/
 }
 
 void HSSV::_generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3& lowerPoint, const glm::vec3& higherPoint, int multiplicity, std::vector<float>& sides)

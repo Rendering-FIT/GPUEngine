@@ -417,7 +417,7 @@ void GpuOctreeLoader::_unbindBuffers()
 
 void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges)
 {
-	/*
+	
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	const unsigned int numParents = batchSize / 8;
 	
@@ -432,13 +432,13 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 	{
 		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
 
-		node->edgesMayCast.resize(_bufferNofPotential[i]);
-		if (!node->edgesMayCast.empty())
-			memcpy(node->edgesMayCast.data(), bPotential + (numEdges*i), _bufferNofPotential[i] * sizeof(uint32_t));
+		node->edgesMayCastMap[255].resize(_bufferNofPotential[i]);
+		if (!node->edgesMayCastMap[255].empty())
+			memcpy(node->edgesMayCastMap[255].data(), bPotential + (numEdges*i), _bufferNofPotential[i] * sizeof(uint32_t));
 
-		node->edgesAlwaysCast.resize(_bufferNofSilhouette[i]);
-		if(!node->edgesAlwaysCast.empty())
-			memcpy(node->edgesAlwaysCast.data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
+		node->edgesAlwaysCastMap[255].resize(_bufferNofSilhouette[i]);
+		if(!node->edgesAlwaysCastMap[255].empty())
+			memcpy(node->edgesAlwaysCastMap[255].data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
 	}
 
 	//Process parents
@@ -448,19 +448,18 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 		auto node = _octree->getNode(startingParent + i);
 		const unsigned int parentIndex = batchSize + i;
 
-		node->edgesMayCast.resize(_bufferNofPotential[parentIndex]);
-		memcpy(node->edgesMayCast.data(), bPotential + (numEdges*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
+		node->edgesMayCastMap[255].resize(_bufferNofPotential[parentIndex]);
+		memcpy(node->edgesMayCastMap[255].data(), bPotential + (numEdges*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
 
-		node->edgesAlwaysCast.resize(_bufferNofSilhouette[parentIndex]);
-		if (!node->edgesAlwaysCast.empty())
-			memcpy(node->edgesAlwaysCast.data(), bSilhouette + (numEdges*parentIndex), _bufferNofSilhouette[parentIndex] * sizeof(uint32_t));
+		node->edgesAlwaysCastMap[255].resize(_bufferNofSilhouette[parentIndex]);
+		if (!node->edgesAlwaysCastMap[255].empty())
+			memcpy(node->edgesAlwaysCastMap[255].data(), bSilhouette + (numEdges*parentIndex), _bufferNofSilhouette[parentIndex] * sizeof(uint32_t));
 	}
 	
 	_voxelPotentialEdges->unmap();
 	_voxelSilhouetteEdges->unmap();
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
-	*/
 }
 
 void GpuOctreeLoader::_copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size)

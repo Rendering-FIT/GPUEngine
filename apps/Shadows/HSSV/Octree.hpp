@@ -2,8 +2,9 @@
 
 #include "AABB.hpp"
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <algorithm>
+#include <map>
 
 #define OCTREE_NUM_CHILDREN 8
 
@@ -15,8 +16,8 @@ struct Node
 {
 	AABB volume;
 
-	std::map<BitmaskType, std::vector<uint32_t>> edgesAlwaysCastMap;
-	std::map<BitmaskType, std::vector<uint32_t>> edgesMayCastMap;
+	std::unordered_map<BitmaskType, std::vector<uint32_t>> edgesAlwaysCastMap;
+	std::unordered_map<BitmaskType, std::vector<uint32_t>> edgesMayCastMap;
 
 	bool isValid() const
 	{
