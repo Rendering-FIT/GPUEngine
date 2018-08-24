@@ -75,6 +75,7 @@ HSSV::HSSV(
 		compressor.compressOctree(_visitor, 2);
 
 		std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+		std::cout << "Compressed size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
 
 		_visitor->shrinkOctree();
 		std::cout << "Shrinking octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
@@ -248,7 +249,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		if (multiplicity != 0)
 		{
 			const glm::vec3& lowerPoint = getEdgeVertexLow(_edges, edge);
-			const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, edge);;
+			const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, edge);
 
 			_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
 			ed.push_back(encodeEdgeMultiplicityToId(edge, multiplicity));

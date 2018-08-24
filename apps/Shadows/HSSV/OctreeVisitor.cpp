@@ -93,7 +93,7 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	//dt = t.getElapsedTimeFromLastQuerySeconds();
 	//std::cout << "Shrinking octree took " << dt << " sec\n";
 
-	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB. Compressing...\n";
+	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB. Compressing...+\n";
 }
 
 
@@ -197,7 +197,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		{
 			if (potentialBitmask.count() > 3)
 			{
-				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex, potentialBitmask.to_ulong());
+				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex, potentialBitmask.to_ullong());
 				numPotential = 0;
 			}
 
@@ -205,7 +205,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 			{
 				if((*sil).second.count()>3)
 				{
-					_storeEdgeIsAlwaysSilhouette(parent, (*sil).first, (*sil).second.to_ulong());
+					_storeEdgeIsAlwaysSilhouette(parent, (*sil).first, (*sil).second.to_ullong());
 					silhouetteBitmasks.erase(sil++);
 				}
 				else
@@ -382,11 +382,16 @@ void OctreeVisitor::assignEdgeToNodeParent(unsigned int node, unsigned int edge,
 
 	assert(parent >= 0);
 
-	auto n = _octree->getNode(parent);
+	assignEdgeToNode(parent, edge, propagatePotential, subBufferId);
+}
+
+void OctreeVisitor::assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+{
+	auto n = _octree->getNode(node);
 
 	if (n)
 	{
-		if(propagatePotential)
+		if (propagatePotential)
 			n->edgesMayCastMap[subBufferId].push_back(edge);
 		else
 			n->edgesAlwaysCastMap[subBufferId].push_back(edge);

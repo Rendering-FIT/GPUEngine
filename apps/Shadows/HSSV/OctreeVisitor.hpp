@@ -24,6 +24,7 @@ public:
 	void shrinkOctree();
 
 	void assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
+	void assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
 
 private:
 	

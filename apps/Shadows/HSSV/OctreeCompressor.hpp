@@ -11,9 +11,9 @@ public:
 	void compressOctree(std::shared_ptr<OctreeVisitor> octreeVisitor, unsigned int compressLevelHeight_1or2);
 
 protected:
-	std::bitset<BitmaskTypeSize> checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential) const;
-	void _compressSyblings(unsigned int startingID, bool processPotential);
-	void _removeEdgeFromSyblingsSparse(unsigned int startingId, unsigned int edge, bool checkPotential, const std::bitset<OCTREE_NUM_CHILDREN>& bitmask);
+	std::bitset<BitmaskTypeSizeBits> checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential, unsigned int nofSyblings) const;
+	void _compressSyblings(unsigned int startingID, bool processPotential, unsigned int compressLevelHeight_1or2);
+	void _removeEdgeFromSyblingsSparse(unsigned int startingId, unsigned int edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, unsigned int nofSyblings);
 
 private:
 	std::shared_ptr<OctreeVisitor> _visitor;

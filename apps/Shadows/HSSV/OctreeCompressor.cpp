@@ -19,17 +19,19 @@ void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, un
 #pragma omp parallel for
 	for (int index = startingIndex; index < stopIndex; index += OCTREE_NUM_CHILDREN)
 	{
-		_compressSyblings(index, true);
-		_compressSyblings(index, false);
+		_compressSyblings(index, true,  compressLevelHeight_1or2);
+		_compressSyblings(index, false, compressLevelHeight_1or2);
 	}
+
+	visitor->getOctree()->setCompressionRatio(compressLevelHeight_1or2);
 }
 
-std::bitset<BitmaskTypeSize> OctreeCompressor::checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential) const
+std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential, unsigned int nofSyblings) const
 {
-	std::bitset<OCTREE_NUM_CHILDREN> retval(0);
+	std::bitset<BitmaskTypeSizeBits> retval(0);
 	auto octree = _visitor->getOctree();
 
-	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	for (unsigned int i = 0; i<nofSyblings; ++i)
 	{
 		const auto node = octree->getNode(i + startingId);
 		const auto& buffer = checkPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
@@ -40,9 +42,15 @@ std::bitset<BitmaskTypeSize> OctreeCompressor::checkEdgePresence(unsigned int ed
 	return retval;
 }
 
-void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPotential)
+void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPotential, unsigned int compressLevelHeight_1or2)
 {
 	std::set<unsigned int> allEdgesSet;
+	int parent = startingID;
+	for (unsigned int i = 0; i < compressLevelHeight_1or2; ++i)
+		parent = _visitor->getOctree()->getNodeParent(parent);
+
+	const auto nofSyblings = ipow(OCTREE_NUM_CHILDREN, compressLevelHeight_1or2);
+
 	for (unsigned int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
 	{
 		const auto node = _visitor->getOctree()->getNode(startingID + i);
@@ -52,18 +60,18 @@ void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPo
 
 	for (const auto e : allEdgesSet)
 	{
-		const auto bitmask = checkEdgePresence(e, startingID, processPotential);
+		const auto bitmask = checkEdgePresence(e, startingID, processPotential, nofSyblings);
 		if (bitmask.count()>3)
 		{
-			_visitor->assignEdgeToNodeParent(startingID, e, processPotential, bitmask.to_ulong());
-			_removeEdgeFromSyblingsSparse(startingID, e, processPotential, bitmask);
+			_visitor->assignEdgeToNode(parent, e, processPotential, bitmask.to_ullong());
+			_removeEdgeFromSyblingsSparse(startingID, e, processPotential, bitmask, nofSyblings);
 		}
 	}
 }
 
-void OctreeCompressor::_removeEdgeFromSyblingsSparse(unsigned int startingID, unsigned int edge, bool checkPotential, const std::bitset<OCTREE_NUM_CHILDREN>& bitmask)
+void OctreeCompressor::_removeEdgeFromSyblingsSparse(unsigned int startingID, unsigned int edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, unsigned int nofSyblings)
 {
-	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	for (unsigned int i = 0; i<nofSyblings; ++i)
 	{
 		if (!bitmask[i])
 			continue;
