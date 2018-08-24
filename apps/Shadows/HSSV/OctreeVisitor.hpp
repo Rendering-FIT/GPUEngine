@@ -21,6 +21,8 @@ public:
 
 	std::shared_ptr<Octree> getOctree() { return _octree; }
 
+	void shrinkOctree();
+
 private:
 	
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex);
@@ -34,8 +36,6 @@ private:
 	};
 
 	void _sortLevel(unsigned int level);
-
-	void _shrinkOctree();
 
 	void _propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential, unsigned int subgroupSize);
 		TestResult _haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential, BitmaskType subBufferId) const;
@@ -51,11 +51,6 @@ private:
 	bool _isPointInsideNode(unsigned int nodeID, const glm::vec3& point) const;
 
 	int _getChildNodeContainingPoint(unsigned int parent, const glm::vec3& point) const;
-
-	void _compressTree();
-		std::bitset<OCTREE_NUM_CHILDREN> checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential) const;
-		void _compressSyblings(unsigned int startingID, bool processPotential);
-		void _removeEdgeFromSyblingsSparse(unsigned int startingId, unsigned int edge, bool checkPotential, const std::bitset<OCTREE_NUM_CHILDREN>& bitmask);
 
 	std::shared_ptr<Octree> _octree;
 };

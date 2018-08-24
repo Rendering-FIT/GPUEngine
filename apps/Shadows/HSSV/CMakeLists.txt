@@ -31,6 +31,8 @@ set(HSSV_FILES
 	HSSV/OctreeSerializer.hpp
 	HSSV/OctreeSerializer.cpp
 	HSSV/OctreeTraversalShader.hpp
+	HSSV/OctreeCompressor.hpp
+	HSSV/OctreeCompressor.cpp
 	
 	PARENT_SCOPE
 )

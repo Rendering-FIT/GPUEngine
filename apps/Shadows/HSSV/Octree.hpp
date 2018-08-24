@@ -8,7 +8,8 @@
 
 #define OCTREE_NUM_CHILDREN 8
 
-typedef uint32_t BitmaskType;
+typedef uint64_t BitmaskType;
+constexpr size_t BitmaskTypeSize = sizeof(BitmaskType);
 
 int ipow(int base, int exp);
 
