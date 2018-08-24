@@ -351,7 +351,7 @@ void OctreeVisitor::_processEdgesInLevel(unsigned int level, bool propagatePoten
 
 					if (result == TestResult::TRUE)
 					{
-						_assignEdgeToNodeParent(currentID, edge, propagatePotential, edgeSubBuffer.first);
+						assignEdgeToNodeParent(currentID, edge, propagatePotential, edgeSubBuffer.first);
 						_removeEdgeFromSyblings(currentID, edge, propagatePotential, edgeSubBuffer.first);
 					}
 				}
@@ -376,7 +376,7 @@ void OctreeVisitor::_removeEdgeFromSyblings(unsigned int startingID, unsigned in
 	}
 }
 
-void OctreeVisitor::_assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+void OctreeVisitor::assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
 {
 	const int parent = _octree->getNodeParent(node);
 

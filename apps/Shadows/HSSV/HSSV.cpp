@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "OctreeSerializer.hpp"
+#include "OctreeCompressor.hpp"
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -69,6 +70,14 @@ HSSV::HSSV(
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 		std::cout << "Building octree took " << dt << " seconds\n";
+
+		OctreeCompressor compressor;
+		compressor.compressOctree(_visitor, 2);
+
+		std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+
+		_visitor->shrinkOctree();
+		std::cout << "Shrinking octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
 
 		t.reset();
 		serializer.storeToFile(model->modelFilename, sceneAABBscale, _octree);
