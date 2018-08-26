@@ -285,7 +285,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		for (const auto e : silhouetteEdges)
 			of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
 		of.close();
-		
+		/*
 		std::ofstream sof;
 		sof.open("silhouette.txt");
 		sof << "SIL\n";
@@ -295,8 +295,9 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		sof << "POT\n";
 		for (const auto e : ed)
 			sof << decodeEdgeFromEncoded(e) << "(" << decodeEdgeMultiplicityFromId(e) << ")" << std::endl;
-		//*/
 		sof.close();
+		//*/
+		
 		printOnce = true;
 	}
 	//*/

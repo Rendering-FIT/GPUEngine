@@ -1,6 +1,6 @@
 #include "OctreeCompressor.hpp"
 
-#include <set>
+#include <unordered_set>
 #include <iterator>
 
 void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, unsigned int compressLevelHeight_1or2)
@@ -15,9 +15,10 @@ void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, un
 
 	const int startingIndex = _visitor->getOctree()->getNumNodesInPreviousLevels(deepestLevel);
 	const int stopIndex = _visitor->getOctree()->getTotalNumNodes();
+	const int nofSyblings = ipow(OCTREE_NUM_CHILDREN, compressLevelHeight_1or2);
 
-#pragma omp parallel for
-	for (int index = startingIndex; index < stopIndex; index += OCTREE_NUM_CHILDREN)
+	#pragma omp parallel for
+	for (int index = startingIndex; index < stopIndex; index += nofSyblings)
 	{
 		_compressSyblings(index, true,  compressLevelHeight_1or2);
 		_compressSyblings(index, false, compressLevelHeight_1or2);
@@ -44,17 +45,17 @@ std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(unsigned in
 
 void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPotential, unsigned int compressLevelHeight_1or2)
 {
-	std::set<unsigned int> allEdgesSet;
+	std::unordered_set<unsigned int> allEdgesSet;
 	int parent = startingID;
 	for (unsigned int i = 0; i < compressLevelHeight_1or2; ++i)
 		parent = _visitor->getOctree()->getNodeParent(parent);
 
 	const auto nofSyblings = ipow(OCTREE_NUM_CHILDREN, compressLevelHeight_1or2);
 
-	for (unsigned int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
+	for (unsigned int i = 0; i < nofSyblings; ++i)
 	{
 		const auto node = _visitor->getOctree()->getNode(startingID + i);
-		auto& buffer = processPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		const auto& buffer = processPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
 		std::copy(buffer.begin(), buffer.end(), std::inserter(allEdgesSet, allEdgesSet.end()));
 	}
 

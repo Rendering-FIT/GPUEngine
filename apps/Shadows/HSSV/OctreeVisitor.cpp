@@ -439,6 +439,12 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 
 	unsigned int comingFromChildId = 0;
 
+	if(_octree->getCompressionRatio()>1)
+	{
+		_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
+		return;
+	}
+
 	while(currentNodeID>=0)
 	{
 		const auto node = _octree->getNode(currentNodeID);
@@ -457,14 +463,77 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 				potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
 		}
 
-		//if(!printOnce)
-		//	std::cout << "Getting " << node->edgesAlwaysCast.size() << " silhouette and " << node->edgesMayCast.size() << " potential from node " << currentNodeID << std::endl;
 		const auto previousNodeId = currentNodeID;
 		currentNodeID = _octree->getNodeParent(currentNodeID);
 		comingFromChildId = previousNodeId - _octree->getChildrenStartingId(currentNodeID);
 	}
 
 	printOnce = true;
+}
+
+void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
+{
+	int currentNodeID = nodeID;
+
+	unsigned int currentLevel = _octree->getDeepestLevel();
+	const unsigned int levelWithCompressedNodess = currentLevel - 2;
+
+	while (currentNodeID >= 0)
+	{
+		const auto node = _octree->getNode(currentNodeID);
+
+		assert(node != nullptr);
+
+		const auto silBuffer = node->edgesAlwaysCastMap.find(255);
+		if(silBuffer!=node->edgesAlwaysCastMap.end())
+			silhouette.insert(silhouette.end(), silBuffer->second.begin(), silBuffer->second.end());
+
+		const auto potBuffer = node->edgesMayCastMap.find(255);
+		if(potBuffer!=node->edgesMayCastMap.end())
+			potential.insert(potential.end(), potBuffer->second.begin(), potBuffer->second.end());
+
+		if (currentLevel == levelWithCompressedNodess)
+		{
+			const auto compressionId = _getCompressionIdWithinParent(nodeID);
+
+			for (const auto edgeBuffer : node->edgesAlwaysCastMap)
+			{
+				if (edgeBuffer.first != 255 && edgeBuffer.first & (1ull << compressionId))
+					silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+			}
+
+			for (const auto edgeBuffer : node->edgesMayCastMap)
+			{
+				if (edgeBuffer.first != 255 && edgeBuffer.first & (1ull << compressionId))
+					potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+			}
+		}
+
+		const auto previousNodeId = currentNodeID;
+		currentNodeID = _octree->getNodeParent(currentNodeID);
+		--currentLevel;
+	}
+}
+
+unsigned int OctreeVisitor::_getCompressionIdWithinParent(unsigned int nodeId) const
+{
+	const auto compressionLevel = _octree->getCompressionRatio();
+
+	assert(compressionLevel <= 2);
+	
+	const auto relativeOneAbove = _getNodeIdWithinParent(nodeId);
+	const auto parent = _octree->getNodeParent(nodeId);
+
+	if (compressionLevel < 2)
+		return relativeOneAbove;
+	else //2
+		return relativeOneAbove + OCTREE_NUM_CHILDREN * _getNodeIdWithinParent(parent);
+}
+
+unsigned int OctreeVisitor::_getNodeIdWithinParent(unsigned int nodeId) const
+{
+	auto parent = _octree->getNodeParent(nodeId);
+	return nodeId - _octree->getChildrenStartingId(parent);
 }
 
 void OctreeVisitor::_sortLevel(unsigned int level)

@@ -31,6 +31,8 @@ private:
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID, const BitmaskType subarrayIndex);
 
+	unsigned int _getCompressionIdWithinParent(unsigned int nodeId) const;
+
 	enum class TestResult
 	{
 		TRUE,
@@ -54,6 +56,10 @@ private:
 	bool _isPointInsideNode(unsigned int nodeID, const glm::vec3& point) const;
 
 	int _getChildNodeContainingPoint(unsigned int parent, const glm::vec3& point) const;
+
+	unsigned int _getNodeIdWithinParent(unsigned int nodeId) const;
+
+	void _getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
 
 	std::shared_ptr<Octree> _octree;
 };
