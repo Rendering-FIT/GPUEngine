@@ -4,22 +4,28 @@
 #include <iostream>
 #include <sstream>
 
-std::string OctreeSerializer::_generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel) const
+std::string OctreeSerializer::_generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionRatio) const
 {
 	std::stringstream str;
-	str << modelFilename << "_" << sceneScale[0] << "_" << sceneScale[1] << "_" << sceneScale[2] << "-" << deepestLevel << ".hssvc";
+	str << modelFilename << "_" << sceneScale[0] << "_" << sceneScale[1] << "_" << sceneScale[2] << "-" << deepestLevel << "c" << compressionRatio << ".hssvc";
 
 	return str.str();
 }
 
-std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel)
+std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionLevel)
 {
-	FILE* input = fopen(_generateFileName(modelFilename, sceneScale, deepestLevel).c_str(), "rb");
+	FILE* input = fopen(_generateFileName(modelFilename, sceneScale, deepestLevel, compressionLevel).c_str(), "rb");
 	if (!input)
 		return nullptr;
 
 	//Read num levels
 	const uint32_t numLevels = _readUint(input);
+
+	//Read compression level
+	const uint32_t compression = _readUint(input);
+
+	if (compression != compressionLevel)
+		return nullptr;
 
 	//Read root AABB
 	AABB rootVolume;
@@ -27,6 +33,7 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 
 	//Create octree
 	std::shared_ptr<Octree> octree = std::make_shared<Octree>(numLevels, rootVolume);
+	octree->setCompressionLevel(compressionLevel);
 
 	//Read node data
 	const unsigned int numNodes = octree->getTotalNumNodes();
@@ -79,12 +86,15 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 
 void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::vec3& sceneScale, std::shared_ptr<Octree> octree)
 {
-	FILE* output = fopen(_generateFileName(modelFilename, sceneScale, octree->getDeepestLevel()).c_str(), "wb");
+	FILE* output = fopen(_generateFileName(modelFilename, sceneScale, octree->getDeepestLevel(), octree->getCompressionLevel()).c_str(), "wb");
 	if (!output)
 		return;
 
 	//Write octree level
 	_writeUint(output, octree->getDeepestLevel());
+
+	//Write octree compression level
+	_writeUint(output, octree->getCompressionLevel());
 
 	//Write top level AABB
 	_writeAabb(output, octree->getNode(0)->volume);

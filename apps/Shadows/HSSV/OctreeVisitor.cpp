@@ -439,7 +439,7 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 
 	unsigned int comingFromChildId = 0;
 
-	if(_octree->getCompressionRatio()>1)
+	if(_octree->getCompressionLevel()>1)
 	{
 		_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
 		return;
@@ -517,7 +517,7 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 
 unsigned int OctreeVisitor::_getCompressionIdWithinParent(unsigned int nodeId) const
 {
-	const auto compressionLevel = _octree->getCompressionRatio();
+	const auto compressionLevel = _octree->getCompressionLevel();
 
 	assert(compressionLevel <= 2);
 	
@@ -585,4 +585,21 @@ void OctreeVisitor::shrinkOctree()
 			}
 		}
 	}
+}
+
+unsigned int OctreeVisitor::getNofAllIndicesInNode(unsigned int nodeID) const
+{
+	assert(nodeID < _octree->getTotalNumNodes());
+
+	const auto node = _octree->getNode(nodeID);
+
+	unsigned int nofIndices = 0;
+
+	for (const auto& buffer : node->edgesAlwaysCastMap)
+		nofIndices += buffer.second.size();
+
+	for(const auto& buffer : node->edgesMayCastMap)
+		nofIndices += buffer.second.size();
+
+	return nofIndices;
 }

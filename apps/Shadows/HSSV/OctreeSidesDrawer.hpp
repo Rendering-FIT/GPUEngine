@@ -44,16 +44,27 @@ protected:
 	void _generateSidesFromSilhouetteCS(const glm::vec4& lightPos, unsigned cellContainingLightId);
 
 	//TODO nahradit bool enumom
-	unsigned int _loadEdgesFromIdUpGetNof(unsigned int cellContainingLightId, bool loadSilhouette);
+	//unsigned int _loadEdgesFromIdUpGetNof(unsigned int cellContainingLightId, bool loadSilhouette);
 
 	void _initShaders();
 	void _initBuffers();
 		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel, size_t& maxPath) const;
 		void _getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const;
-	
+			void _getNofEdgesInNode(unsigned int nodeId, size_t& potential, size_t& silhouette) const;
+
 	bool _generateLoadGpuTraversalShader();
 	void _getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight);
-	
+
+	void _processSubBuffer(
+		const std::unordered_map<BitmaskType, 
+		std::vector<uint32_t>>::value_type& subBuffer, 
+		std::vector<uint32_t>& compressedNodesInfo,
+		std::vector<uint32_t>& nofEdgesPrefixSums,
+		uint32_t* gpuMappedBuffer
+		);
+
+	void _breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const;
+
 private:	
 	int _lastFrameCellIndex = -1;
 
@@ -64,7 +75,7 @@ private:
 	std::shared_ptr<ge::gl::Program> _drawSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _testAndGenerateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
-	std::shared_ptr<ge::gl::Program> _gpuOctreeTraversalProgramSingleBuffer = nullptr;
+	//std::shared_ptr<ge::gl::Program> _gpuOctreeTraversalProgramSingleBuffer = nullptr;
 	std::shared_ptr<ge::gl::Program> _gpuOctreeTraversalProgramMultipleBuffers = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
@@ -85,6 +96,9 @@ private:
 
 	std::shared_ptr<ge::gl::Buffer> _indirectDispatchCsPotential = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _indirectDispatchCsSilhouette = nullptr;
+
+	std::shared_ptr<ge::gl::Buffer> _compressedNodesInfoBuffer = nullptr;
+	std::shared_ptr<ge::gl::Buffer> _compressedNodesInfoIndexingBuffer = nullptr;
 
 	std::shared_ptr<GpuEdges> _gpuEdges;
 

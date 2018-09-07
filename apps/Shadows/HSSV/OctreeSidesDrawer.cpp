@@ -89,6 +89,7 @@ void OctreeSidesDrawer::_initShaders()
 			generateSidesCS)
 		);
 
+	/*
 	_gpuOctreeTraversalProgramSingleBuffer = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
 			"#version 450 core\n",
@@ -96,6 +97,7 @@ void OctreeSidesDrawer::_initShaders()
 			ge::gl::Shader::define("DEEPEST_LEVEL", _octreeVisitor->getOctree()->getDeepestLevel()),
 			edgeTraversalShaderBody)
 		);
+	*/
 }
 
 //#define USE_VERSION_1
@@ -105,7 +107,7 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 #ifdef USE_VERSION_1
 	std::string shaderBody = genTraversalComputeShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #else
-	std::string shaderBody = genTraversalComputeShader2(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
+	std::string shaderBody = genTraversalComputeShader2Compress(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);//genTraversalComputeShader2(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #endif
 
 	_gpuOctreeTraversalProgramMultipleBuffers = std::make_shared<ge::gl::Program>(
@@ -113,7 +115,7 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 
 	return _gpuOctreeTraversalProgramMultipleBuffers->getValidateStatus();
 }
-/*
+
 void OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
 {
 	_initShaders();
@@ -165,6 +167,44 @@ void OctreeSidesDrawer::_initBuffers()
 	const uint32_t indirectData[] = { 0, 1, 1 };
 	_indirectDispatchCsPotential = std::make_shared<ge::gl::Buffer>(3 * sizeof(uint32_t), indirectData);
 	_indirectDispatchCsSilhouette = std::make_shared<ge::gl::Buffer>(3 * sizeof(uint32_t), indirectData);
+
+	_compressedNodesInfoIndexingBuffer = std::make_shared<ge::gl::Buffer>(_octreeVisitor->getOctree()->getTotalNumNodes() * sizeof(uint32_t));
+	_compressedNodesInfoBuffer = std::make_shared<ge::gl::Buffer>();
+}
+
+void OctreeSidesDrawer::_breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const
+{
+	if (std::is_same<unsigned char, BitmaskType>::value)
+		vectorToStore.push_back(id);
+	else
+	{
+		const unsigned int nofUints = BitmaskTypeSizeBits / 32;
+		const uint32_t* val = reinterpret_cast<const uint32_t*>(&id);
+
+		for (unsigned int i = 0; i < nofUints; ++i)
+			vectorToStore.push_back(val[i]);
+	}
+}
+
+void OctreeSidesDrawer::_processSubBuffer(
+	const std::unordered_map<BitmaskType,
+	std::vector<uint32_t>>::value_type& subBuffer,
+	std::vector<uint32_t>& compressedNodesInfo,
+	std::vector<uint32_t>& nofEdgesPrefixSums,
+	uint32_t* gpuMappedBuffer
+)
+{
+	const auto subBufferSize = subBuffer.second.size();
+	assert(subBufferSize);
+
+	memcpy(gpuMappedBuffer + nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1], subBuffer.second.data(), subBufferSize * sizeof(uint32_t));
+	nofEdgesPrefixSums.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1] + subBufferSize);
+
+	//Push compression ID
+	_breakCompressionIdToUintsAndPush(subBuffer.first, compressedNodesInfo);
+
+	//Push starting index
+	compressedNodesInfo.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1]);
 }
 
 void OctreeSidesDrawer::_loadOctreeToGpu()
@@ -172,11 +212,15 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 	const unsigned int nofVoxels = _octreeVisitor->getOctree()->getTotalNumNodes();
 	
 	uint64_t remainingSize = _octreeVisitor->getOctree()->getOctreeSizeBytes();
-	const uint64_t maxBufferSize = 2ull * 1024ull * 1024ull * 1024ull;
+	const uint64_t maxBufferSize = 2ull * 1024ull * 1024ull * 1024ull; //2GB
 	unsigned int currentNode = 0;
 
 	std::vector<uint32_t> nofEdgesPrefixSums;
+	std::vector<uint32_t> compressedNodesInfo;
+	std::vector<uint32_t> compressedNodesInfoIndexing;
+
 	nofEdgesPrefixSums.reserve(nofVoxels + 1);
+	compressedNodesInfoIndexing.reserve(nofVoxels);
 
 	auto octree = _octreeVisitor->getOctree();
 
@@ -196,27 +240,30 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 		{
 			auto node = octree->getNode(currentNode);
 
-			uint64_t sz = (node->edgesAlwaysCast.size() + node->edgesMayCast.size()) * sizeof(uint32_t);
+			uint64_t sz = _octreeVisitor->getNofAllIndicesInNode(currentNode);
 
 			if ((sz + currentNumIndices*sizeof(uint32_t)) > currentSize)
 				break;
 
 			currentNode++;
 
-			if (node->edgesMayCast.size())
-			{
-				memcpy(dataPtr + nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1], node->edgesMayCast.data(), node->edgesMayCast.size() * sizeof(uint32_t));
-				currentNumIndices += node->edgesMayCast.size();
-			}
-			nofEdgesPrefixSums.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1] + node->edgesMayCast.size());
+			compressedNodesInfoIndexing.push_back(compressedNodesInfo.size());
+			compressedNodesInfo.push_back(node->edgesMayCastMap.size());
+			compressedNodesInfo.push_back(node->edgesAlwaysCastMap.size());
 
-			const auto offset = nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1];
-			if (node->edgesAlwaysCast.size())
+			for (const auto& subBuffer : node->edgesMayCastMap)
 			{
-				memcpy(dataPtr + nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1], node->edgesAlwaysCast.data(), node->edgesAlwaysCast.size() * sizeof(uint32_t));
-				currentNumIndices += node->edgesAlwaysCast.size();
+				_processSubBuffer(subBuffer, compressedNodesInfo, nofEdgesPrefixSums, dataPtr);
+				//currentNumIndices += subBuffer.second.size();
 			}
-			nofEdgesPrefixSums.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1] + node->edgesAlwaysCast.size());
+
+			for (const auto& subBuffer : node->edgesAlwaysCastMap)
+			{
+				_processSubBuffer(subBuffer, compressedNodesInfo, nofEdgesPrefixSums, dataPtr);
+				//currentNumIndices += subBuffer.second.size();
+			}
+
+			currentNumIndices += sz;
 		}
 
 		buffer->unmap();
@@ -252,6 +299,17 @@ void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, s
 	}
 }
 
+void OctreeSidesDrawer::_getNofEdgesInNode(unsigned int nodeId, size_t& potential, size_t& silhouette) const
+{
+	potential = silhouette = 0;
+	const auto node = _octreeVisitor->getOctree()->getNode(nodeId);
+	for (const auto& buffer : node->edgesAlwaysCastMap)
+		silhouette += buffer.second.size();
+
+	for (const auto& buffer : node->edgesMayCastMap)
+		potential += buffer.second.size();
+}
+
 void OctreeSidesDrawer::_getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const
 {
 	potential = 0;
@@ -262,9 +320,10 @@ void OctreeSidesDrawer::_getMaximumNofEdgesInLevel(unsigned int level, size_t& p
 
 	for(unsigned int i=0; i<levelSize; ++i)
 	{
-		const auto n = _octreeVisitor->getOctree()->getNode(startingIndex + i);
-		potential = std::max(potential, n->edgesMayCast.size());
-		silhouette = std::max(silhouette, n->edgesAlwaysCast.size());
+		size_t nodePot = 0, nodeSil = 0;
+		_getNofEdgesInNode(startingIndex + i, nodePot, nodeSil);
+		potential = std::max(potential, nodePot);
+		silhouette = std::max(silhouette,nodeSil);
 	}
 }
 
@@ -319,7 +378,7 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 
 	_lastFrameCellIndex = cellIndex;
 }
-
+/*
 unsigned int OctreeSidesDrawer::_loadEdgesFromIdUpGetNof(unsigned cellContainingLightId, bool loadSilhouette)
 {
 	const int deepestLevel = _octreeVisitor->getOctree()->getDeepestLevel();

@@ -58,7 +58,8 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
 	t.reset();
-	//_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel);
+	const unsigned int compressionLevel = 2;
+	_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel, compressionLevel);
 	if (!_octree)
 	{
 		_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
@@ -72,7 +73,7 @@ HSSV::HSSV(
 		std::cout << "Building octree took " << dt << " seconds\n";
 
 		OctreeCompressor compressor;
-		compressor.compressOctree(_visitor, 2);
+		compressor.compressOctree(_visitor, compressionLevel);
 
 		std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
 		std::cout << "Compressed size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
@@ -90,8 +91,8 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
 
-	//_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
-	//_octreeSidesDrawer->init(_gpuEdges);
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
+	_octreeSidesDrawer->init(_gpuEdges);
 	
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();

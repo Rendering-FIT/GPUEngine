@@ -24,7 +24,7 @@ void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, un
 		_compressSyblings(index, false, compressLevelHeight_1or2);
 	}
 
-	visitor->getOctree()->setCompressionRatio(compressLevelHeight_1or2);
+	visitor->getOctree()->setCompressionLevel(compressLevelHeight_1or2);
 }
 
 std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential, unsigned int nofSyblings) const

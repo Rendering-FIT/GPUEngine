@@ -6,11 +6,11 @@
 class OctreeSerializer
 {
 public:
-	std::shared_ptr<Octree> loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel);
+	std::shared_ptr<Octree> loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionLevel);
 	void storeToFile(const std::string& modelFilename, const glm::vec3& sceneScale, std::shared_ptr<Octree> octree);
 
 protected:
-	std::string _generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel) const;
+	std::string _generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionLevel) const;
 
 	uint32_t _readUint(FILE* input);
 	void	 _readAabb(FILE* input, AABB& bbox);

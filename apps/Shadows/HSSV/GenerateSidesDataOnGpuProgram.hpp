@@ -23,7 +23,7 @@ int getNodeIdInLevel(uint nodeID, uint level)
 	return int(nodeID) - int(getNumNodesInPreviousLevels(int(level)));
 }
 
-int getNodeParent(unsigned int nodeID, uint nodeLevel)
+int getNodeParent(uint nodeID, uint nodeLevel)
 {
 	if (nodeID == 0)
 		return -1;
@@ -32,6 +32,13 @@ int getNodeParent(unsigned int nodeID, uint nodeLevel)
 	const int parentRelativeID = idInLevel / 8;
 
 	return parentRelativeID + int(getNumNodesInPreviousLevels(int(nodeLevel) - 1));
+}
+
+int getChildrenStartingId(uint nodeID, unsigned int nodeLevel)
+{
+	const int idInLevel = getNodeIdInLevel(nodeID, nodeLevel);
+	
+	return 8*idInLevel + levelSizesInclusiveSum[nodeLevel];
 }
 ).";
 

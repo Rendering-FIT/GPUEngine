@@ -8,7 +8,7 @@
 
 #define OCTREE_NUM_CHILDREN 8
 
-typedef uint64_t BitmaskType;
+typedef unsigned char BitmaskType;
 constexpr size_t BitmaskTypeSizeBits = 8*sizeof(BitmaskType);
 
 int ipow(int base, int exp);
@@ -90,8 +90,8 @@ public:
 
 	void makeNodesFit();
 
-	void setCompressionRatio(unsigned int ratio) { _treeCompressionRatio = ratio; }
-	unsigned int getCompressionRatio() const { return _treeCompressionRatio; }
+	void setCompressionLevel(unsigned int ratio) { _treeCompressionRatio = ratio; }
+	unsigned int getCompressionLevel() const { return _treeCompressionRatio; }
 
 private:
 	unsigned int _deepestLevel;

@@ -26,6 +26,8 @@ public:
 	void assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
 	void assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
 
+	unsigned int getNofAllIndicesInNode(unsigned int nodeID) const;
+
 private:
 	
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex);
