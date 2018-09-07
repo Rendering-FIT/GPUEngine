@@ -122,7 +122,7 @@ void OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
 
 	_initBuffers();
 #ifdef USE_GPU_OCTREE
-	//_loadOctreeToGpu();
+	_loadOctreeToGpu();
 	if (!_generateLoadGpuTraversalShader())
 		return;
 

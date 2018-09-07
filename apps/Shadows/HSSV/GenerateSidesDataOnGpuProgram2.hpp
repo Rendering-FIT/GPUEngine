@@ -80,7 +80,7 @@ std::string isCompressionIdPresentFunction(unsigned int compressionLevel)
 std::string loadSubBufferMaskfunction(unsigned int nofCompressionIdUints)
 {
 	std::stringstream str;
-	str << "inline void loadSubBufferMask(const uint startingIndexToNodeInfo, uint subBufferIndex, inout uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID])\n";
+	str << "void loadSubBufferMask(const uint startingIndexToNodeInfo, uint subBufferIndex, inout uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID])\n";
 	str << "{\n";
 
 	for(unsigned int i=0; i<nofCompressionIdUints; ++i)
@@ -182,121 +182,122 @@ std::string genMain2Compress(unsigned int numBuffers)
 	std::stringstream str;
 
 	str << "void main()\n{\n";
-	str << "int currentNode = int(cellContainingLight);\n";
-	str << "int currentLevel = int(treeDepth);\n";
+	str << "	int currentNode = int(cellContainingLight);\n";
+	str << "	int currentLevel = int(treeDepth);\n";
 	str << "\n";
-	str << "int prefixSum = 0;\n";
-	str << "int myNode = -1;\n";
-	str << "bool getPotential = true;\n";
-	str << "uint myStartingIndex = 0;\n";
+	str << "	int prefixSum = 0;\n";
+	str << "	int myNode = -1;\n";
+	str << "	bool getPotential = true;\n";
+	str << "	uint myStartingIndex = 0;\n";
 	
 	if(numBuffers>1)
-		str << "uint bufferIndex = 0;\n";
+		str << "	uint bufferIndex = 0;\n";
 
 	str << "\n";
-	str << "while (currentLevel >= 0)\n";
-	str << "{\n";
+	str << "	while (currentLevel >= 0)\n";
+	str << "	{\n";
 	if (numBuffers>1)
-		str << "	currentBufferIndex = getNodeBufferIndex(currentNode);\n";
+		str << "		currentBufferIndex = getNodeBufferIndex(currentNode);\n";
 	str << "\n";
-	str << "	//Potential edges\n";
-	str << "	const unsigned int startingIndexToNodeInfo = nodeInfoIndexing[currentNode];\n";
-	str << "	const unsigned int nofSubBuffersPot = nodeInfo[startingIndexToNodeInfo + 0];\n";
+	str << "		//Potential edges\n";
+	str << "		const unsigned int startingIndexToNodeInfo = nodeInfoIndexing[currentNode];\n";
+	str << "		const unsigned int nofSubBuffersPot = nodeInfo[startingIndexToNodeInfo + 0];\n";
 	str << "\n";
-	str << "	uint currentNofEdges = 0;\n";
+	str << "		uint currentNofEdges = 0;\n";
 	str << "\n";
-	str << "	for (unsigned int subBufferIndex = 0; i<nofSubBuffersPot; ++i)\n";
-	str << "	{\n";
-	str << "		const uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID];\n";
-	str << "        loadSubBufferMask(startingIndexToNodeInfo, subBufferIndex, subBufferMask)\n;";
-	str << "		const uint compressionId = getCompressionIdWithinParent(cellContainingLight, currentNode, currentLevel);\n";
-	str << "		if (!isCompressionIdPresent(compressionId, subBufferMask, currentLevel))\n";
+	str << "		for (unsigned int subBufferIndex = 0; i<nofSubBuffersPot; ++i)\n";
+	str << "		{\n";
+	str << "			uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID];\n";
+	str << "			loadSubBufferMask(startingIndexToNodeInfo, subBufferIndex, subBufferMask);\n";
+	str << "			const uint compressionId = getCompressionIdWithinParent(cellContainingLight, currentNode, currentLevel);\n";
+	str << "			if (!isCompressionIdPresent(compressionId, subBufferMask, currentLevel))\n";
 	str << "			continue;\n";
 	str << "\n";
-	str << "		const uint bufferStart = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO*subBufferIndex + NOF_UINTS_PER_COMPRESSION_ID]\n";
-	str << "		const uint startPotentialCurrent = nofEdgesPrefixSum[bufferStart];\n";
-	str << "		const uint endPotentialCurrent = nofEdgesPrefixSum[bufferStart + 1];\n";
-	str << "		const uint numPotential = endPotentialCurrent - startPotentialCurrent;\n";
-	str << "		currentNofEdges += numPotential;\n";
+	str << "			const uint bufferStart = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO*subBufferIndex + NOF_UINTS_PER_COMPRESSION_ID];\n";
+	str << "			const uint startPotentialCurrent = nofEdgesPrefixSum[bufferStart];\n";
+	str << "			const uint endPotentialCurrent = nofEdgesPrefixSum[bufferStart + 1];\n";
+	str << "			const uint numPotential = endPotentialCurrent - startPotentialCurrent;\n";
+	str << "			currentNofEdges += numPotential;\n";
 	str << "\n";
-	str << "		if (currentNofPotEdges>gl_GlobalInvocationID.x)\n";
-	str << "		{\n";
-	str << "			myNode = int(currentNode);\n";
-	str << "			getPotential = true;\n";
-	str << "			myStartingIndex = startPotentialCurrent + (gl_GlobalInvocationID.x - currentNofEdges);\n";
-	str << "			break;\n";
+	str << "			if (currentNofPotEdges>gl_GlobalInvocationID.x)\n";
+	str << "			{\n";
+	str << "				myNode = int(currentNode);\n";
+	str << "				getPotential = true;\n";
+	str << "				myStartingIndex = startPotentialCurrent + (gl_GlobalInvocationID.x - currentNofEdges);\n";
+	str << "				break;\n";
+	str << "			}\n";
 	str << "		}\n";
-	str << "	}\n";
-	str << "	//Silhouette edges\n";
-	str << "	const unsigned int nofSubBuffersSil = nodeInfo[startingIndexToNodeInfo + 1];\n";
+	str << "		//Silhouette edges\n";
+	str << "		const unsigned int nofSubBuffersSil = nodeInfo[startingIndexToNodeInfo + 1];\n";
 	str << "\n";
-	str << "	if (myNode<0) for (unsigned int subBufferIndex = 0; i<nofSubBuffersSil; ++i)\n";
-	str << "	{\n";
-	str << "		const uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID];\n";
-	str << "        loadSubBufferMask(startingIndexToNodeInfo, subBufferIndex, subBufferMask)\n;";
-	str << "		const uint compressionId = getCompressionIdWithinParent(cellContainingLight, currentNode, currentLevel);\n";
-	str << "		if (!isCompressionIdPresent(compressionId, subBufferMask, currentLevel))\n";
-	str << "			continue;\n";
-	str << "\n";
-	str << "		const uint bufferStart = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO*(subBufferIndex+nofSubBuffersPot) + NOF_UINTS_PER_COMPRESSION_ID]\n";
-	str << "		const uint startSilhouetteCurrent = nofEdgesPrefixSum[bufferStart];\n";
-	str << "		const uint endSilhouetteCurrent = nofEdgesPrefixSum[bufferStart + 1];\n";
-	str << "		const uint numSilhouette = endSilhouetteCurrent - startSilhouetteCurrent;\n";
-	str << "		currentNofEdges += numSilhouette;\n";
-	str << "\n";
-	str << "		if (currentNofPotEdges>gl_GlobalInvocationID.x)\n";
+	str << "		if (myNode<0) for (unsigned int subBufferIndex = 0; i<nofSubBuffersSil; ++i)\n";
 	str << "		{\n";
-	str << "			myNode = int(currentNode);\n";
-	str << "			getPotential = false;\n";
-	str << "			myStartingIndex = startSilhouetteCurrent + (gl_GlobalInvocationID.x - currentNofEdges);\n";
-	str << "			break;\n";
+	str << "			uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID];\n";
+	str << "			loadSubBufferMask(startingIndexToNodeInfo, subBufferIndex, subBufferMask);\n";
+	str << "			const uint compressionId = getCompressionIdWithinParent(cellContainingLight, currentNode, currentLevel);\n";
+	str << "			if (!isCompressionIdPresent(compressionId, subBufferMask, currentLevel))\n";
+	str << "				continue;\n";
+	str << "\n";
+	str << "			const uint bufferStart = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO*(subBufferIndex+nofSubBuffersPot) + NOF_UINTS_PER_COMPRESSION_ID];\n";
+	str << "			const uint startSilhouetteCurrent = nofEdgesPrefixSum[bufferStart];\n";
+	str << "			const uint endSilhouetteCurrent = nofEdgesPrefixSum[bufferStart + 1];\n";
+	str << "			const uint numSilhouette = endSilhouetteCurrent - startSilhouetteCurrent;\n";
+	str << "			currentNofEdges += numSilhouette;\n";
+	str << "\n";
+	str << "			if (currentNofPotEdges>gl_GlobalInvocationID.x)\n";
+	str << "			{\n";
+	str << "				myNode = int(currentNode);\n";
+	str << "				getPotential = false;\n";
+	str << "				myStartingIndex = startSilhouetteCurrent + (gl_GlobalInvocationID.x - currentNofEdges);\n";
+	str << "				break;\n";
+	str << "			}\n";
 	str << "		}\n";
-	str << "	}\n";
 	str << "\n";
-	str << "	if (myNode >= 0)\n";
-	str << "	{\n";
-	str << "		const uint64_t maskPotential = ballotARB(getPotential);\n";
-	str << "		if (getPotential)\n";
+	str << "		if (myNode >= 0)\n";
 	str << "		{\n";
-	str << "			const uvec2 maskPotentialUnpack = unpackUint2x32(maskPotential);\n";
-	str << "			const uint numPotential = bitCount(maskPotentialUnpack.x) + bitCount(maskPotentialUnpack.y);\n";
-	str << "			const int firstSet = getLSB64(maskPotential);\n";
-	str << "			const uint64_t andMask = (uint64_t(1) << gl_SubGroupInvocationARB) - uint64_t(1);\n";
-	str << "			const uvec2 maskIdxPacked = unpackUint2x32(maskPotential & andMask);\n";
-	str << "			const uint idxPotentialInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
-	str << "			unsigned int storeIndexPot;\n";
-	str << "			if (gl_SubGroupInvocationARB == firstSet) storeIndexPot = atomicAdd(nofPotential, numPotential);\n";
-	str << "			storeIndexPot = readInvocationARB(storeIndexPot, firstSet) + idxPotentialInWarp;\n";
+	str << "			const uint64_t maskPotential = ballotARB(getPotential);\n";
+	str << "			if (getPotential)\n";
+	str << "			{\n";
+	str << "				const uvec2 maskPotentialUnpack = unpackUint2x32(maskPotential);\n";
+	str << "				const uint numPotential = bitCount(maskPotentialUnpack.x) + bitCount(maskPotentialUnpack.y);\n";
+	str << "				const int firstSet = getLSB64(maskPotential);\n";
+	str << "				const uint64_t andMask = (uint64_t(1) << gl_SubGroupInvocationARB) - uint64_t(1);\n";
+	str << "				const uvec2 maskIdxPacked = unpackUint2x32(maskPotential & andMask);\n";
+	str << "				const uint idxPotentialInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
+	str << "				unsigned int storeIndexPot;\n";
+	str << "				if (gl_SubGroupInvocationARB == firstSet) storeIndexPot = atomicAdd(nofPotential, numPotential);\n";
+	str << "				storeIndexPot = readInvocationARB(storeIndexPot, firstSet) + idxPotentialInWarp;\n";
 	str << "\n";
 
 	if (numBuffers > 1)
-		str << "            potentialEdges[storeIndexPot] = getNodeFromBuffer(myStartingIndex, currentBufferIndex);\n";
+		str << "				potentialEdges[storeIndexPot] = getNodeFromBuffer(myStartingIndex, currentBufferIndex);\n";
 	else
-		str << "            potentialEdges[storeIndexPot] = edges0[myStartingIndex];\n";
+		str << "				potentialEdges[storeIndexPot] = edges0[myStartingIndex];\n";
 
-	str << "			break;\n";
-	str << "		}\n";
+	str << "				break;\n";
+	str << "			}\n";
 	str << "\n";
-	str << "		const uint64_t maskSilhouette = ballotARB(!getPotential);\n";
-	str << "		if (!getPotential)\n";
-	str << "		{\n";
-	str << "			const uvec2 maskSilhouetteUnpack = unpackUint2x32(maskSilhouette);\n";
-	str << "			const uint numSilhouette = bitCount(maskSilhouetteUnpack.x) + bitCount(maskSilhouetteUnpack.y);\n";
-	str << "			const int firstSet = getLSB64(maskSilhouette);\n";
-	str << "			const uint64_t andMask = (uint64_t(1) << gl_SubGroupInvocationARB) - uint64_t(1);\n";
-	str << "			const uvec2 maskIdxPacked = unpackUint2x32(maskSilhouette & andMask);\n";
-	str << "			const uint idxSilhouetteInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
-	str << "			unsigned int storeIndexSil;\n";
-	str << "			if (gl_SubGroupInvocationARB == firstSet) storeIndexSil = atomicAdd(nofSilhouette, numSilhouette);\n";
-	str << "			storeIndexSil = readInvocationARB(storeIndexSil, firstSet) + idxSilhouetteInWarp;\n";
+	str << "			const uint64_t maskSilhouette = ballotARB(!getPotential);\n";
+	str << "			if (!getPotential)\n";
+	str << "			{\n";
+	str << "				const uvec2 maskSilhouetteUnpack = unpackUint2x32(maskSilhouette);\n";
+	str << "				const uint numSilhouette = bitCount(maskSilhouetteUnpack.x) + bitCount(maskSilhouetteUnpack.y);\n";
+	str << "				const int firstSet = getLSB64(maskSilhouette);\n";
+	str << "				const uint64_t andMask = (uint64_t(1) << gl_SubGroupInvocationARB) - uint64_t(1);\n";
+	str << "				const uvec2 maskIdxPacked = unpackUint2x32(maskSilhouette & andMask);\n";
+	str << "				const uint idxSilhouetteInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
+	str << "				unsigned int storeIndexSil;\n";
+	str << "				if (gl_SubGroupInvocationARB == firstSet) storeIndexSil = atomicAdd(nofSilhouette, numSilhouette);\n";
+	str << "				storeIndexSil = readInvocationARB(storeIndexSil, firstSet) + idxSilhouetteInWarp;\n";
 	str << "\n";
 
 	if (numBuffers > 1)
-		str << "            silhouetteEdges[storeIndexSil] = getNodeFromBuffer(myStartingIndex, currentBufferIndex);\n";
+		str << "				silhouetteEdges[storeIndexSil] = getNodeFromBuffer(myStartingIndex, currentBufferIndex);\n";
 	else
-		str << "            silhouetteEdges[storeIndexSil] = edges0[myStartingIndex];\n";
+		str << "				silhouetteEdges[storeIndexSil] = edges0[myStartingIndex];\n";
 
-	str << "			break;\n";
+	str << "				break;\n";
+	str << "			}\n";
 	str << "		}\n";
 	str << "	}\n";
 	str << "}\n";
@@ -400,8 +401,8 @@ std::string genTraversalComputeShader2Compress(const std::vector<uint32_t>& last
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilhouette{ uint nofSilhouette; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialEdges[]; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _silhouette{ uint silhouetteEdges[]; };\n";
-	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nodeInfoBuffer {uint nodeInfo[]; }\n";
-	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nodeInfoBufferIndexing {uint nodeInfoIndexing[]; }\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nodeInfoBuffer {uint nodeInfo[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nodeInfoBufferIndexing {uint nodeInfoIndexing[]; };\n";
 
 	str << "uniform uint cellContainingLight;\n\n";
 

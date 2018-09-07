@@ -38,7 +38,7 @@ int getChildrenStartingId(uint nodeID, unsigned int nodeLevel)
 {
 	const int idInLevel = getNodeIdInLevel(nodeID, nodeLevel);
 	
-	return 8*idInLevel + levelSizesInclusiveSum[nodeLevel];
+	return 8*idInLevel + int(levelSizesInclusiveSum[nodeLevel]);
 }
 ).";
 

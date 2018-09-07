@@ -58,7 +58,7 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
 	t.reset();
-	const unsigned int compressionLevel = 2;
+	const unsigned int compressionLevel = 1;
 	_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel, compressionLevel);
 	if (!_octree)
 	{
