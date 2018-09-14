@@ -195,16 +195,19 @@ void OctreeSidesDrawer::_processSubBuffer(
 )
 {
 	const auto subBufferSize = subBuffer.second.size();
-	assert(subBufferSize);
+	assert(subBufferSize!=0);
 
 	memcpy(gpuMappedBuffer + nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1], subBuffer.second.data(), subBufferSize * sizeof(uint32_t));
+	
+	const auto startIndex = nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1];
+	
 	nofEdgesPrefixSums.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1] + subBufferSize);
 
 	//Push compression ID
 	_breakCompressionIdToUintsAndPush(subBuffer.first, compressedNodesInfo);
 
 	//Push starting index
-	compressedNodesInfo.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1]);
+	compressedNodesInfo.push_back(startIndex);
 }
 
 void OctreeSidesDrawer::_loadOctreeToGpu()
@@ -252,16 +255,10 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 			compressedNodesInfo.push_back(node->edgesAlwaysCastMap.size());
 
 			for (const auto& subBuffer : node->edgesMayCastMap)
-			{
 				_processSubBuffer(subBuffer, compressedNodesInfo, nofEdgesPrefixSums, dataPtr);
-				//currentNumIndices += subBuffer.second.size();
-			}
 
 			for (const auto& subBuffer : node->edgesAlwaysCastMap)
-			{
 				_processSubBuffer(subBuffer, compressedNodesInfo, nofEdgesPrefixSums, dataPtr);
-				//currentNumIndices += subBuffer.second.size();
-			}
 
 			currentNumIndices += sz;
 		}
@@ -273,6 +270,9 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 	}
 
 	_voxelNofPotentialSilhouetteEdgesPrefixSum = std::make_shared<ge::gl::Buffer>(nofEdgesPrefixSums.size() * sizeof(uint32_t), nofEdgesPrefixSums.data());
+	_compressedNodesInfoBuffer->alloc(compressedNodesInfo.size() * sizeof(uint32_t));
+	_compressedNodesInfoBuffer->setData(compressedNodesInfo.data());
+	_compressedNodesInfoIndexingBuffer->setData(compressedNodesInfoIndexing.data());
 }
 
 void OctreeSidesDrawer::_getMaxPossibleEdgeCountInTraversal(size_t& potential, size_t& silhouette, size_t& maxInVoxel, size_t& maxPath) const
@@ -732,7 +732,7 @@ void OctreeSidesDrawer::_loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int v
 }
 */
 
-//#include <fstream>
+#include <fstream>
 void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight)
 {
 	if (_timer) _timer->stamp("");
@@ -768,6 +768,8 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 	nofSilhouetteEdgesBuffer->bindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++, 0, sizeof(uint32_t));
 	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
+	_compressedNodesInfoBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
+	_compressedNodesInfoIndexingBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
 #ifdef USE_VERSION_1
 	ge::gl::glDispatchCompute(ceil(float(_maxNofEdgesInVoxel) / float(_workgroupSize)), 1, 1);
@@ -777,12 +779,14 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 	bindingPoint = 0;
 	for (const auto b : _gpuOctreeBuffers)
 		b->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
-
+	ge::gl::glFinish();
 	_voxelNofPotentialSilhouetteEdgesPrefixSum->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	nofPotentialEdgesBuffer->unbindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	nofSilhouetteEdgesBuffer->unbindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
+	_compressedNodesInfoBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
+	_compressedNodesInfoIndexingBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 
@@ -790,7 +794,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 	//DEBUG
 	//Get data
-	/*
+
 	uint32_t nofPot = 0, nofSil = 0;
 	nofPotentialEdgesBuffer->getData(&nofPot, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->getData(&nofSil, sizeof(uint32_t), 0);

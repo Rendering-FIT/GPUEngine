@@ -2,7 +2,6 @@
 #include "Plane.hpp"
 #include "GeometryOperations.hpp"
 
-#include <stack>
 #include <iostream>
 #include <bitset>
 #include <set>
@@ -435,7 +434,7 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 {
 	int currentNodeID = nodeID;
 
-	static bool printOnce = false;
+	static bool printOnce = true;
 
 	unsigned int comingFromChildId = 0;
 
@@ -451,16 +450,33 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 
 		assert(node != nullptr);
 
+		if(printOnce) printf("Node %d:\n", currentNodeID);
+
 		for (const auto edgeBuffer : node->edgesAlwaysCastMap)
 		{
-			if(edgeBuffer.first & (1<< comingFromChildId))
+			if (edgeBuffer.first & (1 << comingFromChildId))
+			{
 				silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+				if(printOnce)
+				{
+					printf("- Silhouette ID: %d:\n", edgeBuffer.first);
+					for (const auto item : edgeBuffer.second)
+						printf("\t%d (%d)\n", decodeEdgeFromEncoded(item), decodeEdgeMultiplicityFromId(item));
+				}
+			}
 		}
 			
 		for (const auto edgeBuffer : node->edgesMayCastMap)
 		{
 			if (edgeBuffer.first & (1 << comingFromChildId))
 				potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+
+			if(printOnce)
+			{
+				printf("- Potential ID: %d:\n", edgeBuffer.first);
+				for (const auto item : edgeBuffer.second)
+					printf("\t%d\n", edgeBuffer.first);
+			}
 		}
 
 		const auto previousNodeId = currentNodeID;
@@ -468,7 +484,7 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 		comingFromChildId = previousNodeId - _octree->getChildrenStartingId(currentNodeID);
 	}
 
-	printOnce = true;
+	printOnce = false;
 }
 
 void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const

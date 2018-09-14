@@ -16,28 +16,26 @@ int getLSB64(uint64_t num)
 std::string getCompressionIdWithinParentFunction(unsigned int compressionLevel)
 {
 	const std::string c1 = R".(
-	uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint compressionParentLevel)
-	{
-		return nodeId - uint(getChildrenStartingId(compressionParentId, compressionParentLevel));
-	}
-	).";
+uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint compressionParentLevel)
+{
+	return nodeId - uint(getChildrenStartingId(compressionParentId, compressionParentLevel));
+}
+).";
 
 	const std::string c2 = R".(
-	uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint compressionParentLevel)
-	{
-		const uint depth = treeDepth - compressionParentLevel;
-
+uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint compressionParentLevel)
+{
+	const uint depth = treeDepth - compressionParentLevel;
 		if(depth!=COMPRESSION_LEVEL)
-			return 0;
-
+		return 0;
 		int startingNode = compressionParentId;
-		
-		for(uint i = 0; i<depth; ++i)
-			startingNode = getChildrenStartingId(startingNode, compressionParentLevel-i);
-		
-		return nodeId - uint(startingNode);
-	}
-	).";
+	
+	for(uint i = 0; i<depth; ++i)
+		startingNode = getChildrenStartingId(startingNode, compressionParentLevel-i);
+	
+	return nodeId - uint(startingNode);
+}
+).";
 
 	if (compressionLevel == 1)
 		return c1;
@@ -49,49 +47,33 @@ std::string isCompressionIdPresentFunction(unsigned int compressionLevel)
 {
 	//Assumption is that id is 8-bit
 	const std::string c1 = R".(
-	bool isCompressionIdPresent(uint nodeCompressionId, const uint id[NOF_UINTS_PER_COMPRESSION_ID], uint currentLevel)
-	{
-		return (id[0] & (1 << nodeCompressionId)) != 0;
-	}
-	).";
+bool isCompressionIdPresent(uint nodeCompressionId, const uint startingIndexToCompressionId, uint currentLevel)
+{
+	return (nodeInfo[startingIndexToCompressionId + 0] & (1 << nodeCompressionId)) != 0;
+}
+).";
 
 	//id is 64 bit and more
 	const std::string c2 = R".(
-	bool isCompressionIdPresent(uint nodeCompressionId, const uint id[NOF_UINTS_PER_COMPRESSION_ID], uint currentLevel)
+bool isCompressionIdPresent(const uint nodeCompressionId, const uint startingIndexToCompressionId, uint currentLevel)
+{
+	if(currentLevel == (treeDepth-COMPRESSION_LEVEL))
 	{
-		if(currentLevel == (treeDepth-COMPRESSION_LEVEL))
-		{
-			const uint index = nodeCompressionId / 32;
-			const uint compressionIndex = nodeCompressionId % 32;
-		
-			return (id[index] & compressionIndex)!=0;
-		}
-		else
-			return true;
+		const uint index = nodeCompressionId / 32;
+		const uint compressionIndex = nodeCompressionId % 32;
+	
+		return (nodeInfo[startingIndexToCompressionId + index] & (1 << compressionIndex))!=0;
 	}
-	).";
+	else
+		return true;
+}
+).";
 
 	if (compressionLevel == 1)
 		return c1;
 
 	return c2;
 }
-
-std::string loadSubBufferMaskfunction(unsigned int nofCompressionIdUints)
-{
-	std::stringstream str;
-	str << "void loadSubBufferMask(const uint startingIndexToNodeInfo, uint subBufferIndex, inout uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID])\n";
-	str << "{\n";
-
-	for(unsigned int i=0; i<nofCompressionIdUints; ++i)
-	{
-		str << "    subBufferMask[i] = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO* subBufferIndex +" << i << "];\n";
-	}
-	str << "}\n";
-
-	return str.str();
-}
-
 
 std::string genMain2(unsigned int numBuffers)
 {
@@ -185,7 +167,6 @@ std::string genMain2Compress(unsigned int numBuffers)
 	str << "	int currentNode = int(cellContainingLight);\n";
 	str << "	int currentLevel = int(treeDepth);\n";
 	str << "\n";
-	str << "	int prefixSum = 0;\n";
 	str << "	int myNode = -1;\n";
 	str << "	bool getPotential = true;\n";
 	str << "	uint myStartingIndex = 0;\n";
@@ -205,12 +186,10 @@ std::string genMain2Compress(unsigned int numBuffers)
 	str << "\n";
 	str << "		uint currentNofEdges = 0;\n";
 	str << "\n";
-	str << "		for (unsigned int subBufferIndex = 0; i<nofSubBuffersPot; ++i)\n";
+	str << "		for (unsigned int subBufferIndex = 0; subBufferIndex<nofSubBuffersPot; ++subBufferIndex)\n";
 	str << "		{\n";
-	str << "			uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID];\n";
-	str << "			loadSubBufferMask(startingIndexToNodeInfo, subBufferIndex, subBufferMask);\n";
 	str << "			const uint compressionId = getCompressionIdWithinParent(cellContainingLight, currentNode, currentLevel);\n";
-	str << "			if (!isCompressionIdPresent(compressionId, subBufferMask, currentLevel))\n";
+	str << "			if (!isCompressionIdPresent(compressionId, startingIndexToNodeInfo + NOF_UINTS_PER_NOF_SUBBUFFERS + NOF_UINTS_PER_NODE_INFO*subBufferIndex, currentLevel))\n";
 	str << "			continue;\n";
 	str << "\n";
 	str << "			const uint bufferStart = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO*subBufferIndex + NOF_UINTS_PER_COMPRESSION_ID];\n";
@@ -219,7 +198,7 @@ std::string genMain2Compress(unsigned int numBuffers)
 	str << "			const uint numPotential = endPotentialCurrent - startPotentialCurrent;\n";
 	str << "			currentNofEdges += numPotential;\n";
 	str << "\n";
-	str << "			if (currentNofPotEdges>gl_GlobalInvocationID.x)\n";
+	str << "			if (currentNofEdges>gl_GlobalInvocationID.x)\n";
 	str << "			{\n";
 	str << "				myNode = int(currentNode);\n";
 	str << "				getPotential = true;\n";
@@ -230,21 +209,19 @@ std::string genMain2Compress(unsigned int numBuffers)
 	str << "		//Silhouette edges\n";
 	str << "		const unsigned int nofSubBuffersSil = nodeInfo[startingIndexToNodeInfo + 1];\n";
 	str << "\n";
-	str << "		if (myNode<0) for (unsigned int subBufferIndex = 0; i<nofSubBuffersSil; ++i)\n";
+	str << "		if (myNode<0) for (unsigned int subBufferIndex = 0; subBufferIndex<nofSubBuffersSil; ++subBufferIndex)\n";
 	str << "		{\n";
-	str << "			uint subBufferMask[NOF_UINTS_PER_COMPRESSION_ID];\n";
-	str << "			loadSubBufferMask(startingIndexToNodeInfo, subBufferIndex, subBufferMask);\n";
 	str << "			const uint compressionId = getCompressionIdWithinParent(cellContainingLight, currentNode, currentLevel);\n";
-	str << "			if (!isCompressionIdPresent(compressionId, subBufferMask, currentLevel))\n";
+	str << "			if (!isCompressionIdPresent(compressionId, startingIndexToNodeInfo + NOF_UINTS_PER_NOF_SUBBUFFERS + NOF_UINTS_PER_NODE_INFO*(subBufferIndex+nofSubBuffersPot), currentLevel))\n";
 	str << "				continue;\n";
 	str << "\n";
-	str << "			const uint bufferStart = nodeInfo[startingIndexToNodeInfo + 2 + NOF_UINTS_PER_NODE_INFO*(subBufferIndex+nofSubBuffersPot) + NOF_UINTS_PER_COMPRESSION_ID];\n";
+	str << "			const uint bufferStart = nodeInfo[startingIndexToNodeInfo + NOF_UINTS_PER_NOF_SUBBUFFERS + NOF_UINTS_PER_NODE_INFO*(subBufferIndex+nofSubBuffersPot) + NOF_UINTS_PER_COMPRESSION_ID];\n";
 	str << "			const uint startSilhouetteCurrent = nofEdgesPrefixSum[bufferStart];\n";
 	str << "			const uint endSilhouetteCurrent = nofEdgesPrefixSum[bufferStart + 1];\n";
 	str << "			const uint numSilhouette = endSilhouetteCurrent - startSilhouetteCurrent;\n";
 	str << "			currentNofEdges += numSilhouette;\n";
 	str << "\n";
-	str << "			if (currentNofPotEdges>gl_GlobalInvocationID.x)\n";
+	str << "			if (currentNofEdges>gl_GlobalInvocationID.x)\n";
 	str << "			{\n";
 	str << "				myNode = int(currentNode);\n";
 	str << "				getPotential = false;\n";
@@ -299,6 +276,7 @@ std::string genMain2Compress(unsigned int numBuffers)
 	str << "				break;\n";
 	str << "			}\n";
 	str << "		}\n";
+	str << "	currentNode = getNodeParent(currentNode, currentLevel--);\n";
 	str << "	}\n";
 	str << "}\n";
 
@@ -411,8 +389,9 @@ std::string genTraversalComputeShader2Compress(const std::vector<uint32_t>& last
 	const unsigned int tmpNofUints = ipow(OCTREE_NUM_CHILDREN, compressionLevel) / 32;
 	const unsigned int nofUintsPerCompressionId = tmpNofUints ? tmpNofUints : 1;
 	const unsigned int nofUintsPerNodeInfo = nofUintsPerCompressionId + 1;
-	str << "#define NOF_UINTS_PER_COMPRESSION_ID " << nofUintsPerCompressionId << "\n\n";
-	str << "#define NOF_UINTS_PER_NODE_INFO " << nofUintsPerNodeInfo << "\n\n";
+	str << "#define NOF_UINTS_PER_COMPRESSION_ID " << nofUintsPerCompressionId << "\n";
+	str << "#define NOF_UINTS_PER_NODE_INFO " << nofUintsPerNodeInfo << "\n";
+	str << "#define NOF_UINTS_PER_NOF_SUBBUFFERS 2\n\n";
 
 	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
 	const std::vector<unsigned int> ls = octree->getLevelSizeInclusiveSum();
@@ -448,7 +427,6 @@ std::string genTraversalComputeShader2Compress(const std::vector<uint32_t>& last
 
 	str << getCompressionIdWithinParentFunction(octree->getCompressionLevel());
 	str << isCompressionIdPresentFunction(octree->getCompressionLevel());
-	str << loadSubBufferMaskfunction(nofUintsPerCompressionId);
 
 	str << "\n\n";
 
