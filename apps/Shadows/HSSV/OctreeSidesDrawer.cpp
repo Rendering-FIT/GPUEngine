@@ -102,14 +102,20 @@ void OctreeSidesDrawer::_initShaders()
 
 //#define USE_VERSION_1
 //Version 1 has been proven slower
+#include <fstream>
 bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 {
 #ifdef USE_VERSION_1
 	std::string shaderBody = genTraversalComputeShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #else
 	std::string shaderBody = genTraversalComputeShader2Compress(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);//genTraversalComputeShader2(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
+	/*
+	std::ifstream t("C:\\Users\\ikobrtek\\Desktop\\compressTraverseShader.glsl");
+	std::string shaderBody((std::istreambuf_iterator<char>(t)),
+		std::istreambuf_iterator<char>());
+	//*/
 #endif
-
+	
 	_gpuOctreeTraversalProgramMultipleBuffers = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody) );
 
@@ -187,8 +193,7 @@ void OctreeSidesDrawer::_breakCompressionIdToUintsAndPush(const BitmaskType& id,
 }
 
 void OctreeSidesDrawer::_processSubBuffer(
-	const std::unordered_map<BitmaskType,
-	std::vector<uint32_t>>::value_type& subBuffer,
+	const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer,
 	std::vector<uint32_t>& compressedNodesInfo,
 	std::vector<uint32_t>& nofEdgesPrefixSums,
 	uint32_t* gpuMappedBuffer
@@ -199,7 +204,7 @@ void OctreeSidesDrawer::_processSubBuffer(
 
 	memcpy(gpuMappedBuffer + nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1], subBuffer.second.data(), subBufferSize * sizeof(uint32_t));
 	
-	const auto startIndex = nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1];
+	const auto startIndex = nofEdgesPrefixSums.size() - 1;//nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1];
 	
 	nofEdgesPrefixSums.push_back(nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1] + subBufferSize);
 
@@ -794,7 +799,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 	//DEBUG
 	//Get data
-
+	/*
 	uint32_t nofPot = 0, nofSil = 0;
 	nofPotentialEdgesBuffer->getData(&nofPot, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->getData(&nofSil, sizeof(uint32_t), 0);

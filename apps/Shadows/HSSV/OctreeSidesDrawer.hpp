@@ -56,8 +56,7 @@ protected:
 	void _getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight);
 
 	void _processSubBuffer(
-		const std::unordered_map<BitmaskType, 
-		std::vector<uint32_t>>::value_type& subBuffer, 
+		const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer, 
 		std::vector<uint32_t>& compressedNodesInfo,
 		std::vector<uint32_t>& nofEdgesPrefixSums,
 		uint32_t* gpuMappedBuffer

@@ -475,7 +475,7 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 			{
 				printf("- Potential ID: %d:\n", edgeBuffer.first);
 				for (const auto item : edgeBuffer.second)
-					printf("\t%d\n", edgeBuffer.first);
+					printf("\t%d\n", item);
 			}
 		}
 
