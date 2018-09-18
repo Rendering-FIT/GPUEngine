@@ -250,7 +250,7 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 
 			uint64_t sz = _octreeVisitor->getNofAllIndicesInNode(currentNode);
 
-			if ((sz + currentNumIndices*sizeof(uint32_t)) > currentSize)
+			if ((sz + currentNumIndices)*sizeof(uint32_t) > currentSize)
 				break;
 
 			currentNode++;
@@ -799,7 +799,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 	//DEBUG
 	//Get data
-	/*
+	
 	uint32_t nofPot = 0, nofSil = 0;
 	nofPotentialEdgesBuffer->getData(&nofPot, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->getData(&nofSil, sizeof(uint32_t), 0);
