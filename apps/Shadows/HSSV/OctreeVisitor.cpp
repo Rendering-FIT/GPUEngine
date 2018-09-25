@@ -430,6 +430,9 @@ int OctreeVisitor::_getChildNodeContainingPoint(unsigned int parent, const glm::
 	return -1;
 }
 
+#include <sstream>
+#include <iostream>
+#include <fstream>
 void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
 {
 	int currentNodeID = nodeID;
@@ -444,13 +447,15 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 		return;
 	}
 
+	std::stringstream ss;
+
 	while(currentNodeID>=0)
 	{
 		const auto node = _octree->getNode(currentNodeID);
 
 		assert(node != nullptr);
 
-		if(printOnce) printf("Node %d:\n", currentNodeID);
+		if (printOnce) ss << "Node " << currentNodeID << std::endl;//printf("Node %d:\n", currentNodeID);
 
 		for (const auto edgeBuffer : node->edgesAlwaysCastMap)
 		{
@@ -459,9 +464,9 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 				silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
 				if(printOnce)
 				{
-					printf("- Silhouette ID: %d:\n", edgeBuffer.first);
+					ss << "- Silhouette ID: " << std::to_string(edgeBuffer.first) << ":\n";
 					for (const auto item : edgeBuffer.second)
-						printf("\t%d (%d)\n", decodeEdgeFromEncoded(item), decodeEdgeMultiplicityFromId(item));
+						ss << "\t" << decodeEdgeFromEncoded(item) << " " << decodeEdgeMultiplicityFromId(item) << "\n";
 				}
 			}
 		}
@@ -473,15 +478,22 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 
 			if(printOnce)
 			{
-				printf("- Potential ID: %d:\n", edgeBuffer.first);
+				ss << "- Potential ID: " << std::to_string(edgeBuffer.first) << ":\n";
 				for (const auto item : edgeBuffer.second)
-					printf("\t%d\n", item);
+					ss << "\t" << item << "\n";
 			}
 		}
 
 		const auto previousNodeId = currentNodeID;
 		currentNodeID = _octree->getNodeParent(currentNodeID);
 		comingFromChildId = previousNodeId - _octree->getChildrenStartingId(currentNodeID);
+	}
+
+	if(printOnce)
+	{
+		std::ofstream out("TraverseHierarchy.txt");
+		out << ss.str();
+		out.close();
 	}
 
 	printOnce = false;

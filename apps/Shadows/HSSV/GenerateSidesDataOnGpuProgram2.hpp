@@ -162,7 +162,7 @@ std::string genStoreEdge(unsigned int nofBuffers)
 		str << "		potentialEdges[storeIndex] = edges0[myStartingIndex];\n";
 	str << "	else\n";
 	if (nofBuffers > 1)
-		str << "		silhouetteEdges[storeIndex] = getNodeFromBuffer(myStartingIndex, bufferIndex);";
+		str << "		silhouetteEdges[storeIndex] = getNodeFromBuffer(myStartingIndex, bufferIndex);\n";
 	else
 		str << "		silhouetteEdges[storeIndex] = edges0[myStartingIndex];\n";
 	str << "}\n";
@@ -265,6 +265,8 @@ std::string genMain2Compress(unsigned int numBuffers)
 	str << "	while (currentLevel >= 0 && myNode<0)\n";
 	str << "	{\n";
 	str << "		//Potential edges\n";
+	if(numBuffers>1)
+		str << "bufferIndex = getNodeBufferIndex(currentNode);\n";
 	str << "		const uint startingIndexToNodeInfo = nodeInfoIndexing[currentNode];\n";
 	str << "		const uint nofSubBuffersPot = nodeInfo[startingIndexToNodeInfo + 0];\n";
 	str << "\n";

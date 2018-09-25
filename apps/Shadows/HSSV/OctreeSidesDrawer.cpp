@@ -110,7 +110,7 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader()
 #else
 	std::string shaderBody = genTraversalComputeShader2Compress(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);//genTraversalComputeShader2(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 	/*
-	std::ifstream t("C:\\Users\\ikobrtek\\Desktop\\compressTraverseShader.glsl");
+	std::ifstream t("C:\\Users\\Jofo\\Desktop\\tmp.glsl");
 	std::string shaderBody((std::istreambuf_iterator<char>(t)),
 		std::istreambuf_iterator<char>());
 	//*/
@@ -799,7 +799,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 	//DEBUG
 	//Get data
-	
+	/*
 	uint32_t nofPot = 0, nofSil = 0;
 	nofPotentialEdgesBuffer->getData(&nofPot, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->getData(&nofSil, sizeof(uint32_t), 0);
@@ -818,10 +818,10 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 	std::ofstream of;
 	of.open("PotEdges.txt");
-	of << "Potential:\n";
-	for (const auto e : pe)
-		of << e << std::endl;
-	of << "\nSilhouette:\n";
+	//of << "Potential:\n";
+	//for (const auto e : pe)
+	//	of << e << std::endl;
+	//of << "\nSilhouette:\n";
 	for (const auto e : se)
 		of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
 	of.close();
