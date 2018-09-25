@@ -13,10 +13,12 @@ protected:
 	std::string _generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionLevel) const;
 
 	uint32_t _readUint(FILE* input);
+	uint64_t _readUint64(FILE* input);
 	void	 _readAabb(FILE* input, AABB& bbox);
 	void	 _readUintBuffer(FILE* input, unsigned int nofUints, std::vector<uint32_t>& buffer);
 
 	void	 _writeUint(FILE* output, uint32_t value);
+	void	 _writeUint64(FILE* output, uint64_t value);
 	void     _writeAabb(FILE* output, const AABB& bbox);
 	void	 _writeUintBuffer(FILE* output, const std::vector<uint32_t>& buffer);
 };

@@ -49,7 +49,7 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 			for (unsigned int bufferId = 0; bufferId < numSubbuffersPotential; ++bufferId)
 			{
 				//Read subbuffer id
-				const unsigned int subbufferId = _readUint(input);
+				const BitmaskType subbufferId = _readUint64(input);
 
 				//Read subbuffer size
 				const unsigned int subbufferSize = _readUint(input);
@@ -68,7 +68,7 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 			for (unsigned int bufferId = 0; bufferId < numSubbuffersSilhouette; ++bufferId)
 			{
 				//Read subbuffer id
-				const unsigned int subbufferId = _readUint(input);
+				const BitmaskType subbufferId = _readUint64(input);
 
 				//Read subbuffer size
 				const unsigned int subbufferSize = _readUint(input);
@@ -112,7 +112,7 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 			for(const auto subBuffer : node->edgesMayCastMap)
 			{
 				//Write subbuffer Id (bitmask)
-				_writeUint(output, subBuffer.first);
+				_writeUint64(output, subBuffer.first);
 
 				//write subbuffer size
 				_writeUint(output, subBuffer.second.size());
@@ -129,7 +129,7 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 			for (const auto subBuffer : node->edgesAlwaysCastMap)
 			{
 				//Write subbuffer Id (bitmask)
-				_writeUint(output, subBuffer.first);
+				_writeUint64(output, subBuffer.first);
 
 				//write subbuffer size
 				_writeUint(output, subBuffer.second.size());
@@ -149,6 +149,13 @@ uint32_t OctreeSerializer::_readUint(FILE* f)
 {
 	uint32_t n = 0;
 	fread(&n, sizeof(uint32_t), 1, f);
+	return n;
+}
+
+uint64_t OctreeSerializer::_readUint64(FILE* f)
+{
+	uint64_t n = 0;
+	fread(&n, sizeof(uint64_t), 1, f);
 	return n;
 }
 
@@ -175,6 +182,11 @@ void OctreeSerializer::_readUintBuffer(FILE* f, unsigned int nofUints, std::vect
 void OctreeSerializer::_writeUint(FILE* output, uint32_t value)
 {
 	fwrite(&value, sizeof(uint32_t), 1, output);
+}
+
+void OctreeSerializer::_writeUint64(FILE* output, uint64_t value)
+{
+	fwrite(&value, sizeof(uint64_t), 1, output);
 }
 
 void OctreeSerializer::_writeAabb(FILE* output, const AABB& bbox)
