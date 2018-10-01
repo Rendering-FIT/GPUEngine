@@ -73,7 +73,7 @@ void ShadowVolumes::create(
   glDepthMask(GL_FALSE);
   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
 
-#define SIDES_RASTER_DISCARD
+//#define SIDES_RASTER_DISCARD
 
 #ifdef SIDES_RASTER_DISCARD
   glEnable(GL_RASTERIZER_DISCARD);
