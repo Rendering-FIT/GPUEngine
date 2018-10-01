@@ -149,7 +149,7 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom_returnNofLoaded(
 		for (unsigned int i = 0; i < OCTREE_NUM_CHILDREN; ++i)
 		{
 			auto node = _octree->getNode(currentIndex + i);
-			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+			std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
 			if(!edges.empty())
 				memcpy(indicesPtr + usedCapacity, edges.data(), edges.size() * sizeof(uint32_t));
 			usedCapacity += edges.size()*sizeof(uint32_t);
@@ -176,7 +176,7 @@ size_t GpuOctreeEdgePropagator::_getSyblingsBufferSizeAndMaximum(unsigned int st
 	for(unsigned int i=0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		auto node = _octree->getNode(startingID+i);
-		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
 
 		sz += edges.size();
 		maxSize = std::max(maxSize, (unsigned int)edges.size());
@@ -200,7 +200,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	for(unsigned int i = 0; i<batchSize; ++i)
 	{
 		auto node = _octree->getNode(startingIndex + i);
-		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
 		edges.resize(numIndices[i]);
 
 		if (numIndices[i] != 0)
@@ -225,7 +225,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	for(unsigned int i=0; i<nofParents; ++i)
 	{
 		auto node = _octree->getNode(startingParent + i);
-		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		std::vector<unsigned int>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
 		edges.resize(numIndices[i]);
 
 		if (numIndices[i] != 0)

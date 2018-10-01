@@ -11,6 +11,7 @@
 
 typedef unsigned char BitmaskType;
 constexpr size_t BitmaskTypeSizeBits = 8*sizeof(BitmaskType);
+constexpr BitmaskType BitmaskAllSet = BitmaskType(-1);
 
 int ipow(int base, int exp);
 

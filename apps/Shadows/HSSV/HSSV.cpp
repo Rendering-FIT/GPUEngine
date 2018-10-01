@@ -112,7 +112,7 @@ void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix,
 	_capsDrawer->drawCaps(lightPosition, viewMatrix, projectionMatrix);
 }
 
-//#define DRAW_CPU
+#define DRAW_CPU
 void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;
@@ -276,7 +276,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
 		
 		std::ofstream of;
-		of.open("edges_compress.txt");
+		of.open("CPU_Edges.txt");
 		std::sort(potentialEdges.begin(), potentialEdges.end());
 		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
 		

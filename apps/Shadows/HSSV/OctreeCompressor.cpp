@@ -35,7 +35,7 @@ std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(unsigned in
 	for (unsigned int i = 0; i<nofSyblings; ++i)
 	{
 		const auto node = octree->getNode(i + startingId);
-		const auto& buffer = checkPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		const auto& buffer = checkPotential ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
 		if (std::binary_search(buffer.begin(), buffer.end(), edge))
 			retval[i] = true;
 	}
@@ -55,7 +55,7 @@ void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPo
 	for (unsigned int i = 0; i < nofSyblings; ++i)
 	{
 		const auto node = _visitor->getOctree()->getNode(startingID + i);
-		const auto& buffer = processPotential ? node->edgesMayCastMap[255] : node->edgesAlwaysCastMap[255];
+		const auto& buffer = processPotential ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
 		std::copy(buffer.begin(), buffer.end(), std::inserter(allEdgesSet, allEdgesSet.end()));
 	}
 
@@ -82,9 +82,9 @@ void OctreeCompressor::_removeEdgeFromSyblingsSparse(unsigned int startingID, un
 		if (node)
 		{
 			if (checkPotential)
-				node->edgesMayCastMap[255].erase(std::lower_bound(node->edgesMayCastMap[255].begin(), node->edgesMayCastMap[255].end(), edge));
+				node->edgesMayCastMap[BitmaskAllSet].erase(std::lower_bound(node->edgesMayCastMap[BitmaskAllSet].begin(), node->edgesMayCastMap[BitmaskAllSet].end(), edge));
 			else
-				node->edgesAlwaysCastMap[255].erase(std::lower_bound(node->edgesAlwaysCastMap[255].begin(), node->edgesAlwaysCastMap[255].end(), edge));
+				node->edgesAlwaysCastMap[BitmaskAllSet].erase(std::lower_bound(node->edgesAlwaysCastMap[BitmaskAllSet].begin(), node->edgesAlwaysCastMap[BitmaskAllSet].end(), edge));
 		}
 	}
 }

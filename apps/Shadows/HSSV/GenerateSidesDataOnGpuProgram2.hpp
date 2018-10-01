@@ -28,7 +28,7 @@ uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint co
 	const uint depth = treeDepth - compressionParentLevel;
 		if(depth!=COMPRESSION_LEVEL)
 		return 0;
-		int startingNode = compressionParentId;
+		uint startingNode = compressionParentId;
 	
 	for(uint i = 0; i<depth; ++i)
 		startingNode = getChildrenStartingId(startingNode, compressionParentLevel-i);

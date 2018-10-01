@@ -213,7 +213,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		}
 
 		for(unsigned int i = 0; i<numPotential; ++i)
-			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], edgeIndex, 255);
+			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], edgeIndex, BitmaskAllSet);
 
 		//Store each silhouette edge variant in leaves
 		for(auto sil = silhouetteBitmasks.cbegin(); sil != silhouetteBitmasks.cend(); ++sil)
@@ -225,7 +225,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 			{
 				while (!sil->second[currentPosition]) ++currentPosition;
 
-				_storeEdgeIsAlwaysSilhouette(startingID + currentPosition, sil->first, 255);
+				_storeEdgeIsAlwaysSilhouette(startingID + currentPosition, sil->first, BitmaskAllSet);
 			}
 		}
 	}
@@ -339,7 +339,7 @@ void OctreeVisitor::_processEdgesInLevel(unsigned int level, bool propagatePoten
 
 		if (!edgesMap.empty())
 		{
-			auto it = edgesMap.find(255);
+			auto it = edgesMap.find(BitmaskAllSet);
 			if (it != edgesMap.end())
 			//for (const auto edgeSubBuffer : edgesMap)
 			{
@@ -441,7 +441,7 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 
 	unsigned int comingFromChildId = 0;
 
-	if(_octree->getCompressionLevel()>1)
+	if(/*_octree->getCompressionLevel()>1*/1)
 	{
 		_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
 		return;
@@ -456,31 +456,34 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 		assert(node != nullptr);
 
 		if (printOnce) ss << "Node " << currentNodeID << std::endl;//printf("Node %d:\n", currentNodeID);
-
+		ss << "- Silhouette\n";
 		for (const auto edgeBuffer : node->edgesAlwaysCastMap)
 		{
 			if (edgeBuffer.first & (1 << comingFromChildId))
 			{
 				silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+
 				if(printOnce)
 				{
-					ss << "- Silhouette ID: " << std::to_string(edgeBuffer.first) << ":\n";
+					//ss << "- Silhouette ID: " << std::to_string(edgeBuffer.first) << ":\n";
 					for (const auto item : edgeBuffer.second)
 						ss << "\t" << decodeEdgeFromEncoded(item) << " " << decodeEdgeMultiplicityFromId(item) << "\n";
 				}
 			}
 		}
-			
+		ss << "- Potential\n";
 		for (const auto edgeBuffer : node->edgesMayCastMap)
 		{
 			if (edgeBuffer.first & (1 << comingFromChildId))
+			{
 				potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
 
-			if(printOnce)
-			{
-				ss << "- Potential ID: " << std::to_string(edgeBuffer.first) << ":\n";
-				for (const auto item : edgeBuffer.second)
-					ss << "\t" << item << "\n";
+				if (printOnce)
+				{
+					//ss << "- Potential ID: " << std::to_string(edgeBuffer.first) << ":\n";
+					for (const auto item : edgeBuffer.second)
+						ss << "\t" << item << "\n";
+				}
 			}
 		}
 
@@ -503,20 +506,20 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 {
 	int currentNodeID = nodeID;
 
-	unsigned int currentLevel = _octree->getDeepestLevel();
-	const unsigned int levelWithCompressedNodess = currentLevel - 2;
+	int currentLevel = _octree->getDeepestLevel();
+	const unsigned int levelWithCompressedNodess = _octree->getDeepestLevel() - _octree->getCompressionLevel();
 
-	while (currentNodeID >= 0)
+	while (currentLevel >= 0)
 	{
 		const auto node = _octree->getNode(currentNodeID);
 
 		assert(node != nullptr);
 
-		const auto silBuffer = node->edgesAlwaysCastMap.find(255);
+		const auto silBuffer = node->edgesAlwaysCastMap.find(BitmaskAllSet);
 		if(silBuffer!=node->edgesAlwaysCastMap.end())
 			silhouette.insert(silhouette.end(), silBuffer->second.begin(), silBuffer->second.end());
 
-		const auto potBuffer = node->edgesMayCastMap.find(255);
+		const auto potBuffer = node->edgesMayCastMap.find(BitmaskAllSet);
 		if(potBuffer!=node->edgesMayCastMap.end())
 			potential.insert(potential.end(), potBuffer->second.begin(), potBuffer->second.end());
 
@@ -526,13 +529,13 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 
 			for (const auto edgeBuffer : node->edgesAlwaysCastMap)
 			{
-				if (edgeBuffer.first != 255 && edgeBuffer.first & (1ull << compressionId))
+				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
 					silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
 			}
 
 			for (const auto edgeBuffer : node->edgesMayCastMap)
 			{
-				if (edgeBuffer.first != 255 && edgeBuffer.first & (1ull << compressionId))
+				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
 					potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
 			}
 		}

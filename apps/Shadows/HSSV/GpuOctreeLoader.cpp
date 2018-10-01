@@ -432,13 +432,13 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 	{
 		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
 
-		node->edgesMayCastMap[255].resize(_bufferNofPotential[i]);
-		if (!node->edgesMayCastMap[255].empty())
-			memcpy(node->edgesMayCastMap[255].data(), bPotential + (numEdges*i), _bufferNofPotential[i] * sizeof(uint32_t));
+		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[i]);
+		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
+			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (numEdges*i), _bufferNofPotential[i] * sizeof(uint32_t));
 
-		node->edgesAlwaysCastMap[255].resize(_bufferNofSilhouette[i]);
-		if(!node->edgesAlwaysCastMap[255].empty())
-			memcpy(node->edgesAlwaysCastMap[255].data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
+		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[i]);
+		if(!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
+			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
 	}
 
 	//Process parents
@@ -448,12 +448,12 @@ void GpuOctreeLoader::_acquireGpuData(unsigned int startingVoxelAbsoluteIndex, u
 		auto node = _octree->getNode(startingParent + i);
 		const unsigned int parentIndex = batchSize + i;
 
-		node->edgesMayCastMap[255].resize(_bufferNofPotential[parentIndex]);
-		memcpy(node->edgesMayCastMap[255].data(), bPotential + (numEdges*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
+		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[parentIndex]);
+		memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (numEdges*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
 
-		node->edgesAlwaysCastMap[255].resize(_bufferNofSilhouette[parentIndex]);
-		if (!node->edgesAlwaysCastMap[255].empty())
-			memcpy(node->edgesAlwaysCastMap[255].data(), bSilhouette + (numEdges*parentIndex), _bufferNofSilhouette[parentIndex] * sizeof(uint32_t));
+		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[parentIndex]);
+		if (!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
+			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (numEdges*parentIndex), _bufferNofSilhouette[parentIndex] * sizeof(uint32_t));
 	}
 	
 	_voxelPotentialEdges->unmap();
