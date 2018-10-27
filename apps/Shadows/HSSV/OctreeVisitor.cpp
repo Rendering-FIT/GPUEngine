@@ -508,7 +508,7 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 
 	int currentLevel = _octree->getDeepestLevel();
 	const unsigned int levelWithCompressedNodess = _octree->getDeepestLevel() - _octree->getCompressionLevel();
-
+	unsigned int nofBuffers = 0;
 	while (currentLevel >= 0)
 	{
 		const auto node = _octree->getNode(currentNodeID);
@@ -516,12 +516,18 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 		assert(node != nullptr);
 
 		const auto silBuffer = node->edgesAlwaysCastMap.find(BitmaskAllSet);
-		if(silBuffer!=node->edgesAlwaysCastMap.end())
+		if (silBuffer != node->edgesAlwaysCastMap.end())
+		{
 			silhouette.insert(silhouette.end(), silBuffer->second.begin(), silBuffer->second.end());
+			nofBuffers++;
+		}
 
 		const auto potBuffer = node->edgesMayCastMap.find(BitmaskAllSet);
-		if(potBuffer!=node->edgesMayCastMap.end())
+		if (potBuffer != node->edgesMayCastMap.end())
+		{
 			potential.insert(potential.end(), potBuffer->second.begin(), potBuffer->second.end());
+			nofBuffers++;
+		}
 
 		if (currentLevel == levelWithCompressedNodess)
 		{
@@ -530,13 +536,19 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 			for (const auto edgeBuffer : node->edgesAlwaysCastMap)
 			{
 				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
+				{
 					silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+					nofBuffers++;
+				}
 			}
 
 			for (const auto edgeBuffer : node->edgesMayCastMap)
 			{
 				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
+				{
 					potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
+					nofBuffers++;
+				}
 			}
 		}
 

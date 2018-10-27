@@ -761,17 +761,17 @@ str << "			if(idxInWarp < nofLoaded)\n";
 str << "			{\n";
 str << "				if(isPotential)\n";
 str << "				{\n";
-str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inPotential[2*(buffersProcessed + idxInWarp) + 0];\n";
-str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inPotential[2*(buffersProcessed + idxInWarp) + 1];\n";
+str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inPotential[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 0];\n";
+str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inPotential[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 1];\n";
 if (numBuffers > 1)
-	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inPotential[2 * (buffersProcessed + idxInWarp) + 2]; \n";
+	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inPotential[NOF_UINTS_BUFFER_INFO * (buffersProcessed + idxInWarp) + 2]; \n";
 str << "				}\n";
 str << "				else\n";
 str << "				{\n";
-str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inSilhouette[2*(buffersProcessed + idxInWarp) + 0];\n";
-str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inSilhouette[2*(buffersProcessed + idxInWarp) + 1];\n";
+str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 0];\n";
+str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 1];\n";
 if (numBuffers > 1)
-	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inSilhouette[2*(buffersProcessed + idxInWarp) + 2];\n";
+	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 2];\n";
 str << "				}\n";
 str << "			}\n";
 str << "\n";
@@ -819,8 +819,16 @@ str << "}\n";
 
 str << "void main()\n";
 str << "{\n";
-str << "	const uint nofPotEdges = nofPotential;\n";
-str << "	const uint nofSilEdges = nofSilhouette;\n";
+str << "	uint nofPotEdges = 0;\n";
+str << "	uint nofSilEdges = 0;\n";
+str << "	if (gl_SubGroupInvocationARB == 0)\n";
+str << "	{\n";
+str << "		nofPotEdges = nofPotential;\n";
+str << "		nofSilEdges = nofSilhouette;\n";
+str << "	}\n";
+str << "\n";
+str << "	nofPotEdges = readFirstInvocationARB(nofPotEdges);\n";
+str << "	nofSilEdges = readFirstInvocationARB(nofSilEdges);\n";
 str << "\n";
 str << "	if(gl_GlobalInvocationID.x>=(nofPotEdges + nofSilEdges))\n";
 str << "		return;\n";
@@ -838,15 +846,12 @@ str << "	nofSilBufs = readFirstInvocationARB(nofSilBufs);\n";
 str << "\n";
 str << "	const bool isPot = gl_GlobalInvocationID.x<nofPotEdges;\n";
 str << "\n";
-str << "	const uint shmStart = 2 * (gl_LocalInvocationID.x/gl_SubGroupSizeARB) * gl_SubGroupSizeARB;\n";
+str << "	const uint shmStart = NOF_UINTS_BUFFER_INFO * (gl_LocalInvocationID.x/gl_SubGroupSizeARB) * gl_SubGroupSizeARB;\n";
 str << "\n";
-str << "	if(isPot)\n";
-str << "		processEdges(true, nofPotBufs, 0, shmStart);\n";
-str << "\n";
-str << "	if(!isPot)\n";
-str << "		processEdges(false, nofSilBufs, nofPotEdges, shmStart);\n";
-str << "}\n";
 
+str << "	processEdges(isPot, isPot? nofPotBufs : nofSilBufs, uint(!isPot) * nofPotEdges, shmStart);\n";
+
+str << "}\n";
 
 	return str.str();
 }

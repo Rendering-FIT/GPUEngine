@@ -862,13 +862,13 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 bool OctreeSidesDrawer::_generateLoadGpuTraversalShader2()
 {
-#define USE_LOCAL_SHADER_1
+//#define USE_LOCAL_SHADER_1
 	
 #ifdef USE_LOCAL_SHADER_1
 
 	const std::string shaderBody = genBufferPreprocessShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #else
-	std::ifstream t("C:\\Users\\ikobrtek\\Desktop\\bufferPreprocess.glsl");
+	std::ifstream t("C:\\Users\\Jofo\\Desktop\\tmp.glsl");
 	std::string shaderBody((std::istreambuf_iterator<char>(t)),
 		std::istreambuf_iterator<char>());
 #endif
@@ -879,7 +879,7 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader2()
 #ifdef USE_LOCAL_SHADER_2
 	const std::string shaderBody2 = genCopyShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #else
-	std::ifstream t("C:\\Users\\ikobrtek\\Desktop\\subBuffersCopy.glsl");
+	std::ifstream t("C:\\Users\\Jofo\\Desktop\\compressShader.glsl");
 	std::string shaderBody2((std::istreambuf_iterator<char>(t)),
 		std::istreambuf_iterator<char>());
 #endif
@@ -964,7 +964,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	m_nofPotSilBuffers->getData(&nofSilBuffs, sizeof(uint32_t), sizeof(uint32_t));
 	ge::gl::glFinish();
 	std::vector<uint32_t> v;
-	v.resize(nofPotBuffs * 2);
+	v.resize(nofPotBuffs * (_gpuOctreeBuffers.size()>1 ? 4 : 2));
 	m_potSuBuffers->getData(v.data(), v.size() * sizeof(uint32_t));
 	//*/
 	//--
