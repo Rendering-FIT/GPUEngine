@@ -848,10 +848,14 @@ str << "	const bool isPot = gl_GlobalInvocationID.x<nofPotEdges;\n";
 str << "\n";
 str << "	const uint shmStart = NOF_UINTS_BUFFER_INFO * (gl_LocalInvocationID.x/gl_SubGroupSizeARB) * gl_SubGroupSizeARB;\n";
 str << "\n";
-
-str << "	processEdges(isPot, isPot? nofPotBufs : nofSilBufs, uint(!isPot) * nofPotEdges, shmStart);\n";
+str << "	if(isPot)\n";
+str << "		processEdges(true, nofPotBufs, 0, shmStart);\n";
+str << "\n";
+str << "	if(!isPot)\n";
+str << "		processEdges(false, nofSilBufs, nofPotEdges, shmStart);\n";
 
 str << "}\n";
+
 
 	return str.str();
 }

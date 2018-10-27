@@ -28,6 +28,9 @@ public:
 
 	unsigned int getNofAllIndicesInNode(unsigned int nodeID) const;
 
+	unsigned int getMaxNofSubBuffers() const;
+	unsigned int getNodeNofSubBuffers(unsigned int nodeID) const;
+
 private:
 	
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex);
@@ -62,6 +65,8 @@ private:
 	unsigned int _getNodeIdWithinParent(unsigned int nodeId) const;
 
 	void _getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
+
+	unsigned int _getMaxNofSubBuffersInLevel(unsigned int level) const;
 
 	std::shared_ptr<Octree> _octree;
 };

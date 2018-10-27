@@ -535,19 +535,19 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 
 			for (const auto edgeBuffer : node->edgesAlwaysCastMap)
 			{
+				nofBuffers++;
 				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
 				{
 					silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
-					nofBuffers++;
 				}
 			}
 
 			for (const auto edgeBuffer : node->edgesMayCastMap)
 			{
+				nofBuffers++;
 				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
 				{
 					potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
-					nofBuffers++;
 				}
 			}
 		}
@@ -645,4 +645,47 @@ unsigned int OctreeVisitor::getNofAllIndicesInNode(unsigned int nodeID) const
 		nofIndices += buffer.second.size();
 
 	return nofIndices;
+}
+
+unsigned int OctreeVisitor::getNodeNofSubBuffers(unsigned int nodeID) const
+{
+	const auto node = _octree->getNode(nodeID);
+
+	unsigned int nofSubBuffers = 0;
+
+	if(node)
+	{
+		nofSubBuffers += node->edgesAlwaysCastMap.size();
+		nofSubBuffers += node->edgesMayCastMap.size();
+	}
+
+	return nofSubBuffers;
+}
+
+unsigned int OctreeVisitor::_getMaxNofSubBuffersInLevel(unsigned int level) const
+{
+	const auto startingIndex = _octree->getLevelFirstNodeID(level);
+	const auto levelSize = ipow(OCTREE_NUM_CHILDREN, level);
+
+	unsigned int maxSize = 0;
+
+	for (unsigned int i = 0; i<levelSize; ++i)
+	{
+		maxSize = std::max(maxSize, getNodeNofSubBuffers(startingIndex + i));
+	}
+
+	return maxSize;
+}
+
+unsigned int OctreeVisitor::getMaxNofSubBuffers() const
+{
+	const auto deepestLevel = _octree->getDeepestLevel();
+	unsigned int maxSubBuffers = 0;
+
+	for(unsigned int i = 0; i<=deepestLevel; ++i)
+	{
+		maxSubBuffers += std::max(maxSubBuffers, _getMaxNofSubBuffersInLevel(i));
+	}
+
+	return maxSubBuffers;
 }

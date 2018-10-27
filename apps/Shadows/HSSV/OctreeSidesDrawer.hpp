@@ -135,4 +135,5 @@ private:
 	std::shared_ptr<ge::gl::Buffer> shitBuffer = nullptr;
 
 	unsigned int dispatchSize = 0;
+	unsigned int m_maxNofSubBuffersPath = 0;
 };

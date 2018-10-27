@@ -862,25 +862,25 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeC
 
 bool OctreeSidesDrawer::_generateLoadGpuTraversalShader2()
 {
-//#define USE_LOCAL_SHADER_1
-	
+
+//#define USE_LOCAL_SHADER_1	
 #ifdef USE_LOCAL_SHADER_1
 
 	const std::string shaderBody = genBufferPreprocessShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #else
-	std::ifstream t("C:\\Users\\Jofo\\Desktop\\tmp.glsl");
-	std::string shaderBody((std::istreambuf_iterator<char>(t)),
+	std::ifstream t1("C:\\Users\\Jofo\\Desktop\\tmp.glsl");
+	std::string shaderBody((std::istreambuf_iterator<char>(t1)),
 		std::istreambuf_iterator<char>());
 #endif
 	m_subBuffersPreprocessShader = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody));
 
-#define USE_LOCAL_SHADER_2	
+//#define USE_LOCAL_SHADER_2	
 #ifdef USE_LOCAL_SHADER_2
 	const std::string shaderBody2 = genCopyShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
 #else
-	std::ifstream t("C:\\Users\\Jofo\\Desktop\\compressShader.glsl");
-	std::string shaderBody2((std::istreambuf_iterator<char>(t)),
+	std::ifstream t2("C:\\Users\\Jofo\\Desktop\\compressShader.glsl");
+	std::string shaderBody2((std::istreambuf_iterator<char>(t2)),
 		std::istreambuf_iterator<char>());
 #endif
 
@@ -891,6 +891,9 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader2()
 
 	unsigned int pot=0, sil=0;
 	_getMaxNofBuffersPotSil(pot, sil);
+
+	m_maxNofSubBuffersPath = _octreeVisitor->getMaxNofSubBuffers();
+
 	m_potSuBuffers = std::make_shared<ge::gl::Buffer>(2 * _octreeVisitor->getOctree()->getCompressionLevel() * pot * sizeof(uint32_t));
 	m_silSuBuffers = std::make_shared<ge::gl::Buffer>(2 * _octreeVisitor->getOctree()->getCompressionLevel() * sil * sizeof(uint32_t));
 
@@ -923,7 +926,8 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	nofPotentialEdgesBuffer->setData(zero, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->setData(zero, sizeof(uint32_t), 0);
 	m_nofPotSilBuffers->setData(zero, 2 * sizeof(uint32_t), 0);
-	shitBuffer->setData(zero, 2 * sizeof(uint32_t), 0);
+	const unsigned int shitSize = 800;
+	shitBuffer->setData(zero, shitSize * sizeof(uint32_t), 0);
 
 	unsigned int bindingPoint = 0;
 
@@ -936,8 +940,9 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	nofSilhouetteEdgesBuffer->bindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++, 0, sizeof(uint32_t));
 	_compressedNodesInfoBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_compressedNodesInfoIndexingBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
+	
 
-	ge::gl::glDispatchCompute(1, 1, 1);
+	ge::gl::glDispatchCompute(ceil(float(m_maxNofSubBuffersPath) / float(_workgroupSize)), 1, 1);
 
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -951,13 +956,16 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	nofSilhouetteEdgesBuffer->unbindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_compressedNodesInfoBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_compressedNodesInfoIndexingBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
-
+	
 	//--
 	/*
 	ge::gl::glFinish();
 	uint32_t nofPot = 0, nofSil = 0;
 	nofPotentialEdgesBuffer->getData(&nofPot, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->getData(&nofSil, sizeof(uint32_t), 0);
+	
+	//uint32_t shi[shitSize] = { 0 };
+	//shitBuffer->getData(shi, shitSize * sizeof(uint32_t));
 
 	uint32_t nofPotBuffs = 0, nofSilBuffs = 0;
 	m_nofPotSilBuffers->getData(&nofPotBuffs, sizeof(uint32_t), 0);
@@ -966,6 +974,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	std::vector<uint32_t> v;
 	v.resize(nofPotBuffs * (_gpuOctreeBuffers.size()>1 ? 4 : 2));
 	m_potSuBuffers->getData(v.data(), v.size() * sizeof(uint32_t));
+
 	//*/
 	//--
 
@@ -981,7 +990,6 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	nofSilhouetteEdgesBuffer->bindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++, 0, sizeof(uint32_t));
 	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
-	shitBuffer->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
 	ge::gl::glDispatchCompute(ceil(float(_maxNofEdgesPath) / float(_workgroupSize)), 1, 1);
 
@@ -995,7 +1003,6 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	nofSilhouetteEdgesBuffer->unbindRange(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
-	shitBuffer->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 
@@ -1008,9 +1015,6 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu2(unsigned int lowestNode
 	
 	nofPotentialEdgesBuffer->getData(&nofPot, sizeof(uint32_t), 0);
 	nofSilhouetteEdgesBuffer->getData(&nofSil, sizeof(uint32_t), 0);
-
-	uint32_t shi[517] = { 0 };
-	shitBuffer->getData(shi, 517 * sizeof(uint32_t));
 
 	std::vector<uint32_t> pe, se;
 	pe.resize(nofPot);

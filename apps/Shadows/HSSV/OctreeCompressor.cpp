@@ -62,7 +62,7 @@ void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPo
 	for (const auto e : allEdgesSet)
 	{
 		const auto bitmask = checkEdgePresence(e, startingID, processPotential, nofSyblings);
-		if (bitmask.count()>(BitmaskTypeSizeBits/3))
+		if (bitmask.count()>3)
 		{
 			_visitor->assignEdgeToNode(parent, e, processPotential, bitmask.to_ullong());
 			_removeEdgeFromSyblingsSparse(startingID, e, processPotential, bitmask, nofSyblings);
