@@ -112,7 +112,7 @@ void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix,
 	_capsDrawer->drawCaps(lightPosition, viewMatrix, projectionMatrix);
 }
 
-#define DRAW_CPU
+//#define DRAW_CPU
 void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;

@@ -357,27 +357,56 @@ bool Application::init(int argc,char*argv[]){
   return true;
 }
 
-void Application::drawScene(){
-  if(this->timeStamper)this->timeStamper->begin();
+//#define USE_STATIC_CAM
 
-  ge::gl::glViewport(0,0,this->windowSize.x,this->windowSize.y);
-  ge::gl::glEnable(GL_DEPTH_TEST);
-  this->gBuffer->begin();
-  ge::gl::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
-  this->shadowMask->clear(0,GL_RED,GL_FLOAT);
-  this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
-  this->gBuffer->end();
+#ifdef USE_STATIC_CAM
+void Application::drawScene() {
+	if (this->timeStamper)this->timeStamper->begin();
 
-  if(this->timeStamper)this->timeStamper->stamp("gBuffer");
+	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
+	ge::gl::glEnable(GL_DEPTH_TEST);
+	this->gBuffer->begin();
+	ge::gl::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
+	const auto cameraView = glm::lookAtRH(glm::vec3(780.462, 130.018, -22.6998), glm::vec3(-0.995595, 0.0799146, 0.0490262), glm::vec3(0.0798179, 0.996802, -0.00393048));
+	this->renderModel->draw(this->cameraProjection->getProjection()* /*this->cameraTransform->getView()*/cameraView);
+	this->gBuffer->end();
 
-  if(this->useShadows)
-    this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(),this->cameraProjection->getProjection());
+	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
 
-  if(this->timeStamper)this->timeStamper->stamp("");
-  ge::gl::glDisable(GL_DEPTH_TEST);
-  this->shading->draw(this->lightPosition,glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0,0,0,1)),this->useShadows);
-  if(this->timeStamper)this->timeStamper->end("shading");
+	if (this->useShadows)
+		this->shadowMethod->create(this->lightPosition,/*this->cameraTransform->getView()*/cameraView, this->cameraProjection->getProjection());
+
+	if (this->timeStamper)this->timeStamper->stamp("");
+	ge::gl::glDisable(GL_DEPTH_TEST);
+	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(/*this->cameraTransform->getView()*/cameraView)*glm::vec4(0, 0, 0, 1)), this->useShadows);
+	if (this->timeStamper)this->timeStamper->end("shading");
 }
+
+#else
+void Application::drawScene() {
+	if (this->timeStamper)this->timeStamper->begin();
+
+	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
+	ge::gl::glEnable(GL_DEPTH_TEST);
+	this->gBuffer->begin();
+	ge::gl::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
+
+	this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
+	this->gBuffer->end();
+
+	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
+
+	if (this->useShadows)
+		this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(), this->cameraProjection->getProjection());
+
+	if (this->timeStamper)this->timeStamper->stamp("");
+	ge::gl::glDisable(GL_DEPTH_TEST);
+	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
+	if (this->timeStamper)this->timeStamper->end("shading");
+}
+#endif
 
 void Application::measure(){
   assert(this!=nullptr);

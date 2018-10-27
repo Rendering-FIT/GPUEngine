@@ -55,6 +55,9 @@ protected:
 	bool _generateLoadGpuTraversalShader();
 	void _getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight);
 
+	bool _generateLoadGpuTraversalShader2();
+	void _getPotentialSilhouetteEdgesGpu2(unsigned int lowestNodeContainingLight);
+
 	void _processSubBuffer(
 		const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer, 
 		std::vector<uint32_t>& compressedNodesInfo,
@@ -63,6 +66,8 @@ protected:
 		);
 
 	void _breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const;
+
+	void _getMaxNofBuffersPotSil(uint32_t& pot, uint32_t& sil);
 
 private:	
 	int _lastFrameCellIndex = -1;
@@ -118,4 +123,16 @@ private:
 	DrawingMethod _silhouetteDrawingMethod;
 
 	std::shared_ptr<TimeStamp> _timer;
+
+	//--
+	std::shared_ptr<ge::gl::Program> m_subBuffersPreprocessShader = nullptr;
+	std::shared_ptr<ge::gl::Program> m_getDataFromPrecomputedBuffersShader = nullptr;
+
+	std::shared_ptr<ge::gl::Buffer> m_potSuBuffers = nullptr;
+	std::shared_ptr<ge::gl::Buffer> m_silSuBuffers = nullptr;
+	std::shared_ptr<ge::gl::Buffer> m_nofPotSilBuffers = nullptr;
+	
+	std::shared_ptr<ge::gl::Buffer> shitBuffer = nullptr;
+
+	unsigned int dispatchSize = 0;
 };
