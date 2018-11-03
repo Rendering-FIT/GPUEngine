@@ -58,6 +58,9 @@ protected:
 	bool _generateLoadGpuTraversalShader2();
 	void _getPotentialSilhouetteEdgesGpu2(unsigned int lowestNodeContainingLight);
 
+	bool _generateLoadGpuTraversalShader3();
+	void _getPotentialSilhouetteEdgesGpu3(unsigned int lowestNodeContainingLight);
+
 	void _processSubBuffer(
 		const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer, 
 		std::vector<uint32_t>& compressedNodesInfo,
@@ -69,6 +72,8 @@ protected:
 
 	void _getMaxNofBuffersPotSil(uint32_t& pot, uint32_t& sil);
 
+	void _allocSubBuffersDataBuffers();
+
 private:	
 	int _lastFrameCellIndex = -1;
 
@@ -79,7 +84,6 @@ private:
 	std::shared_ptr<ge::gl::Program> _drawSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _testAndGenerateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
-	//std::shared_ptr<ge::gl::Program> _gpuOctreeTraversalProgramSingleBuffer = nullptr;
 	std::shared_ptr<ge::gl::Program> _gpuOctreeTraversalProgramMultipleBuffers = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
@@ -127,12 +131,19 @@ private:
 	//--
 	std::shared_ptr<ge::gl::Program> m_subBuffersPreprocessShader = nullptr;
 	std::shared_ptr<ge::gl::Program> m_getDataFromPrecomputedBuffersShader = nullptr;
+	std::shared_ptr<ge::gl::Program> m_getDataFromPrecomputedBuffersShader2 = nullptr;
 
 	std::shared_ptr<ge::gl::Buffer> m_potSuBuffers = nullptr;
 	std::shared_ptr<ge::gl::Buffer> m_silSuBuffers = nullptr;
-	std::shared_ptr<ge::gl::Buffer> m_nofPotSilBuffers = nullptr;
+	std::shared_ptr<ge::gl::Buffer> m_nofPotBuffers = nullptr;
+	std::shared_ptr<ge::gl::Buffer> m_nofSilBuffers = nullptr;
 	
 	std::shared_ptr<ge::gl::Buffer> shitBuffer = nullptr;
+	std::shared_ptr<ge::gl::Buffer> nofShit = nullptr;
+	//--
+	//Ver 3
+	std::shared_ptr<ge::gl::Program> m_prefixSumShader = nullptr;
+		unsigned int m_dataStride = 0;
 
 	unsigned int dispatchSize = 0;
 	unsigned int m_maxNofSubBuffersPath = 0;

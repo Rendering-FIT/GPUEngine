@@ -500,12 +500,12 @@ std::string genStoreBufferID(unsigned int nofBuffers)
 	str << "	{\n";
 	str << "		if (storePotential)\n";
 	str << "		{\n";
-	str << "			storeIndex = atomicAdd(nofPotSilBuffers[0], numBuffers); \n";
+	str << "			storeIndex = atomicAdd(nofPotBuffers, numBuffers); \n";
 	str << "		}\n";
 	str << "	\n";
 	str << "		if (!storePotential)\n";
 	str << "		{\n";
-	str << "			storeIndex = atomicAdd(nofPotSilBuffers[1], numBuffers);\n";
+	str << "			storeIndex = atomicAdd(nofSilBuffers, numBuffers);\n";
 	str << "		}\n";
 	str << "	}\n";
 	str << "	\n";
@@ -549,7 +549,8 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialBuffers[]; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _silhouette{ uint silhouetteBuffers[]; };\n";
-	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotSilBuffers{ uint nofPotSilBuffers[2]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotBuffers{ uint nofPotBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilBuffers{ uint nofSilBuffers; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotEdges{ uint nofPotEdges; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilEdges{ uint nofSilEdges; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nodeInfoBuffer {uint nodeInfo[]; };\n";
@@ -682,9 +683,8 @@ std::string genCopyShader(const std::vector<uint32_t>& lastNodePerEdgeBuffer, st
 
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inPot{ uint inPotential[]; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inSil{ uint inSilhouette[]; };\n";
-
-	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inNofPotBuffers{ uint nofPotSilBuffers[2]; };\n";
-
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inNofPotBuffers{ uint nofPotBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inNofSilBuffers{ uint nofSilBuffers; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofPotential{ uint nofPotential; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofSilhouette{ uint nofSilhouette; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialEdges[]; };\n";
@@ -837,8 +837,8 @@ str << "	uint nofPotBufs = 0;\n";
 str << "	uint nofSilBufs = 0;\n";
 str << "	if(gl_SubGroupInvocationARB==0)\n";
 str << "	{\n";
-str << "		nofPotBufs = nofPotSilBuffers[0];\n";
-str << "		nofSilBufs = nofPotSilBuffers[1];\n";
+str << "		nofPotBufs = nofPotBuffers;\n";
+str << "		nofSilBufs = nofSilBuffers;\n";
 str << "	}\n";
 str << "\n";
 str << "	nofPotBufs = readFirstInvocationARB(nofPotBufs);\n";
@@ -858,4 +858,212 @@ str << "}\n";
 
 
 	return str.str();
+}
+
+std::string genCopyShader3(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, unsigned int workgroupSize)
+{
+	std::stringstream str;
+	const unsigned int numBuffers = lastNodePerEdgeBuffer.size();
+	str << genPrologue(workgroupSize);
+
+	for (unsigned int i = 0; i < numBuffers; ++i)
+		str << genBuffer(i);
+
+	str << "\n";
+
+	unsigned int currentIndex = numBuffers;
+
+	const unsigned int nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
+
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inPot{ uint inPotential[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inSil{ uint inSilhouette[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inNofPotBuffers{ uint nofPotBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inNofSilBuffers{ uint nofSilBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofPotential{ uint nofPotential; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofSilhouette{ uint nofSilhouette; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialEdges[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _silhouette{ uint silhouetteEdges[]; };\n";
+
+	str << "\nshared uint shm[" << workgroupSize * nofUintsPerSubbufferInfo << "];\n\n";
+
+	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n";
+
+	str << findLsbFunction;
+
+	if (numBuffers > 1)
+	{
+		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
+		for (unsigned int i = 0; i < numBuffers; ++i)
+		{
+			str << lastNodePerEdgeBuffer[i];
+			if (i != (numBuffers - 1))
+				str << ", ";
+		}
+		str << ");\n";
+	}
+
+	if (numBuffers > 1)
+	{
+		str << genFindBufferFunc();
+		str << genGetNodeFromBuffer(numBuffers);
+	}
+
+	str << R".(
+	
+uint countBitsUint64(const uint64_t num)
+{
+	uvec2 a = unpackUint2x32(num);
+	return bitCount(a.x) + bitCount(a.y);
+}
+
+uint findFirstSet(const uvec2 v)
+{
+	const int lowPos = findLSB(v.x);
+	return (lowPos<0) ? 32 + findLSB(v.y) : lowPos;
+}
+).";
+
+	str << "void processEdges(bool isPotential, uint nofBuffs, uint nofPotEdges, uint shmStart)\n";
+	str << "{\n";
+	str << "	bool isFound = false;\n";
+	str << "	uint buffersProcessed = 0;\n";
+	str << "	uint currentSum = nofPotEdges;\n";
+	str << "	uint resultIndex = 0;\n";
+
+	if (numBuffers > 1)
+		str << "	uint bufferIndex = 0;\n";
+	str << "\n";
+	str << "	while(!isFound && (buffersProcessed<nofBuffs))\n";
+	str << "	{\n";
+	str << "		uint nofLoaded = 0;\n";
+	str << "\n";
+	str << "		//Load to shared memory\n";
+	str << "		{\n";
+	str << "			const uint64_t mask = ballotARB(true);\n";
+	str << "			const uvec2 maskUnpack = unpackUint2x32(mask);\n";
+	str << "			const uint64_t andMask = (uint64_t(1)<<gl_SubGroupInvocationARB)-uint64_t(1);\n";
+	str << "			const uvec2 maskIdxPacked = unpackUint2x32(mask & andMask);\n";
+	str << "			uint idxInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
+	str << "\n";
+	str << "			nofLoaded =  bitCount(maskUnpack.x) + bitCount(maskUnpack.y);\n";
+	str << "			if((buffersProcessed + nofLoaded) >= nofBuffs)\n";
+	str << "			{\n";
+	str << "				nofLoaded = nofBuffs - buffersProcessed;\n";
+	str << "			}\n";
+	str << "\n";
+	str << "			if(idxInWarp < nofLoaded)\n";
+	str << "			{\n";
+	str << "				if(isPotential)\n";
+	str << "				{\n";
+	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inPotential[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 0];\n";
+	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inPotential[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 1];\n";
+	if (numBuffers > 1)
+		str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inPotential[NOF_UINTS_BUFFER_INFO * (buffersProcessed + idxInWarp) + 2]; \n";
+	str << "				}\n";
+	str << "				else\n";
+	str << "				{\n";
+	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 0];\n";
+	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 1];\n";
+	if (numBuffers > 1)
+		str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 2];\n";
+	str << "				}\n";
+	str << "			}\n";
+	str << "\n";
+	str << "			buffersProcessed += nofLoaded;\n";
+	str << "			\n";
+	str << "		}\n";
+	str << "\n";
+	str << "		//Process shm\n";
+	str << "		for(unsigned int i=0; i<nofLoaded; ++i)\n";
+	str << "		{\n";
+	str << "			const uint currentBufferSize = shm[shmStart + NOF_UINTS_BUFFER_INFO*i + 0];\n";
+	str << "			if((currentSum + currentBufferSize)>gl_GlobalInvocationID.x)\n";
+	str << "			{\n";
+	str << "				isFound = true;\n";
+	str << "				resultIndex = shm[shmStart + NOF_UINTS_BUFFER_INFO*i + 1] + (gl_GlobalInvocationID.x - currentSum);\n";
+	if (numBuffers > 1)
+		str << "				bufferIndex = shm[shmStart + NOF_UINTS_BUFFER_INFO*i + 2];\n";
+	str << "				break;\n";
+	str << "			}\n";
+	str << "			\n";
+	str << "			currentSum += currentBufferSize;\n";
+	str << "		}\n";
+	str << "	}\n";
+	str << "\n";
+	str << "	if(isFound)\n";
+	str << "	{	\n";
+	str << "		if(isPotential)\n";
+	str << "		{\n";
+	if (numBuffers > 1)
+		str << "			potentialEdges[gl_GlobalInvocationID.x] = getNodeFromBuffer(resultIndex, bufferIndex);\n";
+	else
+		str << "			potentialEdges[gl_GlobalInvocationID.x] = edges0[resultIndex];\n";
+	str << "		}\n";
+	str << "		else\n";
+	str << "		{\n";
+	str << "			const uint storeIndex = gl_GlobalInvocationID.x - nofPotEdges;\n";
+	if (numBuffers > 1)
+		str << "			silhouetteEdges[storeIndex] = getNodeFromBuffer(resultIndex, bufferIndex);\n";
+	else
+		str << "			silhouetteEdges[storeIndex] = edges0[resultIndex];\n";
+	str << "		}\n";
+	str << "	}\n";
+	str << "}\n";
+
+
+	str << "void main()\n";
+	str << "{\n";
+	str << "	uint nofPotEdges = 0;\n";
+	str << "	uint nofSilEdges = 0;\n";
+	str << "	if (gl_SubGroupInvocationARB == 0)\n";
+	str << "	{\n";
+	str << "		nofPotEdges = nofPotential;\n";
+	str << "		nofSilEdges = nofSilhouette;\n";
+	str << "	}\n";
+	str << "\n";
+	str << "	nofPotEdges = readFirstInvocationARB(nofPotEdges);\n";
+	str << "	nofSilEdges = readFirstInvocationARB(nofSilEdges);\n";
+	str << "\n";
+	str << "	if(gl_GlobalInvocationID.x>=(nofPotEdges + nofSilEdges))\n";
+	str << "		return;\n";
+	str << "\n";
+	str << "	uint nofPotBufs = 0;\n";
+	str << "	uint nofSilBufs = 0;\n";
+	str << "	if(gl_SubGroupInvocationARB==0)\n";
+	str << "	{\n";
+	str << "		nofPotBufs = nofPotBuffers;\n";
+	str << "		nofSilBufs = nofSilBuffers;\n";
+	str << "	}\n";
+	str << "\n";
+	str << "	nofPotBufs = readFirstInvocationARB(nofPotBufs);\n";
+	str << "	nofSilBufs = readFirstInvocationARB(nofSilBufs);\n";
+	str << "\n";
+	str << "	const bool isPot = gl_GlobalInvocationID.x<nofPotEdges;\n";
+	str << "\n";
+	str << "	const uint shmStart = NOF_UINTS_BUFFER_INFO * (gl_LocalInvocationID.x/gl_SubGroupSizeARB) * gl_SubGroupSizeARB;\n";
+	str << "\n";
+	str << "	if(isPot)\n";
+	str << "		processEdges(true, nofPotBufs, 0, shmStart);\n";
+	str << "\n";
+	str << "	if(!isPot)\n";
+	str << "		processEdges(false, nofSilBufs, nofPotEdges, shmStart);\n";
+
+	str << "}\n";
+
+	return str.str();
+}
+
+//Based on https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+int nearestpowof2(int v)
+{
+	int n = int(v);
+	n--;
+	n |= n >> 1;
+	n |= n >> 2;
+	n |= n >> 4;
+	n |= n >> 8;
+	n |= n >> 16;
+	n++;
+
+	return n;
 }
