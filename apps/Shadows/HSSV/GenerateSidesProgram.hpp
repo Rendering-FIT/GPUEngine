@@ -344,6 +344,10 @@ void main()
 
 
 const std::string testAndGenerateSidesCS = R".(
+#extension GL_ARB_shader_ballot : enable
+#extension GL_ARB_gpu_shader_int64 : enable
+#extension GL_AMD_gpu_shader_int64 : enable
+
 layout(local_size_x=WORKGROUP_SIZE_X) in;
 
 layout(std430, binding=0) readonly buffer _edges{
@@ -366,16 +370,24 @@ layout(std430, binding=5) readonly buffer _nofEdgesToTest{
 	uint nofEdgesToTest; };
 
 )."
-+ edgeFunctions + oppositeVertexFunctions + multiplicityFunctions + pushEdgeFunction + 
++ edgeFunctions + oppositeVertexFunctions + multiplicityFunctions + pushEdgeFunction +
 R".(
 
 uniform vec4 lightPosition;
+
+//Just wildly dividing by 32
+//Lazy to exactly speciffy
+shared uint shm[WORKGROUP_SIZE_X/32];
 
 void main()
 {
 	const uint gid = gl_GlobalInvocationID.x;
 	if(gid>=nofEdgesToTest)
 		return;
+	
+	const uint subgroupId = gl_LocalInvocationIndex/gl_SubGroupSizeARB;
+	if(gl_SubGroupInvocationARB==0)
+		shm[subgroupId]=0;
 
 	const uint edgeID = edgesIdToTest[gid];
 	vec3 edgeVertices[2];
@@ -394,13 +406,21 @@ void main()
 	const uint swapVertices = uint(multiplicity>0);
 	const uint absMultiplicity = abs(multiplicity);
 
-	const uint startingPos = atomicAdd(drawIndirect[0], 2*absMultiplicity);
+	//Prefer local atomics
+	const uint startingPosLocal = atomicAdd(shm[subgroupId], 2*absMultiplicity);
+	uint startingPosGlobal = 0;
+	if(gl_SubGroupInvocationARB==0)
+		startingPosGlobal = atomicAdd(drawIndirect[0], shm[subgroupId]);
+	startingPosGlobal = readInvocationARB(startingPosGlobal, 0);
 
-	pushEdge(absMultiplicity, startingPos, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
+	pushEdge(absMultiplicity, startingPosGlobal + startingPosLocal, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
 }
 ).";
 
 const std::string generateSidesCS = R".(
+#extension GL_ARB_shader_ballot : enable
+#extension GL_ARB_gpu_shader_int64 : enable
+#extension GL_AMD_gpu_shader_int64 : enable
 layout(local_size_x=WORKGROUP_SIZE_X) in;
 
 layout(std430, binding=0) readonly buffer _edges{
@@ -422,11 +442,17 @@ layout(std430, binding=5) readonly buffer _nofEdgesToGenerate{
 + edgeFunctions + pushEdgeFunction + 
 R".(
 
+shared uint shm[WORKGROUP_SIZE_X/32];
+
 void main()
 {
 	const uint gid = gl_GlobalInvocationID.x;
 	if(gid>=nofEdgesToGenerate) return;
 	
+	const uint subgroupId = gl_LocalInvocationIndex/gl_SubGroupSizeARB;
+	if(gl_SubGroupInvocationARB==0)
+		shm[subgroupId]=0;
+
 	const uint encodedEdge = edgesIdToGenerate[gid];
 	const int multiplicity = decodeEdgeMultiplicityFromId(encodedEdge);
 	const uint edgeID = decodeEdgeFromEncoded(encodedEdge);
@@ -438,7 +464,13 @@ void main()
 	
 	const uint swapVertices = uint(multiplicity>0);
 	const uint absMultiplicity = abs(multiplicity);
-	const uint outputStartingPos = atomicAdd(drawIndirect[0], 2*abs(multiplicity));
 
-	pushEdge(absMultiplicity, outputStartingPos, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
+	//Prefer local atomics
+	const uint startingPosLocal = atomicAdd(shm[subgroupId], 2*absMultiplicity);
+	uint startingPosGlobal = 0;
+	if(gl_SubGroupInvocationARB==0)
+		startingPosGlobal = atomicAdd(drawIndirect[0], shm[subgroupId]);
+	startingPosGlobal = readInvocationARB(startingPosGlobal, 0);
+
+	pushEdge(absMultiplicity, startingPosGlobal + startingPosLocal, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
 }).";

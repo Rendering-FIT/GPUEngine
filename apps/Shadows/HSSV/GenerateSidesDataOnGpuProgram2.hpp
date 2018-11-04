@@ -909,161 +909,271 @@ std::string genCopyShader3(const std::vector<uint32_t>& lastNodePerEdgeBuffer, s
 	}
 
 	str << R".(
-	
-uint countBitsUint64(const uint64_t num)
+
+uint getPrefixSumValuePot(unsigned int index,  uint nofPotBufs)
 {
-	uvec2 a = unpackUint2x32(num);
-	return bitCount(a.x) + bitCount(a.y);
+	if(index>=nofPotBufs)
+		return nofPotential;
+	
+	return inPotential[NOF_UINTS_BUFFER_INFO * index + 0];
 }
 
-uint findFirstSet(const uvec2 v)
+uint getPrefixSumValueSil(unsigned int index, uint nofSilBufs)
 {
-	const int lowPos = findLSB(v.x);
-	return (lowPos<0) ? 32 + findLSB(v.y) : lowPos;
+	if(index>=nofSilBufs)
+		return nofSilhouette;
+	
+	return inSilhouette[NOF_UINTS_BUFFER_INFO * index + 0];
 }
 ).";
 
-	str << "void processEdges(bool isPotential, uint nofBuffs, uint nofPotEdges, uint shmStart)\n";
+	str << "void processEdgesPot(uint nofBuffs)\n";
 	str << "{\n";
-	str << "	bool isFound = false;\n";
-	str << "	uint buffersProcessed = 0;\n";
-	str << "	uint currentSum = nofPotEdges;\n";
-	str << "	uint resultIndex = 0;\n";
-
+	str << "	//Binary search\n";
+	str << "	int L = 0;\n";
+	str << "	int R = int(nofBuffs) - 1;\n";
+	str << "	int copyIndex = -1;\n";
+	str << "	int m = 0;\n";
 	if (numBuffers > 1)
 		str << "	uint bufferIndex = 0;\n";
 	str << "\n";
-	str << "	while(!isFound && (buffersProcessed<nofBuffs))\n";
+	str << "	while (L <= R)\n";
 	str << "	{\n";
-	str << "		uint nofLoaded = 0;\n";
+	str << "		m = (L + R) >> 1;\n";
 	str << "\n";
-	str << "		//Load to shared memory\n";
+	str << "		const uint m_val = getPrefixSumValuePot(m, nofBuffs);\n";
+	str << "\n";
+	str << "		if (m_val>gl_GlobalInvocationID.x)\n";
 	str << "		{\n";
-	str << "			const uint64_t mask = ballotARB(true);\n";
-	str << "			const uvec2 maskUnpack = unpackUint2x32(mask);\n";
-	str << "			const uint64_t andMask = (uint64_t(1)<<gl_SubGroupInvocationARB)-uint64_t(1);\n";
-	str << "			const uvec2 maskIdxPacked = unpackUint2x32(mask & andMask);\n";
-	str << "			uint idxInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
-	str << "\n";
-	str << "			nofLoaded =  bitCount(maskUnpack.x) + bitCount(maskUnpack.y);\n";
-	str << "			if((buffersProcessed + nofLoaded) >= nofBuffs)\n";
-	str << "			{\n";
-	str << "				nofLoaded = nofBuffs - buffersProcessed;\n";
-	str << "			}\n";
-	str << "\n";
-	str << "			if(idxInWarp < nofLoaded)\n";
-	str << "			{\n";
-	str << "				if(isPotential)\n";
-	str << "				{\n";
-	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inPotential[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 0];\n";
-	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inPotential[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 1];\n";
-	if (numBuffers > 1)
-		str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inPotential[NOF_UINTS_BUFFER_INFO * (buffersProcessed + idxInWarp) + 2]; \n";
-	str << "				}\n";
-	str << "				else\n";
-	str << "				{\n";
-	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 0] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 0];\n";
-	str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 1] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 1];\n";
-	if (numBuffers > 1)
-		str << "					shm[shmStart + NOF_UINTS_BUFFER_INFO*idxInWarp + 2] = inSilhouette[NOF_UINTS_BUFFER_INFO*(buffersProcessed + idxInWarp) + 2];\n";
-	str << "				}\n";
-	str << "			}\n";
-	str << "\n";
-	str << "			buffersProcessed += nofLoaded;\n";
-	str << "			\n";
-	str << "		}\n";
-	str << "\n";
-	str << "		//Process shm\n";
-	str << "		for(unsigned int i=0; i<nofLoaded; ++i)\n";
-	str << "		{\n";
-	str << "			const uint currentBufferSize = shm[shmStart + NOF_UINTS_BUFFER_INFO*i + 0];\n";
-	str << "			if((currentSum + currentBufferSize)>gl_GlobalInvocationID.x)\n";
-	str << "			{\n";
-	str << "				isFound = true;\n";
-	str << "				resultIndex = shm[shmStart + NOF_UINTS_BUFFER_INFO*i + 1] + (gl_GlobalInvocationID.x - currentSum);\n";
-	if (numBuffers > 1)
-		str << "				bufferIndex = shm[shmStart + NOF_UINTS_BUFFER_INFO*i + 2];\n";
-	str << "				break;\n";
-	str << "			}\n";
-	str << "			\n";
-	str << "			currentSum += currentBufferSize;\n";
-	str << "		}\n";
-	str << "	}\n";
-	str << "\n";
-	str << "	if(isFound)\n";
-	str << "	{	\n";
-	str << "		if(isPotential)\n";
-	str << "		{\n";
-	if (numBuffers > 1)
-		str << "			potentialEdges[gl_GlobalInvocationID.x] = getNodeFromBuffer(resultIndex, bufferIndex);\n";
-	else
-		str << "			potentialEdges[gl_GlobalInvocationID.x] = edges0[resultIndex];\n";
+	str << "			R = m - 1;\n";
 	str << "		}\n";
 	str << "		else\n";
 	str << "		{\n";
-	str << "			const uint storeIndex = gl_GlobalInvocationID.x - nofPotEdges;\n";
+	str << "			const uint m_val1 = getPrefixSumValuePot(m + 1, nofBuffs);\n";
+	str << "\n";
+	str << "			if (m_val1 <= gl_GlobalInvocationID.x)\n";
+	str << "				L = m + 1;\n";
+	str << "			else\n";
+	str << "			{\n";
+	str << "				copyIndex = int(gl_GlobalInvocationID.x) - int(m_val);\n";
 	if (numBuffers > 1)
-		str << "			silhouetteEdges[storeIndex] = getNodeFromBuffer(resultIndex, bufferIndex);\n";
-	else
-		str << "			silhouetteEdges[storeIndex] = edges0[resultIndex];\n";
+		str << "				bufferIndex = inPotential[NOF_UINTS_BUFFER_INFO * uint(m) + 2];\n";
+	str << "				break;\n";
+	str << "			}\n";
 	str << "		}\n";
 	str << "	}\n";
+	str << "\n";
+	str << "	if (copyIndex >= 0)\n";
+	str << "	{\n";
+	str << "		const uint bufferStart = inPotential[NOF_UINTS_BUFFER_INFO * uint(m) + 1];\n";
+	str << "\n";
+	if(numBuffers==1)
+		str << "		potentialEdges[gl_GlobalInvocationID.x] = edges0[bufferStart + copyIndex];\n";
+	else
+		str << "		potentialEdges[gl_GlobalInvocationID.x] = getNodeFromBuffer(bufferStart + copyIndex, bufferIndex);\n";
+	str << "	}\n";
 	str << "}\n";
-
-
-	str << "void main()\n";
+	str << "\n";
+	str << "void processEdgesSil(uint nofBuffs, uint silhouetteIndex)\n";
 	str << "{\n";
-	str << "	uint nofPotEdges = 0;\n";
-	str << "	uint nofSilEdges = 0;\n";
-	str << "	if (gl_SubGroupInvocationARB == 0)\n";
+	str << "	//Binary search\n";
+	str << "	int L = 0;\n";
+	str << "	int R = int(nofBuffs) - 1;\n";
+	str << "	int copyIndex = -1;\n";
+	str << "	int m = 0;\n";
+	if (numBuffers > 1)
+		str << "	uint bufferIndex = 0;\n";
+	str << "\n";
+	str << "	while (L <= R)\n";
 	str << "	{\n";
-	str << "		nofPotEdges = nofPotential;\n";
-	str << "		nofSilEdges = nofSilhouette;\n";
+	str << "		m = (L + R) >> 1;\n";
+	str << "\n";
+	str << "		const uint m_val = getPrefixSumValueSil(m, nofBuffs);\n";
+	str << "\n";
+	str << "		if (m_val>silhouetteIndex)\n";
+	str << "		{\n";
+	str << "			R = m - 1;\n";
+	str << "		}\n";
+	str << "		else\n";
+	str << "		{\n";
+	str << "			const uint m_val1 = getPrefixSumValueSil(m + 1, nofBuffs);\n";
+	str << "\n";
+	str << "			if (m_val1 <= silhouetteIndex)\n";
+	str << "				L = m + 1;\n";
+	str << "			else\n";
+	str << "			{\n";
+	str << "				copyIndex = int(silhouetteIndex) - int(m_val);\n";
+	if (numBuffers > 1)
+		str << "				bufferIndex = inSilhouette[NOF_UINTS_BUFFER_INFO * uint(m) + 2];\n";
+	str << "				break;\n";
+	str << "			}\n";
+	str << "		}\n";
 	str << "	}\n";
 	str << "\n";
-	str << "	nofPotEdges = readFirstInvocationARB(nofPotEdges);\n";
-	str << "	nofSilEdges = readFirstInvocationARB(nofSilEdges);\n";
-	str << "\n";
-	str << "	if(gl_GlobalInvocationID.x>=(nofPotEdges + nofSilEdges))\n";
-	str << "		return;\n";
-	str << "\n";
-	str << "	uint nofPotBufs = 0;\n";
-	str << "	uint nofSilBufs = 0;\n";
-	str << "	if(gl_SubGroupInvocationARB==0)\n";
+	str << "	if (copyIndex >= 0)\n";
 	str << "	{\n";
-	str << "		nofPotBufs = nofPotBuffers;\n";
-	str << "		nofSilBufs = nofSilBuffers;\n";
+	str << "		const uint bufferStart = inSilhouette[NOF_UINTS_BUFFER_INFO * uint(m) + 1];\n";
+	str << "\n";
+	if(numBuffers==1)
+		str << "		silhouetteEdges[silhouetteIndex] = edges0[bufferStart + copyIndex];\n";
+	else
+		str << "		silhouetteEdges[silhouetteIndex] = getNodeFromBuffer(bufferStart + copyIndex, bufferIndex);;\n";
 	str << "	}\n";
-	str << "\n";
-	str << "	nofPotBufs = readFirstInvocationARB(nofPotBufs);\n";
-	str << "	nofSilBufs = readFirstInvocationARB(nofSilBufs);\n";
-	str << "\n";
-	str << "	const bool isPot = gl_GlobalInvocationID.x<nofPotEdges;\n";
-	str << "\n";
-	str << "	const uint shmStart = NOF_UINTS_BUFFER_INFO * (gl_LocalInvocationID.x/gl_SubGroupSizeARB) * gl_SubGroupSizeARB;\n";
-	str << "\n";
-	str << "	if(isPot)\n";
-	str << "		processEdges(true, nofPotBufs, 0, shmStart);\n";
-	str << "\n";
-	str << "	if(!isPot)\n";
-	str << "		processEdges(false, nofSilBufs, nofPotEdges, shmStart);\n";
-
 	str << "}\n";
+
+	str << R".(
+void main()
+{
+	uint nofPotEdges = 0;
+	uint nofSilEdges = 0;
+	if (gl_SubGroupInvocationARB == 0)
+	{
+		nofPotEdges = nofPotential;
+		nofSilEdges = nofSilhouette;
+	}
+
+	nofPotEdges = readFirstInvocationARB(nofPotEdges);
+	nofSilEdges = readFirstInvocationARB(nofSilEdges);
+	
+	//We want to eliminate warp that would have to process both pot and sil edges
+	//So we round up the nof pot edges to full warps
+	const uint nofPotEdgesRoundUp = uint(ceil(float(nofPotEdges)/float(gl_SubGroupSizeARB))) * gl_SubGroupSizeARB;
+	
+	if(gl_GlobalInvocationID.x>=(nofPotEdgesRoundUp + nofSilEdges))
+		return;
+		
+	if(gl_GlobalInvocationID.x >=nofPotEdges && gl_GlobalInvocationID.x < nofPotEdgesRoundUp)
+		return;
+		
+	uint nofPotBufs = 0;
+	uint nofSilBufs = 0;
+	if(gl_SubGroupInvocationARB==0)
+	{
+		nofPotBufs = nofPotBuffers;
+		nofSilBufs = nofSilBuffers;
+	}
+
+	nofPotBufs = readFirstInvocationARB(nofPotBufs);
+	nofSilBufs = readFirstInvocationARB(nofSilBufs);
+
+	const bool isPot = gl_GlobalInvocationID.x<nofPotEdgesRoundUp;
+
+	if(isPot)
+		processEdgesPot(nofPotBufs);
+
+	if(!isPot)
+		processEdgesSil(nofSilBufs, gl_GlobalInvocationID.x - nofPotEdgesRoundUp);
+}
+).";
 
 	return str.str();
 }
 
-//Based on https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
-int nearestpowof2(int v)
+std::string genPrefixSumKernel()
 {
-	int n = int(v);
-	n--;
-	n |= n >> 1;
-	n |= n >> 2;
-	n |= n >> 4;
-	n |= n >> 8;
-	n |= n >> 16;
-	n++;
+	if(sizeof(BitmaskType)==1)
+		return R".(
+#version 450 core
 
-	return n;
+#extension GL_ARB_shader_ballot : enable
+#extension GL_ARB_gpu_shader_int64 : enable
+#extension GL_AMD_gpu_shader_int64 : enable
+
+layout (local_size_x = 128) in;
+
+layout(std430, binding = 0) buffer  _inputData  { uint inputBuffer[]; };
+layout(std430, binding = 1) readonly  buffer  _nofElems   { uint nofElements; };
+
+shared uint temp[2 * gl_WorkGroupSize.x];
+
+uniform uvec4 stridesOffsets;
+
+void main()
+{
+	if(nofElements<2)
+		return;
+
+	const int thid = int(gl_LocalInvocationID.x);
+	const uint inputStride = stridesOffsets.x;
+	const uint inputOffset = stridesOffsets.y;
+	//const uint outputStride = stridesOffsets.z;
+	//const uint outputOffset = stridesOffsets.w;
+	int  n = 0;
+	
+	if(nofElements<(2*gl_WorkGroupSize.x))
+	{
+		n = int(2*gl_WorkGroupSize.x);
+	}
+	else
+	{
+		//Finding the nearest power of two to the input
+		//Based on https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+		int n = int(nofElements);
+		n--;
+		n |= n >> 1;
+		n |= n >> 2;
+		n |= n >> 4;
+		n |= n >> 8;
+		n |= n >> 16;
+		n++;
+	}
+	
+	int offset = 1;
+	
+	// load input into shared memory
+	if((2*thid) < nofElements)
+		temp[2*thid] = inputBuffer[2*thid*inputStride + inputOffset];
+	else
+		temp[2*thid] = 0;
+		
+	if((2*thid+1) < nofElements)	
+		temp[2*thid+1] = inputBuffer[(2*thid+1)*inputStride + inputOffset];
+	else
+		temp[2*thid+1] = 0;
+	barrier();
+	
+	for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
+	{ 
+		barrier();
+		if (thid < d)
+		{
+			int ai = offset*(2*thid+1)-1;
+			int bi = offset*(2*thid+2)-1;
+			temp[bi] += temp[ai];
+		}
+		
+		offset *= 2;
+	}
+	
+	if (thid == 0) // clear the last element
+	{ 
+		temp[n - 1] = 0; 
+	}
+	
+	for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
+	{
+		offset >>= 1;
+		barrier();
+		if (thid < d)                     
+		{
+			int ai = offset*(2*thid+1)-1;
+			int bi = offset*(2*thid+2)-1;
+			uint t = temp[ai];
+			temp[ai] = temp[bi];
+			temp[bi] += t; 
+		}
+	}
+	
+	barrier();
+    //outputBuffer[2*thid*outputStride + outputOffset] = temp[2*thid]; // write results to device memory
+    //outputBuffer[(2*thid+1)*outputStride + outputOffset] = temp[2*thid+1];
+	
+	if((2*thid) < nofElements)
+		inputBuffer[2*thid*inputStride + inputOffset] = temp[2*thid]; // write results to device memory
+	if((2*thid+1) < nofElements)
+		inputBuffer[(2*thid+1)*inputStride + inputOffset] = temp[2*thid+1];
+}
+).";
+
+	return "";
 }
