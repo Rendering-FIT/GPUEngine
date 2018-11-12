@@ -70,9 +70,13 @@ protected:
 
 	void _breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const;
 
-	void _getMaxNofBuffersPotSil(uint32_t& pot, uint32_t& sil);
-
 	void _allocSubBuffersDataBuffers();
+
+	void _calcPrefixSums();
+		void _calcPrefixSum(std::shared_ptr<ge::gl::Buffer> input, std::shared_ptr<ge::gl::Buffer> output, std::shared_ptr<ge::gl::Buffer> count, unsigned int worstCase, unsigned int tmpIndex);
+
+	void _calcSingleTwoLevelPrefixSumWgSizes(unsigned int maxNofPotSubBuffs, unsigned int maxNofSilSubBuffs);
+		unsigned int _getNearstLowerPow2(unsigned int x) const;
 
 private:	
 	int _lastFrameCellIndex = -1;
@@ -137,13 +141,27 @@ private:
 	std::shared_ptr<ge::gl::Buffer> m_silSuBuffers = nullptr;
 	std::shared_ptr<ge::gl::Buffer> m_nofPotBuffers = nullptr;
 	std::shared_ptr<ge::gl::Buffer> m_nofSilBuffers = nullptr;
-	
+
+	//Prefix sum
+	std::shared_ptr<ge::gl::Buffer> m_prefixSumTmp[2] = { nullptr, nullptr };
+	std::shared_ptr<ge::gl::Buffer> m_prefixSumTmpAtomic[2] = { nullptr, nullptr };
+
+	//--
 	std::shared_ptr<ge::gl::Buffer> shitBuffer = nullptr;
 	std::shared_ptr<ge::gl::Buffer> nofShit = nullptr;
 	//--
-	//Ver 3
-	std::shared_ptr<ge::gl::Program> m_prefixSumShader = nullptr;
-		unsigned int m_dataStride = 0;
+
+	std::shared_ptr<ge::gl::Program> m_prefixSumShaderSimple = nullptr;
+	std::shared_ptr<ge::gl::Program> m_prefixSumShaderTwoLevel = nullptr;
+	std::shared_ptr<ge::gl::Program> m_prefixSumShaderAdd = nullptr;
+
+	unsigned int m_dataStride = 0;
+	unsigned int m_maxNofPotBuffers = 0;
+	unsigned int m_maxNofSilBuffers = 0;
+	unsigned int m_prefixSumWorkgroupSizeSingle = 0;
+	unsigned int m_prefixSumWorkgroupSizeTwoLevel = 0;
+	unsigned int m_prefixSumWorkgroupSizeSummation = 256;
+	//--
 
 	unsigned int dispatchSize = 0;
 	unsigned int m_maxNofSubBuffersPath = 0;

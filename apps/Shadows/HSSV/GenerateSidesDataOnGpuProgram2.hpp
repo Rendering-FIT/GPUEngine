@@ -1069,20 +1069,19 @@ void main()
 	return str.str();
 }
 
-std::string genPrefixSumKernel()
+std::string genPrefixSumKernelSimple(unsigned int workgroupSize)
 {
-	if(sizeof(BitmaskType)==1)
-		return R".(
+	std::stringstream str;
+
+	str << R".(
 #version 450 core
+).";
 
-#extension GL_ARB_shader_ballot : enable
-#extension GL_ARB_gpu_shader_int64 : enable
-#extension GL_AMD_gpu_shader_int64 : enable
-
-layout (local_size_x = 128) in;
-
+	str << "layout (local_size_x = " << workgroupSize << ") in;\n";
+	str << R".(
 layout(std430, binding = 0) buffer  _inputData  { uint inputBuffer[]; };
-layout(std430, binding = 1) readonly  buffer  _nofElems   { uint nofElements; };
+layout(std430, binding = 1) buffer  _outputData { uint outputBuffer[]; };
+layout(std430, binding = 2) readonly buffer  _nofElems   { uint nofElements; };
 
 shared uint temp[2 * gl_WorkGroupSize.x];
 
@@ -1090,14 +1089,16 @@ uniform uvec4 stridesOffsets;
 
 void main()
 {
-	if(nofElements<2)
+	//if(nofElements<2)
+	if(nofElements==0)
 		return;
 
 	const int thid = int(gl_LocalInvocationID.x);
 	const uint inputStride = stridesOffsets.x;
 	const uint inputOffset = stridesOffsets.y;
-	//const uint outputStride = stridesOffsets.z;
-	//const uint outputOffset = stridesOffsets.w;
+	const uint outputStride = stridesOffsets.z;
+	const uint outputOffset = stridesOffsets.w;
+	
 	int  n = 0;
 	
 	if(nofElements<(2*gl_WorkGroupSize.x))
@@ -1108,7 +1109,7 @@ void main()
 	{
 		//Finding the nearest power of two to the input
 		//Based on https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
-		int n = int(nofElements);
+		n = int(nofElements);
 		n--;
 		n |= n >> 1;
 		n |= n >> 2;
@@ -1130,6 +1131,7 @@ void main()
 		temp[2*thid+1] = inputBuffer[(2*thid+1)*inputStride + inputOffset];
 	else
 		temp[2*thid+1] = 0;
+
 	barrier();
 	
 	for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
@@ -1165,15 +1167,171 @@ void main()
 	}
 	
 	barrier();
-    //outputBuffer[2*thid*outputStride + outputOffset] = temp[2*thid]; // write results to device memory
-    //outputBuffer[(2*thid+1)*outputStride + outputOffset] = temp[2*thid+1];
-	
+
+    // write results to device memory
 	if((2*thid) < nofElements)
-		inputBuffer[2*thid*inputStride + inputOffset] = temp[2*thid]; // write results to device memory
+		outputBuffer[2*thid*outputStride + outputOffset] = temp[2*thid];
 	if((2*thid+1) < nofElements)
-		inputBuffer[(2*thid+1)*inputStride + inputOffset] = temp[2*thid+1];
+		outputBuffer[(2*thid+1)*outputStride + outputOffset] = temp[2*thid+1];
 }
 ).";
 
-	return "";
+	return str.str();
+}
+
+std::string genPrefixSumKernelTwoLevel(unsigned int workgroupSize)
+{
+	std::stringstream str;
+
+	str << R".(
+#version 450 core
+
+).";
+
+	str << "layout (local_size_x = " << workgroupSize << ") in;\n";
+	str << R".(
+layout(std430, binding = 0)	 buffer _inputData  { uint inputBuffer[]; };
+layout(std430, binding = 1)  buffer _outputData { uint outputBuffer[]; };
+layout(std430, binding = 2) readonly  buffer _nofElems   { uint nofElements; };
+layout(std430, binding = 3) writeonly buffer _tmpBufer   { uint tmpBuffer[]; };
+layout(std430, binding = 4) writeonly buffer _tmpSum     { uint nofTmp; };
+
+shared uint temp[2 * gl_WorkGroupSize.x];
+
+uniform uvec4 stridesOffsets;
+
+void main()
+{
+	//if(nofElements<2)
+	if(nofElements==0)
+		return;
+
+	//starting index
+	const uint wgId = gl_GlobalInvocationID.x/gl_WorkGroupSize.x;
+	const unsigned int startingIndex = 2*gl_WorkGroupSize.x*wgId;
+	
+	if(startingIndex >= nofElements)
+		return;
+
+	const uint nofWorkingElements = min(2*gl_WorkGroupSize.x, nofElements - startingIndex);
+	const int thid = int(gl_LocalInvocationID.x);
+	const uint inputStride = stridesOffsets.x;
+	const uint inputOffset = stridesOffsets.y;
+	const uint outputStride = stridesOffsets.z;
+	const uint outputOffset = stridesOffsets.w;
+	
+	int  n = 0;
+
+	if(nofWorkingElements<(2*gl_WorkGroupSize.x))
+	{
+		n = int(2*gl_WorkGroupSize.x);
+	}
+	else
+	{
+		//Finding the nearest power of two to the input
+		//Based on https://stackoverflow.com/questions/466204/rounding-up-to-next-power-of-2
+		n = int(nofWorkingElements);
+		n--;
+		n |= n >> 1;
+		n |= n >> 2;
+		n |= n >> 4;
+		n |= n >> 8;
+		n |= n >> 16;
+		n++;
+	}
+
+	int offset = 1;
+	
+	//In case in and out buffers are identical
+	const uint lastItem = inputBuffer[(nofWorkingElements+startingIndex-1)*inputStride + inputOffset];
+
+	// load input into shared memory
+	if((2*thid) < nofWorkingElements)
+		temp[2*thid] = inputBuffer[(2*thid + startingIndex)*inputStride + inputOffset];
+	else
+		temp[2*thid] = 0;
+
+	if((2*thid+1) < nofWorkingElements)	
+		temp[2*thid+1] = inputBuffer[(2*thid+1+startingIndex)*inputStride + inputOffset];
+	else
+		temp[2*thid+1] = 0;
+
+	barrier();
+	
+	for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
+	{ 
+		barrier();
+		if (thid < d)
+		{
+			int ai = offset*(2*thid+1)-1;
+			int bi = offset*(2*thid+2)-1;
+			temp[bi] += temp[ai];
+		}
+		
+		offset *= 2;
+	}
+	
+	if (thid == 0) // clear the last element
+	{ 
+		temp[n - 1] = 0; 
+	}
+	
+	for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
+	{
+		offset >>= 1;
+		barrier();
+		if (thid < d)                     
+		{
+			int ai = offset*(2*thid+1)-1;
+			int bi = offset*(2*thid+2)-1;
+			uint t = temp[ai];
+			temp[ai] = temp[bi];
+			temp[bi] += t; 
+		}
+	}
+	
+	barrier();
+
+    // write results to device memory
+	if((2*thid) < nofWorkingElements)
+		outputBuffer[(2*thid+startingIndex)*outputStride + outputOffset] = temp[2*thid]; // write results to device memory
+
+	if((2*thid+1) < nofWorkingElements)
+		outputBuffer[(2*thid+1+startingIndex)*outputStride + outputOffset] = temp[2*thid+1];
+
+	if(thid == 0)
+	{
+		tmpBuffer[wgId] = temp[nofWorkingElements-1] + lastItem;
+		atomicAdd(nofTmp, 1);
+	}
+}
+).";
+
+	return str.str();
+}
+
+std::string generateSummationKernel(unsigned int workgroupSize)
+{
+	std::stringstream str;
+	str << "#version 450 core\n";
+	str << "layout (local_size_x = " << workgroupSize << ") in;\n";
+	str << R".(
+layout(std430, binding = 0) buffer _inputData  { uint inputBuffer[]; };
+layout(std430, binding = 1) readonly buffer _sumData { uint perWgSum[]; };
+layout(std430, binding = 2) readonly buffer _dataSize { uint dataSize; };
+
+uniform uint previousWgSize;
+
+uniform uvec2 outputStrideOffset;
+
+void main()
+{
+	if(gl_GlobalInvocationID.x < int(dataSize))
+	{
+		const uint index = gl_GlobalInvocationID.x/(2*previousWgSize);
+		inputBuffer[outputStrideOffset.x *gl_GlobalInvocationID.x + outputStrideOffset.y] += perWgSum[index];
+	}
+}
+).";
+	return str.str();
 }

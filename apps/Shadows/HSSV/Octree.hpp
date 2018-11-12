@@ -9,7 +9,8 @@
 #define OCTREE_NUM_CHILDREN 8
 
 
-typedef unsigned char BitmaskType;
+//typedef unsigned char BitmaskType;
+typedef uint64_t BitmaskType;
 constexpr size_t BitmaskTypeSizeBits = 8*sizeof(BitmaskType);
 constexpr BitmaskType BitmaskAllSet = BitmaskType(-1);
 

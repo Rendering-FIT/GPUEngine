@@ -28,8 +28,9 @@ public:
 
 	unsigned int getNofAllIndicesInNode(unsigned int nodeID) const;
 
-	unsigned int getMaxNofSubBuffers() const;
-	unsigned int getNodeNofSubBuffers(unsigned int nodeID) const;
+	void getMaxNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil) const;
+
+	void getNodeNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil, unsigned int nodeID) const;
 
 private:
 	
@@ -66,7 +67,7 @@ private:
 
 	void _getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
 
-	unsigned int _getMaxNofSubBuffersInLevel(unsigned int level) const;
+	void _getMaxNofSubBuffersInLevelPotSil(unsigned int& pot, unsigned int& sil, unsigned int level) const;
 
 	std::shared_ptr<Octree> _octree;
 };
