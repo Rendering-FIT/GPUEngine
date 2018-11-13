@@ -72,7 +72,7 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 {
 	assert(level <= _octree->getDeepestLevel());
 	
-	const auto levelSize = ipow(OCTREE_NUM_CHILDREN, level);
+	const auto levelSize = unsigned(ipow(OCTREE_NUM_CHILDREN, level));
 	const auto startingIndex = _octree->getLevelFirstNodeID(level);
 
 	unsigned int numProcessed = 0;
@@ -98,15 +98,15 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 		}
 
 		_clearAtomicCounter();
-		_propagateProgram->set1ui("nofVoxels", numLoaded);
+		_propagateProgram->set1ui("nofVoxels", unsigned(numLoaded));
 		_propagateProgram->set1ui("maxNofEdges", maxEdgesPerVoxel);
 
 		ge::gl::glDispatchCompute(16, 1, 1);
 		ge::gl::glFinish();
 
-		_updateCpuData(startingIndex + numProcessed, numLoaded, maxEdgesPerVoxel, type, sizePrefixSum);
+		_updateCpuData(startingIndex + numProcessed, unsigned(numLoaded), maxEdgesPerVoxel, type, sizePrefixSum);
 
-		numProcessed += numLoaded;
+		numProcessed += unsigned(numLoaded);
 	}
 
 	_unbindBuffers();
@@ -154,7 +154,7 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom_returnNofLoaded(
 				memcpy(indicesPtr + usedCapacity, edges.data(), edges.size() * sizeof(uint32_t));
 			usedCapacity += edges.size()*sizeof(uint32_t);
 
-			sizesPrefixSum.push_back(sizesPrefixSum[sizesPrefixSum.size() - 1] + edges.size());
+			sizesPrefixSum.push_back(sizesPrefixSum[sizesPrefixSum.size() - 1] + unsigned(edges.size()));
 		}
 
 		numLoaded += OCTREE_NUM_CHILDREN;

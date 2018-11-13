@@ -107,7 +107,7 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 
 		{
 			//Write nof potential subbuffers
-			_writeUint(output, node->edgesMayCastMap.size());
+			_writeUint(output, uint32_t(node->edgesMayCastMap.size()));
 
 			for(const auto subBuffer : node->edgesMayCastMap)
 			{
@@ -115,7 +115,7 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 				_writeUint64(output, subBuffer.first);
 
 				//write subbuffer size
-				_writeUint(output, subBuffer.second.size());
+				_writeUint(output, uint32_t(subBuffer.second.size()));
 
 				//write data
 				_writeUintBuffer(output, subBuffer.second);
@@ -124,7 +124,7 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 
 		{
 			//Write nof silhouette subbuffers
-			_writeUint(output, node->edgesAlwaysCastMap.size());
+			_writeUint(output, uint32_t(node->edgesAlwaysCastMap.size()));
 
 			for (const auto subBuffer : node->edgesAlwaysCastMap)
 			{
@@ -132,7 +132,7 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 				_writeUint64(output, subBuffer.first);
 
 				//write subbuffer size
-				_writeUint(output, subBuffer.second.size());
+				_writeUint(output, uint32_t(subBuffer.second.size()));
 
 				//write data
 				_writeUintBuffer(output, subBuffer.second);

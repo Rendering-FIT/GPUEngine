@@ -52,7 +52,7 @@ void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPo
 
 	const auto nofSyblings = ipow(OCTREE_NUM_CHILDREN, compressLevelHeight_1or2);
 
-	for (unsigned int i = 0; i < nofSyblings; ++i)
+	for (int i = 0; i < nofSyblings; ++i)
 	{
 		const auto node = _visitor->getOctree()->getNode(startingID + i);
 		const auto& buffer = processPotential ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];

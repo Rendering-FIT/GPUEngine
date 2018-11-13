@@ -367,8 +367,8 @@ void HSSV::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEd
 		glm::vec3 v1 = vertices[edges->getEdgeVertexA(edgeIndex) / 3];
 		glm::vec3 v2 = vertices[edges->getEdgeVertexB(edgeIndex) / 3];
 
-		const unsigned int nofOpposite = edges->getNofOpposite(edgeIndex);
-		const unsigned int starting_index = serializedOppositeVertices.size() * 3;
+		const unsigned int nofOpposite = unsigned int(edges->getNofOpposite(edgeIndex));
+		const unsigned int starting_index = unsigned int(serializedOppositeVertices.size()) * 3;
 
 		serializedEdges.push_back(v1.x); serializedEdges.push_back(v1.y); serializedEdges.push_back(v1.z);
 		serializedEdges.push_back(v2.x); serializedEdges.push_back(v2.y); serializedEdges.push_back(v2.z);

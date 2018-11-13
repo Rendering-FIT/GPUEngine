@@ -87,7 +87,7 @@ class GEGL_EXPORT ge::gl::Buffer:
         GLenum           const&format                  ,
         GLenum           const&type                    ,
         GLvoid     const*const&Data           = nullptr)const;
-    GLsizeiptr getSize       ()const;
+    GLint64 getSize       ()const;
     GLbitfield getUsage      ()const;
     GLenum     getAccess     ()const;
     GLbitfield getAccessFlags()const;

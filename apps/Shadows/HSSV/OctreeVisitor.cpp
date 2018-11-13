@@ -186,7 +186,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 				const int multiplicity = GeometryOps::calcEdgeMultiplicity(edges, edgeIndex, _octree->getNodeVolume(index).getMinPoint());
 				if (multiplicity != 0)
 				{
-					const auto encodedEdge = encodeEdgeMultiplicityToId(edgeIndex, multiplicity);
+					const auto encodedEdge = encodeEdgeMultiplicityToId(unsigned int(edgeIndex), multiplicity);
 					silhouetteBitmasks[encodedEdge][index - startingID] = true;
 				}
 			}
@@ -196,7 +196,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		{
 			if (potentialBitmask.count() > 3)
 			{
-				_storeEdgeIsPotentiallySilhouette(parent, edgeIndex, potentialBitmask.to_ullong());
+				_storeEdgeIsPotentiallySilhouette(parent, unsigned int(edgeIndex), potentialBitmask.to_ullong());
 				numPotential = 0;
 			}
 
@@ -213,7 +213,7 @@ void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane
 		}
 
 		for(unsigned int i = 0; i<numPotential; ++i)
-			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], edgeIndex, BitmaskAllSet);
+			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], unsigned int(edgeIndex), BitmaskAllSet);
 
 		//Store each silhouette edge variant in leaves
 		for(auto sil = silhouetteBitmasks.cbegin(); sil != silhouetteBitmasks.cend(); ++sil)
@@ -327,7 +327,7 @@ void OctreeVisitor::_processEdgesInLevel(unsigned int level, bool propagatePoten
 	
 	assert(startingID >= 0);
 
-	const unsigned int stopId = ipow(OCTREE_NUM_CHILDREN, level) + startingID;
+	const int stopId = ipow(OCTREE_NUM_CHILDREN, level) + startingID;
 
 	int currentID = startingID;
 
@@ -441,65 +441,7 @@ void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned in
 
 	unsigned int comingFromChildId = 0;
 
-	if(/*_octree->getCompressionLevel()>1*/1)
-	{
-		_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
-		return;
-	}
-
-	std::stringstream ss;
-
-	while(currentNodeID>=0)
-	{
-		const auto node = _octree->getNode(currentNodeID);
-
-		assert(node != nullptr);
-
-		if (printOnce) ss << "Node " << currentNodeID << std::endl;//printf("Node %d:\n", currentNodeID);
-		ss << "- Silhouette\n";
-		for (const auto edgeBuffer : node->edgesAlwaysCastMap)
-		{
-			if (edgeBuffer.first & (1 << comingFromChildId))
-			{
-				silhouette.insert(silhouette.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
-
-				if(printOnce)
-				{
-					//ss << "- Silhouette ID: " << std::to_string(edgeBuffer.first) << ":\n";
-					for (const auto item : edgeBuffer.second)
-						ss << "\t" << decodeEdgeFromEncoded(item) << " " << decodeEdgeMultiplicityFromId(item) << "\n";
-				}
-			}
-		}
-		ss << "- Potential\n";
-		for (const auto edgeBuffer : node->edgesMayCastMap)
-		{
-			if (edgeBuffer.first & (1 << comingFromChildId))
-			{
-				potential.insert(potential.end(), edgeBuffer.second.begin(), edgeBuffer.second.end());
-
-				if (printOnce)
-				{
-					//ss << "- Potential ID: " << std::to_string(edgeBuffer.first) << ":\n";
-					for (const auto item : edgeBuffer.second)
-						ss << "\t" << item << "\n";
-				}
-			}
-		}
-
-		const auto previousNodeId = currentNodeID;
-		currentNodeID = _octree->getNodeParent(currentNodeID);
-		comingFromChildId = previousNodeId - _octree->getChildrenStartingId(currentNodeID);
-	}
-
-	if(printOnce)
-	{
-		std::ofstream out("TraverseHierarchy.txt");
-		out << ss.str();
-		out.close();
-	}
-
-	printOnce = false;
+	_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
 }
 
 void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
@@ -605,7 +547,7 @@ void OctreeVisitor::_sortLevel(unsigned int level)
 
 void OctreeVisitor::shrinkOctree()
 {
-	const auto numNodes = _octree->getTotalNumNodes();
+	const int numNodes = int(_octree->getTotalNumNodes());
 
 	#pragma omp parallel for
 	for(int i = 0; i<numNodes; ++i)
@@ -642,10 +584,10 @@ unsigned int OctreeVisitor::getNofAllIndicesInNode(unsigned int nodeID) const
 	unsigned int nofIndices = 0;
 
 	for (const auto& buffer : node->edgesAlwaysCastMap)
-		nofIndices += buffer.second.size();
+		nofIndices += unsigned(buffer.second.size());
 
 	for(const auto& buffer : node->edgesMayCastMap)
-		nofIndices += buffer.second.size();
+		nofIndices += unsigned(buffer.second.size());
 
 	return nofIndices;
 }
@@ -659,15 +601,15 @@ void OctreeVisitor::getNodeNofSubBuffersPotSil(unsigned int& pot, unsigned int& 
 
 	if(node)
 	{
-		pot = node->edgesMayCastMap.size();
-		sil = node->edgesAlwaysCastMap.size();
+		pot = unsigned(node->edgesMayCastMap.size());
+		sil = unsigned(node->edgesAlwaysCastMap.size());
 	}
 }
 
 void OctreeVisitor::_getMaxNofSubBuffersInLevelPotSil(unsigned int& pot, unsigned int& sil, unsigned int level) const
 {
 	const auto startingIndex = _octree->getLevelFirstNodeID(level);
-	const auto levelSize = ipow(OCTREE_NUM_CHILDREN, level);
+	const auto levelSize = unsigned(ipow(OCTREE_NUM_CHILDREN, level));
 
 	pot = 0;
 	sil = 0;

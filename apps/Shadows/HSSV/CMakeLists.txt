@@ -26,11 +26,9 @@ set(HSSV_FILES
 	HSSV/OctreeSidesDrawer.cpp
 	HSSV/GenerateSidesProgram.hpp
 	HSSV/GenerateSidesDataOnGpuProgram.hpp
-	HSSV/GenerateSidesDataOnGpuProgram2.hpp
 	HSSV/GpuEdges.hpp
 	HSSV/OctreeSerializer.hpp
 	HSSV/OctreeSerializer.cpp
-	HSSV/OctreeTraversalShader.hpp
 	HSSV/OctreeCompressor.hpp
 	HSSV/OctreeCompressor.cpp
 	

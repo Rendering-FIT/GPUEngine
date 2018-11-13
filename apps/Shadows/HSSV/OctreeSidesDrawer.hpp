@@ -28,7 +28,6 @@ public:
 
 protected:
 	void _loadOctreeToGpu();
-	//void _loadPotentialSilhouetteEdgesFromVoxelGPU(unsigned int voxelId);
 
 	void _drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
 	void _drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos, unsigned int cellContainingLightId);
@@ -43,20 +42,11 @@ protected:
 	void _generateSidesFromPotentialCS(const glm::vec4& lightPos, unsigned cellContainingLightId);
 	void _generateSidesFromSilhouetteCS(const glm::vec4& lightPos, unsigned cellContainingLightId);
 
-	//TODO nahradit bool enumom
-	//unsigned int _loadEdgesFromIdUpGetNof(unsigned int cellContainingLightId, bool loadSilhouette);
-
 	void _initShaders();
 	void _initBuffers();
 		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel, size_t& maxPath) const;
 		void _getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const;
 			void _getNofEdgesInNode(unsigned int nodeId, size_t& potential, size_t& silhouette) const;
-
-	bool _generateLoadGpuTraversalShader();
-	void _getPotentialSilhouetteEdgesGpu(unsigned int lowestNodeContainingLight);
-
-	bool _generateLoadGpuTraversalShader2();
-	void _getPotentialSilhouetteEdgesGpu2(unsigned int lowestNodeContainingLight);
 
 	bool _generateLoadGpuTraversalShader3();
 	void _getPotentialSilhouetteEdgesGpu3(unsigned int lowestNodeContainingLight);
@@ -88,7 +78,6 @@ private:
 	std::shared_ptr<ge::gl::Program> _drawSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _testAndGenerateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
-	std::shared_ptr<ge::gl::Program> _gpuOctreeTraversalProgramMultipleBuffers = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
 	std::shared_ptr<ge::gl::VertexArray>_potentialSidesCsVAO = nullptr;
@@ -132,9 +121,7 @@ private:
 
 	std::shared_ptr<TimeStamp> _timer;
 
-	//--
 	std::shared_ptr<ge::gl::Program> m_subBuffersPreprocessShader = nullptr;
-	std::shared_ptr<ge::gl::Program> m_getDataFromPrecomputedBuffersShader = nullptr;
 	std::shared_ptr<ge::gl::Program> m_getDataFromPrecomputedBuffersShader2 = nullptr;
 
 	std::shared_ptr<ge::gl::Buffer> m_potSuBuffers = nullptr;
@@ -146,11 +133,6 @@ private:
 	std::shared_ptr<ge::gl::Buffer> m_prefixSumTmp[2] = { nullptr, nullptr };
 	std::shared_ptr<ge::gl::Buffer> m_prefixSumTmpAtomic[2] = { nullptr, nullptr };
 
-	//--
-	std::shared_ptr<ge::gl::Buffer> shitBuffer = nullptr;
-	std::shared_ptr<ge::gl::Buffer> nofShit = nullptr;
-	//--
-
 	std::shared_ptr<ge::gl::Program> m_prefixSumShaderSimple = nullptr;
 	std::shared_ptr<ge::gl::Program> m_prefixSumShaderTwoLevel = nullptr;
 	std::shared_ptr<ge::gl::Program> m_prefixSumShaderAdd = nullptr;
@@ -161,8 +143,6 @@ private:
 	unsigned int m_prefixSumWorkgroupSizeSingle = 0;
 	unsigned int m_prefixSumWorkgroupSizeTwoLevel = 0;
 	unsigned int m_prefixSumWorkgroupSizeSummation = 256;
-	//--
 
-	unsigned int dispatchSize = 0;
 	unsigned int m_maxNofSubBuffersPath = 0;
 };

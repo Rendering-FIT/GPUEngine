@@ -19,7 +19,7 @@ TSSV::TSSV(
 	auto const ad = std::make_shared<Adjacency const>(vertices.data(), nofTriangles, maxMultiplicity);
 
 	_initSidesBuffers(ad);
-	_initSidesProgram(UseReferenceEdge, CullSides, UseStencilValueExport, ad->getMaxMultiplicity());
+	_initSidesProgram(UseReferenceEdge, CullSides, UseStencilValueExport, unsigned(ad->getMaxMultiplicity()));
 	
 	_capsDrawer = std::make_shared<GSCaps>(ad);
 }
@@ -35,8 +35,8 @@ void TSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	_sidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp), 1,GL_FALSE);
 	_sidesProgram->set4fv("LightPosition", glm::value_ptr(lightPosition), 1);
 
-	glPatchParameteri(GL_PATCH_VERTICES, _patchVertices);
-	glDrawElements(GL_PATCHES, _patchVertices*_nofEdges, GL_UNSIGNED_INT, nullptr);
+	glPatchParameteri(GL_PATCH_VERTICES, GLint(_patchVertices));
+	glDrawElements(GL_PATCHES, GLsizei(_patchVertices*_nofEdges), GL_UNSIGNED_INT, nullptr);
 
 	_sidesVAO->unbind();
 }
@@ -56,13 +56,13 @@ void TSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	for (unsigned e = 0; e<ad->getNofEdges(); ++e) 
 	{
 		//loop over edges
-		unsigned base = e*_patchVertices;
-		eptr[base + 0] = ad->getEdge(e, 0) / 3;
-		eptr[base + 1] = ad->getEdge(e, 1) / 3;
-		eptr[base + 2] = ad->getNofTriangles() * 3 + e;
+		unsigned base = e*unsigned(_patchVertices);
+		eptr[base + 0] = unsigned(ad->getEdge(e, 0)) / 3;
+		eptr[base + 1] = unsigned(ad->getEdge(e, 1)) / 3;
+		eptr[base + 2] = unsigned(ad->getNofTriangles()) * 3 + e;
 		for (unsigned o = 0; o<ad->getMaxMultiplicity(); ++o)
 			if (o<ad->getNofOpposite(e))
-				eptr[base + 3 + o] = ad->getOpposite(e, o) / 3;
+				eptr[base + 3 + o] = unsigned(ad->getOpposite(e, o)) / 3;
 			else eptr[base + 3 + o] = 0;
 	}
 
@@ -81,7 +81,7 @@ void TSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	}
 
 	for (unsigned e = 0; e<ad->getNofEdges(); ++e)
-		ptr[(ad->getNofTriangles() * 3 + e) * 4 + 0] = ad->getNofOpposite(e);
+		ptr[(ad->getNofTriangles() * 3 + e) * 4 + 0] = float(ad->getNofOpposite(e));
 	
 	this->_sidesVBO->unmap();
 

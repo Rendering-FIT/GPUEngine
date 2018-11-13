@@ -108,7 +108,7 @@ void GpuOctreeLoader::profile(AdjacencyType edges, unsigned int subgroupSize)
 					const auto batchSize = std::min(voxelBatchSize, deepestLevelSize - (batch*voxelBatchSize));
 					_loadVoxels(voxels, batch*voxelBatchSize, batchSize);
 					_clearAtomicCounter();
-					_fillProgram->set1ui("nofVoxels", batchSize);
+					_fillProgram->set1ui("nofVoxels", unsigned(batchSize));
 
 					ge::gl::glDispatchCompute(1, 1, 1);
 					ge::gl::glFinish();
@@ -174,7 +174,7 @@ void GpuOctreeLoader::_serializeEdges(AdjacencyType edges, std::vector<float>& s
 
 void GpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxels)
 {
-	const unsigned int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, _octree->getDeepestLevel());
+	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, _octree->getDeepestLevel());
 	const int startingIndex = _octree->getLevelFirstNodeID(_octree->getDeepestLevel());
 	const int stopIndex = startingIndex + deepestLevelSize;
 

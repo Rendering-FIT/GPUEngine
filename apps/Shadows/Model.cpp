@@ -130,7 +130,7 @@ void Model::getMaterialsTextures(std::vector<Material>& materials, std::vector<T
 
 			if(materials[i].textureIndex < 0)
 			{
-				materials[i].textureIndex = texPaths.size();
+				materials[i].textureIndex = int32_t(texPaths.size());
 				texPaths.push_back(texPath);
 			}
 		}

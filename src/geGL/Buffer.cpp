@@ -449,7 +449,7 @@ GLvoid*Buffer::_getBufferPointer(
  *
  * @return size of thie buffer in bytes
  */
-GLsizeiptr Buffer::getSize()const{
+GLint64 Buffer::getSize()const{
   assert(this!=nullptr);
   return this->_getBufferParameter64(GL_BUFFER_SIZE);
 }
