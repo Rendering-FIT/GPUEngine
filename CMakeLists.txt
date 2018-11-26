@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.11.1)
 
 ###########################
 # Policies
@@ -17,8 +17,6 @@ PROJECT(GPUEngine
 )
 
 #set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-include(GNUInstallDirs)
 
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 

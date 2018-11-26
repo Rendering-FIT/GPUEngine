@@ -50,11 +50,12 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/FreeLookCamera.h
    ${HEADER_PATH}/PerspectiveCamera.h
    ${HEADER_PATH}/Sampler.h
+   ${HEADER_PATH}/Text.h
    ${HEADER_PATH}/Timer.h
 )
 
 
-set(GL_SOURCES
+set(UTIL_SOURCES
    ${SRC_PATH}/ArgumentObject.cpp
    ${SRC_PATH}/ArgumentViewer.cpp
    ${SRC_PATH}/CameraObject.cpp
@@ -65,12 +66,13 @@ set(GL_SOURCES
    ${SRC_PATH}/OrbitCamera.cpp
    ${SRC_PATH}/FreeLookCamera.cpp
    ${SRC_PATH}/PerspectiveCamera.cpp
+   ${SRC_PATH}/Text.cpp
 )
 
-add_library(${PROJECT_NAME}   
+add_library(${PROJECT_NAME}
    ${UTIL_INCLUDES}
    ${ARGUMENTMANAGER_INCLUDES}
-   ${GL_SOURCES}
+   ${UTIL_SOURCES}
    ${ARGUMENTMANAGER_SOURCES}
    ${LIBRARYLOADER_SOURCES}
 )

@@ -1,22 +1,22 @@
 #pragma once
 
-#include<geCore/Export.h>
+#include<geUtil/Export.h>
 #include<iostream>
 #include<cstdint>
 
 namespace ge{
-  namespace core{
-    GECORE_EXPORT std::string loadTextFile(std::string const&fileName);
-    GECORE_EXPORT std::string processEscapeSequences(std::string const&data);
-    GECORE_EXPORT bool isNan     (std::string const&text);
-    GECORE_EXPORT bool isInfinity(std::string const&text);
-    GECORE_EXPORT bool isFloat   (std::string const&text);
-    GECORE_EXPORT bool isDouble  (std::string const&text);
-    GECORE_EXPORT bool isInt     (std::string const&text);
-    GECORE_EXPORT bool isUint    (std::string const&text);
-    GECORE_EXPORT bool isString  (std::string const&text);
-    GECORE_EXPORT bool isFloatingPoint(std::string const&text);
-    GECORE_EXPORT bool isIntegral     (std::string const&text);
+  namespace util{
+    GEUTIL_EXPORT std::string loadTextFile(std::string const&fileName);
+    GEUTIL_EXPORT std::string processEscapeSequences(std::string const&data);
+    GEUTIL_EXPORT bool isNan     (std::string const&text);
+    GEUTIL_EXPORT bool isInfinity(std::string const&text);
+    GEUTIL_EXPORT bool isFloat   (std::string const&text);
+    GEUTIL_EXPORT bool isDouble  (std::string const&text);
+    GEUTIL_EXPORT bool isInt     (std::string const&text);
+    GEUTIL_EXPORT bool isUint    (std::string const&text);
+    GEUTIL_EXPORT bool isString  (std::string const&text);
+    GEUTIL_EXPORT bool isFloatingPoint(std::string const&text);
+    GEUTIL_EXPORT bool isIntegral     (std::string const&text);
 
     template<typename TYPE>
       bool isValue(std::string const&text);

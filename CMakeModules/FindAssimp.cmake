@@ -121,9 +121,12 @@ endif()
 
 
 # message
-include(GEMacros)
-if(ASSIMP_LIBRARY_RELEASE)
-   ge_report_find_status("${ASSIMP_LIBRARY_RELEASE}")
-else()
-   ge_report_find_status("")
+# message
+include(GEMacros OPTIONAL RESULT_VARIABLE ge_macros_file)
+if(ge_macros_file)
+   if(ASSIMP_LIBRARY_RELEASE)
+      ge_report_find_status("${ASSIMP_LIBRARY_RELEASE}")
+   else()
+      ge_report_find_status("")
+   endif()
 endif()

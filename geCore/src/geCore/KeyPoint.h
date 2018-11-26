@@ -18,7 +18,7 @@ namespace ge
 
 
          /**
-          * Since the implementation of this interface can use any type of parameter it sees fit it allows to supply another type for
+          * Since the implementation of this interface can use any type of parameter it seems fit it allows to supply another type for
           * arithmetic computation purposes. This function allows others to get the internal type (e.g. time_point) transformed to type
           * that is more suitable for arithmetic purposes (e.g. float). It is used in animation key frame interpolators.
           * \return The parameter of the key point transformed to parameter_type.

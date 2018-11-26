@@ -1,4 +1,4 @@
-#include<geCore/Text.h>
+#include<geUtil/Text.h>
 #include<fstream>
 #include<iostream>
 #include<string>
@@ -6,9 +6,9 @@
 #include<geCore/fsa/MealyMachine.h>
 #include<geCore/ErrorPrinter.h>
 
-using namespace ge::core;
+using namespace ge::util;
 
-std::string ge::core::loadTextFile(std::string const&fileName){
+std::string ge::util::loadTextFile(std::string const&fileName){
   std::ifstream f(fileName.c_str());
   if(!f.is_open()){
     ge::core::printError(GE_CORE_FCENAME,"cannot open file",fileName);
@@ -19,7 +19,7 @@ std::string ge::core::loadTextFile(std::string const&fileName){
   return str;
 }
 
-std::string ge::core::processEscapeSequences(std::string const&data){
+std::string ge::util::processEscapeSequences(std::string const&data){
   struct ParserData{
     unsigned    pos   ;
     std::string string;
@@ -143,19 +143,19 @@ std::string ge::core::processEscapeSequences(std::string const&data){
   return pData.string;
 }
 
-bool ge::core::isNan(std::string const&text){
+bool ge::util::isNan(std::string const&text){
   return std::set<std::string>({"NAN","Nan","nan"}).count(text)>0;
 }
 
-bool ge::core::isInfinity(std::string const&text){
+bool ge::util::isInfinity(std::string const&text){
   return std::set<std::string>({"inf","Inf","INF","+inf","+Inf","+INF","-inf","-Inf","-INF"}).count(text)>0;
 }
 
 
-bool ge::core::isFloat(std::string const&text){
+bool ge::util::isFloat(std::string const&text){
   if(isNan(text))return true;
   if(isInfinity(text))return true;
-  MealyMachine mm;
+   core::MealyMachine mm;
 
   auto start            = mm.addState();
   auto sign             = mm.addState();
@@ -191,10 +191,10 @@ bool ge::core::isFloat(std::string const&text){
   return mm.match(text.c_str());
 }
 
-bool ge::core::isDouble(std::string const&text){
+bool ge::util::isDouble(std::string const&text){
   if(isNan(text))return true;
   if(isInfinity(text))return true;
-  MealyMachine mm;
+   core::MealyMachine mm;
 
   auto start            = mm.addState();
   auto sign             = mm.addState();
@@ -229,16 +229,16 @@ bool ge::core::isDouble(std::string const&text){
 
 }
 
-bool ge::core::isFloatingPoint(std::string const&text){
+bool ge::util::isFloatingPoint(std::string const&text){
   return isFloat(text) || isDouble(text);
 }
 
-bool ge::core::isIntegral(std::string const&text){
+bool ge::util::isIntegral(std::string const&text){
   return isInt(text) || isUint(text);
 }
 
-bool ge::core::isInt(std::string const&text){
-  MealyMachine mm;
+bool ge::util::isInt(std::string const&text){
+   core::MealyMachine mm;
 
   auto start = mm.addState();
   auto sign  = mm.addState();
@@ -256,8 +256,8 @@ bool ge::core::isInt(std::string const&text){
   return mm.match(text.c_str());
 }
 
-bool ge::core::isUint(std::string const&text){
-  MealyMachine mm;
+bool ge::util::isUint(std::string const&text){
+   core::MealyMachine mm;
 
   auto start = mm.addState();
   auto sign  = mm.addState();
@@ -275,6 +275,6 @@ bool ge::core::isUint(std::string const&text){
   return mm.match(text.c_str());
 }
 
-bool ge::core::isString(std::string const&){
+bool ge::util::isString(std::string const&){
   return true;
 }

@@ -186,7 +186,6 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
       # Set the final string here so the GUI reflects the final state.
       set(SDL2_LIBRARY ${SDL2_LIBRARY_TEMP} CACHE STRING "SDL2 Libraries to be linked against" FORCE)
-
    else()
 
       # if SDL2_CORE_LIBRARY and SDL2_MAIN_LIBRARY are not properly set, remove SDL2_LIBRARY variable
@@ -199,6 +198,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
    endif()
 
+   message("SDL2_LIBRARY ${SDL2_LIBRARY}")
    # target for cmake 3.0.0 and newer
    if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
@@ -215,5 +215,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 endif()
 
 # message
-include(GEMacros)
-ge_report_find_status()
+include(GEMacros OPTIONAL RESULT_VARIABLE ge_macros_file)
+if(ge_macros_file)
+   ge_report_find_status()
+endif()

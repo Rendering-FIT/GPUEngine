@@ -1,6 +1,6 @@
 #include<geUtil/ArgumentViewer.h>
 #include<geCore/ErrorPrinter.h>
-#include<geCore/Text.h>
+#include<geUtil/Text.h>
 #include<geCore/fsa/MealyMachine.h>
 
 #include<sstream>
@@ -76,7 +76,7 @@ class ge::util::ArgumentViewerImpl{
                  std::is_same<TYPE,float   >::value ||
                  std::is_same<TYPE,double  >::value ,unsigned>::type = 0>
                  TYPE str2val(std::string const&value)const{
-                   return ge::core::str2Value<TYPE>(value);
+                   return ge::util::str2Value<TYPE>(value);
                  }
     template<typename TYPE,typename std::enable_if<std::is_same<TYPE,std::string>::value,unsigned>::type = 0>
       TYPE str2val(std::string const&value)const{
@@ -100,7 +100,7 @@ class ge::util::ArgumentViewerImpl{
         if(!this->isInRange(argumentIndex  ))return def;
         std::vector<TYPE>result;
         while(this->isInRange(argumentIndex)&&this->isValueConvertibleTo<TYPE>(this->getArgument(argumentIndex)))
-          result.push_back(ge::core::str2Value<TYPE>(this->getArgument(argumentIndex++)));
+          result.push_back(ge::util::str2Value<TYPE>(this->getArgument(argumentIndex++)));
         while(result.size()<def.size())
           result.push_back(def.at(result.size()));
         return result;
@@ -171,7 +171,7 @@ void ArgumentViewerImpl::loadArgumentFiles(std::vector<std::string>&args,std::se
       return;
     }
     std::vector<std::string>newArgs;
-    std::string fileContent = ge::core::loadTextFile(fileName);
+    std::string fileContent = ge::util::loadTextFile(fileName);
     this->splitFileToArguments(newArgs,fileContent);
     alreadyLoaded.insert(fileName);
     this->loadArgumentFiles(newArgs,alreadyLoaded);
@@ -601,25 +601,25 @@ namespace ge{
     template<>std::string ArgumentViewerImpl::typeName<uint64_t   >(){return "u64"   ;}
     template<>std::string ArgumentViewerImpl::typeName<std::string>(){return "string";}
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<float>(std::string const&text){
-      return ge::core::isFloatingPoint(text)||ge::core::isIntegral(text);
+      return ge::util::isFloatingPoint(text)||ge::util::isIntegral(text);
     }
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<double>(std::string const&text){
-      return ge::core::isFloatingPoint(text)||ge::core::isIntegral(text);
+      return ge::util::isFloatingPoint(text)||ge::util::isIntegral(text);
     }
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<int32_t>(std::string const&text){
-      return ge::core::isIntegral(text);
+      return ge::util::isIntegral(text);
     }
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<int64_t>(std::string const&text){
-      return ge::core::isIntegral(text);
+      return ge::util::isIntegral(text);
     }
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<uint32_t>(std::string const&text){
-      return ge::core::isUint(text);
+      return ge::util::isUint(text);
     }
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<uint64_t>(std::string const&text){
-      return ge::core::isUint(text);
+      return ge::util::isUint(text);
     }
     template<>bool ArgumentViewerImpl::isValueConvertibleTo<std::string>(std::string const&text){
-      return ge::core::isString(text);
+      return ge::util::isString(text);
     }
     std::string const ArgumentViewerImpl::contextBegin      = "{";
     std::string const ArgumentViewerImpl::contextEnd        = "}";
