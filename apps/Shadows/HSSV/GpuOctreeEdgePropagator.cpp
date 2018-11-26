@@ -7,9 +7,9 @@
 #include <cstring>
 
 
-bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned subgroupSize)
+bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned workgroupSize)
 {
-	if (!_createPropagateProgram(2, subgroupSize))
+	if (!_createPropagateProgram(workgroupSize))
 		return false;
 
 	_octree = octree;
@@ -20,12 +20,11 @@ bool GpuOctreeEdgePropagator::init(std::shared_ptr<Octree> octree, unsigned subg
 	return true;
 }
 
-bool GpuOctreeEdgePropagator::_createPropagateProgram(unsigned numSubgroupsPerWG, unsigned subgroupSize)
+bool GpuOctreeEdgePropagator::_createPropagateProgram(unsigned int workgroupSize)
 {
-	assert(subgroupSize == 32 || subgroupSize == 64);
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 
-	_propagateProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, buildComputeShaderPropagate(numSubgroupsPerWG, subgroupSize)));
+	_propagateProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, buildComputeShaderPropagate(workgroupSize)));
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	return _propagateProgram->isProgram();
@@ -55,15 +54,15 @@ void GpuOctreeEdgePropagator::_clearAtomicCounter()
 
 void GpuOctreeEdgePropagator::_allocateBuffers()
 {
-	//Depest level is already sorted out
+	//Depest level is already sorted
 	const unsigned int secondDeepestLevelSize = ipow(OCTREE_NUM_CHILDREN, _octree->getDeepestLevel()-1);
 	
 	_indices->alloc(MAX_BUFFER_SIZE_PROPAGATE, nullptr);
 	_numIndices->alloc((secondDeepestLevelSize + 1) * sizeof(uint32_t), nullptr);
 	_outputIndices->alloc(MAX_BUFFER_SIZE_PROPAGATE, nullptr);
 	_outputNumIndices->alloc((secondDeepestLevelSize + 1) * sizeof(uint32_t), nullptr); //+1 cos its exclusive sum, last item has to know it's range
-	_parentIndices->alloc(MAX_BUFFER_SIZE_PROPAGATE/8ul, nullptr);
-	_parentNumIndices->alloc((secondDeepestLevelSize /8ul)*sizeof(uint32_t), nullptr);
+	_parentIndices->alloc(MAX_BUFFER_SIZE_PROPAGATE/8ull, nullptr);
+	_parentNumIndices->alloc((secondDeepestLevelSize /8ull)*sizeof(uint32_t), nullptr);
 
 	std::cout << "Total allocated size (Edge Propagator): " << (2 * MAX_BUFFER_SIZE_PROPAGATE + 2 * (secondDeepestLevelSize + 1) * sizeof(uint32_t) + MAX_BUFFER_SIZE_PROPAGATE / 8ul + secondDeepestLevelSize / 8ul) / 1024ul / 1024ul << "MB\n";
 }
@@ -101,7 +100,7 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 		_propagateProgram->set1ui("nofVoxels", unsigned(numLoaded));
 		_propagateProgram->set1ui("maxNofEdges", maxEdgesPerVoxel);
 
-		ge::gl::glDispatchCompute(16, 1, 1);
+		ge::gl::glDispatchCompute(/*16*/100, 1, 1);
 		ge::gl::glFinish();
 
 		_updateCpuData(startingIndex + numProcessed, unsigned(numLoaded), maxEdgesPerVoxel, type, sizePrefixSum);

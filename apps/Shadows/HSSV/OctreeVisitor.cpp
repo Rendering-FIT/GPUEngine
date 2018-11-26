@@ -18,6 +18,27 @@ OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 	_octree = octree;
 }
 
+void OctreeVisitor::_propagateEdgesGpu()
+{
+	std::shared_ptr<GpuOctreeEdgePropagator> edgePropagator = std::make_shared<GpuOctreeEdgePropagator>();
+
+	edgePropagator->init(_octree, 1024);
+	const auto startingLevel = _octree->getDeepestLevel() - 1;
+
+	HighResolutionTimer t;
+	t.reset();
+
+	_propagateEdgesToUpperLevelsGpu(edgePropagator, startingLevel, true);
+	
+	float dt = t.getElapsedTimeFromLastQuerySeconds();
+	std::cout << "Propagate Potential edges took " << dt << " sec\n";
+
+	_propagateEdgesToUpperLevelsGpu(edgePropagator, startingLevel, false);
+	dt = t.getElapsedTimeFromLastQuerySeconds();
+
+	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
+}
+
 void OctreeVisitor::addEdges(const AdjacencyType edges)
 {
 	std::cout << "NoF edges: " << edges->getNofEdges() << "\n";
@@ -34,13 +55,13 @@ void OctreeVisitor::addEdges(const AdjacencyType edges)
 
 	t.reset();
 	const auto startingLevel = _octree->getDeepestLevel() - 1;
-	_propagateEdgesUpFromLevel(startingLevel, true, 32);
+	_propagateEdgesToUpperLevelsCpu(startingLevel, true);
 	dt = t.getElapsedTimeFromLastQueryMilliseconds();
 
 	std::cout << "Propagate Potential edges took " << dt / 1000.0f << " sec\n";
 	t.reset();
 
-	_propagateEdgesUpFromLevel(startingLevel, false, 32);
+	_propagateEdgesToUpperLevelsCpu(startingLevel, false);
 
 	dt = t.getElapsedTimeFromLastQueryMilliseconds();
 
@@ -59,7 +80,9 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	}
 
 	//--
-	//gpuLoader->profile(edges, subgroupSize);
+	/*
+	gpuLoader->profile1(edges);
+	//*/
 	//--
 
 	HighResolutionTimer t;
@@ -68,6 +91,7 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	gpuLoader->addEdgesOnLowestLevelGPU(edges);
 	auto dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Adding edges on GPU took " << dt << " sec\n";
+	
 	delete gpuLoader;
 
 	t.reset();
@@ -76,23 +100,10 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	_sortLevel(dl-1);
 	dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Sorting lowest and second lowest level took " << dt << "sec\n";
-
-	const auto startingLevel = _octree->getDeepestLevel() - 1;
-	_propagateEdgesUpFromLevel(startingLevel, true, subgroupSize);
-	dt = t.getElapsedTimeFromLastQuerySeconds();
-	std::cout << "Propagate Potential edges took " << dt << " sec\n";
 	
-	t.reset();
-	_propagateEdgesUpFromLevel(startingLevel, false, subgroupSize);
-	dt = t.getElapsedTimeFromLastQuerySeconds();
-	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
+	_propagateEdgesGpu();
 
-	//t.reset();
-	//_shrinkOctree();
-	//dt = t.getElapsedTimeFromLastQuerySeconds();
-	//std::cout << "Shrinking octree took " << dt << " sec\n";
-
-	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB. Compressing...+\n";
+	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB\n";
 }
 
 
@@ -134,16 +145,6 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 	
 	std::cout << "Total iterations: " << (stopIndex - startingIndex) / OCTREE_NUM_CHILDREN << "\n";
 	
-	/*
-	//#pragma omp parallel for
-	for (int i = 15881; i < 15944; i += OCTREE_NUM_CHILDREN)
-	{
-		static int a = 0;
-		_addEdgesSyblingsParent(edgePlanes, edges, i);
-		std::cout << a++ << std::endl;
-	}
-	//*/
-	
 	#pragma omp parallel for
 	for (int i = startingIndex; i < stopIndex; i += OCTREE_NUM_CHILDREN)
 	{
@@ -151,7 +152,6 @@ void OctreeVisitor::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& ed
 		_addEdgesSyblingsParent(edgePlanes, edges, i);
 		std::cout << a++ << std::endl;
 	}
-	//*/
 }
 
 void OctreeVisitor::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
@@ -274,24 +274,16 @@ void OctreeVisitor::_storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsig
 	node->edgesMayCastMap[subarrayIndex].push_back(edgeID);
 }
 
-void OctreeVisitor::_propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential, unsigned int subgroupSize)
+void OctreeVisitor::_propagateEdgesToUpperLevelsGpu(std::shared_ptr<GpuOctreeEdgePropagator> propagator,unsigned int startingLevel, bool propagatePotential)
 {
-	//if (propagatePotential)
-	//{
-		//for (int i = startingLevel; i > 0; --i)
-		//	_processEdgesInLevel(i, propagatePotential);
-	//}
-	
-	//else
-	{
-		std::unique_ptr<GpuOctreeEdgePropagator> propagator = std::make_unique<GpuOctreeEdgePropagator>();
+	for (int i = startingLevel; i > 0; --i)
+		propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
+}
 
-		propagator->init(_octree, subgroupSize);
-
-		for (int i = startingLevel; i > 0; --i)
-			propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
-	}
-	//*/
+void OctreeVisitor::_propagateEdgesToUpperLevelsCpu(unsigned int startingLevel, bool propagatePotential)
+{
+	for (int i = startingLevel; i > 0; --i)
+		_processEdgesInLevel(i, propagatePotential);
 }
 
 OctreeVisitor::TestResult OctreeVisitor::_haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential, BitmaskType subBufferId) const
@@ -341,7 +333,6 @@ void OctreeVisitor::_processEdgesInLevel(unsigned int level, bool propagatePoten
 		{
 			auto it = edgesMap.find(BitmaskAllSet);
 			if (it != edgesMap.end())
-			//for (const auto edgeSubBuffer : edgesMap)
 			{
 				auto edgeSubBuffer = *it;
 				for (const auto edge : edgeSubBuffer.second)
@@ -537,11 +528,11 @@ void OctreeVisitor::_sortLevel(unsigned int level)
 	{
 		auto n = _octree->getNode(i);
 
-		for(auto edges : n->edgesAlwaysCastMap)
-			std::sort(edges.second.begin(), edges.second.end());
+		auto edgesSil = n->edgesAlwaysCastMap[BitmaskAllSet];
+		std::sort(edgesSil.begin(), edgesSil.end());
 
-		for (auto edges : n->edgesMayCastMap)
-			std::sort(edges.second.begin(), edges.second.end());
+		auto edgesPot = n->edgesMayCastMap[BitmaskAllSet];
+		std::sort(edgesPot.begin(), edgesPot.end());
 	}
 }
 

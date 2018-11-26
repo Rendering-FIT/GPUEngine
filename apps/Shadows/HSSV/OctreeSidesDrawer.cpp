@@ -653,7 +653,7 @@ unsigned int OctreeSidesDrawer::_getNearstLowerPow2(unsigned int x) const
 bool OctreeSidesDrawer::_generateLoadGpuTraversalShader3()
 {
 	const std::string shaderBody1 = genBufferPreprocessShader(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
-	
+
 	m_subBuffersPreprocessShader = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody1));
 

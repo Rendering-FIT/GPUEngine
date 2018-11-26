@@ -7,7 +7,7 @@
 #include "Octree.hpp"
 #include "GpuEdges.hpp"
 
-#define MAX_BUFFER_SIZE (1024ull*1024ull*1024ull)
+#define MAX_BUFFER_SIZE (2816ull*1024ull*1024ull)
 
 class GpuOctreeLoader
 {
@@ -19,8 +19,9 @@ public:
 
 	void profile(AdjacencyType edges, unsigned int subgroupSize);
 
-protected:
+	void profile1(AdjacencyType edges);
 
+protected:
 	void _createBuffers();
 	bool _createBottomFillProgram(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmSizePerSubgroup);
 
@@ -37,7 +38,6 @@ protected:
 	void _acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges);
 		void _copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size);
 
-	
 	void _testParticularVoxel(AdjacencyType edges, unsigned int voxelId, std::vector<unsigned int>& particularEdgeIndices);
 
 	std::shared_ptr<Octree> _octree;
@@ -55,4 +55,7 @@ protected:
 
 	std::vector<uint32_t> _bufferNofPotential;
 	std::vector<uint32_t> _bufferNofSilhouette;
+
+	unsigned int _wgSize = 0;
+	unsigned int _cacheSize = 0;
 };

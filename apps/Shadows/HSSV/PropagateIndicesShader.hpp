@@ -4,6 +4,9 @@
 
 const std::string propagationComputeShaderPrologue = R".(
 #version 450 core
+#extension GL_ARB_shader_ballot : enable
+#extension GL_ARB_gpu_shader_int64 : enable
+#extension GL_AMD_gpu_shader_int64 : enable
 
 ).";
 
@@ -128,11 +131,9 @@ void main()
 ).";
 
 
-inline const std::string buildComputeShaderPropagate(unsigned int numSubgroupsPerWG, unsigned int subgroupSize)
+inline const std::string buildComputeShaderPropagate(unsigned int workgroupSize)
 {
 	return propagationComputeShaderPrologue +
-		(subgroupSize == 32 ? "#extension GL_ARB_gpu_shader_int64 : require\n" : "#extension GL_AMD_gpu_shader_int64 : require\n") +
-		"#extension GL_ARB_shader_ballot : require\n"+
-		"layout(local_size_x = " + std::to_string(numSubgroupsPerWG * subgroupSize) + ") in;\n\n" +
+		"layout(local_size_x = " + std::to_string(workgroupSize) + ") in;\n\n" +
 		propagationComputeShaderBody;
 }

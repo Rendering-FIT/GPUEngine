@@ -24,8 +24,7 @@ public:
 	void profile(unsigned int subgroupSize);
 
 protected:
-
-	bool _createPropagateProgram(unsigned numSubgroupsPerWG, unsigned subgroupSize);
+	bool _createPropagateProgram(unsigned workgroupSize);
 	void _createBuffers();
 	void _clearAtomicCounter();
 	void _allocateBuffers();

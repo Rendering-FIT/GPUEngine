@@ -11,6 +11,8 @@
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
 
+//#define DRAW_CPU
+
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
 	const glm::vec3& sceneAABBscale,
@@ -59,7 +61,7 @@ HSSV::HSSV(
 	OctreeSerializer serializer;
 	t.reset();
 	const unsigned int compressionLevel = (int)(log(BitmaskTypeSizeBits) / log(8));
-	_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel, compressionLevel);
+	//_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel, compressionLevel);
 	if (!_octree)
 	{
 		_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
@@ -67,10 +69,10 @@ HSSV::HSSV(
 
 		t.reset();
 		_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
-		//_visitor->addEdges(_edges);
+
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
-		std::cout << "Building octree took " << dt << " seconds\n";
+		std::cout << "Building octree took " << dt << " seconds. Compressing...\n";
 
 		OctreeCompressor compressor;
 		compressor.compressOctree(_visitor, compressionLevel);
@@ -94,11 +96,10 @@ HSSV::HSSV(
 	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
 	_octreeSidesDrawer->init(_gpuEdges);
 	
+#ifdef DRAW_CPU
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();
-	//_octree.reset();
-	//_edges.reset();
-	//delete[] _vertices;
+#endif
 }
 
 HSSV::~HSSV()
@@ -112,7 +113,6 @@ void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix,
 	_capsDrawer->drawCaps(lightPosition, viewMatrix, projectionMatrix);
 }
 
-//#define DRAW_CPU
 void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;

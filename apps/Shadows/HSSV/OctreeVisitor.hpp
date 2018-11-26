@@ -8,6 +8,8 @@
 #include "AdjacencyEdgeWrapper.hpp"
 #include "GpuEdges.hpp"
 
+class GpuOctreeEdgePropagator;
+
 class OctreeVisitor
 {
 public:
@@ -19,7 +21,7 @@ public:
 	int getLowestNodeIndexFromPoint(const glm::vec3& point) const;
 	void getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
 
-	std::shared_ptr<Octree> getOctree() { return _octree; }
+	std::shared_ptr<Octree> getOctree() const { return _octree; }
 
 	void shrinkOctree();
 
@@ -33,7 +35,6 @@ public:
 	void getNodeNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil, unsigned int nodeID) const;
 
 private:
-	
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID, const BitmaskType subarrayIndex);
 
@@ -48,10 +49,12 @@ private:
 
 	void _sortLevel(unsigned int level);
 
-	void _propagateEdgesUpFromLevel(unsigned int startingLevel, bool propagatePotential, unsigned int subgroupSize);
+	void _propagateEdgesGpu();
+
+	void _propagateEdgesToUpperLevelsGpu(std::shared_ptr<GpuOctreeEdgePropagator> propagator, unsigned int startingLevel, bool propagatePotential);
+	void _propagateEdgesToUpperLevelsCpu(unsigned int startingLevel, bool propagatePotential);
 		TestResult _haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential, BitmaskType subBufferId) const;
 		void _processEdgesInLevel(unsigned int levelNum, bool propagatePotential);
-		//void _assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
 		void _removeEdgeFromSyblings(unsigned int startingID, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
 
 	void _addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges);
