@@ -33,7 +33,7 @@ public:
 	void getMaxNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil) const;
 
 	void getNodeNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil, unsigned int nodeID) const;
-
+	void dumpOctreeLevel(unsigned int level, const char* filename);
 private:
 	void _storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex);
 	void _storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID, const BitmaskType subarrayIndex);

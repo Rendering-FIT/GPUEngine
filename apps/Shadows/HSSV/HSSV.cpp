@@ -73,15 +73,58 @@ HSSV::HSSV(
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 		std::cout << "Building octree took " << dt << " seconds. Compressing...\n";
-
+		/*
 		OctreeCompressor compressor;
 		compressor.compressOctree(_visitor, compressionLevel);
 
 		std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
 		std::cout << "Compressed size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
-
+		//*/
+		_visitor->getOctree()->setCompressionLevel(compressionLevel);
 		_visitor->shrinkOctree();
 		std::cout << "Shrinking octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+		//--
+		/*
+		std::vector<float> mpA, mpP;
+		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
+		const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
+		const float nofEdges = _edges->getNofEdges();
+		for (unsigned int i = start; i<end; ++i)
+		{
+			const auto node = _octree->getNode(i);
+
+			for(const auto buf : node->edgesAlwaysCastMap)
+				mpA.push_back(float(buf.second.size()) / nofEdges);
+
+			for (const auto buf : node->edgesMayCastMap)
+				mpP.push_back(float(buf.second.size()) / nofEdges);
+		}
+		std::sort(mpA.begin(), mpA.end(), std::greater<float>());
+		std::sort(mpP.begin(), mpP.end(), std::greater<float>());
+		std::cout << "Highest Sil: " << mpA[0] << " " << mpA[1] << " " << mpA[2] << " " << mpA[3] << " " << "\n";
+		std::cout << "Highest Pot: " << mpP[0] << " " << mpP[1] << " " << mpP[2] << " " << mpP[3] << " " << "\n";
+		//*/
+		/*
+		std::vector<uint32_t> mpA, mpP;
+		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
+		const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
+		const float nofEdges = _edges->getNofEdges();
+		for (unsigned int i = start; i<end; ++i)
+		{
+			const auto node = _octree->getNode(i);
+
+			mpA.push_back(node->edgesAlwaysCastMap.size());
+			mpP.push_back(node->edgesMayCastMap.size());
+		}
+		std::sort(mpA.begin(), mpA.end(), std::greater<float>());
+		std::sort(mpP.begin(), mpP.end(), std::greater<float>());
+		std::cout << "Highest Sil: " << mpA[0] << " " << mpA[1] << " " << mpA[2] << " " << mpA[3] << " " << "\n";
+		std::cout << "Highest Pot: " << mpP[0] << " " << mpP[1] << " " << mpP[2] << " " << mpP[3] << " " << "\n";
+
+		std::cout << "Highest Sil Rel: " << float(mpA[0]) / nofEdges << " " << float(mpA[1]) / nofEdges << " " << float(mpA[2]) / nofEdges << " " << float(mpA[3]) / nofEdges << " " << "\n";
+		std::cout << "Highest Pot Rel: " << float(mpP[0]) / nofEdges << " " << float(mpP[1]) / nofEdges << " " << float(mpP[2]) / nofEdges << " " << float(mpP[3]) / nofEdges << " " << "\n";
+		//*/
+		//--
 
 		t.reset();
 		serializer.storeToFile(model->modelFilename, sceneAABBscale, _octree);
@@ -234,7 +277,7 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 
 	//--
 	std::vector<int> ed;
-	//ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
+	ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
 	//--
 	
 	for(const auto edge : silhouetteEdges)

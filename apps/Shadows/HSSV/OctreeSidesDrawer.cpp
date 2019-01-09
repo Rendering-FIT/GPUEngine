@@ -313,6 +313,15 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 	}
 	else
 	{
+		static bool printOnce = false;
+
+		if (!printOnce)
+		{
+			std::cout << "Light " << light.x << ", " << light.y << ", " << light.z << std::endl;
+			std::cout << "Cell index: " << cellIndex << std::endl;
+			printOnce = true;
+		}
+
 		_getPotentialSilhouetteEdgesGpu3(cellIndex);
 
 		if (_silhouetteDrawingMethod == DrawingMethod::CS && _potentialDrawingMethod == DrawingMethod::CS)

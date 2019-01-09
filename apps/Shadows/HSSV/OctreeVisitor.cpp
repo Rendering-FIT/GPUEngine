@@ -12,6 +12,7 @@
 #include "GpuOctreeLoader.hpp"
 #include "GpuOctreeEdgePropagator.hpp"
 #include <iterator>
+#include <functional>
 
 OctreeVisitor::OctreeVisitor(std::shared_ptr<Octree> octree)
 {
@@ -72,7 +73,7 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 {
 	GpuOctreeLoader* gpuLoader = new GpuOctreeLoader();
 
-	if (!gpuLoader->init(_octree, gpuEdges, subgroupSize))
+	if (!gpuLoader->init(_octree, gpuEdges, subgroupSize, edges->getNofEdges()))
 	{
 		std::cerr << "Failed to init GPU octree loader, switching to CPU (very slow)\n";
 		addEdges(edges);
@@ -89,6 +90,7 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 
 	t.reset();
 	gpuLoader->addEdgesOnLowestLevelGPU(edges);
+
 	auto dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Adding edges on GPU took " << dt << " sec\n";
 	
@@ -100,7 +102,27 @@ void OctreeVisitor::addEdgesGPU(const AdjacencyType edges, std::shared_ptr<GpuEd
 	_sortLevel(dl-1);
 	dt = t.getElapsedTimeFromLastQuerySeconds();
 	std::cout << "Sorting lowest and second lowest level took " << dt << "sec\n";
-	
+
+	//--
+	/*
+	std::vector<float> mpA, mpP;
+	const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
+	const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
+	const float nofEdges = edges->getNofEdges();
+	for (unsigned int i = start; i<end; ++i)
+	{
+		const auto node = _octree->getNode(i);
+
+		mpA.push_back(float(node->edgesAlwaysCastMap[BitmaskAllSet].size()) / nofEdges);
+		mpP.push_back(float(node->edgesMayCastMap[BitmaskAllSet].size()) / nofEdges);
+	}
+	std::sort(mpA.begin(), mpA.end(), std::greater<float>());
+	std::sort(mpP.begin(), mpP.end(), std::greater<float>());
+	std::cout << "Highest Sil: " << mpA[0] << " " << mpA[1] << " " << mpA[2] << " " << mpA[3] << " " << "\n";
+	std::cout << "Highest Pot: " << mpP[0] << " " << mpP[1] << " " << mpP[2] << " " << mpP[3] << " " << "\n";
+	//*/
+	//--
+
 	_propagateEdgesGpu();
 
 	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB\n";
@@ -628,4 +650,53 @@ void  OctreeVisitor::getMaxNofSubBuffersPotSil(unsigned int& pot, unsigned int& 
 		pot = std::max(pot, p);
 		sil = std::max(sil, s);
 	}
+}
+
+#include <iostream>
+#include <fstream>
+void OctreeVisitor::dumpOctreeLevel(unsigned int level, const char* filename)
+{
+	std::ofstream file(filename);
+
+	if (!file.is_open())
+		return;
+
+	//Get level start and size
+	const auto firstNode = _octree->getLevelFirstNodeID(level);
+	const auto lastNode = firstNode + _octree->getLevelSize(level);
+
+	for (unsigned int currentNode = firstNode; currentNode < lastNode; ++currentNode)
+	{
+		const auto node = _octree->getNode(currentNode);
+
+		file << "---Node " << std::to_string(currentNode) << std::endl;
+		file << "POTENTIAL\n";
+		for (const auto buffer : node->edgesMayCastMap)
+		{
+			if (!buffer.second.size())
+				continue;
+			
+			file << std::to_string(buffer.first) << ":\n";
+
+			for (const auto edge : buffer.second)
+			{
+				file << "\t" << std::to_string(edge) << std::endl;
+			}
+		}
+		file << "SILHOUETTE\n";
+		for (const auto buffer : node->edgesAlwaysCastMap)
+		{
+			if (!buffer.second.size())
+				continue;
+
+			file << std::to_string(buffer.first) << ":\n";
+
+			for (const auto edge : buffer.second)
+			{
+				file << "\t" << std::to_string(decodeEdgeFromEncoded(edge)) << "(" << std::to_string(decodeEdgeMultiplicityFromId(edge)) << ")" << std::endl;
+			}
+		}
+	}
+
+	file.close();
 }

@@ -52,7 +52,6 @@ protected:
 		
 	void _loadGpuEdges(AdjacencyType edges);
 		void _serializeEdges(AdjacencyType edges, std::vector<float>& serializedEdges, std::vector<glm::vec3>& serializedOppositeVertices);
-
 protected:
 
 	std::shared_ptr<ge::gl::Buffer> _sidesVBO = nullptr;

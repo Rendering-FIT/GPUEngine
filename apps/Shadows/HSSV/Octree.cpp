@@ -333,3 +333,11 @@ void Octree::_expandWholeOctree()
 
 	makeNodesFit();
 }
+
+unsigned int Octree::getLevelSize(unsigned int level) const
+{
+	if (level > getDeepestLevel())
+		return 0;
+
+	return ipow(OCTREE_NUM_CHILDREN, level);
+}
