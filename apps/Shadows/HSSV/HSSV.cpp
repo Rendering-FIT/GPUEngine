@@ -68,22 +68,25 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
-		_visitor->addEdgesGPU(_edges, _gpuEdges, subgroupSize);
+		_visitor->addEdges(_edges, _gpuEdges);
 
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 		std::cout << "Building octree took " << dt << " seconds. Compressing...\n";
-		/*
-		OctreeCompressor compressor;
-		compressor.compressOctree(_visitor, compressionLevel);
+		if (std::is_same<uint64_t, BitmaskType>::value)
+		{
+			OctreeCompressor compressor;
+			compressor.compressOctree(_visitor, compressionLevel);
 
-		std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+			std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+		}
+		
 		std::cout << "Compressed size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
-		//*/
+
 		_visitor->getOctree()->setCompressionLevel(compressionLevel);
 		_visitor->shrinkOctree();
 		std::cout << "Shrinking octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
-		//--
+		
 		/*
 		std::vector<float> mpA, mpP;
 		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);

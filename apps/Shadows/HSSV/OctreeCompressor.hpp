@@ -15,6 +15,8 @@ protected:
 	void _compressSyblings(unsigned int startingID, bool processPotential, unsigned int compressLevelHeight_1or2);
 	void _removeEdgeFromSyblingsSparse(unsigned int startingId, unsigned int edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, unsigned int nofSyblings);
 
+	void _assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
+	void _assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
 private:
 	std::shared_ptr<OctreeVisitor> _visitor;
 };

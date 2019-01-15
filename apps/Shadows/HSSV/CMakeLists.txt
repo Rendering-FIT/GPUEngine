@@ -31,6 +31,14 @@ set(HSSV_FILES
 	HSSV/OctreeSerializer.cpp
 	HSSV/OctreeCompressor.hpp
 	HSSV/OctreeCompressor.cpp
-	
+	HSSV/IOctreeLoader.hpp
+	HSSV/IGpuOctreeLoader.hpp
+	HSSV/IGpuOctreeLoader.cpp
+	HSSV/GpuOctreeLoaderCompress8.cpp
+	HSSV/GpuOctreeLoaderCompress8.hpp
+	HSSV/CpuOctreeLoader.hpp
+	HSSV/CpuOctreeLoader.cpp
+	HSSV/CpuOctreeEdgePropagator.hpp
+	HSSV/CpuOctreeEdgePropagator.cpp
 	PARENT_SCOPE
 )

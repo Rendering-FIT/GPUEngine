@@ -62,7 +62,7 @@ void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPo
 		const auto bitmask = checkEdgePresence(e, startingID, processPotential, nofSyblings);
 		if (bitmask.count()>3)
 		{
-			_visitor->assignEdgeToNode(parent, e, processPotential, bitmask.to_ullong());
+			_assignEdgeToNode(parent, e, processPotential, bitmask.to_ullong());
 			_removeEdgeFromSyblingsSparse(startingID, e, processPotential, bitmask, nofSyblings);
 		}
 	}
@@ -84,5 +84,27 @@ void OctreeCompressor::_removeEdgeFromSyblingsSparse(unsigned int startingID, un
 			else
 				node->edgesAlwaysCastMap[BitmaskAllSet].erase(std::lower_bound(node->edgesAlwaysCastMap[BitmaskAllSet].begin(), node->edgesAlwaysCastMap[BitmaskAllSet].end(), edge));
 		}
+	}
+}
+
+void OctreeCompressor::_assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+{
+	const int parent = _visitor->getOctree()->getNodeParent(node);
+
+	assert(parent >= 0);
+
+	_assignEdgeToNode(parent, edge, propagatePotential, subBufferId);
+}
+
+void OctreeCompressor::_assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+{
+	auto n = _visitor->getOctree()->getNode(node);
+
+	if (n)
+	{
+		if (propagatePotential)
+			n->edgesMayCastMap[subBufferId].push_back(edge);
+		else
+			n->edgesAlwaysCastMap[subBufferId].push_back(edge);
 	}
 }

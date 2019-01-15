@@ -143,7 +143,7 @@ bool haveSyblingsAgreed(uint64_t ballotResult, uint syblingGroup)
 //------------------SHARED MEMORY------------------
 
 //Must be multiple of sizeof(edge), which is 32 bytes
-shared float wgSharedMemory[SHM_SIZE_FLOATS];
+shared float wgSharedMemory[SHARED_MEMORY_FLOATS];
 
 //------------------GETTER FUNCTIONS------------------
 
@@ -215,13 +215,13 @@ void main()
 	#define subgroupIdWithinWG (gl_LocalInvocationIndex/gl_SubGroupSizeARB)
 	#define syblingGroup (gl_SubGroupInvocationARB/8)
 	#define syblingInvocationId (gl_SubGroupInvocationARB%8)
-	#define shmEdgeCapacityPerSubgroup (SHARED_MEMORY_PER_SUBGROUP_FLOATS / EDGE_NUM_FLOATS)
+	#define shmEdgeCapacityPerSubgroup (SHARED_MEMORY_FLOATS / EDGE_NUM_FLOATS)
 	
 	//Prepare shared memory
-	const uint shmBaseOffset = subgroupIdWithinWG * SHARED_MEMORY_PER_SUBGROUP_FLOATS;
+	const uint shmBaseOffset = subgroupIdWithinWG * SHARED_MEMORY_FLOATS;
 	
-	while(true)
-	{
+	//while(true)
+	//{
 		//Acquire voxels
 		uint startingIndex = 0;
 		
@@ -330,7 +330,8 @@ void main()
 						storePotentialEdge(currentEdge, currentVoxel, currentNumPotential++);
 					
 				}
-				else if(isSilhouette)
+				
+				if(isSilhouette)
 				{
 					if(isSilhouetteInAllSyblings)
 					{
@@ -357,18 +358,17 @@ void main()
 			nofPotentialEdgesPerVoxel[nofVoxels + currentParent] = parentNumPotential;
 			nofSilhouetteEdgesPerVoxel[nofVoxels + currentParent] = parentNumSilhouette;
 		}
-	}
+	//}
 }).";
 
-inline const std::string buildComputeShaderFillBottomLevel(unsigned int numSubgroupsPerWG, unsigned int subgroupSize, unsigned int shmPerSubgroup)
+inline const std::string buildComputeShaderFillBottomLevel(unsigned int workgroupSize, unsigned int shmSizeBytes)
 {
 	return voxelComputeShaderPrologue +
 		"#extension GL_ARB_gpu_shader_int64 : enable\n" + 
 		"#extension GL_AMD_gpu_shader_int64 : enable\n" +
 		"#extension GL_ARB_shader_ballot : require\n" +
-		"#define SHARED_MEMORY_PER_SUBGROUP_FLOATS " + std::to_string(shmPerSubgroup / sizeof(float)) + "\n" +
-		"#define SHM_SIZE_FLOATS " + std::to_string(numSubgroupsPerWG * shmPerSubgroup / sizeof(float)) + "\n" +
-		"layout(local_size_x = " + std::to_string(numSubgroupsPerWG * subgroupSize) + ") in;\n\n" +
+		"#define SHARED_MEMORY_FLOATS " + std::to_string(shmSizeBytes / sizeof(float)) + "\n" +
+		"layout(local_size_x = " + std::to_string(workgroupSize) + ") in;\n\n" +
 		voxelComputeShaderBody;
 }
 
