@@ -1,5 +1,6 @@
 #include "IGpuOctreeLoader.hpp"
 #include <omp.h>
+#include "geGL/StaticCalls.h"
 
 IGpuOctreeLoader::IGpuOctreeLoader()
 {
@@ -20,6 +21,7 @@ void IGpuOctreeLoader::_clearAtomicCounter()
 
 	uint32_t zero = 0;
 	_atomicCounter->setData(&zero, sizeof(uint32_t));
+
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
 

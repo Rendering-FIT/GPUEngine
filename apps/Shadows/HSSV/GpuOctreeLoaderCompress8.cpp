@@ -32,7 +32,7 @@ bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress(unsigned int nof
 	_wgSize = 64;
 	_cacheSize = 31744;
 
-	const auto program = buildComputeShaderFillBottomLevel2(_wgSize, _cacheSize, _limits.chunkSizeNofBits, _limits.maxChunksPerParent);
+	const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize, _limits.chunkSizeNofBits, _limits.maxChunksPerParent);
 	
 	_fillProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, program));
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
@@ -203,6 +203,8 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	std::cout << "Num batches: " << numBatches << "\n";
 	HighResolutionTimer t;
+
+	const auto nofF = _octree->getTotalNumNodes();
 
 	for (unsigned int i = 0; i<numBatches; ++i)
 	{
@@ -426,7 +428,7 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 		for (unsigned int cacheSize = cacheSizeStart; cacheSize <= cacheSizeLimit; cacheSize += cacheSizeStep)
 		{
 			_fillProgram.reset();
-			_fillProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, buildComputeShaderFillBottomLevel(wgSize, cacheSize)));
+			_fillProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, buildComputeShaderFillBottomLevel(wgSize, cacheSize, 0, 0)));
 
 			_fillProgram->use();
 			_fillProgram->set1ui("nofEdges", nofEdges);

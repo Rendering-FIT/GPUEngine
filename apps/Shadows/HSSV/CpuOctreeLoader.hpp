@@ -11,7 +11,7 @@ public:
 protected:
 
 	void _addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges);
-		void _addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID);
+		void _addEdgesSyblingsParentCompress8(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID);
 		void _generateEdgePlanes(const AdjacencyType edges, std::vector< std::vector<Plane> >& planes) const;
 		bool _doAllSilhouetteFaceTheSame(const int(&indices)[OCTREE_NUM_CHILDREN]) const;
 

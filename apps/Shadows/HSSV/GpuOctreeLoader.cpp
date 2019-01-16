@@ -140,7 +140,8 @@ bool GpuOctreeLoader::_createBottomFillProgram()
 	_wgSize = 64;
 	_cacheSize = 31744;
 	
-	const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize);
+	//const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize);
+	const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize, 0, 0);
 	/*
 	std::ifstream t2("C:\\Users\\ikobrtek\\Desktop\\loaderCompress.glsl");
 	std::string program((std::istreambuf_iterator<char>(t2)),

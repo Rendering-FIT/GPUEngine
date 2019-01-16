@@ -43,9 +43,18 @@ void OctreeVisitor::_propagateEdgesGpu()
 	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
 }
 
-void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges)
+void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, bool useCompress)
 {
-	IOctreeLoader* gpuLoader = new GpuOctreeLoaderCompress8();
+	IOctreeLoader* gpuLoader = nullptr;
+	
+	if (useCompress)
+	{
+		gpuLoader = new GpuOctreeLoaderCompress8();
+	}
+	else
+	{
+		gpuLoader = new GpuOctreeLoader();
+	}
 
 	if (!gpuLoader->init(_octree, gpuEdges, edges->getNofEdges()))
 	{
@@ -109,7 +118,8 @@ void OctreeVisitor::_addEdgesCpu(const AdjacencyType edges)
 	loader.init(_octree, nullptr, 0);
 	loader.addEdgesOnLowestLevel(edges);
 
-	_propagateEdgesCpu();
+	//_propagateEdgesCpu();
+	_propagateEdgesGpu();
 }
 
 void OctreeVisitor::_propagateEdgesCpu()

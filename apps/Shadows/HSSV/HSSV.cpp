@@ -11,7 +11,7 @@
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
 
-//#define DRAW_CPU
+#define DRAW_CPU
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -68,12 +68,13 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
-		_visitor->addEdges(_edges, _gpuEdges);
+		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
+		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression);
 
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
 		std::cout << "Building octree took " << dt << " seconds. Compressing...\n";
-		if (std::is_same<uint64_t, BitmaskType>::value)
+		if (!useGpuCompression)
 		{
 			OctreeCompressor compressor;
 			compressor.compressOctree(_visitor, compressionLevel);

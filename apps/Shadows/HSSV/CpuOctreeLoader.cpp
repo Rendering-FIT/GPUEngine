@@ -69,11 +69,11 @@ void CpuOctreeLoader::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& 
 #pragma omp parallel for
 	for (int i = startingIndex; i < stopIndex; i += OCTREE_NUM_CHILDREN)
 	{
-		_addEdgesSyblingsParent(edgePlanes, edges, i);
+		_addEdgesSyblingsParentCompress8(edgePlanes, edges, i);
 	}
 }
 
-void CpuOctreeLoader::_addEdgesSyblingsParent(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
+void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
 {
 	unsigned int edgeIndex = 0;
 
@@ -85,7 +85,7 @@ void CpuOctreeLoader::_addEdgesSyblingsParent(const std::vector< std::vector<Pla
 		unsigned int numPotential = 0;
 
 		std::bitset<8> potentialBitmask(0);
-		std::map<int, std::bitset<8>> silhouetteBitmasks;
+		std::unordered_map<int, std::bitset<8>> silhouetteBitmasks;
 
 		int potentialIndices[OCTREE_NUM_CHILDREN];
 

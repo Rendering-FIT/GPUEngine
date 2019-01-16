@@ -15,7 +15,7 @@ class OctreeVisitor
 public:
 	OctreeVisitor(std::shared_ptr<Octree> octree);
 
-	void addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges);
+	void addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges> gpuEdges, bool useCompress);
 
 	int getLowestNodeIndexFromPoint(const glm::vec3& point) const;
 	void getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const;
