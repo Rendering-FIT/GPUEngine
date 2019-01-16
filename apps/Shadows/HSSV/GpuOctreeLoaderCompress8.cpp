@@ -33,8 +33,8 @@ bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress(unsigned int nof
 	_cacheSize = 31744;
 
 	const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize, _limits.chunkSizeNofBits, _limits.maxChunksPerParent);
-	
 	_fillProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, program));
+	
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	return _fillProgram->isProgram();
 }
@@ -77,7 +77,7 @@ void GpuOctreeLoaderCompress8::_allocateOutputBuffersCompress(unsigned voxelsPer
 
 	const unsigned int nofParents = voxelsPerBatch / OCTREE_NUM_CHILDREN;
 
-	//TODO - sem mozne dat reduction factor
+	//TODO - sem mozne dat reduction factor - treba do shadera dat offsety
 	//Potom treba do shaderov spravne offsety (= velkosti na jeden voxel)
 	_voxelPotentialEdges->alloc(voxelsPerBatch * nofEdges * sizeof(uint32_t));
 	_voxelSilhouetteEdges->alloc(voxelsPerBatch * nofEdges * sizeof(uint32_t));
@@ -193,6 +193,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 	//V childoch toho uz vela neostava
 	//Inteligentnejsie pouzivam pamat teraz, viac ide do parentov
 	auto voxelBatchSize = allocatedSizeEdgeIndices / (nofEdges * sizeof(uint32_t));
+	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const unsigned int numBatches = (unsigned int)(ceil(float(deepestLevelSize) / voxelBatchSize));
 
 	_allocateOutputBuffersCompress(voxelBatchSize, nofEdges);
@@ -273,27 +274,13 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 	//Parents with compression
 	const unsigned int startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
 
-	std::vector<uint32_t> ec;
-	ec.resize(2 * numParents * MAX_NOF_SUBBUFFERS);
-	_parentSubbuffCounter->getData(ec.data(), ec.size() * sizeof(uint32_t));
-
-	std::vector<uint32_t> chi;
-	chi.resize(numParents * MAX_NOF_CHUNKS * (1 << _limits.chunkSizeNofBits));
-	_parentEdges->getData(chi.data(), chi.size() * sizeof(uint32_t));
-
 	const uint16_t* chunkDescriptors = reinterpret_cast<uint16_t*>(_chunkDesc->map(GL_READ_ONLY));
 	const uint32_t* edgeCounters = reinterpret_cast<uint32_t*>(_parentSubbuffCounter->map(GL_READ_ONLY));
 	const uint32_t* parentData = reinterpret_cast<uint32_t*>(_parentEdges->map(GL_READ_ONLY));
-	/*
-	std::vector<int32_t> shitData;
-	shitData.resize(10*numEdges);
-	_shit->getData(shitData.data(), shitData.size() * sizeof(uint32_t));
-
-	std::vector<unsigned int> counts;
-	counts.resize(numParents);
-	_chunkCounter->getData(counts.data(), counts.size() * sizeof(uint32_t));
-	*/
-	auto P = _octree->getChildrenStartingId(731);
+	
+	std::vector<unsigned int> nofChunks;
+	nofChunks.resize(numParents);
+	_chunkCounter->getData(nofChunks.data(), nofChunks.size() * sizeof(uint32_t));
 
 #pragma omp parallel for
 	for (int currentParent = 0; currentParent < numParents; ++currentParent)
@@ -304,16 +291,16 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 		chunkDescs[1].resize(MAX_NOF_SUBBUFFERS);
 
 		const unsigned int startingDesc = currentParent*MAX_NOF_CHUNKS;
-		const unsigned int stopDesc = startingDesc + MAX_NOF_CHUNKS;
+		const unsigned int stopDesc = startingDesc + nofChunks[currentParent];
 		for (unsigned int currentDesc = startingDesc; currentDesc < stopDesc; ++currentDesc)
 		{
 			const auto desc = chunkDescriptors[currentDesc];
 			const unsigned char* dptr = reinterpret_cast<const unsigned char*>(&desc);
 
-			if (_isChunkDescValid(desc))
-			{
+			//if (_isChunkDescValid(desc))
+			//{
 				chunkDescs[dptr[1]][dptr[0]].push_back(currentDesc - startingDesc);
-			}
+			//}
 		}
 
 		const unsigned int chunkSize = 1 << _limits.chunkSizeNofBits;

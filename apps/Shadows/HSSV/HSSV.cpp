@@ -11,7 +11,7 @@
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
 
-#define DRAW_CPU
+//#define DRAW_CPU
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -139,13 +139,13 @@ HSSV::HSSV(
 		std::cout << "Loading model from file took " << t.getElapsedTimeSeconds() << "s\n";
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
-
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
-	_octreeSidesDrawer->init(_gpuEdges);
 	
 #ifdef DRAW_CPU
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();
+#else
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
+	_octreeSidesDrawer->init(_gpuEdges);
 #endif
 }
 
