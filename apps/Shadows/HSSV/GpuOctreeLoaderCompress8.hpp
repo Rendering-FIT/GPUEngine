@@ -22,12 +22,12 @@ public:
 
 protected:
 	void _createCompressionBuffers();
-	void _allocateOutputBuffersCompress(unsigned voxelsPerBatch, unsigned nofEdges);
+	void _allocateOutputBuffersCompress(unsigned voxelsPerBatch);
 	void _calculateLimitsCompress(unsigned int nofEdges);
 
-	bool _createBottomFillProgramCompress(unsigned int nofEdges);
+	bool _createBottomFillProgramCompress();
 
-	void _acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges);
+	void _acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize);
 		bool _isChunkDescValid(uint16_t desc) const;
 		void _copyChunk(const uint32_t* gpuData, uint32_t chunkStart, uint32_t* dstData, uint32_t chunkSize);
 		unsigned int _getNextChunkSize(int remainingSize, unsigned int chunkSize) const;

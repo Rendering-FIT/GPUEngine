@@ -19,6 +19,7 @@ protected:
 	void _loadVoxels(const std::vector<glm::vec3>& voxels, unsigned int startingIndex, unsigned int batchSize);
 	void _clearAtomicCounter();
 	void _copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size);
+	void _calculateLowestLevelBufferOffsets(unsigned int nofEdges, float potRatio, float silRatio);
 
 	std::shared_ptr<ge::gl::Buffer> _edges;
 	std::shared_ptr<ge::gl::Buffer> _oppositeVertices;
@@ -33,6 +34,8 @@ protected:
 
 	unsigned int _wgSize = 0;
 	unsigned int _cacheSize = 0;
+	unsigned int _potBufferOffset = 0;
+	unsigned int _silBufferOffset = 0;
 
 	std::vector<uint32_t> _bufferNofPotential;
 	std::vector<uint32_t> _bufferNofSilhouette;

@@ -19,7 +19,7 @@ bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_
 
 	_calculateLimitsCompress(nofEdges);
 
-	if (!_createBottomFillProgramCompress(nofEdges))
+	if (!_createBottomFillProgramCompress())
 		return false;
 
 	_createCompressionBuffers();
@@ -27,7 +27,7 @@ bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_
 	return true;
 }
 
-bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress(unsigned int nofEdges)
+bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress()
 {
 	_wgSize = 64;
 	_cacheSize = 31744;
@@ -71,7 +71,7 @@ void GpuOctreeLoaderCompress8::_copyChunk(const uint32_t* gpuData, uint32_t chun
 	memcpy(dstData, gpuData + chunkStart, chunkSize * sizeof(uint32_t));
 }
 
-void GpuOctreeLoaderCompress8::_allocateOutputBuffersCompress(unsigned voxelsPerBatch, unsigned nofEdges)
+void GpuOctreeLoaderCompress8::_allocateOutputBuffersCompress(unsigned voxelsPerBatch)
 {
 	std::cout << "Voxels per batch: " << voxelsPerBatch << std::endl;
 
@@ -79,8 +79,8 @@ void GpuOctreeLoaderCompress8::_allocateOutputBuffersCompress(unsigned voxelsPer
 
 	//TODO - sem mozne dat reduction factor - treba do shadera dat offsety
 	//Potom treba do shaderov spravne offsety (= velkosti na jeden voxel)
-	_voxelPotentialEdges->alloc(voxelsPerBatch * nofEdges * sizeof(uint32_t));
-	_voxelSilhouetteEdges->alloc(voxelsPerBatch * nofEdges * sizeof(uint32_t));
+	_voxelPotentialEdges->alloc(voxelsPerBatch * _potBufferOffset * sizeof(uint32_t));
+	_voxelSilhouetteEdges->alloc(voxelsPerBatch * _silBufferOffset * sizeof(uint32_t));
 
 	_nofPotentialEdges->alloc(voxelsPerBatch * sizeof(uint32_t));
 	_nofSilhouetteEdges->alloc(voxelsPerBatch * sizeof(uint32_t));
@@ -189,18 +189,20 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
 
-	//TODO - sem zohladnit statistiku a prepocitat spotrebu pamate
-	//V childoch toho uz vela neostava
-	//Inteligentnejsie pouzivam pamat teraz, viac ide do parentov
-	auto voxelBatchSize = allocatedSizeEdgeIndices / (nofEdges * sizeof(uint32_t));
+	_calculateLowestLevelBufferOffsets(nofEdges, 0.8f, 0.3f);
+
+	//_potBufferOffset because there will be always more pot edges
+	auto voxelBatchSize = allocatedSizeEdgeIndices / (_potBufferOffset * sizeof(uint32_t));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const unsigned int numBatches = (unsigned int)(ceil(float(deepestLevelSize) / voxelBatchSize));
 
-	_allocateOutputBuffersCompress(voxelBatchSize, nofEdges);
+	_allocateOutputBuffersCompress(voxelBatchSize);
 
 	_bindBuffersCompress();
 	_fillProgram->use();
 	_fillProgram->set1ui("nofEdges", nofEdges);
+	_fillProgram->set1ui("potBufferOffset", _potBufferOffset);
+	_fillProgram->set1ui("silBufferOffset", _silBufferOffset);
 
 	std::cout << "Num batches: " << numBatches << "\n";
 	HighResolutionTimer t;
@@ -224,7 +226,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 		ge::gl::glFinish();
 		std::cout << "GPU Load: " << std::to_string(t.getElapsedTimeFromLastQuerySeconds()) << std::endl;
 
-		_acquireGpuDataCompress(startingNodeIndex + i*voxelBatchSize, batchSize, nofEdges);
+		_acquireGpuDataCompress(startingNodeIndex + i*voxelBatchSize, batchSize);
 	}
 
 	_unbindBuffersCompress();
@@ -232,7 +234,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
 
-void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges)
+void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize)
 {
 	HighResolutionTimer timer;
 	timer.reset();
@@ -253,7 +255,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 
 		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[i]);
 		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
-			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (numEdges*i), _bufferNofPotential[i] * sizeof(uint32_t));
+			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*i), _bufferNofPotential[i] * sizeof(uint32_t));
 	}
 	_voxelPotentialEdges->unmap();
 
@@ -267,7 +269,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 
 		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[i]);
 		if (!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
-			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (numEdges*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
+			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (_silBufferOffset*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
 	}
 	_voxelSilhouetteEdges->unmap();
 

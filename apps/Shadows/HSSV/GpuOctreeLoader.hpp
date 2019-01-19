@@ -20,12 +20,12 @@ protected:
 	
 	bool _createBottomFillProgram();
 	
-	void _allocateOutputBuffersAndVoxels(unsigned int voxelsPerBatch, unsigned int numEdges);
+	void _allocateOutputBuffersAndVoxels(unsigned int voxelsPerBatch);
 
 	void _bindBuffers();
 	void _unbindBuffers();
 
-	void _acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize, unsigned int numEdges);
+	void _acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize);
 
 	void _testParticularVoxel(AdjacencyType edges, unsigned int voxelId, std::vector<unsigned int>& particularEdgeIndices);
 };

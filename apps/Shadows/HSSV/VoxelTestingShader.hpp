@@ -79,17 +79,19 @@ layout(std430, binding=12) buffer _parentEdges{
 
 uniform uint nofEdges;
 uniform uint nofVoxels;
+uniform uint potBufferOffset;
+uniform uint silBufferOffset;
 
 //------------------SETTER/STORE FUNCTIONS------------------
 
 void storePotentialEdge(uint edgeId, uint voxelId, uint position)
 {
-	voxelEdgesPotential[nofEdges * voxelId + position] = edgeId;
+	voxelEdgesPotential[potBufferOffset * voxelId + position] = edgeId;
 }
 
 void storeSilhouetteEdge(uint edgeId, uint voxelId, uint position)
 {
-	voxelEdgesSilhouette[nofEdges * voxelId + position] = edgeId;
+	voxelEdgesSilhouette[silBufferOffset * voxelId + position] = edgeId;
 }
 
 //------------------MULTIPLICITY FUNCTIONS------------------

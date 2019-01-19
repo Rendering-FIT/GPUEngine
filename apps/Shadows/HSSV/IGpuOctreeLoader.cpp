@@ -63,3 +63,11 @@ void IGpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxe
 		voxels[2 * i + 1] = bbox.getMaxPoint();
 	}
 }
+
+void IGpuOctreeLoader::_calculateLowestLevelBufferOffsets(unsigned int nofEdges, float potRatio, float silRatio)
+{
+	assert(potRatio >= silRatio);
+
+	_potBufferOffset = unsigned int(ceilf(nofEdges * potRatio));
+	_silBufferOffset = unsigned int(ceilf(nofEdges * silRatio));
+}
