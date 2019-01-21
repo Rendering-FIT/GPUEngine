@@ -394,7 +394,6 @@ void Application::drawScene() {
 	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
 
 	this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
-	this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
 	this->gBuffer->end();
 
 	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
@@ -407,6 +406,7 @@ void Application::drawScene() {
 	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
 	if (this->timeStamper)this->timeStamper->end("shading");
 
+	this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
 }
 #endif
 
