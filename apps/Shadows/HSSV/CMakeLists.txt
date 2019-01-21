@@ -40,5 +40,7 @@ set(HSSV_FILES
 	HSSV/CpuOctreeLoader.cpp
 	HSSV/CpuOctreeEdgePropagator.hpp
 	HSSV/CpuOctreeEdgePropagator.cpp
+	HSSV/OctreeWireframeDrawer.hpp
+	HSSV/OctreeWireframeDrawer.cpp
 	PARENT_SCOPE
 )

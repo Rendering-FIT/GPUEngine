@@ -6,6 +6,7 @@
 #include "OctreeVisitor.hpp"
 #include "GpuEdges.hpp"
 #include "OctreeSidesDrawer.hpp"
+#include "OctreeWireframeDrawer.hpp"
 
 struct HSSVParams
 {
@@ -18,6 +19,7 @@ struct HSSVParams
 	float potSpeculativeFactor;
 	float silSpeculativeFactor;
 	bool forceOctreeBuild;
+	bool drawOctree;
 };
 
 class HSSV : public ShadowVolumes
@@ -34,7 +36,9 @@ public:
 	void drawSides(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 	void drawCaps(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 
-	virtual void setTimeStamper(std::shared_ptr<TimeStamp> stamper) override;
+	void setTimeStamper(std::shared_ptr<TimeStamp> stamper) override;
+
+	void drawUser(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 
 protected:
 
@@ -65,7 +69,11 @@ protected:
 
 	std::shared_ptr<GpuEdges> _gpuEdges;
 
+	std::unique_ptr<OctreeWireframeDrawer> _wireframeDrawer;
+
 	float* _vertices = nullptr;
 
 	int _previousOctreeNodeLightPos = -1;
+
+	bool _isDrawOctree = false;
 };

@@ -10,6 +10,7 @@
 
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
+#include "OctreeWireframeDrawer.hpp"
 
 //#define DRAW_CPU
 
@@ -51,6 +52,8 @@ HSSV::HSSV(
 	std::cout << "Octree working space: " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
 	_loadGpuEdges(_edges);
+
+	_isDrawOctree = hssvParams.drawOctree;
 
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
@@ -137,6 +140,12 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 	}
 	
+	if (_isDrawOctree)
+	{
+		_wireframeDrawer = std::make_unique<OctreeWireframeDrawer>();
+		_wireframeDrawer->init(_octree);
+	}
+
 #ifdef DRAW_CPU
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();
@@ -419,14 +428,33 @@ void HSSV::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEd
 		serializedEdges.push_back(*((float*)&nofOpposite));
 		serializedEdges.push_back(*((float*)&starting_index));
 
-		for (unsigned int i = 0; i<nofOpposite; ++i)
+		for (unsigned int i = 0; i < nofOpposite; ++i)
+		{
 			serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);
+		}
 	}
 }
 
 void HSSV::setTimeStamper(std::shared_ptr<TimeStamp> stamper)
 {
 	timeStamp = stamper;
-	if (_octreeSidesDrawer) _octreeSidesDrawer->setStamper(stamper);
+	if (_octreeSidesDrawer)
+	{
+		_octreeSidesDrawer->setStamper(stamper);
+	}
+}
+
+void HSSV::drawUser(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix)
+{
+	if (_isDrawOctree)
+	{
+		//ge::gl::glDisable(GL_DEPTH_TEST);
+		ge::gl::glDepthMask(GL_FALSE);
+
+		_wireframeDrawer->drawWireframe(projectionMatrix * viewMatrix);
+
+		ge::gl::glDepthMask(GL_TRUE);
+		//ge::gl::glEnable(GL_DEPTH_TEST);
+	}
 }
 

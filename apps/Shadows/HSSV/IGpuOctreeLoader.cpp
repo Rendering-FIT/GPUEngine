@@ -66,7 +66,7 @@ void IGpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxe
 
 void IGpuOctreeLoader::_calculateLowestLevelBufferOffsets(unsigned int nofEdges)
 {
-	assert(potRatio >= silRatio);
+	assert(_speculativeRatioPot >= _speculativeRatioSil);
 
 	_potBufferOffset = unsigned int(ceilf(nofEdges * _speculativeRatioPot));
 	_silBufferOffset = unsigned int(ceilf(nofEdges * _speculativeRatioSil));

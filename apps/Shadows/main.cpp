@@ -182,6 +182,7 @@ void Application::parseArguments(int argc,char*argv[]){
   glm::vec2 ratios = vector2vec2(arg->getf32v("--hssv-speculativeRatios", { 0.8f, 0.3f }, "Speculatively reduce memory during octree loading (factors for potential and silhouette ednges)"));
   this->hssvParams.potSpeculativeFactor = ratios.x;
   this->hssvParams.silSpeculativeFactor = ratios.y;
+  this->hssvParams.drawOctree = arg->getu32("--hssv-drawOctree", 0, "Draws lowest-level octree cells as wireframe") != 0;
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -393,6 +394,7 @@ void Application::drawScene() {
 	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
 
 	this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
+	this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
 	this->gBuffer->end();
 
 	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
@@ -404,6 +406,7 @@ void Application::drawScene() {
 	ge::gl::glDisable(GL_DEPTH_TEST);
 	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
 	if (this->timeStamper)this->timeStamper->end("shading");
+
 }
 #endif
 

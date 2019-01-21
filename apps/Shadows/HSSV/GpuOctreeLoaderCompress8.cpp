@@ -29,6 +29,7 @@ bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_
 
 bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress()
 {
+	//Determined by profiling
 	_wgSize = 64;
 	_cacheSize = 31744;
 
@@ -77,8 +78,6 @@ void GpuOctreeLoaderCompress8::_allocateOutputBuffersCompress(unsigned voxelsPer
 
 	const unsigned int nofParents = voxelsPerBatch / OCTREE_NUM_CHILDREN;
 
-	//TODO - sem mozne dat reduction factor - treba do shadera dat offsety
-	//Potom treba do shaderov spravne offsety (= velkosti na jeden voxel)
 	_voxelPotentialEdges->alloc(voxelsPerBatch * _potBufferOffset * sizeof(uint32_t));
 	_voxelSilhouetteEdges->alloc(voxelsPerBatch * _silBufferOffset * sizeof(uint32_t));
 
