@@ -2,16 +2,16 @@
 
 #include "IOctreeLoader.hpp"
 
-#define MAX_BUFFER_SIZE (2816ull*1024ull*1024ull)
-
 class IGpuOctreeLoader : public IOctreeLoader
 {
 public:
 
 	IGpuOctreeLoader();
 	virtual ~IGpuOctreeLoader() {}
-
 	virtual void profile(AdjacencyType edges) = 0;
+
+	void setMaxBufferSize(uint64_t size);
+	void setSpeculativeRatios(float potRatio, float silRatio);
 
 protected:
 
@@ -19,7 +19,7 @@ protected:
 	void _loadVoxels(const std::vector<glm::vec3>& voxels, unsigned int startingIndex, unsigned int batchSize);
 	void _clearAtomicCounter();
 	void _copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size);
-	void _calculateLowestLevelBufferOffsets(unsigned int nofEdges, float potRatio, float silRatio);
+	void _calculateLowestLevelBufferOffsets(unsigned int nofEdges);
 
 	std::shared_ptr<ge::gl::Buffer> _edges;
 	std::shared_ptr<ge::gl::Buffer> _oppositeVertices;
@@ -37,8 +37,13 @@ protected:
 	unsigned int _potBufferOffset = 0;
 	unsigned int _silBufferOffset = 0;
 
+	float _speculativeRatioPot = 0.0f;
+	float _speculativeRatioSil = 0.0f;
+
 	std::vector<uint32_t> _bufferNofPotential;
 	std::vector<uint32_t> _bufferNofSilhouette;
+
+	uint64_t _maxBufferSizeBytes = 0;
 
 private:
 	void _createBuffers();

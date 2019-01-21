@@ -15,12 +15,7 @@
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
-	const glm::vec3& sceneAABBscale,
-	unsigned maxOctreeLevel,
-	unsigned int subgroupSize,
-	unsigned int workgroupSize,
-	unsigned char potentialMethod,
-	unsigned char silhouetteMethod,
+	const HSSVParams& hssvParams,
 	std::shared_ptr<ge::gl::Texture> const& shadowMask,
 	std::shared_ptr<ge::gl::Texture> const& depth,
 	ShadowVolumesParams const& params) : ShadowVolumes(shadowMask, depth, params)
@@ -49,7 +44,7 @@ HSSV::HSSV(
 	auto maxP = sceneBbox.getMaxPoint();
 	std::cout << "Scene AABB " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
-	sceneBbox.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*sceneAABBscale);
+	sceneBbox.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*hssvParams.sceneAABBscale);
 
 	minP = sceneBbox.getMinPoint();
 	maxP = sceneBbox.getMaxPoint();
@@ -61,15 +56,17 @@ HSSV::HSSV(
 	OctreeSerializer serializer;
 	t.reset();
 	const unsigned int compressionLevel = (int)(log(BitmaskTypeSizeBits) / log(8));
-	//_octree = serializer.loadFromFile(model->modelFilename, sceneAABBscale, maxOctreeLevel, compressionLevel);
+	if(!hssvParams.forceOctreeBuild)
+		_octree = serializer.loadFromFile(model->modelFilename, hssvParams.sceneAABBscale, hssvParams.maxOctreeLevel, compressionLevel);
+	
 	if (!_octree)
 	{
-		_octree = std::make_shared<Octree>(maxOctreeLevel, sceneBbox);
+		_octree = std::make_shared<Octree>(hssvParams.maxOctreeLevel, sceneBbox);
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
 		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
-		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression);
+		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
 
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
@@ -131,7 +128,7 @@ HSSV::HSSV(
 		//--
 
 		t.reset();
-		serializer.storeToFile(model->modelFilename, sceneAABBscale, _octree);
+		serializer.storeToFile(model->modelFilename, hssvParams.sceneAABBscale, _octree);
 		std::cout << "Storing model to file took " << t.getElapsedTimeSeconds() << "s\n";
 	}
 	else
@@ -144,7 +141,7 @@ HSSV::HSSV(
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
 	_prepareProgram();
 #else
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, workgroupSize, DrawingMethod(potentialMethod), DrawingMethod(silhouetteMethod));
+	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, hssvParams.workgroupSize, DrawingMethod(hssvParams.potentialDrawingMethod), DrawingMethod(hssvParams.silhouetteDrawingMethod));
 	_octreeSidesDrawer->init(_gpuEdges);
 #endif
 }

@@ -169,11 +169,11 @@ void GpuOctreeLoader::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	const auto nofEdges = edges->getNofEdges();
 
-	_calculateLowestLevelBufferOffsets(nofEdges, 0.8f, 0.3f);
+	_calculateLowestLevelBufferOffsets(nofEdges);
 
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
-	const auto allocatedSizeEdgeIndices = std::min(size_t(MAX_BUFFER_SIZE), size_t(deepestLevelSizeAndParents) * size_t(_potBufferOffset) * sizeof(uint32_t));
+	const auto allocatedSizeEdgeIndices = std::min(_maxBufferSizeBytes, size_t(deepestLevelSizeAndParents) * size_t(_potBufferOffset) * sizeof(uint32_t));
 	
 	//Parents are taken into consideration, as they will also need output buffers
 	//TODO TU extra pozor - zkrokovat

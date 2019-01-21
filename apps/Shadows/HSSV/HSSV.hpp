@@ -11,22 +11,20 @@ struct HSSVParams
 {
 	unsigned int maxOctreeLevel;
 	glm::vec3 sceneAABBscale;
-	unsigned int maxGpuMemoryToUseMB;
+	unsigned int maxGpuMemoryToUsePerBuffer;
 	unsigned char potentialDrawingMethod;
 	unsigned char silhouetteDrawingMethod;
 	unsigned int workgroupSize;
+	float potSpeculativeFactor;
+	float silSpeculativeFactor;
+	bool forceOctreeBuild;
 };
 
 class HSSV : public ShadowVolumes
 {
 public:
 	HSSV(std::shared_ptr<Model> model,
-		const glm::vec3& sceneAABBscale,
-		unsigned int maxOctreeLevel,
-		unsigned int subgroupSize,
-		unsigned int workgroupSize,
-		unsigned char potentialMethod,
-		unsigned char silhouetteMethod,
+		const HSSVParams& hssvParams,
 		std::shared_ptr<ge::gl::Texture>const& shadowMask,
 		std::shared_ptr<ge::gl::Texture>const& depth,
 		ShadowVolumesParams const& params);

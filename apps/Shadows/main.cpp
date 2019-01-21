@@ -174,10 +174,14 @@ void Application::parseArguments(int argc,char*argv[]){
 
   this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
   this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 5.f,5.f,5.f}, "Defines octree volume in terms of scene AABB scaling"));
-  this->hssvParams.maxGpuMemoryToUseMB = arg->geti32("--hssv-gpuMemMax", 1024, "Amount of GPU memory to use during octree build, default 1024MB");
+  this->hssvParams.maxGpuMemoryToUsePerBuffer = arg->geti32("--hssv-maxBufSize", 2048, "Amount of GPU memory to use during octree build for potential edges buffer, default 2048MB. It's not total memory consumption, usually ~x2");
   this->hssvParams.potentialDrawingMethod = arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
   this->hssvParams.silhouetteDrawingMethod = arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
-  this->hssvParams.workgroupSize = arg->getu32("--hssv-wg", 128, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
+  this->hssvParams.workgroupSize = arg->getu32("--hssv-wg", 256, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
+  this->hssvParams.forceOctreeBuild = arg->getu32("--hssv-forceBuild", 0, "Forces octree build (won't load from file if present)") != 0;
+  glm::vec2 ratios = vector2vec2(arg->getf32v("--hssv-speculativeRatios", { 0.8f, 0.3f }, "Speculatively reduce memory during octree loading (factors for potential and silhouette ednges)"));
+  this->hssvParams.potSpeculativeFactor = ratios.x;
+  this->hssvParams.silSpeculativeFactor = ratios.y;
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -326,12 +330,7 @@ bool Application::init(int argc,char*argv[]){
 	  else if (this->methodName == "hssv")
 		  this->shadowMethod = std::make_shared<HSSV>(
 			  model,
-			  hssvParams.sceneAABBscale,
-			  hssvParams.maxOctreeLevel,
-			  static_cast<unsigned int>(wavefrontSize),
-			  hssvParams.workgroupSize,
-			  hssvParams.potentialDrawingMethod,
-			  hssvParams.silhouetteDrawingMethod,
+			  hssvParams,
 			  shadowMask,
 			  gBuffer->depth,
 			  svParams);

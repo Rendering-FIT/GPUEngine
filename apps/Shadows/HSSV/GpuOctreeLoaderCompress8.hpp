@@ -11,7 +11,7 @@
 
 #define MIN_SUBBUFFER_SIZE_UINTS 2u
 
-#define MAX_NOF_CHUNKS 400u
+#define MAX_NOF_CHUNKS 300u
 
 class GpuOctreeLoaderCompress8 : public IGpuOctreeLoader
 {
