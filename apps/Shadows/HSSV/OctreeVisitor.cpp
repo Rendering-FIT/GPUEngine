@@ -56,8 +56,8 @@ void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges
 		gpuLoader = new GpuOctreeLoader();
 	}
 
-	reinterpret_cast<IGpuOctreeLoader*>(gpuLoader)->setMaxBufferSize(bufferSizeMB);
-	reinterpret_cast<IGpuOctreeLoader*>(gpuLoader)->setSpeculativeRatios(speculativeRatioPot, speculativeRatioSil);
+	dynamic_cast<IGpuOctreeLoader*>(gpuLoader)->setMaxBufferSize(bufferSizeMB);
+	dynamic_cast<IGpuOctreeLoader*>(gpuLoader)->setSpeculativeRatios(speculativeRatioPot, speculativeRatioSil);
 
 	if (!gpuLoader->init(_octree, gpuEdges, edges->getNofEdges()))
 	{

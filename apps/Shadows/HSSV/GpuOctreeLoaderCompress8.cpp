@@ -8,6 +8,14 @@
 #include <geGL/Program.h>
 #include "geGL/StaticCalls.h"
 
+#define MAX_NOF_SUBBUFFERS 256u
+
+#define MIN_SUBBUFFER_SIZE_UINTS 2u
+
+//Experimentally determined
+#define MAX_NOF_CHUNKS 350u
+#define PARENT_INCREASED_NOF_EDGES 1.4f
+
 bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges)
 {
 	assert(octree);
@@ -27,6 +35,8 @@ bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_
 	return true;
 }
 
+#include <iostream>
+#include <fstream>
 bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress()
 {
 	//Determined by profiling
@@ -34,6 +44,7 @@ bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress()
 	_cacheSize = 31744;
 
 	const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize, _limits.chunkSizeNofBits, _limits.maxChunksPerParent);
+	
 	_fillProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, program));
 	
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
@@ -170,10 +181,10 @@ unsigned int GpuOctreeLoaderCompress8::_findNearestHigherPow2(unsigned int v) co
 
 void GpuOctreeLoaderCompress8::_calculateLimitsCompress(unsigned int nofEdges)
 {
-	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(unsigned int(ceilf(nofEdges / float(MAX_NOF_CHUNKS)))));
+	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(unsigned int(ceilf(PARENT_INCREASED_NOF_EDGES*nofEdges / float(MAX_NOF_CHUNKS)))));
 	//FFS https://www.geeksforgeeks.org/position-of-rightmost-set-bit/
 	_limits.chunkSizeNofBits = static_cast<unsigned int>(log2f(maxEdgesSubbuffer & -maxEdgesSubbuffer));
-	_limits.maxChunksPerParent = MAX_NOF_CHUNKS; // *0.8
+	_limits.maxChunksPerParent = MAX_NOF_CHUNKS;
 }
 
 void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
@@ -219,7 +230,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 		_clearCompressionBuffers();
 
 		_fillProgram->set1ui("nofVoxels", batchSize);
-		
+
 		t.reset();
 		ge::gl::glDispatchCompute(unsigned int(ceil(float(batchSize) / _wgSize)), 1, 1);
 		ge::gl::glFinish();
@@ -279,9 +290,16 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 	const uint32_t* edgeCounters = reinterpret_cast<uint32_t*>(_parentSubbuffCounter->map(GL_READ_ONLY));
 	const uint32_t* parentData = reinterpret_cast<uint32_t*>(_parentEdges->map(GL_READ_ONLY));
 	
-	std::vector<unsigned int> nofChunks;
-	nofChunks.resize(numParents);
-	_chunkCounter->getData(nofChunks.data(), nofChunks.size() * sizeof(uint32_t));
+	std::vector<unsigned int> nofChunksVec;
+	nofChunksVec.resize(numParents);
+	_chunkCounter->getData(nofChunksVec.data(), nofChunksVec.size() * sizeof(uint32_t));
+
+#ifdef _DEBUG
+	for(unsigned int q=0; q<nofChunksVec.size(); ++q)
+	{
+		assert(nofChunksVec[q]<=_limits.maxChunksPerParent);
+	}
+#endif
 
 #pragma omp parallel for
 	for (int currentParent = 0; currentParent < int(numParents); ++currentParent)
@@ -292,7 +310,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 		chunkDescs[1].resize(MAX_NOF_SUBBUFFERS);
 
 		const unsigned int startingDesc = currentParent*MAX_NOF_CHUNKS;
-		const unsigned int stopDesc = startingDesc + nofChunks[currentParent];
+		const unsigned int stopDesc = startingDesc + nofChunksVec[currentParent];
 		for (unsigned int currentDesc = startingDesc; currentDesc < stopDesc; ++currentDesc)
 		{
 			const auto desc = chunkDescriptors[currentDesc];

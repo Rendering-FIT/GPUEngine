@@ -19,12 +19,12 @@ inline const std::string buildComputeShaderFillBottomLevel(unsigned int workgrou
 	{
 		str << "#extension GL_NV_gpu_shader5 : enable\n";
 		str << "#extension GL_AMD_gpu_shader_int16 : enable\n";
-		str << "#define MAX_CHUNKS_PARENT " + std::to_string(maxChunksParent) + "\n";
-		str << "#define CHUNK_SIZE " + std::to_string(1 << nofBitsCounter) + "\n" + "\n";
+		str << "#define MAX_NOF_CHUNKS " + std::to_string(maxChunksParent) + "\n";
+		str << "#define CHUNK_SIZE " + std::to_string(1 << nofBitsCounter) + "\n";
 		str << "#define CHUNK_MASK " + std::to_string(uint32_t(1 << nofBitsCounter) - 1) + "u\n";
 	}
 
-	str << "layout(local_size_x = " + std::to_string(workgroupSize) + ") in;\n\n";
+	str << "\nlayout(local_size_x = " + std::to_string(workgroupSize) + ") in;\n\n";
 
 	str << R".(
 	//------------------BUFFERS------------------
@@ -58,7 +58,7 @@ layout(std430, binding=7) buffer _atomicCounter{
 	{
 		str << R".(
 layout(std430, binding=8) buffer _parentSubbuffCounter{
-	uvec2 parentSubbuffCounter[];};
+	uint parentSubbuffCounter[];};
 
 layout(std430, binding=9) buffer _chunkCounter{
 	uint parentChunkCounter[];};
@@ -67,7 +67,7 @@ layout(std430, binding=10) buffer _chunkDesc{
 	uint16_t chunkDesc[];};
 
 layout(std430, binding=11) buffer _currentChunkId{
-	u16vec2 currentChunkId[];};
+	uint16_t currentChunkId[];};
 
 layout(std430, binding=12) buffer _parentEdges{
 	uint parentEdges[];};
@@ -195,7 +195,7 @@ uint getSyblingGroupMaskFromBallot(uint64_t ballotResult, uint syblingGroup)
 
 bool shouldStoreInParent(uint syblingGroupMask)
 {
-	return bitCount(syblingGroupMask) > 3;
+	return bitCount(syblingGroupMask) > 2;
 }
 ).";
 	}
@@ -400,16 +400,20 @@ void main()
 			const bool isStoredToParentPot = shouldStoreInParent(syblingMaskPot);
 			const bool isStoredToParentSil = shouldStoreInParent(syblingMaskSil);
 
-			if(isPotentiallySilhouette)
+			const uint syblingMask = isPotentiallySilhouette ? syblingMaskPot : syblingMaskSil;
+			const uint16_t descMask = isPotentiallySilhouette ? uint16_t(0) : uint16_t(0x0100);
+			const uint vectorSubindex = isPotentiallySilhouette ? 0 : 1;
+
+			if(isPotentiallySilhouette || isSilhouette)
 			{
-				if(isStoredToParentPot)
+				if(isStoredToParentPot || isStoredToParentSil)
 				{
 					//Choose pivot thread
-					const int pivot = findLSB(syblingMaskPot);
+					const int pivot = findLSB(syblingMask);
 					if(syblingInvocationId==pivot)
 					{
 						//Increment buffer based on mask
-						const uint storeIndex = parentSubbuffCounter[currentParent*MAX_NOF_SUBBUFFERS + syblingMaskPot].x++;
+						const uint storeIndex = atomicAdd(parentSubbuffCounter[2*(currentParent*MAX_NOF_SUBBUFFERS + syblingMask) + vectorSubindex], 1);
 						
 						//If per buffer counter is zero - get next buffer
 						uint16_t chunkId = uint16_t(0);
@@ -419,71 +423,34 @@ void main()
 						if(startingIndex==0)
 						{
 							//Allocate next chunk
-							const uint newChunkId = parentChunkCounter[currentParent]++;
-								
+							const uint newChunkId = atomicAdd(parentChunkCounter[currentParent], 1);
+							
 							//Fill chunk desc
-							const uint16_t desc = uint16_t(syblingMaskPot); //highest bit is zero -> is potential
-							chunkDesc[MAX_CHUNKS_PARENT * currentParent + newChunkId] = desc;
-
+							uint16_t desc = uint16_t(syblingMask);
+							desc |= descMask;
+							chunkDesc[MAX_NOF_CHUNKS * currentParent + newChunkId] = desc;
+								
 							chunkId = uint16_t(newChunkId);
-							currentChunkId[currentParent * MAX_NOF_SUBBUFFERS + syblingMaskPot].x = uint16_t(newChunkId);
+							currentChunkId[2*(currentParent * MAX_NOF_SUBBUFFERS + syblingMask)+ vectorSubindex] = uint16_t(newChunkId);
 						}
 						else
 						{
-							chunkId = currentChunkId[currentParent * MAX_NOF_SUBBUFFERS + syblingMaskPot].x;
+							chunkId = currentChunkId[2*(currentParent * MAX_NOF_SUBBUFFERS + syblingMask) + vectorSubindex];
 						}
 		
 						//Store
-						const uint previousParentsSize = currentParent * MAX_CHUNKS_PARENT * CHUNK_SIZE;
+						const uint previousParentsSize = currentParent * MAX_NOF_CHUNKS * CHUNK_SIZE;
 						const uint currentChunkStart = uint(chunkId) * CHUNK_SIZE;
 						parentEdges[previousParentsSize + currentChunkStart + startingIndex] = currentEdge;
 					}
 				}
 				else
-					storePotentialEdge(currentEdge, currentVoxel, currentNumPotential++);
-				
-			}
-			else if(isSilhouette)
-			{
-				if(isStoredToParentSil)
 				{
-					//Choose pivot thread
-					const int pivot = findLSB(syblingMaskSil);
-					if(syblingInvocationId==pivot)
-					{
-						//Increment buffer based on mask
-						const uint storeIndex = parentSubbuffCounter[currentParent*MAX_NOF_SUBBUFFERS + syblingMaskSil].y++;
-						//If per buffer counter is zero - get next buffer
-						uint16_t chunkId = uint16_t(0);
-						const uint startingIndex = storeIndex & CHUNK_MASK;
-						
-						//Translate chunk from local sequence to global ID
-						if(startingIndex==0)
-						{
-							//Allocate next chunk
-							const uint newChunkId = parentChunkCounter[currentParent]++;
-								
-							//Fill chunk desc
-							uint16_t desc = uint16_t(syblingMaskSil);
-							desc |= uint16_t(0x0100); //mark it silhouette
-							chunkDesc[MAX_CHUNKS_PARENT * currentParent + newChunkId] = desc;
-								
-							chunkId = uint16_t(newChunkId);
-							currentChunkId[currentParent * MAX_NOF_SUBBUFFERS + syblingMaskSil].y = uint16_t(newChunkId);
-						}
-						else
-						{
-							chunkId = currentChunkId[currentParent * MAX_NOF_SUBBUFFERS + syblingMaskSil].y;
-						}
-	
-						//Store edge
-						const uint previousParentsSize = currentParent * MAX_CHUNKS_PARENT * CHUNK_SIZE;
-						const uint currentChunkStart = uint(chunkId) * CHUNK_SIZE;
-						parentEdges[previousParentsSize + currentChunkStart + startingIndex] = currentEdge;
-					}
+					if(isPotentiallySilhouette)
+						storePotentialEdge(currentEdge, currentVoxel, currentNumPotential++);
+					else
+						storeSilhouetteEdge(currentEdge, currentVoxel, currentNumSilhouette++);
 				}
-				else
-					storeSilhouetteEdge(currentEdge, currentVoxel, currentNumSilhouette++);
 			}
 		}
 ).";

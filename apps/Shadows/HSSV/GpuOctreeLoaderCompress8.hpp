@@ -2,17 +2,6 @@
 
 #include "IGpuOctreeLoader.hpp"
 
-//if we propagate only those edges who have at least 3 bits set, 
-//it makes 37 buffers (0, 1, 2 bits) unused
-//So minimal amount of memory is 219 * chunkSize
-#define MAX_NOF_USABLE_BUFFERS 219u
-
-#define MAX_NOF_SUBBUFFERS 256u
-
-#define MIN_SUBBUFFER_SIZE_UINTS 2u
-
-#define MAX_NOF_CHUNKS 300u
-
 class GpuOctreeLoaderCompress8 : public IGpuOctreeLoader
 {
 public:
