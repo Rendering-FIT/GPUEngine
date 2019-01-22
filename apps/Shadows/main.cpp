@@ -406,6 +406,9 @@ void Application::drawScene() {
 	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
 	if (this->timeStamper)this->timeStamper->end("shading");
 
+	//Blit depth into default FBO
+	ge::gl::glBlitNamedFramebuffer(this->gBuffer->fbo->getId(), 0, 0, 0, this->windowSize.x, this->windowSize.y, 0, 0, this->windowSize.x, this->windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
 	this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
 }
 #endif

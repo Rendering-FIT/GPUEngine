@@ -448,13 +448,11 @@ void HSSV::drawUser(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, g
 {
 	if (_isDrawOctree)
 	{
-		//ge::gl::glDisable(GL_DEPTH_TEST);
+		ge::gl::glEnable(GL_DEPTH_TEST);
 		ge::gl::glDepthMask(GL_FALSE);
 
 		_wireframeDrawer->drawWireframe(projectionMatrix * viewMatrix);
 
 		ge::gl::glDepthMask(GL_TRUE);
-		//ge::gl::glEnable(GL_DEPTH_TEST);
 	}
 }
-

@@ -28,6 +28,4 @@ private:
 	std::shared_ptr<ge::gl::Buffer> _instanceBuffer;
 
 	std::shared_ptr<ge::gl::Program> _program;
-
-	
 };
