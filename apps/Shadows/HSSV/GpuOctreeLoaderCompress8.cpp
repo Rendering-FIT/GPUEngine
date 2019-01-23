@@ -13,8 +13,8 @@
 #define MIN_SUBBUFFER_SIZE_UINTS 2u
 
 //Experimentally determined
-#define MAX_NOF_CHUNKS 350u
-#define PARENT_INCREASED_NOF_EDGES 1.4f
+#define MAX_NOF_CHUNKS 400u
+#define PARENT_INCREASED_NOF_EDGES 1.3f
 
 bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges)
 {
@@ -35,8 +35,6 @@ bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_
 	return true;
 }
 
-#include <iostream>
-#include <fstream>
 bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress()
 {
 	//Determined by profiling

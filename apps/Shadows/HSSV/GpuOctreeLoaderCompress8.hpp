@@ -35,7 +35,6 @@ private:
 	{
 		unsigned int chunkSizeNofBits;
 		unsigned int maxChunksPerParent;
-
 	};
 
 	Limits _limits;
