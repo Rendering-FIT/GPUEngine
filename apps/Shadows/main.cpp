@@ -97,6 +97,7 @@ struct Application{
   void measure();
   void drawScene();
   bool mouseMove(SDL_Event const&event);
+  void printCamParams();
   std::map<SDL_Keycode,bool>keyDown;
   template<bool DOWN>bool keyboard(SDL_Event const&event);
 };
@@ -357,10 +358,19 @@ bool Application::init(int argc,char*argv[]){
   return true;
 }
 
-//#define USE_STATIC_CAM
+#define USE_STATIC_CAM
 
 #ifdef USE_STATIC_CAM
 void Application::drawScene() {
+	
+	const float camData[] = { 0.113558,0.300392,0.47802,-0.275592,-0.266732,-0.923528,-0.0762725,0.963771,-0.255594 };
+
+	auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
+	if (!flc)return;
+	flc->setPosition(glm::vec3(camData[0], camData[1], camData[2]));
+	flc->setRotation(glm::vec3(camData[3], camData[4], camData[5]), glm::vec3(camData[6], camData[7], camData[8]));
+
+
 	if (this->timeStamper)this->timeStamper->begin();
 
 	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
@@ -368,19 +378,24 @@ void Application::drawScene() {
 	this->gBuffer->begin();
 	ge::gl::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
-	const auto cameraView = glm::lookAtRH(glm::vec3(780.462, 130.018, -22.6998), glm::vec3(-0.995595, 0.0799146, 0.0490262), glm::vec3(0.0798179, 0.996802, -0.00393048));
-	this->renderModel->draw(this->cameraProjection->getProjection()* /*this->cameraTransform->getView()*/cameraView);
+	
+	this->renderModel->draw(this->cameraProjection->getProjection()* flc->getView());
 	this->gBuffer->end();
 
 	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
 
 	if (this->useShadows)
-		this->shadowMethod->create(this->lightPosition,/*this->cameraTransform->getView()*/cameraView, this->cameraProjection->getProjection());
+		this->shadowMethod->create(this->lightPosition,flc->getView(), this->cameraProjection->getProjection());
 
 	if (this->timeStamper)this->timeStamper->stamp("");
 	ge::gl::glDisable(GL_DEPTH_TEST);
-	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(/*this->cameraTransform->getView()*/cameraView)*glm::vec4(0, 0, 0, 1)), this->useShadows);
+	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(flc->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
 	if (this->timeStamper)this->timeStamper->end("shading");
+
+	//Blit depth into default FBO
+	ge::gl::glBlitNamedFramebuffer(this->gBuffer->fbo->getId(), 0, 0, 0, this->windowSize.x, this->windowSize.y, 0, 0, this->windowSize.x, this->windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	this->shadowMethod->drawUser(this->lightPosition, flc->getView(), this->cameraProjection->getProjection());
 }
 
 #else
@@ -526,7 +541,49 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
     std::cout<< view.x<<","<<view.y<<","<<view.z<<",";
     std::cout<< up  .x<<","<<up  .y<<","<<up  .z<<std::endl;
   }
-  return true;
+
+  if (DOWN && event.key.keysym.sym == 'j')
+  {
+	  lightPosition.x += 0.1f;
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == 'k')
+  {
+	  lightPosition.y += 0.1f;
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == 'l')
+  {
+	  lightPosition.z += 0.1f;
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+
+  if (DOWN && event.key.keysym.sym == 'n')
+  {
+	  lightPosition.x -= 0.1f;
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == 'm')
+  {
+	  lightPosition.y -= 0.1f;
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == ',')
+  {
+	  lightPosition.z -= 0.1f;
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == 'v')
+  {
+	  lightPosition = glm::vec4(0, 0, 0, 1);
+	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
 }
 
 bool Application::mouseMove(SDL_Event const&event){
@@ -558,3 +615,5 @@ bool Application::mouseMove(SDL_Event const&event){
   }
   return true;
 }
+
+
