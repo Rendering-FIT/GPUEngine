@@ -31,7 +31,7 @@ int getNodeParent(uint nodeID, uint nodeLevel)
 	return parentRelativeID + int(getNumNodesInPreviousLevels(int(nodeLevel) - 1));
 }
 
-int getChildrenStartingId(uint nodeID, unsigned int nodeLevel)
+int getChildrenStartingId(uint nodeID, uint nodeLevel)
 {
 	const int idInLevel = getNodeIdInLevel(nodeID, nodeLevel);
 	
@@ -191,10 +191,10 @@ std::string genStoreBufferID(unsigned int nofBuffers)
 	str << "void storeBufferInfo(\n";
 	str << "	uint64_t voteMask, \n";
 	str << "	bool storePotential, \n";
-	str << "    unsigned int startingBufferIndex, \n";
+	str << "    uint startingBufferIndex, \n";
 	if (nofBuffers>1)
-		str << "	unsigned int bufferIndex,\n";
-	str << "    unsigned int bufferSize)\n";
+		str << "	uint bufferIndex,\n";
+	str << "    uint bufferSize)\n";
 	str << "{\n";
 	str << "	const uvec2 maskUnpack = unpackUint2x32(voteMask);\n";
 	str << "	const uint numBuffers = bitCount(maskUnpack.x) + bitCount(maskUnpack.y);\n";
@@ -202,7 +202,7 @@ std::string genStoreBufferID(unsigned int nofBuffers)
 	str << "	const uint64_t andMask = (uint64_t(1) << gl_SubGroupInvocationARB) - uint64_t(1);\n";
 	str << "	const uvec2 maskIdxPacked = unpackUint2x32(voteMask & andMask);\n";
 	str << "	const uint idxInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);\n";
-	str << "	unsigned int storeIndex;\n";
+	str << "	uint storeIndex;\n";
 	str << "	\n";
 	str << "	if (gl_SubGroupInvocationARB == firstSet)\n";
 	str << "	{\n";
@@ -424,7 +424,7 @@ std::string genCopyShader3(const std::vector<uint32_t>& lastNodePerEdgeBuffer, s
 
 	str << R".(
 
-uint getPrefixSumValuePot(unsigned int index,  uint nofPotBufs)
+uint getPrefixSumValuePot(uint index,  uint nofPotBufs)
 {
 	if(index>=nofPotBufs)
 		return nofPotential;
@@ -432,7 +432,7 @@ uint getPrefixSumValuePot(unsigned int index,  uint nofPotBufs)
 	return inPotential[NOF_UINTS_BUFFER_INFO * index + 0];
 }
 
-uint getPrefixSumValueSil(unsigned int index, uint nofSilBufs)
+uint getPrefixSumValueSil(uint index, uint nofSilBufs)
 {
 	if(index>=nofSilBufs)
 		return nofSilhouette;
@@ -722,7 +722,7 @@ void main()
 
 	//starting index
 	const uint wgId = gl_GlobalInvocationID.x/gl_WorkGroupSize.x;
-	const unsigned int startingIndex = 2*gl_WorkGroupSize.x*wgId;
+	const uint startingIndex = 2*gl_WorkGroupSize.x*wgId;
 	
 	if(startingIndex >= nofElements)
 		return;

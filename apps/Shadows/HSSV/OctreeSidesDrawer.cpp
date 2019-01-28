@@ -681,14 +681,7 @@ bool OctreeSidesDrawer::_generateLoadGpuTraversalShader3()
 	m_prefixSumShaderSimple = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody2s));
 
-#define USE_LOCAL_SHADER_3
-#ifdef USE_LOCAL_SHADER_3
 	const std::string shaderBody3 = genCopyShader3(_lastNodePerEdgeBuffer, _octreeVisitor->getOctree(), _workgroupSize);
-#else
-	std::ifstream t2("C:\\Users\\ikobrtek\\Desktop\\compressShader2.glsl");
-	std::string shaderBody3((std::istreambuf_iterator<char>(t2)),
-		std::istreambuf_iterator<char>());
-#endif
 
 	m_getDataFromPrecomputedBuffersShader2 = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody3));

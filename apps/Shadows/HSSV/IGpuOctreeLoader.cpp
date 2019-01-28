@@ -28,11 +28,15 @@ void IGpuOctreeLoader::_clearAtomicCounter()
 void IGpuOctreeLoader::_copyBuffer(std::shared_ptr<ge::gl::Buffer> buffer, void* destination, size_t size)
 {
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
+	/*
 	const auto source = buffer->map(GL_READ_ONLY);
 
 	memcpy(destination, source, size);
 
 	buffer->unmap();
+	*/
+	buffer->getData(destination, size);
+	ge::gl::glFinish();
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
 void IGpuOctreeLoader::_createBuffers()

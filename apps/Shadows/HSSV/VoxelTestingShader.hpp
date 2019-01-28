@@ -17,8 +17,6 @@ inline const std::string buildComputeShaderFillBottomLevel(unsigned int workgrou
 	str << "#define SHARED_MEMORY_FLOATS " + std::to_string(shmSizeBytes / sizeof(float)) + "\n";
 	if (isCompression)
 	{
-		str << "#extension GL_NV_gpu_shader5 : enable\n";
-		str << "#extension GL_AMD_gpu_shader_int16 : enable\n";
 		str << "#define MAX_NOF_CHUNKS " + std::to_string(maxChunksParent) + "\n";
 		str << "#define CHUNK_SIZE " + std::to_string(1 << nofBitsCounter) + "\n";
 		str << "#define CHUNK_MASK " + std::to_string(uint32_t(1 << nofBitsCounter) - 1) + "u\n";
@@ -38,13 +36,13 @@ layout(std430, binding=1) readonly buffer _oppositeVertices{
 layout(std430, binding=2) readonly buffer _voxels{
 	float voxels[];};
 
-layout(std430, binding=3) buffer _potential{
+layout(std430, binding=3) writeonly buffer _potential{
 	uint voxelEdgesPotential[];};
 
-layout(std430, binding=4) buffer _silhouette{
+layout(std430, binding=4) writeonly buffer _silhouette{
 	uint voxelEdgesSilhouette[];};
 
-layout(std430, binding=5) buffer _outputNofPotentialEdges{
+layout(std430, binding=5) writeonly buffer _outputNofPotentialEdges{
 	volatile uint nofPotentialEdgesPerVoxel[];};
 
 layout(std430, binding=6) buffer _outputNofSilhouetteEdges{
@@ -63,11 +61,11 @@ layout(std430, binding=8) buffer _parentSubbuffCounter{
 layout(std430, binding=9) buffer _chunkCounter{
 	uint parentChunkCounter[];};
 
-layout(std430, binding=10) buffer _chunkDesc{
-	uint16_t chunkDesc[];};
+layout(std430, binding=10) writeonly buffer _chunkDesc{
+	uint chunkDesc[];};
 
 layout(std430, binding=11) buffer _currentChunkId{
-	uint16_t currentChunkId[];};
+	uint currentChunkId[];};
 
 layout(std430, binding=12) buffer _parentEdges{
 	uint parentEdges[];};
@@ -401,7 +399,7 @@ void main()
 			const bool isStoredToParentSil = shouldStoreInParent(syblingMaskSil);
 
 			const uint syblingMask = isPotentiallySilhouette ? syblingMaskPot : syblingMaskSil;
-			const uint16_t descMask = isPotentiallySilhouette ? uint16_t(0) : uint16_t(0x0100);
+			const uint descMask = isPotentiallySilhouette ? 0 : 0x0100;
 			const uint vectorSubindex = isPotentiallySilhouette ? 0 : 1;
 
 			if(isPotentiallySilhouette || isSilhouette)
@@ -416,7 +414,7 @@ void main()
 						const uint storeIndex = atomicAdd(parentSubbuffCounter[2*(currentParent*MAX_NOF_SUBBUFFERS + syblingMask) + vectorSubindex], 1);
 						
 						//If per buffer counter is zero - get next buffer
-						uint16_t chunkId = uint16_t(0);
+						uint chunkId = 0;
 						const uint startingIndex = storeIndex & CHUNK_MASK;
 						
 						//Translate chunk from local sequence to global ID
@@ -426,12 +424,11 @@ void main()
 							const uint newChunkId = atomicAdd(parentChunkCounter[currentParent], 1);
 							
 							//Fill chunk desc
-							uint16_t desc = uint16_t(syblingMask);
-							desc |= descMask;
+							const uint desc = syblingMask | descMask;
 							chunkDesc[MAX_NOF_CHUNKS * currentParent + newChunkId] = desc;
 								
-							chunkId = uint16_t(newChunkId);
-							currentChunkId[2*(currentParent * MAX_NOF_SUBBUFFERS + syblingMask)+ vectorSubindex] = uint16_t(newChunkId);
+							chunkId = newChunkId;
+							currentChunkId[2*(currentParent * MAX_NOF_SUBBUFFERS + syblingMask)+ vectorSubindex] = newChunkId;
 						}
 						else
 						{
