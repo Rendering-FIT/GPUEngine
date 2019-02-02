@@ -584,6 +584,8 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
 	  lightPosition = glm::vec4(0, 0, 0, 1);
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
+
+  return true;
 }
 
 bool Application::mouseMove(SDL_Event const&event){
