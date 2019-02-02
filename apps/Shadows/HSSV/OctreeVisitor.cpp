@@ -69,7 +69,7 @@ void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges
 
 	//--
 	/*
-	gpuLoader->profile(edges);
+	dynamic_cast<IGpuOctreeLoader*>(gpuLoader)->profile(edges);
 	//*/
 	//--
 
