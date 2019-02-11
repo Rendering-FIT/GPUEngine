@@ -279,13 +279,13 @@ void main()
 	#define shmEdgeCapacity (SHARED_MEMORY_FLOATS / EDGE_NUM_FLOATS)
 	
 	//Acquire voxels
-	//barrier();
-	if(gl_LocalInvocationID.x==0)
+	uint curVox = 0;
+	if(gl_SubGroupInvocationARB==0)
 	{
-		numAliveWG = atomicAdd(voxelAtomicCounter, gl_WorkGroupSize.x);
+		curVox = atomicAdd(voxelAtomicCounter, gl_SubGroupSizeARB);
 	}
-	barrier();
-	const uint currentVoxel =  numAliveWG + gl_LocalInvocationID.x;
+	curVox = readInvocationARB(curVox, 0);
+	const uint currentVoxel =  curVox + gl_SubGroupInvocationARB;
 
 	if(currentVoxel>=nofVoxels)
 		return;
@@ -301,7 +301,6 @@ void main()
 		
 	const uint numAlive = bitCount(aliveThreads.x) + bitCount(aliveThreads.y);
 	
-	barrier();
 	if(gl_LocalInvocationID.x==0)
 	{
 		numAliveWG = 0;

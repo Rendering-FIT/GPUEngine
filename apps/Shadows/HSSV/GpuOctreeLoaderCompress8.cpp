@@ -13,7 +13,7 @@
 #define MIN_SUBBUFFER_SIZE_UINTS 2u
 
 //Experimentally determined
-#define MAX_NOF_CHUNKS 460u
+#define MAX_NOF_CHUNKS 500u
 #define PARENT_INCREASED_NOF_EDGES 1.6f
 
 bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges)
@@ -253,35 +253,27 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 	_copyBuffer(_nofPotentialEdges, _bufferNofPotential.data(), batchSize * sizeof(uint32_t));
 	_copyBuffer(_nofSilhouetteEdges, _bufferNofSilhouette.data(), batchSize * sizeof(uint32_t));
 
-	//--POTENTIAL--
-	//Do in sequence so the driver does not have to copy all the buffers to CPU at once
+	//POT & SIL edges
 	const uint32_t* bPotential = reinterpret_cast<uint32_t*>(_voxelPotentialEdges->map(GL_READ_ONLY));
+	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 
-	for (unsigned int i = 0; i<batchSize; ++i)
+#pragma omp parallel for num_threads(4)
+	for (int i = 0; i<batchSize; ++i)
 	{
 		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
 
 		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[i]);
 		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
 			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*i), _bufferNofPotential[i] * sizeof(uint32_t));
-	}
-	_voxelPotentialEdges->unmap();
-
-	//--SILHOUETTE--
-	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
-	assert(ge::gl::glGetError() == GL_NO_ERROR);
-
-	for (unsigned int i = 0; i<batchSize; ++i)
-	{
-		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
 
 		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[i]);
 		if (!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
 			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (_silBufferOffset*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
 	}
+	_voxelPotentialEdges->unmap();
 	_voxelSilhouetteEdges->unmap();
-
+	
 	//Parents with compression
 	const unsigned int startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
 
@@ -294,18 +286,13 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 	_chunkCounter->getData(nofChunksVec.data(), nofChunksVec.size() * sizeof(uint32_t));
 
 #ifdef _DEBUG
-	std::ofstream str;
-	str.open("NumDump.txt");
-
 	for(unsigned int q=0; q<nofChunksVec.size(); ++q)
 	{
 		assert(nofChunksVec[q]<=_limits.maxChunksPerParent);
-		str << nofChunksVec[q] << std::endl;
 	}
-	str.close();
 #endif
 
-//#pragma omp parallel for
+#pragma omp parallel for num_threads(4)
 	for (int currentParent = 0; currentParent < int(numParents); ++currentParent)
 	{
 		//Get chunk descriptors and process them

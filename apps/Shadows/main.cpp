@@ -542,40 +542,42 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
     std::cout<< up  .x<<","<<up  .y<<","<<up  .z<<std::endl;
   }
 
+  const float lightMovementSpeed = 1;
+
   if (DOWN && event.key.keysym.sym == 'j')
   {
-	  lightPosition.x += 0.1f;
+	  lightPosition.x += lightMovementSpeed;
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
 
   if (DOWN && event.key.keysym.sym == 'k')
   {
-	  lightPosition.y += 0.1f;
+	  lightPosition.y += lightMovementSpeed;
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
 
   if (DOWN && event.key.keysym.sym == 'l')
   {
-	  lightPosition.z += 0.1f;
+	  lightPosition.z += lightMovementSpeed;
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
 
 
   if (DOWN && event.key.keysym.sym == 'n')
   {
-	  lightPosition.x -= 0.1f;
+	  lightPosition.x -= lightMovementSpeed;
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
 
   if (DOWN && event.key.keysym.sym == 'm')
   {
-	  lightPosition.y -= 0.1f;
+	  lightPosition.y -= lightMovementSpeed;
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
 
   if (DOWN && event.key.keysym.sym == ',')
   {
-	  lightPosition.z -= 0.1f;
+	  lightPosition.z -= lightMovementSpeed;
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
   }
 
