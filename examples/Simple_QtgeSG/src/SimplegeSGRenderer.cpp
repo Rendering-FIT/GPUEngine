@@ -1,6 +1,6 @@
 #include <SimplegeSGRenderer.h>
 #include <geGL/geGL.h>
-#include <geCore/Text.h>
+#include <geUtil/Text.h>
 #include <QOpenGLContext>
 #include <glsg/GLSceneProcessor.h>
 #include <glsg/GLScene.h>
@@ -58,8 +58,8 @@ void fsg::SimplegeSGRenderer::onOGLContextCreated(QOpenGLContext* context)
 
    //load shaders
    string shaderDir(APP_RESOURCES"/shaders/");
-   shared_ptr<ge::gl::Shader> simple_vs(make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, ge::core::loadTextFile(shaderDir + "simple_vs.glsl")));
-   shared_ptr<ge::gl::Shader> simple_fs(make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER, ge::core::loadTextFile(shaderDir + "simple_fs.glsl")));
+   shared_ptr<ge::gl::Shader> simple_vs(make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, ge::util::loadTextFile(shaderDir + "simple_vs.glsl")));
+   shared_ptr<ge::gl::Shader> simple_fs(make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER, ge::util::loadTextFile(shaderDir + "simple_fs.glsl")));
    shared_ptr<ge::gl::Program> prog = make_shared<ge::gl::Program>(simple_vs, simple_fs);
    VT->program = prog;
 

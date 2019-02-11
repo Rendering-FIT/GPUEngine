@@ -15,7 +15,7 @@ GLuint ge::glsg::semnatic2Attribute(unsigned semantic)
       return 2;
    else if(semantic == (unsigned)idofstring(ge::sg::AttributeDescriptor::Semantic, ge::core::StandardSemanticNames::tangent))
       return 6;
-   return ge::core::EnumRegister::notRegistered;
+   return -1;
 }
 
 GLenum ge::glsg::translateEnum(ge::sg::AttributeDescriptor::DataType type)

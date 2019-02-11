@@ -5,7 +5,7 @@
 #include <geSG/AttributeDescriptor.h>
 #include <geSG/Material.h>
 #include <geSG/MatrixTransform.h>
-#include <geCore/EnumRegister.h>
+//#include <geCore/EnumRegister.h>
 #include <geCore/StandardSemanticsNames.h>
 #include <geSG/Scene.h>
 #include <geSG/Animation.h>

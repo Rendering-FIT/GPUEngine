@@ -2,7 +2,6 @@
 #include <geSG/Export.h>
 #include <geUtil/macros.h>
 #include <memory>
-#include <geCore/EnumRegister.h>
 #include <geCore/idlist.h>
 
 namespace ge {

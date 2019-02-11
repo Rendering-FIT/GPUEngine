@@ -1,5 +1,5 @@
 #include <geGL/geGL.h>
-#include <geCore/Text.h>
+#include <geUtil/Text.h>
 #include <BasicQuickRenderer.h>
 #include <QOpenGLContext>
 #include <QDebug>
@@ -83,8 +83,8 @@ void fsg::BasicQuickRenderer::onOGLContextCreated(QOpenGLContext* context)
    string shaders_dir(APP_RESOURCES + std::string("/shaders/"));
 
    //load shaders
-   std::shared_ptr<ge::gl::Shader>simple_vs(new ge::gl::Shader(GL_VERTEX_SHADER, ge::core::loadTextFile(shaders_dir + "triag_vs.glsl")));
-   std::shared_ptr<ge::gl::Shader>simple_fs(new ge::gl::Shader(GL_FRAGMENT_SHADER, ge::core::loadTextFile(shaders_dir + "red_fs.glsl")));
+   std::shared_ptr<ge::gl::Shader>simple_vs(new ge::gl::Shader(GL_VERTEX_SHADER, ge::util::loadTextFile(shaders_dir + "triag_vs.glsl")));
+   std::shared_ptr<ge::gl::Shader>simple_fs(new ge::gl::Shader(GL_FRAGMENT_SHADER, ge::util::loadTextFile(shaders_dir + "red_fs.glsl")));
    triagProgram = make_shared<ge::gl::Program>(simple_vs, simple_fs);
    
    //create empty VAO, need because of OGL spec

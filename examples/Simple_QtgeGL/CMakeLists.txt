@@ -35,6 +35,9 @@ if(NOT TARGET geGL)
    find_package(GPUEngine COMPONENTS geGL)
 endif()   
 
+if(NOT TARGET geUtil)
+   find_package(GPUEngine COMPONENTS geUtil)
+endif()   
 if(NOT TARGET Qt5::Quick OR NOT TARGET geGL)
    return()
 endif()
@@ -56,7 +59,7 @@ set(SOURCE_FILES
 
 add_executable(${APP_NAME} ${SOURCE_FILES})
 #preferable linking
-target_link_libraries(${APP_NAME} Qt5::Quick geGL )
+target_link_libraries(${APP_NAME} Qt5::Quick geGL geUtil)
 
 #another posiibilities to link Qt5 components in outside project (out of GPUE)
 #  target_link_libraries(${APP_NAME} ${Qt5Quick_LIBRARIES} geGL )

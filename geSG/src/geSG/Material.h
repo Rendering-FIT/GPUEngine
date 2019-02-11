@@ -3,12 +3,11 @@
 #include <geSG/Export.h>
 
 #include <geUtil/macros.h>
-#include <geCore/EnumRegister.h>
 
 #include <memory>
 #include <vector>
 #include <algorithm>
-#include "geCore/idlist.h"
+#include <geCore/idlist.h>
 
 namespace ge{
    namespace sg
