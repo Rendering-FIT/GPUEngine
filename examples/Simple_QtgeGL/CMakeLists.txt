@@ -71,3 +71,11 @@ target_link_libraries(${APP_NAME} Qt5::Quick geGL geUtil)
 target_include_directories(${APP_NAME} PUBLIC "src/")
 set_target_properties(${APP_NAME} PROPERTIES COMPILE_DEFINITIONS "APP_RESOURCES=\"${${APP_NAME}_RESOURCES}\"")
 set_property(TARGET ${APP_NAME} PROPERTY FOLDER "${examples_folder_name}")
+
+
+# setting up the MSVC helper var
+get_target_property(Qt5dllPath Qt5::Quick IMPORTED_LOCATION_RELEASE)
+get_filename_component(Qt5dllDir ${Qt5dllPath} DIRECTORY)
+get_target_property(GPUEdllPath geGL IMPORTED_LOCATION_RELEASE)
+message("${BUILD_TYPE}\nQT5 ${Qt5dllDir}\nGPUE ${OUTPUT_BINDIR}")
+set_target_properties(${APP_NAME} PROPERTIES VS_GLOBAL_DllPath "${OUTPUT_BINDIR};${Qt5dllDir}")
