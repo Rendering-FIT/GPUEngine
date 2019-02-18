@@ -284,7 +284,7 @@ void main()
 	{
 		curVox = atomicAdd(voxelAtomicCounter, gl_SubGroupSizeARB);
 	}
-	curVox = readInvocationARB(curVox, 0);
+	curVox = readFirstInvocationARB(curVox);
 	const uint currentVoxel =  curVox + gl_SubGroupInvocationARB;
 
 	if(currentVoxel>=nofVoxels)

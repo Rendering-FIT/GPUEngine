@@ -26,8 +26,16 @@ void OctreeVisitor::_propagateEdgesGpu()
 {
 	std::shared_ptr<GpuOctreeEdgePropagator> edgePropagator = std::make_shared<GpuOctreeEdgePropagator>();
 
-	edgePropagator->init(_octree, 1024);
+	//edgePropagator->init(_octree, 256, 128);
+	edgePropagator->init(_octree, 32, 64); //determined by profiling
 	const auto startingLevel = _octree->getDeepestLevel() - 1;
+
+	//--
+	/*
+	edgePropagator->profile();
+	return;
+	//*/
+	//--
 
 	HighResolutionTimer t;
 	t.reset();

@@ -98,6 +98,8 @@ public:
 	unsigned int getCompressionLevel() const { return _treeCompressionRatio; }
 	unsigned int getLevelSize(unsigned int level) const;
 
+	void printNodePathToRoot(int nodeId) const;
+
 private:
 	unsigned int _deepestLevel;
 

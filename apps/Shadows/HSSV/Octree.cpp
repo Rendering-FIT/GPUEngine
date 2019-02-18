@@ -2,6 +2,8 @@
 
 #include "GeometryOperations.hpp"
 #include <stack>
+#include <iostream>
+#include <string>
 
 int ipow(int base, int exp)
 {
@@ -340,4 +342,18 @@ unsigned int Octree::getLevelSize(unsigned int level) const
 		return 0;
 
 	return ipow(OCTREE_NUM_CHILDREN, level);
+}
+
+void Octree::printNodePathToRoot(int nodeId) const
+{
+	std::cout << "Node path: ";
+	while (nodeId >= 0)
+	{
+		std::cout << std::to_string(nodeId);
+		nodeId = getNodeParent(nodeId);
+		if (nodeId >= 0)
+			std::cout << " -> ";
+	}
+
+	std::cout << std::endl;
 }

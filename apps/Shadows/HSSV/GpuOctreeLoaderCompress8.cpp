@@ -245,6 +245,147 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize)
 {
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+	const unsigned int numParents = batchSize / OCTREE_NUM_CHILDREN;
+
+	_copyBuffer(_nofPotentialEdges, _bufferNofPotential.data(), batchSize * sizeof(uint32_t));
+	_copyBuffer(_nofSilhouetteEdges, _bufferNofSilhouette.data(), batchSize * sizeof(uint32_t));
+
+	//--POTENTIAL--
+	//Do in sequence so the driver does not have to copy all the buffers to CPU at once
+	const uint32_t* bPotential = reinterpret_cast<uint32_t*>(_voxelPotentialEdges->map(GL_READ_ONLY));
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+
+	for (unsigned int i = 0; i<batchSize; ++i)
+	{
+		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
+
+		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[i]);
+		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
+			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*i), _bufferNofPotential[i] * sizeof(uint32_t));
+	}
+	_voxelPotentialEdges->unmap();
+
+	//--SILHOUETTE--
+	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+
+	for (unsigned int i = 0; i<batchSize; ++i)
+	{
+		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
+
+		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[i]);
+		if (!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
+			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (_silBufferOffset*i), _bufferNofSilhouette[i] * sizeof(uint32_t));
+	}
+	_voxelSilhouetteEdges->unmap();
+
+	//Parents with compression
+	const unsigned int startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
+
+	const uint32_t* chunkDescriptors = reinterpret_cast<uint32_t*>(_chunkDesc->map(GL_READ_ONLY));
+	const uint32_t* edgeCounters = reinterpret_cast<uint32_t*>(_parentSubbuffCounter->map(GL_READ_ONLY));
+	const uint32_t* parentData = reinterpret_cast<uint32_t*>(_parentEdges->map(GL_READ_ONLY));
+
+	std::vector<unsigned int> nofChunksVec;
+	nofChunksVec.resize(numParents);
+	_chunkCounter->getData(nofChunksVec.data(), nofChunksVec.size() * sizeof(uint32_t));
+
+#ifdef _DEBUG
+	std::ofstream str;
+	str.open("NumDump.txt");
+
+	for (unsigned int q = 0; q<nofChunksVec.size(); ++q)
+	{
+		assert(nofChunksVec[q] <= _limits.maxChunksPerParent);
+		str << nofChunksVec[q] << std::endl;
+	}
+	str.close();
+#endif
+
+	#pragma omp parallel for num_threads(4)
+	for (int currentParent = 0; currentParent < int(numParents); ++currentParent)
+	{
+		//Get chunk descriptors and process them
+		std::vector< std::vector<unsigned int> > chunkDescs[2];
+		chunkDescs[0].resize(MAX_NOF_SUBBUFFERS);
+		chunkDescs[1].resize(MAX_NOF_SUBBUFFERS);
+
+		const unsigned int startingDesc = currentParent*MAX_NOF_CHUNKS;
+		const unsigned int stopDesc = startingDesc + nofChunksVec[currentParent];
+		for (unsigned int currentDesc = startingDesc; currentDesc < stopDesc; ++currentDesc)
+		{
+			const auto desc = chunkDescriptors[currentDesc];
+			const unsigned char* dptr = reinterpret_cast<const unsigned char*>(&desc);
+
+			chunkDescs[dptr[1]][dptr[0]].push_back(currentDesc - startingDesc);
+		}
+
+		const unsigned int chunkSize = 1 << _limits.chunkSizeNofBits;
+		auto node = _octree->getNode(startingParent + currentParent);
+
+		//--Silhouette
+		for (unsigned int i = 0; i<MAX_NOF_SUBBUFFERS; ++i)
+		{
+			const auto& chunks = chunkDescs[1][i];
+			if (chunks.size())
+			{
+				const auto nofEdges = edgeCounters[2 * (currentParent * MAX_NOF_SUBBUFFERS + i) + 1];
+				const auto nofChunks = unsigned int(ceilf(float(nofEdges) / (1 << _limits.chunkSizeNofBits)));
+
+				assert(nofChunks == chunks.size());
+
+				node->edgesAlwaysCastMap[i].resize(nofEdges);
+
+				int remainingSize = nofEdges;
+				for (unsigned int chunkNum = 0; chunkNum < nofChunks; ++chunkNum)
+				{
+					const auto chunk = chunks[chunkNum];
+					const auto sz = _getNextChunkSize(remainingSize, chunkSize); //the last chunk might be less than chunkSize
+					remainingSize -= sz;
+
+					_copyChunk(parentData, currentParent * MAX_NOF_CHUNKS * chunkSize + chunkSize*chunk, node->edgesAlwaysCastMap[i].data() + chunkNum*chunkSize, sz);
+				}
+			}
+		}
+
+		//Copy data from subbuffers to octree
+		//--potential
+		for (unsigned int i = 0; i<MAX_NOF_SUBBUFFERS; ++i)
+		{
+			const auto& chunks = chunkDescs[0][i];
+			if (chunks.size())
+			{
+				const auto nofEdges = edgeCounters[2 * (currentParent * MAX_NOF_SUBBUFFERS + i) + 0];
+				const unsigned int nofChunks = unsigned int(ceilf(float(nofEdges) / (1 << _limits.chunkSizeNofBits)));
+
+				assert(nofChunks == chunks.size());
+
+				node->edgesMayCastMap[i].resize(nofEdges);
+
+				int remainingSize = nofEdges;
+				for (unsigned int chunkNum = 0; chunkNum < nofChunks; ++chunkNum)
+				{
+					const auto chunk = chunks[chunkNum];
+					const auto sz = _getNextChunkSize(remainingSize, chunkSize); //the last chunk might be less than chunkSize
+					remainingSize -= sz;
+
+					_copyChunk(parentData, currentParent * MAX_NOF_CHUNKS * chunkSize + chunkSize*chunk, node->edgesMayCastMap[i].data() + chunkNum*chunkSize, sz);
+				}
+			}
+		}
+	}
+
+	_chunkDesc->unmap();
+	_parentSubbuffCounter->unmap();
+	_parentEdges->unmap();
+
+	assert(ge::gl::glGetError() == GL_NO_ERROR);
+}
+
+/*
+void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize)
+{
 	HighResolutionTimer timer;
 	timer.reset();
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
@@ -273,22 +414,22 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 	}
 	_voxelPotentialEdges->unmap();
 	_voxelSilhouetteEdges->unmap();
-	
+
 	//Parents with compression
 	const unsigned int startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
 
 	const uint32_t* chunkDescriptors = reinterpret_cast<uint32_t*>(_chunkDesc->map(GL_READ_ONLY));
 	const uint32_t* edgeCounters = reinterpret_cast<uint32_t*>(_parentSubbuffCounter->map(GL_READ_ONLY));
 	const uint32_t* parentData = reinterpret_cast<uint32_t*>(_parentEdges->map(GL_READ_ONLY));
-	
+
 	std::vector<unsigned int> nofChunksVec;
 	nofChunksVec.resize(numParents);
 	_chunkCounter->getData(nofChunksVec.data(), nofChunksVec.size() * sizeof(uint32_t));
 
 #ifdef _DEBUG
-	for(unsigned int q=0; q<nofChunksVec.size(); ++q)
+	for (unsigned int q = 0; q<nofChunksVec.size(); ++q)
 	{
-		assert(nofChunksVec[q]<=_limits.maxChunksPerParent);
+		assert(nofChunksVec[q] <= _limits.maxChunksPerParent);
 	}
 #endif
 
@@ -373,6 +514,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(unsigned int startingVoxe
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
+*/
 
 #include <iostream>
 #include <fstream>
