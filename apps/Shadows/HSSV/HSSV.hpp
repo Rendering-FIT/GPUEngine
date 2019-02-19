@@ -12,6 +12,7 @@ struct HSSVParams
 {
 	unsigned int maxOctreeLevel;
 	glm::vec3 sceneAABBscale;
+	glm::vec3 initialLightPos; //for build test only
 	unsigned int maxGpuMemoryToUsePerBuffer;
 	unsigned char potentialDrawingMethod;
 	unsigned char silhouetteDrawingMethod;
@@ -20,6 +21,7 @@ struct HSSVParams
 	float silSpeculativeFactor;
 	bool forceOctreeBuild;
 	bool drawOctree;
+	bool doBuildTest;
 };
 
 class HSSV : public ShadowVolumes

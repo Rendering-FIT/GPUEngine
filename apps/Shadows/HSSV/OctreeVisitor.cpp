@@ -81,22 +81,22 @@ void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges
 	//*/
 	//--
 
-	HighResolutionTimer t;
+	//HighResolutionTimer t;
 
-	t.reset();
+	//t.reset();
 	gpuLoader->addEdgesOnLowestLevel(edges);
 
-	auto dt = t.getElapsedTimeFromLastQuerySeconds();
-	std::cout << "Adding edges on GPU took " << dt << " sec\n";
+	//auto dt = t.getElapsedTimeFromLastQuerySeconds();
+	//std::cout << "Adding edges on GPU took " << dt << " sec\n";
 	
 	delete gpuLoader;
 
-	t.reset();
+	//t.reset();
 	const auto dl = _octree->getDeepestLevel();
 	_sortLevel(dl);
 	_sortLevel(dl-1);
-	dt = t.getElapsedTimeFromLastQuerySeconds();
-	std::cout << "Sorting lowest and second lowest level took " << dt << "sec\n";
+	//dt = t.getElapsedTimeFromLastQuerySeconds();
+	//std::cout << "Sorting lowest and second lowest level took " << dt << "sec\n";
 
 	//--
 	/*
@@ -120,7 +120,7 @@ void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges
 
 	_propagateEdgesGpu();
 
-	std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB\n";
+	//std::cout << "Octree size: " << _octree->getOctreeSizeBytes() / 1024ul / 1024ul << "MB\n";
 }
 
 void OctreeVisitor::_addEdgesCpu(const AdjacencyType edges)
@@ -179,9 +179,6 @@ int OctreeVisitor::_getChildNodeContainingPoint(unsigned int parent, const glm::
 	return -1;
 }
 
-#include <sstream>
-#include <iostream>
-#include <fstream>
 void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
 {
 	int currentNodeID = nodeID;

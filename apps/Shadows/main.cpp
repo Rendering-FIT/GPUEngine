@@ -184,6 +184,8 @@ void Application::parseArguments(int argc,char*argv[]){
   this->hssvParams.potSpeculativeFactor = ratios.x;
   this->hssvParams.silSpeculativeFactor = ratios.y;
   this->hssvParams.drawOctree = arg->getu32("--hssv-drawOctree", 0, "Draws lowest-level octree cells as wireframe") != 0;
+  this->hssvParams.initialLightPos = lightPosition;
+  this->hssvParams.doBuildTest = arg->getu32("--hssv-buildTest", 0, "Performs build benchmark on input scene and light position") != 0;
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");

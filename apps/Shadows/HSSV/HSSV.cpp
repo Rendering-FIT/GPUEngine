@@ -12,7 +12,7 @@
 #include "OctreeCompressor.hpp"
 #include "OctreeWireframeDrawer.hpp"
 
-//#define DRAW_CPU
+#define DRAW_CPU
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -45,10 +45,11 @@ HSSV::HSSV(
 	auto maxP = sceneBbox.getMaxPoint();
 	std::cout << "Scene AABB " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
-	sceneBbox.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*hssvParams.sceneAABBscale);
+	AABB octreeSpace;
+	octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*hssvParams.sceneAABBscale);
 
-	minP = sceneBbox.getMinPoint();
-	maxP = sceneBbox.getMaxPoint();
+	minP = octreeSpace.getMinPoint();
+	maxP = octreeSpace.getMaxPoint();
 	std::cout << "Octree working space: " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
 	_loadGpuEdges(_edges);
@@ -62,9 +63,62 @@ HSSV::HSSV(
 	if(!hssvParams.forceOctreeBuild)
 		_octree = serializer.loadFromFile(model->modelFilename, hssvParams.sceneAABBscale, hssvParams.maxOctreeLevel, compressionLevel);
 	
+	if(hssvParams.doBuildTest)
+	{
+		const std::vector<float> sceneScales = { 0.5, 1, 2, 5, 10, 100 };
+		const std::vector<unsigned int> octreeLevels = { 3, 4, 5 };
+		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
+
+		std::ofstream saveFile;
+		saveFile.open("buildTest.txt");
+
+		for(const auto depth : octreeLevels)
+		{
+			for(const auto scale : sceneScales)
+			{
+				octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*glm::vec3(scale, scale, scale));
+
+				_octree.reset();
+				_visitor.reset();
+				_octree = std::make_shared<Octree>(depth, octreeSpace);
+				_visitor = std::make_shared<OctreeVisitor>(_octree);
+
+				HighResolutionTimer t;
+
+				_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
+				if (!useGpuCompression)
+				{
+					OctreeCompressor compressor;
+					compressor.compressOctree(_visitor, compressionLevel);
+				}
+				_visitor->getOctree()->setCompressionLevel(compressionLevel);
+				_visitor->shrinkOctree();
+				const double buildTime = t.getElapsedTimeSeconds();
+				const size_t octreeSizeMB = _octree->getOctreeSizeBytes() / 1024ull / 1024ull;
+
+				//Get NofEdges
+				const int lowestNode = _visitor->getLowestNodeIndexFromPoint(hssvParams.initialLightPos);
+				std::vector<unsigned int> silhouetteEdges;
+				std::vector<unsigned int> potentialEdges;
+				_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
+
+				std::string str;
+				str = "depth " + std::to_string(depth) + " scale " + std::to_string(scale) + " buildTime " + std::to_string(buildTime) + " sizeMB " + std::to_string(octreeSizeMB) + " potEdges " + std::to_string(potentialEdges.size()) + " silEdges " + std::to_string(silhouetteEdges.size()) + "\n";
+				saveFile << str;
+				std::cerr << str;
+			}
+		}
+
+		std::cerr << "---END OF BUILD TEST---\n";
+
+		saveFile.close();
+
+		exit(0);
+	}
+
 	if (!_octree)
 	{
-		_octree = std::make_shared<Octree>(hssvParams.maxOctreeLevel, sceneBbox);
+		_octree = std::make_shared<Octree>(hssvParams.maxOctreeLevel, octreeSpace);
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
