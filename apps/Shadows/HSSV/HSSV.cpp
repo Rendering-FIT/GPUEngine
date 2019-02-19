@@ -68,9 +68,10 @@ HSSV::HSSV(
 		const std::vector<float> sceneScales = { 0.5, 1, 2, 5, 10, 100 };
 		const std::vector<unsigned int> octreeLevels = { 3, 4, 5 };
 		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
+		const unsigned int nofIterations = 3;
 
 		std::ofstream saveFile;
-		saveFile.open(model->modelFilename + ".txt");
+		saveFile.open(std::string("buildTest_") + model->modelFilename + ".txt");
 
 		for(const auto depth : octreeLevels)
 		{
@@ -78,22 +79,28 @@ HSSV::HSSV(
 			{
 				octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*glm::vec3(scale, scale, scale));
 
-				_octree.reset();
-				_visitor.reset();
-				_octree = std::make_shared<Octree>(depth, octreeSpace);
-				_visitor = std::make_shared<OctreeVisitor>(_octree);
-
 				HighResolutionTimer t;
-
-				_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
-				if (!useGpuCompression)
+				double buildTime = 0;
+				for (unsigned int i = 0; i < nofIterations; ++i)
 				{
-					OctreeCompressor compressor;
-					compressor.compressOctree(_visitor, compressionLevel);
+					_octree.reset();
+					_visitor.reset();
+					_octree = std::make_shared<Octree>(depth, octreeSpace);
+					_visitor = std::make_shared<OctreeVisitor>(_octree);
+					t.reset();
+					_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
+					if (!useGpuCompression)
+					{
+						OctreeCompressor compressor;
+						compressor.compressOctree(_visitor, compressionLevel);
+					}
+					_visitor->getOctree()->setCompressionLevel(compressionLevel);
+					_visitor->shrinkOctree();
+					buildTime += t.getElapsedTimeSeconds();
 				}
-				_visitor->getOctree()->setCompressionLevel(compressionLevel);
-				_visitor->shrinkOctree();
-				const double buildTime = t.getElapsedTimeSeconds();
+				
+				buildTime /= double(nofIterations);
+
 				const size_t octreeSizeMB = _octree->getOctreeSizeBytes() / 1024ull / 1024ull;
 
 				//Get NofEdges
