@@ -162,15 +162,14 @@ write_basic_package_version_file(
 
 export(EXPORT ${PROJECT_NAME}Targets
   FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake
-  NAMESPACE ${PROJECT_NAME}::
+  #NAMESPACE ${PROJECT_NAME}::
   )
 
 set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
 install(EXPORT ${PROJECT_NAME}Targets
   FILE
   ${PROJECT_NAME}Targets.cmake
-  NAMESPACE
-  ${PROJECT_NAME}::
+  #NAMESPACE ${PROJECT_NAME}::
   DESTINATION
   ${ConfigPackageLocation}
   )
