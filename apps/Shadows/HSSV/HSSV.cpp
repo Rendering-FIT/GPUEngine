@@ -12,7 +12,7 @@
 #include "OctreeCompressor.hpp"
 #include "OctreeWireframeDrawer.hpp"
 
-#define DRAW_CPU
+//#define DRAW_CPU
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -70,7 +70,7 @@ HSSV::HSSV(
 		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
 
 		std::ofstream saveFile;
-		saveFile.open("buildTest.txt");
+		saveFile.open(model->modelFilename + ".txt");
 
 		for(const auto depth : octreeLevels)
 		{
