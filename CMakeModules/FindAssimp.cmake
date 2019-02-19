@@ -21,7 +21,6 @@ find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSIO
 # if we have older assimp or for some reason we do not use the configs we find assimp the old way
 if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND OR NOT TARGET assimp::assimp)
 
- message("not found 1")
    # find Assimp includes
    find_path(ASSIMP_INCLUDE_DIR assimp/mesh.h
       HINTS ${ASSIMP_ROOT_DIR}

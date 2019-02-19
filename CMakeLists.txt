@@ -26,22 +26,15 @@ SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
 SET(GPUENGINE_BUILD_geAd     OFF  CACHE BOOL "Build addons (geAd directory).")
-SET(GPUENGINE_BUILD_APPS     OFF  CACHE BOOL "Build applications (apps directory).")
 SET(GPUENGINE_BUILD_EXAMPLES OFF  CACHE BOOL "Build examples (examples directory).")
 SET(GPUENGINE_BUILD_TESTS    OFF  CACHE BOOL "Build and run tests (tests directory).")
 SET(GPUENGINE_BUILD_GEGL     ON   CACHE BOOL "Build geGL package.")
 SET(GPUENGINE_BUILD_GESG     OFF  CACHE BOOL "Build geSG package.")
 SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
-SET(GPUENGINE_BUILD_GEPARSER OFF  CACHE BOOL "Build geParser package.")
-SET(GPUENGINE_BUILD_GEDE     OFF  CACHE BOOL "Build geDE package.")
-
-SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp application.")
 
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
-#SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
-#SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -171,13 +164,6 @@ if(GPUENGINE_BUILD_GESG)
 endif()
 if(GPUENGINE_BUILD_geAd)
   add_subdirectory(geAd)
-endif()
-
-if(GPUENGINE_BUILD_APPS)
-  if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
-    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
-  endif()
-  add_subdirectory(apps)
 endif()
 
 if(GPUENGINE_BUILD_EXAMPLES)
