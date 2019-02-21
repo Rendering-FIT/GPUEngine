@@ -59,7 +59,7 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
 	t.reset();
-	const unsigned int compressionLevel = (int)(log(BitmaskTypeSizeBits) / log(8));
+	const unsigned int compressionLevel = hssvParams.noCompression ? 0 : (int)(log(BitmaskTypeSizeBits) / log(8));
 	if(!hssvParams.forceOctreeBuild)
 		_octree = serializer.loadFromFile(model->modelFilename, hssvParams.sceneAABBscale, hssvParams.maxOctreeLevel, compressionLevel);
 	
@@ -130,20 +130,21 @@ HSSV::HSSV(
 
 		t.reset();
 		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
-		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
+		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression && !hssvParams.noCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
 
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
 
-		std::cout << "Building octree took " << dt << " seconds. Compressing...\n";
-		if (!useGpuCompression)
+		std::cout << "Building octree took " << dt << " seconds.\n";
+		if (!useGpuCompression && !hssvParams.noCompression)
 		{
+			std::cout << "Compressing...\n";
 			OctreeCompressor compressor;
 			compressor.compressOctree(_visitor, compressionLevel);
 
 			std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
 		}
 		
-		std::cout << "Compressed size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
+		std::cout << "Final size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
 
 		_visitor->getOctree()->setCompressionLevel(compressionLevel);
 		_visitor->shrinkOctree();

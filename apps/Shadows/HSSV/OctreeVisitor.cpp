@@ -199,6 +199,8 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 	unsigned int nofBuffersPot = 0;
 	unsigned int nofBuffersSil = 0;
 
+	const bool isCompressed = _octree->getCompressionLevel() != 0;
+
 	while (currentLevel >= 0)
 	{
 		const auto node = _octree->getNode(currentNodeID);
@@ -219,7 +221,7 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 			nofBuffersPot++;
 		}
 
-		if (currentLevel == levelWithCompressedNodess)
+		if (currentLevel == levelWithCompressedNodess && isCompressed)
 		{
 			const auto compressionId = _getCompressionIdWithinParent(nodeID);
 

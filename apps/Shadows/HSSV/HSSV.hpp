@@ -22,6 +22,7 @@ struct HSSVParams
 	bool forceOctreeBuild;
 	bool drawOctree;
 	bool doBuildTest;
+	bool noCompression;
 };
 
 class HSSV : public ShadowVolumes
