@@ -14,7 +14,7 @@ if(NOT TARGET geSG)
    find_package(GPUEngine COMPONENTS geSG)
 endif()
 
-if(NOT TARGET geSG OR NOT TARGET ste)
+if(NOT TARGET geSG)
    return()
 endif()
 

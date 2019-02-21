@@ -74,6 +74,9 @@ GENERATE_EXPORT_HEADER(${PROJECT_NAME}
    EXPORT_FILE_NAME "${PROJECT_NAME}/Export.h"
 )
   
+# since we need to specify the ste library as the interface dependency for the export scripts to propagate it but we need cmake to know that this will be a target and not ste.lib since we need it later in the examples in this build tree
+add_library(ste INTERFACE IMPORTED)
+
 target_link_libraries(${PROJECT_NAME}
    PUBLIC geUtil
    INTERFACE ste
