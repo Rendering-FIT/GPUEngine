@@ -435,7 +435,7 @@ layout(std430, binding=2) buffer _generatedSideEdges{
 layout(std430, binding=3) buffer _drawIndirectBuffer{
 	uint drawIndirect[4]; };
 
-layout(std430, binding=5) readonly buffer _nofEdgesToGenerate{
+layout(std430, binding=4) readonly buffer _nofEdgesToGenerate{
 	uint nofEdgesToGenerate; };
 
 )."

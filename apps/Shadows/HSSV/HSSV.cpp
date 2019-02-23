@@ -129,7 +129,7 @@ HSSV::HSSV(
 		_visitor = std::make_shared<OctreeVisitor>(_octree);
 
 		t.reset();
-		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
+		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value && !hssvParams.noCompression;
 		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression && !hssvParams.noCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
 
 		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
