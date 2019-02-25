@@ -67,7 +67,7 @@ HSSV::HSSV(
 	{
 		const std::vector<float> sceneScales = { 0.5, 1, 2, 5, 10, 100 };
 		const std::vector<unsigned int> octreeLevels = { 3, 4, 5 };
-		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value;
+		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value && !hssvParams.noCompression;
 		const unsigned int nofIterations = 3;
 
 		std::ofstream saveFile;
