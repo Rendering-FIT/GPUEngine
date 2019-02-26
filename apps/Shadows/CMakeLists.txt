@@ -103,6 +103,11 @@ set(Internal_inc
 #endforeach()
 
 target_link_libraries(${APP_NAME} ${Internal_deps} ${External_libs})
+
+if (UNIX)
+    target_link_libraries(${APP_NAME} -lstdc++fs)
+endif (UNIX)
+
 set_target_properties(${APP_NAME} PROPERTIES
   INCLUDE_DIRECTORIES "${Internal_inc}"
   )

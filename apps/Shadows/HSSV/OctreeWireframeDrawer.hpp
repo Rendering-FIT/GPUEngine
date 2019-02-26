@@ -12,7 +12,7 @@ public:
 	virtual ~OctreeWireframeDrawer(){}
 
 	bool init(std::shared_ptr<Octree> octree);
-	void drawWireframe(glm::mat4& vp);
+	void drawWireframe(glm::mat4 const& vp);
 
 protected:
 	bool _initProgram();

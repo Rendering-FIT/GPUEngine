@@ -6,7 +6,7 @@
 #include <bitset>
 #include <set>
 
-#include <omp.h>
+#include "OmpConfig.h"
 #include "HighResolutionTimer.hpp"
 #include "MultiplicityCoding.hpp"
 #include "GpuOctreeLoader.hpp"
@@ -279,7 +279,7 @@ void OctreeVisitor::_sortLevel(uint32_t level)
 	const int startingID = _octree->getLevelFirstNodeID(level);
 	const auto size = ipow(OCTREE_NUM_CHILDREN, level);
 
-	#pragma omp parallel for
+	#pragma omp parallel for 
 	for(int i = startingID; i<(startingID+size); ++i)
 	{
 		auto n = _octree->getNode(i);
@@ -296,7 +296,7 @@ void OctreeVisitor::shrinkOctree()
 {
 	const int numNodes = int(_octree->getTotalNumNodes());
 
-	#pragma omp parallel for
+	#pragma omp parallel for 
 	for(int i = 0; i<numNodes; ++i)
 	{
 		auto node = _octree->getNode(i);

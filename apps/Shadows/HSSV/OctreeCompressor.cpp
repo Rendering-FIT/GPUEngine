@@ -17,7 +17,7 @@ void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, ui
 	const int stopIndex = _visitor->getOctree()->getTotalNumNodes();
 	const int nofSyblings = ipow(OCTREE_NUM_CHILDREN, compressLevelHeight_1or2);
 
-	#pragma omp parallel for
+	#pragma omp parallel for 
 	for (int index = startingIndex; index < stopIndex; index += nofSyblings)
 	{
 		_compressSyblings(index, true,  compressLevelHeight_1or2);

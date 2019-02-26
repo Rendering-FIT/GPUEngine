@@ -52,7 +52,7 @@ bool OctreeWireframeDrawer::init(std::shared_ptr<Octree> octree)
 	return true;
 }
 
-void OctreeWireframeDrawer::drawWireframe(glm::mat4& vp)
+void OctreeWireframeDrawer::drawWireframe(glm::mat4 const& vp)
 {
 	const glm::vec4 color = glm::vec4(1.0f, 1.0f, 0, 1.0f);
 

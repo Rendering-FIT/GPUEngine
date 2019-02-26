@@ -1,5 +1,5 @@
 #include "CpuOctreeEdgePropagator.hpp"
-#include <omp.h>
+#include "OmpConfig.h"
 #include "HighResolutionTimer.hpp"
 #include <iostream>
 
@@ -40,7 +40,7 @@ void CpuOctreeEdgePropagator::_processEdgesInLevel(uint32_t level, bool propagat
 
 	int currentID = startingID;
 
-#pragma omp parallel for
+#pragma omp parallel for 
 	for (currentID = startingID; currentID<stopId; currentID += OCTREE_NUM_CHILDREN)
 	{
 		auto firstNode = _octree->getNode(currentID);

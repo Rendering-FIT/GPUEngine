@@ -1,4 +1,3 @@
-#include <omp.h>
 #include <string>
 
 #include "GpuOctreeLoaderCompress8.hpp"
@@ -6,7 +5,8 @@
 #include "VoxelTestingShader.hpp"
 
 #include <geGL/Program.h>
-#include "geGL/StaticCalls.h"
+#include <geGL/StaticCalls.h>
+#include "OmpConfig.h"
 
 #define MAX_NOF_SUBBUFFERS 256u
 
@@ -303,7 +303,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 	str.close();
 #endif
 
-	#pragma omp parallel for num_threads(4)
+	#pragma omp parallel for 
 	for (int currentParent = 0; currentParent < int(numParents); ++currentParent)
 	{
 		//Get chunk descriptors and process them
@@ -399,7 +399,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for 
 	for (int i = 0; i<batchSize; ++i)
 	{
 		auto node = _octree->getNode(startingVoxelAbsoluteIndex + i);
@@ -433,7 +433,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 	}
 #endif
 
-#pragma omp parallel for num_threads(4)
+#pragma omp parallel for 
 	for (int currentParent = 0; currentParent < int(numParents); ++currentParent)
 	{
 		//Get chunk descriptors and process them

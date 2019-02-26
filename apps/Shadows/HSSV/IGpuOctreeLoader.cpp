@@ -1,5 +1,5 @@
 #include "IGpuOctreeLoader.hpp"
-#include <omp.h>
+#include "OmpConfig.h"
 #include "geGL/StaticCalls.h"
 
 IGpuOctreeLoader::IGpuOctreeLoader()
@@ -58,7 +58,7 @@ void IGpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxe
 
 	voxels.resize(2 * deepestLevelSize);
 
-#pragma omp parallel for
+#pragma omp parallel for 
 	for (int i = 0; i<deepestLevelSize; ++i)
 	{
 		const auto bbox = _octree->getNodeVolume(startingIndex + i);

@@ -1,6 +1,6 @@
 #include "CpuOctreeLoader.hpp"
 #include "HighResolutionTimer.hpp"
-#include <omp.h>
+#include "OmpConfig.h"
 #include <bitset>
 #include "MultiplicityCoding.hpp"
 #include "GeometryOperations.hpp"
@@ -66,7 +66,7 @@ void CpuOctreeLoader::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& 
 
 	std::cout << "Total iterations: " << (stopIndex - startingIndex) / OCTREE_NUM_CHILDREN << "\n";
 
-#pragma omp parallel for
+#pragma omp parallel for 
 	for (int i = startingIndex; i < stopIndex; i += OCTREE_NUM_CHILDREN)
 	{
 		_addEdgesSyblingsParentCompress8(edgePlanes, edges, i);

@@ -229,7 +229,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	const uint32_t* indices = reinterpret_cast<const uint32_t*>(_outputIndices->map(GL_READ_ONLY));
 
 	//Process children
-	#pragma omp parallel for num_threads(4)
+	#pragma omp parallel for 
 	for(int i = 0; i<batchSize; ++i)
 	{
 		auto node = _octree->getNode(startingIndex + i);
@@ -253,7 +253,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	const uint32_t startingParent = _octree->getNodeParent(startingIndex);
 	const uint32_t* parentIndices = reinterpret_cast<const uint32_t*>(_parentIndices->map(GL_READ_ONLY));
 
-	#pragma omp parallel for num_threads(4)
+	#pragma omp parallel for 
 	for(int i=0; i<nofParents; ++i)
 	{
 		auto node = _octree->getNode(startingParent + i);
