@@ -11,6 +11,7 @@
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
 #include "OctreeWireframeDrawer.hpp"
+#include <iomanip>
 
 //#define DRAW_CPU
 
@@ -110,8 +111,9 @@ HSSV::HSSV(
 				_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
 
 				std::string str;
-				str = "depth " + std::to_string(depth) + " scale " + std::to_string(scale) + " buildTime " + std::to_string(buildTime) + " sizeMB " + std::to_string(octreeSizeMB) + " potEdges " + std::to_string(potentialEdges.size()) + " silEdges " + std::to_string(silhouetteEdges.size()) + "\n";
-				saveFile << str;
+				//str = "depth " + std::to_string(depth) + " scale " + std::to_string(scale) + " buildTime " + std::to_string(buildTime) + " sizeMB " + std::to_string(octreeSizeMB) + " potEdges " + std::to_string(potentialEdges.size()) + " silEdges " + std::to_string(silhouetteEdges.size()) + "\n";
+				saveFile << std::fixed << std::setw(3) << depth << std::setw(5) << scale << std::setw(10) << buildTime << std::setw(5) << octreeSizeMB << std::setw(10) << potentialEdges.size() << std::setw(10) << silhouetteEdges.size() << "\n";
+				//saveFile << str;
 				std::cerr << str;
 			}
 		}

@@ -306,7 +306,7 @@ layout(location=2)in vec2 tcoords;
 out vec3 vPosition;
 out vec3 vNormal;
 out vec2 vTexCoords;
-out flat uint32_t materialIndex;
+out flat uint materialIndex;
 
 void main()
 {
@@ -330,7 +330,7 @@ layout(location=2)out vec4  fNormal;
 in vec3 vPosition;
 in vec3 vNormal;
 in vec2 vTexCoords;
-in flat uint32_t materialIndex;
+in flat uint materialIndex;
 
 layout(std430,binding=0) readonly buffer textureSSBO
 {

@@ -284,10 +284,10 @@ void OctreeVisitor::_sortLevel(uint32_t level)
 	{
 		auto n = _octree->getNode(i);
 
-		auto edgesSil = n->edgesAlwaysCastMap[BitmaskAllSet];
+		auto& edgesSil = n->edgesAlwaysCastMap[BitmaskAllSet];
 		std::sort(edgesSil.begin(), edgesSil.end());
 
-		auto edgesPot = n->edgesMayCastMap[BitmaskAllSet];
+		auto& edgesPot = n->edgesMayCastMap[BitmaskAllSet];
 		std::sort(edgesPot.begin(), edgesPot.end());
 	}
 }
