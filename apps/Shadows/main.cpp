@@ -427,7 +427,8 @@ void Application::drawScene() {
 	//Blit depth into default FBO
 	ge::gl::glBlitNamedFramebuffer(this->gBuffer->fbo->getId(), 0, 0, 0, this->windowSize.x, this->windowSize.y, 0, 0, this->windowSize.x, this->windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-	this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
+	if(this->shadowMethod) 
+		this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
 }
 #endif
 
