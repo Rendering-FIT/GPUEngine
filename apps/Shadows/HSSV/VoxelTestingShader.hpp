@@ -4,7 +4,7 @@
 #include <sstream>
 
 
-inline const std::string buildComputeShaderFillBottomLevel(unsigned int workgroupSize, unsigned int shmSizeBytes, unsigned int nofBitsCounter, unsigned int maxChunksParent)
+inline const std::string buildComputeShaderFillBottomLevel(uint32_t workgroupSize, uint32_t shmSizeBytes, uint32_t nofBitsCounter, uint32_t maxChunksParent)
 {
 	std::stringstream str;
 
@@ -155,7 +155,7 @@ bool isPlaneIntersectingAabb(inout vec3 points[8], in vec4 plane)
 {
 	const int result = int(sign(testPlanePoint(plane, points[0])));
 	
-	for(unsigned int i=1; i<8; ++i)
+	for(uint i=1; i<8; ++i)
 	{
 		const int r = int(sign(testPlanePoint(plane, points[i])));
 		
@@ -237,7 +237,7 @@ uint getEdgeOppositeVerticesStartingIndex(in uint edgeId)
 	return floatBitsToUint(wgSharedMemory[EDGE_NUM_FLOATS*edgeId + 7]);
 }
 
-shared unsigned int numAliveWG;
+shared uint numAliveWG;
 
 #define MAX_NOF_SUBBUFFERS 256
 
@@ -327,7 +327,7 @@ void main()
 		
 		barrier();			
 
-		for(unsigned int i=0; i<numIters; ++i)
+		for(uint i=0; i<numIters; ++i)
 		{
 			const uint offset = (i * numAliveWG + gl_LocalInvocationID.x) * EDGE_NUM_FLOATS;
 			wgSharedMemory[offset + 0] = edges[currentStartingEdge*EDGE_NUM_FLOATS + offset + 0];

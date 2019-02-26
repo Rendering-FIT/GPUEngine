@@ -60,60 +60,60 @@ class Octree
 {
 public:
 
-	Octree(unsigned int maxRecursionDepth, const AABB& volume);
+	Octree(uint32_t maxRecursionDepth, const AABB& volume);
 
-	AABB getNodeVolume(unsigned int index) const;
+	AABB getNodeVolume(uint32_t index) const;
 
-	int getNodeParent(unsigned int nodeID) const;
-	int getNodeRecursionLevel(unsigned int nodeID) const;
-	int getNodeIdInLevel(unsigned int nodeID) const;
-	int getNodeIdInLevel(unsigned int nodeID, unsigned int level) const;
-	int getNodeIndexWithinParent(unsigned int nodeID) const;
-	int getNodeIndexWithinParent(unsigned int nodeID, unsigned int parent) const;
-	int getChildrenStartingId(unsigned int nodeID) const;
+	int getNodeParent(uint32_t nodeID) const;
+	int getNodeRecursionLevel(uint32_t nodeID) const;
+	int getNodeIdInLevel(uint32_t nodeID) const;
+	int getNodeIdInLevel(uint32_t nodeID, uint32_t level) const;
+	int getNodeIndexWithinParent(uint32_t nodeID) const;
+	int getNodeIndexWithinParent(uint32_t nodeID, uint32_t parent) const;
+	int getChildrenStartingId(uint32_t nodeID) const;
 
-	std::vector<unsigned int> getLevelSizeInclusiveSum() const { return _levelSizesInclusiveSum; }
+	std::vector<uint32_t> getLevelSizeInclusiveSum() const { return _levelSizesInclusiveSum; }
 
-	void splitNode(unsigned int nodeID);
-	void deleteNode(unsigned int nodeID);
-	void deleteNodeSubtree(unsigned int nodeID);
+	void splitNode(uint32_t nodeID);
+	void deleteNode(uint32_t nodeID);
+	void deleteNodeSubtree(uint32_t nodeID);
 
-	Node* getNode(unsigned int nodeID);
-	const Node* getNode(unsigned int nodeID) const;
+	Node* getNode(uint32_t nodeID);
+	const Node* getNode(uint32_t nodeID) const;
 
-	bool nodeExists(unsigned int nodeID) const;
-	bool childrenExist(unsigned int nodeID) const;
+	bool nodeExists(uint32_t nodeID) const;
+	bool childrenExist(uint32_t nodeID) const;
 
-	unsigned int getNumNodesInPreviousLevels(int level) const;
-	unsigned int getDeepestLevel() const;
-	unsigned int getTotalNumNodes() const;
-	int getLevelFirstNodeID(unsigned int level) const;
-	int getNumNodesInLevel(unsigned int level) const;
+	uint32_t getNumNodesInPreviousLevels(int level) const;
+	uint32_t getDeepestLevel() const;
+	uint32_t getTotalNumNodes() const;
+	int getLevelFirstNodeID(uint32_t level) const;
+	int getNumNodesInLevel(uint32_t level) const;
 
 	uint64_t getOctreeSizeBytes() const;
 
 	void makeNodesFit();
 
-	void setCompressionLevel(unsigned int ratio) { _treeCompressionRatio = ratio; }
-	unsigned int getCompressionLevel() const { return _treeCompressionRatio; }
-	unsigned int getLevelSize(unsigned int level) const;
+	void setCompressionLevel(uint32_t ratio) { _treeCompressionRatio = ratio; }
+	uint32_t getCompressionLevel() const { return _treeCompressionRatio; }
+	uint32_t getLevelSize(uint32_t level) const;
 
 	void printNodePathToRoot(int nodeId) const;
 
 private:
-	unsigned int _deepestLevel;
+	uint32_t _deepestLevel;
 
 	void _generateLevelSizes();
 	void _init(const AABB& volume);
 	void _expandWholeOctree();
 
-	void _createChild(const AABB& parentSpace, unsigned int childID, unsigned int indexWithinParent);
-	int _getCorrespondingChildIndexFromPoint(unsigned int nodeID, const glm::vec3& point) const;
+	void _createChild(const AABB& parentSpace, uint32_t childID, uint32_t indexWithinParent);
+	int _getCorrespondingChildIndexFromPoint(uint32_t nodeID, const glm::vec3& point) const;
 	bool _isPointInsideOctree(const glm::vec3& point) const;
 
 	std::vector<Node> _nodes;
 
-	std::vector<unsigned int> _levelSizesInclusiveSum;
+	std::vector<uint32_t> _levelSizesInclusiveSum;
 
-	unsigned int _treeCompressionRatio = 0;
+	uint32_t _treeCompressionRatio = 0;
 };

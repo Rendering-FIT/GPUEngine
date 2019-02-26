@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-inline int encodeEdgeMultiplicityToId(unsigned int edgeID, int multiplicity)
+inline int encodeEdgeMultiplicityToId(uint32_t edgeID, int multiplicity)
 {
 	assert(multiplicity != 0);
 	assert(multiplicity <= 2 && multiplicity >= -2);

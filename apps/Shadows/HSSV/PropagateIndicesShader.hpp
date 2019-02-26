@@ -78,7 +78,7 @@ void main()
 		bool isCacheValid = false;
 		uint positionInEdgeBuffer = 0;
 
-		for(unsigned int i = 0; i<numEdgesInFirst; ++i)
+		for(uint i = 0; i<numEdgesInFirst; ++i)
 		{
 			//Cache a value
 			if((!isCacheValid) && (positionInEdgeBuffer<numEdgesInVoxel))
@@ -119,7 +119,7 @@ void main()
 			outputIndices[startingOutputIndex + numOutputEdges++] = cachedValue;
 
 		//Write leftover edges
-		for(unsigned int i = positionInEdgeBuffer; i<numEdgesInVoxel; ++i)
+		for(uint i = positionInEdgeBuffer; i<numEdgesInVoxel; ++i)
 			outputIndices[startingOutputIndex + numOutputEdges++] = voxelEdgeIndicesSorted[startingOutputIndex + i];
 
 		outputNumIndices[currentVoxel] = numOutputEdges;
@@ -130,7 +130,7 @@ void main()
 }
 ).";
 
-inline const std::string buildComputeShaderPropagate(unsigned int workgroupSize)
+inline const std::string buildComputeShaderPropagate(uint32_t workgroupSize)
 {
 	return propagationComputeShaderPrologue +
 		"layout(local_size_x = " + std::to_string(workgroupSize) + ") in;\n\n" +
@@ -223,7 +223,7 @@ void main()
 	uint numOutputEdges = 0;
 	uint numParentOutputEdges = 0;
 
-	for(unsigned int i = 0; i<numEdgesInFirst; ++i)
+	for(uint32_t i = 0; i<numEdgesInFirst; ++i)
 	{
 		if(!isCacheValid())
 			loadCache(min(numEdgesInVoxel-positionInEdgeBuffer, CACHE_SIZE), startingIndex);
@@ -278,7 +278,7 @@ void main()
 	}
 
 	//Write leftover edges
-	for(unsigned int i = positionInEdgeBuffer; i<numEdgesInVoxel; ++i)
+	for(uint32_t i = positionInEdgeBuffer; i<numEdgesInVoxel; ++i)
 		outputIndices[startingIndex + numOutputEdges++] = voxelEdgeIndicesSorted[startingIndex + i];
 
 	outputNumIndices[currentVoxel] = numOutputEdges;
@@ -288,7 +288,7 @@ void main()
 }
 ).";
 
-inline const std::string buildComputeShaderPropagate2(unsigned int workgroupSize, unsigned int cacheSize)
+inline const std::string buildComputeShaderPropagate2(uint32_t workgroupSize, uint32_t cacheSize)
 {
 	return propagationComputeShaderPrologue +
 		"layout(local_size_x = " + std::to_string(workgroupSize) + ") in;\n\n" +

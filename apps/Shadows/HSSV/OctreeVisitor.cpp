@@ -104,7 +104,7 @@ void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges
 	const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
 	const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
 	const float nofEdges = edges->getNofEdges();
-	for (unsigned int i = start; i<end; ++i)
+	for (uint32_t i = start; i<end; ++i)
 	{
 		const auto node = _octree->getNode(i);
 
@@ -139,7 +139,7 @@ void OctreeVisitor::_propagateEdgesCpu()
 	propagator.propagateEdgesToUpperLevels(_octree);
 }
 
-void OctreeVisitor::_propagateEdgesToUpperLevelsGpu(std::shared_ptr<GpuOctreeEdgePropagator> propagator,unsigned int startingLevel, bool propagatePotential)
+void OctreeVisitor::_propagateEdgesToUpperLevelsGpu(std::shared_ptr<GpuOctreeEdgePropagator> propagator,uint32_t startingLevel, bool propagatePotential)
 {
 	for (int i = startingLevel; i > 0; --i)
 		propagator->propagateEdgesToUpperLevel(i, propagatePotential ? BufferType::POTENTIAL : BufferType::SILHOUETTE);
@@ -149,15 +149,15 @@ void OctreeVisitor::_propagateEdgesToUpperLevelsGpu(std::shared_ptr<GpuOctreeEdg
 int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const
 {
 	int currentParent = 0;
-	const unsigned int deepestLevel = _octree->getDeepestLevel();
+	const uint32_t deepestLevel = _octree->getDeepestLevel();
 
-	for(unsigned int level = 0; level<deepestLevel && currentParent>=0; ++level)
+	for(uint32_t level = 0; level<deepestLevel && currentParent>=0; ++level)
 		currentParent = _getChildNodeContainingPoint(currentParent, point);
 
 	return currentParent;
 }
 
-bool OctreeVisitor::_isPointInsideNode(unsigned int nodeID, const glm::vec3& point) const
+bool OctreeVisitor::_isPointInsideNode(uint32_t nodeID, const glm::vec3& point) const
 {
 	const auto node = _octree->getNode(nodeID);
 
@@ -166,11 +166,11 @@ bool OctreeVisitor::_isPointInsideNode(unsigned int nodeID, const glm::vec3& poi
 	return GeometryOps::testAabbPointIsInsideOrOn(node->volume, point);
 }
 
-int OctreeVisitor::_getChildNodeContainingPoint(unsigned int parent, const glm::vec3& point) const
+int OctreeVisitor::_getChildNodeContainingPoint(uint32_t parent, const glm::vec3& point) const
 {
 	const int startingID = _octree->getChildrenStartingId(parent);
 
-	for(unsigned int i=0; i<OCTREE_NUM_CHILDREN; ++i)
+	for(uint32_t i=0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		if (_isPointInsideNode(startingID + i, point))
 			return startingID + i;
@@ -179,25 +179,25 @@ int OctreeVisitor::_getChildNodeContainingPoint(unsigned int parent, const glm::
 	return -1;
 }
 
-void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
+void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<uint32_t>& potential, std::vector<uint32_t>& silhouette, uint32_t nodeID) const
 {
 	int currentNodeID = nodeID;
 
 	static bool printOnce = true;
 
-	unsigned int comingFromChildId = 0;
+	uint32_t comingFromChildId = 0;
 
 	_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
 }
 
-void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<unsigned int>& potential, std::vector<unsigned int>& silhouette, unsigned int nodeID) const
+void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<uint32_t>& potential, std::vector<uint32_t>& silhouette, uint32_t nodeID) const
 {
 	int currentNodeID = nodeID;
 
 	int currentLevel = _octree->getDeepestLevel();
-	const unsigned int levelWithCompressedNodess = _octree->getDeepestLevel() - _octree->getCompressionLevel();
-	unsigned int nofBuffersPot = 0;
-	unsigned int nofBuffersSil = 0;
+	const uint32_t levelWithCompressedNodess = _octree->getDeepestLevel() - _octree->getCompressionLevel();
+	uint32_t nofBuffersPot = 0;
+	uint32_t nofBuffersSil = 0;
 
 	const bool isCompressed = _octree->getCompressionLevel() != 0;
 
@@ -250,7 +250,7 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 	}
 }
 
-unsigned int OctreeVisitor::_getCompressionIdWithinParent(unsigned int nodeId) const
+uint32_t OctreeVisitor::_getCompressionIdWithinParent(uint32_t nodeId) const
 {
 	const auto compressionLevel = _octree->getCompressionLevel();
 
@@ -265,13 +265,13 @@ unsigned int OctreeVisitor::_getCompressionIdWithinParent(unsigned int nodeId) c
 		return relativeOneAbove + OCTREE_NUM_CHILDREN * _getNodeIdWithinParent(parent);
 }
 
-unsigned int OctreeVisitor::_getNodeIdWithinParent(unsigned int nodeId) const
+uint32_t OctreeVisitor::_getNodeIdWithinParent(uint32_t nodeId) const
 {
 	auto parent = _octree->getNodeParent(nodeId);
 	return nodeId - _octree->getChildrenStartingId(parent);
 }
 
-void OctreeVisitor::_sortLevel(unsigned int level)
+void OctreeVisitor::_sortLevel(uint32_t level)
 {
 	if (level > _octree->getDeepestLevel())
 		return;
@@ -322,13 +322,13 @@ void OctreeVisitor::shrinkOctree()
 	}
 }
 
-unsigned int OctreeVisitor::getNofAllIndicesInNode(unsigned int nodeID) const
+uint32_t OctreeVisitor::getNofAllIndicesInNode(uint32_t nodeID) const
 {
 	assert(nodeID < _octree->getTotalNumNodes());
 
 	const auto node = _octree->getNode(nodeID);
 
-	unsigned int nofIndices = 0;
+	uint32_t nofIndices = 0;
 
 	for (const auto& buffer : node->edgesAlwaysCastMap)
 		nofIndices += unsigned(buffer.second.size());
@@ -339,7 +339,7 @@ unsigned int OctreeVisitor::getNofAllIndicesInNode(unsigned int nodeID) const
 	return nofIndices;
 }
 
-void OctreeVisitor::getNodeNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil, unsigned int nodeID) const
+void OctreeVisitor::getNodeNofSubBuffersPotSil(uint32_t& pot, uint32_t& sil, uint32_t nodeID) const
 {
 	const auto node = _octree->getNode(nodeID);
 
@@ -353,7 +353,7 @@ void OctreeVisitor::getNodeNofSubBuffersPotSil(unsigned int& pot, unsigned int& 
 	}
 }
 
-void OctreeVisitor::_getMaxNofSubBuffersInLevelPotSil(unsigned int& pot, unsigned int& sil, unsigned int level) const
+void OctreeVisitor::_getMaxNofSubBuffersInLevelPotSil(uint32_t& pot, uint32_t& sil, uint32_t level) const
 {
 	const auto startingIndex = _octree->getLevelFirstNodeID(level);
 	const auto levelSize = unsigned(ipow(OCTREE_NUM_CHILDREN, level));
@@ -361,25 +361,25 @@ void OctreeVisitor::_getMaxNofSubBuffersInLevelPotSil(unsigned int& pot, unsigne
 	pot = 0;
 	sil = 0;
 
-	for (unsigned int i = 0; i<levelSize; ++i)
+	for (uint32_t i = 0; i<levelSize; ++i)
 	{
-		unsigned int p = 0, s = 0;
+		uint32_t p = 0, s = 0;
 		getNodeNofSubBuffersPotSil(p, s, startingIndex + i);
 		pot = std::max(pot, p);
 		sil = std::max(sil, s);
 	}
 }
 
-void  OctreeVisitor::getMaxNofSubBuffersPotSil(unsigned int& pot, unsigned int& sil) const
+void  OctreeVisitor::getMaxNofSubBuffersPotSil(uint32_t& pot, uint32_t& sil) const
 {
 	const auto deepestLevel = _octree->getDeepestLevel();
-	unsigned int maxSubBuffers = 0;
+	uint32_t maxSubBuffers = 0;
 	
 	pot = sil = 0;
 
-	for(unsigned int i = 0; i<=deepestLevel; ++i)
+	for(uint32_t i = 0; i<=deepestLevel; ++i)
 	{
-		unsigned int p = 0, s = 0;
+		uint32_t p = 0, s = 0;
 		_getMaxNofSubBuffersInLevelPotSil(p, s, i);
 		pot = std::max(pot, p);
 		sil = std::max(sil, s);
@@ -388,7 +388,7 @@ void  OctreeVisitor::getMaxNofSubBuffersPotSil(unsigned int& pot, unsigned int& 
 
 #include <iostream>
 #include <fstream>
-void OctreeVisitor::dumpOctreeLevel(unsigned int level, const char* filename)
+void OctreeVisitor::dumpOctreeLevel(uint32_t level, const char* filename)
 {
 	std::ofstream file(filename);
 
@@ -399,7 +399,7 @@ void OctreeVisitor::dumpOctreeLevel(unsigned int level, const char* filename)
 	const auto firstNode = _octree->getLevelFirstNodeID(level);
 	const auto lastNode = firstNode + _octree->getLevelSize(level);
 
-	for (unsigned int currentNode = firstNode; currentNode < lastNode; ++currentNode)
+	for (uint32_t currentNode = firstNode; currentNode < lastNode; ++currentNode)
 	{
 		const auto node = _octree->getNode(currentNode);
 

@@ -36,7 +36,7 @@ class TSSV : public ShadowVolumes
 
 private:
 	void _initSidesBuffers(const std::shared_ptr<Adjacency const> ad);
-	void _initSidesProgram(bool UseReferenceEdge, bool CullSides, bool UseStencilValueExport, unsigned int maxMultiplicity);
+	void _initSidesProgram(bool UseReferenceEdge, bool CullSides, bool UseStencilValueExport, uint32_t maxMultiplicity);
 
     std::shared_ptr<ge::gl::Buffer> _sidesVBO;
 	std::shared_ptr<ge::gl::Buffer> _sidesEBO;

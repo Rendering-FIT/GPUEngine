@@ -8,15 +8,15 @@
 class OctreeCompressor
 {
 public:
-	void compressOctree(std::shared_ptr<OctreeVisitor> octreeVisitor, unsigned int compressLevelHeight_1or2);
+	void compressOctree(std::shared_ptr<OctreeVisitor> octreeVisitor, uint32_t compressLevelHeight_1or2);
 
 protected:
-	std::bitset<BitmaskTypeSizeBits> checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential, unsigned int nofSyblings) const;
-	void _compressSyblings(unsigned int startingID, bool processPotential, unsigned int compressLevelHeight_1or2);
-	void _removeEdgeFromSyblingsSparse(unsigned int startingId, unsigned int edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, unsigned int nofSyblings);
+	std::bitset<BitmaskTypeSizeBits> checkEdgePresence(uint32_t edge, uint32_t startingId, bool checkPotential, uint32_t nofSyblings) const;
+	void _compressSyblings(uint32_t startingID, bool processPotential, uint32_t compressLevelHeight_1or2);
+	void _removeEdgeFromSyblingsSparse(uint32_t startingId, uint32_t edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, uint32_t nofSyblings);
 
-	void _assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
-	void _assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
+	void _assignEdgeToNodeParent(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId);
+	void _assignEdgeToNode(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId);
 private:
 	std::shared_ptr<OctreeVisitor> _visitor;
 };

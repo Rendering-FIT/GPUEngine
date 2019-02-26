@@ -59,16 +59,16 @@ HSSV::HSSV(
 	HighResolutionTimer t;
 	OctreeSerializer serializer;
 	t.reset();
-	const unsigned int compressionLevel = hssvParams.noCompression ? 0 : (int)(log(BitmaskTypeSizeBits) / log(8));
+	const uint32_t compressionLevel = hssvParams.noCompression ? 0 : (int)(log(BitmaskTypeSizeBits) / log(8));
 	if(!hssvParams.forceOctreeBuild)
 		_octree = serializer.loadFromFile(model->modelFilename, hssvParams.sceneAABBscale, hssvParams.maxOctreeLevel, compressionLevel);
 	
 	if(hssvParams.doBuildTest)
 	{
 		const std::vector<float> sceneScales = { 0.5, 1, 2, 5, 10, 100 };
-		const std::vector<unsigned int> octreeLevels = { 3, 4, 5 };
+		const std::vector<uint32_t> octreeLevels = { 3, 4, 5 };
 		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value && !hssvParams.noCompression;
-		const unsigned int nofIterations = 3;
+		const uint32_t nofIterations = 3;
 
 		std::ofstream saveFile;
 		saveFile.open(std::string("buildTest_") + model->modelFilename + ".txt");
@@ -81,7 +81,7 @@ HSSV::HSSV(
 
 				HighResolutionTimer t;
 				double buildTime = 0;
-				for (unsigned int i = 0; i < nofIterations; ++i)
+				for (uint32_t i = 0; i < nofIterations; ++i)
 				{
 					_octree.reset();
 					_visitor.reset();
@@ -105,8 +105,8 @@ HSSV::HSSV(
 
 				//Get NofEdges
 				const int lowestNode = _visitor->getLowestNodeIndexFromPoint(hssvParams.initialLightPos);
-				std::vector<unsigned int> silhouetteEdges;
-				std::vector<unsigned int> potentialEdges;
+				std::vector<uint32_t> silhouetteEdges;
+				std::vector<uint32_t> potentialEdges;
 				_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
 
 				std::string str;
@@ -155,7 +155,7 @@ HSSV::HSSV(
 		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
 		const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
 		const float nofEdges = _edges->getNofEdges();
-		for (unsigned int i = start; i<end; ++i)
+		for (uint32_t i = start; i<end; ++i)
 		{
 			const auto node = _octree->getNode(i);
 
@@ -175,7 +175,7 @@ HSSV::HSSV(
 		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
 		const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
 		const float nofEdges = _edges->getNofEdges();
-		for (unsigned int i = start; i<end; ++i)
+		for (uint32_t i = start; i<end; ++i)
 		{
 			const auto node = _octree->getNode(i);
 
@@ -339,8 +339,8 @@ void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<flo
 
 	isLightOut = false;
 
-	std::vector<unsigned int> silhouetteEdges;
-	std::vector<unsigned int> potentialEdges;
+	std::vector<uint32_t> silhouetteEdges;
+	std::vector<uint32_t> potentialEdges;
 
 	_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
 
@@ -426,11 +426,11 @@ void HSSV::_generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3&
 	const glm::vec3 lowInfinity = lowerPoint - lightPos;
 	const glm::vec3 highInfinity = higherPoint - lightPos;
 
-	const unsigned int absMultiplicity = abs(multiplicity);
+	const uint32_t absMultiplicity = abs(multiplicity);
 
 	if (multiplicity > 0)
 	{
-		for (unsigned int i = 0; i < absMultiplicity; ++i)
+		for (uint32_t i = 0; i < absMultiplicity; ++i)
 		{
 			sides.push_back(highInfinity.x); sides.push_back(highInfinity.y); sides.push_back(highInfinity.z); sides.push_back(0);
 			sides.push_back(higherPoint.x); sides.push_back(higherPoint.y); sides.push_back(higherPoint.z); sides.push_back(1.0f);
@@ -443,7 +443,7 @@ void HSSV::_generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3&
 	}
 	else if (multiplicity < 0)
 	{
-		for (unsigned int i = 0; i < absMultiplicity; ++i)
+		for (uint32_t i = 0; i < absMultiplicity; ++i)
 		{
 			sides.push_back(lowInfinity.x); sides.push_back(lowInfinity.y); sides.push_back(lowInfinity.z); sides.push_back(0);
 			sides.push_back(lowerPoint.x); sides.push_back(lowerPoint.y); sides.push_back(lowerPoint.z); sides.push_back(1.0f);
@@ -482,15 +482,15 @@ void HSSV::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEd
 		glm::vec3 v1 = vertices[edges->getEdgeVertexA(edgeIndex) / 3];
 		glm::vec3 v2 = vertices[edges->getEdgeVertexB(edgeIndex) / 3];
 
-		const unsigned int nofOpposite = unsigned int(edges->getNofOpposite(edgeIndex));
-		const unsigned int starting_index = unsigned int(serializedOppositeVertices.size()) * 3;
+		const uint32_t nofOpposite = uint32_t(edges->getNofOpposite(edgeIndex));
+		const uint32_t starting_index = uint32_t(serializedOppositeVertices.size()) * 3;
 
 		serializedEdges.push_back(v1.x); serializedEdges.push_back(v1.y); serializedEdges.push_back(v1.z);
 		serializedEdges.push_back(v2.x); serializedEdges.push_back(v2.y); serializedEdges.push_back(v2.z);
 		serializedEdges.push_back(*((float*)&nofOpposite));
 		serializedEdges.push_back(*((float*)&starting_index));
 
-		for (unsigned int i = 0; i < nofOpposite; ++i)
+		for (uint32_t i = 0; i < nofOpposite; ++i)
 		{
 			serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);
 		}

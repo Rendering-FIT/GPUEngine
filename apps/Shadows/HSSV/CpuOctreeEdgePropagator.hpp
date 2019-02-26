@@ -18,10 +18,10 @@ protected:
 		NON_EXISTING
 	};
 
-	void _propagateEdgesToUpperLevelsCpu(unsigned int startingLevel, bool propagatePotential);
-		void _processEdgesInLevel(unsigned int levelNum, bool propagatePotential);
-		TestResultEdgeCommon _haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential, BitmaskType subBufferId) const;
-		void _removeEdgeFromSyblings(unsigned int startingID, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
-		void _assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
-		void _assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId);
+	void _propagateEdgesToUpperLevelsCpu(uint32_t startingLevel, bool propagatePotential);
+		void _processEdgesInLevel(uint32_t levelNum, bool propagatePotential);
+		TestResultEdgeCommon _haveAllSyblingsEdgeInCommon(uint32_t startingNodeID, uint32_t edgeID, bool propagatePotential, BitmaskType subBufferId) const;
+		void _removeEdgeFromSyblings(uint32_t startingID, uint32_t edge, bool propagatePotential, BitmaskType subBufferId);
+		void _assignEdgeToNodeParent(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId);
+		void _assignEdgeToNode(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId);
 };

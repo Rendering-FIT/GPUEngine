@@ -13,19 +13,19 @@ class GpuOctreeLoader : public IGpuOctreeLoader
 {
 public:
 	void addEdgesOnLowestLevel(AdjacencyType edges) override;
-	bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges) override;
+	bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges) override;
 	void profile(AdjacencyType edges) override;
 
 protected:
 	
 	bool _createBottomFillProgram();
 	
-	void _allocateOutputBuffersAndVoxels(unsigned int voxelsPerBatch);
+	void _allocateOutputBuffersAndVoxels(uint32_t voxelsPerBatch);
 
 	void _bindBuffers();
 	void _unbindBuffers();
 
-	void _acquireGpuData(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize);
+	void _acquireGpuData(uint32_t startingVoxelAbsoluteIndex, uint32_t batchSize);
 
-	void _testParticularVoxel(AdjacencyType edges, unsigned int voxelId, std::vector<unsigned int>& particularEdgeIndices);
+	void _testParticularVoxel(AdjacencyType edges, uint32_t voxelId, std::vector<uint32_t>& particularEdgeIndices);
 };

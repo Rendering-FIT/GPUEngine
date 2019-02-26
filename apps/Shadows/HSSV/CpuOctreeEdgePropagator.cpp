@@ -23,13 +23,13 @@ void CpuOctreeEdgePropagator::propagateEdgesToUpperLevels(std::shared_ptr<Octree
 	std::cout << "Propagate Silhouette edges took " << dt / 1000.0f << " sec\n";
 }
 
-void CpuOctreeEdgePropagator::_propagateEdgesToUpperLevelsCpu(unsigned int startingLevel, bool propagatePotential)
+void CpuOctreeEdgePropagator::_propagateEdgesToUpperLevelsCpu(uint32_t startingLevel, bool propagatePotential)
 {
 	for (int i = startingLevel; i > 0; --i)
 		_processEdgesInLevel(i, propagatePotential);
 }
 
-void CpuOctreeEdgePropagator::_processEdgesInLevel(unsigned int level, bool propagatePotential)
+void CpuOctreeEdgePropagator::_processEdgesInLevel(uint32_t level, bool propagatePotential)
 {
 	assert(level > 0);
 	const int startingID = _octree->getLevelFirstNodeID(level);
@@ -67,11 +67,11 @@ void CpuOctreeEdgePropagator::_processEdgesInLevel(unsigned int level, bool prop
 	}
 }
 
-CpuOctreeEdgePropagator::TestResultEdgeCommon CpuOctreeEdgePropagator::_haveAllSyblingsEdgeInCommon(unsigned int startingNodeID, unsigned int edgeID, bool propagatePotential, BitmaskType subBufferId) const
+CpuOctreeEdgePropagator::TestResultEdgeCommon CpuOctreeEdgePropagator::_haveAllSyblingsEdgeInCommon(uint32_t startingNodeID, uint32_t edgeID, bool propagatePotential, BitmaskType subBufferId) const
 {
 	TestResultEdgeCommon retval = TestResultEdgeCommon::NON_EXISTING;
 
-	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	for (uint32_t i = 0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		const auto node = _octree->getNode(startingNodeID + i);
 
@@ -93,7 +93,7 @@ CpuOctreeEdgePropagator::TestResultEdgeCommon CpuOctreeEdgePropagator::_haveAllS
 	return retval;
 }
 
-void CpuOctreeEdgePropagator::_assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+void CpuOctreeEdgePropagator::_assignEdgeToNodeParent(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId)
 {
 	const int parent = _octree->getNodeParent(node);
 
@@ -102,7 +102,7 @@ void CpuOctreeEdgePropagator::_assignEdgeToNodeParent(unsigned int node, unsigne
 	_assignEdgeToNode(parent, edge, propagatePotential, subBufferId);
 }
 
-void CpuOctreeEdgePropagator::_assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+void CpuOctreeEdgePropagator::_assignEdgeToNode(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId)
 {
 	auto n = _octree->getNode(node);
 
@@ -115,9 +115,9 @@ void CpuOctreeEdgePropagator::_assignEdgeToNode(unsigned int node, unsigned int 
 	}
 }
 
-void CpuOctreeEdgePropagator::_removeEdgeFromSyblings(unsigned int startingID, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+void CpuOctreeEdgePropagator::_removeEdgeFromSyblings(uint32_t startingID, uint32_t edge, bool propagatePotential, BitmaskType subBufferId)
 {
-	for (unsigned int i = 0; i<OCTREE_NUM_CHILDREN; ++i)
+	for (uint32_t i = 0; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		auto node = _octree->getNode(startingID + i);
 

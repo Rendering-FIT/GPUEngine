@@ -18,7 +18,7 @@ enum class DrawingMethod : unsigned char
 class OctreeSidesDrawer
 {
 public:
-	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, unsigned int subgroupSize, DrawingMethod potential, DrawingMethod silhouette);
+	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, uint32_t subgroupSize, DrawingMethod potential, DrawingMethod silhouette);
 
 	void init(std::shared_ptr<GpuEdges> gpuEdges);
 
@@ -45,11 +45,11 @@ protected:
 	void _initShaders();
 	void _initBuffers();
 		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel, size_t& maxPath) const;
-		void _getMaximumNofEdgesInLevel(unsigned int level, size_t& potential, size_t& silhouette) const;
-			void _getNofEdgesInNode(unsigned int nodeId, size_t& potential, size_t& silhouette) const;
+		void _getMaximumNofEdgesInLevel(uint32_t level, size_t& potential, size_t& silhouette) const;
+			void _getNofEdgesInNode(uint32_t nodeId, size_t& potential, size_t& silhouette) const;
 
 	bool _generateLoadGpuTraversalShader3();
-	void _getPotentialSilhouetteEdgesGpu3(unsigned int lowestNodeContainingLight);
+	void _getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeContainingLight);
 
 	void _processSubBuffer(
 		const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer, 
@@ -63,10 +63,10 @@ protected:
 	void _allocSubBuffersDataBuffers();
 
 	void _calcPrefixSums();
-		void _calcPrefixSum(std::shared_ptr<ge::gl::Buffer> input, std::shared_ptr<ge::gl::Buffer> output, std::shared_ptr<ge::gl::Buffer> count, unsigned int worstCase, unsigned int tmpIndex);
+		void _calcPrefixSum(std::shared_ptr<ge::gl::Buffer> input, std::shared_ptr<ge::gl::Buffer> output, std::shared_ptr<ge::gl::Buffer> count, uint32_t worstCase, uint32_t tmpIndex);
 
-	void _calcSingleTwoLevelPrefixSumWgSizes(unsigned int maxNofPotSubBuffs, unsigned int maxNofSilSubBuffs);
-		unsigned int _getNearstLowerPow2(unsigned int x) const;
+	void _calcSingleTwoLevelPrefixSumWgSizes(uint32_t maxNofPotSubBuffs, uint32_t maxNofSilSubBuffs);
+		uint32_t _getNearstLowerPow2(uint32_t x) const;
 
 private:	
 	int _lastFrameCellIndex = -1;
@@ -137,12 +137,12 @@ private:
 	std::shared_ptr<ge::gl::Program> m_prefixSumShaderTwoLevel = nullptr;
 	std::shared_ptr<ge::gl::Program> m_prefixSumShaderAdd = nullptr;
 
-	unsigned int m_dataStride = 0;
-	unsigned int m_maxNofPotBuffers = 0;
-	unsigned int m_maxNofSilBuffers = 0;
-	unsigned int m_prefixSumWorkgroupSizeSingle = 0;
-	unsigned int m_prefixSumWorkgroupSizeTwoLevel = 0;
-	unsigned int m_prefixSumWorkgroupSizeSummation = 256;
+	uint32_t m_dataStride = 0;
+	uint32_t m_maxNofPotBuffers = 0;
+	uint32_t m_maxNofSilBuffers = 0;
+	uint32_t m_prefixSumWorkgroupSizeSingle = 0;
+	uint32_t m_prefixSumWorkgroupSizeTwoLevel = 0;
+	uint32_t m_prefixSumWorkgroupSizeSummation = 256;
 
-	unsigned int m_maxNofSubBuffersPath = 0;
+	uint32_t m_maxNofSubBuffersPath = 0;
 };

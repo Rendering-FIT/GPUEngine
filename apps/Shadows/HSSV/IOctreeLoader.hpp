@@ -10,7 +10,7 @@ class IOctreeLoader
 public:
 	virtual ~IOctreeLoader() {}
 
-	virtual bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges) = 0;
+	virtual bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges) = 0;
 	virtual void addEdgesOnLowestLevel(AdjacencyType edges) = 0;
 
 protected:

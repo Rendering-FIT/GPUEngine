@@ -6,35 +6,35 @@ class GpuOctreeLoaderCompress8 : public IGpuOctreeLoader
 {
 public:
 	void addEdgesOnLowestLevel(AdjacencyType edges) override;
-	bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges) override;
+	bool init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges) override;
 	void profile(AdjacencyType edges) override;
 
 protected:
 	void _createCompressionBuffers();
 	void _allocateOutputBuffersCompress(unsigned voxelsPerBatch);
-	void _calculateLimitsCompress(unsigned int nofEdges);
+	void _calculateLimitsCompress(uint32_t nofEdges);
 
 	bool _createBottomFillProgramCompress();
 
-	void _acquireGpuDataCompress(unsigned int startingVoxelAbsoluteIndex, unsigned int batchSize);
+	void _acquireGpuDataCompress(uint32_t startingVoxelAbsoluteIndex, uint32_t batchSize);
 		bool _isChunkDescValid(uint16_t desc) const;
 		void _copyChunk(const uint32_t* gpuData, uint32_t chunkStart, uint32_t* dstData, uint32_t chunkSize);
-		unsigned int _getNextChunkSize(int remainingSize, unsigned int chunkSize) const;
+		uint32_t _getNextChunkSize(int remainingSize, uint32_t chunkSize) const;
 
 	void _bindBuffersCompress();
 	void _unbindBuffersCompress();
 	
 	void _clearCompressionBuffers();
 
-	unsigned int _findNearestHigherPow2(unsigned int val) const;
+	uint32_t _findNearestHigherPow2(uint32_t val) const;
 
 private:
 
 	//Compression stuff
 	struct Limits
 	{
-		unsigned int chunkSizeNofBits;
-		unsigned int maxChunksPerParent;
+		uint32_t chunkSizeNofBits;
+		uint32_t maxChunksPerParent;
 	};
 
 	Limits _limits;

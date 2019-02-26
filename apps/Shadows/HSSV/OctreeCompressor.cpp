@@ -3,7 +3,7 @@
 #include <unordered_set>
 #include <iterator>
 
-void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, unsigned int compressLevelHeight_1or2)
+void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, uint32_t compressLevelHeight_1or2)
 {
 	if (!visitor)
 		return;
@@ -25,12 +25,12 @@ void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, un
 	}
 }
 
-std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(unsigned int edge, unsigned int startingId, bool checkPotential, unsigned int nofSyblings) const
+std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(uint32_t edge, uint32_t startingId, bool checkPotential, uint32_t nofSyblings) const
 {
 	std::bitset<BitmaskTypeSizeBits> retval(0);
 	auto octree = _visitor->getOctree();
 
-	for (unsigned int i = 0; i<nofSyblings; ++i)
+	for (uint32_t i = 0; i<nofSyblings; ++i)
 	{
 		const auto node = octree->getNode(i + startingId);
 		const auto& buffer = checkPotential ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
@@ -41,11 +41,11 @@ std::bitset<BitmaskTypeSizeBits> OctreeCompressor::checkEdgePresence(unsigned in
 	return retval;
 }
 
-void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPotential, unsigned int compressLevelHeight_1or2)
+void OctreeCompressor::_compressSyblings(uint32_t startingID, bool processPotential, uint32_t compressLevelHeight_1or2)
 {
-	std::unordered_set<unsigned int> allEdgesSet;
+	std::unordered_set<uint32_t> allEdgesSet;
 	int parent = startingID;
-	for (unsigned int i = 0; i < compressLevelHeight_1or2; ++i)
+	for (uint32_t i = 0; i < compressLevelHeight_1or2; ++i)
 		parent = _visitor->getOctree()->getNodeParent(parent);
 
 	const auto nofSyblings = ipow(OCTREE_NUM_CHILDREN, compressLevelHeight_1or2);
@@ -68,9 +68,9 @@ void OctreeCompressor::_compressSyblings(unsigned int startingID, bool processPo
 	}
 }
 
-void OctreeCompressor::_removeEdgeFromSyblingsSparse(unsigned int startingID, unsigned int edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, unsigned int nofSyblings)
+void OctreeCompressor::_removeEdgeFromSyblingsSparse(uint32_t startingID, uint32_t edge, bool checkPotential, const std::bitset<BitmaskTypeSizeBits>& bitmask, uint32_t nofSyblings)
 {
-	for (unsigned int i = 0; i<nofSyblings; ++i)
+	for (uint32_t i = 0; i<nofSyblings; ++i)
 	{
 		if (!bitmask[i])
 			continue;
@@ -87,7 +87,7 @@ void OctreeCompressor::_removeEdgeFromSyblingsSparse(unsigned int startingID, un
 	}
 }
 
-void OctreeCompressor::_assignEdgeToNodeParent(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+void OctreeCompressor::_assignEdgeToNodeParent(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId)
 {
 	const int parent = _visitor->getOctree()->getNodeParent(node);
 
@@ -96,7 +96,7 @@ void OctreeCompressor::_assignEdgeToNodeParent(unsigned int node, unsigned int e
 	_assignEdgeToNode(parent, edge, propagatePotential, subBufferId);
 }
 
-void OctreeCompressor::_assignEdgeToNode(unsigned int node, unsigned int edge, bool propagatePotential, BitmaskType subBufferId)
+void OctreeCompressor::_assignEdgeToNode(uint32_t node, uint32_t edge, bool propagatePotential, BitmaskType subBufferId)
 {
 	auto n = _visitor->getOctree()->getNode(node);
 

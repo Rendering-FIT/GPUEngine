@@ -10,13 +10,13 @@
 
 struct HSSVParams
 {
-	unsigned int maxOctreeLevel;
+	uint32_t maxOctreeLevel;
 	glm::vec3 sceneAABBscale;
 	glm::vec3 initialLightPos; //for build test only
-	unsigned int maxGpuMemoryToUsePerBuffer;
+	uint32_t maxGpuMemoryToUsePerBuffer;
 	unsigned char potentialDrawingMethod;
 	unsigned char silhouetteDrawingMethod;
-	unsigned int workgroupSize;
+	uint32_t workgroupSize;
 	float potSpeculativeFactor;
 	float silSpeculativeFactor;
 	bool forceOctreeBuild;

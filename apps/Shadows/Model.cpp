@@ -83,12 +83,12 @@ void Model::getTcoords(std::vector<float>& tcoords)
 #ifdef USE_FULL_SHADING
 void Model::getMaterialsTextures(std::vector<Material>& materials, std::vector<Texture>& textures)
 {
-	const unsigned int numMaterials = model->mNumMaterials;
+	const uint32_t numMaterials = model->mNumMaterials;
 	materials.resize(numMaterials);
 
 	std::vector<std::string> texPaths;
 
-	for(unsigned int i = 0; i<numMaterials; ++i)
+	for(uint32_t i = 0; i<numMaterials; ++i)
 	{
 		aiColor3D color;
 		float value;
@@ -306,7 +306,7 @@ layout(location=2)in vec2 tcoords;
 out vec3 vPosition;
 out vec3 vNormal;
 out vec2 vTexCoords;
-out flat unsigned int materialIndex;
+out flat uint32_t materialIndex;
 
 void main()
 {
@@ -330,7 +330,7 @@ layout(location=2)out vec4  fNormal;
 in vec3 vPosition;
 in vec3 vNormal;
 in vec2 vTexCoords;
-in flat unsigned int materialIndex;
+in flat uint32_t materialIndex;
 
 layout(std430,binding=0) readonly buffer textureSSBO
 {

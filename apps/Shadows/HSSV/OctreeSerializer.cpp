@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-std::string OctreeSerializer::_generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionRatio) const
+std::string OctreeSerializer::_generateFileName(const std::string& modelFilename, const glm::vec3& sceneScale, uint32_t deepestLevel, uint32_t compressionRatio) const
 {
 	std::stringstream str;
 	str << modelFilename << "_" << sceneScale[0] << "_" << sceneScale[1] << "_" << sceneScale[2] << "-" << deepestLevel << "c" << compressionRatio << ".hssvc";
@@ -12,7 +12,7 @@ std::string OctreeSerializer::_generateFileName(const std::string& modelFilename
 	return str.str();
 }
 
-std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, unsigned int deepestLevel, unsigned int compressionLevel)
+std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelFilename, const glm::vec3& sceneScale, uint32_t deepestLevel, uint32_t compressionLevel)
 {
 	FILE* input = fopen(_generateFileName(modelFilename, sceneScale, deepestLevel, compressionLevel).c_str(), "rb");
 	if (!input)
@@ -36,23 +36,23 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 	octree->setCompressionLevel(compressionLevel);
 
 	//Read node data
-	const unsigned int numNodes = octree->getTotalNumNodes();
+	const uint32_t numNodes = octree->getTotalNumNodes();
 
-	for (unsigned int i = 0; i < numNodes; ++i)
+	for (uint32_t i = 0; i < numNodes; ++i)
 	{
 		{
 			//Read number of potential subbuffers
-			const unsigned int numSubbuffersPotential = _readUint(input);
+			const uint32_t numSubbuffersPotential = _readUint(input);
 
 			auto node = octree->getNode(i);
 
-			for (unsigned int bufferId = 0; bufferId < numSubbuffersPotential; ++bufferId)
+			for (uint32_t bufferId = 0; bufferId < numSubbuffersPotential; ++bufferId)
 			{
 				//Read subbuffer id
 				const BitmaskType subbufferId = _readUint64(input);
 
 				//Read subbuffer size
-				const unsigned int subbufferSize = _readUint(input);
+				const uint32_t subbufferSize = _readUint(input);
 
 				//Read subbuffer data
 				_readUintBuffer(input, subbufferSize, node->edgesMayCastMap[subbufferId]);
@@ -61,17 +61,17 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 
 		{
 			//Read number of silhouette subbuffers
-			const unsigned int numSubbuffersSilhouette = _readUint(input);
+			const uint32_t numSubbuffersSilhouette = _readUint(input);
 
 			auto node = octree->getNode(i);
 
-			for (unsigned int bufferId = 0; bufferId < numSubbuffersSilhouette; ++bufferId)
+			for (uint32_t bufferId = 0; bufferId < numSubbuffersSilhouette; ++bufferId)
 			{
 				//Read subbuffer id
 				const BitmaskType subbufferId = _readUint64(input);
 
 				//Read subbuffer size
-				const unsigned int subbufferSize = _readUint(input);
+				const uint32_t subbufferSize = _readUint(input);
 
 				//Read subbuffer data
 				_readUintBuffer(input, subbufferSize, node->edgesAlwaysCastMap[subbufferId]);
@@ -100,8 +100,8 @@ void OctreeSerializer::storeToFile(const std::string& modelFilename, const glm::
 	_writeAabb(output, octree->getNode(0)->volume);
 
 	//Write nodes
-	const unsigned int nofNodes = octree->getTotalNumNodes();
-	for (unsigned int i = 0; i<nofNodes; ++i)
+	const uint32_t nofNodes = octree->getTotalNumNodes();
+	for (uint32_t i = 0; i<nofNodes; ++i)
 	{
 		auto node = octree->getNode(i);
 
@@ -169,7 +169,7 @@ void OctreeSerializer::_readAabb(FILE* f, AABB& bbox)
 	bbox.setMinMaxPoints(minP, maxP);
 }
 
-void OctreeSerializer::_readUintBuffer(FILE* f, unsigned int nofUints, std::vector<uint32_t>& buffer)
+void OctreeSerializer::_readUintBuffer(FILE* f, uint32_t nofUints, std::vector<uint32_t>& buffer)
 {
 	if (!nofUints)
 		return;

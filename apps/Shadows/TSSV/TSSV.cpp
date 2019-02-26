@@ -90,7 +90,7 @@ void TSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	this->_sidesVAO->addElementBuffer(_sidesEBO);
 }
 
-void TSSV::_initSidesProgram(bool UseReferenceEdge, bool CullSides, bool UseStencilValueExport, unsigned int maxMultiplicity)
+void TSSV::_initSidesProgram(bool UseReferenceEdge, bool CullSides, bool UseStencilValueExport, uint32_t maxMultiplicity)
 {
 	STSSilTemplate TTS;
 	TTS.Version = 430;

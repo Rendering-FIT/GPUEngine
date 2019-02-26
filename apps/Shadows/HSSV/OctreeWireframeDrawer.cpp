@@ -86,7 +86,7 @@ void OctreeWireframeDrawer::_initBuffers()
 
 	//Generate single cell geometry, based on scale (all cells are same size)
 	glm::vec3 vertices[8];
-	for(unsigned int i=0; i<8; ++i)
+	for(uint32_t i=0; i<8; ++i)
 	{
 		vertices[i] = glm::vec3(0.5 *((i & 1) ? 1.0f : -1.0f), 0.5 * ((i & 2) ? 1.0f : -1.0f), 0.5*((i & 4) ? 1.0f : -1.0f)) * extents;
 	}
@@ -119,7 +119,7 @@ void OctreeWireframeDrawer::_initBuffers()
 	std::vector<glm::vec3> offsets;
 	offsets.resize(levelSize);
 
-	for(unsigned int i = startIndex; i<(startIndex + levelSize); ++i)
+	for(uint32_t i = startIndex; i<(startIndex + levelSize); ++i)
 	{
 		const auto node = _octree->getNode(i);
 		offsets[i - startIndex] = node->volume.getCenterPoint();

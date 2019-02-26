@@ -39,7 +39,7 @@ inline void getEdgeOppositeVertices(AdjacencyType ad, size_t edgeId, std::vector
 	const auto nofOpposite = getNofOppositeVertices(ad, edgeId);
 	vertices.reserve(nofOpposite);
 
-	for(unsigned int i = 0; i<nofOpposite; ++i)
+	for(uint32_t i = 0; i<nofOpposite; ++i)
 		vertices.push_back(*(reinterpret_cast<const glm::vec3*>(ad->getVertices() + ad->getOpposite(edgeId, i))));
 }
 

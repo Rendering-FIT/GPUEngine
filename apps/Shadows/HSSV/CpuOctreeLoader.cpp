@@ -6,7 +6,7 @@
 #include "GeometryOperations.hpp"
 
 
-bool CpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, unsigned int nofEdges)
+bool CpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges)
 {
 	_octree = octree;
 
@@ -34,7 +34,7 @@ void CpuOctreeLoader::_generateEdgePlanes(const AdjacencyType edges, std::vector
 
 	planes.resize(numEdges);
 
-	unsigned int index = 0;
+	uint32_t index = 0;
 
 	for (size_t i = 0; i<numEdges; ++i)
 	{
@@ -44,7 +44,7 @@ void CpuOctreeLoader::_generateEdgePlanes(const AdjacencyType edges, std::vector
 		const glm::vec3& v1 = getEdgeVertexLow(edges, i);
 		const glm::vec3& v2 = getEdgeVertexHigh(edges, i);
 
-		for (unsigned int j = 0; j<nofOpposites; ++j)
+		for (uint32_t j = 0; j<nofOpposites; ++j)
 		{
 			Plane p;
 			p.createFromPointsCCW(v1, getOppositeVertex(edges, i, j), v2);
@@ -73,16 +73,16 @@ void CpuOctreeLoader::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& 
 	}
 }
 
-void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, unsigned int startingID)
+void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, uint32_t startingID)
 {
-	unsigned int edgeIndex = 0;
+	uint32_t edgeIndex = 0;
 
 	const int parent = _octree->getNodeParent(startingID);
 
 	const size_t nofEdges = edges->getNofEdges();
 	for (size_t edgeIndex = 0; edgeIndex < nofEdges; ++edgeIndex)
 	{
-		unsigned int numPotential = 0;
+		uint32_t numPotential = 0;
 
 		std::bitset<8> potentialBitmask(0);
 		std::unordered_map<int, std::bitset<8>> silhouetteBitmasks;
@@ -91,7 +91,7 @@ void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::v
 
 		const auto numOppositeVertices = edges->getNofOpposite(edgeIndex);
 
-		for (unsigned int index = startingID; index<(startingID + OCTREE_NUM_CHILDREN); index++)
+		for (uint32_t index = startingID; index<(startingID + OCTREE_NUM_CHILDREN); index++)
 		{
 			const bool isPotentiallySilhouette = numOppositeVertices>1 && GeometryOps::isEdgeSpaceAaabbIntersecting(edgePlanes[edgeIndex][0], edgePlanes[edgeIndex][1], _octree->getNodeVolume(index));
 
@@ -105,7 +105,7 @@ void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::v
 				const int multiplicity = GeometryOps::calcEdgeMultiplicity(edges, edgeIndex, _octree->getNodeVolume(index).getMinPoint());
 				if (multiplicity != 0)
 				{
-					const auto encodedEdge = encodeEdgeMultiplicityToId(unsigned int(edgeIndex), multiplicity);
+					const auto encodedEdge = encodeEdgeMultiplicityToId(uint32_t(edgeIndex), multiplicity);
 					silhouetteBitmasks[encodedEdge][index - startingID] = true;
 				}
 			}
@@ -115,7 +115,7 @@ void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::v
 		{
 			if (potentialBitmask.count() > 3)
 			{
-				_storeEdgeIsPotentiallySilhouette(parent, unsigned int(edgeIndex), potentialBitmask.to_ullong());
+				_storeEdgeIsPotentiallySilhouette(parent, uint32_t(edgeIndex), potentialBitmask.to_ullong());
 				numPotential = 0;
 			}
 
@@ -131,16 +131,16 @@ void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::v
 			}
 		}
 
-		for (unsigned int i = 0; i<numPotential; ++i)
-			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], unsigned int(edgeIndex), BitmaskAllSet);
+		for (uint32_t i = 0; i<numPotential; ++i)
+			_storeEdgeIsPotentiallySilhouette(potentialIndices[i], uint32_t(edgeIndex), BitmaskAllSet);
 
 		//Store each silhouette edge variant in leaves
 		for (auto sil = silhouetteBitmasks.cbegin(); sil != silhouetteBitmasks.cend(); ++sil)
 		{
 			const auto count = sil->second.count();
-			unsigned int currentPosition = 0;
+			uint32_t currentPosition = 0;
 
-			for (unsigned int i = 0; i<count; ++i)
+			for (uint32_t i = 0; i<count; ++i)
 			{
 				while (!sil->second[currentPosition]) ++currentPosition;
 
@@ -165,7 +165,7 @@ bool CpuOctreeLoader::_doAllSilhouetteFaceTheSame(const int(&indices)[OCTREE_NUM
 {
 	const int first = indices[0];
 
-	for (unsigned int i = 1; i<OCTREE_NUM_CHILDREN; ++i)
+	for (uint32_t i = 1; i<OCTREE_NUM_CHILDREN; ++i)
 	{
 		if (indices[i] != first)
 			return false;
@@ -174,7 +174,7 @@ bool CpuOctreeLoader::_doAllSilhouetteFaceTheSame(const int(&indices)[OCTREE_NUM
 	return true;
 }
 
-void CpuOctreeLoader::_storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned int augmentedEdgeIdWithResult, const BitmaskType subarrayIndex)
+void CpuOctreeLoader::_storeEdgeIsAlwaysSilhouette(uint32_t nodeId, uint32_t augmentedEdgeIdWithResult, const BitmaskType subarrayIndex)
 {
 	auto node = _octree->getNode(nodeId);
 
@@ -183,7 +183,7 @@ void CpuOctreeLoader::_storeEdgeIsAlwaysSilhouette(unsigned int nodeId, unsigned
 	node->edgesAlwaysCastMap[subarrayIndex].push_back(augmentedEdgeIdWithResult);
 }
 
-void CpuOctreeLoader::_storeEdgeIsPotentiallySilhouette(unsigned int nodeID, unsigned int edgeID, const BitmaskType subarrayIndex)
+void CpuOctreeLoader::_storeEdgeIsPotentiallySilhouette(uint32_t nodeID, uint32_t edgeID, const BitmaskType subarrayIndex)
 {
 	auto node = _octree->getNode(nodeID);
 

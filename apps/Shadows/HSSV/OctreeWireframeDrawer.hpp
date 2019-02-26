@@ -20,7 +20,7 @@ protected:
 
 private:
 	std::shared_ptr<Octree> _octree;
-	unsigned int _instanceCount = 0;
+	uint32_t _instanceCount = 0;
 
 	std::shared_ptr<ge::gl::Buffer> _vbo;
 	std::shared_ptr<ge::gl::VertexArray> _vao;

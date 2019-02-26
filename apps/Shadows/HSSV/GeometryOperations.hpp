@@ -63,7 +63,7 @@ namespace GeometryOps
 
 		const TestResult result = interpretResult(testPlanePoint(plane, points[0]));
 
-		for (unsigned int i = 1; i < 8; ++i)
+		for (uint32_t i = 1; i < 8; ++i)
 		{
 			TestResult r = interpretResult(testPlanePoint(plane, points[i]));
 

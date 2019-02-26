@@ -15,9 +15,9 @@ class GpuOctreeEdgePropagator
 {
 public:
 
-	void propagateEdgesToUpperLevel(unsigned int level, BufferType type);
+	void propagateEdgesToUpperLevel(uint32_t level, BufferType type);
 
-	bool init(std::shared_ptr<Octree> octree, unsigned int subgroupSize, size_t maxBufferSizeMB);
+	bool init(std::shared_ptr<Octree> octree, uint32_t subgroupSize, size_t maxBufferSizeMB);
 
 	void profile();
 
@@ -32,12 +32,12 @@ protected:
 	void _unbindBuffers();
 
 
-	unsigned int _getLevelMaxNofVoxels(unsigned int level, BufferType type) const;
+	uint32_t _getLevelMaxNofVoxels(uint32_t level, BufferType type) const;
 
-	void _loadVoxelEdgesStartingFrom(unsigned int startingVoxel, unsigned int endVoxel, BufferType type, std::vector<uint32_t>& sizes);
-		size_t _getSyblingsBufferSizeAndMaximum(unsigned int startingId, BufferType type, unsigned int& maxSize);
+	void _loadVoxelEdgesStartingFrom(uint32_t startingVoxel, uint32_t endVoxel, BufferType type, std::vector<uint32_t>& sizes);
+		size_t _getSyblingsBufferSizeAndMaximum(uint32_t startingId, BufferType type, uint32_t& maxSize);
 
-	void _updateCpuData(unsigned int startingIndex, unsigned int batchSize, unsigned int maxEdgesPerVoxel, BufferType type, const std::vector<unsigned int>& sizePrefixSum);
+	void _updateCpuData(uint32_t startingIndex, uint32_t batchSize, uint32_t maxEdgesPerVoxel, BufferType type, const std::vector<uint32_t>& sizePrefixSum);
 
 	std::shared_ptr<ge::gl::Program> _propagateProgram;
 
@@ -51,6 +51,6 @@ protected:
 
 	std::shared_ptr<Octree> _octree;
 
-	unsigned int _wgSize = 0;
+	uint32_t _wgSize = 0;
 	size_t _maxBufferSize = 0;
 };

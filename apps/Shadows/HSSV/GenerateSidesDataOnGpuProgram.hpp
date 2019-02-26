@@ -41,14 +41,14 @@ int getChildrenStartingId(uint nodeID, uint nodeLevel)
 
 //In iterative manner
 //Not expecting to have a lot of buffers
-const std::string genGetNodeFromBuffer(unsigned int numBuffers)
+const std::string genGetNodeFromBuffer(uint32_t numBuffers)
 {
 	std::stringstream str;
 
 	str << "uint getNodeFromBuffer(uint nodeIndex, uint bufferId)\n";
 	str << "{\n";
 
-	for(unsigned int i = 0; i<numBuffers; ++i)
+	for(uint32_t i = 0; i<numBuffers; ++i)
 	{
 		str << "\tif(bufferId==" << i << ") return edges" << i << "[nodeIndex];\n";
 	}
@@ -58,7 +58,7 @@ const std::string genGetNodeFromBuffer(unsigned int numBuffers)
 	return str.str();
 }
 
-std::string genBuffer(unsigned int i)
+std::string genBuffer(uint32_t i)
 {
 	std::stringstream str;
 	str << "layout(std430, binding = " << i << ") readonly buffer _edges" << i << "{uint edges" << i << "[]; };\n";
@@ -88,7 +88,7 @@ int getLSB64(uint64_t num)
 
 ).";
 
-std::string getCompressionIdWithinParentFunction(unsigned int compressionLevel)
+std::string getCompressionIdWithinParentFunction(uint32_t compressionLevel)
 {
 	const std::string c1 = R".(
 uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint compressionParentLevel)
@@ -118,7 +118,7 @@ uint getCompressionIdWithinParent(uint nodeId, uint compressionParentId, uint co
 	return c2;
 }
 
-std::string isCompressionIdPresentFunction(unsigned int compressionLevel)
+std::string isCompressionIdPresentFunction(uint32_t compressionLevel)
 {
 	//Assumption is that id is 8-bit
 	const std::string c1 = R".(
@@ -150,7 +150,7 @@ bool isCompressionIdPresent(const uint nodeCompressionId, const uint startingInd
 	return c2;
 }
 
-std::string genPrologue(unsigned int workgroupSize)
+std::string genPrologue(uint32_t workgroupSize)
 {
 	std::stringstream str;
 	str << "#version 450 core\n";
@@ -164,8 +164,8 @@ std::string genPrologue(unsigned int workgroupSize)
 
 std::string genGetSubBufferId()
 {
-	const unsigned int tmp = BitmaskTypeSizeBits / 32;
-	const unsigned int nofUints = tmp ? tmp : 1;
+	const uint32_t tmp = BitmaskTypeSizeBits / 32;
+	const uint32_t nofUints = tmp ? tmp : 1;
 
 	std::stringstream str;
 
@@ -173,7 +173,7 @@ std::string genGetSubBufferId()
 	str << "{\n";
 	str << "	uint retval[NOF_UINTS_PER_COMPRESSION_ID];\n";
 
-	for (unsigned int i = 0; i < nofUints; ++i)
+	for (uint32_t i = 0; i < nofUints; ++i)
 	{
 		str << "	retval[" << i << "] = nodeInfo[shm_startingIndexToNodeInfo + NOF_UINTS_PER_NOF_SUBBUFFERS + NOF_UINTS_PER_SUBBUFFER_INFO*(subBufferIndex) + " << i << "];\n";
 	}
@@ -184,7 +184,7 @@ std::string genGetSubBufferId()
 	return str.str();
 }
 
-std::string genStoreBufferID(unsigned int nofBuffers)
+std::string genStoreBufferID(uint32_t nofBuffers)
 {
 	std::stringstream str;
 
@@ -240,10 +240,12 @@ std::string genStoreBufferID(unsigned int nofBuffers)
 	return str.str();
 }
 
-std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, unsigned int workgroupSize)
+std::string genBufferPreprocessShaderNoCompreess(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, uint32_t workgroupSize)
 {
-	const unsigned int numBuffers = unsigned int(lastNodePerEdgeBuffer.size());
-	const unsigned int compressionLevel = unsigned int(octree->getCompressionLevel());
+	const uint32_t numBuffers = uint32_t(lastNodePerEdgeBuffer.size());
+	const uint32_t compressionLevel = uint32_t(octree->getCompressionLevel());
+
+	assert(compressionLevel == 0);
 
 	std::stringstream str;
 
@@ -251,7 +253,135 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 
 	str << "\n";
 
-	unsigned int currentIndex = 0;
+	uint32_t currentIndex = 0;
+
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
+
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialBuffers[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _silhouette{ uint silhouetteBuffers[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotBuffers{ uint nofPotBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilBuffers{ uint nofSilBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotEdges{ uint nofPotEdges; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilEdges{ uint nofSilEdges; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nodeInfoBuffer {uint nodeInfo[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nodeInfoBufferIndexing {uint nodeInfoIndexing[]; };\n";
+
+	str << "uniform uint cellContainingLight;\n\n";
+
+	str << "const uint treeDepth = " << octree->getDeepestLevel() << ";\n";
+	const uint32_t tmpNofUints = ipow(OCTREE_NUM_CHILDREN, compressionLevel) / 32;
+	const uint32_t nofUintsPerCompressionId = std::is_same<unsigned char, BitmaskType>::value ? 1 : 2;
+	const uint32_t nofUintsPerNodeInfo = nofUintsPerCompressionId + 1;
+	str << "#define NOF_UINTS_PER_COMPRESSION_ID " << nofUintsPerCompressionId << "\n";
+	str << "#define NOF_UINTS_PER_SUBBUFFER_INFO " << nofUintsPerNodeInfo << "\n";
+	str << "#define NOF_UINTS_PER_NOF_SUBBUFFERS 2\n\n";
+
+	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
+	const std::vector<uint32_t> ls = octree->getLevelSizeInclusiveSum();
+	for (uint32_t i = 0; i < ls.size(); ++i)
+	{
+		str << ls[i];
+		if (i != (ls.size() - 1))
+			str << ", ";
+	}
+	str << ");\n";
+
+	if (numBuffers > 1)
+	{
+		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
+		for (uint32_t i = 0; i < numBuffers; ++i)
+		{
+			str << lastNodePerEdgeBuffer[i];
+			if (i != (numBuffers - 1))
+				str << ", ";
+		}
+		str << ");\n";
+	}
+
+	if (numBuffers > 1)
+	{
+		str << genFindBufferFunc();
+	}
+
+	const uint32_t nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
+	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n";
+
+	str << traversalSupportFunctions;
+
+	str << findLsbFunction;
+
+	str << genStoreBufferID(numBuffers);
+
+	//Shared memory
+	str << "shared uint shm_nofPotSilBuffers[2];\n";
+	str << "shared uint shm_startingIndexToNodeInfo;\n\n";
+
+	str << genGetSubBufferId();
+
+	//main
+	str << "void main()\n";
+	str << "{\n";
+	str << "	int currentNode = int(cellContainingLight);\n";
+	str << "	for(int currentLevel = int(treeDepth); currentLevel >=0; --currentLevel)\n";
+	str << "	{\n";
+	str << "		//First in warp - get info\n";
+	str << "		if(gl_LocalInvocationIndex==0)\n";
+	str << "		{\n";
+	str << "			shm_startingIndexToNodeInfo = nodeInfoIndexing[currentNode];\n";
+	str << "			shm_nofPotSilBuffers[0] = nodeInfo[shm_startingIndexToNodeInfo + 0];\n";
+	str << "			shm_nofPotSilBuffers[1] = nodeInfo[shm_startingIndexToNodeInfo + 1];\n";
+	str << "		}\n";
+	str << "\n";
+	str << "		barrier();\n";
+	str << "\n";
+	str << "		//Check if pot/sil\n";
+	str << "		const uint nofPot = shm_nofPotSilBuffers[0];\n";
+	str << "		const uint nofSil = shm_nofPotSilBuffers[1];\n";
+	str << "		const bool isActive = gl_GlobalInvocationID.x < (nofPot + nofSil);\n";
+	str << "		const bool isPotential = gl_GlobalInvocationID.x < nofPot;\n";
+	str << "\n";
+	str << "		if(isActive)\n";
+	str << "		{\n";
+	str << "			uint subbufferId[NOF_UINTS_PER_COMPRESSION_ID] = getBufferId(gl_GlobalInvocationID.x);\n";
+	if (numBuffers > 1)
+		str << "			const uint bufferNum = getNodeBufferIndex(currentNode);\n";
+	str << "			const uint bufferStart = nodeInfo[shm_startingIndexToNodeInfo + NOF_UINTS_PER_NOF_SUBBUFFERS + NOF_UINTS_PER_SUBBUFFER_INFO*(gl_GlobalInvocationID.x) + NOF_UINTS_PER_COMPRESSION_ID];\n";
+	str << "			const uint startCurrent = nofEdgesPrefixSum[bufferStart];\n";
+	str << "			const uint endCurrent = nofEdgesPrefixSum[bufferStart + 1];\n";
+	str << "			const uint numEdges = endCurrent - startCurrent;\n";
+	str << "\n";
+	str << "			//Store\n";
+	str << "			const uint64_t votePotential = ballotARB(isPotential);\n";
+	str << "			const uint64_t voteSilhouette = ballotARB(!isPotential);\n";
+	str << "			const uint64_t voteRes = isPotential ? votePotential : voteSilhouette;\n";
+	if (numBuffers > 1)
+		str << "			storeBufferInfo(voteRes, isPotential, startCurrent, bufferNum, numEdges);\n";
+	else
+		str << "			storeBufferInfo(voteRes, isPotential, startCurrent, numEdges);\n";
+	str << "		}\n";
+	str << "		currentNode = getNodeParent(currentNode, currentLevel);\n";
+	str << "		barrier();\n";
+	str << "	}\n";
+	str << "}\n";
+
+	return str.str();
+}
+
+std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, uint32_t workgroupSize)
+{
+	const uint32_t numBuffers = uint32_t(lastNodePerEdgeBuffer.size());
+	const uint32_t compressionLevel = uint32_t(octree->getCompressionLevel());
+
+	if (compressionLevel == 0)
+		return genBufferPreprocessShaderNoCompreess(lastNodePerEdgeBuffer, octree, workgroupSize);
+
+	std::stringstream str;
+
+	str << genPrologue(workgroupSize);
+
+	str << "\n";
+
+	uint32_t currentIndex = 0;
 
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
 
@@ -268,16 +398,16 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 
 	str << "const uint treeDepth = " << octree->getDeepestLevel() << ";\n";
 	str << "#define COMPRESSION_LEVEL " << compressionLevel << "\n";
-	const unsigned int tmpNofUints = ipow(OCTREE_NUM_CHILDREN, compressionLevel) / 32;
-	const unsigned int nofUintsPerCompressionId = tmpNofUints ? tmpNofUints : 1;
-	const unsigned int nofUintsPerNodeInfo = nofUintsPerCompressionId + 1;
+	const uint32_t tmpNofUints = ipow(OCTREE_NUM_CHILDREN, compressionLevel) / 32;
+	const uint32_t nofUintsPerCompressionId = tmpNofUints ? tmpNofUints : 1;
+	const uint32_t nofUintsPerNodeInfo = nofUintsPerCompressionId + 1;
 	str << "#define NOF_UINTS_PER_COMPRESSION_ID " << nofUintsPerCompressionId << "\n";
 	str << "#define NOF_UINTS_PER_SUBBUFFER_INFO " << nofUintsPerNodeInfo << "\n";
 	str << "#define NOF_UINTS_PER_NOF_SUBBUFFERS 2\n\n";
 
 	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
-	const std::vector<unsigned int> ls = octree->getLevelSizeInclusiveSum();
-	for (unsigned int i = 0; i < ls.size(); ++i)
+	const std::vector<uint32_t> ls = octree->getLevelSizeInclusiveSum();
+	for (uint32_t i = 0; i < ls.size(); ++i)
 	{
 		str << ls[i];
 		if (i != (ls.size() - 1))
@@ -288,7 +418,7 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 	if (numBuffers > 1)
 	{
 		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
-		for (unsigned int i = 0; i < numBuffers; ++i)
+		for (uint32_t i = 0; i < numBuffers; ++i)
 		{
 			str << lastNodePerEdgeBuffer[i];
 			if (i != (numBuffers - 1))
@@ -302,7 +432,7 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 		str << genFindBufferFunc();
 	}
 
-	const unsigned int nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
+	const uint32_t nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
 	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n";
 
 	str << traversalSupportFunctions;
@@ -311,8 +441,8 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 
 	str << genStoreBufferID(numBuffers);
 
-	str << getCompressionIdWithinParentFunction(octree->getCompressionLevel());
-	str << isCompressionIdPresentFunction(octree->getCompressionLevel());
+	str << getCompressionIdWithinParentFunction(compressionLevel);
+	str << isCompressionIdPresentFunction(compressionLevel);
 
 	//Shared memory
 	str << "shared uint shm_nofPotSilBuffers[2];\n";
@@ -374,20 +504,20 @@ std::string genBufferPreprocessShader(const std::vector<uint32_t>& lastNodePerEd
 	return str.str();
 }
 
-std::string genCopyShader3(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, unsigned int workgroupSize)
+std::string genCopyShader3(const std::vector<uint32_t>& lastNodePerEdgeBuffer, uint32_t workgroupSize)
 {
 	std::stringstream str;
-	const unsigned int numBuffers = unsigned int(lastNodePerEdgeBuffer.size());
+	const uint32_t numBuffers = uint32_t(lastNodePerEdgeBuffer.size());
 	str << genPrologue(workgroupSize);
 
-	for (unsigned int i = 0; i < numBuffers; ++i)
+	for (uint32_t i = 0; i < numBuffers; ++i)
 		str << genBuffer(i);
 
 	str << "\n";
 
-	unsigned int currentIndex = numBuffers;
+	uint32_t currentIndex = numBuffers;
 
-	const unsigned int nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
+	const uint32_t nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
 
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inPot{ uint inPotential[]; };\n";
 	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _inSil{ uint inSilhouette[]; };\n";
@@ -407,7 +537,7 @@ std::string genCopyShader3(const std::vector<uint32_t>& lastNodePerEdgeBuffer, s
 	if (numBuffers > 1)
 	{
 		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
-		for (unsigned int i = 0; i < numBuffers; ++i)
+		for (uint32_t i = 0; i < numBuffers; ++i)
 		{
 			str << lastNodePerEdgeBuffer[i];
 			if (i != (numBuffers - 1))
@@ -583,7 +713,7 @@ void main()
 	return str.str();
 }
 
-std::string genPrefixSumKernelSimple(unsigned int workgroupSize)
+std::string genPrefixSumKernelSimple(uint32_t workgroupSize)
 {
 	std::stringstream str;
 
@@ -693,7 +823,7 @@ void main()
 	return str.str();
 }
 
-std::string genPrefixSumKernelTwoLevel(unsigned int workgroupSize)
+std::string genPrefixSumKernelTwoLevel(uint32_t workgroupSize)
 {
 	std::stringstream str;
 
@@ -824,7 +954,7 @@ void main()
 	return str.str();
 }
 
-std::string generateSummationKernel(unsigned int workgroupSize)
+std::string generateSummationKernel(uint32_t workgroupSize)
 {
 	std::stringstream str;
 	str << "#version 450 core\n";
