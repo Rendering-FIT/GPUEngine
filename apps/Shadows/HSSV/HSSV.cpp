@@ -90,8 +90,9 @@ HSSV::HSSV(
 					_visitor = std::make_shared<OctreeVisitor>(_octree);
 					t.reset();
 					_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
-					if (!useGpuCompression)
+					if (!useGpuCompression && !hssvParams.noCompression)
 					{
+						std::cout << "Compressing on CPU...\n";
 						OctreeCompressor compressor;
 						compressor.compressOctree(_visitor, compressionLevel);
 					}
@@ -112,7 +113,7 @@ HSSV::HSSV(
 
 				std::string str;
 				//str = "depth " + std::to_string(depth) + " scale " + std::to_string(scale) + " buildTime " + std::to_string(buildTime) + " sizeMB " + std::to_string(octreeSizeMB) + " potEdges " + std::to_string(potentialEdges.size()) + " silEdges " + std::to_string(silhouetteEdges.size()) + "\n";
-				saveFile << std::scientific << std::setw(3) << depth << std::setw(5) << scale << std::setw(10) << buildTime << std::setw(5) << octreeSizeMB << std::setw(10) << potentialEdges.size() << std::setw(10) << silhouetteEdges.size() << "\n";
+				saveFile << std::scientific << std::setw(5) << depth << std::setw(10) << scale << std::setw(10) << buildTime << std::setw(5) << octreeSizeMB << std::setw(10) << potentialEdges.size() << std::setw(10) << silhouetteEdges.size() << "\n";
 				//saveFile << str;
 				std::cerr << str;
 			}

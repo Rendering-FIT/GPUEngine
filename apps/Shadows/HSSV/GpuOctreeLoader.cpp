@@ -356,19 +356,7 @@ void GpuOctreeLoader::_acquireGpuData(uint32_t startingVoxelAbsoluteIndex, uint3
 		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
 			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*i), _bufferNofPotential[i] * sizeof(uint32_t));
 	}
-
-	// Process parents
-	const uint32_t startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
-	for(uint32_t i = 0; i<numParents; ++i)
-	{
-		auto node = _octree->getNode(startingParent + i);
-		const uint32_t parentIndex = batchSize + i;
-
-		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[parentIndex]);
-		memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
-	}
-	_voxelPotentialEdges->unmap();
-
+	
 	//--SILHOUETTE--
 	const uint32_t* bSilhouette = reinterpret_cast<uint32_t*>(_voxelSilhouetteEdges->map(GL_READ_ONLY));
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
@@ -383,7 +371,10 @@ void GpuOctreeLoader::_acquireGpuData(uint32_t startingVoxelAbsoluteIndex, uint3
 	}
 
 	// Process parents
-	for (uint32_t i = 0; i<numParents; ++i)
+	const uint32_t startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
+
+	#pragma omp parallel for 
+	for (int i = 0; i<numParents; ++i)
 	{
 		auto node = _octree->getNode(startingParent + i);
 		const uint32_t parentIndex = batchSize + i;
@@ -391,9 +382,14 @@ void GpuOctreeLoader::_acquireGpuData(uint32_t startingVoxelAbsoluteIndex, uint3
 		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[parentIndex]);
 		if (!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
 			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (_silBufferOffset*parentIndex), _bufferNofSilhouette[parentIndex] * sizeof(uint32_t));
+
+		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[parentIndex]);
+		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
+			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
 	}
 	
 	_voxelSilhouetteEdges->unmap();
+	_voxelPotentialEdges->unmap();
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
