@@ -83,6 +83,7 @@ struct Application{
   size_t      testFlyLength            = 0            ;
   size_t      testFramesPerMeasurement = 5            ;
   std::string testOutputName           = "measurement";
+  glm::uvec3  lightGrid				   = glm::uvec3(1);
 
   std::string modelName  = "";
   std::string methodName = "";
@@ -95,6 +96,8 @@ struct Application{
   void initCamera();
   void draw();
   void measure();
+  void measureLightGrid();
+
   void drawScene();
   bool mouseMove(SDL_Event const&event);
   void printCamParams();
@@ -174,7 +177,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->tssvParams.UseStencilValueExport = arg->isPresent("--tssv-useStencilExport" "Use stencil value export");
 
   this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
-  this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 5.f,5.f,5.f}, "Defines octree volume in terms of scene AABB scaling"));
+  this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 1.f,1.f,1.f}, "Defines octree volume in terms of scene AABB scaling"));
   this->hssvParams.maxGpuMemoryToUsePerBuffer = arg->geti32("--hssv-maxBufSize", 2048, "Amount of GPU memory to use during octree build for potential edges buffer, default 2048MB. It's not total memory consumption, usually ~x2");
   this->hssvParams.potentialDrawingMethod = arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
   this->hssvParams.silhouetteDrawingMethod = arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
@@ -188,11 +191,12 @@ void Application::parseArguments(int argc,char*argv[]){
   this->hssvParams.doBuildTest = arg->getu32("--hssv-buildTest", 0, "Performs build benchmark on input scene and light position") != 0;
   this->hssvParams.noCompression = arg->getu32("--hssv-noCompress", 0, "Performs build benchmark on input scene and light position") != 0;
 
-  this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or empty"                                    );
+  this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or grid"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
   this->testFlyLength            = arg->geti32("--test-fly-length"          ,1000         ,"number of measurements, 1000"                                   );
   this->testFramesPerMeasurement = arg->geti32("--test-framesPerMeasurement",5            ,"number of frames that is averaged per one measurement point"    );
   this->testOutputName           = arg->gets  ("--test-output"              ,"measurement","name of output file"                                            );
+  this->lightGrid = vector2uvec3(arg->getu32v("--test-gridSize", {1, 1, 1 }, "Nof of division of light grid per axis"));
 
   bool printHelp = arg->isPresent("-h","prints this help");
 
@@ -482,12 +486,101 @@ void Application::measure(){
   this->mainLoop->removeWindow(this->window->getId());
 }
 
+void Application::measureLightGrid()
+{
+	assert(this != nullptr);
+	
+	std::map<std::string, float>measurement;
+	this->timeStamper->setPrinter([&](std::vector<std::string>const&names, std::vector<float>const&values)
+	{
+		for (size_t i = 0; i<names.size(); ++i)
+			if (names[i] != "") {
+				if (measurement.count(names[i]) == 0)measurement[names[i]] = 0.f;
+				measurement[names[i]] += values[i];
+				}});
+
+	std::vector<std::vector<std::string>>csv;
+
+	std::vector<float> verts;
+	this->model->getVertices(verts);
+	auto const nofVertices = verts.size();
+
+	AABB bbox;
+	bbox.updateWithVerticesVec3(verts.data(), verts.size());
+	/*
+	for(uint32_t i =0; i< nofVertices; i+=3)
+	{
+		bbox.updateWithVertex(glm::vec3(verts[i + 0], verts[i + 1], verts[i + 2]));
+	}
+	*/
+	glm::vec3 extents = bbox.getExtents() * hssvParams.sceneAABBscale;
+
+	bbox.setCenterExtents(bbox.getCenterPoint(), extents);
+	extents = bbox.getExtents();
+	auto const minPoint = bbox.getMinPoint();
+	auto const unitSize = extents / glm::vec3(lightGrid.x, lightGrid.y, lightGrid.z);
+	auto const offset = unitSize / 2.0f;
+
+	//--
+	glm::vec3 minP = bbox.getMinPoint();
+	glm::vec3 maxP = bbox.getMaxPoint();
+	std::cout << "TESTING space: " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
+	//--
+
+	size_t k = 0;
+
+	for (size_t z = 0; z<lightGrid.z; ++z)
+		for (size_t y = 0; y<lightGrid.y; ++y)
+			for (size_t x = 0; x<lightGrid.x; ++x)
+	{
+		lightPosition = glm::vec4(minPoint + offset + unitSize * glm::vec3(x, y, z), 1);
+
+		SDL_Event event;
+		for (size_t f = 0; f < this->testFramesPerMeasurement; ++f)
+		{
+			while (SDL_PollEvent(&event));
+			this->drawScene();
+		}
+
+		std::vector<std::string>line;
+
+		if (csv.size() == 0) 
+		{
+			line.push_back("frame");
+			for (auto const&x : measurement)
+				if (x.first != "")line.push_back(x.first);
+			csv.push_back(line);
+			line.clear();
+		}
+
+		line.push_back(ge::core::value2str(k));
+
+		for (auto const&x : measurement)
+			if (x.first != "")
+				line.push_back(ge::core::value2str(x.second / float(this->testFramesPerMeasurement)));
+
+		csv.push_back(line);
+		measurement.clear();
+		this->window->swap();
+		
+		++k;
+	}
+	std::string output = this->testOutputName + ".csv";
+	saveCSV(output, csv);
+	this->mainLoop->removeWindow(this->window->getId());
+}
+
 void Application::draw(){
   assert(this!=nullptr);
 
   if(this->testName == "fly"){
     this->measure();
     return;
+  }
+
+  if (this->testName == "grid") {
+	  this->measureLightGrid();
+	  return;
   }
 
   if(this->cameraType == "free"){

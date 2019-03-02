@@ -136,7 +136,7 @@ void AABB::getExtents(float& x, float& y, float& z) const
 	z = _extentZ;
 }
 
-glm::vec3 AABB::getExtents()
+glm::vec3 AABB::getExtents() const
 {
 	return glm::vec3(_extentX, _extentY, _extentZ);
 }

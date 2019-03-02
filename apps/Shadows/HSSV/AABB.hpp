@@ -34,7 +34,7 @@ struct AABB
 
 	void getExtents(float& x, float& y, float& z) const;
 
-	glm::vec3 getExtents();
+	glm::vec3 getExtents() const;
 
 	void applyTransform(const glm::mat4& matrix);
 

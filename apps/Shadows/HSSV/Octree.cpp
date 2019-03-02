@@ -211,21 +211,17 @@ void Octree::_createChild(const AABB& parentSpace, uint32_t newNodeId, uint32_t 
 	Node n;
 	glm::vec3 minPoint = parentSpace.getMinPoint();
 
-	const bool isInPlusX = (indexWithinParent & 1) != 0;
-	const bool isInPlusY = (indexWithinParent & 2) != 0;
-	const bool isInPlusZ = (indexWithinParent & 4) != 0;
+	glm::vec3 isInPlus;
+	isInPlus.x = (indexWithinParent & 1u) != 0 ? 1.0f : 0.f;
+	isInPlus.y = (indexWithinParent & 2u) != 0 ? 1.0f : 0.f;
+	isInPlus.z = (indexWithinParent & 4u) != 0 ? 1.0f : 0.f;
 
-	float parentHalfExtentX, parentHalfExtentY, parentHalfExtentZ;
-	parentSpace.getExtents(parentHalfExtentX, parentHalfExtentY,parentHalfExtentZ);
+	glm::vec3 parentHalfExtents = parentSpace.getExtents() / glm::vec3(2.0f);
 
-	parentHalfExtentX /= 2.0f;
-	parentHalfExtentY /= 2.0f;
-	parentHalfExtentZ /= 2.0f;
+	glm::vec3 minPointOffset = isInPlus * parentHalfExtents;
 
-	glm::vec3 minPointOffset = glm::vec3(isInPlusX * parentHalfExtentX, isInPlusY * parentHalfExtentY, isInPlusZ * parentHalfExtentZ);
-
-	minPoint = minPoint + minPointOffset;
-	glm::vec3 maxPoint = minPoint + glm::vec3(parentHalfExtentX, parentHalfExtentY, parentHalfExtentZ);
+	minPoint += minPointOffset;
+	glm::vec3 maxPoint = minPoint + parentHalfExtents;
 
 	n.volume = AABB(minPoint, maxPoint);
 

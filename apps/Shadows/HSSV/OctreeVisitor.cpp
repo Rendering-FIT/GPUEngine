@@ -148,6 +148,7 @@ void OctreeVisitor::_propagateEdgesToUpperLevelsGpu(std::shared_ptr<GpuOctreeEdg
 
 int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const
 {
+	/*
 	int currentParent = 0;
 	const uint32_t deepestLevel = _octree->getDeepestLevel();
 
@@ -155,6 +156,26 @@ int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const
 		currentParent = _getChildNodeContainingPoint(currentParent, point);
 
 	return currentParent;
+	//*/
+
+
+	if (!_isPointInsideNode(0, point))
+		return -1;
+
+	auto const& bb = _octree->getNode(0)->volume;
+	auto singleUnitSize = bb.getExtents() / glm::vec3(ipow(2, _octree->getDeepestLevel()));
+
+	glm::uvec3 pos = glm::uvec3(glm::floor((point - bb.getMinPoint()) / singleUnitSize));
+
+	auto const deepstLevel = _octree->getDeepestLevel();
+//	int relPos = pos.x + pos.y * ipow(2, deepstLevel) + pos.z * ipow(2, deepstLevel * 2);
+	int relPos = 0;
+		
+	for (uint32_t i = 0; i < deepstLevel; ++i)
+		relPos+=((((pos.x >> i) & 1) << 0) + (((pos.y >> i) & 1) << 1) + (((pos.z >> i) & 1) << 2))*ipow(8, i);
+
+	relPos += _octree->getNumNodesInPreviousLevels(deepstLevel);
+	return relPos;
 }
 
 bool OctreeVisitor::_isPointInsideNode(uint32_t nodeID, const glm::vec3& point) const

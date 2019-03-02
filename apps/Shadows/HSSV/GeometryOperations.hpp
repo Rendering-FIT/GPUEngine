@@ -28,7 +28,7 @@ namespace GeometryOps
 {
 	inline bool isInRange(float value, float min, float max)
 	{
-		return value >= min && value <= max;
+		return (value >= min) && (value < max);
 	}
 	
 	inline float testPlanePoint(const Plane& plane, const glm::vec3& point)
@@ -41,7 +41,7 @@ namespace GeometryOps
 		const auto minPoint = bbox.getMinPoint();
 		const auto maxPoint = bbox.getMaxPoint();
 
-		return isInRange(point.x, minPoint.x, maxPoint.x) & isInRange(point.y, minPoint.y, maxPoint.y) & isInRange(point.z, minPoint.z, maxPoint.z);
+		return isInRange(point.x, minPoint.x, maxPoint.x) && isInRange(point.y, minPoint.y, maxPoint.y) && isInRange(point.z, minPoint.z, maxPoint.z);
 	}
 
 	inline TestResult interpretResult(float result)
