@@ -35,9 +35,7 @@ void GSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	unsigned const NumV = 2 + 1 + unsigned(ad->getMaxMultiplicity());
 	
 	_nofEdges = ad->getNofEdges();
-	_nofElements = _nofEdges * NumV;
 
-	/*
 	_sidesVBO = std::make_shared<ge::gl::Buffer>(sizeof(float) * 4 * NumV * _nofEdges);
 
 	float* Ptr = (float*)this->_sidesVBO->map();
@@ -47,11 +45,11 @@ void GSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	{
 		//A
 		for (int k = 0; k < 3; ++k)
-			Ptr[(e*NumV + 0) * 4 + k] = vertices[ad->getEdge(e, 0) * 3 + k];
+			Ptr[(e*NumV + 0) * 4 + k] = vertices[ad->getEdge(e, 0) + k];
 		Ptr[(e*NumV + 0) * 4 + 3] = 1;
 		//B
 		for (int k = 0; k < 3; ++k)
-			Ptr[(e*NumV + 1) * 4 + k] = vertices[ad->getEdge(e, 1) * 3 + k];
+			Ptr[(e*NumV + 1) * 4 + k] = vertices[ad->getEdge(e, 1) + k];
 		Ptr[(e*NumV + 1) * 4 + 3] = 1;
 		//N
 		Ptr[(e*NumV + 2) * 4 + 0] = float(ad->getNofOpposite(e));
@@ -62,52 +60,16 @@ void GSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 		for (; o < ad->getNofOpposite(e); ++o) 
 		{
 			for (int k = 0; k < 3; ++k)
-				Ptr[(e*NumV + 2 + 1 + o) * 4 + k] = vertices[ad->getOpposite(e, o) * 3 + k];
+				Ptr[(e*NumV + 2 + 1 + o) * 4 + k] = vertices[ad->getOpposite(e, o) + k];
 			Ptr[(e*NumV + 2 + 1 + o) * 4 + 3] = 1;
 		}
 		//zeros
 		for (; o < ad->getNofOpposite(e); ++o)
 			for (int k = 0; k < 4; ++k)Ptr[(e*NumV + 2 + 1 + o) * 4 + k] = 0;
 	}
-	*/
-
-	_sidesEBO = std::make_shared<ge::gl::Buffer>(sizeof(unsigned)*NumV*ad->getNofEdges());
-
-	unsigned*eptr = (unsigned*)_sidesEBO->map();
-	for (unsigned e = 0; e < ad->getNofEdges(); ++e)
-	{
-		//loop over edges
-		unsigned base = e * unsigned(NumV);
-		eptr[base + 0] = unsigned(ad->getEdge(e, 0)) / 3;
-		eptr[base + 1] = unsigned(ad->getEdge(e, 1)) / 3;
-		eptr[base + 2] = unsigned(ad->getNofTriangles()) * 3 + e;
-		for (unsigned o = 0; o < ad->getMaxMultiplicity(); ++o)
-			if (o < ad->getNofOpposite(e))
-				eptr[base + 3 + o] = unsigned(ad->getOpposite(e, o)) / 3;
-			else eptr[base + 3 + o] = 0;
-	}
-
-	this->_sidesEBO->unmap();
-
-	this->_sidesVBO = std::make_shared<ge::gl::Buffer>(sizeof(float) * 4 * (ad->getNofTriangles() * 3 + ad->getNofEdges()));
-
-	float*ptr = (float*)this->_sidesVBO->map();
-
-	for (unsigned p = 0; p < ad->getNofTriangles() * 3; ++p)
-	{
-		//loop over points
-		for (unsigned e = 0; e < 3; ++e)
-			ptr[p * 4 + e] = ad->getVertices()[p * 3 + e];
-		ptr[p * 4 + 3] = 1;
-	}
-
-	for (unsigned e = 0; e < ad->getNofEdges(); ++e)
-		ptr[(ad->getNofTriangles() * 3 + e) * 4 + 0] = float(ad->getNofOpposite(e));
-	
 	_sidesVBO->unmap();
 
 	_sidesVAO = std::make_shared<ge::gl::VertexArray>();
-	_sidesVAO->addElementBuffer(_sidesEBO);
 	
 	for (unsigned a = 0; a < NumV; ++a) 
 	{
@@ -154,7 +116,7 @@ void GSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	_sidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp), 1, GL_FALSE);
 	_sidesProgram->set4fv("LightPosition", glm::value_ptr(lightPosition), 1);
 
-	glDrawElements(GL_POINTS, GLsizei(_nofElements), GL_UNSIGNED_INT, nullptr);
+  glDrawArrays(GL_POINTS,0,_nofEdges);
 
 	_sidesVAO->unbind();
 }

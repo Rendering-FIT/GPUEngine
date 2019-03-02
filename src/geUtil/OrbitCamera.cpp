@@ -3,6 +3,10 @@
 using namespace ge::util;
 
 OrbitCamera::OrbitCamera(float distance):CameraTransform(),_xAngle(0),_yAngle(0),_distance(distance),_recompute(true){
+  _position = glm::vec3(0.f);
+  _view     = glm::mat4(1.f);
+  _rotation = glm::mat4(1.f);
+
 }
 
 OrbitCamera::~OrbitCamera(){

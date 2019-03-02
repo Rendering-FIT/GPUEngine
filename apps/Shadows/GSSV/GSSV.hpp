@@ -48,5 +48,4 @@ private:
 	std::shared_ptr<GSCaps>              _capsDrawer;
 
 	size_t	_nofEdges;
-	size_t  _nofElements;
 };
