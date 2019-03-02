@@ -24,6 +24,7 @@ endif()
 
 add_subdirectory(TSSV)
 add_subdirectory(HSSV)
+add_subdirectory(GSSV)
 
 set(APP_SOURCES
   main.cpp
@@ -82,8 +83,9 @@ set(APP_INCLUDES
 
 source_group("TSSV" FILES ${TSSV_FILES})
 source_group("HSSV" FILES ${HSSV_FILES})
+source_group("GSSV" FILES ${GSSV_FILES})
 
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES})
+add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES} ${GSSV_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

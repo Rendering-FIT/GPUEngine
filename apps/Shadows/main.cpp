@@ -36,6 +36,7 @@
 #include"VSSV.h"
 #include"CSSVSOE.h"
 #include "TSSV/TSSV.hpp"
+#include "GSSV/GSSV.hpp"
 #include "HSSV/HSSV.hpp"
 
 struct Application{
@@ -76,6 +77,7 @@ struct Application{
   SintornParams           sintornParams;
   RSSVParams              rssvParams   ;
   TSSVParams              tssvParams   ;
+  GSSVParams              gssvParams   ;
   HSSVParams			  hssvParams   ;
 
   std::string testName                 = ""           ;
@@ -137,7 +139,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
   this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
-  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe/tssv/hssv");
+  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
 
   this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -175,6 +177,10 @@ void Application::parseArguments(int argc,char*argv[]){
   this->tssvParams.UseReferenceEdge      = arg->isPresent("--tssv-useRefEdge", "Use Reference Edge");
   this->tssvParams.CullSides             = arg->isPresent("--tssv-cullSides", "Cull Sides");
   this->tssvParams.UseStencilValueExport = arg->isPresent("--tssv-useStencilExport" "Use stencil value export");
+
+  this->gssvParams.UseReferenceEdge = arg->isPresent("--gssv-useRefEdge", "Use Reference Edge");
+  this->gssvParams.CullSides = arg->isPresent("--gssv-cullSides", "Cull Sides");
+  this->gssvParams.UseStencilValueExport = arg->isPresent("--gssv-useStencilExport" "Use stencil value export");
 
   this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
   this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 1.f,1.f,1.f}, "Defines octree volume in terms of scene AABB scaling"));
@@ -332,6 +338,16 @@ bool Application::init(int argc,char*argv[]){
 			  tssvParams.UseReferenceEdge,
 			  tssvParams.CullSides,
 			  tssvParams.UseStencilValueExport,
+			  maxMultiplicity,
+			  shadowMask,
+			  gBuffer->depth,
+			  svParams);
+	  else if (this->methodName == "gssv")
+		  this->shadowMethod = std::make_shared<GSSV>(
+			  model,
+			  gssvParams.UseReferenceEdge,
+			  gssvParams.CullSides,
+			  gssvParams.UseStencilValueExport,
 			  maxMultiplicity,
 			  shadowMask,
 			  gBuffer->depth,
