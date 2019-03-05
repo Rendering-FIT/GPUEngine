@@ -69,6 +69,8 @@ struct Application{
 
   size_t      maxMultiplicity     = 2    ;
 
+  float       testWarmupSecs     = 2.0;
+
   ShadowVolumesParams     svParams     ;
   CubeShadowMappingParams cubeSMParams ;
   CSSVParams              cssvParams   ;
@@ -99,6 +101,7 @@ struct Application{
   void draw();
   void measure();
   void measureLightGrid();
+  void warmpUp();
 
   void drawScene();
   bool mouseMove(SDL_Event const&event);
@@ -145,6 +148,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   this->maxMultiplicity     = arg->getu32("--maxMultiplicity" ,2 ,"max number of triangles that share the same edge"        );
   this->svParams.zfail      = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
+  this->svParams.rasterDiscard = arg->isPresent("--sv-raster-discard", "disable shadow volumes sides rasterization, for benchmarking");
 
   this->cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
   this->cubeSMParams.near       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
@@ -203,6 +207,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->testFramesPerMeasurement = arg->geti32("--test-framesPerMeasurement",5            ,"number of frames that is averaged per one measurement point"    );
   this->testOutputName           = arg->gets  ("--test-output"              ,"measurement","name of output file"                                            );
   this->lightGrid = vector2uvec3(arg->getu32v("--test-gridSize", {1, 1, 1 }, "Nof of division of light grid per axis"));
+  testWarmupSecs = arg->getf32("--test-warmupSecs", 2.0, "NoF seconds to warm up the card before the actual measurement");
 
   bool printHelp = arg->isPresent("-h","prints this help");
 
@@ -451,6 +456,24 @@ void Application::drawScene() {
 		this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
 }
 #endif
+#include "HSSV/HighResolutionTimer.hpp"
+void Application::warmpUp()
+{
+	std::cout << "Warming up...\n";
+	SDL_Event event;
+	HighResolutionTimer t;
+	t.reset();
+	float elapsedTimeS = 0;
+	while(elapsedTimeS<testWarmupSecs)
+	{
+		t.reset();
+		while (SDL_PollEvent(&event));
+		this->drawScene();
+		ge::gl::glFinish();
+		elapsedTimeS += float(t.getElapsedTimeSeconds());
+	}
+	std::cout << "Go!\n";
+}
 
 void Application::measure(){
   assert(this!=nullptr);
@@ -467,6 +490,8 @@ void Application::measure(){
       if(measurement.count(names[i])==0)measurement[names[i]]=0.f;
       measurement[names[i]]+=values[i];
       }});
+
+  warmpUp();
 
   std::vector<std::vector<std::string>>csv;
   for(size_t k=0;k<this->testFlyLength;++k){
@@ -523,12 +548,7 @@ void Application::measureLightGrid()
 
 	AABB bbox;
 	bbox.updateWithVerticesVec3(verts.data(), verts.size());
-	/*
-	for(uint32_t i =0; i< nofVertices; i+=3)
-	{
-		bbox.updateWithVertex(glm::vec3(verts[i + 0], verts[i + 1], verts[i + 2]));
-	}
-	*/
+	
 	glm::vec3 extents = bbox.getExtents() * hssvParams.sceneAABBscale;
 
 	bbox.setCenterExtents(bbox.getCenterPoint(), extents);
@@ -537,13 +557,10 @@ void Application::measureLightGrid()
 	auto const unitSize = extents / glm::vec3(lightGrid.x, lightGrid.y, lightGrid.z);
 	auto const offset = unitSize / 2.0f;
 
-	//--
-	glm::vec3 minP = bbox.getMinPoint();
-	glm::vec3 maxP = bbox.getMaxPoint();
-	std::cout << "TESTING space: " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
-	//--
-
 	size_t k = 0;
+
+	lightPosition = glm::vec4(0, 0, 0, 1);
+	warmpUp();
 
 	for (size_t z = 0; z<lightGrid.z; ++z)
 		for (size_t y = 0; y<lightGrid.y; ++y)

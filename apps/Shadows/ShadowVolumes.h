@@ -5,6 +5,7 @@
 
 struct ShadowVolumesParams{
   bool zfail = true;
+  bool rasterDiscard = false;
 };
 
 class ShadowVolumes: public ShadowMethod{

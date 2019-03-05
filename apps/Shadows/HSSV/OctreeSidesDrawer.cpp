@@ -200,7 +200,6 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 	while(remainingSize>0)
 	{
 		const uint64_t currentSize = remainingSize > maxBufferSize ? maxBufferSize : remainingSize;
-		remainingSize -= currentSize;
 
 		nofEdgesPrefixSums.push_back(0);
 
@@ -234,7 +233,7 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 		}
 
 		buffer->unmap();
-
+		remainingSize -= currentNumIndices * sizeof(uint32_t);
 		_gpuOctreeBuffers.push_back(buffer);
 		_lastNodePerEdgeBuffer.push_back(currentNode);
 	}

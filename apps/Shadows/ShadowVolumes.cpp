@@ -1,4 +1,5 @@
 #include"ShadowVolumes.h"
+#include "geGL/StaticCalls.h"
 
 ShadowVolumes::ShadowVolumes(
     std::shared_ptr<ge::gl::Texture>const&shadowMask,
@@ -56,7 +57,7 @@ void ShadowVolumes::create(
   assert(this!=nullptr);
   assert(this->_fbo!=nullptr);
 
-  if(this->timeStamp)this->timeStamp->stamp("");
+  //if(this->timeStamp)this->timeStamp->stamp("");
 
   this->_fbo->bind();
   glEnable(GL_STENCIL_TEST);
@@ -73,16 +74,22 @@ void ShadowVolumes::create(
   glDepthMask(GL_FALSE);
   glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
 
-//#define SIDES_RASTER_DISCARD
+  if (_params.rasterDiscard)
+  {
+    glEnable(GL_RASTERIZER_DISCARD);
+	ge::gl::glFinish();
+  }
 
-#ifdef SIDES_RASTER_DISCARD
-  glEnable(GL_RASTERIZER_DISCARD);
-#endif
-  this->drawSides(lightPosition,viewMatrix,projectionMatrix);
-  if(this->timeStamp)this->timeStamp->stamp("drawSides");
-#ifdef SIDES_RASTER_DISCARD
-  glDisable(GL_RASTERIZER_DISCARD);
-#endif
+  if (this->timeStamp)this->timeStamp->stamp("");
+  this->drawSides(lightPosition, viewMatrix, projectionMatrix);
+
+  if (_params.rasterDiscard)
+  {
+	ge::gl::glFinish();
+    glDisable(GL_RASTERIZER_DISCARD);
+  }
+  if (this->timeStamp)this->timeStamp->stamp("drawSides");
+
   if(this->_params.zfail){
     this->drawCaps(lightPosition,viewMatrix,projectionMatrix);
     if(this->timeStamp)this->timeStamp->stamp("drawCaps");

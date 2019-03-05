@@ -280,23 +280,17 @@ int Octree::getNumNodesInLevel(uint32_t level) const
 
 uint64_t Octree::getOctreeSizeBytes() const
 {
-	uint64_t sz = 0;
-
-	//sz += _nodes.size() * sizeof(AABB);
-
 	uint64_t numIndices = 0;
 	for(const auto& node : _nodes)
 	{
-		for(const auto item : node.edgesAlwaysCastMap)
+		for(const auto& item : node.edgesAlwaysCastMap)
 			numIndices += item.second.size();
 
-		for (const auto item : node.edgesMayCastMap)
+		for (const auto& item : node.edgesMayCastMap)
 			numIndices += item.second.size();
 	}
 
-	sz += sizeof(uint32_t) * numIndices;
-
-	return sz;
+	return sizeof(uint32_t) * numIndices;
 }
 
 void Octree::makeNodesFit()

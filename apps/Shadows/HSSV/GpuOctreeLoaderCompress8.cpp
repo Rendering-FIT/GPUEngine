@@ -13,8 +13,9 @@
 #define MIN_SUBBUFFER_SIZE_UINTS 2u
 
 //Experimentally determined
-#define MAX_NOF_CHUNKS 500u
-#define PARENT_INCREASED_NOF_EDGES 1.6f
+//If build crashes, this is the most probable case
+#define MAX_NOF_CHUNKS 1000u
+#define PARENT_INCREASED_NOF_EDGES 1.7f
 
 bool GpuOctreeLoaderCompress8::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges)
 {
@@ -201,7 +202,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
 
-	//_potBufferOffset because there will be always more pot edges
+	//_potBufferOffset because there will be always more pot edges - tak to je blbost
 	auto voxelBatchSize = allocatedSizeEdgeIndices / (_potBufferOffset * sizeof(uint32_t));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
@@ -283,24 +284,25 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 	//Parents with compression
 	const uint32_t startingParent = _octree->getNodeParent(startingVoxelAbsoluteIndex);
 
-	const uint32_t* chunkDescriptors = reinterpret_cast<uint32_t*>(_chunkDesc->map(GL_READ_ONLY));
-	const uint32_t* edgeCounters = reinterpret_cast<uint32_t*>(_parentSubbuffCounter->map(GL_READ_ONLY));
 	const uint32_t* parentData = reinterpret_cast<uint32_t*>(_parentEdges->map(GL_READ_ONLY));
 
+	const uint32_t* chunkDescriptors = reinterpret_cast<uint32_t*>(_chunkDesc->map(GL_READ_ONLY));
+	const uint32_t* edgeCounters = reinterpret_cast<uint32_t*>(_parentSubbuffCounter->map(GL_READ_ONLY));
+	
 	std::vector<uint32_t> nofChunksVec;
 	nofChunksVec.resize(numParents);
 	_chunkCounter->getData(nofChunksVec.data(), nofChunksVec.size() * sizeof(uint32_t));
 
 #ifdef _DEBUG
-	std::ofstream str;
-	str.open("NumDump.txt");
+	//std::ofstream str;
+	//str.open("NumDump.txt");
 
 	for (uint32_t q = 0; q<nofChunksVec.size(); ++q)
 	{
 		assert(nofChunksVec[q] <= _limits.maxChunksPerParent);
-		str << nofChunksVec[q] << std::endl;
+		//str << nofChunksVec[q] << std::endl;
 	}
-	str.close();
+	//str.close();
 #endif
 
 	#pragma omp parallel for 
