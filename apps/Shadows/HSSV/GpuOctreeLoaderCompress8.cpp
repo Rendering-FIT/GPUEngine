@@ -197,13 +197,13 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	_calculateLowestLevelBufferOffsets(nofEdges);
 
-	const auto allocatedSizeEdgeIndices = std::min(size_t(_maxBufferSizeBytes), size_t(deepestLevelSize) * size_t(_potBufferOffset) * sizeof(uint32_t));
+	auto const maxOffset = std::max(_potBufferOffset, _silBufferOffset);
+	const auto allocatedSizeEdgeIndices = std::min(size_t(_maxBufferSizeBytes), size_t(deepestLevelSize) * size_t(maxOffset) * sizeof(uint32_t));
 
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
 
-	//_potBufferOffset because there will be always more pot edges - tak to je blbost
-	auto voxelBatchSize = allocatedSizeEdgeIndices / (_potBufferOffset * sizeof(uint32_t));
+	auto voxelBatchSize = allocatedSizeEdgeIndices / (maxOffset * sizeof(uint32_t));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
 

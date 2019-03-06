@@ -402,8 +402,8 @@ void  OctreeVisitor::getMaxNofSubBuffersPotSil(uint32_t& pot, uint32_t& sil) con
 	{
 		uint32_t p = 0, s = 0;
 		_getMaxNofSubBuffersInLevelPotSil(p, s, i);
-		pot = std::max(pot, p);
-		sil = std::max(sil, s);
+		pot += p;
+		sil += s;
 	}
 }
 

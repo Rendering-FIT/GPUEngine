@@ -151,14 +151,6 @@ bool GpuOctreeLoader::_createBottomFillProgram()
 
 void GpuOctreeLoader::addEdgesOnLowestLevel(AdjacencyType edges)
 {
-	//--
-	/*
-	std::vector<uint32_t> selected;
-	_testParticularVoxel(edges, 16838, selected);
-	return;
-	//*/
-	//--
-
 	const int deepestLevel = _octree->getDeepestLevel();
 	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
 	const int deepestLevelSizeAndParents = ((OCTREE_NUM_CHILDREN + 1) * deepestLevelSize) / OCTREE_NUM_CHILDREN;
@@ -173,11 +165,11 @@ void GpuOctreeLoader::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
-	const auto allocatedSizeEdgeIndices = std::min(_maxBufferSizeBytes, size_t(deepestLevelSizeAndParents) * size_t(_potBufferOffset) * sizeof(uint32_t));
+	auto const maxOffset = std::max(_potBufferOffset, _silBufferOffset);
+	const auto allocatedSizeEdgeIndices = std::min(_maxBufferSizeBytes, size_t(deepestLevelSizeAndParents) * size_t(maxOffset) * sizeof(uint32_t));
 	
 	//Parents are taken into consideration, as they will also need output buffers
-	//TODO TU extra pozor - zkrokovat
-	auto voxelBatchSize = (OCTREE_NUM_CHILDREN*allocatedSizeEdgeIndices)/((OCTREE_NUM_CHILDREN+1) * _potBufferOffset * sizeof(uint32_t));
+	auto voxelBatchSize = (OCTREE_NUM_CHILDREN*allocatedSizeEdgeIndices)/((OCTREE_NUM_CHILDREN+1) * maxOffset * sizeof(uint32_t));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
 
@@ -379,13 +371,21 @@ void GpuOctreeLoader::_acquireGpuData(uint32_t startingVoxelAbsoluteIndex, uint3
 		auto node = _octree->getNode(startingParent + i);
 		const uint32_t parentIndex = batchSize + i;
 
-		node->edgesAlwaysCastMap[BitmaskAllSet].resize(_bufferNofSilhouette[parentIndex]);
-		if (!node->edgesAlwaysCastMap[BitmaskAllSet].empty())
-			memcpy(node->edgesAlwaysCastMap[BitmaskAllSet].data(), bSilhouette + (_silBufferOffset*parentIndex), _bufferNofSilhouette[parentIndex] * sizeof(uint32_t));
+		auto const nofSil = _bufferNofSilhouette[parentIndex];
+		if (nofSil)
+		{
+			auto& edgeBuff = node->edgesAlwaysCastMap[BitmaskAllSet];
+			edgeBuff.resize(nofSil);
+			memcpy(edgeBuff.data(), bSilhouette + (_silBufferOffset*parentIndex), nofSil * sizeof(uint32_t));
+		}
 
-		node->edgesMayCastMap[BitmaskAllSet].resize(_bufferNofPotential[parentIndex]);
-		if (!node->edgesMayCastMap[BitmaskAllSet].empty())
-			memcpy(node->edgesMayCastMap[BitmaskAllSet].data(), bPotential + (_potBufferOffset*parentIndex), _bufferNofPotential[parentIndex] * sizeof(uint32_t));
+		auto const nofPot = _bufferNofPotential[parentIndex];
+		if (nofPot)
+		{
+			auto& edgeBuff = node->edgesMayCastMap[BitmaskAllSet];
+			edgeBuff.resize(_bufferNofPotential[parentIndex]);
+			memcpy(edgeBuff.data(), bPotential + (_potBufferOffset*parentIndex), nofPot * sizeof(uint32_t));
+		}
 	}
 	
 	_voxelSilhouetteEdges->unmap();

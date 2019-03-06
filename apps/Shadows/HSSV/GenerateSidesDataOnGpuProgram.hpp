@@ -316,8 +316,6 @@ std::string genBufferPreprocessShaderNoCompreess(const std::vector<uint32_t>& la
 	str << "shared uint shm_nofPotSilBuffers[2];\n";
 	str << "shared uint shm_startingIndexToNodeInfo;\n\n";
 
-	str << genGetSubBufferId();
-
 	//main
 	str << "void main()\n";
 	str << "{\n";
@@ -342,7 +340,6 @@ std::string genBufferPreprocessShaderNoCompreess(const std::vector<uint32_t>& la
 	str << "\n";
 	str << "		if(isActive)\n";
 	str << "		{\n";
-	str << "			uint subbufferId[NOF_UINTS_PER_COMPRESSION_ID] = getBufferId(gl_GlobalInvocationID.x);\n";
 	if (numBuffers > 1)
 		str << "			const uint bufferNum = getNodeBufferIndex(currentNode);\n";
 	str << "			const uint bufferStart = nodeInfo[shm_startingIndexToNodeInfo + NOF_UINTS_PER_NOF_SUBBUFFERS + NOF_UINTS_PER_SUBBUFFER_INFO*(gl_GlobalInvocationID.x) + NOF_UINTS_PER_COMPRESSION_ID];\n";
