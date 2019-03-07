@@ -12,6 +12,7 @@ struct CSSVParams{
   bool   cullSides       = false;
   bool   usePlanes       = false;
   bool   useInterleaving = false;
+  bool   lobotomized     = false;
 };
 
 class Adjacency;

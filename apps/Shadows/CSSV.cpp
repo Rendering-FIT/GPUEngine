@@ -213,6 +213,7 @@ CSSV::CSSV(
         ge::gl::Shader::define("CULL_SIDES"      ,int32_t(this->_params.cullSides      )),
         ge::gl::Shader::define("USE_PLANES"      ,int32_t(this->_params.usePlanes      )),
         ge::gl::Shader::define("USE_INTERLEAVING",int32_t(this->_params.useInterleaving)),
+        ge::gl::Shader::define("LOBOTOMIZED"     ,int32_t(this->_params.lobotomized    )),
         silhouetteFunctions,
         computeSrc));
 
@@ -239,13 +240,16 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
   assert(this->_sillhouettes       !=nullptr);
   this->_dibo->clear(GL_R32UI,0,sizeof(uint32_t),GL_RED_INTEGER,GL_UNSIGNED_INT);
 
+  _edges->bindBase(GL_SHADER_STORAGE_BUFFER,0);
+  _sillhouettes->bindBase(GL_SHADER_STORAGE_BUFFER,1);
+  _dibo->bindBase(GL_SHADER_STORAGE_BUFFER,2);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
   this->_computeSidesProgram
     ->set1ui    ("numEdge"           ,uint32_t(this->_nofEdges)    )
     ->set4fv    ("lightPosition"     ,glm::value_ptr(lightPosition))
-    ->bindBuffer("edges"             ,this->_edges                 )
-    ->bindBuffer("silhouettes"       ,this->_sillhouettes          )
-    ->bindBuffer("drawIndirectBuffer",this->_dibo                  )
+    //->bindBuffer("edges"             ,this->_edges                 )
+    //->bindBuffer("silhouettes"       ,this->_sillhouettes          )
+    //->bindBuffer("drawIndirectBuffer",this->_dibo                  )
     ->dispatch((GLuint)ge::core::getDispatchSize(this->_nofEdges,this->_params.computeSidesWGS));
 
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
