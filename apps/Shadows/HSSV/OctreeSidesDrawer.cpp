@@ -795,6 +795,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeCont
 
 void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeContainingLight)
 {
+	if (_timer) _timer->stamp("");
 	std::shared_ptr<ge::gl::Buffer> nofPotentialEdgesBuffer;
 	std::shared_ptr<ge::gl::Buffer> nofSilhouetteEdgesBuffer;
 
@@ -876,4 +877,5 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeC
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
+	if (_timer) _timer->stamp("SilhouetteTraversal");
 }
