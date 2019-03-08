@@ -10,7 +10,9 @@ void CSSV::_createSidesData(std::shared_ptr<Adjacency const>const&adj){
   size_t const verticesPerEdgeData = verticesPerEdge+adj->getMaxMultiplicity();
   this->_edges = std::make_shared<ge::gl::Buffer>(sizeof(float)*componentsPerVertex4D*verticesPerEdgeData*adj->getNofEdges());
 
-  auto const dstPtr = static_cast<float      *>(this->_edges->map());
+  //auto const dstPtr = static_cast<float      *>(this->_edges->map());
+  std::vector<float>edgesData(componentsPerVertex4D*verticesPerEdgeData*adj->getNofEdges());
+  auto const dstPtr = edgesData.data();
   auto const srcPtr = static_cast<float const*>(adj->getVertices() );
 
   size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
@@ -42,7 +44,9 @@ void CSSV::_createSidesData(std::shared_ptr<Adjacency const>const&adj){
     uint8_t const value = 0;
     std::memset(emptyOppositeVerticesDstPtr,value,nofEmptyOppositeVertices*componentsPerVertex4D*sizeof(float));
   }
-  this->_edges->unmap();
+  //this->_edges->unmap();
+  this->_edges->setData(edgesData.data(),sizeof(float)*edgesData.size());
+
   this->_nofEdges = adj->getNofEdges();
 
   this->_sillhouettes=std::make_shared<ge::gl::Buffer>(
@@ -61,7 +65,9 @@ void CSSV::_createSidesDataUsingPlanes(std::shared_ptr<Adjacency const>const&adj
   size_t const floatsPerEdge = verticesPerEdge*componentsPerVertex3D + maxNofOppositeVertices*componentsPerPlane3D;
   this->_edges = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
 
-  auto const dstPtr = static_cast<float      *>(this->_edges->map());
+  //auto const dstPtr = static_cast<float      *>(this->_edges->map());
+  std::vector<float>edgesData(adj->getNofEdges()*floatsPerEdge);
+  auto const dstPtr = edgesData.data();
   auto const srcPtr = static_cast<float const*>(adj->getVertices() );
 
   size_t const sizeofVertex3DInBytes = componentsPerVertex3D * sizeof(float);
@@ -88,7 +94,8 @@ void CSSV::_createSidesDataUsingPlanes(std::shared_ptr<Adjacency const>const&adj
     uint8_t const value             = 0;
     std::memset(emptyPlanesDstPtr,value,sizeofPlane3DInBytes*nofEmptyPlanes);
   }
-  this->_edges->unmap();
+  //this->_edges->unmap();
+  this->_edges->setData(edgesData.data(),sizeof(float)*edgesData.size());
   this->_nofEdges = adj->getNofEdges();
 
   this->_sillhouettes=std::make_shared<ge::gl::Buffer>(
@@ -108,7 +115,9 @@ void CSSV::_createSidesDataUsingPlanesWithInterleaving(std::shared_ptr<Adjacency
   size_t const floatsPerEdge = verticesPerEdge*componentsPerVertex3D + maxNofOppositeVertices*componentsPerPlane3D;
   this->_edges = std::make_shared<ge::gl::Buffer>(adj->getNofEdges()*floatsPerEdge*sizeof(float));
 
-  auto const dstPtr = static_cast<float      *>(this->_edges->map());
+  //auto const dstPtr = static_cast<float      *>(this->_edges->map());
+  std::vector<float>edgesData(adj->getNofEdges()*floatsPerEdge);
+  auto const dstPtr = edgesData.data();
   auto const srcPtr = static_cast<float const*>(adj->getVertices() );
 
   for(size_t e=0;e<adj->getNofEdges();++e)dstPtr[e+adj->getNofEdges()*0] = srcPtr[adj->getEdgeVertexA(e)+0];
@@ -126,7 +135,8 @@ void CSSV::_createSidesDataUsingPlanesWithInterleaving(std::shared_ptr<Adjacency
         dstPtr[e+adj->getNofEdges()*(6+o*componentsPerPlane3D+k)] = plane[(uint32_t)k];
     }
 
-  this->_edges->unmap();
+  //this->_edges->unmap();
+  this->_edges->setData(edgesData.data(),sizeof(float)*edgesData.size());
   this->_nofEdges = adj->getNofEdges();
 
   this->_sillhouettes=std::make_shared<ge::gl::Buffer>(
@@ -142,7 +152,9 @@ void CSSV::_createCapsData (std::shared_ptr<Adjacency const>const&adj){
   assert(this!=nullptr);
   assert(adj!=nullptr);
   this->_caps = std::make_shared<ge::gl::Buffer>(sizeof(float)*componentsPerVertex4D*verticesPerTriangle*this->_nofTriangles);
-  auto const dstPtr = static_cast<float      *>(this->_caps->map());
+  std::vector<float>capsData(componentsPerVertex4D*verticesPerTriangle*this->_nofTriangles);
+  auto const dstPtr = capsData.data();
+  //auto const dstPtr = static_cast<float      *>(this->_caps->map());
   auto const srcPtr = static_cast<float const*>(adj->getVertices());
   for(size_t t=0;t<this->_nofTriangles;++t){
     auto const triangleDstPtr = dstPtr + t*componentsPerVertex4D*verticesPerTriangle;
@@ -155,7 +167,8 @@ void CSSV::_createCapsData (std::shared_ptr<Adjacency const>const&adj){
       vertexDstPtr[3] = 1.f;
     }
   }
-  this->_caps->unmap();
+  //this->_caps->unmap();
+  this->_caps->setData(capsData.data(),capsData.size()*sizeof(float));
   this->_capsVao = std::make_shared<ge::gl::VertexArray>();
   this->_capsVao->addAttrib(this->_caps,0,4,GL_FLOAT);
 }
