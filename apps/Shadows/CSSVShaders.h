@@ -23,7 +23,12 @@ layout(std430,binding=0)readonly buffer Edges              {float edges      [];
 layout(std430,binding=0)readonly buffer Edges              {vec4  edges      [];};
 #endif//USE_PLANES == 1
 
+
+#if LOBOTOMIZED == 1
+layout(std430,binding=1)         buffer Silhouettes        {float  silhouettes[];};
+#else
 layout(std430,binding=1)         buffer Silhouettes        {vec4  silhouettes[];};
+#endif
 
 #if LOCAL_ATOMIC == 1
 layout(std430,binding=2)volatile buffer DrawIndirectCommand{uint drawIndirectBuffer[4];};
@@ -133,6 +138,13 @@ void main(){
     Multiplicity += currentMultiplicity(P[0].xyz,P[1].xyz,edges[gid+i].xyz,lightPosition);
 #endif//USE_PLANES == 1
 
+#if LOBOTOMIZED == 1
+  if(Multiplicity != 0){
+    uint w = atomicAdd(drawIndirectBuffer[0],1);
+    silhouettes[w] = float(gl_GlobalInvocationID.x);
+  }
+#else//LOBOTOMIZED
+
 #if LOCAL_ATOMIC == 1
   uint localOffset = atomicAdd(localCounter,uint(2*abs(Multiplicity)));
   barrier();
@@ -171,6 +183,7 @@ void main(){
     }
   }
 #endif
+#endif//LOBOTOMIZED
 }).";
 
 

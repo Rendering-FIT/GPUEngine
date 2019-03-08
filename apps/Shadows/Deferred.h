@@ -7,6 +7,8 @@ class GBuffer: public ge::gl::Context{
     GBuffer(uint32_t w,uint32_t h){
       assert(this!=nullptr);
       this->color    = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RGBA16UI,1,w,h);
+      color->texParameteri(GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+      color->texParameteri(GL_TEXTURE_MIN_FILTER,GL_NEAREST);
       this->position = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RGBA32F,1,w,h);
       this->normal   = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_RGBA32F,1,w,h);
       this->depth    = std::make_shared<ge::gl::Texture>(GL_TEXTURE_RECTANGLE,GL_DEPTH24_STENCIL8,1,w,h);

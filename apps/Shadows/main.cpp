@@ -158,8 +158,9 @@ void Application::parseArguments(int argc,char*argv[]){
   this->cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"            ,64,"compute silhouette shadow volumes work group size"      );
   this->cssvParams.localAtomic     = arg->getu32("--cssv-localAtomic"    ,1 ,"use local atomic instructions"                           );
   this->cssvParams.cullSides       = arg->getu32("--cssv-cullSides"      ,0 ,"enables culling of sides that are outside of viewfrustum");
-  this->cssvParams.usePlanes       = arg->getu32("--cssv-usePlanes"      ,0 ,"use triangle planes instead of opposite vertices"        );
-  this->cssvParams.useInterleaving = arg->getu32("--cssv-useInterleaving",0 ,"reorder edge that so it is struct of arrays"             );
+  this->cssvParams.usePlanes       = arg->getu32("--cssv-usePlanes"      ,1 ,"use triangle planes instead of opposite vertices"        );
+  this->cssvParams.useInterleaving = arg->getu32("--cssv-useInterleaving",1 ,"reorder edge that so it is struct of arrays"             );
+  this->cssvParams.lobotomized     = arg->getu32("--cssv-lobotomized"    ,0 ,"lobotomize shader - it will not output edge data but edge indices");
 
   this->cssvsoeParams.computeSidesWGS = arg->getu32("--cssvsoe-WGS",64,"compute silhouette shadow volumes work group size");
 
