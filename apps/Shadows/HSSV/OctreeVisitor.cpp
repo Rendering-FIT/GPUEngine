@@ -228,14 +228,14 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 
 		assert(node != nullptr);
 
-		const auto silBuffer = node->edgesAlwaysCastMap.find(BitmaskAllSet);
+		const auto& silBuffer = node->edgesAlwaysCastMap.find(BitmaskAllSet);
 		if (silBuffer != node->edgesAlwaysCastMap.end())
 		{
 			silhouette.insert(silhouette.end(), silBuffer->second.begin(), silBuffer->second.end());
 			nofBuffersSil++;
 		}
 
-		const auto potBuffer = node->edgesMayCastMap.find(BitmaskAllSet);
+		const auto& potBuffer = node->edgesMayCastMap.find(BitmaskAllSet);
 		if (potBuffer != node->edgesMayCastMap.end())
 		{
 			potential.insert(potential.end(), potBuffer->second.begin(), potBuffer->second.end());
@@ -246,7 +246,7 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 		{
 			const auto compressionId = _getCompressionIdWithinParent(nodeID);
 
-			for (const auto edgeBuffer : node->edgesAlwaysCastMap)
+			for (const auto& edgeBuffer : node->edgesAlwaysCastMap)
 			{
 				if (edgeBuffer.first != BitmaskAllSet && edgeBuffer.first & (BitmaskType(1) << compressionId))
 				{

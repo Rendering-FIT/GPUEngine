@@ -24,6 +24,7 @@ set(HSSV_FILES
 	HSSV/GpuOctreeEdgePropagator.cpp
 	HSSV/OctreeSidesDrawer.hpp
 	HSSV/OctreeSidesDrawer.cpp
+	HSSV/OctreeSidesDrawDraws.cpp
 	HSSV/GenerateSidesProgram.hpp
 	HSSV/GenerateSidesDataOnGpuProgram.hpp
 	HSSV/GpuEdges.hpp

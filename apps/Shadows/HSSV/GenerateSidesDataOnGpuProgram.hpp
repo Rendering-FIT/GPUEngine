@@ -184,6 +184,25 @@ std::string genGetSubBufferId()
 	return str.str();
 }
 
+std::string getNearestPow2Func()
+{
+	return R".(
+int getNearestPow2(uint num)
+{
+	int n = int(num);
+	n--;
+	n |= n >> 1;
+	n |= n >> 2;
+	n |= n >> 4;
+	n |= n >> 8;
+	n |= n >> 16;
+	n++;
+
+	return n;
+}
+).";
+}
+
 std::string genStoreBufferID(uint32_t nofBuffers)
 {
 	std::stringstream str;
@@ -710,6 +729,7 @@ void main()
 	return str.str();
 }
 
+//From https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch39.html
 std::string genPrefixSumKernelSimple(uint32_t workgroupSize)
 {
 	std::stringstream str;
@@ -974,5 +994,317 @@ void main()
 	}
 }
 ).";
+	return str.str();
+}
+
+std::string generatePrefixSum8bit(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, uint32_t workgroupSize, uint32_t nofSubbuffs, uint32_t subbuffCorrection, uint32_t compBuffSize)
+{
+	std::stringstream str;
+
+	auto const octreeLevel = octree->getDeepestLevel();
+	auto const compressionLevel = octree->getCompressionLevel();
+	assert(compressionLevel == 1);
+	auto const numBuffers = lastNodePerEdgeBuffer.size();
+	uint32_t const nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
+	auto const nofBufferAttribs = numBuffers == 1 ? 2 : 3;
+
+	str << "#version 450 core\n\n";
+	str << "#extension GL_ARB_shader_ballot : require\n\n";
+
+	str << "#define NOF_SUBBUFFERS " << (compressionLevel ? nofSubbuffs : 256) << "u\n";
+	str << "#define SUBBUFF_CORRECTION " << (compressionLevel ? subbuffCorrection : 0) << "u\n";
+	str << "#define MAX_OCTREE_LEVEL " << octreeLevel << "u\n";
+	str << "#define COMPRESSION_LEVEL " << compressionLevel << "u\n";
+	str << "#define COMPRESSION_BUFFERS_PER_ARRAY_SIZE " << compBuffSize << "u\n";
+	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n\n";
+
+	str << "layout (local_size_x = " << workgroupSize << ") in;\n";
+
+	uint32_t currentIndex = 0;
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofEdgesPot { uint nofPotEdges; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofEdgesSil { uint nofSilEdges; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofPot { uint nofPotBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofSil { uint nofSilBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _potential { uint potentialBuffers[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _silhouette { uint silhouetteBuffers[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly  buffer _indices { uint indices[" << 8* compBuffSize << "]; };\n";
+	str << "\n";
+
+	if (numBuffers > 1)
+	{
+		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
+		for (uint32_t i = 0; i < numBuffers; ++i)
+		{
+			str << lastNodePerEdgeBuffer[i];
+			if (i != (numBuffers - 1))
+				str << ", ";
+		}
+		str << ");\n";
+
+		str << genFindBufferFunc();
+	}
+
+	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
+	const std::vector<uint32_t> ls = octree->getLevelSizeInclusiveSum();
+	for (uint32_t i = 0; i < ls.size(); ++i)
+	{
+		str << ls[i];
+		if (i != (ls.size() - 1))
+			str << ", ";
+	}
+	str << ");\n";
+
+	str << "const uint treeDepth = MAX_OCTREE_LEVEL;\n";
+	str << "uniform uint cellContainingLight;\n";
+
+	str << traversalSupportFunctions;
+
+	str << getCompressionIdWithinParentFunction(compressionLevel);
+
+	str << getNearestPow2Func();
+
+	
+
+	str << R".(
+//first index - pot / sil
+//second index - bufferStart / nofEdges (and possibly bufferIndex)
+//third index - max nof possible subbuffers
+#define BUFFER_START_INDEX 0u
+#define BUFFER_NOF_EDGES_INDEX 1u
+).";
+	if (numBuffers > 1)
+		str << "#define BUFFER_INDEX 2u\n";
+
+	str << "shared uint acquiredBuffers[2][" << nofBufferAttribs << "][2*COMPRESSION_BUFFERS_PER_ARRAY_SIZE+MAX_OCTREE_LEVEL];\n";
+
+	str << "shared uint atomicCounters[2]; //pot, sil\n\n";
+
+	//statics
+	str << "const uint maxNofBuffers[MAX_OCTREE_LEVEL+1] = \n{\n	1,\n";
+	
+	for (uint32_t i = 1; i <= octreeLevel; ++i)
+	{
+		str << "	COMPRESSION_BUFFERS_PER_ARRAY_SIZE + " << i << ",\n";
+	}
+	
+	str << "};\n";
+
+	str << R".(
+void main()
+{
+	const uint globalId = gl_GlobalInvocationID.x;
+
+	if(globalId==0)
+	{
+		atomicCounters[0] = 0;
+		atomicCounters[1] = 0;
+		
+		acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][0] = 0;
+	}   acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][0] = 0;
+	
+	barrier();
+	//the whole path
+	uint nodes[MAX_OCTREE_LEVEL+1];
+	nodes[0] = cellContainingLight;
+	nodes[1] = getNodeParent(nodes[0], MAX_OCTREE_LEVEL);
+).";
+
+	for(uint32_t i =2; i<octreeLevel; ++i)
+	{
+		str << "	nodes[" << i << "] = getNodeParent(nodes[" << i - 1 << "], MAX_OCTREE_LEVEL-" << i - 1 << ");\n";
+	}
+	
+	str << "	nodes[" << octreeLevel << "] = 0;\n\n";
+	
+	str << R".(
+	const bool isPotential = globalId < maxNofBuffers[MAX_OCTREE_LEVEL];
+	const uint potMultiplier = isPotential ? 0 : 1;
+	int myLevel = -1;
+	
+	for(uint i = 0; i<=MAX_OCTREE_LEVEL; ++i)
+	{
+		if(globalId < (potMultiplier * maxNofBuffers[MAX_OCTREE_LEVEL] + maxNofBuffers[i]))
+		{
+			myLevel = int(i);
+			break;
+		}
+	}
+
+	uint mask = 255;
+	if(myLevel==1)
+	{
+		const uint indexWithinArray = globalId - (potMultiplier*maxNofBuffers[MAX_OCTREE_LEVEL]) - 1;
+		const uint compressionId = getCompressionIdWithinParent(cellContainingLight, nodes[1], 1);
+		
+		mask = indices[compressionId * COMPRESSION_BUFFERS_PER_ARRAY_SIZE + indexWithinArray];
+	}
+).";
+
+	str << "	uint nofEdges = 0;\n";
+	if (numBuffers == 1)
+		str << R".(
+	if(myLevel>=0)
+	{
+		const uint index = 2 * NOF_SUBBUFFERS * nodes[myLevel]+ (potMultiplier * NOF_SUBBUFFERS) + (mask - SUBBUFF_CORRECTION);
+		const uint start = nofEdgesPrefixSum[index];
+		const uint end = nofEdgesPrefixSum[index+1];
+		nofEdges = end - start;
+		
+		if(nofEdges>0)
+		{
+			const uint storeIndex = atomicAdd(atomicCounters[potMultiplier], 1);
+			acquiredBuffers[potMultiplier][BUFFER_START_INDEX][storeIndex] = start;
+			acquiredBuffers[potMultiplier][BUFFER_NOF_EDGES_INDEX][storeIndex] = nofEdges;
+		}
+	}
+).";
+	else
+		str << R".(
+	if(myLevel>=0)
+	{
+		const uint bufferIndex = getNodeBufferIndex(nodes[myLevel]);
+		const uint index = 2 * NOF_SUBBUFFERS * nodes[myLevel]+ (potMultiplier * NOF_SUBBUFFERS) + (mask - SUBBUFF_CORRECTION);
+		const uint start = nofEdgesPrefixSum[index+bufferIndex];
+		const uint end = nofEdgesPrefixSum[index+bufferIndex+1];
+		nofEdges = end - start;
+		
+		if(nofEdges>0)
+		{
+			const uint storeIndex = atomicAdd(atomicCounters[potMultiplier], 1);
+			acquiredBuffers[potMultiplier][BUFFER_START_INDEX][storeIndex] = start;
+			acquiredBuffers[potMultiplier][BUFFER_NOF_EDGES_INDEX][storeIndex] = nofEdges;
+			acquiredBuffers[potMultiplier][BUFFER_INDEX][storeIndex] = bufferIndex;
+		}
+	}
+).";
+
+	str << R".(
+	barrier();
+	
+	const uint nofPotB = atomicCounters[0];
+	const uint nofSilB = atomicCounters[1];
+	
+	//---The prefix sum itself---
+	const uint nofBuffs = max(nofPotB, nofSilB);
+	uint nofElements = 0;
+	if(nofBuffs < 2*gl_SubGroupSizeARB)
+	{
+		nofElements = 2*gl_SubGroupSizeARB;
+	}
+	else
+	{
+		nofElements = uint(getNearestPow2(nofBuffs));
+	}
+	const uint nofThreadsHalf = nofElements/2;
+	const uint remainingZerosPot = nofElements - nofPotB;
+	const uint remainingZerosSil = nofElements - nofSilB;
+	
+	if(globalId < (remainingZerosPot + remainingZerosSil))
+	{
+		const uint buffSelect = globalId < remainingZerosPot ? 0 : 1;
+		const uint index = (buffSelect == 0 ? nofPotB : nofSilB) + globalId - (buffSelect * remainingZerosPot);
+		acquiredBuffers[buffSelect][BUFFER_NOF_EDGES_INDEX][index] = 0;
+	}
+	
+	const uint edgeTypeIndex = globalId < nofThreadsHalf ? 0 : 1;
+	const int n = int(nofElements);
+	const int thid = int(globalId - (edgeTypeIndex * nofThreadsHalf));
+	
+	//The actual scan
+	{
+		int offset = 1;
+		
+		for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
+		{ 
+			barrier();
+			if (thid < d)
+			{
+				int ai = offset*(2*thid+1)-1;
+				int bi = offset*(2*thid+2)-1;
+				acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][bi] += acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][ai];
+			}
+		
+			offset *= 2;
+		}
+		
+		if (thid == 0) // clear the last element
+		{ 
+			acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][n - 1] = 0; 
+		}
+		
+		for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
+		{
+			offset >>= 1;
+			barrier();
+			if (thid < d)                     
+			{
+				int ai = offset*(2*thid+1)-1;
+				int bi = offset*(2*thid+2)-1;
+				uint t = acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][ai];
+				acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][ai] = acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][bi];
+				acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][bi] += t; 
+			}
+		}
+	}
+
+	barrier();
+).";
+	if (numBuffers == 1)
+		str << R".(
+	if(globalId < (nofPotB + nofSilB))
+	{
+		bool doPotential = globalId < nofPotB;
+		
+		if(doPotential)
+		{
+			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 0] = acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][globalId];
+			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 1] = acquiredBuffers[0][BUFFER_START_INDEX][globalId];
+		}
+		
+		if(!doPotential)
+		{
+			const uint storeIndex = globalId - nofPotB;
+			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 0] = acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][storeIndex];
+			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 1] = acquiredBuffers[1][BUFFER_START_INDEX][storeIndex];
+		}
+	}
+).";
+	else
+		str << R".(
+
+	if(globalId < (nofPotB + nofSilB))
+	{
+		bool doPotential = globalId < nofPotB;
+		
+		if(doPotential)
+		{
+			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 0] = acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][globalId];
+			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 1] = acquiredBuffers[0][BUFFER_START_INDEX][globalId];
+			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 2] = acquiredBuffers[0][BUFFER_INDEX][globalId];
+		}
+		
+		if(!doPotential)
+		{
+			const uint storeIndex = globalId - nofPotB;
+			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 0] = acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][storeIndex];
+			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 1] = acquiredBuffers[1][BUFFER_START_INDEX][storeIndex];
+			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 2] = acquiredBuffers[1][BUFFER_INDEX][storeIndex];
+		}
+	}
+).";
+	str << R".(
+	//Store nofEdges
+	if(globalId==0)
+	{
+		nofPotEdges = acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][nofPotB];
+		nofSilEdges = acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][nofSilB];
+		
+		nofPotBuffers = atomicCounters[0];
+		nofSilBuffers = atomicCounters[1];
+	}
+}
+).";
+
 	return str.str();
 }

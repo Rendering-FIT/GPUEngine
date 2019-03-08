@@ -45,7 +45,7 @@ bool GpuOctreeLoaderCompress8::_createBottomFillProgramCompress()
 
 	const auto program = buildComputeShaderFillBottomLevel(_wgSize, _cacheSize, _limits.chunkSizeNofBits, _limits.maxChunksPerParent);
 	/*
-	std::ifstream t2("C:\\Users\\ikobrtek\\Desktop\\tmpShader.glsl");
+	std::ifstream t2("C:\\Users\\ikobrtek\\Desktop\\buildShader.glsl");
 	std::string program((std::istreambuf_iterator<char>(t2)),
 		std::istreambuf_iterator<char>());
 	//*/

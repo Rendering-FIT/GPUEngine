@@ -457,6 +457,7 @@ void Application::drawScene() {
 }
 #endif
 #include "HSSV/HighResolutionTimer.hpp"
+
 void Application::warmpUp()
 {
 	std::cout << "Warming up...\n";
@@ -464,13 +465,14 @@ void Application::warmpUp()
 	HighResolutionTimer t;
 	t.reset();
 	float elapsedTimeS = 0;
-	while(elapsedTimeS<testWarmupSecs)
+	while (elapsedTimeS<testWarmupSecs)
 	{
-		t.reset();
 		while (SDL_PollEvent(&event));
+		t.reset();
 		this->drawScene();
 		ge::gl::glFinish();
 		elapsedTimeS += float(t.getElapsedTimeSeconds());
+		this->window->swap();
 	}
 	std::cout << "Go!\n";
 }

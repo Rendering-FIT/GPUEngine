@@ -394,16 +394,14 @@ void main()
 			const uint syblingMaskPot = getSyblingGroupMaskFromBallot(potential,  syblingGroup);
 			const uint syblingMaskSil = getSyblingGroupMaskFromBallot(silhouette, syblingGroup);
 
-			const bool isStoredToParentPot = shouldStoreInParent(syblingMaskPot);
-			const bool isStoredToParentSil = shouldStoreInParent(syblingMaskSil);
-
 			const uint syblingMask = isPotentiallySilhouette ? syblingMaskPot : syblingMaskSil;
+			const bool isStoredToParent = shouldStoreInParent(syblingMask);
 			const uint descMask = isPotentiallySilhouette ? 0 : 0x0100;
 			const uint vectorSubindex = isPotentiallySilhouette ? 0 : 1;
 
 			if(isPotentiallySilhouette || isSilhouette)
 			{
-				if(isStoredToParentPot || isStoredToParentSil)
+				if(isStoredToParent)
 				{
 					//Choose pivot thread
 					const int pivot = findLSB(syblingMask);
