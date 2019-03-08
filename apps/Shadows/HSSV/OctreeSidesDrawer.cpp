@@ -828,10 +828,6 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeC
 	m_getSubBufssSader->use();
 	m_getSubBufssSader->set1ui("cellContainingLight", lowestNodeContainingLight);
 
-	m_potSuBuffers->clear(GL_R32UI, GL_RED, GL_UNSIGNED_INT, nullptr);
-	m_silSuBuffers->clear(GL_R32UI, GL_RED, GL_UNSIGNED_INT, nullptr);
-	ge::gl::glFinish();
-
 	unsigned int index = 0;
 	_voxelNofPotentialSilhouetteEdgesPrefixSum->bindBase(GL_SHADER_STORAGE_BUFFER, index++);
 	nofPotentialEdgesBuffer->bindRange(GL_SHADER_STORAGE_BUFFER, index++, 0, sizeof(uint32_t));
