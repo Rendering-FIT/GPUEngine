@@ -1314,3 +1314,37 @@ void main()
 
 	return str.str();
 }
+
+std::string genDivisorKernel()
+{
+	return R".(
+
+#version 450 core
+layout(std430, binding = 0) buffer _potNum{ uint nofPotToPatch; };
+layout(std430, binding = 1) buffer _silNum{ uint nofSilToPatch; };
+layout(std430, binding = 2) buffer _pot{ uint nofPot; };
+layout(std430, binding = 3) buffer _sil{ uint nofSil; };
+
+layout (local_size_x = 32) in;
+
+uniform uint potDivisor;
+uniform uint silDivisor;
+
+void main()
+{
+	if(gl_GlobalInvocationID.x==0)
+	{
+		const uint np = nofPotToPatch;
+		nofPotToPatch = uint(ceil(float(np)/float(potDivisor)));
+		nofPot = np;
+	}
+
+	if(gl_GlobalInvocationID.x==1)
+	{
+		const uint ns = nofSilToPatch;	
+		nofSilToPatch = uint(ceil(float(ns)/float(silDivisor)));
+		nofSil = ns;
+	}
+}
+).";
+}

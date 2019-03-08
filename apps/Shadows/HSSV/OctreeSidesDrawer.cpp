@@ -63,12 +63,17 @@ void OctreeSidesDrawer::_initShaders()
 			potentialSidesGS)
 		);
 
-	if(_silhouetteDrawingMethod == DrawingMethod::CS || _potentialDrawingMethod == DrawingMethod::CS)
+	if (_silhouetteDrawingMethod == DrawingMethod::CS || _potentialDrawingMethod == DrawingMethod::CS)
+	{
 		_drawSidesProgram = std::make_shared<ge::gl::Program>(
 			std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, drawVPSrc),
 			std::make_shared<ge::gl::Shader>(GL_TESS_CONTROL_SHADER, drawCPSrc),
 			std::make_shared<ge::gl::Shader>(GL_TESS_EVALUATION_SHADER, drawEPSrc)
 			);
+
+		m_patchingKernel = std::make_shared<ge::gl::Program>(
+			std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, genDivisorKernel()));
+	}
 
 	if(_potentialDrawingMethod == DrawingMethod::CS)
 		_testAndGenerateSidesProgram = std::make_shared<ge::gl::Program>(
@@ -139,6 +144,8 @@ void OctreeSidesDrawer::_initBuffers()
 		_silhouetteSidesCsVAO = std::make_shared<ge::gl::VertexArray>();
 		_silhouetteSidesCsVAO->addAttrib(_silhouetteEdgeCsVBO, 0, 4, GL_FLOAT);
 	}
+
+	_nofEdgesPotSil = std::make_shared<ge::gl::Buffer>(16 * sizeof(uint32_t));
 
 	const uint32_t indirectData[] = { 0, 1, 1 };
 	_indirectDispatchCsPotential = std::make_shared<ge::gl::Buffer>(3 * sizeof(uint32_t), indirectData);
@@ -804,17 +811,27 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeCont
 
 void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeContainingLight)
 {
+	ge::gl::glFinish();
 	if (_timer) _timer->stamp("");
 	std::shared_ptr<ge::gl::Buffer> nofPotentialEdgesBuffer;
 	std::shared_ptr<ge::gl::Buffer> nofSilhouetteEdgesBuffer;
 
+	uint32_t potDivisor = 1;
+	uint32_t silDivisor = 1;
+
 	if (_potentialDrawingMethod == DrawingMethod::CS)
+	{
 		nofPotentialEdgesBuffer = _indirectDispatchCsPotential;
+		potDivisor = _workgroupSize;
+	}
 	else
 		nofPotentialEdgesBuffer = _indirectDrawBufferPotentialCS;
 
 	if (_silhouetteDrawingMethod == DrawingMethod::CS)
+	{
 		nofSilhouetteEdgesBuffer = _indirectDispatchCsSilhouette;
+		silDivisor = _workgroupSize;
+	}
 	else
 		nofSilhouetteEdgesBuffer = _indirectDrawBufferSilhouetteCS;
 
@@ -881,6 +898,30 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeC
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
+	if (_potentialDrawingMethod == DrawingMethod::CS || _silhouetteDrawingMethod==DrawingMethod::CS)
+	{
+		ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+		m_patchingKernel->use();
+		m_patchingKernel->set1ui("potDivisor", 1);
+		m_patchingKernel->set1ui("silDivisor", 256);
+
+		_indirectDispatchCsPotential->bindRange(GL_SHADER_STORAGE_BUFFER, 0, 0, sizeof(uint32_t));
+		_indirectDispatchCsSilhouette->bindRange(GL_SHADER_STORAGE_BUFFER, 1, 0, sizeof(uint32_t));
+		_nofEdgesPotSil->bindRange(GL_SHADER_STORAGE_BUFFER, 2, 0, sizeof(uint32_t));
+		_nofEdgesPotSil->bindRange(GL_SHADER_STORAGE_BUFFER, 3, 8*sizeof(uint32_t), sizeof(uint32_t));
+
+		ge::gl::glDispatchCompute(1, 1, 1);
+
+		_indirectDispatchCsPotential->unbindRange(GL_SHADER_STORAGE_BUFFER, 0);
+		_indirectDispatchCsSilhouette->unbindRange(GL_SHADER_STORAGE_BUFFER, 1);
+		_nofEdgesPotSil->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
+		_nofEdgesPotSil->unbindRange(GL_SHADER_STORAGE_BUFFER, 3);
+	}
+
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
+
+	ge::gl::glFinish();
+
 	if (_timer) _timer->stamp("SilhouetteTraversal");
 }

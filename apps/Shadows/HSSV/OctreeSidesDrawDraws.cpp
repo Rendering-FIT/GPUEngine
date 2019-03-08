@@ -236,7 +236,7 @@ void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos)
 	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
 	_potentialEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
 	_indirectDrawBufferPotentialCS->bindBase(GL_SHADER_STORAGE_BUFFER, 4);
-	_indirectDispatchCsPotential->bindRange(GL_SHADER_STORAGE_BUFFER, 5, 0, sizeof(uint32_t));
+	_nofEdgesPotSil->bindRange(GL_SHADER_STORAGE_BUFFER, 5, 0, sizeof(uint32_t));
 	_indirectDispatchCsPotential->bind(GL_DISPATCH_INDIRECT_BUFFER);
 
 	ge::gl::glDispatchComputeIndirect(0);
@@ -247,7 +247,7 @@ void OctreeSidesDrawer::_generateSidesFromPotentialCS(const glm::vec4& lightPos)
 	_edgesIdsToTestAndGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
 	_potentialEdgeCsVBO->unbindBase(GL_SHADER_STORAGE_BUFFER, 3);
 	_indirectDrawBufferPotentialCS->unbindBase(GL_SHADER_STORAGE_BUFFER, 4);
-	_indirectDispatchCsPotential->unbindRange(GL_SHADER_STORAGE_BUFFER, 5);
+	_nofEdgesPotSil->unbindRange(GL_SHADER_STORAGE_BUFFER, 5);
 }
 
 void OctreeSidesDrawer::_generateSidesFromSilhouetteCS()
@@ -262,17 +262,17 @@ void OctreeSidesDrawer::_generateSidesFromSilhouetteCS()
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
 	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
 	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
-	_indirectDispatchCsSilhouette->bindRange(GL_SHADER_STORAGE_BUFFER, 4, 0, sizeof(uint32_t));
+	_nofEdgesPotSil->bindRange(GL_SHADER_STORAGE_BUFFER, 4, 8*sizeof(uint32_t), sizeof(uint32_t));
 	_indirectDispatchCsSilhouette->bind(GL_DISPATCH_INDIRECT_BUFFER);
 
 	ge::gl::glDispatchComputeIndirect(0);
 
 	_indirectDispatchCsSilhouette->unbind(GL_DISPATCH_INDIRECT_BUFFER);
-	_gpuEdges->_edges->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
-	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-	_silhouetteEdgeCsVBO->bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-	_indirectDrawBufferSilhouetteCS->bindBase(GL_SHADER_STORAGE_BUFFER, 3);
-	_indirectDispatchCsSilhouette->unbindRange(GL_SHADER_STORAGE_BUFFER, 4);
+	_gpuEdges->_edges->unbindBase(GL_SHADER_STORAGE_BUFFER, 0);
+	_edgesIdsToGenerate->unbindBase(GL_SHADER_STORAGE_BUFFER, 1);
+	_silhouetteEdgeCsVBO->unbindBase(GL_SHADER_STORAGE_BUFFER, 2);
+	_indirectDrawBufferSilhouetteCS->unbindBase(GL_SHADER_STORAGE_BUFFER, 3);
+	_nofEdgesPotSil->unbindRange(GL_SHADER_STORAGE_BUFFER, 4);
 
 	assert(GL_NO_ERROR == ge::gl::glGetError());
 }

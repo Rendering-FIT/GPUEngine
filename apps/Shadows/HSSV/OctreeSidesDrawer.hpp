@@ -85,6 +85,7 @@ private:
 	std::shared_ptr<ge::gl::Program> _testAndGenerateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> m_getSubBufssSader = nullptr;
+	std::shared_ptr<ge::gl::Program> m_patchingKernel = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
 	std::shared_ptr<ge::gl::VertexArray>_potentialSidesCsVAO = nullptr;
@@ -107,6 +108,8 @@ private:
 
 	std::shared_ptr<ge::gl::Buffer> _compressedNodesInfoBuffer = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _compressedNodesInfoIndexingBuffer = nullptr;
+
+	std::shared_ptr<ge::gl::Buffer> _nofEdgesPotSil = nullptr;
 
 	std::shared_ptr<GpuEdges> _gpuEdges;
 
