@@ -1076,7 +1076,7 @@ std::string generatePrefixSum8bit(const std::vector<uint32_t>& lastNodePerEdgeBu
 	if (numBuffers > 1)
 		str << "#define BUFFER_INDEX 2u\n";
 
-	str << "shared uint acquiredBuffers[2][" << nofBufferAttribs << "][2*COMPRESSION_BUFFERS_PER_ARRAY_SIZE+MAX_OCTREE_LEVEL];\n";
+	str << "shared uint acquiredBuffers[2][" << nofBufferAttribs << "][256];\n";
 
 	str << "shared uint atomicCounters[2]; //pot, sil\n\n";
 
@@ -1196,6 +1196,12 @@ void main()
 	{
 		nofElements = uint(getNearestPow2(nofBuffs));
 	}
+
+	if(nofBuffs==nofElements)
+	{
+		nofElements*=2;
+	}
+
 	const uint nofThreadsHalf = nofElements/2;
 	const uint remainingZerosPot = nofElements - nofPotB;
 	const uint remainingZerosSil = nofElements - nofSilB;
