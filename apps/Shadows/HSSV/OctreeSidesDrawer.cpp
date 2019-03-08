@@ -210,8 +210,11 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 		nofEdgesPrefixSums.push_back(0);
 
 		std::shared_ptr<ge::gl::Buffer> buffer = std::make_shared<ge::gl::Buffer>(currentSize, nullptr);
-		uint32_t* dataPtr = reinterpret_cast<uint32_t*>(buffer->map(GL_WRITE_ONLY));
-		
+
+		std::vector<uint32_t> dataVector;
+		dataVector.resize(currentSize / sizeof(uint32_t));
+		uint32_t* dataPtr = dataVector.data();
+
 		uint64_t currentNumIndices = 0;
 
 		while(currentNode<nofVoxels)
@@ -238,7 +241,7 @@ void OctreeSidesDrawer::_loadOctreeToGpu()
 			currentNumIndices += sz;
 		}
 
-		buffer->unmap();
+		buffer->setData(dataPtr, dataVector.size() * sizeof(uint32_t));
 		remainingSize -= currentNumIndices * sizeof(uint32_t);
 		_gpuOctreeBuffers.push_back(buffer);
 		_lastNodePerEdgeBuffer.push_back(currentNode);
@@ -277,7 +280,10 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 		nofEdgesPrefixSums.push_back(0);
 
 		std::shared_ptr<ge::gl::Buffer> buffer = std::make_shared<ge::gl::Buffer>(currentSize, nullptr);
-		uint32_t* dataPtr = reinterpret_cast<uint32_t*>(buffer->map(GL_WRITE_ONLY));
+		
+		std::vector<uint32_t> dataVector;
+		dataVector.resize(currentSize / sizeof(uint32_t));
+		uint32_t* dataPtr = dataVector.data();
 
 		uint64_t currentNumIndices = 0;
 		while (currentNode < nofVoxels)
@@ -368,7 +374,7 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 			currentNode++;
 		}
 
-		buffer->unmap();
+		buffer->setData(dataPtr, dataVector.size() * sizeof(uint32_t));
 		remainingSize -= currentNumIndices * sizeof(uint32_t);
 		_gpuOctreeBuffers.push_back(buffer);
 		_lastNodePerEdgeBuffer.push_back(currentNode);
@@ -401,7 +407,10 @@ void OctreeSidesDrawer::_loadUbo()
 	_calcBitMasks8(3);
 
 	m_ubo = std::make_shared<ge::gl::Buffer>(8 * m_bitMasks[0].size() * sizeof(uint32_t));
-	uint32_t* ptr = reinterpret_cast<uint32_t*>(m_ubo->map(GL_WRITE_ONLY));
+
+	std::vector<uint32_t> data;
+	data.resize(8 * m_bitMasks[0].size());
+	uint32_t* ptr = data.data();
 
 	uint32_t currentOffset = 0;
 	
@@ -412,7 +421,7 @@ void OctreeSidesDrawer::_loadUbo()
 		currentOffset += uint32_t(sz);
 	}
 
-	m_ubo->unmap();
+	m_ubo->setData(ptr, data.size() * sizeof(uint32_t));
 }
 
 bool OctreeSidesDrawer::_loadGpuTraversalShader8bit(unsigned int workgroupSize)

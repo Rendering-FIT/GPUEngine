@@ -165,7 +165,9 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom(
 	sizesPrefixSum.clear();
 	sizesPrefixSum.push_back(0);
 
-	uint8_t* indicesPtr = (uint8_t*)_indices->map(GL_WRITE_ONLY);
+	std::vector<uint8_t> dataVeector;
+	dataVeector.resize(_maxBufferSize);
+	uint8_t* indicesPtr = dataVeector.data();
 
 	uint32_t numLoaded = 0;
 	while(numLoaded<remainingSize)
@@ -192,11 +194,8 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom(
 		numLoaded += OCTREE_NUM_CHILDREN;
 	}
 
-	auto numIndicesPtr = _numIndices->map(GL_WRITE_ONLY);
-	memcpy(numIndicesPtr, sizesPrefixSum.data(), sizesPrefixSum.size() * sizeof(uint32_t));
-
-	_indices->unmap();
-	_numIndices->unmap();
+	_numIndices->setData(sizesPrefixSum.data(), sizesPrefixSum.size() * sizeof(uint32_t));
+	_indices->setData(indicesPtr, dataVeector.size());
 
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 }
