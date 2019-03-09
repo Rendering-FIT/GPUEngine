@@ -55,12 +55,16 @@ protected:
 	bool _loadGpuTraversalShader8bit(unsigned int workgroupSize);
 	void _getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeContainingLight);
 
+	void _getPotentialSilhouetteEdgesNoCompress(uint32_t lowestNodeContainingLight);
+
 	void _processSubBuffer(
 		const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer, 
 		std::vector<uint32_t>& compressedNodesInfo,
 		std::vector<uint32_t>& nofEdgesPrefixSums,
 		uint32_t* gpuMappedBuffer
 		);
+
+	bool _loadOctreeTraversalKernelNoCompress(uint32_t workgroupSize);
 
 	void _breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const;
 
@@ -74,6 +78,8 @@ protected:
 
 	void _calcBitMasks8(unsigned int minBits);
 	void _loadUbo();
+
+	void _fixDispatchSizes(uint32_t potDivisor, uint32_t silDivisor);
 private:	
 	int _lastFrameCellIndex = -1;
 
@@ -86,6 +92,7 @@ private:
 	std::shared_ptr<ge::gl::Program> _generateSidesProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> m_getSubBufssSader = nullptr;
 	std::shared_ptr<ge::gl::Program> m_patchingKernel = nullptr;
+	std::shared_ptr<ge::gl::Program> m_traverseOctreeNoCompressKernel = nullptr;
 
 	std::shared_ptr<ge::gl::VertexArray>_dummyVAO = nullptr;
 	std::shared_ptr<ge::gl::VertexArray>_potentialSidesCsVAO = nullptr;

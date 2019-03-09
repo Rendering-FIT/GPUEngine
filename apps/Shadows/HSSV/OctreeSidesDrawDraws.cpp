@@ -26,8 +26,11 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 			std::cout << "Cell index: " << cellIndex << std::endl;
 			printOnce = true;
 		}
-
-		if(m_compressionLevel==1)
+		if (m_compressionLevel == 0)
+		{
+			_getPotentialSilhouetteEdgesNoCompress(cellIndex);
+		}
+		else if(m_compressionLevel==1)
 		{
 			_getPotentialSilhouetteEdgesGpu8bit(cellIndex);
 		}

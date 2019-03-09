@@ -1348,3 +1348,175 @@ void main()
 }
 ).";
 }
+
+
+std::string genTraversalNoCompressKernel(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, unsigned int workgroupSize)
+{
+	uint32_t const numBuffers = lastNodePerEdgeBuffer.size();
+
+	std::stringstream str;
+	str << "#version 450 core\n";
+	str << "#extension GL_ARB_shader_ballot : require\n";
+	str << "#extension GL_ARB_gpu_shader_int64 : enable\n";
+	str << "#extension GL_AMD_gpu_shader_int64 : enable\n\n";
+	str << "layout(local_size_x=" << workgroupSize << ") in;\n";
+
+	for (unsigned int i = 0; i < numBuffers; ++i)
+		str << genBuffer(i);
+
+	str << "\n";
+
+	unsigned int currentIndex = numBuffers;
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
+
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofPotential{ uint nofPotential; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _nofSilhouette{ uint nofSilhouette; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _potential{ uint potentialEdges[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") buffer _silhouette{ uint silhouetteEdges[]; };\n\n";
+
+	str << "uniform uint cellContainingLight;\n\n";
+
+	str << "const uint treeDepth = " << octree->getDeepestLevel() << ";\n";
+
+	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
+	const std::vector<unsigned int> ls = octree->getLevelSizeInclusiveSum();
+	for (unsigned int i = 0; i < ls.size(); ++i)
+	{
+		str << ls[i];
+		if (i != (ls.size() - 1))
+			str << ", ";
+	}
+	str << ");\n";
+
+	if (numBuffers > 1)
+	{
+		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
+		for (unsigned int i = 0; i < numBuffers; ++i)
+		{
+			str << lastNodePerEdgeBuffer[i];
+			if (i != (numBuffers - 1))
+				str << ", ";
+		}
+		str << ");\n";
+	}
+
+	str << traversalSupportFunctions;
+
+	str << findLsbFunction;
+
+	if (numBuffers > 1)
+	{
+		str << genFindBufferFunc();
+		str << genGetNodeFromBuffer(numBuffers);
+	}
+
+	str << R".(
+void main()
+{
+	int currentNode = int(cellContainingLight);
+	int currentLevel = int(treeDepth);
+
+	uint prefixSum = 0;
+
+	int myNode = -1;
+	bool getPotential = true;
+	uint myStartingIndex = 0;
+).";
+	if (numBuffers > 1)
+		str << "	uint bufferIndex = 0;\n";
+
+	str << "	while(currentLevel>=0)\n\t{\n";
+	if (numBuffers > 1)
+	{
+		str << "		bufferIndex = getNodeBufferIndex(currentNode);\n";
+		str << "		const uint startPotential = nofEdgesPrefixSum[2 * currentNode + bufferIndex + 0];\n";
+		str << "		const uint startSilhouette = nofEdgesPrefixSum[2 * currentNode + bufferIndex + 1];\n";
+		str << "		const uint endSilhouette = nofEdgesPrefixSum[2 * currentNode + bufferIndex + 2];\n";
+	}
+	else
+	{
+		str << "		const uint startPotential = nofEdgesPrefixSum[2 * currentNode + 0];\n";
+		str << "		const uint startSilhouette = nofEdgesPrefixSum[2 * currentNode + 1];\n";
+		str << "		const uint endSilhouette = nofEdgesPrefixSum[2 * currentNode + 2];\n";
+	}
+
+	str << R".(
+		const uint numPotential = startSilhouette - startPotential;
+		const uint numSilhouette = endSilhouette - startSilhouette;
+
+		if((prefixSum + numPotential) > gl_GlobalInvocationID.x)
+		{ 
+			myNode = int(currentNode); 
+			getPotential = true; 
+			myStartingIndex = startPotential + (gl_GlobalInvocationID.x - prefixSum); 
+			break;
+		}
+		prefixSum += numPotential;
+		if((prefixSum + numSilhouette) > gl_GlobalInvocationID.x)
+		{ 
+			myNode = int(currentNode); 
+			getPotential = false; 
+			myStartingIndex = startSilhouette + (gl_GlobalInvocationID.x - prefixSum); 
+			break;
+		}
+		prefixSum += numSilhouette;
+		currentNode = getNodeParent(currentNode, currentLevel--);
+	}
+
+	if(myNode<0) 
+		return;
+
+	const uint64_t maskPotential = ballotARB(getPotential);
+	if(getPotential)
+	{
+		const uvec2 maskPotentialUnpack = unpackUint2x32(maskPotential);
+		const uint numPotential = bitCount(maskPotentialUnpack.x) + bitCount(maskPotentialUnpack.y);
+		const int firstSet = getLSB64(maskPotential);
+		const uint64_t andMask = (uint64_t(1)<<gl_SubGroupInvocationARB)-uint64_t(1);
+		const uvec2 maskIdxPacked = unpackUint2x32(maskPotential & andMask);
+		const uint idxPotentialInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);
+		unsigned int storeIndexPot;
+		if(gl_SubGroupInvocationARB==firstSet)
+		{
+			storeIndexPot = atomicAdd(nofPotential, numPotential);
+		}
+		storeIndexPot = readInvocationARB(storeIndexPot, firstSet) + idxPotentialInWarp;
+).";
+
+	if (numBuffers > 1)
+		str << "		potentialEdges[storeIndexPot] = getNodeFromBuffer(myStartingIndex, bufferIndex);\n";
+	else
+		str << "		potentialEdges[storeIndexPot] = edges0[myStartingIndex];\n";
+	str << "	}\n\n";
+
+	str << R".(
+	const uint64_t maskSilhouette = ballotARB(!getPotential);
+	if(!getPotential)
+	{
+		const uvec2 maskSilhouetteUnpack = unpackUint2x32(maskSilhouette);
+		const uint numSilhouette = bitCount(maskSilhouetteUnpack.x) + bitCount(maskSilhouetteUnpack.y);
+		const int firstSet = getLSB64(maskSilhouette);
+		const uint64_t andMask = (uint64_t(1)<<gl_SubGroupInvocationARB)-uint64_t(1);
+		const uvec2 maskIdxPacked = unpackUint2x32(maskSilhouette & andMask);
+		const uint idxSilhouetteInWarp = bitCount(maskIdxPacked.x) + bitCount(maskIdxPacked.y);
+		unsigned int storeIndexSil;
+		if(gl_SubGroupInvocationARB==firstSet)
+		{		
+			storeIndexSil = atomicAdd(nofSilhouette, numSilhouette);
+		}
+		storeIndexSil = readInvocationARB(storeIndexSil, firstSet) + idxSilhouetteInWarp;
+).";
+
+	if (numBuffers > 1)
+		str << "		silhouetteEdges[storeIndexSil] = getNodeFromBuffer(myStartingIndex, bufferIndex);\n";
+
+	else
+		str << "		silhouetteEdges[storeIndexSil] = edges0[myStartingIndex];\n";
+
+	str << R".(
+	}
+}
+).";
+
+	return str.str();
+}
