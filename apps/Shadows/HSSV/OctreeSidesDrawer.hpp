@@ -66,6 +66,9 @@ protected:
 
 	bool _loadOctreeTraversalKernelNoCompress(uint32_t workgroupSize);
 
+	bool _loadOctreeTraversalKernelNoCompress2();
+	void _getPotentialSilhouetteEdgesNoCompress2(uint32_t lowestNodeContainingLight);
+
 	void _breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const;
 
 	void _allocSubBuffersDataBuffers();

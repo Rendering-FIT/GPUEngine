@@ -1062,10 +1062,6 @@ std::string generatePrefixSum8bit(const std::vector<uint32_t>& lastNodePerEdgeBu
 
 	str << getCompressionIdWithinParentFunction(compressionLevel);
 
-	str << getNearestPow2Func();
-
-	
-
 	str << R".(
 //first index - pot / sil
 //second index - bufferStart / nofEdges (and possibly bufferIndex)
@@ -1187,20 +1183,7 @@ void main()
 	
 	//---The prefix sum itself---
 	const uint nofBuffs = max(nofPotB, nofSilB);
-	uint nofElements = 0;
-	if(nofBuffs < 2*gl_SubGroupSizeARB)
-	{
-		nofElements = 2*gl_SubGroupSizeARB;
-	}
-	else
-	{
-		nofElements = uint(getNearestPow2(nofBuffs));
-	}
-
-	if(nofBuffs==nofElements)
-	{
-		nofElements*=2;
-	}
+	uint nofElements = 64 + (nofBuffs>64 ? 64 : 0);
 
 	const uint nofThreadsHalf = nofElements/2;
 	const uint remainingZerosPot = nofElements - nofPotB;
@@ -1514,6 +1497,141 @@ void main()
 		str << "		silhouetteEdges[storeIndexSil] = edges0[myStartingIndex];\n";
 
 	str << R".(
+	}
+}
+).";
+
+	return str.str();
+}
+
+std::string genPreprocessKernelNoCompress(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree)
+{
+	std::stringstream str;
+
+	auto const octreeLevel = octree->getDeepestLevel();
+	auto const compressionLevel = octree->getCompressionLevel();
+	assert(compressionLevel == 0);
+	auto const numBuffers = lastNodePerEdgeBuffer.size();
+	uint32_t const nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
+	auto const nofBufferAttribs = numBuffers == 1 ? 2 : 3;
+
+	str << "#version 450 core\n\n";
+	str << "#extension GL_ARB_shader_ballot : require\n\n";
+
+	str << "#define MAX_OCTREE_LEVEL " << octreeLevel << "u\n";
+	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n\n";
+
+	str << "layout (local_size_x = 32) in;\n";
+
+	uint32_t currentIndex = 0;
+	str << "layout(std430, binding = " << currentIndex++ << ") readonly buffer _nofEdgesPrefixSum{ uint nofEdgesPrefixSum[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofEdgesPot { uint nofPotEdges; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofEdgesSil { uint nofSilEdges; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofPot { uint nofPotBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _nofSil { uint nofSilBuffers; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _potential { uint potentialBuffers[]; };\n";
+	str << "layout(std430, binding = " << currentIndex++ << ") writeonly buffer _silhouette { uint silhouetteBuffers[]; };\n";
+	str << "\n";
+
+	if (numBuffers > 1)
+	{
+		str << "const uint edgeBuffersMapping[" << numBuffers << "] = uint[" << numBuffers << "](";
+		for (uint32_t i = 0; i < numBuffers; ++i)
+		{
+			str << lastNodePerEdgeBuffer[i];
+			if (i != (numBuffers - 1))
+				str << ", ";
+		}
+		str << ");\n";
+
+		str << genFindBufferFunc();
+	}
+
+	str << "const uint levelSizesInclusiveSum[" << octree->getDeepestLevel() + 1 << "] = uint[" << octree->getDeepestLevel() + 1 << "](";
+	const std::vector<uint32_t> ls = octree->getLevelSizeInclusiveSum();
+	for (uint32_t i = 0; i < ls.size(); ++i)
+	{
+		str << ls[i];
+		if (i != (ls.size() - 1))
+			str << ", ";
+	}
+	str << ");\n";
+
+	str << "const uint treeDepth = MAX_OCTREE_LEVEL;\n";
+	str << "uniform uint cellContainingLight;\n";
+
+	str << traversalSupportFunctions;
+
+	str << R".(
+void main()
+{
+	if(gl_GlobalInvocationID.x==0)
+	{
+		uint currentNode = cellContainingLight;
+		uint scanP = 0;
+		uint scanS = 0;
+		uint storeIndexP = 0;
+		uint storeIndexS = 0;
+		uint potB = 0;
+		uint silB = 0;
+
+		for(int i = 0; i<=MAX_OCTREE_LEVEL; ++i)
+		{
+).";
+
+	if (numBuffers > 1)
+		str << R".(			const uint bufferIndex = getNodeBufferIndex(currentNode);
+			const uint index = 2*currentNode+bufferIndex;
+).";
+	else
+		str << "			const uint index = 2*currentNode;\n";
+
+	str << R".(
+			const uint startP = nofEdgesPrefixSum[index+0];
+			const uint endP = nofEdgesPrefixSum[index+1];
+			const uint nofEdgesP = endP - startP;
+
+			const uint startS = nofEdgesPrefixSum[index+1];
+			const uint endS = nofEdgesPrefixSum[index+2];
+			const uint nofEdgesS = endS - startS;
+
+			if(nofEdgesP>0)
+			{
+				potentialBuffers[storeIndexP + 0] = scanP;
+				potentialBuffers[storeIndexP + 1] = startP;
+).";
+
+	if (numBuffers > 1) 
+		str << "				potentialBuffers[storeIndexP + 2] = bufferIndex;\n";
+			
+	str << R".(
+				storeIndexP += NOF_UINTS_BUFFER_INFO;
+				scanP += nofEdgesP;
+				potB++;
+			}
+
+			if(nofEdgesS>0)
+			{
+				silhouetteBuffers[storeIndexS + 0] = scanS;
+				silhouetteBuffers[storeIndexS + 1] = startS;
+).";
+
+	if (numBuffers > 1)
+		str << "				silhouetteBuffers[storeIndexS + 2] = bufferIndex;\n";
+	
+	str << R".(		
+				storeIndexS += NOF_UINTS_BUFFER_INFO;
+				scanS += nofEdgesS;
+				silB++;
+			}
+
+			currentNode = getNodeParent(currentNode, MAX_OCTREE_LEVEL-i);
+		}
+		
+		nofPotBuffers = potB;
+		nofSilBuffers = silB;
+		nofPotEdges = scanP;
+		nofSilEdges = scanS;
 	}
 }
 ).";

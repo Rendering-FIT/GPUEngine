@@ -29,6 +29,7 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 		if (m_compressionLevel == 0)
 		{
 			_getPotentialSilhouetteEdgesNoCompress(cellIndex);
+			//_getPotentialSilhouetteEdgesNoCompress2(cellIndex);
 		}
 		else if(m_compressionLevel==1)
 		{
