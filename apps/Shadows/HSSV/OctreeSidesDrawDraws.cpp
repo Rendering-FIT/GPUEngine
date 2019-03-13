@@ -44,16 +44,6 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 			_drawSidesCS(mvp, light);
 		else
 		{
-			switch (_silhouetteDrawingMethod)
-			{
-			case DrawingMethod::GS:
-				_drawSidesFromSilhouetteEdgesGS(mvp, light); break;
-			case DrawingMethod::TS:
-				_drawSidesFromSilhouetteEdgesTS(mvp, light); break;
-			case DrawingMethod::CS:
-				_drawSidesFromSilhouetteEdgesCS(mvp, light); break;
-			}
-
 			switch (_potentialDrawingMethod)
 			{
 			case DrawingMethod::GS:
@@ -62,6 +52,16 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 				_drawSidesFromPotentialEdgesTS(mvp, light); break;
 			case DrawingMethod::CS:
 				_drawSidesFromPotentialEdgesCS(mvp, light); break;
+			}
+			
+			switch (_silhouetteDrawingMethod)
+			{
+			case DrawingMethod::GS:
+				_drawSidesFromSilhouetteEdgesGS(mvp, light); break;
+			case DrawingMethod::TS:
+				_drawSidesFromSilhouetteEdgesTS(mvp, light); break;
+			case DrawingMethod::CS:
+				_drawSidesFromSilhouetteEdgesCS(mvp, light); break;
 			}
 		}
 	}
@@ -210,6 +210,13 @@ void OctreeSidesDrawer::_drawSidesFromPotentialEdgesCS(const glm::mat4& mvp, con
 {
 	//if (_timer) _timer->stamp("");
 	_generateSidesFromPotentialCS(lightPos);
+	
+	//--
+	ge::gl::glFinish();
+
+	if (_timer) _timer->stamp("SilhouetteTraversal");
+	//--
+
 	//if (_timer) _timer->stamp("PotentialEdges");
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 

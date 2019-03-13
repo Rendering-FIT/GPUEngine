@@ -444,7 +444,7 @@ bool OctreeSidesDrawer::_loadGpuTraversalShader8bit(unsigned int workgroupSize)
 	_loadUbo();
 
 	/*
-	std::ifstream t2("C:\\Users\\ikobrtek\\Desktop\\generated.glsl");
+	std::ifstream t2("C:\\Users\\ikobrtek\\Desktop\\newnew.glsl");
 	std::string program((std::istreambuf_iterator<char>(t2)),
 		std::istreambuf_iterator<char>());
 	//*/
@@ -1136,7 +1136,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesNoCompress2(uint32_t lowestN
 
 	ge::gl::glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 
-	ge::gl::glFinish();
+	//ge::gl::glFinish();
 
-	if (_timer) _timer->stamp("SilhouetteTraversal");
+	//if (_timer) _timer->stamp("SilhouetteTraversal");
 }

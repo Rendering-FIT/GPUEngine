@@ -1016,7 +1016,9 @@ std::string generatePrefixSum8bit(const std::vector<uint32_t>& lastNodePerEdgeBu
 	str << "#define MAX_OCTREE_LEVEL " << octreeLevel << "u\n";
 	str << "#define COMPRESSION_LEVEL " << compressionLevel << "u\n";
 	str << "#define COMPRESSION_BUFFERS_PER_ARRAY_SIZE " << compBuffSize << "u\n";
-	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n\n";
+	str << "#define NOF_UINTS_BUFFER_INFO " << nofUintsPerSubbufferInfo << "\n";
+	str << "#define NOF_MASK 0x00FFFFFF\n";
+	str << "#define PREFIX_SUM_SHIFT 24\n\n";
 
 	str << "layout (local_size_x = " << workgroupSize << ") in;\n";
 
@@ -1062,18 +1064,6 @@ std::string generatePrefixSum8bit(const std::vector<uint32_t>& lastNodePerEdgeBu
 
 	str << getCompressionIdWithinParentFunction(compressionLevel);
 
-	str << R".(
-//first index - pot / sil
-//second index - bufferStart / nofEdges (and possibly bufferIndex)
-//third index - max nof possible subbuffers
-#define BUFFER_START_INDEX 0u
-#define BUFFER_NOF_EDGES_INDEX 1u
-).";
-	if (numBuffers > 1)
-		str << "#define BUFFER_INDEX 2u\n";
-
-	str << "shared uint acquiredBuffers[2][" << nofBufferAttribs << "][256];\n";
-
 	str << "shared uint atomicCounters[2]; //pot, sil\n\n";
 
 	//statics
@@ -1095,9 +1085,7 @@ void main()
 	{
 		atomicCounters[0] = 0;
 		atomicCounters[1] = 0;
-		
-		acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][0] = 0;
-	}   acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][0] = 0;
+	} 
 	
 	barrier();
 	//the whole path
@@ -1142,16 +1130,26 @@ void main()
 		str << R".(
 	if(myLevel>=0)
 	{
-		const uint index = 2 * NOF_SUBBUFFERS * nodes[myLevel]+ (potMultiplier * NOF_SUBBUFFERS) + (mask - SUBBUFF_CORRECTION);
+		const uint index = 2 * NOF_SUBBUFFERS * nodes[myLevel] + (potMultiplier * NOF_SUBBUFFERS) + (mask - SUBBUFF_CORRECTION);
 		const uint start = nofEdgesPrefixSum[index];
 		const uint end = nofEdgesPrefixSum[index+1];
 		nofEdges = end - start;
 		
 		if(nofEdges>0)
 		{
-			const uint storeIndex = atomicAdd(atomicCounters[potMultiplier], 1);
-			acquiredBuffers[potMultiplier][BUFFER_START_INDEX][storeIndex] = start;
-			acquiredBuffers[potMultiplier][BUFFER_NOF_EDGES_INDEX][storeIndex] = nofEdges;
+			const uint storeIndex = atomicAdd(atomicCounters[potMultiplier], (1 << PREFIX_SUM_SHIFT) + nofEdges);
+			const uint newStoreIndex = storeIndex >> PREFIX_SUM_SHIFT;
+			const uint newNofEdges = storeIndex & NOF_MASK;
+			if(isPotential)
+			{
+				potentialBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 0] = newNofEdges;
+				potentialBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 1] = start;
+			}
+			else
+			{
+  				silhouetteBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 0] = newNofEdges;
+  				silhouetteBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 1] = start;
+			}
 		}
 	}
 ).";
@@ -1160,17 +1158,30 @@ void main()
 	if(myLevel>=0)
 	{
 		const uint bufferIndex = getNodeBufferIndex(nodes[myLevel]);
-		const uint index = 2 * NOF_SUBBUFFERS * nodes[myLevel]+ (potMultiplier * NOF_SUBBUFFERS) + (mask - SUBBUFF_CORRECTION);
+		const uint index = 2 * NOF_SUBBUFFERS * nodes[myLevel] + (potMultiplier * NOF_SUBBUFFERS) + (mask - SUBBUFF_CORRECTION);
 		const uint start = nofEdgesPrefixSum[index+bufferIndex];
 		const uint end = nofEdgesPrefixSum[index+bufferIndex+1];
 		nofEdges = end - start;
 		
+
 		if(nofEdges>0)
 		{
-			const uint storeIndex = atomicAdd(atomicCounters[potMultiplier], 1);
-			acquiredBuffers[potMultiplier][BUFFER_START_INDEX][storeIndex] = start;
-			acquiredBuffers[potMultiplier][BUFFER_NOF_EDGES_INDEX][storeIndex] = nofEdges;
-			acquiredBuffers[potMultiplier][BUFFER_INDEX][storeIndex] = bufferIndex;
+			const uint storeIndex = atomicAdd(atomicCounters[potMultiplier], (1 << PREFIX_SUM_SHIFT) + nofEdges);
+			const uint newStoreIndex = storeIndex >> PREFIX_SUM_SHIFT;
+			const uint newNofEdges = storeIndex & NOF_MASK;
+			if(isPotential)
+			{
+				potentialBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 0] = newNofEdges;
+				potentialBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 1] = start;
+				potentialBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 2] = bufferIndex;
+				
+			}
+			else
+			{
+  				silhouetteBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 0] = newNofEdges;
+  				silhouetteBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 1] = start;
+				silhouetteBuffers[NOF_UINTS_BUFFER_INFO*newStoreIndex + 3] = bufferIndex;
+			}
 		}
 	}
 ).";
@@ -1178,120 +1189,16 @@ void main()
 	str << R".(
 	barrier();
 	
-	const uint nofPotB = atomicCounters[0];
-	const uint nofSilB = atomicCounters[1];
-	
-	//---The prefix sum itself---
-	const uint nofBuffs = max(nofPotB, nofSilB);
-	uint nofElements = 64 + (nofBuffs>64 ? 64 : 0);
-
-	const uint nofThreadsHalf = nofElements/2;
-	const uint remainingZerosPot = nofElements - nofPotB;
-	const uint remainingZerosSil = nofElements - nofSilB;
-	
-	if(globalId < (remainingZerosPot + remainingZerosSil))
-	{
-		const uint buffSelect = globalId < remainingZerosPot ? 0 : 1;
-		const uint index = (buffSelect == 0 ? nofPotB : nofSilB) + globalId - (buffSelect * remainingZerosPot);
-		acquiredBuffers[buffSelect][BUFFER_NOF_EDGES_INDEX][index] = 0;
-	}
-	
-	const uint edgeTypeIndex = globalId < nofThreadsHalf ? 0 : 1;
-	const int n = int(nofElements);
-	const int thid = int(globalId - (edgeTypeIndex * nofThreadsHalf));
-	
-	//The actual scan
-	{
-		int offset = 1;
-		
-		for (int d = n>>1; d > 0; d >>= 1) // build sum in place up the tree
-		{ 
-			barrier();
-			if (thid < d)
-			{
-				int ai = offset*(2*thid+1)-1;
-				int bi = offset*(2*thid+2)-1;
-				acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][bi] += acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][ai];
-			}
-		
-			offset *= 2;
-		}
-		
-		if (thid == 0) // clear the last element
-		{ 
-			acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][n - 1] = 0; 
-		}
-		
-		for (int d = 1; d < n; d *= 2) // traverse down tree & build scan
-		{
-			offset >>= 1;
-			barrier();
-			if (thid < d)                     
-			{
-				int ai = offset*(2*thid+1)-1;
-				int bi = offset*(2*thid+2)-1;
-				uint t = acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][ai];
-				acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][ai] = acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][bi];
-				acquiredBuffers[edgeTypeIndex][BUFFER_NOF_EDGES_INDEX][bi] += t; 
-			}
-		}
-	}
-
-	barrier();
-).";
-	if (numBuffers == 1)
-		str << R".(
-	if(globalId < (nofPotB + nofSilB))
-	{
-		bool doPotential = globalId < nofPotB;
-		
-		if(doPotential)
-		{
-			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 0] = acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][globalId];
-			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 1] = acquiredBuffers[0][BUFFER_START_INDEX][globalId];
-		}
-		
-		if(!doPotential)
-		{
-			const uint storeIndex = globalId - nofPotB;
-			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 0] = acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][storeIndex];
-			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 1] = acquiredBuffers[1][BUFFER_START_INDEX][storeIndex];
-		}
-	}
-).";
-	else
-		str << R".(
-
-	if(globalId < (nofPotB + nofSilB))
-	{
-		bool doPotential = globalId < nofPotB;
-		
-		if(doPotential)
-		{
-			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 0] = acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][globalId];
-			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 1] = acquiredBuffers[0][BUFFER_START_INDEX][globalId];
-			potentialBuffers[NOF_UINTS_BUFFER_INFO*globalId + 2] = acquiredBuffers[0][BUFFER_INDEX][globalId];
-		}
-		
-		if(!doPotential)
-		{
-			const uint storeIndex = globalId - nofPotB;
-			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 0] = acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][storeIndex];
-			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 1] = acquiredBuffers[1][BUFFER_START_INDEX][storeIndex];
-			silhouetteBuffers[NOF_UINTS_BUFFER_INFO*storeIndex + 2] = acquiredBuffers[1][BUFFER_INDEX][storeIndex];
-		}
-	}
-).";
-	str << R".(
-	//Store nofEdges
 	if(globalId==0)
 	{
-		nofPotEdges = acquiredBuffers[0][BUFFER_NOF_EDGES_INDEX][nofPotB];
-		nofSilEdges = acquiredBuffers[1][BUFFER_NOF_EDGES_INDEX][nofSilB];
+		const uint pot_counter = atomicCounters[0];
+		const uint sil_counter = atomicCounters[1];
+		nofPotEdges = pot_counter & NOF_MASK;
+		nofSilEdges = sil_counter & NOF_MASK;
 		
-		nofPotBuffers = atomicCounters[0];
-		nofSilBuffers = atomicCounters[1];
-	}
+		nofPotBuffers = pot_counter >> PREFIX_SUM_SHIFT;
+		nofSilBuffers = sil_counter >> PREFIX_SUM_SHIFT;
+	};
 }
 ).";
 

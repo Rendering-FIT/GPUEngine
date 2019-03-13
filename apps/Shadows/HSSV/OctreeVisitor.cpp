@@ -158,7 +158,6 @@ int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const
 	return currentParent;
 	//*/
 
-
 	if (!_isPointInsideNode(0, point))
 		return -1;
 
@@ -168,11 +167,10 @@ int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const
 	glm::uvec3 pos = glm::uvec3(glm::floor((point - bb.getMinPoint()) / singleUnitSize));
 
 	auto const deepstLevel = _octree->getDeepestLevel();
-//	int relPos = pos.x + pos.y * ipow(2, deepstLevel) + pos.z * ipow(2, deepstLevel * 2);
 	int relPos = 0;
 		
 	for (uint32_t i = 0; i < deepstLevel; ++i)
-		relPos+=((((pos.x >> i) & 1) << 0) + (((pos.y >> i) & 1) << 1) + (((pos.z >> i) & 1) << 2))*ipow(8, i);
+		relPos+=((((pos.x >> i) & 1) << 0) + (((pos.y >> i) & 1) << 1) + (((pos.z >> i) & 1) << 2))*ipow(OCTREE_NUM_CHILDREN, i);
 
 	relPos += _octree->getNumNodesInPreviousLevels(deepstLevel);
 	return relPos;
