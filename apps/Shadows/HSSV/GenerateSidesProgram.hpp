@@ -69,6 +69,7 @@ int currentMultiplicity(vec3 A, vec3 B, vec3 O, vec3 L)
 ).";
 
 const std::string pushEdgeFunction = R".(
+#ifndef LOBOTOMIZED
 void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
 {
 	for(uint i = 0; i<absMultiplicity; ++i)
@@ -77,6 +78,7 @@ void pushEdge(uint absMultiplicity, uint startingIndex, vec3 L, vec3 H)
 		sideEdges[startingIndex + 2*i + 1] = vec4(H, 1);
 	}
 }
+#endif
 ).";
 
 const std::string sidesVS = R".(
@@ -348,6 +350,8 @@ const std::string testAndGenerateSidesCS = R".(
 #extension GL_ARB_gpu_shader_int64 : enable
 #extension GL_AMD_gpu_shader_int64 : enable
 
+//#define LOBOTOMIZED
+
 layout(local_size_x=WORKGROUP_SIZE_X) in;
 
 layout(std430, binding=0) readonly buffer _edges{
@@ -359,9 +363,13 @@ layout(std430, binding=1) readonly buffer _oppositeVertices{
 layout(std430, binding=2) readonly buffer _edgeIdsToGenerate{
 	uint edgesIdToTest[]; };
 
+#ifdef LOBOTOMIZED
+layout(std430, binding=3) buffer _generatedSideEdges{
+	float sideEdges[]; };
+#else
 layout(std430, binding=3) buffer _generatedSideEdges{
 	vec4 sideEdges[]; };
-
+#endif
 layout(std430, binding=4) buffer _drawIndirectBuffer{
 	uint drawIndirect[4]; };
 
@@ -403,6 +411,13 @@ void main()
 	for(uint i=0; i<nofOpposite; ++i)
 		multiplicity += currentMultiplicity(edgeVertices[0], edgeVertices[1], getOppositeVertex(oppositeStartingIndex, i), vec3(lightPosition));
 
+#ifdef LOBOTOMIZED
+	if(multiplicity != 0)
+	{
+		uint w = atomicAdd(drawIndirect[0],1);
+		sideEdges[w] = float(gl_GlobalInvocationID.x);
+	}
+#else
 	const uint swapVertices = uint(multiplicity>0);
 	const uint absMultiplicity = abs(multiplicity);
 
@@ -414,6 +429,7 @@ void main()
 	startingPosGlobal = readInvocationARB(startingPosGlobal, 0);
 
 	pushEdge(absMultiplicity, startingPosGlobal + startingPosLocal, edgeVertices[0^swapVertices], edgeVertices[1^swapVertices]);
+#endif
 }
 ).";
 

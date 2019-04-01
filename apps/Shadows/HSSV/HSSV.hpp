@@ -5,7 +5,7 @@
 #include "Octree.hpp"
 #include "OctreeVisitor.hpp"
 #include "GpuEdges.hpp"
-#include "OctreeSidesDrawer.hpp"
+#include "ISidesDrawer.hpp"
 #include "OctreeWireframeDrawer.hpp"
 
 struct HSSVParams
@@ -23,6 +23,8 @@ struct HSSVParams
 	bool drawOctree;
 	bool doBuildTest;
 	bool noCompression;
+	bool drawFromCpu;
+	bool doEdgeTest;
 };
 
 class HSSV : public ShadowVolumes
@@ -36,6 +38,7 @@ public:
 
 	virtual ~HSSV();
 
+	bool init() override;
 	void drawSides(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 	void drawCaps(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 
@@ -44,26 +47,29 @@ public:
 	void drawUser(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix) override;
 
 protected:
+	std::vector<float> _loadVertices(std::shared_ptr<Model> const model);
+	void _createAdjacency(std::vector<float> const& verts3f);
+	AABB _calculateOctreeSpace(std::vector<float> const & verts3f, glm::vec3 scale);
+	void _createOctree(uint32_t maxOctreeLevel, AABB const& octreeSpace, bool verbose = true);
+	void _loadOctreeFromFile(std::string const& filename, uint32_t octreeLevel, uint32_t compressionLevel, glm::vec3 sceneScale);
+	void _storeOctree(glm::vec3 const& sceneScale);
 
-	AABB _getSceneAabb(float* vertices3fv, size_t numVertices);
+	void _buildTest();
+	void _edgeTest();
+
+	AABB _getSceneAabb(std::vector<float> const& verts3f);
 		void _fixSceneAABB(AABB& bbox);
 
-	void _prepareBuffers(size_t maxVboSize);
-	void _prepareProgram();
-	void _updateSidesVBO(const std::vector<float>& vertices);
-
-	void _getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<float>& silhouetteVertices);
-		void _generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3& lowerPoint, const glm::vec3& higherPoint, int multiplicitySign, std::vector<float>& sides);
-		
 	void _loadGpuEdges(AdjacencyType edges);
 		void _serializeEdges(AdjacencyType edges, std::vector<float>& serializedEdges, std::vector<glm::vec3>& serializedOppositeVertices);
+
 protected:
+	std::shared_ptr<Model> _model;
+	HSSVParams _params;
+	uint32_t _compressionLevel = 0;
+	AABB _octreeSpace;
 
-	std::shared_ptr<ge::gl::Buffer> _sidesVBO = nullptr;
-	std::shared_ptr<ge::gl::VertexArray> _sidesVAO = nullptr;
-	std::shared_ptr<ge::gl::Program> _sidesProgram = nullptr;
-
-	std::shared_ptr<OctreeSidesDrawer> _octreeSidesDrawer;
+	std::shared_ptr<ISidesDrawer> _octreeSidesDrawer;
 	std::shared_ptr<GSCaps> _capsDrawer = nullptr;
 
 	std::shared_ptr<Octree> _octree = nullptr;
@@ -73,10 +79,4 @@ protected:
 	std::shared_ptr<GpuEdges> _gpuEdges;
 
 	std::unique_ptr<OctreeWireframeDrawer> _wireframeDrawer;
-
-	float* _vertices = nullptr;
-
-	int _previousOctreeNodeLightPos = -1;
-
-	bool _isDrawOctree = false;
 };

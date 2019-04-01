@@ -1,6 +1,9 @@
 
 set(HSSV_FILES
 	HSSV/AdjacencyEdgeWrapper.hpp
+	HSSV/CpuSidesDrawer.hpp
+	HSSV/CpuSidesDrawer.cpp
+	HSSV/ISidesDrawer.hpp
 	HSSV/HSSV.cpp
 	HSSV/HSSV.hpp
 	HSSV/Octree.hpp

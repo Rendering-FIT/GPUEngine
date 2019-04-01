@@ -1,5 +1,4 @@
 #include "HSSV.hpp"
-#include "SidesProgram.hpp"
 
 #include <glm/gtx/transform.hpp>
 #include "geGL/StaticCalls.h"
@@ -10,10 +9,10 @@
 
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
+#include "OctreeSidesDrawer.hpp"
+#include "CpuSidesDrawer.hpp"
 #include "OctreeWireframeDrawer.hpp"
 #include <iomanip>
-
-//#define DRAW_CPU
 
 HSSV::HSSV(
 	std::shared_ptr<Model> model,
@@ -22,24 +21,97 @@ HSSV::HSSV(
 	std::shared_ptr<ge::gl::Texture> const& depth,
 	ShadowVolumesParams const& params) : ShadowVolumes(shadowMask, depth, params)
 {
-	std::vector<float>vertices;
-	model->getVertices(vertices);
-	const auto nofVertexFloats = vertices.size();
+	_params = hssvParams;
+	_model = model;
+}
 
+HSSV::~HSSV()
+{}
+
+bool HSSV::init()
+{
 	printf("Renderer: %s %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
 
-	_vertices = new float[vertices.size()];
-	memcpy(_vertices, vertices.data(), vertices.size() * sizeof(float));
-	vertices.clear();
+	auto const vertices = _loadVertices(_model);
+	_createAdjacency(vertices);
 
-	size_t const nofTriangles = nofVertexFloats / (verticesPerTriangle*componentsPerVertex3D);
-	_edges = std::make_shared<Adjacency const>(_vertices, nofTriangles, 2);
+	_loadGpuEdges(_edges);
 
-	std::cout << "NoF Edges: " << _edges->getNofEdges() << std::endl;
+	_compressionLevel = _params.noCompression ? 0 : (int)(log(BitmaskTypeSizeBits) / log(8));
+
+	//Build test
+	if (_params.doBuildTest)
+	{
+		_buildTest();
+		exit(0);
+	}
+
+	//Edge test
+	if(_params.doEdgeTest)
+	{
+		_edgeTest();
+		exit(0);
+	}
+
+	_octreeSpace = _calculateOctreeSpace(vertices, _params.sceneAABBscale);
+
+
+	if (!_params.forceOctreeBuild)
+	{
+		_loadOctreeFromFile(_model->modelFilename, _params.maxOctreeLevel, _compressionLevel, _params.sceneAABBscale);
+	}
+
+	if(_octree==nullptr)
+	{
+		_createOctree(_params.maxOctreeLevel, _octreeSpace);
+		_storeOctree(_params.sceneAABBscale);
+	}
+
+	if(_params.drawOctree)
+	{
+		_wireframeDrawer = std::make_unique<OctreeWireframeDrawer>();
+		_wireframeDrawer->init(_octree);
+	}
+
+	if(_params.drawFromCpu)
+	{
+		_octreeSidesDrawer = std::make_shared<CpuSidesDrawer>(_visitor, _edges);
+	}
+	else
+	{
+		_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, _params.workgroupSize, DrawingMethod(_params.potentialDrawingMethod), DrawingMethod(_params.silhouetteDrawingMethod));
+	}
+
+	if (!_octreeSidesDrawer->init(_gpuEdges))
+	{
+		return false;
+	}
 
 	_capsDrawer = std::make_shared<GSCaps>(_edges);
 
-	AABB sceneBbox = _getSceneAabb(_vertices, nofVertexFloats);
+	return true;
+}
+
+std::vector<float> HSSV::_loadVertices(std::shared_ptr<Model> const model)
+{
+	std::vector<float>vertices;
+	model->getVertices(vertices);
+	return vertices;
+}
+
+
+void HSSV::_createAdjacency(std::vector<float> const& verts3f)
+{
+	size_t const nofTriangles = verts3f.size() / (verticesPerTriangle*componentsPerVertex3D);
+	size_t const dataSize = verts3f.size();
+	float* verts = new float[dataSize]; //this will leak...
+	memcpy(verts, verts3f.data(), dataSize * sizeof(float));
+	_edges = std::make_shared<Adjacency const>(verts, nofTriangles, 2);
+}
+
+AABB HSSV::_calculateOctreeSpace(std::vector<float> const& verts3f, glm::vec3 scale)
+{
+	AABB sceneBbox = _getSceneAabb(verts3f);
 	_fixSceneAABB(sceneBbox);
 
 	auto minP = sceneBbox.getMinPoint();
@@ -47,183 +119,207 @@ HSSV::HSSV(
 	std::cout << "Scene AABB " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
 	AABB octreeSpace;
-	octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*hssvParams.sceneAABBscale);
+	octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*scale);
 
-	minP = octreeSpace.getMinPoint();
-	maxP = octreeSpace.getMaxPoint();
-	std::cout << "Octree working space: " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
-
-	_loadGpuEdges(_edges);
-
-	_isDrawOctree = hssvParams.drawOctree;
-
-	HighResolutionTimer t;
-	OctreeSerializer serializer;
-	t.reset();
-	const uint32_t compressionLevel = hssvParams.noCompression ? 0 : (int)(log(BitmaskTypeSizeBits) / log(8));
-	if(!hssvParams.forceOctreeBuild)
-		_octree = serializer.loadFromFile(model->modelFilename, hssvParams.sceneAABBscale, hssvParams.maxOctreeLevel, compressionLevel);
-	
-	if(hssvParams.doBuildTest)
-	{
-		const std::vector<float> sceneScales = { 0.5, 1, 2, 5, 10, 100 };
-		const std::vector<uint32_t> octreeLevels = { 3, 4, 5 };
-		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value && !hssvParams.noCompression;
-		const uint32_t nofIterations = 3;
-
-		std::ofstream saveFile;
-		saveFile.open(std::string("buildTest_") + model->modelFilename + ".txt");
-
-		for(const auto depth : octreeLevels)
-		{
-			for(const auto scale : sceneScales)
-			{
-				octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*glm::vec3(scale, scale, scale));
-
-				HighResolutionTimer t;
-				double buildTime = 0;
-				for (uint32_t i = 0; i < nofIterations; ++i)
-				{
-					_octree.reset();
-					_visitor.reset();
-					_octree = std::make_shared<Octree>(depth, octreeSpace);
-					_visitor = std::make_shared<OctreeVisitor>(_octree);
-					t.reset();
-					_visitor->addEdges(_edges, _gpuEdges, useGpuCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
-					if (!useGpuCompression && !hssvParams.noCompression)
-					{
-						std::cout << "Compressing on CPU...\n";
-						OctreeCompressor compressor;
-						compressor.compressOctree(_visitor, compressionLevel);
-					}
-					_visitor->getOctree()->setCompressionLevel(compressionLevel);
-					_visitor->shrinkOctree();
-					buildTime += t.getElapsedTimeSeconds();
-				}
-				
-				buildTime /= double(nofIterations);
-
-				const size_t octreeSizeMB = _octree->getOctreeSizeBytes() / 1024ull / 1024ull;
-
-				//Get NofEdges
-				const int lowestNode = _visitor->getLowestNodeIndexFromPoint(hssvParams.initialLightPos);
-				std::vector<uint32_t> silhouetteEdges;
-				std::vector<uint32_t> potentialEdges;
-				_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
-
-				std::string str;
-				//str = "depth " + std::to_string(depth) + " scale " + std::to_string(scale) + " buildTime " + std::to_string(buildTime) + " sizeMB " + std::to_string(octreeSizeMB) + " potEdges " + std::to_string(potentialEdges.size()) + " silEdges " + std::to_string(silhouetteEdges.size()) + "\n";
-				saveFile << std::scientific << std::setw(5) << depth << std::setw(10) << scale << std::setw(10) << buildTime << std::setw(5) << octreeSizeMB << std::setw(10) << potentialEdges.size() << std::setw(10) << silhouetteEdges.size() << "\n";
-				//saveFile << str;
-				std::cerr << str;
-			}
-		}
-
-		std::cerr << "---END OF BUILD TEST---\n";
-
-		saveFile.close();
-
-		exit(0);
-	}
-
-	if (!_octree)
-	{
-		_octree = std::make_shared<Octree>(hssvParams.maxOctreeLevel, octreeSpace);
-		_visitor = std::make_shared<OctreeVisitor>(_octree);
-
-		t.reset();
-		const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value && !hssvParams.noCompression;
-		_visitor->addEdges(_edges, _gpuEdges, useGpuCompression && !hssvParams.noCompression, hssvParams.maxGpuMemoryToUsePerBuffer, hssvParams.potSpeculativeFactor, hssvParams.silSpeculativeFactor);
-
-		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
-
-		std::cout << "Building octree took " << dt << " seconds.\n";
-		if (!useGpuCompression && !hssvParams.noCompression)
-		{
-			std::cout << "Compressing...\n";
-			OctreeCompressor compressor;
-			compressor.compressOctree(_visitor, compressionLevel);
-
-			std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
-		}
-		
-		std::cout << "Final size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
-
-		_visitor->getOctree()->setCompressionLevel(compressionLevel);
-		_visitor->shrinkOctree();
-		std::cout << "Shrinking octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
-		
-		/*
-		std::vector<float> mpA, mpP;
-		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
-		const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
-		const float nofEdges = _edges->getNofEdges();
-		for (uint32_t i = start; i<end; ++i)
-		{
-			const auto node = _octree->getNode(i);
-
-			for(const auto buf : node->edgesAlwaysCastMap)
-				mpA.push_back(float(buf.second.size()) / nofEdges);
-
-			for (const auto buf : node->edgesMayCastMap)
-				mpP.push_back(float(buf.second.size()) / nofEdges);
-		}
-		std::sort(mpA.begin(), mpA.end(), std::greater<float>());
-		std::sort(mpP.begin(), mpP.end(), std::greater<float>());
-		std::cout << "Highest Sil: " << mpA[0] << " " << mpA[1] << " " << mpA[2] << " " << mpA[3] << " " << "\n";
-		std::cout << "Highest Pot: " << mpP[0] << " " << mpP[1] << " " << mpP[2] << " " << mpP[3] << " " << "\n";
-		//*/
-		/*
-		std::vector<uint32_t> mpA, mpP;
-		const auto start = _octree->getLevelFirstNodeID(_octree->getDeepestLevel() - 2);
-		const auto end = start + _octree->getNumNodesInLevel(_octree->getDeepestLevel());
-		const float nofEdges = _edges->getNofEdges();
-		for (uint32_t i = start; i<end; ++i)
-		{
-			const auto node = _octree->getNode(i);
-
-			mpA.push_back(node->edgesAlwaysCastMap.size());
-			mpP.push_back(node->edgesMayCastMap.size());
-		}
-		std::sort(mpA.begin(), mpA.end(), std::greater<float>());
-		std::sort(mpP.begin(), mpP.end(), std::greater<float>());
-		std::cout << "Highest Sil: " << mpA[0] << " " << mpA[1] << " " << mpA[2] << " " << mpA[3] << " " << "\n";
-		std::cout << "Highest Pot: " << mpP[0] << " " << mpP[1] << " " << mpP[2] << " " << mpP[3] << " " << "\n";
-
-		std::cout << "Highest Sil Rel: " << float(mpA[0]) / nofEdges << " " << float(mpA[1]) / nofEdges << " " << float(mpA[2]) / nofEdges << " " << float(mpA[3]) / nofEdges << " " << "\n";
-		std::cout << "Highest Pot Rel: " << float(mpP[0]) / nofEdges << " " << float(mpP[1]) / nofEdges << " " << float(mpP[2]) / nofEdges << " " << float(mpP[3]) / nofEdges << " " << "\n";
-		//*/
-		//--
-
-		t.reset();
-		serializer.storeToFile(model->modelFilename, hssvParams.sceneAABBscale, _octree);
-		std::cout << "Storing model to file took " << t.getElapsedTimeSeconds() << "s\n";
-	}
-	else
-	{
-		std::cout << "Loading model from file took " << t.getElapsedTimeSeconds() << "s\n";
-		_visitor = std::make_shared<OctreeVisitor>(_octree);
-	}
-	
-	if (_isDrawOctree)
-	{
-		_wireframeDrawer = std::make_unique<OctreeWireframeDrawer>();
-		_wireframeDrawer->init(_octree);
-	}
-
-#ifdef DRAW_CPU
-	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));
-	_prepareProgram();
-#else
-	_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, hssvParams.workgroupSize, DrawingMethod(hssvParams.potentialDrawingMethod), DrawingMethod(hssvParams.silhouetteDrawingMethod));
-	_octreeSidesDrawer->init(_gpuEdges);
-#endif
+	return octreeSpace;
 }
 
-HSSV::~HSSV()
+void HSSV::_loadOctreeFromFile(std::string const& filename, uint32_t octreeLevel, uint32_t compressionLevel, glm::vec3 sceneScale)
 {
-	if (_vertices)
-		delete[] _vertices;
+	OctreeSerializer serializer;
+	_octree = serializer.loadFromFile(filename, sceneScale, octreeLevel, compressionLevel);
+	if(_octree)
+	{
+		_visitor = std::make_shared<OctreeVisitor>(_octree);
+	}
+}
+
+void HSSV::_storeOctree(glm::vec3 const& sceneScale)
+{
+	OctreeSerializer serializer;
+	serializer.storeToFile(_model->modelFilename, sceneScale, _octree);
+}
+
+void HSSV::_createOctree(uint32_t maxOctreeLevel, AABB const& octreeSpace, bool verbose)
+{
+	_octree = std::make_shared<Octree>(maxOctreeLevel, octreeSpace);
+	_visitor = std::make_shared<OctreeVisitor>(_octree);
+
+	HighResolutionTimer t;
+	t.reset();
+
+	const bool useGpuCompression = std::is_same<unsigned char, BitmaskType>::value && !_params.noCompression;
+	_visitor->addEdges(_edges, _gpuEdges, useGpuCompression && !_params.noCompression, _params.maxGpuMemoryToUsePerBuffer, _params.potSpeculativeFactor, _params.silSpeculativeFactor);
+
+	if (verbose)
+	{
+		const auto dt = t.getElapsedTimeFromLastQuerySeconds();
+		std::cout << "Building octree took " << dt << " seconds.\n";
+	}
+
+	if (!useGpuCompression && !_params.noCompression)
+	{
+		if (verbose)
+		{
+			std::cout << "Compressing on CPU...\n";
+		}
+
+		OctreeCompressor compressor;
+		compressor.compressOctree(_visitor, _compressionLevel);
+
+		if (verbose)
+		{
+			std::cout << "Compresing octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+		}
+	}
+
+	_visitor->getOctree()->setCompressionLevel(_compressionLevel);
+	_visitor->shrinkOctree();
+
+	if (verbose)
+	{
+		std::cout << "Final size: " << _octree->getOctreeSizeBytes() / 1024 / 1024 << " MB\n";
+		std::cout << "Shrinking octree took " << t.getElapsedTimeFromLastQuerySeconds() << "s\n";
+	}
+}
+
+void HSSV::_buildTest()
+{
+	const std::vector<float> sceneScales = { 1, 2, 4, 8, 16 };
+	const std::vector<uint32_t> octreeLevels = { 3, 4, 5 };
+	const uint32_t nofIterations = 3;
+
+	std::ofstream saveFile;
+	saveFile.open(std::string("buildTest_") + _model->modelFilename + ".txt");
+
+	std::vector<float> vertices3f;
+	_model->getVertices(vertices3f);
+	AABB const sceneBbox = _getSceneAabb(vertices3f);
+	AABB octreeSpace;
+
+	for (const auto depth : octreeLevels)
+	{
+		for (const auto scale : sceneScales)
+		{
+			octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*glm::vec3(scale, scale, scale));
+
+			HighResolutionTimer t;
+			double buildTime = 0;
+			for (uint32_t i = 0; i < nofIterations; ++i)
+			{
+				_octree.reset();
+				_visitor.reset();
+				_createOctree(depth, octreeSpace, false);
+				
+				buildTime += t.getElapsedTimeSeconds();
+			}
+
+			buildTime /= double(nofIterations);
+
+			const size_t octreeSizeMB = _octree->getOctreeSizeBytes() / 1024ull / 1024ull;
+
+			size_t const nofVoxels = _octree->getTotalNumNodes();
+			size_t potSizes = 0, silSizes = 0;
+			for (unsigned int i = _octree->getLevelFirstNodeID(_octree->getDeepestLevel()); i<nofVoxels; ++i)
+			{
+				std::vector<uint32_t> silhouetteEdges;
+				std::vector<uint32_t> potentialEdges;
+				_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, i);
+
+				potSizes += potentialEdges.size();
+				silSizes += silhouetteEdges.size();
+			}
+
+			potSizes /= nofVoxels;
+			silSizes /= nofVoxels;
+
+			/*
+			//Get NofEdges
+			const int lowestNode = _visitor->getLowestNodeIndexFromPoint(hssvParams.initialLightPos);
+			std::vector<uint32_t> silhouetteEdges;
+			std::vector<uint32_t> potentialEdges;
+			_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
+			*/
+			std::string str;
+			//str = "depth " + std::to_string(depth) + " scale " + std::to_string(scale) + " buildTime " + std::to_string(buildTime) + " sizeMB " + std::to_string(octreeSizeMB) + " potEdges " + std::to_string(potentialEdges.size()) + " silEdges " + std::to_string(silhouetteEdges.size()) + "\n";
+			saveFile << std::scientific << depth << std::setw(15) << scale << std::setw(15) << buildTime << std::setw(10) << octreeSizeMB << std::setw(15) << potSizes << std::setw(15) << silSizes << "\n";
+			//saveFile << str;
+			std::cerr << str;
+		}
+	}
+
+	std::cerr << "---END OF BUILD TEST---\n";
+
+	saveFile.close();
+}
+
+void HSSV::_edgeTest()
+{
+	const std::vector<float> sceneScales = { 1, 2, 4, 8, 16 };
+	const std::vector<uint32_t> octreeLevels = { 3, 4, 5 };
+
+	std::ofstream saveFile;
+	saveFile.open(std::string("silTest_") + _model->modelFilename + ".txt");
+
+	std::vector<float> vertices3f;
+	_model->getVertices(vertices3f);
+	AABB const sceneBbox = _getSceneAabb(vertices3f);
+	AABB octreeSpace;
+
+	for (const auto depth : octreeLevels)
+	{
+		for (const auto scale : sceneScales)
+		{
+			_octree.reset();
+			_visitor.reset();
+			auto const sceneScale = glm::vec3(scale, scale, scale);
+
+			_loadOctreeFromFile(_model->modelFilename, depth, _compressionLevel, sceneScale);
+
+			if (_octree == nullptr)
+			{
+				octreeSpace.setCenterExtents(sceneBbox.getCenterPoint(), sceneBbox.getExtents()*sceneScale);
+				_createOctree(depth, octreeSpace, false);
+				_storeOctree(sceneScale);
+			}
+
+			_visitor = std::make_shared<OctreeVisitor>(_octree);
+			printf("Depth %d scale %d\n", depth, int(scale));
+			size_t const nofAllVoxels = _octree->getTotalNumNodes();
+			float silPercent = 0;
+
+			for (unsigned int i = _octree->getLevelFirstNodeID(_octree->getDeepestLevel()); i<nofAllVoxels; ++i)
+			{
+				std::vector<uint32_t> silhouetteEdges;
+				std::vector<uint32_t> potentialEdges;
+				_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, i);
+
+				std::vector<int> ed;
+				ed.reserve(potentialEdges.size() + silhouetteEdges.size());
+				ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
+				glm::vec3 const lightPos = _octree->getNode(i)->volume.getCenterPoint();
+				for (const auto edge : potentialEdges)
+				{
+					const int multiplicity = GeometryOps::calcEdgeMultiplicity(_edges, edge, lightPos);
+					if (multiplicity != 0)
+					{
+						ed.push_back(edge);
+					}
+				}
+
+				float const dp = (100.0f*float(silhouetteEdges.size()) / float(ed.size()));
+				silPercent += dp;
+			}
+
+			float const tt = float(_octree->getNumNodesInLevel(_octree->getDeepestLevel()));
+			silPercent /= tt;
+
+			saveFile << std::scientific << depth << std::setw(15) << scale << std::setw(15) << silPercent << "\n";
+		}
+	}
+
+	saveFile.close();
+	exit(0);
 }
 
 void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
@@ -234,29 +330,14 @@ void HSSV::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix,
 void HSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix, glm::mat4 const& projectionMatrix)
 {
 	const glm::mat4 mvp = projectionMatrix * viewMatrix;
-#ifdef DRAW_CPU
-	std::vector<float> sidesGeometry;
-	
-	_getSilhouetteFromLightPos(lightPosition, sidesGeometry);
-	
-	_updateSidesVBO(sidesGeometry);
 
-	_sidesVAO->bind();
-	_sidesProgram->use();
-	_sidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp));
-
-	ge::gl::glDrawArrays(GL_TRIANGLES, 0, sidesGeometry.size() / 4);
-
-	_sidesVAO->unbind();
-#else
 	_octreeSidesDrawer->drawSides(mvp, lightPosition);
-#endif
 }
 
-AABB HSSV::_getSceneAabb(float* vertices3fv, size_t numVerticesFloats)
+AABB HSSV::_getSceneAabb(std::vector<float> const& verts)
 {
 	AABB bbox;
-	bbox.updateWithVerticesVec3(vertices3fv, numVerticesFloats);
+	bbox.updateWithVerticesVec3(verts.data(), verts.size());
 
 	return bbox;
 }
@@ -296,166 +377,6 @@ void HSSV::_fixSceneAABB(AABB& bbox)
 		bbox.setMinMaxPoints(min - glm::vec3(0, 0, minSize), max + glm::vec3(0, 0, minSize));
 
 		std::cout << "Fixing Z AABB dimension\n";
-	}
-}
-
-void HSSV::_prepareBuffers(size_t maxVboSize)
-{
-	_sidesVBO = std::make_shared <ge::gl::Buffer>(maxVboSize);
-	_sidesVAO = std::make_shared<ge::gl::VertexArray>();
-
-	_sidesVAO->addAttrib(_sidesVBO, 0, 4, GL_FLOAT);
-}
-
-void HSSV::_prepareProgram()
-{
-	std::shared_ptr<ge::gl::Shader> vs = std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER, hssvVsSource);
-	std::shared_ptr<ge::gl::Shader> fs = std::make_shared<ge::gl::Shader>(GL_FRAGMENT_SHADER, hssvFsSource);
-
-	_sidesProgram = std::make_shared<ge::gl::Program>(vs, fs);
-}
-
-void HSSV::_updateSidesVBO(const std::vector<float>& vertices)
-{
-	float* ptr = reinterpret_cast<float*>(_sidesVBO->map(GL_MAP_WRITE_BIT));
-
-	memcpy(ptr, vertices.data(), vertices.size() * sizeof(float));
-
-	_sidesVBO->unmap();
-}
-
-void HSSV::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::vector<float>& sidesVertices)
-{
-	const int lowestNode = _visitor->getLowestNodeIndexFromPoint(lightPos);
-
-	static bool isLightOut = false;
-
-	if (lowestNode < 0)
-	{
-		if (!isLightOut)
-		{
-			std::cerr << "Light (" << lightPos.x << " " << lightPos.y << " " << lightPos.z << ") is out of octree range\n";
-			isLightOut = true;
-		}
-		return;
-	}
-
-	isLightOut = false;
-
-	std::vector<uint32_t> silhouetteEdges;
-	std::vector<uint32_t> potentialEdges;
-
-	_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
-
-	sidesVertices.clear();
-	sidesVertices.reserve((potentialEdges.size() + silhouetteEdges.size()) * 4);
-
-	//--
-	std::vector<int> ed;
-	ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
-	//--
-	
-	for(const auto edge : silhouetteEdges)
-	{
-		const int multiplicity = decodeEdgeMultiplicityFromId(edge);
-		const glm::vec3& lowerPoint = getEdgeVertexLow(_edges, decodeEdgeFromEncoded(edge));
-		const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, decodeEdgeFromEncoded(edge));;
-
-		_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
-	}
-	//*/
-	for(const auto edge : potentialEdges)
-	{
-		const int multiplicity = GeometryOps::calcEdgeMultiplicity(_edges, edge, lightPos);
-		if (multiplicity != 0)
-		{
-			const glm::vec3& lowerPoint = getEdgeVertexLow(_edges, edge);
-			const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, edge);
-
-			_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
-			ed.push_back(encodeEdgeMultiplicityToId(edge, multiplicity));
-		}
-	}
-	
-	static bool printOnce = false;
-	if (!printOnce)
-	{
-		std::cout << "Light node: " << lowestNode << std::endl;
-		std::cout << "Light " << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << std::endl;
-		const auto n = _octree->getNode(lowestNode);
-		auto minP = n->volume.getMinPoint();
-		auto maxP = n->volume.getMaxPoint();
-		std::cout << "Node space " << minP.x << ", " << minP.y << ", " << minP.z << " Max: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
-		minP = n->volume.getCenterPoint();
-		n->volume.getExtents(maxP.x, maxP.y, maxP.z);
-		std::cout << "Center " << minP.x << ", " << minP.y << ", " << minP.z << " Extents: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
-		
-		std::cout << "Num potential: " << potentialEdges.size() << ", numSilhouette: " << silhouetteEdges.size() << std::endl;
-		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
-		
-		std::ofstream of;
-		of.open("CPU_Edges.txt");
-		std::sort(potentialEdges.begin(), potentialEdges.end());
-		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
-		
-		of << "Potential:\n";
-		for (const auto e : potentialEdges)
-			of << e << std::endl;
-
-		of << "\nSilhouette:\n";
-		for (const auto e : silhouetteEdges)
-			of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
-		of.close();
-		/*
-		std::ofstream sof;
-		sof.open("silhouette.txt");
-		sof << "SIL\n";
-		for (const auto e : silhouetteEdges)
-			sof << decodeEdgeFromEncoded(e) << "(" << decodeEdgeMultiplicityFromId(e) << ")" << std::endl;
-		
-		sof << "POT\n";
-		for (const auto e : ed)
-			sof << decodeEdgeFromEncoded(e) << "(" << decodeEdgeMultiplicityFromId(e) << ")" << std::endl;
-		sof.close();
-		//*/
-		
-		printOnce = true;
-	}
-	//*/
-}
-
-void HSSV::_generatePushSideFromEdge(const glm::vec3& lightPos, const glm::vec3& lowerPoint, const glm::vec3& higherPoint, int multiplicity, std::vector<float>& sides)
-{
-	const glm::vec3 lowInfinity = lowerPoint - lightPos;
-	const glm::vec3 highInfinity = higherPoint - lightPos;
-
-	const uint32_t absMultiplicity = abs(multiplicity);
-
-	if (multiplicity > 0)
-	{
-		for (uint32_t i = 0; i < absMultiplicity; ++i)
-		{
-			sides.push_back(highInfinity.x); sides.push_back(highInfinity.y); sides.push_back(highInfinity.z); sides.push_back(0);
-			sides.push_back(higherPoint.x); sides.push_back(higherPoint.y); sides.push_back(higherPoint.z); sides.push_back(1.0f);
-			sides.push_back(lowerPoint.x); sides.push_back(lowerPoint.y); sides.push_back(lowerPoint.z); sides.push_back(1.0f);
-
-			sides.push_back(lowInfinity.x); sides.push_back(lowInfinity.y); sides.push_back(lowInfinity.z); sides.push_back(0);
-			sides.push_back(highInfinity.x); sides.push_back(highInfinity.y); sides.push_back(highInfinity.z); sides.push_back(0);
-			sides.push_back(lowerPoint.x); sides.push_back(lowerPoint.y); sides.push_back(lowerPoint.z); sides.push_back(1.0f);
-		}
-	}
-	else if (multiplicity < 0)
-	{
-		for (uint32_t i = 0; i < absMultiplicity; ++i)
-		{
-			sides.push_back(lowInfinity.x); sides.push_back(lowInfinity.y); sides.push_back(lowInfinity.z); sides.push_back(0);
-			sides.push_back(lowerPoint.x); sides.push_back(lowerPoint.y); sides.push_back(lowerPoint.z); sides.push_back(1.0f);
-			sides.push_back(higherPoint.x); sides.push_back(higherPoint.y); sides.push_back(higherPoint.z); sides.push_back(1.0f);
-
-			sides.push_back(highInfinity.x); sides.push_back(highInfinity.y); sides.push_back(highInfinity.z); sides.push_back(0);
-			sides.push_back(lowInfinity.x); sides.push_back(lowInfinity.y); sides.push_back(lowInfinity.z); sides.push_back(0);
-			sides.push_back(higherPoint.x); sides.push_back(higherPoint.y); sides.push_back(higherPoint.z); sides.push_back(1.0f);
-		}
 	}
 }
 
@@ -511,7 +432,7 @@ void HSSV::setTimeStamper(std::shared_ptr<TimeStamp> stamper)
 
 void HSSV::drawUser(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix)
 {
-	if (_isDrawOctree)
+	if (_params.drawOctree)
 	{
 		ge::gl::glEnable(GL_DEPTH_TEST);
 		ge::gl::glDepthMask(GL_FALSE);

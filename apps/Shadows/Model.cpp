@@ -29,7 +29,8 @@ Model::~Model(){
   if(this->model)aiReleaseImport(this->model);
 }
 
-void Model::getVertices(std::vector<float>&vertices){
+void Model::getVertices(std::vector<float>&vertices) const 
+{
   size_t nofVertices = 0;
   for(size_t i=0;i<model->mNumMeshes;++i)
     nofVertices+=model->mMeshes[i]->mNumFaces*3;
@@ -43,7 +44,7 @@ void Model::getVertices(std::vector<float>&vertices){
   }
 }
 
-void Model::getNormals(std::vector<float>& normals)
+void Model::getNormals(std::vector<float>& normals) const
 {
 	for (size_t i = 0; i < model->mNumMeshes; ++i)
 	{
@@ -62,7 +63,7 @@ void Model::getNormals(std::vector<float>& normals)
 	}
 }
 
-void Model::getTcoords(std::vector<float>& tcoords)
+void Model::getTcoords(std::vector<float>& tcoords) const
 {
 	for (size_t i = 0; i < model->mNumMeshes; ++i)
 	{

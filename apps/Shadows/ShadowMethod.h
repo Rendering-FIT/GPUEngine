@@ -34,6 +34,7 @@ class ShadowMethod: public ge::gl::Context{
         glm::vec4 const&lightPosition   ,
         glm::mat4 const&viewMatrix      ,
         glm::mat4 const&projectionMatrix) = 0;
+	virtual bool init() { return true; }
 	virtual void setTimeStamper(std::shared_ptr<TimeStamp> stamper) { timeStamp = stamper; }
 	virtual void drawUser(glm::vec4 const&lightPosition,
 		glm::mat4 const&viewMatrix,

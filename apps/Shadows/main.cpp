@@ -193,14 +193,16 @@ void Application::parseArguments(int argc,char*argv[]){
   this->hssvParams.potentialDrawingMethod = arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
   this->hssvParams.silhouetteDrawingMethod = arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
   this->hssvParams.workgroupSize = arg->getu32("--hssv-wg", 256, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
-  this->hssvParams.forceOctreeBuild = arg->getu32("--hssv-forceBuild", 0, "Forces octree build (won't load from file if present)") != 0;
+  this->hssvParams.forceOctreeBuild = arg->isPresent("--hssv-forceBuild", "Forces octree build (won't load from file if present)");
   glm::vec2 ratios = vector2vec2(arg->getf32v("--hssv-speculativeRatios", { 0.8f, 0.3f }, "Speculatively reduce memory during octree loading (factors for potential and silhouette ednges)"));
   this->hssvParams.potSpeculativeFactor = ratios.x;
   this->hssvParams.silSpeculativeFactor = ratios.y;
-  this->hssvParams.drawOctree = arg->getu32("--hssv-drawOctree", 0, "Draws lowest-level octree cells as wireframe") != 0;
+  this->hssvParams.drawOctree = arg->isPresent("--hssv-drawOctree", "Draws lowest-level octree cells as wireframe");
   this->hssvParams.initialLightPos = lightPosition;
-  this->hssvParams.doBuildTest = arg->getu32("--hssv-buildTest", 0, "Performs build benchmark on input scene and light position") != 0;
-  this->hssvParams.noCompression = arg->getu32("--hssv-noCompress", 0, "Performs build benchmark on input scene and light position") != 0;
+  this->hssvParams.doBuildTest = arg->isPresent("--hssv-buildTest", "Performs build benchmark on input scene and light position");
+  this->hssvParams.doEdgeTest = arg->isPresent("--hssv-silTest", "Performs edge statistics test in model");
+  this->hssvParams.noCompression = arg->isPresent("--hssv-noCompress", "Performs build benchmark on input scene and light position");
+  this->hssvParams.drawFromCpu = arg->isPresent("--hssv-drawCpu", "Uses CPU traversal instead of GPU traversal");
 
   this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or grid"                                    );
   this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
@@ -367,6 +369,12 @@ bool Application::init(int argc,char*argv[]){
 			  svParams);
 	  else
 		  this->useShadows = false;
+  }
+
+  if (!shadowMethod->init())
+  {
+    std::cerr << "Failed to init the shadow method!\n";
+  	return false;
   }
 
   if(this->verbose)

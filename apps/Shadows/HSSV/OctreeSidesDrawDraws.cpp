@@ -4,7 +4,7 @@
 
 void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 {
-	const auto cellIndex = _octreeVisitor->getLowestNodeIndexFromPoint(glm::vec3(light));
+	const auto cellIndex = _visitor->getLowestNodeIndexFromPoint(glm::vec3(light));
 
 	if (cellIndex<0)
 	{
@@ -65,8 +65,6 @@ void OctreeSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 			}
 		}
 	}
-
-	_lastFrameCellIndex = cellIndex;
 }
 
 void OctreeSidesDrawer::_drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos)

@@ -29,9 +29,9 @@ class Model{
     aiScene const*model = nullptr;
     Model(std::string const&name);
     virtual ~Model();
-    void getVertices(std::vector<float>&vertices);
-	void getNormals(std::vector<float>&normals);
-	void getTcoords(std::vector<float>&tcoords);
+    void getVertices(std::vector<float>&vertices) const;
+	void getNormals(std::vector<float>&normals) const;
+	void getTcoords(std::vector<float>&tcoords) const;
 	std::string modelDirectory;
 	std::string modelFilename;
 #ifdef USE_FULL_SHADING

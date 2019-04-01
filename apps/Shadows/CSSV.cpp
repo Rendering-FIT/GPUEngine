@@ -247,7 +247,8 @@ CSSV::CSSV(
 CSSV::~CSSV(){}
 
 void CSSV::_computeSides(glm::vec4 const&lightPosition){
- if (timeStamp) timeStamp->stamp("");
+	ge::gl::glFinish();
+	if (timeStamp) timeStamp->stamp("");
   assert(this                      !=nullptr);
   assert(this->_dibo               !=nullptr);
   assert(this->_computeSidesProgram!=nullptr);
@@ -259,7 +260,7 @@ void CSSV::_computeSides(glm::vec4 const&lightPosition){
   _sillhouettes->bindBase(GL_SHADER_STORAGE_BUFFER,1);
   _dibo->bindBase(GL_SHADER_STORAGE_BUFFER,2);
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-  ge::gl::glFinish();
+  
   this->_computeSidesProgram
     ->set1ui    ("numEdge"           ,uint32_t(this->_nofEdges)    )
     ->set4fv    ("lightPosition"     ,glm::value_ptr(lightPosition))

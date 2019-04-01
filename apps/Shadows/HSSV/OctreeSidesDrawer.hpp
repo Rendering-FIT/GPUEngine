@@ -4,9 +4,10 @@
 #include <geGL/Buffer.h>
 #include <geGL/VertexArray.h>
 
+#include "ISidesDrawer.hpp"
+
 #include "OctreeVisitor.hpp"
-#include "GpuEdges.hpp"
-#include "../TimeStamp.h"
+
 
 enum class DrawingMethod : unsigned char
 {
@@ -15,16 +16,14 @@ enum class DrawingMethod : unsigned char
 	CS = 2
 };
 
-class OctreeSidesDrawer
+class OctreeSidesDrawer : public ISidesDrawer
 {
 public:
 	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, uint32_t subgroupSize, DrawingMethod potential, DrawingMethod silhouette);
 
-	void init(std::shared_ptr<GpuEdges> gpuEdges);
+	bool init(std::shared_ptr<GpuEdges> gpuEdges) override;
 
-	void drawSides(const glm::mat4& mvp,const glm::vec4& light);
-
-	void setStamper(std::shared_ptr<TimeStamp> stamper);
+	void drawSides(const glm::mat4& mvp,const glm::vec4& light) override;
 
 protected:
 	void _loadOctreeToGpu();
@@ -84,7 +83,6 @@ protected:
 
 	void _fixDispatchSizes(uint32_t potDivisor, uint32_t silDivisor);
 private:	
-	int _lastFrameCellIndex = -1;
 
 	std::shared_ptr<ge::gl::Program> _potentialGsProgram = nullptr;
 	std::shared_ptr<ge::gl::Program> _potentialTsProgram = nullptr;
@@ -123,8 +121,6 @@ private:
 
 	std::shared_ptr<GpuEdges> _gpuEdges;
 
-	std::shared_ptr<OctreeVisitor> _octreeVisitor = nullptr;
-
 	std::vector<std::shared_ptr<ge::gl::Buffer>> _gpuOctreeBuffers;
 	std::vector<uint32_t> _lastNodePerEdgeBuffer;
 
@@ -138,8 +134,6 @@ private:
 
 	DrawingMethod _potentialDrawingMethod;
 	DrawingMethod _silhouetteDrawingMethod;
-
-	std::shared_ptr<TimeStamp> _timer;
 
 	std::shared_ptr<ge::gl::Program> m_subBuffersPreprocessShader = nullptr;
 	std::shared_ptr<ge::gl::Program> m_getDataFromPrecomputedBuffersShader2 = nullptr;
