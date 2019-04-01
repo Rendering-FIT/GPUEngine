@@ -73,7 +73,7 @@ void GSSV::_initSidesBuffers(std::shared_ptr<Adjacency const> ad)
 	
 	for (unsigned a = 0; a < NumV; ++a) 
 	{
-		_sidesVAO->addAttrib( _sidesVBO, a, 4, GL_FLOAT, sizeof(float) * 4 * NumV, (GLintptr)(sizeof(float) * 4 * a));
+		_sidesVAO->addAttrib( _sidesVBO, a, 4, GL_FLOAT, GLsizei(sizeof(float) * 4 * NumV), (GLintptr)(sizeof(float) * 4 * a));
 	}
 }
 

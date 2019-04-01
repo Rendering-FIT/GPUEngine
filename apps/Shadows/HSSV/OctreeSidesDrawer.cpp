@@ -107,7 +107,7 @@ bool OctreeSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
 	else if (m_compressionLevel == 1)
 	{
 		_loadOctreeToGpu8BitOrNoCompress();
-		_loadGpuTraversalShader8bit(_workgroupSize);
+		_loadGpuTraversalShader8bit();
 	}
 	else
 	{
@@ -317,14 +317,15 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 				//Pot edges
 				for (uint32_t bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
 				{
-					auto ret = node->edgesMayCastMap.find(bm);
+					BitmaskType const b = BitmaskType(bm);
+					auto ret = node->edgesMayCastMap.find(b);
 					if (ret != node->edgesMayCastMap.end() && node->edgesMayCastMap[bm].size()>0)
 					{
-						uint32_t const subbufferSize = uint32_t(node->edgesMayCastMap[bm].size());
+						uint32_t const subbufferSize = uint32_t(node->edgesMayCastMap[b].size());
 
 						auto const lastOffset = nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1];
 
-						memcpy(dataPtr + lastOffset, node->edgesMayCastMap[bm].data(), subbufferSize * sizeof(uint32_t));
+						memcpy(dataPtr + lastOffset, node->edgesMayCastMap[b].data(), subbufferSize * sizeof(uint32_t));
 
 						nofEdgesPrefixSums.push_back(lastOffset + subbufferSize);
 					}
@@ -414,7 +415,7 @@ void OctreeSidesDrawer::_calcBitMasks8(unsigned int minBits)
 		for (uint32_t b = 0; b<8; ++b)
 		{
 			if (num[b])
-				m_bitMasks[b].push_back(num.to_ulong());
+				m_bitMasks[b].push_back(BitmaskType(num.to_ulong()));
 		}
 	}
 }
@@ -441,7 +442,7 @@ void OctreeSidesDrawer::_loadUbo()
 	m_ubo->setData(ptr, data.size() * sizeof(uint32_t));
 }
 
-bool OctreeSidesDrawer::_loadGpuTraversalShader8bit(unsigned int workgroupSize)
+bool OctreeSidesDrawer::_loadGpuTraversalShader8bit()
 {
 	//Load some data
 	//MUST be before shader creation
@@ -594,7 +595,7 @@ void OctreeSidesDrawer::_calcSingleTwoLevelPrefixSumWgSizes(uint32_t maxNofPotSu
 	else
 	{
 		twoLevel = twoLevelDefault;
-		singlePot = std::max(minumumWgSize, uint32_t(ceil(float(maxNofPotSubBuffs)/ (2 * twoLevel))));
+		singlePot = std::max(minumumWgSize, uint32_t(ceil(float(maxNofPotSubBuffs)/ float(2 * twoLevel))));
 	}
 
 	if (maxNofSilSubBuffs <= MAX_NOF_SUBBUFFERS_SINGLE_PASS)
@@ -760,12 +761,9 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeCont
 	std::shared_ptr<ge::gl::Buffer> nofPotentialEdgesBuffer;
 	std::shared_ptr<ge::gl::Buffer> nofSilhouetteEdgesBuffer;
 
-	bool isIndirectDispatchPot = false;
-	bool isIndirectDispatchSil = false;
 	if (_potentialDrawingMethod == DrawingMethod::CS)
 	{
 		nofPotentialEdgesBuffer = _indirectDispatchCsPotential;
-		isIndirectDispatchPot = true;
 	}
 	else
 		nofPotentialEdgesBuffer = _indirectDrawBufferPotentialCS;
@@ -774,7 +772,6 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeCont
 	if (_silhouetteDrawingMethod == DrawingMethod::CS)
 	{
 		nofSilhouetteEdgesBuffer = _indirectDispatchCsSilhouette;
-		isIndirectDispatchSil = true;
 	}
 	else
 		nofSilhouetteEdgesBuffer = _indirectDrawBufferSilhouetteCS;

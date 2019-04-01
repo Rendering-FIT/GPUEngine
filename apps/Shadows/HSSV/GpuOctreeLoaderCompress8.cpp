@@ -182,7 +182,7 @@ uint32_t GpuOctreeLoaderCompress8::_findNearestHigherPow2(uint32_t v) const
 
 void GpuOctreeLoaderCompress8::_calculateLimitsCompress(uint32_t nofEdges)
 {
-	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(uint32_t(ceilf(PARENT_INCREASED_NOF_EDGES*nofEdges / float(MAX_NOF_CHUNKS)))));
+	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(uint32_t(ceilf(float(PARENT_INCREASED_NOF_EDGES*nofEdges) / float(MAX_NOF_CHUNKS)))));
 	//FFS https://www.geeksforgeeks.org/position-of-rightmost-set-bit/
 	_limits.chunkSizeNofBits = static_cast<uint32_t>(log2f(float(maxEdgesSubbuffer & -maxEdgesSubbuffer)));
 	_limits.maxChunksPerParent = MAX_NOF_CHUNKS;
@@ -205,7 +205,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	uint32_t voxelBatchSize = uint32_t(allocatedSizeEdgeIndices / (maxOffset * sizeof(uint32_t)));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
-	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
+	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / float(voxelBatchSize)));
 
 	_allocateOutputBuffersCompress(voxelBatchSize);
 
@@ -217,8 +217,6 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	std::cout << "Num batches: " << numBatches << "\n";
 	HighResolutionTimer t;
-
-	const auto nofF = _octree->getTotalNumNodes();
 
 	for (uint32_t i = 0; i<numBatches; ++i)
 	{
@@ -232,7 +230,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 		_fillProgram->set1ui("nofVoxels", batchSize);
 		t.reset();
-		ge::gl::glDispatchCompute(uint32_t(ceil(float(batchSize) / _wgSize)), 1, 1);
+		ge::gl::glDispatchCompute(uint32_t(ceil(float(batchSize) / float(_wgSize))), 1, 1);
 		ge::gl::glFinish();
 		std::cout << "GPU Load: " << std::to_string(t.getElapsedTimeFromLastQuerySeconds()) << std::endl;
 
@@ -333,11 +331,11 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 			if (chunks.size())
 			{
 				const auto nofEdges = edgeCounters[2 * (currentParent * MAX_NOF_SUBBUFFERS + i) + 1];
-				const auto nofChunks = uint32_t(ceilf(float(nofEdges) / (1 << _limits.chunkSizeNofBits)));
+				const auto nofChunks = uint32_t(ceilf(float(nofEdges) / float(1 << _limits.chunkSizeNofBits)));
 
 				assert(nofChunks == chunks.size());
 
-				node->edgesAlwaysCastMap[i].resize(nofEdges);
+				node->edgesAlwaysCastMap[BitmaskType(i)].resize(nofEdges);
 
 				int remainingSize = nofEdges;
 				for (uint32_t chunkNum = 0; chunkNum < nofChunks; ++chunkNum)
@@ -346,7 +344,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 					const auto sz = _getNextChunkSize(remainingSize, chunkSize); //the last chunk might be less than chunkSize
 					remainingSize -= sz;
 
-					_copyChunk(parentData, currentParent * MAX_NOF_CHUNKS * chunkSize + chunkSize*chunk, node->edgesAlwaysCastMap[i].data() + chunkNum*chunkSize, sz);
+					_copyChunk(parentData, currentParent * MAX_NOF_CHUNKS * chunkSize + chunkSize*chunk, node->edgesAlwaysCastMap[BitmaskType(i)].data() + chunkNum*chunkSize, sz);
 				}
 			}
 		}
@@ -359,11 +357,11 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 			if (chunks.size())
 			{
 				const auto nofEdges = edgeCounters[2 * (currentParent * MAX_NOF_SUBBUFFERS + i) + 0];
-				const uint32_t nofChunks = uint32_t(ceilf(float(nofEdges) / (1 << _limits.chunkSizeNofBits)));
+				const uint32_t nofChunks = uint32_t(ceilf(float(nofEdges) / float(1 << _limits.chunkSizeNofBits)));
 
 				assert(nofChunks == chunks.size());
 
-				node->edgesMayCastMap[i].resize(nofEdges);
+				node->edgesMayCastMap[BitmaskType(i)].resize(nofEdges);
 
 				int remainingSize = nofEdges;
 				for (uint32_t chunkNum = 0; chunkNum < nofChunks; ++chunkNum)
@@ -372,7 +370,7 @@ void GpuOctreeLoaderCompress8::_acquireGpuDataCompress(uint32_t startingVoxelAbs
 					const auto sz = _getNextChunkSize(remainingSize, chunkSize); //the last chunk might be less than chunkSize
 					remainingSize -= sz;
 
-					_copyChunk(parentData, currentParent * MAX_NOF_CHUNKS * chunkSize + chunkSize*chunk, node->edgesMayCastMap[i].data() + chunkNum*chunkSize, sz);
+					_copyChunk(parentData, currentParent * MAX_NOF_CHUNKS * chunkSize + chunkSize*chunk, node->edgesMayCastMap[BitmaskType(i)].data() + chunkNum*chunkSize, sz);
 				}
 			}
 		}
@@ -529,7 +527,6 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 	uint32_t const nofEdges = uint32_t(edges->getNofEdges());
 	int const deepestLevel = _octree->getDeepestLevel();
 	int const deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
-	int const startingNodeIndex = _octree->getLevelFirstNodeID(deepestLevel);
 
 	uint32_t const wgSizeStart = 64;
 	uint32_t const wgSizeLimit = 1024;
@@ -549,7 +546,7 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 	//_potBufferOffset because there will be always more pot edges
 	uint32_t voxelBatchSize = uint32_t(allocatedSizeEdgeIndices / (_potBufferOffset * sizeof(uint32_t)));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
-	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
+	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / float(voxelBatchSize)));
 
 	_allocateOutputBuffersCompress(voxelBatchSize);
 

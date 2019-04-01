@@ -11,7 +11,6 @@ void OctreeCompressor::compressOctree(std::shared_ptr<OctreeVisitor> visitor, ui
 	_visitor = visitor;
 
 	const int deepestLevel = _visitor->getOctree()->getDeepestLevel();
-	const int levelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
 
 	const int startingIndex = _visitor->getOctree()->getNumNodesInPreviousLevels(deepestLevel);
 	const int stopIndex = _visitor->getOctree()->getTotalNumNodes();

@@ -51,7 +51,7 @@ protected:
 	bool _generateLoadGpuTraversalShader3();
 	void _getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeContainingLight);
 
-	bool _loadGpuTraversalShader8bit(unsigned int workgroupSize);
+	bool _loadGpuTraversalShader8bit();
 	void _getPotentialSilhouetteEdgesGpu8bit(uint32_t lowestNodeContainingLight);
 
 	void _getPotentialSilhouetteEdgesNoCompress(uint32_t lowestNodeContainingLight);

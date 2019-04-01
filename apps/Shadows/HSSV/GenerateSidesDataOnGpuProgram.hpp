@@ -288,7 +288,7 @@ std::string genBufferPreprocessShaderNoCompreess(const std::vector<uint32_t>& la
 	str << "uniform uint cellContainingLight;\n\n";
 
 	str << "const uint treeDepth = " << octree->getDeepestLevel() << ";\n";
-	const uint32_t tmpNofUints = ipow(OCTREE_NUM_CHILDREN, compressionLevel) / 32;
+
 	const uint32_t nofUintsPerCompressionId = std::is_same<unsigned char, BitmaskType>::value ? 1 : 2;
 	const uint32_t nofUintsPerNodeInfo = nofUintsPerCompressionId + 1;
 	str << "#define NOF_UINTS_PER_COMPRESSION_ID " << nofUintsPerCompressionId << "\n";
@@ -1006,7 +1006,6 @@ std::string generatePrefixSum8bit(const std::vector<uint32_t>& lastNodePerEdgeBu
 	assert(compressionLevel == 1);
 	auto const numBuffers = lastNodePerEdgeBuffer.size();
 	uint32_t const nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
-	auto const nofBufferAttribs = numBuffers == 1 ? 2 : 3;
 
 	str << "#version 450 core\n\n";
 	str << "#extension GL_ARB_shader_ballot : require\n\n";
@@ -1416,11 +1415,9 @@ std::string genPreprocessKernelNoCompress(const std::vector<uint32_t>& lastNodeP
 	std::stringstream str;
 
 	auto const octreeLevel = octree->getDeepestLevel();
-	auto const compressionLevel = octree->getCompressionLevel();
-	assert(compressionLevel == 0);
+	assert(octree->getCompressionLevel() == 0);
 	auto const numBuffers = lastNodePerEdgeBuffer.size();
 	uint32_t const nofUintsPerSubbufferInfo = (numBuffers > 1) ? 4 : 2;
-	auto const nofBufferAttribs = numBuffers == 1 ? 2 : 3;
 
 	str << "#version 450 core\n\n";
 	str << "#extension GL_ARB_shader_ballot : require\n\n";

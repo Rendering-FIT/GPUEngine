@@ -1,13 +1,18 @@
 #include "CpuOctreeLoader.hpp"
 #include "HighResolutionTimer.hpp"
 #include "OmpConfig.h"
-#include <bitset>
+
 #include "MultiplicityCoding.hpp"
 #include "GeometryOperations.hpp"
+#include "../Defines.h"
 
+#include <bitset>
 
 bool CpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges)
 {
+	UNUSED_ARGUMENT(gpuEdges);
+	UNUSED_ARGUMENT(nofEdges);
+
 	_octree = octree;
 
 	return true;
@@ -59,7 +64,6 @@ void CpuOctreeLoader::_generateEdgePlanes(const AdjacencyType edges, std::vector
 void CpuOctreeLoader::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& edgePlanes, const AdjacencyType edges)
 {
 	const int deepestLevel = _octree->getDeepestLevel();
-	const int levelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
 
 	const int startingIndex = _octree->getNumNodesInPreviousLevels(deepestLevel);
 	const int stopIndex = _octree->getTotalNumNodes();
@@ -75,8 +79,6 @@ void CpuOctreeLoader::_addEdgesOnLowestLevel(std::vector< std::vector<Plane> >& 
 
 void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::vector<Plane> >& edgePlanes, AdjacencyType edges, uint32_t startingID)
 {
-	uint32_t edgeIndex = 0;
-
 	const int parent = _octree->getNodeParent(startingID);
 
 	const size_t nofEdges = edges->getNofEdges();

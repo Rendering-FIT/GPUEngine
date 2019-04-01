@@ -54,7 +54,6 @@ void IGpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxe
 {
 	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, _octree->getDeepestLevel());
 	const int startingIndex = _octree->getLevelFirstNodeID(_octree->getDeepestLevel());
-	const int stopIndex = startingIndex + deepestLevelSize;
 
 	voxels.resize(2 * deepestLevelSize);
 
@@ -70,8 +69,8 @@ void IGpuOctreeLoader::_serializeDeepestLevelVoxels(std::vector<glm::vec3>& voxe
 
 void IGpuOctreeLoader::_calculateLowestLevelBufferOffsets(uint32_t nofEdges)
 {
-	_potBufferOffset = uint32_t(ceilf(nofEdges * _speculativeRatioPot));
-	_silBufferOffset = uint32_t(ceilf(nofEdges * _speculativeRatioSil));
+	_potBufferOffset = uint32_t(ceilf(float(nofEdges) * _speculativeRatioPot));
+	_silBufferOffset = uint32_t(ceilf(float(nofEdges) * _speculativeRatioSil));
 }
 
 void IGpuOctreeLoader::setMaxBufferSize(uint64_t size)
