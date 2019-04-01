@@ -50,7 +50,7 @@ void CpuSidesDrawer::drawSides(const glm::mat4& mvp, const glm::vec4& light)
 	_sidesProgram->use();
 	_sidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp));
 	
-	ge::gl::glDrawArrays(GL_TRIANGLES, 0, sidesGeometry.size() / 4);
+	ge::gl::glDrawArrays(GL_TRIANGLES, 0, GLsizei(sidesGeometry.size() / 4));
 	
 	_sidesVAO->unbind();
 }

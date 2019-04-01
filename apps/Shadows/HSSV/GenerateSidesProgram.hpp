@@ -445,7 +445,7 @@ layout(std430, binding=0) readonly buffer _edges{
 layout(std430, binding=1) readonly buffer _edgeIdsToGenerate{
 	uint edgesIdToGenerate[]; };
 
-layout(std430, binding=2) buffer _generatedSideEdges{
+layout(std430, binding=2) writeonly buffer _generatedSideEdges{
 	vec4 sideEdges[]; };
 
 layout(std430, binding=3) buffer _drawIndirectBuffer{

@@ -99,7 +99,6 @@ std::vector<float> HSSV::_loadVertices(std::shared_ptr<Model> const model)
 	return vertices;
 }
 
-
 void HSSV::_createAdjacency(std::vector<float> const& verts3f)
 {
 	size_t const nofTriangles = verts3f.size() / (verticesPerTriangle*componentsPerVertex3D);

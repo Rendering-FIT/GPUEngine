@@ -1242,7 +1242,7 @@ void main()
 
 std::string genTraversalNoCompressKernel(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, unsigned int workgroupSize)
 {
-	uint32_t const numBuffers = lastNodePerEdgeBuffer.size();
+	uint32_t const numBuffers = uint32_t(lastNodePerEdgeBuffer.size());
 
 	std::stringstream str;
 	str << "#version 450 core\n";

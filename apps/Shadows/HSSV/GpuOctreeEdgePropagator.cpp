@@ -124,7 +124,7 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 		assert((numLoaded%OCTREE_NUM_CHILDREN) == 0);
 
 		const uint64_t parentIdicesRequiredSize = maxEdgesPerVoxel * (numLoaded / OCTREE_NUM_CHILDREN) * sizeof(uint32_t);
-		if(_parentIndices->getSize() < parentIdicesRequiredSize)
+		if(uint64_t(_parentIndices->getSize()) < parentIdicesRequiredSize)
 		{
 			_parentIndices->unbindBase(GL_SHADER_STORAGE_BUFFER, 4);
 			_parentIndices.reset();
@@ -137,7 +137,7 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 		_propagateProgram->set1ui("nofVoxels", unsigned(numLoaded));
 		_propagateProgram->set1ui("maxNofEdges", maxEdgesPerVoxel);
 
-		ge::gl::glDispatchCompute(ceilf(float(numLoaded)/_wgSize), 1, 1);
+		ge::gl::glDispatchCompute(GLuint(ceilf(float(numLoaded)/_wgSize)), 1, 1);
 		ge::gl::glFinish();
 
 		_updateCpuData(startingIndex + numProcessed, unsigned(numLoaded), maxEdgesPerVoxel, type, sizePrefixSum);
@@ -229,7 +229,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 
 	//Process children
 	#pragma omp parallel for 
-	for(int i = 0; i<batchSize; ++i)
+	for(int i = 0; i<int(batchSize); ++i)
 	{
 		auto node = _octree->getNode(startingIndex + i);
 		std::vector<uint32_t>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
@@ -253,7 +253,7 @@ void GpuOctreeEdgePropagator::_updateCpuData(unsigned startingIndex, unsigned ba
 	const uint32_t* parentIndices = reinterpret_cast<const uint32_t*>(_parentIndices->map(GL_READ_ONLY));
 
 	#pragma omp parallel for 
-	for(int i=0; i<nofParents; ++i)
+	for(int i=0; i<int(nofParents); ++i)
 	{
 		auto node = _octree->getNode(startingParent + i);
 		std::vector<uint32_t>& edges = type == BufferType::POTENTIAL ? node->edgesMayCastMap[BitmaskAllSet] : node->edgesAlwaysCastMap[BitmaskAllSet];
@@ -351,7 +351,7 @@ void GpuOctreeEdgePropagator::profile()
 					const auto numLoaded = sizePrefixSum.size() - 1;
 
 					const uint64_t parentIdicesRequiredSize = maxEdgesPerVoxel * (numLoaded / OCTREE_NUM_CHILDREN) * sizeof(uint32_t);
-					if (_parentIndices->getSize() < parentIdicesRequiredSize)
+					if (uint64_t(_parentIndices->getSize()) < parentIdicesRequiredSize)
 					{
 						_parentIndices->unbindBase(GL_SHADER_STORAGE_BUFFER, 4);
 						_parentIndices.reset();
@@ -366,7 +366,7 @@ void GpuOctreeEdgePropagator::profile()
 
 					ge::gl::glFinish();
 					timer.reset();
-					ge::gl::glDispatchCompute(ceilf(float(numLoaded) / wgSize), 1, 1);
+					ge::gl::glDispatchCompute(GLuint(ceilf(float(numLoaded) / wgSize)), 1, 1);
 					ge::gl::glFinish();
 					time += timer.getElapsedTimeMilliseconds();
 

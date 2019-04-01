@@ -62,7 +62,7 @@ void OctreeCompressor::_compressSyblings(uint32_t startingID, bool processPotent
 		const auto bitmask = checkEdgePresence(e, startingID, processPotential, nofSyblings);
 		if (bitmask.count()>(1+ compressLevelHeight_1or2))
 		{
-			_assignEdgeToNode(parent, e, processPotential, bitmask.to_ullong());
+			_assignEdgeToNode(parent, e, processPotential, BitmaskType(bitmask.to_ullong()));
 			_removeEdgeFromSyblingsSparse(startingID, e, processPotential, bitmask, nofSyblings);
 		}
 	}

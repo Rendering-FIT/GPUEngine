@@ -49,7 +49,7 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 			for (uint32_t bufferId = 0; bufferId < numSubbuffersPotential; ++bufferId)
 			{
 				//Read subbuffer id
-				const BitmaskType subbufferId = _readUint64(input);
+				const BitmaskType subbufferId = BitmaskType(_readUint64(input));
 
 				//Read subbuffer size
 				const uint32_t subbufferSize = _readUint(input);
@@ -68,7 +68,7 @@ std::shared_ptr<Octree> OctreeSerializer::loadFromFile(const std::string& modelF
 			for (uint32_t bufferId = 0; bufferId < numSubbuffersSilhouette; ++bufferId)
 			{
 				//Read subbuffer id
-				const BitmaskType subbufferId = _readUint64(input);
+				const BitmaskType subbufferId = BitmaskType(_readUint64(input));
 
 				//Read subbuffer size
 				const uint32_t subbufferSize = _readUint(input);

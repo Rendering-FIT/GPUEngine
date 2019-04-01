@@ -116,7 +116,7 @@ void GSSV::drawSides(glm::vec4 const& lightPosition, glm::mat4 const& viewMatrix
 	_sidesProgram->setMatrix4fv("mvp", glm::value_ptr(mvp), 1, GL_FALSE);
 	_sidesProgram->set4fv("LightPosition", glm::value_ptr(lightPosition), 1);
 
-	glDrawArrays(GL_POINTS,0,_nofEdges);
+	glDrawArrays(GL_POINTS,0, GLsizei(_nofEdges));
 
 	_sidesVAO->unbind();
 }

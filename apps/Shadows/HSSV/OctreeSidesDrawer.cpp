@@ -453,12 +453,10 @@ bool OctreeSidesDrawer::_loadGpuTraversalShader8bit(unsigned int workgroupSize)
 		std::istreambuf_iterator<char>());
 	//*/
 	std::string program = generatePrefixSum8bit(_lastNodePerEdgeBuffer, _visitor->getOctree(), 1024, m_nofTotalSubbuffers, m_subBufferCorrection, uint32_t(m_bitMasks[0].size()));
-
 	m_getSubBufssSader = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, program));
 	
 	const std::string shaderBody3 = genCopyShader3(_lastNodePerEdgeBuffer, _workgroupSize);
-
 	m_getDataFromPrecomputedBuffersShader2 = std::make_shared<ge::gl::Program>(
 		std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, shaderBody3));
 
@@ -1005,7 +1003,7 @@ void OctreeSidesDrawer::_getPotentialSilhouetteEdgesNoCompress(uint32_t lowestNo
 	_edgesIdsToTestAndGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 	_edgesIdsToGenerate->bindBase(GL_SHADER_STORAGE_BUFFER, bindingPoint++);
 
-	ge::gl::glDispatchCompute(ceil(float(_maxNofEdgesPath) / float(_workgroupSize)), 1, 1);
+	ge::gl::glDispatchCompute(GLuint(ceil(float(_maxNofEdgesPath) / float(_workgroupSize))), 1, 1);
 	
 	bindingPoint = 0;
 	for (const auto b : _gpuOctreeBuffers)

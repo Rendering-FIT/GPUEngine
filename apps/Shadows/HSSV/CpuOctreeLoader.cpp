@@ -115,7 +115,7 @@ void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::v
 		{
 			if (potentialBitmask.count() > 3)
 			{
-				_storeEdgeIsPotentiallySilhouette(parent, uint32_t(edgeIndex), potentialBitmask.to_ullong());
+				_storeEdgeIsPotentiallySilhouette(parent, uint32_t(edgeIndex), BitmaskType(potentialBitmask.to_ullong()));
 				numPotential = 0;
 			}
 
@@ -123,7 +123,7 @@ void CpuOctreeLoader::_addEdgesSyblingsParentCompress8(const std::vector< std::v
 			{
 				if ((*sil).second.count()>3)
 				{
-					_storeEdgeIsAlwaysSilhouette(parent, (*sil).first, (*sil).second.to_ullong());
+					_storeEdgeIsAlwaysSilhouette(parent, (*sil).first, BitmaskType((*sil).second.to_ullong()));
 					silhouetteBitmasks.erase(sil++);
 				}
 				else

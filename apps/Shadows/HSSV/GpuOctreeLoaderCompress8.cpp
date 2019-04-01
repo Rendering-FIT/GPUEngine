@@ -184,26 +184,26 @@ void GpuOctreeLoaderCompress8::_calculateLimitsCompress(uint32_t nofEdges)
 {
 	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(uint32_t(ceilf(PARENT_INCREASED_NOF_EDGES*nofEdges / float(MAX_NOF_CHUNKS)))));
 	//FFS https://www.geeksforgeeks.org/position-of-rightmost-set-bit/
-	_limits.chunkSizeNofBits = static_cast<uint32_t>(log2f(maxEdgesSubbuffer & -maxEdgesSubbuffer));
+	_limits.chunkSizeNofBits = static_cast<uint32_t>(log2f(float(maxEdgesSubbuffer & -maxEdgesSubbuffer)));
 	_limits.maxChunksPerParent = MAX_NOF_CHUNKS;
 }
 
 void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 {
-	const int deepestLevel = _octree->getDeepestLevel();
-	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
-	const int startingNodeIndex = _octree->getLevelFirstNodeID(deepestLevel);
-	const auto nofEdges = edges->getNofEdges();
+	int const deepestLevel = _octree->getDeepestLevel();
+	int const deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
+	int const startingNodeIndex = _octree->getLevelFirstNodeID(deepestLevel);
+	uint32_t const nofEdges = uint32_t(edges->getNofEdges());
 
 	_calculateLowestLevelBufferOffsets(nofEdges);
 
 	auto const maxOffset = std::max(_potBufferOffset, _silBufferOffset);
-	const auto allocatedSizeEdgeIndices = std::min(size_t(_maxBufferSizeBytes), size_t(deepestLevelSize) * size_t(maxOffset) * sizeof(uint32_t));
+	auto const allocatedSizeEdgeIndices = std::min(size_t(_maxBufferSizeBytes), size_t(deepestLevelSize) * size_t(maxOffset) * sizeof(uint32_t));
 
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
 
-	auto voxelBatchSize = allocatedSizeEdgeIndices / (maxOffset * sizeof(uint32_t));
+	uint32_t voxelBatchSize = uint32_t(allocatedSizeEdgeIndices / (maxOffset * sizeof(uint32_t)));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
 
@@ -222,7 +222,7 @@ void GpuOctreeLoaderCompress8::addEdgesOnLowestLevel(AdjacencyType edges)
 
 	for (uint32_t i = 0; i<numBatches; ++i)
 	{
-		const auto batchSize = std::min(voxelBatchSize, deepestLevelSize - (i*voxelBatchSize));
+		uint32_t const batchSize = uint32_t(std::min(voxelBatchSize, deepestLevelSize - (i*voxelBatchSize)));
 
 		std::cout << "Batch " << i << " size " << batchSize << std::endl;
 
@@ -526,19 +526,19 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 	std::vector<glm::vec3> voxels;
 	_serializeDeepestLevelVoxels(voxels);
 
-	const auto nofEdges = edges->getNofEdges();
-	const int deepestLevel = _octree->getDeepestLevel();
-	const int deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
-	const int startingNodeIndex = _octree->getLevelFirstNodeID(deepestLevel);
+	uint32_t const nofEdges = uint32_t(edges->getNofEdges());
+	int const deepestLevel = _octree->getDeepestLevel();
+	int const deepestLevelSize = ipow(OCTREE_NUM_CHILDREN, deepestLevel);
+	int const startingNodeIndex = _octree->getLevelFirstNodeID(deepestLevel);
 
-	const uint32_t wgSizeStart = 64;
-	const uint32_t wgSizeLimit = 1024;
+	uint32_t const wgSizeStart = 64;
+	uint32_t const wgSizeLimit = 1024;
 
-	const uint32_t cacheSizeStart = 1024;
-	const uint32_t cacheSizeStep = 1024;
-	const uint32_t cacheSizeLimit = 32768;
+	uint32_t const cacheSizeStart = 1024;
+	uint32_t const cacheSizeStep = 1024;
+	uint32_t const cacheSizeLimit = 32768;
 
-	const uint32_t bottomTestRepetitions = 3;
+	uint32_t const bottomTestRepetitions = 3;
 
 	HighResolutionTimer timer;
 
@@ -547,7 +547,7 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 	const auto allocatedSizeEdgeIndices = std::min(size_t(_maxBufferSizeBytes), size_t(deepestLevelSize) * size_t(_potBufferOffset) * sizeof(uint32_t));
 
 	//_potBufferOffset because there will be always more pot edges
-	auto voxelBatchSize = allocatedSizeEdgeIndices / (_potBufferOffset * sizeof(uint32_t));
+	uint32_t voxelBatchSize = uint32_t(allocatedSizeEdgeIndices / (_potBufferOffset * sizeof(uint32_t)));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
 
@@ -567,7 +567,7 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 			_fillProgram = std::make_shared<ge::gl::Program>(std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER, buildComputeShaderFillBottomLevel(wgSize, cacheSize, _limits.chunkSizeNofBits, _limits.maxChunksPerParent)));
 
 			_fillProgram->use();
-			_fillProgram->set1ui("nofEdges", nofEdges);
+			_fillProgram->set1ui("nofEdges", uint32_t(nofEdges));
 			_fillProgram->set1ui("potBufferOffset", _potBufferOffset);
 			_fillProgram->set1ui("silBufferOffset", _silBufferOffset);
 
@@ -583,7 +583,7 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 
 				for (uint32_t batch = 0; batch < numBatches; ++batch)
 				{
-					const auto batchSize = std::min(voxelBatchSize, deepestLevelSize - (batch*voxelBatchSize));
+					uint32_t const batchSize = uint32_t(std::min(voxelBatchSize, deepestLevelSize - (batch*voxelBatchSize)));
 					_loadVoxels(voxels, batch*voxelBatchSize, batchSize);
 					_clearAtomicCounter();
 					_clearCompressionBuffers();

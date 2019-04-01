@@ -42,11 +42,11 @@ void OctreeVisitor::_propagateEdgesGpu()
 
 	_propagateEdgesToUpperLevelsGpu(edgePropagator, startingLevel, true);
 	
-	float dt = t.getElapsedTimeFromLastQuerySeconds();
+	float dt = float(t.getElapsedTimeFromLastQuerySeconds());
 	std::cout << "Propagate Potential edges took " << dt << " sec\n";
 
 	_propagateEdgesToUpperLevelsGpu(edgePropagator, startingLevel, false);
-	dt = t.getElapsedTimeFromLastQuerySeconds();
+	dt = float(t.getElapsedTimeFromLastQuerySeconds());
 
 	std::cout << "Propagate Silhouette edges took " << dt << " sec\n";
 }
@@ -67,7 +67,7 @@ void OctreeVisitor::addEdges(const AdjacencyType edges, std::shared_ptr<GpuEdges
 	dynamic_cast<IGpuOctreeLoader*>(gpuLoader)->setMaxBufferSize(bufferSizeMB);
 	dynamic_cast<IGpuOctreeLoader*>(gpuLoader)->setSpeculativeRatios(speculativeRatioPot, speculativeRatioSil);
 
-	if (!gpuLoader->init(_octree, gpuEdges, edges->getNofEdges()))
+	if (!gpuLoader->init(_octree, gpuEdges, uint32_t(edges->getNofEdges())))
 	{
 		delete gpuLoader;
 		std::cerr << "Failed to init GPU octree loader, switching to CPU (very slow)\n";
@@ -162,7 +162,7 @@ int OctreeVisitor::getLowestNodeIndexFromPoint(const glm::vec3& point) const
 		return -1;
 
 	auto const& bb = _octree->getNode(0)->volume;
-	auto singleUnitSize = bb.getExtents() / glm::vec3(ipow(2, _octree->getDeepestLevel()));
+	auto singleUnitSize = bb.getExtents() / glm::vec3(float(ipow(2, _octree->getDeepestLevel())));
 
 	glm::uvec3 pos = glm::uvec3(glm::floor((point - bb.getMinPoint()) / singleUnitSize));
 
