@@ -315,8 +315,9 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 			if(compressionLevel!=0)
 			{
 				//Pot edges
-				for (BitmaskType bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
+				for (uint32_t b = BitmaskType(m_subBufferCorrection); b <= BitmaskAllSet; ++b)
 				{
+					BitmaskType bm = BitmaskType(b);
 					auto ret = node->edgesMayCastMap.find(bm);
 					if (ret != node->edgesMayCastMap.end() && node->edgesMayCastMap[bm].size()>0)
 					{
@@ -335,8 +336,9 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 				}
 
 				//Sil edges
-				for (BitmaskType bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
+				for (BitmaskType b = BitmaskType(m_subBufferCorrection); b <= BitmaskAllSet; ++b)
 				{
+					BitmaskType bm = BitmaskType(b);
 					auto ret = node->edgesAlwaysCastMap.find(bm);
 					if (ret != node->edgesAlwaysCastMap.end() && node->edgesAlwaysCastMap[bm].size()>0)
 					{
