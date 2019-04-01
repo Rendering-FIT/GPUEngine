@@ -158,7 +158,6 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom(
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	
 	size_t usedCapacity = 0;
-	uint32_t const stopIndex = uint32_t(endVoxel);// startingVoxel + levelSize;
 	uint32_t const remainingSize = endVoxel - startingVoxel;
 
 	sizesPrefixSum.clear();

@@ -262,9 +262,8 @@ std::string genStoreBufferID(uint32_t nofBuffers)
 std::string genBufferPreprocessShaderNoCompreess(const std::vector<uint32_t>& lastNodePerEdgeBuffer, std::shared_ptr<Octree> octree, uint32_t workgroupSize)
 {
 	const uint32_t numBuffers = uint32_t(lastNodePerEdgeBuffer.size());
-	const uint32_t compressionLevel = uint32_t(octree->getCompressionLevel());
 
-	assert(compressionLevel == 0);
+	assert(octree->getCompressionLevel() == 0);
 
 	std::stringstream str;
 

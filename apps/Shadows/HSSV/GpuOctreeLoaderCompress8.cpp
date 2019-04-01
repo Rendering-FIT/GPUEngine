@@ -182,7 +182,7 @@ uint32_t GpuOctreeLoaderCompress8::_findNearestHigherPow2(uint32_t v) const
 
 void GpuOctreeLoaderCompress8::_calculateLimitsCompress(uint32_t nofEdges)
 {
-	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(uint32_t(ceilf(float(PARENT_INCREASED_NOF_EDGES*nofEdges) / float(MAX_NOF_CHUNKS)))));
+	const int maxEdgesSubbuffer = std::max(MIN_SUBBUFFER_SIZE_UINTS, _findNearestHigherPow2(uint32_t(ceilf(PARENT_INCREASED_NOF_EDGES*float(nofEdges) / float(MAX_NOF_CHUNKS)))));
 	//FFS https://www.geeksforgeeks.org/position-of-rightmost-set-bit/
 	_limits.chunkSizeNofBits = static_cast<uint32_t>(log2f(float(maxEdgesSubbuffer & -maxEdgesSubbuffer)));
 	_limits.maxChunksPerParent = MAX_NOF_CHUNKS;
@@ -586,7 +586,7 @@ void GpuOctreeLoaderCompress8::profile(AdjacencyType edges)
 					_clearCompressionBuffers();
 					_fillProgram->set1ui("nofVoxels", unsigned(batchSize));
 
-					ge::gl::glDispatchCompute(uint32_t(ceil(float(batchSize) / _wgSize)), 1, 1);
+					ge::gl::glDispatchCompute(uint32_t(ceil(float(batchSize) / float(_wgSize))), 1, 1);
 					ge::gl::glFinish();
 				}
 

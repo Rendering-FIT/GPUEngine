@@ -315,17 +315,16 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 			if(compressionLevel!=0)
 			{
 				//Pot edges
-				for (uint32_t bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
+				for (BitmaskType bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
 				{
-					BitmaskType const b = BitmaskType(bm);
-					auto ret = node->edgesMayCastMap.find(b);
+					auto ret = node->edgesMayCastMap.find(bm);
 					if (ret != node->edgesMayCastMap.end() && node->edgesMayCastMap[bm].size()>0)
 					{
-						uint32_t const subbufferSize = uint32_t(node->edgesMayCastMap[b].size());
+						uint32_t const subbufferSize = uint32_t(node->edgesMayCastMap[bm].size());
 
 						auto const lastOffset = nofEdgesPrefixSums[nofEdgesPrefixSums.size() - 1];
 
-						memcpy(dataPtr + lastOffset, node->edgesMayCastMap[b].data(), subbufferSize * sizeof(uint32_t));
+						memcpy(dataPtr + lastOffset, node->edgesMayCastMap[bm].data(), subbufferSize * sizeof(uint32_t));
 
 						nofEdgesPrefixSums.push_back(lastOffset + subbufferSize);
 					}
@@ -336,7 +335,7 @@ void OctreeSidesDrawer::_loadOctreeToGpu8BitOrNoCompress()
 				}
 
 				//Sil edges
-				for (uint32_t bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
+				for (BitmaskType bm = m_subBufferCorrection; bm <= BitmaskAllSet; ++bm)
 				{
 					auto ret = node->edgesAlwaysCastMap.find(bm);
 					if (ret != node->edgesAlwaysCastMap.end() && node->edgesAlwaysCastMap[bm].size()>0)
@@ -606,7 +605,7 @@ void OctreeSidesDrawer::_calcSingleTwoLevelPrefixSumWgSizes(uint32_t maxNofPotSu
 	else
 	{
 		twoLevel = twoLevelDefault;
-		singleSil = std::max(minumumWgSize, uint32_t(ceil(float(maxNofSilSubBuffs) / (2*twoLevel))));
+		singleSil = std::max(minumumWgSize, uint32_t(ceil(float(maxNofSilSubBuffs) / float(2*twoLevel))));
 	}
 
 	m_prefixSumWorkgroupSizeTwoLevel = twoLevel;
