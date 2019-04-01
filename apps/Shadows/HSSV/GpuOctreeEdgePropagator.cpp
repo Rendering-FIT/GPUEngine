@@ -137,7 +137,7 @@ void GpuOctreeEdgePropagator::propagateEdgesToUpperLevel(unsigned level, BufferT
 		_propagateProgram->set1ui("nofVoxels", unsigned(numLoaded));
 		_propagateProgram->set1ui("maxNofEdges", maxEdgesPerVoxel);
 
-		ge::gl::glDispatchCompute(GLuint(ceilf(float(numLoaded)/_wgSize)), 1, 1);
+		ge::gl::glDispatchCompute(GLuint(ceilf(float(numLoaded)/float(_wgSize))), 1, 1);
 		ge::gl::glFinish();
 
 		_updateCpuData(startingIndex + numProcessed, unsigned(numLoaded), maxEdgesPerVoxel, type, sizePrefixSum);
@@ -158,9 +158,8 @@ void GpuOctreeEdgePropagator::_loadVoxelEdgesStartingFrom(
 	assert(ge::gl::glGetError() == GL_NO_ERROR);
 	
 	size_t usedCapacity = 0;
-	const uint32_t stopIndex = endVoxel;// startingVoxel + levelSize;
-	const uint32_t remainingSize = endVoxel - startingVoxel;
-	uint32_t currentIndex = startingVoxel;
+	uint32_t const stopIndex = uint32_t(endVoxel);// startingVoxel + levelSize;
+	uint32_t const remainingSize = endVoxel - startingVoxel;
 
 	sizesPrefixSum.clear();
 	sizesPrefixSum.push_back(0);
@@ -320,7 +319,7 @@ void GpuOctreeEdgePropagator::profile()
 	std::vector<ProfRes> profResults;
 
 	HighResolutionTimer timer;
-	for(wgSize; wgSize<=1024; wgSize *=2)
+	for(; wgSize<=1024; wgSize *=2)
 	{
 		_propagateProgram.reset();
 		_createPropagateProgram(wgSize);
@@ -328,7 +327,7 @@ void GpuOctreeEdgePropagator::profile()
 		_propagateProgram->use();
 		
 		size_t bufferSizeMB = 64;
-		for(bufferSizeMB; bufferSizeMB < 4096ull; bufferSizeMB*=2ull)
+		for(; bufferSizeMB < 4096ull; bufferSizeMB*=2ull)
 		{
 			_maxBufferSize = bufferSizeMB * 1024ull * 1024ull;
 			_unbindBuffers();
@@ -366,7 +365,7 @@ void GpuOctreeEdgePropagator::profile()
 
 					ge::gl::glFinish();
 					timer.reset();
-					ge::gl::glDispatchCompute(GLuint(ceilf(float(numLoaded) / wgSize)), 1, 1);
+					ge::gl::glDispatchCompute(GLuint(ceilf(float(numLoaded) / float(wgSize))), 1, 1);
 					ge::gl::glFinish();
 					time += timer.getElapsedTimeMilliseconds();
 

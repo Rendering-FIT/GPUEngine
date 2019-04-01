@@ -30,6 +30,7 @@ bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEd
 //NOT WORKING
 void GpuOctreeLoader::profile(AdjacencyType edges)
 {
+	UNUSED_ARGUMENT(edges);
 	//_loadEdges(edges);
 	/*
 
@@ -172,9 +173,9 @@ void GpuOctreeLoader::addEdgesOnLowestLevel(AdjacencyType edges)
 	const auto allocatedSizeEdgeIndices = std::min(_maxBufferSizeBytes, size_t(deepestLevelSizeAndParents) * size_t(maxOffset) * sizeof(uint32_t));
 	
 	//Parents are taken into consideration, as they will also need output buffers
-	uint32_t voxelBatchSize = uint32_t(OCTREE_NUM_CHILDREN*allocatedSizeEdgeIndices)/((OCTREE_NUM_CHILDREN+1) * maxOffset * sizeof(uint32_t));
+	uint32_t voxelBatchSize = uint32_t((OCTREE_NUM_CHILDREN*allocatedSizeEdgeIndices)/((OCTREE_NUM_CHILDREN+1) * maxOffset * sizeof(uint32_t)));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
-	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
+	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / float(voxelBatchSize)));
 
 	_allocateOutputBuffersAndVoxels(uint32_t(voxelBatchSize));
 
