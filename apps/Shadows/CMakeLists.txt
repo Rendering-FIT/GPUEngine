@@ -52,6 +52,7 @@ set(APP_INCLUDES
   CameraPath.h
   CSV.h
   Deferred.h
+  Defines.h
   Model.h
   Shading.h
   ShadowMethod.h

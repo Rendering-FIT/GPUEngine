@@ -190,7 +190,7 @@ void Application::parseArguments(int argc,char*argv[]){
   this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
   this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 1.f,1.f,1.f}, "Defines octree volume in terms of scene AABB scaling"));
   this->hssvParams.maxGpuMemoryToUsePerBuffer = arg->geti32("--hssv-maxBufSize", 2048, "Amount of GPU memory to use during octree build for potential edges buffer, default 2048MB. It's not total memory consumption, usually ~x2");
-  this->hssvParams.potentialDrawingMethod = arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
+  this->hssvParams.potentialDrawingMethod = (unsigned char)(arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader"));
   this->hssvParams.silhouetteDrawingMethod = arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader");
   this->hssvParams.workgroupSize = arg->getu32("--hssv-wg", 256, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
   this->hssvParams.forceOctreeBuild = arg->isPresent("--hssv-forceBuild", "Forces octree build (won't load from file if present)");
@@ -555,7 +555,6 @@ void Application::measureLightGrid()
 
 	std::vector<float> verts;
 	this->model->getVertices(verts);
-	auto const nofVertices = verts.size();
 
 	AABB bbox;
 	bbox.updateWithVerticesVec3(verts.data(), verts.size());

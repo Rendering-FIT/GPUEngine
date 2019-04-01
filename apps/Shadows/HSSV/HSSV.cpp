@@ -5,13 +5,14 @@
 #include "MultiplicityCoding.hpp"
 #include "HighResolutionTimer.hpp"
 
-#include <fstream>
-
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
 #include "OctreeSidesDrawer.hpp"
 #include "CpuSidesDrawer.hpp"
 #include "OctreeWireframeDrawer.hpp"
+#include "../Defines.h"
+
+#include <fstream>
 #include <iomanip>
 
 HSSV::HSSV(
@@ -410,8 +411,8 @@ void HSSV::_serializeEdges(AdjacencyType edges, std::vector<float>& serializedEd
 
 		serializedEdges.push_back(v1.x); serializedEdges.push_back(v1.y); serializedEdges.push_back(v1.z);
 		serializedEdges.push_back(v2.x); serializedEdges.push_back(v2.y); serializedEdges.push_back(v2.z);
-		serializedEdges.push_back(*((float*)&nofOpposite));
-		serializedEdges.push_back(*((float*)&starting_index));
+		serializedEdges.push_back(*reinterpret_cast<const float*>(&nofOpposite));
+		serializedEdges.push_back(*reinterpret_cast<const float*>(&starting_index));
 
 		for (uint32_t i = 0; i < nofOpposite; ++i)
 		{
@@ -429,8 +430,10 @@ void HSSV::setTimeStamper(std::shared_ptr<TimeStamp> stamper)
 	}
 }
 
-void HSSV::drawUser(glm::vec4 const&lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix)
+void HSSV::drawUser(glm::vec4 const& lightPosition, glm::mat4 const&viewMatrix, glm::mat4 const&projectionMatrix)
 {
+	UNUSED_ARGUMENT(lightPosition);
+
 	if (_params.drawOctree)
 	{
 		ge::gl::glEnable(GL_DEPTH_TEST);

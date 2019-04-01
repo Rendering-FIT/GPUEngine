@@ -210,7 +210,7 @@ RenderModel::RenderModel(std::shared_ptr<Model>const&mdl){
   mdl->getNormals(normData);
  
   this->normals = std::make_shared<ge::gl::Buffer>(this->nofVertices*sizeof(float)*NUM_NORMAL_COMPONENTS,normData.data());
-  auto err = glGetError();
+
 #ifdef USE_FULL_SHADING
   std::vector<float>tc;
   mdl->getTcoords(tc);

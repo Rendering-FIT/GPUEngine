@@ -9,8 +9,6 @@
 
 #include"TimeStamp.h"
 
-#define UNUSED_ARGUMENT(x) (void)(x)
-
 size_t const componentsPerVertex2D   = 2;
 size_t const componentsPerVertex3D   = 3;
 size_t const componentsPerVertex4D   = 4;

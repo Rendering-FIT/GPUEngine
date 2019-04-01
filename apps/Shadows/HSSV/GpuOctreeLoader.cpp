@@ -4,12 +4,15 @@
 
 #include <geGL/StaticCalls.h>
 #include "MultiplicityCoding.hpp"
+#include "../Defines.h"
 
 #include <iostream>
 #include <fstream>
 
 bool GpuOctreeLoader::init(std::shared_ptr<Octree> octree, std::shared_ptr<GpuEdges> gpuEdges, uint32_t nofEdges)
 {
+	UNUSED_ARGUMENT(nofEdges);
+	
 	assert(octree);
 	assert(gpuEdges);
 
@@ -169,7 +172,7 @@ void GpuOctreeLoader::addEdgesOnLowestLevel(AdjacencyType edges)
 	const auto allocatedSizeEdgeIndices = std::min(_maxBufferSizeBytes, size_t(deepestLevelSizeAndParents) * size_t(maxOffset) * sizeof(uint32_t));
 	
 	//Parents are taken into consideration, as they will also need output buffers
-	auto voxelBatchSize = (OCTREE_NUM_CHILDREN*allocatedSizeEdgeIndices)/((OCTREE_NUM_CHILDREN+1) * maxOffset * sizeof(uint32_t));
+	uint32_t voxelBatchSize = uint32_t(OCTREE_NUM_CHILDREN*allocatedSizeEdgeIndices)/((OCTREE_NUM_CHILDREN+1) * maxOffset * sizeof(uint32_t));
 	voxelBatchSize = voxelBatchSize - (voxelBatchSize % OCTREE_NUM_CHILDREN);
 	const uint32_t numBatches = (uint32_t)(ceil(float(deepestLevelSize) / voxelBatchSize));
 
@@ -191,15 +194,15 @@ void GpuOctreeLoader::addEdgesOnLowestLevel(AdjacencyType edges)
 		std::cout << "Batch " << i << " size " << batchSize << std::endl;
 		
 		t.reset();
-		_loadVoxels(voxels, uint32_t(i*voxelBatchSize), batchSize);
+		_loadVoxels(voxels, i*voxelBatchSize, batchSize);
 		_clearAtomicCounter();
 
 		_fillProgram->set1ui("nofVoxels", batchSize);
 
-		ge::gl::glDispatchCompute(uint32_t(ceil(float(batchSize)/ _wgSize)), 1, 1);
+		ge::gl::glDispatchCompute(uint32_t(ceil(float(batchSize)/ float(_wgSize))), 1, 1);
 		ge::gl::glFinish();
 
-		_acquireGpuData(startingNodeIndex + uint32_t(i*voxelBatchSize), batchSize);
+		_acquireGpuData(startingNodeIndex + i*voxelBatchSize, batchSize);
 	}
 
 	_unbindBuffers();
@@ -234,8 +237,8 @@ void GpuOctreeLoader::_testParticularVoxel(AdjacencyType edges, uint32_t voxelId
 
 			serializedEdges.push_back(v1.x); serializedEdges.push_back(v1.y); serializedEdges.push_back(v1.z);
 			serializedEdges.push_back(v2.x); serializedEdges.push_back(v2.y); serializedEdges.push_back(v2.z);
-			serializedEdges.push_back(*((float*)&nofOpposite));
-			serializedEdges.push_back(*((float*)&starting_index));
+			serializedEdges.push_back(*reinterpret_cast<const float*>(&nofOpposite));
+			serializedEdges.push_back(*reinterpret_cast<const float*>(&starting_index));
 
 			for (uint32_t i = 0; i<nofOpposite; ++i)
 				serializedOppositeVertices.push_back(vertices[edges->getOpposite(edgeIndex, i) / 3]);

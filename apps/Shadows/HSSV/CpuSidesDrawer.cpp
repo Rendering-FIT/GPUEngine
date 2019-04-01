@@ -14,7 +14,7 @@ CpuSidesDrawer::CpuSidesDrawer(std::shared_ptr<OctreeVisitor> visitor, std::shar
 	_octree = _visitor->getOctree();
 }
 
-bool CpuSidesDrawer::init(std::shared_ptr<GpuEdges> gpuEdges)
+bool CpuSidesDrawer::init(std::shared_ptr<GpuEdges> )
 {
 	_prepareProgram();
 	_prepareBuffers(2 * _edges->getNofEdges() * 6 * 4 * sizeof(float));

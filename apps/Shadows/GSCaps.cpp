@@ -18,7 +18,7 @@ void GSCaps::drawCaps(glm::vec4 const& lightPosition, glm::mat4 const& viewMatri
 	_capsProgram->use();
 	_capsProgram->setMatrix4fv("mvp", glm::value_ptr(mvp), 1, GL_FALSE);
 	_capsProgram->set4fv("LightPosition", glm::value_ptr(lightPosition), 1);
-	ge::gl::glDrawArrays(GL_TRIANGLES, 0, _nofCapsTriangles * 3);
+	ge::gl::glDrawArrays(GL_TRIANGLES, 0, GLsizei(_nofCapsTriangles * 3));
 
 	_capsVAO->unbind();
 }

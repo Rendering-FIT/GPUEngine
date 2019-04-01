@@ -167,7 +167,7 @@ void Octree::deleteNodeSubtree(unsigned nodeID)
 
 	const int level = getNodeRecursionLevel(nodeID);
 
-	if(level!=_deepestLevel)
+	if(level!=int(_deepestLevel))
 	{
 		const uint32_t startingChild = getChildrenStartingId(nodeID);
 

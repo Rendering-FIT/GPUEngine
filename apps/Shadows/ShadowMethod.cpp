@@ -1,4 +1,5 @@
 #include"ShadowMethod.h"
+#include"Defines.h"
 
 ShadowMethod::ShadowMethod(){}
 
