@@ -200,12 +200,6 @@ int OctreeVisitor::_getChildNodeContainingPoint(uint32_t parent, const glm::vec3
 
 void OctreeVisitor::getSilhouttePotentialEdgesFromNodeUp(std::vector<uint32_t>& potential, std::vector<uint32_t>& silhouette, uint32_t nodeID) const
 {
-	int currentNodeID = nodeID;
-
-	static bool printOnce = true;
-
-	uint32_t comingFromChildId = 0;
-
 	_getSilhouttePotentialEdgesFromNodeUpCompress2(potential, silhouette, nodeID);
 }
 
@@ -240,7 +234,7 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 			nofBuffersPot++;
 		}
 
-		if (currentLevel == levelWithCompressedNodess && isCompressed)
+		if ((uint32_t(currentLevel) == levelWithCompressedNodess) && isCompressed)
 		{
 			const auto compressionId = _getCompressionIdWithinParent(nodeID);
 
@@ -263,7 +257,6 @@ void OctreeVisitor::_getSilhouttePotentialEdgesFromNodeUpCompress2(std::vector<u
 			}
 		}
 
-		const auto previousNodeId = currentNodeID;
 		currentNodeID = _octree->getNodeParent(currentNodeID);
 		--currentLevel;
 	}
@@ -392,7 +385,6 @@ void OctreeVisitor::_getMaxNofSubBuffersInLevelPotSil(uint32_t& pot, uint32_t& s
 void  OctreeVisitor::getMaxNofSubBuffersPotSil(uint32_t& pot, uint32_t& sil) const
 {
 	const auto deepestLevel = _octree->getDeepestLevel();
-	uint32_t maxSubBuffers = 0;
 	
 	pot = sil = 0;
 

@@ -9,6 +9,8 @@
 
 #include"TimeStamp.h"
 
+#define UNUSED_ARGUMENT(x) (void)(x)
+
 size_t const componentsPerVertex2D   = 2;
 size_t const componentsPerVertex3D   = 3;
 size_t const componentsPerVertex4D   = 4;
@@ -38,7 +40,7 @@ class ShadowMethod: public ge::gl::Context{
 	virtual void setTimeStamper(std::shared_ptr<TimeStamp> stamper) { timeStamp = stamper; }
 	virtual void drawUser(glm::vec4 const&lightPosition,
 		glm::mat4 const&viewMatrix,
-		glm::mat4 const&projectionMatrix) {}
+		glm::mat4 const&projectionMatrix);
 protected:
 	std::shared_ptr<TimeStamp      >timeStamp = nullptr;
 };

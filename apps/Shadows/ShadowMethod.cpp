@@ -50,3 +50,11 @@ glm::vec4 computePlane(glm::vec3 A,glm::vec3 B,glm::vec3 C){
   return p;
 }
 
+void ShadowMethod::drawUser(glm::vec4 const&lightPosition,
+	glm::mat4 const&viewMatrix,
+	glm::mat4 const&projectionMatrix)
+{
+	UNUSED_ARGUMENT(lightPosition);
+	UNUSED_ARGUMENT(viewMatrix);
+	UNUSED_ARGUMENT(projectionMatrix);
+}

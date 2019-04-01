@@ -4,8 +4,6 @@
 #include "Plane.hpp"
 #include "AdjacencyEdgeWrapper.hpp"
 
-#include <vector>
-
 
 enum class EdgeSilhouetness : int
 {
@@ -117,4 +115,4 @@ namespace GeometryOps
 
 		return (result1 == TestResult::INTERSECTS_ON || result2 == TestResult::INTERSECTS_ON);
 	}
-};
+}
