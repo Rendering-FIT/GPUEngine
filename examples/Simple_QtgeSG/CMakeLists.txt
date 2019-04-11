@@ -63,6 +63,8 @@ set(SOURCE_FILES
    src/VisualizationTechnique.h
 )
 
+message("\nAss dir ${ASSIMP_LIBRARY_DIRS}\n")
+
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${GLSG_FILES})
 target_link_libraries(${APP_NAME} Qt5::Quick geGL AssimpModelLoader QtImageLoader)
