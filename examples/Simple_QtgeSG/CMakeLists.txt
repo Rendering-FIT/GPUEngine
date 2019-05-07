@@ -34,7 +34,7 @@ if(NOT TARGET ste)
    find_package(ste QUIET)
 endif()
 
-if(NOT TARGET Qt5::Quick OR NOT TARGET geGL OR NOT TARGET geSG OR NOT TARGET AssimpModelLoader OR NOT TARGET QtImageLoader )
+if(NOT TARGET Qt5::Quick OR NOT TARGET geGL OR NOT TARGET geUtil OR NOT TARGET geSG OR NOT TARGET AssimpModelLoader OR NOT TARGET QtImageLoader )
    return()
 endif()
 
@@ -67,7 +67,7 @@ message("\nAss dir ${ASSIMP_LIBRARY_DIRS}\n")
 
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${GLSG_FILES})
-target_link_libraries(${APP_NAME} Qt5::Quick geGL AssimpModelLoader QtImageLoader)
+target_link_libraries(${APP_NAME} Qt5::Quick geGL geUtil AssimpModelLoader QtImageLoader)
 target_include_directories(${APP_NAME} PUBLIC "src/")
 set_target_properties(${APP_NAME} PROPERTIES COMPILE_DEFINITIONS "APP_RESOURCES=\"${${APP_NAME}_RESOURCES}\"")
 set_property(TARGET ${APP_NAME} PROPERTY FOLDER "${examples_folder_name}")

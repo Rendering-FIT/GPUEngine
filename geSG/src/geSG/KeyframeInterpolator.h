@@ -1,7 +1,5 @@
 #pragma once
 #include <algorithm>
-#include <geCore/Updatable.h>
-
 namespace ge
 {
    namespace sg

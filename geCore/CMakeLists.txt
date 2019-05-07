@@ -35,6 +35,7 @@ set(CORE_INCLUDES
   ${HEADER_PATH}/Defines.h
   ${HEADER_PATH}/DisjointSet.h
   ${HEADER_PATH}/Dtemplates.h
+  ${HEADER_PATH}/enum_definition.h
   ${HEADER_PATH}/ErrorPrinter.h
   ${HEADER_PATH}/Functor.h
   ${HEADER_PATH}/idlist.h

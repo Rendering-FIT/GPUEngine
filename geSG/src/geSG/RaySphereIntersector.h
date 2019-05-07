@@ -1,9 +1,9 @@
 #pragma once
 
 #include <geSG/Export.h>
-#include <geUtil/Intersector.h>
+#include <geSG/Intersector.h>
 
-#include <geUtil/Ray.h>
+#include <geSG/Ray.h>
 #include <geSG/BoundingVolume.h>
 #include <memory>
 
@@ -13,15 +13,15 @@ namespace ge
    {
       class BoundingSphere;
 
-      struct GESG_EXPORT RaySphereIntersector : public ge::util::Intersector
+      struct GESG_EXPORT RaySphereIntersector : public Intersector
       {
-         static bool intersects(const ge::util::Ray & ray, const ge::sg::BoundingSphere & bs);
-         static float computeIntersection(const ge::util::Ray& ray, ge::sg::BoundingSphere bs);
+         static bool intersects(const Ray & ray, const BoundingSphere & bs);
+         static float computeIntersection(const Ray& ray, BoundingSphere bs);
 
          virtual bool intersects() const override;
 
-         ge::util::Ray ray;
-         std::shared_ptr<ge::sg::BoundingSphere> bs;
+         Ray ray;
+         std::shared_ptr<BoundingSphere> bs;
       };
    }
 }

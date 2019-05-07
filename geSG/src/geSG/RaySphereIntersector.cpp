@@ -10,7 +10,7 @@ using namespace ge::sg;
 *
 * @return True if ray intersects the sphere.
 */
-bool RaySphereIntersector::intersects(const ge::util::Ray & ray, const ge::sg::BoundingSphere & bs)
+bool RaySphereIntersector::intersects(const Ray & ray, const ge::sg::BoundingSphere & bs)
 {
    float r2 = bs.radius * bs.radius;
    glm::vec3 oc = (ray.origin - bs.center);
@@ -26,7 +26,7 @@ bool RaySphereIntersector::intersects(const ge::util::Ray & ray, const ge::sg::B
    return false;
 }
 
-float RaySphereIntersector::computeIntersection(const ge::util::Ray& ray, ge::sg::BoundingSphere bs)
+float RaySphereIntersector::computeIntersection(const Ray& ray, ge::sg::BoundingSphere bs)
 {
    float r2 = bs.radius * bs.radius;
    float a = glm::dot(ray.direction, ray.direction);

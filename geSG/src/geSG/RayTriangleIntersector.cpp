@@ -2,7 +2,6 @@
 #include <geSG//MeshPrimitiveIterator.h>
 #include <glm/glm.hpp>
 
-using namespace ge::util;
 using namespace ge::sg;
 using namespace glm;
 

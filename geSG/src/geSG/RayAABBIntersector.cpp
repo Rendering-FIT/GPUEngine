@@ -3,7 +3,6 @@
 #include <algorithm>
 
 using namespace ge::sg;
-using namespace ge::util;
 
 bool RayAABBIntersector::intersects(const Ray& ray, const AABB* aabb)
 {

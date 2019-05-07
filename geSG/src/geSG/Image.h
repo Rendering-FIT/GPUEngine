@@ -3,7 +3,7 @@
 #include <geSG/Export.h>
 
 // temporary solution
-#include <geUtil/macros.h>
+#include <geCore/enum_definition.h>
 
 
 namespace ge{

@@ -2,7 +2,7 @@
 
 namespace ge
 {
-   namespace util{
+   namespace sg{
       /**
        * Class that resamples the parametr t <0,1>.
        * For use in animation for ease motion.

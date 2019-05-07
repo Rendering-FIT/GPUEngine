@@ -1,6 +1,5 @@
 #pragma once
 
-#include <geSG/Export.h>
 #include <geSG/Mesh.h>
 #include <geSG/Material.h>
 #include <geSG/Node.h>

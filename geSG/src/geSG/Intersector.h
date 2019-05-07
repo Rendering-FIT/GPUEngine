@@ -1,10 +1,10 @@
 #pragma once
 
-#include <geUtil/Export.h>
+#include <geSG/Export.h>
 
 namespace ge
 {
-   namespace util
+   namespace sg
    {
       struct /*GEUTIL_EXPORT*/ Intersector
       {

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstring>
-#include <iostream>
 #include <geCore/Dtemplates.h>
 
 /*

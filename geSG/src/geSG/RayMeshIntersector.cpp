@@ -12,7 +12,6 @@
    using namespace std;
 #endif
 
-using namespace ge::util;
 using namespace ge::sg;
 using namespace std;
 using namespace std::placeholders;

@@ -27,6 +27,7 @@ set(SG_INCLUDES
    ${HEADER_PATH}/Drawable.h
    ${HEADER_PATH}/KeyframeInterpolator.h
    ${HEADER_PATH}/Image.h
+   ${HEADER_PATH}/Intersector.h
    ${HEADER_PATH}/Light.h
    ${HEADER_PATH}/Material.h
    ${HEADER_PATH}/MatrixTransform.h
@@ -35,10 +36,12 @@ set(SG_INCLUDES
    ${HEADER_PATH}/MeshTriangleIterators.h
    ${HEADER_PATH}/Model.h
    ${HEADER_PATH}/Node.h
+   ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/RayAABBIntersector.h
    ${HEADER_PATH}/RayMeshIntersector.h
    ${HEADER_PATH}/RaySphereIntersector.h
    ${HEADER_PATH}/RayTriangleIntersector.h
+   ${HEADER_PATH}/Sampler.h
    ${HEADER_PATH}/Scene.h
    ${HEADER_PATH}/Transform.h
 )
@@ -60,7 +63,8 @@ set(SG_SOURCES
 ################################################
 # PACKAGES
 
-find_package(GPUEngine COMPONENTS geUtil) #uses custom module to report if the util is not added as subdir from GPUE master CMake
+find_package(glm REQUIRED)
+find_package(GPUEngine COMPONENTS geCore) #uses custom module to report if the util is not added as subdir from GPUE master CMake
 
 #########################################
 # Target
@@ -78,7 +82,7 @@ GENERATE_EXPORT_HEADER(${PROJECT_NAME}
 add_library(ste INTERFACE IMPORTED)
 
 target_link_libraries(${PROJECT_NAME}
-   PUBLIC geUtil
+   PUBLIC geCore glm
    INTERFACE ste
 )
 
@@ -111,7 +115,7 @@ install(EXPORT ${PROJECT_NAME}Targets
 )
 
 #Dependencies to find in config
-set(Dependencies geUtil ste)
+set(Dependencies geCore glm ste)
 configure_file(
    ${PROJECT_NAME}Config.cmake.in
    "${PROJECT_NAME}Config.cmake"

@@ -1,9 +1,7 @@
 #pragma once
 
-#include <geUtil/macros.h>
+#include <geCore/enum_definition.h>
 
-#include <geSG/Export.h>
-#include <geSG/Model.h>
 #include <geSG/AttributeDescriptor.h>
 
 #include <vector>

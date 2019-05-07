@@ -2,7 +2,7 @@
 
 #include <geSG/Export.h>
 
-#include <geUtil/macros.h>
+#include <geCore/enum_definition.h>
 
 #include <memory>
 #include <vector>

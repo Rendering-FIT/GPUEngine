@@ -3,7 +3,7 @@
 #include <geSG/Export.h>
 #include <memory>
 #include <vector>
-#include <geUtil/macros.h>
+#include <geCore/enum_definition.h>
 #include <geCore/Updatable.h>
 #include <chrono>
 

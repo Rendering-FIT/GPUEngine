@@ -37,19 +37,14 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/CameraObject.h
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
-   ${HEADER_PATH}/Intersector.h
-   ${HEADER_PATH}/IntersectPrimitive.h
-   ${HEADER_PATH}/macros.h
    ${HEADER_PATH}/MatrixStack.h
    ${HEADER_PATH}/OrbitManipulator.h
    ${HEADER_PATH}/Progress.h
-   ${HEADER_PATH}/Ray.h
    ${HEADER_PATH}/geUtil.h
    ${HEADER_PATH}/Camera.h
    ${HEADER_PATH}/OrbitCamera.h
    ${HEADER_PATH}/FreeLookCamera.h
    ${HEADER_PATH}/PerspectiveCamera.h
-   ${HEADER_PATH}/Sampler.h
    ${HEADER_PATH}/Text.h
    ${HEADER_PATH}/Timer.h
 )

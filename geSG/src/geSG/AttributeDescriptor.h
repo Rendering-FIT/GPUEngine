@@ -1,6 +1,5 @@
 #pragma once
 #include <geSG/Export.h>
-#include <geUtil/macros.h>
 #include <memory>
 #include <geCore/idlist.h>
 
