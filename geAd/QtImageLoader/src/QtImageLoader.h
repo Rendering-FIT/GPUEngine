@@ -28,6 +28,8 @@ public:
 class QtImage : public ge::sg::ImageTemplate < QImage >
 {
 public:
+   ~QtImage();
+
    virtual unsigned char* getBits();
 
    virtual size_t getSizeInBytes();

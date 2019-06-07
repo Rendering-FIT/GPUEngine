@@ -16,6 +16,8 @@ public:
 class FreeImageImage : public ge::sg::ImageTemplate < fipImage >
 {
 public:
+   ~FreeImageImage();
+
    virtual unsigned char* getBits();
 
    virtual size_t getSizeInBytes();

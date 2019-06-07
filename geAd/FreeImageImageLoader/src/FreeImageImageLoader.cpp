@@ -70,6 +70,11 @@ FreeImageImage* FreeImageImageLoader::loadImage(const wchar_t* imageIdentifier, 
 // FreeImageImage
 //////////////////////////////////////////////////////////////////////////
 
+FreeImageImage::~FreeImageImage()
+{
+   delete _image;
+}
+
 unsigned char* FreeImageImage::getBits()
 {
    if(!_image) return NULL;
