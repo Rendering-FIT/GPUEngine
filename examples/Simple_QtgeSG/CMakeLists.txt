@@ -63,7 +63,6 @@ set(SOURCE_FILES
    src/VisualizationTechnique.h
 )
 
-message("\nAss dir ${ASSIMP_LIBRARY_DIRS}\n")
 
 
 add_executable(${APP_NAME} ${SOURCE_FILES} ${GLSG_FILES})
@@ -78,5 +77,4 @@ get_filename_component(Qt5dllDir ${Qt5dllPath} DIRECTORY)
 get_target_property(assdllPath assimp::assimp IMPORTED_LOCATION_RELEASE)
 get_filename_component(assdllDir ${assdllPath} DIRECTORY)
 get_target_property(GPUEdllPath geGL IMPORTED_LOCATION_RELEASE)
-message("${OUTPUT_BINDIR};${assdllDir};${Qt5dllDir}")
 set_target_properties(${APP_NAME} PROPERTIES VS_GLOBAL_DllPath "${OUTPUT_BINDIR};${assdllDir};${Qt5dllDir}")

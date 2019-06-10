@@ -198,7 +198,6 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       set(${CMAKE_FIND_PACKAGE_NAME}_FOUND True)
    endif()
 
-   message("SDL2_LIBRARY ${SDL2_LIBRARY}")
    # target for cmake 3.0.0 and newer
    if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
