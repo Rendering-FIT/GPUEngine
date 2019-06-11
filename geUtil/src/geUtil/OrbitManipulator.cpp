@@ -66,6 +66,24 @@ void OrbitManipulator::updateMatrix()
 }
 
 
+void OrbitManipulator::moveZ(float dz)
+{
+   _dirty = true;
+   _distance += dz * sensitivityZ;
+   if(_distance < _minimalDistance) _distance = _minimalDistance;
+}
+
+void OrbitManipulator::moveXY(float dx, float dy)
+{
+   _dirty = true;
+   float distX, distY;
+   // 0.3f is magical constant from OSG - perhaps there should be different sensitivities?
+   distX = dx * _distance * 0.3f * sensitivityX;
+   distY = dy * _distance * 0.3f * sensitivityY;
+
+   _center += glm::vec3(glm::vec4(distX, distY, 0, 1) * _rotationMat);
+}
+
 /**
  * Feed this method with the delta (change) of normalized screen coordinates.
  * Speed can be adjusted via the sensitivity ratios.
@@ -87,9 +105,7 @@ void OrbitManipulator::rotate(float dx,float dy)
  */
 void OrbitManipulator::zoom(float dz)
 {
-   _dirty = true;
-   _distance += dz * sensitivityZ;
-   if(_distance < _minimalDistance) _distance = _minimalDistance;
+   moveZ(dz);
 }
 
 
@@ -98,13 +114,7 @@ void OrbitManipulator::zoom(float dz)
  */
 void OrbitManipulator::move(float dx,float dy)
 {
-   _dirty = true;
-   float distX, distY;
-   // 0.3f is magical constant from OSG - perhaps there should be different sensitivities?
-   distX = dx * _distance * 0.3f * sensitivityX;
-   distY = dy * _distance * 0.3f * sensitivityY;
-
-   _center += glm::vec3(glm::vec4(distX, distY, 0, 1) * _rotationMat);
+   moveXY(dx,dy);
 }
 
 

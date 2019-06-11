@@ -1,30 +1,15 @@
 #ifndef GE_UTIL_ORBIT_MANIPULATOR_H
 #define GE_UTIL_ORBIT_MANIPULATOR_H
 
-#include <memory>
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <geUtil/Export.h>
+#include <memory>
+#include <glm/gtc/quaternion.hpp>
+#include <geUtil/BasicManipulatorInterface.h>
 
 namespace ge {
 namespace util {
 
-
-class GEUTIL_EXPORT ObjectManipulator
-{
-public:
-
-   inline const glm::mat4& mat() const;
-
-   virtual std::shared_ptr<glm::mat4>& matrix() = 0;
-   virtual void setMatrix(const std::shared_ptr<glm::mat4>& mat) = 0;
-
-   virtual ~ObjectManipulator() {}
-
-};
-
-
-class GEUTIL_EXPORT OrbitManipulator : public ObjectManipulator
+class GEUTIL_EXPORT OrbitManipulator : public BasicManipulatorInterface
 {
 protected:
 
@@ -39,6 +24,8 @@ protected:
    float _angleX;
    float _angleY;
 
+public:
+protected:
    bool _diableFlipOver;
    bool _fixVerticalAxis;
    glm::mat4 _rotationMat;
@@ -55,10 +42,13 @@ public:
 
    inline bool isDirty(){ return _dirty; }
 
-   virtual std::shared_ptr<glm::mat4>& matrix() override;
-   virtual void setMatrix(const std::shared_ptr<glm::mat4>& matrix) override;
+   std::shared_ptr<glm::mat4>& matrix() override;
+   void setMatrix(const std::shared_ptr<glm::mat4>& matrix) override;
 
-   void rotate(float dx,float dy);
+   void moveZ(float dz) override;
+   void moveXY(float dx, float dy) override;
+   void rotate(float dx,float dy) override;
+
    void zoom(float dz);
    void move(float dx,float dy);
    //void zoomJump(int dir);
@@ -76,7 +66,7 @@ public:
 
 
 // inline methods
-inline const glm::mat4& ObjectManipulator::mat() const  { return *const_cast<ObjectManipulator*>(this)->matrix(); }
+inline const glm::mat4& MatrixManipulatorInterface::mat() const  { return *const_cast<MatrixManipulatorInterface*>(this)->matrix(); }
 
 }
 }

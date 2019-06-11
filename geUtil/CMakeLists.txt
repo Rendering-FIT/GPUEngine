@@ -37,9 +37,9 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/CameraObject.h
    ${HEADER_PATH}/CameraPath.h
    ${HEADER_PATH}/FPSPrinter.h
-   ${HEADER_PATH}/ManipulatorInterface.h
+   ${HEADER_PATH}/MatrixManipulatorInterface.h
    ${HEADER_PATH}/MatrixStack.h
-   ${HEADER_PATH}/MoveManipulatorInterface.h
+   ${HEADER_PATH}/BasicManipulatorInterface.h
    ${HEADER_PATH}/OrbitManipulator.h
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/geUtil.h
