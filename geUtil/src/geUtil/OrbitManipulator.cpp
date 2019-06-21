@@ -66,6 +66,48 @@ void OrbitManipulator::updateMatrix()
 }
 
 
+glm::vec3 OrbitManipulator::getPosition() const
+{
+   return glm::vec3{
+      -_distance*cos(_angleX)*sin(_angleY),
+      _distance*cos(_angleX)*cos(_angleX),
+      _distance*sin(_angleX)
+      };
+}
+
+void OrbitManipulator::setPosition(glm::vec3 pos)
+{
+   //todo: use more efficient math to compute this
+   _dirty = true;
+   this->_distance = glm::distance(this->_center, pos);
+   glm::mat4 lookat = glm::lookAt(pos, this->_center, this->_localUp);
+   glm::vec3 dummy1;
+   glm::vec4 dummy2;
+   glm::quat orientation;
+   glm::decompose(lookat, dummy1, orientation, dummy1, dummy1, dummy2);
+   dummy1 = glm::eulerAngles(orientation);
+   _angleX = dummy1.y;
+   _angleY = dummy1.x;
+   _angleY = glm::clamp(_angleY, -glm::half_pi<float>(), glm::half_pi<float>());
+
+   _rotationMat = glm::rotate(glm::mat4(), _angleY, glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(), _angleX, glm::vec3(0, 1, 0));
+}
+
+glm::quat OrbitManipulator::getOrientation() const
+{
+   float ct = cos(_angleX / 2.f);
+   float cp = cos(_angleY / 2.f);
+   float st = sin(_angleX / 2.f);
+   float sp = sin(_angleY / 2.f);
+   return {cp*ct, -sp * st, st*cp, sp*ct};
+}
+
+void OrbitManipulator::setOrientation(glm::quat)
+{
+
+}
+
+
 void OrbitManipulator::moveZ(float dz)
 {
    _dirty = true;

@@ -4,12 +4,12 @@
 #include <geUtil/Export.h>
 #include <memory>
 #include <glm/gtc/quaternion.hpp>
-#include <geUtil/BasicManipulatorInterface.h>
+#include <geUtil/ManipulatorInterfaces.h>
 
 namespace ge {
 namespace util {
 
-class GEUTIL_EXPORT OrbitManipulator : public BasicManipulatorInterface
+class GEUTIL_EXPORT OrbitManipulator : public BasicManipulatorInterface, public PositionAttitudeInterface
 {
 protected:
 
@@ -59,9 +59,13 @@ public:
 
    void updateMatrix();
 
-   inline glm::vec3 getLocalUp() const { return _localUp; }
-   void setLocalUp(glm::vec3 val) { _localUp = glm::normalize(val); }
+   glm::vec3 getLocalUp() const override { return _localUp; }
+   void setLocalUp(glm::vec3 val) override { _localUp = glm::normalize(val); }
 
+   glm::vec3 getPosition() const override;
+   void setPosition(glm::vec3) override;
+   glm::quat getOrientation() const override;
+   void setOrientation(glm::quat) override;
 };
 
 
