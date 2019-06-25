@@ -20,15 +20,21 @@ OrbitManipulator::OrbitManipulator()
    , _diableFlipOver(true)
    , _fixVerticalAxis(true)
    , _minimalDistance(0)
-   , sensitivityX(3)
-   , sensitivityY(3)
+   , sensitivityX(1)
+   , sensitivityY(1)
    , sensitivityZ(1)
    , forward(0, 0, -1)
 {
 }
 
 
-std::shared_ptr<glm::mat4>& OrbitManipulator::matrix()
+const glm::mat4& OrbitManipulator::getMatrix()
+{
+   updateMatrix();
+   return *_matrix;
+}
+
+std::shared_ptr<glm::mat4>& OrbitManipulator::getRefMatrix()
 {
    updateMatrix();
    return _matrix;
@@ -46,8 +52,6 @@ void OrbitManipulator::setMatrix(const std::shared_ptr<glm::mat4>& matrix)
  * Updates the view matrix need to be called before getMatrix().
  * When you manipulate the "camera"/view through zoom(),
  * move(), rotate() methods it only updates its internal state (center, distance, rotation).
- *
- * Suggestion: Maybe use dirty mechanism...
  */
 void OrbitManipulator::updateMatrix()
 {
@@ -56,13 +60,6 @@ void OrbitManipulator::updateMatrix()
 
    *_matrix = glm::translate(glm::mat4(), glm::vec3(0, 0, -_distance))* _rotationMat * glm::translate(glm::mat4(), -_center);
    _dirty = false;
-
-   /*glm::vec3 dummy1;
-   glm::vec4 dummy2;
-   glm::vec3 trans;
-   glm::quat orientation;
-   glm::decompose(*_matrix, dummy1, orientation, trans, dummy1, dummy2);
-   std::cout << "camera Pos " << glm::to_string(orientation * trans) << std::endl;*/
 }
 
 
@@ -95,16 +92,15 @@ void OrbitManipulator::setPosition(glm::vec3 pos)
 
 glm::quat OrbitManipulator::getOrientation() const
 {
-   float ct = cos(_angleX / 2.f);
-   float cp = cos(_angleY / 2.f);
-   float st = sin(_angleX / 2.f);
-   float sp = sin(_angleY / 2.f);
-   return {cp*ct, -sp * st, st*cp, sp*ct};
+   return {glm::vec3{_angleY,_angleX,0.0f}}; //used quaternion constructor that accepts the euler angles; BEWARE THE ORDER (pitch, yaw, roll)
 }
 
-void OrbitManipulator::setOrientation(glm::quat)
+void OrbitManipulator::setOrientation(glm::quat orientation)
 {
-
+   _dirty = true;
+   glm::vec3 ang = eulerAngles(orientation);
+   _angleX = ang.x;
+   _angleY = ang.y;
 }
 
 
@@ -119,9 +115,8 @@ void OrbitManipulator::moveXY(float dx, float dy)
 {
    _dirty = true;
    float distX, distY;
-   // 0.3f is magical constant from OSG - perhaps there should be different sensitivities?
-   distX = dx * _distance * 0.3f * sensitivityX;
-   distY = dy * _distance * 0.3f * sensitivityY;
+   distX = dx * _distance * sensitivityX;
+   distY = dy * _distance * sensitivityY;
 
    _center += glm::vec3(glm::vec4(distX, distY, 0, 1) * _rotationMat);
 }

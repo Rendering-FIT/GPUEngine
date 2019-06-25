@@ -11,9 +11,13 @@ namespace util
    {
    public:
 
-      inline const glm::mat4& mat() const;
+      // method can't be const since the manipulators need to update its internal state (the matrix usually)
+      virtual const glm::mat4& getMatrix()
+      {
+         return *getRefMatrix();
+      }
 
-      virtual std::shared_ptr<glm::mat4>& matrix() = 0;
+      virtual std::shared_ptr<glm::mat4>& getRefMatrix() = 0;
       virtual void setMatrix(const std::shared_ptr<glm::mat4>& mat) = 0;
 
       virtual ~MatrixManipulatorInterface() {}
@@ -23,7 +27,7 @@ namespace util
    /**
     *
     */
-   class BasicManipulatorInterface : public MatrixManipulatorInterface
+   class GEUTIL_EXPORT BasicManipulatorInterface : public MatrixManipulatorInterface
    {
    public:
       BasicManipulatorInterface() = default;
@@ -43,7 +47,7 @@ namespace util
    /**
     * Interface for Position attitude transform like manipulators.
     */
-   class PositionAttitudeInterface
+   class GEUTIL_EXPORT PositionAttitudeInterface
    {
    public:
       virtual glm::vec3 getPosition() const = 0;

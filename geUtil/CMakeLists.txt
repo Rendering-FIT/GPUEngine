@@ -13,64 +13,31 @@ set(HEADER_PATH ${CMAKE_CURRENT_LIST_DIR}/src/${PROJECT_NAME})
 set(SRC_PATH ${CMAKE_CURRENT_LIST_DIR}/src/${PROJECT_NAME})
 
 
-set(ARGUMENTMANAGER_SOURCES
-   ${SRC_PATH}/ArgumentManager/ArgData.cpp
-   ${SRC_PATH}/ArgumentManager/BaseData.cpp
-   ${SRC_PATH}/ArgumentManager/ArrayData.cpp
-   ${SRC_PATH}/ArgumentManager/StructData.cpp
-   ${SRC_PATH}/ArgumentManager/ArgumentManager.cpp
-)
-
-set(ARGUMENTMANAGER_INCLUDES
-   ${HEADER_PATH}/ArgumentManager/ArgData.h
-   ${HEADER_PATH}/ArgumentManager/BaseData.h
-   ${HEADER_PATH}/ArgumentManager/ArrayData.h
-   ${HEADER_PATH}/ArgumentManager/StructData.h
-   ${HEADER_PATH}/ArgumentManager/ArgumentManager.h
-)
-
 set(UTIL_INCLUDES
    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/Export.h
-   ${HEADER_PATH}/algorithms.h
-   ${HEADER_PATH}/ArgumentObject.h
-   ${HEADER_PATH}/ArgumentViewer.h
-   ${HEADER_PATH}/CameraObject.h
-   ${HEADER_PATH}/CameraPath.h
+   ${HEADER_PATH}/Camera.h
    ${HEADER_PATH}/FPSPrinter.h
    ${HEADER_PATH}/ManipulatorInterfaces.h
    ${HEADER_PATH}/MatrixStack.h
    ${HEADER_PATH}/OrbitManipulator.h
    ${HEADER_PATH}/Progress.h
    ${HEADER_PATH}/geUtil.h
-   ${HEADER_PATH}/Camera.h
-   ${HEADER_PATH}/OrbitCamera.h
-   ${HEADER_PATH}/FreeLookCamera.h
-   ${HEADER_PATH}/PerspectiveCamera.h
    ${HEADER_PATH}/Text.h
    ${HEADER_PATH}/Timer.h
 )
 
 
 set(UTIL_SOURCES
-   ${SRC_PATH}/ArgumentObject.cpp
-   ${SRC_PATH}/ArgumentViewer.cpp
-   ${SRC_PATH}/CameraObject.cpp
-   ${SRC_PATH}/CameraPath.cpp
+   ${SRC_PATH}/BasicCamera.cpp
    ${SRC_PATH}/FPSPrinter.cpp
    ${SRC_PATH}/OrbitManipulator.cpp
    ${SRC_PATH}/Progress.cpp
-   ${SRC_PATH}/OrbitCamera.cpp
-   ${SRC_PATH}/FreeLookCamera.cpp
-   ${SRC_PATH}/PerspectiveCamera.cpp
    ${SRC_PATH}/Text.cpp
 )
 
 add_library(${PROJECT_NAME}
    ${UTIL_INCLUDES}
-   ${ARGUMENTMANAGER_INCLUDES}
    ${UTIL_SOURCES}
-   ${ARGUMENTMANAGER_SOURCES}
-   ${LIBRARYLOADER_SOURCES}
 )
 
 GENERATE_EXPORT_HEADER(${PROJECT_NAME}

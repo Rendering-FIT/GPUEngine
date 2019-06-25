@@ -42,7 +42,8 @@ public:
 
    inline bool isDirty(){ return _dirty; }
 
-   std::shared_ptr<glm::mat4>& matrix() override;
+   const glm::mat4& getMatrix() override;
+   std::shared_ptr<glm::mat4>& getRefMatrix() override;
    void setMatrix(const std::shared_ptr<glm::mat4>& matrix) override;
 
    void moveZ(float dz) override;
@@ -60,7 +61,11 @@ public:
    void updateMatrix();
 
    glm::vec3 getLocalUp() const override { return _localUp; }
-   void setLocalUp(glm::vec3 val) override { _localUp = glm::normalize(val); }
+   void setLocalUp(glm::vec3 val) override
+   {
+      _dirty = true;
+      _localUp = glm::normalize(val);
+   }
 
    glm::vec3 getPosition() const override;
    void setPosition(glm::vec3) override;
@@ -68,9 +73,6 @@ public:
    void setOrientation(glm::quat) override;
 };
 
-
-// inline methods
-inline const glm::mat4& MatrixManipulatorInterface::mat() const  { return *const_cast<MatrixManipulatorInterface*>(this)->matrix(); }
 
 }
 }
