@@ -1,6 +1,6 @@
-#include <geGL/VertexArrayImpl.h>
+#include <geGL/private/VertexArrayImpl.h>
 #include <geGL/VertexArray.h>
-#include <geGL/BufferImpl.h>
+#include <geGL/private/BufferImpl.h>
 
 using namespace ge::gl;
 

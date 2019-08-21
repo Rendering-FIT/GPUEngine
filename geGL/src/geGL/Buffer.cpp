@@ -1,8 +1,8 @@
+#include <geGL/private/BufferImpl.h>
+#include <geGL/private/VertexArrayImpl.h>
 #include <geGL/Buffer.h>
-#include <geGL/BufferImpl.h>
 #include <geGL/OpenGLUtil.h>
 #include <geGL/VertexArray.h>
-#include <geGL/VertexArrayImpl.h>
 #include <algorithm>
 #include <cassert>
 #include <vector>

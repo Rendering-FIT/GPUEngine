@@ -1,8 +1,8 @@
 #include<geGL/Program.h>
-#include<geGL/ShaderImpl.h>
+#include<geGL/private/ShaderImpl.h>
+#include<geGL/private/ProgramImpl.h>
 #include<geGL/OpenGLUtil.h>
 #include<geGL/Buffer.h>
-#include<geGL/ProgramImpl.h>
 #include<iostream>
 #include<string>
 #include<limits>
@@ -728,7 +728,7 @@ void Program::_fillBufferInfo(){
   assert(this!=nullptr);
   GLuint nofBuffers = this->getInterfaceParam(GL_SHADER_STORAGE_BLOCK,GL_ACTIVE_RESOURCES);
   for(GLuint i=0;i<nofBuffers;++i){
-    std::string name = this->_chopIndexingInPropertyName(this->getResourceName(GL_BUFFER_VARIABLE,i));
+    std::string name = this->_chopIndexingInPropertyName(this->getResourceName(GL_SHADER_STORAGE_BLOCK,i));
     GLint binding            = this->getResourceParam(GL_SHADER_STORAGE_BLOCK,GL_BUFFER_BINDING                      ,i);
     GLint dataSize           = this->getResourceParam(GL_SHADER_STORAGE_BLOCK,GL_BUFFER_DATA_SIZE                    ,i);
     GLint nofActiveVariables = this->getResourceParam(GL_SHADER_STORAGE_BLOCK,GL_NUM_ACTIVE_VARIABLES                ,i);

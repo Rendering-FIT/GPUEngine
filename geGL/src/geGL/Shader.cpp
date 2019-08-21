@@ -1,5 +1,5 @@
 #include<geGL/Shader.h>
-#include<geGL/ShaderImpl.h>
+#include<geGL/private/ShaderImpl.h>
 #include<geGL/Program.h>
 #include<sstream>
 

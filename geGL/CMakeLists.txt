@@ -2,16 +2,14 @@ cmake_minimum_required(VERSION 3.10.1)
 
 project(
   geGL
-  VERSION 1.0.5
+  VERSION 1.0.7
   )
 
 SET(CMAKE_CXX_STANDARD 14)
 
 set(SOURCES
   src/${PROJECT_NAME}/Buffer.cpp
-  src/${PROJECT_NAME}/BufferImpl.cpp
   src/${PROJECT_NAME}/VertexArray.cpp
-  src/${PROJECT_NAME}/VertexArrayImpl.cpp
   src/${PROJECT_NAME}/Framebuffer.cpp
   src/${PROJECT_NAME}/Texture.cpp
   src/${PROJECT_NAME}/Sampler.cpp
@@ -34,17 +32,13 @@ set(INCLUDES
   src/${PROJECT_NAME}/Fwd.h
   src/${PROJECT_NAME}/Definitions.h
   src/${PROJECT_NAME}/Buffer.h
-  src/${PROJECT_NAME}/BufferImpl.h
   src/${PROJECT_NAME}/VertexArray.h
-  src/${PROJECT_NAME}/VertexArrayImpl.h
   src/${PROJECT_NAME}/Framebuffer.h
   src/${PROJECT_NAME}/Texture.h
   src/${PROJECT_NAME}/Sampler.h
   src/${PROJECT_NAME}/ProgramPipeline.h
   src/${PROJECT_NAME}/Shader.h
-  src/${PROJECT_NAME}/ShaderImpl.h
   src/${PROJECT_NAME}/Program.h
-  src/${PROJECT_NAME}/ProgramImpl.h
   src/${PROJECT_NAME}/ProgramInfo.h
   src/${PROJECT_NAME}/Renderbuffer.h
   src/${PROJECT_NAME}/OpenGL.h
@@ -83,6 +77,23 @@ set(GENERATED_INCLUDES
   src/${PROJECT_NAME}/Generated/TrapImplementation.h
   )
 
+set(PRIVATE_SOURCES
+  src/${PROJECT_NAME}/private/BufferImpl.cpp
+  src/${PROJECT_NAME}/private/VertexArrayImpl.cpp
+  src/${PROJECT_NAME}/private/BufferImpl.h
+  src/${PROJECT_NAME}/private/VertexArrayImpl.h
+  src/${PROJECT_NAME}/private/ProgramImpl.h
+  src/${PROJECT_NAME}/private/ShaderImpl.h
+  src/${PROJECT_NAME}/private/linux_OpenGLFunctionLoader.h
+  src/${PROJECT_NAME}/private/linux_OpenGLFunctionLoader.cpp
+  src/${PROJECT_NAME}/private/windows_OpenGLFunctionLoader.h
+  src/${PROJECT_NAME}/private/windows_OpenGLFunctionLoader.cpp
+  src/${PROJECT_NAME}/private/mac_OpenGLFunctionLoader.h
+  src/${PROJECT_NAME}/private/mac_OpenGLFunctionLoader.cpp
+  src/${PROJECT_NAME}/private/global.h
+  src/${PROJECT_NAME}/private/global.cpp
+  )
+
 source_group("Header Files\\Generated" FILES ${GENERATED_INCLUDES})
 
 option(BUILD_SHARED_LIBS "build this library as shared")
@@ -92,7 +103,7 @@ SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
 SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
 
-add_library(${PROJECT_NAME} ${SOURCES} ${INCLUDES} ${GENERATED_INCLUDES})
+add_library(${PROJECT_NAME} ${SOURCES} ${INCLUDES} ${GENERATED_INCLUDES} ${PRIVATE_SOURCES})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 include(GNUInstallDirs)
