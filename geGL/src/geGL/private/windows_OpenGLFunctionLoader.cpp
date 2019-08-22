@@ -1,6 +1,8 @@
 #ifdef _MSC_VER
 
 #include <geGL/private/windows_OpenGLFunctionLoader.h>
+#include <cassert>
+#include <iostream>
 
 using namespace std;
 
