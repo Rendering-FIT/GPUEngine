@@ -6,6 +6,7 @@
 #include<limits>
 #include<functional>
 #include<geCore/Export.h>
+#include <string>
 
 namespace ge{
   namespace core{
