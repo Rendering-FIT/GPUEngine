@@ -116,7 +116,7 @@ if(TARGET assimp::assimp AND NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
             IMPORTED_IMPLIB_DEBUG "${IMPLIBd}"
             IMPORTED_IMPLIB_RELEASE "${IMPLIB}"
          )
-         target_include_directories(${CMAKE_FIND_PACKAGE_NAME} INTERFACE $<TARGET_PROPERTY:assimp::assimp,INTERFACE_INCLUDE_DIRECTORIE>)
+         target_include_directories(${CMAKE_FIND_PACKAGE_NAME} INTERFACE $<TARGET_PROPERTY:assimp::assimp,INTERFACE_INCLUDE_DIRECTORIES>)
       else()
          set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${INC}"

@@ -1,20 +1,6 @@
 set(examples_folder_name "examples")
 
-set(examplesList  EmptyWindow
-                  ShaderTest
-                  VertexArray
-                  HilbertCurve
-                  MemoryBandwidth
-                  HelloTriangle
-                  TriangleRendering
-                  ObjLoader
-                  HelloGEGL
-                  AnimatedSkybox
-                  Minecraft
-                  BlitOpenGL
-                  TextureTest
-                  NoiseTest
-                  Simple_QtgeGL
+set(examplesList  Simple_QtgeGL
                   Simple_QtgeSG
                   Simple_Animation
 )

@@ -48,5 +48,4 @@ add_library(${MODULE_NAME} INTERFACE )
 
 target_sources(${MODULE_NAME} INTERFACE ${${MODULE_NAME}_SOURCE_FILES})
 target_include_directories(${MODULE_NAME} INTERFACE "${MODULE_DIR}/src/" ${ASSIMP_INCLUDE_DIRS})
-#set_property(TARGET geGL APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${${_dep}_LIBRARY}")
 target_link_libraries(${MODULE_NAME} INTERFACE ste geSG glm assimp::assimp)

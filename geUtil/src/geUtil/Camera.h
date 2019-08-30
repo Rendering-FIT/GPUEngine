@@ -11,20 +11,6 @@ namespace util
 {
    class BasicManipulatorInterface;
 
-   class GEUTIL_EXPORT CameraProjection {
-   public:
-      virtual ~CameraProjection() {}
-      virtual glm::mat4 getProjection() = 0;
-   };
-
-   class GEUTIL_EXPORT CameraTransform {
-   public:
-      virtual ~CameraTransform() {}
-      virtual glm::mat4 getView() = 0;
-   };
-
-
-
    class GEUTIL_EXPORT CameraMatrixInterface
    {
    public:
