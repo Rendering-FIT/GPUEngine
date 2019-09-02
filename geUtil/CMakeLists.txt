@@ -15,7 +15,8 @@ set(SRC_PATH ${CMAKE_CURRENT_LIST_DIR}/src/${PROJECT_NAME})
 
 set(UTIL_INCLUDES
    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/Export.h
-   ${HEADER_PATH}/Camera.h
+   ${HEADER_PATH}/BasicCamera.h
+   ${HEADER_PATH}/CameraInterfaces.h
    ${HEADER_PATH}/FPSPrinter.h
    ${HEADER_PATH}/ManipulatorInterfaces.h
    ${HEADER_PATH}/MatrixStack.h

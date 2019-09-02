@@ -1,22 +1,17 @@
 #pragma once
 
-#include<glm/glm.hpp>
-#include<glm/gtc/matrix_transform.hpp>
-#include<glm/gtc/type_ptr.hpp>
 #include <geUtil/ManipulatorInterfaces.h>
+#include <geUtil/CameraInterfaces.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace ge
 {
 namespace util
 {
    class BasicManipulatorInterface;
-
-   class GEUTIL_EXPORT CameraMatrixInterface
-   {
-   public:
-      virtual glm::mat4 getProjectionMatrix() const = 0;
-      virtual glm::mat4 getViewMatrix() const = 0;
-   };
 
    class GEUTIL_EXPORT BasicCamera: public CameraMatrixInterface, BasicManipulatorInterface
    {

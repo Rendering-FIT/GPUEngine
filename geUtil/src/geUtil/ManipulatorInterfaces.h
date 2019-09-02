@@ -37,7 +37,7 @@ namespace util
       virtual void rotate(float dx, float dy) = 0;
 
       inline glm::vec3 getLocalUp() const { return localUp; }
-      void setLocalUp(glm::vec3 val) { localUp = glm::normalize(val); }
+      void setLocalUp(const glm::vec3& val) { localUp = glm::normalize(val); }
 
 
    protected:
@@ -51,11 +51,11 @@ namespace util
    {
    public:
       virtual glm::vec3 getPosition() const = 0;
-      virtual void setPosition(glm::vec3) = 0;
+      virtual void setPosition(const glm::vec3&) = 0;
       virtual glm::quat getOrientation() const = 0;
-      virtual void setOrientation(glm::quat) = 0;
+      virtual void setOrientation(const glm::quat&) = 0;
       virtual glm::vec3 getLocalUp() const = 0;
-      virtual void setLocalUp(glm::vec3) = 0;
+      virtual void setLocalUp(const glm::vec3&) = 0;
    };
 }
 }

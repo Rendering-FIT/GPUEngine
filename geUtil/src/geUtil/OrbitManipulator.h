@@ -55,22 +55,21 @@ public:
    //void zoomJump(int dir);
 
    void setCenter(const glm::vec3& center);
-   void setEye(const glm::vec3& eye);
    void setDistance(const float distance);
 
    void updateMatrix();
 
    glm::vec3 getLocalUp() const override { return _localUp; }
-   void setLocalUp(glm::vec3 val) override
+   void setLocalUp(const glm::vec3& val) override
    {
       _dirty = true;
       _localUp = glm::normalize(val);
    }
 
    glm::vec3 getPosition() const override;
-   void setPosition(glm::vec3) override;
+   void setPosition(const glm::vec3&) override;
    glm::quat getOrientation() const override;
-   void setOrientation(glm::quat) override;
+   void setOrientation(const glm::quat&) override;
 };
 
 

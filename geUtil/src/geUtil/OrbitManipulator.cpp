@@ -72,7 +72,7 @@ glm::vec3 OrbitManipulator::getPosition() const
       };
 }
 
-void OrbitManipulator::setPosition(glm::vec3 pos)
+void OrbitManipulator::setPosition(const glm::vec3& pos)
 {
    //todo: use more efficient math to compute this
    _dirty = true;
@@ -95,7 +95,7 @@ glm::quat OrbitManipulator::getOrientation() const
    return {glm::vec3{_angleY,_angleX,0.0f}}; //used quaternion constructor that accepts the euler angles; BEWARE THE ORDER (pitch, yaw, roll)
 }
 
-void OrbitManipulator::setOrientation(glm::quat orientation)
+void OrbitManipulator::setOrientation(const glm::quat& orientation)
 {
    _dirty = true;
    glm::vec3 ang = eulerAngles(orientation);
@@ -160,25 +160,6 @@ void OrbitManipulator::setCenter(const glm::vec3& center)
    _dirty = true;
    this->_center = center;
 }
-
-
-void OrbitManipulator::setEye(const glm::vec3& eye)
-{
-   _dirty = true;
-   this->_distance = glm::distance(this->_center, eye);
-   glm::mat4 lookat = glm::lookAt(eye, this->_center, this->_localUp);
-   glm::vec3 dummy1;
-   glm::vec4 dummy2;
-   glm::quat orientation;
-   glm::decompose(lookat, dummy1, orientation, dummy1, dummy1, dummy2);
-   dummy1 = glm::eulerAngles(orientation);
-   _angleX = dummy1.y;
-   _angleY = dummy1.x;
-   _angleY = glm::clamp(_angleY, -glm::half_pi<float>(), glm::half_pi<float>());
-
-   _rotationMat = glm::rotate(glm::mat4(), _angleY, glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(), _angleX, glm::vec3(0, 1, 0));
-}
-
 
 void OrbitManipulator::setDistance(const float distance)
 {

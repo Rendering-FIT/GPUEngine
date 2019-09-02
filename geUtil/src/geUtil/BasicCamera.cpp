@@ -1,4 +1,4 @@
-#include <geUtil/Camera.h>
+#include <geUtil/BasicCamera.h>
 
 using namespace ge::util;
 
