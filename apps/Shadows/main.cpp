@@ -270,7 +270,6 @@ bool Application::init(int argc,char*argv[]){
   ge::gl::glEnable(GL_DEPTH_TEST);
   ge::gl::glDepthFunc(GL_LEQUAL);
   ge::gl::glDisable(GL_CULL_FACE);
-  ge::gl::glClearColor(0,0,0,1);
 
   this->initWavefrontSize();
 
@@ -280,6 +279,7 @@ bool Application::init(int argc,char*argv[]){
   this->initCamera();
 
   this->gBuffer = std::make_shared<GBuffer>(this->windowSize.x,this->windowSize.y);
+  gBuffer->setClearColor(glm::uvec4(153, 153, 255, 255));
 
   this->model = std::make_shared<Model>(this->modelName);
   this->renderModel = std::make_shared<RenderModel>(this->model);
@@ -400,20 +400,18 @@ bool Application::init(int argc,char*argv[]){
 #ifdef USE_STATIC_CAM
 void Application::drawScene() {
 	
-	const float camData[] = { 0.113558,0.300392,0.47802,-0.275592,-0.266732,-0.923528,-0.0762725,0.963771,-0.255594 };
+	const float camData[] = { 9.41808,10.8025,7.31726,-0.538761,-0.703279,-0.463827,-0.532975,0.710914,-0.458846 };
 
 	auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
 	if (!flc)return;
 	flc->setPosition(glm::vec3(camData[0], camData[1], camData[2]));
 	flc->setRotation(glm::vec3(camData[3], camData[4], camData[5]), glm::vec3(camData[6], camData[7], camData[8]));
 
-
 	if (this->timeStamper)this->timeStamper->begin();
 
 	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
 	ge::gl::glEnable(GL_DEPTH_TEST);
 	this->gBuffer->begin();
-	ge::gl::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
 	
 	this->renderModel->draw(this->cameraProjection->getProjection()* flc->getView());
@@ -442,7 +440,7 @@ void Application::drawScene() {
 	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
 	ge::gl::glEnable(GL_DEPTH_TEST);
 	this->gBuffer->begin();
-	ge::gl::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
 
 	this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());

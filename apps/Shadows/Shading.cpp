@@ -59,6 +59,11 @@ void main(){
   sum+=Ka*La*ambientFactor;
   sum+=Kd*Ld*diffuseFactor;
   sum+=Ks*Ls*specularFactor;
+  
+  if(length(normal)==0)
+  {
+	sum = Kd;
+  }
 
   fColor=vec4(sum,1);//output color
 }).";
