@@ -38,6 +38,7 @@
 #include "TSSV/TSSV.hpp"
 #include "GSSV/GSSV.hpp"
 #include "HSSV/HSSV.hpp"
+#include "SM/ShadowMapping.h"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -81,6 +82,7 @@ struct Application{
   TSSVParams              tssvParams   ;
   GSSVParams              gssvParams   ;
   HSSVParams			  hssvParams   ;
+  ShadowMappingParams	  smParams;
 
   std::string testName                 = ""           ;
   std::string testFlyKeyFileName       = ""           ;
@@ -126,90 +128,94 @@ glm::vec4  vector2vec4 (std::vector<double  >const&v){assert(v.size()>=4);return
 void Application::parseArguments(int argc,char*argv[]){
   assert(this!=nullptr);
   auto arg = std::make_shared<ge::util::ArgumentViewer>(argc,argv);
-  this->modelName  = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
+  modelName  = arg->gets("--model","/media/windata/ft/prace/models/o/o.3ds","model file name");
 
-  this->windowSize = vector2uvec2(arg->getu32v("--window-size",{512,512},"window size" ));
+  windowSize = vector2uvec2(arg->getu32v("--window-size",{512,512},"window size" ));
 
-  this->lightPosition       = vector2vec4(arg->getf32v("--light",{100.f,100.f,100.f,1.f},"light position"));
+  lightPosition       = vector2vec4(arg->getf32v("--light",{100.f,100.f,100.f,1.f},"light position"));
 
-  this->cameraFovy          = arg->getf32("--camera-fovy"       ,1.5707963267948966f                   ,"camera field of view in y direction");
-  this->cameraNear          = arg->getf32("--camera-near"       ,0.1f                                  ,"camera near plane position"         );
-  this->cameraFar           = arg->getf32("--camera-far"        ,std::numeric_limits<float>::infinity(),"camera far plane position"          );
-  this->sensitivity         = arg->getf32("--camera-sensitivity",0.01f                                 ,"camera sensitivity"                 );
-  this->orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
-  this->freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
-  this->cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
+  cameraFovy          = arg->getf32("--camera-fovy"       ,1.5707963267948966f                   ,"camera field of view in y direction");
+  cameraNear          = arg->getf32("--camera-near"       ,0.1f                                  ,"camera near plane position"         );
+  cameraFar           = arg->getf32("--camera-far"        ,std::numeric_limits<float>::infinity(),"camera far plane position"          );
+  sensitivity         = arg->getf32("--camera-sensitivity",0.01f                                 ,"camera sensitivity"                 );
+  orbitZoomSpeed      = arg->getf32("--camera-zoomSpeed"  ,0.2f                                  ,"orbit camera zoom speed"            );
+  freeCameraSpeed     = arg->getf32("--camera-speed"      ,1.f                                   ,"free camera speed"                  );
+  cameraType          = arg->gets  ("--camera-type"       ,"orbit"                               ,"orbit/free camera type"             );
 
-  this->useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
-  this->verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
-  this->methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
+  useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
+  verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
+  methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/sm/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
 
-  this->wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
+  wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
-  this->maxMultiplicity     = arg->getu32("--maxMultiplicity" ,2 ,"max number of triangles that share the same edge"        );
-  this->svParams.zfail      = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
-  this->svParams.rasterDiscard = arg->isPresent("--sv-raster-discard", "disable shadow volumes sides rasterization, for benchmarking");
+  maxMultiplicity     = arg->getu32("--maxMultiplicity" ,2 ,"max number of triangles that share the same edge"        );
+  svParams.zfail      = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
+  svParams.rasterDiscard = arg->isPresent("--sv-raster-discard", "disable shadow volumes sides rasterization, for benchmarking");
 
-  this->cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
-  this->cubeSMParams.near       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
-  this->cubeSMParams.far        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
-  this->cubeSMParams.faces      = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
+  smParams.resolution = cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
+  smParams.near       = cubeSMParams.near       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
+  smParams.far        = cubeSMParams.far        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
+  cubeSMParams.faces  = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
 
-  this->cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"            ,64,"compute silhouette shadow volumes work group size"      );
-  this->cssvParams.localAtomic     = arg->getu32("--cssv-localAtomic"    ,1 ,"use local atomic instructions"                           );
-  this->cssvParams.cullSides       = arg->getu32("--cssv-cullSides"      ,0 ,"enables culling of sides that are outside of viewfrustum");
-  this->cssvParams.usePlanes       = arg->getu32("--cssv-usePlanes"      ,1 ,"use triangle planes instead of opposite vertices"        );
-  this->cssvParams.useInterleaving = arg->getu32("--cssv-useInterleaving",1 ,"reorder edge that so it is struct of arrays"             );
-  this->cssvParams.lobotomized     = arg->getu32("--cssv-lobotomized"    ,0 ,"lobotomize shader - it will not output edge data but edge indices");
+  smParams.viewDir    = vector2vec3(arg->getf32v("--shadowMap-lightDir", { 0, -1, 0 }, "Light direction"));
+  smParams.fovy       = arg->getf32("shadowMap-fovy", 45.0f, "Shadow map field-of-view");
+  smParams.pcfTaps    = arg->geti32("--shadowMap-pcf", 0, "NoF PCF taps");
 
-  this->cssvsoeParams.computeSidesWGS = arg->getu32("--cssvsoe-WGS",64,"compute silhouette shadow volumes work group size");
+  cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"            ,64,"compute silhouette shadow volumes work group size"      );
+  cssvParams.localAtomic     = arg->getu32("--cssv-localAtomic"    ,1 ,"use local atomic instructions"                           );
+  cssvParams.cullSides       = arg->getu32("--cssv-cullSides"      ,0 ,"enables culling of sides that are outside of viewfrustum");
+  cssvParams.usePlanes       = arg->getu32("--cssv-usePlanes"      ,1 ,"use triangle planes instead of opposite vertices"        );
+  cssvParams.useInterleaving = arg->getu32("--cssv-useInterleaving",1 ,"reorder edge that so it is struct of arrays"             );
+  cssvParams.lobotomized     = arg->getu32("--cssv-lobotomized"    ,0 ,"lobotomize shader - it will not output edge data but edge indices");
 
-  this->vssvParams.usePlanes              = arg->geti32("--vssv-usePlanes"   ,0,"use planes instead of opposite vertices"            );
-  this->vssvParams.useStrips              = arg->geti32("--vssv-useStrips"   ,1,"use triangle strips for sides of shadow volumes 0/1");
-  this->vssvParams.useAllOppositeVertices = arg->geti32("--vssv-useAll"      ,0,"use all opposite vertices (even empty) 0/1"         );
-  this->vssvParams.drawCapsSeparately     = arg->geti32("--vssv-capsSeparate",0,"draw caps using two draw calls"                     );
+  cssvsoeParams.computeSidesWGS = arg->getu32("--cssvsoe-WGS",64,"compute silhouette shadow volumes work group size");
 
-  this->sintornParams.shadowFrustaPerWorkGroup = arg->geti32("--sintorn-frustumsPerWorkgroup",1    ,"nof triangles solved by work group"                                              );
-  this->sintornParams.bias                     = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
-  this->sintornParams.discardBackFacing        = arg->geti32("--sintorn-discardBackFacing"   ,1    ,"discard light back facing fragments from hierarchical depth texture construction");
+  vssvParams.usePlanes              = arg->geti32("--vssv-usePlanes"   ,0,"use planes instead of opposite vertices"            );
+  vssvParams.useStrips              = arg->geti32("--vssv-useStrips"   ,1,"use triangle strips for sides of shadow volumes 0/1");
+  vssvParams.useAllOppositeVertices = arg->geti32("--vssv-useAll"      ,0,"use all opposite vertices (even empty) 0/1"         );
+  vssvParams.drawCapsSeparately     = arg->geti32("--vssv-capsSeparate",0,"draw caps using two draw calls"                     );
 
-  this->rssvParams.computeSilhouetteWGS    = arg->geti32("--rssv-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
-  this->rssvParams.localAtomic             = arg->geti32("--rssv-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
-  this->rssvParams.cullSides               = arg->geti32("--rssv-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
-  this->rssvParams.silhouettesPerWorkgroup = arg->geti32("--rssv-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
-  this->rssvParams.usePlanes               = arg->geti32("--rssv-usePlanes"              ,0 ,"use triangle planes instead of opposite vertices"            );
+  sintornParams.shadowFrustaPerWorkGroup = arg->geti32("--sintorn-frustumsPerWorkgroup",1    ,"nof triangles solved by work group"                                              );
+  sintornParams.bias                     = arg->getf32("--sintorn-bias"                ,0.01f,"offset of triangle planes"                                                       );
+  sintornParams.discardBackFacing        = arg->geti32("--sintorn-discardBackFacing"   ,1    ,"discard light back facing fragments from hierarchical depth texture construction");
 
-  this->tssvParams.UseReferenceEdge      = arg->isPresent("--tssv-useRefEdge", "Use Reference Edge");
-  this->tssvParams.CullSides             = arg->isPresent("--tssv-cullSides", "Cull Sides");
-  this->tssvParams.UseStencilValueExport = arg->isPresent("--tssv-useStencilExport" "Use stencil value export");
+  rssvParams.computeSilhouetteWGS    = arg->geti32("--rssv-computeSilhouettesWGS"  ,64,"workgroups size for silhouette computation"                  );
+  rssvParams.localAtomic             = arg->geti32("--rssv-localAtomic"            ,1 ,"use local atomic instructions in silhouette computation"     );
+  rssvParams.cullSides               = arg->geti32("--rssv-cullSides"              ,0 ,"enables frustum culling of silhouettes"                      );
+  rssvParams.silhouettesPerWorkgroup = arg->geti32("--rssv-silhouettesPerWorkgroup",1 ,"number of silhouette edges that are compute by one workgroup");
+  rssvParams.usePlanes               = arg->geti32("--rssv-usePlanes"              ,0 ,"use triangle planes instead of opposite vertices"            );
 
-  this->gssvParams.UseReferenceEdge = arg->isPresent("--gssv-useRefEdge", "Use Reference Edge");
-  this->gssvParams.CullSides = arg->isPresent("--gssv-cullSides", "Cull Sides");
-  this->gssvParams.UseStencilValueExport = arg->isPresent("--gssv-useStencilExport" "Use stencil value export");
+  tssvParams.UseReferenceEdge      = arg->isPresent("--tssv-useRefEdge", "Use Reference Edge");
+  tssvParams.CullSides             = arg->isPresent("--tssv-cullSides", "Cull Sides");
+  tssvParams.UseStencilValueExport = arg->isPresent("--tssv-useStencilExport" "Use stencil value export");
 
-  this->hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
-  this->hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 1.f,1.f,1.f}, "Defines octree volume in terms of scene AABB scaling"));
-  this->hssvParams.maxGpuMemoryToUsePerBuffer = arg->geti32("--hssv-maxBufSize", 2048, "Amount of GPU memory to use during octree build for potential edges buffer, default 2048MB. It's not total memory consumption, usually ~x2");
-  this->hssvParams.potentialDrawingMethod = (unsigned char)(arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader"));
-  this->hssvParams.silhouetteDrawingMethod = (unsigned char)(arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader"));
-  this->hssvParams.workgroupSize = arg->getu32("--hssv-wg", 256, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
-  this->hssvParams.forceOctreeBuild = arg->isPresent("--hssv-forceBuild", "Forces octree build (won't load from file if present)");
+  gssvParams.UseReferenceEdge = arg->isPresent("--gssv-useRefEdge", "Use Reference Edge");
+  gssvParams.CullSides = arg->isPresent("--gssv-cullSides", "Cull Sides");
+  gssvParams.UseStencilValueExport = arg->isPresent("--gssv-useStencilExport" "Use stencil value export");
+
+  hssvParams.maxOctreeLevel = arg->geti32("--hssv-maxOctreeLevel", 5, "Deepest octree level (octree granularity = 8^deepestLevel)");
+  hssvParams.sceneAABBscale = vector2vec3(arg->getf32v("--hssv-sceneScale", { 1.f,1.f,1.f}, "Defines octree volume in terms of scene AABB scaling"));
+  hssvParams.maxGpuMemoryToUsePerBuffer = arg->geti32("--hssv-maxBufSize", 2048, "Amount of GPU memory to use during octree build for potential edges buffer, default 2048MB. It's not total memory consumption, usually ~x2");
+  hssvParams.potentialDrawingMethod = (unsigned char)(arg->getu32("--hssv-potentialMethod", 0, "Method for drawing sides from potentially silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader"));
+  hssvParams.silhouetteDrawingMethod = (unsigned char)(arg->getu32("--hssv-silhouetteMethod", 0, "Method for drawing sides from always silhouette edges. 0 = Geometry shader, 1 = Tessellation shader, 2 = Compute shader"));
+  hssvParams.workgroupSize = arg->getu32("--hssv-wg", 256, "Workgroup size for HSSV method, used in octree traversal CS and CS drawing methods.");
+  hssvParams.forceOctreeBuild = arg->isPresent("--hssv-forceBuild", "Forces octree build (won't load from file if present)");
   glm::vec2 ratios = vector2vec2(arg->getf32v("--hssv-speculativeRatios", { 0.8f, 0.3f }, "Speculatively reduce memory during octree loading (factors for potential and silhouette ednges)"));
-  this->hssvParams.potSpeculativeFactor = ratios.x;
-  this->hssvParams.silSpeculativeFactor = ratios.y;
-  this->hssvParams.drawOctree = arg->isPresent("--hssv-drawOctree", "Draws lowest-level octree cells as wireframe");
-  this->hssvParams.initialLightPos = lightPosition;
-  this->hssvParams.doBuildTest = arg->isPresent("--hssv-buildTest", "Performs build benchmark on input scene and light position");
-  this->hssvParams.doEdgeTest = arg->isPresent("--hssv-silTest", "Performs edge statistics test in model");
-  this->hssvParams.noCompression = arg->isPresent("--hssv-noCompress", "Performs build benchmark on input scene and light position");
-  this->hssvParams.drawFromCpu = arg->isPresent("--hssv-drawCpu", "Uses CPU traversal instead of GPU traversal");
+  hssvParams.potSpeculativeFactor = ratios.x;
+  hssvParams.silSpeculativeFactor = ratios.y;
+  hssvParams.drawOctree = arg->isPresent("--hssv-drawOctree", "Draws lowest-level octree cells as wireframe");
+  hssvParams.initialLightPos = lightPosition;
+  hssvParams.doBuildTest = arg->isPresent("--hssv-buildTest", "Performs build benchmark on input scene and light position");
+  hssvParams.doEdgeTest = arg->isPresent("--hssv-silTest", "Performs edge statistics test in model");
+  hssvParams.noCompression = arg->isPresent("--hssv-noCompress", "Performs build benchmark on input scene and light position");
+  hssvParams.drawFromCpu = arg->isPresent("--hssv-drawCpu", "Uses CPU traversal instead of GPU traversal");
 
-  this->testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or grid"                                    );
-  this->testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
-  this->testFlyLength            = arg->geti32("--test-fly-length"          ,1000         ,"number of measurements, 1000"                                   );
-  this->testFramesPerMeasurement = arg->geti32("--test-framesPerMeasurement",5            ,"number of frames that is averaged per one measurement point"    );
-  this->testOutputName           = arg->gets  ("--test-output"              ,"measurement","name of output file"                                            );
-  this->lightGrid = vector2uvec3(arg->getu32v("--test-gridSize", {1, 1, 1 }, "Nof of division of light grid per axis"));
+  testName                 = arg->gets  ("--test"                     ,""           ,"name of test - fly or grid"                                    );
+  testFlyKeyFileName       = arg->gets  ("--test-fly-keys"            ,""           ,"filename containing fly keyframes - csv x,y,z,vx,vy,vz,ux,uy,uz");
+  testFlyLength            = arg->geti32("--test-fly-length"          ,1000         ,"number of measurements, 1000"                                   );
+  testFramesPerMeasurement = arg->geti32("--test-framesPerMeasurement",5            ,"number of frames that is averaged per one measurement point"    );
+  testOutputName           = arg->gets  ("--test-output"              ,"measurement","name of output file"                                            );
+  lightGrid = vector2uvec3(arg->getu32v("--test-gridSize", {1, 1, 1 }, "Nof of division of light grid per axis"));
   testWarmupSecs = arg->getf32("--test-warmupSecs", 2.0, "NoF seconds to warm up the card before the actual measurement");
 
   bool printHelp = arg->isPresent("-h","prints this help");
@@ -223,45 +229,45 @@ void Application::parseArguments(int argc,char*argv[]){
 
 void Application::initWavefrontSize(){
   assert(this!=nullptr);
-  if(this->wavefrontSize==0){
+  if(wavefrontSize==0){
     std::string renderer = std::string((char*)ge::gl::glGetString(GL_RENDERER));
 	std::transform(renderer.begin(), renderer.end(), renderer.begin(), ::tolower);
     if     (renderer.find("amd")!=std::string::npos || renderer.find("ati") != std::string::npos || renderer.find("radeon") != std::string::npos || renderer.find("firegl") != std::string::npos || renderer.find("firepro") != std::string::npos)
-      this->wavefrontSize = 64;
+      wavefrontSize = 64;
     else if(renderer.find("nvidia")!=std::string::npos || renderer.find("geforce") != std::string::npos || renderer.find("titan") != std::string::npos || renderer.find("quadro") != std::string::npos)
-      this->wavefrontSize = 32;
+      wavefrontSize = 32;
     else{
       std::cerr<<"WARNING: renderer is not NVIDIA or AMD, setting wavefrontSize to 32"<<std::endl;
-      this->wavefrontSize = 32;
+      wavefrontSize = 32;
     }
   }
 }
 
 void Application::initCamera(){
   assert(this!=nullptr);
-  if     (this->cameraType == "orbit")
-    this->cameraTransform = std::make_shared<ge::util::OrbitCamera>();
-  else if(this->cameraType == "free")
-    this->cameraTransform = std::make_shared<ge::util::FreeLookCamera>();
+  if     (cameraType == "orbit")
+    cameraTransform = std::make_shared<ge::util::OrbitCamera>();
+  else if(cameraType == "free")
+    cameraTransform = std::make_shared<ge::util::FreeLookCamera>();
   else{
     std::cerr<<"ERROR: --camera-type is incorrect"<<std::endl;
     exit(0);
   }
-  this->cameraProjection = std::make_shared<ge::util::PerspectiveCamera>(this->cameraFovy,(float)this->windowSize.x/(float)this->windowSize.y,this->cameraNear,this->cameraFar);
+  cameraProjection = std::make_shared<ge::util::PerspectiveCamera>(cameraFovy,(float)windowSize.x/(float)windowSize.y,cameraNear,cameraFar);
 }
 
 bool Application::init(int argc,char*argv[]){
-  this->parseArguments(argc,argv);
+  parseArguments(argc,argv);
 
-  this->mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
-  this->mainLoop->setIdleCallback(std::bind(&Application::draw,this));
-  this->window   = std::make_shared<ge::ad::SDLWindow>(this->windowSize.x,this->windowSize.y);
-  this->window->setEventCallback(SDL_MOUSEMOTION,std::bind(&Application::mouseMove      ,this,std::placeholders::_1));
-  this->window->setEventCallback(SDL_KEYDOWN    ,std::bind(&Application::keyboard<true> ,this,std::placeholders::_1));
-  this->window->setEventCallback(SDL_KEYUP      ,std::bind(&Application::keyboard<false>,this,std::placeholders::_1));
-  this->window->createContext("rendering",450u,ge::ad::SDLWindow::CORE,ge::ad::SDLWindow::DEBUG);
-  this->mainLoop->addWindow("primaryWindow",this->window);
-  this->window->makeCurrent("rendering");
+  mainLoop = std::make_shared<ge::ad::SDLMainLoop>();
+  mainLoop->setIdleCallback(std::bind(&Application::draw,this));
+  window   = std::make_shared<ge::ad::SDLWindow>(windowSize.x,windowSize.y);
+  window->setEventCallback(SDL_MOUSEMOTION,std::bind(&Application::mouseMove      ,this,std::placeholders::_1));
+  window->setEventCallback(SDL_KEYDOWN    ,std::bind(&Application::keyboard<true> ,this,std::placeholders::_1));
+  window->setEventCallback(SDL_KEYUP      ,std::bind(&Application::keyboard<false>,this,std::placeholders::_1));
+  window->createContext("rendering",450u,ge::ad::SDLWindow::CORE,ge::ad::SDLWindow::DEBUG);
+  mainLoop->addWindow("primaryWindow",window);
+  window->makeCurrent("rendering");
   SDL_GL_SetSwapInterval(0); //disable vsync
 
   ge::gl::init(SDL_GL_GetProcAddress);
@@ -271,77 +277,85 @@ bool Application::init(int argc,char*argv[]){
   ge::gl::glDepthFunc(GL_LEQUAL);
   ge::gl::glDisable(GL_CULL_FACE);
 
-  this->initWavefrontSize();
+  initWavefrontSize();
 
-  if(this->testName == "fly" || this->testName == "grid")
-    this->cameraType = "free";
+  if(testName == "fly" || testName == "grid")
+    cameraType = "free";
 
-  this->initCamera();
+  initCamera();
 
-  this->gBuffer = std::make_shared<GBuffer>(this->windowSize.x,this->windowSize.y);
+  gBuffer = std::make_shared<GBuffer>(windowSize.x,windowSize.y);
   gBuffer->setClearColor(glm::uvec4(153, 153, 255, 255));
 
-  this->model = std::make_shared<Model>(this->modelName);
-  this->renderModel = std::make_shared<RenderModel>(this->model);
+  model = std::make_shared<Model>(modelName);
+  renderModel = std::make_shared<RenderModel>(model);
 
-  this->shadowMask = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32F,1,this->windowSize.x,this->windowSize.y);
-  this->shading = std::make_shared<Shading>(this->gBuffer->color,this->gBuffer->position,this->gBuffer->normal,this->shadowMask);
+  shadowMask = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D,GL_R32F,1,windowSize.x,windowSize.y);
+  shading = std::make_shared<Shading>(gBuffer->color,gBuffer->position,gBuffer->normal,shadowMask);
 
-  this->emptyVAO = std::make_shared<ge::gl::VertexArray>();
+  emptyVAO = std::make_shared<ge::gl::VertexArray>();
 
   if (useShadows)
   {
-	  if (this->methodName == "cubeShadowMapping")
-		  this->shadowMethod = std::make_shared<CubeShadowMapping>(
-			  this->shadowMask,
-			  this->windowSize,
-			  this->gBuffer->position,
-			  this->renderModel->nofVertices,
-			  this->renderModel->vertices,
-			  this->cubeSMParams);
-	  else if (this->methodName == "cssv")
-		  this->shadowMethod = std::make_shared<CSSV>(
-			  this->shadowMask,
-			  this->model,
-			  this->gBuffer->depth,
-			  this->svParams,
-			  this->maxMultiplicity,
-			  this->cssvParams);
-	  else if (this->methodName == "cssvsoe")
-		  this->shadowMethod = std::make_shared<CSSVSOE>(
-			  this->shadowMask,
-			  this->model,
-			  this->gBuffer->depth,
-			  this->svParams,
-			  this->maxMultiplicity,
-			  this->cssvsoeParams);
-	  else if (this->methodName == "sintorn")
-		  this->shadowMethod = std::make_shared<Sintorn>(
-			  this->shadowMask,
-			  this->windowSize,
-			  this->gBuffer->depth,
-			  this->gBuffer->normal,
-			  this->model,
-			  this->wavefrontSize,
-			  this->sintornParams);
-	  else if (this->methodName == "rssv")
-		  this->shadowMethod = std::make_shared<RSSV>(
-			  this->shadowMask,
-			  this->windowSize,
-			  this->gBuffer->depth,
-			  this->model,
-			  this->maxMultiplicity,
-			  this->rssvParams);
-	  else if (this->methodName == "vssv")
-		  this->shadowMethod = std::make_shared<VSSV>(
-			  this->shadowMask,
-			  this->model,
-			  this->gBuffer->depth,
-			  this->svParams,
-			  this->maxMultiplicity,
-			  this->vssvParams);
-	  else if (this->methodName == "tssv")
-		  this->shadowMethod = std::make_shared<TSSV>(
+	  if (methodName == "cubeShadowMapping")
+		  shadowMethod = std::make_shared<CubeShadowMapping>(
+			  shadowMask,
+			  windowSize,
+			  gBuffer->position,
+			  renderModel->nofVertices,
+			  renderModel->vertices,
+			  cubeSMParams);
+	  else if (methodName == "sm")
+		  shadowMethod = std::make_shared<ShadowMapping>(
+			  shadowMask,
+			  windowSize,
+			  gBuffer->position,
+			  renderModel->nofVertices,
+			  renderModel->vertices,
+			  smParams);
+	  else if (methodName == "cssv")
+		  shadowMethod = std::make_shared<CSSV>(
+			  shadowMask,
+			  model,
+			  gBuffer->depth,
+			  svParams,
+			  maxMultiplicity,
+			  cssvParams);
+	  else if (methodName == "cssvsoe")
+		  shadowMethod = std::make_shared<CSSVSOE>(
+			  shadowMask,
+			  model,
+			  gBuffer->depth,
+			  svParams,
+			  maxMultiplicity,
+			  cssvsoeParams);
+	  else if (methodName == "sintorn")
+		  shadowMethod = std::make_shared<Sintorn>(
+			  shadowMask,
+			  windowSize,
+			  gBuffer->depth,
+			  gBuffer->normal,
+			  model,
+			  wavefrontSize,
+			  sintornParams);
+	  else if (methodName == "rssv")
+		  shadowMethod = std::make_shared<RSSV>(
+			  shadowMask,
+			  windowSize,
+			  gBuffer->depth,
+			  model,
+			  maxMultiplicity,
+			  rssvParams);
+	  else if (methodName == "vssv")
+		  shadowMethod = std::make_shared<VSSV>(
+			  shadowMask,
+			  model,
+			  gBuffer->depth,
+			  svParams,
+			  maxMultiplicity,
+			  vssvParams);
+	  else if (methodName == "tssv")
+		  shadowMethod = std::make_shared<TSSV>(
 			  model,
 			  tssvParams.UseReferenceEdge,
 			  tssvParams.CullSides,
@@ -350,8 +364,8 @@ bool Application::init(int argc,char*argv[]){
 			  shadowMask,
 			  gBuffer->depth,
 			  svParams);
-	  else if (this->methodName == "gssv")
-		  this->shadowMethod = std::make_shared<GSSV>(
+	  else if (methodName == "gssv")
+		  shadowMethod = std::make_shared<GSSV>(
 			  model,
 			  gssvParams.UseReferenceEdge,
 			  gssvParams.CullSides,
@@ -360,15 +374,15 @@ bool Application::init(int argc,char*argv[]){
 			  shadowMask,
 			  gBuffer->depth,
 			  svParams);
-	  else if (this->methodName == "hssv")
-		  this->shadowMethod = std::make_shared<HSSV>(
+	  else if (methodName == "hssv")
+		  shadowMethod = std::make_shared<HSSV>(
 			  model,
 			  hssvParams,
 			  shadowMask,
 			  gBuffer->depth,
 			  svParams);
 	  else
-		  this->useShadows = false;
+		  useShadows = false;
   }
 
   if (!shadowMethod->init())
@@ -377,20 +391,20 @@ bool Application::init(int argc,char*argv[]){
   	return false;
   }
 
-  if(this->verbose)
-    this->timeStamper = std::make_shared<TimeStamp>();
+  if(verbose)
+    timeStamper = std::make_shared<TimeStamp>();
   else
-    this->timeStamper = std::make_shared<TimeStamp>(nullptr);
-  if (this->shadowMethod)
-	  this->shadowMethod->setTimeStamper(this->timeStamper);
+    timeStamper = std::make_shared<TimeStamp>(nullptr);
+  if (shadowMethod)
+	  shadowMethod->setTimeStamper(timeStamper);
 
-  if(this->testName == "fly" || this->testName == "grid"){
-    if(this->shadowMethod!=nullptr){
-      this->shadowMethod->setTimeStamper(this->timeStamper);
+  if(testName == "fly" || testName == "grid"){
+    if(shadowMethod!=nullptr){
+      shadowMethod->setTimeStamper(timeStamper);
     }
   }
 
-  this->drawPrimitive = std::make_shared<DrawPrimitive>(this->windowSize);
+  drawPrimitive = std::make_shared<DrawPrimitive>(windowSize);
 
   return true;
 }
@@ -400,67 +414,67 @@ bool Application::init(int argc,char*argv[]){
 #ifdef USE_STATIC_CAM
 void Application::drawScene() {
 	
-	const float camData[] = { 9.41808,10.8025,7.31726,-0.538761,-0.703279,-0.463827,-0.532975,0.710914,-0.458846 };
+	const float camData[] = { -2.46096,4.3451,0.681852,0.561151,-0.540303,-0.627043,0.360311,0.841471,-0.40262 };
 
-	auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
+	auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
 	if (!flc)return;
 	flc->setPosition(glm::vec3(camData[0], camData[1], camData[2]));
 	flc->setRotation(glm::vec3(camData[3], camData[4], camData[5]), glm::vec3(camData[6], camData[7], camData[8]));
 
-	if (this->timeStamper)this->timeStamper->begin();
+	if (timeStamper)timeStamper->begin();
 
-	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
+	ge::gl::glViewport(0, 0, windowSize.x, windowSize.y);
 	ge::gl::glEnable(GL_DEPTH_TEST);
-	this->gBuffer->begin();
-	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
+	gBuffer->begin();
+	shadowMask->clear(0, GL_RED, GL_FLOAT);
 	
-	this->renderModel->draw(this->cameraProjection->getProjection()* flc->getView());
-	this->gBuffer->end();
+	renderModel->draw(cameraProjection->getProjection()* flc->getView());
+	gBuffer->end();
 
-	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
+	if (timeStamper)timeStamper->stamp("gBuffer");
 
-	if (this->useShadows)
-		this->shadowMethod->create(this->lightPosition,flc->getView(), this->cameraProjection->getProjection());
+	if (useShadows)
+		shadowMethod->create(lightPosition,flc->getView(), cameraProjection->getProjection());
 
-	if (this->timeStamper)this->timeStamper->stamp("");
+	if (timeStamper)timeStamper->stamp("");
 	ge::gl::glDisable(GL_DEPTH_TEST);
-	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(flc->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
-	if (this->timeStamper)this->timeStamper->end("shading");
+	shading->draw(lightPosition, glm::vec3(glm::inverse(flc->getView())*glm::vec4(0, 0, 0, 1)), useShadows);
+	if (timeStamper)timeStamper->end("shading");
 
 	//Blit depth into default FBO
-	ge::gl::glBlitNamedFramebuffer(this->gBuffer->fbo->getId(), 0, 0, 0, this->windowSize.x, this->windowSize.y, 0, 0, this->windowSize.x, this->windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	ge::gl::glBlitNamedFramebuffer(gBuffer->fbo->getId(), 0, 0, 0, windowSize.x, windowSize.y, 0, 0, windowSize.x, windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-	this->shadowMethod->drawUser(this->lightPosition, flc->getView(), this->cameraProjection->getProjection());
+	shadowMethod->drawUser(lightPosition, flc->getView(), cameraProjection->getProjection());
 }
 
 #else
 void Application::drawScene() {
-	if (this->timeStamper)this->timeStamper->begin();
+	if (timeStamper)timeStamper->begin();
 
-	ge::gl::glViewport(0, 0, this->windowSize.x, this->windowSize.y);
+	ge::gl::glViewport(0, 0, windowSize.x, windowSize.y);
 	ge::gl::glEnable(GL_DEPTH_TEST);
-	this->gBuffer->begin();
+	gBuffer->begin();
 
-	this->shadowMask->clear(0, GL_RED, GL_FLOAT);
+	shadowMask->clear(0, GL_RED, GL_FLOAT);
 
-	this->renderModel->draw(this->cameraProjection->getProjection()*this->cameraTransform->getView());
-	this->gBuffer->end();
+	renderModel->draw(cameraProjection->getProjection()*cameraTransform->getView());
+	gBuffer->end();
 
-	if (this->timeStamper)this->timeStamper->stamp("gBuffer");
+	if (timeStamper)timeStamper->stamp("gBuffer");
 
-	if (this->useShadows)
-		this->shadowMethod->create(this->lightPosition,this->cameraTransform->getView(), this->cameraProjection->getProjection());
+	if (useShadows)
+		shadowMethod->create(lightPosition,cameraTransform->getView(), cameraProjection->getProjection());
 
-	if (this->timeStamper)this->timeStamper->stamp("");
+	if (timeStamper)timeStamper->stamp("");
 	ge::gl::glDisable(GL_DEPTH_TEST);
-	this->shading->draw(this->lightPosition, glm::vec3(glm::inverse(this->cameraTransform->getView())*glm::vec4(0, 0, 0, 1)), this->useShadows);
-	if (this->timeStamper)this->timeStamper->end("shading");
+	shading->draw(lightPosition, glm::vec3(glm::inverse(cameraTransform->getView())*glm::vec4(0, 0, 0, 1)), useShadows);
+	if (timeStamper)timeStamper->end("shading");
 
 	//Blit depth into default FBO
-	ge::gl::glBlitNamedFramebuffer(this->gBuffer->fbo->getId(), 0, 0, 0, this->windowSize.x, this->windowSize.y, 0, 0, this->windowSize.x, this->windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	ge::gl::glBlitNamedFramebuffer(gBuffer->fbo->getId(), 0, 0, 0, windowSize.x, windowSize.y, 0, 0, windowSize.x, windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-	if(this->shadowMethod) 
-		this->shadowMethod->drawUser(this->lightPosition, this->cameraTransform->getView(), this->cameraProjection->getProjection());
+	if(shadowMethod) 
+		shadowMethod->drawUser(lightPosition, cameraTransform->getView(), cameraProjection->getProjection());
 }
 #endif
 #include "HSSV/HighResolutionTimer.hpp"
@@ -476,24 +490,24 @@ void Application::warmpUp()
 	{
 		while (SDL_PollEvent(&event));
 		t.reset();
-		this->drawScene();
+		drawScene();
 		ge::gl::glFinish();
 		elapsedTimeS += float(t.getElapsedTimeSeconds());
-		this->window->swap();
+		window->swap();
 	}
 	std::cout << "Go!\n";
 }
 
 void Application::measure(){
   assert(this!=nullptr);
-  if(this->testFlyKeyFileName==""){
+  if(testFlyKeyFileName==""){
     ge::core::printError(GE_CORE_FCENAME,"camera path file is empty");
-    this->mainLoop->removeWindow(this->window->getId());
+    mainLoop->removeWindow(window->getId());
     return;
   }
-  auto cameraPath = std::make_shared<CameraPath>(false,this->testFlyKeyFileName);
+  auto cameraPath = std::make_shared<CameraPath>(false,testFlyKeyFileName);
   std::map<std::string,float>measurement;
-  this->timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
+  timeStamper->setPrinter([&](std::vector<std::string>const&names,std::vector<float>const&values){
       for(size_t i=0;i<names.size();++i)
       if(names[i]!=""){
       if(measurement.count(names[i])==0)measurement[names[i]]=0.f;
@@ -503,16 +517,16 @@ void Application::measure(){
   warmpUp();
 
   std::vector<std::vector<std::string>>csv;
-  for(size_t k=0;k<this->testFlyLength;++k){
-    auto keypoint = cameraPath->getKeypoint(float(k)/float(this->testFlyLength));
-    auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
+  for(size_t k=0;k<testFlyLength;++k){
+    auto keypoint = cameraPath->getKeypoint(float(k)/float(testFlyLength));
+    auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
     flc->setPosition(keypoint.position);
     flc->setRotation(keypoint.viewVector,keypoint.upVector);
 	SDL_Event event;
-	for (size_t f = 0; f < this->testFramesPerMeasurement; ++f)
+	for (size_t f = 0; f < testFramesPerMeasurement; ++f)
 	{
 		while(SDL_PollEvent(&event));
-		this->drawScene();
+		drawScene();
 	}
 
     std::vector<std::string>line;
@@ -526,14 +540,14 @@ void Application::measure(){
     line.push_back(ge::core::value2str(k));
     for(auto const&x:measurement)
       if(x.first!="")
-        line.push_back(ge::core::value2str(x.second/float(this->testFramesPerMeasurement)));
+        line.push_back(ge::core::value2str(x.second/float(testFramesPerMeasurement)));
     csv.push_back(line);
     measurement.clear();
-    this->window->swap();
+    window->swap();
   }
-  std::string output = this->testOutputName+".csv";
+  std::string output = testOutputName+".csv";
   saveCSV(output,csv);
-  this->mainLoop->removeWindow(this->window->getId());
+  mainLoop->removeWindow(window->getId());
 }
 
 void Application::measureLightGrid()
@@ -541,7 +555,7 @@ void Application::measureLightGrid()
 	assert(this != nullptr);
 	
 	std::map<std::string, float>measurement;
-	this->timeStamper->setPrinter([&](std::vector<std::string>const&names, std::vector<float>const&values)
+	timeStamper->setPrinter([&](std::vector<std::string>const&names, std::vector<float>const&values)
 	{
 		for (size_t i = 0; i<names.size(); ++i)
 			if (names[i] != "") {
@@ -552,7 +566,7 @@ void Application::measureLightGrid()
 	std::vector<std::vector<std::string>>csv;
 
 	std::vector<float> verts;
-	this->model->getVertices(verts);
+	model->getVertices(verts);
 
 	AABB bbox;
 	bbox.updateWithVerticesVec3(verts.data(), verts.size());
@@ -577,10 +591,10 @@ void Application::measureLightGrid()
 		lightPosition = glm::vec4(minPoint + offset + unitSize * glm::vec3(x, y, z), 1);
 
 		SDL_Event event;
-		for (size_t f = 0; f < this->testFramesPerMeasurement; ++f)
+		for (size_t f = 0; f < testFramesPerMeasurement; ++f)
 		{
 			while (SDL_PollEvent(&event));
-			this->drawScene();
+			drawScene();
 		}
 
 		std::vector<std::string>line;
@@ -598,64 +612,64 @@ void Application::measureLightGrid()
 
 		for (auto const&x : measurement)
 			if (x.first != "")
-				line.push_back(ge::core::value2str(x.second / float(this->testFramesPerMeasurement)));
+				line.push_back(ge::core::value2str(x.second / float(testFramesPerMeasurement)));
 
 		csv.push_back(line);
 		measurement.clear();
-		this->window->swap();
+		window->swap();
 		
 		++k;
 	}
-	std::string output = this->testOutputName + ".csv";
+	std::string output = testOutputName + ".csv";
 	saveCSV(output, csv);
-	this->mainLoop->removeWindow(this->window->getId());
+	mainLoop->removeWindow(window->getId());
 }
 
 void Application::draw(){
   assert(this!=nullptr);
 
-  if(this->testName == "fly"){
-    this->measure();
+  if(testName == "fly"){
+    measure();
     return;
   }
 
-  if (this->testName == "grid") {
-	  this->measureLightGrid();
+  if (testName == "grid") {
+	  measureLightGrid();
 	  return;
   }
 
-  if(this->cameraType == "free"){
-    auto freeLook = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
-    for(int a=0;a<3;++a)freeLook->move(a,float(this->keyDown["d s"[a]]-this->keyDown["acw"[a]])*this->freeCameraSpeed);
+  if(cameraType == "free"){
+    auto freeLook = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
+    for(int a=0;a<3;++a)freeLook->move(a,float(keyDown["d s"[a]]-keyDown["acw"[a]])*freeCameraSpeed);
   }
 
-  this->drawScene();
+  drawScene();
 
-  //this->drawPrimitive->drawTexture(this->gBuffer->normal);
+  //drawPrimitive->drawTexture(gBuffer->normal);
   //*
-  if(this->methodName == "sintorn"){
-    auto sintorn = std::dynamic_pointer_cast<Sintorn>(this->shadowMethod);
-    if(this->keyDown['h'])this->drawPrimitive->drawTexture(sintorn->_HDT[0]);
-    if(this->keyDown['j'])this->drawPrimitive->drawTexture(sintorn->_HDT[1]);
-    if(this->keyDown['k'])this->drawPrimitive->drawTexture(sintorn->_HDT[2]);
-    if(this->keyDown['l'])this->drawPrimitive->drawTexture(sintorn->_HDT[3]);
+  if(methodName == "sintorn"){
+    auto sintorn = std::dynamic_pointer_cast<Sintorn>(shadowMethod);
+    if(keyDown['h'])drawPrimitive->drawTexture(sintorn->_HDT[0]);
+    if(keyDown['j'])drawPrimitive->drawTexture(sintorn->_HDT[1]);
+    if(keyDown['k'])drawPrimitive->drawTexture(sintorn->_HDT[2]);
+    if(keyDown['l'])drawPrimitive->drawTexture(sintorn->_HDT[3]);
 
-    if(this->keyDown['v'])sintorn->drawHST(0);
-    if(this->keyDown['b'])sintorn->drawHST(1);
-    if(this->keyDown['n'])sintorn->drawHST(2);
-    if(this->keyDown['m'])sintorn->drawHST(3);
-    if(this->keyDown[','])sintorn->drawFinalStencilMask();
+    if(keyDown['v'])sintorn->drawHST(0);
+    if(keyDown['b'])sintorn->drawHST(1);
+    if(keyDown['n'])sintorn->drawHST(2);
+    if(keyDown['m'])sintorn->drawHST(3);
+    if(keyDown[','])sintorn->drawFinalStencilMask();
   }
-  if(this->methodName == "rssv"){
-    auto rssv = std::dynamic_pointer_cast<RSSV>(this->shadowMethod);
-    if(this->keyDown['h'])this->drawPrimitive->drawTexture(rssv->_HDT[0]);
-    if(this->keyDown['j'])this->drawPrimitive->drawTexture(rssv->_HDT[1]);
-    if(this->keyDown['k'])this->drawPrimitive->drawTexture(rssv->_HDT[2]);
-    if(this->keyDown['l'])this->drawPrimitive->drawTexture(rssv->_HDT[3]);
+  if(methodName == "rssv"){
+    auto rssv = std::dynamic_pointer_cast<RSSV>(shadowMethod);
+    if(keyDown['h'])drawPrimitive->drawTexture(rssv->_HDT[0]);
+    if(keyDown['j'])drawPrimitive->drawTexture(rssv->_HDT[1]);
+    if(keyDown['k'])drawPrimitive->drawTexture(rssv->_HDT[2]);
+    if(keyDown['l'])drawPrimitive->drawTexture(rssv->_HDT[3]);
   }
 
   // */
-  this->window->swap();
+  window->swap();
 }
 
 int main(int argc,char*argv[]){
@@ -667,9 +681,9 @@ int main(int argc,char*argv[]){
 
 
 template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
-  this->keyDown[event.key.keysym.sym] = DOWN;
+  keyDown[event.key.keysym.sym] = DOWN;
   if(DOWN && event.key.keysym.sym=='p'){
-    auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
+    auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
     if(!flc)return true;
     auto rv = flc->getRotation();
     auto pos = flc->getPosition();
@@ -729,30 +743,30 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
 }
 
 bool Application::mouseMove(SDL_Event const&event){
-  if(this->cameraType == "orbit"){
+  if(cameraType == "orbit"){
     if(event.motion.state & SDL_BUTTON_LMASK){
-      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
+      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(cameraTransform);
       if(orbitCamera){
-        orbitCamera->addXAngle(float(event.motion.yrel)*this->sensitivity);
-        orbitCamera->addYAngle(float(event.motion.xrel)*this->sensitivity);
+        orbitCamera->addXAngle(float(event.motion.yrel)*sensitivity);
+        orbitCamera->addYAngle(float(event.motion.xrel)*sensitivity);
       }
     }
     if(event.motion.state & SDL_BUTTON_RMASK){
-      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
+      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(cameraTransform);
       if(orbitCamera)
-        orbitCamera->addDistance(float(event.motion.yrel)*this->orbitZoomSpeed);
+        orbitCamera->addDistance(float(event.motion.yrel)*orbitZoomSpeed);
     }
     if(event.motion.state & SDL_BUTTON_MMASK){
-      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(this->cameraTransform);
-      orbitCamera->addXPosition(+orbitCamera->getDistance()*float(event.motion.xrel)/float(this->windowSize.x)*2.f);
-      orbitCamera->addYPosition(-orbitCamera->getDistance()*float(event.motion.yrel)/float(this->windowSize.y)*2.f);
+      auto orbitCamera = std::dynamic_pointer_cast<ge::util::OrbitCamera>(cameraTransform);
+      orbitCamera->addXPosition(+orbitCamera->getDistance()*float(event.motion.xrel)/float(windowSize.x)*2.f);
+      orbitCamera->addYPosition(-orbitCamera->getDistance()*float(event.motion.yrel)/float(windowSize.y)*2.f);
     }
   }
-  if(this->cameraType == "free"){
-    auto freeCamera = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(this->cameraTransform);
+  if(cameraType == "free"){
+    auto freeCamera = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
     if(event.motion.state & SDL_BUTTON_LMASK){
-      freeCamera->setAngle(1,freeCamera->getAngle(1)+float(event.motion.xrel)*this->sensitivity);
-      freeCamera->setAngle(0,freeCamera->getAngle(0)+float(event.motion.yrel)*this->sensitivity);
+      freeCamera->setAngle(1,freeCamera->getAngle(1)+float(event.motion.xrel)*sensitivity);
+      freeCamera->setAngle(0,freeCamera->getAngle(0)+float(event.motion.yrel)*sensitivity);
     }
   }
   return true;

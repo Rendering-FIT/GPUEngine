@@ -51,7 +51,7 @@ void main(){
   vec3 L = normalize(lightPosition.xyz-position*lightPosition.w);//light vector
   vec3 R = reflect(-L,normal);//reflected light vector
 
-  const float shadowFactor = shadowCoef>=1 ? 1 : 0.1f;
+  const float shadowFactor = clamp(shadowCoef, 0, 1);
   float ambientFactor  = 1;
   float diffuseFactor  = max(dot(L,normal),0)*shadowFactor;
   float specularFactor = pow(max(dot(R,V),0),Shininess)*specularFactorCoef*float(shadowCoef>=1);
