@@ -9,7 +9,7 @@ struct ShadowMappingParams
 	glm::vec3 upDir =   glm::vec3(0, 1, 0);
 	float     near = 0.1f;
 	float     far = 1000.f;
-	float     fovy = 45.0f;
+	float     fovy = 1.5707963267948966f;
 	uint32_t  resolution = 1024;
 	uint32_t  pcfTaps = 1;
 };
