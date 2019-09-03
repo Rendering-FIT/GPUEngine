@@ -6,6 +6,7 @@
 struct ShadowMappingParams 
 {
 	glm::vec3 viewDir = glm::vec3(0, -1, 0);
+	glm::vec3 upDir =   glm::vec3(0, 1, 0);
 	float     near = 0.1f;
 	float     far = 1000.f;
 	float     fovy = 45.0f;
@@ -31,10 +32,11 @@ public:
 		glm::mat4 const&viewMatrix,
 		glm::mat4 const&projectionMatrix) override;
 
+	void setViewProps(glm::vec3 const& view, glm::vec3 const& up) { _params.viewDir = view; _params.upDir = up; }
+
 protected:
 
-	void _calcMatrices();
-	glm::mat4 computeLightView(glm::vec3 light, glm::vec3 viewVec);
+	glm::mat4 computeLightView(glm::vec3 const& lightPos, glm::vec3 const& viewVec, glm::vec3 const& upVec);
 	glm::mat4 computeLightProj(float nearZ, float farZ, float fovY);
 
 	glm::uvec2                          _windowSize;

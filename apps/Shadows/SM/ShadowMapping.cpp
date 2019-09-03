@@ -57,7 +57,7 @@ void ShadowMapping::create(
 		timeStamp->stamp("");
 	}
 
-	_lightView = computeLightView(lightPosition, _params.viewDir);
+	_lightView = computeLightView(lightPosition, _params.viewDir, _params.upDir);
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(2.5, 10);
@@ -102,10 +102,9 @@ void ShadowMapping::create(
 }
 
 
-glm::mat4 ShadowMapping::computeLightView(glm::vec3 light, glm::vec3 viewVec)
+glm::mat4 ShadowMapping::computeLightView(glm::vec3 const& lightPos, glm::vec3 const& viewVec, glm::vec3 const& upVec)
 {
-	glm::vec3 up = glm::cross(viewVec, viewVec + glm::vec3(1.f));
-	return glm::lookAt(light, light + viewVec, up);
+	return glm::lookAt(lightPos, lightPos + viewVec, upVec);
 }
 
 glm::mat4 ShadowMapping::computeLightProj(float nearZ, float farZ, float fovY)

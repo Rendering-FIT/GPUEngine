@@ -72,6 +72,8 @@ struct Application{
 
   float       testWarmupSecs     = 2.0;
 
+  float		  m_LightStepSize    = 1.0f;
+
   ShadowVolumesParams     svParams     ;
   CubeShadowMappingParams cubeSMParams ;
   CSSVParams              cssvParams   ;
@@ -158,7 +160,7 @@ void Application::parseArguments(int argc,char*argv[]){
   cubeSMParams.faces  = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
 
   smParams.viewDir    = vector2vec3(arg->getf32v("--shadowMap-lightDir", { 0, -1, 0 }, "Light direction"));
-  smParams.fovy       = arg->getf32("shadowMap-fovy", 45.0f, "Shadow map field-of-view");
+  smParams.fovy       = arg->getf32("shadowMap-fovy", 1.5707963267948966f, "Shadow map field-of-view");
   smParams.pcfTaps    = arg->geti32("--shadowMap-pcf", 0, "NoF PCF taps");
 
   cssvParams.computeSidesWGS = arg->getu32("--cssv-WGS"            ,64,"compute silhouette shadow volumes work group size"      );
@@ -680,9 +682,12 @@ int main(int argc,char*argv[]){
 }
 
 
-template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
+template<bool DOWN>bool Application::keyboard(SDL_Event const&event)
+{
   keyDown[event.key.keysym.sym] = DOWN;
-  if(DOWN && event.key.keysym.sym=='p'){
+  
+  if(DOWN && event.key.keysym.sym=='p')
+  {
     auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
     if(!flc)return true;
     auto rv = flc->getRotation();
@@ -694,7 +699,7 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
     std::cout<< up  .x<<","<<up  .y<<","<<up  .z<<std::endl;
   }
 
-  const float lightMovementSpeed = 1;
+  const float lightMovementSpeed = m_LightStepSize;
 
   if (DOWN && event.key.keysym.sym == 'j')
   {
@@ -737,6 +742,43 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event){
   {
 	  lightPosition = glm::vec4(0, 0, 0, 1);
 	  std::cout << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == SDLK_KP_MINUS)
+  {
+	  m_LightStepSize /= 2.0;
+	  std::cout << "Light move step " << m_LightStepSize << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == SDLK_KP_PLUS)
+  {
+	  m_LightStepSize *= 2.0;
+	  std::cout << "Light move step " << m_LightStepSize << std::endl;
+  }
+
+  if (DOWN && event.key.keysym.sym == SDLK_o)
+  {
+	  auto freeLookCam = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
+	  if (!freeLookCam)
+	  {
+		  return true;
+	  }
+
+	  auto pos = freeLookCam->getPosition();
+	  auto rv = freeLookCam->getRotation();
+	  auto view = glm::normalize(-glm::vec3(glm::row(rv, 2)));
+	  auto up = glm::normalize(glm::vec3(glm::row(rv, 1)));
+
+	  lightPosition = glm::vec4(pos, 1);
+
+	  std::cout << "Light pos: " << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
+	  std::cout << "Light dir: " << view.x << "," << view.y << "," << view.z << std::endl;
+
+	  auto sm = std::dynamic_pointer_cast<ShadowMapping>(shadowMethod);
+	  if (sm)
+	  {
+		  sm->setViewProps(view, up);
+	  }
   }
 
   return true;
