@@ -19,13 +19,10 @@ protected:
 
    glm::vec3 _localUp;
    glm::vec3 _center;
-   glm::quat _rotation;
    float _distance;
    float _angleX;
    float _angleY;
 
-public:
-protected:
    bool _diableFlipOver;
    bool _fixVerticalAxis;
    glm::mat4 _rotationMat;
@@ -36,7 +33,6 @@ public:
    float sensitivityX;
    float sensitivityY;
    float sensitivityZ;
-   glm::vec3 forward;
 
    OrbitManipulator();
 

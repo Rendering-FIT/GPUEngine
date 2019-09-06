@@ -13,7 +13,6 @@ OrbitManipulator::OrbitManipulator()
    , _matrix(make_shared<glm::mat4>())
    , _localUp(0, 1, 0)
    , _center(0, 0, 0)
-   , _rotation()
    , _distance(5)
    , _angleX(0)
    , _angleY(0)
@@ -23,7 +22,6 @@ OrbitManipulator::OrbitManipulator()
    , sensitivityX(1)
    , sensitivityY(1)
    , sensitivityZ(1)
-   , forward(0, 0, -1)
 {
 }
 

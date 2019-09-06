@@ -20,8 +20,6 @@ PROJECT(GPUEngine
 
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 
-SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
-
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
@@ -35,6 +33,7 @@ SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "")
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -137,10 +136,11 @@ write_basic_package_version_file(
    COMPATIBILITY ExactVersion
 )
 
-install(FILES
-   "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
-   "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
-  DESTINATION ${INSTALL_CM_DIR}
+install(
+   FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+   DESTINATION ${INSTALL_CM_DIR}
   )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
