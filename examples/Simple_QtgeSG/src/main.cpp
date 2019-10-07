@@ -65,7 +65,8 @@ int main(int argc, char** argv)
    std::shared_ptr<ge::sg::Scene> scene(AssimpModelLoader::loadScene(modelFileName.toUtf8().constData()));
    if(!scene)
    {
-      cerr << "Failed to load scene!" << endl;      
+      cerr << "Failed to load scene!" << endl;
+      return -1;
    }
    basicRenderer.setScene(scene);
 
