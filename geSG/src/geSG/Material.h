@@ -69,7 +69,7 @@ namespace ge{
             }
          }
 
-         int size;
+         int size; //< number of components of dataType elements
          DataType dataType;
          Semantic semantic;
          std::unique_ptr<unsigned char[]> data; //shared pointer could be longer than the data itself

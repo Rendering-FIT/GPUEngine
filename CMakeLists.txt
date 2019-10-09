@@ -11,7 +11,7 @@ include(CMakePackageConfigHelpers)
 
 
 PROJECT(GPUEngine
-   VERSION 0.0.0.0
+   VERSION 0.1.0.0
    DESCRIPTION "Toolkit for general rendering."
    LANGUAGES CXX
 )
