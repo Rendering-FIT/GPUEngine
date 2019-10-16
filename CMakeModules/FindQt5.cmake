@@ -11,5 +11,7 @@ if(${${CMAKE_FIND_PACKAGE_NAME}_FOUND} AND NOT TARGET ${CMAKE_FIND_PACKAGE_NAME}
 endif()
 
 # message
-include(GEMacros)
-ge_report_find_status()
+include(GEMacros OPTIONAL RESULT_VARIABLE ge_macros_file)
+if(ge_macros_file)
+   ge_report_find_status()
+endif()

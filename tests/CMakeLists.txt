@@ -9,18 +9,6 @@ endfunction(add_tests)
 
 add_tests("fsaTest;mealyMachineTest;idlistTest" "geCore")
 
-if(GPUENGINE_BUILD_GEDE)
-add_tests("typeRegisterTest;functionRegisterTest;interpretTest;variableRegisterTest;statementFactoryTest" "geCore;geDE")
-endif()
-
-if(GPUENGINE_BUILD_GEPARSER)
-add_tests("tokenizationTest;syntaxTest" "geCore;geParser")
-endif()
-
-if(GPUENGINE_BUILD_GEUTIL)
-add_tests("argumentViewerTest" "geUtil")
-endif()
-
 if(GPUENGINE_BUILD_GESG)
 add_tests("animationTest" "geSG")
 endif()

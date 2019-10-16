@@ -35,6 +35,9 @@ if(NOT TARGET geGL)
    find_package(GPUEngine COMPONENTS geGL)
 endif()   
 
+if(NOT TARGET geUtil)
+   find_package(GPUEngine COMPONENTS geUtil)
+endif()   
 if(NOT TARGET Qt5::Quick OR NOT TARGET geGL)
    return()
 endif()
@@ -56,7 +59,7 @@ set(SOURCE_FILES
 
 add_executable(${APP_NAME} ${SOURCE_FILES})
 #preferable linking
-target_link_libraries(${APP_NAME} Qt5::Quick geGL )
+target_link_libraries(${APP_NAME} Qt5::Quick geGL geUtil)
 
 #another posiibilities to link Qt5 components in outside project (out of GPUE)
 #  target_link_libraries(${APP_NAME} ${Qt5Quick_LIBRARIES} geGL )
@@ -68,3 +71,10 @@ target_link_libraries(${APP_NAME} Qt5::Quick geGL )
 target_include_directories(${APP_NAME} PUBLIC "src/")
 set_target_properties(${APP_NAME} PROPERTIES COMPILE_DEFINITIONS "APP_RESOURCES=\"${${APP_NAME}_RESOURCES}\"")
 set_property(TARGET ${APP_NAME} PROPERTY FOLDER "${examples_folder_name}")
+
+
+# setting up the MSVC helper var
+get_target_property(Qt5dllPath Qt5::Quick IMPORTED_LOCATION_RELEASE)
+get_filename_component(Qt5dllDir ${Qt5dllPath} DIRECTORY)
+get_target_property(GPUEdllPath geGL IMPORTED_LOCATION_RELEASE)
+set_target_properties(${APP_NAME} PROPERTIES VS_GLOBAL_DllPath "${OUTPUT_BINDIR};${Qt5dllDir}")

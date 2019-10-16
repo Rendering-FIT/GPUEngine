@@ -116,5 +116,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 endif()
 
 # message
-include(GEMacros)
-ge_report_find_status("${OPENGL_LIBRARY}")
+include(GEMacros OPTIONAL RESULT_VARIABLE ge_macros_file)
+if(ge_macros_file)
+   ge_report_find_status()
+endif()

@@ -1,37 +1,39 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.11.1)
 
-PROJECT(GPUEngine)
+###########################
+# Policies
+###########################
+cmake_policy(VERSION 3.11.1)
+
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+
+PROJECT(GPUEngine
+   VERSION 0.1.0.0
+   DESCRIPTION "Toolkit for general rendering."
+   LANGUAGES CXX
+)
+
+#set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
-
-SET(GPUENGINE_MAJOR_VERSION 0)
-SET(GPUENGINE_MINOR_VERSION 0)
-SET(GPUENGINE_PATCH_VERSION 0)
-SET(GPUENGINE_REVISION_VERSION 0)
-SET(GPUENGINE_VERSION ${GPUENGINE_MAJOR_VERSION}.${GPUENGINE_MINOR_VERSION}.${GPUENGINE_PATCH_VERSION}.${GPUENGINE_REVISION_VERSION})
-
-SET(GPUENGINE_MINIMAL_COMPATIBLE_VERSION "0.0.0.0")
 
 SET(OUTPUT_LIBDIR ${PROJECT_BINARY_DIR}/lib)
 SET(OUTPUT_BINDIR ${PROJECT_BINARY_DIR}/bin)
 
 SET(GPUENGINE_BUILD_geAd     OFF  CACHE BOOL "Build addons (geAd directory).")
-SET(GPUENGINE_BUILD_APPS     OFF  CACHE BOOL "Build applications (apps directory).")
 SET(GPUENGINE_BUILD_EXAMPLES OFF  CACHE BOOL "Build examples (examples directory).")
 SET(GPUENGINE_BUILD_TESTS    OFF  CACHE BOOL "Build and run tests (tests directory).")
 SET(GPUENGINE_BUILD_GEGL     ON   CACHE BOOL "Build geGL package.")
 SET(GPUENGINE_BUILD_GESG     OFF  CACHE BOOL "Build geSG package.")
-SET(GPUENGINE_BUILD_GERG     OFF  CACHE BOOL "Build geRG package.")
 SET(GPUENGINE_BUILD_GEUTIL   ON   CACHE BOOL "Build geUtil package.")
-SET(GPUENGINE_BUILD_GEPARSER OFF  CACHE BOOL "Build geParser package.")
-SET(GPUENGINE_BUILD_GEDE     OFF  CACHE BOOL "Build geDE package.")
-
-SET(GPUENGINE_BUILD_APP_geViewerAssimp OFF CACHE BOOL "Build geViewerAssimp application.")
 
 
 SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows")
 SET(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows")
-SET(CMAKE_RELWITHDEBINFO_POSTFIX "rd" CACHE STRING "add a postfix, usually empty on windows")
-SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on windows")
+set(CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "")
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -86,32 +88,23 @@ IF(MSVC)
    ELSE()
       # MSVC 2015 workarounds to be placed here (currently none)
    ENDIF()
-   IF(GPUENGINE_REPLACE_GLEW)
-     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DREPLACE_GLEW")
-   ENDIF()
 ENDIF()
 
 SET(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_C_STANDARD 99)
 
-IF(CMAKE_COMPILER_IS_GNUCXX)
+IF(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
   add_compile_options(-W)
   add_compile_options(-Wall)
   add_compile_options(-Wconversion)
   add_compile_options(-pedantic)
 ENDIF()
 
-IF(CMAKE_COMPILER_IS_GNUCC)
-  add_compile_options(-W)
-  add_compile_options(-Wall)
-  add_compile_options(-Wconversion)
-  add_compile_options(-pedantic)
-ENDIF()
 
 SET(CMAKE_MODULE_PATH "${GPUEngine_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
 # Dynamic vs Static Linkage
-OPTION(GPUENGINE_DYNAMIC_LINKAGE "Build GPUEngine as libs for dynamic linkage. Use OFF for static libs." ON)
+option(BUILD_SHARED_LIBS "Build GPUEngine as libs for dynamic linkage. Use OFF for static libs." ON)
 
 IF(WIN32)
   SET(GPUENGINE_DEPS_CONFIG_FILE CACHE FILEPATH "Optional config file that will setup GPUEngine dependencies.")
@@ -125,11 +118,11 @@ ENDIF()
 # Export Things
 ##################################################
 
-SET(INSTALL_CM_DIR cmake)
+SET(INSTALL_CM_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 configure_file(version.h.in "include/version.h" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h"
-  DESTINATION include
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/include/version.h" 
+  DESTINATION include/geCore #installing the GPUE version header to geCore
   )
 
 configure_file(
@@ -138,16 +131,16 @@ configure_file(
   @ONLY
   )
 
-configure_file(
-  GPUEngineConfigVersion.cmake.in
-  GPUEngineConfigVersion.cmake
-  @ONLY
-  )
+write_basic_package_version_file(
+   ${PROJECT_NAME}ConfigVersion.cmake
+   COMPATIBILITY ExactVersion
+)
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfig.cmake"
-  #             "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/GEMacros.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/GPUEngineConfigVersion.cmake"
-  DESTINATION ${INSTALL_CM_DIR}
+install(
+   FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+   DESTINATION ${INSTALL_CM_DIR}
   )
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
@@ -155,17 +148,22 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/"
   )
 
 
-add_subdirectory(src)
 
-if(GPUENGINE_BUILD_geAd)
-  add_subdirectory(geAd)
+add_subdirectory(geCore)
+
+if(GPUENGINE_BUILD_GEUTIL)
+  add_subdirectory(geUtil)
 endif()
 
-if(GPUENGINE_BUILD_APPS)
-  if(NOT GPUENGINE_BUILD_geAd OR NOT GPUENGINE_BUILD_GEGL)
-    message(SEND_ERROR "GPUENGINE_BUILD_APPS requires GPUENGINE_BUILD_geAd and GPUENGINE_BUILD_GEGL set to ON.")
-  endif()
-  add_subdirectory(apps)
+if(GPUENGINE_BUILD_GEGL)
+  add_subdirectory(geGL)
+endif()
+
+if(GPUENGINE_BUILD_GESG)
+  add_subdirectory(geSG)
+endif()
+if(GPUENGINE_BUILD_geAd)
+  add_subdirectory(geAd)
 endif()
 
 if(GPUENGINE_BUILD_EXAMPLES)

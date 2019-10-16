@@ -64,6 +64,11 @@ QtImage* QtImageLoader::loadImage(const QString& imageIdentifier, int options)
 //////////////////////////////////////////////////////////////////////////
 
 
+QtImage::~QtImage()
+{
+   delete _image;
+}
+
 unsigned char* QtImage::getBits()
 {
    if(!_image) return nullptr;

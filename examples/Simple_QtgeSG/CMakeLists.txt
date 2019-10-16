@@ -34,7 +34,7 @@ if(NOT TARGET ste)
    find_package(ste QUIET)
 endif()
 
-if(NOT TARGET Qt5::Quick OR NOT TARGET geGL OR NOT TARGET geSG OR NOT TARGET AssimpModelLoader OR NOT TARGET QtImageLoader )
+if(NOT TARGET Qt5::Quick OR NOT TARGET geGL OR NOT TARGET geUtil OR NOT TARGET geSG OR NOT TARGET AssimpModelLoader OR NOT TARGET QtImageLoader )
    return()
 endif()
 
@@ -64,8 +64,17 @@ set(SOURCE_FILES
 )
 
 
+
 add_executable(${APP_NAME} ${SOURCE_FILES} ${GLSG_FILES})
-target_link_libraries(${APP_NAME} Qt5::Quick geGL AssimpModelLoader QtImageLoader)
+target_link_libraries(${APP_NAME} Qt5::Quick geGL geUtil AssimpModelLoader QtImageLoader)
 target_include_directories(${APP_NAME} PUBLIC "src/")
 set_target_properties(${APP_NAME} PROPERTIES COMPILE_DEFINITIONS "APP_RESOURCES=\"${${APP_NAME}_RESOURCES}\"")
 set_property(TARGET ${APP_NAME} PROPERTY FOLDER "${examples_folder_name}")
+
+# setting up the MSVC helper var
+get_target_property(Qt5dllPath Qt5::Quick IMPORTED_LOCATION_RELEASE)
+get_filename_component(Qt5dllDir ${Qt5dllPath} DIRECTORY)
+get_target_property(assdllPath assimp::assimp IMPORTED_LOCATION_RELEASE)
+get_filename_component(assdllDir ${assdllPath} DIRECTORY)
+get_target_property(GPUEdllPath geGL IMPORTED_LOCATION_RELEASE)
+set_target_properties(${APP_NAME} PROPERTIES VS_GLOBAL_DllPath "${OUTPUT_BINDIR};${assdllDir};${Qt5dllDir}")

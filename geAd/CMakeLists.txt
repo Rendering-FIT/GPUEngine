@@ -1,18 +1,3 @@
-set(LIB_NAME_UPPER GEAD)
-
-configure_file(
-   ../src/CMake/geExport.h.in
-   "${GPUEngine_SOURCE_DIR}/geAd/Export.h"
-   @ONLY
-)
-
-install(FILES
-   "${GPUEngine_SOURCE_DIR}/geAd/Export.h"
-   DESTINATION include/geAd
-)
-
-add_subdirectory(OsgImport)
-add_subdirectory(SDLWindow)
-add_subdirectory(SDLOrbitManipulator)
-add_subdirectory(DEUtil)
-add_subdirectory(LibraryLoader)
+# This file is now empty since I removed all addons that were compiled into a library.
+# Other addons might require it in the future.
+# --forry
