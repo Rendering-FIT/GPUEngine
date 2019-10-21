@@ -1,0 +1,7 @@
+
+set(VSSV_FILES
+	VSSV/VSSV.cpp
+	VSSV/VSSV.h
+	VSSV/VSSVShaders.h
+	PARENT_SCOPE
+)

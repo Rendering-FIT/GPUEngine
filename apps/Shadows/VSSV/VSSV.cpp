@@ -1,5 +1,5 @@
 #include"VSSV.h"
-#include"FastAdjacency.h"
+#include"../FastAdjacency.h"
 #include"VSSVShaders.h"
 
 size_t const floatsPerNofOppositeVertices = 1;
@@ -246,7 +246,7 @@ VSSV::VSSV(
   }
 
 #include"VSSVShaders.h"
-#include"SilhouetteShaders.h"
+#include"../SilhouetteShaders.h"
 
   this->_drawSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_VERTEX_SHADER,

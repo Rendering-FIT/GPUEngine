@@ -28,6 +28,7 @@ add_subdirectory(GSSV)
 add_subdirectory(SM)
 add_subdirectory(CSM)
 add_subdirectory(FTS)
+add_subdirectory(VSSV)
 
 set(APP_SOURCES
   main.cpp
@@ -44,7 +45,6 @@ set(APP_SOURCES
   SintornTiles.cpp
   RSSV.cpp
   RSSVTiles.cpp
-  VSSV.cpp
   DrawPrimitive.cpp
   ShadowVolumes.cpp
   GSCaps.cpp
@@ -69,8 +69,6 @@ set(APP_INCLUDES
   RSSV.h
   RSSVTiles.h
   RSSVShaders.h
-  VSSV.h
-  VSSVShaders.h
   DrawPrimitive.h
   ProgramExtension.h
   ShadowVolumes.h
@@ -89,8 +87,16 @@ source_group("GSSV" FILES ${GSSV_FILES})
 source_group("SM"   FILES ${SM_FILES})
 source_group("CSM"  FILES ${CSM_FILES})
 source_group("FTS"  FILES ${FTS_FILES})
+source_group("VSSV" FILES ${VSSV_FILES})
 
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES} ${GSSV_FILES} ${SM_FILES} ${CSM_FILES} ${FTS_FILES})
+add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} 
+	${TSSV_FILES} 
+	${HSSV_FILES} 
+	${GSSV_FILES} 
+	${SM_FILES} 
+	${CSM_FILES} 
+	${FTS_FILES}
+	${VSSV_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

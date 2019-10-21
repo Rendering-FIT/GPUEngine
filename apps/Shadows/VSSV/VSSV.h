@@ -1,9 +1,9 @@
 #pragma once
 
 #include<geGL/geGL.h>
-#include"ShadowVolumes.h"
-#include"Model.h"
-#include"TimeStamp.h"
+#include"../ShadowVolumes.h"
+#include"../Model.h"
+#include"../TimeStamp.h"
 
 struct VSSVParams{
   bool usePlanes              = false;
