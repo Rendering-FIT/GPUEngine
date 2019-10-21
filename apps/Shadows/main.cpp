@@ -25,7 +25,7 @@
 #include<geUtil/PerspectiveCamera.h>
 #include"Shading.h"
 #include"ShadowMethod.h"
-#include"CubeShadowMapping.h"
+#include"CSM/CubeShadowMapping.h"
 #include"CSSV.h"
 #include"TimeStamp.h"
 #include"Sintorn.h"

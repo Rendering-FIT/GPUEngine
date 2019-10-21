@@ -8,6 +8,7 @@
 
 #define OCTREE_NUM_CHILDREN 8
 
+#define OCTREE_MAX_MULTIPLICITY 2
 
 typedef unsigned char BitmaskType;
 //typedef uint64_t BitmaskType;

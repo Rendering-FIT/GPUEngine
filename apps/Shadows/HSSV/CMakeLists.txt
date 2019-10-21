@@ -25,11 +25,16 @@ set(HSSV_FILES
 	HSSV/PropagateIndicesShader.hpp
 	HSSV/GpuOctreeEdgePropagator.hpp
 	HSSV/GpuOctreeEdgePropagator.cpp
+	HSSV/IGpuOctreeSidesDrawer.hpp
+	HSSV/IGpuOctreeSidesDrawer.cpp
 	HSSV/OctreeSidesDrawer.hpp
 	HSSV/OctreeSidesDrawer.cpp
+	HSSV/OctreeSidesDrawer2.hpp
+	HSSV/OctreeSidesDrawer2.cpp
 	HSSV/OctreeSidesDrawDraws.cpp
 	HSSV/GenerateSidesProgram.hpp
 	HSSV/GenerateSidesDataOnGpuProgram.hpp
+	HSSV/GenerateSidesDataOnGpuProgram.cpp
 	HSSV/GpuEdges.hpp
 	HSSV/OctreeSerializer.hpp
 	HSSV/OctreeSerializer.cpp

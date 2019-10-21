@@ -1,7 +1,7 @@
 #pragma once
 
 #include<geGL/geGL.h>
-#include"ShadowMethod.h"
+#include"../ShadowMethod.h"
 
 struct CubeShadowMappingParams{
   uint32_t resolution = 1024  ;

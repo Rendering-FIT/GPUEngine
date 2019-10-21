@@ -4,9 +4,8 @@
 #include <geGL/Buffer.h>
 #include <geGL/VertexArray.h>
 
-#include "ISidesDrawer.hpp"
-
 #include "OctreeVisitor.hpp"
+#include "IGpuOctreeSidesDrawer.hpp"
 
 
 enum class DrawingMethod : unsigned char
@@ -16,7 +15,7 @@ enum class DrawingMethod : unsigned char
 	CS = 2
 };
 
-class OctreeSidesDrawer : public ISidesDrawer
+class OctreeSidesDrawer : public IGpuOctreeSidesDrawer
 {
 public:
 	OctreeSidesDrawer(std::shared_ptr<OctreeVisitor> octreeVisitor, uint32_t subgroupSize, DrawingMethod potential, DrawingMethod silhouette);
@@ -26,9 +25,7 @@ public:
 	void drawSides(const glm::mat4& mvp,const glm::vec4& light) override;
 
 protected:
-	void _loadOctreeToGpu();
-	void _loadOctreeToGpu8BitOrNoCompress();
-
+	
 	void _drawSidesFromSilhouetteEdgesTS(const glm::mat4& mvp, const glm::vec4& lightPos);
 	void _drawSidesFromSilhouetteEdgesGS(const glm::mat4& mvp, const glm::vec4& lightPos);
 	void _drawSidesFromSilhouetteEdgesCS(const glm::mat4& mvp, const glm::vec4& lightPos);
@@ -44,9 +41,6 @@ protected:
 
 	void _initShaders();
 	void _initBuffers();
-		void _getMaxPossibleEdgeCountInTraversal(size_t& potentialPath, size_t& silhouettePath, size_t& maxInVoxel, size_t& maxPath) const;
-		void _getMaximumNofEdgesInLevel(uint32_t level, size_t& potential, size_t& silhouette) const;
-			void _getNofEdgesInNode(uint32_t nodeId, size_t& potential, size_t& silhouette) const;
 
 	bool _generateLoadGpuTraversalShader3();
 	void _getPotentialSilhouetteEdgesGpu3(uint32_t lowestNodeContainingLight);
@@ -56,19 +50,10 @@ protected:
 
 	void _getPotentialSilhouetteEdgesNoCompress(uint32_t lowestNodeContainingLight);
 
-	void _processSubBuffer(
-		const std::unordered_map<BitmaskType, std::vector<uint32_t>>::value_type& subBuffer, 
-		std::vector<uint32_t>& compressedNodesInfo,
-		std::vector<uint32_t>& nofEdgesPrefixSums,
-		uint32_t* gpuMappedBuffer
-		);
-
 	bool _loadOctreeTraversalKernelNoCompress(uint32_t workgroupSize);
 
 	bool _loadOctreeTraversalKernelNoCompress2();
 	void _getPotentialSilhouetteEdgesNoCompress2(uint32_t lowestNodeContainingLight);
-
-	void _breakCompressionIdToUintsAndPush(const BitmaskType& id, std::vector<uint32_t>& vectorToStore) const;
 
 	void _allocSubBuffersDataBuffers();
 
@@ -78,7 +63,6 @@ protected:
 	void _calcSingleTwoLevelPrefixSumWgSizes(uint32_t maxNofPotSubBuffs, uint32_t maxNofSilSubBuffs);
 		uint32_t _getNearstLowerPow2(uint32_t x) const;
 
-	void _calcBitMasks8(unsigned int minBits);
 	void _loadUbo();
 
 	void _fixDispatchSizes(uint32_t potDivisor, uint32_t silDivisor);
@@ -109,20 +93,14 @@ private:
 	std::shared_ptr<ge::gl::Buffer> _indirectDrawBufferSilhouetteCS = nullptr;
 
 	std::shared_ptr<ge::gl::Buffer> _voxelEdgeIndices = nullptr;
-	std::shared_ptr<ge::gl::Buffer> _voxelNofPotentialSilhouetteEdgesPrefixSum = nullptr;
+
 
 	std::shared_ptr<ge::gl::Buffer> _indirectDispatchCsPotential = nullptr;
 	std::shared_ptr<ge::gl::Buffer> _indirectDispatchCsSilhouette = nullptr;
 
-	std::shared_ptr<ge::gl::Buffer> _compressedNodesInfoBuffer = nullptr;
-	std::shared_ptr<ge::gl::Buffer> _compressedNodesInfoIndexingBuffer = nullptr;
-
 	std::shared_ptr<ge::gl::Buffer> _nofEdgesPotSil = nullptr;
 
 	std::shared_ptr<GpuEdges> _gpuEdges;
-
-	std::vector<std::shared_ptr<ge::gl::Buffer>> _gpuOctreeBuffers;
-	std::vector<uint32_t> _lastNodePerEdgeBuffer;
 
 	uint32_t _nofPotentialEdgesToDraw = 0;
 	uint32_t _nofSilhouetteEdgesToDraw = 0;
@@ -160,12 +138,7 @@ private:
 
 	uint32_t m_maxNofSubBuffersPath = 0;
 
-	std::vector< std::vector<uint32_t> > m_bitMasks;
-
 	std::shared_ptr<ge::gl::Buffer> m_ubo;
 
-	uint32_t m_nofTotalSubbuffers = 0;
-	uint32_t m_subBufferCorrection = 0;
-
-	uint32_t m_compressionLevel;
+	
 };

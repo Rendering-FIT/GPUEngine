@@ -84,19 +84,18 @@ void CpuSidesDrawer::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::
 
 	std::vector<uint32_t> silhouetteEdges;
 	std::vector<uint32_t> potentialEdges;
+	std::vector<uint32_t> castPot;
 
 	_visitor->getSilhouttePotentialEdgesFromNodeUp(potentialEdges, silhouetteEdges, lowestNode);
 
 	sidesVertices.clear();
 	sidesVertices.reserve((potentialEdges.size() + silhouetteEdges.size()) * 4);
 
-	//--
-	std::vector<int> ed;
-	ed.insert(ed.end(), silhouetteEdges.begin(), silhouetteEdges.end());
-	//--
-
 	for (const auto edge : silhouetteEdges)
 	{
+		//--
+		auto const e = decodeEdgeFromEncoded(edge);
+		//--
 		int const multiplicity = decodeEdgeMultiplicityFromId(edge);
 		auto const& lowerPoint = getEdgeVertexLow(_edges, decodeEdgeFromEncoded(edge));
 		auto const& higherPoint = getEdgeVertexHigh(_edges, decodeEdgeFromEncoded(edge));;
@@ -113,13 +112,25 @@ void CpuSidesDrawer::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::
 			const glm::vec3& higherPoint = getEdgeVertexHigh(_edges, edge);
 
 			_generatePushSideFromEdge(lightPos, lowerPoint, higherPoint, multiplicity, sidesVertices);
-			ed.push_back(encodeEdgeMultiplicityToId(edge, multiplicity));
+			castPot.push_back(encodeEdgeMultiplicityToId(edge, multiplicity));
 		}
 	}
 
 	static bool printOnce = false;
 	if (!printOnce)
 	{
+		//--
+		std::ofstream vstream;
+		vstream.open("CPuVerts.txt");
+
+		for(unsigned int i=0; i<sidesVertices.size(); i+=4)
+		{
+			vstream << sidesVertices[i] << " " << sidesVertices[i+1] << " " << sidesVertices[i+2] << " " << sidesVertices[i+3] << std::endl;
+		}
+		vstream.close();
+		//--
+		
+		
 		std::cout << "Light node: " << lowestNode << std::endl;
 		std::cout << "Light " << lightPos.x << ", " << lightPos.y << ", " << lightPos.z << std::endl;
 		const auto n = _octree->getNode(lowestNode);
@@ -131,12 +142,13 @@ void CpuSidesDrawer::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::
 		std::cout << "Center " << minP.x << ", " << minP.y << ", " << minP.z << " Extents: " << maxP.x << ", " << maxP.y << ", " << maxP.z << "\n";
 
 		std::cout << "Num potential: " << potentialEdges.size() << ", numSilhouette: " << silhouetteEdges.size() << std::endl;
-		std::cout << "Silhouette consists of " << ed.size() << " edges\n";
+		std::cout << "Silhouette consists of " << silhouetteEdges.size() + castPot.size() << " edges\n";
 
 		std::ofstream of;
 		of.open("CPU_Edges.txt");
 		std::sort(potentialEdges.begin(), potentialEdges.end());
 		std::sort(silhouetteEdges.begin(), silhouetteEdges.end());
+		std::sort(castPot.begin(), castPot.end());
 
 		of << "Potential:\n";
 		for (const auto e : potentialEdges)
@@ -145,6 +157,11 @@ void CpuSidesDrawer::_getSilhouetteFromLightPos(const glm::vec3& lightPos, std::
 		of << "\nSilhouette:\n";
 		for (const auto e : silhouetteEdges)
 			of << decodeEdgeFromEncoded(e) << " multiplicity: " << decodeEdgeMultiplicityFromId(e) << std::endl;
+
+		of << "\nUsedPot:\n";
+		for (auto const cp : castPot)
+			of << decodeEdgeFromEncoded(cp) << " multiplicity: " << decodeEdgeMultiplicityFromId(cp) << std::endl;
+
 		of.close();
 		/*
 		std::ofstream sof;

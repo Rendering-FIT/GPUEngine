@@ -26,6 +26,7 @@ add_subdirectory(TSSV)
 add_subdirectory(HSSV)
 add_subdirectory(GSSV)
 add_subdirectory(SM)
+add_subdirectory(CSM)
 add_subdirectory(FTS)
 
 set(APP_SOURCES
@@ -35,7 +36,6 @@ set(APP_SOURCES
   CSV.cpp
   Shading.cpp
   ShadowMethod.cpp
-  CubeShadowMapping.cpp
   FastAdjacency.cpp
   TimeStamp.cpp
   CSSV.cpp
@@ -58,8 +58,6 @@ set(APP_INCLUDES
   Model.h
   Shading.h
   ShadowMethod.h
-  CubeShadowMapping.h
-  CubeShadowMappingShaders.h
   FastAdjacency.h
   TimeStamp.h
   CSSV.h
@@ -89,9 +87,10 @@ source_group("TSSV" FILES ${TSSV_FILES})
 source_group("HSSV" FILES ${HSSV_FILES})
 source_group("GSSV" FILES ${GSSV_FILES})
 source_group("SM"   FILES ${SM_FILES})
+source_group("CSM"  FILES ${CSM_FILES})
 source_group("FTS"  FILES ${FTS_FILES})
 
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES} ${GSSV_FILES} ${SM_FILES} ${FTS_FILES})
+add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES} ${GSSV_FILES} ${SM_FILES} ${CSM_FILES} ${FTS_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

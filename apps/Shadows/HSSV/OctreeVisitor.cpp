@@ -5,6 +5,7 @@
 #include <iostream>
 #include <bitset>
 #include <set>
+#include <string>
 
 #include "OmpConfig.h"
 #include "HighResolutionTimer.hpp"

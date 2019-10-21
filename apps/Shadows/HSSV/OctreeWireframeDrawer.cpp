@@ -47,7 +47,7 @@ bool OctreeWireframeDrawer::init(std::shared_ptr<Octree> octree)
 
 	_initBuffers();
 
-	ge::gl::glLineWidth(3.0f);
+	ge::gl::glLineWidth(1.0f);
 
 	return true;
 }

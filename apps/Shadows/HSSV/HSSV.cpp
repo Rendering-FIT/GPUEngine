@@ -8,6 +8,7 @@
 #include "OctreeSerializer.hpp"
 #include "OctreeCompressor.hpp"
 #include "OctreeSidesDrawer.hpp"
+#include "OctreeSidesDrawer2.hpp"
 #include "CpuSidesDrawer.hpp"
 #include "OctreeWireframeDrawer.hpp"
 #include "../Defines.h"
@@ -31,8 +32,6 @@ HSSV::~HSSV()
 
 bool HSSV::init()
 {
-	printf("Renderer: %s %s\n", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
-
 	auto const vertices = _loadVertices(_model);
 	_createAdjacency(vertices);
 
@@ -81,6 +80,7 @@ bool HSSV::init()
 	else
 	{
 		_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer>(_visitor, _params.workgroupSize, DrawingMethod(_params.potentialDrawingMethod), DrawingMethod(_params.silhouetteDrawingMethod));
+		//_octreeSidesDrawer = std::make_shared<OctreeSidesDrawer2>(_visitor, _params.workgroupSize);
 	}
 
 	if (!_octreeSidesDrawer->init(_gpuEdges))
