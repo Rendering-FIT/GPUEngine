@@ -1,8 +1,8 @@
 #pragma once
 
 #include<geGL/geGL.h>
-#include"ShadowMethod.h"
-#include"Model.h"
+#include"../ShadowMethod.h"
+#include"../Model.h"
 
 struct SintornParams{
   size_t shadowFrustaPerWorkGroup = 1    ;

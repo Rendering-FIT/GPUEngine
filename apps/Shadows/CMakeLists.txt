@@ -31,6 +31,7 @@ add_subdirectory(FTS)
 add_subdirectory(VSSV)
 add_subdirectory(CSSV)
 add_subdirectory(CSSVSOE)
+add_subdirectory(Sintorn)
 
 set(APP_SOURCES
   main.cpp
@@ -41,8 +42,6 @@ set(APP_SOURCES
   ShadowMethod.cpp
   FastAdjacency.cpp
   TimeStamp.cpp
-  Sintorn.cpp
-  SintornTiles.cpp
   RSSV.cpp
   RSSVTiles.cpp
   DrawPrimitive.cpp
@@ -60,9 +59,6 @@ set(APP_INCLUDES
   ShadowMethod.h
   FastAdjacency.h
   TimeStamp.h
-  Sintorn.h
-  SintornTiles.h
-  SintornShaders.h
   RSSV.h
   RSSVTiles.h
   RSSVShaders.h
@@ -87,6 +83,7 @@ source_group("FTS"  FILES ${FTS_FILES})
 source_group("VSSV" FILES ${VSSV_FILES})
 source_group("CSSV" FILES ${CSSV_FILES})
 source_group("CSSVSOE" FILES ${CSSVSOE_FILES})
+source_group("Sintorn" FILES ${SINTORN_FILES})
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} 
 	${TSSV_FILES} 
@@ -97,7 +94,8 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES}
 	${FTS_FILES}
 	${VSSV_FILES}
 	${CSSV_FILES}
-	${CSSVSOE_FILES})
+	${CSSVSOE_FILES}
+	${SINTORN_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file
