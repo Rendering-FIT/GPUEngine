@@ -13,7 +13,7 @@
 #include<glm/gtc/matrix_access.hpp>
 
 
-//#define USE_FULL_SHADING
+#define USE_FULL_SHADING
 
 #ifdef USE_FULL_SHADING
 #include "Material.h"

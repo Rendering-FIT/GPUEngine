@@ -34,7 +34,7 @@ layout(binding=1) uniform sampler2DShadow	shadowMap;
 
 uniform mat4  lightVP;
 uniform int  pcfSize = 0;
-uniform float texelSize;
+uniform vec2 texelSize;
 
 void main()
 {
@@ -42,21 +42,27 @@ void main()
 	vec3 viewSamplePosition = texelFetch(position,Coord,0).xyz;
 	vec4 lightFragPos = lightVP * vec4(viewSamplePosition, 1);
 	
-	lightFragPos /= lightFragPos.w;
-	lightFragPos.xyz = 0.5 * lightFragPos.xyz + 0.5;	
+    float shadow = 0.f;
+    const float w = lightFragPos.w;
+    if(lightFragPos.x <= w && lightFragPos.x >= -w && lightFragPos.y <= w && lightFragPos.y >=-w)
+    {
+	    lightFragPos /= lightFragPos.w;
+	    lightFragPos.xyz = 0.5f * lightFragPos.xyz + 0.5f;
 
-	float shadow = 0;
+	    shadow = 0.f;
+        for(int i = -pcfSize; i<=pcfSize; ++i)
+	    {
+		    for(int j = -pcfSize; j<=pcfSize; ++j)
+		    {
+			    shadow += texture(shadowMap, lightFragPos.xyz + vec3(texelSize, 0) * vec3(i, j, 0));
+		    }
+	    }
 
-	for(int i = -pcfSize; i<=pcfSize; ++i)
-	{
-		for(int j = -pcfSize; j<=pcfSize; ++j)
-		{
-			shadow += texture(shadowMap, lightFragPos.xyz + texelSize * vec3(i, j, 0));
-		}
-	}
+        float squareSide = 2*pcfSize + 1;
+        shadow /= max(squareSide*squareSide, 1);
+    }
 
-	float squareSide = 2*pcfSize + 1;
-	fColor=shadow/max(squareSide*squareSide, 1);	
+	fColor=shadow;	
 }
 ).";
 

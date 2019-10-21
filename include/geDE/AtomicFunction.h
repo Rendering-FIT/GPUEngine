@@ -2,6 +2,7 @@
 
 #include<geDE/Function.h>
 #include<map>
+#include<string>
 
 namespace ge{
   namespace de{

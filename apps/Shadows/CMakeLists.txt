@@ -26,6 +26,7 @@ add_subdirectory(TSSV)
 add_subdirectory(HSSV)
 add_subdirectory(GSSV)
 add_subdirectory(SM)
+add_subdirectory(FTS)
 
 set(APP_SOURCES
   main.cpp
@@ -81,14 +82,16 @@ set(APP_INCLUDES
   Texture.h
   GSCaps.h
   GSCapsShaders.h
+  IShadowMapping.h
   )
 
 source_group("TSSV" FILES ${TSSV_FILES})
 source_group("HSSV" FILES ${HSSV_FILES})
 source_group("GSSV" FILES ${GSSV_FILES})
 source_group("SM"   FILES ${SM_FILES})
+source_group("FTS"  FILES ${FTS_FILES})
 
-add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES} ${GSSV_FILES} ${SM_FILES})
+add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} ${TSSV_FILES} ${HSSV_FILES} ${GSSV_FILES} ${SM_FILES} ${FTS_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

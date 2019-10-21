@@ -1,5 +1,7 @@
 #include"Model.h"
 
+#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
+
 #include <FreeImage.h>
 #include <experimental/filesystem>
 
@@ -235,21 +237,19 @@ RenderModel::RenderModel(std::shared_ptr<Model>const&mdl){
   {
   	  for (const auto& tex : textures)
 	  {
-		  err = glGetError();
   	  	  std::shared_ptr<ge::gl::Texture> t = std::make_shared<ge::gl::Texture>(GL_TEXTURE_2D, GL_RGBA8, 1, tex.width, tex.height);
-		  err = glGetError();
+
 		  t->setData2D(tex.data, GL_BGRA, GL_UNSIGNED_BYTE, 0, GL_TEXTURE_2D, 0, 0, tex.width, tex.height);
-		  err = glGetError();
+
   	  	  t->generateMipmap();
-		  err = glGetError();
 
 		  texObjects.push_back(t);
 
 		  const auto handle = t->getId();
 		  const uint64_t handle64 = glGetTextureSamplerHandleARB(handle, sampler->getId());
-		  err = glGetError();
+
   	  	  glMakeTextureHandleResidentARB(handle64);
-		  err = glGetError();
+
 		  textureHandles.push_back(handle64);
 	  }
 
@@ -358,6 +358,7 @@ void main()
 {
 	Material mat = materials[materialIndex];
 	vec3 diffuse = mat.diffuseColor.xyz;
+
 	if(mat.textureIndex>=0)
 	{
 #ifdef GL_ARB_gpu_shader_int64
@@ -365,8 +366,10 @@ void main()
 #else
 		sampler2D s = sampler2D(unpackUint2x32(texHandles[mat.textureIndex]));
 #endif
-		diffuse *= texture(s, vTexCoords).xyz;
+		vec4 texSample = texture(s, vTexCoords);
+        diffuse *= texSample.xyz;
 	}
+
 	uvec4 color  = uvec4(0);
     color.xyz   += uvec3(diffuse.xyz  *0xff);
 	color.xyz   += uvec3(mat.specularColor.xyz *0xff)<<8;

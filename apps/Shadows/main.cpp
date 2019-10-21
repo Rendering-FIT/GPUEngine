@@ -39,6 +39,7 @@
 #include "GSSV/GSSV.hpp"
 #include "HSSV/HSSV.hpp"
 #include "SM/ShadowMapping.h"
+#include "FTS/FrustumTracedShadows.h"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -146,7 +147,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
   verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
-  methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/sm/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
+  methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/sm/fts/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
 
   wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -154,11 +155,13 @@ void Application::parseArguments(int argc,char*argv[]){
   svParams.zfail      = arg->getu32("--zfail"           ,1 ,"shadow volumes zfail 0/1"                                );
   svParams.rasterDiscard = arg->isPresent("--sv-raster-discard", "disable shadow volumes sides rasterization, for benchmarking");
 
-  smParams.resolution = cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
+  smParams.resolution.x = cubeSMParams.resolution = arg->getu32("--shadowMap-resolution",1024  ,"shadow map resolution"               );
+  smParams.resolution.y = smParams.resolution.x;
   smParams.near       = cubeSMParams.near       = arg->getf32("--shadowMap-near"      ,0.1f  ,"shadow map near plane position"      );
   smParams.far        = cubeSMParams.far        = arg->getf32("--shadowMap-far"       ,1000.f,"shadow map far plane position"       );
   cubeSMParams.faces  = arg->getu32("--shadowMap-faces"     ,6     ,"number of used cube shadow map faces");
-
+  smParams.resolution.z = arg->getu32("--fts-depth", 10, "Maximum number of triangles in Irregular Z-Buffer per cell");
+  smParams.upDir      = vector2vec3(arg->getf32v("--shadowMap-up", { 0, 1, 0 }, "light up vector"));
   smParams.viewDir    = vector2vec3(arg->getf32v("--shadowMap-lightDir", { 0, -1, 0 }, "Light direction"));
   smParams.fovy       = arg->getf32("shadowMap-fovy", 1.5707963267948966f, "Shadow map field-of-view");
   smParams.pcfTaps    = arg->geti32("--shadowMap-pcf", 0, "NoF PCF taps");
@@ -281,6 +284,8 @@ bool Application::init(int argc,char*argv[]){
 
   initWavefrontSize();
 
+  printf("Renderer: %s %s\n", ge::gl::glGetString(GL_VENDOR), ge::gl::glGetString(GL_RENDERER));
+
   if(testName == "fly" || testName == "grid")
     cameraType = "free";
 
@@ -315,6 +320,14 @@ bool Application::init(int argc,char*argv[]){
 			  renderModel->nofVertices,
 			  renderModel->vertices,
 			  smParams);
+      else if (methodName == "fts")
+          shadowMethod = std::make_shared<FrustumTracedShadows>(
+              smParams,
+              shadowMask,
+              windowSize,
+              gBuffer->position,
+              renderModel->nofVertices,
+              renderModel->vertices);
 	  else if (methodName == "cssv")
 		  shadowMethod = std::make_shared<CSSV>(
 			  shadowMask,
@@ -383,11 +396,14 @@ bool Application::init(int argc,char*argv[]){
 			  shadowMask,
 			  gBuffer->depth,
 			  svParams);
-	  else
-		  useShadows = false;
+      else
+      {
+          std::cerr << "Failed to init the shadow method!\n";
+          useShadows = false;
+      }
   }
 
-  if (!shadowMethod->init())
+  if (useShadows && !shadowMethod->init())
   {
     std::cerr << "Failed to init the shadow method!\n";
   	return false;
@@ -416,7 +432,7 @@ bool Application::init(int argc,char*argv[]){
 #ifdef USE_STATIC_CAM
 void Application::drawScene() {
 	
-	const float camData[] = { -2.46096,4.3451,0.681852,0.561151,-0.540303,-0.627043,0.360311,0.841471,-0.40262 };
+	const float camData[] = { 602.281,88.1596,96.8042,-0.276641,-0.514136,0.811871,-0.165827,0.857709,0.486659 };
 
 	auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
 	if (!flc)return;
@@ -446,7 +462,10 @@ void Application::drawScene() {
 	//Blit depth into default FBO
 	ge::gl::glBlitNamedFramebuffer(gBuffer->fbo->getId(), 0, 0, 0, windowSize.x, windowSize.y, 0, 0, windowSize.x, windowSize.y, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-	shadowMethod->drawUser(lightPosition, flc->getView(), cameraProjection->getProjection());
+    if (useShadows)
+    {
+        shadowMethod->drawUser(lightPosition, flc->getView(), cameraProjection->getProjection());
+    }
 }
 
 #else
@@ -773,12 +792,19 @@ template<bool DOWN>bool Application::keyboard(SDL_Event const&event)
 
 	  std::cout << "Light pos: " << lightPosition.x << "," << lightPosition.y << "," << lightPosition.z << std::endl;
 	  std::cout << "Light dir: " << view.x << "," << view.y << "," << view.z << std::endl;
+      std::cout << "Light up: " << up.x << "," << up.y << "," << up.z << std::endl;
 
-	  auto sm = std::dynamic_pointer_cast<ShadowMapping>(shadowMethod);
+
+	  auto sm = std::dynamic_pointer_cast<IShadowMapping>(shadowMethod);
 	  if (sm)
 	  {
-		  sm->setViewProps(view, up);
+		  sm->setLightViewProps(view, up);
 	  }
+  }
+
+  if (DOWN && event.key.keysym.sym == SDLK_ESCAPE)
+  {
+      mainLoop->removeWindow(window->getId());
   }
 
   return true;
