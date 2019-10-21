@@ -29,6 +29,8 @@ add_subdirectory(SM)
 add_subdirectory(CSM)
 add_subdirectory(FTS)
 add_subdirectory(VSSV)
+add_subdirectory(CSSV)
+add_subdirectory(CSSVSOE)
 
 set(APP_SOURCES
   main.cpp
@@ -39,8 +41,6 @@ set(APP_SOURCES
   ShadowMethod.cpp
   FastAdjacency.cpp
   TimeStamp.cpp
-  CSSV.cpp
-  CSSVSOE.cpp
   Sintorn.cpp
   SintornTiles.cpp
   RSSV.cpp
@@ -60,9 +60,6 @@ set(APP_INCLUDES
   ShadowMethod.h
   FastAdjacency.h
   TimeStamp.h
-  CSSV.h
-  CSSVShaders.h
-  CSSVSOE.h
   Sintorn.h
   SintornTiles.h
   SintornShaders.h
@@ -88,6 +85,8 @@ source_group("SM"   FILES ${SM_FILES})
 source_group("CSM"  FILES ${CSM_FILES})
 source_group("FTS"  FILES ${FTS_FILES})
 source_group("VSSV" FILES ${VSSV_FILES})
+source_group("CSSV" FILES ${CSSV_FILES})
+source_group("CSSVSOE" FILES ${CSSVSOE_FILES})
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} 
 	${TSSV_FILES} 
@@ -96,7 +95,9 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES}
 	${SM_FILES} 
 	${CSM_FILES} 
 	${FTS_FILES}
-	${VSSV_FILES})
+	${VSSV_FILES}
+	${CSSV_FILES}
+	${CSSVSOE_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

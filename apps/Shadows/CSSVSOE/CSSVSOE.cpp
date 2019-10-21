@@ -1,5 +1,5 @@
 #include"CSSVSOE.h"
-#include"FastAdjacency.h"
+#include"../FastAdjacency.h"
 
 #include<geCore/Dtemplates.h>
 
@@ -130,7 +130,7 @@ CSSVSOE::CSSVSOE(
   this->_createCapsData(adj);
 
 #include"CSSVSOEShaders.h"
-#include"SilhouetteShaders.h"
+#include"../SilhouetteShaders.h"
 
   this->_computeSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,

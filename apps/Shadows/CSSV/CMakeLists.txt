@@ -1,0 +1,7 @@
+
+set(CSSV_FILES
+	CSSV/CSSV.cpp
+	CSSV/CSSV.h
+	CSSV/CSSVShaders.h
+	PARENT_SCOPE
+)

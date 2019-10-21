@@ -4,9 +4,9 @@
 
 #include<geGL/geGL.h>
 #include<glm/glm.hpp>
-#include"ShadowVolumes.h"
-#include"Model.h"
-#include"TimeStamp.h"
+#include"../ShadowVolumes.h"
+#include"../Model.h"
+#include"../TimeStamp.h"
 
 struct CSSVSOEParams{
   size_t computeSidesWGS = 64   ;

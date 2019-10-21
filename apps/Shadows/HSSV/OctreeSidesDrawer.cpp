@@ -2,7 +2,7 @@
 #include "GenerateSidesProgram.hpp"
 #include <geGL/StaticCalls.h>
 #include "MultiplicityCoding.hpp"
-#include "../CSSVShaders.h"
+#include "../CSSV/CSSVShaders.h"
 #include "GenerateSidesDataOnGpuProgram.hpp"
 #include "../TimeStamp.h"
 #include <fstream>

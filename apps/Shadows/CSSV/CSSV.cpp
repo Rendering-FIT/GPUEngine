@@ -1,5 +1,5 @@
 #include"CSSV.h"
-#include"FastAdjacency.h"
+#include"../FastAdjacency.h"
 
 #include<geCore/Dtemplates.h>
 #include "geGL/StaticCalls.h"
@@ -216,7 +216,7 @@ CSSV::CSSV(
   this->_dibo=std::make_shared<ge::gl::Buffer>(sizeof(DrawArraysIndirectCommand),&cmd);
 
 #include"CSSVShaders.h"
-#include"SilhouetteShaders.h"
+#include"../SilhouetteShaders.h"
 
   this->_computeSidesProgram = std::make_shared<ge::gl::Program>(
       std::make_shared<ge::gl::Shader>(GL_COMPUTE_SHADER,
