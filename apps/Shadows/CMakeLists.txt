@@ -74,16 +74,16 @@ set(APP_INCLUDES
   IShadowMapping.h
   )
 
-source_group("TSSV" FILES ${TSSV_FILES})
-source_group("HSSV" FILES ${HSSV_FILES})
-source_group("GSSV" FILES ${GSSV_FILES})
-source_group("SM"   FILES ${SM_FILES})
-source_group("CSM"  FILES ${CSM_FILES})
-source_group("FTS"  FILES ${FTS_FILES})
-source_group("VSSV" FILES ${VSSV_FILES})
-source_group("CSSV" FILES ${CSSV_FILES})
-source_group("CSSVSOE" FILES ${CSSVSOE_FILES})
-source_group("Sintorn" FILES ${SINTORN_FILES})
+source_group("Methods\\TSSV" FILES ${TSSV_FILES})
+source_group("Methods\\HSSV" FILES ${HSSV_FILES})
+source_group("Methods\\GSSV" FILES ${GSSV_FILES})
+source_group("Methods\\SM"   FILES ${SM_FILES})
+source_group("Methods\\CSM"  FILES ${CSM_FILES})
+source_group("Methods\\FTS"  FILES ${FTS_FILES})
+source_group("Methods\\VSSV" FILES ${VSSV_FILES})
+source_group("Methods\\CSSV" FILES ${CSSV_FILES})
+source_group("Methods\\CSSVSOE" FILES ${CSSVSOE_FILES})
+source_group("Methods\\Sintorn" FILES ${SINTORN_FILES})
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} 
 	${TSSV_FILES} 
