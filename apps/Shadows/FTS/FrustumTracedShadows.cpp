@@ -150,6 +150,15 @@ bool FrustumTracedShadows::IsConservativeRasterizationSupported() const
     return false;
 }
 
+void FrustumTracedShadows::CreateShadowMaskData()
+{
+    ShadowMaskVao = std::make_unique<VertexArray>();
+
+    ShadowMaskFbo = std::make_unique<Framebuffer>();
+    ShadowMaskFbo->attachTexture(GL_COLOR_ATTACHMENT0, ShadowMask);
+    ShadowMaskFbo->drawBuffers(1, GL_COLOR_ATTACHMENT0);
+}
+
 bool FrustumTracedShadows::init()
 {
     if (!IsConservativeRasterizationSupported())
@@ -162,9 +171,6 @@ bool FrustumTracedShadows::init()
 
     IrregularZBuffer = std::make_shared<Buffer>(_params.resolution.x * _params.resolution.y * _params.resolution.z * sizeof(u32));
     AtomicCounter = std::make_shared<Buffer>(_params.resolution.x * _params.resolution.y * sizeof(u32));
-    shit = std::make_shared<Buffer>(_params.resolution.x * _params.resolution.y * sizeof(u32));
-    
-    //shitTex = std::make_shared<Texture>(GL_TEXTURE_2D, GL_RGBA, 1, _params.resolution.x, _params.resolution.y);
 
     Fbo = std::make_unique<Framebuffer>();
     Fbo->setDefaultWidth(_params.resolution.x);
@@ -173,15 +179,11 @@ bool FrustumTracedShadows::init()
     Vao = std::make_unique<VertexArray>();
     Vao->addAttrib(Vertices, 0, 3, GL_FLOAT);
 
-    ShadowMaskVao = std::make_unique<VertexArray>();
-
-    ShadowMaskFbo = std::make_unique<Framebuffer>();
-    ShadowMaskFbo->attachTexture(GL_COLOR_ATTACHMENT0, ShadowMask);
-    ShadowMaskFbo->drawBuffers(1, GL_COLOR_ATTACHMENT0);
+    CreateShadowMaskData();
 
     FtsShaderGen shaderGen;
-    IzbFillProgram = shaderGen.GetZbufferFillProgram(_params.resolution);
-    ShadowMaskProgram = shaderGen.GetZbufferTraversalProgram(_params.resolution);
+    IzbFillProgram = shaderGen.GetIzbFillProgram(_params.resolution);
+    ShadowMaskProgram = shaderGen.GetIzbTraversalProgram(_params.resolution);
 
     assert(glGetError() == GL_NO_ERROR);
 

@@ -34,8 +34,10 @@ public:
 
     virtual bool init() override;
 
-private:
+protected:
     bool IsConservativeRasterizationSupported() const;
+
+    void CreateShadowMaskData();
 
     std::shared_ptr<ge::gl::Buffer> IrregularZBuffer;
     std::shared_ptr<ge::gl::Buffer> AtomicCounter;
@@ -54,7 +56,4 @@ private:
     std::unique_ptr<ge::gl::Program> ShadowMaskProgram;
 
     glm::uvec2                       WindowSize;
-
-    std::shared_ptr<ge::gl::Buffer> shit;
-    std::shared_ptr<ge::gl::Texture> shitTex;
 };

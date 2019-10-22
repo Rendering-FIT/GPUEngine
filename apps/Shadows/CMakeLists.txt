@@ -32,6 +32,7 @@ add_subdirectory(VSSV)
 add_subdirectory(CSSV)
 add_subdirectory(CSSVSOE)
 add_subdirectory(Sintorn)
+add_subdirectory(OFTS)
 
 set(APP_SOURCES
   main.cpp
@@ -84,6 +85,7 @@ source_group("Methods\\VSSV" FILES ${VSSV_FILES})
 source_group("Methods\\CSSV" FILES ${CSSV_FILES})
 source_group("Methods\\CSSVSOE" FILES ${CSSVSOE_FILES})
 source_group("Methods\\Sintorn" FILES ${SINTORN_FILES})
+source_group("Methods\\OFTS" FILES ${OFTS_FILES})
 
 add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES} 
 	${TSSV_FILES} 
@@ -95,7 +97,8 @@ add_executable(${APP_NAME} ${APP_SOURCES} ${APP_INCLUDES}
 	${VSSV_FILES}
 	${CSSV_FILES}
 	${CSSVSOE_FILES}
-	${SINTORN_FILES})
+	${SINTORN_FILES}
+	${OFTS_FILES})
 
 ################################################
 # Internal_deps - only 'ge' targets goes here (e.g. geCore), it configures this package intra project dependencies and also configures the config file

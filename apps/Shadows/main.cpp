@@ -40,6 +40,7 @@
 #include "HSSV/HSSV.hpp"
 #include "SM/ShadowMapping.h"
 #include "FTS/FrustumTracedShadows.h"
+#include "OFTS/OmnidirFrustumTracedShadows.h"
 
 struct Application{
   std::shared_ptr<ge::ad::SDLMainLoop       >mainLoop         = nullptr;
@@ -147,7 +148,7 @@ void Application::parseArguments(int argc,char*argv[]){
 
   useShadows          = !arg->isPresent("--no-shadows",   "turns off shadows"                                                      );
   verbose             =  arg->isPresent("--verbose"   ,   "toggle verbose mode"                                                    );
-  methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/sm/fts/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
+  methodName          =  arg->gets     ("--method"    ,"","name of shadow method: cubeShadowMapping/sm/fts/ofts/cssv/sintorn/rssv/vssv/cssvsoe/tssv/gssv/hssv");
 
   wavefrontSize       = arg->getu32("--wavefrontSize",0,"warp/wavefront size, usually 32 for NVidia and 64 for AMD");
 
@@ -328,6 +329,14 @@ bool Application::init(int argc,char*argv[]){
               gBuffer->position,
               renderModel->nofVertices,
               renderModel->vertices);
+      else if (methodName == "ofts")
+          shadowMethod = std::make_shared<OmnidirFrustumTracedShadows>(
+              smParams,
+              shadowMask,
+              windowSize,
+              gBuffer->position,
+              renderModel->nofVertices,
+              renderModel->vertices);
 	  else if (methodName == "cssv")
 		  shadowMethod = std::make_shared<CSSV>(
 			  shadowMask,
@@ -427,12 +436,12 @@ bool Application::init(int argc,char*argv[]){
   return true;
 }
 
-//#define USE_STATIC_CAM
+#define USE_STATIC_CAM
 
 #ifdef USE_STATIC_CAM
 void Application::drawScene() {
 	
-	const float camData[] = { 602.281,88.1596,96.8042,-0.276641,-0.514136,0.811871,-0.165827,0.857709,0.486659 };
+	const float camData[] = { 564.486,132.271,-159.916,-0.439015,-0.666869,-0.602122,-0.392882,0.745175,-0.538849 };
 
 	auto flc = std::dynamic_pointer_cast<ge::util::FreeLookCamera>(cameraTransform);
 	if (!flc)return;
