@@ -436,7 +436,7 @@ bool Application::init(int argc,char*argv[]){
   return true;
 }
 
-#define USE_STATIC_CAM
+//#define USE_STATIC_CAM
 
 #ifdef USE_STATIC_CAM
 void Application::drawScene() {
