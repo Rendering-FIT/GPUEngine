@@ -142,6 +142,7 @@ namespace ge{
             IMPLEMENT1(glNamedBufferSubData         ,EXT);
             IMPLEMENT1(glGetNamedBufferSubData      ,EXT);
             IMPLEMENT1(glGetNamedBufferParameteriv  ,EXT);
+            IMPLEMENT0(glGetNamedBufferParameteri64v    );
             IMPLEMENT1(glGetNamedBufferPointerv     ,EXT);
 
             IMPLEMENT0(glCreateVertexArrays           );
@@ -307,6 +308,13 @@ namespace ge{
             PUSH_WRITE_BUFFER();
             this->glBindBuffer          (GL_COPY_WRITE_BUFFER,buffer);
             this->glGetBufferParameteriv(GL_COPY_WRITE_BUFFER,pname,param);
+            POP_WRITE_BUFFER();
+          }
+
+          void m_glGetNamedBufferParameteri64v_dsa(GLuint buffer,GLenum pname,GLint64*param){
+            PUSH_WRITE_BUFFER();
+            this->glBindBuffer          (GL_COPY_WRITE_BUFFER,buffer);
+            this->glGetBufferParameteri64v(GL_COPY_WRITE_BUFFER,pname,param);
             POP_WRITE_BUFFER();
           }
 
@@ -568,7 +576,7 @@ namespace ge{
           }
 
           void m_glDeleteTextures_dsa(GLsizei n,const GLuint*ids){
-            this->glDeleteTextures(n,ids);
+            this->m_glDeleteTextures(n,ids);
             for(GLsizei i=0;i<n;++i)
               this->m_texture2Target.erase(ids[i]);
           }

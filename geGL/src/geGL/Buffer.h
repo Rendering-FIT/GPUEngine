@@ -108,6 +108,6 @@ void ge::gl::Buffer::setData(std::vector<T>const&d,GLintptr offset)const{
 template<typename T>
 void ge::gl::Buffer::getData(std::vector<T>&d,GLintptr offset)const{
   auto const size = (getSize() - offset);
-  d.reserve(size/sizeof(T));
+  d.resize(size/sizeof(T));
   getData(d.data(),size,offset);
 }

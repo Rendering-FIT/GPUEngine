@@ -60,3 +60,16 @@ TEST_CASE("Buffer Tests"){
   }
   win.endFrame();
 }
+
+TEST_CASE("BufferSize"){
+  SDLWin win;
+  win.beginFrame();
+  ge::gl::init();
+  {
+    std::cerr << "sizeof(GLsizeiptr): " << sizeof(GLsizeiptr) << std::endl;
+    size_t const size = 1024ull*1024ull*1024ull*3ull;
+    auto b = make_shared<Buffer>(size);
+    REQUIRE(b->getSize() == size);
+  }
+  win.endFrame();
+}

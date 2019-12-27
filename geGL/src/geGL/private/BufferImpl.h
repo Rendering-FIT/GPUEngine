@@ -8,6 +8,7 @@ class ge::gl::BufferImpl {
   BufferImpl(Buffer* b);
   ~BufferImpl();
   GLint   getBufferParameter(GLenum pname) const;
+  GLint64 getBufferParameter64(GLenum pname) const;
   GLvoid* getBufferPointer(GLenum pname) const;
   void bufferData(GLsizeiptr size, GLvoid const* data, GLbitfield flags) const;
   void updateVertexArrays();

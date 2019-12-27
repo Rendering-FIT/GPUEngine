@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/dormon/geGL.git
 	branch = master
-	commit = 11237f2719c65724d314fe04c9db4c4ba8b2a313
+	commit = 17d53ba3ed8799aac290059ec44574b1d1dee0c0
 	parent = 6d35d13892ee13859772ff133b351a4d0841ffa5
 	method = rebase
 	cmdver = 0.4.0

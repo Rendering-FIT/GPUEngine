@@ -300,7 +300,7 @@ void Buffer::getData(GLvoid *data, GLsizeiptr size, GLintptr offset) const
  */
 GLsizeiptr Buffer::getSize() const
 {
-  return impl->getBufferParameter(GL_BUFFER_SIZE);
+  return impl->getBufferParameter64(GL_BUFFER_SIZE);
 }
 
 /**

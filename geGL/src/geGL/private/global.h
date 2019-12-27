@@ -10,7 +10,7 @@ namespace ge{
   }
 }
 
-class GEGL_EXPORT ge::gl::Global{
+class ge::gl::Global{
   public:
     FunctionTablePointer table   = nullptr;
     ContextPointer       context = nullptr;
