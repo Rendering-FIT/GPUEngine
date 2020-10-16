@@ -14,6 +14,13 @@
 # (this provides target glm (tested on GLM version 0.9.7.0))
 find_package(${CMAKE_FIND_PACKAGE_NAME} ${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION} CONFIG QUIET)
 
+if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
+    if(TARGET glm::glm)
+        add_library(glm ALIAS glm::glm)
+        set(TARGET_NAME glm::glm)
+    endif()
+endif()
+
 # use regular old-style approach
 if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
@@ -32,6 +39,7 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
    if(${CMAKE_FIND_PACKAGE_NAME}_FOUND)
       if(NOT ${CMAKE_MAJOR_VERSION} LESS 3)
          if(NOT TARGET ${CMAKE_FIND_PACKAGE_NAME})
+            set(TARGET_NAME glm)
             add_library(${CMAKE_FIND_PACKAGE_NAME} INTERFACE IMPORTED)
             set_target_properties(${CMAKE_FIND_PACKAGE_NAME} PROPERTIES
                INTERFACE_INCLUDE_DIRECTORIES "${GLM_INCLUDE_DIR}"
@@ -42,8 +50,8 @@ if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FOUND)
 
 endif()
 
-if(TARGET ${CMAKE_FIND_PACKAGE_NAME})
-   set_property(TARGET ${CMAKE_FIND_PACKAGE_NAME} APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL")
+if(TARGET ${TARGET_NAME})
+   set_property(TARGET ${TARGET_NAME} APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL")
 endif()
 
 # message

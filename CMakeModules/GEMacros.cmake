@@ -27,17 +27,24 @@ macro(ge_report_find_status found_where)
 endmacro()
 
 macro(ge_report_find_status)
+   # guess package name
+   set(TARGET_NAME ${CMAKE_FIND_PACKAGE_NAME})
    if(TARGET ${CMAKE_FIND_PACKAGE_NAME})
+      set(TARGET_NAME ${CMAKE_FIND_PACKAGE_NAME})
+   elseif(TARGET ${CMAKE_FIND_PACKAGE_NAME}::${CMAKE_FIND_PACKAGE_NAME})
+      set(TARGET_NAME ${CMAKE_FIND_PACKAGE_NAME}::${CMAKE_FIND_PACKAGE_NAME})
+   endif()
+   if(TARGET ${TARGET_NAME})
       if(NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
          get_property(ALREADY_REPORTED GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_FOUND_REPORTED)
          if(NOT ALREADY_REPORTED)
 
             # try path from the linked library
-            get_target_property(found_where ${CMAKE_FIND_PACKAGE_NAME} INTERFACE_LINK_LIBRARIES)
+            get_target_property(found_where ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
 
             # try path from include directory
             if("${found_where}" STREQUAL "found_where-NOTFOUND")
-               get_target_property(found_where ${CMAKE_FIND_PACKAGE_NAME} INTERFACE_INCLUDE_DIRECTORIES)
+               get_target_property(found_where ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
             endif()
 
             # try config path
@@ -51,7 +58,7 @@ macro(ge_report_find_status)
             endif()
 
             # print message
-            message(STATUS "Find package ${CMAKE_FIND_PACKAGE_NAME}: ${found_where}")
+            message(STATUS "Find package ${CMAKE_FIND_PACKAGE_NAME} (as target ${TARGET_NAME}): ${found_where}")
             set_property(GLOBAL PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_FOUND_REPORTED True)
 
          endif()

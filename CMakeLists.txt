@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.11.1)
+cmake_minimum_required(VERSION 3.18.4)
 
 ###########################
 # Policies
 ###########################
-cmake_policy(VERSION 3.11.1)
+cmake_policy(VERSION 3.18.4)
 
 
 include(GNUInstallDirs)
@@ -11,7 +11,7 @@ include(CMakePackageConfigHelpers)
 
 
 PROJECT(GPUEngine
-   VERSION 0.1.0.0
+   VERSION 0.1.1.0
    DESCRIPTION "Toolkit for general rendering."
    LANGUAGES CXX
 )
