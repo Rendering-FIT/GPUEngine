@@ -29,7 +29,6 @@ set(FSA_INCLUDES
 
 set(CORE_INCLUDES
   ${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}/Export.h
-  ${HEADER_PATH}/geCore.h
   ${HEADER_PATH}/CallStackPrinter.h
   ${HEADER_PATH}/Command.h
   ${HEADER_PATH}/Defines.h

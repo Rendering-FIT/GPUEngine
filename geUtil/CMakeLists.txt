@@ -22,7 +22,6 @@ set(UTIL_INCLUDES
    ${HEADER_PATH}/MatrixStack.h
    ${HEADER_PATH}/OrbitManipulator.h
    ${HEADER_PATH}/Progress.h
-   ${HEADER_PATH}/geUtil.h
    ${HEADER_PATH}/Text.h
    ${HEADER_PATH}/Timer.h
 )
