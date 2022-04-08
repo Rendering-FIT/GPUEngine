@@ -18,29 +18,41 @@ SET(CMAKE_MINSIZEREL_POSTFIX "s" CACHE STRING "add a postfix, usually empty on w
 project(${PROJECT_NAME})
 SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
-find_package(Qt5 COMPONENTS Quick )
+find_package(assimp)
+find_package(Qt5 COMPONENTS Quick)
 if(NOT TARGET geGL)
    find_package(GPUEngine COMPONENTS geGL)
 endif()
-find_package(AssimpModelLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAd/AssimpModelLoader/cmake)
-find_package(QtImageLoader QUIET HINTS ${GPUEngine_SOURCE_DIR}/geAd/QtImageLoader/cmake)
+if(NOT TARGET AssimpModelLoader)
+    find_package(AssimpModelLoader QUIET)
+endif()
+if(NOT TARGET QtImageLoader)
+    find_package(QtImageLoader QUIET)
+endif()
 
 # We need some special treatment here inside the GE build system. There are some libraries that the
 # targets exports only when used via config. For example the geSG needs ste when compiled in aplication
-# but not when compiled here as dll. The quickest solution is to find it manualy here. But rest asured
-# when you would configure your cmake the the geSG config will bring the ste as external dependency.
+# but not when compiled here as dll. The quickest solution is to find it manualy here. But rest assured
+# when you would configure your cmake the geSG config will bring the ste as external dependency.
 
 if(NOT TARGET ste)
    find_package(ste QUIET)
 endif()
 
-if(NOT TARGET Qt5::Quick OR NOT TARGET geGL OR NOT TARGET geUtil OR NOT TARGET geSG OR NOT TARGET AssimpModelLoader OR NOT TARGET QtImageLoader )
+foreach(tar Qt5::Quick AssimpModelLoader QtImageLoader assimp::assimp)
+    if(NOT TARGET ${tar})
+        message("NOT TARGET ${tar}")
+    endif()
+endforeach()
+
+if(NOT TARGET Qt5::Quick OR NOT TARGET geGL OR NOT TARGET geUtil OR NOT TARGET geSG OR NOT TARGET AssimpModelLoader OR NOT TARGET QtImageLoader OR NOT TARGET assimp::assimp
+)
    return()
 endif()
 
-set(DEFAULT_RESOERCES_PATH "${CMAKE_CURRENT_LIST_DIR}/resources")
+set(DEFAULT_RESOURCES_PATH "${CMAKE_CURRENT_LIST_DIR}/resources")
 
-set(${APP_NAME}_RESOURCES "${DEFAULT_RESOERCES_PATH}" CACHE PATH "Relative or absolute path to Application resources.")
+set(${APP_NAME}_RESOURCES "${DEFAULT_RESOURCES_PATH}" CACHE PATH "Relative or absolute path to Application resources.")
 
 set(HEADER_PATH src)
 set(SOURCE_PATH src)

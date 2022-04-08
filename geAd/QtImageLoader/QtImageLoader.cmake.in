@@ -1,0 +1,18 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+
+if(NOT TARGET @PROJECT_NAME@)
+
+   foreach(_dep @Dependencies@)
+      if(NOT TARGET ${_dep})
+         find_dependency(${_dep} HINTS "${CMAKE_CURRENT_LIST_DIR}/../")
+      endif()
+   endforeach()
+   
+   if(NOT TARGET Qt5::Gui)
+      find_dependency(Qt5 COMPONENTS Gui)
+   endif()
+
+   include(${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake)
+
+endif(NOT TARGET @PROJECT_NAME@)

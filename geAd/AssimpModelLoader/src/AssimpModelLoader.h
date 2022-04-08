@@ -4,9 +4,16 @@
 #include <geSG/Material.h>
 #include <geSG/Node.h>
 #include <geSG/MatrixTransform.h>
-#include <memory>
 #include <geSG/Scene.h>
-#include <assimp/anim.h>
+
+#include <memory>
+
+struct aiAnimation;
+struct aiNodeAnim;
+struct aiMesh;
+struct aiNode;
+struct aiScene;
+struct aiMaterial;
 
 namespace fsg{
    class AnimationChannel;
@@ -21,10 +28,6 @@ namespace ge
       class Model;
    }
 }
-struct aiMesh;
-struct aiNode;
-struct aiScene;
-struct aiMaterial;
 
 
 template<typename TReal>
@@ -34,7 +37,7 @@ template <typename TReal>
 class aiVector3t;
 typedef aiVector3t<float> aiVector3D;
 
-class AssimpModelLoader
+class ASSIMPMODELLOADER_EXPORT AssimpModelLoader
 {
 public:
 

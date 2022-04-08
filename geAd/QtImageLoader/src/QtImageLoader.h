@@ -16,7 +16,7 @@ class QtImage;
  * 
  * \example Simple_QtgeSG/main.cpp
  */
-class QtImageLoader
+class QTIMAGELOADER_EXPORT QtImageLoader
 {
 public:
 
@@ -25,7 +25,7 @@ public:
    static QtImage* loadImage(const QString& imageIdentifier, int options = 0);
 };
 
-class QtImage : public ge::sg::ImageTemplate < QImage >
+class QTIMAGELOADER_EXPORT QtImage : public ge::sg::ImageTemplate < QImage >
 {
 public:
    ~QtImage();
