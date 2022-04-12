@@ -24,7 +24,6 @@ set(SG_INCLUDES
    ${HEADER_PATH}/BoundingSphere.h
    ${HEADER_PATH}/BoundingVolume.h
    ${HEADER_PATH}/DefaultImage.h
-   ${HEADER_PATH}/Drawable.h
    ${HEADER_PATH}/KeyframeInterpolator.h
    ${HEADER_PATH}/Image.h
    ${HEADER_PATH}/Intersector.h

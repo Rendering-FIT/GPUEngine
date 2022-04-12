@@ -15,12 +15,9 @@ namespace ge
       class Scene
       {
       public:
-         //Scene();
-
          std::vector<std::shared_ptr<Model>> models; ///< holds all models of the scene
          std::vector<std::shared_ptr<Animation>> animations; ///holds animations
          std::shared_ptr<MatrixTransformNode> rootNode; ///< root node of the scene
-      protected:
       };
 
       /**

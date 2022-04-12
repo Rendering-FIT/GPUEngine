@@ -17,7 +17,7 @@ namespace ge{
       /**
        * Material component base class. Serving only as a common type.
        */
-      class /*GESG_EXPORT*/ MaterialComponent
+      class MaterialComponent
       {
       public:
         
@@ -32,13 +32,12 @@ namespace ge{
          virtual ~MaterialComponent(){}
       protected:
          ComponentType componentType;
-      private:
       };
 
       /**
        * Representing simple uniform-like material component e.g. diffuse color of type vec4
        */
-      class /*GESG_EXPORT*/ MaterialSimpleComponent : public MaterialComponent
+      class MaterialSimpleComponent : public MaterialComponent
       {
       public:
          ENUM_CLASS_FRIEND_OPERATOR(DataType, UNKNOWN, BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT, DOUBLE);
@@ -69,7 +68,7 @@ namespace ge{
             }
          }
 
-         int size; //< number of components of dataType elements
+         int size; ///< number of components of dataType elements
          DataType dataType;
          Semantic semantic;
          std::unique_ptr<unsigned char[]> data; //shared pointer could be longer than the data itself
@@ -78,7 +77,7 @@ namespace ge{
       /**
        * Material component representing image e.g. 2D texture image (without mip-maps ofc.)
        */
-      class /*GESG_EXPORT*/ MaterialImageComponent : public MaterialComponent
+      class MaterialImageComponent : public MaterialComponent
       {
       public:
          idlist(Semantic, unknown, ambientTexture, diffuseTexture, specularTexture, emissiveTexture, heightTexture, normalTexture, shininessTexture, opacityTexture, displacementTexture, lightmapTexture, reflectionTexture)
@@ -98,7 +97,7 @@ namespace ge{
       /**
        * Collection of material components.
        */
-      class /*GESG_EXPORT*/ Material
+      class Material
       {
       public:
 

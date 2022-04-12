@@ -1,6 +1,4 @@
 #pragma once
-//#include <geSG/Export.h>
-
 
 namespace ge
 {

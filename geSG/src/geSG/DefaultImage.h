@@ -9,23 +9,19 @@ namespace ge
       class GESG_EXPORT DefaultImage : public ge::sg::Image
       {
       public:
-         DefaultImage();
+         unsigned char* getBits() override;
 
-         virtual unsigned char* getBits() override;
-
-         virtual size_t getSizeInBytes() override;
-         virtual Format getFormat() override; //should this function return int or some template type which could be specified as GLenum
-         virtual DataType getDataType() override;
-         virtual size_t getWidth() override;
-         virtual size_t getHeight() override;
-
-         ~DefaultImage();
-
-         unsigned char* _bits;
-         Format _format;
-         DataType _dataType;
-         size_t _width;
-         size_t _height;
+         size_t getSizeInBytes() override;
+         Format getFormat() override; //should this function return int or some template type which could be specified as GLenum
+         DataType getDataType() override;
+         size_t getWidth() override;
+         size_t getHeight() override;
+         
+         unsigned char bits[4] = {0xff,0xff,0xff,0xff};
+         Format format = Format::RGBA;
+         DataType dataType = DataType::UNSIGNED_BYTE;
+         size_t width = 1;
+         size_t height = 1;
       };
    }
 }

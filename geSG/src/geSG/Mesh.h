@@ -19,7 +19,7 @@ namespace ge{
        * by number of attributes (position, normal etc.) and one material.
        * It is basically opengl draw command.
        */
-      class /*GESG_EXPORT*/ Mesh
+      class Mesh
       {
       public:
 
@@ -70,29 +70,11 @@ namespace ge{
             return std::shared_ptr<AttributeDescriptor>(nullptr);
          }
 
-         /*enum class PrimitiveType
-         {
-         UNKNOWN,
-         POINTS,
-         LINES,
-         LINE_LOOP,
-         LINE_STRIP,
-         TRIANGLES,
-         TRIANGLE_STRIP,
-         TRIANGLE_FAN,
-         QUADS,
-         QUAD_STRIP,
-         POLYGON,
-         PATCH,
-         };*/
-
          ENUM_CLASS_FRIEND_OPERATOR(PrimitiveType, UNKNOWN, POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN, QUADS, QUAD_STRIP, POLYGON, PATCH, )
          size_t count; ///< vertex count
          PrimitiveType primitive;
          std::vector<std::shared_ptr<AttributeDescriptor>>   attributes;
          std::shared_ptr<Material> material;
-      protected:
-      private:
       };
 
    }

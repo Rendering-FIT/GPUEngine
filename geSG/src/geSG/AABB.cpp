@@ -3,10 +3,6 @@
 
 using namespace ge::sg;
 
-AABB::AABB()
-{
-}
-
 AABB::AABB(const AABB& other): min(other.min)
                                , max(other.max)
 {

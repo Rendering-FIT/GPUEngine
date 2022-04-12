@@ -2,19 +2,9 @@
 
 using namespace ge::sg;
 
-DefaultImage::DefaultImage()
-{
-   _bits = new unsigned char[4];
-   *(unsigned*)_bits = 0xffffffff;
-   _format = Format::RGBA;
-   _dataType = DataType::UNSIGNED_BYTE;
-   _width = 1;
-   _height = 1;
-}
-
 unsigned char* DefaultImage::getBits()
 {
-   return _bits;
+   return bits;
 }
 
 size_t DefaultImage::getSizeInBytes()
@@ -24,29 +14,20 @@ size_t DefaultImage::getSizeInBytes()
 
 Image::Format DefaultImage::getFormat()
 {
-   return _format;
+   return format;
 }
 
 Image::DataType DefaultImage::getDataType()
 {
-   return _dataType;
+   return dataType;
 }
 
 size_t DefaultImage::getWidth()
 {
-   return _width;
+   return width;
 }
 
 size_t DefaultImage::getHeight()
 {
-   return _height;
-}
-
-DefaultImage::~DefaultImage()
-{
-   if(_bits)
-   {
-      delete[]_bits;
-      _bits = nullptr;
-   }
+   return height;
 }

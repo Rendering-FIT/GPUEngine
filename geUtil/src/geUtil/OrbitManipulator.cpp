@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <iostream>
-#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <geUtil/OrbitManipulator.h>
 
@@ -9,16 +9,12 @@ using namespace ge::util;
 
 
 OrbitManipulator::OrbitManipulator()
-   : _dirty(true)
-   , _matrix(make_shared<glm::mat4>())
-   , _localUp(0, 1, 0)
-   , _center(0, 0, 0)
-   , _distance(5)
-   , _angleX(0)
-   , _angleY(0)
-   , _diableFlipOver(true)
-   , _fixVerticalAxis(true)
-   , _minimalDistance(0)
+   : localUp(0, 1, 0)
+   , center(0, 0, 0)
+   , distance(5)
+   , angleX(0)
+   , angleY(0)
+   , minimalDistance(0)
    , sensitivityX(1)
    , sensitivityY(1)
    , sensitivityZ(1)
@@ -26,97 +22,62 @@ OrbitManipulator::OrbitManipulator()
 }
 
 
-const glm::mat4& OrbitManipulator::getMatrix()
+glm::mat4 OrbitManipulator::getMatrix() const
 {
-   updateMatrix();
-   return *_matrix;
+   return glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -distance)) * glm::toMat4(getOrientation()) * glm::translate(glm::mat4(1.f), -center);
 }
-
-std::shared_ptr<glm::mat4>& OrbitManipulator::getRefMatrix()
-{
-   updateMatrix();
-   return _matrix;
-}
-
-
-void OrbitManipulator::setMatrix(const std::shared_ptr<glm::mat4>& matrix)
-{
-   _matrix=matrix;
-   // should we perform matrix decomposition here and update manipulator variables?
-}
-
-
-/**
- * Updates the view matrix need to be called before getMatrix().
- * When you manipulate the "camera"/view through zoom(),
- * move(), rotate() methods it only updates its internal state (center, distance, rotation).
- */
-void OrbitManipulator::updateMatrix()
-{
-   if(!_dirty)
-      return;
-
-   *_matrix = glm::translate(glm::mat4(), glm::vec3(0, 0, -_distance))* _rotationMat * glm::translate(glm::mat4(), -_center);
-   _dirty = false;
-}
-
 
 glm::vec3 OrbitManipulator::getPosition() const
 {
    return glm::vec3{
-      -_distance*cos(_angleX)*sin(_angleY),
-      _distance*cos(_angleX)*cos(_angleX),
-      _distance*sin(_angleX)
+      -distance*cos(angleX)*sin(angleY),
+      distance*cos(angleX)*cos(angleX),
+      distance*sin(angleX)
       };
 }
 
 void OrbitManipulator::setPosition(const glm::vec3& pos)
 {
-   //todo: use more efficient math to compute this
-   _dirty = true;
-   this->_distance = glm::distance(this->_center, pos);
-   glm::mat4 lookat = glm::lookAt(pos, this->_center, this->_localUp);
-   glm::vec3 dummy1;
-   glm::vec4 dummy2;
-   glm::quat orientation;
-   glm::decompose(lookat, dummy1, orientation, dummy1, dummy1, dummy2);
-   dummy1 = glm::eulerAngles(orientation);
-   _angleX = dummy1.y;
-   _angleY = dummy1.x;
-   _angleY = glm::clamp(_angleY, -glm::half_pi<float>(), glm::half_pi<float>());
 
-   _rotationMat = glm::rotate(glm::mat4(), _angleY, glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(), _angleX, glm::vec3(0, 1, 0));
+   glm::vec3 dir(pos - getPosition()); //direction of the translation
+   center += dir; //move centre in the direction of the translation thus preserving the orientation
 }
 
 glm::quat OrbitManipulator::getOrientation() const
 {
-   return {glm::vec3{_angleY,_angleX,0.0f}}; //used quaternion constructor that accepts the euler angles; BEWARE THE ORDER (pitch, yaw, roll)
+   return {glm::vec3{angleY,angleX,0.0f}}; //used quaternion constructor that accepts the euler angles; BEWARE THE ORDER (pitch, yaw, roll)
 }
 
 void OrbitManipulator::setOrientation(const glm::quat& orientation)
 {
-   _dirty = true;
    glm::vec3 ang = eulerAngles(orientation);
-   _angleX = ang.x;
-   _angleY = ang.y;
+   angleX = ang.x;
+   angleY = ang.y;
 }
 
 
+/**
+ * \brief Zoom
+ * \param dz Counter intuitively +dz means zoom-in (mouse wheel up) so the distance needs to be changed by -dz.
+ */
 void OrbitManipulator::moveZ(float dz)
 {
-   _dirty = true;
-   _distance += dz * sensitivityZ;
-   if(_distance < _minimalDistance) _distance = _minimalDistance;
+   distance += -dz * sensitivityZ;
+   if(distance < minimalDistance) distance = minimalDistance;
 }
 
+/**
+ * \brief Pan
+ * \param dx Pan -x so the camera movement is left when you drag right.
+ * \param dy Pan y
+ */
 void OrbitManipulator::moveXY(float dx, float dy)
 {
-   _dirty = true;
    float distX, distY;
-   distX = dx * _distance * sensitivityX;
-   distY = dy * _distance * sensitivityY;
+   distX = -dx * distance * sensitivityX;
+   distY = dy * distance * sensitivityY;
 
-   _center += glm::vec3(glm::vec4(distX, distY, 0, 1) * _rotationMat);
+   center += glm::vec3(glm::vec3(distX, distY, 0) * getOrientation());
 }
 
 /**
@@ -125,18 +86,16 @@ void OrbitManipulator::moveXY(float dx, float dy)
  */
 void OrbitManipulator::rotate(float dx,float dy)
 {
-   _dirty = true;
-   _angleX += dx * sensitivityX;
-   _angleY += dy * sensitivityY;
+   angleX += dx * sensitivityX;
+   angleY += dy * sensitivityY;
 
-   _angleY = glm::clamp(_angleY, -glm::half_pi<float>(), glm::half_pi<float>());
-
-   _rotationMat = glm::rotate(glm::mat4(), _angleY, glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(), _angleX, glm::vec3(0, 1, 0));
+   angleY = glm::clamp(angleY, -glm::half_pi<float>(), glm::half_pi<float>());
 }
 
 
 /**
- * Zoom in/out fluently.
+ * Zoom in/out.
+ * \see moveZ
  */
 void OrbitManipulator::zoom(float dz)
 {
@@ -146,6 +105,7 @@ void OrbitManipulator::zoom(float dz)
 
 /**
  * Pan the camera. Takes the distance from center into account.
+ * \see moveXY
  */
 void OrbitManipulator::move(float dx,float dy)
 {
@@ -155,12 +115,10 @@ void OrbitManipulator::move(float dx,float dy)
 
 void OrbitManipulator::setCenter(const glm::vec3& center)
 {
-   _dirty = true;
-   this->_center = center;
+   this->center = center;
 }
 
 void OrbitManipulator::setDistance(const float distance)
 {
-   _dirty = true;
-   this->_distance = distance;
+   this->distance = distance;
 }

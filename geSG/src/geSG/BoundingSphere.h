@@ -16,8 +16,7 @@ namespace ge
       class GESG_EXPORT BoundingSphere : public BoundingVolume
       {
       public:
-         BoundingSphere();
-
+         BoundingSphere() = default;
          BoundingSphere(const BoundingSphere& other);
 
          /**
@@ -33,7 +32,6 @@ namespace ge
          void expand(const BSContainer<std::shared_ptr<BoundingSphere>>& container)
          {
             glm::vec3 newCenter = this->center;
-            float newRadius = 0.0f;
 
             //compute new center
             for(auto BS : container)
@@ -42,7 +40,7 @@ namespace ge
             }
 
             newCenter /= container.size() + 1;
-            newRadius = glm::distance(newCenter, this->center) + this->radius;
+            float newRadius = glm::distance(newCenter, this->center) + this->radius;
 
             for(auto BS : container)
             {
@@ -52,8 +50,8 @@ namespace ge
          }
 
 
-         glm::vec3 center;
-         float radius;
+         glm::vec3 center{};
+         float radius = 0.f;
       };
 
       /**

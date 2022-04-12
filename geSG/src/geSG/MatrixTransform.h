@@ -2,7 +2,7 @@
 
 #include <geSG/Export.h>
 #include <geSG/Transform.h>
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include <memory>
 #include <vector>
 

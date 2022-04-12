@@ -19,17 +19,11 @@ namespace ge{
        * of meshes and materials placed in MatrixTransfom hieararchy
        * (DAG).
        */
-      class /*GESG_EXPORT*/ Model
+      struct Model
       {
-      public:
-
          std::vector<std::shared_ptr<Mesh>> meshes;
          std::vector<std::shared_ptr<Material>> materials;
          std::shared_ptr<MatrixTransformNode> rootNode;
-         //~Model();
-      protected:
-
-      private:
       };
    }
 }

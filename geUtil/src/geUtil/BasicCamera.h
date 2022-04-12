@@ -3,9 +3,7 @@
 #include <geUtil/ManipulatorInterfaces.h>
 #include <geUtil/CameraInterfaces.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <memory>
 
 namespace ge
 {
@@ -13,11 +11,9 @@ namespace util
 {
    class BasicManipulatorInterface;
 
-   class GEUTIL_EXPORT BasicCamera: public CameraMatrixInterface, BasicManipulatorInterface
+   class GEUTIL_EXPORT BasicCamera: public CameraMatrixInterface, public BasicManipulatorInterface
    {
    public:
-      std::shared_ptr<glm::mat4>& getRefMatrix() override;
-      void setMatrix(const std::shared_ptr<glm::mat4>& mat) override;
       void moveZ(float dz) override;
       void moveXY(float dx, float dy) override;
       void rotate(float dx, float dy) override;
@@ -28,8 +24,7 @@ namespace util
       void setActiveManipulator(std::shared_ptr<BasicManipulatorInterface>& manipulator);
 
    protected:
-      std::shared_ptr<glm::mat4> viewMatrix;
-      std::shared_ptr<glm::mat4> projectionMatrix;
+      std::shared_ptr<glm::mat4> projectionMatrix = std::make_shared<glm::mat4>(1.f);
       std::shared_ptr<BasicManipulatorInterface> activeManipulator;
    };
 

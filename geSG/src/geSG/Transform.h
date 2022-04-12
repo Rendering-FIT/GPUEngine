@@ -1,7 +1,5 @@
 #pragma once
 
-#include <geSG/Export.h>
-
 namespace ge{
    namespace sg
    {
@@ -11,7 +9,7 @@ namespace ge{
        * it must be able to output/compute matrix for needs of
        * e.g. OpenGL API. The matrix ordering is defined by usage.
        */
-      class GESG_EXPORT Transform
+      class Transform
       {
       public:
          virtual float* getMatrixData() = 0;

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <geSG/Export.h>
-
-// temporary solution
 #include <geCore/enum_definition.h>
 
 
@@ -15,7 +12,7 @@ namespace ge{
        * Simple abstract class representing 2D image. Do NOT inherit.
        * Subclass TemplateImage.
        */
-      class GESG_EXPORT Image
+      class Image
       {
       public:
 
@@ -54,7 +51,6 @@ namespace ge{
 
       protected:
          ImageImpl *_image;
-      private:
       };
    }//namespace sg
 } //namespace ge

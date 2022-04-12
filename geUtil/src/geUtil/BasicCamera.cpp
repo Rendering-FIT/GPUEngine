@@ -2,16 +2,6 @@
 
 using namespace ge::util;
 
-inline std::shared_ptr<glm::mat4>& BasicCamera::getRefMatrix()
-{
-   return viewMatrix;
-}
-
-inline void BasicCamera::setMatrix(const std::shared_ptr<glm::mat4>& mat)
-{
-   viewMatrix = mat;
-}
-
 inline void BasicCamera::moveZ(float dz)
 {
    activeManipulator->moveZ(dz);
@@ -34,7 +24,7 @@ inline glm::mat4 BasicCamera::getProjectionMatrix() const
 
 inline glm::mat4 BasicCamera::getViewMatrix() const
 {
-   return *viewMatrix;
+   return activeManipulator->getMatrix();
 }
 
 inline BasicManipulatorInterface& BasicCamera::getActiveManipulator()

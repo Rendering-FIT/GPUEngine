@@ -4,11 +4,6 @@
 
 using namespace ge::sg;
 
-BoundingSphere::BoundingSphere(): center(glm::vec3())
-                                  , radius(0.0f)
-{
-}
-
 BoundingSphere::BoundingSphere(const BoundingSphere& other): center(other.center)
                                                              , radius(other.radius)
 {

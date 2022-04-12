@@ -1,11 +1,8 @@
 #pragma once
 
 #include <iterator>
-#define GLM_ENABLE EXPERIMENTAL
-#include <glm/glm.hpp>
-
-
 #include <algorithm>
+#include <cassert>
 
 namespace ge
 {

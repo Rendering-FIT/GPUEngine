@@ -16,7 +16,7 @@ namespace ge
       class GESG_EXPORT AABB : public BoundingVolume
       {
       public:
-         AABB();
+         AABB() = default;
 
          AABB(const AABB& other);
 

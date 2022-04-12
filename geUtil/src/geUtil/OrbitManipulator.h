@@ -1,32 +1,30 @@
-#ifndef GE_UTIL_ORBIT_MANIPULATOR_H
-#define GE_UTIL_ORBIT_MANIPULATOR_H
+#pragma once
 
 #include <geUtil/Export.h>
-#include <memory>
 #include <glm/gtc/quaternion.hpp>
 #include <geUtil/ManipulatorInterfaces.h>
 
 namespace ge {
 namespace util {
 
-class GEUTIL_EXPORT OrbitManipulator : public BasicManipulatorInterface, public PositionAttitudeInterface
+/**
+ * \brief Very simple manipulator for orbital camera.
+ * This manipulator is mostly for producing/manipulating the view matrix. It emulates the orbiting movement around the center point (pivot).
+ * It cannot roll and it cannot move closer to the center that the minimalDistance.
+ * It implements both the BasicManipulatorInterface and the PositionOrientationInterface for camera manipulation (input) as well as some convenience methods
+ * like zoom and move. For output there are getters from PositionOrientationInterface or getMatrix() from BasicManipulatorInterface which will compute and return a view matrix.
+ * Since it's assumed that the move and rotate methods will be hooked up to the mouse movement there are sensitivity* parameters which modulates the movement speed.
+ */
+class GEUTIL_EXPORT OrbitManipulator : public BasicManipulatorInterface, public PositionOrientationInterface
 {
 protected:
-
-   bool _dirty;
-
-   std::shared_ptr<glm::mat4> _matrix;
-
-   glm::vec3 _localUp;
-   glm::vec3 _center;
-   float _distance;
-   float _angleX;
-   float _angleY;
-
-   bool _diableFlipOver;
-   bool _fixVerticalAxis;
-   glm::mat4 _rotationMat;
-   float _minimalDistance;
+   glm::vec3 localUp;
+   glm::vec3 center;
+   float distance;
+   float angleX;
+   float angleY;
+   
+   float minimalDistance;
 
 public:
 
@@ -36,32 +34,27 @@ public:
 
    OrbitManipulator();
 
-   inline bool isDirty(){ return _dirty; }
+   //Matrix Interface
+   glm::mat4 getMatrix() const override;
 
-   const glm::mat4& getMatrix() override;
-   std::shared_ptr<glm::mat4>& getRefMatrix() override;
-   void setMatrix(const std::shared_ptr<glm::mat4>& matrix) override;
-
+   //BasicManipulatorInterface
    void moveZ(float dz) override;
    void moveXY(float dx, float dy) override;
    void rotate(float dx,float dy) override;
 
    void zoom(float dz);
    void move(float dx,float dy);
-   //void zoomJump(int dir);
 
    void setCenter(const glm::vec3& center);
    void setDistance(const float distance);
 
-   void updateMatrix();
-
-   glm::vec3 getLocalUp() const override { return _localUp; }
+   glm::vec3 getLocalUp() const override { return localUp; }
    void setLocalUp(const glm::vec3& val) override
    {
-      _dirty = true;
-      _localUp = glm::normalize(val);
+      localUp = glm::normalize(val);
    }
 
+   //PositionOrientationInterface
    glm::vec3 getPosition() const override;
    void setPosition(const glm::vec3&) override;
    glm::quat getOrientation() const override;
@@ -71,5 +64,3 @@ public:
 
 }
 }
-
-#endif /* GE_UTIL_ORBIT_MANIPULATOR_H */
