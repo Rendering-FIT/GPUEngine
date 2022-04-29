@@ -284,7 +284,7 @@ std::string Shader::define(std::string const&Name,uint32_t vectorSize,int32_t co
 
 std::string Shader::define(std::string const&Name,float Value){
   std::stringstream result;
-  result<<"#define "<<Name<<" "<<Value<<"\n";
+  result<<"#define "<<Name<<" float("<<Value<<")\n";
   return result.str();
 }
 

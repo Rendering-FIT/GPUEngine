@@ -22,21 +22,11 @@ std::string ge::gl::getNoiseSource(){
 #define UVEC3 uvec3
 #define UVEC4 uvec4
 
-//#define VECXI(x,m,i) JOIN(x,JOIN(VECI,m(i)))
-//#define VECI1(i) 
-//#define VECI2(i) [i]
-//#define VECI3(i) [i]
-//#define VECI4(i) [i]
-
-uint  getElem(uint  x,uint i){return x   ;}
-uint  getElem(uvec2 x,uint i){return x[i];}
-uint  getElem(uvec3 x,uint i){return x[i];}
-uint  getElem(uvec4 x,uint i){return x[i];}
-float getElem(float x,uint i){return x   ;}
-float getElem(vec2  x,uint i){return x[i];}
-float getElem(vec3  x,uint i){return x[i];}
-float getElem(vec4  x,uint i){return x[i];}
-#define VECXI(x,m,i) getElem(x,i)
+#define VECI1(x,i) x
+#define VECI2(x,i) x[i]
+#define VECI3(x,i) x[i]
+#define VECI4(x,i) x[i]
+#define VECXI(x,m,i) JOIN(VECI,m)(x,i)
 
 float convert(uint  x){return float(float(x  )                                 );}
 vec2  convert(uvec2 x){return vec2 (float(x.x),float(x.y)                      );}

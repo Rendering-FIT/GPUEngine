@@ -60,7 +60,7 @@ void Renderbuffer::setStorage(
     GLsizei const&height        ,
     GLsizei const&samples       )const{
   assert(this!=nullptr);
-  this->getContext().glNamedRenderbufferStorageMultisample(this->getId(),internalFormat,samples,width,height);
+  this->getContext().glNamedRenderbufferStorageMultisample(this->getId(),samples,internalFormat,width,height);
 }
 
 
