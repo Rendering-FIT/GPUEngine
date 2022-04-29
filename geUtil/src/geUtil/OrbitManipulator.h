@@ -18,21 +18,19 @@ namespace util {
 class GEUTIL_EXPORT OrbitManipulator : public BasicManipulatorInterface, public PositionOrientationInterface
 {
 protected:
-   glm::vec3 localUp;
-   glm::vec3 center;
-   float distance;
-   float angleX;
-   float angleY;
+   glm::vec3 localUp{0, 1, 0};
+   glm::vec3 center{0, 0, 0};
+   float distance = 5;
+   float angleX = 0;
+   float angleY = 0;
    
-   float minimalDistance;
+   float minimalDistance = 0;
 
 public:
 
-   float sensitivityX;
-   float sensitivityY;
-   float sensitivityZ;
-
-   OrbitManipulator();
+   float sensitivityX = 1;
+   float sensitivityY = 1;
+   float sensitivityZ = 1;
 
    //Matrix Interface
    glm::mat4 getMatrix() const override;

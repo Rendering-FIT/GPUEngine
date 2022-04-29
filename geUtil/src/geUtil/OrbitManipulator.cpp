@@ -7,21 +7,6 @@
 using namespace std;
 using namespace ge::util;
 
-
-OrbitManipulator::OrbitManipulator()
-   : localUp(0, 1, 0)
-   , center(0, 0, 0)
-   , distance(5)
-   , angleX(0)
-   , angleY(0)
-   , minimalDistance(0)
-   , sensitivityX(1)
-   , sensitivityY(1)
-   , sensitivityZ(1)
-{
-}
-
-
 glm::mat4 OrbitManipulator::getMatrix() const
 {
    return glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -distance)) * glm::toMat4(getOrientation()) * glm::translate(glm::mat4(1.f), -center);
@@ -29,11 +14,11 @@ glm::mat4 OrbitManipulator::getMatrix() const
 
 glm::vec3 OrbitManipulator::getPosition() const
 {
-   return glm::vec3{
-      -distance*cos(angleX)*sin(angleY),
-      distance*cos(angleX)*cos(angleX),
-      distance*sin(angleX)
-      };
+   return center + glm::vec3{
+      -distance * sin(angleX) * cos(angleY),
+      distance * sin(angleY),
+      distance * cos(angleX) * cos(angleY)
+   };
 }
 
 void OrbitManipulator::setPosition(const glm::vec3& pos)
