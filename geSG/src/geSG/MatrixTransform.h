@@ -81,7 +81,7 @@ namespace ge {
 
 
 
-          std::vector<std::shared_ptr<Light>> meshes;
+          std::vector<std::shared_ptr<Light>> lights;
       };
    } //namespace ge::sg
 }

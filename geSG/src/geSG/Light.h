@@ -9,7 +9,7 @@ namespace ge
       /**
        * Holds information about the point or directional light. The usage is up to the user.
        * You can put it into a scene graph and make a visualisation technique that will lit only
-       * the scene beyond the light node. You can make VT that takes light and uses it as gloabal
+       * the scene beyond the light node. You can make VT that takes light and uses it as global
        * sun light or headlight.
        */
       struct Light
@@ -18,10 +18,15 @@ namespace ge
          glm::vec4 color; ///< light intensity in RGBA (the A could be used as user sees fit)
       };
 
-      struct SpotLight : public Light
+      struct DirectionalLight : public Light
       {
-         glm::vec3 direction; ///< direction of the center of the spot light
-         float angle; ///< angle in radians
+          glm::vec3 direction; ///< direction of the center of the directional light or spot light
+      };
+
+      struct SpotLight : public DirectionalLight
+      {
+         float innerAngle; ///< inner angle (hot spot) in radians
+         float outerAngle; ///< outer angle (falloff) in radians
       };
    }
 }
