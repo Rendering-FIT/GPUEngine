@@ -123,3 +123,50 @@ ge::sg::MatrixTransform::MatrixTransform(const Transform& transform)
 ge::sg::MatrixTransform::~MatrixTransform()
 {
 }
+
+///////////////////////////////////////////////////////////////////////////
+// LightMatrixTransform
+
+ge::sg::LightMatrixTransform::LightMatrixTransform()
+	: MatrixTransformBase()
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(const float* matrix)
+	: MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(const glm::mat4& matrix)
+	: MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(glm::mat4* matrix)
+	: MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(const std::shared_ptr<glm::mat4>& matrix)
+	: MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(std::shared_ptr<glm::mat4>&& matrix)
+	: MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(LightMatrixTransform& matrix)
+	: MatrixTransformBase(matrix)
+{
+}
+
+ge::sg::LightMatrixTransform::LightMatrixTransform(const Transform& transform)
+	: MatrixTransformBase(transform)
+{
+}
+
+ge::sg::LightMatrixTransform::~LightMatrixTransform()
+{
+}
