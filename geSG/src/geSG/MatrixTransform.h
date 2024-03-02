@@ -11,6 +11,7 @@ namespace ge {
    namespace sg{
 
       class Mesh;
+      class Light;
 
       /**
        * Base class for transforms that uses matrix representation.
@@ -59,6 +60,28 @@ namespace ge {
         
 
          std::vector<std::shared_ptr<Mesh>> meshes;
+      };
+
+      /**
+       * Represents local and relative coordinate reference frame for a set of lights.
+       */
+      class GESG_EXPORT LightMatrixTransform : public MatrixTransformBase
+      {
+      public:
+          LightMatrixTransform();
+          LightMatrixTransform(const float* matrix);
+          LightMatrixTransform(const glm::mat4& matrix);
+          LightMatrixTransform(glm::mat4 * matrix);
+          LightMatrixTransform(const std::shared_ptr<glm::mat4> &matrix);
+          LightMatrixTransform(std::shared_ptr<glm::mat4> && matrix);
+          LightMatrixTransform(LightMatrixTransform & matrix);
+          LightMatrixTransform(const Transform &transform);
+
+          virtual ~LightMatrixTransform();
+
+
+
+          std::vector<std::shared_ptr<Light>> meshes;
       };
    } //namespace ge::sg
 }
