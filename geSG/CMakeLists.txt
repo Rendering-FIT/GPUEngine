@@ -43,7 +43,6 @@ set(SG_INCLUDES
    ${HEADER_PATH}/Sampler.h
    ${HEADER_PATH}/Scene.h
    ${HEADER_PATH}/Transform.h
-   ${HEADER_PATH}/Camera.h
 )
 
 set(SG_SOURCES
