@@ -12,10 +12,10 @@ namespace ste
 namespace ge{
    namespace sg
    {
-      class MatrixTransform;
+      class MatrixTransformBase;
       /**
        * Basic graph node typedef.
        */
-      typedef ste::Node<std::shared_ptr<ge::sg::MatrixTransform>> MatrixTransformNode;
+      typedef ste::Node<std::shared_ptr<ge::sg::MatrixTransformBase>> MatrixTransformNode;
    }
 }

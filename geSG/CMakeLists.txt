@@ -28,8 +28,10 @@ set(SG_INCLUDES
    ${HEADER_PATH}/Image.h
    ${HEADER_PATH}/Intersector.h
    ${HEADER_PATH}/Light.h
+   ${HEADER_PATH}/LightMatrixTransform.h
    ${HEADER_PATH}/Material.h
    ${HEADER_PATH}/MatrixTransform.h
+   ${HEADER_PATH}/MatrixTransformBase.h
    ${HEADER_PATH}/Mesh.h
    ${HEADER_PATH}/MeshPrimitiveIterator.h
    ${HEADER_PATH}/MeshTriangleIterators.h
@@ -52,7 +54,9 @@ set(SG_SOURCES
    ${SRC_PATH}/AnimationManager.cpp
    ${SRC_PATH}/BoundingSphere.cpp
    ${SRC_PATH}/DefaultImage.cpp
+   ${SRC_PATH}/LightMatrixTransform.cpp
    ${SRC_PATH}/MatrixTransform.cpp
+   ${SRC_PATH}/MatrixTransformBase.cpp
    ${SRC_PATH}/RayAABBIntersector.cpp
    ${SRC_PATH}/RayMeshIntersector.cpp
    ${SRC_PATH}/RaySphereIntersector.cpp
